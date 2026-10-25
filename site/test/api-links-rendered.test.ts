@@ -119,7 +119,7 @@ describe('the pages, rendered for each port', () => {
     expect(linked).toBeGreaterThan(0)
   }, 900_000)
 
-  it('link a standard-library name only where the page says its language: a shell\'s exit is not Python\'s, nor coreutils\' timeout Elixir\'s', async () => {
+  it('link a bare word to the standard library only where the page says its language: a shell\'s exit is not Python\'s, nor coreutils\' timeout Elixir\'s', async () => {
     const processor = await createMarkdownProcessor({ gfm: true, rehypePlugins: [rehypeTmuxKeys as never, rehypeApiLinks as never] } as never)
     const shared = pages.filter((page) => page.shared)
     const wrong: string[] = []

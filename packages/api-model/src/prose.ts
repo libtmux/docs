@@ -236,8 +236,10 @@ export interface MentionContext {
   /**
    * Whether the page itself says `pagePort` is its language: its own port, a fence's language, a port-labelled row or section.
    * A page that is shared by every port is rendered once for each, so the port it is rendered for says where it is read, not
-   * what it is about. A standard-library or builtin name is then not linked by that port: `exit` in a sentence about a shell
-   * is not Python's, and `timeout` in one about coreutils is not Elixir's type. Left unset, the page is taken to say so.
+   * what it is about. A bare lowercase word is then not linked to that port's standard library or builtins: it is as likely a
+   * shell command or an English word as a name, and `exit` in a sentence about a shell is not Python's, nor `timeout` in
+   * one about coreutils Elixir's type. A name that carries its own evidence (`Base.strip`, `BTreeMap`, a call) still links.
+   * Left unset, the page is taken to say its language.
    */
   languageSaid?: boolean
   product?: ApiProduct
@@ -302,18 +304,18 @@ export function decideMention(
   for (const port of [named, ctx.pagePort]) {
     if (!port || !models[port]) continue
     // The language of a build that the page does not name is where the page is read: it owns the library's symbols, not the language's.
-    const unsaid = port === ctx.pagePort && port !== named && ctx.languageSaid === false
+    const unsaid = port === ctx.pagePort && port !== named && ctx.languageSaid === false && !isLikelyReference(text)
     const res = resolver.resolve(port, text, ctx.product)
     ambiguous ||= res.how === 'ambiguous'
     tried.push(`${port}:${res.how}`)
     const hit = link(port, res)
     if (hit) {
-      if (hit.kind === 'link' && /^https?:\/\//i.test(hit.href) && unsaid) return { kind: 'skip', why: 'a standard-library name on a page that does not say its language' }
+      if (hit.kind === 'link' && /^https?:\/\//i.test(hit.href) && unsaid) return { kind: 'skip', why: 'a bare word on a page that does not say its language' }
       return hit
     }
     const builtin = builtinHref(port, text)
     if (builtin) {
-      if (unsaid) return { kind: 'skip', why: 'a builtin name on a page that does not say its language' }
+      if (unsaid) return { kind: 'skip', why: 'a bare word on a page that does not say its language' }
       return { kind: 'link', port, href: builtin, title: `${text}: ${PORT_NAME[port]}`, external: true }
     }
   }

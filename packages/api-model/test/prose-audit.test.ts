@@ -95,18 +95,21 @@ describe('product context in prose', () => {
       .toMatchObject({ kind: 'link', port: 'rs', href: 'https://doc.rust-lang.org/std/collections/struct.BTreeMap.html', external: true })
   })
 
-  it('links a standard-library name for the port of a build only where the page says its language', () => {
-    const rust = { port: 'rs', version: '0', symbols: [] } as unknown as ApiModel
-    const ask = (context: Parameters<typeof decideMention>[1]) => decideMention('BTreeMap', context, new Resolver([rust]), { rs: rust })
-    expect(ask({ pagePort: 'rs' })).toMatchObject({ kind: 'link', external: true })
-    expect(ask({ pagePort: 'rs', languageSaid: true })).toMatchObject({ kind: 'link', external: true })
-    // A page shared by every port is rendered for Rust too, and says nothing of Rust.
-    expect(ask({ pagePort: 'rs', languageSaid: false })).toMatchObject({ kind: 'skip' })
+  it('links a bare word to the standard library of the build only where the page says its language', () => {
+    const elixir = { port: 'elixir', version: '0', symbols: [] } as unknown as ApiModel
+    const ask = (text: string, context: Parameters<typeof decideMention>[1]) => decideMention(text, context, new Resolver([elixir]), { elixir })
+    expect(ask('timeout', { pagePort: 'elixir' })).toMatchObject({ kind: 'link', external: true })
+    expect(ask('timeout', { pagePort: 'elixir', languageSaid: true })).toMatchObject({ kind: 'link', external: true })
+    // A page shared by every port is rendered for Elixir too, and `timeout` in it is the coreutils command.
+    expect(ask('timeout', { pagePort: 'elixir', languageSaid: false })).toMatchObject({ kind: 'skip' })
     // The sentence that names the port says it, whatever the page does.
-    expect(ask({ pagePort: 'rs', languageSaid: false, before: 'In Rust, ' })).toMatchObject({ kind: 'link', external: true })
+    expect(ask('timeout', { pagePort: 'elixir', languageSaid: false, before: 'In Elixir, ' })).toMatchObject({ kind: 'link', external: true })
+    // A name that carries its own evidence, a type or a qualified one, links on any page.
+    const rust = { port: 'rs', version: '0', symbols: [] } as unknown as ApiModel
+    expect(decideMention('BTreeMap', { pagePort: 'rs', languageSaid: false }, new Resolver([rust]), { rs: rust })).toMatchObject({ kind: 'link', external: true })
     // The library's own symbols are the page's to link in every build.
-    const own = { port: 'rs', version: '0', symbols: [{ id: 'Session', name: 'Session', kind: 'struct', signatures: [], source: { file: 'a.rs' } }] } as unknown as ApiModel
-    expect(decideMention('Session', { pagePort: 'rs', languageSaid: false }, new Resolver([own]), { rs: own })).toMatchObject({ kind: 'link', external: false })
+    const own = { port: 'rs', version: '0', symbols: [{ id: 'session', name: 'session', kind: 'function', signatures: [], source: { file: 'a.rs' } }] } as unknown as ApiModel
+    expect(decideMention('session', { pagePort: 'rs', languageSaid: false }, new Resolver([own]), { rs: own })).toMatchObject({ kind: 'link', external: false })
   })
 
   it('links a variable or a printed object nowhere', () => {

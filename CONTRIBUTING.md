@@ -397,9 +397,10 @@ The same prose reaches a reader by more than one route, and the tests render eac
 verifier to it: the pages, in the build of each port and in the one build for none, through the
 linker the site uses; the Markdown copy of a symbol and of a page; the hover card; and the
 notices in templates. A page shared by every port is rendered once for each, and the port of that build
-says where it is read, not what it is about, so it links a standard-library name only where the page
-(its own port, a fence, a row, a section or the sentence) says its language: a shell's `exit` is not
-Python's. A test lists every file that links prose or holds an index to link with, by any call, in any
+says where it is read, not what it is about, so it links a bare lowercase word to that port's standard
+library only where the page (its own port, a fence, a row, a section or the sentence) says its
+language, and a name that carries evidence of its own (`Base.strip`, `BTreeMap`, a call) anywhere: a
+shell's `exit` is not Python's. A test lists every file that links prose or holds an index to link with, by any call, in any
 directory or extension, and fails on one that is not listed with what it does with an address outside the
 site.
 
