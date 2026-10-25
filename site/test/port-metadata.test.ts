@@ -121,7 +121,7 @@ describe('workspace CLI availability', () => {
 
   it('installs the Rust crate and the Go command from their registries', () => {
     expect(installs('rs').map(({ code }) => code)).toEqual([
-      expect.stringMatching(/^cargo install --locked --version 0\.1\.0-alpha\.\d+ tmux-workspace$/),
+      'cargo install --locked tmux-workspace',
     ])
     expect(installs('go').map(({ code }) => code)).toEqual([
       'go install github.com/libtmux/libtmux-go/workspace/cmd/tmux-workspace@latest',
@@ -278,5 +278,31 @@ describe('port destinations', () => {
     expect(JSON.parse(output)).not.toHaveProperty('ecosystem')
     // The verification script reads the inventory the same way.
     expect(JSON.parse(output).inventory).toBeGreaterThan(0)
+  })
+})
+
+describe('install text for the 0.1.0 ports', () => {
+  const RELEASED = ['ruby', 'lua', 'powershell', 'elixir', 'ts', 'rs', 'go', 'java', 'kotlin', 'scala', 'csharp', 'fsharp', 'swift']
+  const PRERELEASE_TEXT = /alpha|--pre\b|--prerelease|-AllowPrerelease|-Prerelease|every release so far/i
+
+  function handWritten(slug: string): string[] {
+    const port = PORT_BY_SLUG[slug]!
+    const lists = [port.installs, ...(port.packages ?? []).map((entry) => entry.installs ?? [])]
+    const texts = lists.flat().flatMap((install) => [install.code, install.note ?? '', ...(install.additionalBlocks ?? []).map((block) => block.code)])
+    const server = SERVERS[slug]
+    if (server) for (const method of server.methods) {
+      const command = server.resolve(method, { id: 'off' } as never)
+      texts.push(command.prereq ?? '', command.note ?? '', ...command.args)
+    }
+    return texts
+  }
+
+  it.each(RELEASED)('carries no alpha version or prerelease flag in the %s install lists', (slug) => {
+    for (const text of handWritten(slug)) expect(text, `${slug}: ${text}`).not.toMatch(PRERELEASE_TEXT)
+  })
+
+  it('catches a prerelease flag when one is planted', () => {
+    expect('dotnet tool install --global LibTmux.Mcp --prerelease').toMatch(PRERELEASE_TEXT)
+    expect('gem install --version 0.1.0.alpha.1 libtmux').toMatch(PRERELEASE_TEXT)
   })
 })

@@ -127,7 +127,7 @@ function nugetInstalls(packageName: string, pinCli = false): readonly InstallCom
   return [
     {
       label: '.NET CLI', lang: 'console',
-      code: `dotnet package add ${packageName} ${pinCli ? '--version {version}' : '--prerelease'}`,
+      code: `dotnet package add ${packageName}${pinCli ? ' --version {version}' : ''}`,
       versionedCode: `dotnet package add ${packageName} --version {version}`,
       note: '.NET 10 SDK: run in your project directory. On .NET 8 or 9, use dotnet add package with the same arguments.',
     },
@@ -255,8 +255,8 @@ export interface Port {
   /** Separately published packages whose APIs belong in this port's docs. */
   packages?: readonly PortPackage[]
   /**
-   * `local` builds from a source checkout; `published` installs a prerelease
-   * from the registry but is still in development on the shared native
+   * `local` builds from a source checkout; `published` installs from the
+   * registry but is still in development on the shared native
    * pages; `released` is a finished loader with its own authored pages.
    */
   workspaceCliAvailability?: 'local' | 'published' | 'released'
@@ -326,8 +326,8 @@ export interface Port {
    *
    * Which form applies is not a property of the port, it is the current state
    * of its registry, which `site/src/data/registry.json` records and
-   * `scripts/gen-registry.mjs` refreshes. Seven of the eight have no stable
-   * release.
+   * `scripts/gen-registry.mjs` refreshes. A port moves from `prerelease` to
+   * `stable` when its first final release reaches the registry.
    *
    * The prerelease forms pin explicitly. Not because the bare command fails:
    * measured against the live registries, `cargo add libtmux` resolves
@@ -339,9 +339,9 @@ export interface Port {
    * it. A bare command also changes what it installs the day a stable lands,
    * silently; the generated pin changes visibly.
    *
-   * Swift is the one case where the spelling is forced. Its tags are
-   * prereleases, and `0.1.0-alpha.5` sorts below `0.1.0`, so `from: "0.1.0"`
-   * has nothing in range and `exact:` is the only form that resolves.
+   * Swift's prerelease form pins `exact:` because its alpha tags sort below
+   * `0.1.0`, so a `from:` range had nothing in it; the stable form uses
+   * `from:`, as the package README does.
    *
    * `{version}` is the registry's newest matching release and `{tag}` the
    * git tag. `composePrompt` substitutes both; `prompts.test.ts` fails on any
@@ -453,8 +453,8 @@ const CORE_PORTS: readonly Port[] = [
         id: 'async', name: 'libtmux-async', registry: 'https://rubygems.org/gems/libtmux-async', require: 'libtmux/async',
         source: { path: 'gems/libtmux-async', ref: 'master' },
         installs: [
-          { label: 'gem', lang: 'console', code: 'gem install --version 0.1.0.alpha.1 libtmux-async' },
-          { label: 'Bundler', lang: 'ruby', code: 'gem "libtmux-async", "0.1.0.alpha.1"' },
+          { label: 'gem', lang: 'console', code: 'gem install libtmux-async' },
+          { label: 'Bundler', lang: 'ruby', code: 'gem "libtmux-async"' },
         ],
       },
       {
@@ -465,8 +465,8 @@ const CORE_PORTS: readonly Port[] = [
         require: 'libtmux/mcp',
         executable: 'libtmux-mcp',
         installs: [
-          { label: 'gem', lang: 'console', code: 'gem install --version 0.1.0.alpha.1 libtmux-mcp' },
-          { label: 'Bundler', lang: 'ruby', code: 'gem "libtmux-mcp", "0.1.0.alpha.1"' },
+          { label: 'gem', lang: 'console', code: 'gem install libtmux-mcp' },
+          { label: 'Bundler', lang: 'ruby', code: 'gem "libtmux-mcp"' },
         ],
       },
       {
@@ -477,8 +477,8 @@ const CORE_PORTS: readonly Port[] = [
         require: 'libtmux/workspace',
         executable: 'libtmux-workspace',
         installs: [
-          { label: 'gem', lang: 'console', code: 'gem install --version 0.1.0.alpha.1 libtmux-workspace' },
-          { label: 'Bundler', lang: 'ruby', code: 'gem "libtmux-workspace", "0.1.0.alpha.1"' },
+          { label: 'gem', lang: 'console', code: 'gem install libtmux-workspace' },
+          { label: 'Bundler', lang: 'ruby', code: 'gem "libtmux-workspace"' },
         ],
       },
     ],
@@ -492,8 +492,8 @@ const CORE_PORTS: readonly Port[] = [
     publishesOwnTree: true,
     generator: 'public inventory + YARD JSON + RBS',
     installs: [
-      { label: 'gem', lang: 'console', code: 'gem install --version 0.1.0.alpha.1 libtmux' },
-      { label: 'Bundler', lang: 'ruby', code: 'gem "libtmux", "0.1.0.alpha.1"' },
+      { label: 'gem', lang: 'console', code: 'gem install libtmux' },
+      { label: 'Bundler', lang: 'ruby', code: 'gem "libtmux"' },
     ],
     registry: { name: 'RubyGems', url: 'https://rubygems.org/gems/libtmux', icon: 'rubygems' },
     initProject: { code: 'bundle init', lang: 'console' },
@@ -528,7 +528,7 @@ const CORE_PORTS: readonly Port[] = [
       {
         label: 'LuaRocks',
         lang: 'console',
-        code: 'luarocks --local install libtmux 0.1.0alpha1-1',
+        code: 'luarocks --local install libtmux',
       },
     ],
     registry: { name: 'LuaRocks', url: 'https://luarocks.org/modules/tony/libtmux', icon: 'luarocks' },
@@ -583,16 +583,16 @@ const CORE_PORTS: readonly Port[] = [
       registry: 'https://www.powershellgallery.com/packages/LibTmux.Workspace',
       source: { path: 'src/LibTmux.Workspace.PowerShell', ref: 'master' },
       installs: [
-        { label: 'PowerShellGet', lang: 'powershell', code: 'Install-Module -Name LibTmux.Workspace -AllowPrerelease',
+        { label: 'PowerShellGet', lang: 'powershell', code: 'Install-Module -Name LibTmux.Workspace',
           note: 'Installs the matching LibTmux core dependency. Run PowerShell and tmux on the same Unix host.' },
-        { label: 'PSResourceGet', lang: 'powershell', code: 'Install-PSResource -Name LibTmux.Workspace -Prerelease',
+        { label: 'PSResourceGet', lang: 'powershell', code: 'Install-PSResource -Name LibTmux.Workspace',
           note: 'Installs the matching LibTmux core dependency. Run PowerShell and tmux on the same Unix host.' },
       ],
     }],
     installs: [
-      { label: 'PowerShellGet', lang: 'powershell', code: 'Install-Module -Name LibTmux -AllowPrerelease',
+      { label: 'PowerShellGet', lang: 'powershell', code: 'Install-Module -Name LibTmux',
         note: 'Requires PowerShell 7.4 or later and tmux on the same Unix host.' },
-      { label: 'PSResourceGet', lang: 'powershell', code: 'Install-PSResource -Name LibTmux -Prerelease',
+      { label: 'PSResourceGet', lang: 'powershell', code: 'Install-PSResource -Name LibTmux',
         note: 'Requires PowerShell 7.4 or later and tmux on the same Unix host.' },
     ],
     registry: { name: 'PowerShell Gallery', url: 'https://www.powershellgallery.com/packages/LibTmux', icon: 'powershell' },
@@ -681,7 +681,7 @@ const CORE_PORTS: readonly Port[] = [
         label: 'mix.exs',
         lang: 'elixir',
         filename: 'mix.exs',
-        code: '{:libtmux, "== {version}"}',
+        code: '{:libtmux, "~> {version}"}',
         additionalBlocks: [{ lang: 'console', code: 'mix deps.get' }],
         note: 'Add the tuple to the deps list in mix.exs, then fetch it. Needs Elixir 1.20.4 or newer, Erlang/OTP 29.1.2 or a newer 29.x release, tmux 3.3 or newer (the planned floor), and a C11 compiler on Linux.',
       },
@@ -689,8 +689,9 @@ const CORE_PORTS: readonly Port[] = [
     registry: { name: 'Hex', url: 'https://hex.pm/packages/libtmux', icon: 'hex' },
     initProject: { code: 'mix new my_app', lang: 'console' },
     installForms: {
+      // `~> 0.1.0` accepts every 0.1.N release, as the package README's
+      // `~> 0.1` does. A prerelease is pinned exactly.
       stable: { code: '{:libtmux, "~> {version}"}', lang: 'elixir' },
-      // An exact requirement: the package is an alpha, and its README pins it.
       prerelease: { code: '{:libtmux, "== {version}"}', lang: 'elixir' },
       git: { code: '{:libtmux, github: "libtmux/libtmux-elixir", tag: "{tag}"}', lang: 'elixir' },
     },
@@ -860,8 +861,8 @@ const CORE_PORTS: readonly Port[] = [
         reference: 'https://docs.rs/tmux-workspace',
         source: { path: 'crates/tmux-workspace', ref: 'master' },
         executable: 'tmux-workspace',
-        installs: [{ label: 'cargo', lang: 'console', code: 'cargo install --locked --version 0.1.0-alpha.15 tmux-workspace',
-          note: 'Needs Rust 1.85 or newer. cargo install skips prereleases unless asked, so the command names the version. This builds and installs the native CLI; run tmux-workspace --help afterward.' }] },
+        installs: [{ label: 'cargo', lang: 'console', code: 'cargo install --locked tmux-workspace',
+          note: 'Needs Rust 1.85 or newer. This builds and installs the native CLI; run tmux-workspace --help afterward.' }] },
       { id: 'mcp', name: 'tmux-mcp', registry: 'https://crates.io/crates/tmux-mcp',
         reference: 'https://docs.rs/tmux-mcp',
         source: { path: 'crates/tmux-mcp', ref: 'master' } },
@@ -1012,7 +1013,7 @@ const CORE_PORTS: readonly Port[] = [
         label: 'Gradle',
         lang: 'kotlin',
         code: `dependencies {
-    implementation(platform("io.github.libtmux:libtmux-bom:0.0.1-alpha.12"))
+    implementation(platform("io.github.libtmux:libtmux-bom:0.1.0"))
 
     implementation("io.github.libtmux:libtmux")
     testImplementation("io.github.libtmux:libtmux-junit5")
@@ -1027,7 +1028,7 @@ const CORE_PORTS: readonly Port[] = [
     <dependency>
       <groupId>io.github.libtmux</groupId>
       <artifactId>libtmux-bom</artifactId>
-      <version>0.0.1-alpha.12</version>
+      <version>0.1.0</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
@@ -1095,19 +1096,19 @@ const CORE_PORTS: readonly Port[] = [
           {
             label: 'dotnet tool',
             lang: 'console',
-            code: 'dotnet tool install --global LibTmux.Workspace.Cli --prerelease',
-            note: '--prerelease is required: every release so far carries an -alpha tag. Add $HOME/.dotnet/tools to PATH if the shell cannot find tmux-workspace.',
+            code: 'dotnet tool install --global LibTmux.Workspace.Cli',
+            note: 'Add $HOME/.dotnet/tools to PATH if the shell cannot find tmux-workspace.',
           },
           {
             label: 'dnx',
             lang: 'console',
-            code: 'dnx LibTmux.Workspace.Cli --prerelease --yes -- --help',
+            code: 'dnx LibTmux.Workspace.Cli --yes -- --help',
             note: 'Runs it once from NuGet without installing anything; needs the .NET 10 SDK.',
           },
           {
             label: 'Tool manifest',
             lang: 'console',
-            code: 'dotnet tool install LibTmux.Workspace.Cli --prerelease',
+            code: 'dotnet tool install LibTmux.Workspace.Cli',
             note: 'Run at a repository root: it writes dotnet-tools.json, which pins the version for everyone who clones it. Run it as dotnet tmux-workspace.',
           },
         ],
@@ -1234,19 +1235,20 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
         lang: 'swift',
         code: `.package(
     url: "https://github.com/libtmux/libtmux-swift.git",
-    exact: "0.1.0-alpha.5"
+    from: "0.1.0"
 )`,
-        note: 'An exact version, not a range. Every tag before 0.1.0 is a prerelease: SwiftPM keeps prereleases out of a `from: "0.1.0"` range, and `from: "0.1.0-alpha.5"` resolves forward into every prerelease after it.',
+        note: 'A range from 0.1.0 up to the next major version. Any 0.1.N release may change the API, so pin `exact:` instead to avoid a break.',
       },
     ],
     // SwiftPM resolves from the repository itself, so the repository is the
     // registry page a reader checks for versions.
     initProject: { code: 'swift package init --type executable', lang: 'console' },
     installForms: {
+      // `from: "0.1.0"` means ">= 0.1.0, < 1.0.0", the form the package
+      // README recommends for a final release.
       stable: { code: '.package(url: "https://github.com/libtmux/libtmux-swift", from: "{version}")', lang: 'swift' },
-      // `from: "0.1.0"` means ">= 0.1.0, < 1.0.0", and `0.1.0-alpha.5` sorts
-      // below `0.1.0`, so nothing in the repository is in range. This is the
-      // one port where the spelling is forced rather than chosen.
+      // A prerelease sorts below its final, so a `from:` range skips it and
+      // `exact:` is the only form that resolves one.
       prerelease: { code: '.package(url: "https://github.com/libtmux/libtmux-swift", exact: "{version}")', lang: 'swift' },
       git: { code: '.package(url: "https://github.com/libtmux/libtmux-swift", exact: "{tag}")', lang: 'swift' },
     },
@@ -1480,8 +1482,8 @@ export function workspaceOverviewNotice(port: Port): { title: string; body: stri
   if (port.workspaceCliAvailability === 'published') {
     return {
       title,
-      body: scope + `The \`${command}\` CLI is published to ${port.registry?.name ?? 'the package registry'} `
-        + 'as a prerelease. Pin its version when automation depends on its output.',
+      body: scope + `The \`${command}\` CLI is published to ${port.registry?.name ?? 'the package registry'}, `
+        + 'numbered 0.1.N. Pin its version when automation depends on its output.',
     }
   }
   if (port.workspaceCliAvailability !== 'local') return concept
@@ -1499,7 +1501,7 @@ export function productDescription(port: Port, product: DocProduct): string {
     if (port.workspaceCliAvailability === 'local')
       return `Build the CLI from source and load workspace files with ${port.workspaceCli}.`
     if (port.workspaceCliAvailability === 'published')
-      return `Load workspace files with the ${port.workspaceCli} prerelease.`
+      return `Load workspace files with the published ${port.workspaceCli} CLI.`
     return port.workspaceCli
       ? `Load workspace configuration files with ${port.workspaceCli}.`
       : 'In development. Workspace builder internals; no workspace loader CLI.'
