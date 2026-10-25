@@ -14514,20 +14514,6 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "py",
-   "text": "objects.inv",
-   "page": "/meta/intersphinx/",
-   "line": 37,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "py",
-   "text": "objects.inv",
-   "page": "/meta/intersphinx/examples/",
-   "line": 35,
-   "why": "not defined in the stated port"
-  },
-  {
    "port": "csharp",
    "text": "ConnectAndBuild",
    "page": "/csharp/latest/examples/attach-and-send-keys/",
