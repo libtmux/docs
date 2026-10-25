@@ -80,9 +80,23 @@ export function sidebarInventory(json: ApiTreeJson): ApiTreeJson {
   return view
 }
 
-/** Ownership is explicit: dots in a declaration name do not imply a parent. */
+const catalogs = new WeakMap<ApiTreeJson, ReturnType<typeof createCatalog>>()
+
+/**
+ * Ownership is explicit: dots in a declaration name do not imply a parent.
+ * Every page and every lazy branch asks for the same inventory's catalog, so
+ * it is built once per inventory, as its filtered view is.
+ */
 export function sidebarCatalog(source: ApiTreeJson) {
   const json = sidebarInventory(source)
+  const known = catalogs.get(json)
+  if (known) return known
+  const catalog = createCatalog(json)
+  catalogs.set(json, catalog)
+  return catalog
+}
+
+function createCatalog(json: ApiTreeJson) {
   const records = searchApi(json, '')
   const symbols = new Map(records.map((record) => [record.id, record]))
   const parent = new Map<string, string>()

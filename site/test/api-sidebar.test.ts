@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { sidebarCatalog, sidebarNodes, quietSidebarKinds, SIDEBAR_PRESENTATIONS, type SidebarNode } from '../src/lib/api-sidebar'
+import { sidebarCatalog, sidebarInventory, sidebarNodes, quietSidebarKinds, SIDEBAR_PRESENTATIONS, type SidebarNode } from '../src/lib/api-sidebar'
 import { apiTreeHref, searchApi, type ApiSearchResult, type ApiTreeJson } from '../src/lib/api-search'
 import { tmuxReferenceTree, tmuxReferenceUrl, tmuxSourceModel } from '../src/lib/tmux-reference'
 
@@ -155,6 +155,12 @@ describe('anonymous declarations in the sidebar', () => {
     expect(catalog.symbols.has('c:enum:tmux.h:@1')).toBe(false)
     expect(catalog.membersOf('c:struct:client').map((member) => member.name)).toEqual(['flags'])
     expect(sidebarNodes(anonymous, base, 'outline', '')[0]?.count).toBe(2)
+  })
+
+  it('builds one catalog for an inventory and for the view the sidebar navigates', () => {
+    expect(sidebarCatalog(anonymous)).toBe(sidebarCatalog(anonymous))
+    expect(sidebarCatalog(sidebarInventory(anonymous))).toBe(sidebarCatalog(anonymous))
+    expect(sidebarCatalog(structuredClone(anonymous))).not.toBe(sidebarCatalog(anonymous))
   })
 
   it('names roots that share a name by that name, never by id', () => {
