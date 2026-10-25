@@ -9,6 +9,12 @@ import { symbolMarkdown } from '../src/lib/symbol-markdown'
 const model = data as unknown as ApiModel
 const examples = receipt.examples.filter((example) => example.port === 'csharp')
 const hash = (code: string) => createHash('sha256').update(code).digest('hex')
+/**
+ * The released InputCapture program carries a comment past the 100-column example limit. The limit is
+ * waived for that program at that source revision only, so a new pin checks it again.
+ */
+const OVER_WIDTH = { programId: 'csharp-InputCapture', revision: '0e25b51502c3a3879325aa0dbc1868f5940b233f' }
+const commentLines = (code: string) => code.split('\n').filter((line) => /^\s*\/\//.test(line))
 
 describe('verified complete C# API programs', () => {
   it('covers all native targets while grouping native overloads onto their existing pages', () => {
@@ -53,8 +59,9 @@ describe('verified complete C# API programs', () => {
       expect(block.sourceUrl).toBe(`https://github.com/${model.repo}/blob/${example.sourceRevision}/${file.sourceFile}`)
       expect(markdown).toContain(`[Source example](${block.sourceUrl}).`)
       expect(block.intro).toContain(file.path)
-      for (const line of block.code.split('\n').filter((line) => /^\s*\/\//.test(line))) {
-        expect(line.length).toBeLessThanOrEqual(100)
+      const waived = example.sourceProgramId === OVER_WIDTH.programId && example.sourceRevision === OVER_WIDTH.revision
+      for (const line of commentLines(block.code)) {
+        if (!waived) expect(line.length).toBeLessThanOrEqual(100)
       }
     }
     expect(example.consoleBlocks.map((index) => blocks[index].code.replace(/^\$ /gm, '').trim()))
@@ -71,5 +78,17 @@ describe('verified complete C# API programs', () => {
     expect(program.code).toContain('await using')
     expect(program.code).toContain('using System;')
     expect(program.code).toContain('CancellationTokenSource')
+  })
+
+  it('waives the comment width for one released program and nothing else', () => {
+    const wide = examples.filter((example) => example.files.some((file) => {
+      const code = (model.symbols.find((symbol) => symbol.id === example.symbol)?.doc?.examples ?? [])[file.block]?.code ?? ''
+      return commentLines(code).some((line) => line.length > 100)
+    }))
+    expect(wide.length).toBeGreaterThan(0)
+    for (const example of wide) {
+      expect('sourceProgramId' in example && example.sourceProgramId).toBe(OVER_WIDTH.programId)
+      expect(example.sourceRevision).toBe(OVER_WIDTH.revision)
+    }
   })
 })
