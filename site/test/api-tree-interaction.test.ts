@@ -358,3 +358,29 @@ it('leaves a search result of one kind plain in a protocol tree, and marks a mix
   expect(results.querySelectorAll('.api-kind-word')).toHaveLength(3)
   expect(n.fetch).toHaveBeenCalled()
 })
+
+it('opens a lazy branch without its anonymous declarations, which search still finds', async () => {
+  const json: ApiTreeJson = {
+    port: 'tmux',
+    buckets: [{ id: 'args', label: 'Arguments', count: 1, slug: 'client', children: [],
+      types: [{ id: 'c:client', name: 'client', slug: 'client', kind: 'struct', m: 1 }] }],
+    members: {
+      'c:client': [
+        ['anonymous enum', 'client-anonymous', 'c:client::@7', 'enum', 'types', '', 'client (anonymous enum)'],
+        ['flags', 'flags', 'c:client::flags', 'attribute'],
+      ],
+      'c:client::@7': [['CLIENT_TERMINAL', 'client-terminal', 'c:client::@7::CLIENT_TERMINAL', 'constant']],
+    },
+  }
+  const n = await navigation({ json, search: true })
+  await n.key(n.bucket, 'ArrowRight')
+  const owner = n.children(n.bucket)[0]
+  await n.key(owner, 'ArrowRight')
+  expect(n.children(owner).map((row) => row.querySelector('.api-nav__label')?.textContent)).toEqual(['flags'])
+  const input = win.document.querySelector<HTMLInputElement>('input')!
+  const results = win.document.querySelector<HTMLElement>('[data-api-search-results]')!
+  input.value = 'CLIENT_TERMINAL'
+  input.dispatchEvent(new win.Event('input', { bubbles: true }))
+  await vi.waitFor(() => expect(results.querySelectorAll('a')).toHaveLength(1))
+  expect(results.querySelector('a')?.getAttribute('href')).toBe('/en/tmux/3.7c/reference/client-terminal/')
+})

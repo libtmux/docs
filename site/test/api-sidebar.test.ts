@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { sidebarCatalog, sidebarNodes, quietSidebarKinds } from '../src/lib/api-sidebar'
-import { apiTreeHref, type ApiTreeJson } from '../src/lib/api-search'
+import { sidebarCatalog, sidebarNodes, quietSidebarKinds, SIDEBAR_PRESENTATIONS, type SidebarNode } from '../src/lib/api-sidebar'
+import { apiTreeHref, searchApi, type ApiSearchResult, type ApiTreeJson } from '../src/lib/api-search'
+import { tmuxReferenceTree, tmuxReferenceUrl, tmuxSourceModel } from '../src/lib/tmux-reference'
 
 const json: ApiTreeJson = {
   port: 'sample',
@@ -108,5 +109,145 @@ describe('API sidebar presentations', () => {
     expect(nodes[0]?.children).toBeUndefined()
     expect(nodes[1]?.children?.[0]).toMatchObject({ label: 'Fields', expanded: true })
     expect(nodes[1]?.children?.[0]?.children?.[0]).toMatchObject({ label: 'Server fields', current: true, href: '/reference/fields-server/' })
+  })
+})
+
+const rowsOf = (nodes: SidebarNode[]): SidebarNode[] => nodes.flatMap((node) => [node, ...rowsOf(node.children ?? [])])
+const ANONYMOUS = /^anonymous (?:enum|struct|union)$/
+
+describe('anonymous declarations in the sidebar', () => {
+  const anonymous: ApiTreeJson = {
+    port: 'tmux',
+    buckets: [{ id: 'types', label: 'Types', count: 4, slug: 'client', children: [], types: [
+      { id: 'c:struct:client', name: 'client', qualifiedName: 'client', slug: 'client', m: 1, kind: 'struct', category: 'types' },
+      { id: 'c:enum:key_code_type', name: 'key_code_type', qualifiedName: 'key_code_type', slug: 'key-code-type', m: 1, kind: 'enum', category: 'types' },
+      { id: 'c:enum:tmux.h:@1', name: 'anonymous enum', qualifiedName: 'anonymous enum', slug: 'anon-1', m: 1, kind: 'enum', category: 'types' },
+      { id: 'c:enum:tmux.h:@2', name: 'anonymous enum', qualifiedName: 'anonymous enum', slug: 'anon-2', m: 1, kind: 'enum', category: 'types' },
+    ] }],
+    members: {
+      'c:struct:client': [
+        ['flags', 'client-flags', 'c:struct:client::flags', 'attribute', 'members', '', 'client.flags'],
+        ['anonymous union', 'client-union', 'c:struct:client::@3', 'union', 'types', '', 'client (anonymous union)'],
+      ],
+      'c:struct:client::@3': [['inner', 'client-inner', 'c:struct:client::@3::inner', 'attribute', 'members', '', 'inner']],
+      'c:enum:key_code_type': [['KEYC_TYPE', 'keyc-type', 'c:enum:key_code_type::KEYC_TYPE', 'constant', 'members', '', 'KEYC_TYPE']],
+      'c:enum:tmux.h:@1': [['KEYC_FOCUS_IN', 'keyc-focus-in', 'c:enum:tmux.h:@1::KEYC_FOCUS_IN', 'constant', 'members', '', 'KEYC_FOCUS_IN']],
+      'c:enum:tmux.h:@2': [['KEYC_USER', 'keyc-user', 'c:enum:tmux.h:@2::KEYC_USER', 'constant', 'members', '', 'KEYC_USER']],
+    },
+  }
+
+  it('leaves them, and what they hold, out of every layout and the owner list', () => {
+    const base = '/reference/'
+    const layouts = [
+      ...SIDEBAR_PRESENTATIONS.flatMap((mode) => ['', 'c:struct:client', 'c:enum:key_code_type'].map((selected) => sidebarNodes(anonymous, base, mode, selected))),
+      sidebarNodes(anonymous, base, 'grouped', 'c:struct:client', true),
+    ]
+    const rows = layouts.flatMap(rowsOf)
+    const hrefs = new Set(rows.map((row) => row.href))
+    expect(rows.map((row) => row.label).filter((label) => ANONYMOUS.test(label) || /c:/.test(label))).toEqual([])
+    for (const slug of ['anon-1', 'anon-2', 'keyc-focus-in', 'keyc-user', 'client-union', 'client-inner']) expect(hrefs, slug).not.toContain(`${base}${slug}/`)
+    // Neighbours stay, with the destinations they had.
+    expect(hrefs).toContain(`${base}client-flags/`)
+    expect(hrefs).toContain(`${base}key-code-type/`)
+    expect(hrefs).toContain(`${base}keyc-type/`)
+    const catalog = sidebarCatalog(anonymous)
+    expect(catalog.owners.map((owner) => owner.id)).toEqual(['c:struct:client', 'c:enum:key_code_type'])
+    expect(catalog.symbols.has('c:enum:tmux.h:@1')).toBe(false)
+    expect(catalog.membersOf('c:struct:client').map((member) => member.name)).toEqual(['flags'])
+    expect(sidebarNodes(anonymous, base, 'outline', '')[0]?.count).toBe(2)
+  })
+
+  it('names roots that share a name by that name, never by id', () => {
+    const shared: ApiTreeJson = { port: 'tmux', buckets: [{ id: 'types', label: 'Types', count: 2, slug: 'sessions', children: [], types: [
+      { id: 'c:struct:sessions', name: 'sessions', qualifiedName: 'sessions', slug: 'struct-sessions', m: 0, kind: 'struct', category: 'types' },
+      { id: 'c:variable:sessions', name: 'sessions', qualifiedName: 'sessions', slug: 'variable-sessions', m: 0, kind: 'attribute', category: 'members' },
+    ] }], members: {} }
+    const roots = sidebarNodes(shared, '/reference/', 'outline', 'c:struct:sessions')[0]!.children!
+    expect(roots.map((row) => [row.label, row.kind, row.href])).toEqual([
+      ['sessions', 'struct', '/reference/struct-sessions/'], ['sessions', 'attribute', '/reference/variable-sessions/'],
+    ])
+  })
+
+  it('does not change the inventory that search and the pages use', () => {
+    const before = JSON.stringify(anonymous)
+    sidebarNodes(anonymous, '/reference/', 'outline', '')
+    expect(JSON.stringify(anonymous)).toBe(before)
+    expect(searchApi(anonymous, 'KEYC_FOCUS_IN').map((record) => record.id)).toEqual(['c:enum:tmux.h:@1::KEYC_FOCUS_IN'])
+    expect(searchApi(anonymous, '', 'types').filter((record) => ANONYMOUS.test(record.name)).map((record) => record.id).sort())
+      .toEqual(['c:enum:tmux.h:@1', 'c:enum:tmux.h:@2', 'c:struct:client::@3'])
+  })
+})
+
+describe.each(['3.7c', '3.2a'])('tmux %s C reference sidebar', (version) => {
+  const json = tmuxReferenceTree(version)
+  const base = tmuxReferenceUrl(version)
+  const records = searchApi(json, '')
+  const href = (record: ApiSearchResult) => apiTreeHref(base, record, json.hrefs)
+  const anonymousRecords = records.filter((record) => ANONYMOUS.test(record.name))
+  // What an anonymous declaration holds goes with it.
+  const hidden = new Set<string>()
+  const hide = (id: string) => {
+    if (hidden.has(id)) return
+    hidden.add(id)
+    for (const [name, , member] of json.members[id] ?? []) hide(member ?? `${id}.${name}`)
+  }
+  for (const record of anonymousRecords) hide(record.id)
+  const hiddenHrefs = new Set(records.filter((record) => hidden.has(record.id)).map(href))
+  const holders = Object.entries(json.members)
+    .filter(([owner, members]) => !hidden.has(owner) && members.some(([name, , id]) => hidden.has(id ?? `${owner}.${name}`))).map(([owner]) => owner)
+  const outlines = [sidebarNodes(json, base, 'outline', ''), sidebarNodes(json, base, 'outline', 'c:function:cmd_find_target'),
+    ...['outline', 'focus', 'grouped'].flatMap((mode) => holders.map((owner) => sidebarNodes(json, base, mode as 'outline', owner))),
+    sidebarNodes(json, base, 'grouped', holders[0]!, true)]
+  const rows = outlines.flatMap(rowsOf)
+  const ids = new Set(records.map((record) => record.id))
+
+  it('has anonymous declarations to leave out, in the roots and inside named structs', () => {
+    expect(anonymousRecords.length).toBeGreaterThan(0)
+    expect(hidden.size).toBeGreaterThan(anonymousRecords.length)
+    expect(holders.length).toBeGreaterThan(0)
+    expect(sidebarNodes(json, base, 'outline', '').some((row) => row.lazy?.startsWith('bucket:'))).toBe(true)
+  })
+
+  it('never labels a row with a record id or a clang USR', () => {
+    const labels = rows.map((row) => row.label)
+    expect(labels.filter((label) => /^c:|c:enum:|c:@|@\d/.test(label) || ids.has(label))).toEqual([])
+  })
+
+  it('shows no anonymous declaration or member of one as a row', () => {
+    expect(rows.map((row) => row.label).filter((label) => ANONYMOUS.test(label))).toEqual([])
+    expect(rows.filter((row) => row.href && hiddenHrefs.has(row.href)).map((row) => `${row.label} ${row.href}`)).toEqual([])
+    const catalog = sidebarCatalog(json)
+    expect(catalog.records.filter((record) => hidden.has(record.id))).toEqual([])
+    expect(catalog.owners.filter((owner) => hidden.has(owner.id))).toEqual([])
+  })
+
+  it.each(['window_copy_cmd_action', ...(version === '3.7c' ? ['key_code_type'] : [])])('keeps the named enum %s and its members, at their own URLs', (name) => {
+    const named = records.find((record) => record.kind === 'enum' && record.name === name)!
+    const members = (json.members[named.id] ?? []).map(([member, slug, id]) => ({ id: id ?? `${named.id}.${member}`, slug }))
+    expect(members.length).toBeGreaterThan(0)
+    const outline = sidebarNodes(json, base, 'outline', named.id)
+    const row = rowsOf(outline).find((node) => node.label === name)
+    expect(row).toMatchObject({ kind: 'enum', href: href(named), count: members.length, expanded: true })
+    expect(row?.children?.map((child) => child.href)).toEqual(members.map((member) => `${base}${member.slug}/`))
+    expect(sidebarNodes(json, base, 'focus', named.id).slice(1).map((child) => child.href)).toEqual(members.map((member) => `${base}${member.slug}/`))
+  })
+
+  it('leaves the pages, their URLs and search alone', () => {
+    const before = JSON.stringify(json)
+    sidebarCatalog(json)
+    expect(JSON.stringify(json)).toBe(before)
+    const symbols = new Map(tmuxSourceModel(version).symbols.map((symbol) => [symbol.id, symbol]))
+    expect(anonymousRecords.filter((record) => !symbols.has(record.id))).toEqual([])
+    for (const record of anonymousRecords) {
+      expect(href(record)).toBe(tmuxReferenceUrl(version, symbols.get(record.id)))
+    }
+    for (const name of ['anonymous enum', 'anonymous union']) {
+      expect(searchApi(json, name, 'types').filter((record) => record.name === name).map((record) => record.id).sort(), name)
+        .toEqual(anonymousRecords.filter((record) => record.name === name && record.category === 'types').map((record) => record.id).sort())
+    }
+    for (const record of anonymousRecords.filter((candidate) => candidate.category === 'types' && json.members[candidate.id]?.length)) {
+      const [name, , id] = json.members[record.id]![0]!
+      expect(searchApi(json, name, 'members').map((member) => member.id), name).toContain(id)
+    }
   })
 })

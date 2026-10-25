@@ -33,8 +33,56 @@ export function quietSidebarKinds(nodes: SidebarNode[]) {
   for (const node of nodes) if (node.children) quietSidebarKinds(node.children)
 }
 
+/** What the C extractor calls a declaration that C never names: `anonymous enum`. */
+const ANONYMOUS_DECLARATION = /^anonymous (?:enum|struct|union)$/
+
+const inventories = new WeakMap<ApiTreeJson, ApiTreeJson>()
+
+/**
+ * The inventory the sidebar navigates: the reference's own, without anonymous
+ * declarations or anything they hold. Nothing names them, so a row could only
+ * repeat "anonymous enum" over a different member list. Search and the pages
+ * themselves still reach them; only the sidebar leaves them out.
+ */
+export function sidebarInventory(json: ApiTreeJson): ApiTreeJson {
+  const known = inventories.get(json)
+  if (known) return known
+  const hidden = new Set<string>()
+  const hiddenSlugs = new Set<string>()
+  const hide = (id: string, slug: string) => {
+    hiddenSlugs.add(slug)
+    if (hidden.has(id)) return
+    hidden.add(id)
+    for (const [name, slug, memberId] of json.members[id] ?? []) hide(memberId ?? `${id}.${name}`, slug)
+  }
+  const anonymous = (name: string, qualifiedName = '') => ANONYMOUS_DECLARATION.test(name) || ANONYMOUS_DECLARATION.test(qualifiedName)
+  const find = (buckets: ApiTreeBucket[]) => {
+    for (const bucket of buckets) {
+      for (const entry of bucket.types) if (anonymous(entry.name, entry.qualifiedName)) hide(entry.id, entry.slug)
+      find(bucket.children)
+    }
+  }
+  find(json.buckets)
+  for (const [owner, members] of Object.entries(json.members)) {
+    for (const [name, slug, id, , , , qualifiedName] of members) if (anonymous(name, qualifiedName)) hide(id ?? `${owner}.${name}`, slug)
+  }
+  const strip = (buckets: ApiTreeBucket[]): ApiTreeBucket[] => buckets.map((bucket) => {
+    const types = bucket.types.filter((entry) => !hidden.has(entry.id))
+    const children = strip(bucket.children)
+    return { ...bucket, types, children, count: types.length + children.reduce((sum, child) => sum + child.count, 0),
+      slug: bucket.slug && hiddenSlugs.has(bucket.slug) ? types[0]?.slug ?? children.find((child) => child.slug)?.slug ?? null : bucket.slug }
+  }).filter((bucket) => bucket.count > 0)
+  const view: ApiTreeJson = hidden.size === 0 ? json : { ...json, buckets: strip(json.buckets), members: Object.fromEntries(
+    Object.entries(json.members).filter(([owner]) => !hidden.has(owner))
+      .map(([owner, members]) => [owner, members.filter(([name, , id]) => !hidden.has(id ?? `${owner}.${name}`))])) }
+  inventories.set(json, view)
+  inventories.set(view, view)
+  return view
+}
+
 /** Ownership is explicit: dots in a declaration name do not imply a parent. */
-export function sidebarCatalog(json: ApiTreeJson) {
+export function sidebarCatalog(source: ApiTreeJson) {
+  const json = sidebarInventory(source)
   const records = searchApi(json, '')
   const symbols = new Map(records.map((record) => [record.id, record]))
   const parent = new Map<string, string>()
@@ -60,8 +108,9 @@ const groupName = (kind: string) => ({ property: 'Properties', method: 'Methods'
   enum: 'Enums', 'enum-member': 'Enum members', typealias: 'Type aliases' }[kind] ?? `${kind[0]?.toUpperCase()}${kind.slice(1)}s`)
 
 /** Curated buckets and declaration ownership share one projection for initial and lazy rows. */
-export function sidebarNodes(json: ApiTreeJson, base: string, mode: SidebarPresentation, selected: string, allTypes = false,
+export function sidebarNodes(source: ApiTreeJson, base: string, mode: SidebarPresentation, selected: string, allTypes = false,
   branch?: { lazy: string; level: number }): SidebarNode[] {
+  const json = sidebarInventory(source)
   const catalog = sidebarCatalog(json)
   const ancestry = new Set<string>()
   for (let id: string | undefined = selected; id && !ancestry.has(id); id = catalog.parent.get(id)) ancestry.add(id)
@@ -110,7 +159,7 @@ export function sidebarNodes(json: ApiTreeJson, base: string, mode: SidebarPrese
       const name = parts.slice(-length).join(separator)
       if (peers.every((other) => other.id === record.id || other.qualifiedName.split(separator).slice(-length).join(separator) !== name)) return name
     }
-    return record.qualifiedName
+    return record.symbolName
   }
   const bucketNodes = (bucket: ApiTreeBucket, level: number): SidebarNode[] => {
     const entries = bucket.types.flatMap((entry) => {
