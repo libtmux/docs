@@ -182,7 +182,7 @@ it.each([{ port: 'go', term: 'struct' }, { port: 'ts', term: 'class' }])('render
     request: new Request(`https://libtmux.org${path}`),
   })
   expect(win.document.querySelector('.api-nav-column [role="tree"]')).not.toBeNull()
-  expect(win.document.querySelector(`.api-nav a[href="${path}"]`)?.getAttribute('aria-current')).toBe('page')
+  expect(win.document.querySelector('.api-nav [data-api-root]')?.getAttribute('href')).toBe(ports.referenceUrl(ports.PORT_BY_SLUG[port], 'v9-proof'))
   checkContents(win.document, path)
   expect([...win.document.querySelectorAll('details')].some((details) =>
     details.querySelector('summary')?.textContent === 'On this page' && details.querySelector(`a[href="#${term}"]`))).toBe(true)

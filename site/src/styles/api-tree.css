@@ -10,6 +10,7 @@
 
 .api-nav {
   --api-nav-indent: 0.75rem;
+  --api-nav-row-gap: 2px;
   font-size: 0.875rem;
 }
 
@@ -61,7 +62,7 @@
 .api-nav[data-marks='mixed'][data-presentation] .api-nav__row { padding-inline-start: calc(0.5rem + (var(--level, 1) - 1) * var(--api-nav-indent)); gap: 0.25rem; }
 .api-nav[data-marks='mixed'][data-presentation] .api-nav__row > .api-nav__label { padding-inline-start: 0; }
 .api-nav[data-presentation='outline'] :is(.api-nav__item:not([aria-level='1']) > .api-nav__row, .api-nav__leaf:not([aria-level='1'])) > .api-nav__label::before {
-  content: ''; position: absolute; top: 0; bottom: 0;
+  content: ''; position: absolute; top: calc(-1 * var(--api-nav-row-gap)); bottom: 0;
   inset-inline-start: calc(0.5rem + round(1.35em, 2px) + 0.5rem + (var(--level) - 2) * var(--api-nav-indent));
   border-inline-start: 1px solid color-mix(in srgb, var(--text-color) 40%, transparent); pointer-events: none;
 }
@@ -234,14 +235,14 @@
 .api-nav__group {
   display: flex;
   flex-direction: column;
-  row-gap: 2px;
+  row-gap: var(--api-nav-row-gap);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .api-nav__group {
-  padding-top: 2px;
+  padding-top: var(--api-nav-row-gap);
 }
 
 /* Positioned, so a row's offsetTop is measured from the tree it scrolls in. */

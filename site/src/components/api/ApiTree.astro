@@ -61,7 +61,6 @@ interface Props {
   currentIndex?: string
   glossaryHref?: string
   glossaryLabel?: string
-  destinations?: { href: string; label: string }[]
   /**
    * Where a row shows its kind mark. The API tree keeps a fixed gutter of marks
    * so a reader can scan down it. A tree whose groups already name their kind
@@ -80,7 +79,7 @@ const {
   searchLabel = 'Find a type or member', searchPlaceholder = 'Find symbol',
   filters = [{ id: 'all', label: 'All' }, { id: 'types', label: 'Types' }, { id: 'members', label: 'Members' }],
   currentIndex,
-  glossaryHref, glossaryLabel = 'API glossary', destinations = [], marks = 'gutter',
+  glossaryHref, glossaryLabel = 'API glossary', marks = 'gutter',
 } = Astro.props as Props
 // The port's own reference root. `withRoot` would give the locale root:
 // Astro's `base` prefixes routes, not strings a component builds.
@@ -140,6 +139,7 @@ const glossaryNode: TreeNode[] = glossaryHref ? [{
 }] : []
 const catalog = inventory ? sidebarCatalog(inventory) : undefined
 const selectedOwner = catalog?.ownerOf(selectedSymbol)
+const selectedParent = catalog?.symbols.get(catalog.parent.get(selectedSymbol) ?? '')
 const ownerLabel = catalog?.ownerLabel ?? 'type'
 const ownerPlural = catalog?.ownerPlural ?? 'types'
 const nodes = presentation && inventory ? sidebarNodes(inventory, base, presentation, selectedSymbol)
@@ -215,7 +215,6 @@ if (!mark(nodes)) {
       <summary aria-label="Sidebar actions" title="Sidebar actions"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="19" cy="12" r="1.5" /></svg></summary>
       <div class="api-nav__actions">
         <button type="button" data-api-owner-all hidden={presentation === 'outline'}>All {ownerPlural}</button>
-        <a data-api-owner-back hidden></a>
         <button type="button" data-api-reveal aria-label="Reveal current" title="Reveal current">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /><path d="M12 2v4m0 12v4M2 12h4m12 0h4" /></svg>
           <span>Reveal current</span>
@@ -224,18 +223,22 @@ if (!mark(nodes)) {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m8 4 4 4 4-4M8 20l4-4 4 4M5 12h14" /></svg>
           <span>Collapse all</span>
         </button>
-        {!controlled && <div class="api-nav__destinations">
-          {indexLabel && <a href={base} aria-current={indexNode.current ? 'page' : undefined}>{indexLabel}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" /></svg>
-          </a>}
-          {glossaryHref && <a href={glossaryHref} aria-current={currentPath.replace(/\/?$/, '/') === glossaryHref ? 'page' : undefined}>{glossaryLabel}</a>}
-          {destinations.map((entry) => <a href={entry.href} aria-current={currentPath === entry.href ? 'page' : undefined}>{entry.label}</a>)}
-        </div>}
         <div class="api-nav__layouts" role="radiogroup" aria-label="Sidebar layout">
           {SIDEBAR_PRESENTATIONS.map((mode) => <button type="button" role="radio" data-api-presentation={mode}
             aria-checked={mode === presentation ? 'true' : 'false'} tabindex={mode === presentation ? 0 : -1}>
             <span class="api-nav__choice" aria-hidden="true" />{mode[0].toUpperCase() + mode.slice(1)}
           </button>)}
+        </div>
+        <div class="api-nav__destinations" role="group" aria-label="Reference navigation">
+          <a data-api-owner-back data-symbol={selectedParent?.id} hidden={!selectedParent && indexNode.current}
+            href={selectedParent ? apiTreeHref(base, selectedParent, inventory?.hrefs) : base} target={controlled ? '_top' : undefined}
+            aria-label={selectedParent ? `Up to ${selectedParent.name}` : 'Up to reference root'}
+            title={selectedParent ? `Up to ${selectedParent.name}` : 'Up to reference root'}>
+            <span>Up</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m7 10 5-5 5 5M12 5v14" /></svg>
+          </a>
+          <a data-api-root href={base} target={controlled ? '_top' : undefined} aria-current={indexNode.current ? 'page' : undefined} title="Reference root">
+            <span>Root</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 5h14M12 19V9m-4 4 4-4 4 4" /></svg>
+          </a>
         </div>
       </div>
       </details>

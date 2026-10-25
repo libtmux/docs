@@ -506,13 +506,14 @@ export async function setApiSidebar(nav: HTMLElement, mode: SidebarPresentation,
     all.hidden = mode === 'outline'
     all.textContent = options.allTypes ? `Back to ${owner?.name ?? 'members'}` : `All ${catalog.ownerPlural}`
   }
-  const parent = catalog.symbols.get(catalog.parent.get(owner?.id ?? '') ?? '')
+  const parent = catalog.symbols.get(catalog.parent.get(selected) ?? '')
   const back = nav.querySelector<HTMLAnchorElement>('[data-api-owner-back]')
   if (back) {
-    back.hidden = !parent
-    back.textContent = parent ? `Back to ${parent.name}` : ''
+    back.hidden = !parent && location.pathname.replace(/\/?$/, '/') === nav.dataset.base
+    back.setAttribute('aria-label', parent ? `Up to ${parent.name}` : 'Up to reference root')
+    back.title = back.getAttribute('aria-label')!
     back.dataset.symbol = parent?.id ?? ''
-    if (parent) back.href = apiTreeHref(nav.dataset.base ?? '/', parent, json.hrefs)
+    back.href = parent ? apiTreeHref(nav.dataset.base ?? '/', parent, json.hrefs) : nav.dataset.base ?? '/'
   }
   for (const choice of nav.querySelectorAll<HTMLButtonElement>('[data-api-presentation]')) {
     const checked = choice.dataset.apiPresentation === mode
@@ -589,7 +590,7 @@ function initPresentation(nav: HTMLElement, tree: HTMLElement, signal: AbortSign
   }, { signal })
   nav.querySelector<HTMLAnchorElement>('[data-api-owner-back]')?.addEventListener('click', (event) => {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
-    if (!nav.hasAttribute('data-controlled')) return
+    if (!nav.hasAttribute('data-controlled') || !(event.currentTarget as HTMLElement).dataset.symbol) return
     event.preventDefault()
     update((event.currentTarget as HTMLElement).dataset.symbol ?? '')
     if (actions) actions.open = false

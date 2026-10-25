@@ -156,12 +156,6 @@ const apiNavigation = requestedApiNavigation ?? (referenceInventory ? {
   inventory: referenceInventory, base: referenceUrl(PORT_BY_SLUG[port!], version, product), version: apiTreeVersion(API_MODELS[port!], []),
   selected: searchApi(referenceInventory, '').find((entry) => apiTreeHref(referenceUrl(PORT_BY_SLUG[port!], version, product), entry, referenceInventory.hrefs) === currentPath)?.id ?? '',
 } : undefined)
-const referenceLinks = (items: SidebarItem[]): { href: string; label: string }[] => items.flatMap((item) => [
-  ...(item.href ? [{ href: item.href, label: item.label }] : []), ...(item.type === 'group' ? referenceLinks(item.items) : []),
-])
-const declarationLinks = referenceInventory ? new Set(searchApi(referenceInventory, '').map((entry) => apiTreeHref(apiNavigation!.base, entry, referenceInventory.hrefs))) : new Set()
-const referenceDestinations = referenceInventory ? referenceLinks(sidebarNavigation).filter((entry) =>
-  !declarationLinks.has(entry.href) && entry.href !== apiNavigation!.base && entry.href !== `${apiNavigation!.base}glossary/`) : []
 const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && port ? [
   { name: PORT_BY_SLUG[port].name, url: portPageUrl(PORT_BY_SLUG[port], version) },
   { name: DOC_PRODUCTS[product].label, url: portPageUrl(PORT_BY_SLUG[port], version, product) },
@@ -253,7 +247,6 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
     {apiNavigation ? <ApiTree presentation="outline" inventory={apiNavigation.inventory} selectedSymbol={apiNavigation.selected}
       referenceBase={apiNavigation.base} portName={port ? PORT_BY_SLUG[port].name : 'tmux CLI'} tree={[]} members={[]} withMembers={new Set()}
       currentPath={currentPath} version={apiNavigation.version} indexLabel={port ? 'Reference overview' : 'All commands'}
-      destinations={referenceDestinations}
       glossaryHref={port ? `${apiNavigation.base}glossary/` : apiNavigation.fullManual} glossaryLabel={port ? 'API glossary' : 'Full manual'}
       treeLabel={port ? `${PORT_BY_SLUG[port].name} API` : 'tmux commands'}
       searchLabel={port ? 'Find a type or member' : 'Find a command'} searchPlaceholder={port ? 'Find symbol' : 'Find command'}
