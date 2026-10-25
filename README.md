@@ -30,7 +30,7 @@ $ pnpm dev
 ```
 
 This serves the site shell with the cached API models and example sources.
-See [Contributing](CONTRIBUTING.md) for the full check suite and port source
+See [Contributing](.github/CONTRIBUTING.md) for the full check suite and port source
 requirements.
 
 ## Build and preview

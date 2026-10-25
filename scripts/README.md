@@ -7,7 +7,7 @@ manifest it serves is produced.
 
 Use the Node and pnpm versions declared in `package.json`. Integrated guide
 staging also needs the source checkouts named in `site/src/lib/ports.ts` at
-its recorded revisions. See [CONTRIBUTING.md](../CONTRIBUTING.md) for setup
+its recorded revisions. See [CONTRIBUTING.md](../.github/CONTRIBUTING.md) for setup
 and verification loops.
 
 A full local assembly can run native reference generators when their

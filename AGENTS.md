@@ -10,7 +10,7 @@ requested work.
 ## Which policy applies
 
 - Environment, Oxlint, formatting, tests, and pull requests:
-  [CONTRIBUTING.md](CONTRIBUTING.md).
+  [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 - Documentation, user-facing text, comments, and commits: [WRITING.md](WRITING.md).
 
 Each guide is the single home for its subject.
@@ -43,7 +43,7 @@ facts come from the code.
   documentation framework. Extend the shell with small integrations, as in
   `site/src/integrations/pagefind.ts`.
 - Keep TypeScript on the workspace's 6.x catalog entry; do not bump it to 7.
-  See [Toolchain constraints](CONTRIBUTING.md#toolchain-constraints).
+  See [Toolchain constraints](.github/CONTRIBUTING.md#toolchain-constraints).
 
 ## Repository boundaries
 
