@@ -498,6 +498,27 @@ export const BUILTINS: Record<string, Record<string, string>> = {
   },
 }
 
+/**
+ * Languages whose curated names win over an inventory they share with another language. Kotlin and Scala
+ * read the JDK's inventory, which names `java.util.Vector` and `java.util.concurrent.Flow`, and a Kotlin
+ * `Flow` or a Scala `Vector` is the language's own. Every path that resolves a name outside the project asks
+ * this, so a symbol's docs and a sentence in prose cannot send one name two places.
+ */
+export const CURATED_BEFORE_INVENTORY: ReadonlySet<string> = new Set(['kotlin', 'scala'])
+
+/**
+ * The languages whose documentation a port already goes to, besides its own. A Kotlin or Scala sentence that says
+ * "the Java ones" is about the project's wrappers of the Java API and not a switch to Java: its `Vector` is Scala's.
+ * A sentence that names a language the port does not reach (a Python page on Rust's `Vec`) still decides the name.
+ */
+export const PLATFORM_REACH: Readonly<Record<string, readonly string[]>> = { kotlin: ['java'], scala: ['java'] }
+
+/**
+ * Names the JDK's inventory holds that Kotlin and Scala prose means another library's by. A Scala sentence's "an Ox
+ * `Flow`" is not `java.util.concurrent.Flow`, the JDK's interfaces for reactive streams. Reviewed one name at a time.
+ */
+export const NOT_THE_JDKS: Readonly<Record<string, ReadonlySet<string>>> = { scala: new Set(['Flow']) }
+
 /** The documentation URL for a language's own type, if this is one. */
 export function builtinHref(port: string, name: string): string | undefined {
   if (!Object.hasOwn(BUILTINS, port)) return undefined

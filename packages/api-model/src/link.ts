@@ -1,7 +1,7 @@
 import { tokenizeDoc, type DocSpan } from './doc/roles.ts'
 import { symbolEntries, type InventoryEntry } from './inventory.ts'
 import type { ApiSymbol, Signature, SymbolKind, TypeParameter } from './model.ts'
-import { builtinHref, ELIXIR_STDLIB_MODULES, elixirStdlibHref } from './builtins.ts'
+import { builtinHref, CURATED_BEFORE_INVENTORY, ELIXIR_STDLIB_MODULES, elixirStdlibHref, NOT_THE_JDKS } from './builtins.ts'
 import { neverLinks } from './never-links.ts'
 import { qualifiedNameOf } from './modules.ts'
 import { findTopLevel, splitTopLevel, typeParametersOf } from './type-params.ts'
@@ -806,7 +806,7 @@ export class SymbolIndex {
     const shadowedUsing = usingAlias && (this.byName.has('Using') || this.bySuffix.has(clean) ||
       context?.signatures.some((sig) => sig.params.some((param) => param.name === 'Using') || sig.receiver?.name === 'Using'))
     const builtin = this.lang && !shadowedUsing ? builtinHref(this.lang, clean) : undefined
-    if (builtin && ['kotlin', 'scala'].includes(this.lang ?? '')) return { href: builtin, external: true }
+    if (builtin && CURATED_BEFORE_INVENTORY.has(this.lang ?? '')) return { href: builtin, external: true }
 
     // Intersphinx order: exact name, then the shortest suffix. An inventory
     // is authoritative for its own project, so it is consulted before the
@@ -818,6 +818,7 @@ export class SymbolIndex {
     const stdlib = this.lang === 'py' ? pythonCallee(clean) : clean
     for (const inv of this.external) {
       if (inv.langs && (!this.lang || !inv.langs.includes(this.lang))) continue
+      if (inv.project === 'Java SE' && NOT_THE_JDKS[this.lang ?? '']?.has(clean)) continue
       // A call with no arguments is not an overload that takes some: it has the entry written with its
       // parentheses, or the plain name when that entry's anchor lists no parameters.
       const entry = (name: string) => {

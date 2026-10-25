@@ -6,7 +6,8 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import type { ApiModel, ApiSymbol } from '../src/model.ts'
 import { Resolver, notASymbol } from '../src/resolver.ts'
-import { decideFilePath, decideMention } from '../src/prose.ts'
+import { decideFilePath, decideMention, portFromSentence } from '../src/prose.ts'
+import { builtinHref } from '../src/builtins.ts'
 import { extractWithSpec } from '../src/languages/spec.ts'
 import { GO } from '../src/languages/specs.ts'
 
@@ -110,6 +111,79 @@ describe('product context in prose', () => {
     // The library's own symbols are the page's to link in every build.
     const own = { port: 'rs', version: '0', symbols: [{ id: 'session', name: 'session', kind: 'function', signatures: [], source: { file: 'a.rs' } }] } as unknown as ApiModel
     expect(decideMention('session', { pagePort: 'rs', languageSaid: false }, new Resolver([own]), { rs: own })).toMatchObject({ kind: 'link', external: false })
+  })
+
+  it('names a port in a sentence by a whole word, and not by what code, a path or a URL contains', () => {
+    expect(portFromSentence('In Java, ')).toBe('java')
+    expect(portFromSentence('Python\'s checked wait is ')).toBe('py')
+    expect(portFromSentence('In C++20 and ')).toBe('cxx')
+    expect(portFromSentence('Go has ')).toBe('go')
+    // JavaScript is not Java, an algorithm is not Go, and a trust is not Rust.
+    expect(portFromSentence('JavaScript has a ')).toBeUndefined()
+    expect(portFromSentence('An algorithm going to Google uses a trust of ')).toBeUndefined()
+    expect(portFromSentence('lets go and ')).toBeUndefined()
+    // The anchor of a file is not C#, and the words of a dotted name, a path or an address are not a language.
+    expect(portFromSentence('Read options-table.c#L359 for the ')).toBeUndefined()
+    expect(portFromSentence('the java.util.Set docs and ')).toBeUndefined()
+    expect(portFromSentence('see https://docs.python.org/3/library/os.html and ')).toBeUndefined()
+    expect(portFromSentence('under src/java/ and ')).toBeUndefined()
+    expect(portFromSentence('Rust and Python differ, so ')).toBe('py')
+  })
+
+  it('resolves a Kotlin or Scala name to the language before the JDK inventory they share, as a symbol\'s docs do', () => {
+    const kotlin = { port: 'kotlin', version: '0', symbols: [] } as unknown as ApiModel
+    const scala = { port: 'scala', version: '0', symbols: [] } as unknown as ApiModel
+    const java = { port: 'java', version: '0', symbols: [] } as unknown as ApiModel
+    const resolver = new Resolver([kotlin, scala, java])
+    resolver.addInventory('Java SE', 'https://docs.oracle.com/en/java/javase/21/docs/api/', [
+      { name: 'Flow', uri: 'java.base/java/util/concurrent/Flow.html', type: 'std:label', priority: 1, dispname: '-' },
+      { name: 'Vector', uri: 'java.base/java/util/Vector.html', type: 'std:label', priority: 1, dispname: '-' },
+      { name: 'List', uri: 'java.base/java/util/List.html', type: 'std:label', priority: 1, dispname: '-' },
+    ], ['java', 'kotlin', 'scala'])
+    const models = { kotlin, scala, java }
+    const href = (port: string, text: string) => {
+      const found = decideMention(text, { pagePort: port }, resolver, models)
+      return found.kind === 'link' ? found.href : found.kind
+    }
+    expect(href('kotlin', 'Flow')).toBe(builtinHref('kotlin', 'Flow'))
+    expect(href('kotlin', 'List')).toBe(builtinHref('kotlin', 'List'))
+    expect(href('scala', 'Vector')).toBe(builtinHref('scala', 'Vector'))
+    expect(href('scala', 'List')).toBe(builtinHref('scala', 'List'))
+    // Java's own sentences still reach the JDK.
+    expect(href('java', 'Vector')).toBe('https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Vector.html')
+    expect(href('kotlin', 'Flow')).not.toContain('docs.oracle.com')
+  })
+
+  it('keeps a Scala or Kotlin page\'s own language when its sentence says Java, and still follows a language the port does not reach', () => {
+    const scala = { port: 'scala', version: '0', symbols: [] } as unknown as ApiModel
+    const java = { port: 'java', version: '0', symbols: [] } as unknown as ApiModel
+    const rust = { port: 'rs', version: '0', symbols: [] } as unknown as ApiModel
+    const py = { port: 'py', version: '0', symbols: [] } as unknown as ApiModel
+    const resolver = new Resolver([scala, java, rust, py])
+    resolver.addInventory('Java SE', 'https://docs.oracle.com/en/java/javase/21/docs/api/', [
+      { name: 'Vector', uri: 'java.base/java/util/Vector.html', type: 'std:label', priority: 1, dispname: '-' },
+      { name: 'Flow', uri: 'java.base/java/util/concurrent/Flow.html', type: 'std:label', priority: 1, dispname: '-' },
+      { name: 'Optional.of', uri: 'java.base/java/util/Optional.html#of(T)', type: 'std:label', priority: 1, dispname: '-' },
+    ], ['java', 'scala'])
+    const models = { scala, java, rs: rust, py }
+    const href = (port: string, text: string, before: string) => {
+      const found = decideMention(text, { pagePort: port, before }, resolver, models)
+      return found.kind === 'link' ? found.href : found.kind
+    }
+    expect(href('scala', 'Vector', 'aliases of the Java ones, and return immutable ')).toBe(builtinHref('scala', 'Vector'))
+    // The JDK\'s Flow is not the Ox Flow a Scala sentence means; a JDK method a Scala page names is the JDK\'s.
+    expect(href('scala', 'Flow', 'an Ox ')).toBe('unresolved')
+    expect(href('scala', 'Optional.of', 'different from ')).toBe('https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html#of(T)')
+    // A name only the JDK has, in a sentence that says Java, is Java's: the link is credited to Java, where a bare name is read.
+    const credited = (port: string, text: string, before: string) => {
+      const found = decideMention(text, { pagePort: port, before }, resolver, models)
+      return found.kind === 'link' ? found.port : found.kind
+    }
+    expect(credited('scala', 'Optional.of', 'the record\'s own Java accessor, ')).toBe('java')
+    expect(credited('scala', 'Vector', 'aliases of the Java ones, and return immutable ')).toBe('scala')
+    // A Java page that says Scala is about Scala, and a Python page that names Rust follows Rust.
+    expect(href('java', 'Vector', 'In Java, ')).toBe('https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Vector.html')
+    expect(portFromSentence('Rust\'s ')).toBe('rs')
   })
 
   it('links a variable or a printed object nowhere', () => {

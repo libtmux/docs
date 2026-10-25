@@ -1,6 +1,7 @@
 import type { ApiModel, ApiProduct, ApiSymbol } from './model.ts'
 import { symbolEntries, type InventoryEntry } from './inventory.ts'
 import { modulesIn, qualifiedNameOf } from './modules.ts'
+import { CURATED_BEFORE_INVENTORY, NOT_THE_JDKS, builtinHref } from './builtins.ts'
 
 /**
  * One resolver for every place a symbol is mentioned: a prose table cell, a
@@ -375,8 +376,14 @@ export class Resolver {
     const asModule = this.modules.get(port + ' ' + qualified)
     if (asModule) return { how: 'module-index', module: asModule, port }
 
+    // As in a symbol's docs: where a language's curated names win over the inventory it shares, a name the project
+    // does not declare is the language's before it is the JDK's.
+    const curated = CURATED_BEFORE_INVENTORY.has(port) ? builtinHref(port, text.trim()) ?? builtinHref(port, qualified) : undefined
+    if (curated) return { how: 'federated', href: curated, project: port === 'kotlin' ? 'Kotlin' : 'Scala' }
+
     for (const inv of this.inventories) {
       if (inv.langs && !inv.langs.includes(port)) continue
+      if (inv.project === 'Java SE' && NOT_THE_JDKS[port]?.has(qualified)) continue
       // The full dotted name only. A tail match here made Java's
       // `Stream.filter()` resolve to Python's builtin `filter` — a link that
       // is worse than no link, because it looks deliberate.
