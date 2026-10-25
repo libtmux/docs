@@ -28,7 +28,7 @@ interface Props {
 const { text, index, context, citations = true } = Astro.props as Props
 // Through the index, so the tokenizer knows which language's spelling of a
 // cross-reference it is reading. Tokenizing here meant reST for all eight.
-const spans = linkTmuxDoc(index.linkText(text, context))
+const spans = linkTmuxDoc(index.docSpans(text, context))
 const memberReference = /^(?:[\w$]+(?:\.[\w$]+)*)?#[^\s#]+(?:\([^#]*\))?$/
 const labelParts = (label: string, qualified: boolean) => qualified ? label.split(/(#)/) : [label]
 ---
@@ -50,7 +50,7 @@ const labelParts = (label: string, qualified: boolean) => qualified ? label.spli
         <span>{span.label}</span>
       )
     }
-    const parts = span.link ? [] : index.linkLiteral(span.label, context)
+    const parts = span.link ? [] : span.parts ?? index.linkLiteral(span.label, context)
     const qualified = memberReference.test(span.label) && Boolean(span.link || parts.some((part) => part.link))
     return span.link ? (
       <a class="api-xref" href={span.link.href} rel={span.link.external ? 'nofollow noopener' : undefined}>

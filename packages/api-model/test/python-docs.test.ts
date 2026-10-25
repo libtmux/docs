@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest'
 import { parsePythonDoc, pythonDocBody } from '../src/doc/python.ts'
 import { docSummaryText, referencesIn, tokenizeDoc } from '../src/doc/roles.ts'
 import { extractPython } from '../src/languages/python.ts'
+import { readInventory } from '../src/inventory.ts'
 import { SymbolIndex } from '../src/link.ts'
 
 // Exact ast.get_docstring(QueryList) at public libtmux 9fdd083a (also v0.62.0).
@@ -212,6 +213,8 @@ describe('source-scoped Python typing bindings', () => {
     const [symbol] = await extract('import typing as t\nclass QueryList(list[T], t.Generic[T]):\n    pass\n')
     expect(symbol.extends).toEqual(['list[T]', 't.Generic[T]'])
     const index = new SymbolIndex([symbol], (entry) => `#${entry.id}`, 'py')
+    // CPython's own inventory is what answers for `typing.Generic`; the site always attaches it.
+    index.addInventory('https://docs.python.org/3/', readInventory(readFileSync(new URL('../../../site/src/data/inventories/python.inv', import.meta.url))).entries, ['py'], 'Python')
     const spans = index.linkType('t.Generic[T]', symbol)
     expect(spans.map((span) => span.text).join('')).toBe('t.Generic[T]')
     expect(spans.find((span) => span.text === 't.Generic')?.link?.href).toBe('https://docs.python.org/3/library/typing.html#typing.Generic')

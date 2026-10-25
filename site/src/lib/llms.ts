@@ -96,6 +96,7 @@ export function llmsPage(entry: CollectionEntry<'docs'>, origin: string, base: s
   const url = `${origin}${entry.data.product && !port ? `${PORT_ROOT}/` : base}${path ? `${path}/` : ''}`
   let body = resolvePortCode(linkProseMarkdown(entry.body ?? '', entryPort ?? port, entry.data.product, {
     page: entry,
+    portSaid: Boolean(entryPort),
     resolved: (href) => new URL(href, url).href,
     authored: (href, owner) => new URL(proseHref(href, SITE_ROOT, owner,
       owner === port ? version : defaults[owner ?? ''] ?? 'latest', PORT_ROOT), url).href,

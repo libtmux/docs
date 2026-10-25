@@ -23,10 +23,11 @@
 const dotnet = (page: string) => `https://learn.microsoft.com/dotnet/api/${page}`
 const rust = (page: string) => `https://doc.rust-lang.org/std/${page}`
 const go = (page: string) => `https://pkg.go.dev/${page}`
-const cpp = (page: string) => `https://en.cppreference.com/w/cpp/${page}`
+const cpp = (page: string) => `https://en.cppreference.com/cpp/${page}`
 const swift = (page: string) => `https://developer.apple.com/documentation/swift/${page}`
 const mdn = (page: string) =>
   `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/${page}`
+const iteration = 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols'
 const ts = (page: string) => `https://www.typescriptlang.org/docs/handbook/2/${page}`
 
 /** Compiler-only utilities have no JavaScript global or DOM reference on MDN. */
@@ -89,7 +90,7 @@ const qualifiedScala = Object.fromEntries([
     [name, `fs2.concurrent.${name}`].map((alias) => [alias, `https://javadoc.io/static/co.fs2/fs2-core_3/3.13.0/fs2/concurrent/${name}.html`])),
 ])
 
-const qualifiedDotnetExceptions = Object.fromEntries([
+const DOTNET_EXCEPTIONS = [
   'System.Exception',
   'System.ArgumentException',
   'System.ArgumentNullException',
@@ -105,9 +106,17 @@ const qualifiedDotnetExceptions = Object.fromEntries([
   'System.Text.RegularExpressions.RegexMatchTimeoutException',
   'System.Text.Json.JsonException',
   'System.Threading.Tasks.TaskCanceledException',
-].flatMap((name) => [name, name.split('.').at(-1)!].map((alias) => [alias, dotnet(name.toLowerCase())])))
+]
 
-const elixirDocs = (page: string) => `https://hexdocs.pm/elixir/${page}`
+/** Each exception by its full name, and by its bare one where `bare` says the language's files have its namespace in scope. */
+const dotnetExceptions = (bare: (namespace: string) => boolean = () => true) => Object.fromEntries(
+  DOTNET_EXCEPTIONS.flatMap((name) => [name, ...(bare(name.slice(0, name.lastIndexOf('.'))) ? [name.split('.').at(-1)!] : [])].map((alias) => [alias, dotnet(name.toLowerCase())])),
+)
+
+/** What the F# port's files open (the extracted model's `namespaceImports`): F# opens nothing from `System` itself. */
+const FSHARP_OPENED = new Set(['System', 'System.Threading.Tasks'])
+
+const elixirDocs = (page: string) => `https://elixir.hexdocs.pm/${page}`
 
 /** Modules of the Elixir standard library whose members this reference links to by name. */
 export const ELIXIR_STDLIB_MODULES: ReadonlySet<string> = new Set([
@@ -134,13 +143,13 @@ const ELIXIR_STDLIB_FUNCTIONS: readonly (readonly [module: string, name: string,
 
 /** The typespec grammar names these without a module. */
 const ELIXIR_BASIC_TYPES = [
-  'any', 'none', 'atom', 'map', 'pid', 'port', 'reference', 'struct', 'tuple', 'float', 'integer', 'neg_integer',
+  'any', 'none', 'atom', 'map', 'pid', 'port', 'reference', 'tuple', 'float', 'integer', 'neg_integer',
   'non_neg_integer', 'pos_integer', 'list', 'nonempty_list', 'maybe_improper_list', 'nonempty_improper_list',
   'nonempty_maybe_improper_list',
 ]
 const ELIXIR_BUILTIN_TYPES = [
   'term', 'arity', 'as_boolean', 'binary', 'bitstring', 'boolean', 'byte', 'char', 'charlist', 'nonempty_charlist', 'fun',
-  'function', 'identifier', 'iodata', 'iolist', 'keyword', 'mfa', 'module', 'no_return', 'node', 'number', 'timeout',
+  'function', 'identifier', 'iodata', 'iolist', 'keyword', 'mfa', 'module', 'no_return', 'node', 'number', 'struct', 'timeout',
 ]
 
 export const BUILTINS: Record<string, Record<string, string>> = {
@@ -149,7 +158,8 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     ...Object.fromEntries(ELIXIR_BUILTIN_TYPES.map((name) => [name, elixirDocs('typespecs.html#built-in-types')])),
     nil: elixirDocs('typespecs.html#literals'),
     optional: elixirDocs('typespecs.html#maps'),
-    required: elixirDocs('typespecs.html#maps'),
+    // The page writes `required(key_type)` in its listing of literals, not under Maps.
+    required: elixirDocs('typespecs.html#literals'),
     ...Object.fromEntries(['Exception.t', 'Enumerable.t', 'Keyword.t', 'MapSet.t', 'Range.t', 'Regex.t', 'String.t', 'Path.t']
       .map((name) => [name, elixirStdlibHref(name.split('.')[0]!, 't', 0, 't')])),
     'Supervisor.child_spec': elixirStdlibHref('Supervisor', 'child_spec', 0, 't'),
@@ -192,12 +202,12 @@ export const BUILTINS: Record<string, Record<string, string>> = {
   kotlin: {
     ...qualifiedKotlin,
     suspend: 'https://kotlinlang.org/docs/coroutines-basics.html#suspending-functions',
-    finally: 'https://kotlinlang.org/docs/exceptions.html#finally-block',
+    finally: 'https://kotlinlang.org/docs/exceptions.html#the-finally-block',
     String: kotlin('kotlin/-string'), Boolean: kotlin('kotlin/-boolean'),
     Int: kotlin('kotlin/-int'), Long: kotlin('kotlin/-long'),
     Unit: kotlin('kotlin/-unit'), Any: kotlin('kotlin/-any'),
     List: kotlin('kotlin.collections/-list'), Map: kotlin('kotlin.collections/-map'),
-    Iterable: kotlin('kotlin.collections/-iterable'),
+    Iterable: kotlin('kotlin.collections/-iterable'), Collection: kotlin('kotlin.collections/-collection'),
     Flow: 'https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/',
     StateFlow: 'https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-state-flow/',
     'collect()': 'https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/collect.html',
@@ -211,6 +221,9 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     Vector: scala('scala/collection/immutable/Vector'),
     List: scala('scala/collection/immutable/List'),
     IterableOnce: scala('scala/collection/IterableOnce'),
+    // Predef and the package object bind these bare names to Scala's collections, not java.util's.
+    Set: scala('scala/collection/immutable/Set'), SortedSet: scala('scala/collection/immutable/SortedSet'),
+    Iterable: scala('scala/collection/Iterable'), Iterator: scala('scala/collection/Iterator'),
     'scala.concurrent.duration.FiniteDuration': scala('scala/concurrent/duration/FiniteDuration'),
     ExecutionContext: scala('scala/concurrent/ExecutionContext'),
     Using: scalaUsing, 'scala.util.Using': scalaUsing,
@@ -220,10 +233,10 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     Resource: 'https://typelevel.org/cats-effect/api/3.x/cats/effect/kernel/Resource.html',
   },
   fsharp: {
-    ...qualifiedDotnetExceptions,
+    ...dotnetExceptions((namespace) => FSHARP_OPENED.has(namespace)),
     Result: fsharp('fsharp-core-fsharpresult-2'),
-    option: fsharp('fsharp-core-fsharpoption-1'),
-    list: fsharp('fsharp-collections-fsharplist-1'),
+    option: fsharp('fsharp-core-option-1'),
+    list: fsharp('fsharp-collections-list-1'),
     seq: dotnet('system.collections.generic.ienumerable-1'),
     string: dotnet('system.string'), bool: dotnet('system.boolean'),
     int: dotnet('system.int32'), int64: dotnet('system.int64'),
@@ -231,8 +244,8 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     CancellationToken: dotnet('system.threading.cancellationtoken'),
     IReadOnlyList: dotnet('system.collections.generic.ireadonlylist-1'),
     IAsyncEnumerable: dotnet('system.collections.generic.iasyncenumerable-1'),
-    None: fsharp('fsharp-core-fsharpoption-1'),
-    Some: fsharp('fsharp-core-fsharpoption-1'),
+    None: fsharp('fsharp-core-option-1'),
+    Some: fsharp('fsharp-core-option-1'),
     Seq: fsharp('fsharp-collections-seqmodule'),
     'Seq.filter': `${fsharp('fsharp-collections-seqmodule')}#filter`,
     Async: fsharp('fsharp-control-fsharpasync'),
@@ -241,7 +254,7 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     'Task.WhenAll': dotnet('system.threading.tasks.task.whenall'),
   },
   csharp: {
-    ...qualifiedDotnetExceptions,
+    ...dotnetExceptions(),
     bool: dotnet('system.boolean'),
     Boolean: dotnet('system.boolean'),
     string: dotnet('system.string'),
@@ -338,12 +351,7 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     'fmt.Stringer': go('fmt#Stringer'),
   },
   cxx: {
-    void: cpp('language/void'),
-    bool: cpp('language/bool_literal'),
-    int: cpp('language/types'),
-    long: cpp('language/types'),
-    double: cpp('language/types'),
-    char: cpp('language/types'),
+    ...Object.fromEntries(['void', 'bool', 'int', 'long', 'double', 'char'].map((word) => [word, cpp(`keyword/${word}`)])),
     size_t: cpp('types/size_t'),
     'std::size_t': cpp('types/size_t'),
     'std::ptrdiff_t': cpp('types/ptrdiff_t'),
@@ -452,17 +460,20 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     Date: mdn('Date'),
     Error: mdn('Error'),
     RegExp: mdn('RegExp'),
-    AsyncIterable: mdn('AsyncIterator'),
-    Iterable: mdn('Iterator'),
-    void: ts('everyday-types.html#void'),
-    never: ts('everyday-types.html#never'),
-    unknown: ts('everyday-types.html#unknown'),
+    AsyncIterable: `${iteration}#the_async_iterator_and_async_iterable_protocols`,
+    Iterable: `${iteration}#the_iterable_protocol`,
+    IterableIterator: mdn('Iterator'),
+    ReadonlyMap: mdn('Map'),
+    ReadonlySet: mdn('Set'),
+    void: ts('functions.html#void'),
+    never: ts('functions.html#never'),
+    unknown: ts('functions.html#unknown'),
     undefined: mdn('undefined'),
-    null: mdn('null'),
+    null: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/null',
     ...TYPESCRIPT_UTILITY_TYPES,
   },
   java: {
-    ExtensionContext: 'https://docs.junit.org/current/api/org.junit.jupiter.api/org/junit/jupiter/api/extension/ExtensionContext.html',
+    ExtensionContext: 'https://docs.junit.org/5.14.4/api/org.junit.jupiter.api/org/junit/jupiter/api/extension/ExtensionContext.html',
     boolean: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-4.html#jls-4.2.5',
     int: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-4.html#jls-4.2.1',
     long: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-4.html#jls-4.2.1',
@@ -470,13 +481,15 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     void: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5',
   },
   // Lua's eight value types share one section of the manual; `integer` is
-  // the subtype 5.3 added and LuaLS spells separately. `any` and `unknown`
-  // are LuaLS annotation types, with no counterpart in the language.
+  // the subtype 5.3 added and LuaLS spells separately. `any` is a LuaLS
+  // annotation type, with no counterpart in the language. LuaLS's `unknown`
+  // is what it infers, and its wiki documents no such annotation, so it
+  // stays plain.
   lua: Object.fromEntries([
     ...['nil', 'boolean', 'number', 'integer', 'string', 'function', 'table', 'thread', 'userdata'].map(
       (name) => [name, 'https://www.lua.org/manual/5.4/manual.html#2.1'],
     ),
-    ...['any', 'unknown'].map((name) => [name, 'https://luals.github.io/wiki/annotations/#documenting-types']),
+    ['any', 'https://luals.github.io/wiki/annotations/#documenting-types'],
   ]),
   py: {
     Unpack: 'https://docs.python.org/3/library/typing.html#typing.Unpack',
@@ -484,6 +497,27 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     TypeAlias: 'https://docs.python.org/3/library/typing.html#typing.TypeAlias',
   },
 }
+
+/**
+ * Languages whose curated names win over an inventory they share with another language. Kotlin and Scala
+ * read the JDK's inventory, which names `java.util.Vector` and `java.util.concurrent.Flow`, and a Kotlin
+ * `Flow` or a Scala `Vector` is the language's own. Every path that resolves a name outside the project asks
+ * this, so a symbol's docs and a sentence in prose cannot send one name two places.
+ */
+export const CURATED_BEFORE_INVENTORY: ReadonlySet<string> = new Set(['kotlin', 'scala'])
+
+/**
+ * The languages whose documentation a port already goes to, besides its own. A Kotlin or Scala sentence that says
+ * "the Java ones" is about the project's wrappers of the Java API and not a switch to Java: its `Vector` is Scala's.
+ * A sentence that names a language the port does not reach (a Python page on Rust's `Vec`) still decides the name.
+ */
+export const PLATFORM_REACH: Readonly<Record<string, readonly string[]>> = { kotlin: ['java'], scala: ['java'] }
+
+/**
+ * Names the JDK's inventory holds that Kotlin and Scala prose means another library's by. A Scala sentence's "an Ox
+ * `Flow`" is not `java.util.concurrent.Flow`, the JDK's interfaces for reactive streams. Reviewed one name at a time.
+ */
+export const NOT_THE_JDKS: Readonly<Record<string, ReadonlySet<string>>> = { scala: new Set(['Flow']) }
 
 /** The documentation URL for a language's own type, if this is one. */
 export function builtinHref(port: string, name: string): string | undefined {

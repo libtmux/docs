@@ -309,6 +309,170 @@ evidence; it fails on a destination that no longer passes or on evidence past
 the bound, and is not a dependency of the test or deploy workflows
 ([CI](docs/ci.md#header-destination-check-verify-destinationsyml)).
 
+### Standard-library and SDK destinations
+
+A link into a language's own documentation, or into an SDK this estate builds
+on, is held to more than a 200. [`api-destinations.mjs`](scripts/lib/api-destinations.mjs)
+reads every one the site generates: the curated maps in
+[`builtins.ts`](packages/api-model/src/builtins.ts), the cached inventories,
+the references in the extracted doc comments, the links in pages (the content tree, the guides staged
+from each port's artifact, and the workspace pages written once for every port), guide data, the glossary,
+and the heading each of PowerShell's common parameters has on its Microsoft Learn page. Each is requested once and must land on a page whose own
+declaration is the symbol the link was made for.
+
+A documentation page says what it documents, in the markup its host uses, and
+says it more exactly than its address or a word in its title:
+[`api-identities.mjs`](scripts/lib/api-identities.mjs) reads rustdoc's title and
+heading, javadoc's package line and the parameters a member's anchor spells,
+Dokka's breadcrumbs and declaration, Scaladoc's kind, cppreference's heading
+and declaration, ExDoc's `c:` and `t:` anchors and operand count, fsdocs' Module
+or Type, Learn's namespace and generic arity, CPython's `dl.py` role,
+pkg.go.dev's full import path and kind, Documenter's category, MDN's title and
+DocC's symbol kind. [`api-sources.mjs`](scripts/lib/api-sources.mjs) says the same of the name that led
+there: its kind, the package, module or type written before it, its operand
+count and its parameter list where the name gives them. A link is right when the
+two agree. `Option<T>::map` keeps its `map`, `System.getenv()` is the overload
+that takes nothing, and `std::map` is not `std::unordered_map`, `std::optional`
+not `std::bad_optional_access`, and `Flow` not `flow()`. A name written bare
+needs an owner: `BARE_OWNERS` in `api-sources.mjs` is what each port imports, and
+`DEFAULT_SCOPES` is what its language provides, so `Duration` in Java is
+`java.time.Duration` and a bare `run` in Python is nobody's. A bare name that no
+table covers is refused rather than guessed. The scopes are per name where a language binds
+them so (`DEFAULT_NAMES`: Scala's `Map` and `Set` are `immutable`'s, `Iterator` is
+`scala.collection`'s, as Predef and the package object bind them), a name written bare
+in a file that opens its namespace is read from the port's model (F#'s `open`s), and a
+type a member's docs extend is matched exactly, never by the end of its name. A page
+of a host we read that declares no symbol (a search page, a manual section) is no symbol,
+whatever its title says. A host that publishes no declaration at all (the TypeScript
+handbook, the Lua manual, the JLS) is read by its fragment and its title, and a symbol
+name there passes only by an exception.
+
+A link a person wrote is a fact, and it is reviewed as one. Every Markdown link in a page, term in
+the glossary, link in a doc comment and title a keyword's help carries is a pair of its exact text and
+its exact address, and where its page documents no symbol it is a row of
+[`api-link-review.json`](site/src/data/api-link-review.json): the text, the address with its
+fragment, and the heading the page has there (the heading the fragment opens, else the page's own top
+heading). The verifier checks two things and matches nothing by likeness. Every pair the source writes
+is a row and every row is a pair the source writes, so a text planted at another address, a narrower
+page, a page of another language or a heading that shares a word with it fails as unlisted. And the
+page's heading at the address is the row's, so a page rewritten or moved under the link fails as
+drift. Adding a link means adding its row: a failing run prints the heading it found and the row to
+add, and a person reads both. A text that is exactly the name of the symbol its page declares needs no
+row: it is compared with the name, exactly (`Files` is `Files`, never `File`; `Option::map` ends the
+page's path, owner included; a call written out is its callee; `Result` is `std::result`'s), and
+words that describe the page are not a name. A row on a page that declares a symbol (`Python class
+methods` at `classmethod`) is recorded under the symbol's full name. Language is read from the
+address, never from the words: each port goes to its own language's documentation and to what its
+platform shares (Kotlin and Scala to the Java hosts, C#, F# and PowerShell to the .NET API, runtime,
+standard library and NuGet pages of Microsoft Learn, and no port to another product's pages there),
+and a link a port writes to any other fails (`PORT_LANGUAGES` in
+[`api-links.mjs`](scripts/lib/api-links.mjs)). The same words at the same address written for several
+ports are held for each of them, and a port the table does not know, or an address whose language it
+cannot read, fails rather than passes unchecked. The links in a page are read by a Markdown parser
+([`api-markdown-links.mjs`](scripts/lib/api-markdown-links.mjs)), so a link with a title, an autolink,
+a reference link, a `<url>` definition, a raw `<a>` or code with brackets in its words is a pair like
+any other. An address is read the way a browser reads it (`HTTPS://` and `http://` in any case, a
+protocol-relative `//host`, a host with a dot after it, a bare `www.` host), and an address on an API
+host that no link accounts for (in a code span, a fence, front matter, an image, a definition nothing
+uses, or a sentence) fails as a link with no words to review. The pages of the libtmux packages
+themselves belong to the header verifier, which records the package each is and the ports that publish it;
+a link to one is a pair like any other, held to the port that writes it and, by its row, to the package
+it names. `meta/` pages are the site's own credits and licences: their links to a language's website
+are logo and licence terms, not API documentation, so only their links to those package pages are read.
+`json-schema.org`, which `mcp-schema.ts` links for the type words of a tool's schema, documents a data format
+and not a language or an SDK, so it is not one of the hosts read (`API_HOSTS`).
+
+Prose is read the way the page renders it. A symbol's documentation (`PROSE_FIELDS` in
+[`prose-fields.ts`](packages/api-model/src/prose-fields.ts)) is linked by `SymbolIndex.docSpans`, the
+function `ApiDoc` renders with, over the text `ApiDoc` receives: the field itself, or the paragraphs and
+list items `ApiProse` splits it into, with fenced code left alone. A link the site writes from the model
+(a command's facts, a parameter's binding) is the builtin it names. Every other string a symbol holds
+is in `STRUCTURAL_FIELDS`, and a test fails on a string in neither, and on an expression a component
+passes to `ApiDoc` or `ApiProse` that `RENDERED_TEXTS` does not list, so a field the extractor adds, or
+a field a component starts to render, is decided before it ships. A variable is the reader's own and
+links nowhere, a printed `[object Object]` is text (`neverLinks`, read by the type tokenizer every
+path calls and by the prose linker), and a language's keywords (`for`, `import`) are documented at
+the top level (`BARE_OWNERS` in `api-sources.mjs`).
+
+A name in prose is linked by one function, `decideMention`, and a port's own curated names come before the
+inventory of the platform it runs on, in a page and in a symbol's documentation alike (`CURATED_BEFORE_INVENTORY`):
+Scala's `Vector` and Kotlin's `Flow` are not `java.util`'s, and a name only the JDK or the Java library has is
+Java's where the sentence says Java (`PLATFORM_REACH`). The language a sentence names is read by whole words, and a
+path, a URL or a dotted name names none: `JavaScript` is not `Java`, and `options-table.c#L359` is not C#.
+
+The same prose reaches a reader by more than one route, and the tests render each one and hold the
+verifier to it: every page the site builds, staged guides and shared workspace pages included
+(`proseSources`, which the collector reads too), in the build of each port and in the one build for none,
+through the linker the site uses; the Markdown copy of a symbol and of a page (`llmsPage`, which `llms-full.txt`
+and every `.md` twin carry); the documentation, types and PowerShell common parameters of every symbol,
+drawn by `ApiDoc`, `ApiType` and `ApiCommandParameters` as the site compiles them; the hover card; the
+descriptions, summaries, arguments and schema texts of every MCP object, through `renderToolDescription`; and the
+notices in templates. A link the linker makes must also reach the language its page reads as, or the one its
+sentence names, and the entry its port curates for that name. A page shared by every port is rendered once for each, and the port of that build
+says where it is read, not what it is about, so it links a bare lowercase word to that port's standard
+library only where the page (its own port, a fence, a row, a section or the sentence) says its
+language, and a name that carries evidence of its own (`Base.strip`, `BTreeMap`, a call) anywhere: a
+shell's `exit` is not Python's. A test lists every file that links prose or holds an index to link with, by any call, in any
+directory or extension, and fails on one that is not listed with what it does with an address outside the
+site. A file that gives a Markdown processor the page linker's plugin (`rehypeApiLinks`) is one of them.
+
+A host that moves the
+page elsewhere, even by the case of a letter, fails, because a link should be
+the page's address. Request the missing ones after changing a map, an
+inventory or a pinned model:
+
+```console
+$ node scripts/verify-api-destinations.mjs --missing
+```
+
+The command is sequential and pauses between requests; it keeps fetched pages
+for twelve hours (`--no-cache` asks again). A host that blocks the request,
+throttles it or renders the page in the browser is recorded as unverifiable
+with one of a closed list of reasons and is never counted as passing; the
+offline check prints every one as unresolved. The cached inventories (CPython,
+Julia, the JDK and the web platform) are checked whole against the index each
+host publishes, and bound to the entries they held by a digest:
+
+```console
+$ node scripts/verify-api-destinations.mjs --inventories
+```
+
+The evidence is `site/src/data/api-destination-evidence.json`, and each passing
+record keeps the identity its page declared. `--check` requests nothing, but it
+judges every name the source generates again, now, against that recorded
+identity: a builtin edited over the same address fails. It also fails a
+destination with no passing record, two records for one address, a record for a
+link nothing makes, an identity that disagrees with its own address, a pass
+that rests on an exception that is no longer listed, and any difference between
+the links the source writes and the rows of the link table (a link with no row,
+a row for no link, a row twice, a row for a text that needs none, a record whose
+heading is not its row's). `PAGE_EXCEPTIONS` in
+`scripts/lib/api-destinations.mjs` carries the exceptions, one entry per exact
+address with the names it covers and its reason: `listed` for a name a page
+documents beside its subject rather than in its title (`std::chrono::milliseconds`
+on the `duration` page, and on no other), `section` for an anchor that documents
+several symbols or is spelled as a heading (the Lua manual's value types, the
+typespec reference), where the section the anchor opens must still name the
+symbol. Add to it only after reading the page. A name
+that a language spells another way (`int` for `Int32`, `string` for `String`)
+goes in `TYPE_ALIASES`, and a package that two spellings share in
+`NAME_ALIASES`. `--check` also fails a record that contradicts itself (a pass
+with a 404, a failure field or a redirect), an unverifiable record that gives a
+reason of its own, and a run that left more than a few destinations
+unverifiable, because that run checked nothing.
+`scripts/verify-api-destinations.negative.mjs` plants a wrong fragment, a wrong
+page, a symbol the page does not document, a word that merely contains the
+symbol, a wrong package or namespace, a wrong kind, operand count or parameter
+list, a bare name in the wrong scope, words on a link that name another symbol,
+an exception borrowed by another page, an unlisted link, a drifted heading, a
+link written for the wrong language or several ports, each form a Markdown link
+takes, an address outside any link, a case-only redirect and a redirect to a
+landing page on pages shaped like the real ones, each fault in the evidence, and
+each edit of the source over an unchanged record, and requires the check to name
+each. The weekly
+[`verify-destinations.yml`](.github/workflows/verify-destinations.yml) re-runs
+the live check; pull requests never do.
+
 ## Building and previewing
 
 Build the Astro shell:

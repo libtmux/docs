@@ -490,6 +490,21 @@ Plain `--check`, which `test.yml` runs through the publication audit, prints
 stale records as `::warning::` annotations under GitHub Actions and still
 passes.
 
+The same workflow holds the standard-library and SDK links to the symbols they
+name (`scripts/verify-api-destinations.mjs`): the identity a page declares, its
+kind, package, name, operand count and parameters, must be the one the link was
+made for. Its second pair of steps does for
+`site/src/data/api-destination-evidence.json` what the first does for the
+header evidence: the live run writes to a temporary file that the
+`api-destination-evidence` artifact carries, and `--check --fresh` holds the
+committed file to the age bound even after the live run failed. Pull request CI
+only runs `--check` without `--fresh` through the publication audit, so a
+change fails there for a link with no passing record, never for a host's
+answer or the passage of time. A host that blocks the request or renders the
+page in the browser is printed as unresolved and never counted as passing, and
+a run that leaves more than a twentieth of the destinations unresolved fails,
+because a run that asked almost nothing has checked almost nothing.
+
 ## Secrets this scheme expects
 
 | Secret | Used by | Scope | Storage level |

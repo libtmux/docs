@@ -1,6 +1,7 @@
 import type { ApiModel, ApiProduct, ApiSymbol } from './model.ts'
 import type { Resolver } from './resolver.ts'
-import { builtinHref } from './builtins.ts'
+import { PLATFORM_REACH, builtinHref } from './builtins.ts'
+import { neverLinks } from './never-links.ts'
 
 /**
  * Whether a code span in prose is a reference to the API, and to what.
@@ -149,15 +150,32 @@ export function looksLikeApiMention(text: string): boolean {
  * attribute all of them to the last span.
  */
 export function portFromSentence(before: string): string | undefined {
-  const sentence = before.split(/(?<=[.!?])\s+(?=[A-Z])/).pop() ?? before
-  let best: { port: string; at: number } | undefined
-  for (const [slug, name] of Object.entries(PORT_NAME)) {
-    const at = sentence.toLowerCase().lastIndexOf(name.toLowerCase())
-    if (at === -1) continue
-    if (!best || at > best.at) best = { port: slug, at }
-  }
-  return best?.port
+  const sentence = (before.split(/(?<=[.!?])\s+(?=[A-Z])/).pop() ?? before)
+  return namedPorts(sentence).at(-1)?.port
 }
+
+/**
+ * The languages a text names, in the order it names them, each with where. A path, a URL, a file with an anchor
+ * (`options-table.c#L359`) and a dotted or scoped name (`java.util.Set`, `std::map`) are code: they name a place or a symbol,
+ * and a language only by the letters inside them.
+ */
+export function namedPorts(text: string): { port: string; at: number }[] {
+  const prose = text.split(/\s+/).filter((token) => !/[\\/_()]|:\/\/|\w[.:]\w/.test(token)).join(' ')
+  const found: { port: string; at: number }[] = []
+  for (const [slug, pattern] of PORT_WORDS) {
+    pattern.lastIndex = 0
+    for (const match of prose.matchAll(pattern)) found.push({ port: slug, at: match.index })
+  }
+  return found.sort((a, b) => a.at - b.at)
+}
+
+/**
+ * A language's name as a whole word: `Java` is not `JavaScript`, `Go` is not `algorithm` or `going`, and `C#` is not
+ * the end of `table.c#L359`. `Go` is also an English verb, so it is read only with its capital.
+ */
+const PORT_WORDS: [string, RegExp][] = Object.entries(PORT_NAME).map(([slug, name]) => [
+  slug, new RegExp(`(?<![A-Za-z0-9#+])${name.replace(/[+#.]/g, '\\$&')}(?![A-Za-z#+])`, name === 'Go' ? 'g' : 'gi'),
+])
 
 /**
  * Whether a failure to resolve is worth reporting.
@@ -232,6 +250,15 @@ export type MentionDecision =
 
 export interface MentionContext {
   pagePort?: string
+  /**
+   * Whether the page itself says `pagePort` is its language: its own port, a fence's language, a port-labelled row or section.
+   * A page that is shared by every port is rendered once for each, so the port it is rendered for says where it is read, not
+   * what it is about. A bare lowercase word is then not linked to that port's standard library or builtins: it is as likely a
+   * shell command or an English word as a name, and `exit` in a sentence about a shell is not Python's, nor `timeout` in
+   * one about coreutils Elixir's type. A name that carries its own evidence (`Base.strip`, `BTreeMap`, a call) still links.
+   * Left unset, the page is taken to say its language.
+   */
+  languageSaid?: boolean
   product?: ApiProduct
   before?: string
   /**
@@ -260,6 +287,8 @@ export function decideMention(
   models: Record<string, ApiModel>,
 ): MentionDecision {
   if (!looksLikeApiMention(text)) return { kind: 'skip', why: 'not a mention' }
+  const never = neverLinks(text)
+  if (never) return { kind: 'skip', why: never }
 
   const link = (port: string, res: ReturnType<Resolver['resolve']>): MentionDecision | undefined => {
     if (res.how === 'federated') {
@@ -286,18 +315,34 @@ export function decideMention(
     return undefined
   }
 
-  const named = ctx.before ? portFromSentence(ctx.before) : undefined
+  const said = ctx.before ? portFromSentence(ctx.before) : undefined
+  // A port that already goes to the named language (Scala to Java) stays itself: the sentence is about its wrappers. It answers first,
+  // with its own symbols and its curated names; what only the language's inventory has is the language's, and the sentence says so.
+  const reached = Boolean(said && ctx.pagePort && said !== ctx.pagePort && PLATFORM_REACH[ctx.pagePort]?.includes(said))
+  const named = reached ? undefined : said
   const tried: string[] = []
   let ambiguous = false
-  for (const port of [named, ctx.pagePort]) {
+  for (const port of reached ? [ctx.pagePort, said] : [named, ctx.pagePort]) {
     if (!port || !models[port]) continue
+    // The language of a build that the page does not name is where the page is read: it owns the library's symbols, not the language's.
+    const unsaid = port === ctx.pagePort && port !== named && ctx.languageSaid === false && !isLikelyReference(text)
     const res = resolver.resolve(port, text, ctx.product)
     ambiguous ||= res.how === 'ambiguous'
     tried.push(`${port}:${res.how}`)
+    // The page port answers with a symbol or a curated name, which the resolver files under the port's own name. A hit in any other
+    // inventory, the JDK's or the parent library's (each build names that one differently), is the language's: the sentence says
+    // which, and the language answers next.
+    if (reached && port === ctx.pagePort && res.how === 'federated' && res.project !== PORT_NAME[port]) continue
     const hit = link(port, res)
-    if (hit) return hit
+    if (hit) {
+      if (hit.kind === 'link' && /^https?:\/\//i.test(hit.href) && unsaid) return { kind: 'skip', why: 'a bare word on a page that does not say its language' }
+      return hit
+    }
     const builtin = builtinHref(port, text)
-    if (builtin) return { kind: 'link', port, href: builtin, title: `${text}: ${PORT_NAME[port]}`, external: true }
+    if (builtin) {
+      if (unsaid) return { kind: 'skip', why: 'a bare word on a page that does not say its language' }
+      return { kind: 'link', port, href: builtin, title: `${text}: ${PORT_NAME[port]}`, external: true }
+    }
   }
   // A known language must never resolve a similarly named API in another port.
   if (tried.length) return ambiguous

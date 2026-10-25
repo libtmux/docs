@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { SymbolIndex } from '../src/link.ts'
 import { Resolver } from '../src/resolver.ts'
-import { readInventory } from '../src/inventory.ts'
+import { readInventory, symbolEntries } from '../src/inventory.ts'
 import { moduleOf, modulesIn } from '../src/modules.ts'
 
 /**
@@ -452,5 +452,90 @@ describe('JDK and DOM federation', () => {
     // a wider surface for a wrong link, not a better one.
     const stray = jdk!.entries.filter((e) => /^(javax|com\.sun|jdk|org\.w3c)\./.test(e.name))
     expect(stray.slice(0, 5).map((e) => e.name)).toEqual([])
+  })
+})
+
+describe('a link names a symbol its host documents', () => {
+  const entry = (name: string, uri: string, type = 'std:label') => ({ name, uri, type, priority: 1, dispname: '-' })
+
+  it('does not link a name to a page of the manual', () => {
+    // Julia lists its front page as the document `index`; a variable of that name is not a reference to it.
+    const inventory = [entry('index', '', 'std:doc'), entry('Base.map', 'base/collections/#Base.map', 'jl:function')]
+    const index = new SymbolIndex([], (s) => `#${s.id}`, 'julia')
+    index.addInventory('https://docs.julialang.org/en/v1/', inventory, ['julia'], 'Julia')
+    expect(index.resolve('index')).toBeUndefined()
+    expect(index.resolve('Base.map')?.href).toBe('https://docs.julialang.org/en/v1/base/collections/#Base.map')
+
+    const resolver = new Resolver([{ port: 'julia', symbols: [] } as never])
+    resolver.addInventory('Julia', 'https://docs.julialang.org/en/v1/', inventory, ['julia'])
+    expect(resolver.resolve('julia', 'index')).toMatchObject({ how: 'no-symbol' })
+  })
+
+  it('does not link a name to a label of the manual, in an inventory that keeps its symbols in a domain of its own', () => {
+    // CPython lists the search page as the label `search` and argparse's section as `default`; neither is a function.
+    const inventory = [
+      entry('search', 'search.html'), entry('default', 'library/argparse.html#default'), entry('open', 'builtins/functions.html#open', 'py:function'),
+      entry('glossary', 'glossary.html', 'std:doc'), entry('os.open', 'library/os.html#os.open', 'py:function'),
+    ]
+    expect(symbolEntries(inventory).map((candidate) => candidate.name)).toEqual(['open', 'os.open'])
+    const index = new SymbolIndex([], (s) => `#${s.id}`, 'py')
+    index.addInventory('https://docs.python.org/3/', inventory, ['py'], 'Python')
+    expect(index.resolve('search')).toBeUndefined()
+    expect(index.resolve('default')).toBeUndefined()
+    expect(index.resolve('open')?.href).toBe('https://docs.python.org/3/builtins/functions.html#open')
+    const resolver = new Resolver([{ port: 'py', symbols: [] } as never])
+    resolver.addInventory('Python', 'https://docs.python.org/3/', inventory, ['py'])
+    expect(resolver.resolve('py', 'search')).toMatchObject({ how: 'no-symbol' })
+    // An inventory with no domain of its own, as the JDK's, writes its symbols as labels.
+    expect(symbolEntries([entry('List', 'java.base/java/util/List.html')]).length).toBe(1)
+  })
+
+  it('links a call with no arguments to the overload that takes none', () => {
+    const jdk = [
+      entry('System.getenv', 'java.base/java/lang/System.html#getenv(java.lang.String)'), entry('System.getenv()', 'java.base/java/lang/System.html#getenv()'),
+      entry('System.getProperty', 'java.base/java/lang/System.html#getProperty(java.lang.String)'), entry('Process.pid', 'java.base/java/lang/Process.html#pid()'),
+    ]
+    const index = new SymbolIndex([], (s) => `#${s.id}`, 'java')
+    index.addInventory('https://docs.oracle.com/en/java/javase/21/docs/api/', jdk, ['java'], 'Java SE')
+    const href = (name: string) => index.resolve(name)?.href?.replace('https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/', '')
+    expect(href('System.getenv()')).toBe('System.html#getenv()')
+    expect(href('System.getenv')).toBe('System.html#getenv(java.lang.String)')
+    // The only overload takes an argument, so a call with none links to nothing; one whose anchor lists none is the call.
+    expect(href('System.getProperty()')).toBeUndefined()
+    expect(href('Process.pid()')).toBe('Process.html#pid()')
+  })
+
+  it('does not guess a member of a standard-library module', () => {
+    const index = new SymbolIndex([], (s) => `#${s.id}`, 'py')
+    // `re.error` was written as a fragment of the `re` page and answered by no anchor on it.
+    expect(index.resolve('re.error')).toBeUndefined()
+    expect(index.resolve('shutil.which("tmux")')).toBeUndefined()
+    expect(index.resolve('re')?.href).toBe('https://docs.python.org/3/library/re.html')
+  })
+
+  it('asks CPython for the name before a call or a subscript', () => {
+    const index = new SymbolIndex([], (s) => `#${s.id}`, 'py')
+    index.addInventory('https://docs.python.org/3/', [
+      entry('shutil.which', 'library/shutil.html#shutil.which'), entry('subprocess.Popen', 'library/subprocess.html#subprocess.Popen'), entry('sys.path', 'library/sys.html#sys.path'),
+    ], ['py'], 'Python')
+    expect(index.resolve('shutil.which("tmux")')?.href).toBe('https://docs.python.org/3/library/shutil.html#shutil.which')
+    expect(index.resolve('subprocess.Popen(cwd=)')?.href).toBe('https://docs.python.org/3/library/subprocess.html#subprocess.Popen')
+    expect(index.resolve('sys.path[0]')?.href).toBe('https://docs.python.org/3/library/sys.html#sys.path')
+    // The name must still be one the inventory lists.
+    expect(index.resolve('shutil.nowhere("tmux")')).toBeUndefined()
+    // A bare call is the reader's own function, whatever its argument is called.
+    index.addInventory('https://docs.python.org/3/', [entry('run', 'library/pdb.html#pdbcommand-run', 'std:pdbcommand'), entry('select', 'library/select.html#module-select'), entry('queue', 'library/queue.html#module-queue')], ['py'], 'Python')
+    for (const call of ['run(self.x)', 'select(pane.id)', 'queue(self.q)']) expect(index.resolve(call), call).toBeUndefined()
+    // And a command-line option or a pdb command is no symbol, so a bare word that spells one links to nothing.
+    expect(index.resolve('run')).toBeUndefined()
+  })
+
+  it('does not send an unlisted JDK member to a search page', () => {
+    // The inventory is the JDK's own index. A name it lacks has no page, and a search URL
+    // for it answers 200 from the landing page.
+    const resolver = new Resolver([{ port: 'java', symbols: [] } as never])
+    resolver.addInventory('Java SE', 'https://docs.oracle.com/en/java/javase/21/docs/api/', [entry('Stream.filter', 'java.base/java/util/stream/Stream.html#filter(java.util.function.Predicate)')], ['java'])
+    expect(resolver.resolve('java', 'Stream.filter')).toMatchObject({ how: 'federated', href: expect.stringContaining('java.base/java/util/stream/Stream.html#filter') })
+    expect(resolver.resolve('java', 'Stream.noSuchMember')).toMatchObject({ how: 'no-symbol' })
   })
 })
