@@ -225,6 +225,53 @@ it('renders Up to the immediate parent before the sidebar script loads', async (
   const up = win.document.querySelector('[data-api-owner-back]')!
   expect(up.getAttribute('href')).toBe('/pr-42/en/kotlin/latest/reference/companion/')
   expect(up.getAttribute('aria-label')).toBe('Up to Companion')
+  // The client moves Up in place from this identity, so the markup must carry it.
+  expect(up.getAttribute('data-symbol')).toBe('companion')
+  expect(up.hasAttribute('hidden')).toBe(false)
+})
+
+it.each([
+  { page: 'a top-level declaration', selectedSymbol: 'session', path: 'session/', hidden: false },
+  { page: 'the reference root', selectedSymbol: '', path: '', hidden: true },
+])('sends Up from $page to the reference root and hides it only at the root', async ({ selectedSymbol, path, hidden }) => {
+  const component = await (await components())('ApiTree')
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  windows.push(win)
+  const referenceBase = '/pr-42/en/kotlin/latest/reference/'
+  win.document.body.innerHTML = await container.renderToString(component, { props: {
+    presentation: 'outline', selectedSymbol, inventory: { port: 'kotlin',
+      buckets: [{ id: 'objects', label: 'Objects', count: 1, slug: 'session', children: [], types: [
+        { id: 'session', name: 'Session', slug: 'session', kind: 'class', m: 0 },
+      ] }], members: {},
+    }, referenceBase, portName: 'Kotlin', tree: [], members: [], withMembers: new Set(),
+    currentPath: `${referenceBase}${path}`, version: 'test',
+  } })
+  const up = win.document.querySelector('[data-api-owner-back]')!
+  expect(up.getAttribute('href')).toBe(referenceBase)
+  expect(up.getAttribute('aria-label')).toBe('Up to reference root')
+  expect(up.hasAttribute('hidden')).toBe(hidden)
+  expect(up.getAttribute('data-symbol') ?? '').toBe('')
+})
+
+it('labels the owner picker before the sidebar script loads with the owner in its own spelling', async () => {
+  const component = await (await components())('ApiTree')
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  windows.push(win)
+  const inventory = (spelling?: string) => ({ port: 'cxx',
+    buckets: [{ id: 'objects', label: 'Objects', count: 1, slug: 'session', children: [], types: [
+      { id: 'session', name: 'Session', slug: 'session', kind: 'class', m: 1 },
+    ] }], members: { session: [['Node', 'node', 'node', 'class', 'types', '', 'libtmux::Session::Node', spelling] as never], node: [['leaf', 'leaf', 'leaf', 'method']] } })
+  const label = async (spelling?: string) => {
+    win.document.body.innerHTML = await container.renderToString(component, { props: {
+      presentation: 'outline', selectedSymbol: 'leaf', inventory: inventory(spelling), referenceBase: '/en/cxx/latest/reference/', portName: 'C++',
+      tree: [], members: [], withMembers: new Set(), currentPath: '/en/cxx/latest/reference/leaf/', version: 'test',
+    } })
+    return win.document.querySelector('[data-api-owner-label]')?.textContent
+  }
+  expect(await label('Session::Node')).toBe('Session::Node')
+  expect(await label()).toBe('Node')
 })
 
 it.each(['go', 'rs', 'cxx', 'ts'])('bounds the initial %s sidebar to its current path and deferred picker', async (port) => {

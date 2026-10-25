@@ -46,6 +46,11 @@ describe('source catalog reference navigation', () => {
     expect(records.find((record) => record.id === ownerId)?.qualifiedName).toBe(qualified)
     expect(records.find((record) => record.id === childId)?.shortName).toBe(short)
     expect(records.map((record) => [record.id, record.slug])).toEqual([[ownerId, owner.slug], [childId, child.slug]])
+    // A nested type that is itself a category entry carries the same spelling on that entry.
+    const nested = referenceTreeFor(port, catalog, [{ id: 'objects', label: 'Objects', collapsed: false, children: [],
+      entries: [owner, child].map((item) => ({ id: item.id, name: item.name, kind: item.kind, slug: item.slug! })) }])
+    expect(nested.buckets[0]!.types.map((entry) => [entry.id, entry.shortName])).toEqual([[ownerId, ownerName], [childId, short]])
+    expect(searchApi(nested, '').find((record) => record.id === childId)?.shortName).toBe(short)
   })
 
   it('shares ordered sections, counts, search and nested union members without a library port', () => {

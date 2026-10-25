@@ -70,6 +70,15 @@ describe('API sidebar presentations', () => {
     expect(nodes[0]?.children?.filter((node) => node.kind === 'function').map((node) => node.label)).toEqual(['OptionalInt.orNull', 'OptionalLong.orNull'])
   })
 
+  it('distinguishes roots with the same name by the namespace their language writes', () => {
+    const namespaces: ApiTreeJson = { port: 'cxx', buckets: [{ id: 'objects', label: 'Objects', count: 3, slug: 'a-server', children: [], types: [
+      ['a', 'libtmux::a::Server'], ['b', 'libtmux::b::Server'], ['c', 'libtmux::c::Server'],
+    ].map(([key, qualifiedName]) => ({ id: qualifiedName!, name: 'Server', symbolName: 'Server', qualifiedName: qualifiedName!,
+      slug: `${key}-server`, m: 0 as const, kind: 'class', category: 'types' })) }], members: {} }
+    const roots = sidebarNodes(namespaces, '/reference/', 'outline', 'libtmux::a::Server')[0]!.children!
+    expect(roots.map((row) => row.label)).toEqual(['a::Server', 'b::Server', 'c::Server'])
+  })
+
   it('shows escaped Kotlin identifiers without changing their destinations', () => {
     const quoted = structuredClone(json)
     quoted.port = 'kotlin'
@@ -161,6 +170,41 @@ describe('anonymous declarations in the sidebar', () => {
     expect(sidebarCatalog(anonymous)).toBe(sidebarCatalog(anonymous))
     expect(sidebarCatalog(sidebarInventory(anonymous))).toBe(sidebarCatalog(anonymous))
     expect(sidebarCatalog(structuredClone(anonymous))).not.toBe(sidebarCatalog(anonymous))
+  })
+
+  it('drops a category that held only anonymous declarations, with its landing link', () => {
+    const unnamed = structuredClone(anonymous)
+    unnamed.buckets = [
+      { id: 'types', label: 'Types', count: 2, slug: 'client', children: [], types: unnamed.buckets[0]!.types.slice(0, 2) },
+      { id: 'unnamed', label: 'Unnamed', count: 2, slug: 'anon-1', children: [
+        { id: 'unnamed-inner', label: 'Unnamed inner', count: 1, slug: 'anon-2', children: [], types: [unnamed.buckets[0]!.types[3]!] }],
+        types: [unnamed.buckets[0]!.types[2]!] },
+    ]
+    for (const mode of ['outline', 'grouped'] as const) {
+      const nodes = sidebarNodes(unnamed, '/reference/', mode, 'c:struct:client')
+      expect(nodes.map((node) => [node.label, node.count]), mode).toEqual([['Types', 2]])
+    }
+    // A category that keeps a named entry stays, and lands on it rather than on a hidden page.
+    const mixed = structuredClone(anonymous)
+    mixed.buckets[0]!.slug = 'anon-1'
+    mixed.buckets[0]!.types = [mixed.buckets[0]!.types[2]!, mixed.buckets[0]!.types[0]!]
+    expect(sidebarNodes(mixed, '/reference/', 'outline', '').map((node) => [node.label, node.count, node.href])).toEqual([['Types', 1, '/reference/client/']])
+  })
+
+  it('leaves them out of rows opened later, by category and by owner', () => {
+    const base = '/reference/'
+    const category = sidebarNodes(anonymous, base, 'outline', '', false, { lazy: 'bucket:types', level: 2 })
+    expect(category.map((row) => row.label)).toEqual(['client', 'key_code_type'])
+    const owner = sidebarNodes(anonymous, base, 'outline', '', false, { lazy: 'type:c:struct:client', level: 3 })
+    expect(owner.map((row) => row.label)).toEqual(['flags'])
+    expect(sidebarNodes(anonymous, base, 'outline', '', false, { lazy: 'type:c:enum:tmux.h:@1', level: 3 })).toEqual([])
+    // A category opened later counts and lands on what the sidebar shows, not on what it hides.
+    const nested = structuredClone(anonymous)
+    const [client, , anon] = nested.buckets[0]!.types
+    nested.buckets = [{ id: 'outer', label: 'Outer', count: 2, slug: 'anon-1', types: [], children: [
+      { id: 'inner', label: 'Inner', count: 2, slug: 'anon-1', children: [], types: [anon!, client!] }] }]
+    expect(sidebarNodes(nested, base, 'outline', '', false, { lazy: 'bucket:outer', level: 2 }).map((row) => [row.label, row.count, row.href]))
+      .toEqual([['Inner', 1, '/reference/client/']])
   })
 
   it('names roots that share a name by that name, never by id', () => {
