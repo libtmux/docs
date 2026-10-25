@@ -1,4 +1,4 @@
-import { apiTreeHref, searchApi, type ApiSearchResult, type ApiTreeJson } from './api-search'
+import { apiTreeHref, searchApi, type ApiSearchResult, type ApiTreeBucket, type ApiTreeJson } from './api-search'
 
 export const SIDEBAR_PRESENTATIONS = ['outline', 'focus', 'grouped'] as const
 export type SidebarPresentation = typeof SIDEBAR_PRESENTATIONS[number]
@@ -33,8 +33,50 @@ export function quietSidebarKinds(nodes: SidebarNode[]) {
   for (const node of nodes) if (node.children) quietSidebarKinds(node.children)
 }
 
+/** What the C extractor calls a declaration that C never names: `anonymous enum`. */
+const ANONYMOUS_DECLARATION = /^anonymous (?:enum|struct|union)$/
+
+const inventories = new WeakMap<ApiTreeJson, ApiTreeJson>()
+
+/**
+ * The inventory the sidebar navigates: the reference's own, without anonymous
+ * declarations or anything they hold. Nothing names them, so a row could only
+ * repeat "anonymous enum" over a different member list. Search and the pages
+ * themselves still reach them; only the sidebar leaves them out.
+ */
+export function sidebarInventory(json: ApiTreeJson): ApiTreeJson {
+  const known = inventories.get(json)
+  if (known) return known
+  const hidden = new Set<string>()
+  const hide = (id: string) => {
+    if (hidden.has(id)) return
+    hidden.add(id)
+    for (const [name, , memberId] of json.members[id] ?? []) hide(memberId ?? `${id}.${name}`)
+  }
+  const anonymous = (name: string, qualifiedName = '') => ANONYMOUS_DECLARATION.test(name) || ANONYMOUS_DECLARATION.test(qualifiedName)
+  const find = (buckets: ApiTreeBucket[]) => {
+    for (const bucket of buckets) {
+      for (const entry of bucket.types) if (anonymous(entry.name, entry.qualifiedName)) hide(entry.id)
+      find(bucket.children)
+    }
+  }
+  find(json.buckets)
+  for (const [owner, members] of Object.entries(json.members)) {
+    for (const [name, , id, , , , qualifiedName] of members) if (anonymous(name, qualifiedName)) hide(id ?? `${owner}.${name}`)
+  }
+  const strip = (buckets: ApiTreeBucket[]): ApiTreeBucket[] => buckets.map((bucket) => ({
+    ...bucket, types: bucket.types.filter((entry) => !hidden.has(entry.id)), children: strip(bucket.children),
+  }))
+  const view: ApiTreeJson = hidden.size === 0 ? json : { ...json, buckets: strip(json.buckets), members: Object.fromEntries(
+    Object.entries(json.members).filter(([owner]) => !hidden.has(owner))
+      .map(([owner, members]) => [owner, members.filter(([name, , id]) => !hidden.has(id ?? `${owner}.${name}`))])) }
+  inventories.set(json, view)
+  return view
+}
+
 /** Ownership is explicit: dots in a declaration name do not imply a parent. */
-export function sidebarCatalog(json: ApiTreeJson) {
+export function sidebarCatalog(source: ApiTreeJson) {
+  const json = sidebarInventory(source)
   const records = searchApi(json, '')
   const symbols = new Map(records.map((record) => [record.id, record]))
   const parent = new Map<string, string>()
@@ -86,7 +128,8 @@ export function sidebarNodes(json: ApiTreeJson, base: string, mode: SidebarPrese
         const name = parts.slice(-length).join('.')
         if (peers.every((other) => other.id === record.id || other.qualifiedName.split('.').slice(-length).join('.') !== name)) return name
       }
-      return record.id
+      // An id is no label: peers the name cannot separate keep it, and their kind mark and link do.
+      return record.symbolName
     }
     const core = ['Server', 'Session', 'Window', 'Pane', 'Client']
       .flatMap((name) => roots.filter((record) => record.symbolName === name))

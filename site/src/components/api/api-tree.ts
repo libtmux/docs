@@ -14,7 +14,7 @@ import { wordBreak } from '../../lib/word-break'
 import { kindMark, markClass } from '../../lib/api-labels'
 import { apiTreeHref, searchApi, type ApiTreeBucket as JsonBucket, type ApiTreeJson as TreeJson } from '../../lib/api-search'
 import { apiTreePath, captureApiTree, initializeApiTree, type ApiTreeSelection, type ApiTreeState } from './api-tree-state'
-import { SIDEBAR_PRESENTATIONS, SIDEBAR_PREFERENCE_KEY, sidebarCatalog, sidebarName, sidebarNodes, quietSidebarKinds, type SidebarNode, type SidebarPresentation } from '../../lib/api-sidebar'
+import { SIDEBAR_PRESENTATIONS, SIDEBAR_PREFERENCE_KEY, sidebarCatalog, sidebarInventory, sidebarName, sidebarNodes, quietSidebarKinds, type SidebarNode, type SidebarPresentation } from '../../lib/api-sidebar'
 import { initApiOwnerPicker } from './api-owner-picker'
 
 const ITEM = '[role="treeitem"]'
@@ -368,7 +368,7 @@ function findBucket(buckets: JsonBucket[], id: string): JsonBucket | undefined {
 }
 
 async function build(nav: HTMLElement, item: HTMLElement): Promise<HTMLElement | undefined> {
-  const json = await load(nav.dataset.src ?? '')
+  const json = sidebarInventory(await load(nav.dataset.src ?? ''))
   // Restoration and a reader's toggle can await the same request.
   const existing = item.querySelector<HTMLElement>(':scope > [role="group"]')
   if (existing) return existing
