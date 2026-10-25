@@ -18,7 +18,7 @@ export { Resolver, notASymbol, toPath, DEFAULT_TEMPLATES, DEFAULT_PRIMARY_MODULE
 export type { Resolution, UrlTemplate } from './resolver.ts'
 export { qualifiedNameOf, moduleOf, modulesIn } from './modules.ts'
 export { CONCEPTS, conceptsFor, type Concept } from './concepts.ts'
-export { looksLikeApiMention, tableMentions, proseMentions, type TableMention, type ProseMention } from './mentions.ts'
+export { looksLikeApiMention, tableMentions, proseMentions, LinkedOwners, type TableMention, type ProseMention, type LinkedOwner } from './mentions.ts'
 export { parseHunks, mapLine, type Hunk } from './source-lines.ts'
 export * from './prose.ts'
 export { BUILTINS, builtinHref } from './builtins.ts'

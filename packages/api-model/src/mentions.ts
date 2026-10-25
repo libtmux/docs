@@ -94,6 +94,43 @@ const FENCE_PORT: Record<string, string> = {
   elixir: 'elixir', ex: 'elixir', exs: 'elixir',
 }
 
+/** A symbol that a link on a page names. */
+export interface LinkedOwner {
+  port: string
+  symbol: string
+}
+
+/**
+ * The owners that links earlier on one page gave a name, so the same name
+ * written bare later keeps it.
+ *
+ * A name is kept apart by the port section its link was written in: a link in
+ * the C# section says nothing about the same word in the PowerShell section of
+ * a shared page. A name that earlier links gave two different owners stays
+ * unresolved, because the page has not said which one a bare use means.
+ */
+export class LinkedOwners {
+  private readonly owners = new Map<string, Map<string, LinkedOwner>>()
+
+  private static key(port: string | undefined, text: string): string {
+    return `${port ?? ''}\0${text}`
+  }
+
+  /** Record the owner that a link in `port`'s text gave `text`. */
+  link(port: string | undefined, text: string, owner: LinkedOwner): void {
+    const key = LinkedOwners.key(port, text)
+    const owners = this.owners.get(key) ?? new Map<string, LinkedOwner>()
+    owners.set(`${owner.port}\0${owner.symbol}`, owner)
+    this.owners.set(key, owners)
+  }
+
+  /** The one owner earlier links in `port`'s text gave `text`, or undefined when there is none or there are several. */
+  recur(port: string | undefined, text: string): LinkedOwner | undefined {
+    const owners = this.owners.get(LinkedOwners.key(port, text))
+    return owners?.size === 1 ? [...owners.values()][0] : undefined
+  }
+}
+
 /** Inline references in prose, including port sections, tables, and existing links. */
 export function proseMentions(markdown: string, portByLabel: Record<string, string>, portAt?: (offset: number) => string | undefined): ProseMention[] {
   const out: ProseMention[] = []

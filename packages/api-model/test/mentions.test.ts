@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { proseMentions } from '../src/mentions.ts'
+import { LinkedOwners, proseMentions, type LinkedOwner } from '../src/mentions.ts'
 import { isLikelyReference, notApiReason } from '../src/prose.ts'
 
 const LABELS = { Python: 'py', TypeScript: 'ts', Go: 'go' }
@@ -109,5 +109,59 @@ describe('spans that are code but not API', () => {
     for (const text of ['Server.panes', 'LibTmux.Server', 'v3.3a', '3.3a.Server', 'Version.next', 'TmuxVersion.V3_3a']) {
       expect(notApiReason(text), text).toBeUndefined()
     }
+  })
+})
+
+describe('a name that earlier links on the page gave an owner', () => {
+  const WAIT: LinkedOwner = { port: 'csharp', symbol: 'LibTmux.PaneWaitOutcome.PaneExited' }
+  const RUN: LinkedOwner = { port: 'csharp', symbol: 'LibTmux.PaneRunResult.PaneExited' }
+  const OWNERS: Record<string, LinkedOwner> = { '/csharp/latest/reference/wait/': WAIT, '/csharp/latest/reference/run/': RUN }
+
+  /** Replay a page as scripts/gen-mentions.mjs does: a link records its owner, and a bare name asks for it. */
+  function recurrences(source: string, portAt?: (offset: number) => string | undefined) {
+    const owners = new LinkedOwners()
+    return proseMentions(source, LABELS, portAt).flatMap((mention) => {
+      if (mention.linked) {
+        const owner = OWNERS[mention.href ?? '']
+        if (owner) owners.link(mention.port, mention.text, owner)
+        return []
+      }
+      return [{ text: mention.text, owner: owners.recur(mention.port, mention.text) }]
+    })
+  }
+
+  it('keeps that owner when the name recurs bare in the same section', () => {
+    const source = '[`PaneExited`](/csharp/latest/reference/wait/) is a result. A killed server ends as `PaneExited`.'
+    expect(recurrences(source)).toEqual([{ text: 'PaneExited', owner: WAIT }])
+  })
+
+  it('keeps a link in one port section from naming the same word in another', () => {
+    const source = '[`PaneExited`](/csharp/latest/reference/wait/) is a result.\n\nA killed server ends as `PaneExited`.'
+    const split = source.indexOf('\n\n')
+    const sections = (offset: number) => (offset < split ? 'csharp' : 'powershell')
+    expect(recurrences(source, sections)).toEqual([{ text: 'PaneExited', owner: undefined }])
+    expect(recurrences(source, () => 'csharp')).toEqual([{ text: 'PaneExited', owner: WAIT }])
+  })
+
+  it('does not choose between two owners that links gave the name', () => {
+    const both = '[`PaneExited`](/csharp/latest/reference/wait/) and [`PaneExited`](/csharp/latest/reference/run/) then `PaneExited`.'
+    expect(recurrences(both)).toEqual([{ text: 'PaneExited', owner: undefined }])
+    const twice = '[`PaneExited`](/csharp/latest/reference/wait/) and [`PaneExited`](/csharp/latest/reference/wait/) then `PaneExited`.'
+    expect(recurrences(twice)).toEqual([{ text: 'PaneExited', owner: WAIT }])
+  })
+
+  it('gives no owner to a bare name that comes before its link, or whose link has no owner', () => {
+    const before = 'A killed server ends as `PaneExited`. [`PaneExited`](/csharp/latest/reference/wait/) is a result.'
+    expect(recurrences(before)).toEqual([{ text: 'PaneExited', owner: undefined }])
+    const unowned = '[`PaneExited`](https://example.org/outcome) is a result. A killed server ends as `PaneExited`.'
+    expect(recurrences(unowned)).toEqual([{ text: 'PaneExited', owner: undefined }])
+  })
+
+  it('tells names apart by their text', () => {
+    const owners = new LinkedOwners()
+    owners.link('csharp', 'PaneExited', WAIT)
+    expect(owners.recur('csharp', 'PaneExited')).toBe(WAIT)
+    expect(owners.recur('csharp', 'PollingFallback')).toBeUndefined()
+    expect(owners.recur(undefined, 'PaneExited')).toBeUndefined()
   })
 })

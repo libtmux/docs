@@ -3,7 +3,7 @@
 import { existsSync, globSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Resolver, parentInventory, decideMention, isLikelyReference, notASymbol, notApiReason, proseMentions, pageSlug } from '../packages/api-model/src/index.ts'
+import { Resolver, parentInventory, decideMention, isLikelyReference, notASymbol, notApiReason, proseMentions, LinkedOwners, pageSlug } from '../packages/api-model/src/index.ts'
 import { isLocale } from '../site/src/i18n/locales.ts'
 import { isTmuxProse } from '../site/src/lib/docs-paths.ts'
 
@@ -184,7 +184,7 @@ for (const { file, source } of [...realEntries, ...sharedWorkspaceEntries(realFi
 
   const selected = resolvePortContent(source, authoredPort)
   // A name the page already linked keeps that owner when it recurs bare.
-  const linkedHere = new Map()
+  const linkedHere = new LinkedOwners()
   for (const { port: contextPort, text, line, before, linked, href } of proseMentions(selected.body, PORT_BY_LABEL, selected.portAt)) {
     const pagePort = authoredPort ?? contextPort
     if (!linked && nativeTmux) continue
@@ -192,11 +192,11 @@ for (const { file, source } of [...realEntries, ...sharedWorkspaceEntries(realFi
     let target
     if (linked) {
       target = authoredTarget(href, page)
-      if (target && !linkedHere.has(text)) linkedHere.set(text, target)
+      if (target) linkedHere.link(contextPort, text, target)
     } else {
       const decision = decideMention(text, { pagePort, product, before }, resolver, models)
       if (decision.kind !== 'link') {
-        const authored = decision.kind === 'unresolved' ? linkedHere.get(text) : undefined
+        const authored = decision.kind === 'unresolved' ? linkedHere.recur(contextPort, text) : undefined
         if (!authored) {
           if (decision.kind === 'unresolved' && pagePort && isLikelyReference(text) && !notApiReason(text)) {
             dangling.push({ port: pagePort, text, page, line, why: decision.why })
