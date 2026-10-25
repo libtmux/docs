@@ -317,16 +317,18 @@ describe('native Sphinx declarations', () => {
     for (; depth > 0 && end < css.length; end++) depth += css[end] === '{' ? 1 : css[end] === '}' ? -1 : 0
     return unlayer(css.slice(0, start) + css.slice(inner, end - 1) + css.slice(end))
   }
-  // The published pages highlight a targeted declaration with this colour; the shell must not flatten it.
+  // The Furo sheet's own (important) rule that highlights a targeted declaration, with its theme colour.
   const highlight = 'rgb(255, 255, 204)'
-  const published = `${unlayer(sheet)}\ndl.py > dt:target { background: ${highlight}; }`
+  const furoTarget = readFileSync(new URL('./fixtures/native-furo-target.css', import.meta.url), 'utf8')
+  const published = `${unlayer(sheet)}\n${furoTarget}\nbody { --color-highlight-on-target: ${highlight}; }`
   const shellCss = (source = readFileSync(new URL('../src/styles/native-sphinx.css', import.meta.url), 'utf8')) => source
   const dt = (type: string, id: string, extra = '') => `<dt class="sig gp-sphinx-api-header" id="${id}"><div class="gp-sphinx-api-layout gp-sphinx-api-layout--desktop"><div class="gp-sphinx-api-layout-left"><div class="gp-sphinx-api-signature">f(\n  a,\n  b)</div><a class="headerlink gp-sphinx-api-link">&para;</a></div><div class="gp-sphinx-api-layout-right"><span class="gp-sphinx-api-badge-container"><span class="gp-sphinx-badge">${type}</span></span><span class="gp-sphinx-api-source-link"><a>[source]</a></span></div></div></dt>`
   const dl = (type: string, id: string, body = '') => `<dl class="py ${type} gp-sphinx-api-container">${dt(type, id)}<dd>${body}</dd></dl>`
   const page = dl('class', 'Outer', dl('method', 'Outer.run') + dl('class', 'Outer.Inner', dl('method', 'Outer.Inner.go'))) + dl('function', 'helper')
-  const open = (shell: boolean, css = shellCss(), width = 1024, hash = '') => {
+  const open = (shell: boolean, css = shellCss(), width = 1024, hash = '', marker = true) => {
     const win = new Window({ width, url: `https://libtmux.org/api/${hash}` })
     win.document.documentElement.toggleAttribute('data-native-shell', shell)
+    win.document.documentElement.toggleAttribute('data-native-class-rows', marker)
     win.document.head.innerHTML = `<style>${published}\n${css}</style>`
     win.document.body.innerHTML = `<article><section id="m">${page}</section></article>`
     const style = (id: string, selector?: string) => {
@@ -345,12 +347,12 @@ describe('native Sphinx declarations', () => {
       }
     } finally { void win.happyDOM.abort() }
   }
-  const sticky = (id: string, shell = true, css?: string, width?: number) => {
-    const { win, style } = open(shell, css, width)
+  const sticky = (id: string, shell = true, css?: string, width?: number, marker = true) => {
+    const { win, style } = open(shell, css, width, '', marker)
     try { const { position, top } = style(id); return { position, top } } finally { void win.happyDOM.abort() }
   }
-  const computed = (id: string, hash = '', css?: string, rowHeight?: string) => {
-    const { win, style } = open(true, css, 1024, hash)
+  const computed = (id: string, hash = '', css?: string, rowHeight?: string, marker = true) => {
+    const { win, style } = open(true, css, 1024, hash, marker)
     try {
       if (rowHeight) win.document.getElementById('Outer')!.closest('dl')!.style.setProperty('--native-class-row-height', rowHeight)
       const { backgroundColor, zIndex, scrollMarginTop } = style(id); return { backgroundColor, zIndex, scrollMarginTop } } finally { void win.happyDOM.abort() }
@@ -390,6 +392,31 @@ describe('native Sphinx declarations', () => {
     expect(sticky('Outer', true, without).position).not.toBe('sticky')
   })
 
+  it('pins only after the script has measured the rows', () => {
+    expect(sticky('Outer', true, undefined, undefined, false).position).not.toBe('sticky')
+    expect(computed('Outer.run', '', undefined, '98px', false).scrollMarginTop).not.toContain('98px')
+    const ungated = shellCss().replaceAll('[data-native-class-rows]', '')
+    expect(ungated).not.toBe(shellCss())
+    expect(sticky('Outer', true, ungated, undefined, false).position).toBe('sticky')
+    expect(computed('Outer.run', '', ungated, '98px', false).scrollMarginTop).toContain('98px')
+  })
+
+  it('pins at widths between 48em and 1024px', () => {
+    expect(sticky('Outer', true, undefined, 900).position).toBe('sticky')
+    expect(sticky('Outer', true, undefined, 769).position).toBe('sticky')
+    const raised = shellCss().replace('min-width: 48.01em', 'min-width: 64.01em')
+    expect(raised).not.toBe(shellCss())
+    expect(sticky('Outer', true, raised, 900).position).not.toBe('sticky')
+  })
+
+  it('leaves the gap below the pinned row that the shell scroll padding implies', () => {
+    const css = shellCss()
+    const padding = Number(css.match(/scroll-padding-top: calc\(var\(--native-header-height\) \+ ([\d.]+)rem\)/)?.[1])
+    const subtracted = Number(css.match(/calc\(var\(--native-class-row-height, 0px\) - ([\d.]+)rem\)/)?.[1])
+    // An anchored member sits at header + padding + (row - subtracted); the row ends at header + row.
+    expect(padding - subtracted).toBeCloseTo(0.5, 5)
+  })
+
   it('hides what scrolls beneath the pinned row and stays under the 40 of the site header', () => {
     const rule = shellCss().match(/dt\.gp-sphinx-api-header:not\(:target\) \{\s*background-color: color-mix\(in srgb, var\(--background-color\), var\(--text-color\) (\d+)%\);/)
     expect(rule, 'the pinned row mixes two opaque page colours').not.toBeNull()
@@ -404,16 +431,30 @@ describe('native Sphinx declarations', () => {
 
   describe('target highlight on the pinned row', () => {
     // happy-dom cannot resolve color-mix, so the fill is swapped for a plain colour.
-    const plain = (css: string) => css.replace(/color-mix\([^;]*\)/g, 'rgb(10, 20, 30)')
-    it('is kept while the row is the target and fills otherwise', () => {
+    const fill = 'rgb(10, 20, 30)'
+    const plain = (css: string) => css.replace(/color-mix\([^;]*\)/g, fill)
+    const withoutFuro = (hash: string, css: string) => {
+      const { win, style } = open(true, css, 1024, hash)
+      try {
+        for (const sheetElement of win.document.querySelectorAll('style')) sheetElement.textContent = `${unlayer(sheet)}\n${css}`
+        return style('Outer').backgroundColor
+      } finally { void win.happyDOM.abort() }
+    }
+
+    it('shows the published highlight on a targeted row and the fill otherwise', () => {
       expect(computed('Outer', '#Outer', plain(shellCss())).backgroundColor).toBe(highlight)
-      expect(computed('Outer', '', plain(shellCss())).backgroundColor).toBe('rgb(10, 20, 30)')
+      expect(computed('Outer', '', plain(shellCss())).backgroundColor).toBe(fill)
+    })
+
+    it('never applies the fill to the target', () => {
+      expect(withoutFuro('#Outer', plain(shellCss()))).not.toBe(fill)
+      expect(withoutFuro('', plain(shellCss()))).toBe(fill)
     })
 
     it('fails when the fill no longer excludes the target', () => {
       const flattened = shellCss().replace(/dt\.gp-sphinx-api-header:not\(:target\) \{\s*background-color/, 'dt.gp-sphinx-api-header {\n    background-color')
       expect(flattened).not.toBe(shellCss())
-      expect(computed('Outer', '#Outer', plain(flattened)).backgroundColor).toBe('rgb(10, 20, 30)')
+      expect(withoutFuro('#Outer', plain(flattened))).toBe(fill)
     })
   })
 
@@ -428,18 +469,18 @@ describe('native Sphinx declarations', () => {
 
   describe('row measuring script', () => {
     const script = readFileSync(new URL('../src/components/docs/NativeSphinxScript.astro', import.meta.url), 'utf8')
-    const run = (source: string, heights: Record<string, number>) => {
+    const run = (source: string, heights: Record<string, number>, options: { html?: string; observer?: boolean } = {}) => {
       const win = new Window({ url: 'https://libtmux.org/api/' })
       const observed: { callback: () => void; rows: Element[] }[] = []
       Object.assign(win, {
         layoutBeforeAppearance: (work: () => void) => work(),
-        ResizeObserver: class { rows: Element[] = []; constructor(callback: () => void) { observed.push({ callback, rows: this.rows }) }
-          observe(row: Element) { this.rows.push(row) }; disconnect() {} },
+        ...options.observer === false ? { ResizeObserver: undefined } : { ResizeObserver: class { rows: Element[] = []; constructor(callback: () => void) { observed.push({ callback, rows: this.rows }) }
+          observe(row: Element) { this.rows.push(row) }; disconnect() {} } },
       })
       win.HTMLElement.prototype.getBoundingClientRect = function (this: HTMLElement) {
         return new win.DOMRect(0, 0, 400, heights[this.id] ?? 0)
       }
-      win.document.body.innerHTML = `<article><section>${page}</section></article>`
+      win.document.body.innerHTML = `<article><section>${options.html ?? page}</section></article>`
       win.eval(ts.transpileModule(source.replace(/^  import .*$/gm, ''), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText)
       return { win, observed, height: (id: string) => win.document.getElementById(id)!.closest('dl')!.style.getPropertyValue('--native-class-row-height') }
     }
@@ -449,6 +490,7 @@ describe('native Sphinx declarations', () => {
       const heights = { Outer: 39.4, 'Outer.Inner': 70, 'Outer.run': 30, helper: 30 }
       const { win, observed, height } = run(body, heights)
       try {
+        expect(win.document.documentElement.hasAttribute('data-native-class-rows')).toBe(true)
         expect(height('Outer')).toBe('39.4px')
         expect(height('Outer.Inner')).toBe('')
         expect(height('helper')).toBe('')
@@ -458,6 +500,30 @@ describe('native Sphinx declarations', () => {
         observed[0].callback()
         expect(height('Outer')).toBe('98px')
       } finally { void win.happyDOM.abort() }
+    })
+
+    it('still marks the page when a class has no declaration row', () => {
+      const { win, observed } = run(body, {}, { html: '<dl class="py class gp-sphinx-api-container"><dd>Body</dd></dl>' })
+      try {
+        expect(win.document.documentElement.hasAttribute('data-native-class-rows')).toBe(true)
+        expect(win.document.querySelector('dl')!.style.getPropertyValue('--native-class-row-height')).toBe('')
+        expect(observed).toHaveLength(0)
+      } finally { void win.happyDOM.abort() }
+    })
+
+    it('measures once without ResizeObserver', () => {
+      const { win, height } = run(body, { Outer: 52 }, { observer: false })
+      try {
+        expect(height('Outer')).toBe('52px')
+        expect(win.document.documentElement.hasAttribute('data-native-class-rows')).toBe(true)
+      } finally { void win.happyDOM.abort() }
+    })
+
+    it('fails when the script no longer marks the page', () => {
+      const broken = body.replace("document.documentElement.setAttribute('data-native-class-rows', '')", '')
+      expect(broken).not.toBe(body)
+      const { win } = run(broken, { Outer: 39.4 })
+      try { expect(win.document.documentElement.hasAttribute('data-native-class-rows')).toBe(false) } finally { void win.happyDOM.abort() }
     })
 
     it('fails when the script no longer measures the rows', () => {

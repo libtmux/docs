@@ -165,6 +165,7 @@
       for (const { owner, row } of classRows) owner.style.setProperty('--native-class-row-height', `${row.getBoundingClientRect().height}px`)
     }
     measureClassRows()
+    document.documentElement.setAttribute('data-native-class-rows', '')
     layoutBeforeAppearance(measureClassRows)
     if (typeof ResizeObserver === 'function' && classRows.length) {
       const rowObserver = new ResizeObserver(measureClassRows)
