@@ -1,24 +1,26 @@
 ---
 import TableOfContentsIcon from '../icons/TableOfContentsIcon.astro'
-interface Props { tableOfContents?: boolean; native?: boolean }
-const { tableOfContents = false, native = false } = Astro.props
+interface Props { tableOfContents?: boolean; native?: boolean; api?: boolean }
+const { tableOfContents = false, native = false, api = false } = Astro.props
 const Control = native ? 'label' : 'button'
+const SidebarControl = api ? 'button' : Control
 ---
-    <Control
-      id="mobile-sidebar-toggle"
-      type={native ? undefined : 'button'}
-      for={native ? '__navigation' : undefined}
-      role={native ? 'button' : undefined}
-      tabindex={native ? 0 : undefined}
+    <SidebarControl
+      id={api ? undefined : 'mobile-sidebar-toggle'}
+      data-api-nav-toggle={api || undefined}
+      type={native && !api ? undefined : 'button'}
+      for={native && !api ? '__navigation' : undefined}
+      role={native && !api ? 'button' : undefined}
+      tabindex={native && !api ? 0 : undefined}
       aria-label="Open navigation menu"
-      aria-controls={native ? 'native-navigation' : 'mobile-sidebar'}
+      aria-controls={api ? 'api-nav' : native ? 'native-navigation' : 'mobile-sidebar'}
       aria-expanded="false"
-      class:list={['toolbar-button', !native && 'documentation-sidebar-toggle']}
+      class:list={['toolbar-button', api ? 'reference-sidebar-toggle' : !native && 'documentation-sidebar-toggle']}
     >
       <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
       </svg>
-    </Control>
+    </SidebarControl>
     {
       tableOfContents && (
         <Control
@@ -41,4 +43,5 @@ const Control = native ? 'label' : 'button'
   .toolbar-button:hover { background: var(--color-surface-hover); }
   .toolbar-button:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
   @media (min-width: 64rem) { .documentation-sidebar-toggle { display: none; } }
+  @media (min-width: 56rem) { .reference-sidebar-toggle { display: none; } }
 </style>

@@ -491,6 +491,35 @@
           "sha256": "cd35444c4d85ba5411c9bebbcc89a552cf346efe414502078d9a338d5c89f44e"
         }
       ]
+    },
+    {
+      "port": "elixir",
+      "language": "elixir",
+      "sourceRevision": "b72452c198917433229bdc266a68c163541b6127",
+      "sourceRepository": "libtmux/libtmux-elixir",
+      "toolchain": [
+        "Elixir 1.20.4",
+        "Erlang/OTP 29.1.2"
+      ],
+      "page": "ports/elixir/guides/attaching-to-tmux",
+      "shellRecipe": [
+        "sh run.sh elixir connect.exs"
+      ],
+      "expectedOutputs": [
+        [
+          "work"
+        ]
+      ],
+      "files": [
+        {
+          "name": "connect.exs",
+          "sha256": "75ce60ad895fd506eabf88108abd51d3af2f882d62d035fbacd9ff9c90c43e62"
+        },
+        {
+          "name": "run.sh",
+          "sha256": "06102da59a219f3ade2c03eb92eda1056107bce3f4e0056580d72f76324f3b82"
+        }
+      ]
     }
   ],
   "rootExample": {

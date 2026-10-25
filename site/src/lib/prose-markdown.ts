@@ -17,6 +17,8 @@ interface MarkdownLinkProjection {
   resolved?: (href: string) => string
   /** Authored links need the ownership region and the selected build version. */
   authored?: (href: string, owner?: string) => string
+  /** False when `port` is only the port of the build and the page itself, a shared one, does not say its language. */
+  portSaid?: boolean
 }
 
 /** Add resolved links without reserializing prose or executable examples. */
@@ -101,7 +103,8 @@ export function linkProseMarkdown(raw: string, port?: string, product?: ApiProdu
   })
   for (const mention of proseMentions(body, PORT_BY_LABEL, portAt)) {
     if (!spans.has(mention.start)) continue
-    const decision = link(mention.text, { pagePort: portAt(mention.start) ?? port ?? mention.port, before: mention.before })
+    // As on the rendered page: a slot or a page that names its port says its language; the port of the build alone does not.
+    const decision = link(mention.text, { pagePort: portAt(mention.start) ?? port ?? mention.port, before: mention.before, languageSaid: Boolean(portAt(mention.start)) || project.portSaid !== false })
     if (decision.kind !== 'link') continue
     // Angle destinations preserve balanced punctuation in API slugs.
     const href = (project.resolved?.(decision.href) ?? decision.href).replaceAll('<', '%3C').replaceAll('>', '%3E')

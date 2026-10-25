@@ -1,11 +1,12 @@
 import type { ApiModel, ApiSymbol, Signature, SourceApiModel, SymbolIndex } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { toMarkdown } from 'mdast-util-to-markdown'
-import { boundLabel, keywordArgument, membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model'
+import { boundLabel, membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { PORT_NAME, referenceAlternatives } from './api-models'
 import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasScalarMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from './tmux-manual-data'
+import { tmuxCommandItems, tmuxCommandRows, tmuxCommandSeparator, tmuxSymbolSends, type ResolvedUsage } from './tmux-reference'
 import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl } from './tmux-catalog'
 import { tmuxCommandMentions, tmuxMentionMarkdown } from './tmux-links'
 import { productApiIndex } from './product-api'
@@ -31,6 +32,8 @@ export interface MarkdownContext {
   index?: SymbolIndex
   hrefFor?: (symbol: ApiSymbol) => string
   manualLinks?: { name: string; href: string }[]
+  /** The library methods that send the command a C declaration implements. */
+  usage?: ResolvedUsage[]
   catalogLinks?: { name: string; href: string }[]
   paths?: ApiRelationshipPath[]
   symbol: ApiSymbol
@@ -66,6 +69,21 @@ function inlineCode(code: string): string {
   return `${fence}${pad}${code}${pad}${fence}`
 }
 
+/** A reference as Markdown, linked as the page links it: whole when it resolves, by the names in its literal when it does not. */
+function referenceMarkdown(span: { label: string; link?: { href: string }; parts?: { text: string; link?: { href: string } }[] }): string | undefined {
+  if (span.link) return `[${inlineCode(span.label)}](${span.link.href})`
+  if (!span.parts?.some((part) => part.link)) return undefined
+  let plain = ''
+  let linked = ''
+  for (const part of span.parts) {
+    if (!part.link) { plain += part.text; continue }
+    if (plain) { linked += inlineCode(plain); plain = '' }
+    linked += `[${inlineCode(part.text)}](${part.link.href})`
+  }
+  if (plain) linked += inlineCode(plain)
+  return linked
+}
+
 function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, linkApi: boolean): string {
   if (!linkApi && !/\btmux\s|[-_]/.test(markdown)) return markdown
   // Use the HTML resolver for prose exports too. Never rewrite runnable code
@@ -96,29 +114,15 @@ function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, 
       }
       if (!linkApi) return
       if (node.type === 'inlineCode') {
-        if (keywordArgument.test(node.value)) return
-        if (!index.linkText(markdown.slice(start, end), symbol).some((span) => span.kind === 'ref')) return
-        const link = index.resolve(node.value, 'any', symbol)
-        if (link) edits.push({ start, end, text: `[${inlineCode(node.value)}](${link.href})` })
-        else {
-          const parts = index.linkType(node.value, symbol)
-          if (parts.some((part) => part.link)) {
-            let plain = ''
-            let linked = ''
-            for (const part of parts) {
-              if (!part.link) { plain += part.text; continue }
-              if (plain) { linked += inlineCode(plain); plain = '' }
-              linked += `[${inlineCode(part.text)}](${part.link.href})`
-            }
-            if (plain) linked += inlineCode(plain)
-            edits.push({ start, end, text: linked })
-          }
-        }
+        // The span the page links: `docSpans` is what `ApiDoc` renders, so a name the page leaves plain stays plain here.
+        const reference = index.docSpans(markdown.slice(start, end), symbol).find((span) => span.kind === 'ref')
+        const linked = reference?.kind === 'ref' ? referenceMarkdown(reference) : undefined
+        if (linked) edits.push({ start, end, text: linked })
       } else if (markdown.slice(start, end) === node.value) {
-        const spans = index.linkText(node.value, symbol)
-        if (spans.some((span) => span.kind === 'ref' && span.link)) edits.push({ start, end,
-          text: spans.map((span) => span.kind === 'ref' && span.link
-            ? `[${inlineCode(span.label)}](${span.link.href})` : 'text' in span ? span.text : span.label).join('') })
+        const spans = index.docSpans(node.value, symbol)
+        const linked = spans.map((span) => (span.kind === 'ref' ? referenceMarkdown(span) : undefined))
+        if (linked.some(Boolean)) edits.push({ start, end,
+          text: spans.map((span, i) => linked[i] ?? ('text' in span ? span.text : span.label)).join('') })
       }
     } else if ('children' in node) for (const child of node.children) visit(child as Parameters<typeof visit>[0])
   }
@@ -132,6 +136,18 @@ function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, 
 export async function symbolMarkdownWithLayout(ctx: MarkdownContext): Promise<string> {
   const language = 'language' in ctx.model ? ctx.model.language : ctx.model.port
   return symbolMarkdown({ ...ctx, signatureLayouts: await apiSignatureLayouts(ctx.symbol, language) })
+}
+
+/** The methods that send a command, one line per scope. */
+function usageMarkdown(usage: ResolvedUsage): string[] {
+  const lines = [`These methods send [\`${usage.command}\`](${usage.manualHref}):`, '']
+  for (const group of usage.groups) {
+    const flag = group.scope && (group.scope.flag || group.scope.target) ? ` \`-${group.scope.flag || group.scope.target}\`` : ''
+    const target = group.function ? ` ([\`${group.function.name}\`](${group.function.href}))` : ''
+    const ports = group.ports.map((entry) => `${entry.name}: ${entry.links.map((link) => `[\`${link.label}\`](${link.href})`).join(', ')}`)
+    lines.push(`- ${group.scope?.label ?? 'Any scope'}${flag}${target}: ${ports.join('; ')}`)
+  }
+  return lines
 }
 
 export function symbolMarkdown(ctx: MarkdownContext): string {
@@ -177,6 +193,13 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   if (facts.length) out.push(...facts, '')
   const commands = ctx.manualLinks ?? (port ? tmuxCommandsFor(port, symbol.publicId ?? symbol.id)
     .map((command) => ({ ...command, href: tmuxManualUrl('latest', command.name) })) : [])
+  for (const send of port && !ctx.manualLinks ? tmuxSymbolSends(port, symbol.publicId ?? symbol.id) : []) {
+    // The same items as the method page: each scope names the command and then its C function, set apart by a comma, and
+    // the scopes by a semicolon. A condition follows the scope it holds for.
+    const items = tmuxCommandItems(tmuxCommandRows([send], []))
+    const written = items.map((item) => `[\`${item.command}\`](${item.href})${item.scope ? ` ${item.scope.label.toLowerCase()} scope${item.function ? `, [\`${item.function.name}\`](${item.function.href})` : ''}` : ''}${item.when ? ` (${item.when})` : ''}`)
+    out.push(`tmux command: ${written.join(tmuxCommandSeparator(items))}`, '')
+  }
   for (const command of commands) out.push(`tmux command: [\`${command.name}\`](${command.href})`, '')
   const catalog = ctx.catalogLinks ?? (port && !ctx.manualLinks ? tmuxCatalogKindsForSymbol(port, symbol)
     .map((kind) => ({ name: CATALOG_KINDS[kind].label, href: tmuxCatalogUrl('latest', kind) })) : [])
@@ -362,6 +385,11 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
       }
       out.push('')
     }
+  }
+
+  if (ctx.usage?.length) {
+    out.push('## In libtmux', '')
+    for (const entry of ctx.usage) out.push(...usageMarkdown(entry), '')
   }
 
   // One trailing newline, so the file ends the way a text file should.

@@ -71,7 +71,7 @@ settings](../../configuration/environment/) for environment bindings and
 | `-d` | flag; False | load the session without attaching it |
 | `-a`, `--append` | flag; False | load workspace, appending windows to the current session |
 | `-2` | flag; None | force tmux to assume the terminal supports 256 colours. |
-| `-8` | flag; None | legacy 88-colour flag; unsupported by tmux 3.2a+ |
+| `-8` | flag; None | legacy 88-colour flag; unsupported since tmux 3.2a |
 | `--log-file` | value; None | file to log errors/output to |
 | `--progress-format` | value; None | Spinner line format: preset name (default, minimal, window, pane, verbose) or a format string with tokens {session}, {window}, {progress}, {window_progress}, {pane_progress}, etc. Env: TMUXP_PROGRESS_FORMAT |
 | `--progress-lines` | value; None | Number of script-output lines shown in the spinner panel (default: 3). 0 hides the panel entirely (script output goes to stdout). -1 shows unlimited lines (capped to terminal height). Env: TMUXP_PROGRESS_LINES |

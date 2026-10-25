@@ -50,7 +50,11 @@ interface Props {
   /** Include this page in the local search index. */
   searchable?: boolean
   updated?: string
-  /** Suppress the site header, for embedded/preview renders. */
+  /**
+   * Suppress the site header, notice and footer navigation, for embedded/preview
+   * renders. The footer keeps its page-source line: every page names its source
+   * and links its Markdown, docs.json and llms files.
+   */
   bare?: boolean
   /** BCP-47 tag for this page. Drives <html lang> and the hreflang cluster. */
   locale?: string
@@ -270,7 +274,7 @@ const inventoryPage: InventoryPage = {
       <div data-pagefind-filter={`section:${section}`} data-pagefind-ignore="all" hidden></div>
       <slot />
     </div>
-    {!bare && <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} port={portSlug} version={target.version} pagePath={pagePath} githubUrl={githubUrl} flush={flush} />}
+    <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} port={portSlug} version={target.version} pagePath={pagePath} githubUrl={githubUrl} flush={flush} compact={bare} />
     <BackToTop />
     <SearchModal port={navPort} version={navVersion} />
     <LinkPreview />

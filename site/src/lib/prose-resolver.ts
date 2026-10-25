@@ -25,6 +25,7 @@ import scalaPaths from '../data/api/scala.paths.json'
 import fsharpPaths from '../data/api/fsharp.paths.json'
 import powershellPaths from '../data/api/powershell.paths.json'
 import juliaPaths from '../data/api/julia.paths.json'
+import elixirPaths from '../data/api/elixir.paths.json'
 
 /** Language labels used by shared prose headings and comparison rows. */
 export const PORT_BY_LABEL: Record<string, string> = Object.fromEntries(
@@ -37,10 +38,10 @@ const PATHS: Record<string, { repo: string; revision: string; paths: string[] }>
   py: pyPaths, ruby: rubyPaths, lua: luaPaths, ts: tsPaths, rs: rsPaths,
   go: goPaths, java: javaPaths, csharp: csharpPaths, cxx: cxxPaths,
   swift: swiftPaths, kotlin: kotlinPaths, scala: scalaPaths, fsharp: fsharpPaths,
-  powershell: powershellPaths, julia: juliaPaths,
+  powershell: powershellPaths, julia: juliaPaths, elixir: elixirPaths,
 }
 const TREES = Object.fromEntries(Object.entries(PATHS).map(([port, data]) => [port, new Set(data.paths)]))
-const FILE_RE = /^[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|cpp|hpp|h|swift|jl|ps1|psm1|psd1|md|toml|json|ya?ml|sh)$/
+const FILE_RE = /^[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|cpp|hpp|h|swift|jl|ex|exs|ps1|psm1|psd1|md|toml|json|ya?ml|sh)$/
 
 type ProseDecision = MentionDecision & { file?: boolean }
 
@@ -49,7 +50,7 @@ export function createProseLinker(product?: ApiProduct) {
   const resolver = getResolver()
   const versionOf = (port: string) => linkedVersionFor(port)
 
-  return (text: string, context: Pick<MentionContext, 'pagePort' | 'before'>): ProseDecision => {
+  return (text: string, context: Pick<MentionContext, 'pagePort' | 'before' | 'languageSaid'>): ProseDecision => {
     let protocol = decideMcpMention(text, { ...context, product })
     // Markdown encodes URI-template braces; literal registrations still win.
     if (protocol?.kind === 'unresolved' && text.startsWith('mcp:')) {

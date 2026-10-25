@@ -1119,18 +1119,21 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 }
 
 /*
- * The current port's GitHub, package and reference menus, at the height of the
- * search, colour and menu controls. Each is a picker (documentation-picker.css)
- * whose trigger is a chip like its neighbours; the label shows from 70rem and
- * the mark alone, with its accessible name, carries the 48rem to 70rem range.
+ * The current port's repository, package host and API reference, then the
+ * disclosure that lists every other destination, at the height of the search,
+ * colour and menu controls. The links and the disclosure's trigger are chips
+ * of one shape; the label shows from 80rem and the mark alone, with its
+ * accessible name, carries the 48rem to 80rem range. The disclosure is a
+ * picker (documentation-picker.css).
  */
-.site-header__pickers {
+.site-header__destinations {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex: none;
 }
 
+.site-header .header-link,
 .site-header .header-picker > summary {
   box-sizing: border-box;
   height: 1.75rem;
@@ -1145,6 +1148,15 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   line-height: 1;
 }
 
+.site-header .header-link {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.site-header .header-link:is(:hover, :focus-visible),
 .site-header .header-picker > summary:is(:hover, :focus-visible),
 .site-header .header-picker[open] > summary {
   background: color-mix(in oklab, var(--topnav-background), var(--topnav-text-color) 16%);
@@ -1155,17 +1167,24 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   margin-left: 0;
 }
 
+/* A chip with a mark is self-explanatory, and the hint's glyph would widen a bar with no room. */
+.site-header a.header-link[data-external-link]::after {
+  content: none;
+}
+
 /* The brand colour arrives on interaction, as on the links in a port's hero. */
+.site-header .header-link:is(:hover, :focus-visible) .registry-icon,
 .site-header .header-picker > summary:is(:hover, :focus-visible) .registry-icon {
   color: var(--icon-brand);
 }
 
+html[data-theme-mode='dark'] .site-header .header-link:is(:hover, :focus-visible) .registry-icon,
 html[data-theme-mode='dark'] .site-header .header-picker > summary:is(:hover, :focus-visible) .registry-icon {
   color: var(--icon-brand-dark);
 }
 
 /* A panel with no script hangs from its trigger's right edge, never off the viewport. */
-.site-header__pickers .header-picker:not([data-enhanced]) > .doc-picker-panel {
+.site-header__destinations .header-picker:not([data-enhanced]) > .doc-picker-panel {
   left: auto;
   right: 0;
 }
@@ -1322,7 +1341,7 @@ html[data-theme-mode='dark'] .site-header .header-picker > summary:is(:hover, :f
 }
 
 /* A scripted picker floats over the page, so opening one leaves the row alone. */
-.site-header__panel-pickers:has(details[open][data-enhanced]) {
+.site-header__panel-destinations:has(details[open][data-enhanced]) {
   flex-direction: row;
   align-items: center;
 }
@@ -1371,19 +1390,21 @@ html[data-theme-mode='dark'] .site-header .header-picker > summary:is(:hover, :f
 }
 
 /*
- * The menu triggers do not fit a phone bar beside the wordmark, search, colour
- * and menu controls: the no-script colour switch alone is wider than the space
- * they would need. The Menu panel holds a second copy below 48rem and the bar
- * holds the menus from there, so exactly one copy is displayed and focusable.
+ * The links and the disclosure do not fit a phone bar beside the wordmark,
+ * search, colour and menu controls: the no-script colour switch alone is wider
+ * than the space they would need. The Menu panel holds a second copy below
+ * 48rem and the bar holds them from there, so exactly one copy is displayed
+ * and focusable.
  */
 @media (max-width: 47.999rem) {
-  .site-header__pickers { display: none; }
+  .site-header__destinations { display: none; }
 }
 @media (min-width: 48rem) {
-  .site-header__panel-pickers { display: none; }
+  .site-header__panel-destinations { display: none; }
 }
-@media (max-width: 69.999rem) {
-  .site-header__pickers .header-picker__label { display: none; }
+/* A host's name is longer than the word it replaces, so the labels wait for more room than the search label does. */
+@media (max-width: 79.999rem) {
+  .site-header__destinations :is(.header-link__label, .header-picker__label) { display: none; }
 }
 @media (max-width: 95.999rem) {
   .site-header__menu-label { display: none; }

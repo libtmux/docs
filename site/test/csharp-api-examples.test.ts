@@ -9,6 +9,22 @@ import { symbolMarkdown } from '../src/lib/symbol-markdown'
 const model = data as unknown as ApiModel
 const examples = receipt.examples.filter((example) => example.port === 'csharp')
 const hash = (code: string) => createHash('sha256').update(code).digest('hex')
+/**
+ * The released InputCapture program carries one comment line past the 100-column example limit. The limit
+ * is waived for that line, at that length, in that program at that source revision, so a second wide
+ * comment or a new pin is checked again.
+ */
+const WAIVED = {
+  programId: 'csharp-InputCapture',
+  revision: '0e25b51502c3a3879325aa0dbc1868f5940b233f',
+  line: '// PS1 rides on the command because a non-interactive bash default-shell drops it from the environment.',
+  length: 103,
+}
+const commentLines = (code: string) => code.split('\n').filter((line) => /^\s*\/\//.test(line))
+/** The comment lines of a displayed program that are wider than an example comment may be. */
+const tooWide = (code: string, programId: string, revision: string) => commentLines(code).filter((line) =>
+  line.length > 100 && !(programId === WAIVED.programId && revision === WAIVED.revision
+    && line === WAIVED.line && line.length === WAIVED.length))
 
 describe('verified complete C# API programs', () => {
   it('covers all native targets while grouping native overloads onto their existing pages', () => {
@@ -53,9 +69,7 @@ describe('verified complete C# API programs', () => {
       expect(block.sourceUrl).toBe(`https://github.com/${model.repo}/blob/${example.sourceRevision}/${file.sourceFile}`)
       expect(markdown).toContain(`[Source example](${block.sourceUrl}).`)
       expect(block.intro).toContain(file.path)
-      for (const line of block.code.split('\n').filter((line) => /^\s*\/\//.test(line))) {
-        expect(line.length).toBeLessThanOrEqual(100)
-      }
+      expect(tooWide(block.code, example.sourceProgramId, example.sourceRevision), `${example.symbol}/${file.path}`).toEqual([])
     }
     expect(example.consoleBlocks.map((index) => blocks[index].code.replace(/^\$ /gm, '').trim()))
       .toEqual(example.shellRecipe)
@@ -71,5 +85,31 @@ describe('verified complete C# API programs', () => {
     expect(program.code).toContain('await using')
     expect(program.code).toContain('using System;')
     expect(program.code).toContain('CancellationTokenSource')
+  })
+
+  it('waives one released comment line and nothing else', () => {
+    const displayed = examples.flatMap((example) => example.files.map((file) => ({
+      programId: 'sourceProgramId' in example ? example.sourceProgramId : '',
+      revision: example.sourceRevision,
+      code: (model.symbols.find((symbol) => symbol.id === example.symbol)?.doc?.examples ?? [])[file.block]?.code ?? '',
+    })))
+    // The waiver is still needed: that line is displayed, and it is the only one over the limit.
+    const wide = displayed.flatMap((entry) => commentLines(entry.code).filter((line) => line.length > 100))
+    expect(wide.length).toBeGreaterThan(0)
+    expect(new Set(wide)).toEqual(new Set([WAIVED.line]))
+    expect(WAIVED.line).toHaveLength(WAIVED.length)
+
+    // A second wide comment in the same program at the same revision fails, as does the waived line
+    // anywhere else or at another length.
+    const second = `// ${'x'.repeat(98)}`
+    expect(second).toHaveLength(101)
+    const code = `${WAIVED.line}\n${second}\n`
+    expect(tooWide(code, WAIVED.programId, WAIVED.revision)).toEqual([second])
+    expect(tooWide(code, 'csharp-ServerQueries', WAIVED.revision)).toEqual([WAIVED.line, second])
+    expect(tooWide(code, WAIVED.programId, '1'.repeat(40))).toEqual([WAIVED.line, second])
+    expect(tooWide(`${WAIVED.line}.\n`, WAIVED.programId, WAIVED.revision)).toEqual([`${WAIVED.line}.`])
+    expect(tooWide(`  ${WAIVED.line}\n`, WAIVED.programId, WAIVED.revision)).toEqual([`  ${WAIVED.line}`])
+    // Control: a comment within the limit is not reported.
+    expect(tooWide(`// ${'x'.repeat(97)}\n`, 'csharp-ServerQueries', WAIVED.revision)).toEqual([])
   })
 })

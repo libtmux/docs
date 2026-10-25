@@ -2,6 +2,34 @@ import { gunzipSync, inflateSync, deflateSync } from 'node:zlib'
 import type { ApiModelBase, ApiSymbol, PortSlug, SymbolKind } from './model.ts'
 import { qualifiedNameOf } from './modules.ts'
 
+/**
+ * Entries of a Sphinx inventory that name something other than an API symbol:
+ * a page of the manual, a command-line option, a pdb command, an environment
+ * variable, a bytecode opcode, a monitoring event or a grammar token. A code
+ * span that happens to spell one (`ps`, `run`, `index`) is not a reference to
+ * it, so a lookup never answers with one.
+ */
+export const NON_SYMBOL_ROLES: ReadonlySet<string> = new Set([
+  'std:doc', 'std:cmdoption', 'std:pdbcommand', 'std:envvar', 'std:opcode', 'std:monitoring-event', 'std:token',
+])
+
+/** Whether an entry can be the destination of a name in code. */
+export const isSymbolEntry = (entry: { type: string }): boolean => !NON_SYMBOL_ROLES.has(entry.type)
+
+/**
+ * The entries of one inventory that can be the destination of a name in code.
+ *
+ * An inventory that documents a language in a domain of its own (CPython's
+ * `py:`, Julia's `jl:`) keeps its symbols there, and its `std:` entries are
+ * the manual: headings, glossary terms, pages. `search` and `default` are
+ * labels of CPython's manual, not functions. An inventory with no such domain,
+ * as our own JDK one, writes its symbols as `std:label`, so those stay.
+ */
+export function symbolEntries<T extends { type: string }>(entries: T[]): T[] {
+  const language = entries.some((entry) => !entry.type.startsWith('std:'))
+  return entries.filter((entry) => isSymbolEntry(entry) && !(language && entry.type.startsWith('std:')))
+}
+
 /** Sphinx v2 uses object types in records; roles resolve those types. */
 const DOMAIN: Record<PortSlug, string> = {
   py: 'py',
@@ -9,6 +37,7 @@ const DOMAIN: Record<PortSlug, string> = {
   lua: 'std',
   powershell: 'std',
   julia: 'std',
+  elixir: 'std',
   cxx: 'cpp',
   ts: 'js',
   rs: 'std',

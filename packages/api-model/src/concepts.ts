@@ -3780,11 +3780,52 @@ for (const [id, ports] of Object.entries(HIERARCHY_CONCEPTS)) {
     if (binding.variants) (concept.variants ??= {})[port] = binding.variants
   }
 }
+// Elixir observes tmux into immutable structs. The entity modules hold captured
+// data; a captured graph is read through Snapshot and Selection, and one tmux
+// command runs through Server.run, so no entity has methods of its own.
+const ELIXIR_CONCEPTS: Record<string, { symbol: string; note?: string }> = {
+  server: { symbol: 'LibTmux.Server', note: '`Server` describes an existing server by executable and socket. It neither connects nor reserves the server’s identity.' },
+  session: { symbol: 'LibTmux.Session', note: '`Session` is an immutable observation. Fields not captured read as `:unloaded`.' },
+  window: { symbol: 'LibTmux.Window', note: '`Window` is a physical window. `WindowLink` records its session index and active state.' },
+  pane: { symbol: 'LibTmux.Pane', note: '`Pane` is an immutable physical pane observation. It does not send keys or capture text.' },
+  snapshot: { symbol: 'LibTmux.Server.snapshot/2', note: 'Captures a new graph over an observation interval. A retained `Snapshot` never refreshes.' },
+  'server-cmd': { symbol: 'LibTmux.Server.run/3', note: 'Runs one trusted `Command` without attaching a client and returns bounded output with exit evidence.' },
+  'list-sessions': { symbol: 'LibTmux.Snapshot.sessions/1', note: 'Returns a `Selection` of captured sessions without contacting tmux.' },
+  'list-server-windows': { symbol: 'LibTmux.Snapshot.windows/1', note: 'Returns a `Selection` of every captured physical window. `window_links/1` lists session placements.' },
+  'list-server-panes': { symbol: 'LibTmux.Snapshot.panes/1', note: 'Returns a `Selection` of every captured physical pane without contacting tmux.' },
+  'list-clients': { symbol: 'LibTmux.Snapshot.clients/1', note: 'Returns a `Selection` of captured attached clients without contacting tmux.' },
+  'session-id': { symbol: 'LibTmux.Session.id' },
+  'window-id': { symbol: 'LibTmux.Window.id' },
+  'pane-id': { symbol: 'LibTmux.Pane.id' },
+  'session-name': { symbol: 'LibTmux.Session.name' },
+  'window-name': { symbol: 'LibTmux.Window.name' },
+  'window-index': { symbol: 'LibTmux.WindowLink.index', note: 'The index belongs to the session placement, `WindowLink`, not to the physical window.' },
+  'window-width': { symbol: 'LibTmux.Window.width' },
+  'window-height': { symbol: 'LibTmux.Window.height' },
+  'window-layout': { symbol: 'LibTmux.Window.layout' },
+  'window-active': { symbol: 'LibTmux.WindowLink.active', note: 'The flag belongs to the session placement, `WindowLink`.' },
+  'session-attached': { symbol: 'LibTmux.Session.attached' },
+  'pane-index': { symbol: 'LibTmux.Pane.index' },
+  'pane-width': { symbol: 'LibTmux.Pane.width' },
+  'pane-height': { symbol: 'LibTmux.Pane.height' },
+  'pane-active': { symbol: 'LibTmux.Pane.active' },
+  'pane-title': { symbol: 'LibTmux.Pane.title' },
+  'pane-pid': { symbol: 'LibTmux.Pane.pid' },
+  'pane-current-command': { symbol: 'LibTmux.Pane.current_command' },
+  'pane-window-id': { symbol: 'LibTmux.Pane.window_id' },
+}
+for (const [id, binding] of Object.entries(ELIXIR_CONCEPTS)) {
+  const concept = CONCEPTS[id]
+  if (!concept) throw new Error(`concepts: Elixir maps unknown concept ${id}`)
+  concept.symbols.elixir = binding.symbol
+  if (binding.note) (concept.notes ??= {}).elixir = binding.note
+}
 CONCEPTS['list-session-panes']!.absent!.julia = 'Traverse `windows(session)` and `panes(window)` in the captured snapshot. `panes(snapshot)` has server-wide scope.'
 for (const concept of Object.values(CONCEPTS)) {
   concept.absent ??= {}
   if (!concept.symbols.powershell) concept.absent.powershell ??= 'No source-verified PowerShell equivalent is recorded for this operation.'
   if (!concept.symbols.julia) concept.absent.julia ??= 'No source-verified Julia equivalent is recorded for this operation.'
+  if (!concept.symbols.elixir) concept.absent.elixir = 'No source-verified Elixir equivalent is recorded for this operation.'
   if (!concept.symbols.ruby) concept.absent.ruby = 'No source-verified Ruby equivalent is recorded for this operation.'
   if (!concept.symbols.lua) concept.absent.lua = 'No source-verified Lua equivalent is recorded for this operation.'
   if (!concept.symbols.kotlin) concept.absent.kotlin = 'No source-verified Kotlin equivalent is recorded for this operation.'

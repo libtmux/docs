@@ -35,7 +35,7 @@ async function signatureComponent() {
     return `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
   }
   const name = await compile('../src/components/api/SymbolName.astro', { '../../lib/word-break': new URL('../src/lib/word-break.ts', import.meta.url).href })
-  const preview = await compile('../src/components/LinkPreview.astro')
+  const preview = await compile('../src/components/LinkPreview.astro', { '../lib/link-preview-card': new URL('../src/lib/link-preview-card.ts', import.meta.url).href })
   const keyword = await compile('../src/components/api/ApiKeyword.astro', { '../LinkPreview.astro': preview })
   const type = await compile('../src/components/api/ApiType.astro', {
     './SymbolName.astro': name, './ApiKeyword.astro': keyword,
@@ -625,7 +625,7 @@ describe('native signature emission', () => {
     const before = JSON.stringify(models.julia)
     const { entries } = await signatureProbe(models)
     expect([...new Set(entries.map(({ port }) => port))]).toEqual(API_MODEL_PORTS.map(({ slug }) => slug))
-    expect(new Set(entries.map(({ port }) => port)).size).toBe(15)
+    expect(new Set(entries.map(({ port }) => port)).size).toBe(16)
     for (const [port, model] of Object.entries(models)) {
       const callables = model.symbols.filter((symbol) => symbol.signatures.some((signature) => signature.params.length > 0 && signature.returns))
       const selected = callables.find((symbol) => /capture/i.test(symbol.name)) ?? callables[0]

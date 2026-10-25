@@ -1,4 +1,4 @@
-import type { DocSpan, LinkTarget } from '@libtmux/api-model'
+import type { DocSpan, LinkTarget, SymbolIndex } from '@libtmux/api-model'
 import { tmuxCatalogHref } from './tmux-catalog'
 import { tmuxCatalogMentions, tmuxCatalogProseReferences } from './tmux-catalog-links'
 import { tmuxManual, tmuxManualEntityHref, type TmuxEntityKind } from './tmux-manual-data'
@@ -146,7 +146,7 @@ export function tmuxMentions(text: string, { code = false, version = 'latest', b
   return found.sort((a, b) => a.start - b.start)
 }
 
-type LinkedDocSpan = DocSpan & { link?: LinkTarget }
+type LinkedDocSpan = DocSpan & { link?: LinkTarget; parts?: ReturnType<SymbolIndex['linkLiteral']> }
 
 /** Add native tmux links after language API and authored-link resolution. */
 export function linkTmuxDoc(spans: LinkedDocSpan[], version = 'latest'): LinkedDocSpan[] {

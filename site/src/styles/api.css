@@ -179,6 +179,12 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   opacity: 0.6;
 }
 
+/* A method that sends a tmux command names the flag and the C function behind it. */
+.tmux-send { margin-inline-start: 0.25rem; }
+.tmux-send > * + * { margin-inline-start: 0.25rem; }
+/* A command a method sends only on some calls says when, quieter than the command. */
+.tmux-when { margin-inline-start: 0.25rem; opacity: 0.65; font-size: 0.85em; }
+
 /*
  * The member list on a type's page.
  *
@@ -748,8 +754,8 @@ html:has(:is(.api-reference-layout--symbol, .api-reference-layout--glossary)):no
 @media (min-width: 56rem) {
   .api-reference-layout:has(> .api-nav-column) { grid-template-columns: 16rem minmax(0, 1fr); }
   :is(.api-reference-layout--symbol, .api-reference-layout--glossary) .api-nav {
-    top: var(--api-header-height);
-    height: calc(100dvh - var(--api-header-height));
+    top: var(--api-nav-top, var(--api-header-height));
+    height: var(--api-nav-height, calc(100dvh - var(--api-header-height)));
   }
 }
 .api-page-contents { display: none; }
@@ -868,7 +874,7 @@ dl.py.gp-sphinx-api-container > dd > :first-child > dl.field-list:first-child { 
 /* The last parameter's heading sits inside a grid item, beyond the reach of the chain above. */
 dl.py.gp-sphinx-api-container > dd > .gp-sphinx-api-parameters:last-child > dl.field-list > dd:last-child >
   ul.api-parameters > li:last-child > .api-parameter-heading:last-child { margin-bottom: 0; }
-.api-related-types { margin-top: 2rem; }
+.api-related-types, .api-tmux-usage { margin-top: 2rem; }
 .api-related-cards { display: grid; gap: 0.75rem; margin-top: 0.75rem; }
 .api-related-card { padding: 0.875rem 1rem; border: 1px solid var(--color-edge); border-radius: 0.4rem; }
 .api-related-card:hover { background: var(--color-surface); }

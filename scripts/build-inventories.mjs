@@ -19,7 +19,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { readInventory, writeInventory } from '../packages/api-model/src/inventory.ts'
+import { readInventory, symbolEntries, writeInventory } from '../packages/api-model/src/inventory.ts'
 import { TYPESCRIPT_UTILITY_TYPES } from '../packages/api-model/src/builtins.ts'
 import { javadocSymbols } from '../packages/api-model/src/javadoc.ts'
 
@@ -29,6 +29,7 @@ const check = process.argv.includes('--check')
 const domOnly = process.argv.includes('--dom-only')
 
 const JDK = 'https://docs.oracle.com/en/java/javase/21/docs/api/'
+const MDN_SITEMAP = 'https://developer.mozilla.org/sitemaps/en-us/sitemap.xml.gz'
 
 /**
  * Packages worth carrying.
@@ -68,7 +69,7 @@ async function buildJdk() {
  * compiler resolves against, so the names here are exactly the ones its
  * annotations can mention.
  */
-function buildDom() {
+async function buildDom() {
   const libDir = join(repoRoot, 'node_modules/typescript/lib')
   // MDN files the two apart, and so must this. `Promise` under `Web/API/` is
   // a page that does not exist: it is a language builtin, not a DOM
@@ -94,11 +95,17 @@ function buildDom() {
       seen.set(name, { id: name, name, kind: 'interface', uri: `${prefix}${name}` })
     }
   }
+  // TypeScript declares far more names than MDN documents: option bags,
+  // event maps, type aliases and mixins have no page of their own. A name MDN
+  // does not list stays unlinked; guessing its path sends a reader to a 404.
+  const sitemap = await fetch(MDN_SITEMAP, { redirect: 'follow' })
+  if (!sitemap.ok) throw new Error(`${MDN_SITEMAP}: HTTP ${sitemap.status}`)
+  const pages = new Set([...(await sitemap.text()).matchAll(/<loc>([^<]*)<\/loc>/g)].map((match) => match[1]))
   return {
     name: 'dom',
     project: 'MDN Web Docs',
     baseUrl: 'https://developer.mozilla.org/',
-    symbols: [...seen.values()],
+    symbols: [...seen.values()].filter((symbol) => pages.has(`https://developer.mozilla.org/${symbol.uri}`)),
   }
 }
 
@@ -150,7 +157,7 @@ function writeSidecar(name, bytes) {
   // something anyone reads.
   writeFileSync(
     join(outDir, `${name}.entries.json`),
-    `${JSON.stringify({ project, version, e: entries.map((x) => [x.name, x.uri]) })}\n`,
+    `${JSON.stringify({ project, version, e: symbolEntries(entries).map((x) => [x.name, x.uri]) })}\n`,
   )
 }
 
@@ -171,5 +178,5 @@ if (check) {
   process.exit(failed ? 1 : 0)
 }
 
-emit(buildDom())
+emit(await buildDom())
 if (!domOnly) emit(await buildJdk())

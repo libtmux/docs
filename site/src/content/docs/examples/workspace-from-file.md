@@ -12,7 +12,7 @@ tableOfContents: true
 A tmux command file can create a session, arrange its windows, and split its
 panes. This example builds two windows with three panes, prints their names
 and pane counts, then removes its private server. The first four steps write
-the command file, and the last four load and inspect it. It requires tmux 3.2
+the command file, and the last four load and inspect it. It requires tmux 3.3a
 or newer and a POSIX shell.
 
 ## 1. Create a detached session

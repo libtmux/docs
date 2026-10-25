@@ -11,40 +11,25 @@
  */
 import SymbolName from './SymbolName.astro'
 import ApiBadge from './ApiBadge.astro'
+import type { SidebarNode } from '../../lib/api-sidebar'
 
-export interface TreeNode {
-  id: string
-  label: string
-  kind?: string
-  /** The kind stays on the row for assistive technology, and its mark is not drawn. */
-  quiet?: boolean
-  href?: string
-  count?: number
-  level: number
-  current?: boolean
-  shortcut?: boolean
-  disabled?: boolean
-  /** Holds the tree's one Tab stop. */
-  tab?: boolean
-  /** Undefined for a leaf. */
-  expanded?: boolean
-  /** `bucket:<id>` or `type:<id>`: children arrive from tree.json on first open. */
-  lazy?: string
-  children?: TreeNode[]
-}
+export type TreeNode = SidebarNode
 
 interface Props {
   nodes: TreeNode[]
 }
 
 const { nodes } = Astro.props as Props
+const items = nodes.filter((node) => !node.section)
 ---
 
 {
-  nodes.map((node, i) =>
-    node.disabled ? (
+  nodes.map((node) =>
+    node.section ? (
+      <li role="none" class="api-nav__section"><span>{node.label}</span><span>{node.count} {node.section}</span></li>
+    ) : node.disabled ? (
       <li role="none"><span role="treeitem" class="api-nav__row api-nav__leaf" aria-disabled="true"
-        aria-level={node.level} aria-setsize={nodes.length} aria-posinset={i + 1} tabindex={node.tab ? '0' : '-1'}
+        aria-level={node.level} aria-setsize={items.length} aria-posinset={items.indexOf(node) + 1} tabindex={node.tab ? '0' : '-1'}
         aria-description="No objects advertised in the reference configuration" style={`--level:${node.level}`}>
         <span class="api-nav__label"><SymbolName name={node.label} /></span>
         <span class="api-nav__count">{node.count}</span>
@@ -54,8 +39,8 @@ const { nodes } = Astro.props as Props
         role="treeitem"
         class="api-nav__item"
         aria-level={node.level}
-        aria-setsize={nodes.length}
-        aria-posinset={i + 1}
+        aria-setsize={items.length}
+        aria-posinset={items.indexOf(node) + 1}
         aria-expanded={node.expanded ? 'true' : 'false'}
         aria-labelledby={node.count !== undefined ? `${node.id} ${node.id}-count` : node.id}
         aria-description={node.kind}
@@ -70,9 +55,12 @@ const { nodes } = Astro.props as Props
               <SymbolName name={node.label} />
             </a>
           ) : (
-            <span class="api-nav__label" id={node.id}>
-              <SymbolName name={node.label} />
-            </span>
+            <>
+              <span class="api-nav__label" id={node.id}>
+                <SymbolName name={node.label} />
+              </span>
+              {node.fallbackHref && <noscript><a class="api-nav__label" href={node.fallbackHref}><SymbolName name={node.label} /></a></noscript>}
+            </>
           )}
           {node.count !== undefined && (
             <span class="api-nav__count" id={`${node.id}-count`}>
@@ -92,8 +80,8 @@ const { nodes } = Astro.props as Props
           role="treeitem"
           class="api-nav__row api-nav__leaf"
           aria-level={node.level}
-          aria-setsize={nodes.length}
-          aria-posinset={i + 1}
+          aria-setsize={items.length}
+          aria-posinset={items.indexOf(node) + 1}
           href={node.href}
           data-api-shortcut={node.shortcut || undefined}
           tabindex={node.tab ? '0' : '-1'}

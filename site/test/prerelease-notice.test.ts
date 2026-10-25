@@ -45,6 +45,7 @@ beforeAll(async () => {
   for (const name of Object.keys(imports)) if (name.endsWith('.astro')) imports[name] = stub
   imports['astro:transitions'] = 'data:text/javascript,export const ClientRouter=globalThis.__prereleaseChild'
   imports['../components/PrereleaseNotice.astro'] = await compile(noticeSource, 'PrereleaseNotice.astro')
+  imports['../components/SiteFooter.astro'] = await compile('<footer data-compact={String(Boolean(Astro.props.compact))} data-github={Astro.props.githubUrl} />', 'SiteFooterProbe.astro')
   // Only unrelated child components are stubbed; ownership and notice markup run unchanged.
   layout = (await import(/* @vite-ignore */ await compile(source, file.pathname, imports))).default
 })
@@ -55,7 +56,7 @@ afterEach(async () => {
 })
 afterAll(() => vi.unstubAllGlobals())
 
-async function render(path: string, pagePath?: string, portSlug?: string, bare = false, buildPort = '') {
+async function render(path: string, pagePath?: string, portSlug?: string, bare = false, repository?: string, buildPort = '') {
   const url = new URL(path, 'https://libtmux.org')
   const prefix = /^(\/pr-\d+)?\/(en|ja)\//.exec(url.pathname)
   vi.stubEnv('LIBTMUX_DOCS_BASE', prefix?.[0] ?? '/')
@@ -63,11 +64,24 @@ async function render(path: string, pagePath?: string, portSlug?: string, bare =
   vi.stubEnv('LIBTMUX_DOCS_LOCALE', prefix?.[2] ?? 'en')
   const container = await experimental_AstroContainer.create()
   return container.renderToString(layout, {
-    request: new Request(url), props: { title: 'Documentation', pagePath, portSlug, bare,
+    request: new Request(url), props: { title: 'Documentation', pagePath, portSlug, bare, repository,
       locale: prefix?.[2] ?? 'en', pageSource: { repo: 'libtmux/docs', ref: 'main', path: 'site/src/pages/index.astro' } },
     slots: { default: '<main>Page content</main>' },
   })
 }
+
+describe('bare pages', () => {
+  it('keep the footer, reduced to its page-source line, so every page names its source', async () => {
+    expect(await render('/en/demo/sidebar/preview/py/', 'demo/sidebar/preview/py', 'py', true)).toContain('<footer data-compact="true"')
+    expect(await render('/en/py/latest/reference/server/', 'reference/server', 'py')).toContain('<footer data-compact="false"')
+  })
+
+  it('point the GitHub icon at the repository they name, even for a language with a source directory', async () => {
+    const preview = (repository?: string) => render('/en/demo/sidebar/preview/kotlin/', 'demo/sidebar/preview/kotlin', 'kotlin', true, repository)
+    expect(await preview('libtmux/docs')).toContain('data-github="https://github.com/libtmux/docs/"')
+    expect(await preview()).toMatch(/data-github="https:\/\/github\.com\/[^"]+\/tree\/[^"]+\/libtmux-kotlin"/)
+  })
+})
 
 describe('prerelease notice ownership', () => {
   it('assigns versioned tmux manuals, catalogs and C pages to their release inventory', async () => {
@@ -83,10 +97,10 @@ describe('prerelease notice ownership', () => {
   })
   it('exports the selected port only inside its version mount', async () => {
     for (const path of ['/en/', '/pr-42/en/', '/py/', '/py/latestish/']) {
-      const shared = await render(path, '', 'py', false, 'py')
+      const shared = await render(path, '', 'py', false, undefined, 'py')
       expect(renderedTargets(shared, path), path).toEqual([])
     }
-    const port = await render('/py/latest/', '', 'py', false, 'py')
+    const port = await render('/py/latest/', '', 'py', false, undefined, 'py')
     expect(renderedTargets(port, '/py/latest/')).toMatchObject([
       { scope: 'py', version: 'latest', category: 'doc', identity: 'index', href: '/py/latest/' },
     ])

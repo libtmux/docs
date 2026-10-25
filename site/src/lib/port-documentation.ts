@@ -206,6 +206,56 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       }),
     ],
   },
+  elixir: {
+    domains: [
+      {
+        id: 'core', label: 'Core library', kind: 'core', navGroup: 'Library', route: '', package: 'core',
+        description: 'Install libtmux from Hex and observe tmux as immutable snapshots.',
+      },
+      {
+        id: 'mcp', label: 'MCP', kind: 'unavailable', navGroup: 'Availability', route: 'mcp', product: 'mcp',
+        description: 'No published MCP server is available for the Elixir port.',
+      },
+      {
+        id: 'workspace', label: 'Workspace Manager', kind: 'unavailable', navGroup: 'Availability', route: 'workspace', product: 'workspace',
+        description: 'No published workspace manager is available for the Elixir port.',
+      },
+    ],
+    sourceGuides: [
+      guide('README.md', 'guides/overview', 'core', {
+        title: 'Getting started', description: 'Add the Hex package, check the Elixir, OTP and tmux requirements, and run an example.',
+        aliases: [], sidebar: { group: 'Guides', order: 2 },
+      }),
+      guide('docs/filtering.md', 'guides/filtering', 'core', {
+        description: 'Select observed values with portable keyword and operator filters.',
+        aliases: [], sidebar: { group: 'Guides', order: 3 },
+      }),
+      guide('docs/first-task.md', 'examples/capture-and-read', 'core', {
+        title: 'Capture a pane and read it', description: 'Capture a graph, select a pane and read it through one-shot and control commands.',
+        aliases: [], sidebar: { group: 'Examples', order: 3 },
+      }),
+      guide('docs/mental-model.md', 'concepts/mental-model', 'core', {
+        description: 'Hold one captured graph for several decisions and run a command when you need another.',
+        aliases: [], sidebar: { group: 'Concepts', order: 2 },
+      }),
+      guide('docs/observations.md', 'concepts/observations', 'core', {
+        description: 'Capture an immutable snapshot of an existing server and read it without further commands.',
+        aliases: [], sidebar: { group: 'Concepts', order: 3 },
+      }),
+      guide('docs/ownership.md', 'topics/ownership', 'core', {
+        description: 'Run an executable without a shell, with exit status kept apart from output.',
+        aliases: [], sidebar: { group: 'Topics', order: 2 },
+      }),
+      guide('docs/encoding.md', 'topics/encoding', 'core', {
+        description: 'Render commands and decode fields without a shell or a raw newline.',
+        aliases: [], sidebar: { group: 'Topics', order: 3 },
+      }),
+      guide('docs/schema.md', 'topics/schema', 'core', {
+        description: 'Fields, wire names, value categories and operators of each observed entity.',
+        aliases: [], sidebar: { group: 'Topics', order: 4 },
+      }),
+    ],
+  },
   lua: {
     domains: [
       {

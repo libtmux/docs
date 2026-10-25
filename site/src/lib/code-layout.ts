@@ -239,6 +239,12 @@ export function supportsRubySignatures(symbol: ApiSymbol, language?: string): bo
     symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
 }
 
+/** The declarations Elixir's reference lays out: callables, callbacks and types. */
+export function supportsElixirSignatures(symbol: ApiSymbol, language?: string): boolean {
+  return language === 'elixir' && ['function', 'method', 'typealias'].includes(symbol.kind) &&
+    symbol.signatures.length > 0 && symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
+}
+
 export function supportsLuaSignatures(symbol: ApiSymbol, language?: string): boolean {
   return language === 'lua' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length > 0 &&
     symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
@@ -326,6 +332,11 @@ export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string):
     const { rubySignatureLayout } = await import('./ruby-code-layout')
     return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
       [signature, await rubySignatureLayout(symbol, signature)] as const)))
+  }
+  if (supportsElixirSignatures(symbol, language)) {
+    const { elixirSignatureLayout } = await import('./elixir-code-layout')
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await elixirSignatureLayout(symbol, signature)] as const)))
   }
   if (supportsLuaSignatures(symbol, language)) {
     const { luaSignatureLayout } = await import('./lua-code-layout')

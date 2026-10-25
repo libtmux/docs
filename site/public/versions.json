@@ -120,6 +120,14 @@
         "kind": "trunk",
         "supported": true
       }
+    ],
+    "elixir": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
     ]
   },
   "defaultVersion": {
@@ -137,6 +145,7 @@
     "cxx": "latest",
     "swift": "latest",
     "powershell": "latest",
-    "julia": "latest"
+    "julia": "latest",
+    "elixir": "latest"
   }
 }

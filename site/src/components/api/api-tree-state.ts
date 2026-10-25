@@ -70,7 +70,7 @@ export function initializeApiTree(nav: HTMLElement | null, restoreState = true):
   if (!nav || !tree) return
   let saved: ApiTreeState | undefined
   try {
-    const value = JSON.parse(window.sessionStorage.getItem(`libtmux:api-tree:${nav.dataset.base}`) ?? 'null')
+    const value = JSON.parse(window.sessionStorage.getItem(`libtmux:api-tree:${nav.dataset.base}${nav.dataset.stateScope ? `:${nav.dataset.stateScope}` : ''}`) ?? 'null')
     if (Number.isFinite(value?.top) && value.top >= 0 && value.branches && typeof value.branches === 'object') saved = value
   } catch { /* Navigation remains usable without session storage. */ }
   let selection: ApiTreeSelection | undefined

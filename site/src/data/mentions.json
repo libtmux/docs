@@ -2206,6 +2206,531 @@
    "section": "ports"
   },
   {
+   "port": "elixir",
+   "symbol": "LibTmux.Client.control_mode",
+   "page": "/elixir/latest/topics/schema/",
+   "title": "Observation and filter schema",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Codec.decode_field/3",
+   "page": "/elixir/latest/topics/encoding/",
+   "title": "Command and field encoding",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Command",
+   "page": "/elixir/latest/topics/encoding/",
+   "title": "Command and field encoding",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Command.argv/2",
+   "page": "/elixir/latest/topics/encoding/",
+   "title": "Command and field encoding",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Command.render/2",
+   "page": "/elixir/latest/topics/encoding/",
+   "title": "Command and field encoding",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Control",
+   "page": "/elixir/latest/concepts/mental-model/",
+   "title": "Read values, execute explicitly",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Control.child_spec/1",
+   "page": "/elixir/latest/topics/ownership/",
+   "title": "One-shot process ownership",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Control.close/2",
+   "page": "/elixir/latest/concepts/mental-model/",
+   "title": "Read values, execute explicitly",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Control.close/2",
+   "page": "/elixir/latest/topics/ownership/",
+   "title": "One-shot process ownership",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Control.reconnect/2",
+   "page": "/elixir/latest/concepts/mental-model/",
+   "title": "Read values, execute explicitly",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Control.reconnect/2",
+   "page": "/elixir/latest/topics/ownership/",
+   "title": "One-shot process ownership",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Control.request_close/1",
+   "page": "/elixir/latest/topics/ownership/",
+   "title": "One-shot process ownership",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Control.start_link/1",
+   "page": "/elixir/latest/topics/ownership/",
+   "title": "One-shot process ownership",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Control.submit/3",
+   "page": "/elixir/latest/concepts/mental-model/",
+   "title": "Read values, execute explicitly",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Control.submit/3",
+   "page": "/elixir/latest/examples/capture-and-read/",
+   "title": "Capture a pane and read it",
+   "section": "examples"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Control.submit/3",
+   "page": "/elixir/latest/topics/ownership/",
+   "title": "One-shot process ownership",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Deadline",
+   "page": "/elixir/latest/topics/ownership/",
+   "title": "One-shot process ownership",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Error.certainty/0",
+   "page": "/elixir/latest/examples/capture-and-read/",
+   "title": "Capture a pane and read it",
+   "section": "examples"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Error.kind",
+   "page": "/elixir/latest/examples/capture-and-read/",
+   "title": "Capture a pane and read it",
+   "section": "examples"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Error.phase",
+   "page": "/elixir/latest/examples/capture-and-read/",
+   "title": "Capture a pane and read it",
+   "section": "examples"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Filter.from_json/3",
+   "page": "/elixir/latest/guides/filtering/",
+   "title": "Filter captured values",
+   "section": "guides"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Filter.new/3",
+   "page": "/elixir/latest/guides/filtering/",
+   "title": "Filter captured values",
+   "section": "guides"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Filter.to_wire/1",
+   "page": "/elixir/latest/guides/filtering/",
+   "title": "Filter captured values",
+   "section": "guides"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Format.field/1",
+   "page": "/elixir/latest/topics/encoding/",
+   "title": "Command and field encoding",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Format.literal/1",
+   "page": "/elixir/latest/topics/encoding/",
+   "title": "Command and field encoding",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Operation",
+   "page": "/elixir/latest/concepts/mental-model/",
+   "title": "Read values, execute explicitly",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Operation",
+   "page": "/elixir/latest/topics/ownership/",
+   "title": "One-shot process ownership",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Operation.await/2",
+   "page": "/elixir/latest/concepts/mental-model/",
+   "title": "Read values, execute explicitly",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Operation.await/2",
+   "page": "/elixir/latest/examples/capture-and-read/",
+   "title": "Capture a pane and read it",
+   "section": "examples"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Operation.stop/1",
+   "page": "/elixir/latest/concepts/mental-model/",
+   "title": "Read values, execute explicitly",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Pane.current_command",
+   "page": "/elixir/latest/topics/schema/",
+   "title": "Observation and filter schema",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Pane.current_path",
+   "page": "/elixir/latest/topics/schema/",
+   "title": "Observation and filter schema",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Pane.dead",
+   "page": "/elixir/latest/topics/schema/",
+   "title": "Observation and filter schema",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Pane.exit_status",
+   "page": "/elixir/latest/topics/schema/",
+   "title": "Observation and filter schema",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Pane.title",
+   "page": "/elixir/latest/topics/schema/",
+   "title": "Observation and filter schema",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Protocol",
+   "page": "/elixir/latest/topics/encoding/",
+   "title": "Command and field encoding",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Ref",
+   "page": "/elixir/latest/concepts/mental-model/",
+   "title": "Read values, execute explicitly",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Ref",
+   "page": "/elixir/latest/examples/capture-and-read/",
+   "title": "Capture a pane and read it",
+   "section": "examples"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Ref.id/0",
+   "page": "/elixir/latest/topics/schema/",
+   "title": "Observation and filter schema",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Schema",
+   "page": "/elixir/latest/topics/schema/",
+   "title": "Observation and filter schema",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Schema.fields/1",
+   "page": "/elixir/latest/concepts/observations/",
+   "title": "Captured tmux state",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Selection",
+   "page": "/elixir/latest/concepts/mental-model/",
+   "title": "Read values, execute explicitly",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Selection",
+   "page": "/elixir/latest/examples/capture-and-read/",
+   "title": "Capture a pane and read it",
+   "section": "examples"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Selection.count/2",
+   "page": "/elixir/latest/guides/filtering/",
+   "title": "Filter captured values",
+   "section": "guides"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Selection.count/2",
+   "page": "/elixir/latest/topics/schema/",
+   "title": "Observation and filter schema",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Selection.filter/2",
+   "page": "/elixir/latest/guides/filtering/",
+   "title": "Filter captured values",
+   "section": "guides"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Selection.member_id?/2",
+   "page": "/elixir/latest/guides/filtering/",
+   "title": "Filter captured values",
+   "section": "guides"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Selection.one!/2",
+   "page": "/elixir/latest/examples/capture-and-read/",
+   "title": "Capture a pane and read it",
+   "section": "examples"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Selection.one!/2",
+   "page": "/elixir/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Selection.one/2",
+   "page": "/elixir/latest/topics/schema/",
+   "title": "Observation and filter schema",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Selection.where/2",
+   "page": "/elixir/latest/examples/capture-and-read/",
+   "title": "Capture a pane and read it",
+   "section": "examples"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Server",
+   "page": "/elixir/latest/concepts/mental-model/",
+   "title": "Read values, execute explicitly",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Server.new/1",
+   "page": "/elixir/latest/concepts/observations/",
+   "title": "Captured tmux state",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Server.new/1",
+   "page": "/elixir/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Server.snapshot!/2",
+   "page": "/elixir/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Server.snapshot/2",
+   "page": "/elixir/latest/concepts/mental-model/",
+   "title": "Read values, execute explicitly",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Server.snapshot/2",
+   "page": "/elixir/latest/concepts/observations/",
+   "title": "Captured tmux state",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Server.snapshot/2",
+   "page": "/elixir/latest/examples/capture-and-read/",
+   "title": "Capture a pane and read it",
+   "section": "examples"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Session.attached",
+   "page": "/elixir/latest/concepts/observations/",
+   "title": "Captured tmux state",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Session.attached",
+   "page": "/elixir/latest/topics/schema/",
+   "title": "Observation and filter schema",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Session.attached_count",
+   "page": "/elixir/latest/concepts/observations/",
+   "title": "Captured tmux state",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Session.attached_count",
+   "page": "/elixir/latest/topics/schema/",
+   "title": "Observation and filter schema",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Snapshot",
+   "page": "/elixir/latest/concepts/mental-model/",
+   "title": "Read values, execute explicitly",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Snapshot",
+   "page": "/elixir/latest/concepts/observations/",
+   "title": "Captured tmux state",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Snapshot.fetch/3",
+   "page": "/elixir/latest/concepts/observations/",
+   "title": "Captured tmux state",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Snapshot.items/2",
+   "page": "/elixir/latest/concepts/observations/",
+   "title": "Captured tmux state",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Snapshot.new/2",
+   "page": "/elixir/latest/concepts/observations/",
+   "title": "Captured tmux state",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Snapshot.related/4",
+   "page": "/elixir/latest/concepts/observations/",
+   "title": "Captured tmux state",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Snapshot.sessions",
+   "page": "/elixir/latest/concepts/observations/",
+   "title": "Captured tmux state",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Snapshot.sessions/1",
+   "page": "/elixir/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Transport.OneShot.run/3",
+   "page": "/elixir/latest/topics/ownership/",
+   "title": "One-shot process ownership",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Window.layout",
+   "page": "/elixir/latest/topics/schema/",
+   "title": "Observation and filter schema",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Window.zoomed",
+   "page": "/elixir/latest/topics/schema/",
+   "title": "Observation and filter schema",
+   "section": "topics"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.WindowLink",
+   "page": "/elixir/latest/concepts/mental-model/",
+   "title": "Read values, execute explicitly",
+   "section": "concepts"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.WindowLink",
+   "page": "/elixir/latest/concepts/observations/",
+   "title": "Captured tmux state",
+   "section": "concepts"
+  },
+  {
    "port": "fsharp",
    "symbol": "LibTmux.FSharp.CardinalityError.MultipleMatches",
    "page": "/fsharp/latest/concepts/queries/",
@@ -4776,13 +5301,6 @@
   },
   {
    "port": "java",
-   "symbol": "io.github.libtmux.exception.CardinalityException.CardinalityException.MultipleMatches",
-   "page": "/scala/latest/guides/query/",
-   "title": "Queries",
-   "section": "guides"
-  },
-  {
-   "port": "java",
    "symbol": "io.github.libtmux.exception.CardinalityException.CardinalityException.NoMatch",
    "page": "/java/latest/concepts/queries/",
    "title": "Filtering and queries",
@@ -4916,13 +5434,6 @@
   },
   {
    "port": "java",
-   "symbol": "io.github.libtmux.Pane.Pane.awaitText",
-   "page": "/scala/latest/guides/compatibility/",
-   "title": "Compatibility",
-   "section": "guides"
-  },
-  {
-   "port": "java",
    "symbol": "io.github.libtmux.Pane.Pane.capture",
    "page": "/java/latest/guides/capturing-output/",
    "title": "Capturing output",
@@ -5014,31 +5525,10 @@
   },
   {
    "port": "java",
-   "symbol": "io.github.libtmux.query.FilterExpr.FilterExpr.and",
-   "page": "/scala/latest/guides/query/",
-   "title": "Queries",
-   "section": "guides"
-  },
-  {
-   "port": "java",
-   "symbol": "io.github.libtmux.query.FilterExpr.FilterExpr.or",
-   "page": "/scala/latest/guides/query/",
-   "title": "Queries",
-   "section": "guides"
-  },
-  {
-   "port": "java",
    "symbol": "io.github.libtmux.query.Selections.Selections.exactlyOne",
    "page": "/java/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
-  },
-  {
-   "port": "java",
-   "symbol": "io.github.libtmux.query.Selections.Selections.exactlyOne",
-   "page": "/scala/latest/guides/query/",
-   "title": "Queries",
-   "section": "guides"
   },
   {
    "port": "java",
@@ -5140,13 +5630,6 @@
   },
   {
    "port": "java",
-   "symbol": "io.github.libtmux.Server.Server.control",
-   "page": "/scala/latest/guides/compatibility/",
-   "title": "Compatibility",
-   "section": "guides"
-  },
-  {
-   "port": "java",
    "symbol": "io.github.libtmux.Server.Server.isAlive",
    "page": "/java/latest/topics/socket-and-servers/",
    "title": "Socket and servers",
@@ -5168,13 +5651,6 @@
   },
   {
    "port": "java",
-   "symbol": "io.github.libtmux.Server.Server.open",
-   "page": "/scala/latest/guides/compatibility/",
-   "title": "Compatibility",
-   "section": "guides"
-  },
-  {
-   "port": "java",
    "symbol": "io.github.libtmux.Server.Server.sessions",
    "page": "/java/latest/guides/querying-and-filtering/",
    "title": "Querying and filtering",
@@ -5186,13 +5662,6 @@
    "page": "/java/latest/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
-  },
-  {
-   "port": "java",
-   "symbol": "io.github.libtmux.Server.Server.within",
-   "page": "/scala/latest/guides/compatibility/",
-   "title": "Compatibility",
-   "section": "guides"
   },
   {
    "port": "java",
@@ -8032,6 +8501,13 @@
   {
    "port": "powershell",
    "symbol": "LibTmux\\Connect-TmuxControl",
+   "page": "/powershell/latest/guides/commands/",
+   "title": "Commands and control clients",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Connect-TmuxControl",
    "page": "/powershell/latest/guides/compatibility/",
    "title": "Compatibility",
    "section": "guides"
@@ -8270,6 +8746,13 @@
   {
    "port": "powershell",
    "symbol": "LibTmux\\Invoke-TmuxChain",
+   "page": "/powershell/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxChain",
    "page": "/powershell/latest/guides/getting-started/",
    "title": "Getting started",
    "section": "guides"
@@ -8286,6 +8769,20 @@
    "symbol": "LibTmux\\Invoke-TmuxCommand",
    "page": "/powershell/latest/guides/capture/",
    "title": "Capture, refresh and raw commands",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxCommand",
+   "page": "/powershell/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxCommand",
+   "page": "/powershell/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -8322,6 +8819,13 @@
    "page": "/powershell/latest/examples/command-completion/",
    "title": "Check command completion",
    "section": "examples"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxPaneCommand",
+   "page": "/powershell/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
   },
   {
    "port": "powershell",
@@ -8584,6 +9088,13 @@
   },
   {
    "port": "powershell",
+   "symbol": "LibTmux\\Set-TmuxLayout",
+   "page": "/powershell/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
    "symbol": "LibTmux\\Split-TmuxPane",
    "page": "/powershell/latest/examples/create-layout/",
    "title": "Create windows and panes",
@@ -8637,6 +9148,13 @@
    "page": "/powershell/latest/examples/wait-for-service/",
    "title": "Wait for a service",
    "section": "examples"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Wait-TmuxPaneText",
+   "page": "/powershell/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
   },
   {
    "port": "powershell",
@@ -9431,55 +9949,6 @@
   },
   {
    "port": "py",
-   "symbol": "tmuxp.cli.shell.CLIShellNamespace.shell",
-   "page": "/csharp/latest/workspace/configuration/environment/",
-   "title": "Workspace environment",
-   "section": "ports"
-  },
-  {
-   "port": "py",
-   "symbol": "tmuxp.cli.shell.CLIShellNamespace.shell",
-   "page": "/cxx/latest/workspace/configuration/environment/",
-   "title": "Workspace environment",
-   "section": "ports"
-  },
-  {
-   "port": "py",
-   "symbol": "tmuxp.cli.shell.CLIShellNamespace.shell",
-   "page": "/go/latest/workspace/configuration/environment/",
-   "title": "Workspace environment",
-   "section": "ports"
-  },
-  {
-   "port": "py",
-   "symbol": "tmuxp.cli.shell.CLIShellNamespace.shell",
-   "page": "/java/latest/workspace/configuration/environment/",
-   "title": "Workspace environment",
-   "section": "ports"
-  },
-  {
-   "port": "py",
-   "symbol": "tmuxp.cli.shell.CLIShellNamespace.shell",
-   "page": "/rs/latest/workspace/configuration/environment/",
-   "title": "Workspace environment",
-   "section": "ports"
-  },
-  {
-   "port": "py",
-   "symbol": "tmuxp.cli.shell.CLIShellNamespace.shell",
-   "page": "/swift/latest/workspace/configuration/environment/",
-   "title": "Workspace environment",
-   "section": "ports"
-  },
-  {
-   "port": "py",
-   "symbol": "tmuxp.cli.shell.CLIShellNamespace.shell",
-   "page": "/ts/latest/workspace/configuration/environment/",
-   "title": "Workspace environment",
-   "section": "ports"
-  },
-  {
-   "port": "py",
    "symbol": "tmuxp.plugin.TmuxpPlugin.after_window_finished",
    "page": "/py/latest/workspace/configuration/hooks/",
    "title": "Bootstrap scripts and extensions",
@@ -9644,6 +10113,13 @@
    "symbol": "config.PaneConfig",
    "page": "/rs/latest/workspace/reference/",
    "title": "Rust workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "config.PaneConfig.shell",
+   "page": "/rs/latest/workspace/configuration/environment/",
+   "title": "Workspace environment",
    "section": "ports"
   },
   {
@@ -11805,13 +12281,6 @@
   {
    "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.cats.Observation.value",
-   "page": "/lua/latest/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "scala",
-   "symbol": "io.github.libtmux.scaladsl.cats.Observation.value",
    "page": "/scala/latest/guides/streaming/",
    "title": "Streaming",
    "section": "guides"
@@ -11835,20 +12304,6 @@
    "symbol": "io.github.libtmux.scaladsl.cats.Server.panes",
    "page": "/scala/latest/guides/overview/",
    "title": "Installation and requirements",
-   "section": "guides"
-  },
-  {
-   "port": "scala",
-   "symbol": "io.github.libtmux.scaladsl.cats.Server.resource",
-   "page": "/scala/latest/concepts/transports/",
-   "title": "Commands and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "scala",
-   "symbol": "io.github.libtmux.scaladsl.cats.Server.resource",
-   "page": "/scala/latest/guides/ownership/",
-   "title": "Ownership",
    "section": "guides"
   },
   {
@@ -11889,6 +12344,13 @@
   {
    "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.Pane.awaitText",
+   "page": "/scala/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Pane.awaitText",
    "page": "/scala/latest/guides/execution/",
    "title": "Execution",
    "section": "guides"
@@ -11923,6 +12385,13 @@
   },
   {
    "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.query.CardinalityError.MultipleMatches",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.query.CardinalityError.NoMatch",
    "page": "/scala/latest/concepts/queries/",
    "title": "Filtering and queries",
@@ -11937,7 +12406,21 @@
   },
   {
    "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.query.Expr.and",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.query.Expr.not",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.query.Expr.or",
    "page": "/scala/latest/guides/query/",
    "title": "Queries",
    "section": "guides"
@@ -12000,6 +12483,13 @@
   },
   {
    "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.query.IterableOnce.exactlyOne",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.Server",
    "page": "/scala/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
@@ -12035,6 +12525,13 @@
   },
   {
    "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server.control",
+   "page": "/scala/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.Server.fromJava",
    "page": "/scala/latest/guides/ownership/",
    "title": "Ownership",
@@ -12057,6 +12554,13 @@
   {
    "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.Server.open",
+   "page": "/scala/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server.open",
    "page": "/scala/latest/topics/ownership/",
    "title": "Client and effect lifetimes",
    "section": "topics"
@@ -12066,6 +12570,13 @@
    "symbol": "io.github.libtmux.scaladsl.Server.shell",
    "page": "/scala/latest/guides/execution/",
    "title": "Execution",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server.within",
+   "page": "/scala/latest/guides/compatibility/",
+   "title": "Compatibility",
    "section": "guides"
   },
   {
@@ -12241,6 +12752,13 @@
    "symbol": "PanePlan",
    "page": "/swift/latest/workspace/reference/",
    "title": "Swift workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "PanePlan.shell",
+   "page": "/swift/latest/workspace/configuration/environment/",
+   "title": "Workspace environment",
    "section": "ports"
   },
   {
@@ -13955,6 +14473,13 @@
   },
   {
    "port": "scala",
+   "text": "Flow",
+   "page": "/scala/latest/guides/compatibility/",
+   "line": 30,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "scala",
    "text": "Execution.waiting",
    "page": "/scala/latest/guides/execution/",
    "line": 66,
@@ -13972,6 +14497,13 @@
    "text": "io.github.libtmux",
    "page": "/scala/latest/guides/getting-started/",
    "line": 17,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "scala",
+   "text": "Flow",
+   "page": "/scala/latest/guides/getting-started/",
+   "line": 24,
    "why": "not defined in the stated port"
   },
   {

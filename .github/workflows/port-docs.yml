@@ -311,6 +311,11 @@ jobs:
               output.write(f'version={version}\n')
           PY
 
+      - name: Read selected Elixir toolchain
+        id: elixir-runtime
+        if: matrix.port == 'elixir'
+        run: python3 docs/scripts/read-elixir-toolchain.py port
+
       - name: Install native system dependencies
         if: steps.mcp.outputs.required == 'true' || matrix.port == 'cxx'
         env:
@@ -467,6 +472,30 @@ jobs:
           set -euo pipefail
           julia --startup-file=no --project="$LIBTMUX_DOCS_JULIA_PROJECT" \
             "$LIBTMUX_DOCS_GENERATOR_CHECKOUT/docs/export-api.jl" "$PWD/docs/build/api.json"
+
+      - if: matrix.port == 'elixir'
+        uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
+        with:
+          otp-version: ${{ steps.elixir-runtime.outputs.otp-version }}
+          elixir-version: ${{ steps.elixir-runtime.outputs.elixir-version }}
+          # Exact versions only: a loose match would resolve a moving release.
+          version-type: strict
+          install-hex: true
+          install-rebar: false
+
+      # The exporter is this repository's script, run in the selected source so
+      # the build step finds _build/docs/api.json. Mix compiles the package and
+      # its C helper before the exporter reads the documentation chunks.
+      - name: Export Elixir API from the selected source
+        if: matrix.port == 'elixir'
+        working-directory: port
+        env:
+          MIX_ENV: prod
+          EXPORTER: ${{ github.workspace }}/docs/packages/api-model/scripts/export-elixir.exs
+        run: |
+          set -euo pipefail
+          mix deps.get --only prod
+          mix run --no-start "$EXPORTER" _build/docs/api.json
 
       - if: matrix.port == 'ruby'
         uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0

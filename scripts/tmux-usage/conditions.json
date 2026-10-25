@@ -1,0 +1,678 @@
+{
+  "schemaVersion": 1,
+  "conditions": [
+    {
+      "port": "java",
+      "symbol": "io.github.libtmux.Pane.Pane.sendKeys",
+      "command": "list-panes",
+      "scope": "window",
+      "when": "the pane is synchronized",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:656",
+          "has": [
+            "#{pane_synchronized}"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:667",
+          "has": [
+            "server.run("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "symbol": "io.github.libtmux.Pane.Pane.sendLiteral",
+      "command": "list-panes",
+      "scope": "window",
+      "when": "the pane is synchronized",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:656",
+          "has": [
+            "#{pane_synchronized}"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:667",
+          "has": [
+            "server.run("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "swift",
+      "symbol": "Server.newSession(named:startDirectory:windowName:width:height:)",
+      "command": "resize-window",
+      "scope": null,
+      "when": "the requested size differs from the created size",
+      "evidence": [
+        {
+          "at": "Sources/LibTmux/Creation.swift:144",
+          "has": [
+            "guard requestedSize"
+          ]
+        },
+        {
+          "at": "Sources/LibTmux/Creation.swift:149",
+          "has": [
+            "guard widthChanged || heightChanged"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "fsharp",
+      "symbol": "LibTmux.FSharp.Server.newSession",
+      "command": "list-panes",
+      "scope": "session",
+      "when": "the spec names a first window",
+      "evidence": [
+        {
+          "at": "src/LibTmux.FSharp/Hierarchy.fs:85",
+          "has": [
+            "match first with"
+          ]
+        },
+        {
+          "at": "src/LibTmux.FSharp/Hierarchy.fs:87",
+          "has": [
+            "session.GetPanesAsync("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "fsharp",
+      "symbol": "LibTmux.FSharp.Server.newSession",
+      "command": "list-panes",
+      "scope": "window",
+      "when": "the spec has more than one window",
+      "evidence": [
+        {
+          "at": "src/LibTmux.FSharp/Hierarchy.fs:91",
+          "has": [
+            "for window in"
+          ]
+        },
+        {
+          "at": "src/LibTmux.FSharp/Hierarchy.fs:109",
+          "has": [
+            "created.GetPanesAsync("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "fsharp",
+      "symbol": "LibTmux.FSharp.Server.newSession",
+      "command": "new-window",
+      "scope": null,
+      "when": "the spec has more than one window",
+      "evidence": [
+        {
+          "at": "src/LibTmux.FSharp/Hierarchy.fs:91",
+          "has": [
+            "for window in"
+          ]
+        },
+        {
+          "at": "src/LibTmux.FSharp/Hierarchy.fs:99",
+          "has": [
+            "session.CreateWindowAsync("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.observe_output",
+      "command": "refresh-client",
+      "scope": null,
+      "when": "output is not yet enabled",
+      "evidence": [
+        {
+          "at": "src/observation.jl:540",
+          "has": [
+            "if !hub.output_enabled"
+          ]
+        },
+        {
+          "at": "src/observation.jl:543",
+          "has": [
+            "\"refresh-client\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.capture_bytes",
+      "command": "delete-buffer",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "receiver": "ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_io.jl:84",
+          "through": 164,
+          "has": [
+            "function capture_bytes("
+          ]
+        },
+        {
+          "at": "src/control_io.jl:60",
+          "has": [
+            "\"delete-buffer\""
+          ]
+        },
+        {
+          "at": "src/control_io.jl:150"
+        },
+        {
+          "at": "src/pane_io.jl:64",
+          "through": 86,
+          "has": [
+            "function capture_bytes("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.load_buffer",
+      "command": "display-message",
+      "scope": null,
+      "when": "on a Server",
+      "receiver": "Server",
+      "evidence": [
+        {
+          "at": "src/pane_io.jl:182",
+          "through": 189,
+          "has": [
+            "function load_buffer("
+          ]
+        },
+        {
+          "at": "src/acquisition.jl:52",
+          "has": [
+            "\"display-message\""
+          ]
+        },
+        {
+          "at": "src/pane_io.jl:185"
+        },
+        {
+          "at": "src/control_buffers.jl:68",
+          "through": 72,
+          "has": [
+            "function load_buffer("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.snapshot",
+      "command": "display-message",
+      "scope": null,
+      "when": "on a Server",
+      "receiver": "Server",
+      "evidence": [
+        {
+          "at": "src/acquisition.jl:218",
+          "through": 247,
+          "has": [
+            "function snapshot("
+          ]
+        },
+        {
+          "at": "src/acquisition.jl:52",
+          "has": [
+            "\"display-message\""
+          ]
+        },
+        {
+          "at": "src/acquisition.jl:227"
+        },
+        {
+          "at": "src/control_io.jl:238",
+          "through": 266,
+          "has": [
+            "function snapshot("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.capture_bytes",
+      "command": "list-buffers",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "receiver": "ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_io.jl:84",
+          "through": 164,
+          "has": [
+            "function capture_bytes("
+          ]
+        },
+        {
+          "at": "src/control_io.jl:35",
+          "has": [
+            "\"list-buffers\""
+          ]
+        },
+        {
+          "at": "src/control_io.jl:112"
+        },
+        {
+          "at": "src/pane_io.jl:64",
+          "through": 86,
+          "has": [
+            "function capture_bytes("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.save_buffer",
+      "command": "list-buffers",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "receiver": "ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_buffers.jl:85",
+          "through": 116,
+          "has": [
+            "function save_buffer("
+          ]
+        },
+        {
+          "at": "src/control_io.jl:35",
+          "has": [
+            "\"list-buffers\""
+          ]
+        },
+        {
+          "at": "src/control_buffers.jl:96"
+        },
+        {
+          "at": "src/pane_io.jl:192",
+          "through": 208,
+          "has": [
+            "function save_buffer("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.capture_bytes",
+      "command": "save-buffer",
+      "scope": null,
+      "when": "on a ControlConnection",
+      "receiver": "ControlConnection",
+      "evidence": [
+        {
+          "at": "src/control_io.jl:84",
+          "through": 164,
+          "has": [
+            "function capture_bytes("
+          ]
+        },
+        {
+          "at": "src/control_io.jl:131",
+          "has": [
+            "\"save-buffer\""
+          ]
+        },
+        {
+          "at": "src/pane_io.jl:64",
+          "through": 86,
+          "has": [
+            "function capture_bytes("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.get_environment",
+      "command": "show-environment",
+      "scope": null,
+      "when": "on a Server",
+      "receiver": "Server",
+      "evidence": [
+        {
+          "at": "src/configuration.jl:343",
+          "through": 359,
+          "has": [
+            "function get_environment("
+          ]
+        },
+        {
+          "at": "src/configuration.jl:299",
+          "has": [
+            "\"show-environment\""
+          ]
+        },
+        {
+          "at": "src/configuration.jl:353"
+        },
+        {
+          "at": "src/control_options.jl:413",
+          "through": 429,
+          "has": [
+            "function get_environment("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "julia",
+      "symbol": "LibTmux.snapshot",
+      "command": "list-clients",
+      "scope": null,
+      "when": "a session exists",
+      "evidence": [
+        {
+          "at": "src/acquisition.jl:128",
+          "has": [
+            "isempty(ss)"
+          ]
+        },
+        {
+          "at": "src/acquisition.jl:129",
+          "has": [
+            "\"list-clients\""
+          ]
+        },
+        {
+          "at": "src/control_io.jl:225",
+          "has": [
+            "isempty(ss)",
+            "\"list-clients\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "swift",
+      "symbol": "Server.resize(_:width:height:)",
+      "command": "resize-pane",
+      "scope": null,
+      "when": "a width or height is given",
+      "evidence": [
+        {
+          "at": "Sources/LibTmux/Mutations.swift:70",
+          "has": [
+            "guard arguments.count > 2 else { return }"
+          ]
+        },
+        {
+          "at": "Sources/LibTmux/Mutations.swift:71",
+          "has": [
+            "expectSuccess("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "symbol": "io.github.libtmux.Shell.Shell.capturing",
+      "command": "run-shell",
+      "scope": null,
+      "when": "except from tmux 3.3 until 3.5",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Shell.java:22",
+          "has": [
+            "OUTPUT_LOST",
+            "new TmuxVersion(3, 3"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Shell.java:24",
+          "has": [
+            "OUTPUT_FOUND",
+            "new TmuxVersion(3, 5"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Shell.java:50",
+          "has": [
+            "running.atLeast(OUTPUT_LOST)",
+            "!running.atLeast(OUTPUT_FOUND)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Shell.java:51",
+          "has": [
+            "throw new UnsupportedFeatureException("
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Shell.java:55",
+          "has": [
+            "\"run-shell\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "symbol": "io.github.libtmux.Pane.Pane.paste",
+      "command": "load-buffer",
+      "scope": null,
+      "when": "except before tmux 3.4",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:962",
+          "has": [
+            "running.atLeast(Buffers.EXACT_NAMED_DELETE)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:963",
+          "has": [
+            "throw new UnsupportedFeatureException("
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Buffers.java:36",
+          "has": [
+            "EXACT_NAMED_DELETE",
+            "new TmuxVersion(3, 4"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:971",
+          "has": [
+            "server.runTogether("
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:1015",
+          "has": [
+            "running.atLeast(Buffers.EXACT_NAMED_DELETE)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:1016",
+          "has": [
+            "throw new UnsupportedFeatureException("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "symbol": "io.github.libtmux.Pane.Pane.paste",
+      "command": "paste-buffer",
+      "scope": null,
+      "when": "except before tmux 3.4",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:962",
+          "has": [
+            "running.atLeast(Buffers.EXACT_NAMED_DELETE)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:963",
+          "has": [
+            "throw new UnsupportedFeatureException("
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Buffers.java:36",
+          "has": [
+            "EXACT_NAMED_DELETE",
+            "new TmuxVersion(3, 4"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:971",
+          "has": [
+            "server.runTogether("
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:1015",
+          "has": [
+            "running.atLeast(Buffers.EXACT_NAMED_DELETE)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:1016",
+          "has": [
+            "throw new UnsupportedFeatureException("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "symbol": "io.github.libtmux.Buffers.Buffers.delete",
+      "command": "delete-buffer",
+      "scope": null,
+      "when": "except before tmux 3.4",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Buffers.java:108",
+          "has": [
+            "running.atLeast(EXACT_NAMED_DELETE)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Buffers.java:109",
+          "has": [
+            "throw new UnsupportedFeatureException("
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Buffers.java:36",
+          "has": [
+            "EXACT_NAMED_DELETE",
+            "new TmuxVersion(3, 4"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Buffers.java:111",
+          "has": [
+            "\"delete-buffer\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "symbol": "session.Session.selectWindow",
+      "command": "select-window",
+      "scope": null,
+      "when": "the target is not last, next or previous",
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/session_nav.ts:34",
+          "has": [
+            "target === \"last\""
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/session_nav.ts:35",
+          "has": [
+            "target === \"next\""
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/session_nav.ts:36",
+          "has": [
+            "target === \"previous\""
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/session_nav.ts:40",
+          "has": [
+            "\"select-window\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "go",
+      "symbol": "tmux.Server.HasSession",
+      "command": "list-sessions",
+      "scope": null,
+      "when": "the request does not set Pattern",
+      "evidence": [
+        {
+          "at": "tmux/session_lifecycle.go:139",
+          "has": [
+            "!request.Pattern"
+          ]
+        },
+        {
+          "at": "tmux/session_lifecycle.go:140",
+          "has": [
+            "s.sessionNamed(ctx, request.Target)"
+          ]
+        },
+        {
+          "at": "tmux/session_lifecycle.go:157",
+          "has": [
+            "\"list-sessions\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "csharp",
+      "symbol": "LibTmux.Pane.BreakAsync",
+      "command": "display-message",
+      "scope": null,
+      "when": "break-pane prints no window ID",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Pane.Topology.cs:192",
+          "has": [
+            "result.StandardOutputLines.Count == 0"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Pane.Topology.cs:196",
+          "has": [
+            "\"display-message\", \"-p\", \"-t\", Target"
+          ]
+        }
+      ]
+    }
+  ]
+}

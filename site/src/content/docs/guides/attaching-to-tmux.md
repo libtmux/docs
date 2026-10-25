@@ -69,7 +69,7 @@ its name. Each command stays in the calling shell; no terminal is attached.
 It stops its own server on success or failure.
 
 Save it as `connect.sh` and run `sh connect.sh`, or paste the whole block into
-a POSIX shell. It requires tmux 3.2a or newer.
+a POSIX shell. It requires tmux 3.3a or newer.
 
 ```sh title="connect.sh"
 (
@@ -135,7 +135,8 @@ socket and leaves that server running:
 [Ruby](/ruby/latest/guides/attaching-to-tmux/) ·
 [Lua](/lua/latest/guides/attaching-to-tmux/) ·
 [PowerShell](/powershell/latest/guides/attaching-to-tmux/) ·
-[Julia](/julia/latest/guides/attaching-to-tmux/)
+[Julia](/julia/latest/guides/attaching-to-tmux/) ·
+[Elixir](/elixir/latest/guides/attaching-to-tmux/)
 
 ## Where to go next
 

@@ -46,7 +46,11 @@ describe('prose mention index', () => {
     expect(mentionIndex.mentions.some((row) => row.port === 'csharp'
       && row.symbol === 'LibTmux.Workspace.WorkspaceActionKind.CaptureResult'
       && row.page === '/powershell/latest/workspace/source-guide/')).toBe(true)
-    expect(mentionIndex.dangling.filter((row) => ['powershell', 'julia'].includes(row.port))).toEqual([])
+    expect(mentionIndex.dangling.filter((row) => ['powershell', 'julia', 'elixir'].includes(row.port))).toEqual([])
+    // A bare name takes the owner an earlier link on the same page gave it, so it is neither unresolved nor a second backlink.
+    const input = '/powershell/latest/guides/input/'
+    expect(mentionIndex.mentions.filter((row) => row.page === input && row.symbol === 'LibTmux.PaneWaitOutcome.PaneExited')).toHaveLength(1)
+    expect(mentionIndex.dangling.some((row) => row.page === input && row.text === 'PaneExited')).toBe(false)
   })
 
   it('does not turn language types into unrelated API backlinks', () => {

@@ -1,0 +1,82 @@
+name: verify-destinations
+
+# The port header links each repository, package page and API reference the
+# inventory publishes, and site/src/data/destination-evidence.json records the
+# live answer for each (scripts/verify-destinations.mjs). Nothing in a pull
+# request can notice a registry change or time passing, so this runs weekly and
+# on demand, and is not part of test or deploy-shell: a registry outage or an
+# old record must never block a docs change.
+#
+# The job cannot commit, so the live run writes to a temporary file. That run
+# fails on a published destination that no longer passes, an unlinked one that
+# now answers, or a version a host lacks. The second step holds the evidence in
+# the repository to the age bound, so it fails once a refresh is due. The fresh
+# file is kept as an artifact: commit it with the inventory change that follows.
+#
+# The same run holds the standard-library and SDK links the reference pages
+# make to the same standard (scripts/verify-api-destinations.mjs): the page
+# exists, the fragment is an anchor on it, and what the page declares it
+# documents (kind, package, name, operand count, parameters) is what the link
+# names. Its evidence is site/src/data/api-destination-evidence.json. A host
+# that blocks the request or renders the page in the browser is reported as
+# unresolved, never as passing.
+#
+# Read-only requests to public hosts; no secrets and no write access.
+
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-destinations
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '26'
+
+      - name: Verify every destination against its host
+        run: node scripts/verify-destinations.mjs --out "$RUNNER_TEMP/destination-evidence.json"
+
+      # Runs after a failed live run too, so one run reports both problems.
+      - name: Require the committed evidence to be fresh
+        if: ${{ !cancelled() }}
+        run: node scripts/verify-destinations.mjs --check --fresh
+
+      - name: Verify every standard-library and SDK link against its host
+        if: ${{ !cancelled() }}
+        run: node scripts/verify-api-destinations.mjs --no-cache --out "$RUNNER_TEMP/api-destination-evidence.json"
+
+      - name: Require the committed API evidence to be fresh
+        if: ${{ !cancelled() }}
+        run: node scripts/verify-api-destinations.mjs --check --fresh
+
+      - name: Keep the fresh evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: destination-evidence
+          path: ${{ runner.temp }}/destination-evidence.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Keep the fresh API evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: api-destination-evidence
+          path: ${{ runner.temp }}/api-destination-evidence.json
+          if-no-files-found: ignore
+          retention-days: 14

@@ -16,7 +16,7 @@ address those objects.
 
 ## Read a hierarchy with a shared window
 
-Save this complete script as `traversal.sh`. It requires tmux 3.2a or newer
+Save this complete script as `traversal.sh`. It requires tmux 3.3a or newer
 and a POSIX shell. It creates a shared window on a private server and checks
 both listing-row counts and unique pane counts.
 

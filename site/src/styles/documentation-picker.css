@@ -49,6 +49,8 @@
 .header-picker__group > .header-picker__option { margin-inline-start: .5rem; }
 .header-picker__icon { display: grid; place-items: center; flex: none; width: 1.5rem; color: var(--color-muted); }
 .header-picker__text { display: grid; min-width: 0; }
+/* A detail is one line; the accessible name keeps the whole of it. */
+.header-picker__text > small { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .header-picker__name { font-weight: 500; }
 .header-picker__option:is(:hover, :focus-visible) .registry-icon { color: var(--icon-brand); }
 html[data-theme-mode='dark'] .header-picker__option:is(:hover, :focus-visible) .registry-icon { color: var(--icon-brand-dark); }

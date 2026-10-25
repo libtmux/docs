@@ -15,7 +15,7 @@ describe('C++ standard references', () => {
     const names = new Set(annotations.flatMap((text) => [...text.matchAll(/std::[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*/g)].map((match) => match[0])))
     expect(names.size).toBeGreaterThanOrEqual(50)
     for (const name of names) {
-      expect(index.linkType(name)[0]?.link, name).toMatchObject({ external: true, href: expect.stringContaining('https://en.cppreference.com/w/cpp/') })
+      expect(index.linkType(name)[0]?.link, name).toMatchObject({ external: true, href: expect.stringContaining('https://en.cppreference.com/cpp/') })
     }
   })
 
@@ -27,7 +27,7 @@ describe('C++ standard references', () => {
     const symbol = model.symbols.find((symbol) => symbol.parent === 'libtmux::ExecutionPolicy' && symbol.type?.includes(name))!
     expect(symbol).toBeDefined()
     const spans = new SymbolIndex(model.symbols, () => '#', 'cxx').linkType(symbol.type!, symbol)
-    expect(spans.find((span) => span.text === name)?.link).toMatchObject({ href: `https://en.cppreference.com/w/cpp/${page}`, external: true })
+    expect(spans.find((span) => span.text === name)?.link).toMatchObject({ href: `https://en.cppreference.com/cpp/${page}`, external: true })
   })
 
   it.each([
@@ -62,7 +62,7 @@ describe('C++ standard references', () => {
     expect(help[0]).toMatchObject({ text: 'nodiscard', keyword: true,
       help: { href: 'https://eel.is/c++draft/dcl.attr.nodiscard' } })
     expect(help[0].link).toBeUndefined()
-    expect(spans.some((span) => span.link?.href.startsWith('https://en.cppreference.com/w/cpp/') && span.text !== 'int')).toBe(false)
+    expect(spans.some((span) => span.link?.href.startsWith('https://en.cppreference.com/cpp/') && span.text !== 'int')).toBe(false)
   })
 
   it('keeps numeric digit separators separate from character literals and later type names', () => {
@@ -71,7 +71,7 @@ describe('C++ standard references', () => {
     const spans = index.linkType(annotation)
     expect(spans.map((span) => span.text).join('')).toBe(annotation)
     expect(spans.find((span) => span.text === 'std::size_t')?.link).toEqual({
-      href: 'https://en.cppreference.com/w/cpp/types/size_t', external: true,
+      href: 'https://en.cppreference.com/cpp/types/size_t', external: true,
     })
   })
 
@@ -146,6 +146,16 @@ describe('standard types in product signatures', () => {
     expect(builtinHref('powershell', 'ApplicationInfo')).toBe('https://learn.microsoft.com/dotnet/api/system.management.automation.applicationinfo?view=powershellsdk-7.4.0')
   })
 
+  it('links PSResourceGet and the argument exception that PowerShell guides name', () => {
+    expect(builtinHref('powershell', 'Install-PSResource'))
+      .toBe('https://learn.microsoft.com/powershell/module/microsoft.powershell.psresourceget/install-psresource?view=powershellget-3.x')
+    expect(builtinHref('powershell', 'System.ArgumentException')).toBe('https://learn.microsoft.com/dotnet/api/system.argumentexception')
+    for (const name of ['ArgumentException', 'System.InvalidOperationException', 'Install-Module']) {
+      expect(builtinHref('powershell', name), name).toBeUndefined()
+    }
+    expect(builtinHref('csharp', 'Install-PSResource')).toBeUndefined()
+  })
+
   it('resolves compiler utility types without claiming local declarations', () => {
     const utilities = new SymbolIndex([], () => '#', 'ts')
     for (const [name, target] of Object.entries(TYPESCRIPT_UTILITY_TYPES)) {
@@ -211,7 +221,7 @@ describe('standard types in product signatures', () => {
     ['csharp', 'ReadOnlyMemory<byte>', 'ReadOnlyMemory', 'https://learn.microsoft.com/dotnet/api/system.readonlymemory-1'],
     ['csharp', 'IEnumerator<T>', 'IEnumerator', 'https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1'],
     ['csharp', 'IReadOnlyCollection<Pane>', 'IReadOnlyCollection', 'https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1'],
-    ['cxx', 'std::function<void(double)>', 'double', 'https://en.cppreference.com/w/cpp/language/types'],
+    ['cxx', 'std::function<void(double)>', 'double', 'https://en.cppreference.com/cpp/keyword/double'],
     ['swift', 'Data', 'Data', 'https://developer.apple.com/documentation/foundation/data'],
     ['swift', 'AsyncStream<String>', 'AsyncStream', 'https://developer.apple.com/documentation/swift/asyncstream'],
     ['py', 'Unpack[Config]', 'Unpack', 'https://docs.python.org/3/library/typing.html#typing.Unpack'],
@@ -311,14 +321,20 @@ describe('.NET exception references in F# and C#', () => {
     ['System.Threading.Tasks.TaskCanceledException', 'system.threading.tasks.taskcanceledexception'],
   ] as const
 
+  // The F# port's files open System and System.Threading.Tasks (the model's `namespaceImports`), so only those exceptions are
+  // written bare there; an exception of a namespace no file opens is linked by its full name.
+  const fsharpOpened = new Set(['System', 'System.Threading.Tasks'])
+
   it.each(['fsharp', 'csharp'])('links verified qualified and imported exception names in %s', (port) => {
     const index = new SymbolIndex([], () => '#', port)
     for (const [qualified, page] of exceptions) {
-      for (const name of [qualified, qualified.split('.').at(-1)!]) {
+      const bare = port === 'csharp' || fsharpOpened.has(qualified.slice(0, qualified.lastIndexOf('.')))
+      for (const name of bare ? [qualified, qualified.split('.').at(-1)!] : [qualified]) {
         const href = `https://learn.microsoft.com/dotnet/api/${page}`
         expect(builtinHref(port, name), `${port}:${name}`).toBe(href)
         expect(index.linkType(name)).toEqual([{ text: name, link: { href, external: true } }])
       }
+      if (!bare) expect(builtinHref(port, qualified.split('.').at(-1)!), `${port}:${qualified} bare`).toBeUndefined()
     }
   })
 

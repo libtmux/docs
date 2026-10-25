@@ -13,7 +13,9 @@ Add a `Port` object to the `PORTS` array with every required field:
 `versionedDocs`, `tagGrammar`, `renderer`, `generator`, `installs`,
 `initProject`, and `installForms`. Add `registry`, `packages`,
 `productAvailability`, `ecosystemHost`, and `publishesOwnApi` only when their
-contracts apply. Decide the renderer and hosting ownership first:
+contracts apply. Set `publishesOwnTree` on every library whose caller publishes
+its version tree; without it the shell also publishes the port's `latest`
+prefix. Decide the renderer and hosting ownership first:
 
 - **Ecosystem-hosted** (`renderer: 'none'`, `ecosystemHost` set) only when a
   canonical, free, self-updating host for that language's ecosystem already
@@ -38,6 +40,64 @@ workflow and select their own language.
 `slug` becomes the URL segment (`/<slug>/<version>/...`) and the manifest key
 in `versions.json` (§4) — pick it once, since changing it later is a URL
 break for every published version.
+
+### Inventory the port's packages and destinations
+
+The header links a port's repository and package host and lists every other
+package, command, module and source directory it ships.
+`site/src/lib/port-inventory.ts` holds that list, one entry per thing a reader
+can depend on, run or read. Write each entry from the owning manifests and
+release configuration, not from the documentation products: the library
+first, then its repository, companions, commands, MCP server and testing
+products. Leave out private workspaces and development tools.
+
+Name a package page or API reference only where the host really serves one.
+A port installed from Git, or from its own registry, names no host page. Set
+an entry `planned` or `configured-unpublished` until its host serves it: only
+`published` entries produce links. List a page an ecosystem suggests and its
+host does not serve as `unavailable`.
+
+Give a package that ships inside another distribution (a Go package, a
+SwiftPM target, an export path) the id of the distribution in `within`, and
+the ecosystem's word for it in `unit`. An entry that is one file of a
+repository, such as a Julia package extension or a Python plugin module, names
+the file in `path` and sets `file: true`, so it opens that file rather than a
+directory it shares with its neighbours. An entry that is a command (an
+executable product, a `cmd/` package, a CMake executable, or a package that
+only installs one) is `cli` in every port, and its build target is a `target`.
+A package that offers a library as well as a command is judged by its role, so
+a workspace library with a CLI is a `companion`.
+
+Add a reader for the port's manifests to `scripts/lib/manifest-packages.mjs`
+and regenerate `site/src/data/manifest-packages.json`, which the inventory's
+tests compare with in both directions:
+
+```console
+$ node scripts/gen-manifest-packages.mjs
+```
+
+Then run the verifier. It requests each URL once, read-only, from the live
+hosts, checks that the manifest's version is on every host that lists versions,
+and records what it found:
+
+```console
+$ node scripts/verify-destinations.mjs
+```
+
+The verifier refuses to run, with or without `--check`, if a port in `ports.ts`
+has no inventory entry with a published library: the header builds its links
+from that entry, so a port without one would offer nothing. A host the
+inventory has not named before needs an identity rule in
+`scripts/lib/destination-verification.mjs` and its cases in
+`scripts/verify-destinations.negative.mjs`; without a rule its destinations are
+recorded as `unverifiable` and fail.
+
+The command exits 1 if a published destination fails or an unlinked one starts
+to answer. Commit the updated `site/src/data/destination-evidence.json`; the
+unit tests and the publication audit hold the inventory to it, and warn
+when it is older than `EVIDENCE_MAX_AGE_DAYS`; the weekly
+`verify-destinations.yml` re-verifies it and fails once a refresh is due. Add the port's expected links, with the
+entries behind each row, to `site/test/fixtures/header-links.ts`.
 
 ## 2. Add the worktree
 
@@ -73,7 +133,19 @@ In the new worktree, on `docs-site`:
   `site/src/lib/api-models.ts`, and the generated model/nav/path sidecars.
   If the port owns guides, stage them from the same checkout with explicit
   routes and source provenance. Ruby's inventory/YARD/RBS adapter and Lua's
-  LuaLS adapter are the current examples.
+  LuaLS adapter are the current examples. Elixir's exporter lives in this
+  repository, as F#'s does: `packages/api-model/scripts/export-elixir.exs` runs in the
+  checkout through its own Mix toolchain, reads the compiled application's
+  documentation chunks and typespecs, and formats each declaration with the
+  language's formatter. `port-docs.yml` runs it in CI with the Erlang/OTP and
+  Elixir versions that the selected source pins in `priv/tmux/support.json`.
+  Run it locally, then extract the model:
+
+  ```console
+  $ (cd ~/work/libtmux/libtmux-elixir-docs-site && MIX_ENV=prod mix run --no-start \
+      ~/work/libtmux/docs/packages/api-model/scripts/export-elixir.exs _build/docs/api.json)
+  $ node scripts/gen-api-model.mjs --port elixir
+  ```
 - **`native-skinned` port**: point the language's own generator (DocC,
   rustdoc, Dokka, ...) at our CSS/token output and a header/footer injection
   point, following whichever of those generators is the closest precedent —
@@ -183,6 +255,7 @@ bytes are a no-op and different bytes fail before upload.
 ## Checklist summary
 
 - [ ] `ports.ts`: new `Port` entry, renderer and product availability decided
+- [ ] `port-inventory.ts`: entries from the manifests, verified, with evidence committed
 - [ ] Worktree added on branch `docs-site`, `checkout`/`worktree` paths match
 - [ ] Native exporter and API-model adapter cover the public surface
 - [ ] Source-owned prose/examples stage from the selected revision

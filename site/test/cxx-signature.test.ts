@@ -31,7 +31,7 @@ async function signatureComponent() {
   const helpers = 'data:text/javascript,export const { nativeSignatureText, apiSignatureLayouts } = globalThis.__cxxSignatureHelpers'
   expect((await import(/* @vite-ignore */ helpers)).nativeSignatureText).toBe(nativeSignatureText)
   const name = await compile('../src/components/api/SymbolName.astro', { '../../lib/word-break': new URL('../src/lib/word-break.ts', import.meta.url).href })
-  const preview = await compile('../src/components/LinkPreview.astro')
+  const preview = await compile('../src/components/LinkPreview.astro', { '../lib/link-preview-card': new URL('../src/lib/link-preview-card.ts', import.meta.url).href })
   const keyword = await compile('../src/components/api/ApiKeyword.astro', { '../LinkPreview.astro': preview })
   const type = await compile('../src/components/api/ApiType.astro', {
     './SymbolName.astro': name, './ApiKeyword.astro': keyword,
@@ -87,7 +87,7 @@ describe('C++ native signature emission', () => {
           expect(signature.getAttribute('data-code-width-status')).toBe('fits')
           expect(signature.querySelector('button.api-keyword-trigger')?.textContent).toBe('nodiscard')
           expect(signature.querySelector('[popover] a[href="https://eel.is/c++draft/dcl.attr.nodiscard"]')).not.toBeNull()
-          expect(signature.querySelector('a[href="https://en.cppreference.com/w/cpp/container/vector"]')?.textContent).toBe('std::vector')
+          expect(signature.querySelector('a[href="https://en.cppreference.com/cpp/container/vector"]')?.textContent).toBe('std::vector')
           expect(signature.querySelector('.api-signature-name-link')?.textContent).toBe(member ? name : undefined)
         }
       }

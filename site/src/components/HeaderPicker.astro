@@ -1,71 +1,62 @@
 ---
 import RegistryIcon from './icons/RegistryIcon.astro'
-import { pickerSections, type Port, type PortPicker } from '../lib/ports'
+import { headerSections, type HeaderRow } from '../lib/header-links'
+import type { Port } from '../lib/ports'
 import '../styles/documentation-picker.css'
 
 /**
- * A top-bar menu of a port's external destinations, built on the documentation
- * picker: a native disclosure, a searchable list of ordinary links and the
- * shared initializer's Escape, outside-click and positioning behavior. Every
- * row is an external link, so the shared link hint draws its one glyph.
+ * A top-bar disclosure of every published destination of a port: a native
+ * details of ordinary external links, with the documentation picker's search,
+ * Escape and focus return, outside dismissal and viewport placement. The
+ * primary repository and package are direct links beside it; this lists the
+ * rest, grouped as source, packages and API reference.
  *
- * The product a row belongs to is a plain-text heading naming its group, never
- * a link, so it takes no focus and no arrow-key stop. A menu of one product
- * has nothing to tell apart and carries no heading.
+ * A group's heading is plain text naming the kind of destination, never a
+ * link, so it takes no focus and no arrow-key stop. A list of one kind has
+ * nothing to tell apart and carries no heading.
  */
 interface Props {
   port: Port
-  picker: PortPicker
+  rows: readonly HeaderRow[]
   /**
-   * The bar holds the menus from 48rem; below that the Menu panel holds a
+   * The bar holds the disclosure from 48rem; below that the Menu panel holds a
    * second copy, and CSS leaves one of them visible.
    */
   placement: 'bar' | 'menu'
 }
-const { port, picker, placement } = Astro.props
+const { port, rows, placement } = Astro.props
 
-const copy = picker.kind === 'github' ? {
-  trigger: 'GitHub: choose a repository', title: 'Source on GitHub', search: 'Find a repository',
-  placeholder: 'Find a repository…', empty: 'No matching repositories.',
-} : picker.kind === 'packages' ? {
-  trigger: 'Packages: choose a package', title: `Packages on ${picker.context}`, search: 'Find a package',
-  placeholder: 'Find a package…', empty: 'No matching packages.',
-} : {
-  trigger: 'Docs: choose an API reference', title: 'API reference', search: 'Find an API reference',
-  placeholder: 'Find an API reference…', empty: 'No matching references.',
-}
-const sections = pickerSections(picker)
+const sections = headerSections(rows)
 const titled = sections.length > 1
 // The bar and Menu copies share a page, so each heading id carries its placement.
-const headingId = (group: string) => `header-picker-${placement}-${picker.kind}-${group}`
-// A single destination needs no search.
-const searchable = picker.rows.length > 1
+const headingId = (kind: string) => `header-picker-${placement}-${kind}`
+const searchable = rows.length > 1
 ---
-<details class="doc-picker header-picker" data-doc-picker data-header-picker={picker.kind} data-placement={placement} data-pagefind-ignore="all">
-  <summary class="topnav-chip header-picker__trigger" aria-label={copy.trigger}>
-    <RegistryIcon icon={picker.icon} decorative />
-    <span class="header-picker__label">{picker.label}</span>
+<details class="doc-picker header-picker" data-doc-picker data-header-picker="destinations" data-placement={placement} data-pagefind-ignore="all">
+  <summary class="topnav-chip header-picker__trigger" aria-label="Packages and source: choose a destination">
+    <RegistryIcon icon="packages" decorative />
+    <span class="header-picker__label">Packages</span>
     <svg class="doc-picker-caret" width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
   </summary>
   <div class="doc-picker-panel header-picker__panel" data-picker-panel>
-    <p class="doc-picker-title">{copy.title} <span class="doc-picker-count">{picker.rows.length}</span></p>
+    <p class="doc-picker-title">Packages and source <span class="doc-picker-count">{rows.length}</span></p>
     {searchable && <label class="doc-picker-search" hidden data-picker-search-label>
-      <span class="sr-only">{copy.search}</span>
+      <span class="sr-only">Find a package, repository or API reference</span>
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg>
-      <input type="search" placeholder={copy.placeholder} autocomplete="off" data-picker-search />
+      <input type="search" placeholder="Find a package or repository…" autocomplete="off" data-picker-search />
     </label>}
-    {sections.map(({ group, label, rows }) => <div class="header-picker__group" data-picker-group data-group={group}
-      role={titled ? 'group' : undefined} aria-labelledby={titled ? headingId(group) : undefined}>
-      {titled && <p class="header-picker__heading" id={headingId(group)} data-picker-heading>{label}</p>}
-      {rows.map((row) => <a class="doc-picker-option header-picker__option" href={row.url} rel="noopener" data-picker-option data-match={row.match}>
+    {sections.map(({ kind, label, rows: group }) => <div class="header-picker__group" data-picker-group data-group={kind}
+      role={titled ? 'group' : undefined} aria-labelledby={titled ? headingId(kind) : undefined}>
+      {titled && <p class="header-picker__heading" id={headingId(kind)} data-picker-heading>{label}</p>}
+      {group.map((row) => <a class="doc-picker-option header-picker__option" href={row.url} rel="noopener" data-picker-option data-match={row.match} data-entries={row.entries.join(' ')}>
         <span class="header-picker__icon"><RegistryIcon icon={row.icon} decorative /></span>
         <span class="header-picker__text"><span class="header-picker__name">{row.label}</span><small>{row.detail}</small></span>
       </a>)}
     </div>)}
     {searchable && <>
-      <p class="doc-picker-empty" data-picker-empty hidden>{copy.empty}</p>
+      <p class="doc-picker-empty" data-picker-empty hidden>No matching destinations.</p>
       <p class="sr-only" role="status" data-picker-status></p>
     </>}
-    <div class="header-picker__footer"><span>{port.name}</span>{' · '}<span>{picker.context}</span></div>
+    <div class="header-picker__footer"><span>{port.name}</span>{' · '}<span>{port.repo}</span></div>
   </div>
 </details>

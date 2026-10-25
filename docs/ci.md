@@ -29,6 +29,7 @@ The current ownership split is:
 | Swift (`swift`) | `port-docs.yml`, with the symbol graph | `publishesOwnTree` |
 | Ruby (`ruby`) | its own exporter | `publishesOwnTree` |
 | Lua (`lua`) | its own exporter | `publishesOwnTree` |
+| Elixir (`elixir`) | `port-docs.yml`, with the exporter in `packages/api-model` | `publishesOwnTree` |
 | Python (`py`) | its own Sphinx build | `publishesOwnApi`; the shell publishes the rest |
 
 Python's reviewed caller branch can build and publish a complete tree, but its
@@ -91,9 +92,9 @@ the site inside it.
 
 `path-prefix` is validated inside the reusable workflow: non-empty, no
 leading or trailing slash, no `..` segment, and never a bare reserved name
-(`py`, `ruby`, `lua`, `ts`, `rs`, `go`, `java`, `dotnet`, `cxx`, `swift`, `manifest`,
-`_shell`) — a caller cannot `sync --delete` an entire language root even by
-mistake, because that path never validates.
+(every slug in `site/src/lib/ports.ts`, `manifest` and `_shell`). A caller
+cannot `sync --delete` an entire language root even by mistake, because that
+path never validates.
 
 ## The manifest
 
@@ -468,6 +469,41 @@ An S3 lifecycle rule expiring objects under `pr-*/` after roughly two weeks
 is the backstop for any cleanup run that never fires (a workflow disabled,
 a run that errors before the delete step) — that rule is `infra/`'s
 concern, not this workflow's.
+
+## Header destination check (`verify-destinations.yml`)
+
+Runs weekly and on demand. It asks each host the port header links to whether
+the package, repository or API page still exists and still names what the
+inventory says (`scripts/verify-destinations.mjs`), and holds the evidence
+committed in `site/src/data/destination-evidence.json` to its age bound. It is
+not a dependency of `test.yml` or `deploy-shell.yml`: a registry outage or an
+old record must not block a docs change, and a change that touches none of this
+does not fail because time passed.
+
+The job has `contents: read`, no secrets and no way to push, so the live run
+writes to a temporary file and the workflow uploads it as the
+`destination-evidence` artifact. The second step runs even when the first
+fails, so one run reports both a failing destination and stale evidence. To
+clear either, run `node scripts/verify-destinations.mjs` locally (or download
+the artifact), and commit the file with the inventory change that follows.
+Plain `--check`, which `test.yml` runs through the publication audit, prints
+stale records as `::warning::` annotations under GitHub Actions and still
+passes.
+
+The same workflow holds the standard-library and SDK links to the symbols they
+name (`scripts/verify-api-destinations.mjs`): the identity a page declares, its
+kind, package, name, operand count and parameters, must be the one the link was
+made for. Its second pair of steps does for
+`site/src/data/api-destination-evidence.json` what the first does for the
+header evidence: the live run writes to a temporary file that the
+`api-destination-evidence` artifact carries, and `--check --fresh` holds the
+committed file to the age bound even after the live run failed. Pull request CI
+only runs `--check` without `--fresh` through the publication audit, so a
+change fails there for a link with no passing record, never for a host's
+answer or the passage of time. A host that blocks the request or renders the
+page in the browser is printed as unresolved and never counted as passing, and
+a run that leaves more than a twentieth of the destinations unresolved fails,
+because a run that asked almost nothing has checked almost nothing.
 
 ## Secrets this scheme expects
 

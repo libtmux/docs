@@ -55,6 +55,13 @@ html[data-native-shell] :is(.site-header, .documentation-context, .prerelease-no
 html[data-native-shell] .site-header h3,
 html[data-native-shell] .documentation-context h3 { font-family: var(--font-sans); }
 html[data-native-shell] .toolbar-button { cursor: pointer; }
+html[data-native-shell] .page { display: grid; grid-template-columns: minmax(0, 1fr); }
+html[data-native-shell] .page > .main { min-width: 0; }
+html[data-native-shell] .page > .api-nav-column { font-family: var(--font-sans); font-size: 1rem; line-height: 1.5; }
+html[data-native-shell] :is(#__navigation, .sidebar-overlay) { display: none; }
+@media (min-width: 56rem) {
+  html[data-native-shell] .page { grid-template-columns: 16rem minmax(0, 1fr); }
+}
 html[data-native-shell] .sidebar-drawer { z-index: 45; }
 html[data-native-shell] .sidebar-overlay,
 html[data-native-shell] .toc-overlay { z-index: 44; }

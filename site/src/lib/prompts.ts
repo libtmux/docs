@@ -499,6 +499,10 @@ export function portParts(args: {
     unavailable['session-freezer'] = 'Ruby workspace support loads and applies creation plans. It does not freeze a live session, preserve program state, or reconcile an existing topology. Report that boundary and do not invent a freeze API.'
     unavailable['session-supervisor'] = 'Ruby workspace support is creation-only. It can validate, plan, and load a new workspace, but it does not reconcile or delete drift. Report that boundary and do not present creation as convergence.'
   }
+  if (port.slug === 'elixir') {
+    unavailable['session-freezer'] = 'Elixir has no published workspace package or loader. Document the missing product and stop; do not call the scaffold or invent freeze and restore APIs.'
+    unavailable['session-supervisor'] = 'Elixir has no published workspace product or reconciliation API. Document the missing product and stop; do not advertise scaffold packages as usable.'
+  }
   if (port.slug === 'lua') {
     unavailable['session-freezer'] = 'Lua has no published workspace package or loader. Document the missing product and stop; do not call the scaffold or invent freeze and restore APIs.'
     unavailable['session-supervisor'] = 'Lua has no published workspace product or reconciliation API. Document the missing product and stop; do not advertise scaffold modules as usable.'

@@ -116,7 +116,8 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
     </button>
   </DocumentationContext>
   <main class:list={['api-reference-layout grid', object && 'api-reference-layout--symbol']}>
-    <ApiTree referenceBase={base} glossaryHref={`${base}reference/glossary/`} glossaryLabel={MCP_GLOSSARY_TITLE} portName={info.name} tree={navigation.tree} currentRoot={section}
+    <ApiTree presentation="outline" inventory={navigation.json} selectedSymbol={object?.id ?? `section:${section}`}
+      referenceBase={base} glossaryHref={`${base}reference/glossary/`} glossaryLabel={MCP_GLOSSARY_TITLE} portName={info.name} tree={navigation.tree} currentRoot={section}
       currentBucket={currentBucket} currentIndex={object ? undefined : section} ownerId={object?.id}
       members={[]} withMembers={new Set()} currentPath={Astro.url.pathname} version={navigation.version}
       indexLabel="" marks="mixed" treeLabel={`${info.name} MCP reference`} searchLabel="Find an MCP object" searchPlaceholder="Find tool, prompt, resource"

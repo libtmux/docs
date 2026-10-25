@@ -5,10 +5,11 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { dev } from 'astro'
 import { chromium, firefox, webkit } from 'playwright'
-import { API_MODEL_PORTS, PORTS, productAvailable } from '../src/lib/ports.ts'
+import { API_MODEL_PORTS, PORTS, productAvailable, referenceSegment } from '../src/lib/ports.ts'
+import { buildTarget, defaultVersionFor } from '../src/lib/versions.ts'
 import { checkClipboard, checkCompleteApiExamples } from './check-clipboard.mjs'
-import { checkApiAnchorArrival, checkApiExampleOwnership, checkApiNavigation, checkApiStickyHeadings, checkApiStickyHeadingsFail, checkDocumentationNavigation, checkNavigation } from './check-navigation.mjs'
-import { checkReferencePreferences, checkGlobalHeader } from './check-reference-preferences.mjs'
+import { checkApiAnchorArrival, checkApiExampleOwnership, checkApiNavigation, checkApiNavigationFail, checkApiStickyHeadings, checkApiStickyHeadingsFail, checkReferenceSidebarBounds, checkReferenceSidebarBoundsFail, checkDocumentationNavigation, checkNavigation } from './check-navigation.mjs'
+import { checkReferencePreferences, checkGlobalHeader, checkHeaderLinksFail } from './check-reference-preferences.mjs'
 import { checkHeaderMenuSections, checkHeaderMenuSectionsFail } from './check-header-menu-sections.mjs'
 import { checkStatusBadges, checkStatusBadgesFail } from './check-status-badges.mjs'
 import { checkHomeLauncher } from './check-home-launcher.mjs'
@@ -17,10 +18,11 @@ import { checkColorScheme } from './check-color-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample, checkRowPermalinks } from './check-dev-sample.mjs'
 import { checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkMemberBodyInsets, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
-import { checkBadgeCentring, checkMentionDensity } from './check-badge-centring.mjs'
-import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkRequiredAppearance, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
+import { checkBadgeCentring, checkChipGrowth, checkMentionDensity, checkUsageChips } from './check-badge-centring.mjs'
+import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkKindBadgeLinksFail, checkRequiredAppearance, checkTmuxReferencePreviews, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
 import { checkTypeParameters } from './check-type-parameters.mjs'
 import { checkTmuxKeys, TMUX_KEY_PAGES } from './check-tmux-keys.mjs'
+import { checkSidebarDemo } from './check-sidebar-demo.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiAnchorsOnly = process.argv.includes('--api-anchors')
@@ -37,6 +39,7 @@ const globalHeaderOnly = process.argv.includes('--global-header')
 const headerMenuSectionsOnly = process.argv.includes('--header-menu-sections')
 const statusBadgesOnly = process.argv.includes('--status-badges')
 const badgeCentringOnly = process.argv.includes('--badge-centring')
+const referencePreviewsOnly = process.argv.includes('--reference-previews')
 const homeLauncherOnly = process.argv.includes('--home-launcher')
 const homeControlsOnly = process.argv.includes('--home-controls')
 const sampleOnly = process.argv.includes('--sample')
@@ -55,6 +58,10 @@ Object.assign(process.env, {
   LIBTMUX_DOCS_LOCALES_ROOT: '', LIBTMUX_DOCS_LOCALE: 'en', LIBTMUX_DOCS_PORT: '',
   LIBTMUX_DOCS_VERSION: 'latest', LIBTMUX_DOCS_PORT_DEFAULTS: '{"py":"stable"}',
 })
+// The one version of each port's reference this build serves: its own target, as the site's build target says it. A port's core
+// reference is a tree of its own, so a link to another version of it (the Python reference that the other ports link to at its
+// default, `stable`) names a tree this build does not contain. The routes below and the checks that ask what is served read it here.
+const MIRRORED_VERSION = buildTarget(process.env).version
 // Astro always writes root/.astro, so a separate cacheDir alone cannot isolate it.
 const source = fileURLToPath(new URL('../', import.meta.url))
 // Astro resolves external component styles against the nearest shared path.
@@ -182,7 +189,7 @@ for (const { port, symbol } of entries) {
 </DocsLayout>
 `)
 for (const { slug: port } of PORTS) {
-  const directory = join(root, `src/pages/${port}/latest/reference`)
+  const directory = join(root, `src/pages/${port}/${MIRRORED_VERSION}/reference`)
   mkdirSync(directory, { recursive: true })
   writeFileSync(join(directory, '[...slug].astro'), `---
 import Reference from '../../../reference/[...slug].astro'
@@ -224,10 +231,10 @@ import { coreApiSymbols } from '../../../../lib/product-api'
 export { GET } from '../../../[...slug].preview.json'
 export function getStaticPaths() {
   const model = API_MODELS.${port}
-  const glossary = referenceUrl(PORT_BY_SLUG.${port}, 'latest') + 'glossary/'
+  const glossary = referenceUrl(PORT_BY_SLUG.${port}, '${MIRRORED_VERSION}') + 'glossary/'
   return [{ params: { slug: 'glossary' }, props: { preview: glossaryPreview(glossary) } },
     ...coreApiSymbols(model).map((owner) => ({ params: { slug: owner.slug },
-      props: { preview: symbolPreview(model, owner, 'latest') } }))]
+      props: { preview: symbolPreview(model, owner, '${MIRRORED_VERSION}') } }))]
 }
 `)
   writeFileSync(join(directory, 'tree.json.ts'), `
@@ -236,12 +243,14 @@ export const GET = () => new Response(JSON.stringify(referenceTree('${port}')), 
   headers: { 'Content-Type': 'application/json' },
 })
 `)
-  writeFileSync(join(root, `src/pages/${port}/latest/index.astro`), `---
+  writeFileSync(join(root, `src/pages/${port}/${MIRRORED_VERSION}/index.astro`), `---
 import Home from '../../index.astro'
 ---
 <Home port="${port}" />
 `)
 }
+/** What this build serves, for a check that asks whether a link's destination is in it. */
+const servedBuild = (base) => ({ root: new URL(base).pathname.replace(/\/$/, ''), ports: PORTS, version: MIRRORED_VERSION, segment: referenceSegment('core') })
 let server, browser
 const terminate = async () => {
   await browser?.close()
@@ -253,6 +262,23 @@ process.on('SIGINT', terminate)
 const startServer = () => dev({ root, cacheDir: join(mirror, 'cache'),
   devToolbar: { enabled: false },
   vite: { cacheDir: join(mirror, 'vite'),
+    ...(serveOnly ? { plugins: [{ name: 'source-preview-aliases', configureServer(viteServer) {
+      // Run before Astro's base-path guard, including requests for HTML.
+      return () => viteServer.middlewares.stack.unshift({ route: '', handle(request, response, next) {
+        const url = request.url ?? '/'
+        const path = url.split('?')[0]
+        const reference = path.match(/^\/en\/([^/]+)\/([^/]+)\/reference(?:\/|$)/)
+        if (reference && API_MODEL_PORTS.some((port) => port.slug === reference[1])
+          && reference[2] === defaultVersionFor(reference[1]) && reference[2] !== MIRRORED_VERSION) {
+          response.writeHead(302, { Location: url.replace(`/${reference[1]}/${reference[2]}/reference`, `/${reference[1]}/${MIRRORED_VERSION}/reference`) })
+          response.end()
+          return
+        }
+        if (path !== '/' && path !== '/demo' && !path.startsWith('/demo/')) return next()
+        response.writeHead(302, { Location: `/en${url}` })
+        response.end()
+      } })
+    } }] } : {}),
     ...(requestedBrowserPort === undefined ? {} : { server: { strictPort: true } }) }, logLevel: 'error',
   server: { host: '127.0.0.1', port: requestedBrowserPort === undefined
     ? (serveOnly ? 53971 : 0) : Number(requestedBrowserPort) } })
@@ -746,10 +772,11 @@ try {
     : keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
     : apiStickyOnly ? '/swift/latest/reference/server/'
     : badgeCentringOnly ? '/py/stable/guides/attaching-to-tmux/'
+    : referencePreviewsOnly ? '/cxx/latest/reference/libtmux-server-panes/'
     : documentationNavigationOnly || headerMenuSectionsOnly || statusBadgesOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
     : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/'
     : typeParametersOnly ? '/ts/latest/reference/selection-selection-where/' : '/tmux/concepts/server-session-window-pane/'
-  const fullRun = ![homeLauncherOnly, homeControlsOnly, keywordHelpOnly, apiSignaturesOnly, referenceLayoutOnly, globalHeaderOnly, headerMenuSectionsOnly, statusBadgesOnly, badgeCentringOnly,
+  const fullRun = ![homeLauncherOnly, homeControlsOnly, keywordHelpOnly, apiSignaturesOnly, referenceLayoutOnly, globalHeaderOnly, headerMenuSectionsOnly, statusBadgesOnly, badgeCentringOnly, referencePreviewsOnly,
     referencePreferencesOnly, documentationNavigationOnly, apiNavigationOnly, apiAnchorsOnly, typeParametersOnly].some(Boolean)
   const setupPages = sampleOnly ? [firstPage, '/demo/widgets/pickers/', ...TMUX_KEY_PAGES]
     : [firstPage, ...(fullRun ? TMUX_KEY_PAGES : [])]
@@ -789,6 +816,7 @@ try {
     await retryReload(() => checkKeywordHelp(browser, base))
   } else if (globalHeaderOnly) {
     await retryReload(() => checkGlobalHeader(browser, base))
+    await checkHeaderLinksFail(browser, base)
   } else if (headerMenuSectionsOnly) {
     await retryReload(() => checkHeaderMenuSections(browser, base))
     await checkHeaderMenuSectionsFail(browser, base)
@@ -798,6 +826,10 @@ try {
   } else if (badgeCentringOnly) {
     await retryReload(() => checkBadgeCentring(browser, base))
     await checkMentionDensity(browser, base)
+    await checkChipGrowth(browser, base)
+    await checkUsageChips(browser, base)
+  } else if (referencePreviewsOnly) {
+    await retryReload(() => checkTmuxReferencePreviews(browser, base, { served: servedBuild(base) }))
   } else if (referencePreferencesOnly) {
     await retryReload(() => checkReferencePreferences(browser, base))
     await retryReload(() => checkGlobalHeader(browser, base))
@@ -807,9 +839,12 @@ try {
     const page = await browser.newPage({ reducedMotion: 'reduce' })
     page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     await retryReload(() => checkApiNavigation(page, base))
+    await checkApiNavigationFail(browser, base)
   } else if (apiAnchorsOnly) {
     await retryReload(() => checkApiAnchorArrival(browser, base))
   } else if (apiStickyOnly) {
+    await checkReferenceSidebarBounds(browser, base)
+    await checkReferenceSidebarBoundsFail(browser, base)
     // Each engine aligns a sticky heading differently, so this mode runs all three.
     const sticky = (engineBrowser) => retryReload(() => checkApiStickyHeadings(engineBrowser, base))
       .then(() => checkApiStickyHeadingsFail(engineBrowser, base))
@@ -859,7 +894,7 @@ try {
       .then(() => retryReload(() => checkKeywordHelp(browser, base)))
     )
     const preferences = schedule(() => checkReferencePreferences(browser, base))
-    const globalHeader = schedule(() => checkGlobalHeader(browser, base))
+    const globalHeader = schedule(() => checkGlobalHeader(browser, base).then(() => checkHeaderLinksFail(browser, base)))
     const headerMenuSections = schedule(() => checkHeaderMenuSections(browser, base)
       .then(() => checkHeaderMenuSectionsFail(browser, base)))
     const statusBadges = schedule(() => checkStatusBadges(browser, base)
@@ -868,16 +903,23 @@ try {
     const documentationNavigation = schedule(() => retryReload(() => checkDocumentationNavigation(browser, base)))
     const apiNavigationPage = await browser.newPage({ reducedMotion: 'reduce' })
     apiNavigationPage.setDefaultTimeout(process.env.CI ? 20000 : 10000)
-    const apiNavigation = schedule(() => retryReload(() => checkApiNavigation(apiNavigationPage, base)).finally(() => apiNavigationPage.close()))
+    const apiNavigation = schedule(() => retryReload(() => checkApiNavigation(apiNavigationPage, base)).then(() => checkApiNavigationFail(browser, base)).finally(() => apiNavigationPage.close()))
     const apiAnchors = schedule(() => retryReload(() => checkApiAnchorArrival(browser, base)))
-    const kindBadges = schedule(() => retryReload(() => checkKindBadgeLinks(browser, base)))
+    // The failing control follows the clean run, so the same selectors pass on a reference page before they fail on a guide.
+    const kindBadges = schedule(() => retryReload(() => checkKindBadgeLinks(browser, base))
+      .then(() => checkKindBadgeLinksFail(browser, base)))
     const badgeCentring = schedule(() => retryReload(() => checkBadgeCentring(browser, base, { sample: sampleOnly }))
-      .then(() => checkMentionDensity(browser, base)))
+      .then(() => checkMentionDensity(browser, base))
+      .then(() => checkChipGrowth(browser, base))
+      .then(() => checkUsageChips(browser, base)))
     const blockLinks = schedule(() => retryReload(() => checkBlockLinksUndecorated(browser, base)))
+    const referencePreviews = schedule(() => retryReload(() => checkTmuxReferencePreviews(browser, base, { served: servedBuild(base) })))
     await apiAnchors
     const apiSticky = schedule(() => retryReload(() => checkApiStickyHeadings(browser, base))
       .then(() => checkApiStickyHeadingsFail(browser, base)))
     await apiSticky
+    await checkReferenceSidebarBounds(browser, base)
+    await checkReferenceSidebarBoundsFail(browser, base)
     const typeParameters = schedule(() => retryReload(() => checkTypeParameters(browser, base)))
     await typeParameters
     const paths = ['tmux/concepts/server-session-window-pane', 'tmux/examples/attach-and-send-keys', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
@@ -1174,9 +1216,10 @@ try {
     await page.close()
     const failures = (await Promise.all([
       navigation, apiExamples, reference, preferences, globalHeader, headerMenuSections, statusBadges, apiNavigation,
-      clipboard, documentationNavigation, homeLauncher, apiAnchors, apiSticky, typeParameters, kindBadges, badgeCentring, blockLinks,
+      clipboard, documentationNavigation, homeLauncher, apiAnchors, apiSticky, typeParameters, kindBadges, badgeCentring, blockLinks, referencePreviews,
     ])).filter(Boolean)
     if (failures.length) throw new AggregateError(failures, 'Browser checks failed')
+    await checkSidebarDemo(browser, `${base}/demo/sidebar/`)
   }
 } finally {
   await browser?.close()

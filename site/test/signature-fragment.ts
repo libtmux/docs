@@ -25,7 +25,7 @@ async function compileFragment() {
     return `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
   }
   const name = await compile('../src/components/api/SymbolName.astro', { '../../lib/word-break': new URL('../src/lib/word-break.ts', import.meta.url).href })
-  const preview = await compile('../src/components/LinkPreview.astro')
+  const preview = await compile('../src/components/LinkPreview.astro', { '../lib/link-preview-card': new URL('../src/lib/link-preview-card.ts', import.meta.url).href })
   const keyword = await compile('../src/components/api/ApiKeyword.astro', { '../LinkPreview.astro': preview })
   const type = await compile('../src/components/api/ApiType.astro', {
     './SymbolName.astro': name, './ApiKeyword.astro': keyword,

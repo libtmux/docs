@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { createHash } from 'node:crypto'
 import { Window } from 'happy-dom'
@@ -8,6 +8,8 @@ import { REGISTRY } from '../src/lib/registry'
 import { LANG_TO_PORT } from '../src/plugins/remark-port-code.mjs'
 import { SITE_BUILT, SITE_PREFIX, PREVIEW_PREFIX, productionPath, publishedPath, sitePath } from './site-root'
 import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects } from '../src/lib/mcp-catalog'
+import type { ApiTreeJson } from '../src/lib/api-search'
+import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
 interface Manifest {
   ports: Record<string, { slug: string; supported: boolean }[]>
@@ -39,6 +41,8 @@ interface DocsManifest {
 
 const products = ['mcp', 'workspace'] as const
 const primaryPorts = PORTS.filter((port) => !port.parentLibrary)
+/** A regular-expression alternation over the registered ports, so a new port is covered without editing a list. */
+const portSlugs = (ports: readonly Port[] = PORTS) => ports.map((port) => port.slug).join('|')
 const read = (path: string) => readFileSync(sitePath(path), 'utf8')
 // Earlier product checks parse these indexes. Reuse only plain link facts,
 // keyed by the current HTML bytes, rather than keeping their large DOMs alive.
@@ -53,8 +57,18 @@ function referenceDeclarations(html: string, document?: Window['document']) {
   return declarations
 }
 const manifest = (): Manifest => JSON.parse(read('versions.json'))
+/** The pages a manifest lists at or below a product's overview, other than the overview, with or without a trailing slash. */
+const pagesBeyondOverview = (pages: { url: string }[], overview: string) => pages
+  .map((entry) => new URL(entry.url).pathname.replace(/\/*$/, '/'))
+  .filter((path) => path.startsWith(overview) && path !== overview)
 const urlFor = (path: string) => new URL(`/${SITE_PREFIX}${path}`, 'https://libtmux.org')
-const productUrl = /\/(?:py|ruby|lua|powershell|julia|ts|rs|go|java|csharp|cxx|swift)\/[^/]+\/(?:mcp|workspace)(?:\/|$)/
+const productUrl = new RegExp(`/(?:${portSlugs(primaryPorts)})/[^/]+/(?:mcp|workspace)(?:/|$)`)
+// Python, Ruby, PowerShell and Julia keep real workspace Topics or native replacements; no other port does.
+const legacyWorkspaceTopics = new RegExp(`/(?:${portSlugs(PORTS.filter((port) => !['py', 'ruby', 'powershell', 'julia'].includes(port.slug)))})/[^/]+/workspace/topics/?$`)
+// A page's storage identity under `ports/` must not reach a public link.
+const storageIdentity = new RegExp(`/ports/(?:${portSlugs()})/`)
+// Port documentation is not translated, so no port tree exists under a translated locale.
+const localizedPortTree = new RegExp(`^/ja/(?:${portSlugs()})/`)
 const nativeProductDocs = (port: string) => ['powershell', 'julia'].includes(port)
 const mcpClientSetupRoutes: Record<string, string[]> = {
   py: ['mcp/guides'], ruby: ['mcp/guides/connect-client', 'mcp/source-guide'],
@@ -88,7 +102,8 @@ it('advertises local native loaders while retaining their development status', (
 function sectionsFor(port: string, product: ProductPage['product']): string[] {
   if (port === 'powershell' && product === 'mcp') return []
   if (nativeProductDocs(port)) return ['', 'source-guide', 'reference']
-  if (port === 'lua') return ['']
+  // A product with no published implementation has only the overview that says so.
+  if (!productAvailable(PORTS.find((entry) => entry.slug === port)!, product)) return ['']
   if (port === 'ruby') return ['', 'topics', 'guides', 'examples', 'reference']
   // `reference` is a section of the product now, not a page inside Internals:
   // the Workspace Manager and the MCP server are packages with APIs of their
@@ -175,44 +190,91 @@ function graph(document: Window['document']): StructuredEntry[] {
     })
 }
 
-/** Read the rendered sidebar ancestry independently of the breadcrumb builder. */
+/**
+ * Read the rendered sidebar ancestry independently of the breadcrumb builder.
+ *
+ * The API reference is one tree whose only top-level row is the reference itself. The rows from there to the
+ * page's declaration are returned, without the badge each row draws beside its name. The page's own link must
+ * already be marked current in the served HTML, since nothing here runs a script.
+ */
 function referenceTrail(document: Window['document'], href: string) {
-  const navigation = document.querySelector('[data-section-navigation] nav')!
+  const navigation = document.querySelector('.api-nav nav')!
   const current = [...navigation.querySelectorAll('a[aria-current="page"]')]
     .find((link) => link.getAttribute('href') === href)
   expect(current, `${href} active sidebar declaration`).toBeDefined()
-  const trail: { name: string; url: string | null }[] = [{ name: current!.getAttribute('data-sidebar-label')!, url: href }]
-  for (let group = current!.closest('details.sidebar-section'); group; group = group.parentElement?.closest('details.sidebar-section') ?? null) {
-    const label = group.querySelector(':scope > summary > .api-nav__label')!
-    if (label === current) continue
+  const trail: { name: string; url: string | null }[] = []
+  for (let row = current!.closest('[role="treeitem"]'); row; row = row.parentElement?.closest('[role="treeitem"]') ?? null) {
+    // A leaf is its own link; a branch keeps its label, linked or not, in the row above its group.
+    const leaf = row.tagName === 'A'
+    const label = row.querySelector(leaf ? ':scope > .api-nav__label' : ':scope > .api-nav__row > .api-nav__label')!
     const copy = label.cloneNode(true)
     for (const decoration of copy.querySelectorAll('[aria-hidden="true"]')) decoration.remove()
-    trail.unshift({ name: copy.textContent.trim(), url: label.getAttribute('href') })
+    trail.unshift({ name: copy.textContent.trim(), url: (leaf ? row : label).getAttribute('href') })
   }
-  return trail
+  const [reference, ...declarations] = trail
+  expect(reference?.name, `${href} the tree's top row is the reference`).toBe('API reference')
+  return declarations
+}
+
+/** The first paint of the real reference sidebar, so the reader below follows the component's markup. */
+async function referenceSidebar(inventory: ApiTreeJson, selectedSymbol: string) {
+  const template = await loadAstroTemplate('components/api/ApiTree.astro', {
+    real: ['components/api/ApiTreeItems.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro'],
+  })
+  const window = new Window()
+  window.document.body.innerHTML = await renderAstroTemplate(template, { props: {
+    presentation: 'outline', inventory, selectedSymbol, referenceBase: '/reference/', portName: 'Sample', tree: [], members: [],
+    withMembers: new Set(), currentPath: '/reference/', version: 'test', treeLabel: 'Sample: API Reference',
+  } })
+  return window
+}
+
+const sidebarInventory: ApiTreeJson = {
+  port: 'sample',
+  buckets: [{ id: 'sample', label: 'API reference', count: 2, slug: 'application', types: [], children: [
+    { id: 'base', label: 'Base', count: 2, slug: null, types: [
+      { id: 'Application', name: 'Application', slug: 'application', m: 1, kind: 'struct', category: 'types' },
+      { id: 'Other', name: 'Other', slug: 'other', m: 0, kind: 'struct', category: 'types' },
+    ], children: [] },
+  ] }],
+  members: { Application: [['close', 'application-close', 'Application.close', 'method']] },
 }
 
 it.each([
-  { href: '/reference/application-close/', label: 'close', expected: [
-    { name: 'Application', url: '/reference/application/' }, { name: 'close', url: '/reference/application-close/' },
+  { symbol: 'Application.close', href: '/reference/application-close/', expected: [
+    { name: 'Base', url: null }, { name: 'Application', url: '/reference/application/' }, { name: 'close', url: '/reference/application-close/' },
   ] },
-  { href: '/reference/application/', label: 'Application', expected: [
-    { name: 'Application', url: '/reference/application/' },
+  { symbol: 'Application', href: '/reference/application/', expected: [
+    { name: 'Base', url: null }, { name: 'Application', url: '/reference/application/' },
   ] },
-])('reads reference ancestors of $label without badges or a repeated current owner', async ({ href, label, expected }) => {
-  const window = new Window()
+])('reads reference ancestors of $symbol without badges or a repeated current owner', async ({ symbol, href, expected }) => {
+  const window = await referenceSidebar(sidebarInventory, symbol)
   try {
-    window.document.body.innerHTML = `<div data-section-navigation><nav>
-      <details class="sidebar-section"><summary><a class="api-nav__label" href="/reference/">Language API</a></summary>
-      <details class="sidebar-section"><summary><span class="api-nav__label"><span aria-hidden="true">M</span>Base</span></summary>
-      <details class="sidebar-section"><summary><a class="api-nav__label" data-sidebar-label="Application" href="/reference/application/"><span aria-hidden="true">S</span>Application</a></summary>
-      <a data-sidebar-label="close" href="/reference/application-close/">close</a>
-      </details></details></details></nav></div>`
-    window.document.querySelector(`a[data-sidebar-label="${label}"]`)!.setAttribute('aria-current', 'page')
-    expect(referenceTrail(window.document, href)).toEqual([
-      { name: 'Language API', url: '/reference/' }, { name: 'Base', url: null },
-      ...expected,
-    ])
+    expect(referenceTrail(window.document, href)).toEqual(expected)
+  } finally {
+    await window.happyDOM.close()
+  }
+})
+
+it('names a row by its label alone when a mark is drawn inside it', async () => {
+  const window = await referenceSidebar(sidebarInventory, 'Application.close')
+  try {
+    const owner = window.document.querySelector('.api-nav [role="treeitem"][aria-description="struct"]')!
+    const label = owner.querySelector(':scope > .api-nav__row > .api-nav__label')!
+    label.prepend(owner.querySelector(':scope > .api-nav__row > .api-nav__kind')!)
+    expect(label.textContent).toMatch(/^\s*\S+\s+Application/)
+    expect(referenceTrail(window.document, '/reference/application-close/').map((item) => item.name)).toEqual(['Base', 'Application', 'close'])
+  } finally {
+    await window.happyDOM.close()
+  }
+})
+
+it('finds no ancestry in a sidebar that does not mark the page, or that marks another', async () => {
+  const window = await referenceSidebar(sidebarInventory, 'Other')
+  try {
+    expect(() => referenceTrail(window.document, '/reference/application-close/')).toThrow(/active sidebar declaration/)
+    window.document.querySelector('.api-nav nav a[aria-current="page"]')!.removeAttribute('aria-current')
+    expect(() => referenceTrail(window.document, '/reference/other/')).toThrow(/active sidebar declaration/)
   } finally {
     await window.happyDOM.close()
   }
@@ -396,7 +458,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       }
       const hrefs = tags(html, 'a').map((tag) => attribute(tag, 'href')).filter((href): href is string => Boolean(href))
       expect(hrefs.filter((href) => new URL(href, urlFor(page.path)).origin === 'https://libtmux.org'
-        && /\/ports\/(?:py|ruby|lua|ts|rs|go|java|csharp|cxx|swift)\//.test(href)),
+        && storageIdentity.test(href)),
         `${page.path} storage identities in public links`).toEqual([])
       if (!page.section && page.version !== 'latest') {
         const home = pageHtml(`${page.port}/${page.version}/`)
@@ -426,6 +488,43 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       expect(article!.indexOf(logo), `${page.path} logo precedes title`).toBeLessThan(article!.indexOf('<h1'))
       expect(resolves(expected, urlFor(page.path).href), `${page.path} logo resolves`).toBe(true)
     }
+  })
+
+  it.each(PORTS.filter((port) => !port.parentLibrary && products.some((product) => !productAvailable(port, product))))
+    ('$name builds, lists and links only the overview of a product it has not published', (port) => {
+    const version = manifest().defaultVersion[port.slug]!
+    const docs = JSON.parse(read(`${port.slug}/${version}/docs.json`)) as DocsManifest
+    for (const product of products.filter((entry) => !productAvailable(port, entry))) {
+      // Whatever the product's other pages would be called, none is built or listed.
+      const directory = sitePath(`${port.slug}/${version}/${product}`)
+      const built = existsSync(directory) ? readdirSync(directory, { recursive: true }).map(String) : []
+      expect(built.filter((file) => file.endsWith('.html') && file !== 'index.html'), `${port.slug} ${product} pages built beyond the overview`).toEqual([])
+      expect(pagesBeyondOverview(docs.pages, urlFor(`${port.slug}/${version}/${product}/`).pathname),
+        `${port.slug} ${product} pages listed beyond the overview`).toEqual([])
+      const advertised = docs.ports.find((entry) => entry.slug === port.slug)!.products.find((entry) => entry.slug === product)!
+      expect(advertised.availability, `${port.slug} ${product}`).toBe('unpublished')
+      expect(advertised.reference, `${port.slug} ${product} reference`).toBeNull()
+    }
+  })
+
+  it('covers every registered port in the patterns that name ports', () => {
+    for (const port of PORTS) {
+      expect(storageIdentity.test(`/en/ports/${port.slug}/guides/`), `${port.slug} storage identity`).toBe(true)
+      expect(localizedPortTree.test(`/ja/${port.slug}/latest/`), `${port.slug} localized tree`).toBe(true)
+      if (!port.parentLibrary) expect(productUrl.test(`/en/${port.slug}/latest/mcp/`), `${port.slug} product URL`).toBe(true)
+      const redirected = !['py', 'ruby', 'powershell', 'julia'].includes(port.slug)
+      expect(legacyWorkspaceTopics.test(`/en/${port.slug}/latest/workspace/topics/`), `${port.slug} legacy Topics`).toBe(redirected)
+    }
+    expect(productUrl.test('/en/elixir/latest/mcp/guides/')).toBe(true)
+    expect(productUrl.test('/en/elixir/latest/guides/overview/')).toBe(false)
+  })
+
+  it('finds a listed page beneath a product overview whatever its name or trailing slash', () => {
+    const overview = '/en/elixir/latest/mcp/'
+    const listed = (...paths: string[]) => pagesBeyondOverview(paths.map((path) => ({ url: `https://libtmux.org${path}` })), overview)
+    expect(listed('/en/elixir/latest/mcp/', '/en/elixir/latest/mcp', '/en/elixir/latest/', '/en/elixir/latest/mcp-notes/')).toEqual([])
+    expect(listed('/en/elixir/latest/mcp/guides')).toEqual(['/en/elixir/latest/mcp/guides/'])
+    expect(listed('/en/elixir/latest/mcp/guides/', '/en/elixir/latest/mcp/cookbook/step')).toEqual(['/en/elixir/latest/mcp/guides/', '/en/elixir/latest/mcp/cookbook/step/'])
   })
 
   it('opens a product overview with its install picker, then its section cards', async () => {
@@ -474,8 +573,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       const sectionPath = `${page.port}/${page.version}/${page.product}/${page.section === 'source-guide' ? 'source-guide/' : section === 'home' ? '' : `${section}/`}`
       expect(current![0].getAttribute('href'), `${page.path} current destination`).toBe(urlFor(sectionPath).pathname)
       expect(resolves(current![0].getAttribute('href')!), `${page.path} current destination exists`).toBe(true)
-      const navigation = document.querySelectorAll('[data-section-navigation] nav')
+      // The API reference is the reference sidebar, one navigation for every viewport; the other sections share the section sidebar.
+      const navigation = document.querySelectorAll(section === 'reference' ? '.api-nav nav' : '[data-section-navigation] nav')
       expect(navigation.length, `${page.path} documentation navigation`).toBeGreaterThan(0)
+      if (section === 'reference') expect(navigation, `${page.path} one reference navigation`).toHaveLength(1)
       for (const nav of navigation) {
         expect(nav.getAttribute('aria-label'), page.path).toBe(`${surface}: ${sectionLabel}`)
         const links = [...nav.querySelectorAll('a[href]')]
@@ -553,14 +654,14 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       await inspect(samplePath, (document) => {
         expect(document.querySelector('article h1')?.textContent).toBe(sample.title)
         expect(graph(document).some((entry) => entry['@type'] === 'APIReference')).toBe(true)
+        const trail = referenceTrail(document, new URL(sample.href, urlFor(page.path)).pathname)
         if (page.product === 'workspace') {
           const reference = urlFor(page.path).pathname
           const expected = [
             { name: page.name, url: urlFor(`${page.port}/${page.version}/`).pathname },
             { name: 'Workspace Manager', url: urlFor(`${page.port}/${page.version}/workspace/`).pathname },
             { name: 'API reference', url: reference },
-            ...referenceTrail(document, new URL(sample.href, urlFor(page.path)).pathname)
-              .filter((item) => item.url !== reference),
+            ...trail,
           ]
           const crumbs = [...document.querySelectorAll('nav[aria-label="Breadcrumb"] [data-breadcrumb-item]')]
           expect(crumbs.map((item) => item.textContent.trim()), `${samplePath} sidebar ancestry`)
@@ -602,6 +703,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     }
   })
 
+  // A port reads every page of its MCP reference in one test, so the work grows with the reference and the largest port
+  // leaves little of the default deadline on a slower runner. The deadline is not what the test is about; the assertions are.
   it.each(Object.keys(MCP_REFERENCE))('%s uses the shared reference browser for all advertised protocol objects', async (port) => {
     const version = manifest().defaultVersion[port]
     expect(version, `${port} default version`).toBeDefined()
@@ -629,7 +732,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(JSON.parse(contract.querySelector('code')!.textContent)).toEqual(object.tool?.inputSchema ?? object.item)
       })
     }
-  })
+  }, 30_000)
 
   it.each(primaryPorts.map((port) => port.slug))('switches to equivalent sections and the tmux documentation for %s', async (slug) => {
     const defaults = manifest().defaultVersion
@@ -716,7 +819,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     })
   })
 
-  it.each(PORTS.filter((port) => !port.parentLibrary && !['py', 'ruby', 'lua', 'powershell', 'julia'].includes(port.slug)))
+  it.each(PORTS.filter((port) => !port.parentLibrary && productAvailable(port, 'workspace')
+    && !['py', 'ruby', 'powershell', 'julia'].includes(port.slug)))
     ('$name publishes workspace Guides and Examples browse pages', async (port) => {
     for (const page of pages().filter((entry) => entry.product === 'workspace'
       && entry.port === port.slug && ['guides', 'examples'].includes(entry.section))) await inspect(page.path, (document) => {
@@ -839,7 +943,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(resolves(entry.url), entry.url).toBe(true)
         expect(resolves(entry.markdownUrl), entry.markdownUrl).toBe(true)
         expect(entry.url, `${root} canonical workspace API exports`).not.toMatch(/\/workspace\/api(?:\/|$)/)
-        expect(entry.url, `${root} legacy workspace Topics redirect excluded`).not.toMatch(/\/(?:lua|ts|rs|go|java|csharp|cxx|swift)\/[^/]+\/workspace\/topics\/?$/)
+        expect(entry.url, `${root} legacy workspace Topics redirect excluded`).not.toMatch(legacyWorkspaceTopics)
         if (root) expect(new URL(entry.url).pathname).toContain(`/${SITE_PREFIX}${root}`)
       }
     }
@@ -847,10 +951,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     expect(existsSync(japanese), 'Japanese assembled manifest').toBe(true)
     const translated = JSON.parse(readFileSync(japanese, 'utf8')) as { pages: { url: string }[] }
     expect(translated.pages.map((entry) => new URL(entry.url).pathname)
-      .filter((path) => /^\/ja\/(?:py|ruby|lua|ts|rs|go|java|csharp|cxx|swift)\//.test(path)),
+      .filter((path) => localizedPortTree.test(path)),
     'Japanese manifest does not invent localized port guides').toEqual([])
     for (const entry of translated.pages.filter((entry) => productUrl.test(entry.url))) {
-      expect(new URL(entry.url).pathname, entry.url).not.toMatch(/^\/ja\/(?:py|ruby|lua|ts|rs|go|java|csharp|cxx|swift)\//)
+      expect(new URL(entry.url).pathname, entry.url).not.toMatch(localizedPortTree)
       expect(resolves(entry.url), entry.url).toBe(true)
     }
   })

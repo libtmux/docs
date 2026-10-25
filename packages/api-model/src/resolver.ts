@@ -1,6 +1,7 @@
 import type { ApiModel, ApiProduct, ApiSymbol } from './model.ts'
-import type { InventoryEntry } from './inventory.ts'
+import { symbolEntries, type InventoryEntry } from './inventory.ts'
 import { modulesIn, qualifiedNameOf } from './modules.ts'
+import { CURATED_BEFORE_INVENTORY, NOT_THE_JDKS, builtinHref } from './builtins.ts'
 
 /**
  * One resolver for every place a symbol is mentioned: a prose table cell, a
@@ -74,6 +75,7 @@ export const DEFAULT_PRIMARY_MODULES: Record<string, string> = {
   swift: 'LibTmux',
   powershell: 'LibTmux',
   julia: 'LibTmux',
+  elixir: 'LibTmux',
 }
 
 export const DEFAULT_TEMPLATES: UrlTemplate[] = [
@@ -85,13 +87,6 @@ export const DEFAULT_TEMPLATES: UrlTemplate[] = [
       const i = q.indexOf('.')
       return 'https://pkg.go.dev/' + q.slice(0, i) + '#' + q.slice(i + 1)
     },
-  },
-  {
-    project: 'Java SE',
-    langs: ['java'],
-    prefixes: ['Stream.', 'Optional.', 'List.', 'Map.', 'Set.', 'CompletableFuture.'],
-    href: (q) =>
-      'https://docs.oracle.com/en/java/javase/21/docs/api/index.html?q=' + encodeURIComponent(q),
   },
 ]
 
@@ -105,9 +100,10 @@ export const DEFAULT_TEMPLATES: UrlTemplate[] = [
 export function notASymbol(text: string): string | undefined {
   if (/^[a-z][a-z0-9+.-]*:\/\//i.test(text)) return 'a protocol URI'
   if (/^(?:net|v)?\d+\.\d+(?:\.\d+)?(?:[a-z]|[-+][\w.-]+)?$/.test(text)) return 'a version'
+  if (/^(?:net|v)?\d+(?:\.\d+)*\.x$/.test(text)) return 'a version line'
   if (/^\w+(?:\.\w+)+:[\w.-]+(?::[\w.<>{}-]+)?$/.test(text)) return 'a dependency coordinate'
   if (/\.(?:tsv|html)$/.test(text)) return 'a filename'
-  if (/\.(py|ts|go|rs|java|kt|kts|scala|cs|fs|fsi|fsproj|properties|cpp|hpp|c|h|lua|rb|swift|jl|ps1|psm1|psd1|md|json|ya?ml|toml|sh)\b/.test(text)) return 'a filename'
+  if (/\.(py|ts|go|rs|java|kt|kts|scala|cs|fs|fsi|fsproj|properties|cpp|hpp|c|h|lua|rb|swift|jl|exs?|ps1|psm1|psd1|md|json|ya?ml|toml|sh)\b/.test(text)) return 'a filename'
   if (/(^|\s)--?[A-Za-z]/.test(text)) return 'a command-line flag'
   if (/[=<>!]=|\s[=<>]\s/.test(text)) return 'an expression, not a reference'
   if (/^new\s/.test(text)) return 'a constructor call'
@@ -117,9 +113,12 @@ export function notASymbol(text: string): string | undefined {
 }
 
 /** Strip call syntax down to a dotted path. */
-export function toPath(text: string): string[] {
-  return text
-    .replace(/^(await|try|new)\s+/, '')
+export function toPath(text: string, port?: string): string[] {
+  let path = text.replace(/^(await|try|new)\s+/, '')
+  // Elixir spells a type `t:name/0` and a function `name/2`; neither prefix nor
+  // arity names a segment. Elsewhere `/2` belongs to the name, as in `HTTP/2`.
+  if (port === 'elixir') path = path.replace(/^[tc]:(?=[A-Za-z_])/, '').replace(/(?<=[A-Za-z_!?])\/\d+$/, '')
+  return path
     .replace(/\(.*$/, '')
     .replace(/`\d+/g, '')
     .replace(/->/g, '.')
@@ -193,7 +192,10 @@ export class Resolver {
         // `unsetEnvironment(_:in:)` — so prose saying `unsetEnvironment`
         // matched nothing at all. Index both forms: the labelled name is what
         // the reference displays, the bare one is what a sentence writes.
-        for (const key of new Set([symbol.name, symbol.name.replace(/\(.*$/, '')])) {
+        const names = [symbol.name, symbol.name.replace(/\(.*$/, '')]
+        // An Elixir function is `run/2`; prose says `run`.
+        if (model.port === 'elixir') names.push(symbol.name.replace(/\/\d+$/, ''))
+        for (const key of new Set(names)) {
           if (!key) continue
           const list = this.byMember.get(key) ?? []
           list.push(row)
@@ -229,7 +231,7 @@ export class Resolver {
     langs?: string[],
   ): void {
     const map = new Map<string, InventoryEntry>()
-    for (const e of entries) if (!map.has(e.name)) map.set(e.name, e)
+    for (const e of symbolEntries(entries)) if (!map.has(e.name)) map.set(e.name, e)
     this.inventories.push({ project, baseUrl: baseUrl.replace(/\/*$/, '/'), entries: map, langs })
   }
 
@@ -288,7 +290,7 @@ export class Resolver {
       }
     }
 
-    const parts = toPath(text)
+    const parts = toPath(text, port)
     if (!parts.length) return { how: 'not-a-symbol', why: 'empty after normalisation' }
 
     // A fully qualified name wins outright. `tmux.NewServer` is the module
@@ -313,7 +315,7 @@ export class Resolver {
     const candidates = Resolver.preferTypeOverConstructor(bare.length ? bare : members)
     if (parts.length > 2) {
       const suffix = `.${parts.join('.')}`
-      const qualified = candidates.filter((row) => `.${toPath(row.qualified).join('.')}`.endsWith(suffix))
+      const qualified = candidates.filter((row) => `.${toPath(row.qualified, port).join('.')}`.endsWith(suffix))
       if (qualified.length === 1) return { how: 'scoped', symbol: qualified[0].symbol, port }
     }
     if (parts.length === 1 && candidates.length === 1) return { how: 'unique', symbol: candidates[0].symbol, port }
@@ -374,8 +376,14 @@ export class Resolver {
     const asModule = this.modules.get(port + ' ' + qualified)
     if (asModule) return { how: 'module-index', module: asModule, port }
 
+    // As in a symbol's docs: where a language's curated names win over the inventory it shares, a name the project
+    // does not declare is the language's before it is the JDK's.
+    const curated = CURATED_BEFORE_INVENTORY.has(port) ? builtinHref(port, text.trim()) ?? builtinHref(port, qualified) : undefined
+    if (curated) return { how: 'federated', href: curated, project: port === 'kotlin' ? 'Kotlin' : 'Scala' }
+
     for (const inv of this.inventories) {
       if (inv.langs && !inv.langs.includes(port)) continue
+      if (inv.project === 'Java SE' && NOT_THE_JDKS[port]?.has(qualified)) continue
       // The full dotted name only. A tail match here made Java's
       // `Stream.filter()` resolve to Python's builtin `filter` — a link that
       // is worse than no link, because it looks deliberate.

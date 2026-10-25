@@ -1,12 +1,15 @@
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { SOURCE_GUIDE_PORTS } from '../src/lib/port-documentation'
+import { PORT_BY_SLUG } from '../src/lib/ports'
 
 const root = new URL('../../', import.meta.url).pathname
 const workflow = readFileSync(join(root, '.github/workflows/port-docs.yml'), 'utf8')
 const doxygenCheck = join(root, 'scripts/check-doxygen.py')
+const toolchainReader = join(root, 'scripts/read-elixir-toolchain.py')
 function script(name: string) {
   const start = workflow.indexOf(`      - name: ${name}\n`)
   expect(start).toBeGreaterThan(-1)
@@ -47,6 +50,25 @@ function documentationVersion(port: string, source: string) {
     return { ...result, output: readFileSync(output, 'utf8'), environment: readFileSync(environment, 'utf8'), tooling }
   } finally { rmSync(directory, { recursive: true, force: true }) }
 }
+
+function elixirToolchain(files: Record<string, string | undefined>) {
+  const directory = mkdtempSync(join(tmpdir(), 'libtmux-elixir-toolchain-'))
+  const output = join(directory, 'output')
+  try {
+    mkdirSync(join(directory, 'port/priv/tmux'), { recursive: true })
+    writeFileSync(output, '')
+    for (const [name, content] of Object.entries(files)) {
+      if (content !== undefined) writeFileSync(join(directory, 'port', name), content)
+    }
+    const result = spawnSync('python3', ['-I', toolchainReader, 'port'], {
+      cwd: directory, encoding: 'utf8', timeout: 5000, env: { ...process.env, GITHUB_OUTPUT: output },
+    })
+    return { ...result, output: readFileSync(output, 'utf8') }
+  } finally { rmSync(directory, { recursive: true, force: true }) }
+}
+
+const support = (reference: unknown) => JSON.stringify({ schema_version: 1, reference })
+const tracking = 'erlang 29\nelixir 1.20\n'
 
 describe('native documentation producers', () => {
   it.each([0, 23])('uses Julia tooling to build its tmux floor and stops on build failure %s', (exitCode) => {
@@ -150,6 +172,179 @@ require('node:fs').appendFileSync(process.env.EXPORT_INVOCATIONS, JSON.stringify
         ['-NoLogo', '-NoProfile', '-File', join(tooling, 'eng/Export-Docs.ps1'), '-SourceRoot', source, '-Restore'],
       ])
     } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+})
+
+describe('Elixir documentation producer', () => {
+  it('reads the exact reference runtimes that .tool-versions release lines select', () => {
+    const result = elixirToolchain({ '.tool-versions': tracking, 'priv/tmux/support.json': support({ otp: '29.1.2', elixir: '1.20.4' }) })
+    expect(result.status, result.stderr).toBe(0)
+    expect(result.output).toBe('otp-version=29.1.2\nelixir-version=1.20.4\n')
+  })
+
+  it.each([
+    ['an OTP release line', tracking, { otp: '29', elixir: '1.20.4' }],
+    ['an Elixir release line', tracking, { otp: '29.1.2', elixir: '1.20' }],
+    ['a range', tracking, { otp: '29.1.2', elixir: '>= 1.20.4' }],
+    ['an injected output line', tracking, { otp: '29.1.2', elixir: '1.20.4\nINJECTED=yes' }],
+    ['a missing OTP pin', tracking, { elixir: '1.20.4' }],
+    ['a non-string pin', tracking, { otp: 29.1, elixir: '1.20.4' }],
+    ['an OTP major that .tool-versions does not select', 'erlang 28\nelixir 1.20\n', { otp: '29.1.2', elixir: '1.20.4' }],
+    ['an Elixir line that .tool-versions does not select', 'erlang 29\nelixir 1.19\n', { otp: '29.1.2', elixir: '1.20.4' }],
+    ['a prefix that is not a version boundary', 'erlang 2\nelixir 1.20\n', { otp: '29.1.2', elixir: '1.20.4' }],
+    ['a duplicated tool line', 'erlang 29\nerlang 29\nelixir 1.20\n', { otp: '29.1.2', elixir: '1.20.4' }],
+    ['a missing tool line', 'elixir 1.20\n', { otp: '29.1.2', elixir: '1.20.4' }],
+    ['an extra field on a tool line', 'erlang 29 injected\nelixir 1.20\n', { otp: '29.1.2', elixir: '1.20.4' }],
+  ])('rejects %s without writing outputs', (_name, versions, reference) => {
+    const result = elixirToolchain({ '.tool-versions': versions, 'priv/tmux/support.json': support(reference) })
+    expect(result.status).not.toBe(0)
+    expect(result.output).toBe('')
+  })
+
+  it.each([
+    ['support policy', { '.tool-versions': tracking }],
+    ['.tool-versions', { 'priv/tmux/support.json': support({ otp: '29.1.2', elixir: '1.20.4' }) }],
+  ])('rejects a source without its %s', (_name, files) => {
+    const result = elixirToolchain(files)
+    expect(result.status).not.toBe(0)
+    expect(result.output).toBe('')
+  })
+
+  function exporter(failing = '') {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-elixir-export-'))
+    try {
+      const source = join(directory, 'selected source')
+      const output = join(directory, 'invocations')
+      mkdirSync(source)
+      writeFileSync(join(directory, 'mix'), `#!${process.execPath}
+const fs = require('node:fs')
+fs.appendFileSync(process.env.EXPORT_INVOCATIONS, JSON.stringify({ argv: process.argv.slice(2), cwd: process.cwd(), env: process.env.MIX_ENV }) + '\\n')
+if (process.argv[2] === process.env.FAILING_TASK) process.exit(23)
+`, { mode: 0o700 })
+      const result = spawnSync('bash', ['-e', '-c', script('Export Elixir API from the selected source')], {
+        cwd: source, encoding: 'utf8', timeout: 5000,
+        env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, MIX_ENV: 'prod', EXPORTER: join(directory, 'docs/export-elixir.exs'),
+          EXPORT_INVOCATIONS: output, FAILING_TASK: failing },
+      })
+      const calls = readFileSync(output, 'utf8').trim().split('\n').filter(Boolean).map((line) => JSON.parse(line))
+      return { result, calls, source: realpathSync(source), exporter: join(directory, 'docs/export-elixir.exs') }
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  }
+
+  it('fetches production dependencies, then exports from the source into the path the model reads', () => {
+    const { result, calls, source, exporter: exportScript } = exporter()
+    expect(result.status, result.stderr).toBe(0)
+    expect(calls).toEqual([
+      { argv: ['deps.get', '--only', 'prod'], cwd: source, env: 'prod' },
+      { argv: ['run', '--no-start', exportScript, '_build/docs/api.json'], cwd: source, env: 'prod' },
+    ])
+  })
+
+  it.each(['deps.get', 'run'])('stops when mix %s fails', (task) => {
+    const { result, calls } = exporter(task)
+    expect(result.status).toBe(23)
+    expect(calls.map((call) => call.argv[0])).toEqual(task === 'deps.get' ? ['deps.get'] : ['deps.get', 'run'])
+  })
+
+  it('installs exact runtimes before exporting with this repository\'s script', () => {
+    const read = workflow.indexOf('name: Read selected Elixir toolchain')
+    const setup = workflow.indexOf('uses: erlef/setup-beam@')
+    const exportStep = workflow.indexOf('name: Export Elixir API from the selected source')
+    const build = workflow.indexOf("name: Build this port's tree")
+    expect(read).toBeGreaterThan(workflow.indexOf('name: Snapshot source inputs before native generation'))
+    expect(read).toBeLessThan(setup)
+    expect(setup).toBeLessThan(exportStep)
+    expect(exportStep).toBeLessThan(build)
+    const setupStep = workflow.slice(workflow.lastIndexOf('\n      - ', setup), exportStep)
+    expect(setupStep).toMatch(/uses: erlef\/setup-beam@[0-9a-f]{40} # v\d+\.\d+\.\d+\n/)
+    expect(setupStep).toContain("if: matrix.port == 'elixir'")
+    expect(setupStep).toContain('otp-version: ${{ steps.elixir-runtime.outputs.otp-version }}')
+    expect(setupStep).toContain('elixir-version: ${{ steps.elixir-runtime.outputs.elixir-version }}')
+    expect(setupStep).toContain('version-type: strict')
+    expect(workflow.slice(exportStep, build)).toContain('EXPORTER: ${{ github.workspace }}/docs/packages/api-model/scripts/export-elixir.exs')
+    expect(existsSync(join(root, 'packages/api-model/scripts/export-elixir.exs'))).toBe(true)
+  })
+
+  it('gives the docs test job the same pinned runtimes before its unit tests', () => {
+    const tests = readFileSync(join(root, '.github/workflows/test.yml'), 'utf8')
+    const pin = (text: string) => /uses: (erlef\/setup-beam@[0-9a-f]{40}) # (v\d+\.\d+\.\d+)\n/.exec(text)?.slice(1)
+    expect(pin(tests)).toBeDefined()
+    expect(pin(tests)).toEqual(pin(workflow))
+    expect(workflow).toContain('run: python3 docs/scripts/read-elixir-toolchain.py port')
+    expect(tests).toContain('run: python3 scripts/read-elixir-toolchain.py .port-sources/elixir')
+    expect(tests).toContain('version-type: strict')
+    const read = tests.indexOf('name: Read integrated Elixir toolchain')
+    const setup = tests.indexOf('uses: erlef/setup-beam@')
+    expect(tests.indexOf('path: .port-sources/elixir')).toBeLessThan(read)
+    expect(read).toBeLessThan(setup)
+    expect(setup).toBeLessThan(tests.indexOf('- name: test-all'))
+  })
+
+  // setup-beam must receive exactly what the reader printed: a literal version, a decoy step that
+  // mentions the output, or a second setup-beam step would leave the pinned pair unused.
+  const toolchainWiring = (text: string) => {
+    const steps = text.split(/\n(?=      - )/).map((step) => step.replace(/^\n?      - /, '        '))
+    const key = (step: string, name: string) => new RegExp(`^ {8}${name}: (.+)$`, 'm').exec(step)?.[1]
+    const readers = steps.filter((step) => /read-elixir-toolchain\.py/.test(key(step, 'run') ?? ''))
+    const setups = steps.filter((step) => /^erlef\/setup-beam@/.test(key(step, 'uses') ?? ''))
+    const block = setups[0] ? /^ {8}with:\n((?: {10}.*\n?)*)/m.exec(setups[0])?.[1] ?? '' : ''
+    const inputs = Object.fromEntries([...block.matchAll(/^ {10}([\w-]+): (.+)$/gm)].map((match) => [match[1], match[2]]))
+    return { readers: readers.map((step) => key(step, 'id')), setups: setups.length, inputs }
+  }
+
+  it.each(['port-docs.yml', 'test.yml'])('feeds the reader outputs of %s into setup-beam', (name) => {
+    const { readers, setups, inputs } = toolchainWiring(readFileSync(join(root, '.github/workflows', name), 'utf8'))
+    expect(readers, `${name} reader step ids`).toHaveLength(1)
+    expect(readers[0], `${name} reader step has an id`).toMatch(/^[\w-]+$/)
+    expect(setups, `${name} setup-beam steps`).toBe(1)
+    expect(inputs['otp-version'], name).toBe(`\${{ steps.${readers[0]}.outputs.otp-version }}`)
+    expect(inputs['elixir-version'], name).toBe(`\${{ steps.${readers[0]}.outputs.elixir-version }}`)
+  })
+
+  it('notices a literal version, a decoy step and a second setup-beam step', () => {
+    const real = readFileSync(join(root, '.github/workflows/test.yml'), 'utf8')
+    const otp = '          otp-version: ${{ steps.elixir-runtime.outputs.otp-version }}\n'
+    const elixir = '          elixir-version: ${{ steps.elixir-runtime.outputs.elixir-version }}\n'
+    expect(real).toContain(otp)
+    expect(real).toContain(elixir)
+    const wired = toolchainWiring(real).inputs
+    expect(toolchainWiring(real.replace(otp, '          otp-version: "28.0"\n')).inputs['otp-version']).not.toBe(wired['otp-version'])
+    const decoy = '      - name: Decoy\n        run: echo "${{ steps.elixir-runtime.outputs.elixir-version }}"\n'
+    const literal = real.replace(elixir, '          elixir-version: 1.18.0\n').replace('      - name: Stage integrated source guides', `${decoy}      - name: Stage integrated source guides`)
+    expect(literal).toContain('${{ steps.elixir-runtime.outputs.elixir-version }}')
+    expect(toolchainWiring(literal).inputs['elixir-version']).toBe('1.18.0')
+    const doubled = real.replace('      - name: Stage integrated source guides', `      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1\n        with:\n${otp}${elixir}\n      - name: Stage integrated source guides`)
+    expect(toolchainWiring(doubled).setups).toBe(2)
+  })
+
+  it('writes the artifact the API model step reads', () => {
+    const model = readFileSync(join(root, 'scripts/gen-api-model.mjs'), 'utf8')
+    const artifact = /\belixir: \{[^}]*nativeArtifact: '([^']+)'/.exec(model)?.[1]
+    expect(artifact).toBeDefined()
+    expect(script('Export Elixir API from the selected source')).toContain(` ${artifact}\n`)
+  })
+})
+
+describe('source-bound guide staging', () => {
+  const build = readFileSync(join(root, 'scripts/build-site.sh'), 'utf8')
+  // Ruby and Lua carry their guides in the exporter artifact, wrappers stage
+  // from their parent library, and the other ports stage from the checkout.
+  const fromSource = (text: string) => {
+    const branch = /\nelif \[ -n "\$\{LIBTMUX_DOCS_SOURCE_SHA:-\}" \] && \{([\s\S]*?)\}; then\n([\s\S]*?)\nelif/.exec(text)
+    expect(branch).not.toBeNull()
+    expect(branch![2]).toContain('stage-port-docs.mjs" --port "$LIBTMUX_DOCS_PORT" --from-source')
+    return [...branch![1].matchAll(/= (\w+) \]/g)].map((match) => match[1])
+  }
+  const unstaged = (text: string) => SOURCE_GUIDE_PORTS
+    .filter((slug) => !PORT_BY_SLUG[slug]?.parentLibrary && !['ruby', 'lua'].includes(slug))
+    .filter((slug) => !fromSource(text).includes(slug))
+
+  it('stages every checkout-sourced port guide from the selected source', () => {
+    expect(unstaged(build)).toEqual([])
+  })
+
+  it('notices a port left on the cached guides', () => {
+    expect(unstaged(build.replace('[ "$LIBTMUX_DOCS_PORT" = elixir ]', '[ "$LIBTMUX_DOCS_PORT" = julia ]'))).toEqual(['elixir'])
   })
 })
 
@@ -271,7 +466,7 @@ describe('selected MCP runtime provisioning', () => {
 
   it.each([
     ['go', true], ['py', true], ['ruby', true],
-    ['lua', false], ['kotlin', false], ['scala', false], ['fsharp', false], ['powershell', false], ['julia', true],
+    ['lua', false], ['kotlin', false], ['scala', false], ['fsharp', false], ['powershell', false], ['julia', true], ['elixir', false],
   ])('uses the product catalog for %s runtime availability', (port, required) => {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-mcp-availability-'))
     try {

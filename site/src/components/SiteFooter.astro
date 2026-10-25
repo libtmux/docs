@@ -26,26 +26,31 @@ interface Props {
   githubUrl: string
   /** No gap above: the page's columns run down to the footer's rule. */
   flush?: boolean
+  /** Only the page-source line, for an embedded page that has no site navigation of its own. */
+  compact?: boolean
 }
 
-const { locale, port, version, pagePath, source, markdownHref, llmsRoot, githubUrl, flush = false } = Astro.props
+const { locale, port, version, pagePath, source, markdownHref, llmsRoot, githubUrl, flush = false, compact = false } = Astro.props
 const inventories = inventoryLinks(port, version, pagePath)
 ---
 
-<footer class:list={[!flush && 'mt-16', 'border-t border-edge']}>
-  <div class="mx-auto max-w-7xl px-4 py-8 text-sm">
-    <p class="mb-4">
-      libtmux provides libraries for controlling tmux.
-    </p>
-    <ul class="flex flex-wrap gap-x-4 gap-y-1">
-      {PORTS.map((p) => (
-        <li>
-          <a class="hover:underline" href={portHomeUrl(p, defaultVersionFor(p.slug))}>{p.name}</a>
-        </li>
-      ))}
-      <li><a class="hover:underline" href={withRoot('/meta/third-party-notices/')}>Third-party notices</a></li>
-    </ul>
-    <div class="mt-6 flex items-start justify-between gap-4 border-t border-edge pt-4 opacity-80">
+<footer class:list={[!flush && !compact && 'mt-16', 'border-t border-edge']}>
+  <div class:list={['mx-auto max-w-7xl px-4', compact ? 'py-2' : 'py-8', 'text-sm']}>
+    {!compact && <>
+      <p class="mb-4">
+        libtmux provides libraries for controlling tmux.
+      </p>
+      <ul class="flex flex-wrap gap-x-4 gap-y-1">
+        {PORTS.map((p) => (
+          <li>
+            <a class="hover:underline" href={portHomeUrl(p, defaultVersionFor(p.slug))}>{p.name}</a>
+          </li>
+        ))}
+        <li><a class="hover:underline" href={withRoot('/meta/ai-policy/')}>AI policy</a></li>
+        <li><a class="hover:underline" href={withRoot('/meta/third-party-notices/')}>Third-party notices</a></li>
+      </ul>
+    </>}
+    <div class:list={[!compact && 'mt-6', 'flex items-start justify-between gap-4', !compact && 'border-t border-edge pt-4', 'opacity-80']}>
       <div class="page-source min-w-0 wrap-anywhere">
         {source && <>{t(locale, 'footer.source')}: <code>{source.path}</code> &#183; </>}
         {t(locale, 'footer.machineReadable')}:

@@ -12,7 +12,7 @@ import { apiGlossary, apiGlossaryHeadings, API_GLOSSARY_TITLE, apiGlossaryHref }
 import ApiQualifiedName from '../../components/api/ApiQualifiedName.astro'
 import ApiType from '../../components/api/ApiType.astro'
 import ApiPageContents from '../../components/api/ApiPageContents.astro'
-import { apiEntryFields, apiEntrySections, apiMemberGroups, hasScalarMembers, relatedApiTypes, type ApiSection } from '../../lib/api-sections'
+import { apiEntryFields, apiEntrySections, apiMemberGroups, hasScalarMembers, relatedTypeLinks, type ApiSection } from '../../lib/api-sections'
 import PageToolbar from '../../components/PageToolbar.astro'
 import PagePortSwitcher from '../../components/PagePortSwitcher.astro'
 import DocumentationContext from '../../components/docs/DocumentationContext.astro'
@@ -25,6 +25,7 @@ import { withRoot } from '../../lib/site-root'
 import { API_MODELS, API_NAV, PORT_NAME, indexFor, isMemberOwner, ownersOf, pageSlug, referenceAlternatives, topLevelTypesOf } from '../../lib/api-models'
 import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
 import { productApiHref } from '../../lib/product-api'
+import { nativeQualifiedName } from '../../lib/native-name'
 import { symbolSource } from '../../lib/markdown-twins'
 import { localeSourcePath } from '../../i18n/locales'
 import { buildLocale } from '../../i18n/resolve'
@@ -32,12 +33,15 @@ import { buildTarget, defaultVersionFor } from '../../lib/versions'
 import ApiDoc from '../../components/api/ApiDoc.astro'
 import ApiTree from '../../components/api/ApiTree.astro'
 import type { PortNavData } from '../../lib/api-models'
-import { apiTreeVersion, bucketAncestors, bucketForSymbol, navTree, referenceNavigation, referenceIndexSections, referenceIndexSectionsFor, type TreeBucket } from '../../lib/api-tree'
+import { apiTreeVersion, bucketAncestors, bucketForSymbol, navTree, referenceTree, referenceTreeFor, referenceNavigation, referenceIndexSections, referenceIndexSectionsFor, type TreeBucket } from '../../lib/api-tree'
+import { sidebarSelection } from '../../lib/api-sidebar'
 import type { BreadcrumbItem } from '../../lib/sidebar'
 import SymbolName from '../../components/api/SymbolName.astro'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
 import { tmuxManualUrl } from '../../lib/tmux-manual-data'
+import type { ResolvedUsage } from '../../lib/tmux-reference'
+import TmuxUsage from '../tmux/TmuxUsage.astro'
 
 /** Source projects supply identity and navigation to the same API renderer. */
 export interface SourceReferenceContext {
@@ -54,6 +58,7 @@ export interface SourceReferenceContext {
   index: SymbolIndex
   pagePorts: PagePortLink[]
   manualLinks?: { name: string; href: string }[]
+  usage?: ResolvedUsage[]
   catalogLinks?: { name: string; href: string }[]
   paths?: ApiRelationshipPath[]
 }
@@ -133,6 +138,9 @@ const index = source?.index ?? indexFor(portModel ?? { port: 'py', extractor: ''
 const nav = source?.nav ?? (port ? API_NAV[port] : undefined)
 const dependencyNavigation = port && PORT_BY_SLUG[port]?.apiDependencyNavigation?.length ? referenceNavigation(port) : undefined
 const tree = source?.tree ?? dependencyNavigation?.tree ?? (port ? navTree(port) : [])
+
+/** What the sidebar navigates: this port's inventory, or the source project's. */
+const sidebarInventory = model ? (port ? referenceTree(port) : referenceTreeFor('tmux', model, tree)) : undefined
 
 /** Nav ids of the types that own members, which open into them in the tree. */
 const withMembers = new Set([...pageOwners.map((s) => s.publicId ?? s.id), ...(dependencyNavigation?.members.keys() ?? [])])
@@ -363,11 +371,11 @@ const paths = (source?.paths ?? []).filter((path) => !owner || path.symbols.some
 if (relationshipSections.some((section) => ['api-calls', 'api-called-by'].includes(section.id))) pageSections.push({ id: 'api-call-network', label: 'Call neighborhood' })
 if (paths.length) pageSections.push({ id: 'api-source-paths', label: 'Paths through the source', count: paths.length })
 pageSections.push(...relationshipSections.map((section) => ({ id: section.id, label: section.label, count: section.items.length })))
-const related = owner ? relatedApiTypes(owner, members, index, declaringType, { includeInternal: Boolean(source) }).map((symbol) => ({
-  name: ownerNames.get(symbol.name)! > 1 ? `${symbol.name} (${moduleOf(symbol)})` : symbol.name,
-  identity: qualifiedNameOf(symbol), kind: symbol.kind, href: hrefFor(symbol), symbol,
-})) : []
+const related = owner && model ? relatedTypeLinks(model, owner, members, index, hrefFor, { language, repeated: ownerNames, includeInternal: Boolean(source) }) : []
 if (related.length) pageSections.push({ id: 'api-related-types', label: 'Related types', count: related.length })
+// The methods that send the command are what a reader of the C needs last, after the code around it.
+const usage = source?.usage ?? []
+if (owner && usage.length) pageSections.push({ id: 'api-tmux-usage', label: 'In libtmux' })
 const title = glossary ? API_GLOSSARY_TITLE : owner
   ? qualifiedNameOf(owner)
   : model
@@ -423,8 +431,11 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
   <!-- Flush: the tree's column runs from the header to the footer against the
        viewport's edge, as Learn's does, and only the text column is padded. -->
   <main class:list={["api-reference-layout grid", owner && 'api-reference-layout--symbol', glossary && 'api-reference-layout--glossary']}>
-    {model && (
+    {model && sidebarInventory && (
       <ApiTree
+        presentation="outline"
+        inventory={sidebarInventory}
+        selectedSymbol={sidebarSelection(sidebarInventory, owner)}
         referenceBase={refBase}
         glossaryHref={port ? `${refBase}glossary/` : undefined}
         portName={label}
@@ -689,7 +700,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
               <dl class="api-definition">
               {/* The module, namespace or package this symbol is in, and its full name with a button to copy it; the page heading above carries neither. */}
               <dt>Qualified name</dt>
-              <dd><ApiQualifiedName name={qualifiedNameOf(owner)} /></dd>
+              <dd><ApiQualifiedName name={nativeQualifiedName(model, owner)} /></dd>
               {ownerModule && (
                 <>
                   <dt>{moduleLabel}</dt>
@@ -836,11 +847,18 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                 {related.map((item) => <div class="api-index-card api-related-card">
                   <a class="api-index-card__link" href={item.href} title={item.identity}>
                     <ApiBadge label={item.kind} variant="kind" value={item.kind} compact />
-                    <code>{item.name}</code>
+                    <code>{item.qualified ? <SymbolName name={item.name} /> : item.name}</code>
                   </a>
                   {item.symbol.doc?.summary && <p><ApiDoc text={item.symbol.doc.summary} index={index} context={item.symbol} citations={false} /></p>}
                 </div>)}
               </div>
+            </section>}
+            {usage.length > 0 && <section class="api-tmux-usage" aria-labelledby="api-tmux-usage">
+              <h2 class="api-section-heading text-lg font-semibold" id="api-tmux-usage">In libtmux<a class="api-heading-link" href="#api-tmux-usage" aria-label="Link to In libtmux">#</a></h2>
+              {usage.map((entry) => <>
+                <p>These methods send <a href={entry.manualHref}><code>{entry.command}</code></a>.</p>
+                <TmuxUsage usage={entry} />
+              </>)}
             </section>}
           </>
         )

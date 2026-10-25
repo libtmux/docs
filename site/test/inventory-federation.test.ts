@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { readInventory } from '@libtmux/api-model'
+import { readInventory, symbolEntries } from '@libtmux/api-model'
 import { API_MODELS, createApiIndex, indexFor } from '../src/lib/api-models'
 import { productApiIndex } from '../src/lib/product-api'
 import { createProseLinker } from '../src/lib/prose-resolver'
@@ -25,7 +25,7 @@ const invDir = join(here, '../src/data/inventories')
 const href = (s: { publicId?: string; id: string }) => `#${s.publicId ?? s.id}`
 
 describe('indexFor attaches the inventories', () => {
-  it('links PowerShell commands, pipeline objects, common parameters, and variables', () => {
+  it('links PowerShell commands, pipeline objects and common parameters, and leaves variables plain', () => {
     const model = API_MODELS.powershell
     const command = model.symbols.find((symbol) => symbol.name === 'Connect-TmuxServer')!
     const index = indexFor(model, href)
@@ -38,8 +38,9 @@ describe('indexFor attaches the inventories', () => {
     const prose = index.linkText('Use Get-TmuxSnapshot with LibTmux.Server and -ErrorAction. The example uses $SocketPath.', command)
     const refs = prose.filter((span) => span.kind === 'ref')
     expect(refs.map((span) => span.target)).toEqual(['Get-TmuxSnapshot', 'LibTmux.Server', '-ErrorAction', '$SocketPath'])
-    expect(refs.every((span) => span.link)).toBe(true)
-    expect(refs.at(-1)?.link?.href).toContain('about_variables')
+    // A variable is the reader's own, so it names no page: linking every `$name` to the page on variables said nothing about it.
+    expect(refs.slice(0, -1).every((span) => span.link)).toBe(true)
+    expect(refs.at(-1)?.link).toBeUndefined()
     for (const [name, path] of [
       ['System.Management.Automation.SwitchParameter', 'system.management.automation.switchparameter?view=powershellsdk-7.4.0'],
       ['System.Management.Automation.ActionPreference', 'system.management.automation.actionpreference?view=powershellsdk-7.4.0'],
@@ -267,7 +268,9 @@ describe('each sidecar agrees with the .inv beside it', () => {
       readFileSync(join(invDir, `${name}.entries.json`), 'utf8'),
     ) as { project: string; e: [string, string][] }
 
-    expect(sidecar.e.length, `${name}: entry count differs`).toBe(inv.entries.length)
+    // The sidecar leaves out documents: a page of the manual is not a symbol.
+    const symbols = symbolEntries(inv.entries)
+    expect(sidecar.e.length, `${name}: entry count differs`).toBe(symbols.length)
     expect(sidecar.project).toBe(inv.project)
 
     // Compared as multisets, not by name: an inventory may carry one name in

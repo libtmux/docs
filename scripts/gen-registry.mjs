@@ -258,6 +258,14 @@ const PROBES = {
     if (body === null) throw new Error(`General: HTTP ${status}`)
     return generalVersions(body, port)
   },
+  async elixir() {
+    // Hex lists every release and the retirements beside them. A retired
+    // release stays installable, but no reader should be sent to one.
+    const { missing, body } = await getJson('https://hex.pm/api/packages/libtmux')
+    if (missing || !body || body.status === 404) return null
+    const retired = new Set(Object.keys(body.retirements ?? {}))
+    return (body.releases ?? []).map((release) => release.version).filter((version) => !retired.has(version))
+  },
   async ts() {
     // `libtmux`, not the scoped `@libtmux/libtmux` this probe used to ask for.
     // The scoped name 404s, which classified a published package as having

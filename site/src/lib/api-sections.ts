@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto'
-import { builtinHref, memberTier, typeParametersOf, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model'
+import { commandFacts, memberTier, moduleOf, parameterBindingFacts, parameterBindingText, qualifiedNameOf, typeParametersOf, type ApiModelBase, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model'
 import { apiGlossaryHref } from './api-glossary'
-import { csharpParameters, supportsCSharpSignatures, supportsGoSignatures, supportsJavaSignatures, supportsLuaSignatures, supportsRubySignatures, supportsRustSignatures, supportsTypeScriptSignatures, swiftBaseName } from './code-layout'
+import { relatedLabels } from './api-labels'
+import { csharpParameters, supportsCSharpSignatures, supportsElixirSignatures, supportsGoSignatures, supportsJavaSignatures, supportsLuaSignatures, supportsRubySignatures, supportsRustSignatures, supportsTypeScriptSignatures, swiftBaseName } from './code-layout'
 
 export interface ApiSection {
   id: string
@@ -30,7 +31,7 @@ export function signatureMultiline(symbol: ApiSymbol, signature: Signature, port
 
 /** Keep native declaration syntax consistent in HTML and copied Markdown. */
 export function usesNativeSignatures(symbol: ApiSymbol, port?: string): boolean {
-  return (port === 'rs' && Boolean(symbol.variant)) || supportsRustSignatures(symbol, port) || supportsTypeScriptSignatures(symbol, port) || supportsGoSignatures(symbol, port) || supportsJavaSignatures(symbol, port) || supportsCSharpSignatures(symbol, port) || supportsRubySignatures(symbol, port) || supportsLuaSignatures(symbol, port) || ['kotlin', 'scala', 'fsharp', 'c', 'powershell', 'julia'].includes(port ?? '') ||
+  return (port === 'rs' && Boolean(symbol.variant)) || supportsRustSignatures(symbol, port) || supportsTypeScriptSignatures(symbol, port) || supportsGoSignatures(symbol, port) || supportsJavaSignatures(symbol, port) || supportsCSharpSignatures(symbol, port) || supportsRubySignatures(symbol, port) || supportsLuaSignatures(symbol, port) || supportsElixirSignatures(symbol, port) || ['kotlin', 'scala', 'fsharp', 'c', 'powershell', 'julia'].includes(port ?? '') ||
     (port === 'cxx' && symbol.signatures.length > 0 && symbol.signatures.every((signature) => Boolean(signature.raw)))
 }
 
@@ -224,18 +225,7 @@ export function apiMethodDetails(symbol: ApiSymbol) {
 /** The same native command facts appear in HTML and copied Markdown. */
 export function apiCommandFacts(symbol: ApiSymbol, contextPath?: string): { label: string; value: string }[] {
   const command = symbol.command
-  if (!command) return []
-  const kindHelp = apiGlossaryHref(command.kind, contextPath)
-  const facts: { label: string; value: string }[] = [{ label: 'Command type', value: kindHelp ? `[\`${command.kind}\`](${kindHelp})` : `\`${command.kind}\`` }]
-  if (command.defaultParameterSet && command.defaultParameterSet !== '__AllParameterSets') facts.push({ label: 'Default parameter set', value: command.defaultParameterSet })
-  if (command.aliases.length) facts.push({ label: 'Aliases', value: command.aliases.map((alias) => `\`${alias}\``).join(', ') })
-  if (command.supportsShouldProcess) facts.push({ label: 'Confirmation', value: `Supports \`-WhatIf\` and \`-Confirm\`; confirm impact: ${command.confirmImpact}.` })
-  if (command.supportsPaging) facts.push({ label: 'Paging', value: 'Supports paging parameters.' })
-  if (command.supportsTransactions) facts.push({ label: 'Transactions', value: 'Supports transactions.' })
-  facts.push({ label: 'Positional binding', value: command.positionalBinding ? 'Enabled.' : 'Disabled; use named parameters unless a position is declared.' })
-  if (command.inputTypes.length) facts.push({ label: 'Pipeline inputs', value: command.inputTypes.map((entry) => `\`${entry.type}\`${entry.description ? `: ${entry.description}` : ''}`).join('; ') })
-  if (command.outputTypes.length) facts.push({ label: 'Outputs', value: command.outputTypes.map((type) => `\`${type}\``).join(', ') })
-  return facts
+  return command ? commandFacts(command, apiGlossaryHref(command.kind, contextPath)) : []
 }
 
 /** Native help links prefer the same generated declaration in this reference. */
@@ -251,57 +241,9 @@ export function apiCommandRelatedLinks(symbol: ApiSymbol, index?: SymbolIndex) {
   return links.filter((link, i) => links.findIndex((entry) => entry.href === link.href) === i)
 }
 
-/** Preserve the reflected attribute type even when its display name is short. */
-function parameterAttributeText(attribute: NonNullable<Param['binding']>['attributes'][number]): string {
-  const name = attribute.type.split('.').at(-1)!.replace(/Attribute$/, '')
-  const call = `${name}(${attribute.arguments.map((value) => JSON.stringify(value)).join(', ')})`
-  const fence = '`'.repeat(Math.max(1, ...[...call.matchAll(/`+/g)].map((match) => match[0].length + 1)))
-  const label = `${fence}${call}${fence}`
-  const href = builtinHref('powershell', attribute.type)
-  return href ? `[${label}](${href})` : label
-}
+export { parameterBindingFacts, parameterBindingText }
 
-export function parameterBindingText(param: Param): string | undefined {
-  const binding = param.binding
-  if (!binding) return undefined
-  const facts = [binding.mandatory ? 'Required.' : 'Optional.', binding.position === undefined ? 'Named parameter.' : `Position ${binding.position}.`]
-  if (binding.switch) facts.push('Switch parameter.')
-  if (binding.common) facts.push('Common parameter.')
-  if (binding.dynamic) facts.push('Dynamic parameter.')
-  const pipeline = [binding.pipeline.byValue && 'by value', binding.pipeline.byPropertyName && 'by property name'].filter(Boolean)
-  facts.push(pipeline.length ? `Accepts pipeline input ${pipeline.join(' and ')}.` : 'Does not accept pipeline input.')
-  if (binding.pipeline.remainingArguments) facts.push('Accepts remaining arguments.')
-  if (binding.aliases.length) facts.push(`Aliases: ${binding.aliases.map((alias) => `\`${alias}\``).join(', ')}.`)
-  if (binding.documentedDefault) facts.push(`Documented default: \`${binding.documentedDefault}\`.`)
-  for (const attribute of binding.attributes.filter((entry) => /\.(Validate\w+|ArgumentCompleter)Attribute$/.test(entry.type))) {
-    facts.push(`${parameterAttributeText(attribute)}.`)
-  }
-  return facts.join(' ')
-}
-
-/** Native properties are easier to compare as labelled facts than sentences. */
-export function parameterBindingFacts(param: Param): { label: string; value: string }[] {
-  const b = param.binding
-  if (!b) return []
-  const pipeline = [b.pipeline.byValue && 'By value', b.pipeline.byPropertyName && 'By property name'].filter(Boolean)
-  const facts = [
-    { label: 'Required', value: b.mandatory ? 'Yes' : 'No' },
-    { label: 'Position', value: b.position === undefined ? 'Named' : String(b.position) },
-    { label: 'Pipeline input', value: pipeline.join('; ') || 'No' },
-  ]
-  if (b.switch) facts.push({ label: 'Switch', value: 'Yes' })
-  if (b.dynamic) facts.push({ label: 'Dynamic', value: 'Yes' })
-  if (b.pipeline.remainingArguments) facts.push({ label: 'Remaining arguments', value: 'Yes' })
-  if (b.aliases.length) facts.push({ label: 'Aliases', value: b.aliases.map((alias) => `\`${alias}\``).join(', ') })
-  if (b.documentedDefault) facts.push({ label: 'Default', value: `\`${b.documentedDefault}\`` })
-  for (const attribute of b.attributes.filter((entry) => /\.(Validate\w+|ArgumentCompleter)Attribute$/.test(entry.type))) {
-    const name = attribute.type.split('.').at(-1)!.replace(/Attribute$/, '')
-    facts.push({ label: name === 'ArgumentCompleter' ? 'Completion' : 'Validation', value: parameterAttributeText(attribute) })
-  }
-  return facts
-}
-
-export const POWER_SHELL_COMMON_HELP = 'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_commonparameters?view=powershell-7.4'
+export { POWER_SHELL_COMMON_HELP, POWER_SHELL_COMMON_HELP_TITLE, powerShellCommonParameterHref, powerShellCommonParameterLabel } from './powershell-common-parameters'
 
 /** Group the existing semantic order without sorting or omitting members. */
 export function apiMemberGroups(members: ApiSymbol[], signals: MemberSignals) {
@@ -319,12 +261,15 @@ export function apiMemberGroups(members: ApiSymbol[], signals: MemberSignals) {
   return groups.filter((group) => group.members.length > 0)
 }
 
+/** The declarations a related-types list can hold. */
+const RELATED_KINDS: ReadonlySet<string> = new Set(['class', 'struct', 'union', 'interface', 'trait', 'enum', 'typealias'])
+
 /** Related declarations come from ownership, inheritance and return types. */
 export function relatedApiTypes(owner: ApiSymbol, members: ApiSymbol[], index: SymbolIndex, parent?: ApiSymbol, options: { includeInternal?: boolean } = {}) {
   const types = new Map<string, ApiSymbol>()
   const add = (symbol?: ApiSymbol) => {
     if (!symbol || symbol.id === owner.id || (!options.includeInternal && symbol.apiScope === 'internal') ||
-        !['class', 'struct', 'union', 'interface', 'trait', 'enum', 'typealias'].includes(symbol.kind)) return
+        !RELATED_KINDS.has(symbol.kind)) return
     types.set(symbol.publicId ?? symbol.id, symbol)
   }
   add(parent)
@@ -342,6 +287,53 @@ export function relatedApiTypes(owner: ApiSymbol, members: ApiSymbol[], index: S
     }
   }
   return [...types.values()].slice(0, 6)
+}
+
+export interface RelatedTypeLink {
+  /** The label the page shows. */
+  name: string
+  /** Whether the label spells out the owner, so it breaks at the owner's separator. */
+  qualified: boolean
+  /** The source-qualified name, for the link's title. */
+  identity: string
+  kind: ApiSymbol['kind']
+  href: string
+  symbol: ApiSymbol
+}
+
+const typeNameCounts = new WeakMap<ApiSymbol[], Map<string, number>>()
+const symbolsById = new WeakMap<ApiSymbol[], Map<string, ApiSymbol>>()
+
+/**
+ * The related types of a page with the label it shows for each; `repeated` counts the top-level types that share a name.
+ * `language` selects the owner-bound spelling of an Elixir type, see `relatedLabels`.
+ */
+export function relatedTypeLinks(
+  model: ApiModelBase, owner: ApiSymbol, members: ApiSymbol[], index: SymbolIndex, hrefFor: (symbol: ApiSymbol) => string,
+  options: { language?: string; repeated: ReadonlyMap<string, number>; includeInternal?: boolean },
+): RelatedTypeLink[] {
+  let ids = symbolsById.get(model.symbols)
+  let names = typeNameCounts.get(model.symbols)
+  if (!ids || !names) {
+    ids = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
+    names = new Map()
+    for (const symbol of model.symbols) if (RELATED_KINDS.has(symbol.kind)) names.set(symbol.name, (names.get(symbol.name) ?? 0) + 1)
+    symbolsById.set(model.symbols, ids)
+    typeNameCounts.set(model.symbols, names)
+  }
+  const symbols = relatedApiTypes(owner, members, index, owner.parent ? ids.get(owner.parent) : undefined, { includeInternal: options.includeInternal })
+  const inputs = symbols.map((symbol) => {
+    const declarer = symbol.parent ? ids.get(symbol.parent) : undefined
+    return {
+      id: symbol.id, name: symbol.name, qualifiedName: qualifiedNameOf(symbol), shared: (names.get(symbol.name) ?? 0) > 1,
+      label: (options.repeated.get(symbol.name) ?? 0) > 1 ? `${symbol.name} (${moduleOf(symbol)})` : symbol.name,
+      owner: declarer && { id: declarer.id, name: declarer.name },
+    }
+  })
+  const labels = relatedLabels(inputs, new Set([owner.id, ...(owner.parent ? [owner.parent] : [])]), options.language)
+  return symbols.map((symbol, i) => ({
+    name: labels[i]!, qualified: labels[i] !== inputs[i]!.label, identity: qualifiedNameOf(symbol), kind: symbol.kind, href: hrefFor(symbol), symbol,
+  }))
 }
 
 /** Describe unnamed native types without inventing a compilable declaration. */

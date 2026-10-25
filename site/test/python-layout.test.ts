@@ -202,7 +202,7 @@ describe('Python layouts in the rendered declaration', () => {
       return `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
     }
     const bridge = 'data:text/javascript,export const { parameterId, qualifiedNameOf, signatureMultiline } = globalThis.__pythonDeclaration'
-    const preview = await compile('../src/components/LinkPreview.astro')
+    const preview = await compile('../src/components/LinkPreview.astro', { '../lib/link-preview-card': new URL('../src/lib/link-preview-card.ts', import.meta.url).href })
     const keyword = await compile('../src/components/api/ApiKeyword.astro', { '../LinkPreview.astro': preview })
     const name = await compile('../src/components/api/SymbolName.astro', { '../../lib/word-break': new URL('../src/lib/word-break.ts', import.meta.url).href })
     const type = await compile('../src/components/api/ApiType.astro', {

@@ -24,6 +24,12 @@ export interface HomeExample {
   expectedOutput: string
   variants: Record<Exclude<HomeView, 'full'>, string>
   automaticCleanup?: string
+  /**
+   * Set when the quickstart has no error handling to add. The Error handling
+   * option then changes nothing: `errors` repeats `concise` and `cleanup`
+   * repeats `full`.
+   */
+  withoutErrorHandling?: string
 }
 
 export const HOME_VIEWS = ['concise', 'errors', 'cleanup', 'full'] as const

@@ -1,7 +1,8 @@
 import { tokenizeDoc, type DocSpan } from './doc/roles.ts'
-import type { InventoryEntry } from './inventory.ts'
+import { symbolEntries, type InventoryEntry } from './inventory.ts'
 import type { ApiSymbol, Signature, SymbolKind, TypeParameter } from './model.ts'
-import { builtinHref } from './builtins.ts'
+import { builtinHref, CURATED_BEFORE_INVENTORY, ELIXIR_STDLIB_MODULES, elixirStdlibHref, NOT_THE_JDKS } from './builtins.ts'
+import { neverLinks } from './never-links.ts'
 import { qualifiedNameOf } from './modules.ts'
 import { findTopLevel, splitTopLevel, typeParametersOf } from './type-params.ts'
 
@@ -41,31 +42,39 @@ const ROLE_KINDS: Record<string, SymbolKind[]> = {
  * mention is, and the rest stays plain rather than wrong.
  */
 const PY_INTERSPHINX: Record<string, string> = {
-  int: 'library/functions.html#int',
-  str: 'library/stdtypes.html#str',
-  bool: 'library/functions.html#bool',
-  float: 'library/functions.html#float',
-  bytes: 'library/stdtypes.html#bytes',
-  list: 'library/stdtypes.html#list',
-  dict: 'library/stdtypes.html#dict',
-  set: 'library/stdtypes.html#set',
-  tuple: 'library/stdtypes.html#tuple',
-  None: 'library/constants.html#None',
-  object: 'library/functions.html#object',
-  Exception: 'library/exceptions.html#Exception',
-  type: 'library/functions.html#type',
+  int: 'builtins/functions.html#int',
+  str: 'builtins/stdtypes.html#str',
+  bool: 'builtins/functions.html#bool',
+  float: 'builtins/functions.html#float',
+  bytes: 'builtins/stdtypes.html#bytes',
+  list: 'builtins/stdtypes.html#list',
+  dict: 'builtins/stdtypes.html#dict',
+  set: 'builtins/stdtypes.html#set',
+  tuple: 'builtins/stdtypes.html#tuple',
+  None: 'builtins/constants.html#None',
+  object: 'builtins/functions.html#object',
+  Exception: 'builtins/exceptions.html#Exception',
+  type: 'builtins/functions.html#type',
   Any: 'library/typing.html#typing.Any',
   Literal: 'library/typing.html#typing.Literal',
   Optional: 'library/typing.html#typing.Optional',
   Union: 'library/typing.html#typing.Union',
-  Callable: 'library/typing.html#typing.Callable',
-  Iterator: 'library/typing.html#typing.Iterator',
-  Sequence: 'library/typing.html#typing.Sequence',
-  Mapping: 'library/typing.html#typing.Mapping',
+  // The abstract bases live in `collections.abc`; `typing.Mapping` and the rest are its deprecated aliases,
+  // and a name written with `typing.` still reaches them through the inventory.
+  Callable: 'library/collections.abc.html#collections.abc.Callable',
+  Iterator: 'library/collections.abc.html#collections.abc.Iterator',
+  Sequence: 'library/collections.abc.html#collections.abc.Sequence',
+  Mapping: 'library/collections.abc.html#collections.abc.Mapping',
   Path: 'library/pathlib.html#pathlib.Path',
 }
 
 const PY_DOCS = 'https://docs.python.org/3/'
+
+/** The dotted name before a trailing call or subscript (`shutil.which` in `shutil.which("tmux")`), else the text as written. */
+function pythonCallee(text: string): string {
+  const stripped = text.replace(/\((?:[^()]|\([^()]*\))*\)$/, '').replace(/\[[^\]]*\]$/, '')
+  return stripped !== text && /^[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)+$/.test(stripped) ? stripped : text
+}
 
 /** Syntax words in the native declarations rendered as complete signatures. */
 const SIGNATURE_KEYWORDS: Record<string, Set<string>> = Object.fromEntries(Object.entries({
@@ -76,6 +85,8 @@ const SIGNATURE_KEYWORDS: Record<string, Set<string>> = Object.fromEntries(Objec
   go: 'func chan map struct interface',
   swift: 'any',
   julia: 'where struct mutable abstract primitive type function end',
+  // Attributes that open a declaration, and the guard of a spec.
+  elixir: 'spec type opaque callback macrocallback when',
   cxx: 'alignas alignof auto class concept const consteval constexpr constinit decltype default delete enum explicit extern final friend inline mutable namespace noexcept operator override register requires static struct template thread_local typedef typename union using virtual volatile',
 }).map(([port, words]) => [port, new Set(words.split(' '))]))
 
@@ -86,7 +97,7 @@ export interface KeywordHelp {
   href: string
 }
 
-const KEYWORD_HELP: Record<string, Record<string, KeywordHelp>> = {
+export const KEYWORD_HELP: Record<string, Record<string, KeywordHelp>> = {
   cxx: {
     nodiscard: {
       title: 'C++ nodiscard attribute',
@@ -131,6 +142,8 @@ interface TypeSpan {
   declaration?: true
   keyword?: true
   help?: KeywordHelp
+  /** Syntax the grammar owns, such as an atom or a keyword key: it names no API. */
+  nonReference?: true
 }
 
 /**
@@ -279,6 +292,8 @@ export class SymbolIndex {
   private readonly swiftCallables = new Map<string, ApiSymbol[]>()
   /** The outermost namespaces a Ruby id starts with, for a name written without one. */
   private readonly rubyRoots = new Set<string>()
+  /** An Elixir module's members, by the module's id. */
+  private readonly elixirMembers = new Map<string, ApiSymbol[]>()
 
   // A plain field, not a constructor parameter property. Node's
   // --experimental-strip-types rejects parameter properties outright
@@ -339,6 +354,7 @@ export class SymbolIndex {
       list.push(s)
       this.byName.set(s.name, list)
       if (this.lang === 'ruby' && pub.includes('::')) this.rubyRoots.add(pub.slice(0, pub.indexOf('::')))
+      if (this.lang === 'elixir' && s.parent) this.elixirMembers.set(s.parent, [...(this.elixirMembers.get(s.parent) ?? []), s])
       const labels = this.lang === 'swift' ? pub.indexOf('(') : -1
       if (labels > 0) {
         const overloads = this.swiftCallables.get(pub.slice(0, labels)) ?? []
@@ -396,7 +412,9 @@ export class SymbolIndex {
     project?: string,
   ): void {
     const byName = new Map<string, InventoryEntry>()
-    for (const entry of entries) if (!byName.has(entry.name)) byName.set(entry.name, entry)
+    // A page of the manual or a command-line option is not a symbol: Julia's `index` is its front
+    // page, and CPython's `search` is its search page, not a function of that name.
+    for (const entry of symbolEntries(entries)) if (!byName.has(entry.name)) byName.set(entry.name, entry)
     this.external.push({ baseUrl: baseUrl.replace(/\/*$/, '/'), byName, langs, project })
   }
 
@@ -619,9 +637,17 @@ export class SymbolIndex {
       const yard = this.resolveYard(target, context)
       if (yard) return yard
     }
+    if (this.lang === 'elixir') {
+      const elixir = this.resolveElixir(target, context)
+      if (elixir) return elixir
+    }
     let clean = target.replace(/^[~.]/, '')
+    // `System.getenv()` is the overload that takes nothing, and an inventory that lists overloads says which.
+    const nullary = this.lang !== 'swift' && this.lang !== 'py' && clean.endsWith('()')
     // Swift ids keep their argument labels, so `isRunning()` names `Server.isRunning()`.
     if (this.lang !== 'swift') clean = clean.replace(/\(\)$/, '')
+    // Elixir names a type `t:name/0` and a function `name/2`; the prefix and arity select, they do not spell.
+    if (this.lang === 'elixir') clean = clean.replace(/^[tc]:(?=[A-Za-z_])/, '').replace(/\/\d+$/, '')
     let opaqueContext = false
     if (this.lang === 'powershell' && context) {
       const prefixed = /^[$-]/.test(clean)
@@ -641,10 +667,9 @@ export class SymbolIndex {
         if (documented && help) return { href: `${help}#notes`, external: true, project: 'PowerShell command help' }
       }
     }
-    if (this.lang === 'powershell' && role === 'variable') return {
-      href: 'https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_variables?view=powershell-7.4',
-      external: true, project: 'PowerShell variables',
-    }
+    // A variable names no page and a printed string names no symbol, whatever else resolves under that spelling. A command's own
+    // parameter, which a `$name` may stand for, is answered above.
+    if (neverLinks(target)) return undefined
     if (this.lang === 'scala') clean = clean.replace(/^_root_\./, '').replace(/#/g, '.')
     if (this.lang === 'fsharp' || this.lang === 'csharp') clean = clean.replace(/`\d+/g, '')
     const [importHead, ...tail] = clean.split('.')
@@ -781,17 +806,31 @@ export class SymbolIndex {
     const shadowedUsing = usingAlias && (this.byName.has('Using') || this.bySuffix.has(clean) ||
       context?.signatures.some((sig) => sig.params.some((param) => param.name === 'Using') || sig.receiver?.name === 'Using'))
     const builtin = this.lang && !shadowedUsing ? builtinHref(this.lang, clean) : undefined
-    if (builtin && ['kotlin', 'scala'].includes(this.lang ?? '')) return { href: builtin, external: true }
+    if (builtin && CURATED_BEFORE_INVENTORY.has(this.lang ?? '')) return { href: builtin, external: true }
 
     // Intersphinx order: exact name, then the shortest suffix. An inventory
     // is authoritative for its own project, so it is consulted before the
     // built-in table rather than after.
+    // A Python reference may be written as a call or a subscript, as in `shutil.which("tmux")` or
+    // `sys.path[0]`. CPython documents the name before it, so that is what the inventory is asked,
+    // when that name is itself dotted. A bare call such as `run(self.x)` names a function of the
+    // reader's own, and a dotted argument does not make it CPython's.
+    const stdlib = this.lang === 'py' ? pythonCallee(clean) : clean
     for (const inv of this.external) {
       if (inv.langs && (!this.lang || !inv.langs.includes(this.lang))) continue
-      const hit = inv.byName.get(clean) ?? context?.namespaceImports?.toReversed()
-        .map((namespace) => inv.byName.get(`${namespace}.${clean}`)).find(Boolean) ??
+      if (inv.project === 'Java SE' && NOT_THE_JDKS[this.lang ?? '']?.has(clean)) continue
+      // A call with no arguments is not an overload that takes some: it has the entry written with its
+      // parentheses, or the plain name when that entry's anchor lists no parameters.
+      const entry = (name: string) => {
+        const exact = nullary ? inv.byName.get(`${name}()`) : undefined
+        if (exact) return exact
+        const plain = inv.byName.get(name)
+        return plain && !(nullary && /\([^)]/.test(plain.uri.split('#')[1] ?? '')) ? plain : undefined
+      }
+      const hit = entry(stdlib) ?? context?.namespaceImports?.toReversed()
+        .map((namespace) => entry(`${namespace}.${clean}`)).find(Boolean) ??
         (this.lang === 'julia' && !clean.includes('.')
-          ? inv.byName.get(`Core.${clean}`) ?? inv.byName.get(`Base.${clean}`) : undefined)
+          ? entry(`Core.${clean}`) ?? entry(`Base.${clean}`) : undefined)
       if (hit) return {
         href: inv.baseUrl === '/' && hit.uri.startsWith('/') ? hit.uri : inv.baseUrl + hit.uri,
         external: true,
@@ -811,17 +850,84 @@ export class SymbolIndex {
     const std = PY_INTERSPHINX[last]
     if (std) return { href: `${PY_DOCS}${std}`, external: true, project: 'Python' }
     if (PY_EXCEPTIONS.has(last)) {
-      return { href: `${PY_DOCS}library/exceptions.html#${last}`, external: true, project: 'Python' }
+      return { href: `${PY_DOCS}builtins/exceptions.html#${last}`, external: true, project: 'Python' }
     }
+    // A module is a page CPython documents under its own name. A member of one
+    // is only a link when the inventory above lists it: a guessed fragment lands
+    // on the module's page at an anchor that may not exist, as `re.error` did.
     const [head, ...rest] = clean.split('.')
-    if (rest.length && PY_STDLIB_MODULES.has(head)) {
-      return { href: `${PY_DOCS}library/${head}.html#${clean}`, external: true, project: 'Python' }
-    }
     if (!rest.length && PY_STDLIB_MODULES.has(head)) {
       return { href: `${PY_DOCS}library/${head}.html`, external: true, project: 'Python' }
     }
 
     return undefined
+  }
+
+  /** The module a declaration belongs to: itself, or its parent. */
+  private elixirOwner(context?: ApiSymbol): ApiSymbol | undefined {
+    return context?.parent ? this.byDeclared.get(context.parent) : context
+  }
+
+  /**
+   * A module as Elixir's aliases write it. `Server` inside `LibTmux.Foo` is
+   * `LibTmux.Server`: the full name first, then the enclosing namespaces of the
+   * referring module from the innermost out, then the one module a suffix names.
+   */
+  private elixirModule(path: string, context?: ApiSymbol): ApiSymbol | undefined {
+    const isModule = (symbol?: ApiSymbol) => symbol && ['module', 'struct', 'exception', 'interface'].includes(symbol.kind) ? symbol : undefined
+    const exact = isModule(this.byPublic.get(path))
+    if (exact) return exact
+    const segments = (this.elixirOwner(context)?.id ?? '').split('.')
+    for (let length = segments.length - 1; length > 0; length--) {
+      const hit = isModule(this.byPublic.get(`${segments.slice(0, length).join('.')}.${path}`))
+      if (hit) return hit
+    }
+    const suffixed = (this.bySuffix.get(path) ?? []).filter((symbol) => isModule(symbol))
+    return suffixed.length === 1 ? suffixed[0] : undefined
+  }
+
+  /** The operand count of a call or remote type that opens at the start of `rest`. */
+  private static elixirArity(rest: string): number | undefined {
+    const open = /^\s*\(/.exec(rest)
+    if (!open) return undefined
+    const closing = closingBracket(rest, open[0].length - 1)
+    if (closing < 0) return undefined
+    const operands = rest.slice(open[0].length, closing)
+    return operands.trim() ? splitTopLevel(operands, ',').length : 0
+  }
+
+  /**
+   * An ExDoc reference: `Mod`, `Mod.fun/2`, `fun/2`, `t:Mod.type/0`, `c:callback/1`.
+   *
+   * `fun/2` and `t:type/0` belong to the module being documented. A module
+   * that is not ours but is the standard library's links to its own page; the
+   * rest stays plain, because a guess would send a reader somewhere else.
+   */
+  private resolveElixir(target: string, context?: ApiSymbol): LinkTarget | undefined {
+    const parts = /^(?:([tc]):)?([^\s/]+?)(?:\/(\d+))?$/.exec(target.trim().replace(/\(\)$/, ''))
+    if (!parts) return undefined
+    const [, kind, body, arity] = parts as unknown as [string, 't' | 'c' | undefined, string, string | undefined]
+    const link = (symbol: ApiSymbol): LinkTarget => ({ href: this.hrefFor(symbol), external: false, symbol })
+    const segments = body.split('.')
+    const last = segments.at(-1)!
+    const named = /^[a-z_]/.test(last)
+    const modulePath = named ? segments.slice(0, -1).join('.') : body
+    const owner = modulePath ? this.elixirModule(modulePath, context) : this.elixirOwner(context)
+    if (!named) return owner && !kind && !arity ? link(owner) : undefined
+    if (!owner) {
+      const head = modulePath.split('.')[0]!
+      if (!modulePath || !ELIXIR_STDLIB_MODULES.has(head) || this.elixirModule(head, context)) return undefined
+      return { href: elixirStdlibHref(modulePath, last, arity === undefined ? undefined : Number(arity), kind), external: true, project: 'Elixir' }
+    }
+    const wanted = (this.elixirMembers.get(owner.id) ?? []).filter((member) => {
+      const [, memberName, memberArity] = /^(.*?)(?:\/(\d+))?$/.exec(member.name)!
+      return memberName === last && (arity === undefined || memberArity === arity) &&
+        (kind === 't' ? member.kind === 'typealias' : kind === 'c' ? member.kind === 'method' : true)
+    })
+    // A name shared by a type and a function means the function, unless the reference says `t:`.
+    const callable = wanted.filter((member) => member.kind !== 'typealias')
+    const hits = kind || !callable.length ? wanted : callable
+    return hits.length === 1 ? link(hits[0]!) : undefined
   }
 
   /**
@@ -904,10 +1010,57 @@ export class SymbolIndex {
    *
    * A keyword argument such as `cancel:` or `clients: true` names a parameter
    * of the call being described, not the member elsewhere that shares its
-   * name, so it stays plain code.
+   * name, so it stays plain code. A variable and the text a program prints
+   * stay plain too (`neverLinks`), in `linkType`, which every path calls.
    */
   linkLiteral(text: string, context?: ApiSymbol): TypeSpan[] {
     return keywordArgument.test(text) ? [{ text }] : this.linkType(text, context)
+  }
+
+  /**
+   * One run of doc prose as the page renders it: the spans `linkText` finds, and for a reference that
+   * resolves nowhere, the linked parts of its literal. `ApiDoc` renders these spans and the link verifier
+   * reads its destinations from them, so both see the same links.
+   */
+  docSpans(text: string, context?: ApiSymbol): (DocSpan & { link?: LinkTarget; parts?: TypeSpan[] })[] {
+    return this.linkText(text, context).map((span) => (span.kind === 'ref' && !span.link ? { ...span, parts: this.linkLiteral(span.label, context) } : span))
+  }
+
+  /**
+   * One name in an Elixir declaration or typespec.
+   *
+   * Atoms (`:ok`) and keyword keys (`cwd:`) are values, an attribute word
+   * after `@` is syntax, and the declared function and its parameters are
+   * declarations. What is left is a module, or a type written as a call:
+   * `LibTmux.Snapshot.t()` is the type `t/0` of that module and `t()` is the
+   * current module's own. Their operands decide the arity.
+   */
+  private elixirType(ident: string, annotation: string, at: number, context?: ApiSymbol, signature?: Signature): TypeSpan[] {
+    const before = annotation.slice(0, at)
+    const after = annotation.slice(at + ident.length)
+    if (/^\d/.test(ident) || /(?:^|[^:]):$/.test(before) || /^:(?!:)/.test(after)) return [{ text: ident, nonReference: true }]
+    if (SIGNATURE_KEYWORDS.elixir!.has(ident) && (before.endsWith('@') || ident === 'when')) return [{ text: ident, keyword: true }]
+    const lineStart = before.slice(before.lastIndexOf('\n') + 1)
+    const parameter = signature?.params.find((param) => param.name === ident)
+    if (context && signature && ident === context.name.replace(/\/\d+$/, '') && /^\s*(?:@\w+\s+)?$/.test(lineStart)) {
+      return [{ text: ident, declaration: true }]
+    }
+    if (parameter && context && /^\s*(?:\\\\|::|,|\))/.test(after) && (/[(,]\s*$/.test(before) || /^\s*::/.test(after))) {
+      return [{ text: ident, declaration: true, link: {
+        href: `${this.hrefFor(context).split('#')[0]}#${encodeURIComponent(parameterId(context, ident))}`, external: false,
+      } }]
+    }
+    const arity = SymbolIndex.elixirArity(after)
+    const dot = ident.lastIndexOf('.')
+    let hit: ApiSymbol | undefined
+    if (/^[A-Z]/.test(ident) && arity === undefined) hit = this.elixirModule(ident, context)
+    else if (arity !== undefined) {
+      const owner = dot < 0 ? this.elixirOwner(context) : this.elixirModule(ident.slice(0, dot), context)
+      hit = (this.elixirMembers.get(owner?.id ?? '') ?? []).find((member) => member.name === `${ident.slice(dot + 1)}/${arity}`)
+    }
+    if (hit) return [{ text: ident, link: { href: this.hrefFor(hit), external: false, symbol: hit } }]
+    const builtin = builtinHref('elixir', ident)
+    return [{ text: ident, ...(builtin ? { link: { href: builtin, external: true } } : {}) }]
   }
 
   /**
@@ -920,6 +1073,7 @@ export class SymbolIndex {
    * makes those all work without a grammar for type syntax.
    */
   linkType(annotation: string, context?: ApiSymbol, signature?: Signature): TypeSpan[] {
+    if (neverLinks(annotation)) return [{ text: annotation }]
     const out: TypeSpan[] = []
     const rustPayload = this.lang === 'rs' && (context?.variant || (context?.parent && this.byDeclared.get(context.parent)?.variant))
     const variantDelimiters: string[] = []
@@ -932,6 +1086,8 @@ export class SymbolIndex {
     // anything and C++ annotations rendered almost entirely plain.
     const identifier = this.lang === 'julia'
       ? String.raw`[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*!?`
+      // A number is matched whole, so `1_000` is not a literal followed by a name.
+      : this.lang === 'elixir' ? String.raw`\d[\d_]*(?:\.\d+)?(?:[eE][+-]?\d+)?|[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*[!?]?`
       : this.lang === 'powershell' ? String.raw`(?:[A-Za-z_][A-Za-z0-9_.]*\\)?[A-Za-z_][A-Za-z0-9_.-]*`
       : this.lang === 'ts' ? String.raw`[A-Za-z_$][A-Za-z0-9_$.]*`
       : this.lang === 'rs' ? String.raw`(?:r#)?[A-Za-z_][A-Za-z0-9_.]*(?:::(?:r#)?[A-Za-z_][A-Za-z0-9_.]*)*`
@@ -939,7 +1095,7 @@ export class SymbolIndex {
     // C++ prefixes, escaped quotes, raw delimiters and suffixes belong to the
     // literal token. Its contents cannot introduce an attribute or type link.
     const cppLiteral = String.raw`(?:(?:u8|u|U|L)?R"(?<delimiter>[^ ()\\\t\v\f\r\n]{0,16})\([\s\S]*?\)\k<delimiter>"|(?:u8|u|U|L)?(?:"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'))(?:[A-Za-z_]\w*)?`
-    const initial = this.lang === 'ts' ? 'A-Za-z_$' : 'A-Za-z_'
+    const initial = this.lang === 'ts' ? 'A-Za-z_$' : this.lang === 'elixir' ? 'A-Za-z_0-9' : 'A-Za-z_'
     const pattern = String.raw`(?<ident>\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|${identifier})|(?<other>[^${initial}"'/]+|["'/])`
     // F# type variables start with an apostrophe but do not close like strings.
     const re = new RegExp(this.lang === 'cxx'
@@ -989,6 +1145,10 @@ export class SymbolIndex {
         ? undefined : this.boundSpans(ident, bindings)
       if (bound) {
         out.push(...bound)
+        continue
+      }
+      if (this.lang === 'elixir') {
+        out.push(...this.elixirType(ident, annotation, m.index!, context, signature))
         continue
       }
       if (this.lang === 'cxx' && ident === 'nodiscard' &&

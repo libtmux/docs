@@ -69,7 +69,7 @@ describe('generated Python docstring parity', () => {
     const tree = fromMarkdown(markdown)
     expect(tree.children.filter((node) => node.type === 'code').map((node) => node.value)).toEqual(expected)
     expect(markdown).toContain('*Experimental, unstable*.')
-    expect(markdown).toContain('[`list`](https://docs.python.org/3/library/stdtypes.html#list)')
+    expect(markdown).toContain('[`list`](https://docs.python.org/3/builtins/stdtypes.html#list)')
     expect(markdown).toContain('[`t.Generic`](https://docs.python.org/3/library/typing.html#typing.Generic)')
     expect(markdown).toContain('libtmux._internal.query_list.QueryList')
   })

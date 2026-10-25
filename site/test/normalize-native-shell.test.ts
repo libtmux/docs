@@ -262,7 +262,7 @@ describe('native shell URL normalization', () => {
       const article = '<h2 id="capture">Pane &amp; capture</h2>\n<pre>  $ printf &quot;ok&quot;\n</pre><a href="#capture">Capture</a>'
       const tabs = '<script src="../../_static/tabs.js?v=legacy"></script>'
       const otherScripts = '<script src="../../_static/js/layout.js?v=old"></script><script src="../../_static/design-tabs.js"></script><script src="https://other.example/_static/tabs.js"></script><script src="../../_static/missing.js"></script>'
-      const baseline = `<html class="no-js"><head><title>Native title</title><link rel="canonical" href="https://native.example/pane/"><link href="../../_static/theme.css" rel="stylesheet"><link href="../../_static/libtmux-org.css?v=old" rel="stylesheet"><script src="/_shell/shell.js"></script>${tabs}${otherScripts}</head><body><header class="mobile-header">Old</header><article role="main">${article}</article><footer><a href="../session/">Next</a><p>Native attribution</p><div class="page-source"><code>docs/pane.md</code></div></footer></body></html>`
+      const baseline = `<html class="no-js"><head><title>Native title</title><link rel="canonical" href="https://native.example/pane/"><link href="../../_static/theme.css" rel="stylesheet"><link href="../../_static/libtmux-org.css?v=old" rel="stylesheet"><script src="/_shell/shell.js"></script>${tabs}${otherScripts}</head><body><header class="mobile-header">Old</header><aside class="sidebar-drawer">Old navigation</aside><article role="main">${article}</article><footer><a href="../session/">Next</a><p>Native attribution</p><div class="page-source"><code>docs/pane.md</code></div></footer></body></html>`
       writeFileSync(page, baseline)
       const context = {
         schema: 1, port: 'py', version: 'v0.62.0', root: '/pr-42/en/', base: '/pr-42/en/py/v0.62.0/api/',
@@ -271,8 +271,9 @@ describe('native shell URL normalization', () => {
       const contextFile = join(directory, 'context.json')
       writeFileSync(contextFile, JSON.stringify(context))
       const metadata = { scope: 'py', product: 'core', version: 'v0.62.0', identity: 'native-api:api/pane', title: 'Pane' }
-      const envelope = `<html data-native-shell-export><head data-native-shell-assets><meta name="libtmux-inventory" content='${JSON.stringify(metadata)}'><link rel="stylesheet" href="/pr-42/en/py/v0.62.0/_astro/shell.css"><script type="module" src="/pr-42/en/py/v0.62.0/_astro/shell.js"></script></head><body><template data-native-boundary="header-start"></template><header class="site-header">Shared header</header><template data-native-boundary="header-end"></template><template data-native-boundary="footer-start"></template><footer class="shared-footer">Shared footer</footer><template data-native-boundary="footer-end"></template></body></html>`
+      const envelope = `<html data-native-shell-export><head data-native-shell-assets><meta name="libtmux-inventory" content='${JSON.stringify(metadata)}'><link rel="stylesheet" href="/pr-42/en/py/v0.62.0/_astro/shell.css"><script type="module" src="/pr-42/en/py/v0.62.0/_astro/shell.js"></script></head><body><template data-native-boundary="header-start"></template><header class="site-header">Shared header $&amp; $$</header><template data-native-boundary="header-end"></template><template data-native-boundary="sidebar-start"></template><div class="api-nav-column">Selectable sidebar $&amp; $$</div><template data-native-boundary="sidebar-end"></template><template data-native-boundary="footer-start"></template><footer class="shared-footer">Shared footer $&amp; $$</footer><template data-native-boundary="footer-end"></template></body></html>`
       writeFileSync(join(shell, 'api/api/pane/index.html'), envelope)
+      writeFileSync(join(shell, 'api/tree.json'), '{"port":"py","buckets":[],"members":{}}')
       const options = { sphinxPort: 'py', version: 'v0.62.0', contextFile, shellDirectory: shell }
       await normalizeNativeShell(native, '/pr-42/en', options)
       const html = readFileSync(page, 'utf8')
@@ -280,6 +281,12 @@ describe('native shell URL normalization', () => {
       const targets = renderedTargets(html, `${context.base}api/pane/`)
       expect(targets.map((target) => target.category)).toEqual(['doc', 'heading'])
       expect(targets[1]).toMatchObject({ scope: 'py', version: 'v0.62.0', href: `${context.base}api/pane/#capture` })
+      expect(html).toContain('<div class="api-nav-column">Selectable sidebar $&amp; $$</div>')
+      // Replacement tokens in any compiled region are page text, never instructions to the splice.
+      expect(html).toContain('<header class="site-header">Shared header $&amp; $$</header>')
+      expect(html).toContain('<!-- libtmux-native-footer --><footer class="shared-footer">Shared footer $&amp; $$</footer><!-- /libtmux-native-footer -->\n</body>')
+      expect(html).not.toContain('class="sidebar-drawer"')
+      expect(readFileSync(join(native, 'tree.json'), 'utf8')).toBe('{"port":"py","buckets":[],"members":{}}')
       expect(html).toContain('<title>Native title</title><link rel="canonical" href="https://native.example/pane/">')
       expect(html).toContain('href="/pr-42/en/py/v0.62.0/api/_static/theme.css"')
       expect(html.includes('src="/pr-42/en/py/v0.62.0/api/_static/tabs.js?v=legacy"')).toBe(tabsPresent)

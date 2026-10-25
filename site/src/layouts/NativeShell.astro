@@ -11,6 +11,8 @@ import DocumentationNavigationButtons from '../components/docs/DocumentationNavi
 import DocumentationScript from '../components/docs/DocumentationScript.astro'
 import NativeSphinxScript from '../components/docs/NativeSphinxScript.astro'
 import type { NativePageContext, NativeShellContext } from '../lib/native-shell'
+import { nativeReferenceTree } from '../lib/native-shell'
+import ApiTree from '../components/api/ApiTree.astro'
 import { referencePageLinks } from '../lib/reference-page-links'
 import { PORTS, portHomeUrl } from '../lib/ports'
 import { defaultVersionFor } from '../lib/versions'
@@ -60,10 +62,17 @@ const equivalents = { port, primary: page.signatures[0], symbols, indexes: page.
       </div>
     </SiteHeader>
     <DocumentationContext port={port} version={version} locale={locale} sourcePath={page.sourcePath} reference>
-      <DocumentationNavigationButtons slot="navigation" tableOfContents={page.hasTableOfContents} native />
+      <DocumentationNavigationButtons slot="navigation" tableOfContents={page.hasTableOfContents} native api />
     </DocumentationContext>
     <PrereleaseNotice />
     <template data-native-boundary="header-end"></template>
+    <template data-native-boundary="sidebar-start"></template>
+    <ApiTree presentation="outline" inventory={nativeReferenceTree(context)} selectedSymbol={`page:${page.path}`}
+      referenceBase={base} portName={PORTS.find((entry) => entry.slug === port)?.name ?? port} version={context.artifactSha256}
+      tree={[]} members={[]} withMembers={new Set()} currentPath={page.url} indexLabel="Reference overview"
+      searchLabel="Find a page or declaration" searchPlaceholder="Find page or symbol"
+      filters={[{ id: 'all', label: 'All' }, { id: 'pages', label: 'Pages' }, { id: 'types', label: 'Types' }, { id: 'members', label: 'Members' }]} />
+    <template data-native-boundary="sidebar-end"></template>
     <template data-native-boundary="footer-start"></template>
     <SiteFooter locale={locale} source={page.source} markdownHref={page.markdownHref} llmsRoot={base} port={port} version={version}
       githubUrl={`https://github.com/${context.source.repository}/tree/${context.source.sha}`} flush />

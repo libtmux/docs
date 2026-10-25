@@ -83,14 +83,16 @@ try {
     .map((option) => option.dataset.port)), ['ts'], 'Fragment navigation preserves the active language filter')
   await page.keyboard.press('Escape')
   await page.evaluate(() => scrollTo(0, 0))
-  for (const [input, button] of [['__navigation', 'mobile-sidebar-toggle'], ['__toc', 'mobile-toc-toggle']]) {
+  for (const [input, button] of [[null, '[data-api-nav-toggle]'], ['__toc', '#mobile-toc-toggle']]) {
     await page.setViewportSize({ width: 641, height: 900 })
-    const opener = page.locator(`#${button}`)
+    const opener = page.locator(button)
     await opener.focus()
     await page.keyboard.press('Enter')
-    assert(await page.locator(`#${input}`).isChecked(), `${button}: keyboard opens the drawer`)
+    const isOpen = () => input ? page.locator(`#${input}`).isChecked() : opener.getAttribute('aria-expanded').then(value => value === 'true')
+    const drawerId = input ? 'native-toc' : 'api-nav'
+    assert(await isOpen(), `${button}: keyboard opens the drawer`)
     assert(await page.evaluate((id) => document.getElementById(id).contains(document.activeElement),
-      input === '__navigation' ? 'native-navigation' : 'native-toc'), `${button}: focus moves into the drawer`)
+      drawerId), `${button}: focus moves into the drawer`)
     await page.waitForFunction((id) => {
       const drawer = document.getElementById(id)
       const rect = drawer.getBoundingClientRect()
@@ -99,18 +101,18 @@ try {
       if (!link) return false
       const bounds = link.getBoundingClientRect()
       return link.contains(document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2))
-    }, input === '__navigation' ? 'native-navigation' : 'native-toc')
+    }, drawerId)
     await page.keyboard.press('Control+k')
     await page.locator('dialog[open]').waitFor()
     await page.keyboard.press('Escape')
     await page.waitForFunction(() => !document.querySelector('dialog[open]'))
-    assert(await page.locator(`#${input}`).isChecked(), `${button}: dismissing search preserves the underlying drawer`)
+    assert(await isOpen(), `${button}: dismissing search preserves the underlying drawer`)
     await page.setViewportSize({ width: 380, height: 900 })
     await page.waitForFunction(() => document.querySelector('[data-documentation-context]').hasAttribute('data-settings-open'))
     assert(await opener.isVisible(), `${button}: resizing keeps the drawer opener visible`)
     await page.keyboard.press('Escape')
-    assert.equal(await page.locator(`#${input}`).isChecked(), false, `${button}: Escape closes the drawer`)
-    assert.equal(await page.evaluate(() => document.activeElement?.id), button, `${button}: Escape returns focus to the visible opener`)
+    assert.equal(await isOpen(), false, `${button}: Escape closes the drawer`)
+    assert(await opener.evaluate(element => document.activeElement === element), `${button}: Escape returns focus to the visible opener`)
   }
   console.log('Native shell: reduced-motion deep links with and without JavaScript, stable first paint, reachable scrolled header, assets, keyboard, unobscured dropdowns at 1440/1062/768/688/641/390px in light/dark, filtered class/member equivalents, and drawer focus across resizing passed')
 } finally {

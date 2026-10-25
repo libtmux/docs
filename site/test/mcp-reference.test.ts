@@ -106,7 +106,7 @@ it.each(Object.keys(MCP_REFERENCE))('routes and indexes every advertised %s prot
   expect(routes).toHaveLength(expected.length + 3)
   const navigation = mcpNavigation(port)
   const all = searchApi(navigation.json, '')
-  expect(all.map((row) => row.id).sort()).toEqual(objects.map((row) => row.id).sort())
+  expect(all.filter((row) => row.kind !== 'section').map((row) => row.id).sort()).toEqual(objects.map((row) => row.id).sort())
   for (const object of objects) {
     const route = routes.find((entry) => entry.path === object.path)!
     expect(route, object.id).toMatchObject({ port, section: object.section, itemSlug: object.slug, version: 'next' })

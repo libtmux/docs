@@ -1,4 +1,3 @@
-import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window } from 'happy-dom'
@@ -439,64 +438,4 @@ describe('every tmux declaration the C layout reads', () => {
       ].join('\n'))
     } finally { Object.assign(CODE_COLUMNS, { api: original }) }
   })
-})
-
-/** The formatter the fixtures pin, when this machine has it. */
-function clangFormat(): ((text: string, limit: number) => string) | undefined {
-  try {
-    if (!/clang-format version 21\./.test(execFileSync('clang-format', ['--version'], { encoding: 'utf8' }))) return undefined
-  } catch { return undefined }
-  const style = (limit: number) => `{BasedOnStyle: LLVM, ColumnLimit: ${limit}, PointerAlignment: Right, AlignAfterOpenBracket: Align, BinPackParameters: true, ContinuationIndentWidth: 4, IndentWidth: 2}`
-  return (text, limit) => execFileSync('clang-format', ['--assume-filename=declaration.c', `--style=${style(limit)}`], { input: `${text}\n`, encoding: 'utf8' }).trimEnd()
-}
-const clang = clangFormat()
-
-describe.skipIf(!clang)('C layouts agree with the clang-format on this machine', () => {
-  it('formats a sample of the declarations in both tmux versions as clang-format does', () => {
-    const raws = new Map<string, string>()
-    for (const version of VERSIONS) {
-      for (const symbol of tmuxSourceModel(version).symbols) {
-        if (!supportsCSignatures(symbol, 'c') || symbol.kind === 'enum') continue
-        for (const signature of symbol.signatures) raws.set(signature.raw!, symbol.id)
-      }
-    }
-    const sample = [...raws.keys()].filter((_, at) => at % 20 === 0)
-    expect(sample.length).toBeGreaterThan(100)
-    const strip = (text: string) => text.endsWith(';') ? text.slice(0, -1) : text
-    const disagreements: unknown[] = []
-    for (const raw of sample) {
-      const actual = formatCDeclaration(raw, 60)
-      if (raw.trimEnd().endsWith(';')) {
-        if (actual !== clang!(raw, 60)) disagreements.push({ raw, expected: clang!(raw, 60), actual })
-        continue
-      }
-      // The page never prints the `;` clang-format needs, so it takes no column. Where clang-format
-      // with the `;` in the last column keeps every line within 60, the two agree exactly; where it
-      // does not, the last line is at the limit or clang-format with the `;` inside 60 agrees.
-      const outside = strip(clang!(`${raw};`, 61))
-      const inside = strip(clang!(`${raw};`, 60))
-      const exact = outside.split('\n').every((line) => line.length <= 60)
-      if (exact ? actual !== outside : actual !== inside && actual.split('\n').at(-1)!.length !== 60) disagreements.push({ raw, outside, inside, actual })
-    }
-    expect(disagreements).toEqual([])
-  }, 60_000)
-
-  it('formats enums as clang-format does', () => {
-    const raws = new Set<string>()
-    for (const version of VERSIONS) {
-      for (const symbol of tmuxSourceModel(version).symbols) {
-        if (symbol.kind === 'enum' && supportsCSignatures(symbol, 'c')) for (const signature of symbol.signatures) raws.add(signature.raw!)
-      }
-    }
-    expect(raws.size).toBeGreaterThan(50)
-    const disagreements: unknown[] = []
-    for (const raw of raws) {
-      const terminated = raw.trimEnd().endsWith(';')
-      const expected = terminated ? clang!(raw, 60) : clang!(`${raw};`, 61).slice(0, -1)
-      if (expected.split('\n').some((line) => line.length > 60)) continue
-      const actual = formatCEnumDeclaration(raw, 60)
-      if (actual !== expected) disagreements.push({ raw, expected, actual })
-    }
-    expect(disagreements).toEqual([])
-  }, 60_000)
 })

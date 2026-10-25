@@ -27,7 +27,7 @@ describe('route branding', () => {
   it('uses project titles independently of package names and shared source repositories', () => {
     const names = {
       py: 'libtmux', ruby: 'libtmux-ruby', lua: 'libtmux-lua', ts: 'libtmux-ts',
-      powershell: 'libtmux-powershell', julia: 'LibTmux.jl',
+      powershell: 'libtmux-powershell', julia: 'LibTmux.jl', elixir: 'libtmux-elixir',
       rs: 'libtmux-rs', go: 'libtmux-go', java: 'libtmux-java', kotlin: 'libtmux-kotlin',
       scala: 'libtmux-scala', csharp: 'libtmux-dotnet', fsharp: 'libtmux-fsharp',
       cxx: 'libtmux-cxx', swift: 'libtmux-swift',
@@ -79,9 +79,9 @@ describe('route branding', () => {
     expect(branding('rs', 'workspace/', '/pr-42/ja/').asset('logo.svg'))
       .toBe('/pr-42/ja/brand/rust/workspace/logo.svg')
   })
-  it('ships raster and vector fallbacks for every port and product', () => {
-    for (const port of PORTS) for (const product of ['', 'mcp/', 'workspace/']) {
-      const brand = branding(port.slug, product)
+  it('ships raster and vector fallbacks for every palette and product', () => {
+    for (const language of Object.keys(palettes)) for (const product of ['library', 'mcp', 'workspace']) {
+      const brand = { asset: (file: string) => `/brand/${language}/${product}/${file}` }
       for (const file of ['logo.svg', 'favicon.ico', 'logo-32.png', 'logo-512.png', 'apple-touch-icon-light.png', 'opengraph-light.png', 'twitter-light.png', 'site.webmanifest']) {
         expect(existsSync(publicFile(brand.asset(file))), brand.asset(file)).toBe(true)
       }
@@ -91,6 +91,17 @@ describe('route branding', () => {
       for (const icon of manifest.icons) {
         expect(existsSync(publicFile(brand.asset(icon.src))), icon.src).toBe(true)
       }
+    }
+  })
+  it('ships a language icon, with its provenance, for every port the switcher lists', () => {
+    for (const { slug } of PORTS) {
+      const dir = `/brand/languages/${slug}`
+      for (const file of ['icon.svg', 'provenance.json']) expect(existsSync(publicFile(`${dir}/${file}`)), `${slug}/${file}`).toBe(true)
+      const provenance = JSON.parse(readFileSync(publicFile(`${dir}/provenance.json`), 'utf8'))
+      const icon = readFileSync(publicFile(`${dir}/icon.svg`))
+      expect(createHash('sha256').update(icon).digest('hex'), `${slug} icon digest`).toBe(provenance.sha256)
+      const license = provenance.license?.localCopy?.file
+      if (license) expect(existsSync(publicFile(`${dir}/${license}`)), `${slug}/${license}`).toBe(true)
     }
   })
   it('keeps text and links readable on light and dark surfaces', () => {

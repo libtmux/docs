@@ -28,7 +28,7 @@ const cards = (section: string, port?: string) =>
 
 describe('shared browse cards', () => {
   it.each([
-    ['guides', 6], ['concepts', 4], ['topics', 10], ['examples', 3],
+    ['guides', 7], ['concepts', 4], ['topics', 10], ['examples', 3],
   ] as const)('keeps the %s destinations in shared and native version mounts', (section, count) => {
     const shared = cards(section)
     expect(shared).toHaveLength(count)

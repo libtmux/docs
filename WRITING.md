@@ -3,7 +3,7 @@
 This guide governs documentation, user-facing text, content frontmatter,
 source comments, review descriptions, changelogs, release notes, and commit
 messages. For setup, checks, and pull request workflow, see
-[CONTRIBUTING.md](CONTRIBUTING.md).
+[CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 ## Voice
 
@@ -139,6 +139,10 @@ runs them in a new directory. Add `--view concise`, `--view errors`, or
 `--view cleanup` to verify each checkbox combination; the default is `full`.
 Every view is a complete program, and Copy preserves the selected view.
 Changing executable files requires new native runs for the changed views.
+A quickstart taken from its port's tested example may have no error handling
+to add. Its entry then sets `withoutErrorHandling`, the Error handling option
+changes nothing, `errors` repeats `concise` and `cleanup` repeats `full`, and
+`wrapper-libraries.test.ts` checks both repeats.
 
 The homepage runner records the private sockets selected by the program.
 It checks automatic cleanup when selected, then stops any surviving owned

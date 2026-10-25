@@ -1,22 +1,23 @@
 import { Window, type HTMLAnchorElement, type HTMLButtonElement, type HTMLElement } from 'happy-dom'
-import { readFileSync, realpathSync } from 'node:fs'
-import { createRequire } from 'node:module'
-import { pathToFileURL } from 'node:url'
+import { readFileSync } from 'node:fs'
 import { runInNewContext } from 'node:vm'
-import { experimental_AstroContainer } from 'astro/container'
 import { createRenderer } from 'astro-expressive-code'
 import { select } from 'astro-expressive-code/hast'
 import { fromHtml } from 'hast-util-from-html'
 import { visit } from 'unist-util-visit'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+vi.mock('astro:content', () => ({ getCollection: async () => [] }))
 import { symbolPreview, glossaryPreview, tmuxManualPreview } from '../src/lib/link-preview'
 import { API_MODELS } from '../src/lib/api-models'
 import { productApiIndex } from '../src/lib/product-api'
 import { apiGlossaryHref } from '../src/lib/api-glossary'
 import { initLinkPreviews, disposeLinkPreviews, linkPreviewTarget, positionLinkPreview } from '../src/lib/link-preview-browser'
+import { PREVIEW_DEFAULT_ACTION } from '../src/lib/link-preview-card'
 import { GET } from '../src/pages/[...slug].preview.json'
 import { highlightTokens } from '../src/lib/highlight'
+import { PREVIEW_SIGNATURE_CHARS, PREVIEW_SIGNATURE_LINES } from '../src/lib/preview-signature'
 import config from '../ec.config.mjs'
+import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
 it.each([
   ['/en/powershell/latest/workspace/reference/libtmux-workspace/', 'cmdlet', '/en/powershell/latest/workspace/reference/glossary/#cmdlet'],
@@ -41,7 +42,7 @@ it('uses authored, native descriptions and signatures without reconstructing lan
   const julia = API_MODELS.julia
   const symbol = julia.symbols.find((entry) => entry.id === 'LibTmux.from_env')!
   const result = symbolPreview(julia, symbol, 'latest')
-  expect(result.title).toBe('LibTmux.from_env')
+  expect(result.title).toBe('from_env')
   expect(result.description).toContain('without contacting tmux')
   expect(result.signature).toBe(symbol.signatures[0].raw)
   expect(result.href).toMatch(/\/julia\/latest\/reference\/libtmux-from_env\/$/)
@@ -110,26 +111,12 @@ it('only fetches same-origin supported reference URLs', () => {
 })
 
 it('keeps native keyword help and parameter permalinks inside their inline paragraph', async () => {
-  const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
-  const { transform } = await import(astroRequire.resolve('@astrojs/compiler-rs'))
-  async function compile(relative: string, imports: Record<string, string> = {}) {
-    const file = new URL(relative, import.meta.url)
-    const source = readFileSync(file, 'utf8').replace(/<script[\s\S]*?<\/script>/g, '').replace(/<style[\s\S]*?<\/style>/g, '')
-    const result = await transform(source, { filename: file.pathname, internalURL: 'astro/compiler-runtime',
-      resultScopedSlot: true, resolvePath: (specifier: string) => specifier })
-    expect(result.diagnostics.filter((item: { severity: string }) => item.severity === 'error')).toEqual([])
-    let code = result.code.replaceAll('"astro/compiler-runtime"', JSON.stringify(pathToFileURL(astroRequire.resolve('astro/compiler-runtime')).href))
-    for (const [specifier, url] of Object.entries(imports)) code = code.replaceAll(JSON.stringify(specifier), JSON.stringify(url))
-    return `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
-  }
-  const preview = await compile('../src/components/LinkPreview.astro')
-  const keyword = await compile('../src/components/api/ApiKeyword.astro', { '../LinkPreview.astro': preview })
+  const keyword = await loadAstroTemplate('components/api/ApiKeyword.astro', { real: ['components/LinkPreview.astro'] })
   const model = API_MODELS.kotlin
   const symbol = model.symbols.find((entry) => entry.id === 'io.github.libtmux.kotlin.ControlClient.output')!
   const parameter = symbol.signatures.flatMap((signature) => signature.params).find((entry) => entry.name === 'onSubscribed')!
   const helped = productApiIndex(model, 'latest').linkType(parameter.type!, symbol).find((span) => span.help)!
-  const container = await experimental_AstroContainer.create()
-  const html = await container.renderToString((await import(/* @vite-ignore */ keyword)).default, { props: { text: helped.text, help: helped.help } })
+  const html = await renderAstroTemplate(keyword, { props: { text: helped.text, help: helped.help } })
   const tree = fromHtml(`<p><strong>onSubscribed</strong> (${html}<span> () → Unit</span>) <a href="#parameter">#</a></p>`, { fragment: true })
   // Use the HTML5 parser: a hidden block element can still close the parameter paragraph.
   expect(tree.children).toHaveLength(1)
@@ -152,16 +139,18 @@ let requests: ReturnType<typeof vi.fn>
 let opened: boolean
 let serial = 0
 let prefix: string
-beforeEach(() => {
+let shell = ''
+let cardHtml: Promise<string> | undefined
+beforeEach(async () => {
+  // Rendered before the timers are faked, and once: the card that the layout writes, with every slot the painter fills.
+  shell = await (cardHtml ??= loadAstroTemplate('components/LinkPreview.astro').then((template) => renderAstroTemplate(template, { props: { id: 'reference-link-preview' } })))
   prefix = `/en/ts/latest/reference/preview-test-${++serial}`
   win = new Window({ url: 'https://libtmux.org/en/ts/latest/guides/' })
   for (const [name, value] of Object.entries({ window: win, document: win.document, location: win.location,
     Element: win.Element, Node: win.Node, HTMLElement: win.HTMLElement, innerHeight: 800 })) vi.stubGlobal(name, value)
   vi.useFakeTimers()
   opened = false
-  win.document.body.innerHTML = `<a id="a" href="${prefix}-a/">a</a><a id="b" href="${prefix}-b/">b</a>
-    <span id="reference-link-preview"><code data-preview-title></code><button data-preview-expand hidden aria-expanded="false">Show full name</button><span data-preview-description></span>
-    <span data-preview-detail></span><code data-preview-signature></code><a data-preview-open></a><button data-preview-close>Close</button></span>`
+  win.document.body.innerHTML = `<a id="a" href="${prefix}-a/">a</a><a id="b" href="${prefix}-b/">b</a>${shell}`
   const panel = win.document.getElementById('reference-link-preview')!
   Object.assign(panel, { showPopover: () => { opened = true }, hidePopover: () => { opened = false } })
   const matches = panel.matches.bind(panel)
@@ -250,6 +239,36 @@ describe('preview lifecycle', () => {
     expect(code.classList.contains('lm-highlighted')).toBe(false)
   })
 
+  it('shows only the head of a declaration too long for a card, whatever the payload carries', async () => {
+    const token = (content: string) => ({ content, light: { color: '#A626A4', fontStyle: 0 }, dark: { color: '#F97583', fontStyle: 0 } })
+    const lines = Array.from({ length: 40 }, (_, index) => `case_${index}`)
+    const signature = `enum {\n${lines.join('\n')}\n}`
+    const payload = { schema: 1, title: 'enum', description: '', signature, signatureLanguage: 'c', href: `${prefix}-a/`,
+      signatureHighlight: { language: 'c', light: { foreground: '#24292E', background: '#FFFFFF' }, dark: { foreground: '#E1E4E8', background: '#24292E' },
+        lines: signature.split('\n').map((line) => [token(line)]) } }
+    requests.mockResolvedValueOnce(new Response(JSON.stringify(payload)))
+    hover(); await settle()
+    const code = win.document.querySelector<HTMLElement>('[data-preview-signature]')!
+    // The lines it keeps, then a line that says the rest is on the page; the cut highlighting no longer fits, so it is plain text.
+    expect(code.textContent).toBe(`${signature.split('\n').slice(0, PREVIEW_SIGNATURE_LINES).join('\n')}\n…`)
+    expect(code.querySelectorAll('*')).toHaveLength(0)
+    escape()
+    // One line of hundreds of thousands of characters, as the tmux key-code enum is, is cut at the character limit.
+    requests.mockResolvedValueOnce(new Response(JSON.stringify({ ...payload, href: `${prefix}-b/`, signature: `enum { ${'KEYC_X, '.repeat(60_000)}}`, signatureHighlight: undefined })))
+    hover('b'); await settle()
+    expect(code.textContent!.length).toBeLessThanOrEqual(PREVIEW_SIGNATURE_CHARS + 2)
+    expect(code.textContent!.endsWith('\n…')).toBe(true)
+    escape()
+    // The control: a declaration that fits keeps its highlighting and its text, with nothing added.
+    win.document.body.insertAdjacentHTML('afterbegin', `<a id="c" href="${prefix}-c/">c</a>`)
+    const short = 'enum { A, B }'
+    requests.mockResolvedValueOnce(new Response(JSON.stringify({ ...payload, href: `${prefix}-c/`, signature: short,
+      signatureHighlight: { ...payload.signatureHighlight, lines: [[token(short)]] } })))
+    hover('c'); await settle()
+    expect(code.textContent).toBe(short)
+    expect(code.querySelectorAll('span')).toHaveLength(1)
+  })
+
   it('keeps the destructor name and native signature intact with meaningful title breaks', async () => {
     const name = 'libtmux::CommandOperation::~CommandOperation'
     const signature = '~CommandOperation();'
@@ -277,7 +296,11 @@ describe('preview lifecycle', () => {
     expect(short).not.toBe(name)
     expect(short).toContain('applyWorkspace')
     expect(expand.hidden).toBe(false)
+    expand.focus()
     expand.click()
+    // Painting the card again leaves the control in place, so a keyboard reader keeps their place.
+    expect(win.document.activeElement).toBe(expand)
+    expect(panel.querySelector('[data-preview-expand]')).toBe(expand)
     expect(title()).toBe(name)
     expect(expand.getAttribute('aria-expanded')).toBe('true')
     expect(expand.textContent).toBe('Collapse')
@@ -308,7 +331,7 @@ describe('preview lifecycle', () => {
     expect(open.textContent).toBe('Open manual')
     expect(open.getAttribute('href')).toBe('https://libtmux.org/tmux/latest/manual/full/#options-destroy-unattached')
     escape(); hover('b'); await settle()
-    expect(open.textContent).toBe('')
+    expect(open.textContent).toBe(PREVIEW_DEFAULT_ACTION)
   })
 
   it('treats punctuation in a preview name as text when adding break opportunities', async () => {
