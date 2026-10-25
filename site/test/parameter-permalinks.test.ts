@@ -5,7 +5,7 @@ import { experimental_AstroContainer } from 'astro/container'
 import { Window, type Element } from 'happy-dom'
 import { afterEach, expect, it, vi } from 'vitest'
 import { parameterId, SymbolIndex, type ApiSymbol, type Param } from '@libtmux/api-model'
-import { apiEntryFields, parameterBindingFacts, POWER_SHELL_COMMON_HELP, POWER_SHELL_COMMON_HELP_TITLE } from '../src/lib/api-sections'
+import { apiEntryFields, parameterBindingFacts, POWER_SHELL_COMMON_HELP, POWER_SHELL_COMMON_HELP_TITLE, powerShellCommonParameterHref, powerShellCommonParameterLabel } from '../src/lib/api-sections'
 import { linkTmuxDoc } from '../src/lib/tmux-links'
 import { signatureSpans, typeLayout } from '../src/lib/code-layout'
 import { auditTypeLinks } from './type-link-audit'
@@ -32,7 +32,7 @@ async function parameterComponents() {
     for (const [specifier, url] of Object.entries(imports)) code = code.replaceAll(JSON.stringify(specifier), JSON.stringify(url))
     return `data:text/javascript;base64,${Buffer.from(`${code}\n//# sourceURL=${file.pathname}`).toString('base64')}`
   }
-  const bridge = 'data:text/javascript,export const { parameterId, parameterBindingFacts, POWER_SHELL_COMMON_HELP, POWER_SHELL_COMMON_HELP_TITLE, linkTmuxDoc, signatureSpans, typeLayout } = globalThis.__apiParameterPermalinks'
+  const bridge = 'data:text/javascript,export const { parameterId, parameterBindingFacts, POWER_SHELL_COMMON_HELP, POWER_SHELL_COMMON_HELP_TITLE, powerShellCommonParameterHref, powerShellCommonParameterLabel, linkTmuxDoc, signatureSpans, typeLayout } = globalThis.__apiParameterPermalinks'
   const name = await compile('../src/components/api/SymbolName.astro', { '../../lib/word-break': new URL('../src/lib/word-break.ts', import.meta.url).href })
   const preview = await compile('../src/components/LinkPreview.astro', { '../lib/link-preview-card': new URL('../src/lib/link-preview-card.ts', import.meta.url).href })
   const keyword = await compile('../src/components/api/ApiKeyword.astro', { '../LinkPreview.astro': preview })
@@ -68,7 +68,7 @@ ${source.slice(start, end)}`
 }
 
 let components: ReturnType<typeof parameterComponents> | undefined
-const bridged = { parameterId, parameterBindingFacts, POWER_SHELL_COMMON_HELP, POWER_SHELL_COMMON_HELP_TITLE, linkTmuxDoc, signatureSpans, typeLayout }
+const bridged = { parameterId, parameterBindingFacts, POWER_SHELL_COMMON_HELP, POWER_SHELL_COMMON_HELP_TITLE, powerShellCommonParameterHref, powerShellCommonParameterLabel, linkTmuxDoc, signatureSpans, typeLayout }
 const session: ApiSymbol = { id: 'demo.Session', name: 'Session', kind: 'class', modifiers: [], signatures: [], source: { file: 'demo.py' } }
 const parameter: Param = { name: 'target', type: 'Session', optional: true, default: 'None',
   doc: 'Choose the Session whose windows should be read.', since: '1.2', deprecated: 'Use selection instead.' }

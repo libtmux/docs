@@ -315,8 +315,9 @@ A link into a language's own documentation, or into an SDK this estate builds
 on, is held to more than a 200. [`api-destinations.mjs`](scripts/lib/api-destinations.mjs)
 reads every one the site generates: the curated maps in
 [`builtins.ts`](packages/api-model/src/builtins.ts), the cached inventories,
-the references in the extracted doc comments, the links in pages, guide data
-and the glossary. Each is requested once and must land on a page whose own
+the references in the extracted doc comments, the links in pages (the content tree, the guides staged
+from each port's artifact, and the workspace pages written once for every port), guide data, the glossary,
+and the heading each of PowerShell's common parameters has on its Microsoft Learn page. Each is requested once and must land on a page whose own
 declaration is the symbol the link was made for.
 
 A documentation page says what it documents, in the markup its host uses, and
@@ -393,10 +394,20 @@ links nowhere, a printed `[object Object]` is text (`neverLinks`, read by the ty
 path calls and by the prose linker), and a language's keywords (`for`, `import`) are documented at
 the top level (`BARE_OWNERS` in `api-sources.mjs`).
 
+A name in prose is linked by one function, `decideMention`, and a port's own curated names come before the
+inventory of the platform it runs on, in a page and in a symbol's documentation alike (`CURATED_BEFORE_INVENTORY`):
+Scala's `Vector` and Kotlin's `Flow` are not `java.util`'s, and a name only the JDK has is Java's where the
+sentence says Java (`PLATFORM_REACH`). The language a sentence names is read by whole words, and a path, a URL
+or a dotted name names none: `JavaScript` is not `Java`, and `options-table.c#L359` is not C#.
+
 The same prose reaches a reader by more than one route, and the tests render each one and hold the
-verifier to it: the pages, in the build of each port and in the one build for none, through the
-linker the site uses; the Markdown copy of a symbol and of a page; the hover card; and the
-notices in templates. A page shared by every port is rendered once for each, and the port of that build
+verifier to it: every page the site builds, staged guides and shared workspace pages included
+(`proseSources`, which the collector reads too), in the build of each port and in the one build for none,
+through the linker the site uses; the Markdown copy of a symbol and of a page (`llmsPage`, which `llms-full.txt`
+and every `.md` twin carry); the documentation, types and PowerShell common parameters of every symbol,
+drawn by `ApiDoc`, `ApiType` and `ApiCommandParameters` as the site compiles them; the hover card; and the
+notices in templates. A link the linker makes must also reach the language its page reads as, or the one its
+sentence names, and the entry its port curates for that name. A page shared by every port is rendered once for each, and the port of that build
 says where it is read, not what it is about, so it links a bare lowercase word to that port's standard
 library only where the page (its own port, a fence, a row, a section or the sentence) says its
 language, and a name that carries evidence of its own (`Base.strip`, `BTreeMap`, a call) anywhere: a

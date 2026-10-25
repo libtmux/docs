@@ -18,15 +18,25 @@
 
 import { globSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
+import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import { BUILTINS } from '../../packages/api-model/src/builtins.ts'
-import { Resolver, SymbolIndex, conceptNotes, proseTexts, looksLikeApiMention, notASymbol, sourceUrl } from '../../packages/api-model/src/index.ts'
+import { Resolver, SymbolIndex, conceptNotes, decideMention, proseTexts, looksLikeApiMention, notASymbol, sourceUrl } from '../../packages/api-model/src/index.ts'
+import { fromMarkdown } from 'mdast-util-from-markdown'
 import { parseApiProse } from '../../site/src/lib/api-prose.ts'
+import { SOURCE_GUIDE_PORTS } from '../../site/src/lib/port-documentation.ts'
+import { stagedPortGuides } from '../stage-port-docs.mjs'
+import { powerShellCommonParameterHref, powerShellCommonParameterLabel } from '../../site/src/lib/powershell-common-parameters.ts'
+import { KNOWN_PORTS, resolvePortBody, resolvePortData } from '../../site/src/lib/workspace-shared-slots.ts'
+import { PORTS as SITE_PORTS } from '../../site/src/lib/ports.ts'
 import { KEYWORD_HELP } from '../../packages/api-model/src/link.ts'
 import { NATIVE_API_GLOSSARIES } from '../../site/src/lib/api-glossary-native.ts'
 export { TYPE_ALIASES, addressSegments, arityOf, nameSegments, terminalSymbol } from './api-sources.mjs'
 import { nameSegments } from './api-sources.mjs'
 import { dataLinks, markdownLinks, normalizeAddress, occurrencesIn } from './api-markdown-links.mjs'
+
+/** The ports whose workspace pages the loader fills from the shared source. */
+const PORTS_SHARED = SITE_PORTS.map((port) => port.slug).filter((slug) => KNOWN_PORTS.has(slug))
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -170,10 +180,30 @@ function note(found, written, use) {
  * The runs of text `ApiDoc` receives for a prose field: the text itself, or the paragraphs and list items
  * `ApiProse` splits it into, which leave fenced code alone.
  */
-function runsOf(text, form) {
+export function proseRuns(text, form) {
   const items = (list) => list.flatMap((item) => [item.text, ...items(item.children)])
   const blocks = () => parseApiProse(text).flatMap((block) => (block.kind === 'p' ? [block.text] : block.kind === 'ul' || block.kind === 'ol' ? items(block.items) : []))
   return form === 'inline' ? [text] : form === 'blocks' ? blocks() : [text, ...blocks()]
+}
+
+/** Every type the site draws for a symbol, with the signature it is drawn in: what `ApiType` is given. */
+export function typeInputs(symbol) {
+  const found = []
+  const add = (signature, text) => { if (text) found.push({ signature, text }) }
+  add(undefined, symbol.type)
+  for (const base of symbol.extends ?? []) add(undefined, base)
+  for (const signature of symbol.signatures ?? []) {
+    add(signature, signature.raw)
+    add(signature, signature.returns)
+    add(signature, signature.receiver?.type)
+    for (const param of signature.params ?? []) add(signature, param.type)
+    for (const raised of signature.raises ?? []) add(signature, raised.type)
+    for (const parameter of signature.typeParameters ?? []) {
+      add(signature, parameter.bound)
+      add(signature, parameter.default)
+    }
+  }
+  return found
 }
 
 /**
@@ -273,22 +303,10 @@ export function collectApiDestinations({ root = ROOT } = {}) {
     }
     // The Markdown copy of a symbol links its prose through `docSpans` too, so the one pass reads what both renderers link.
     const prose = (symbol, text, form = 'inline', derived = false) => {
-      for (const run of runsOf(text, form)) rendered(symbol, run, derived)
+      for (const run of proseRuns(text, form)) rendered(symbol, run, derived)
     }
     for (const symbol of model.symbols) {
-      types(symbol, undefined, symbol.type)
-      for (const base of symbol.extends ?? []) types(symbol, undefined, base)
-      for (const signature of symbol.signatures ?? []) {
-        types(symbol, signature, signature.raw)
-        types(symbol, signature, signature.returns)
-        types(symbol, signature, signature.receiver?.type)
-        for (const param of signature.params ?? []) types(symbol, signature, param.type)
-        for (const raised of signature.raises ?? []) types(symbol, signature, raised.type)
-        for (const parameter of signature.typeParameters ?? []) {
-          types(symbol, signature, parameter.bound)
-          types(symbol, signature, parameter.default)
-        }
-      }
+      for (const { signature, text } of typeInputs(symbol)) types(symbol, signature, text)
       // Every string the site renders as documentation, read as the site reads it.
       for (const { text, form, derived } of proseTexts(symbol)) prose(symbol, text, form, derived)
       for (const related of symbol.command?.relatedLinks ?? []) note(found, related.href, { port, name: related.text, source: 'doc-link', label: related.text })
@@ -329,27 +347,104 @@ const portOf = (file, source) => /^port:\s*['"]?([a-z]+)['"]?\s*$/m.exec(/^---\r
   ?? /(?:^|\/)ports\/([^/]+)\//.exec(file)?.[1]
 
 /**
- * What prose pins to a standard-library name: every code span in a port's own
- * pages, resolved the way the linker resolves it, plus the links written by
- * hand. A page that belongs to no single port names no language, so its spans
- * are left to the pages that do.
+ * The pages the site renders as prose, as the entries the site builds from them: the content tree, the guides it stages
+ * from each port's cached artifact (`stage-port-docs --cached`), and the workspace pages every port shares, written once and
+ * resolved for each port by the loader. Each is `{ file, path, id, data, body, source }`: the entry's id, front matter and body
+ * as the site reads them, where it is written, and the source text as the collector reads it. A file that starts with `_` is not built, except
+ * the staged guides, which are, and `meta/` is the site's own credits and licences.
+ */
+export function proseSources({ root = ROOT, meta = false } = {}) {
+  // The parser is the site's own, from this checkout's site package, whichever tree's pages are read.
+  const { parseFrontmatter } = createRequire(join(ROOT, 'site', 'package.json'))('@astrojs/markdown-remark')
+  const idOf = (file) => file.replace(/\.mdx?$/, '').replace(/\/index$/, '')
+  const content = join(root, 'site', 'src', 'content', 'docs')
+  const pages = []
+  const entry = (file, source) => {
+    const { frontmatter, content: body } = parseFrontmatter(source)
+    return { file, path: `site/src/content/docs/${file}`, id: idOf(file), data: frontmatter, body, source }
+  }
+  for (const file of globSync('**/*.{md,mdx}', { cwd: content }).sort()) {
+    if (file.startsWith('_') || (!meta && file.startsWith('meta/'))) continue
+    pages.push(entry(file, readFileSync(join(content, file), 'utf8')))
+  }
+  for (const port of SOURCE_GUIDE_PORTS) {
+    const artifact = readJson(join(root, 'site', 'src', 'data', 'port-guides', `${port}.json`))
+    for (const [file, source] of stagedPortGuides(port, artifact)) pages.push(entry(`_staged/${file}`, source))
+  }
+  // A page a port writes for itself keeps its id; the shared source fills the ids no page claims.
+  const claimed = new Set(pages.map((page) => page.id))
+  const shared = join(root, 'site', 'src', 'content', '_workspace-shared')
+  for (const file of globSync('**/*.{md,mdx}', { cwd: shared }).sort()) {
+    const { frontmatter, content: body } = parseFrontmatter(readFileSync(join(shared, file), 'utf8'))
+    for (const port of PORTS_SHARED) {
+      const id = `ports/${port}/${idOf(file)}`
+      if (claimed.has(id)) continue
+      const data = resolvePortData(frontmatter, port, 'workspace')
+      const resolved = resolvePortBody(body, port)
+      pages.push({ file: `_workspace-shared/${port}/${file}`, path: `site/src/content/_workspace-shared/${file}`, id, data, body: resolved,
+        source: `---\nport: ${JSON.stringify(port)}\nproduct: "workspace"\n---\n${resolved}` })
+    }
+  }
+  return pages
+}
+
+/** The text before each code span in its paragraph, cell or heading, as the page linker reads a sentence. */
+function codeSpans(tree) {
+  const found = []
+  const phrasing = (node, scope, inLink) => {
+    if (node.type === 'inlineCode') {
+      if (!inLink) found.push({ text: node.value.trim(), before: scope.text })
+      scope.text += node.value
+    } else if (node.type === 'text') {
+      scope.text += node.value
+    } else if (node.type === 'html' || node.type === 'image' || node.type === 'imageReference') {
+      // Not prose.
+    } else {
+      for (const child of node.children ?? []) phrasing(child, scope, inLink || node.type === 'link' || node.type === 'linkReference')
+    }
+  }
+  const walk = (node) => {
+    if (node.type === 'code' || node.type === 'html') return
+    if (node.type === 'paragraph' || node.type === 'heading' || node.type === 'tableCell') {
+      const scope = { text: '' }
+      for (const child of node.children ?? []) phrasing(child, scope, false)
+      return
+    }
+    for (const child of node.children ?? []) walk(child)
+  }
+  walk(tree)
+  return found
+}
+
+/**
+ * The name a code span claims when it links. A call written with a value (`Optional.of(false)`) names the method and uses it: the
+ * value is not a parameter type, so the method is what the link says, and the page it lands on is held to that.
+ */
+export function claimedName(text) {
+  return /\(\s*(?:true|false|null|nil|None|undefined|-?\d[\w.]*|"[^"]*"|'[^']*')\s*[,)]/.test(text) ? text.replace(/\(.*$/s, '') : text
+}
+
+/**
+ * What prose pins to a name outside the project: every code span the page linker would link, asked of the page
+ * linker's own function (`decideMention`) with what the page tells it. A page of a port is read as that port. A
+ * page shared by every port is rendered in the build of each, where the port says only where it is read, so
+ * it is asked once for each port, saying so, and once for none.
  */
 function collectProse(found, { root, models, inventories }) {
-  const content = join(root, 'site', 'src', 'content', 'docs')
   const resolver = new Resolver(Object.values(models))
   for (const inventory of inventories) resolver.addInventory(inventory.project, inventory.baseUrl, inventory.entries, inventory.langs)
-  for (const file of globSync('**/*.{md,mdx}', { cwd: content }).sort()) {
-    if (file.startsWith('meta/') || file.startsWith('_')) continue
-    const source = readFileSync(join(content, file), 'utf8')
-    const port = portOf(file, source)
-    if (!port || !models[port]) continue
-    const product = /^product:\s*['"]?(core|workspace|mcp)['"]?\s*$/m.exec(source)?.[1] ?? /^ports\/[^/]+\/(workspace|mcp)\//.exec(file)?.[1]
-    const body = source.replace(/^---[\s\S]*?\n---\n/, '').replace(/^(`{3,}|~{3,})[\s\S]*?^\1[ \t]*$/gm, '')
-    for (const match of body.matchAll(/`([^`\n]+)`/g)) {
-      const text = match[1].trim()
+  for (const { file, source } of proseSources({ root })) {
+    const own = portOf(file, source)
+    if (own && !models[own]) continue
+    const product = /^product:\s*['"]?(core|workspace|mcp)['"]?\s*$/m.exec(source)?.[1] ?? /^(?:_staged\/)?ports\/[^/]+\/(workspace|mcp)\//.exec(file)?.[1]
+    const body = source.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '')
+    const spans = codeSpans(fromMarkdown(body))
+    for (const { text, before } of spans) {
       if (!looksLikeApiMention(text) || notASymbol(text)) continue
-      const resolution = resolver.resolve(port, text, product)
-      if (resolution.how === 'federated') note(found, resolution.href, { port, name: text, source: 'prose' })
+      for (const pagePort of own ? [own] : [undefined, ...Object.keys(models)]) {
+        const decision = decideMention(text, { pagePort, product, before, languageSaid: Boolean(own) }, resolver, models)
+        if (decision.kind === 'link' && /^https?:\/\//i.test(decision.href)) note(found, decision.href, { port: decision.port, name: claimedName(text), source: 'prose' })
+      }
     }
   }
 }
@@ -374,17 +469,15 @@ function collectAuthored(found, { root }) {
     for (const { label, url } of pairs) pair(url, label, where, from)
     for (const url of stray) loose(url, where, from)
   }
-  const content = join(root, 'site', 'src', 'content', 'docs')
-  for (const file of globSync('**/*.{md,mdx}', { cwd: content }).sort()) {
-    // Astro does not build a file that starts with `_`. `meta/` is the site's own credits and licences: its links to a language's
-    // website are logo, trademark and licence terms (and a zip of a logo), which are not API documentation and have no symbol to
-    // name. The links it makes to the pages of libtmux's own packages are read, as they are anywhere.
-    if (file.startsWith('_')) continue
-    const text = readFileSync(join(content, file), 'utf8')
+  // The pages the site renders: the content tree, the guides staged from each port's artifact, and the workspace pages filtered for
+  // each port. `meta/` is the site's own credits and licences: its links to a language's website are logo, trademark and licence terms
+  // (and a zip of a logo), which are not API documentation and have no symbol to name. The links it makes to the pages of libtmux's
+  // own packages are read, as they are anywhere.
+  for (const { file, path, source: text } of proseSources({ root, meta: true })) {
     const front = /^---\r?\n[\s\S]*?\r?\n---\r?\n/.exec(text)?.[0] ?? ''
     const links = markdownLinks(text, { front: front.length })
     const ours = (url) => owned.has(normalizeAddress(url))
-    read(file.startsWith('meta/') ? { pairs: links.pairs.filter(({ url }) => ours(url)), loose: links.loose.filter(ours) } : links, `site/src/content/docs/${file}`, portOf(file, text))
+    read(file.startsWith('meta/') ? { pairs: links.pairs.filter(({ url }) => ours(url)), loose: links.loose.filter(ours) } : links, path, portOf(file, text))
   }
   const walk = (value, where, from) => {
     if (typeof value === 'string') read(markdownLinks(value), where, from)
@@ -392,9 +485,16 @@ function collectAuthored(found, { root }) {
     else if (value && typeof value === 'object') for (const item of Object.values(value)) walk(item, where, from)
   }
   for (const file of globSync('site/src/data/port-guides/*.json', { cwd: root }).sort()) walk(readJson(join(root, file)), file, /([a-z]+)\.json$/.exec(file)?.[1])
-  for (const file of ['site/src/lib/api-glossary.ts', 'site/src/lib/api-sections.ts']) {
+  for (const file of ['site/src/lib/api-glossary.ts', 'site/src/lib/powershell-common-parameters.ts']) {
     read(dataLinks(readFileSync(join(root, file), 'utf8')), file)
   }
+  // Each of PowerShell's common parameters links to its own heading of the page that documents them: the component builds the address
+  // from the name a command lists, so the names are read from the commands and the address from the builder it uses.
+  const common = new Set()
+  for (const symbol of readJson(join(root, 'site', 'src', 'data', 'api', 'powershell.json')).symbols) {
+    for (const signature of symbol.signatures ?? []) for (const param of signature.params ?? []) if (param.binding?.common) common.add(param.name)
+  }
+  for (const name of [...common].sort()) pair(powerShellCommonParameterHref(name), powerShellCommonParameterLabel(name), 'site/src/components/api/ApiCommandParameters.astro', 'powershell')
   // The native glossary builds its addresses with helpers, so it is read as data.
   for (const [port, terms] of Object.entries(NATIVE_API_GLOSSARIES)) {
     for (const [term, definition] of Object.entries(terms)) {

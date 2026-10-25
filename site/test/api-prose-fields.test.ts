@@ -1,11 +1,13 @@
 import { globSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
-  PROSE_FIELDS, RENDERED_TEXTS, STRUCTURAL_FIELDS, commandFacts, isStructuralField, parameterBindingFacts, parameterBindingText, proseTexts, unclassifiedFields,
+  BUILTINS, PROSE_FIELDS, RENDERED_TEXTS, STRUCTURAL_FIELDS, commandFacts, isStructuralField, parameterBindingFacts, parameterBindingText, proseTexts, unclassifiedFields,
   type ApiSymbol, type SymbolIndex,
 } from '@libtmux/api-model'
 import { apiHostOf, apiIndexes, collectApiDestinations } from '../../scripts/lib/api-destinations.mjs'
 import { normalizeAddress } from '../../scripts/lib/api-markdown-links.mjs'
+import { languageOfUrl } from '../../scripts/lib/api-links.mjs'
+import { createProseLinker } from '../src/lib/prose-resolver'
 import { parseApiProse } from '../src/lib/api-prose'
 import { API_MODELS } from '../src/lib/api-models'
 import { defaultVersionFor } from '../src/lib/versions'
@@ -42,12 +44,24 @@ describe('the strings of an extracted symbol', () => {
 })
 
 describe('the expressions the components render as prose', () => {
-  const components = globSync('src/components/**/*.astro', { cwd: new URL('..', import.meta.url).pathname })
-  const sources = components.map((file) => [file, readFileSync(new URL(`../${file}`, import.meta.url), 'utf8')] as const)
-  const rendered = new Map<string, string[]>()
-  for (const [file, source] of sources) {
-    for (const match of source.matchAll(RENDERED)) rendered.set(match[1], [...(rendered.get(match[1]) ?? []), file])
+  /** Every Astro file the site renders with: a component, a page and a layout draw prose alike. */
+  const SCANNED = 'src/**/*.astro'
+  const expressionsIn = (listing: (readonly [string, string])[]) => {
+    const found = new Map<string, string[]>()
+    for (const [file, source] of listing) for (const match of source.matchAll(RENDERED)) found.set(match[1], [...(found.get(match[1]) ?? []), file])
+    return found
   }
+  const components = globSync(SCANNED, { cwd: new URL('..', import.meta.url).pathname })
+  const sources = components.map((file) => [file, readFileSync(new URL(`../${file}`, import.meta.url), 'utf8')] as const)
+  const rendered = expressionsIn(sources)
+
+  it('are read in every component, page and layout: a page that draws a symbol\'s prose is as much a renderer as a component', () => {
+    for (const directory of ['src/components/', 'src/pages/', 'src/layouts/']) expect(components.some((file) => file.startsWith(directory)), directory).toBe(true)
+    const planted = '<ApiDoc text={symbol.doc.seeAlso[0]} index={index} context={symbol} />'
+    for (const file of ['src/pages/zz.astro', 'src/layouts/Zz.astro', 'src/components/api/Zz.astro']) {
+      expect([...expressionsIn([[file, planted]]).keys()], file).toEqual(['symbol.doc.seeAlso[0]'])
+    }
+  })
 
   it('are each one the verifier reads: a component that renders a new expression fails until RENDERED_TEXTS says what it is', () => {
     expect([...rendered.keys()].sort()).toEqual(Object.keys(RENDERED_TEXTS).sort())
@@ -156,6 +170,28 @@ describe('the code that links prose', () => {
     }
     expect(external).toEqual([])
     expect(mentions).toBeGreaterThan(0)
+  })
+})
+
+describe('a name in prose and in a symbol\'s docs', () => {
+  it('reaches the documentation of one language: a Kotlin Flow or a Scala Vector is not the JDK\'s', () => {
+    const prose = createProseLinker()
+    const differing: string[] = []
+    let compared = 0
+    for (const [port, names] of Object.entries(BUILTINS)) {
+      if (!indexes[port]) continue
+      for (const name of Object.keys(names)) {
+        const said = prose(name, { pagePort: port })
+        const proseHref = said.kind === 'link' && /^https?:/.test(said.href) ? said.href : undefined
+        const symbol = indexes[port].resolve(name, 'any')
+        const symbolHref = symbol?.external ? symbol.href : undefined
+        if (!proseHref || !symbolHref) continue
+        compared += 1
+        if (languageOfUrl(proseHref) !== languageOfUrl(symbolHref)) differing.push(`${port} ${name}: ${proseHref} / ${symbolHref}`)
+      }
+    }
+    expect(differing).toEqual([])
+    expect(compared).toBeGreaterThan(300)
   })
 })
 

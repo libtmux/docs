@@ -31,7 +31,7 @@
  * Usage: node scripts/verify-api-destinations.negative.mjs
  */
 import { spawnSync } from 'node:child_process'
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
@@ -556,6 +556,11 @@ const cases = [
   { name: 'fragment: a row that records the page-level name, not the heading the fragment opens', destination: authored(`${COMMON}#-erroraction`, 'PowerShell error action', 'powershell'), links: table(['PowerShell error action', `${COMMON}#-erroraction`, 'microsoft.powershell.core.CommonParameters']), failure: 'drift' },
   { name: 'fragment: a row that records the section the fragment opened before it moved', destination: authored(`${COMMON}#-erroraction`, 'PowerShell error action', 'powershell'), links: table(['PowerShell error action', `${COMMON}#-erroraction`, '-Verbose']), failure: 'drift' },
   { name: 'fragment: the same words at another section of the page, which no row lists', destination: authored(`${COMMON}#-verbose`, 'PowerShell error action', 'powershell'), failure: 'label' },
+  // Class: the link under each of PowerShell's common parameters, which the command page builds from the parameter's name.
+  { name: 'common parameter control: the words for -Verbose at the heading -Verbose', destination: authored(`${COMMON}#-verbose`, 'Microsoft Learn reference for -Verbose', 'powershell'), links: table(['Microsoft Learn reference for -Verbose', `${COMMON}#-verbose`, '-Verbose']), ok: true },
+  { name: 'common parameter: the words for -Debug at the heading -Verbose', destination: authored(`${COMMON}#-verbose`, 'Microsoft Learn reference for -Debug', 'powershell'), links: table(['Microsoft Learn reference for -Debug', `${COMMON}#-verbose`, '-Debug']), failure: 'drift' },
+  { name: 'common parameter: a parameter whose heading the page does not have', destination: authored(`${COMMON}#-debug`, 'Microsoft Learn reference for -Debug', 'powershell'), links: table(['Microsoft Learn reference for -Debug', `${COMMON}#-debug`, '-Debug']), failure: 'fragment' },
+  { name: 'common parameter: the words for -Verbose with no row to review them', destination: authored(`${COMMON}#-verbose`, 'Microsoft Learn reference for -Verbose', 'powershell'), failure: 'label' },
   // Class: a link to the page of a libtmux package is held to the port that publishes it and the package it names.
   { name: 'package control: the Rust page links the crate it publishes, with the reviewed words', destination: packaged('https://docs.rs/tmux-mcp', 'crate API', 'rs', 'tmux-mcp', ['rs']), ok: true },
   { name: 'package: a Go page links the Rust crate', destination: packaged('https://docs.rs/tmux-mcp', 'crate API', 'go', 'tmux-mcp', ['rs']), failure: 'language' },
@@ -693,6 +698,37 @@ for (const planting of plants) {
     console.log(`ok   markdown: ${planting.name}: ${record.failure}`)
   }
 }
+
+// Class: a page the site builds from somewhere else is read as the site reads it. A guide staged from a port's artifact, and a workspace
+// page written once for every port, are planted in a root whose data is this checkout's, and the destinations they link must be found and
+// then held to the committed evidence like any other.
+const STAGED_URL = 'https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Objects.html#requireNonNull(T,java.util.function.Supplier)'
+const SHARED_URL = 'https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Objects.html#hash(java.lang.Object...)'
+const built = mkdtempSync(join(tmpdir(), 'api-destination-staged-'))
+const builtData = join(built, 'site', 'src', 'data')
+mkdirSync(builtData, { recursive: true })
+for (const entry of readdirSync(join(root, 'site', 'src', 'data'))) if (entry !== 'port-guides') symlinkSync(join(root, 'site', 'src', 'data', entry), join(builtData, entry))
+mkdirSync(join(builtData, 'port-guides'))
+for (const entry of readdirSync(join(root, 'site', 'src', 'data', 'port-guides'))) {
+  const guides = JSON.parse(readFileSync(join(root, 'site', 'src', 'data', 'port-guides', entry), 'utf8'))
+  if (entry === 'scala.json') guides.guides[0].content += "\n\nThe record's own Java accessor (`Objects.requireNonNull`) answers.\n"
+  writeFileSync(join(builtData, 'port-guides', entry), JSON.stringify(guides))
+}
+symlinkSync(join(root, 'site', 'src', 'lib'), join(built, 'site', 'src', 'lib'))
+mkdirSync(join(built, 'site', 'src', 'content', 'docs'), { recursive: true })
+mkdirSync(join(built, 'site', 'src', 'content', '_workspace-shared'), { recursive: true })
+writeFileSync(join(built, 'site', 'src', 'content', '_workspace-shared', 'zz-planted.md'), '---\ntitle: planted\n---\nIn Java, `Objects.hash` combines values.\n')
+const evidenceOf = () => JSON.parse(readFileSync(join(root, 'site', 'src', 'data', 'api-destination-evidence.json'), 'utf8'))
+const builtFound = collectApiDestinations({ root: built })
+const realFound = collectApiDestinations({ root })
+for (const [name, url] of [['a guide staged from a port artifact', STAGED_URL], ['a workspace page shared by every port', SHARED_URL]]) {
+  const uses = [...(builtFound.get(url)?.uses.values() ?? [])]
+  if (realFound.has(url)) fail(`staged: ${name}: control failed, the committed pages already link ${url}`)
+  else if (uses.length === 0) fail(`staged: ${name}: expected the collector to find ${url}`)
+  else if (!checkApiEvidence(builtFound, evidenceOf(), { root: built }).problems.some((problem) => problem.includes(url) && /has no evidence/.test(problem))) fail(`staged: ${name}: expected --check to name ${url} as having no evidence`)
+  else console.log(`ok   staged: ${name}: found, and held to the evidence`)
+}
+rmSync(built, { recursive: true, force: true })
 server.close()
 
 // The second half drives the real command over a copy of the committed evidence.

@@ -224,10 +224,7 @@ export function apiCommandRelatedLinks(symbol: ApiSymbol, index?: SymbolIndex) {
 
 export { parameterBindingFacts, parameterBindingText }
 
-/** The page that documents PowerShell's common parameters, with the words that link to it; the link verifier reads the pair from here. */
-const COMMON_PARAMETERS = { title: 'common parameter behavior', url: 'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_commonparameters?view=powershell-7.4' }
-export const POWER_SHELL_COMMON_HELP = COMMON_PARAMETERS.url
-export const POWER_SHELL_COMMON_HELP_TITLE = COMMON_PARAMETERS.title
+export { POWER_SHELL_COMMON_HELP, POWER_SHELL_COMMON_HELP_TITLE, powerShellCommonParameterHref, powerShellCommonParameterLabel } from './powershell-common-parameters'
 
 /** Group the existing semantic order without sorting or omitting members. */
 export function apiMemberGroups(members: ApiSymbol[], signals: MemberSignals) {
