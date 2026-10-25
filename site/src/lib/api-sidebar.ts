@@ -191,8 +191,8 @@ export function sidebarNodes(source: ApiTreeJson, base: string, mode: SidebarPre
         .map((member) => symbol(member, level + 1)),
     }))
   }
-  const rootName = (record: ApiSearchResult, peers: ApiSearchResult[]) => {
-    if (record.name !== record.symbolName || peers.filter((other) => other.name === record.name).length < 2) return record.name
+  const rootName = (record: ApiSearchResult, peers: ApiSearchResult[], names: Map<string, number>) => {
+    if (record.name !== record.symbolName || (names.get(record.name) ?? 0) < 2) return record.name
     const separator = record.qualifiedName.includes('::') ? '::' : '.'
     const parts = record.qualifiedName.split(separator)
     for (let length = 2; length <= parts.length; length++) {
@@ -206,7 +206,9 @@ export function sidebarNodes(source: ApiTreeJson, base: string, mode: SidebarPre
       const record = catalog.symbols.get(entry.id)
       return record ? [{ ...record, name: entry.name, shortcut: entry.shortcut }] : []
     })
-    return windowed(`bucket:${bucket.id}`, level, [...entries.map((entry) => symbol({ ...entry, name: rootName(entry, entries) }, level, entry.shortcut)),
+    const names = new Map<string, number>()
+    for (const entry of entries) names.set(entry.name, (names.get(entry.name) ?? 0) + 1)
+    return windowed(`bucket:${bucket.id}`, level, [...entries.map((entry) => symbol({ ...entry, name: rootName(entry, entries, names) }, level, entry.shortcut)),
       ...bucket.children.map((child) => bucketNode(child, level))])
   }
   const bucketNode = (bucket: ApiTreeBucket, level: number): SidebarNode => ({
