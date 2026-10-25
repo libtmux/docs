@@ -25,7 +25,14 @@ const setup = [
   { sourceFile: 'rust-toolchain.toml', name: 'rust-toolchain.toml' },
 ]
 
-/** Attach complete consumers using the committed native inventory's kinds and owners. */
+/**
+ * Attach complete consumers using the committed native inventory's kinds and owners.
+ *
+ * Readers add the published crates with `cargo add`: libtmux at the workspace
+ * version the documented revision declares, which moves only in release
+ * commits, and the consumer's other dependencies at the requirements its
+ * committed Cargo.toml states.
+ */
 export function attachCompleteRustExamples(
   symbols: ApiSymbol[],
   read: (path: string) => string | undefined,
@@ -52,10 +59,9 @@ export function attachCompleteRustExamples(
     return code
   }
   const urlFor = (file: string) => `https://github.com/${source.repo}/blob/${source.revision}/${file}`
-  const setupCode = setup.map((file) => codeFor(file.sourceFile))
   // Parse TOML rather than accepting a plausible-looking line inside malformed setup.
-  const cargo = parse(setupCode[0])
-  const toolchain = parse(setupCode[1]).toolchain
+  const cargo = parse(codeFor(setup[0].sourceFile))
+  const workspacePackage = parse(codeFor('Cargo.toml')).workspace
   const packageInfo = cargo.package
   const workspace = cargo.workspace
   const dependencies = cargo.dependencies
@@ -72,8 +78,21 @@ export function attachCompleteRustExamples(
     tokio && typeof tokio.version === 'string' && Array.isArray(features) &&
     ['macros', 'rt', 'time'].every((feature) => features.includes(feature)),
   'consumer dependencies or workspace boundary are missing')
-  const channel = table(toolchain) && typeof toolchain.channel === 'string' ? toolchain.channel : ''
-  require(/^\d+\.\d+\.\d+$/.test(channel), 'toolchain must pin a Rust release')
+  const release = table(workspacePackage) && table(workspacePackage.package) ? workspacePackage.package : {}
+  const version = typeof release.version === 'string' ? release.version : ''
+  const rustFloor = typeof release['rust-version'] === 'string' ? release['rust-version'] : ''
+  require(/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?$/.test(version), 'workspace must declare a release version')
+  require(/^\d+\.\d+(?:\.\d+)?$/.test(rustFloor), 'workspace must declare its minimum Rust version')
+  const entries = Object.entries(dependencies as Record<string, unknown>)
+  const plain = entries.filter(([name, spec]) => name !== 'libtmux' && typeof spec === 'string')
+  const featured = entries.filter(([, spec]) => table(spec) && Array.isArray(spec.features))
+  const addCommands = [
+    `cargo add ${[`libtmux@${version}`, ...plain.map(([name, spec]) => `${name}@${spec as string}`)].join(' ')}`,
+    ...featured.map(([name, spec]) => {
+      const { version: requirement, features: list } = spec as { version: string; features: string[] }
+      return `cargo add ${name}@${requirement} --features ${list.join(',')}`
+    }),
+  ]
 
   const native = new Map<string, string[]>()
   for (const match of codeFor(manifest.nativeInventory).matchAll(
@@ -120,23 +139,16 @@ export function attachCompleteRustExamples(
       'program depends on a hidden source helper')
     const blocks: NonNullable<DocBlock['examples']> = [{
       lang: 'console',
-      intro: `${program.title}. ${program.description} Use a Unix environment with Git, rustup, and tmux 3.3a or newer. The toolchain file below pins Rust ${channel}. In an empty directory, fetch the documented source:`,
-      code: `$ git clone https://github.com/${source.repo}.git libtmux-source &&\n  git -C libtmux-source checkout --detach ${source.revision}\n`,
-    }, ...setup.map((file, index) => ({
-      lang: 'toml', intro: `Save this complete consumer setup as ${file.name}:`,
-      sourceUrl: urlFor(file.sourceFile), code: setupCode[index],
-    })), {
+      intro: `${program.title}. ${program.description} Use Rust ${rustFloor} or newer with Cargo, and tmux 3.3a or newer, on a Unix system. In an empty directory, create a project and add the published crates:`,
+      code: `$ cargo init --name libtmux-api-example &&\n${addCommands.map((command) => `  ${command}`).join(' &&\n')}\n`,
+    }, {
       lang: 'rust',
-      intro: 'Save this complete program as src/main.rs. It owns a private tmux socket, applies a ten-second task deadline, and reports both task and cleanup errors. Server::kill stops its daemon; Server::shutdown closes its client executor. Successful cleanup removes the temporary directory even when the task fails.',
+      intro: 'Replace `src/main.rs` with this complete program. It owns a private tmux socket, applies a ten-second task deadline, and reports both task and cleanup errors. `Server::kill` stops its daemon; `Server::shutdown` closes its client executor. Successful cleanup removes the temporary directory even when the task fails.',
       sourceUrl: urlFor(program.sourceFile), code,
     }, {
       lang: 'console',
-      intro: 'Copy the complete files from the pinned checkout and run the consumer. This also creates src for the displayed program. Success exits with status 0; setup, operation, deadline or cleanup failures exit unsuccessfully and print diagnostics to stderr:',
-      code: '$ mkdir -p src &&\n' +
-        '  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n' +
-        '  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n' +
-        `  cp libtmux-source/${program.sourceFile} src/main.rs &&\n` +
-        `  ${manifest.runCommand}\n`,
+      intro: 'Run the consumer. Success exits with status 0; setup, operation, deadline or cleanup failures exit unsuccessfully and print diagnostics to stderr:',
+      code: `$ ${manifest.runCommand}\n`,
     }, { lang: 'text', intro: 'Expected output:', code: `${program.expectedOutput}\n` }]
     for (const target of program.targets) {
       require(typeof target === 'string' && /^libtmux::[\w:]+$/.test(target), 'invalid native target')
