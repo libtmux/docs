@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { sidebarCatalog, sidebarInventory, sidebarNodes, quietSidebarKinds, SIDEBAR_PRESENTATIONS, SIDEBAR_WINDOW, type SidebarNode } from '../src/lib/api-sidebar'
+import { sidebarCatalog, sidebarInventory, sidebarNodes, quietSidebarKinds, SIDEBAR_MIN_GAP, SIDEBAR_PRESENTATIONS, SIDEBAR_WINDOW, type SidebarNode } from '../src/lib/api-sidebar'
 import { apiTreeHref, searchApi, type ApiSearchResult, type ApiTreeJson } from '../src/lib/api-search'
 import { API_MODEL_PORTS } from '../src/lib/ports'
 import { referenceTree } from '../src/lib/api-tree'
@@ -177,6 +177,28 @@ describe('long lists in Outline', () => {
     const [rest] = sidebarNodes(category, base, 'outline', 'f0')[0]!.children!.filter(isMore)
     expect(rest!.label).toMatch(/^\d+ more entries$/)
     expect(rest!.fallbackHref).toBe(`${base}f${firstHidden(rest!)}/`)
+  })
+
+  it.each([
+    { hidden: SIDEBAR_MIN_GAP - 1, absorbed: true },
+    { hidden: SIDEBAR_MIN_GAP, absorbed: false },
+  ])('shows a run of $hidden before the window rather than folding it: $absorbed', ({ hidden, absorbed }) => {
+    // The window starts half its length before the selected row.
+    const children = membersOfBig(sidebarNodes(longOwner(), base, 'outline', `big.m${hidden + (SIDEBAR_WINDOW >> 1)}`))
+    expect(children.filter(isMore).map((node) => node.lazy)).toEqual(absorbed
+      ? [`more:type:big:${hidden + SIDEBAR_WINDOW}-${COUNT}`] : [`more:type:big:0-${hidden}`, `more:type:big:${hidden + SIDEBAR_WINDOW}-${COUNT}`])
+    expect(children[0]!.label).toBe(absorbed ? 'm0' : `${hidden} more members`)
+  })
+
+  it.each([
+    { hidden: SIDEBAR_MIN_GAP - 1, absorbed: true },
+    { hidden: SIDEBAR_MIN_GAP, absorbed: false },
+  ])('shows a run of $hidden after the window rather than folding it: $absorbed', ({ hidden, absorbed }) => {
+    const start = COUNT - hidden - SIDEBAR_WINDOW
+    const children = membersOfBig(sidebarNodes(longOwner(), base, 'outline', `big.m${start + (SIDEBAR_WINDOW >> 1)}`))
+    expect(children.filter(isMore).map((node) => node.lazy)).toEqual(absorbed
+      ? [`more:type:big:0-${start}`] : [`more:type:big:0-${start}`, `more:type:big:${COUNT - hidden}-${COUNT}`])
+    expect(children.at(-1)!.label).toBe(absorbed ? `m${COUNT - 1}` : `${hidden} more members`)
   })
 
   it.each([SIDEBAR_WINDOW, SIDEBAR_WINDOW + 2])('lists %i members whole, as a run that short is not worth a row', (count) => {

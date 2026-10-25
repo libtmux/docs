@@ -129,7 +129,7 @@ function createCatalog(json: ApiTreeJson) {
 export const SIDEBAR_WINDOW = 40
 
 /** A hidden run shorter than this is shown instead: a row to open it would save nothing. */
-const SIDEBAR_MIN_GAP = 8
+export const SIDEBAR_MIN_GAP = 8
 
 const groupName = (kind: string) => ({ property: 'Properties', method: 'Methods', class: 'Classes', object: 'Objects',
   constructor: 'Constructors', field: 'Fields', event: 'Events', function: 'Functions', interface: 'Interfaces',
