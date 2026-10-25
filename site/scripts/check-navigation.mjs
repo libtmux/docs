@@ -413,7 +413,8 @@ async function observeInitialPageLoad(page) {
 }
 
 /** Keep API controls and history usable across document navigation. */
-export async function checkApiNavigation(page, base) {
+export async function checkApiNavigation(page, base, { sabotage } = {}) {
+  if (sabotage) await page.addInitScript(sabotage)
   await observeInitialPageLoad(page)
   const server = `${base}/lua/latest/reference/libtmux-server/`
   const snapshot = `${base}/lua/latest/reference/libtmux-server-snapshot/`
@@ -449,8 +450,8 @@ export async function checkApiNavigation(page, base) {
         assert(bounds, 'The open drawer exposes its dismissal overlay')
         await overlay.click({ position: { x: bounds.width - 2, y: 400 } })
       }
+      assert.equal(await toggle.getAttribute('aria-expanded'), 'false', `${close}: API drawer closes`)
       await nav.waitFor({ state: 'hidden' })
-      assert.equal(await toggle.getAttribute('aria-expanded'), 'false')
       assert.equal(await page.evaluate(() => document.body.style.overflow), '')
     }
     await page.goBack({ waitUntil: 'commit' })
@@ -534,7 +535,10 @@ export async function checkApiNavigation(page, base) {
   await page.keyboard.press('Escape')
   await page.keyboard.press('Escape')
   await search.fill('')
-  await page.locator('[data-lazy="type:libtmux.Pane"] > .api-nav__row').click()
+  await page.locator('[data-lazy="bucket:pane"]').focus()
+  await page.keyboard.press('ArrowRight')
+  await page.locator('[data-lazy="type:libtmux.Pane"]').focus()
+  await page.keyboard.press('ArrowRight')
   await page.waitForFunction(() => document.querySelector('[data-lazy="type:libtmux.Pane"]')?.getAttribute('aria-expanded') === 'true')
   await page.locator('.api-nav__tree a[href$="/reference/libtmux-session/"]').click()
   await page.waitForURL(`${base}/lua/latest/reference/libtmux-session/`, { waitUntil: 'commit' })
@@ -652,12 +656,24 @@ export async function checkApiAnchorArrival(browser, base) {
  * this check drives the production reference page. `only` limits the scenarios
  * and `sabotage` adds a script or style to every page, for the control below.
  */
-export async function checkReferenceSidebarBounds(browser, base) {
+export async function checkApiNavigationFail(browser, base) {
+  const page = await browser.newPage({ reducedMotion: 'reduce' })
+  try {
+    await assert.rejects(() => checkApiNavigation(page, base, { sabotage: () => {
+      document.addEventListener('click', (event) => {
+        if (event.target.closest('[data-api-nav-close]')) event.stopImmediatePropagation()
+      }, true)
+    } }), /button: API drawer closes/, 'The navigation check detects a broken close button')
+  } finally { await page.close() }
+}
+
+export async function checkReferenceSidebarBounds(browser, base, { sabotage } = {}) {
   const page = await browser.newPage({ viewport: { width: 1233, height: 1220 }, reducedMotion: 'reduce', colorScheme: 'dark' })
   try {
     await page.goto(`${base}/tmux/latest/manual/#options`)
     await page.locator('html[data-page-readiness="ready"]').waitFor()
     await page.locator('.api-nav[data-presentation-ready="true"]').waitFor()
+    if (sabotage) await page.addStyleTag({ content: sabotage })
     for (const mode of ['outline', 'focus', 'grouped']) {
       await page.locator('[data-api-actions] > summary').click()
       await page.getByRole('radio', { name: mode, exact: false }).click()
@@ -679,7 +695,8 @@ export async function checkReferenceSidebarBounds(browser, base) {
       await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }))
       await page.waitForFunction(() => document.querySelector('.api-nav').dataset.symbol === 'section:clients-and-sessions', undefined, { timeout: 1000 })
       await page.evaluate(() => scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }))
-      await page.waitForFunction(() => document.querySelector('.api-nav').dataset.symbol === 'section:options', undefined, { timeout: 1000 })
+      await page.waitForFunction(() => document.querySelector('.api-nav').dataset.symbol === 'section:options', undefined, { timeout: 1000 }).catch(() => {})
+      assert.equal(await page.locator('.api-nav').getAttribute('data-symbol'), 'section:options', `${mode}: sidebar follows the last visible section`)
     }
     await page.setViewportSize({ width: 1233, height: 760 })
     await page.evaluate(() => scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }))
@@ -689,6 +706,14 @@ export async function checkReferenceSidebarBounds(browser, base) {
     }, undefined, { timeout: 1000 })
     console.log('Reference sidebar: controls stay pinned, tree fits above footer, and sections follow scrolling in all layouts')
   } finally { await page.close() }
+}
+
+export async function checkReferenceSidebarBoundsFail(browser, base) {
+  for (const [sabotage, failure] of [
+    ['.api-nav-column { margin-bottom: 40px !important; }', /sidebar column meets the footer/],
+    ['h2#options { display: none !important; }', /sidebar follows the last visible section/],
+  ]) await assert.rejects(() => checkReferenceSidebarBounds(browser, base, { sabotage }), failure,
+    'The sidebar check detects broken footer alignment and section tracking')
 }
 
 export async function checkApiStickyHeadings(browser, base, { only, sabotage } = {}) {

@@ -29,17 +29,16 @@ describe('API sidebar presentations', () => {
 
   it('opens the selected ancestry in Outline and keeps canonical prefixed links', () => {
     const nodes = sidebarNodes(json, '/pr/42/kotlin/latest/reference/', 'outline', 'create')
-    const owner = nodes.find((node) => node.label === 'Session')
+    expect(nodes.map((node) => node.label)).toEqual(['Objects'])
+    const owner = nodes[0]?.children?.find((node) => node.label === 'Session')
     const nested = owner?.children?.find((node) => node.label === 'Companion')
     expect(owner?.expanded).toBe(true)
     expect(nested?.expanded).toBe(true)
     expect(nested?.children?.[0]).toMatchObject({ current: true, href: json.hrefs!.create })
-    expect(nodes.find((node) => node.label === 'Window')?.expanded).toBe(false)
-    expect(owner?.level).toBe(1)
-    expect(nested?.level).toBe(2)
-    expect(nodes.filter((node) => node.section).map((node) => node.label)).toEqual(['Core objects', 'Supporting types'])
-    const items = (rows: typeof nodes): typeof nodes => rows.flatMap((node) => node.section ? [] : [node, ...items(node.children ?? [])])
-    expect(items(nodes).every((node) => node.kind && node.href)).toBe(true)
+    expect(nodes[0]?.children?.find((node) => node.label === 'Window')?.expanded).toBe(false)
+    expect(owner?.level).toBe(2)
+    expect(nested?.level).toBe(3)
+    expect(nodes[0]?.kind).toBeUndefined()
   })
 
   it('focuses the selected owner and represents empty owners without invented members', () => {
@@ -51,11 +50,13 @@ describe('API sidebar presentations', () => {
 
   it('groups direct members by kind, sorts names, and counts the actual members', () => {
     const nodes = sidebarNodes(json, '/reference/', 'grouped', 'a-name')
-    const methods = nodes.find((node) => node.label === 'Methods')
+    expect(nodes[0]?.label).toBe('Objects')
+    const groups = nodes[0]?.children?.find((node) => node.label === 'Session')?.children ?? []
+    const methods = groups.find((node) => node.label === 'Methods')
     expect(methods?.count).toBe(2)
     expect(methods?.children?.map((node) => node.label)).toEqual(['attach', 'zoom'])
-    expect(nodes.find((node) => node.label === 'Properties')?.children?.[0]?.current).toBe(true)
-    expect(nodes.find((node) => node.label === 'Modules')?.children?.[0]?.label).toBe('Companion')
+    expect(groups.find((node) => node.label === 'Properties')?.children?.[0]?.current).toBe(true)
+    expect(groups.find((node) => node.label === 'Modules')?.children?.[0]?.label).toBe('Companion')
   })
 
   it('distinguishes standalone functions with the same name by receiver', () => {
@@ -65,14 +66,14 @@ describe('API sidebar presentations', () => {
       name: 'orNull', slug: receiver.toLowerCase(), m: 0, kind: 'function', category: 'members',
     })
     const nodes = sidebarNodes(extensions, '/reference/', 'outline', 'java.util.OptionalInt.orNull')
-    expect(nodes.filter((node) => node.kind === 'function').map((node) => node.label)).toEqual(['OptionalInt.orNull', 'OptionalLong.orNull'])
+    expect(nodes[0]?.children?.filter((node) => node.kind === 'function').map((node) => node.label)).toEqual(['OptionalInt.orNull', 'OptionalLong.orNull'])
   })
 
   it('shows escaped Kotlin identifiers without changing their destinations', () => {
     const quoted = structuredClone(json)
     quoted.port = 'kotlin'
     quoted.members.a!.push(['`set`', 'escaped-set', 'a.`set`', 'method'])
-    const owner = sidebarNodes(quoted, '/reference/', 'outline', 'a.`set`').find((node) => node.label === 'Session')
+    const owner = sidebarNodes(quoted, '/reference/', 'outline', 'a.`set`')[0]?.children?.find((node) => node.label === 'Session')
     expect(owner?.children?.find((node) => node.current)).toMatchObject({ label: 'set', href: '/reference/escaped-set/' })
   })
 
@@ -91,6 +92,21 @@ describe('API sidebar presentations', () => {
       .toBe('/pr-42/en/rs/latest/mcp/tools/#windows')
     const nodes = sidebarNodes(json, '/reference/', 'grouped', 'a-name')
     quietSidebarKinds(nodes)
-    expect(nodes.find((node) => node.label === 'Methods')?.children?.every((node) => node.quiet)).toBe(true)
+    expect(nodes[0]?.children?.[0]?.children?.find((node) => node.label === 'Methods')?.children?.every((node) => node.quiet)).toBe(true)
+  })
+
+  it.each(['outline', 'grouped'] as const)('keeps curated nested buckets collapsed outside the current path in %s', (mode) => {
+    const inventory = structuredClone(json)
+    inventory.buckets.push({ id: 'formats', label: 'Format variables', count: 1, slug: 'fields-server', types: [], children: [
+      { id: 'fields', label: 'Fields', count: 1, slug: 'fields-server', children: [], types: [
+        { id: 'Fields.Server', name: 'Server fields', slug: 'fields-server', m: 0, kind: 'class' },
+      ] },
+    ] })
+    const nodes = sidebarNodes(inventory, '/reference/', mode, 'Fields.Server')
+    expect(nodes.map((node) => node.label)).toEqual(['Objects', 'Format variables'])
+    expect(nodes[0]).toMatchObject({ lazy: 'bucket:objects', expanded: false })
+    expect(nodes[0]?.children).toBeUndefined()
+    expect(nodes[1]?.children?.[0]).toMatchObject({ label: 'Fields', expanded: true })
+    expect(nodes[1]?.children?.[0]?.children?.[0]).toMatchObject({ label: 'Server fields', current: true, href: '/reference/fields-server/' })
   })
 })

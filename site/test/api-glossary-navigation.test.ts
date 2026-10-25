@@ -1,6 +1,7 @@
 import { afterEach, expect, it, vi } from 'vitest'
 vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
 import { readFileSync, realpathSync } from 'node:fs'
+import { gzipSync } from 'node:zlib'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { experimental_AstroContainer } from 'astro/container'
@@ -182,12 +183,70 @@ it.each([{ port: 'go', term: 'struct' }, { port: 'ts', term: 'class' }])('render
     request: new Request(`https://libtmux.org${path}`),
   })
   expect(win.document.querySelector('.api-nav-column [role="tree"]')).not.toBeNull()
+  expect(win.document.querySelector('.api-nav a[aria-current="page"]')?.textContent?.trim()).toBe('API glossary')
   expect(win.document.querySelector('.api-nav [data-api-root]')?.getAttribute('href')).toBe(ports.referenceUrl(ports.PORT_BY_SLUG[port], 'v9-proof'))
   checkContents(win.document, path)
   expect([...win.document.querySelectorAll('details')].some((details) =>
     details.querySelector('summary')?.textContent === 'On this page' && details.querySelector(`a[href="#${term}"]`))).toBe(true)
   checkHeadings(win.document, path)
   expect(win.document.querySelector('a[href$=".json"]')?.getAttribute('href')).toBe(`${path.slice(0, -1)}.json`)
+})
+
+it.each(['outline', 'focus', 'grouped'] as const)('keeps Full manual visible and current in the %s sidebar', async (presentation) => {
+  const component = await (await components())('ApiTree')
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  windows.push(win)
+  win.document.body.innerHTML = await container.renderToString(component, { props: {
+    presentation, inventory: { port: 'tmux', buckets: [], members: {} },
+    referenceBase: '/en/tmux/3.7c/manual/', portName: 'tmux', tree: [], members: [], withMembers: new Set(),
+    currentPath: '/en/tmux/3.7c/manual/full/', version: '3.7c',
+    glossaryHref: '/en/tmux/3.7c/manual/full/', glossaryLabel: 'Full manual',
+  } })
+  const link = win.document.querySelector('.api-nav a[aria-current="page"]')
+  expect(link?.textContent?.trim()).toBe('Full manual')
+  expect(link?.getAttribute('href')).toBe('/en/tmux/3.7c/manual/full/')
+  expect(link?.closest('details')).toBeNull()
+})
+
+it('renders Up to the immediate parent before the sidebar script loads', async () => {
+  const component = await (await components())('ApiTree')
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  windows.push(win)
+  win.document.body.innerHTML = await container.renderToString(component, { props: {
+    presentation: 'outline', selectedSymbol: 'create', inventory: { port: 'kotlin',
+      buckets: [{ id: 'objects', label: 'Objects', count: 1, slug: 'session', children: [], types: [
+        { id: 'session', name: 'Session', slug: 'session', kind: 'class', m: 1 },
+      ] }], members: { session: [['Companion', 'companion', 'companion', 'module', 'types']], companion: [['create', 'create', 'create', 'method']] },
+    }, referenceBase: '/pr-42/en/kotlin/latest/reference/', portName: 'Kotlin', tree: [], members: [], withMembers: new Set(),
+    currentPath: '/pr-42/en/kotlin/latest/reference/create/', version: 'test',
+  } })
+  const up = win.document.querySelector('[data-api-owner-back]')!
+  expect(up.getAttribute('href')).toBe('/pr-42/en/kotlin/latest/reference/companion/')
+  expect(up.getAttribute('aria-label')).toBe('Up to Companion')
+})
+
+it.each(['go', 'rs', 'cxx', 'ts'])('bounds the initial %s sidebar to its current path and deferred picker', async (port) => {
+  const inventory = tree.referenceTree(port)
+  const selected = inventory.buckets[0]!.types.find((entry) => !entry.shortcut)!
+  const component = await (await components())('ApiTree')
+  const container = await experimental_AstroContainer.create()
+  const html = await container.renderToString(component, { props: {
+    presentation: 'outline', inventory, selectedSymbol: selected.id,
+    referenceBase: `/en/${port}/latest/reference/`, portName: port, tree: [], members: [], withMembers: new Set(),
+    currentPath: `/en/${port}/latest/reference/${selected.slug}/`, version: 'test',
+  } })
+  expect(Buffer.byteLength(html), `${port} sidebar bytes`).toBeLessThan(96 * 1024)
+  expect(gzipSync(html).byteLength, `${port} sidebar gzip bytes`).toBeLessThan(12 * 1024)
+  const win = new Window()
+  windows.push(win)
+  win.document.body.innerHTML = html
+  expect(win.document.querySelectorAll('[data-owner-id]')).toHaveLength(0)
+  const top = win.document.querySelectorAll('.api-nav__tree > [data-lazy^="bucket:"]')
+  expect(top.length).toBe(inventory.buckets.length)
+  expect([...top].filter((row) => row.getAttribute('aria-expanded') === 'true')).toHaveLength(1)
+  expect(win.document.querySelector('.api-nav__tree [aria-current="page"]')?.getAttribute('href')).toBe(`/en/${port}/latest/reference/${selected.slug}/`)
 })
 
 it.each([undefined, 'mcp', 'workspace'] as const)('preserves real DocsLayout contents and adds %s glossary permalinks', async (product) => {

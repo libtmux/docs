@@ -328,7 +328,7 @@ function branch(name: string, href: string | undefined, level: number, lazy: str
     a.href = href
     a.tabIndex = -1
     if (shortcut) a.setAttribute('data-api-shortcut', '')
-    if (!shortcut && new URL(href, location.href).pathname === location.pathname) a.setAttribute('aria-current', 'page')
+    if (!shortcut && !lazy.startsWith('bucket:') && new URL(href, location.href).pathname === location.pathname) a.setAttribute('aria-current', 'page')
     wordBreak(name).forEach((part, i) => {
       if (i > 0) a.append(document.createElement('wbr'))
       a.append(part)
@@ -377,7 +377,12 @@ async function build(nav: HTMLElement, item: HTMLElement): Promise<HTMLElement |
   const id = rest.join(':')
   const level = Number(item.getAttribute('aria-level')) + 1
   const children: HTMLLIElement[] = []
-  if (kind === 'bucket') {
+  if (nav.dataset.presentation) {
+    const nodes = sidebarNodes(json, base, nav.dataset.presentation as SidebarPresentation, nav.dataset.symbol ?? '', false,
+      { lazy: item.dataset.lazy ?? '', level })
+    if (nav.dataset.marks === 'mixed') quietSidebarKinds(nodes)
+    children.push(...presentationRows(nodes))
+  } else if (kind === 'bucket') {
     const bucket = findBucket(json.buckets, id)
     if (!bucket) return undefined
     const quiet = kindsAgree(nav, bucket.types.map((t) => t.kind))
@@ -418,7 +423,7 @@ async function build(nav: HTMLElement, item: HTMLElement): Promise<HTMLElement |
 function selectPresentation(nav: HTMLElement) {
   if (!nav.dataset.currentHref) return
   for (const link of nav.querySelectorAll<HTMLAnchorElement>('.api-nav__tree a')) {
-    if (!link.hasAttribute('data-api-shortcut') && link.getAttribute('href') === nav.dataset.currentHref) link.setAttribute('aria-current', 'page')
+    if (!link.hasAttribute('data-api-shortcut') && !link.matches('[data-lazy^="bucket:"] > .api-nav__row > a') && link.getAttribute('href') === nav.dataset.currentHref) link.setAttribute('aria-current', 'page')
     else link.removeAttribute('aria-current')
   }
 }
@@ -492,10 +497,34 @@ export async function setApiSidebar(nav: HTMLElement, mode: SidebarPresentation,
   if (tab) tab.tabIndex = 0
   const picker = nav.querySelector<HTMLButtonElement>('[data-api-owner]')
   if (picker) {
+    const options = nav.querySelector('[role="listbox"]')
+    if (options && !options.querySelector('[role="option"]')) {
+      options.replaceChildren(...catalog.owners.map((record, index) => {
+        const option = document.createElement('div')
+        option.id = `api-owner-option-${index}`
+        option.className = 'api-nav__owner-option'
+        option.setAttribute('role', 'option')
+        option.dataset.ownerId = record.id
+        option.dataset.qualifiedName = record.qualifiedName
+        const mark = kindBadge(record.kind)
+        const name = document.createElement('span')
+        name.className = 'api-nav__owner-name'
+        name.textContent = sidebarName(record.symbolName, json.port)
+        const qualified = document.createElement('small')
+        qualified.textContent = record.qualifiedName !== record.symbolName ? record.qualifiedName : ''
+        name.append(qualified)
+        const kind = document.createElement('span')
+        kind.className = 'api-kind-word'
+        kind.textContent = record.kind
+        option.append(...(mark ? [mark] : []), name, kind)
+        return option
+      }))
+    }
+    picker.disabled = false
     picker.dataset.symbol = owner?.id ?? ''
     const ownerLabel = picker.querySelector('[data-api-owner-label]')
     const enclosing = catalog.symbols.get(catalog.parent.get(owner?.id ?? '') ?? '')
-    if (ownerLabel) ownerLabel.textContent = owner ? `${enclosing ? `${enclosing.symbolName}.` : ''}${owner.symbolName}` : `Choose ${catalog.ownerLabel}`
+    if (ownerLabel) ownerLabel.textContent = owner ? sidebarName(owner.shortName ?? `${enclosing ? `${enclosing.symbolName}.` : ''}${owner.symbolName}`, json.port) : `Choose ${catalog.ownerLabel}`
     const mark = owner && kindBadge(owner.kind)
     nav.querySelector('[data-api-owner-mark]')?.replaceChildren(...(mark ? [mark] : []))
     for (const option of nav.querySelectorAll<HTMLElement>('[data-owner-id]')) option.setAttribute('aria-selected', String(option.dataset.ownerId === owner?.id))

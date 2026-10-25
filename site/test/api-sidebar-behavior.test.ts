@@ -21,12 +21,12 @@ it('keeps selection across modes, reveals collapsed ancestry, and switches to an
   const nav = win.document.querySelector('.api-nav')! as unknown as HTMLElement
   await setApiSidebar(nav, 'outline', 'create')
   expect(nav.querySelector('[aria-current="page"]')?.textContent).toContain('create')
-  expect(nav.querySelectorAll('.api-nav__section')).toHaveLength(2)
-  for (const row of nav.querySelectorAll('.api-nav__tree .api-nav__row')) {
+  expect(nav.querySelector('[data-lazy="bucket:objects"]')?.getAttribute('aria-expanded')).toBe('true')
+  for (const row of nav.querySelectorAll('.api-nav__tree [aria-description] > .api-nav__row, .api-nav__leaf[aria-description]')) {
     expect(row.querySelector(':scope > .api-nav__kind'), row.textContent ?? '').not.toBeNull()
   }
-  expect(nav.querySelector('[data-lazy="type:session"]')?.getAttribute('aria-level')).toBe('1')
-  expect(nav.querySelector('[data-lazy="type:companion"]')?.getAttribute('aria-level')).toBe('2')
+  expect(nav.querySelector('[data-lazy="type:session"]')?.getAttribute('aria-level')).toBe('2')
+  expect(nav.querySelector('[data-lazy="type:companion"]')?.getAttribute('aria-level')).toBe('3')
   ;(nav.querySelector('[data-api-collapse]') as HTMLButtonElement).click()
   expect(nav.querySelector('[aria-expanded="true"]')).toBeNull()
   ;(nav.querySelector('[data-api-reveal]') as HTMLButtonElement).click()
@@ -60,6 +60,42 @@ it('keeps selection across modes, reveals collapsed ancestry, and switches to an
   expect(nav.querySelector('[data-lazy="type:session"]')?.getAttribute('aria-expanded')).toBe('true')
   nav.dataset.marks = 'mixed'
   await setApiSidebar(nav, 'grouped', 'create')
-  expect(nav.querySelector('[role="group"] .api-nav__kind')).toBeNull()
-  expect(nav.querySelector('[role="group"] [role="treeitem"]')?.getAttribute('aria-description')).toBe('method')
+  expect(nav.querySelector('[data-lazy="group:companion:method"] .api-nav__kind')).toBeNull()
+  expect(nav.querySelector('[data-lazy="group:companion:method"] [role="treeitem"]')?.getAttribute('aria-description')).toBe('method')
+  win.localStorage.setItem('libtmux:sidebar-presentation', 'focus')
+  const restored = new Promise((resolve) => nav.addEventListener('api-sidebar:change', resolve, { once: true }))
+  initApiTree()
+  await restored
+  expect(nav.dataset.presentation).toBe('focus')
+  expect(nav.dataset.symbol).toBe('create')
+})
+
+it('follows visible manual sections on scroll without changing the URL', async () => {
+  win = new Window({ url: 'https://libtmux.org/en/tmux/latest/manual/#clients' })
+  for (const [name, value] of Object.entries({ window: win, document: win.document, location: win.location, CustomEvent: win.CustomEvent })) vi.stubGlobal(name, value)
+  const json: ApiTreeJson = { port: 'tmux', buckets: [{ id: 'manual', label: 'Commands', count: 2, slug: null, children: [], types:
+    ['clients', 'options'].map((id) => ({ id, name: id, slug: '', m: 0, kind: 'section' })),
+  }], members: {}, hrefs: { clients: '/en/tmux/latest/manual/#clients', options: '/en/tmux/latest/manual/#options' } }
+  vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => json })))
+  win.document.body.innerHTML = '<div class="api-nav" data-base="/en/tmux/latest/manual/" data-src="/manual/tree.json" data-presentation="outline" data-symbol="clients"><ul class="api-nav__tree" role="tree"></ul></div><h2 id="clients">Clients</h2><h2 id="options">Options</h2>'
+  Object.defineProperty(win.document.documentElement, 'scrollHeight', { value: 3000 })
+  for (const [id, top] of [['clients', 100], ['options', 1200]] as const) {
+    const element = win.document.getElementById(id)!
+    vi.spyOn(element, 'getClientRects').mockReturnValue([new win.DOMRect(0, top, 100, 32)] as never)
+    vi.spyOn(element, 'getBoundingClientRect').mockImplementation(() => new win.DOMRect(0, top - win.scrollY, 100, 32))
+  }
+  vi.resetModules()
+  const { initApiTree } = await import('../src/components/api/api-tree')
+  const nav = win.document.querySelector('.api-nav')!
+  const arrived = new Promise((resolve) => nav.addEventListener('api-sidebar:change', resolve, { once: true }))
+  initApiTree()
+  await arrived
+  await win.happyDOM.whenAsyncComplete()
+  const scrolled = new Promise((resolve) => nav.addEventListener('api-sidebar:change', resolve, { once: true }))
+  win.scrollTo({ top: 1250 })
+  win.dispatchEvent(new win.Event('scroll'))
+  await scrolled
+  expect(nav.getAttribute('data-symbol')).toBe('options')
+  expect(nav.querySelector('[aria-current="page"]')?.getAttribute('href')).toBe('/en/tmux/latest/manual/#options')
+  expect(win.location.hash).toBe('#clients')
 })

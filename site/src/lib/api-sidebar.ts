@@ -1,4 +1,4 @@
-import { apiTreeHref, searchApi, type ApiSearchResult, type ApiTreeJson } from './api-search'
+import { apiTreeHref, searchApi, type ApiSearchResult, type ApiTreeBucket, type ApiTreeJson } from './api-search'
 
 export const SIDEBAR_PRESENTATIONS = ['outline', 'focus', 'grouped'] as const
 export type SidebarPresentation = typeof SIDEBAR_PRESENTATIONS[number]
@@ -59,63 +59,91 @@ const groupName = (kind: string) => ({ property: 'Properties', method: 'Methods'
   constructor: 'Constructors', field: 'Fields', event: 'Events', function: 'Functions', interface: 'Interfaces',
   enum: 'Enums', 'enum-member': 'Enum members', typealias: 'Type aliases' }[kind] ?? `${kind[0]?.toUpperCase()}${kind.slice(1)}s`)
 
-/** A projection of the same inventory used by ordinary reference navigation. */
-export function sidebarNodes(json: ApiTreeJson, base: string, mode: SidebarPresentation, selected: string, allTypes = false): SidebarNode[] {
+/** Curated buckets and declaration ownership share one projection for initial and lazy rows. */
+export function sidebarNodes(json: ApiTreeJson, base: string, mode: SidebarPresentation, selected: string, allTypes = false,
+  branch?: { lazy: string; level: number }): SidebarNode[] {
   const catalog = sidebarCatalog(json)
   const ancestry = new Set<string>()
   for (let id: string | undefined = selected; id && !ancestry.has(id); id = catalog.parent.get(id)) ancestry.add(id)
+  const buckets = new Map<string, ApiTreeBucket>()
+  const placements = new Map<string, string[]>()
+  const index = (list: ApiTreeBucket[], path: string[] = []) => {
+    for (const bucket of list) {
+      buckets.set(bucket.id, bucket)
+      const here = [...path, bucket.id]
+      for (const entry of bucket.types) if (!entry.shortcut) placements.set(entry.id, here)
+      index(bucket.children, here)
+    }
+  }
+  index(json.buckets)
+  const currentBuckets = new Set([...ancestry].map((id) => placements.get(id)).find(Boolean) ?? [])
   let seq = 0
   const nextId = () => `api-presentation-${++seq}`
   const symbol = (record: ApiSearchResult, level: number, shortcut = false, expand = true): SidebarNode => {
     const members = catalog.membersOf(record.id)
-    const open = expand && ancestry.has(record.id)
+    const open = expand && !shortcut && ancestry.has(record.id)
     return { id: nextId(), label: sidebarName(record.name, json.port), kind: record.kind, href: apiTreeHref(base, record, json.hrefs),
       level, current: !shortcut && record.id === selected, shortcut,
       ...(members.length && expand ? { count: members.length, lazy: `type:${record.id}`, expanded: open,
-        ...(open ? { children: members.map((member) => symbol(member, level + 1)) } : {}) } : {}) }
+        ...(open ? { children: memberNodes(record.id, level + 1) } : {}) } : {}) }
   }
-  if (allTypes || (mode !== 'outline' && !catalog.symbols.has(selected))) return catalog.owners.map((record) => ({ ...symbol({ ...record, name: record.qualifiedName }, 1, false, false), count: catalog.membersOf(record.id).length }))
-  if (mode === 'outline') {
-    const roots = catalog.records.filter((record) => !catalog.parent.has(record.id))
-    if (roots.every((record) => record.kind === 'section')) return roots.map((record) => symbol(record, 1))
-    const rootName = (record: ApiSearchResult) => {
-      const peers = roots.filter((other) => other.symbolName === record.symbolName)
-      if (peers.length < 2) return record.symbolName
-      const parts = record.qualifiedName.split('.')
-      for (let length = 2; length <= parts.length; length++) {
-        const name = parts.slice(-length).join('.')
-        if (peers.every((other) => other.id === record.id || other.qualifiedName.split('.').slice(-length).join('.') !== name)) return name
-      }
-      return record.id
+  const memberNodes = (owner: string, level: number): SidebarNode[] => {
+    const members = catalog.membersOf(owner)
+    if (mode !== 'grouped') return members.map((member) => symbol(member, level))
+    const groups = new Map<string, ApiSearchResult[]>()
+    for (const member of members) {
+      const group = groups.get(member.kind) ?? []
+      group.push(member)
+      groups.set(member.kind, group)
     }
-    const core = ['Server', 'Session', 'Window', 'Pane', 'Client']
-      .flatMap((name) => roots.filter((record) => record.symbolName === name))
-    const support = roots.filter((record) => !core.includes(record) && record.category === 'types')
-    const other = roots.filter((record) => !core.includes(record) && record.category !== 'types')
-    const section = (label: string, records: ApiSearchResult[], unit = 'types'): SidebarNode[] => records.length ? [
-      { id: nextId(), label, section: unit, count: records.length, level: 1 },
-      ...records.map((record) => symbol({ ...record, name: rootName(record) }, 1)),
-    ] : []
-    return [...section('Core objects', core), ...section('Supporting types', support),
-      ...section(other.every((record) => record.kind === 'function') ? 'Functions' : 'Other declarations', other, 'declarations')]
+    return [...groups].sort(([a], [b]) => groupName(a).localeCompare(groupName(b), 'en')).map(([kind, records]) => ({
+      id: nextId(), label: groupName(kind), count: records.length, level, expanded: true, lazy: `group:${owner}:${kind}`,
+      children: records.toSorted((a, b) => a.name.localeCompare(b.name, 'en') || a.id.localeCompare(b.id, 'en'))
+        .map((member) => symbol(member, level + 1)),
+    }))
   }
-  const owner = catalog.ownerOf(selected)
-  if (!owner) {
-    const record = catalog.symbols.get(selected)
-    return record ? [symbol(record, 1)] : []
+  const rootName = (record: ApiSearchResult, peers: ApiSearchResult[]) => {
+    if (record.name !== record.symbolName || peers.filter((other) => other.name === record.name).length < 2) return record.name
+    const separator = record.qualifiedName.includes('::') ? '::' : '.'
+    const parts = record.qualifiedName.split(separator)
+    for (let length = 2; length <= parts.length; length++) {
+      const name = parts.slice(-length).join(separator)
+      if (peers.every((other) => other.id === record.id || other.qualifiedName.split(separator).slice(-length).join(separator) !== name)) return name
+    }
+    return record.qualifiedName
   }
-  const members = catalog.membersOf(owner.id)
-  const head = symbol(owner, 1, false, false)
-  head.count = members.length
-  if (mode === 'focus') return [head, ...members.map((member) => symbol(member, 1))]
-  const groups = new Map<string, ApiSearchResult[]>()
-  for (const member of members) {
-    const group = groups.get(member.kind) ?? []
-    group.push(member)
-    groups.set(member.kind, group)
+  const bucketNodes = (bucket: ApiTreeBucket, level: number): SidebarNode[] => {
+    const entries = bucket.types.flatMap((entry) => {
+      const record = catalog.symbols.get(entry.id)
+      return record ? [{ ...record, name: entry.name, shortcut: entry.shortcut }] : []
+    })
+    return [...entries.map((entry) => symbol({ ...entry, name: rootName(entry, entries) }, level, entry.shortcut)),
+      ...bucket.children.map((child) => bucketNode(child, level))]
   }
-  return [head, ...[...groups].sort(([a], [b]) => groupName(a).localeCompare(groupName(b), 'en')).map(([kind, records]) => ({
-    id: nextId(), label: groupName(kind), count: records.length, level: 1, expanded: true, lazy: `group:${owner.id}:${kind}`,
-    children: records.sort((a, b) => a.name.localeCompare(b.name, 'en') || a.id.localeCompare(b.id, 'en')).map((member) => symbol(member, 2)),
-  }))]
+  const bucketNode = (bucket: ApiTreeBucket, level: number): SidebarNode => ({
+    id: nextId(), label: bucket.label, level, count: bucket.count, lazy: `bucket:${bucket.id}`,
+    ...(bucket.slug ? { href: `${base}${bucket.slug}/` } : {}),
+    expanded: currentBuckets.has(bucket.id),
+    ...(currentBuckets.has(bucket.id) ? { children: bucketNodes(bucket, level + 1) } : {}),
+  })
+  if (branch) {
+    if (branch.lazy.startsWith('bucket:')) {
+      const bucket = buckets.get(branch.lazy.slice(7))
+      return bucket ? bucketNodes(bucket, branch.level) : []
+    }
+    if (branch.lazy.startsWith('type:')) return memberNodes(branch.lazy.slice(5), branch.level)
+    return []
+  }
+  if (allTypes) return catalog.owners.map((record) => ({ ...symbol({ ...record, name: record.qualifiedName }, 1, false, false), count: catalog.membersOf(record.id).length }))
+  if (mode === 'focus' && catalog.symbols.has(selected)) {
+    const owner = catalog.ownerOf(selected)
+    if (!owner) return [symbol(catalog.symbols.get(selected)!, 1)]
+    const members = catalog.membersOf(owner.id)
+    return [{ ...symbol(owner, 1, false, false), count: members.length }, ...members.map((member) => symbol(member, 1))]
+  }
+  // Manuals and protocol catalogs already have section owners; avoid wrapping them in a second section row.
+  if (json.buckets.length === 1 && !json.buckets[0]!.children.length && json.buckets[0]!.types.every((entry) => entry.kind === 'section')) {
+    return bucketNodes(json.buckets[0]!, 1)
+  }
+  return json.buckets.map((bucket) => bucketNode(bucket, 1))
 }

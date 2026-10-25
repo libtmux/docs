@@ -6,7 +6,7 @@ export function initApiOwnerPicker(nav: HTMLElement, signal: AbortSignal) {
   const popup = root?.querySelector<HTMLElement>('[data-api-owner-popup]')
   const empty = root?.querySelector<HTMLElement>('[data-api-owner-empty]')
   if (!root || !trigger || !input || !popup) return
-  const options = [...popup.querySelectorAll<HTMLElement>('[role="option"]')]
+  let options = [...popup.querySelectorAll<HTMLElement>('[role="option"]')]
   let visible = options
   let active = -1
   const highlight = (index: number) => {
@@ -80,5 +80,5 @@ export function initApiOwnerPicker(nav: HTMLElement, signal: AbortSignal) {
   document.addEventListener('pointerdown', (event) => {
     if (!root.contains(event.target as Node)) close()
   }, { signal })
-  nav.addEventListener('api-owner:sync', () => close(), { signal })
+  nav.addEventListener('api-owner:sync', () => { options = [...popup.querySelectorAll<HTMLElement>('[role="option"]')]; close() }, { signal })
 }

@@ -165,7 +165,7 @@ if (!mark(nodes)) {
     document.documentElement.setAttribute('data-api-nav', '')
   </script>
   <div class="api-nav-overlay" data-api-nav-overlay></div>
-  <div id="api-nav" class="api-nav" data-src={inventorySrc ?? `${base}tree.json`} data-base={base} data-version={version} data-marks={marks === 'mixed' ? 'mixed' : undefined}
+  <div id="api-nav" class="api-nav" data-src={inventorySrc ?? `${base}tree.json`} data-base={base} data-version={presentation ? `3:${version}` : version} data-marks={marks === 'mixed' ? 'mixed' : undefined}
     data-presentation={presentation} data-symbol={presentation ? selectedSymbol : undefined}
     data-controlled={controlled || undefined}
     data-state-scope={presentation === 'outline' ? presentation : presentation ? `${presentation}:${selectedOwner?.id ?? ''}` : undefined} aria-labelledby="api-nav-title">
@@ -191,22 +191,17 @@ if (!mark(nodes)) {
     {presentation && catalog && <div class="api-nav__presentation">
       <div class="api-nav__picker-row">
       <div class="api-nav__owner-picker" data-api-owner-picker>
-        <button type="button" id="api-owner" class="api-nav__owner-field" data-api-owner data-symbol={selectedOwner?.id}
+        <button type="button" id="api-owner" class="api-nav__owner-field" disabled data-api-owner data-symbol={selectedOwner?.id}
           aria-expanded="false" aria-controls="api-owner-popup" aria-haspopup="listbox" aria-label={`Choose ${ownerLabel}`}>
           <span data-api-owner-mark>{selectedOwner && <ApiBadge label={selectedOwner.kind} variant="kind" value={selectedOwner.kind} compact />}</span>
-          <span data-api-owner-label>{selectedOwner?.symbolName ?? `Choose ${ownerLabel}`}</span>
+          <span data-api-owner-label>{selectedOwner?.shortName ?? selectedOwner?.symbolName ?? `Choose ${ownerLabel}`}</span>
           <span class="api-nav__chevron" aria-hidden="true" />
         </button>
         <div id="api-owner-popup" class="api-nav__owner-popup" data-api-owner-popup hidden>
           <input class="api-nav__owner-search" data-api-owner-search role="combobox" aria-expanded="false" aria-controls="api-owner-options"
             aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder={`Filter ${ownerPlural}…`} aria-label={`Filter ${ownerPlural}`} />
           <div id="api-owner-options" role="listbox" aria-label={ownerPlural} tabindex="-1">
-            {catalog.owners.map((owner, index) => <div id={`api-owner-option-${index}`} role="option" aria-selected={owner.id === selectedOwner?.id ? 'true' : 'false'}
-              class="api-nav__owner-option" data-owner-id={owner.id} data-qualified-name={owner.qualifiedName}>
-              <ApiBadge label={owner.kind} variant="kind" value={owner.kind} compact />
-              <span class="api-nav__owner-name">{owner.symbolName}<small>{owner.qualifiedName !== owner.symbolName ? owner.qualifiedName : ''}</small></span>
-              <ApiBadge label={owner.kind} variant="kind" value={owner.kind} plain />
-            </div>)}
+
           </div>
           <p data-api-owner-empty role="status" hidden>No {ownerPlural} found.</p>
         </div>
@@ -244,6 +239,9 @@ if (!mark(nodes)) {
       </details>
       </div>
     </div>}
+    {presentation && glossaryHref && <a class="api-nav__reference-link" href={glossaryHref}
+      aria-current={currentPath.replace(/\/?$/, '/') === glossaryHref ? 'page' : undefined}
+      target={controlled ? '_top' : undefined}>{glossaryLabel}</a>}
     <nav class="api-nav__nav" aria-label={treeLabel} data-pagefind-ignore="all">
       <p class="api-nav__search-status" role="status" data-api-search-status></p>
       <button type="button" class="api-nav__retry" data-api-search-retry hidden>Retry search</button>

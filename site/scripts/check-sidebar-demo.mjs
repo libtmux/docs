@@ -70,7 +70,7 @@ export async function checkSidebarDemo(browser, url, options = {}) {
             assert.equal(await current(f).count(), 1, `${port}/${mode}: one current declaration`)
             assert.equal(await f.locator('[data-api-actions]').evaluate((menu) => menu.open), false, 'Choosing a layout closes its menu')
           }
-          assert.equal(await f.locator('.api-nav__tree .api-nav__row').evaluateAll((rows) => rows.every((row) => row.querySelector('.api-nav__kind'))), true, `${port}: Outline marks every item`)
+          assert.equal(await f.locator('.api-nav__tree [aria-description] > .api-nav__row, .api-nav__leaf[aria-description]').evaluateAll((rows) => rows.every((row) => row.querySelector('.api-nav__kind'))), true, `${port}: Outline marks every declaration`)
           const full = await f.locator('[data-preview-full]').getAttribute('href')
           const destination = await f.evaluate(async (selected) => {
             const nav = document.querySelector('.api-nav')
@@ -181,7 +181,7 @@ export async function checkSidebarDemo(browser, url, options = {}) {
           assert.equal(await current(f).count(), 1, 'Exactly one selected navigation declaration')
           assert.match(await current(f).textContent(), /Windows/)
           assert.equal(await f.locator('.api-nav__tree [tabindex="0"]').count(), 1, 'One tree Tab stop')
-          const ownerCount = f.locator('.api-nav__tree .api-nav__row').filter({ has: f.locator('.api-nav__label').filter({ hasText: /^Server$/ }) }).first().locator('.api-nav__count')
+          const ownerCount = f.locator('.api-nav__tree .api-nav__row:has(> .api-nav__kind)').filter({ has: f.locator('.api-nav__label').filter({ hasText: /^Server$/ }) }).first().locator('.api-nav__count')
           if (values['negative-control'] === 'count') await ownerCount.evaluate((node) => { node.textContent = '0' })
           assert.equal(await ownerCount.textContent(), String(serverCount))
           const geometry = await f.locator('.api-nav').evaluate((nav) => ({ width: nav.clientWidth, overflow: nav.scrollWidth > nav.clientWidth, role: nav.getAttribute('role') }))

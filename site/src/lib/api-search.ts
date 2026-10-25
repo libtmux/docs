@@ -4,6 +4,7 @@ export interface ApiTreeEntry {
   name: string
   symbolName?: string
   qualifiedName?: string
+  shortName?: string
   slug: string
   m: 0 | 1
   shortcut?: boolean
@@ -27,7 +28,7 @@ export interface ApiTreeJson {
   ownerLabel?: string
   ownerPlural?: string
   buckets: ApiTreeBucket[]
-  members: Record<string, [string, string, string?, string?, string?, string?, string?][]>
+  members: Record<string, [string, string, string?, string?, string?, string?, string?, string?][]>
   /** Canonical destinations for declarations documented in another port. */
   hrefs?: Record<string, string>
   relationships?: Record<string, { target: string; kind: 'type' | 'call' | 'reference'; sites?: { file: string; line: number }[] }[]>
@@ -44,6 +45,7 @@ export interface ApiSearchResult {
   name: string
   symbolName: string
   qualifiedName: string
+  shortName?: string
   slug: string
   kind: string
   category: string
@@ -63,9 +65,9 @@ export function searchApi(json: ApiTreeJson, query: string, category = 'all'): A
     if (seen.has(entry.id)) return
     seen.add(entry.id)
     records.push(entry)
-    for (const [name, slug, id, kind, category, summary, qualifiedName] of json.members[entry.id] ?? []) {
+    for (const [name, slug, id, kind, category, summary, qualifiedName, shortName] of json.members[entry.id] ?? []) {
       append({ name, symbolName: name, slug, id: id ?? `${entry.id}.${name}`, kind: kind ?? 'member',
-        category: category ?? 'members', summary: summary ?? '', qualifiedName: qualifiedName ?? id ?? `${entry.id}.${name}` })
+        category: category ?? 'members', summary: summary ?? '', qualifiedName: qualifiedName ?? id ?? `${entry.id}.${name}`, shortName })
     }
   }
   const visit = (buckets: ApiTreeBucket[]) => {
