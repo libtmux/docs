@@ -269,7 +269,7 @@ describe('native shell URL normalization', () => {
       }
       const contextFile = join(directory, 'context.json')
       writeFileSync(contextFile, JSON.stringify(context))
-      const envelope = `<html data-native-shell-export><head data-native-shell-assets><link rel="stylesheet" href="/pr-42/en/py/v0.62.0/_astro/shell.css"><script type="module" src="/pr-42/en/py/v0.62.0/_astro/shell.js"></script></head><body><template data-native-boundary="header-start"></template><header class="site-header">Shared header</header><template data-native-boundary="header-end"></template><template data-native-boundary="sidebar-start"></template><div class="api-nav-column">Selectable sidebar $&amp; $$</div><template data-native-boundary="sidebar-end"></template><template data-native-boundary="footer-start"></template><footer class="shared-footer">Shared footer</footer><template data-native-boundary="footer-end"></template></body></html>`
+      const envelope = `<html data-native-shell-export><head data-native-shell-assets><link rel="stylesheet" href="/pr-42/en/py/v0.62.0/_astro/shell.css"><script type="module" src="/pr-42/en/py/v0.62.0/_astro/shell.js"></script></head><body><template data-native-boundary="header-start"></template><header class="site-header">Shared header $&amp; $$</header><template data-native-boundary="header-end"></template><template data-native-boundary="sidebar-start"></template><div class="api-nav-column">Selectable sidebar $&amp; $$</div><template data-native-boundary="sidebar-end"></template><template data-native-boundary="footer-start"></template><footer class="shared-footer">Shared footer $&amp; $$</footer><template data-native-boundary="footer-end"></template></body></html>`
       writeFileSync(join(shell, 'api/api/pane/index.html'), envelope)
       writeFileSync(join(shell, 'api/tree.json'), '{"port":"py","buckets":[],"members":{}}')
       const options = { sphinxPort: 'py', version: 'v0.62.0', contextFile, shellDirectory: shell }
@@ -277,6 +277,9 @@ describe('native shell URL normalization', () => {
       const html = readFileSync(page, 'utf8')
       expect(nativeArticle(html)).toBe(article)
       expect(html).toContain('<div class="api-nav-column">Selectable sidebar $&amp; $$</div>')
+      // Replacement tokens in any compiled region are page text, never instructions to the splice.
+      expect(html).toContain('<header class="site-header">Shared header $&amp; $$</header>')
+      expect(html).toContain('<!-- libtmux-native-footer --><footer class="shared-footer">Shared footer $&amp; $$</footer><!-- /libtmux-native-footer -->\n</body>')
       expect(html).not.toContain('class="sidebar-drawer"')
       expect(readFileSync(join(native, 'tree.json'), 'utf8')).toBe('{"port":"py","buckets":[],"members":{}}')
       expect(html).toContain('<title>Native title</title><link rel="canonical" href="https://native.example/pane/">')
