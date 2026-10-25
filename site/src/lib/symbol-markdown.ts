@@ -1,7 +1,7 @@
 import type { ApiModel, ApiSymbol, Signature, SourceApiModel, SymbolIndex } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { toMarkdown } from 'mdast-util-to-markdown'
-import { boundLabel, keywordArgument, membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model'
+import { boundLabel, membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { PORT_NAME, referenceAlternatives } from './api-models'
 import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasScalarMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
@@ -69,6 +69,21 @@ function inlineCode(code: string): string {
   return `${fence}${pad}${code}${pad}${fence}`
 }
 
+/** A reference as Markdown, linked as the page links it: whole when it resolves, by the names in its literal when it does not. */
+function referenceMarkdown(span: { label: string; link?: { href: string }; parts?: { text: string; link?: { href: string } }[] }): string | undefined {
+  if (span.link) return `[${inlineCode(span.label)}](${span.link.href})`
+  if (!span.parts?.some((part) => part.link)) return undefined
+  let plain = ''
+  let linked = ''
+  for (const part of span.parts) {
+    if (!part.link) { plain += part.text; continue }
+    if (plain) { linked += inlineCode(plain); plain = '' }
+    linked += `[${inlineCode(part.text)}](${part.link.href})`
+  }
+  if (plain) linked += inlineCode(plain)
+  return linked
+}
+
 function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, linkApi: boolean): string {
   if (!linkApi && !/\btmux\s|[-_]/.test(markdown)) return markdown
   // Use the HTML resolver for prose exports too. Never rewrite runnable code
@@ -99,29 +114,15 @@ function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, 
       }
       if (!linkApi) return
       if (node.type === 'inlineCode') {
-        if (keywordArgument.test(node.value)) return
-        if (!index.linkText(markdown.slice(start, end), symbol).some((span) => span.kind === 'ref')) return
-        const link = index.resolve(node.value, 'any', symbol)
-        if (link) edits.push({ start, end, text: `[${inlineCode(node.value)}](${link.href})` })
-        else {
-          const parts = index.linkType(node.value, symbol)
-          if (parts.some((part) => part.link)) {
-            let plain = ''
-            let linked = ''
-            for (const part of parts) {
-              if (!part.link) { plain += part.text; continue }
-              if (plain) { linked += inlineCode(plain); plain = '' }
-              linked += `[${inlineCode(part.text)}](${part.link.href})`
-            }
-            if (plain) linked += inlineCode(plain)
-            edits.push({ start, end, text: linked })
-          }
-        }
+        // The span the page links: `docSpans` is what `ApiDoc` renders, so a name the page leaves plain stays plain here.
+        const reference = index.docSpans(markdown.slice(start, end), symbol).find((span) => span.kind === 'ref')
+        const linked = reference?.kind === 'ref' ? referenceMarkdown(reference) : undefined
+        if (linked) edits.push({ start, end, text: linked })
       } else if (markdown.slice(start, end) === node.value) {
-        const spans = index.linkText(node.value, symbol)
-        if (spans.some((span) => span.kind === 'ref' && span.link)) edits.push({ start, end,
-          text: spans.map((span) => span.kind === 'ref' && span.link
-            ? `[${inlineCode(span.label)}](${span.link.href})` : 'text' in span ? span.text : span.label).join('') })
+        const spans = index.docSpans(node.value, symbol)
+        const linked = spans.map((span) => (span.kind === 'ref' ? referenceMarkdown(span) : undefined))
+        if (linked.some(Boolean)) edits.push({ start, end,
+          text: spans.map((span, i) => linked[i] ?? ('text' in span ? span.text : span.label)).join('') })
       }
     } else if ('children' in node) for (const child of node.children) visit(child as Parameters<typeof visit>[0])
   }
