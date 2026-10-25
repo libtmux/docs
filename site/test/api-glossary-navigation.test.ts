@@ -279,12 +279,13 @@ const PORT_SLUGS = ports.API_MODEL_PORTS.map((port) => port.slug)
 const SIDEBAR_RAW_BUDGET = 96 * 1024
 const SIDEBAR_GZIP_BUDGET = 12 * 1024
 
-async function sidebarMarkup(component: unknown, port: string, inventory: search.ApiTreeJson, selected: { id: string; slug: string }, presentation = 'outline') {
+async function sidebarMarkup(component: unknown, port: string, inventory: search.ApiTreeJson, selected: { id: string; slug: string }, presentation = 'outline',
+  base = `/en/${port}/latest/reference/`) {
   const container = await experimental_AstroContainer.create()
   return container.renderToString(component as never, { props: {
     presentation, inventory, selectedSymbol: selected.id,
-    referenceBase: `/en/${port}/latest/reference/`, portName: port, tree: [], members: [], withMembers: new Set(),
-    currentPath: `/en/${port}/latest/reference/${selected.slug}/`, version: 'test',
+    referenceBase: base, portName: port, tree: [], members: [], withMembers: new Set(),
+    currentPath: search.apiTreeHref(base, selected, inventory.hrefs), version: 'test',
   } })
 }
 
@@ -306,28 +307,36 @@ it.each(PORT_SLUGS)('bounds the initial %s sidebar to its current path and defer
     .toBe(search.apiTreeHref(`/en/${port}/latest/reference/`, selected, inventory.hrefs))
 }, 30_000)
 
+// Every reference whose pages carry this sidebar: the sixteen libraries, and the tmux C reference in its oldest and newest versions.
+const BUDGETED = [
+  ...PORT_SLUGS.map((port) => ({ name: port, port, base: `/en/${port}/latest/reference/`, inventory: () => tree.referenceTree(port) })),
+  ...['3.7c', '3.2a'].map((version) => ({ name: `tmux ${version}`, port: 'tmux', base: reference.tmuxReferenceUrl(version), inventory: () => reference.tmuxReferenceTree(version) })),
+]
+/** Pages rendered per reference, from the top of the ranking. */
+const HEAVIEST_RENDERED = 100
+
 // The heaviest sidebar belongs to whichever declaration opens the most rows, not to a
 // type or a first entry. Ranking every declaration's rows finds it without rendering
-// them all; the heaviest few are rendered and each must fit.
-it.each(PORT_SLUGS)('keeps the heaviest %s sidebar inside the page-weight budget', async (port) => {
-  const inventory = tree.referenceTree(port)
-  const base = `/en/${port}/latest/reference/`
+// them all. The ranking tracks rendered bytes closely but not exactly, so enough of its
+// top is rendered to cover the drift, and each page must fit.
+it.each(BUDGETED)('keeps the heaviest $name sidebar inside the page-weight budget', async ({ name, port, base, inventory: load }) => {
+  const inventory = load()
   const heaviest = apiSidebar.sidebarCatalog(inventory).records
     .map((record) => ({ record, rows: JSON.stringify(apiSidebar.sidebarNodes(inventory, base, 'outline', record.id)).length }))
-    .sort((a, z) => z.rows - a.rows).slice(0, 5)
+    .sort((a, z) => z.rows - a.rows).slice(0, HEAVIEST_RENDERED)
   const component = await (await components())('ApiTree')
   const sizes: number[] = []
   for (const { record } of heaviest) {
-    const html = await sidebarMarkup(component, port, inventory, record)
+    const html = await sidebarMarkup(component, port, inventory, record, 'outline', base)
     sizes.push(Buffer.byteLength(html))
-    expect(sizes.at(-1), `${port} ${record.id} sidebar bytes`).toBeLessThan(SIDEBAR_RAW_BUDGET)
-    expect(gzipSync(html).byteLength, `${port} ${record.id} sidebar gzip bytes`).toBeLessThan(SIDEBAR_GZIP_BUDGET)
+    expect(sizes.at(-1), `${name} ${record.id} sidebar bytes`).toBeLessThan(SIDEBAR_RAW_BUDGET)
+    expect(gzipSync(html).byteLength, `${name} ${record.id} sidebar gzip bytes`).toBeLessThan(SIDEBAR_GZIP_BUDGET)
   }
   // The ranking must lead to heavy pages: any page picked without it, such as a category's first, weighs no more.
   const first = inventory.buckets[0]!.types.find((entry) => !entry.shortcut)!
-  expect(Math.max(...sizes), `${port} ranking finds the heaviest sidebar`)
-    .toBeGreaterThanOrEqual(Buffer.byteLength(await sidebarMarkup(component, port, inventory, first)))
-}, 60_000)
+  expect(Math.max(...sizes), `${name} ranking finds the heaviest sidebar`)
+    .toBeGreaterThanOrEqual(Buffer.byteLength(await sidebarMarkup(component, port, inventory, first, 'outline', base)))
+}, 120_000)
 
 it('names each folded row by what it holds, and links it to the first page it holds only without a script', async () => {
   const members = Array.from({ length: 300 }, (_, i): [string, string, string, string] => [`member_${i}`, `big-member-${i}`, `big.member_${i}`, 'method'])
