@@ -36,6 +36,17 @@ export function hasFieldMembers(owner: ApiSymbol, members: ApiSymbol[], port?: s
   return fields.length > 0 && rest.length === 0
 }
 
+/** The member entries of a type page's section navigation: a Fields block beside the member list, then its groups. */
+export function apiMemberSections(options: {
+  fields: number; members: number; label: string; groups: { id: string; label: string }[]
+}): ApiSection[] {
+  return [
+    ...(options.fields ? [{ id: 'api-fields', label: 'Fields', count: options.fields }] : []),
+    ...(options.members ? [{ id: 'api-members', label: options.label, count: options.members },
+      ...options.groups.map((group) => ({ id: group.id, label: group.label, nested: true }))] : []),
+  ]
+}
+
 /** The table a type page lists its members in, or none for the grouped list. */
 export function memberTableColumns(owner: ApiSymbol, members: ApiSymbol[], port?: string): 'fields' | 'value' | undefined {
   return hasFieldMembers(owner, members, port) ? 'fields' : hasScalarMembers(owner, members) ? 'value' : undefined

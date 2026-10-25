@@ -12,7 +12,7 @@ import { apiGlossary, apiGlossaryHeadings, API_GLOSSARY_TITLE, apiGlossaryHref }
 import ApiQualifiedName from '../../components/api/ApiQualifiedName.astro'
 import ApiType from '../../components/api/ApiType.astro'
 import ApiPageContents from '../../components/api/ApiPageContents.astro'
-import { apiEntryFields, apiEntrySections, apiMemberGroups, memberTableColumns, relatedTypeLinks, splitFieldMembers, type ApiSection } from '../../lib/api-sections'
+import { apiEntryFields, apiEntrySections, apiMemberGroups, apiMemberSections, memberTableColumns, relatedTypeLinks, splitFieldMembers, type ApiSection } from '../../lib/api-sections'
 import PageToolbar from '../../components/PageToolbar.astro'
 import PagePortSwitcher from '../../components/PagePortSwitcher.astro'
 import DocumentationContext from '../../components/docs/DocumentationContext.astro'
@@ -365,9 +365,7 @@ const pageSections: ApiSection[] = glossary ? apiGlossaryHeadings(glossaryContex
 })) : owner ? [
   { id: 'api-overview', label: 'Overview' },
   ...apiEntrySections(owner, language, index),
-  ...(fieldsAndRest ? [{ id: 'api-fields', label: 'Fields', count: split.fields.length }] : []),
-  ...(shown.length ? [{ id: 'api-members', label: membersLabel, count: shown.length },
-    ...(showMemberGroups ? memberGroups.map((group) => ({ id: group.id, label: group.label, nested: true })) : [])] : []),
+  ...apiMemberSections({ fields: fieldsAndRest ? split.fields.length : 0, members: shown.length, label: membersLabel, groups: showMemberGroups ? memberGroups : [] }),
   ...(otherInherited.length ? [{ id: 'api-inherited', label: 'Inherited members', count: otherInherited.length }] : []),
 ] : []
 const relationshipSections = owner && model ? apiRelationshipSections(model, owner) : []
@@ -794,7 +792,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
               — which is what learn.microsoft.com puts here too.
             */}
             {fieldsAndRest && owner && (
-              <div class="api-members mt-8">
+              <div class="api-fields mt-8">
                 <h2 class="api-section-heading text-lg font-semibold" id="api-fields">Fields<span class="api-section-count">{split.fields.length}</span><a class="api-heading-link" href="#api-fields" aria-label="Link to Fields">#</a></h2>
                 <ApiScalarMembers owner={owner} members={split.fields} index={index} hrefFor={hrefFor} columns="fields" />
               </div>

@@ -4,7 +4,7 @@ import { afterAll, describe, expect, it, vi } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
 import { membersOf, SymbolIndex, type ApiSymbol } from '@libtmux/api-model'
 import { API_MODELS } from '../src/lib/api-models'
-import { hasFieldMembers, memberTableColumns, splitFieldMembers } from '../src/lib/api-sections'
+import { apiMemberSections, hasFieldMembers, memberTableColumns, splitFieldMembers } from '../src/lib/api-sections'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { apiComponents } from './api-components'
 
@@ -135,11 +135,31 @@ describe('Rust field tables', () => {
       expect(all.toSorted()).toEqual(hrefs(children()).toSorted())
     })
 
+    it('lists Fields before Members in the section navigation, each with its own count', () => {
+      const { fields, rest } = splitFieldMembers(owner, fieldsOf(owner), 'rs')
+      const groups = [{ id: 'api-other-members', label: 'Other members' }]
+      expect(apiMemberSections({ fields: fields.length, members: rest.length, label: 'Members', groups })).toEqual([
+        { id: 'api-fields', label: 'Fields', count: fields.length },
+        { id: 'api-members', label: 'Members', count: rest.length },
+        { id: 'api-other-members', label: 'Other members', nested: true },
+      ])
+    })
+
     it('fails the split when a field is dropped from a copy of the data', () => {
       const victim = children().find((entry) => entry.kind === 'attribute')!.id
       const out = split(model.symbols.filter((entry) => entry.id !== victim))
       expect(out.table).toHaveLength(children().filter((entry) => entry.kind === 'attribute').length - 1)
     })
+  })
+
+  it('keeps the Fields block out of every .api-members selector, and styled like it', () => {
+    const page = readFileSync(new URL('../src/components/api/ApiReference.astro', import.meta.url), 'utf8')
+    const block = /<div class="([^"]*)">\s*<h2[^>]*id="api-fields"/.exec(page)![1]
+    expect(block.split(' ')).toContain('api-fields')
+    expect(block.split(' ')).not.toContain('api-members')
+    const css = readFileSync(new URL('../src/styles/api.css', import.meta.url), 'utf8')
+    expect(css).toMatch(/\.api-fields > h2,\n\.api-members > h2,/)
+    expect(apiMemberSections({ fields: 0, members: 0, label: 'Members', groups: [] })).toEqual([])
   })
 
   it('fails when a field is dropped from the model', () => {
