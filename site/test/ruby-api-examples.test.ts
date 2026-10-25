@@ -27,7 +27,7 @@ describe('verified complete Ruby API programs', () => {
     expect(symbol.source.revision).toBe(example.sourceRevision)
     expect(symbol.publicId).toBe(example.symbol)
     expect(example.page).toBe(`ports/ruby/reference/${symbol.slug}`)
-    expect(blocks).toHaveLength(5)
+    expect(blocks).toHaveLength(4)
     for (const file of example.files) {
       if (!('clipboardSha256' in file)) {
         throw new Error(`Missing Ruby clipboard hash: ${example.symbol}/${file.name}`)
@@ -40,14 +40,15 @@ describe('verified complete Ruby API programs', () => {
     }
     expect(blocks.filter((block) => block.lang === 'console')
       .map((block) => block.code.replace(/^\$ /gm, '').trim())).toEqual(example.shellRecipe)
-    expect(blocks[2].sourceUrl).toBe(`https://github.com/${model.repo}/blob/${example.sourceRevision}/${example.sourceFile}`)
-    expect(markdown).toContain(`[Source example](${blocks[2].sourceUrl}).`)
-    expect(blocks[2].code).toContain('require "libtmux"')
-    expect(blocks[2].code).toContain('LibTmux::Server.start do')
-    expect(blocks[2].code).toContain('rescue StandardError => error')
-    expect(blocks[2].code).not.toContain('require_relative')
-    expect(blocks[4].code.split('\n').slice(0, -1)).toEqual(example.expectedOutputs[1])
-    for (const line of blocks[2].code.split('\n').filter((line) => /^\s*#/.test(line))) {
+    expect(blocks[1].sourceUrl).toBe(`https://github.com/${model.repo}/blob/${example.sourceRevision}/${example.sourceFile}`)
+    expect(markdown).toContain(`[Source example](${blocks[1].sourceUrl}).`)
+    expect(blocks[1].code).toContain('require "libtmux"')
+    expect(blocks[1].code).toContain('LibTmux::Server.start do')
+    expect(blocks[1].code).toContain('rescue StandardError => error')
+    expect(blocks[1].code).not.toContain('require_relative')
+    expect(blocks[3].code.split('\n').slice(0, -1)).toEqual(example.expectedOutputs.at(-1))
+    expect(blocks[0].code).toMatch(/^source "https:\/\/rubygems\.org"\n\ngem "libtmux[\w-]*", "\d[^"]*"\n$/)
+    for (const line of blocks[1].code.split('\n').filter((line) => /^\s*#/.test(line))) {
       expect(line.length).toBeLessThanOrEqual(100)
     }
   })

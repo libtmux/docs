@@ -81,6 +81,8 @@ export function attachCompleteGoExamples(
 ): void {
   if (!/^[0-9a-f]{40}$/.test(source.revision)) throw new Error('Go examples require a full source revision')
   if (!/^\d+\.\d+\.\d+$/.test(source.goVersion)) throw new Error('Go examples require the module Go version')
+  // The module's go directive is a floor; a .0 patch reads as the minor release.
+  const goFloor = source.goVersion.replace(/\.0$/, '')
   for (const example of examples) {
     const matches = symbols.filter((symbol) => symbol.id === example.symbol)
     if (matches.length !== 1) throw new Error(`Go example target must resolve once: ${example.symbol}`)
@@ -88,24 +90,19 @@ export function attachCompleteGoExamples(
     const blocks: NonNullable<DocBlock['examples']> = [
       {
         lang: 'console',
-        intro: `${example.intro.replace(/\n/g, ' ')} Use Go ${source.goVersion} or newer and tmux 3.3a or newer on a Unix system, with tmux and cat on PATH. In a new directory, fetch the documented library revision:`,
-        code: `$ git clone https://github.com/${source.repo}.git libtmux-source && \\\n  git -C libtmux-source checkout ${source.revision}\n`,
+        intro: `${example.intro.replace(/\n/g, ' ')} Use Go ${goFloor} or newer and tmux 3.3a or newer on a Unix system, with \`tmux\` and \`cat\` on \`PATH\`. In a new directory, create a module and add the library from the Go module proxy:`,
+        code: `$ go mod init example.com/libtmux-api && \\\n  go get github.com/${source.repo}@latest\n`,
       },
       {
         lang: 'go',
-        intro: 'Save this dependency file as go.mod:',
-        code: `module example.com/libtmux-api\n\ngo ${source.goVersion}\n\nrequire github.com/libtmux/libtmux-go v0.0.0\n\nreplace github.com/libtmux/libtmux-go => ./libtmux-source\n`,
-      },
-      {
-        lang: 'go',
-        intro: 'Save this complete example as example_test.go. It creates a private temporary socket and stops its server before removing the directory. Cleanup failure fails the example and retains the socket directory.',
+        intro: 'Save this complete example as `example_test.go`. It creates a private temporary socket and stops its server before removing the directory. Cleanup failure fails the example and retains the socket directory.',
         sourceUrl: `https://github.com/${source.repo}/blob/${source.revision}/${example.file}`,
         code: example.code,
       },
       {
         lang: 'console',
         intro: 'Run the saved file. Go checks the Output comment and fails on different output or an operation or cleanup error:',
-        code: '$ GOWORK=off go test -count=1 -v example_test.go\n',
+        code: '$ go test -count=1 -v example_test.go\n',
       },
     ]
     symbol.doc = { summary: '', ...symbol.doc, examples: [...(symbol.doc?.examples ?? []), ...blocks] }

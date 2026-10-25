@@ -667,7 +667,11 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       } catch {
         return undefined
       }
-    }, { repo: cfg.repo, revision })
+    }, {
+      repo: cfg.repo, revision,
+      // Readers depend on the newest release this revision contains; no version file tracks it.
+      releaseTag: git(checkout, 'describe', '--tags', '--abbrev=0', '--match', 'v[0-9]*', revision),
+    })
   }
 
   if (port === 'swift') {

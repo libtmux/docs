@@ -49,23 +49,20 @@ export function attachCompleteLuaExamples(
     const blocks: NonNullable<DocBlock['examples']> = [
       {
         lang: 'console',
-        intro: `${example.description} Use Lua ${manifest.setup.lua}, LuaRocks, Git, tmux 3.3a or newer, a C compiler, and CMake on Linux. In a new directory, install the documented source and standalone runtime dependency:`,
-        code: `$ git clone https://github.com/${source.repository}.git libtmux-source &&\n` +
-          `  git -C libtmux-source checkout ${source.revision} &&\n` +
-          `  luarocks --tree ./rocks install luv ${manifest.setup.luv} &&\n` +
-          '  (cd libtmux-source &&\n' +
-          '    luarocks --tree ../rocks make rockspecs/libtmux-scm-1.rockspec) &&\n' +
+        intro: `${example.description} Use Lua 5.1 or newer with LuaRocks, tmux 3.3a or newer, and a C compiler and CMake for luv on Linux. In a new directory, install the library and its standalone runtime dependency from LuaRocks:`,
+        code: '$ luarocks --tree ./rocks install luv &&\n' +
+          '  luarocks --tree ./rocks install libtmux &&\n' +
           '  eval "$(luarocks --tree ./rocks path)"\n',
       },
       {
         lang: 'sh',
-        intro: 'Save this complete launcher as run.sh. It starts a private tmux daemon and cleans up after success or failure. A failed daemon shutdown reports and retains its socket directory.',
+        intro: 'Save this complete launcher as `run.sh`. It starts a private tmux daemon and cleans up after success or failure. A failed daemon shutdown reports and retains its socket directory.',
         sourceUrl: url(manifest.setup.launcher),
         code: launcher,
       },
       {
         lang: 'lua',
-        intro: `Save the complete program as ${name}. Closing the library connection leaves the daemon running; the launcher owns its lifetime.`,
+        intro: `Save the complete program as \`${name}\`. Closing the library connection leaves the daemon running; the launcher owns its lifetime.`,
         sourceUrl: url(example.file),
         code,
       },

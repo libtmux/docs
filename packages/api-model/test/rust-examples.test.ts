@@ -36,6 +36,7 @@ function fixture() {
       '[dependencies]\nlibtmux = { path = "libtmux-source/crates/libtmux" }\n' +
       'tempfile = "3.20"\ntokio = { version = "1.40", features = ["macros", "rt", "time"] }\n',
     'rust-toolchain.toml': '[toolchain]\nchannel = "1.97.1"\n',
+    'Cargo.toml': '[workspace]\nmembers = ["crates/*"]\n[workspace.package]\nversion = "0.1.0-alpha.17"\nedition = "2024"\nrust-version = "1.85"\n',
     'crates/libtmux/examples/api_construction.rs': 'use libtmux::Server;\n#[tokio::main(flavor = "current_thread")]\nasync fn main() {}\n',
   }
   const read = (file: string) => file === 'crates/libtmux/examples/api/manifest.json'
@@ -51,15 +52,17 @@ describe('complete Rust API programs', () => {
       const blocks = f.symbols[index].doc!.examples!
       expect(f.symbols[index].doc!.summary).toBe('Existing prose.')
       expect(blocks[0].code).toBe('old();\n')
-      expect(blocks).toHaveLength(7)
-      expect(blocks[2].code).toBe(f.files['crates/libtmux/examples/api/consumer.toml'])
-      expect(blocks[3].code).toBe(f.files['rust-toolchain.toml'])
-      expect(blocks[4].code).toBe(f.files[f.manifest.examples[0].sourceFile])
-      expect(blocks[4].sourceUrl).toBe(`https://github.com/${source.repo}/blob/${source.revision}/${f.manifest.examples[0].sourceFile}`)
-      expect(blocks[1].code).toContain(`checkout --detach ${source.revision}`)
-      expect(blocks[5].code).toContain('mkdir -p src &&\n')
-      expect(blocks[5].code).toContain('cargo run --quiet\n')
-      expect(blocks[6].code).toBe('done\n')
+      expect(blocks).toHaveLength(5)
+      expect(blocks[1].code).toBe('$ cargo init --name libtmux-api-example &&\n' +
+        '  cargo add libtmux@0.1.0-alpha.17 tempfile@3.20 &&\n' +
+        '  cargo add tokio@1.40 --features macros,rt,time\n')
+      expect(blocks[1].intro).toContain('Rust 1.85 or newer')
+      expect(blocks[1].intro).not.toMatch(/git|clone|1\.97/i)
+      expect(blocks[2].code).toBe(f.files[f.manifest.examples[0].sourceFile])
+      expect(blocks[2].sourceUrl).toBe(`https://github.com/${source.repo}/blob/${source.revision}/${f.manifest.examples[0].sourceFile}`)
+      expect(blocks[2].intro).toContain('`src/main.rs`')
+      expect(blocks[3].code).toBe('$ cargo run --quiet\n')
+      expect(blocks[4].code).toBe('done\n')
     }
     expect(f.symbols[2].doc!.examples).toHaveLength(1)
     expect(f.symbols[3].doc!.examples).toHaveLength(1)
@@ -84,9 +87,10 @@ describe('complete Rust API programs', () => {
     ['wrong product', (f: ReturnType<typeof fixture>) => { f.symbols[0].product = 'workspace' }],
     ['duplicate program', (f: ReturnType<typeof fixture>) => { f.manifest.examples.push(f.manifest.examples[0]) }],
     ['missing Cargo setup', (f: ReturnType<typeof fixture>) => { delete f.files[f.manifest.setupFiles[0].sourceFile] }],
-    ['missing toolchain', (f: ReturnType<typeof fixture>) => { delete f.files['rust-toolchain.toml'] }],
-    ['malformed TOML', (f: ReturnType<typeof fixture>) => { f.files['rust-toolchain.toml'] += '[broken\n' }],
-    ['unpinned toolchain', (f: ReturnType<typeof fixture>) => { f.files['rust-toolchain.toml'] = '[toolchain]\nchannel = "stable"\n' }],
+    ['missing workspace manifest', (f: ReturnType<typeof fixture>) => { delete f.files['Cargo.toml'] }],
+    ['malformed TOML', (f: ReturnType<typeof fixture>) => { f.files['Cargo.toml'] += '[broken\n' }],
+    ['unversioned workspace', (f: ReturnType<typeof fixture>) => { f.files['Cargo.toml'] = f.files['Cargo.toml'].replace('version = "0.1.0-alpha.17"\n', '') }],
+    ['missing minimum Rust', (f: ReturnType<typeof fixture>) => { f.files['Cargo.toml'] = f.files['Cargo.toml'].replace('rust-version = "1.85"\n', '') }],
     ['wrong dependency path', (f: ReturnType<typeof fixture>) => { const file = f.manifest.setupFiles[0].sourceFile; f.files[file] = f.files[file].replace('libtmux-source/crates/libtmux', '../hidden') }],
     ['missing runtime dependency', (f: ReturnType<typeof fixture>) => { const file = f.manifest.setupFiles[0].sourceFile; f.files[file] = f.files[file].replace('"macros", ', '') }],
     ['duplicate setup file', (f: ReturnType<typeof fixture>) => { f.manifest.setupFiles[1] = f.manifest.setupFiles[0] }],

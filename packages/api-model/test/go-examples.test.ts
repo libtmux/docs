@@ -34,14 +34,16 @@ describe('complete native Go examples', () => {
     expect(target.id).toBe('tmux.Server.Sessions')
     expect(target.doc?.summary).toBe('Original contract.')
     const blocks = target.doc!.examples!
-    expect(blocks.map((block) => block.lang)).toEqual(['go', 'console', 'go', 'go', 'console'])
+    expect(blocks.map((block) => block.lang)).toEqual(['go', 'console', 'go', 'console'])
     expect(blocks[0].code).toBe('existing')
-    expect(blocks[1].code).toBe(`$ git clone https://github.com/libtmux/libtmux-go.git libtmux-source && \\\n  git -C libtmux-source checkout ${source.revision}\n`)
-    expect(blocks[2].code).toContain('replace github.com/libtmux/libtmux-go => ./libtmux-source')
-    expect(blocks[3].code).toBe(code)
-    expect(blocks[3].sourceUrl).toBe(`https://github.com/${source.repo}/blob/${source.revision}/${file}`)
-    expect(blocks[3].intro).not.toContain('[source example](')
-    expect(blocks[4].code).toBe('$ GOWORK=off go test -count=1 -v example_test.go\n')
+    expect(blocks[1].code).toBe('$ go mod init example.com/libtmux-api && \\\n  go get github.com/libtmux/libtmux-go@latest\n')
+    expect(blocks[1].intro).not.toMatch(/git|clone/i)
+    expect(blocks[1].intro).toContain('Use Go 1.26 or newer')
+    expect(blocks[1].intro).toContain('`cat` on `PATH`')
+    expect(blocks[2].code).toBe(code)
+    expect(blocks[2].sourceUrl).toBe(`https://github.com/${source.repo}/blob/${source.revision}/${file}`)
+    expect(blocks[2].intro).not.toContain('[source example](')
+    expect(blocks[3].code).toBe('$ go test -count=1 -v example_test.go\n')
   })
 
   it('uses native function and receiver-method names for attachment', async () => {

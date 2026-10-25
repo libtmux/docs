@@ -26,13 +26,13 @@ describe('verified complete API programs', () => {
     }
     expect(blocks.filter((block) => block.lang === 'console')
       .map((block) => block.code.replace(/^\$ /gm, '').trim())).toEqual(example.shellRecipe)
-    expect(blocks[2].sourceUrl).toBe(`https://github.com/${model.repo}/blob/${example.sourceRevision}/${example.sourceFile}`)
-    expect(blocks[2].intro).not.toContain('[source example](')
-    expect(markdown).toContain(`[Source example](${blocks[2].sourceUrl}).`)
-    expect(blocks[2].code).toMatch(/^package tmux_test\n/)
-    expect(blocks[2].code).toMatch(/func Example\w+_complete\(\)/)
-    expect(blocks[2].code).toContain('// Output:')
-    for (const line of blocks[2].code.split('\n').filter((line) => /^\s*\/\//.test(line))) {
+    expect(blocks[1].sourceUrl).toBe(`https://github.com/${model.repo}/blob/${example.sourceRevision}/${example.sourceFile}`)
+    expect(blocks[1].intro).not.toContain('[source example](')
+    expect(markdown).toContain(`[Source example](${blocks[1].sourceUrl}).`)
+    expect(blocks[1].code).toMatch(/^package tmux_test\n/)
+    expect(blocks[1].code).toMatch(/func Example\w+_complete\(\)/)
+    expect(blocks[1].code).toContain('// Output:')
+    for (const line of blocks[1].code.split('\n').filter((line) => /^\s*\/\//.test(line))) {
       expect(line.replaceAll('\t', '    ').length).toBeLessThanOrEqual(100)
     }
   })

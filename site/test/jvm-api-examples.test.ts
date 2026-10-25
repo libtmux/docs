@@ -42,15 +42,24 @@ describe('verified complete Java-family API programs', () => {
     expect(example.page).toBe(`ports/${example.port}/reference/${symbol.slug}`)
     expect(example.files).toHaveLength(5)
     for (const file of example.files) {
-      if (!('clipboardSha256' in file) || !('sourceFile' in file) || !('path' in file)) {
+      // settings and build are the port's files rewritten for the Maven Central release, so they cite no source.
+      const rewritten = file.name === 'settings.gradle.kts' || file.name === 'build.gradle.kts'
+      if (!('clipboardSha256' in file) || !('path' in file) || ('sourceFile' in file) === rewritten) {
         throw new Error(`${example.symbol}/${file.name}: incomplete source file receipt`)
       }
       const block = blocks[file.block]
       expect(hash(block.code), `${example.symbol}/${file.path}`).toBe(file.sha256)
       expect(hash(block.code.replace(/\n$/, ''))).toBe(file.clipboardSha256)
       expect(exported.some((entry) => hash(entry.value + '\n') === file.sha256)).toBe(true)
-      expect(block.sourceUrl).toBe(`https://github.com/${model.repo}/blob/${example.sourceRevision}/${file.sourceFile}`)
-      expect(markdown).toContain(`[Source example](${block.sourceUrl}).`)
+      if (rewritten) {
+        expect(block.sourceUrl).toBeUndefined()
+        expect(block.code).not.toMatch(/includeBuild|SNAPSHOT/)
+        if (file.name === 'build.gradle.kts') expect(block.code).toMatch(/implementation\("io\.github\.libtmux:[\w-]+:\d[^"]*"\)/)
+      } else {
+        if (!('sourceFile' in file)) throw new Error(`${example.symbol}/${file.name}: missing source`)
+        expect(block.sourceUrl).toBe(`https://github.com/${model.repo}/blob/${example.sourceRevision}/${file.sourceFile}`)
+        expect(markdown).toContain(`[Source example](${block.sourceUrl}).`)
+      }
       expect(block.intro).toContain(file.path)
       for (const line of block.code.split('\n').filter((line) => /^\s*(?:\/\/|#)/.test(line))) {
         expect(line.length).toBeLessThanOrEqual(100)
@@ -58,7 +67,9 @@ describe('verified complete Java-family API programs', () => {
     }
     expect(example.consoleBlocks.map((index) => blocks[index].code.replace(/^\$ /gm, '').trim()))
       .toEqual(example.shellRecipe)
-    expect(blocks[example.consoleBlocks[1] + 1].code.trimEnd().split('\n')).toEqual(example.expectedOutputs[1])
+    expect(example.shellRecipe).toHaveLength(1)
+    expect(example.shellRecipe[0]).toMatch(/^gradle --console=plain --quiet installDist -PexampleMain=/)
+    expect(blocks[example.consoleBlocks.at(-1)! + 1].code.trimEnd().split('\n')).toEqual(example.expectedOutputs.at(-1))
     for (const index of example.consoleBlocks) {
       expect(blocks[index].lang).toBe('console')
       expect(exported.some((entry) => entry.value + '\n' === blocks[index].code)).toBe(true)

@@ -61,7 +61,7 @@ export function attachCompleteCxxExamples(
     const blocks: NonNullable<DocBlock['examples']> = [
       {
         lang: 'console',
-        intro: `${example.title}. ${example.description.replace(/\n/g, ' ')} Use Clang 18 with libc++ 18, CMake 3.25 or newer, Ninja, Git, and tmux 3.3a or newer on Linux. In an empty directory, fetch the documented library revision:`,
+        intro: `${example.title}. ${example.description.replace(/\n/g, ' ')} libtmux-cxx is not published to a package registry yet, so this builds it from its repository. Use Clang 18 or newer with libc++, CMake 3.25 or newer, Ninja, Git, and tmux 3.3a or newer on Linux. In an empty directory, fetch the documented library revision:`,
         code: `$ git clone https://github.com/${source.repo}.git libtmux-source && \\\n  git -C libtmux-source checkout ${source.revision}\n`,
       },
       {
@@ -71,12 +71,12 @@ export function attachCompleteCxxExamples(
       },
       {
         lang: 'cmake',
-        intro: 'Save this complete consumer project as CMakeLists.txt:',
+        intro: 'Save this complete consumer project as `CMakeLists.txt`:',
         sourceUrl: urlFor(manifest.projectFile), code: project,
       },
       {
         lang: 'cpp',
-        intro: 'Save this complete program as main.cpp. `ScopedTmuxServer` owns a private daemon and stops it when the program exits. Ordinary applications use `Server` for their own socket; these examples use the fixture until setup moves to ordinary server objects.',
+        intro: 'Save this complete program as `main.cpp`. `ScopedTmuxServer` owns a private daemon and stops it when the program exits. Ordinary applications use `Server` for their own socket; these examples use the fixture until setup moves to ordinary server objects.',
         sourceUrl: urlFor(example.file), code: program,
       },
       {

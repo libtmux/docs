@@ -12,11 +12,19 @@ interface RubyExamples {
   files?: { path: string; content: string }[]
 }
 
-/** Native export metadata selects whole programs; ordinary recipe helpers stay unlisted. */
+/**
+ * Native export metadata selects whole programs; ordinary recipe helpers stay unlisted.
+ *
+ * Readers install the gem from RubyGems at the version the documented revision
+ * declares. The port bumps that version only in its release commits, so it
+ * names a published release, and Bundler needs it spelled out while the gems
+ * are prereleases.
+ */
 export function attachCompleteRubyExamples(
   symbols: ApiSymbol[],
   input: unknown,
   source: { repository: string; revision: string },
+  packages: { name: string; version: string }[] = [],
 ): void {
   const bundle = input as RubyExamples | undefined
   const programs = bundle?.manifest?.programs
@@ -46,28 +54,27 @@ export function attachCompleteRubyExamples(
     }
     const code = files.get(program.path)
     if (!code?.trim()) throw new Error(`Missing complete Ruby example: ${program.path}`)
+    const version = packages.find((entry) => entry.name === program.gem)?.version
+    if (!version || !/^\d+\.\d+\.\d+(?:\.[0-9A-Za-z]+)*$/.test(version)) {
+      throw new Error(`Ruby example gem has no release version: ${program.gem}`)
+    }
     const filename = basename(program.path)
     const blocks: NonNullable<DocBlock['examples']> = [
       {
-        lang: 'console',
-        intro: `${api.description.replace(/\n/g, ' ')} Use Ruby 4.0.7, Bundler, Git and tmux 3.3a or newer on Unix, with /bin/cat and /bin/sh available. In an empty directory, fetch the documented library revision:`,
-        code: `$ git clone https://github.com/${source.repository}.git libtmux-source && \\\n  git -C libtmux-source checkout ${source.revision}\n`,
+        lang: 'ruby',
+        intro: `${api.description.replace(/\n/g, ' ')} Use Ruby 3.3 or newer with Bundler, and tmux 3.3a or newer, on Unix with \`/bin/cat\` and \`/bin/sh\` available. In an empty directory, save this \`Gemfile\`:`,
+        code: `source "https://rubygems.org"\n\ngem "${program.gem}", "${version}"\n`,
       },
       {
         lang: 'ruby',
-        intro: 'Save this dependency file as Gemfile:',
-        code: `source "https://rubygems.org"\n\ngem "${program.gem}", path: "libtmux-source/gems/${program.gem}"\n`,
-      },
-      {
-        lang: 'ruby',
-        intro: `Save this complete program as ${filename}. Its Server.start block owns a private tmux server and stops it on exit, including after an error.`,
+        intro: `Save this complete program as \`${filename}\`. Its \`Server.start\` block owns a private tmux server and stops it on exit, including after an error.`,
         sourceUrl: `https://github.com/${source.repository}/blob/${source.revision}/${program.path}`,
         code,
       },
       {
         lang: 'console',
-        intro: 'Install the runtime dependencies and run the saved program. An operation or cleanup error makes it exit unsuccessfully:',
-        code: `$ bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby ${filename}\n`,
+        intro: 'Install the gem and run the program. An operation or cleanup error makes it exit unsuccessfully:',
+        code: `$ bundle install && \\\n  bundle exec ruby ${filename}\n`,
       },
       { lang: 'text', intro: 'Expected output:', code: api.output },
     ]

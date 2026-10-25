@@ -36,8 +36,13 @@ describe('complete Swift API programs', () => {
       expect(file).toHaveProperty('clipboardSha256', hash(block.code.replace(/\n$/, '')))
       expect(exported.some((block) => hash(block.value + '\n') === file.sha256),
         `${file.name} Markdown`).toBe(true)
-      expect(block.sourceUrl).toBe(`https://github.com/${model.repo}/blob/${example.sourceRevision}/${
-        file.name === 'Package.swift' ? 'Examples/Standalone/Package.swift' : example.sourceFile}`)
+      // The consumer package is the port's file with its checkout dependency replaced, so it cites no source.
+      expect(block.sourceUrl).toBe(file.name === 'Package.swift'
+        ? undefined : `https://github.com/${model.repo}/blob/${example.sourceRevision}/${example.sourceFile}`)
+      if (file.name === 'Package.swift') {
+        expect(block.code).toMatch(/\.package\(url: "https:\/\/github\.com\/libtmux\/libtmux-swift\.git", exact: "\d[^"]*"\)/)
+        expect(block.code).not.toContain('libtmux-source')
+      }
       for (const line of block.code.split('\n').filter((line) => /^\s*\/\//.test(line))) {
         expect(line.length).toBeLessThanOrEqual(100)
       }

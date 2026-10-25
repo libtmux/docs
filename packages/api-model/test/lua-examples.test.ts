@@ -23,7 +23,7 @@ const target = (): ApiSymbol => ({
 })
 
 describe('complete Lua API examples from native artifacts', () => {
-  it('retains native docs, exact full files, pinned setup, and both source links', () => {
+  it('retains native docs, exact full files, registry setup, and both source links', () => {
     const symbol = target()
     attachCompleteLuaExamples([symbol], manifest(), files, source)
     expect(symbol.doc?.summary).toBe('Existing native documentation.')
@@ -33,8 +33,12 @@ describe('complete Lua API examples from native artifacts', () => {
     expect(examples[2].code).toBe(program)
     expect(examples[1].sourceUrl).toBe(`https://github.com/${source.repository}/blob/${source.revision}/examples/api/run.sh`)
     expect(examples[2].sourceUrl).toBe(`https://github.com/${source.repository}/blob/${source.revision}/examples/api/connect.lua`)
-    expect(examples[0].code).toContain(`git -C libtmux-source checkout ${source.revision}`)
-    expect(examples[0].code).toContain('luarocks --tree ./rocks install luv 1.52.1-0')
+    expect(examples[0].code).toBe('$ luarocks --tree ./rocks install luv &&\n' +
+      '  luarocks --tree ./rocks install libtmux &&\n' +
+      '  eval "$(luarocks --tree ./rocks path)"\n')
+    expect(examples[0].intro).toContain('Lua 5.1 or newer')
+    expect(examples[0].intro).not.toMatch(/git|clone/i)
+    expect(examples[2].intro).toContain('`connect.lua`')
     expect(examples[3].code).toBe('$ eval "$(luarocks --tree ./rocks path)" &&\n  sh run.sh connect.lua\n')
     expect(examples.some((example) => example.code.includes('not a complete example'))).toBe(false)
   })
