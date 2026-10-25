@@ -152,9 +152,9 @@ describe('long lists in Outline', () => {
     expect(index(shown.at(-1)!)).toBeLessThan(COUNT - 1)
     expect(children[0]).toBe(before)
     expect(children.at(-1)).toBe(after)
-    expect(before).toMatchObject({ label: `${index(shown[0]!)} more`, expanded: false, level: shown[0]!.level, lazy: `more:type:big:0-${index(shown[0]!)}` })
+    expect(before).toMatchObject({ label: `${index(shown[0]!)} more members`, expanded: false, level: shown[0]!.level, lazy: `more:type:big:0-${index(shown[0]!)}` })
     expect(before!.href).toBeUndefined()
-    expect(after).toMatchObject({ label: `${COUNT - 1 - index(shown.at(-1)!)} more`, lazy: `more:type:big:${index(shown.at(-1)!) + 1}-${COUNT}` })
+    expect(after).toMatchObject({ label: `${COUNT - 1 - index(shown.at(-1)!)} more members`, lazy: `more:type:big:${index(shown.at(-1)!) + 1}-${COUNT}` })
   })
 
   it('opens a long owner at its first members when the owner itself is selected', () => {
@@ -162,6 +162,21 @@ describe('long lists in Outline', () => {
     expect(children[0]).toMatchObject({ label: 'm0', kind: 'method' })
     expect(children.filter(isMore)).toHaveLength(1)
     expect(children.at(-1)!.lazy).toBe(`more:type:big:${children.length - 1}-${COUNT}`)
+  })
+
+  it('names what a folded row holds and leads it, without a script, to the first page it holds', () => {
+    const [before, after] = membersOfBig(sidebarNodes(longOwner(), base, 'outline', 'big.m100')).filter(isMore)
+    const firstHidden = (node: SidebarNode) => Number(node.lazy!.split(':').at(-1)!.split('-')[0])
+    expect(before!.label).toMatch(/^\d+ more members$/)
+    expect(before!.fallbackHref).toBe(`${base}big-m0/`)
+    expect(after!.fallbackHref).toBe(`${base}big-m${firstHidden(after!)}/`)
+    // Under a script the row opens, and is not a link.
+    expect(before!.href).toBeUndefined()
+    const category: ApiTreeJson = { port: 'sample', members: {}, buckets: [{ id: 'objects', label: 'Objects', count: COUNT, slug: 'f0', children: [], types:
+      Array.from({ length: COUNT }, (_, i) => ({ id: `f${i}`, name: `f${i}`, slug: `f${i}`, m: 0 as const, kind: 'function', category: 'members' })) }] }
+    const [rest] = sidebarNodes(category, base, 'outline', 'f0')[0]!.children!.filter(isMore)
+    expect(rest!.label).toMatch(/^\d+ more entries$/)
+    expect(rest!.fallbackHref).toBe(`${base}f${firstHidden(rest!)}/`)
   })
 
   it.each([SIDEBAR_WINDOW, SIDEBAR_WINDOW + 2])('lists %i members whole, as a run that short is not worth a row', (count) => {

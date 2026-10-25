@@ -14,7 +14,8 @@
  * being read before first paint. Phone: the same markup as a drawer docked on
  * the left, as Microsoft Learn's table of contents is, rather than two screens
  * of links above the title. Without JavaScript it stays an inline column, and
- * every closed row is still a link.
+ * every closed row is still a link; a folded "N more" row leads to the first
+ * page it holds.
  */
 import ApiTreeItems, { type TreeNode } from './ApiTreeItems.astro'
 import ApiBadge from './ApiBadge.astro'
@@ -252,7 +253,7 @@ if (!mark(nodes)) {
       </ul>
     </nav>
   </div>
-  <noscript><style>.api-nav__search { display: none; }</style></noscript>
+  <noscript><style>.api-nav__search, .api-nav__item[data-lazy^='more:'] > .api-nav__row > span.api-nav__label { display: none; }</style></noscript>
   <script is:inline data-astro-rerun set:html={`((nav) => (${initializeApiTree.toString()})(nav, !nav.dataset.apiTreeInitialized))(document.currentScript.closest('.api-nav-column').querySelector('.api-nav'));`} />
   <script>
     import { initApiTree, saveApiTreeState } from './api-tree'

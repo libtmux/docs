@@ -14,6 +14,8 @@ export interface SidebarNode {
   section?: string
   quiet?: boolean
   href?: string
+  /** Where a row that only opens in a script leads without one. */
+  fallbackHref?: string
   count?: number
   level: number
   current?: boolean
@@ -164,8 +166,13 @@ export function sidebarNodes(source: ApiTreeJson, base: string, mode: SidebarPre
     let end = start + SIDEBAR_WINDOW
     if (start < SIDEBAR_MIN_GAP) start = 0
     if (list.length - end < SIDEBAR_MIN_GAP) end = list.length
-    const rest = (from: number, to: number): SidebarNode[] => from === to ? []
-      : [{ id: nextId(), label: `${to - from} more`, level, expanded: false, lazy: `more:${parent}:${from}-${to}` }]
+    // Without a script the run cannot open, so its row leads to the first page it holds, whose own window shows what follows.
+    const rest = (from: number, to: number): SidebarNode[] => {
+      if (from === to) return []
+      const fallbackHref = list.slice(from, to).find((node) => node.href)?.href
+      return [{ id: nextId(), label: `${to - from} more ${parent.startsWith('type:') ? 'members' : 'entries'}`, level, expanded: false,
+        lazy: `more:${parent}:${from}-${to}`, ...(fallbackHref ? { fallbackHref } : {}) }]
+    }
     return [...rest(0, start), ...list.slice(start, end), ...rest(end, list.length)]
   }
   const symbol = (record: ApiSearchResult, level: number, shortcut = false, expand = true): SidebarNode => {

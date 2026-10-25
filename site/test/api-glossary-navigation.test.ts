@@ -329,6 +329,38 @@ it.each(PORT_SLUGS)('keeps the heaviest %s sidebar inside the page-weight budget
     .toBeGreaterThanOrEqual(Buffer.byteLength(await sidebarMarkup(component, port, inventory, first)))
 }, 60_000)
 
+it('names each folded row by what it holds, and links it to the first page it holds only without a script', async () => {
+  const members = Array.from({ length: 300 }, (_, i): [string, string, string, string] => [`member_${i}`, `big-member-${i}`, `big.member_${i}`, 'method'])
+  const inventory: search.ApiTreeJson = { port: 'sample', members: { big: members }, buckets: [{ id: 'objects', label: 'Objects', count: 1, slug: 'big', children: [], types: [
+    { id: 'big', name: 'Big', slug: 'big', m: 1, kind: 'class', category: 'types' }] }] }
+  const templates = await components()
+  const html = await sidebarMarkup(await templates('ApiTree'), 'sample', inventory, { id: 'big.member_150', slug: 'big-member-150' })
+  for (const javascript of [true, false]) {
+    const win = new Window()
+    windows.push(win)
+    // Select the real noscript payload for the DOM fixture, as the contents tests do.
+    win.document.body.innerHTML = html.replace(/<noscript\b[^>]*>([\s\S]*?)<\/noscript>/g, javascript ? '' : '$1')
+    await paint(win, [...templates.styles, readFileSync(new URL('../src/styles/api-tree.css', import.meta.url), 'utf8')])
+    const folded = [...win.document.querySelectorAll('[data-lazy^="more:"]')]
+    expect(folded, `folded rows (JavaScript ${javascript})`).toHaveLength(2)
+    for (const row of folded) {
+      const label = row.querySelector(':scope > .api-nav__row > span.api-nav__label')!
+      const link = row.querySelector(':scope > .api-nav__row a')
+      const first = Number(row.getAttribute('data-lazy')!.split(':').at(-1)!.split('-')[0])
+      expect(label.textContent!.trim(), 'the name says what the row holds').toMatch(/^\d+ more members$/)
+      expect(win.document.getElementById(row.getAttribute('aria-labelledby')!)).toBe(label)
+      expect(row.getAttribute('aria-expanded')).toBe('false')
+      if (javascript) expect(link, 'a script opens the row, so it is not a link').toBeNull()
+      else {
+        expect(link?.getAttribute('href')).toBe(`/en/sample/latest/reference/big-member-${first}/`)
+        expect(link?.textContent?.trim()).toBe(label.textContent!.trim())
+        expect(displayed(win, link), 'the link is shown').toBe(true)
+        expect(displayed(win, label), 'and the text it stands in for is not').toBe(false)
+      }
+    }
+  }
+}, 60_000)
+
 it('measures a sidebar that lists every member as over budget, and the same owner in Outline as within it', async () => {
   const members = Array.from({ length: 3000 }, (_, i): [string, string, string, string] => [`member_${i}`, `huge-member-${i}`, `huge.member_${i}`, 'method'])
   const inventory: search.ApiTreeJson = { port: 'sample', members: { huge: members }, buckets: [{ id: 'objects', label: 'Objects', count: 1, slug: 'huge', children: [], types: [
