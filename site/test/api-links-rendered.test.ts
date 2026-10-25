@@ -14,12 +14,14 @@ import { apiEntryFields } from '../src/lib/api-sections'
 import { llmsPage } from '../src/lib/llms'
 import { createProseLinker } from '../src/lib/prose-resolver'
 import { DOC_PRODUCTS, PORTS as SITE_PORTS, productConceptNotice, productDescription, workspaceOverviewNotice } from '../src/lib/ports'
+import { renderToolDescription } from '../src/lib/mcp-reference'
 import { productApiHref, productApiIndex } from '../src/lib/product-api'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { defaultVersionFor } from '../src/lib/versions'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
 import { rehypeTmuxKeys } from '../src/plugins/rehype-tmux-keys'
 import { apiComponents } from './api-components'
+import { MCP_PORTS, descriptionSources } from './mcp-description-audit'
 
 /**
  * The link verifier reads the addresses the site links. These tests render the site, through the code that renders it, and hold the
@@ -346,6 +348,42 @@ describe('the symbol pages, drawn by the components', () => {
     // One heading for each common parameter the commands list, and the one the page names without a heading is not among them.
     const names = new Set(model.symbols.flatMap((symbol) => symbol.signatures.flatMap((signature) => signature.params.filter((param) => param.binding?.common).map((param) => param.name))))
     expect([...anchors].map((href) => href.split('#-')[1]).sort()).toEqual([...names].map((name) => name.toLowerCase()).sort())
+  }, 900_000)
+})
+
+describe('the MCP reference, rendered for each port', () => {
+  interface Text { port: string; objectId?: string; where: string; text: string }
+  /** The addresses on an API host that `renderToolDescription`, the function the MCP route renders with, links in these texts and the collector does not read. */
+  async function strays(texts: Text[]) {
+    const stray = new Map<string, string>()
+    let linked = 0
+    for (const { port, objectId, where, text } of texts) {
+      for (const href of hostAddresses(await renderToolDescription(text, { port, version: 'latest', objectId }))) {
+        linked += 1
+        if (!collected(href) && !stray.has(href)) stray.set(href, `${port} ${where}`)
+      }
+    }
+    return { stray, linked }
+  }
+
+  it('link no address the collector does not read: every description, summary, argument and schema text the route hands the renderer', async () => {
+    const texts = MCP_PORTS.flatMap((port) => descriptionSources(port).map((source): Text => ({ port, objectId: source.object.id, where: `${source.object.name} ${source.where}`, text: source.text })))
+    const { stray } = await strays(texts)
+    expect([...stray].map(([href, where]) => `${href} (${where})`)).toEqual([])
+    expect(MCP_PORTS.length).toBeGreaterThan(5)
+    expect(new Set(texts.map((entry) => entry.port)).size).toBe(MCP_PORTS.length)
+    expect(texts.length).toBeGreaterThan(100)
+  }, 900_000)
+
+  it('would fail on a link the collector does not read: a planted link is found and named, and the links a role makes and plain code are not', async () => {
+    const address = 'https://docs.python.org/3/library/os.html#os.nosuch'
+    const planted = await strays([{ port: 'py', where: 'planted', text: `See [os.nosuch](${address}) and \`shutil.which("tmux")\`.` }])
+    expect([...planted.stray]).toEqual([[address, 'py planted']])
+    expect(planted.linked).toBe(1)
+    // A role renders as a link to a destination the collector reads, and code with no link leaves nothing to read.
+    const role = await strays([{ port: 'py', where: 'role', text: 'See :class:`pathlib.Path` and `Path` and `os.path.join`.' }])
+    expect(role.linked).toBeGreaterThan(0)
+    expect([...role.stray]).toEqual([])
   }, 900_000)
 })
 

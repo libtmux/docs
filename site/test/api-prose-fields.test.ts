@@ -90,10 +90,11 @@ describe('the expressions the components render as prose', () => {
 describe('the code that links prose', () => {
   /**
    * What touches the linker or an index: the tokens a call, an indirect call (`index['linkText']`, `const { linkType } = index`) and a
-   * destructured use all contain. A file of any kind or place that holds one is read here, with what it does with an address outside
+   * destructured use all contain, and the page linker's plugin (`rehypeApiLinks`) wherever a processor is given it, by name or by the
+   * module it is imported from. A file of any kind or place that holds one is read here, with what it does with an address outside
    * the site, or the test fails.
    */
-  const LINKER = /\b(?:linkText|linkLiteral|linkType|linkDoc|docSpans|createProseLinker|decideMention|getResolver|tokenizeDoc|productApiIndex|createApiIndex|indexFor|SymbolIndex)\b|\b(?:[iI]ndex\w*|idx|resolver)\??(?:\.|\[['"])resolve\b/
+  const LINKER = /\b(?:linkText|linkLiteral|linkType|linkDoc|docSpans|createProseLinker|decideMention|getResolver|tokenizeDoc|productApiIndex|createApiIndex|indexFor|SymbolIndex|rehypeApiLinks)\b|['"][^'"\n]*\/rehype-api-links(?:\.[cm]?[jt]s)?['"]|\b(?:[iI]ndex\w*|idx|resolver)\??(?:\.|\[['"])resolve\b/
   const SOURCES = /\.(?:[cm]?[jt]sx?|astro)$/
   const WHERE = /^(?:src(?!\/(?:data|content)\/)|scripts)\//
   const READ: Record<string, string> = {
@@ -113,7 +114,8 @@ describe('the code that links prose', () => {
     'src/lib/code-layout.ts': 'links the types of a signature (linkType)',
     'src/lib/link-preview.ts': 'a hover card names only the references that resolve to a page of this site; any other link is text on the card',
     'src/lib/mcp-preview.ts': 'tokenizes MCP tool text, which names no library symbol',
-    'src/lib/mcp-rest.ts': 'resolves an MCP reference to a page of this site',
+    'src/lib/mcp-reference.ts': 'renders every MCP description through rehypeApiLinks; the strings the route renders are read in api-links-rendered.test.ts',
+    'src/lib/mcp-rest.ts': 'resolves the roles and references of an MCP description: createProseLinker, as the page linker asks it; the descriptions are rendered in api-links-rendered.test.ts',
     'src/lib/product-api.ts': 'builds the product index',
     'src/lib/prose-markdown.ts': 'the Markdown copy of a page: the prose linker, as the rendered page asks it',
     'src/lib/prose-resolver.ts': 'the prose linker and its resolver',
@@ -150,9 +152,15 @@ describe('the code that links prose', () => {
     planted('scripts/x.mjs', 'index.linkText(text)')
     planted('src/lib/x.ts', 'const link = createProseLinker(product)')
     planted('src/lib/x.ts', 'const how = decideMention(text, context, resolver, models)')
+    // The page linker's plugin, given to a processor by name, renamed on import, imported by a dynamic import or only by its module.
+    planted('src/lib/x.ts', "import { rehypeApiLinks } from '../plugins/rehype-api-links'")
+    planted('src/lib/x.ts', 'createMarkdownProcessor({ rehypePlugins: [rehypeTmuxKeys, rehypeApiLinks] })')
+    planted('src/lib/x.ts', "const { rehypeApiLinks: linker } = await import('../plugins/rehype-api-links.ts')")
+    planted('src/components/x.astro', 'import * as links from "../plugins/rehype-api-links"')
     // A local helper of the same name, and a file that is not code, are not the linker.
     expect(read([['src/lib/x.ts', 'spans.push(...linkTextOf(offset, range.start))']])).toEqual([])
     expect(read([['src/lib/x.md', 'index.linkText(text)'], ['src/data/x.ts', 'index.linkText(text)']])).toEqual([])
+    expect(read([['src/lib/x.ts', 'const rehypeApiLinksOf = 1; // see plugins/rehype-api-links.ts'], ['src/lib/y.ts', "import { rehypeTmuxKeys } from '../plugins/rehype-tmux-keys'"]])).toEqual([])
   })
 
   it('draw no card mention of an address outside the site: a card names references to this site\'s own pages and shows any other link as text', () => {

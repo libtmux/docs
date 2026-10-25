@@ -405,7 +405,8 @@ verifier to it: every page the site builds, staged guides and shared workspace p
 (`proseSources`, which the collector reads too), in the build of each port and in the one build for none,
 through the linker the site uses; the Markdown copy of a symbol and of a page (`llmsPage`, which `llms-full.txt`
 and every `.md` twin carry); the documentation, types and PowerShell common parameters of every symbol,
-drawn by `ApiDoc`, `ApiType` and `ApiCommandParameters` as the site compiles them; the hover card; and the
+drawn by `ApiDoc`, `ApiType` and `ApiCommandParameters` as the site compiles them; the hover card; the
+descriptions, summaries, arguments and schema texts of every MCP object, through `renderToolDescription`; and the
 notices in templates. A link the linker makes must also reach the language its page reads as, or the one its
 sentence names, and the entry its port curates for that name. A page shared by every port is rendered once for each, and the port of that build
 says where it is read, not what it is about, so it links a bare lowercase word to that port's standard
@@ -413,7 +414,7 @@ library only where the page (its own port, a fence, a row, a section or the sent
 language, and a name that carries evidence of its own (`Base.strip`, `BTreeMap`, a call) anywhere: a
 shell's `exit` is not Python's. A test lists every file that links prose or holds an index to link with, by any call, in any
 directory or extension, and fails on one that is not listed with what it does with an address outside the
-site.
+site. A file that gives a Markdown processor the page linker's plugin (`rehypeApiLinks`) is one of them.
 
 A host that moves the
 page elsewhere, even by the case of a letter, fails, because a link should be
