@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { dev } from 'astro'
 import { chromium, firefox, webkit } from 'playwright'
 import { API_MODEL_PORTS, PORTS, productAvailable, referenceSegment } from '../src/lib/ports.ts'
-import { buildTarget } from '../src/lib/versions.ts'
+import { buildTarget, defaultVersionFor } from '../src/lib/versions.ts'
 import { checkClipboard, checkCompleteApiExamples } from './check-clipboard.mjs'
 import { checkApiAnchorArrival, checkApiExampleOwnership, checkApiNavigation, checkApiStickyHeadings, checkApiStickyHeadingsFail, checkReferenceSidebarBounds, checkDocumentationNavigation, checkNavigation } from './check-navigation.mjs'
 import { checkReferencePreferences, checkGlobalHeader, checkHeaderLinksFail } from './check-reference-preferences.mjs'
@@ -267,6 +267,13 @@ const startServer = () => dev({ root, cacheDir: join(mirror, 'cache'),
       return () => viteServer.middlewares.stack.unshift({ route: '', handle(request, response, next) {
         const url = request.url ?? '/'
         const path = url.split('?')[0]
+        const reference = path.match(/^\/en\/([^/]+)\/([^/]+)\/reference(?:\/|$)/)
+        if (reference && API_MODEL_PORTS.some((port) => port.slug === reference[1])
+          && reference[2] === defaultVersionFor(reference[1]) && reference[2] !== MIRRORED_VERSION) {
+          response.writeHead(302, { Location: url.replace(`/${reference[1]}/${reference[2]}/reference`, `/${reference[1]}/${MIRRORED_VERSION}/reference`) })
+          response.end()
+          return
+        }
         if (path !== '/' && path !== '/demo' && !path.startsWith('/demo/')) return next()
         response.writeHead(302, { Location: `/en${url}` })
         response.end()
