@@ -650,12 +650,7 @@ export async function checkApiAnchorArrival(browser, base) {
   console.log(`API anchors: ${paths.size} declarations across ${PORTS.length} ports, primary and retained fragments, phone/desktop, both themes and no-JavaScript navigation pass`)
 }
 
-/**
- * Sticky Members and group bars in a real engine. Mocked geometry cannot show
- * where a browser aligns a sticky heading or whether the bars cover focus, so
- * this check drives the production reference page. `only` limits the scenarios
- * and `sabotage` adds a script or style to every page, for the control below.
- */
+/** The control for `checkApiNavigation`: a drawer whose close button does nothing must fail it. */
 export async function checkApiNavigationFail(browser, base) {
   const page = await browser.newPage({ reducedMotion: 'reduce' })
   try {
@@ -667,6 +662,11 @@ export async function checkApiNavigationFail(browser, base) {
   } finally { await page.close() }
 }
 
+/**
+ * The tmux manual's sidebar in each layout: controls stay reachable and the column ends at the footer
+ * while the page scrolls, and the highlighted section follows the one being read. `sabotage` adds a
+ * style to the page, for the control below.
+ */
 export async function checkReferenceSidebarBounds(browser, base, { sabotage } = {}) {
   const page = await browser.newPage({ viewport: { width: 1233, height: 1220 }, reducedMotion: 'reduce', colorScheme: 'dark' })
   try {
@@ -708,6 +708,7 @@ export async function checkReferenceSidebarBounds(browser, base, { sabotage } = 
   } finally { await page.close() }
 }
 
+/** The controls for `checkReferenceSidebarBounds`: a column pushed off the footer and a hidden last section must each fail it. */
 export async function checkReferenceSidebarBoundsFail(browser, base) {
   for (const [sabotage, failure] of [
     ['.api-nav-column { margin-bottom: 40px !important; }', /sidebar column meets the footer/],
@@ -716,6 +717,12 @@ export async function checkReferenceSidebarBoundsFail(browser, base) {
     'The sidebar check detects broken footer alignment and section tracking')
 }
 
+/**
+ * Sticky Members and group bars in a real engine. Mocked geometry cannot show
+ * where a browser aligns a sticky heading or whether the bars cover focus, so
+ * this check drives the production reference page. `only` limits the scenarios
+ * and `sabotage` adds a script or style to every page, for the control below.
+ */
 export async function checkApiStickyHeadings(browser, base, { only, sabotage } = {}) {
   const engine = browser.browserType().name()
   const path = `${base}/swift/latest/reference/server/`
