@@ -192,6 +192,32 @@ it.each([{ port: 'go', term: 'struct' }, { port: 'ts', term: 'class' }])('render
   expect(win.document.querySelector('a[href$=".json"]')?.getAttribute('href')).toBe(`${path.slice(0, -1)}.json`)
 })
 
+// A page selects its declaration by the model's own identifier, which for Python's members and
+// a few of Swift's is not the id the sidebar inventory keys them by.
+it.each([
+  { port: 'py', id: 'libtmux.pane.Pane.split', publicId: 'libtmux.Pane.split' },
+  { port: 'py', id: 'libtmux.pane.Pane', publicId: 'libtmux.Pane' },
+  { port: 'swift', id: 'Server.newSession(named:startDirectory:windowName:width:height:environment:shell:)', publicId: 'Server.newSession(named:startDirectory:windowName:width:height:)' },
+  { port: 'go', id: 'tmux.Pane.Kill', publicId: 'tmux.Pane.Kill' },
+])('opens the ancestry and marks the page in the server-rendered $port sidebar of $id', async ({ port, id, publicId }) => {
+  const model = models.API_MODELS[port]!
+  const owner = model.symbols.find((symbol) => symbol.id === id)
+  expect(owner, `${port}: ${id}`).toBeDefined()
+  expect(owner!.publicId).toBe(publicId)
+  const component = await (await components())('ApiReference')
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  windows.push(win)
+  const slug = owner!.slug ?? models.pageSlug(owner!.publicId ?? owner!.id)
+  win.document.body.innerHTML = await container.renderToString(component, {
+    props: { model, owner }, params: { slug },
+    request: new Request(`https://libtmux.org/en/${port}/latest/reference/${slug}/`),
+  })
+  const current = [...win.document.querySelectorAll('.api-nav__tree [aria-current="page"]')]
+  expect(current.map((link) => link.getAttribute('href'))).toEqual([`${ports.referenceUrl(ports.PORT_BY_SLUG[port], 'latest')}${slug}/`])
+  expect(win.document.querySelector('.api-nav__tree [aria-expanded="true"]'), 'the page\'s own branch opens').not.toBeNull()
+}, 60_000)
+
 it.each(['outline', 'focus', 'grouped'] as const)('keeps Full manual visible and current in the %s sidebar', async (presentation) => {
   const component = await (await components())('ApiTree')
   const container = await experimental_AstroContainer.create()

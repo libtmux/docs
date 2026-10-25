@@ -85,6 +85,23 @@ export function sidebarInventory(json: ApiTreeJson): ApiTreeJson {
 const catalogs = new WeakMap<ApiTreeJson, ReturnType<typeof createCatalog>>()
 
 /**
+ * The id the sidebar inventory knows a page's declaration by.
+ *
+ * A page names its declaration by public id, but the inventory keys a type by
+ * the id its category entry carries and a member by the id the model gives it,
+ * and for Python and a few Swift members the two differ. Selecting by the
+ * public id alone finds no row there, so the first paint opens nothing and
+ * marks nothing until the client takes over. The public id wins where the
+ * inventory holds it, since that is how types are keyed. A declaration the
+ * inventory does not hold, such as an anonymous one, keeps its public id.
+ */
+export function sidebarSelection(source: ApiTreeJson, symbol: { id: string; publicId?: string } | undefined): string {
+  if (!symbol) return ''
+  const { symbols } = sidebarCatalog(source)
+  return [symbol.publicId, symbol.id].find((id): id is string => id !== undefined && symbols.has(id)) ?? symbol.publicId ?? symbol.id
+}
+
+/**
  * Ownership is explicit: dots in a declaration name do not imply a parent.
  * Every page and every lazy branch asks for the same inventory's catalog, so
  * it is built once per inventory, as its filtered view is.

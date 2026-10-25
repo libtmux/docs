@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { sidebarCatalog, sidebarInventory, sidebarNodes, quietSidebarKinds, SIDEBAR_MIN_GAP, SIDEBAR_PRESENTATIONS, SIDEBAR_WINDOW, type SidebarNode } from '../src/lib/api-sidebar'
+import { sidebarCatalog, sidebarInventory, sidebarNodes, sidebarSelection, quietSidebarKinds, SIDEBAR_MIN_GAP, SIDEBAR_PRESENTATIONS, SIDEBAR_WINDOW, type SidebarNode } from '../src/lib/api-sidebar'
 import { apiTreeHref, searchApi, type ApiSearchResult, type ApiTreeJson } from '../src/lib/api-search'
+import { API_MODELS, pageSlug } from '../src/lib/api-models'
 import { API_MODEL_PORTS } from '../src/lib/ports'
+import { coreApiSymbols } from '../src/lib/product-api'
 import { referenceTree } from '../src/lib/api-tree'
 import { tmuxReferenceTree, tmuxReferenceUrl, tmuxSourceModel } from '../src/lib/tmux-reference'
 
@@ -301,6 +303,68 @@ describe('long lists in Outline', () => {
     }
   }, 60_000)
 })
+/**
+ * A reference page selects its declaration by the identifier its own model gives it, resolved as
+ * `ApiReference` resolves it. Driving the first paint from the inventory's ids instead would hide a
+ * page whose identifier the inventory does not hold, and that page would open nothing and mark
+ * nothing until the client took over.
+ */
+describe('first paint of a reference page', () => {
+  type Page = { symbol: { id: string; publicId?: string }; href: string }
+  /** What the sidebar fails to show for pages, as page ids. A declaration the sidebar leaves out, such as an anonymous one, must show nothing. */
+  function misses(json: ApiTreeJson, base: string, pages: Page[]) {
+    const held = new Set(sidebarCatalog(json).records.map((record) => record.id))
+    const hiddenOnPurpose = new Set(searchApi(json, '').map((record) => record.id).filter((id) => !held.has(id)))
+    const wrong: string[] = []
+    let shown = 0
+    for (const { symbol, href } of pages) {
+      const selected = sidebarSelection(json, symbol)
+      const current = rowsOf(sidebarNodes(json, base, 'outline', selected)).filter((node) => node.current)
+      if (hiddenOnPurpose.has(selected)) {
+        if (current.length) wrong.push(`${selected}: marks a row though the sidebar leaves it out`)
+      } else if (current.length !== 1 || current[0]!.href !== href) wrong.push(`${symbol.publicId ?? symbol.id}: ${current.length} current rows, ${current.map((node) => node.href)} for ${href}`)
+      else shown++
+    }
+    return { wrong, shown, left: hiddenOnPurpose.size }
+  }
+
+  it.each(API_MODEL_PORTS.map((port) => port.slug))('marks its own row in the first paint of every %s declaration page', (slug) => {
+    const json = referenceTree(slug)
+    const base = `/en/${slug}/latest/reference/`
+    const pages = coreApiSymbols(API_MODELS[slug]!).map((symbol) => ({ symbol, href: `${base}${symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id)}/` }))
+    const { wrong, shown } = misses(json, base, pages)
+    expect(wrong.slice(0, 5), `${slug}: pages whose own row is missing`).toEqual([])
+    expect(shown).toBe(pages.length)
+  }, 60_000)
+
+  it.each(['3.7c', '3.2a'])('marks its own row in the first paint of every tmux %s C reference page, and none for what the sidebar leaves out', (version) => {
+    const json = tmuxReferenceTree(version)
+    const base = tmuxReferenceUrl(version)
+    const pages = tmuxSourceModel(version).symbols.map((symbol) => ({ symbol, href: tmuxReferenceUrl(version, symbol) }))
+    const { wrong, shown, left } = misses(json, base, pages)
+    expect(wrong.slice(0, 5)).toEqual([])
+    // Every page either shows its row or is one the sidebar omits on purpose.
+    expect(shown + left).toBe(pages.length)
+    expect(left).toBeGreaterThan(0)
+  }, 60_000)
+
+  it('resolves a public id the inventory does not hold to the id it does, and keeps one it holds', () => {
+    const json: ApiTreeJson = { port: 'sample', buckets: [{ id: 'objects', label: 'Objects', count: 1, slug: 'pane', children: [], types: [
+      { id: 'sample.Pane', name: 'Pane', slug: 'pane', m: 1, kind: 'class', category: 'types' }] }],
+    members: { 'sample.Pane': [['split', 'pane-split', 'sample.pane.Pane.split', 'method']] } }
+    // A member is keyed by its model id, a type by its public id.
+    expect(sidebarSelection(json, { id: 'sample.pane.Pane.split', publicId: 'sample.Pane.split' })).toBe('sample.pane.Pane.split')
+    expect(sidebarSelection(json, { id: 'sample.pane.Pane', publicId: 'sample.Pane' })).toBe('sample.Pane')
+    expect(sidebarSelection(json, { id: 'sample.Pane' })).toBe('sample.Pane')
+    // Where the inventory holds both, the public id is the key types are held by.
+    const both: ApiTreeJson = { ...json, members: { ...json.members, 'sample.Pane': [...json.members['sample.Pane']!, ['Pane', 'pane-alias', 'sample.pane.Pane', 'class']] } }
+    expect(sidebarSelection(both, { id: 'sample.pane.Pane', publicId: 'sample.Pane' })).toBe('sample.Pane')
+    // Neither is held: the page keeps its own name, and the index page selects nothing.
+    expect(sidebarSelection(json, { id: 'sample.hidden', publicId: 'sample.Hidden' })).toBe('sample.Hidden')
+    expect(sidebarSelection(json, undefined)).toBe('')
+  })
+})
+
 const ANONYMOUS = /^anonymous (?:enum|struct|union)$/
 
 describe('anonymous declarations in the sidebar', () => {
