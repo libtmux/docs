@@ -53,8 +53,9 @@ async function footer(props: Record<string, unknown>) {
 it('keeps the page-source line on an embedded preview and drops the site navigation', async () => {
   const embedded = await footer({ compact: true })
   const line = embedded.document.querySelector('.page-source')!
-  expect([...line.querySelectorAll('a')].map((link) => link.getAttribute('href')!.replace(/^.*\//, '')))
-    .toEqual(['py.md', '[port].astro', 'docs.json', 'llms.txt', 'llms-full.txt'])
+  expect([...line.querySelectorAll('a')].map((link) => link.getAttribute('href')!.replace(/\/$/, '').replace(/^.*\//, '')))
+    // The inventory download and its help page sit on the same line, so a preview names them too.
+    .toEqual(['py.md', '[port].astro', 'docs.json', 'llms.txt', 'llms-full.txt', 'objects-full.inv', 'intersphinx', 'intersphinx'])
   expect(line.querySelector('code')!.textContent).toBe('site/src/pages/demo/sidebar/preview/[port].astro')
   expect(embedded.document.querySelector('footer a[aria-label="GitHub"]')!.getAttribute('href')).toBe('https://github.com/libtmux/docs/')
   expect(embedded.document.querySelectorAll('footer li')).toHaveLength(0)
