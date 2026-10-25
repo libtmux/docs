@@ -13,7 +13,7 @@ A script can drive a shell it never shows. It starts a detached session, types
 into the pane with `send-keys`, and reads the screen back with `capture-pane`.
 The steps below add one command each. Every block is a range of lines from the
 finished `send-command.sh`, so each step shows code that runs. [The complete
-script](#the-complete-script) follows the last step. It needs tmux 3.2a or
+script](#the-complete-script) follows the last step. It needs tmux 3.3a or
 newer and a POSIX shell.
 
 ## 1. Choose a private socket

@@ -13,7 +13,7 @@ run commands, and wait for their results. The distribution and executable are
 `libtmux-mcp`; Python imports use `libtmux_mcp`.
 
 The server runs over standard input and output. It requires Python 3.10 or
-newer and tmux 3.2a or newer. Its default toolsets are `inspect`, `manage`,
+newer and tmux 3.2a or newer; see [tmux support](../../../tmux/guides/tmux-support/). Its default toolsets are `inspect`, `manage`,
 and `execute`; deletion tools require an explicit selection.
 
 ## Start here

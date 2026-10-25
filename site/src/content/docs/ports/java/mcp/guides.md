@@ -15,7 +15,7 @@ private server when the MCP process exits.
 
 ## Build the launcher
 
-Use JDK 25, Git, and tmux 3.2a or newer on a Unix host. Create an empty directory:
+Use JDK 25, Git, and tmux 3.3a or newer on a Unix host. Create an empty directory:
 
 ```console
 $ mkdir java-mcp-client && cd java-mcp-client

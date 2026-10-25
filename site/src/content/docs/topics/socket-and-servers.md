@@ -20,7 +20,7 @@ an explicit socket path; when supplied, it takes precedence over `-L`. Without
 an explicit selection, a client inside tmux can use the server recorded in
 `TMUX`; an outside client uses the default socket.
 
-Save this complete script as `sockets.sh`. It requires tmux 3.2a or newer and
+Save this complete script as `sockets.sh`. It requires tmux 3.3a or newer and
 a POSIX shell. It starts two private servers with the same session name,
 changes one, and verifies that the other is unaffected.
 

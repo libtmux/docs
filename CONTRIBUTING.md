@@ -159,11 +159,33 @@ grows with a name that wraps, so a related chip's mark is held flush with its
 corner and as tall as the first line. The gate measures the Related APIs chips
 on the Scala Server, Session, Window, Pane and Client pages at 1440 pixels,
 where a name wraps onto several lines, and requires each chip to hold its name
-and clear the next. Each check ends with a negative control that breaks what it
-holds and requires the gate to notice, by the problem it names:
+and clear the next. It reads the chips of the usage table on the `list-panes`
+manual page the same way, and requires a chip with a qualifier to keep the width
+its name needs, with the qualifier beside it or under it. Each check ends with a
+negative control that breaks what it holds and requires the gate to notice, by
+the problem it names:
 
 ```console
 $ node site/scripts/check-dev.mjs --badge-centring
+```
+
+A link the page marks for a preview card must have a card to show. The preview
+check hovers the C function link of a method page, then asks for the payload of
+every marked link on four pages. It asks only for destinations the dev build
+serves: one version of each port's reference, as its build target says, so the
+Python reference that the other ports link to at `stable` is not asked for. What
+it leaves out is bounded: only reference trees whose publisher owns the version
+tree (`publishesOwnTree`), at versions the dev build does not serve. A payload
+missing on a port the build does serve is reported, and the check fails if it
+would not report one. Both checks run in the publication audit through the full
+`check-dev.mjs` matrix, on its own source mirror and not on the assembly. The
+trees it leaves out are the shell's own in the assembly (each port's shell build
+renders `<slug>/<version>/reference/`), and `reference-previews.test.ts` reads
+every port and tmux tree there and requires a payload beside each page a link is
+marked for:
+
+```console
+$ node site/scripts/check-dev.mjs --reference-previews
 ```
 
 Keep the complete assembly, all output suites, link audits, source/model
@@ -203,6 +225,18 @@ before adding a mapping. Record an absence when a port has no equivalent;
 similar names alone do not establish one. An overloaded page can belong to
 several concepts. The page dropdown and "In other ports" use these mappings,
 and tests require every mapped target to resolve.
+
+A tmux command page links the methods that send the command, and a method
+page links the command and the C function behind its scope. Those links come
+from each port's source at the revision its API model was extracted from, not
+from concepts: a method that only reads a captured snapshot has no link, and a
+plan or chain that only records a command is an exclusion with cited lines. After
+a port's model changes revision, regenerate the usage data with the port
+checkouts present:
+
+```console
+$ node scripts/gen-tmux-usage.mjs
+```
 
 "Discussed in" comes from API mentions in guides, including tables and
 sections headed with a port name. After editing those mentions, regenerate

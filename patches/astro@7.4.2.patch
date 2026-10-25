@@ -1,0 +1,15 @@
+diff --git a/dist/prefetch/index.js b/dist/prefetch/index.js
+index 9f8eddb996523d18baa0379f91e3db811b06c7cd..7f04300b9f3bb7edfadda21f4c582f5f7442d8f5 100644
+--- a/dist/prefetch/index.js
++++ b/dist/prefetch/index.js
+@@ -126,7 +126,9 @@ function createViewportIntersectionObserver() {
+ 				timeouts.set(anchor, setTimeout(() => {
+ 					observer.unobserve(anchor);
+ 					timeouts.delete(anchor);
+-					prefetch(anchor.href);
++					if (anchor.isConnected) {
++						prefetch(anchor.href);
++					}
+ 				}, 300));
+ 			} else {
+ 				// If exited viewport but haven't prefetched, cancel it

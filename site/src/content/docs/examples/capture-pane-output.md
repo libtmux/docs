@@ -14,7 +14,7 @@ its result are separate operations: the pane's shell may still be processing
 input when the first capture runs. The steps below build `capture.sh` around
 that gap. It sends a command, captures the screen until one complete line
 appears, and removes its server. [The complete script](#the-complete-script)
-follows the last step. It requires tmux 3.2 or newer and `sleep` with
+follows the last step. It requires tmux 3.3a or newer and `sleep` with
 fractional seconds.
 
 ## 1. Choose a private socket

@@ -6,6 +6,9 @@ import {
 } from '@libtmux/api-model'
 import { apiHostOf, apiIndexes, collectApiDestinations } from '../../scripts/lib/api-destinations.mjs'
 import { parseApiProse } from '../src/lib/api-prose'
+import { API_MODELS } from '../src/lib/api-models'
+import { defaultVersionFor } from '../src/lib/versions'
+import { symbolPreview } from '../src/lib/link-preview'
 
 /**
  * The link verifier reads the links of the prose the site renders. These tests hold the verifier to
@@ -65,6 +68,49 @@ describe('the expressions the components render as prose', () => {
   it('are linked by docSpans, the function the verifier calls', () => {
     const doc = sources.find(([file]) => file.endsWith('ApiDoc.astro'))![1]
     expect(doc).toContain('index.docSpans(text, context)')
+  })
+})
+
+describe('the code that links prose', () => {
+  const LINKS_PROSE = /\w\.(?:linkText|linkLiteral|docSpans)\(/
+  /**
+   * Every file of the site that asks the index to link documentation text, and what it does with an address outside the site. A file that
+   * starts to link prose must be added here, with the reason it needs no destination of its own, or the test fails.
+   */
+  const CALLERS: Record<string, string> = {
+    'src/components/api/ApiDoc.astro': 'renders every link, through docSpans, which the collector calls too',
+    'src/lib/symbol-markdown.ts': 'the Markdown export links the same fields, whose names the collector also resolves (its `exported` pass)',
+    'src/lib/link-preview.ts': 'a hover card names only the references that resolve to a page of this site; any other link is text on the card',
+  }
+  const files = globSync('src/{components,lib,pages,layouts,integrations,plugins}/**/*.{ts,astro,mjs}', { cwd: new URL('..', import.meta.url).pathname })
+
+  it('are each listed with what they do with an address outside the site, so a new one fails until it is read', () => {
+    const callers = files.filter((file) => LINKS_PROSE.test(readFileSync(new URL(`../${file}`, import.meta.url), 'utf8')))
+    expect(callers.sort()).toEqual(Object.keys(CALLERS).sort())
+  })
+
+  it('notice a file that starts to link prose, and not a local helper of the same name', () => {
+    const links = LINKS_PROSE
+    expect(links.test('for (const span of index.linkText(summary, context)) {}')).toBe(true)
+    expect(links.test('const parts = this.docSpans(text)')).toBe(true)
+    expect(links.test('spans.push(...linkText(offset, range.start))')).toBe(false)
+  })
+
+  it('draw no card mention of an address outside the site: a card names references to this site\'s own pages and shows any other link as text', () => {
+    const external: string[] = []
+    let mentions = 0
+    for (const [port, model] of Object.entries(API_MODELS)) {
+      const version = defaultVersionFor(port)
+      for (const symbol of model.symbols) {
+        for (const part of symbolPreview(model, symbol, version).descriptionParts ?? []) {
+          if (typeof part === 'string') continue
+          mentions += 1
+          if (!part.href.startsWith('/')) external.push(`${symbol.id}: ${part.href}`)
+        }
+      }
+    }
+    expect(external).toEqual([])
+    expect(mentions).toBeGreaterThan(0)
   })
 })
 

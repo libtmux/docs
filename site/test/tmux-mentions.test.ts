@@ -6,6 +6,7 @@ import { Window } from 'happy-dom'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { visit } from 'unist-util-visit'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+vi.mock('astro:content', () => ({ getCollection: async () => [] }))
 import { kindMark, markClass, markHeight } from '../src/lib/api-labels'
 import { tmuxManualPreview } from '../src/lib/link-preview'
 import { createLinkPreviewPolicy } from '../src/lib/link-preview-paint'
@@ -190,7 +191,7 @@ describe('tmux hover cards', () => {
     expect(tmuxManualPreview('latest', 'list-clients')).toEqual({
       schema: 1, title: 'list-clients', kind: 'command', description: command.summary,
       signature: `tmux list-clients ${command.usage}`, signatureLanguage: 'tmux-usage', detail: 'Alias: lsc.',
-      href: '/tmux/latest/manual/list-clients/', actionLabel: 'Open manual',
+      href: '/tmux/latest/manual/list-clients/', actionLabel: 'Open manual', footer: [`tmux ${tmuxManual('latest').version}`, 'Manual'],
     })
   })
 
@@ -200,12 +201,14 @@ describe('tmux hover cards', () => {
     expect(terms!.session_attached).toEqual({
       schema: 1, title: 'session_attached', kind: 'format', description: 'Number of clients session is attached to',
       detail: 'Format variable', href: '/tmux/latest/manual/full/#session_attached', actionLabel: 'Open manual',
+      footer: [`tmux ${tmuxManual('latest').version}`, 'Manual'],
     })
     expect(terms!['options-destroy-unattached']).toEqual({
       schema: 1, title: 'destroy-unattached', kind: 'option', detail: 'Session option',
       description: 'If on, destroy the session after the last client has detached.',
       signature: 'destroy-unattached [off | on | keep-last | keep-group]', signatureLanguage: 'tmux-usage',
       href: '/tmux/latest/manual/full/#options-destroy-unattached', actionLabel: 'Open manual',
+      footer: [`tmux ${tmuxManual('latest').version}`, 'Manual'],
     })
     expect(terms!['hooks-session-created']).toMatchObject({ kind: 'hook', detail: 'Hook', description: 'Run when a new session created.' })
     for (const [anchor, term] of Object.entries(terms!)) {
@@ -221,7 +224,7 @@ describe('tmux hover cards', () => {
     expect(payload.signatureHighlight.language).toBe('tmux-usage')
     expect(payload.signatureHighlight.lines.map((line: { content: string }[]) => line.map((token) => token.content).join('')).join('\n'))
       .toBe(preview.signature)
-    const slugs = getStaticPaths().map((path) => path.params.slug)
+    const slugs = (await getStaticPaths()).map((path) => path.params.slug)
     expect(slugs).toEqual(expect.arrayContaining(['tmux/latest/manual/list-clients', 'tmux/latest/manual/full', 'tmux/3.2a/manual/list-clients']))
   })
 

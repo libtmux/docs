@@ -219,7 +219,7 @@
  */
 @property --sp-h { syntax: '<length>'; inherits: true; initial-value: 0px; }
 @property --sp-pb { syntax: '<length>'; inherits: true; initial-value: 0px; }
-:is(.api-elsewhere-value, .api-command-related, nav.api-related) a:has(> .api-nav__kind) {
+:is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a:has(> .api-nav__kind) {
   --sp-h: round(1.6em, 2px);
   --sp-pb: round(calc((var(--sp-h) - 2px - .875 * 1cap) / 2), var(--mark-step));
   display: inline-flex;
@@ -238,7 +238,7 @@
   background: color-mix(in srgb, var(--color-foreground-primary, currentColor) 4%, transparent);
   text-decoration: none;
 }
-:is(.api-elsewhere-value, .api-command-related, nav.api-related) a > .api-nav__kind {
+:is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a > .api-nav__kind {
   --mk-w: 1.6em; --mk-bwv: 0px;
   --mk-fill: color-mix(in srgb, var(--mk-hue, currentColor) 18%, var(--background-color, transparent));
   /* The mark is one line tall and stays on the first line, however many lines the name takes. */
@@ -250,7 +250,7 @@
   border-inline-end: 1px solid color-mix(in srgb, var(--mk-hue, currentColor) 30%, transparent);
   border-radius: 0;
 }
-:is(.api-elsewhere-value, .api-command-related, nav.api-related) a > .api-nav__kind + code {
+:is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a > .api-nav__kind + code {
   /*
    * The last line's baseline keeps its gap from the bottom edge. The top margin reserves exactly the space the first
    * line has in a one-line chip (a hair less, so a single line never grows it), so the first line sits level with
@@ -268,10 +268,30 @@
   text-decoration: none;
 }
 @supports not (text-box: trim-both cap alphabetic) {
-  :is(.api-elsewhere-value, .api-command-related, nav.api-related) a > .api-nav__kind + code { margin: 0 0 var(--sp-pb); line-height: 1; }
+  :is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a > .api-nav__kind + code { margin: 0 0 var(--sp-pb); line-height: 1; }
 }
+/* A related or elsewhere chip darkens its surface on hover and focus; its mark takes the tree's active treatment, as any hovered link's does. */
 :is(.api-elsewhere-value, .api-command-related, nav.api-related) a:has(> .api-nav__kind):is(:hover, :focus-visible) {
   background: color-mix(in srgb, var(--color-foreground-primary, currentColor) 9%, transparent);
+}
+/*
+ * In the usage table hover and focus act on the whole chip, so it reads as one control: the surface and the border
+ * darken together and the mark keeps the fill it rests with. The loud active mark and its 2px ring are the selected
+ * row of the navigation tree; a ring on the mark alone overhangs the chip's rounded corner. Focus is one outline
+ * around the whole chip, clear of its edge. The related and elsewhere chips keep what they had.
+ */
+.tmux-usage a:has(> .api-nav__kind):is(:hover, :focus-visible) {
+  background: color-mix(in srgb, var(--color-foreground-primary, currentColor) 9%, transparent);
+  border-color: color-mix(in srgb, var(--color-foreground-primary, currentColor) 40%, transparent);
+}
+.tmux-usage a:has(> .api-nav__kind):is(:hover, :focus-visible) > .api-nav__kind {
+  background: var(--mk-fill, var(--mk-bg, transparent));
+  color: var(--mk-ink, var(--mk-fg, inherit));
+  box-shadow: var(--mk-shadow, none);
+}
+.tmux-usage a:has(> .api-nav__kind):focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 /* In the contents column each chip is its own row: as wide as its content, with an even gap between rows. */
 .api-page-contents nav.api-related ul { display: grid; gap: .5rem; justify-items: start; }
@@ -368,6 +388,15 @@
     background: Highlight;
     color: HighlightText;
     border-color: Highlight;
+  }
+  /* A hovered chip of the usage table changes as a whole, in its border; its mark stays as it rests. */
+  .tmux-usage a:has(> .api-nav__kind):is(:hover, :focus-visible) {
+    border-color: Highlight;
+  }
+  .tmux-usage a:has(> .api-nav__kind):is(:hover, :focus-visible) > .api-nav__kind {
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
   }
 }
 

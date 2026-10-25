@@ -16,7 +16,7 @@ cooperate, or poll an observable condition with a deadline.
 
 ## Signal completion and bound the wait
 
-Save this complete script as `waiting.sh`. It requires tmux 3.2a or newer,
+Save this complete script as `waiting.sh`. It requires tmux 3.3a or newer,
 a POSIX shell, and the GNU coreutils `timeout` command. It starts a producer
 on a private server, waits for its signal, checks a deadline, and releases
 a cooperative lock before cleanup.

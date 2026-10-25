@@ -28,7 +28,7 @@ async function parameterComponent() {
   }
   vi.stubGlobal('__apiSignatureScope', { parameterId, qualifiedNameOf, signatureMultiline })
   const helpers = 'data:text/javascript,export const { parameterId, qualifiedNameOf, signatureMultiline } = globalThis.__apiSignatureScope'
-  const preview = await compile('../src/components/LinkPreview.astro')
+  const preview = await compile('../src/components/LinkPreview.astro', { '../lib/link-preview-card': new URL('../src/lib/link-preview-card.ts', import.meta.url).href })
   const keyword = await compile('../src/components/api/ApiKeyword.astro', { '../LinkPreview.astro': preview })
   const name = await compile('../src/components/api/SymbolName.astro', {
     '../../lib/word-break': new URL('../src/lib/word-break.ts', import.meta.url).href,

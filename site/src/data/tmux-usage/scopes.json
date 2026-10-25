@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "commands": {
+    "list-panes": {
+      "scopes": [
+        { "id": "server", "label": "Server", "flag": "a", "function": "cmd_list_panes_server" },
+        { "id": "session", "label": "Session", "flag": "s", "function": "cmd_list_panes_session" },
+        { "id": "window", "label": "Window", "flag": "", "target": "t", "function": "cmd_list_panes_window" }
+      ]
+    },
+    "list-windows": {
+      "scopes": [
+        { "id": "server", "label": "Server", "flag": "a", "function": "cmd_list_windows_server", "inline": ["3.7c"] },
+        { "id": "session", "label": "Session", "flag": "", "target": "t", "function": "cmd_list_windows_session", "inline": ["3.7c"] }
+      ]
+    }
+  }
+}
