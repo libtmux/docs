@@ -395,6 +395,13 @@ describe('what a name says it is', () => {
     expect(markdownLinks('See [a](https://x.org/a) and https:&#47;&#47;y.org/b').loose).toEqual(['https://y.org/b'])
   })
 
+  it('does not take an image in the words of a link for a link', () => {
+    const address = 'https://docs.python.org/3/library/os.html#os.environ'
+    expect(markdownLinks(`See [![alt](${address})](https://example.org) here`).loose).toEqual([address])
+    expect(markdownLinks(`See [![alt][i]](https://example.org) here\n\n[i]: ${address}`).loose).toEqual([address])
+    expect(markdownLinks(`See [a](${address}) here`).loose).toEqual([])
+  })
+
   it('reads an address the way a browser does, however it is written', () => {
     expect(normalizeAddress('HTTPS://Docs.Python.org/3/library/os.html#X')).toBe('https://docs.python.org/3/library/os.html#X')
     expect(normalizeAddress('//docs.python.org/3/library/sys.html')).toBe('https://docs.python.org/3/library/sys.html')

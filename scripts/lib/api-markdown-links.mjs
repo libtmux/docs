@@ -84,6 +84,15 @@ export function markdownLinks(text, { front = 0 } = {}) {
     if (!label || !url) return false
     pairs.push({ label, url })
     covered.push(range)
+    // An image in the words of a link is not a link: its address is written outside one.
+    const imagesIn = (nodes) => nodes?.forEach((child) => {
+      if (child.type === 'image' || child.type === 'imageReference') {
+        const target = child.type === 'image' ? child.url : definitions.get(child.identifier)?.url
+        for (const found of occurrencesIn(target ?? '')) read.add(found.url)
+      }
+      imagesIn(child.children)
+    })
+    imagesIn(children)
     return true
   }
   const visit = (parent) => {
