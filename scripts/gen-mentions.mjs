@@ -183,6 +183,8 @@ for (const { file, source } of [...realEntries, ...sharedWorkspaceEntries(realFi
   const product = frontmatterValue(source, 'product') ?? /^ports\/[^/]+\/(workspace|mcp)\//.exec(file)?.[1]
 
   const selected = resolvePortContent(source, authoredPort)
+  // A name the page already linked keeps that owner when it recurs bare.
+  const linkedHere = new Map()
   for (const { port: contextPort, text, line, before, linked, href } of proseMentions(selected.body, PORT_BY_LABEL, selected.portAt)) {
     const pagePort = authoredPort ?? contextPort
     if (!linked && nativeTmux) continue
@@ -190,16 +192,22 @@ for (const { file, source } of [...realEntries, ...sharedWorkspaceEntries(realFi
     let target
     if (linked) {
       target = authoredTarget(href, page)
+      if (target && !linkedHere.has(text)) linkedHere.set(text, target)
     } else {
       const decision = decideMention(text, { pagePort, product, before }, resolver, models)
       if (decision.kind !== 'link') {
-        if (decision.kind === 'unresolved' && pagePort && isLikelyReference(text) && !notApiReason(text)) {
-          dangling.push({ port: pagePort, text, page, line, why: decision.why })
+        const authored = decision.kind === 'unresolved' ? linkedHere.get(text) : undefined
+        if (!authored) {
+          if (decision.kind === 'unresolved' && pagePort && isLikelyReference(text) && !notApiReason(text)) {
+            dangling.push({ port: pagePort, text, page, line, why: decision.why })
+          }
+          continue
         }
-        continue
+        target = authored
+      } else {
+        const res = resolver.resolve(decision.port, text, product)
+        if ('symbol' in res) target = { port: decision.port, symbol: res.symbol.id }
       }
-      const res = resolver.resolve(decision.port, text, product)
-      if ('symbol' in res) target = { port: decision.port, symbol: res.symbol.id }
     }
     if (!target) continue
     const { port, symbol } = target

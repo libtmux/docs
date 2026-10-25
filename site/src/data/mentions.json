@@ -14500,34 +14500,6 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "powershell",
-   "text": "System.ArgumentException",
-   "page": "/powershell/latest/guides/compatibility/",
-   "line": 67,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "powershell",
-   "text": "System.ArgumentException",
-   "page": "/powershell/latest/guides/compatibility/",
-   "line": 70,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "powershell",
-   "text": "Install-PSResource",
-   "page": "/powershell/latest/guides/getting-started/",
-   "line": 48,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "powershell",
-   "text": "PaneExited",
-   "page": "/powershell/latest/guides/input/",
-   "line": 162,
-   "why": "not defined in the stated port"
-  },
-  {
    "port": "ruby",
    "text": "Enumerable",
    "page": "/ruby/latest/guides/getting-started/",
