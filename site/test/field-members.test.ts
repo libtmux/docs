@@ -155,10 +155,14 @@ describe('Rust field tables', () => {
   it('keeps the Fields block out of every .api-members selector, and styled like it', () => {
     const page = readFileSync(new URL('../src/components/api/ApiReference.astro', import.meta.url), 'utf8')
     const block = /<div class="([^"]*)">\s*<h2[^>]*id="api-fields"/.exec(page)![1]
-    expect(block.split(' ')).toContain('api-fields')
+    // Its own class: .api-members would capture the sticky members logic, and .api-fields is the field-list rule.
+    expect(block.split(' ')).toContain('api-field-table')
+    expect(block.split(' ')).not.toContain('api-members')
+    expect(block.split(' ')).not.toContain('api-fields')
     expect(block.split(' ')).not.toContain('api-members')
     const css = readFileSync(new URL('../src/styles/api.css', import.meta.url), 'utf8')
-    expect(css).toMatch(/\.api-fields > h2,\n\.api-members > h2,/)
+    expect(css).toMatch(/\.api-field-table > h2,\n\.api-members > h2,/)
+    expect(css).not.toMatch(/(?:^|[\s,}])\.api-field-table\s*\{[^}]*(?:margin|font-size)/m)
     expect(apiMemberSections({ fields: 0, members: 0, label: 'Members', groups: [] })).toEqual([])
   })
 

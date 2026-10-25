@@ -221,8 +221,8 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
 .api-scalar-members th[scope="row"] { font-weight: inherit; }
 .api-member-group { margin-block: 1.5rem 2rem; }
 .api-member-group--single { margin-top: 0.75rem; }
-.api-members, .api-fields { display: flow-root; }
-.api-fields > h2,
+.api-members, .api-field-table { display: flow-root; }
+.api-field-table > h2,
 .api-members > h2,
 .api-members > .api-member-group > h3 {
   --api-member-bar: color-mix(in srgb, var(--background-color), var(--text-color) 6%);
@@ -235,7 +235,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   overflow-wrap: anywhere;
 }
 /* The arrival cue tints the opaque bar instead of replacing it, so content never shows through. */
-.api-fields > h2[data-anchor-arrival],
+.api-field-table > h2[data-anchor-arrival],
 .api-members > h2[data-anchor-arrival],
 .api-members > .api-member-group > h3[data-anchor-arrival] {
   animation-name: api-member-bar-arrival;
@@ -248,7 +248,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   100% { background-color: var(--api-member-bar); box-shadow: 0 0 0 .25rem transparent; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .api-fields > h2[data-anchor-arrival],
+  .api-field-table > h2[data-anchor-arrival],
   .api-members > h2[data-anchor-arrival],
   .api-members > .api-member-group > h3[data-anchor-arrival] {
     background-color: color-mix(in srgb, var(--color-link, #2879d0) 18%, var(--api-member-bar)) !important;

@@ -792,7 +792,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
               — which is what learn.microsoft.com puts here too.
             */}
             {fieldsAndRest && owner && (
-              <div class="api-fields mt-8">
+              <div class="api-field-table mt-8">
                 <h2 class="api-section-heading text-lg font-semibold" id="api-fields">Fields<span class="api-section-count">{split.fields.length}</span><a class="api-heading-link" href="#api-fields" aria-label="Link to Fields">#</a></h2>
                 <ApiScalarMembers owner={owner} members={split.fields} index={index} hrefFor={hrefFor} columns="fields" />
               </div>
