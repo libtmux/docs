@@ -38,6 +38,7 @@ const { locale, source, markdownHref, llmsRoot, githubUrl, flush = false } = Ast
           <a class="hover:underline" href={portHomeUrl(p, defaultVersionFor(p.slug))}>{p.name}</a>
         </li>
       ))}
+      <li><a class="hover:underline" href={withRoot('/meta/ai-policy/')}>AI policy</a></li>
       <li><a class="hover:underline" href={withRoot('/meta/third-party-notices/')}>Third-party notices</a></li>
     </ul>
     <div class="mt-6 flex items-start justify-between gap-4 border-t border-edge pt-4 opacity-80">
