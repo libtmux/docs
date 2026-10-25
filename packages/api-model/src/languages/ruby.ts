@@ -221,7 +221,7 @@ export function extractRuby(input: unknown, expectedRevision?: string): ApiModel
     source: source(entry.source, artifact),
   }))
   const symbols = [...namespaces, ...aliases, ...methods]
-  attachCompleteRubyExamples(symbols, artifact.examples, artifact.source)
+  attachCompleteRubyExamples(symbols, artifact.examples, artifact.source, artifact.packages)
   return {
     port: 'ruby',
     repo: artifact.source.repository,

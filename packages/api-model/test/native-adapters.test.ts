@@ -97,12 +97,13 @@ describe('Ruby native documentation adapter', () => {
     const model = extractRuby(input, REVISION)
     for (const id of input.examples.manifest.programs[0].api.symbols) {
       const symbol = model.symbols.find((entry) => entry.id === id)!
-      expect(symbol.doc?.examples).toHaveLength(5)
-      expect(symbol.doc!.examples![2]).toMatchObject({
+      expect(symbol.doc?.examples).toHaveLength(4)
+      expect(symbol.doc!.examples![0].code).toMatch(/^gem "libtmux", "\d[^"]*"$/m)
+      expect(symbol.doc!.examples![1]).toMatchObject({
         lang: 'ruby', code,
         sourceUrl: `https://github.com/libtmux/libtmux-ruby/blob/${REVISION}/examples/api/active.rb`,
       })
-      expect(symbol.doc!.examples![4]).toMatchObject({ lang: 'text', code: 'active\n' })
+      expect(symbol.doc!.examples![3]).toMatchObject({ lang: 'text', code: 'active\n' })
     }
     expect(model.symbols.find((entry) => entry.id === 'LibTmux::Pane#active?')?.doc?.summary)
       .toBe('Whether this pane is active.')
