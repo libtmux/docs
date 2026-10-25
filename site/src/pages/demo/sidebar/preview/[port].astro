@@ -4,6 +4,7 @@ import ApiTree from '../../../../components/api/ApiTree.astro'
 import { DEMO_LANGUAGES, sidebarDemoData } from '../../../../lib/sidebar-demo-data'
 import { withRoot } from '../../../../lib/site-root'
 import { sidebarExamples } from '../../../../lib/sidebar-demo'
+import { CONTRIBUTE_REPO } from '../../../../i18n/contribute'
 
 export function getStaticPaths() { return DEMO_LANGUAGES.map((port) => ({ params: { port } })) }
 const port = Astro.params.port!
@@ -12,7 +13,7 @@ const selected = sidebarExamples(inventory)[0]?.id ?? ''
 const src = withRoot(`/demo/sidebar/preview/${port}.json`)
 ---
 
-<BaseLayout title={`${label} sidebar preview`} portSlug={port === 'tmux' ? undefined : port} noindex searchable={false} bare>
+<BaseLayout title={`${label} sidebar preview`} portSlug={port === 'tmux' ? undefined : port} repository={CONTRIBUTE_REPO} noindex searchable={false} bare>
   <div class="sidebar-preview" data-sidebar-preview data-language={port} data-inventory={src}>
     <header class="sidebar-preview__header">
       <a href={withRoot('/demo/sidebar/')} target="_parent">libtmux · sidebar demo</a>
@@ -48,10 +49,14 @@ const src = withRoot(`/demo/sidebar/preview/${port}.json`)
 </script>
 
 <style is:global>
-  .sidebar-preview { --topnav-height: 3rem; --sidebar-width: 296px; height: 100dvh; overflow: hidden; }
-  .sidebar-preview__header { height: 3rem; display: flex; align-items: center; gap: 1.5rem; padding: 0 1rem; border-bottom: 1px solid var(--color-edge); font-size: 0.8rem; }
+  /* The frame takes the viewport above the footer's page-source line. */
+  body:has(.sidebar-preview) { display: flex; flex-direction: column; height: 100dvh; }
+  body:has(.sidebar-preview) > :has(> .sidebar-preview) { flex: 1 1 0; min-height: 0; }
+  .sidebar-preview { --topnav-height: 3rem; --sidebar-width: 296px; --api-nav-height: 100%; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+  .sidebar-preview__header { flex: none; height: 3rem; display: flex; align-items: center; gap: 1.5rem; padding: 0 1rem; border-bottom: 1px solid var(--color-edge); font-size: 0.8rem; }
   .sidebar-preview__header > :last-child { margin-left: auto; text-transform: capitalize; color: var(--color-muted); }
-  .sidebar-preview__layout { display: grid; grid-template-columns: var(--sidebar-width) minmax(0, 1fr); height: calc(100dvh - 3rem); }
+  .sidebar-preview__layout { display: grid; grid-template: minmax(0, 1fr) / var(--sidebar-width) minmax(0, 1fr); flex: 1 1 0; min-height: 0; }
+  .sidebar-preview .api-nav-column { height: 100%; }
   .sidebar-preview__article { min-width: 0; overflow: auto; padding: 2rem; }
   .sidebar-preview__article h1 { font-size: 1.8rem; margin: 0.5rem 0 1.5rem; overflow-wrap: anywhere; }
   .sidebar-preview__article h2 { font-size: 1.1rem; margin: 2rem 0 0.75rem; }
@@ -64,8 +69,8 @@ const src = withRoot(`/demo/sidebar/preview/${port}.json`)
   .sidebar-preview__members small { margin-left: auto; font-size: 0.7rem; color: var(--color-muted); }
   .sidebar-preview__mobile { display: none; }
   @media (width < 56rem) {
-    .sidebar-preview__layout { display: block; height: calc(100dvh - 6rem); }
-    .sidebar-preview__mobile { display: flex; align-items: center; gap: 1rem; height: 3rem; padding: 0 1rem; border-bottom: 1px solid var(--color-edge); font-size: 0.8rem; }
+    .sidebar-preview__layout { display: block; }
+    .sidebar-preview__mobile { flex: none; display: flex; align-items: center; gap: 1rem; height: 3rem; padding: 0 1rem; border-bottom: 1px solid var(--color-edge); font-size: 0.8rem; }
     .sidebar-preview__mobile button { flex-shrink: 0; color: var(--color-link); cursor: pointer; }
     .sidebar-preview__mobile span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .sidebar-preview__article { height: 100%; padding: 1.25rem; }
