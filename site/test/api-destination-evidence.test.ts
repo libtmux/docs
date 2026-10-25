@@ -389,6 +389,12 @@ describe('what a name says it is', () => {
     expect(markdownLinks(`${front}[a](${url})`, { front: front.length }).loose).toEqual([url])
   })
 
+  it('reads the entities a reader sees through: in an anchor\'s address and words, and in text that decodes into an address', () => {
+    expect(markdownLinks('<a href="https&#58;//x.org/a?b=1&amp;c=2">Rust&nbsp;structs &amp; enums</a>')).toEqual({ pairs: [{ label: 'Rust structs & enums', url: 'https://x.org/a?b=1&c=2' }], loose: [] })
+    expect(markdownLinks('See https:&#47;&#47;docs.python.org/3/library/os.html here').loose).toEqual(['https://docs.python.org/3/library/os.html'])
+    expect(markdownLinks('See [a](https://x.org/a) and https:&#47;&#47;y.org/b').loose).toEqual(['https://y.org/b'])
+  })
+
   it('reads an address the way a browser does, however it is written', () => {
     expect(normalizeAddress('HTTPS://Docs.Python.org/3/library/os.html#X')).toBe('https://docs.python.org/3/library/os.html#X')
     expect(normalizeAddress('//docs.python.org/3/library/sys.html')).toBe('https://docs.python.org/3/library/sys.html')

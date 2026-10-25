@@ -5,9 +5,11 @@ import {
   type ApiSymbol, type SymbolIndex,
 } from '@libtmux/api-model'
 import { apiHostOf, apiIndexes, collectApiDestinations } from '../../scripts/lib/api-destinations.mjs'
+import { normalizeAddress } from '../../scripts/lib/api-markdown-links.mjs'
 import { parseApiProse } from '../src/lib/api-prose'
 import { API_MODELS } from '../src/lib/api-models'
 import { defaultVersionFor } from '../src/lib/versions'
+import { productApiIndex } from '../src/lib/product-api'
 import { symbolPreview } from '../src/lib/link-preview'
 
 /**
@@ -16,10 +18,10 @@ import { symbolPreview } from '../src/lib/link-preview'
  * link a page shows that the verifier never sees each fail here.
  */
 const root = new URL('../../', import.meta.url).pathname
-const { models, indexes: built } = apiIndexes({ root })
-const indexes = built as Record<string, SymbolIndex>
+/** The site's own models and indexes: what the pages link with, not a copy of it. */
+const indexes: Record<string, SymbolIndex> = Object.fromEntries(Object.entries(API_MODELS).map(([port, model]) => [port, productApiIndex(model, defaultVersionFor(port))]))
 const RENDERED = /<Api(?:Doc|Prose)\b[^>]*?\btext=\{([^}]+)\}/g
-const symbols = Object.entries(models).flatMap(([port, model]) => (model.symbols as ApiSymbol[]).map((symbol) => ({ port, symbol })))
+const symbols = Object.entries(API_MODELS).flatMap(([port, model]) => (model.symbols as ApiSymbol[]).map((symbol) => ({ port, symbol })))
 
 describe('the strings of an extracted symbol', () => {
   it('are each documentation or structure, so a field the extractor adds is decided, not skipped', () => {
@@ -72,28 +74,71 @@ describe('the expressions the components render as prose', () => {
 })
 
 describe('the code that links prose', () => {
-  const LINKS_PROSE = /\w\.(?:linkText|linkLiteral|docSpans)\(/
   /**
-   * Every file of the site that asks the index to link documentation text, and what it does with an address outside the site. A file that
-   * starts to link prose must be added here, with the reason it needs no destination of its own, or the test fails.
+   * What touches the linker or an index: the tokens a call, an indirect call (`index['linkText']`, `const { linkType } = index`) and a
+   * destructured use all contain. A file of any kind or place that holds one is read here, with what it does with an address outside
+   * the site, or the test fails.
    */
-  const CALLERS: Record<string, string> = {
-    'src/components/api/ApiDoc.astro': 'renders every link, through docSpans, which the collector calls too',
-    'src/lib/symbol-markdown.ts': 'the Markdown export links the same fields, whose names the collector also resolves (its `exported` pass)',
+  const LINKER = /\b(?:linkText|linkLiteral|linkType|linkDoc|docSpans|createProseLinker|decideMention|getResolver|tokenizeDoc|productApiIndex|createApiIndex|indexFor|SymbolIndex)\b|\b(?:[iI]ndex\w*|idx|resolver)\??(?:\.|\[['"])resolve\b/
+  const SOURCES = /\.(?:[cm]?[jt]sx?|astro)$/
+  const WHERE = /^(?:src(?!\/(?:data|content)\/)|scripts)\//
+  const READ: Record<string, string> = {
+    'scripts/check-dev.mjs': 'asks an index which page a name has; links nothing',
+    'src/components/ProseText.astro': 'template prose, with the port it names: decideMention; the notices it carries are read below',
+    'src/components/api/ApiCommandParameters.astro': 'passes the index to ApiDoc',
+    'src/components/api/ApiDoc.astro': 'the renderer: docSpans, which the collector calls too',
+    'src/components/api/ApiEntry.astro': 'passes the index to ApiDoc; resolves the type an entry inherits from, to a page of this site',
+    'src/components/api/ApiProse.astro': 'passes the index to ApiDoc',
+    'src/components/api/ApiReference.astro': 'passes the index to ApiDoc',
+    'src/components/api/ApiScalarMembers.astro': 'passes the index to ApiDoc',
+    'src/components/api/ApiSignatureParameters.astro': 'passes the index to ApiType',
+    'src/components/api/ApiType.astro': 'links a type: linkType, which the collector calls on every signature',
+    'src/components/api/ProductApiPage.astro': 'builds the index the page renders with',
+    'src/lib/api-models.ts': 'builds the index (createApiIndex)',
+    'src/lib/api-sections.ts': 'reads which symbols a signature names, to list related types; links nothing',
+    'src/lib/code-layout.ts': 'links the types of a signature (linkType)',
     'src/lib/link-preview.ts': 'a hover card names only the references that resolve to a page of this site; any other link is text on the card',
+    'src/lib/mcp-preview.ts': 'tokenizes MCP tool text, which names no library symbol',
+    'src/lib/mcp-rest.ts': 'resolves an MCP reference to a page of this site',
+    'src/lib/product-api.ts': 'builds the product index',
+    'src/lib/prose-markdown.ts': 'the Markdown copy of a page: the prose linker, as the rendered page asks it',
+    'src/lib/prose-resolver.ts': 'the prose linker and its resolver',
+    'src/lib/symbol-markdown.ts': 'the Markdown copy of a symbol: docSpans, as the page links it, and types',
+    'src/lib/tmux-links.ts': 'adds tmux links to spans docSpans has made',
+    'src/lib/tmux-reference.ts': 'builds an index to resolve a reference to a page of this site',
+    'src/plugins/rehype-api-links.ts': 'the page linker: decideMention, with what the page says of its language',
   }
-  const files = globSync('src/{components,lib,pages,layouts,integrations,plugins}/**/*.{ts,astro,mjs}', { cwd: new URL('..', import.meta.url).pathname })
+  const read = (listing: [string, string][]) => listing.filter(([file, source]) => WHERE.test(file) && SOURCES.test(file) && LINKER.test(source)).map(([file]) => file).sort()
+  const disk = (): [string, string][] => globSync('{src,scripts}/**/*', { cwd: new URL('..', import.meta.url).pathname })
+    .filter((file) => SOURCES.test(file))
+    .map((file) => [file, readFileSync(new URL(`../${file}`, import.meta.url), 'utf8')])
 
-  it('are each listed with what they do with an address outside the site, so a new one fails until it is read', () => {
-    const callers = files.filter((file) => LINKS_PROSE.test(readFileSync(new URL(`../${file}`, import.meta.url), 'utf8')))
-    expect(callers.sort()).toEqual(Object.keys(CALLERS).sort())
+  it('are each read: every file that links, or holds an index to link with, is listed with what it does with an address outside the site', () => {
+    expect(read(disk())).toEqual(Object.keys(READ).sort())
   })
 
-  it('notice a file that starts to link prose, and not a local helper of the same name', () => {
-    const links = LINKS_PROSE
-    expect(links.test('for (const span of index.linkText(summary, context)) {}')).toBe(true)
-    expect(links.test('const parts = this.docSpans(text)')).toBe(true)
-    expect(links.test('spans.push(...linkText(offset, range.start))')).toBe(false)
+  it('notice a file that starts to link prose, however it calls the linker and wherever it lives', () => {
+    const planted = (file: string, source: string) => expect(read([[file, source]]), `${file}: ${source}`).toEqual([file])
+    planted('src/lib/x.ts', 'for (const span of index.linkText(summary, context)) {}')
+    planted('src/lib/x.ts', 'const parts = this.docSpans(text)')
+    planted('src/lib/x.ts', 'index.linkType(annotation, symbol)')
+    planted('src/lib/x.ts', 'const link = index.resolve(name, "any", symbol)')
+    planted('src/lib/x.ts', 'const link = index.linkDoc(spans, symbol)')
+    planted('src/lib/x.ts', "const f = index['linkText']; f(text)")
+    planted('src/lib/x.ts', 'const { linkType } = index')
+    planted('src/lib/x.ts', 'const a = index?.resolve(name)')
+    planted('src/lib/x.ts', 'const index = productApiIndex(model, version)')
+    planted('src/components/x.tsx', 'index.linkText(text)')
+    planted('src/lib/x.mts', 'index.linkText(text)')
+    planted('src/utils/x.ts', 'index.linkText(text)')
+    planted('src/pages/x.astro', 'index.linkText(text)')
+    planted('src/layouts/x.astro', 'index.linkText(text)')
+    planted('scripts/x.mjs', 'index.linkText(text)')
+    planted('src/lib/x.ts', 'const link = createProseLinker(product)')
+    planted('src/lib/x.ts', 'const how = decideMention(text, context, resolver, models)')
+    // A local helper of the same name, and a file that is not code, are not the linker.
+    expect(read([['src/lib/x.ts', 'spans.push(...linkTextOf(offset, range.start))']])).toEqual([])
+    expect(read([['src/lib/x.md', 'index.linkText(text)'], ['src/data/x.ts', 'index.linkText(text)']])).toEqual([])
   })
 
   it('draw no card mention of an address outside the site: a card names references to this site\'s own pages and shows any other link as text', () => {
@@ -161,9 +206,25 @@ describe('the links the pages show', () => {
   }
 
   it('are all destinations: every API link a field shows is one the verifier collects', () => {
-    const missing = [...shown].filter(([href]) => !destinations.has(href)).map(([href, where]) => `${href} (${where})`)
+    const missing = [...shown].filter(([href]) => !destinations.has(normalizeAddress(href))).map(([href, where]) => `${href} (${where})`)
     expect(missing).toEqual([])
     expect(shown.size).toBeGreaterThan(0)
+  })
+
+  it('are linked alike by the collector\'s index and the site\'s, so the verifier reads what the pages link and not a copy of it', () => {
+    const collector = apiIndexes({ root }).indexes as Record<string, SymbolIndex>
+    const offSite = (index: SymbolIndex, symbol: ApiSymbol, text: string) => index.docSpans(text, symbol)
+      .flatMap((span) => (span.kind === 'link' ? [span.href] : span.kind === 'ref' ? (span.link ? [span.link.href] : (span.parts ?? []).flatMap((part) => (part.link ? [part.link.href] : []))) : []))
+      .filter((href) => /^https?:/.test(href))
+    const differing: string[] = []
+    for (const { port, symbol } of symbols) {
+      for (const { text } of proseTexts(symbol)) {
+        const site = offSite(indexes[port], symbol, text)
+        const ours = offSite(collector[port], symbol, text)
+        if (JSON.stringify(site) !== JSON.stringify(ours)) differing.push(`${port}:${symbol.id}: ${site.join(' ')} / ${ours.join(' ')}`)
+      }
+    }
+    expect(differing).toEqual([])
   })
 
   it('would fail the check on a link the verifier does not collect', () => {

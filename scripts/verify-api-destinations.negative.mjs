@@ -626,6 +626,8 @@ const spellings = [
   ['an address in capitals', (label) => `See [${label}](HTTPS://DOC.RUST-LANG.ORG/reference/items/structs.html) here.`],
   ['a host with a dot after it', (label) => `See [${label}](https://doc.rust-lang.org./reference/items/structs.html) here.`],
   ['a raw anchor to a protocol-relative address', (label) => `See <a href="//doc.rust-lang.org/reference/items/structs.html">${label}</a> here.`],
+  ['a raw anchor whose address is written with an entity', (label) => `See <a href="https&#58;//doc.rust-lang.org/reference/items/structs.html">${label}</a> here.`],
+  ['a raw anchor whose words are written with an entity', (label) => `See <a href="${STRUCTS}">${label.replace(' ', '&nbsp;')}</a> here.`],
 ]
 const looseForms = [
   ['an address in a sentence', `See ${STRUCTS} here.`],
@@ -639,6 +641,8 @@ const looseForms = [
   ['a protocol-relative address in a sentence', 'See //doc.rust-lang.org/reference/items/structs.html here.'],
   ['an address in capitals in a sentence', 'See HTTPS://DOC.RUST-LANG.ORG/reference/items/structs.html here.'],
   ['a host with a dot after it in a sentence', 'See https://doc.rust-lang.org./reference/items/structs.html here.'],
+  ['an address a reader sees only after its entities decode', 'See https:&#47;&#47;doc.rust-lang.org/reference/items/structs.html here.'],
+  ['an address with its scheme written in an entity', 'See https&#58;//doc.rust-lang.org/reference/items/structs.html here.'],
 ]
 // Addresses the check cannot fetch from the stand-in server are held at the collector: they are found, and found loose.
 const looseCollected = [

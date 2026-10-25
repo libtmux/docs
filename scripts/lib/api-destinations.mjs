@@ -20,7 +20,7 @@ import { globSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BUILTINS } from '../../packages/api-model/src/builtins.ts'
-import { Resolver, SymbolIndex, conceptNotes, proseTexts, tokenizeDoc, looksLikeApiMention, notASymbol } from '../../packages/api-model/src/index.ts'
+import { Resolver, SymbolIndex, conceptNotes, proseTexts, looksLikeApiMention, notASymbol, sourceUrl } from '../../packages/api-model/src/index.ts'
 import { parseApiProse } from '../../site/src/lib/api-prose.ts'
 import { KEYWORD_HELP } from '../../packages/api-model/src/link.ts'
 import { NATIVE_API_GLOSSARIES } from '../../site/src/lib/api-glossary-native.ts'
@@ -178,7 +178,10 @@ function runsOf(text, form) {
 
 /**
  * The extracted API models of a checkout and, for each port, the index the site links its prose with:
- * the port's own symbols and the inventories it resolves against.
+ * the port's own symbols, the inventories it resolves against, and its source files. This is the site's
+ * `createApiIndex` (which a script cannot import) read from the same data; the parent and dependency
+ * libraries are the sidecar the build writes from the same models, and they resolve to pages of this site.
+ * A test holds the two indexes to the same links over every prose field of every symbol.
  */
 export function apiIndexes({ root = ROOT } = {}) {
   const data = join(root, 'site', 'src', 'data')
@@ -201,6 +204,28 @@ export function apiIndexes({ root = ROOT } = {}) {
     for (const dependency of dependencies) {
       if (dependency.langs.includes(port)) index.addInventory(dependency.baseUrl, entriesOf(dependency), dependency.langs, dependency.project)
     }
+    // The files the site's `createApiIndex` resolves a name to: a source file of the model is one entry, by its path and by its base name.
+    const sourceFiles = new Map()
+    for (const symbol of model.symbols) {
+      const file = symbol.source.file
+      const href = sourceUrl(model, { ...symbol, source: { ...symbol.source, line: undefined } }, '/')
+      if (!href || !file) continue
+      for (const name of [file, file.split('/').at(-1)]) {
+        const targets = sourceFiles.get(name) ?? new Map()
+        targets.set(file, href)
+        sourceFiles.set(name, targets)
+      }
+    }
+    const filesByBase = new Map()
+    for (const [name, candidates] of sourceFiles) {
+      if (candidates.size !== 1) continue
+      const href = [...candidates.values()][0]
+      const base = href.startsWith('https://github.com/') ? 'https://github.com/' : ''
+      const entries = filesByBase.get(base) ?? []
+      entries.push({ name, uri: href.slice(base.length), type: 'std:label', priority: 1, dispname: '-' })
+      filesByBase.set(base, entries)
+    }
+    for (const [base, entries] of filesByBase) index.addInventory(base, entries, [port], 'Source')
     indexes[port] = index
   }
   return { models, inventories, indexes }
@@ -234,14 +259,6 @@ export function collectApiDestinations({ root = ROOT } = {}) {
       if (!text) return
       for (const span of index.linkType(text, symbol, signature)) link(span.link, span.text, 'type', symbol)
     }
-    // What the Markdown export links: a name in a code span, a reference, a written link.
-    const exported = (symbol, text) => {
-      for (const span of tokenizeDoc(text, port)) {
-        if (span.kind === 'ref') link(index.resolve(span.target, span.role, symbol), span.target, 'doc', symbol, span.role)
-        else if (span.kind === 'code' && looksLikeApiMention(span.text) && !notASymbol(span.text)) link(index.resolve(span.text, 'any', symbol), span.text, 'doc', symbol)
-        else if (span.kind === 'link') note(found, span.href, { port, name: span.text, source: 'doc-link', label: span.text })
-      }
-    }
     // What `ApiDoc` renders: the spans `docSpans` gives, and the linked parts of the literal of a reference that resolves nowhere.
     // A fact the site writes from the model links the builtin it names, which is already a destination of its own; only an author's link is a pair to review.
     const builtinHrefs = new Set(Object.values(BUILTINS[port] ?? {}))
@@ -254,11 +271,9 @@ export function collectApiDestinations({ root = ROOT } = {}) {
         else if (span.kind === 'ref') for (const part of span.parts ?? []) link(part.link, part.text, 'doc', symbol)
       }
     }
+    // The Markdown copy of a symbol links its prose through `docSpans` too, so the one pass reads what both renderers link.
     const prose = (symbol, text, form = 'inline', derived = false) => {
-      for (const run of runsOf(text, form)) {
-        if (!derived) exported(symbol, run)
-        rendered(symbol, run, derived)
-      }
+      for (const run of runsOf(text, form)) rendered(symbol, run, derived)
     }
     for (const symbol of model.symbols) {
       types(symbol, undefined, symbol.type)
@@ -362,11 +377,14 @@ function collectAuthored(found, { root }) {
   const content = join(root, 'site', 'src', 'content', 'docs')
   for (const file of globSync('**/*.{md,mdx}', { cwd: content }).sort()) {
     // Astro does not build a file that starts with `_`. `meta/` is the site's own credits and licences: its links to a language's
-    // website are logo, trademark and licence terms (and a zip of a logo), which are not API documentation and have no symbol to name.
-    if (file.startsWith('meta/') || file.startsWith('_')) continue
+    // website are logo, trademark and licence terms (and a zip of a logo), which are not API documentation and have no symbol to
+    // name. The links it makes to the pages of libtmux's own packages are read, as they are anywhere.
+    if (file.startsWith('_')) continue
     const text = readFileSync(join(content, file), 'utf8')
     const front = /^---\r?\n[\s\S]*?\r?\n---\r?\n/.exec(text)?.[0] ?? ''
-    read(markdownLinks(text, { front: front.length }), `site/src/content/docs/${file}`, portOf(file, text))
+    const links = markdownLinks(text, { front: front.length })
+    const ours = (url) => owned.has(normalizeAddress(url))
+    read(file.startsWith('meta/') ? { pairs: links.pairs.filter(({ url }) => ours(url)), loose: links.loose.filter(ours) } : links, `site/src/content/docs/${file}`, portOf(file, text))
   }
   const walk = (value, where, from) => {
     if (typeof value === 'string') read(markdownLinks(value), where, from)

@@ -377,7 +377,9 @@ uses, or a sentence) fails as a link with no words to review. The pages of the l
 themselves belong to the header verifier, which records the package each is and the ports that publish it;
 a link to one is a pair like any other, held to the port that writes it and, by its row, to the package
 it names. `meta/` pages are the site's own credits and licences: their links to a language's website
-are logo and licence terms, not API documentation, and they are not read.
+are logo and licence terms, not API documentation, so only their links to those package pages are read.
+`json-schema.org`, which `mcp-schema.ts` links for the type words of a tool's schema, documents a data format
+and not a language or an SDK, so it is not one of the hosts read (`API_HOSTS`).
 
 Prose is read the way the page renders it. A symbol's documentation (`PROSE_FIELDS` in
 [`prose-fields.ts`](packages/api-model/src/prose-fields.ts)) is linked by `SymbolIndex.docSpans`, the
@@ -387,8 +389,19 @@ list items `ApiProse` splits it into, with fenced code left alone. A link the si
 is in `STRUCTURAL_FIELDS`, and a test fails on a string in neither, and on an expression a component
 passes to `ApiDoc` or `ApiProse` that `RENDERED_TEXTS` does not list, so a field the extractor adds, or
 a field a component starts to render, is decided before it ships. A variable is the reader's own and
-links nowhere, a printed `[object Object]` is text, and a language's keywords (`for`, `import`) are
-documented at the top level (`BARE_OWNERS` in `api-sources.mjs`).
+links nowhere, a printed `[object Object]` is text (`neverLinks`, read by the type tokenizer every
+path calls and by the prose linker), and a language's keywords (`for`, `import`) are documented at
+the top level (`BARE_OWNERS` in `api-sources.mjs`).
+
+The same prose reaches a reader by more than one route, and the tests render each one and hold the
+verifier to it: the pages, in the build of each port and in the one build for none, through the
+linker the site uses; the Markdown copy of a symbol and of a page; the hover card; and the
+notices in templates. A page shared by every port is rendered once for each, and the port of that build
+says where it is read, not what it is about, so it links a standard-library name only where the page
+(its own port, a fence, a row, a section or the sentence) says its language: a shell's `exit` is not
+Python's. A test lists every file that links prose or holds an index to link with, by any call, in any
+directory or extension, and fails on one that is not listed with what it does with an address outside the
+site.
 
 A host that moves the
 page elsewhere, even by the case of a letter, fails, because a link should be

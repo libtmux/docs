@@ -11,6 +11,7 @@
  * fails a loose address, so a form this parser does not know cannot pass by being missed.
  */
 
+import { decodeHTML, decodeHTMLAttribute } from 'entities'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 
 /**
@@ -40,7 +41,7 @@ export function occurrencesIn(text) {
   return found
 }
 
-const plain = (html) => html.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim()
+const plain = (html) => decodeHTML(html.replace(/<[^>]*>/g, '')).replace(/\s+/g, ' ').trim()
 // A Markdown parser reads an anchor with a quoted address as HTML. One with an unquoted address (`<a href=https://x.org>`) it reads as text,
 // and the address in it is found loose.
 const WHOLE_ANCHOR = /<a\b[^>]*?\bhref\s*=\s*(?:"([^"]*)"|'([^']*)')[^>]*>([\s\S]*?)<\/a\s*>/gi
@@ -99,7 +100,7 @@ export function markdownLinks(text, { front = 0 } = {}) {
         for (const match of node.value.matchAll(WHOLE_ANCHOR)) {
           const label = plain(match[3])
           if (!label) continue
-          pairs.push({ label, url: (match[1] ?? match[2]).replace(/&amp;/g, '&') })
+          pairs.push({ label, url: decodeHTMLAttribute(match[1] ?? match[2]) })
           covered.push([at + match.index, at + match.index + match[0].length])
         }
         // An anchor opened in this node and closed in a later one: `<a href="x">`, the words, `</a>`.
@@ -109,20 +110,24 @@ export function markdownLinks(text, { front = 0 } = {}) {
           if (close > index) {
             const label = plain(text.slice(node.position.end.offset, children[close].position.start.offset))
             if (label) {
-              pairs.push({ label, url: (open[1] ?? open[2]).replace(/&amp;/g, '&') })
+              pairs.push({ label, url: decodeHTMLAttribute(open[1] ?? open[2]) })
               covered.push([at, children[close].position.end.offset])
               index = close
             }
           }
         }
+      } else if (node.type === 'text') {
+        // Text a reader sees: an entity decodes to a character (`https:&#47;&#47;x.org` reads as an address), which the source does not show.
+        for (const found of occurrencesIn(node.value)) read.add(found.url)
       } else {
         visit(node)
       }
     }
   }
+  const read = new Set()
   visit(tree)
   for (const definition of used) covered.push(offsets(definition))
-  return { pairs, loose: looseIn(text, covered) }
+  return { pairs, loose: [...new Set([...looseIn(text, covered), ...read])] }
 }
 
 /**
