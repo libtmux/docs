@@ -20,18 +20,20 @@ interface Props {
 }
 
 const { nodes } = Astro.props as Props
-const items = nodes.filter((node) => !node.section)
+const items = nodes.filter((node) => !node.section && !node.heading)
 ---
 
 {
   nodes.map((node) =>
-    node.section ? (
+    node.heading ? (
+      <li role="none" class="api-nav__section api-nav__caption"><span>{node.label}</span></li>
+    ) : node.section ? (
       <li role="none" class="api-nav__section"><span>{node.label}</span><span>{node.count} {node.section}</span></li>
     ) : node.disabled ? (
       <li role="none"><span role="treeitem" class="api-nav__row api-nav__leaf" aria-disabled="true"
         aria-level={node.level} aria-setsize={items.length} aria-posinset={items.indexOf(node) + 1} tabindex={node.tab ? '0' : '-1'}
         aria-description="No objects advertised in the reference configuration" style={`--level:${node.level}`}>
-        <span class="api-nav__label"><SymbolName name={node.label} /></span>
+        <span class="api-nav__label">{node.labelHtml ? <Fragment set:html={node.labelHtml} /> : <SymbolName name={node.label} />}</span>
         <span class="api-nav__count">{node.count}</span>
       </span></li>
     ) : node.expanded !== undefined ? (
@@ -52,14 +54,14 @@ const items = nodes.filter((node) => !node.section)
           {node.kind && !node.quiet && <ApiBadge label={node.kind} variant="kind" value={node.kind} compact />}
           {node.href ? (
             <a class="api-nav__label" id={node.id} href={node.href} data-api-shortcut={node.shortcut || undefined} tabindex="-1" aria-current={node.current ? 'page' : undefined}>
-              <SymbolName name={node.label} />
+              {node.labelHtml ? <Fragment set:html={node.labelHtml} /> : <SymbolName name={node.label} />}
             </a>
           ) : (
             <>
               <span class="api-nav__label" id={node.id}>
-                <SymbolName name={node.label} />
+                {node.labelHtml ? <Fragment set:html={node.labelHtml} /> : <SymbolName name={node.label} />}
               </span>
-              {node.fallbackHref && <noscript><a class="api-nav__label" href={node.fallbackHref}><SymbolName name={node.label} /></a></noscript>}
+              {node.fallbackHref && <noscript><a class="api-nav__label" href={node.fallbackHref}>{node.labelHtml ? <Fragment set:html={node.labelHtml} /> : <SymbolName name={node.label} />}</a></noscript>}
             </>
           )}
           {node.count !== undefined && (
@@ -87,13 +89,17 @@ const items = nodes.filter((node) => !node.section)
           tabindex={node.tab ? '0' : '-1'}
           aria-current={node.current ? 'page' : undefined}
           aria-description={node.kind}
+          target={node.external ? '_blank' : undefined}
+          rel={node.external ? 'noopener noreferrer' : undefined}
           style={`--level:${node.level}`}
         >
           {node.kind && !node.quiet && <ApiBadge label={node.kind} variant="kind" value={node.kind} compact />}
           <span class="api-nav__label">
-            <SymbolName name={node.label} />
+            {node.labelHtml ? <Fragment set:html={node.labelHtml} /> : <SymbolName name={node.label} />}
           </span>
           {node.count !== undefined && <span class="api-nav__count">{node.count}</span>}
+          {node.external && <span class="api-nav__external" aria-hidden="true">&#8599;&#65038;</span>}
+          {node.external && <span class="sr-only"> (opens in a new tab)</span>}
         </a>
       </li>
     ),

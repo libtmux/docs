@@ -63,6 +63,10 @@ html[data-theme-mode='dark'] .api-nav { --api-nav-guide: color-mix(in srgb, var(
 .api-nav__section { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; padding: 0.75rem 0.5rem 0.35rem; color: var(--color-muted); font-size: 0.6875rem; }
 .api-nav__section > :first-child { font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
 .api-nav__section > :last-child { white-space: nowrap; }
+/* A Sphinx toctree caption names the rows below it and has no count. */
+.api-nav__caption { justify-content: flex-start; }
+.api-nav__external { margin-inline-start: auto; color: var(--color-muted); font-size: 0.75rem; }
+.api-nav__label code { font-size: 0.9em; overflow-wrap: anywhere; }
 .api-nav[data-presentation='outline'] .api-nav__item > .api-nav__row > .api-nav__label { font-weight: 600; }
 .api-nav[data-presentation] .api-nav__leaf > .api-nav__label { font-weight: 500; }
 /* A folded run has no kind mark, so it keeps the mark's gutter and its label lines up with the rows it stands for. */
