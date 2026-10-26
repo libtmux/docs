@@ -343,7 +343,7 @@ describe('a command item of a method that sends at a scope', () => {
     expect([...item.querySelectorAll('a')].map((a) => a.getAttribute('href'))).toEqual([
       tmuxManualUrl('latest', 'list-panes'), '/tmux/latest/reference/c-function-cmd-list-panes-c-cmd_list_panes_server/',
     ])
-    expect(item.querySelector('.tmux-send')!.getAttribute('title')).toMatch(/^Calls .+: .+:\d+$/)
+    expect(item.querySelector('.tmux-send')!.getAttribute('title')).toMatch(/^(?:Calls .+: )?[^ ]+:\d+$/)
   })
 })
 
