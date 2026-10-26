@@ -191,6 +191,14 @@ export async function checkSidebarDemo(browser, url, options = {}) {
           if (variant !== 'focus') assert(guides.length > 0, `${variant}/${viewport}/${theme}: the layout shows nested rows`)
           if (variant === 'grouped') assert(guides.some((row) => /^Methods?\b/.test(row.text)), `${viewport}/${theme}: the Grouped kind subgroup is a nested row`)
           for (const row of guides) assert.equal(row.line, '1px', `${variant}/${viewport}/${theme}: nested row ${row.text} shows its guide line`)
+          // The glossary is the tree's last row, an ordinary item reached after every declaration.
+          const last = await f.locator('.api-nav__tree').evaluate((tree) => {
+            const rows = [...tree.querySelectorAll('[role="treeitem"]')].filter((row) => row.getClientRects().length)
+            const row = rows.at(-1)
+            return { text: row?.textContent.trim(), href: row?.getAttribute('href'), leaf: row?.classList.contains('api-nav__leaf'), above: document.querySelector('.api-nav__reference-link') !== null }
+          })
+          assert.deepEqual({ text: last.text, leaf: last.leaf, above: last.above }, { text: 'API glossary', leaf: true, above: false }, `${variant}/${viewport}/${theme}: the glossary is the last tree row`)
+          assert.match(last.href, /\/glossary\/$/)
           const geometry = await f.locator('.api-nav').evaluate((nav) => ({ width: nav.clientWidth, overflow: nav.scrollWidth > nav.clientWidth, role: nav.getAttribute('role') }))
           assert.equal(geometry.overflow, false, `${variant}/${viewport}/${theme}: no sidebar overflow`)
           if (viewport === 'desktop') assert.equal(geometry.role, null)
@@ -250,7 +258,7 @@ export async function checkSidebarDemo(browser, url, options = {}) {
     await select('symbol', empty.id)
     await waitSelection(f, empty.id)
     assert.equal(await tree.locator('.api-nav__count').textContent(), '0')
-    assert.equal(await tree.locator('[role="treeitem"]').count(), 1)
+    assert.equal(await tree.locator('[role="treeitem"]:not([href$="/glossary/"])').count(), 1)
     await select('symbol', long.id)
     await waitSelection(f, long.id)
     assert.equal(await current(f).evaluate((node) => node.scrollWidth <= node.clientWidth), true, 'Long symbol wraps')

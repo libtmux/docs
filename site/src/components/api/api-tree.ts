@@ -491,6 +491,7 @@ export async function setApiSidebar(nav: HTMLElement, mode: SidebarPresentation,
   delete nav.dataset.apiTreeInteracted
   const nodes = sidebarNodes(json, nav.dataset.base ?? '/', mode, selected, options.allTypes)
   if (nav.dataset.marks === 'mixed') quietSidebarKinds(nodes)
+  if (nav.dataset.glossaryHref) nodes.push({ id: 'api-nav-glossary', label: nav.dataset.glossaryLabel ?? '', href: nav.dataset.glossaryHref, level: 1 })
   tree.replaceChildren(...presentationRows(nodes))
   selectPresentation(nav)
   const tab = tree.querySelector<HTMLElement>('[aria-current="page"]')?.closest<HTMLElement>(ITEM) ?? rows(tree)[0]

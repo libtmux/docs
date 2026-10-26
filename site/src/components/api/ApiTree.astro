@@ -144,7 +144,8 @@ const selectedOwner = catalog?.ownerOf(selectedSymbol)
 const selectedParent = catalog?.symbols.get(catalog.parent.get(selectedSymbol) ?? '')
 const ownerLabel = catalog?.ownerLabel ?? 'type'
 const ownerPlural = catalog?.ownerPlural ?? 'types'
-const nodes = presentation && inventory ? sidebarNodes(inventory, base, presentation, selectedSymbol)
+// The glossary is the tree's last row, so it is reached after every declaration.
+const nodes = presentation && inventory ? [...sidebarNodes(inventory, base, presentation, selectedSymbol), ...glossaryNode]
   : [...(indexLabel ? [indexNode] : []), ...glossaryNode, ...tree.map((b) => bucketNode(b, 1, false))]
 
 if (marks === 'mixed') quietSidebarKinds(nodes)
@@ -168,7 +169,7 @@ if (!mark(nodes)) {
   </script>
   <div class="api-nav-overlay" data-api-nav-overlay></div>
   <div id="api-nav" class="api-nav" data-src={inventorySrc ?? `${base}tree.json`} data-base={base} data-version={presentation ? `3:${version}` : version} data-marks={marks === 'mixed' ? 'mixed' : undefined}
-    data-presentation={presentation} data-symbol={presentation ? selectedSymbol : undefined}
+    data-presentation={presentation} data-glossary-href={presentation ? glossaryHref : undefined} data-glossary-label={presentation && glossaryHref ? glossaryLabel : undefined} data-symbol={presentation ? selectedSymbol : undefined}
     data-controlled={controlled || undefined}
     data-state-scope={presentation === 'outline' ? presentation : presentation ? `${presentation}:${selectedOwner?.id ?? ''}` : undefined} aria-labelledby="api-nav-title">
     <div class="api-nav__head">
@@ -241,9 +242,6 @@ if (!mark(nodes)) {
       </details>
       </div>
     </div>}
-    {presentation && glossaryHref && <a class="api-nav__reference-link" href={glossaryHref}
-      aria-current={currentPath.replace(/\/?$/, '/') === glossaryHref ? 'page' : undefined}
-      target={controlled ? '_top' : undefined}>{glossaryLabel}</a>}
     <nav class="api-nav__nav" aria-label={treeLabel} data-pagefind-ignore="all">
       <p class="api-nav__search-status" role="status" data-api-search-status></p>
       <button type="button" class="api-nav__retry" data-api-search-retry hidden>Retry search</button>
