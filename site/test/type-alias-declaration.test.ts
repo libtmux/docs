@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 import { Window } from 'happy-dom'
-import { SymbolIndex, membersOf } from '@libtmux/api-model'
+import { SymbolIndex, membersOf, pageMembersOf } from '@libtmux/api-model'
 import { API_MODELS } from '../src/lib/api-models'
+import { referenceTree } from '../src/lib/api-tree'
+import { sidebarCatalog } from '../src/lib/api-sidebar'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { loadAstroTemplate, renderAstroTemplate, withoutScope } from './astro-templates'
 
@@ -69,7 +71,7 @@ describe('TypeScript type alias declarations', () => {
     const shown = await declaration('types.MenuItem')
     expect(shown.text).toBe('type types.MenuItem = MenuEntry | "separator"')
     expect(shown.links.map(([name]) => name)).toEqual(['MenuEntry'])
-    expect(membersOf(model, symbolOf('types.MenuItem'))).toEqual([])
+    expect(pageMembersOf(model, symbolOf('types.MenuItem'))).toEqual([])
     const document = await page('types.MenuItem')
     expect(document.querySelector('#api-members, #api-inherited')).toBeNull()
   })
@@ -77,13 +79,13 @@ describe('TypeScript type alias declarations', () => {
   it('declares an object type verbatim without resolving members', async () => {
     const shown = await declaration('engine.DaemonGuard')
     expect(shown.value).toBe('{\n  readonly pid: string;\n  readonly startTime: string;\n}')
-    expect(membersOf(model, symbolOf('engine.DaemonGuard'))).toEqual([])
+    expect(pageMembersOf(model, symbolOf('engine.DaemonGuard'))).toEqual([])
   })
 
   it('lists the members of the declaration a lone reference names, on their existing pages', async () => {
     const owner = symbolOf('types.ConnectOptions')
     const target = symbolOf('types.ConnectionOptions')
-    const members = membersOf(model, owner)
+    const members = pageMembersOf(model, owner)
     expect(members.map((member) => member.name)).toEqual(OPTION_MEMBERS)
     expect(members.some((member) => member.inheritedFrom)).toBe(false)
     // The alias owns no member symbol: each row is a target member, so it keeps that member's page.
@@ -114,5 +116,22 @@ describe('TypeScript type alias declarations', () => {
     const union = symbolMarkdown({ model, symbol: symbolOf('types.MenuItem'), index, hrefFor })
     expect(union).toContain('```ts\ntype MenuItem = MenuEntry | "separator"\n```')
     expect(union).not.toMatch(/Alias of|## Members|## Inherited members/)
+  })
+
+  it('keeps navigation, sidebar and search on the members each type declares', () => {
+    const tree = referenceTree('ts')
+    // The alias is an owner kind, but it owns nothing: the four rows belong to ConnectionOptions alone.
+    expect(tree.members['types.ConnectOptions']).toBeUndefined()
+    expect(tree.members['types.ConnectionOptions']?.map(([name]) => name).sort()).toEqual(OPTION_MEMBERS)
+    const owners = new Map<string, string[]>()
+    for (const [owner, rows] of Object.entries(tree.members)) {
+      for (const [name, , id] of rows) owners.set(id ?? `${owner}.${name}`, [...(owners.get(id ?? `${owner}.${name}`) ?? []), owner])
+    }
+    expect([...owners].filter(([, list]) => list.length > 1)).toEqual([])
+    const catalog = sidebarCatalog(tree)
+    for (const name of OPTION_MEMBERS) {
+      expect(catalog.ownerOf(`types.ConnectionOptions.${name}`)?.id).toBe('types.ConnectionOptions')
+    }
+    expect(catalog.membersOf('types.ConnectOptions')).toEqual([])
   })
 })

@@ -1,7 +1,7 @@
 import type { ApiModel, ApiSymbol, Signature, SourceApiModel, SymbolIndex } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { toMarkdown } from 'mdast-util-to-markdown'
-import { aliasMembersTarget, aliasTarget, boundLabel, membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model'
+import { aliasMembersTarget, aliasTarget, boundLabel, pageMembersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { PORT_NAME, referenceAlternatives } from './api-models'
 import { aliasDeclaration, apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasScalarMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
@@ -329,7 +329,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   }
 
   const signals = memberSignals(port ?? '', mentions.mentions)
-  const members = membersOf(model, symbol, signals)
+  const members = pageMembersOf(model, symbol, signals)
   const declared = members.filter((member) => !member.inheritedFrom || memberTier(member, signals) === 'parent')
   const inherited = members.filter((member) => member.inheritedFrom && memberTier(member, signals) !== 'parent')
   const symbolLinkText = (target: ApiSymbol) => {

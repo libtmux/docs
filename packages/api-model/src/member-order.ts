@@ -125,7 +125,7 @@ export function aliasMembersTarget(model: ApiModelBase & { port?: string }, owne
 }
 
 /** Include explicit public re-exports without inferring access from private bases. */
-export function membersOf(model: ApiModelBase & { port?: string }, owner: ApiSymbol, signals = memberSignals(model.port ?? ''), seen = new Set<string>()): ApiSymbol[] {
+export function membersOf(model: ApiModelBase & { port?: string }, owner: ApiSymbol, signals = memberSignals(model.port ?? '')): ApiSymbol[] {
   const members = model.symbols.filter((symbol) => symbol.parent === owner.id)
   for (const id of signals.inheritedParents.get(idOf(owner)) ?? []) {
     const source = model.symbols.find((symbol) => idOf(symbol) === id)
@@ -133,15 +133,28 @@ export function membersOf(model: ApiModelBase & { port?: string }, owner: ApiSym
       members.push({ ...source, parent: owner.id, inheritedFrom: source.parent })
     }
   }
-  // An alias is another name for its target, so it lists the target's members as its own.
-  // Each keeps its id and page; a member the target itself inherits stays marked inherited.
-  const target = members.length ? undefined : aliasMembersTarget(model, owner)
-  if (target && !seen.has(target.id)) {
-    seen.add(owner.id)
-    for (const member of membersOf(model, target, signals, seen)) members.push({ ...member, parent: owner.id })
-  }
-  return owner.variant || owner.declarations?.some((declaration) => declaration.kind === 'constant')
+  return sortMembers(owner, members, signals)
+}
+
+const sortMembers = (owner: ApiSymbol, members: ApiSymbol[], signals: MemberSignals) =>
+  owner.variant || owner.declarations?.some((declaration) => declaration.kind === 'constant')
     ? members : members.sort(compareMembers(signals))
+
+/**
+ * The members a type's own page lists: `membersOf`, and for an alias of one declaration that
+ * declaration's members too. An alias is another name, so each keeps its id and page.
+ *
+ * Only the alias page and its Markdown export call this. The navigation tree, sidebar, search
+ * and inventories take `membersOf`, where a member has exactly one owner.
+ */
+export function pageMembersOf(model: ApiModelBase & { port?: string }, owner: ApiSymbol, signals = memberSignals(model.port ?? ''), seen = new Set<string>()): ApiSymbol[] {
+  const members = membersOf(model, owner, signals)
+  const target = members.length ? undefined : aliasMembersTarget(model, owner)
+  if (!target || seen.has(target.id)) return members
+  seen.add(owner.id)
+  // The target's members keep their own inheritance marks; an alias adds none.
+  const listed = pageMembersOf(model, target, signals, seen).map((member) => ({ ...member, parent: owner.id }))
+  return sortMembers(owner, listed, signals)
 }
 
 /**

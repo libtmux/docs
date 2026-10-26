@@ -1,6 +1,6 @@
 ---
 import type { ApiModel, ApiSymbol, SourceApiModel, SymbolIndex } from '@libtmux/api-model'
-import { aliasMembersTarget, membersOf, memberTier, docSummaryText, memberSignals, parameterId, qualifiedNameOf, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model'
+import { aliasMembersTarget, membersOf, pageMembersOf, memberTier, docSummaryText, memberSignals, parameterId, qualifiedNameOf, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model'
 import mentionsData from '../../data/mentions.json'
 import ApiEntry from '../../components/api/ApiEntry.astro'
 import ApiScalarMembers from './ApiScalarMembers.astro'
@@ -224,7 +224,7 @@ const sourceUrl = (symbol: ApiSymbol): string | undefined => model
   ? apiSourceUrl(model, symbol, refBase)
   : undefined
 
-const members = owner && model ? membersOf(model, owner, signals) : []
+const members = owner && model ? pageMembersOf(model, owner, signals) : []
 
 const owners = (model ? topLevelTypesOf(model) : []).sort((a, b) => a.name.localeCompare(b.name))
 
