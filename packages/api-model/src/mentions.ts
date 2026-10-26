@@ -161,6 +161,23 @@ export interface PageMentionsInput {
 }
 
 /**
+ * Whether a bare member name is a member of the one qualified type that an earlier span in its paragraph names.
+ *
+ * `The exception carries `ActualVersion` and `Command`` follows a paragraph that names
+ * `LibTmux.TmuxUnsupportedOnReleaseException`; `Command` alone belongs to many types, but only that one
+ * type named there has it. Two types with the member leave the name unresolved.
+ */
+function ownedByPrecedingType(text: string, before: string, port: string, resolver: Resolver, product: ApiProduct | undefined): boolean {
+  if (!/^[A-Za-z_]\w*$/.test(text)) return false
+  const types = new Set([...before.matchAll(/`([A-Z]\w*(?:\.\w+)+)`/g)].map((match) => match[1]!))
+  const owned = [...types].filter((type) => {
+    const res = resolver.resolve(port, `${type}.${text}`, product)
+    return res.how === 'federated' || 'symbol' in res
+  })
+  return owned.length === 1
+}
+
+/**
  * The symbols one page mentions, and the spans in it that look like API but resolve to nothing.
  *
  * A link names its own symbol. A bare span is resolved by `decideMention`, and when that leaves it
@@ -185,6 +202,7 @@ export function pageMentions(input: PageMentionsInput): { targets: LinkedOwner[]
       const decision = decideMention(text, { pagePort, product, before }, resolver, models)
       if (decision.kind !== 'link') {
         const authored = decision.kind === 'unresolved' ? linkedHere.recur(contextPort, text) : undefined
+        if (!authored && decision.kind === 'unresolved' && pagePort && ownedByPrecedingType(text, before, pagePort, resolver, product)) continue
         if (!authored) {
           if (decision.kind === 'unresolved' && pagePort && isLikelyReference(text) && !notApiReason(text)) {
             dangling.push({ port: pagePort, text, page, line, why: decision.why })

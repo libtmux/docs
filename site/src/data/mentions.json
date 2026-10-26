@@ -14458,48 +14458,6 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "powershell",
-   "text": "Command",
-   "page": "/powershell/latest/guides/compatibility/",
-   "line": 71,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "powershell",
-   "text": "LibTmux.Workspace.WorkspaceFormatException",
-   "page": "/powershell/latest/guides/compatibility/",
-   "line": 74,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "powershell",
-   "text": "InnerException",
-   "page": "/powershell/latest/guides/compatibility/",
-   "line": 75,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "powershell",
-   "text": "NotImplemented",
-   "page": "/powershell/latest/guides/compatibility/",
-   "line": 76,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "powershell",
-   "text": "0.1.N",
-   "page": "/powershell/latest/guides/getting-started/",
-   "line": 25,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "powershell",
-   "text": "0.1.N",
-   "page": "/powershell/latest/guides/getting-started/",
-   "line": 632,
-   "why": "not defined in the stated port"
-  },
-  {
    "port": "ruby",
    "text": "Enumerable",
    "page": "/ruby/latest/guides/getting-started/",
