@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
@@ -20,13 +20,11 @@ export async function compose({ directory, runtime, catalogs, bucket, locale }) 
   const inputs = []
   const compatibility = []
   const missing = []
-  for (const [port, versions] of Object.entries(manifest.ports)) {
-    if (!versions.length) continue
-    const version = manifest.defaultVersion[port]
-    if (!versions.some((entry) => entry.slug === version)) throw new Error(`No published default for ${port}/${version}`)
-    const relative = `${port}/${version}/targets.json`
+  const fallback = []
+  // A catalog's file, or null when it is absent. Only a 404 is absence.
+  const locate = (relative) => {
     let file = resolve(out, relative)
-    if (ownership.portTrees.includes(port) || !existsSync(file)) {
+    if (ownership.portTrees.includes(relative.split('/')[0]) || !existsSync(file)) {
       file = resolve(catalogs, relative)
       if (bucket) {
         mkdirSync(resolve(file, '..'), { recursive: true })
@@ -41,28 +39,46 @@ export async function compose({ directory, runtime, catalogs, bucket, locale }) 
         }
       }
     }
-    if (!existsSync(file)) {
-      missing.push({ port, version, catalog: `${base}${relative}` })
+    return existsSync(file) ? file : null
+  }
+  for (const [port, versions] of Object.entries(manifest.ports)) {
+    if (!versions.length) continue
+    const version = manifest.defaultVersion[port]
+    if (!versions.some((entry) => entry.slug === version)) throw new Error(`No published default for ${port}/${version}`)
+    // The advertised default may predate targets.json; its latest tree is the fallback.
+    let used = version
+    let relative = `${port}/${version}/targets.json`
+    let file = locate(relative)
+    if (!file && version !== 'latest') {
+      used = 'latest'
+      relative = `${port}/latest/targets.json`
+      file = locate(relative)
+    }
+    if (!file) {
+      missing.push({ port, version, catalog: `${base}${port}/${version}/targets.json` })
+      rmSync(resolve(out, 'reference', port, 'objects.inv'), { force: true })
       continue
     }
+    if (used !== version) fallback.push({ port, default: version, used, catalog: `${base}${relative}` })
     const bytes = readFileSync(file)
+    const published = used
     const catalog = JSON.parse(bytes.toString())
-    const expectedBase = `${base}${port}/${version}/`
-    if (catalog.schema !== 1 || catalog.scope !== port || catalog.version !== version || catalog.base !== expectedBase || !catalog.targets?.length) {
+    const expectedBase = `${base}${port}/${published}/`
+    if (catalog.schema !== 1 || catalog.scope !== port || catalog.version !== published || catalog.base !== expectedBase || !catalog.targets?.length) {
       throw new Error(`Published target catalog has the wrong identity: ${relative}`)
     }
     for (const target of catalog.targets) {
-      if (target.scope !== port || target.version !== version || !target.href.startsWith(expectedBase) ||
+      if (target.scope !== port || target.version !== published || !target.href.startsWith(expectedBase) ||
           !new URL(target.href, 'https://inventory.invalid').pathname.startsWith(expectedBase) || target.key !== targetKey(target)) {
-        throw new Error(`Published target is outside ${port}/${version}: ${target.key}`)
+        throw new Error(`Published target is outside ${port}/${published}: ${target.key}`)
       }
     }
     targets.push(...catalog.targets)
-    inputs.push({ port, version, catalog: `${base}${relative}`, sha256: createHash('sha256').update(bytes).digest('hex') })
+    inputs.push({ port, version: published, catalog: `${base}${relative}`, sha256: createHash('sha256').update(bytes).digest('hex') })
     const entries = compatibilityEntries(catalog.targets, base).map((entry) => ({ ...entry, uri: `../../${entry.uri}` }))
     compatibility.push({
       file: resolve(out, 'reference', port, 'objects.inv'),
-      bytes: writeInventoryEntries(entries, { project: `libtmux ${port}`, version, legacyCaseSensitiveLabels: true }),
+      bytes: writeInventoryEntries(entries, { project: `libtmux ${port}`, version: published, legacyCaseSensitiveLabels: true }),
     })
   }
   targets.sort((a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0)
@@ -76,9 +92,10 @@ export async function compose({ directory, runtime, catalogs, bucket, locale }) 
   }
   writeFileSync(resolve(out, 'objects-full.inv'), full)
   writeFileSync(resolve(out, 'objects.inv'), legacy)
-  writeFileSync(resolve(out, 'targets.json'), `${JSON.stringify({ schema: 1, base, defaults: manifest.defaultVersion, coverage: { inputs, missing }, targets })}\n`)
+  writeFileSync(resolve(out, 'targets.json'), `${JSON.stringify({ schema: 1, base, defaults: manifest.defaultVersion, coverage: { inputs, fallback, missing }, targets })}\n`)
+  for (const { port, default: from, used, catalog } of fallback) console.log(`Composed ${port}/${used} because ${port}/${from} has not published its catalog: ${catalog}`)
   for (const { port, version, catalog } of missing) console.log(`Left out of the full inventory: ${port}/${version} has not published ${catalog}`)
-  return { targets: targets.length, inputs, missing }
+  return { targets: targets.length, inputs, fallback, missing }
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {

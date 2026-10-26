@@ -24,9 +24,9 @@ links to select a language, version or preview.
 | [docs.json](/docs.json) | Discover page titles, URLs, descriptions, headings and Markdown URLs in a structured manifest. |
 | Markdown | Read one page as text using its footer's **Markdown** link. |
 | Raw source | Inspect the source file using its footer's **Raw source** link, where available. |
-| [objects-full.inv](/objects-full.inv) | Resolve Sphinx references across shared docs, the default version of each port that has published its catalog, and tmux reference versions. |
+| [objects-full.inv](/objects-full.inv) | Resolve Sphinx references across shared docs, each port's default version, or its latest until the default has published a catalog, and tmux reference versions. |
 | objects.inv | Resolve Sphinx references within one port and version, or one tmux documentation tree. |
-| [targets.json](/targets.json) | Browse inventory keys, display names and destination URLs as JSON. A scoped catalog sits beside each root inventory. |
+| [targets.json](/targets.json) | Browse inventory keys, display names and destination URLs as JSON. A scoped catalog sits beside each root inventory. The root one lists fallbacks and ports left out. |
 
 The root exports above cover the assembled site. Port exports describe the
 selected port and version. For a single API declaration, start with

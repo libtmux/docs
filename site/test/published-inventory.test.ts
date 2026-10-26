@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { chmodSync, cpSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, cpSync, existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -85,6 +85,8 @@ describe('published default inventory composition', () => {
   it('leaves out a port whose default catalog is absent and reports it', () => {
     const { path } = fixture()
     addPorts(path, { py: false })
+    mkdirSync(join(path, 'dist/reference/py'), { recursive: true })
+    writeFileSync(join(path, 'dist/reference/py/objects.inv'), 'stale')
     const output = compose(path)
     expect(output).toContain('py/v1.0.0')
     const catalog = JSON.parse(readFileSync(join(path, 'dist/targets.json'), 'utf8'))
@@ -94,6 +96,33 @@ describe('published default inventory composition', () => {
     expect(readInventory(readFileSync(join(path, 'dist/objects-full.inv'))).entries.map(({ uri }) => uri).join()).not.toContain('py/')
     expect(() => readFileSync(join(path, 'dist/reference/py/objects.inv'))).toThrow()
     expect(readFileSync(join(path, 'dist/reference/rs/objects.inv')).length).toBeGreaterThan(0)
+  })
+  it('composes an absent default from the port latest catalog and reports the fallback', () => {
+    const { path } = fixture()
+    addPorts(path, { py: false })
+    const value = { scope: 'py', version: 'latest', product: 'core', category: 'api', identity: 'Pane', display: 'Pane', href: '/en/py/latest/reference/pane/#Pane' }
+    const target = { ...value, key: targetKey(value), legacy: [{ type: 'std:label', name: 'Pane' }] }
+    const latest = { schema: 1, base: '/en/py/latest/', scope: 'py', version: 'latest', targets: [target] }
+    mkdirSync(join(path, 'published/py/latest'), { recursive: true })
+    writeFileSync(join(path, 'published/py/latest/targets.json'), JSON.stringify(latest))
+    const output = compose(path)
+    expect(output).toContain('py/latest')
+    const catalog = JSON.parse(readFileSync(join(path, 'dist/targets.json'), 'utf8'))
+    expect(catalog.coverage.fallback).toEqual([{ port: 'py', default: 'v1.0.0', used: 'latest', catalog: '/en/py/latest/targets.json' }])
+    expect(catalog.coverage.missing).toEqual([])
+    expect(catalog.targets.filter((entry: { scope: string }) => entry.scope === 'py').map((entry: { href: string }) => entry.href)).toEqual(['/en/py/latest/reference/pane/#Pane'])
+    expect(readInventory(readFileSync(join(path, 'dist/reference/py/objects.inv'))).entries[0].uri).toBe('../../py/latest/reference/pane/#Pane')
+    // A latest catalog gets the same identity checks as any other.
+    writeFileSync(join(path, 'published/py/latest/targets.json'), JSON.stringify({ ...latest, base: '/en/py/stable/' }))
+    expect(() => compose(path)).toThrow('wrong identity')
+  })
+  it('removes the legacy port inventory when neither default nor latest is published', () => {
+    const { path } = fixture()
+    addPorts(path, { py: false })
+    const file = join(path, 'dist/reference/py/objects.inv')
+    mkdirSync(dirname(file), { recursive: true }); writeFileSync(file, 'stale')
+    compose(path)
+    expect(existsSync(file)).toBe(false)
   })
   it('composes a site and tmux only inventory when no default catalog is published', () => {
     const { path } = fixture(false)
