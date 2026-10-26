@@ -111,6 +111,7 @@ describe('the code that links prose', () => {
     'src/components/api/ProductApiPage.astro': 'builds the index the page renders with',
     'src/lib/api-models.ts': 'builds the index (createApiIndex)',
     'src/lib/api-sections.ts': 'reads which symbols a signature names, to list related types; links nothing',
+    'src/lib/api-tmux-sections.ts': 'builds the index each port\'s equivalent notes render with; links nothing itself',
     'src/lib/code-layout.ts': 'links the types of a signature (linkType)',
     'src/lib/link-preview.ts': 'a hover card names only the references that resolve to a page of this site; any other link is text on the card',
     'src/lib/mcp-preview.ts': 'tokenizes MCP tool text, which names no library symbol',

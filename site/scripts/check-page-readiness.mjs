@@ -303,13 +303,18 @@ const SIDEBAR_BADGE_LINKS = [
  * marks single-line prose links, which must not grow their line; `sample`
  * keeps an entry in the bounded sample.
  */
+/** An equivalent in another port, in the In other ports table of a symbol's page. */
+const EQUIVALENT_BADGE_LINK = {
+  label: 'API equivalent', path: '/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/',
+  badges: 'section:has(> #api-other-ports) .tmux-usage a > .api-nav__kind', gap: false, sample: true,
+}
 const BADGE_LINKS = [
   { label: 'prose link', path: '/rs/latest/concepts/server-session-window-pane/', badges: 'p a > .api-link-kind', line: true, fixtures: true, sample: true },
   { label: 'guide prose link', path: '/py/stable/guides/attaching-to-tmux/', badges: 'p a > .api-link-kind', line: true, sample: true },
   { label: 'MCP prose link', path: '/py/stable/mcp/tools/capture_pane/', badges: 'p a > .api-link-kind', line: true },
   { label: 'MCP index card', path: '/py/stable/mcp/tools/', badges: '.api-index-card a > .api-nav__kind', gap: false, centre: false, sample: true },
   { label: 'MCP catalog heading', path: '/py/stable/mcp/tools/', badges: 'h2 a > .api-nav__kind', gap: false, centre: false },
-  { label: 'API equivalent', path: '/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/', badges: '.api-elsewhere-value a > .api-nav__kind', gap: false, sample: true },
+  EQUIVALENT_BADGE_LINK,
   ...SIDEBAR_BADGE_LINKS,
   // The MCP tree draws no marks under a group of one kind, so its leaf marks are measured on an API tree.
   { label: 'navigation tree link', path: '/java/latest/reference/io-github-libtmux-server-server/', badges: 'a.api-nav__leaf > .api-nav__kind', gap: false },
@@ -487,11 +492,11 @@ export async function checkKindBadgeLinks(browser, base, { sample = false, entri
  * of it alone and has to report the missing badge by its own name.
  */
 export async function checkKindBadgeLinksFail(browser, base) {
-  for (const entry of SIDEBAR_BADGE_LINKS) {
+  for (const entry of [...SIDEBAR_BADGE_LINKS, EQUIVALENT_BADGE_LINK]) {
     await assert.rejects(checkKindBadgeLinks(browser, base, { entries: [{ ...entry, path: '/py/stable/workspace/guides/' }] }),
       new RegExp(`no ${entry.label} badge to measure`))
   }
-  console.log(`Kind badges: a sidebar without badged rows fails each of its ${SIDEBAR_BADGE_LINKS.length} selectors PASS`)
+  console.log(`Kind badges: a sidebar without badged rows fails each of its ${SIDEBAR_BADGE_LINKS.length + 1} selectors PASS`)
 }
 
 /** Overview pages with cards, then a prose page whose inline preview links must keep their line. */
@@ -626,6 +631,42 @@ export async function payloadGaps(request, origin, hrefs, served) {
  * so hover it and read the card, then ask the same of every marked link on the pages whose destination the build
  * serves (`served`, from `servedByBuild`; without it every destination is asked), and of one that has no payload.
  */
+/** The method page's C function link, with the marker that opts it into the card. */
+async function functionLinkMarked(page) {
+  const link = page.locator(TMUX_FUNCTION_LINK).first()
+  assert.equal(await link.count(), 1, 'The method page has no C function link marked for a preview')
+  assert.equal(await link.textContent(), 'cmd_list_panes_server')
+  return link
+}
+
+/**
+ * The link check must fail when the page loses the marker, the link or the section: it reads the same page after each is
+ * taken away, and a page that never had the section.
+ */
+export async function checkTmuxReferencePreviewsFail(browser, base) {
+  const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1440, height: 1000 } })
+  const page = await context.newPage()
+  page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
+  try {
+    await page.goto(`${base}${TMUX_METHOD_PAGE}`, { waitUntil: 'load' })
+    await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready')
+    await functionLinkMarked(page)
+    await page.evaluate(() => { for (const link of document.querySelectorAll('.tmux-send a')) delete link.dataset.linkPreview })
+    await assert.rejects(functionLinkMarked(page), /no C function link marked for a preview/)
+    await page.evaluate(() => document.querySelector('#api-tmux-command')?.closest('section')?.remove())
+    await assert.rejects(functionLinkMarked(page), /no C function link marked for a preview/)
+    await page.goto(`${base}/py/stable/workspace/guides/`, { waitUntil: 'load' })
+    await assert.rejects(functionLinkMarked(page), /no C function link marked for a preview/)
+    console.log('Reference previews: a page without the marked C function link fails the check PASS')
+  } finally {
+    await context.close()
+  }
+}
+
+/** The C function a method's tmux command line names, in the tmux command section of its page. */
+const TMUX_FUNCTION_LINK = 'section.api-tmux-section:has(> #api-tmux-command) .tmux-send a[data-link-preview]'
+const TMUX_METHOD_PAGE = '/cxx/latest/reference/libtmux-server-panes/'
+
 export async function checkTmuxReferencePreviews(browser, base, { served: build } = {}) {
   const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1440, height: 1000 } })
   const page = await context.newPage()
@@ -634,11 +675,9 @@ export async function checkTmuxReferencePreviews(browser, base, { served: build 
   const origin = new URL(base).origin
   const served = build ? (href) => servedByBuild(href, build) : undefined
   try {
-    await page.goto(`${base}/cxx/latest/reference/libtmux-server-panes/`, { waitUntil: 'load' })
+    await page.goto(`${base}${TMUX_METHOD_PAGE}`, { waitUntil: 'load' })
     await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready')
-    const link = page.locator('p.gp-sphinx-api-mentions .tmux-send a[data-link-preview]').first()
-    assert.equal(await link.count(), 1, 'The method page has no C function link marked for a preview')
-    assert.equal(await link.textContent(), 'cmd_list_panes_server')
+    const link = await functionLinkMarked(page)
     await link.hover()
     // The first request for a declaration's card compiles its route in the dev server.
     await page.waitForFunction(() => document.getElementById('reference-link-preview')?.matches(':popover-open'), null, { timeout: 60000 })

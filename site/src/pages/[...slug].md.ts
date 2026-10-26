@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro'
 import { getCollection, type CollectionEntry } from 'astro:content'
 import { sourceUrl } from '@libtmux/api-model'
 import { API_MODELS } from '../lib/api-models'
-import { productApiHref, productApiRedirects, productApiRoutes } from '../lib/product-api'
+import { productApiAlternatives, productApiHref, productApiRedirects, productApiRoutes } from '../lib/product-api'
 import { symbolMarkdownWithLayout } from '../lib/symbol-markdown'
 import { buildLocale } from '../i18n/resolve'
 import { DEFAULT_LOCALE } from '../i18n/locales'
@@ -71,9 +71,12 @@ export const GET: APIRoute = async ({ props, site }) => {
   }
   const model = API_MODELS[route.port]
   const symbol = model.symbols.find((entry) => entry.id === route.id)!
+  let defaults: Record<string, string> = {}
+  try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
   return new Response(await symbolMarkdownWithLayout({
     model, symbol,
     version: route.version,
+    alternatives: productApiAlternatives(model, symbol, route.version, defaults),
     hrefFor: (entry) => productApiHref(model, entry, route.version),
     canonical: new URL(productApiHref(model, symbol, route.version), site ?? 'https://libtmux.org').href,
     source: sourceUrl(model, symbol),
