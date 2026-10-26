@@ -906,6 +906,13 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Window.Layout",
+   "page": "/powershell/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Window.Layout",
    "page": "/powershell/latest/guides/layout/",
    "title": "Arrange panes and resize windows",
    "section": "guides"
@@ -14448,13 +14455,6 @@
    "text": "Since",
    "page": "/lua/latest/topics/format-token-fields/",
    "line": 33,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "powershell",
-   "text": "Layout",
-   "page": "/powershell/latest/guides/compatibility/",
-   "line": 60,
    "why": "not defined in the stated port"
   },
   {
