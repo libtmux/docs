@@ -29,6 +29,21 @@ export function signatureMultiline(symbol: ApiSymbol, signature: Signature, port
   return params.includes('\n') || (params.length > 0 && symbol.name.length + params.length + (signature.returns?.length ?? 0) + 6 > 88)
 }
 
+/** Ports whose type aliases record the declared type in `type`, verbatim. */
+const ALIAS_DECLARATION_PORTS: ReadonlySet<string> = new Set(['ts', 'rs'])
+
+/**
+ * `type Name<T> = Value`, in the parts both renderers share.
+ *
+ * Only an alias that has no signature of its own and records what it names: an alias without
+ * `type` has nothing to declare, and a port with signatures prints them instead.
+ */
+export function aliasDeclaration(symbol: ApiSymbol, language?: string): { name: string; typeParams: string; value: string; text: string } | undefined {
+  if (symbol.kind !== 'typealias' || symbol.signatures.length || !symbol.type || !ALIAS_DECLARATION_PORTS.has(language ?? '')) return undefined
+  const typeParams = symbol.typeParams?.length ? `<${symbol.typeParams.join(', ')}>` : ''
+  return { name: symbol.name, typeParams, value: symbol.type, text: `type ${symbol.name}${typeParams} = ${symbol.type}` }
+}
+
 /** Keep native declaration syntax consistent in HTML and copied Markdown. */
 export function usesNativeSignatures(symbol: ApiSymbol, port?: string): boolean {
   return (port === 'rs' && Boolean(symbol.variant)) || supportsRustSignatures(symbol, port) || supportsTypeScriptSignatures(symbol, port) || supportsGoSignatures(symbol, port) || supportsJavaSignatures(symbol, port) || supportsCSharpSignatures(symbol, port) || supportsRubySignatures(symbol, port) || supportsLuaSignatures(symbol, port) || supportsElixirSignatures(symbol, port) || ['kotlin', 'scala', 'fsharp', 'c', 'powershell', 'julia'].includes(port ?? '') ||

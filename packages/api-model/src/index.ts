@@ -26,7 +26,7 @@ export * from './prose.ts'
 export { BUILTINS, builtinHref } from './builtins.ts'
 export * from './nav.ts'
 export { NAV } from './nav-config.ts'
-export { MEMBER_TIERS, memberSignals, memberTier, compareMembers, membersOf, type MemberSignals, type MemberTier } from './member-order.ts'
+export { MEMBER_TIERS, memberSignals, memberTier, compareMembers, membersOf, aliasTarget, type MemberSignals, type MemberTier } from './member-order.ts'
 
 export { parentInventory } from './parent-inventory.ts'
 

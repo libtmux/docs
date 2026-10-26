@@ -2,6 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
+import { aliasTarget, membersOf } from '../src/member-order.ts'
 import { extractProject } from '../src/project.ts'
 
 const dirs: string[] = []
@@ -46,5 +47,27 @@ describe('TypeScript type aliases', () => {
     expect(type('Boxed')?.typeParams).toEqual(['T extends string = "x"'])
     // A member that is not an alias keeps its annotation in `type`, unchanged.
     expect(type('ConnectionOptions.bufferSize')?.type).toBe('number')
+  })
+
+  it('resolves only a lone reference, following alias chains', async () => {
+    const model = await extract()
+    const named = (name: string) => model.symbols.find((symbol) => symbol.id === `types.${name}`)!
+    const names = (name: string) => membersOf({ ...model, port: 'ts' }, named(name)).map((member) => member.name)
+    expect(aliasTarget(model, named('ConnectOptions'))?.id).toBe('types.ConnectionOptions')
+    expect(names('ConnectOptions')).toEqual(['bufferSize', 'signal'])
+    expect(membersOf({ ...model, port: 'ts' }, named('ConnectOptions')).every((member) => member.inheritedFrom === 'types.ConnectionOptions')).toBe(true)
+    expect(names('Twice')).toEqual(['bufferSize', 'signal'])
+    // Controls: a union, an object type, an applied or built-in generic and an unknown name name no single declaration.
+    for (const name of ['Either', 'Shape', 'Boxed', 'Applied', 'Generic']) expect(names(name), name).toEqual([])
+    expect(aliasTarget(model, named('Either'))).toBeUndefined()
+    expect(aliasTarget(model, named('Applied'))).toBeUndefined()
+  })
+
+  it('stops on an alias cycle and on a port that has not opted in', async () => {
+    const model = await extract()
+    const loop = model.symbols.find((symbol) => symbol.id === 'types.Loop')!
+    expect(membersOf({ ...model, port: 'ts' }, loop)).toEqual([])
+    const connect = model.symbols.find((symbol) => symbol.id === 'types.ConnectOptions')!
+    expect(membersOf({ ...model, port: 'rs' }, connect)).toEqual([])
   })
 })

@@ -722,6 +722,8 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .
 .api-native-signature .api-declaration-name { color: var(--api-ink-name); }
 .api-native-signature .api-signature-context { color: var(--color-foreground-secondary); }
 .api-native-signature .api-operator { white-space: nowrap; }
+/* A union or object type keeps the line breaks it is written with. */
+.api-alias-value { white-space: pre-wrap; overflow-wrap: anywhere; }
 .api-method > h3 { font-size: 0.875rem; line-height: 1.7; }
 .api-method-source { margin-inline-start: 0.75rem; white-space: nowrap; font-size: 0.875em; }
 .api-method + .api-method { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--api-border); }

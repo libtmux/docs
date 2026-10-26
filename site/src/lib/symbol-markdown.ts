@@ -1,10 +1,10 @@
 import type { ApiModel, ApiSymbol, Signature, SourceApiModel, SymbolIndex } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { toMarkdown } from 'mdast-util-to-markdown'
-import { boundLabel, membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model'
+import { aliasTarget, boundLabel, membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { PORT_NAME, referenceAlternatives } from './api-models'
-import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasScalarMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
+import { aliasDeclaration, apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasScalarMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from './tmux-manual-data'
 import { tmuxCommandItems, tmuxCommandRows, tmuxCommandSeparator, tmuxSymbolSends, type ResolvedUsage } from './tmux-reference'
 import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl } from './tmux-catalog'
@@ -175,20 +175,21 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   if (symbol.exportedFrom) facts.push(`- **Exported from:** ${symbol.exportedFrom}`)
   if (symbol.inheritedFrom) facts.push(`- **Inherited from:** ${symbol.inheritedFrom}`)
   if (symbol.publicOwner && symbol.publicOwner !== symbol.id) facts.push(`- **Public owner:** ${symbol.publicOwner}`)
-  if (symbol.extends?.length) {
-    const bases = symbol.extends.map((base) => {
-      const parts: string[] = []
-      let plain = ''
-      for (const part of index?.linkType(base, symbol) ?? [{ text: base }]) {
-        if (!part.link) { plain += part.text; continue }
-        if (plain) { parts.push(inlineCode(plain)); plain = '' }
-        parts.push(`[${inlineCode(part.text)}](${part.link.href})`)
-      }
-      if (plain) parts.push(inlineCode(plain))
-      return parts.join('')
-    })
-    facts.push(`- **Bases:** ${bases.join(', ')}`)
+  // A type with its names linked where the site resolves them; the rest stays code.
+  const linkedType = (type: string) => {
+    const parts: string[] = []
+    let plain = ''
+    for (const part of index?.linkType(type, symbol) ?? [{ text: type }]) {
+      if (!part.link) { plain += part.text; continue }
+      if (plain) { parts.push(inlineCode(plain)); plain = '' }
+      parts.push(`[${inlineCode(part.text)}](${part.link.href})`)
+    }
+    if (plain) parts.push(inlineCode(plain))
+    return parts.join('')
   }
+  if (symbol.extends?.length) facts.push(`- **Bases:** ${symbol.extends.map(linkedType).join(', ')}`)
+  const aliased = aliasDeclaration(symbol, language) ? aliasTarget(model, symbol) : undefined
+  if (aliased && symbol.type) facts.push(`- **Alias of:** ${linkedType(symbol.type.trim())}`)
   if (ctx.canonical) facts.push(`- **Page:** ${ctx.canonical}`)
   if (facts.length) out.push(...facts, '')
   const commands = ctx.manualLinks ?? (port ? tmuxCommandsFor(port, symbol.publicId ?? symbol.id)
@@ -212,6 +213,8 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   if (language === 'julia' && symbol.kind === 'typealias' && symbol.type) {
     out.push(fencedCode(`${symbol.name} = ${symbol.type}`, 'julia'), '')
   }
+  const alias = aliasDeclaration(symbol, language)
+  if (alias) out.push(fencedCode(alias.text, language ?? ''), '')
   const signatures = language === 'c' ? symbol.signatures.filter((signature) => signature.raw) : symbol.signatures
   // A parameter set names its declaration whether or not the text was laid out.
   const setLabel = (entry: Signature) => entry.label && entry.label !== '__AllParameterSets' ? `${entry.label}${entry.isDefault ? ' (default)' : ''}:\n` : ''

@@ -221,6 +221,8 @@ import ApiType from './ApiType.astro'
 import ApiSignatureParameters from './ApiSignatureParameters.astro'
 const { symbol, index, language, keyword, prename, nameHref, value, pythonLayouts } = Astro.props
 const folds = (sig) => sig.params.length >= 10
+// Only a TypeScript or Rust alias has a declaration of its own.
+const alias = undefined
 ---
 <>
 ${source.slice(start, end)}

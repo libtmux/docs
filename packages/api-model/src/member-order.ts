@@ -88,14 +88,46 @@ export function memberSignals(
 
 const idOf = (s: ApiSymbol) => s.publicId ?? s.id
 
+const TYPE_KINDS: ReadonlySet<ApiSymbol['kind']> = new Set(['class', 'interface', 'struct', 'union', 'enum', 'trait', 'typealias', 'exception'])
+/** A name, possibly qualified: no type arguments, unions, object types or functions. */
+const BARE_REFERENCE = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*$/
+
+/**
+ * The declaration a type alias names, when its right-hand side is one bare reference.
+ *
+ * `type ConnectOptions = ConnectionOptions` is the same type as its target, so its page
+ * shows the target's members. A reference with type arguments, a union or an object
+ * type is a new type and has none to show. The alias's own module wins over a same-named
+ * declaration elsewhere; otherwise the name must be unique in the model.
+ */
+export function aliasTarget(model: ApiModelBase, alias: ApiSymbol): ApiSymbol | undefined {
+  const reference = alias.kind === 'typealias' ? alias.type?.trim() : undefined
+  if (!reference || !BARE_REFERENCE.test(reference)) return undefined
+  const name = reference.slice(reference.lastIndexOf('.') + 1)
+  const named = model.symbols.filter((symbol) => symbol !== alias && symbol.name === name && TYPE_KINDS.has(symbol.kind))
+  const scope = alias.parent ?? alias.id.slice(0, Math.max(0, alias.id.length - alias.name.length - 1))
+  const local = named.filter((symbol) => symbol.id === `${scope}.${name}` || (scope === '' && symbol.id === name))
+  const found = local.length ? local : named
+  return found.length === 1 ? found[0] : undefined
+}
+
+/** Ports whose `type` on an alias is its right-hand side, as written, and whose alias pages are covered by tests. */
+const ALIAS_MEMBER_PORTS: ReadonlySet<string> = new Set(['ts'])
+
 /** Include explicit public re-exports without inferring access from private bases. */
-export function membersOf(model: ApiModelBase & { port?: string }, owner: ApiSymbol, signals = memberSignals(model.port ?? '')): ApiSymbol[] {
+export function membersOf(model: ApiModelBase & { port?: string }, owner: ApiSymbol, signals = memberSignals(model.port ?? ''), seen = new Set<string>()): ApiSymbol[] {
   const members = model.symbols.filter((symbol) => symbol.parent === owner.id)
   for (const id of signals.inheritedParents.get(idOf(owner)) ?? []) {
     const source = model.symbols.find((symbol) => idOf(symbol) === id)
     if (source && !members.some((member) => idOf(member) === id || member.name === source.name)) {
       members.push({ ...source, parent: owner.id, inheritedFrom: source.parent })
     }
+  }
+  // An alias of a declaration lists that declaration's members; each keeps its own id and page.
+  const target = members.length || !ALIAS_MEMBER_PORTS.has(model.port ?? (model as { language?: string }).language ?? '') ? undefined : aliasTarget(model, owner)
+  if (target && !seen.has(target.id)) {
+    seen.add(owner.id)
+    for (const member of membersOf(model, target, signals, seen)) members.push({ ...member, parent: owner.id, inheritedFrom: member.inheritedFrom ?? target.id })
   }
   return owner.variant || owner.declarations?.some((declaration) => declaration.kind === 'constant')
     ? members : members.sort(compareMembers(signals))
