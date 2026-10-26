@@ -1,7 +1,7 @@
 import type { ApiModel, ApiSymbol, Signature, SourceApiModel, SymbolIndex } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { toMarkdown } from 'mdast-util-to-markdown'
-import { aliasTarget, boundLabel, membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model'
+import { aliasMembersTarget, aliasTarget, boundLabel, membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { PORT_NAME, referenceAlternatives } from './api-models'
 import { aliasDeclaration, apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasScalarMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
@@ -332,6 +332,10 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const members = membersOf(model, symbol, signals)
   const declared = members.filter((member) => !member.inheritedFrom || memberTier(member, signals) === 'parent')
   const inherited = members.filter((member) => member.inheritedFrom && memberTier(member, signals) !== 'parent')
+  const symbolLinkText = (target: ApiSymbol) => {
+    const name = inlineCode(target.name)
+    return ctx.hrefFor ? `[${name}](${ctx.hrefFor(target)})` : name
+  }
   const appendMembers = (entries: ApiSymbol[]) => {
     for (const member of entries) {
       out.push(`- ${ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)} (${symbol.variant && member.type ? inlineCode(member.type) : member.kind})${member.inheritedFrom ? `, inherited from ${inlineCode(member.inheritedFrom)}` : ''}${member.doc?.summary ? `: ${member.doc.summary}` : ''}`)
@@ -339,7 +343,8 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     out.push('')
   }
   if (declared.length) {
-    out.push(symbol.variant ? '## Fields' : '## Members', '')
+    const aliasedMembers = aliasMembersTarget(model, symbol)
+    out.push(symbol.variant ? '## Fields' : aliasedMembers ? `## Members of ${symbolLinkText(aliasedMembers)}` : '## Members', '')
     if (hasScalarMembers(symbol, declared)) {
       out.push('| Name | Value | Description |', '| --- | --- | --- |')
       const cell = (text: string) => text.replaceAll('|', '\\|').replaceAll('\n', ' ')

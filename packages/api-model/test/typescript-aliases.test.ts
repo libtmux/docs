@@ -55,7 +55,8 @@ describe('TypeScript type aliases', () => {
     const names = (name: string) => membersOf({ ...model, port: 'ts' }, named(name)).map((member) => member.name)
     expect(aliasTarget(model, named('ConnectOptions'))?.id).toBe('types.ConnectionOptions')
     expect(names('ConnectOptions')).toEqual(['bufferSize', 'signal'])
-    expect(membersOf({ ...model, port: 'ts' }, named('ConnectOptions')).every((member) => member.inheritedFrom === 'types.ConnectionOptions')).toBe(true)
+    // An alias is another name, so its members are not marked inherited.
+    expect(membersOf({ ...model, port: 'ts' }, named('ConnectOptions')).some((member) => member.inheritedFrom)).toBe(false)
     expect(names('Twice')).toEqual(['bufferSize', 'signal'])
     // Controls: a union, an object type, an applied or built-in generic and an unknown name name no single declaration.
     for (const name of ['Either', 'Shape', 'Boxed', 'Applied', 'Generic']) expect(names(name), name).toEqual([])

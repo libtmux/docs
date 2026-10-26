@@ -114,6 +114,16 @@ export function aliasTarget(model: ApiModelBase, alias: ApiSymbol): ApiSymbol | 
 /** Ports whose `type` on an alias is its right-hand side, as written, and whose alias pages are covered by tests. */
 const ALIAS_MEMBER_PORTS: ReadonlySet<string> = new Set(['ts'])
 
+/**
+ * The declaration whose members an alias page lists: an alias that owns no member and names
+ * one declaration, on a port that has opted in.
+ */
+export function aliasMembersTarget(model: ApiModelBase & { port?: string }, owner: ApiSymbol): ApiSymbol | undefined {
+  if (!ALIAS_MEMBER_PORTS.has(model.port ?? (model as { language?: string }).language ?? '')) return undefined
+  if (model.symbols.some((symbol) => symbol.parent === owner.id)) return undefined
+  return aliasTarget(model, owner)
+}
+
 /** Include explicit public re-exports without inferring access from private bases. */
 export function membersOf(model: ApiModelBase & { port?: string }, owner: ApiSymbol, signals = memberSignals(model.port ?? ''), seen = new Set<string>()): ApiSymbol[] {
   const members = model.symbols.filter((symbol) => symbol.parent === owner.id)
@@ -123,11 +133,12 @@ export function membersOf(model: ApiModelBase & { port?: string }, owner: ApiSym
       members.push({ ...source, parent: owner.id, inheritedFrom: source.parent })
     }
   }
-  // An alias of a declaration lists that declaration's members; each keeps its own id and page.
-  const target = members.length || !ALIAS_MEMBER_PORTS.has(model.port ?? (model as { language?: string }).language ?? '') ? undefined : aliasTarget(model, owner)
+  // An alias is another name for its target, so it lists the target's members as its own.
+  // Each keeps its id and page; a member the target itself inherits stays marked inherited.
+  const target = members.length ? undefined : aliasMembersTarget(model, owner)
   if (target && !seen.has(target.id)) {
     seen.add(owner.id)
-    for (const member of membersOf(model, target, signals, seen)) members.push({ ...member, parent: owner.id, inheritedFrom: member.inheritedFrom ?? target.id })
+    for (const member of membersOf(model, target, signals, seen)) members.push({ ...member, parent: owner.id })
   }
   return owner.variant || owner.declarations?.some((declaration) => declaration.kind === 'constant')
     ? members : members.sort(compareMembers(signals))

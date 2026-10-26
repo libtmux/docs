@@ -85,12 +85,16 @@ describe('TypeScript type alias declarations', () => {
     const target = symbolOf('types.ConnectionOptions')
     const members = membersOf(model, owner)
     expect(members.map((member) => member.name)).toEqual(OPTION_MEMBERS)
-    expect(members.every((member) => member.inheritedFrom === target.id)).toBe(true)
+    expect(members.some((member) => member.inheritedFrom)).toBe(false)
     // The alias owns no member symbol: each row is a target member, so it keeps that member's page.
     expect(model.symbols.filter((symbol) => symbol.parent === owner.id)).toEqual([])
     const document = await page('types.ConnectOptions')
-    const section = document.querySelector('#api-inherited')!
-    expect(section.textContent).toContain('Inherited members')
+    const heading = document.querySelector('#api-members')!
+    expect(heading.textContent!.replace(/\s+/g, ' ')).toMatch(/^Members of ConnectionOptions/)
+    expect(heading.querySelector('a')!.getAttribute('href')).toBe('/ts/latest/reference/types-connectionoptions/')
+    expect(document.querySelector('#api-inherited')).toBeNull()
+    expect(document.body.textContent).not.toMatch(/Reached through|Inherited from/)
+    expect(document.querySelector('.api-member-list .api-badge--mod')).toBeNull()
     expect([...document.querySelectorAll('.api-member-list a.api-member-link')].map((a) => [a.textContent, a.getAttribute('href')]))
       .toEqual(OPTION_MEMBERS.map((name) => [name, `/ts/latest/reference/types-connectionoptions-${name.toLowerCase()}/`]))
     for (const name of OPTION_MEMBERS) {
@@ -102,9 +106,10 @@ describe('TypeScript type alias declarations', () => {
     const markdown = symbolMarkdown({ model, symbol: symbolOf('types.ConnectOptions'), index, hrefFor })
     expect(markdown).toContain('```ts\ntype ConnectOptions = ConnectionOptions\n```')
     expect(markdown).toContain(`- **Alias of:** [\`ConnectionOptions\`](${hrefFor(symbolOf('types.ConnectionOptions'))})`)
-    expect(markdown).toContain('## Inherited members')
+    expect(markdown).toContain(`## Members of [\`ConnectionOptions\`](${hrefFor(symbolOf('types.ConnectionOptions'))})`)
+    expect(markdown).not.toMatch(/Inherited members|inherited from/)
     for (const name of OPTION_MEMBERS) {
-      expect(markdown).toContain(`[\`${name}\`](${hrefFor(symbolOf(`types.ConnectionOptions.${name}`))}) (property), inherited from \`types.ConnectionOptions\``)
+      expect(markdown).toContain(`[\`${name}\`](${hrefFor(symbolOf(`types.ConnectionOptions.${name}`))}) (property)`)
     }
     const union = symbolMarkdown({ model, symbol: symbolOf('types.MenuItem'), index, hrefFor })
     expect(union).toContain('```ts\ntype MenuItem = MenuEntry | "separator"\n```')
