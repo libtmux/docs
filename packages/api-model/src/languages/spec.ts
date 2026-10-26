@@ -493,6 +493,9 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
     // A type alias carries its parameters on itself; a callable carries them on its signature.
     const generics = hasParams ? undefined : declaredTypeParameters(child, spec)
     const memberDoc = docFor(raw, spec, memberSignatures, ctx.parser, generics)
+    // A TypeScript alias writes its right-hand side in `value`; Rust's `type_item` and
+    // other members write the annotation in `type`.
+    const aliasedType = child.childForFieldName('type') ?? (resolvedKind === 'typealias' ? child.childForFieldName('value') : null)
     emit(ctx, {
       id: memberId,
       name,
@@ -502,9 +505,9 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
       signatures: memberSignatures,
       ...(scopeBoundary !== undefined ? { typeScopeBoundary: scopeBoundary } : {}),
       ...(variant ? { variant: variant.shape } : {}),
-      type: hasParams ? undefined : child.childForFieldName('type') && spec.typeText
-        ? spec.typeText(child.childForFieldName('type')!)
-        : (child.childForFieldName('type')?.text ?? spec.implicitType?.(child))?.replace(/\s+/g, ' '),
+      type: hasParams ? undefined : aliasedType && spec.typeText
+        ? spec.typeText(aliasedType)
+        : (aliasedType?.text ?? spec.implicitType?.(child))?.replace(/\s+/g, ' '),
       value: child.type === 'annotation_type_element_declaration' && spec.grammar === 'java' ? child.childForFieldName('value')?.text : variant ? variant.value : hasParams
         ? undefined
         : child.childForFieldName('declarator')?.childForFieldName('value')?.text.replace(/\s+/g, ' '),
