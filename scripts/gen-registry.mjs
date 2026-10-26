@@ -4,15 +4,16 @@
  *
  * The agent prompts name an install command, and an install command that does
  * not resolve is worse than no prompt at all: the reader's agent runs it,
- * fails, and starts inventing. Seven of the eight ports have no stable release
- * and one is not published at all, so the right spelling differs per port and
- * changes the day any of them ships.
+ * fails, and starts inventing. A port with only prereleases needs a different
+ * spelling from one with a final release, and one port is not published at
+ * all, so the right spelling differs per port and changes the day one ships.
  *
  * Two spellings are forced rather than chosen, and the rest are pinned so a
  * prompt's prose and its command agree:
  *
- *   - Swift tags only prereleases, and `0.1.0-alpha.4` sorts below `0.1.0`, so
- *     `from: "0.1.0"` has nothing in range. `exact:` is the only form.
+ *   - A Swift prerelease such as `0.1.0-alpha.4` sorts below `0.1.0`, so
+ *     `from:` never selects one. `exact:` is the only form for a prerelease;
+ *     a final release takes `from:`.
  *   - C++ has no vcpkg port, so a CMake FetchContent block at a tag is the
  *     only way in.
  *
@@ -21,9 +22,9 @@
  * pin, because a resolver with no release to prefer falls back to a
  * prerelease. The pins stay because the prompt names a version in prose beside
  * the command, and because a bare command changes what it installs the day a
- * stable lands while a generated pin changes visibly.
+ * release lands while a generated pin changes visibly.
  *
- * So which of `installForms.{stable,prerelease,git}` applies is a fact about
+ * So which of `installForms.{release,prerelease,git}` applies is a fact about
  * the registry today, not about the port, and it belongs in generated data
  * rather than in a hand-typed string that goes stale the next time anyone
  * publishes. `ports.ts` owns the spellings; this owns the state.
@@ -84,7 +85,7 @@ const expand = (p) => (p.startsWith('~/') ? join(homedir(), p.slice(2)) : p)
  * written for git tags. Registries mostly report the bare number: crates.io
  * says `0.1.0-alpha.10`, Maven Central says `0.0.1-alpha.10`, PyPI says
  * `0.62.0`, and only the Go proxy says `v0.0.1-alpha.6`. Parsing a bare
- * number with those regexes returns null, which would classify every stable
+ * number with those regexes returns null, which would classify every final
  * release as unpublished. Normalise first, once, here.
  */
 /** Whether a version string is a prerelease under this port's grammar. */
@@ -96,10 +97,12 @@ function isPrerelease(version, grammar) {
 const newestFirst = (versions, grammar) =>
   [...versions].sort((a, b) => comparePackageVersions(a, b, grammar))
 
-/** The release stage a PyPI project declares in its Development Status classifier. */
-const PYPI_STAGES = {
-  '2 - Pre-Alpha': 'pre-alpha', '3 - Alpha': 'alpha', '4 - Beta': 'beta', '5 - Production/Stable': 'stable', '6 - Mature': 'stable',
-}
+/**
+ * The prerelease stage a PyPI project declares in its Development Status
+ * classifier. A later classifier declares nothing here: a final release is
+ * named by its version's series, never by a claim of stability.
+ */
+const PYPI_STAGES = { '2 - Pre-Alpha': 'pre-alpha', '3 - Alpha': 'alpha', '4 - Beta': 'beta' }
 const declaredStage = (classifiers) => PYPI_STAGES[
   classifiers?.find((entry) => entry.startsWith('Development Status :: '))?.slice('Development Status :: '.length)
 ]
@@ -358,13 +361,13 @@ async function allTags(port) {
 /** Classify one port from the versions its registry carries. */
 function classify(port, versions, tag) {
   if (versions === null || versions.length === 0) {
-    return { status: 'unpublished', version: null, stable: null, tag }
+    return { status: 'unpublished', version: null, release: null, tag }
   }
   const ordered = newestFirst(versions, port.tagGrammar)
-  const stable = ordered.find((v) => !isPrerelease(v, port.tagGrammar)) ?? null
-  return stable
-    ? { status: 'stable', version: stable, stable, tag }
-    : { status: 'prerelease', version: ordered[0], stable: null, tag }
+  const release = ordered.find((v) => !isPrerelease(v, port.tagGrammar)) ?? null
+  return release
+    ? { status: 'release', version: release, release, tag }
+    : { status: 'prerelease', version: ordered[0], release: null, tag }
 }
 
 const opts = parseArgs(process.argv.slice(2))
@@ -378,12 +381,14 @@ if (opts.help) {
  * port may not be published yet, so fill only missing entries from the seed.
  * Reading --out alone would leave a fresh output path without any fallback.
  */
-const seed = existsSync(DEFAULT_OUT)
-  ? JSON.parse(readFileSync(DEFAULT_OUT, 'utf8'))
-  : existsSync(opts.out)
-    ? JSON.parse(readFileSync(opts.out, 'utf8'))
-    : { ports: {} }
-const baseline = opts.baseline ? JSON.parse(readFileSync(opts.baseline, 'utf8')) : seed
+const SCHEMA = 2
+/** A file written under another schema is no fallback: its entries name other fields. */
+const read = (path) => {
+  const data = JSON.parse(readFileSync(path, 'utf8'))
+  return data.schema === SCHEMA ? data : { ports: {} }
+}
+const seed = existsSync(DEFAULT_OUT) ? read(DEFAULT_OUT) : existsSync(opts.out) ? read(opts.out) : { ports: {} }
+const baseline = opts.baseline ? read(opts.baseline) : seed
 const committed = { ports: { ...seed.ports, ...baseline.ports } }
 
 const ports = {}
@@ -457,7 +462,7 @@ for (const port of PORTS) {
 }
 
 const payload = {
-  schema: 1,
+  schema: SCHEMA,
   /**
    * Deliberately not a timestamp of this run. A field that changes on every
    * invocation makes `--check` fail for no reason and turns a no-op refresh

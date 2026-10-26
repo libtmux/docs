@@ -529,13 +529,13 @@ $ node scripts/gen-registry.mjs
 ```
 
 Regenerates `site/src/data/registry.json`, which records what each port's
-package registry carries right now: a stable release, a prerelease only, or
+package registry carries right now: a final release, a prerelease only, or
 nothing at all. `installCommand` in
 [ports.ts](../site/src/lib/ports.ts) composes that with the install spellings
 to produce the command a page or an agent prompt shows, so the command cannot
 name a version the registry does not have.
 
-It matters because most ports have no stable release, and several
+It matters because a port with only prereleases is common, and several
 resolve nothing unless the prerelease is named: Cargo treats an alpha as out of
 range for a plain requirement, `go get` without a version resolves the highest
 release and a prerelease is not one, and SwiftPM's `from:` excludes prereleases

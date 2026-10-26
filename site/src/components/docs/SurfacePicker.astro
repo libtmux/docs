@@ -3,7 +3,7 @@ import DocumentationIcon from './DocumentationIcon.astro'
 import StatusBadge from '../StatusBadge.astro'
 import { currentDocumentation, type DocumentationSurface } from '../../lib/documentation-navigation'
 import { branding } from '../../lib/branding'
-import { PICKER_GROUP_SUMMARY, PORT_BY_SLUG, PRODUCT_STATUS_LINE } from '../../lib/ports'
+import { PICKER_GROUP_SUMMARY, PORT_BY_SLUG, productStatusLine } from '../../lib/ports'
 import { withRoot } from '../../lib/site-root'
 import type { Locale } from '../../i18n/locales'
 import '../../styles/documentation-picker.css'
@@ -24,7 +24,7 @@ const artwork = (id: string) => {
 ---
 <details class="surface-picker doc-picker" data-surface-picker data-doc-picker data-pagefind-ignore="all">
   <summary aria-label={solutionsOnly ? 'Choose a solution' : `Choose documentation: ${surface.label}, ${currentLabel}${surface.concept ? ', concept example' : surface.status ? `, ${surface.status}` : ''}`}
-    aria-description={!solutionsOnly && surface.status ? PRODUCT_STATUS_LINE[surface.status] : undefined}>
+    aria-description={!solutionsOnly && surface.status ? productStatusLine(surface.status) : undefined}>
     {port ? <img class="surface-artwork" src={artwork(surface.id)} width="30" height="30" alt="" /> : <TmuxLogo />}
     <span class="surface-current"><strong><span class="surface-label">{!solutionsOnly && surface.id === 'tmux'
       ? <><span class="surface-name-full">{surface.label}</span><span class="surface-name-short">tmux</span></>

@@ -36,20 +36,22 @@ const breadcrumbs = [{ name: 'libtmux', url: withRoot('/') }, { name: 'Support a
 
     <h2 id="release-stages" class="mt-10 text-xl font-semibold">Release stages</h2>
     <p class="mt-3">
-      A badge shows the stage that the package's registry declares, or the stage of the newest
-      version the registry lists: <strong>pre-alpha</strong>, <strong>alpha</strong>,
-      <strong>beta</strong>, <strong>rc</strong> or <strong>stable</strong>. When the registry lists no
-      release at all, the badge shows the stage of the repository's newest release tag instead, and a
-      tag that is exactly <code>MAJOR.MINOR.PATCH</code>, with an optional leading <code>v</code> or
-      package label, such as <code>v0.1.0</code>, reads <strong>stable</strong>. A tag newer than the
+      A badge shows the prerelease stage that the package's registry declares, or the stage of the
+      newest version the registry lists: <strong>pre-alpha</strong>, <strong>alpha</strong>,
+      <strong>beta</strong> or <strong>rc</strong>. A final release shows its series instead, such as
+      <strong>0.x</strong> for <code>0.1.0</code>: it is released, and any release may change or
+      remove exported identifiers, so pin an exact version. When the registry lists no release at
+      all, the badge shows the stage of the repository's newest release tag instead, and a tag that is
+      exactly <code>MAJOR.MINOR.PATCH</code>, with an optional leading <code>v</code> or package label,
+      such as <code>v0.1.0</code>, shows its series. A tag newer than the
       registry's newest version does not count: a registry that lists only <code>0.1.0-alpha.2</code>
       shows <strong>alpha</strong> even after the repository tags <code>v0.1.0</code>. A package with
       no release and no release tag shows <strong>unreleased</strong>. A language without an
       implementation has no badge.
     </p>
     <p class="mt-3">
-      Python's <code>tmuxp</code> workspace loader and Python MCP server show the stage their PyPI
-      projects declare instead of <strong>concept</strong>.
+      Python's <code>tmuxp</code> workspace loader and Python MCP server show their own PyPI release
+      stage or series instead of <strong>concept</strong>.
     </p>
 
     <h2 id="use-an-example" class="mt-10 text-xl font-semibold">Use an example</h2>

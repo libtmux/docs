@@ -32,7 +32,7 @@ describe('documentation surface navigation', () => {
     const surfaces = buildDocumentationSurfaces(port.slug, 'latest', menus(port, 'latest'))
     for (const surface of surfaces) {
       const expected: ProductStatus | undefined = surface.id === 'core' ? releaseMaturity(REGISTRY.ports[port.slug]!)
-        : port.slug === 'py' ? REGISTRY.ports.py!.packages![surface.id === 'mcp' ? 'libtmux-mcp' : 'tmuxp']!.maturity : 'concept'
+        : port.slug === 'py' ? releaseMaturity(REGISTRY.ports.py!.packages![surface.id === 'mcp' ? 'libtmux-mcp' : 'tmuxp']!) : 'concept'
       expect(surface.status, `${port.slug} ${surface.id}`).toBe(expected)
       expect(surface.status, `${port.slug} ${surface.id}`).toBe(productStatus(port, surface.id as 'core' | DocProduct, REGISTRY))
       // Concept is a support scope that leads a companion's release stage; the flag and the badge agree.
@@ -40,15 +40,15 @@ describe('documentation surface navigation', () => {
     }
   })
 
-  it('builds Julia’s surfaces and badges the library stable from its final tag alone', () => {
+  it('builds Julia’s surfaces and badges the library 0.x from its final tag alone', () => {
     const julia = PORTS.find((port) => port.slug === 'julia')!
     const recorded = REGISTRY.ports.julia!
     // What the deploy's resolver wrote once v0.1.0 was tagged and General did not carry it.
-    REGISTRY.ports.julia = { status: 'unpublished', version: null, stable: null, tag: 'v0.1.0' }
+    REGISTRY.ports.julia = { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' }
     try {
       const surfaces = buildDocumentationSurfaces('julia', 'latest', menus(julia, 'latest'))
       expect(Object.fromEntries(surfaces.map((surface) => [surface.id, surface.status])))
-        .toEqual({ core: 'stable', mcp: 'concept', workspace: 'concept' })
+        .toEqual({ core: '0.x', mcp: 'concept', workspace: 'concept' })
     } finally {
       REGISTRY.ports.julia = recorded
     }
@@ -57,9 +57,9 @@ describe('documentation surface navigation', () => {
   it('shows Python the stage its PyPI projects declare and every other port a concept companion', () => {
     const status = (slug: string) => Object.fromEntries(buildDocumentationSurfaces(slug, 'latest', menus(PORTS.find((port) => port.slug === slug)!, 'latest'))
       .map((surface) => [surface.id, surface.status]))
-    expect(status('py')).toEqual({ core: 'stable', mcp: 'pre-alpha', workspace: 'stable' })
-    expect(status('go')).toEqual({ core: 'alpha', mcp: 'concept', workspace: 'concept' })
-    expect(status('java')).toEqual({ core: 'alpha', mcp: 'concept', workspace: 'concept' })
+    expect(status('py')).toEqual({ core: '0.x', mcp: 'pre-alpha', workspace: '1.x' })
+    expect(status('go')).toEqual({ core: '0.x', mcp: 'concept', workspace: 'concept' })
+    expect(status('java')).toEqual({ core: '0.x', mcp: 'concept', workspace: 'concept' })
   })
 
   it('offers the tmux area without inventing a library port or empty prose sections', async () => {

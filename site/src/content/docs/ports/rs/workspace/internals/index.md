@@ -42,8 +42,8 @@ the requested name, so repeated builds require a new name or explicit cleanup.
 
 Add `tmux-workspace` separately from the core crate. Workspace creation and
 freezing are asynchronous and require a running Tokio runtime and tmux on the
-host. Pin a prerelease explicitly; a stable-only Cargo requirement does not
-select an alpha release.
+host. Releases are numbered 0.1.N and any release may change the API, so pin
+an exact version.
 
 The parser records unknown keys in `unsupported_keys`. Review those lists
 before building: an unrecognized field does not configure the created session.

@@ -21,14 +21,13 @@ and tmux on Linux. Start in an empty directory.
 The following commands run in a POSIX shell.
 
 Install [LibTmux](https://www.powershellgallery.com/packages/LibTmux/)
-from PowerShell Gallery with PSResourceGet. The prerelease flag includes the
-alpha releases. Installation uses your current user's module directory;
-the program loads it with `Import-Module LibTmux`.
+from PowerShell Gallery with PSResourceGet. Installation uses your current
+user's module directory; the program loads it with `Import-Module LibTmux`.
 
 ```console
 $ pwsh -NoLogo -NoProfile -Command '
   $ErrorActionPreference = "Stop"
-  Install-PSResource -Name LibTmux -Prerelease `
+  Install-PSResource -Name LibTmux `
     -Repository PSGallery -Scope CurrentUser -TrustRepository
 '
 ```

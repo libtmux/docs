@@ -21,7 +21,7 @@ Use Ruby 4.0.7 with its development headers, Bundler, Git, a C compiler and
 Make, and tmux 3.3a or newer on a Unix host. The bundle includes native
 extensions such as `io-event`, `json`, and `fiddle`. This recipe uses the
 source revision whose MCP contract is documented here; it does not
-assume that a newer checkout and an installed prerelease have identical APIs.
+assume that a newer checkout and an installed release have identical APIs.
 
 Create an empty directory:
 

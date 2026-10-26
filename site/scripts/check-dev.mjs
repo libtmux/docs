@@ -1048,8 +1048,8 @@ try {
         assert.equal(result.redundantHeaderLinks, 0, 'Surface destinations are absent from the header bar')
         assert(result.headerControls.every((control) => Math.abs(control.height - result.headerControls[0].height) < 0.1
           && Math.abs(control.top - result.headerControls[0].top) < 0.1), `${path} at ${width}px: header controls align at equal heights`)
-        // tmux pages document tmux itself, so the libtmux alpha notice is absent there.
-        if (path.startsWith('tmux/')) assert.equal(result.badgeForeground, null, `${path}: no libtmux alpha notice`)
+        // tmux pages document tmux itself, so the libtmux release notice is absent there.
+        if (path.startsWith('tmux/')) assert.equal(result.badgeForeground, null, `${path}: no libtmux release notice`)
         else assert.equal(result.badgeForeground, 'rgb(255, 255, 255)', 'Filled badge uses white foreground')
         if (width < 1536) assert(result.schemeLabelWidth <= 1, 'Compact color-scheme controls hide their text visually')
         assert(result.overflow <= 1, `${path} at ${width}px: page overflow ${result.overflow}px`)

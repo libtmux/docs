@@ -34,7 +34,7 @@ describe('Ruby port metadata', () => {
       'libtmux-mcp',
       'libtmux-workspace',
     ])
-    expect(Object.values(registry.ports.ruby.packages).every((entry) => entry.version === '0.1.0.alpha.1')).toBe(true)
+    expect(Object.values(registry.ports.ruby.packages).every((entry) => entry.version === '0.1.0')).toBe(true)
   })
 
   it('offers install or build instructions for each available workspace app', () => {
@@ -69,10 +69,10 @@ describe('Lua port metadata', () => {
       productAvailability: { mcp: 'unpublished', workspace: 'unpublished' },
     })
     expect(registry.ports.lua).toMatchObject({
-      status: 'prerelease',
-      version: '0.1.0alpha1-1',
-      stable: null,
-      tag: 'v0.1.0alpha1',
+      status: 'release',
+      version: '0.1.0-1',
+      release: '0.1.0-1',
+      tag: 'v0.1.0',
     })
   })
 })
@@ -121,7 +121,7 @@ describe('workspace CLI availability', () => {
 
   it('installs the Rust crate and the Go command from their registries', () => {
     expect(installs('rs').map(({ code }) => code)).toEqual([
-      expect.stringMatching(/^cargo install --locked --version 0\.1\.0-alpha\.\d+ tmux-workspace$/),
+      'cargo install --locked tmux-workspace',
     ])
     expect(installs('go').map(({ code }) => code)).toEqual([
       'go install github.com/libtmux/libtmux-go/workspace/cmd/tmux-workspace@latest',
@@ -185,7 +185,7 @@ describe('port destinations', () => {
     const powershell = PORT_BY_SLUG.powershell!
     const tree = (ref: string) => `https://github.com/libtmux/libtmux-powershell/tree/${ref}/src/LibTmux.PowerShell`
     expect(portDestinations({ port: powershell, version: 'latest' }).source).toMatchObject({ url: tree('master'), path: 'src/LibTmux.PowerShell', ref: 'master' })
-    expect(portDestinations({ port: powershell, version: 'stable' }).source.url).toBe(tree('master'))
+    expect(portDestinations({ port: powershell, version: 'next' }).source.url).toBe(tree('master'))
     expect(portDestinations({ port: powershell, version: 'v0.1.0-alpha2' }).source).toMatchObject({ url: tree('v0.1.0-alpha2'), ref: 'v0.1.0-alpha2' })
     expect(portDestinations({ port: powershell, version: 'v0.1.0-alpha2', revision: 'abc123' }).source.url).toBe(tree('abc123'))
     expect(portDestinations({ port: powershell, version: 'latest', revision: 'abc123' }).source.url).toBe(tree('abc123'))
@@ -216,7 +216,7 @@ describe('port destinations', () => {
     expect(portDestinations({ port: ts, product: 'mcp', version: 'latest', revision: 'abc123' }).source.url).toBe(tree('master'))
     expect(portDestinations({ port: ts, product: 'mcp', version: 'v0.1.0-alpha.12' }).source.url).toBe(tree('v0.1.0-alpha.12'))
     expect(portDestinations({ port: ts, product: 'mcp', version: 'v0.1.0-alpha.12', revision: 'abc123' }).source.url).toBe(tree('v0.1.0-alpha.12'))
-    expect(portDestinations({ port: ts, product: 'mcp', version: 'stable', revision: 'abc123' }).source.url).toBe(tree('abc123'))
+    expect(portDestinations({ port: ts, product: 'mcp', version: 'next', revision: 'abc123' }).source.url).toBe(tree('abc123'))
   })
 
   it('links only the repository for a product without a directory or package', () => {
@@ -278,5 +278,31 @@ describe('port destinations', () => {
     expect(JSON.parse(output)).not.toHaveProperty('ecosystem')
     // The verification script reads the inventory the same way.
     expect(JSON.parse(output).inventory).toBeGreaterThan(0)
+  })
+})
+
+describe('install text for the 0.1.0 ports', () => {
+  const RELEASED = ['ruby', 'lua', 'powershell', 'elixir', 'ts', 'rs', 'go', 'java', 'kotlin', 'scala', 'csharp', 'fsharp', 'swift']
+  const PRERELEASE_TEXT = /alpha|--pre\b|--prerelease|-AllowPrerelease|-Prerelease|every release so far/i
+
+  function handWritten(slug: string): string[] {
+    const port = PORT_BY_SLUG[slug]!
+    const lists = [port.installs, ...(port.packages ?? []).map((entry) => entry.installs ?? [])]
+    const texts = lists.flat().flatMap((install) => [install.code, install.note ?? '', ...(install.additionalBlocks ?? []).map((block) => block.code)])
+    const server = SERVERS[slug]
+    if (server) for (const method of server.methods) {
+      const command = server.resolve(method, { id: 'off' } as never)
+      texts.push(command.prereq ?? '', command.note ?? '', ...command.args)
+    }
+    return texts
+  }
+
+  it.each(RELEASED)('carries no alpha version or prerelease flag in the %s install lists', (slug) => {
+    for (const text of handWritten(slug)) expect(text, `${slug}: ${text}`).not.toMatch(PRERELEASE_TEXT)
+  })
+
+  it('catches a prerelease flag when one is planted', () => {
+    expect('dotnet tool install --global LibTmux.Mcp --prerelease').toMatch(PRERELEASE_TEXT)
+    expect('gem install --version 0.1.0.alpha.1 libtmux').toMatch(PRERELEASE_TEXT)
   })
 })

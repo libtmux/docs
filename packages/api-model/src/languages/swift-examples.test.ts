@@ -55,6 +55,19 @@ describe('complete Swift API examples', () => {
       `https://github.com/${source.repo}/blob/${source.revision}/Examples/Sources/ApiServer/ApiServer.swift`)
   })
 
+  it('depends on a final release with from:, the range the package README recommends', () => {
+    const { read, files } = fixture()
+    files['Sources/LibTmux/LibTmuxVersion.swift'] =
+      'public enum LibTmuxVersion {\n    public static let current = "0.1.0"\n}\n'
+    const target = symbol()
+    attachCompleteSwiftExamples([target], read, source)
+    const packageBlock = target.doc?.examples?.[1]
+    expect(packageBlock?.code).toContain(
+      '.package(url: "https://github.com/libtmux/libtmux-swift.git", from: "0.1.0")')
+    expect(packageBlock?.code).not.toContain('exact:')
+    expect(packageBlock?.intro).toContain('from release 0.1.0')
+  })
+
   it('leaves older source revisions without a manifest unchanged', () => {
     const target = symbol()
     const original = structuredClone(target)

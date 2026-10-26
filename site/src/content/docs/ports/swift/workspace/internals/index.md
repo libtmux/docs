@@ -45,7 +45,7 @@ failure, it attempts to remove the exact session it created and reports both
 errors if cleanup also fails.
 
 These pages describe the current source API. The port distinguishes its
-unreleased source examples from the released alpha package. Use a matching
+unreleased source examples from the released package. Use a matching
 source revision for these examples, or consult the release's own README when
 pinning a published version.
 
