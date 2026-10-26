@@ -184,6 +184,13 @@ export async function checkSidebarDemo(browser, url, options = {}) {
           const ownerCount = f.locator('.api-nav__tree .api-nav__row:has(> .api-nav__kind)').filter({ has: f.locator('.api-nav__label').filter({ hasText: /^Server$/ }) }).first().locator('.api-nav__count')
           if (values['negative-control'] === 'count') await ownerCount.evaluate((node) => { node.textContent = '0' })
           assert.equal(await ownerCount.textContent(), String(serverCount))
+          // Every nested row carries the guide line, kind subgroups included, in each layout that nests.
+          const guides = await f.locator('.api-nav__tree').evaluate((tree) => [...tree.querySelectorAll(
+            ".api-nav__item:is([aria-description], [data-lazy^='group:']):not([aria-level='1']) > .api-nav__row > .api-nav__label, .api-nav__leaf[aria-description]:not([aria-level='1']) > .api-nav__label")]
+            .filter((label) => label.getClientRects().length).map((label) => ({ text: label.textContent.trim(), line: getComputedStyle(label, '::before').borderInlineStartWidth })))
+          if (variant !== 'focus') assert(guides.length > 0, `${variant}/${viewport}/${theme}: the layout shows nested rows`)
+          if (variant === 'grouped') assert(guides.some((row) => /^Methods?\b/.test(row.text)), `${viewport}/${theme}: the Grouped kind subgroup is a nested row`)
+          for (const row of guides) assert.equal(row.line, '1px', `${variant}/${viewport}/${theme}: nested row ${row.text} shows its guide line`)
           const geometry = await f.locator('.api-nav').evaluate((nav) => ({ width: nav.clientWidth, overflow: nav.scrollWidth > nav.clientWidth, role: nav.getAttribute('role') }))
           assert.equal(geometry.overflow, false, `${variant}/${viewport}/${theme}: no sidebar overflow`)
           if (viewport === 'desktop') assert.equal(geometry.role, null)
