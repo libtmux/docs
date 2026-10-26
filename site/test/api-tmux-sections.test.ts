@@ -282,6 +282,18 @@ describe('the reference page of pane.Pane.sendKeys', () => {
     expect(section('api-other-ports').querySelectorAll('tbody tr').length).toBe(wanted[3].count)
   })
 
+  it('counts the source-path steps the tmux C API section draws', async () => {
+    const owner = symbolOf('ts', 'server.Server.newSession')
+    const cApi = sections('ts', owner).find((section) => section.type === 'c-api')!
+    const document = await page('ts', owner)
+    const drawn = document.getElementById('api-tmux-c-api')!.closest('section')!
+    // newSession's curated path draws steps beyond the degree-1 chips, so a count of the chips alone falls short.
+    expect(drawn.querySelectorAll('.api-source-path li a').length).toBeGreaterThan(0)
+    expect(new Set([...drawn.querySelectorAll('a:not(.api-heading-link)')].map((a) => a.getAttribute('href'))).size).toBe(cApi.count)
+    const link = [...document.querySelectorAll('nav.api-section-links a')].find((a) => a.getAttribute('href') === '#api-tmux-c-api')!
+    expect(link.querySelector('span')?.textContent).toBe(String(cApi.count))
+  })
+
   it('has none of them on the page of a symbol with no tmux data', async () => {
     const document = await page('ts', symbolOf('ts', 'client.Client.constructor'))
     expect(document.querySelector('.api-tmux-section')).toBeNull()
