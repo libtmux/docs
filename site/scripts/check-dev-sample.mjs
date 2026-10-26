@@ -189,9 +189,9 @@ export async function checkDevSample(browser, base) {
       assert.equal(await page.locator('main h1').count(), 1, `${path}: one main heading`)
       const rootPath = new URL(base).pathname.replace(/\/$/, '')
       const inventoryLinks = await page.locator('footer a[href$=".inv"]').evaluateAll((links) => links.map((link) => link.getAttribute('href')))
-      assert.deepEqual(inventoryLinks, path === 'api-example-probe/'
-        ? [`${rootPath}/ts/latest/objects.inv`, `${rootPath}/objects-full.inv`]
-        : [...(path.startsWith('tmux/') ? [`${rootPath}/tmux/objects.inv`] : []), `${rootPath}/objects-full.inv`], `${path}: inventory links follow page scope`)
+      // The probe renders a TypeScript reference page outside /ts/latest/, so it names no port inventory.
+      assert.deepEqual(inventoryLinks, [...(path.startsWith('tmux/') ? [`${rootPath}/tmux/objects.inv`] : []), `${rootPath}/objects-full.inv`],
+        `${path}: inventory links follow page scope`)
       assert.equal(await page.getByRole('link', { name: 'About Sphinx inventories', exact: true }).getAttribute('href'), `${rootPath}/meta/intersphinx/`)
       for (const width of [1440, 768, 390]) {
         await page.setViewportSize({ width, height: 1000 })
