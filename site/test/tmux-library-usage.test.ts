@@ -4,6 +4,7 @@ import { Window } from 'happy-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { dispatcherProblems, documentProblems, isPrivateSymbol, notPublic, publicSymbols, viaRevisionFor } from '../../scripts/gen-tmux-usage.mjs'
 import { API_MODELS } from '../src/lib/api-models'
+import { kindMark } from '../src/lib/api-labels'
 import { PORTS } from '../src/lib/ports'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { TMUX_MANUALS, tmuxApiLinks, tmuxCommandsFor, tmuxLibrarySection, tmuxManualHeadings, tmuxManualUrl } from '../src/lib/tmux-manual-data'
@@ -895,10 +896,30 @@ describe('the manual page', () => {
     expect(document.querySelector('#libraries')).not.toBeNull()
     expect(document.querySelectorAll('.tmux-usage table').length).toBe(1)
     expect(document.querySelector('.tmux-usage tr[data-port="swift"] a')!.getAttribute('href')).toMatch(/\/swift\/[^/]+\/reference\/server-panes\(\)\/$/)
-    expect([...document.querySelectorAll('h2#list-panes-implementation + p + ul a')].map((a) => a.textContent)).toEqual([
+    expect([...document.querySelectorAll('h2#list-panes-implementation + p + .tmux-usage a')].map((a) => a.querySelector('code')!.textContent)).toEqual([
       'cmd_list_panes_entry', 'cmd_list_panes_exec', 'cmd_list_panes_server', 'cmd_list_panes_session', 'cmd_list_panes_window',
     ])
   })
+
+  it('gives each C implementation entry the kind badge the tmux C model records for it', async () => {
+    const model = tmuxSourceModel('latest')
+    for (const [slug, names] of [['send-keys', ['cmd_send_keys_entry', 'cmd_send_keys_exec']], ['list-panes', ['cmd_list_panes_entry', 'cmd_list_panes_exec', 'cmd_list_panes_server']]] as const) {
+      const document = await page(slug)
+      const links = [...document.querySelectorAll(`h2#${slug}-implementation + p + .tmux-usage a`)]
+      for (const name of names) {
+        const link = links.find((a) => a.querySelector('code')!.textContent === name)!
+        const kind = model.symbols.find((entry) => entry.name === name)!.kind
+        // The same badge the API lists use: the compact mark, titled with the kind and drawn from the kind's palette.
+        const badge = link.querySelector('.api-nav__kind')!
+        expect(badge, name).not.toBeNull()
+        expect(badge.textContent, name).toBe(kindMark(kind))
+        expect(badge.className, name).toContain(`api-badge--kind-${kind}`)
+      }
+      // The entry is a table and the callback a function, so the badges are not one kind throughout.
+      expect(new Set(links.map((a) => a.querySelector('.api-nav__kind')!.textContent)).size, slug).toBeGreaterThan(1)
+    }
+  })
+
 
   it('ends with Use from a library, after the C implementation and everything else', async () => {
     for (const slug of ['list-panes', 'capture-pane']) {
@@ -920,7 +941,7 @@ describe('the manual page', () => {
 
   it('has no section for a command that no language sends, rather than a link that is not a sender', async () => {
     const document = await page('set-window-option')
-    expect(document.querySelector('.tmux-usage')).toBeNull()
+    expect(document.querySelector('.tmux-usage table')).toBeNull()
     expect(document.querySelector('h2#set-window-option-use-from-a-library')).toBeNull()
     expect(tmuxLibrarySection('set-window-option')).toBeUndefined()
     expect(tmuxLibrarySection('capture-pane')).toBe('usage')

@@ -3,6 +3,7 @@ import DocsLayout from '../../../../layouts/DocsLayout.astro'
 import SectionHeading from '../../../../components/SectionHeading.astro'
 import { Code } from 'astro-expressive-code/components'
 import TmuxUsage from '../../../../components/tmux/TmuxUsage.astro'
+import ApiBadge from '../../../../components/api/ApiBadge.astro'
 import { tmuxCommandSources, tmuxReferenceUrl, tmuxResolvedUsage } from '../../../../lib/tmux-reference'
 import { withRoot } from '../../../../lib/site-root'
 import type { PageSource } from '../../../../lib/markdown-twins'
@@ -104,7 +105,7 @@ const manualHtml = command || isManual
     {implementations.length > 0 && <>
       <SectionHeading id={rowAnchor(command.name, 'implementation')}>C implementation</SectionHeading>
       <p>Internal declarations in tmux {reference.version}:</p>
-      <ul>{implementations.map((entry) => <li><a href={entry.href}><code>{entry.name}</code></a></li>)}</ul>
+      <div class="tmux-usage"><span class="tmux-usage__links">{implementations.map((entry) => <span class="tmux-usage__item"><a href={entry.href}><ApiBadge label={entry.kind} variant="kind" value={entry.kind} compact preview={false} /><code>{entry.name}</code></a></span>)}</span></div>
     </>}
     {tmuxLibrarySection(command.name) && <>
       <SectionHeading id={rowAnchor(command.name, 'use from a library')} legacyId="libraries">Use from a library</SectionHeading>

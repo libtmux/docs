@@ -240,7 +240,7 @@ export function tmuxCommandSources(version: string, name: string) {
   const command = model.commands.find((entry) => entry.name === name)
   const scoped = tmuxScopes(name).flatMap((scope) => tmuxScopeFunction(version, name, scope, { inline: false }) ?? [])
   return command ? [...[command.entry, command.callback].flatMap((id) => model.symbols.find((entry) => entry.id === id) ?? []), ...scoped]
-    .map((symbol) => ({ name: symbol.name, href: tmuxReferenceUrl(version, symbol) })) : []
+    .map((symbol) => ({ name: symbol.name, kind: symbol.kind, href: tmuxReferenceUrl(version, symbol) })) : []
 }
 
 export interface SymbolSend extends Omit<SymbolUsage, 'scopes'> {
