@@ -159,7 +159,7 @@ describe('standard types in product signatures', () => {
   it('links the exception property and error category that PowerShell guides name', () => {
     expect(builtinHref('powershell', 'InnerException')).toBe('https://learn.microsoft.com/dotnet/api/system.exception.innerexception')
     expect(builtinHref('powershell', 'NotImplemented'))
-      .toBe('https://learn.microsoft.com/dotnet/api/system.management.automation.errorcategory?view=powershellsdk-7.4.0')
+      .toBe('https://learn.microsoft.com/dotnet/api/system.management.automation.errorcategory?view=powershellsdk-7.4.0#system-management-automation-errorcategory-notimplemented')
     for (const port of ['csharp', 'go']) expect(builtinHref(port, 'NotImplemented'), port).toBeUndefined()
     expect(builtinHref('powershell', 'Message')).toBeUndefined()
   })
