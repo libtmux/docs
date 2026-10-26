@@ -63,8 +63,8 @@ const reasonParts = (text: string) => text.split(/`([^`]+)`/)
   </table>
   {usage.absent ? <p class="tmux-usage__absent">{usage.absent}</p> : usage.absent === undefined && absent.length > 0 && <p class="tmux-usage__absent">No method in {new Intl.ListFormat('en', { type: 'disjunction' }).format(absent)} sends this command{single ? ' at this scope' : ''} itself.</p>}
 </div>
-<style>
-  /* A table wider than its column scrolls inside it; a chip is never cut or wrapped to fit. */
+<style is:global>
+  /* A table wider than its column scrolls inside it; a chip is never cut or wrapped to fit. The style is global: the API sections and the manual page draw the same lists, and every rule is under .tmux-usage. */
   .tmux-usage { margin-block: 1rem; font-size: 0.8125rem; max-inline-size: 100%; overflow-x: auto; container: tmux-usage / inline-size; }
   .tmux-usage table { display: table; width: 100%; border-collapse: collapse; table-layout: auto; font-size: inherit; }
   .tmux-usage :is(th, td) { padding: 0.45rem 0.9rem 0.45rem 0; vertical-align: top; text-align: left; border-bottom: 1px solid var(--color-edge, var(--color-background-border)); }

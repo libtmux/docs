@@ -507,7 +507,7 @@ describe('from a method to the command and its C function', () => {
       Object.values(flags).map((flag) => `- [\`list-panes\`](${manual}) \`${flag}\``))
     const functions = section('tmux C API').filter((line) => line.includes('cmd_list_panes_'))
     for (const scope of Object.keys(flags)) {
-      expect(functions).toContain(`- [\`cmd_list_panes_${scope}\`](/tmux/latest/reference/c-function-cmd-list-panes-c-cmd_list_panes_${scope}/) (function), degree 1`)
+      expect(functions).toContain(`- [\`cmd_list_panes_${scope}\`](/tmux/latest/reference/c-function-cmd-list-panes-c-cmd_list_panes_${scope}/) (function)`)
     }
     // The control: a command with no scope is the command alone.
     const swift = API_MODELS.swift.symbols.find((entry) => (entry.publicId ?? entry.id) === 'Server.panes()')!
@@ -1021,7 +1021,7 @@ function layoutProblems(css: string): string[] {
 
 describe('the chip layout of the usage table', () => {
   const component = readFileSync(new URL('../src/components/tmux/TmuxUsage.astro', import.meta.url), 'utf8')
-  const css = /<style>([\s\S]*)<\/style>/.exec(component)![1]
+  const css = /<style[^>]*>([\s\S]*)<\/style>/.exec(component)![1]
 
   it('stacks the chips of a cell flush, keeps each on one line, and scrolls or stacks instead of overlapping', () => {
     expect(layoutProblems(css)).toEqual([])

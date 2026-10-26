@@ -26,8 +26,10 @@ export interface TmuxCApiSection extends Base {
   type: 'c-api'
   /** The functions the commands end in: degree 1. */
   direct: CApiItem[]
-  /** Functions reached from a direct one along a curated path through the tmux source. */
-  paths: { title: string; from: CApiItem; items: (CApiItem & { degree: number })[] }[]
+  /** What the degrees count, said once for every path. */
+  note?: string
+  /** Curated paths through the tmux source, each entered at a direct function (degree 1) and followed in order. */
+  paths: { title: string; items: (CApiItem & { degree: number })[] }[]
 }
 export interface TmuxCatalogSection extends Base { type: 'catalog'; catalog: CatalogKind; items: { name: string; href: string }[] }
 export interface GuidesSection extends Base { type: 'guides'; groups: { id: string; label: string; items: { title: string; href: string }[] }[] }
@@ -37,6 +39,9 @@ export type ApiTmuxSection = TmuxCommandSection | TmuxCApiSection | TmuxCatalogS
 type Alternatives = ReturnType<typeof referenceAlternatives>
 
 const VERSION = 'latest'
+/** The sentence the concept table writes for every language it has no mapping or reason for. */
+const GENERIC_ABSENCE = /^No source-verified .+ equivalent is recorded for this operation\.$/
+
 const order = (slug: string) => PORTS.findIndex((entry) => entry.slug === slug)
 const capitalize = (text: string) => text[0].toUpperCase() + text.slice(1)
 
@@ -58,14 +63,15 @@ function otherPorts(port: string, alternatives: Alternatives): OtherPortsSection
         return [{ port: entry.port, name: entry.name, links: [], note: `\`${qualified}\`${entry.note ? `. ${entry.note}` : ''}`, noteIndex: noteIndex(entry.port) }]
       }
       // A reason says why this language has none; a language with no reason is one of the closing sentence's.
-      return entry.absent ? [{ port: entry.port, name: entry.name, links: [], note: entry.absent }] : []
+      return entry.absent && !GENERIC_ABSENCE.test(entry.absent) ? [{ port: entry.port, name: entry.name, links: [], note: entry.absent }] : []
     })
-    const bare = ports.filter(({ entry }) => !entry.href && !entry.publicId && !entry.absent).map(({ entry }) => entry.name)
+    const bare = ports.filter(({ entry }) => !entry.href && !entry.publicId && !(entry.absent && !GENERIC_ABSENCE.test(entry.absent)))
+      .sort((a, b) => order(a.entry.port) - order(b.entry.port)).map(({ entry }) => entry.name)
     return {
       label: group.label,
       table: {
         command: group.label, caption: `Equivalents of ${group.label} in other languages`,
-        absent: bare.length ? `No equivalent in ${new Intl.ListFormat('en', { type: 'disjunction' }).format(bare)}.` : null,
+        absent: bare.length ? `No equivalent is recorded in ${new Intl.ListFormat('en-GB', { type: 'disjunction' }).format(bare)}.` : null,
         groups: [{ heading: 'Equivalent', ports: rows.sort((a, b) => order(a.port) - order(b.port)) }],
       } satisfies UsageTable,
     }
@@ -103,13 +109,13 @@ export function apiTmuxSections(
       const start = path.symbols.findIndex((entry) => direct.some((found) => found.id === entry.id))
       if (start < 0) return []
       const item = (entry: ApiSymbol): CApiItem => ({ id: entry.id, name: entry.name, href: tmuxReferenceUrl(VERSION, entry), kind: entry.kind })
-      return [{ title: path.title, from: item(path.symbols[start]),
-        items: path.symbols.slice(start + 1).map((entry, i) => ({ ...item(entry), degree: i + 2 })) }]
+      return [{ title: path.title, items: path.symbols.slice(start).map((entry, i) => ({ ...item(entry), degree: i + 1 })) }]
     })
     sections.push({
       type: 'c-api', id: 'api-tmux-c-api', label: 'tmux C API', direct: direct.map(({ symbol: _, ...rest }) => rest), paths,
-      count: direct.length + paths.reduce((total, path) => total + path.items.length, 0),
-      intro: `The C declarations in tmux that implement these commands${paths.length ? ', and the functions they reach along curated paths through the source' : ''}.`,
+      count: direct.length + paths.reduce((total, path) => total + path.items.length - 1, 0),
+      intro: 'The C declarations in tmux that implement these commands.',
+      ...(paths.length ? { note: 'Each path starts at a function a command runs, which is degree 1. The degree counts calls from there: degree 2 is called by that function, degree 3 by the next, and so on.' } : {}),
     })
   }
 

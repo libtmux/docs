@@ -159,10 +159,11 @@ function tmuxSectionMarkdown(section: ApiTmuxSection): string[] {
       out.push(`- ${link(item.command, item.href)}${scope}${item.when ? ` (${item.when})` : ''}`)
     }
   } else if (section.type === 'c-api') {
-    for (const item of section.direct) out.push(`- ${link(item.name, item.href)} (${item.kind}), degree 1`)
+    for (const item of section.direct) out.push(`- ${link(item.name, item.href)} (${item.kind})`)
+    if (section.note) out.push('', section.note)
     for (const path of section.paths) {
       out.push('', `### ${path.title}`, '')
-      for (const item of path.items) out.push(`- ${link(item.name, item.href)} (${item.kind}), degree ${item.degree}, from ${inlineCode(path.from.name)}`)
+      for (const item of path.items) out.push(`${item.degree}. ${item.degree > 1 ? 'calls → ' : ''}${link(item.name, item.href)} (${item.kind})`)
     }
   } else if (section.type === 'catalog') {
     for (const item of section.items) out.push(`- [${item.name}](${item.href}) (${section.catalog})`)

@@ -1,7 +1,8 @@
+import { readFileSync } from 'node:fs'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window, type Document } from 'happy-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { conceptsFor, type ApiSymbol } from '@libtmux/api-model'
+import { CONCEPTS, conceptsFor, type ApiSymbol } from '@libtmux/api-model'
 import mentions from '../src/data/mentions.json'
 import { API_MODELS } from '../src/lib/api-models'
 import { apiTmuxSections, type ApiTmuxSection } from '../src/lib/api-tmux-sections'
@@ -67,11 +68,13 @@ describe('the sections of pane.Pane.sendKeys', () => {
     for (const [i, concept] of conceptsFor('ts', 'pane.Pane.sendKeys').entries()) {
       const table = ports.groups[i].table
       const rows = table.groups[0].ports
-      const absent = others.filter((port) => !concept.symbols[port] && !concept.absent?.[port])
-      // A reason stays on its own row; only the languages without one are collapsed.
-      expect(rows.filter((row) => !row.links.length).map((row) => row.port).sort()).toEqual(others.filter((port) => !concept.symbols[port] && concept.absent?.[port]).sort())
+      // Only a reason that says something stays a row; the sentence the concept table writes for every unmapped language does not.
+      const reasoned = (port: string) => !concept.symbols[port] && concept.absent?.[port] && !/^No source-verified .+ equivalent is recorded for this operation\.$/.test(concept.absent[port])
+      const absent = others.filter((port) => !concept.symbols[port] && !reasoned(port))
+      expect(rows.filter((row) => !row.links.length).map((row) => row.port).sort()).toEqual(others.filter((port) => reasoned(port)).sort())
       for (const row of rows.filter((row) => !row.links.length && !concept.symbols[row.port])) expect(row.note).toBe(concept.absent![row.port])
-      expect(table.absent).toBe(absent.length ? expect.stringContaining('No equivalent in') : null)
+      expect(absent.every((port) => !rows.some((row) => row.port === port))).toBe(true)
+      expect(table.absent).toEqual(absent.length ? expect.stringContaining('No equivalent is recorded in') : null)
       linked += rows.filter((row) => row.links.length).length
     }
     expect(linked).toBeGreaterThan(0)
@@ -102,13 +105,12 @@ describe('the tmux C API of a method that creates a session', () => {
     if (cApi?.type !== 'c-api') throw new Error('no C API section')
     expect(cApi.direct.map((item) => item.name)).toContain('cmd_new_session_exec')
     const path = cApi.paths.find((entry) => entry.title === 'Create a session and its first pane')!
-    expect(path.from.name).toBe('cmd_new_session_exec')
     expect(path.items.map((item) => [item.name, item.degree, item.kind])).toEqual([
-      ['spawn_window', 2, 'function'], ['spawn_pane', 3, 'function'], ['window_add_pane', 4, 'function'], ['window_pane_create', 5, 'function'],
+      ['cmd_new_session_exec', 1, 'function'], ['spawn_window', 2, 'function'], ['spawn_pane', 3, 'function'], ['window_add_pane', 4, 'function'], ['window_pane_create', 5, 'function'],
     ])
     const model = tmuxSourceModel('latest')
     for (const item of path.items) expect(item.href).toBe(tmuxReferenceUrl('latest', model.symbols.find((entry) => entry.id === item.id)!))
-    expect(cApi.count).toBe(cApi.direct.length + path.items.length)
+    expect(cApi.count).toBe(cApi.direct.length + path.items.length - 1)
   })
 
   it('shows only the degree-1 functions of a command with no curated path', () => {
@@ -120,12 +122,62 @@ describe('the tmux C API of a method that creates a session', () => {
     const symbol = symbolOf('ts', 'server.Server.newSession')
     const document = await html(sections('ts', symbol))
     const cApi = document.querySelector('#api-tmux-c-api')!.closest('section')!
-    expect(cApi.querySelector('h3')!.textContent).toBe('Create a session and its first pane')
-    expect([...cApi.querySelectorAll('.tmux-usage__when')].map((note) => note.textContent)).toContain('degree 5, from cmd_new_session_exec')
+    // One ordered sequence under the path name, as Paths through the source draws it, with the degree before each step.
+    expect(cApi.querySelector('.api-source-path h3')!.textContent).toBe('Create a session and its first pane')
+    const steps = [...cApi.querySelectorAll('.api-source-path li')]
+    expect(steps.map((step) => step.querySelector('code')!.textContent)).toEqual(['cmd_new_session_exec', 'spawn_window', 'spawn_pane', 'window_add_pane', 'window_pane_create'])
+    expect(steps.map((step) => step.querySelector('a > .api-source-path__edge')!.textContent)).toEqual(['1', '2', '3', '4', '5'])
+    expect(steps.map((step) => step.querySelectorAll(':scope > .api-source-path__edge').length)).toEqual([0, 1, 1, 1, 1])
+    expect(steps[1].querySelector(':scope > .api-source-path__edge')!.textContent).toBe('calls →')
+    // The degree-1 declarations stay as chips above the paths, and the degrees are explained once.
+    expect(cApi.querySelectorAll(':scope > .tmux-usage a').length).toBe(2)
+    expect(cApi.textContent!.match(/degree counts calls/g)).toHaveLength(1)
+    expect(cApi.textContent).not.toContain('from cmd_new_session_exec')
     const text = symbolMarkdown({ model: API_MODELS.ts, symbol })
     const body = text.split('## tmux C API\n')[1].split('\n## ')[0]
-    expect(body).toContain('### Create a session and its first pane')
-    expect(body).toMatch(/- \[`window_pane_create`\]\(\/tmux\/latest\/reference\/c-function-window-c-window_pane_create\/\) \(function\), degree 5, from `cmd_new_session_exec`/)
+    expect(body).toContain('### Create a session and its first pane\n\n1. [`cmd_new_session_exec`]')
+    expect(body).toMatch(/\n5\. calls → \[`window_pane_create`\]\(\/tmux\/latest\/reference\/c-function-window-c-window_pane_create\/\) \(function\)/)
+    expect(body.match(/degree counts calls/g)).toHaveLength(1)
+  })
+})
+
+describe('the wording of the sections', () => {
+  it('names the symbol as inline code in HTML and keeps the backticks in Markdown', async () => {
+    const symbol = symbolOf('ts', 'server.Server.newSession')
+    const document = await html(sections('ts', symbol))
+    for (const id of ['api-tmux-command', 'api-guides']) {
+      const intro = document.getElementById(id)!.closest('section')!.querySelector('p')!
+      expect(intro.textContent, id).not.toContain('`')
+      expect(intro.querySelector('code')!.textContent, id).toBe('newSession')
+    }
+    expect(symbolMarkdown({ model: API_MODELS.ts, symbol })).toContain('The tmux commands behind `newSession`.')
+  })
+
+  it('separates the guides of one group with commas', async () => {
+    const symbol = symbolOf('ts', 'server.Server.newSession')
+    const list = sections('ts', symbol).find((section) => section.type === 'guides')
+    if (list?.type !== 'guides') throw new Error('no guides')
+    const group = list.groups.find((entry) => entry.items.length > 1)!
+    expect(group, 'two mentions in one group').toBeDefined()
+    const document = await html([list])
+    const paragraph = [...document.querySelectorAll('section p')].find((p) => p.querySelectorAll('a').length === group.items.length && p.textContent!.includes(group.items[0].title))!
+    expect(paragraph.textContent).toBe(group.items.map((item) => item.title).join(', '))
+  })
+
+  it('collapses the generic absences of send-keys into one sentence and keeps Java\'s reason as a row', () => {
+    const concept = CONCEPTS['send-keys']
+    expect(concept.absent!.java).toContain('no direct equivalent')
+    const ports = sections('ts', sendKeys).find((section) => section.type === 'ports')
+    if (ports?.type !== 'ports') throw new Error('no ports')
+    const table = ports.groups.find((group) => group.label === concept.label)!.table
+    const rows = table.groups[0].ports
+    expect(rows.find((row) => row.port === 'java')!.note).toBe(concept.absent!.java)
+    const generic = ['powershell', 'julia', 'elixir', 'fsharp']
+    for (const port of generic) {
+      expect(concept.absent![port]).toMatch(/^No source-verified/)
+      expect(rows.some((row) => row.port === port), port).toBe(false)
+    }
+    expect(table.absent).toBe('No equivalent is recorded in PowerShell, Julia, Elixir or F#.')
   })
 })
 
@@ -246,5 +298,26 @@ describe('the rows under a declaration', () => {
     const member = await entry({ member: true })
     expect([...member.querySelectorAll('.gp-sphinx-api-mentions-label')].map((label) => label.textContent)).toEqual(['tmux command', 'Discussed in'])
     expect(member.querySelector('.api-elsewhere')).not.toBeNull()
+  })
+})
+
+describe('the styles the lists borrow', () => {
+  // Astro scopes a component's style to the component's own markup, so a list drawn by another component or page
+  // gets none of it unless the rule is global. The manual page's chips ran together for want of this.
+  const read = (file: string) => readFileSync(new URL(`../src/components/${file}`, import.meta.url), 'utf8')
+
+  it('reach the chip lists of the manual page and the API sections: global, with the gap between chips', () => {
+    const usage = read('tmux/TmuxUsage.astro')
+    expect(usage).toContain('<style is:global>')
+    expect(usage).toMatch(/\.tmux-usage__links \{[^}]*gap: 0\.35rem/)
+    // Global is safe because every selector in the block is under the component's own class.
+    const selectors = [...usage.split('<style is:global>')[1].matchAll(/^\s*([^\s@/*][^{\n]*)\{/gm)].map((match) => match[1])
+    expect(selectors.length).toBeGreaterThan(5)
+    for (const selector of selectors) expect(selector.trim(), selector).toMatch(/^\.tmux-usage/)
+  })
+
+  it('reach the path sequence of the tmux C API section', () => {
+    const relationships = read('api/ApiRelationships.astro')
+    for (const selector of ['.api-source-path ol', '.api-source-path li', '.api-source-path li a', '.api-source-path__edge']) expect(relationships, selector).toContain(`:global(${selector})`)
   })
 })
