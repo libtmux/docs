@@ -19,7 +19,7 @@ on:
     inputs:
       path-prefix:
         description: >
-          S3 key prefix this call may write, e.g. 'py/v0.46.2', 'py/stable',
+          S3 key prefix this call may write, e.g. 'py/v0.46.2', 'py/next',
           'pr-42'. Validated below, not just documented — this is the one
           thing standing between a caller and every other prefix in the
           bucket.
@@ -57,7 +57,7 @@ on:
         type: string
         default: ''
       version:
-        description: Version slug for the manifest entry (VersionEntry.slug), e.g. 'v0.46.2', 'stable'. Required when `port` is set.
+        description: Version slug for the manifest entry (VersionEntry.slug), e.g. 'v0.46.2', 'next'. Required when `port` is set.
         required: false
         type: string
         default: ''
@@ -147,7 +147,7 @@ jobs:
           reserved=(py ruby lua powershell julia elixir ts rs go java kotlin scala csharp fsharp cxx swift manifest _shell)
           for r in "${reserved[@]}"; do
             if [[ "$p" == "$r" ]]; then
-              echo "::error::path-prefix '$p' is a bare reserved top-level name — qualify it, e.g. '$r/stable'" >&2
+              echo "::error::path-prefix '$p' is a bare reserved top-level name — qualify it, e.g. '$r/latest'" >&2
               exit 1
             fi
           done

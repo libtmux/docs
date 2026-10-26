@@ -17,7 +17,7 @@ usage() {
 Usage: scripts/build-site.sh [options]
 
   --versions v1,v2,...  Version slugs to build per self-hosted port
-                         (default: latest,stable)
+                         (default: latest)
   --ports p1,p2,...     Limit to these port slugs (default: all self-hosted
                          ports from site/src/lib/ports.ts)
   --skip-refs           Skip native reference renderers (selected-source MCP is required)
@@ -27,7 +27,7 @@ Usage: scripts/build-site.sh [options]
 USAGE
 }
 
-versions_arg="latest,stable"
+versions_arg="latest"
 versions_explicit=0
 ports_filter=""
 skip_refs=0
@@ -966,7 +966,7 @@ for shell_locale in $(list_locales); do
   log "building the shell for $shell_locale (base=$LIBTMUX_DOCS_LOCALES_ROOT/$shell_locale/)"
   LIBTMUX_DOCS_LOCALE="$shell_locale" \
     LIBTMUX_DOCS_ROOT="${LIBTMUX_DOCS_LOCALES_ROOT:-}/$shell_locale/" \
-    build_shell "$LIBTMUX_DOCS_LOCALES_ROOT/$shell_locale/" "$root_version" "trunk" "true" "stable" "$assembly_out/$shell_locale"
+    build_shell "$LIBTMUX_DOCS_LOCALES_ROOT/$shell_locale/" "$root_version" "trunk" "true" "latest" "$assembly_out/$shell_locale"
 done
 
 # Every port's home page (site/src/pages/[port]/index.astro) is built here,
@@ -1019,7 +1019,7 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
     # `versionedDocs: false` stays supported, not because anything uses it.
     log "building $name ($slug) prose only (base=$LIBTMUX_DOCS_PORT_ROOT/$slug/, reference on $ecosystem_host)"
     LIBTMUX_DOCS_PORT="$slug" \
-      build_shell "$LIBTMUX_DOCS_PORT_ROOT/$slug/" "stable" "alias" "false" "stable" "$site_out/$slug"
+      build_shell "$LIBTMUX_DOCS_PORT_ROOT/$slug/" "latest" "trunk" "false" "latest" "$site_out/$slug"
     # That build just overwrote this port's home page with a copy of the
     # site homepage — see the snapshot comment above. Put the real one back.
     [ -f "$port_home_snapshots/$slug.html" ] &&
@@ -1072,11 +1072,11 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
     # Five ports used to answer "the API" twice, in three different visual
     # systems: Breathe for C++, DocC for Swift, staged Markdown for TypeScript
     # and .NET, and this site's own components at /reference/. A reader
-    # arriving at /cxx/stable/api/ met a page with no cards, no badges, no
+    # arriving at /cxx/latest/api/ met a page with no cards, no badges, no
     # source links and no prose, while /reference/cxx/ had all four.
     #
     # A port that publishes its own API tree is the exception and stays
-    # generated: /py/stable/api/ is gp-sphinx rendering upstream's own
+    # generated: /py/latest/api/ is gp-sphinx rendering upstream's own
     # documentation — the thing this reference is built to match, and the
     # oracle `site/scripts/check-style-parity.mjs` compares against. Deleting
     # it would delete the measurement. `publishesOwnApi` in ports.ts carries
@@ -1210,7 +1210,7 @@ fi
 log "publishing inventories from assembled pages"
 node "$script_dir/publish-inventories.mjs" "$site_out" "$LIBTMUX_DOCS_PORT_ROOT/"
 
-# Only here is a whole-site link check meaningful. Every `/py/stable/` path is
+# Only here is a whole-site link check meaningful. Every `/py/latest/` path is
 # written by a different `astro build`, so any single build reports thousands
 # of them missing and is right to; the assembly is the first moment all of
 # them exist at once.

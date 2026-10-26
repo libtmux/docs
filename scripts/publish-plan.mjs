@@ -3,10 +3,10 @@
 // One dispatch publishes any set of ports at a ref:
 //
 // - `latest` publishes each port's default branch as `latest`. It is the
-//   default version only while the port has no stable release, the rule a
+//   default version only while the port has no final release, the rule a
 //   trunk push follows (scripts/port-docs-identity.sh).
 // - `release` republishes each port's newest release tag, plus `next` for a
-//   prerelease or `stable` (the default) for a release, as a tag push does.
+//   prerelease. A final release is the default, as a tag push makes it.
 // - Any other ref is one port's exact ref, published as the inputs name it.
 //
 // Dispatch capability and the caller branch come from the port catalog.
@@ -80,15 +80,15 @@ export function plan(inputs, catalog, lookup, versions) {
       workflow: dispatch.workflow, dispatchRef: dispatch.ref ?? defaultBranch, language: dispatch.language ?? '' }
     const releases = tags.filter((tag) => versions.releaseTag(tag, port) !== null)
     if (ref === 'latest') {
-      const stable = releases.some((tag) => !versions.packageVersionIsPrerelease(versionOf(tag, port), port.tagGrammar))
-      entries.push({ ...base, sourceRef: defaultBranch, version: 'latest', kind: 'trunk', isDefault: !stable, resolvesTo: '' })
+      const released = releases.some((tag) => !versions.packageVersionIsPrerelease(versionOf(tag, port), port.tagGrammar))
+      entries.push({ ...base, sourceRef: defaultBranch, version: 'latest', kind: 'trunk', isDefault: !released, resolvesTo: '' })
     } else if (ref === 'release') {
       const tag = versions.newestPublishedTag(releases, port, null)
       if (!tag) continue
       const version = versionOf(tag, port)
-      const alias = versions.packageVersionIsPrerelease(version, port.tagGrammar) ? 'next' : 'stable'
-      entries.push({ ...base, sourceRef: tag, version, kind: 'tag', isDefault: false, resolvesTo: '' })
-      entries.push({ ...base, sourceRef: tag, version: alias, kind: 'alias', isDefault: alias === 'stable', resolvesTo: version })
+      const prerelease = versions.packageVersionIsPrerelease(version, port.tagGrammar)
+      entries.push({ ...base, sourceRef: tag, version, kind: 'tag', isDefault: !prerelease, resolvesTo: '' })
+      if (prerelease) entries.push({ ...base, sourceRef: tag, version: 'next', kind: 'alias', isDefault: false, resolvesTo: version })
     } else {
       const kind = inputs.versionKind
       if (!KINDS.includes(kind)) fail(`an exact ref needs version-kind trunk, tag or alias, not ${kind || 'auto'}`)

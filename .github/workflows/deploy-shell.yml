@@ -4,7 +4,7 @@ name: deploy-shell
 # and historical versions remain owned by their port publishers.
 #
 # The shell has no versioned URL space of its own (notes/research/06: root
-# is always "whatever's on trunk," never /latest/ or /stable/ like a port).
+# is always "whatever's on trunk," never /latest/ like a port).
 # A tag here is a release marker for this repo's own history; it deploys to
 # the same root a trunk push does, not a separate prefix. Release branches
 # are a per-port version concept (versions.ts VersionKind 'branch', e.g.

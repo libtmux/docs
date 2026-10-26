@@ -53,7 +53,7 @@ describe('published version manifest merge', () => {
     }])).toThrow('preview entry')
     expect(() => merge(seed, [{
       port: 'ruby',
-      manifest: { schema: 1, ports: { ruby: [] }, defaultVersion: { ruby: 'stable' } },
+      manifest: { schema: 1, ports: { ruby: [] }, defaultVersion: { ruby: 'v0.46.2' } },
     }])).toThrow('has no published entry')
   })
 
