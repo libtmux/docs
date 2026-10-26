@@ -209,7 +209,7 @@ export interface ApiDependencyNavigation {
 }
 
 export interface Port {
-  /** URL segment under the site root, e.g. `py` in /py/stable/. */
+  /** URL segment under the site root, e.g. `py` in /py/latest/. */
   slug: string
   /** Artwork palette and compact navigation label. */
   logoLanguage: string
@@ -327,7 +327,7 @@ export interface Port {
    * Which form applies is not a property of the port, it is the current state
    * of its registry, which `site/src/data/registry.json` records and
    * `scripts/gen-registry.mjs` refreshes. A port moves from `prerelease` to
-   * `stable` when its first final release reaches the registry.
+   * `release` when its first final release reaches the registry.
    *
    * The prerelease forms pin explicitly. Not because the bare command fails:
    * measured against the live registries, `cargo add libtmux` resolves
@@ -336,11 +336,11 @@ export interface Port {
    * package has no release at all. The pin is here because a prompt states the
    * version in prose a line above the command, so the two have to agree, and
    * because an eval that records what it installed needs the command to say
-   * it. A bare command also changes what it installs the day a stable lands,
+   * it. A bare command also changes what it installs the day a release lands,
    * silently; the generated pin changes visibly.
    *
    * Swift's prerelease form pins `exact:` because its alpha tags sort below
-   * `0.1.0`, so a `from:` range had nothing in it; the stable form uses
+   * `0.1.0`, so a `from:` range had nothing in it; the release form uses
    * `from:`, as the package README does.
    *
    * `{version}` is the registry's newest matching release and `{tag}` the
@@ -349,7 +349,7 @@ export interface Port {
    */
   installForms: {
     /** Unpinned, or version-pinned where the ecosystem always pins. */
-    stable: InstallForm
+    release: InstallForm
     /** Names the prerelease explicitly, because these resolvers skip it otherwise. */
     prerelease: InstallForm
     /** Straight from the repository, for a port the registry does not carry. */
@@ -429,7 +429,7 @@ const CORE_PORTS: readonly Port[] = [
       // Pairing the two installed into the ambient environment rather than the
       // project uv had just created, which an agent following the prompt would
       // not notice until an import failed somewhere else.
-      stable: { code: 'uv add libtmux', lang: 'console' },
+      release: { code: 'uv add libtmux', lang: 'console' },
       prerelease: { code: "uv add --prerelease=allow 'libtmux=={version}'", lang: 'console' },
       git: { code: 'uv add "libtmux @ git+https://github.com/tmux-python/libtmux@{tag}"', lang: 'console' },
     },
@@ -498,7 +498,7 @@ const CORE_PORTS: readonly Port[] = [
     registry: { name: 'RubyGems', url: 'https://rubygems.org/gems/libtmux', icon: 'rubygems' },
     initProject: { code: 'bundle init', lang: 'console' },
     installForms: {
-      stable: { code: 'bundle add libtmux', lang: 'console' },
+      release: { code: 'bundle add libtmux', lang: 'console' },
       prerelease: { code: 'bundle add libtmux --version {version}', lang: 'console' },
       git: {
         code: 'bundle add libtmux --git https://github.com/libtmux/libtmux-ruby.git --ref {tag}',
@@ -534,7 +534,7 @@ const CORE_PORTS: readonly Port[] = [
     registry: { name: 'LuaRocks', url: 'https://luarocks.org/modules/tony/libtmux', icon: 'luarocks' },
     initProject: { code: 'luarocks init', lang: 'console' },
     installForms: {
-      stable: { code: 'luarocks --local install libtmux', lang: 'console' },
+      release: { code: 'luarocks --local install libtmux', lang: 'console' },
       prerelease: { code: 'luarocks --local install libtmux {version}', lang: 'console' },
       git: {
         code: 'git clone --branch {tag} --depth 1 https://github.com/libtmux/libtmux-lua.git vendor/libtmux && ./luarocks make vendor/libtmux/rockspecs/libtmux-scm-1.rockspec',
@@ -598,7 +598,7 @@ const CORE_PORTS: readonly Port[] = [
     registry: { name: 'PowerShell Gallery', url: 'https://www.powershellgallery.com/packages/LibTmux', icon: 'powershell' },
     initProject: { code: 'Create a PowerShell script in this directory; no project manifest is required.', lang: 'text' },
     installForms: {
-      stable: { code: 'Install-Module -Name LibTmux', lang: 'powershell' },
+      release: { code: 'Install-Module -Name LibTmux', lang: 'powershell' },
       prerelease: { code: 'Install-Module -Name LibTmux -RequiredVersion {version} -AllowPrerelease', lang: 'powershell' },
       git: { code: 'git clone --branch {tag} --depth 1 https://github.com/libtmux/libtmux-powershell.git\npwsh -NoProfile -File libtmux-powershell/eng/Build.ps1 -Restore', lang: 'console' },
     },
@@ -643,7 +643,7 @@ const CORE_PORTS: readonly Port[] = [
       note: 'Run in Julia with tmux on PATH. The package is not registered in General, so this installs from Git; Manifest.toml records the package tree hash.' }],
     initProject: { code: 'using Pkg\nPkg.activate(".")', lang: 'julia' },
     installForms: {
-      stable: { code: 'using Pkg\nPkg.add("LibTmux")', lang: 'julia' },
+      release: { code: 'using Pkg\nPkg.add("LibTmux")', lang: 'julia' },
       prerelease: { code: 'using Pkg\nPkg.add(PackageSpec(name="LibTmux", version="{version}"))', lang: 'julia' },
       // Unselected source installs follow the default branch.
       git: { code: 'using Pkg\nPkg.add(PackageSpec(url="https://github.com/libtmux/libtmux-julia.git", rev="master"))', lang: 'julia' },
@@ -691,7 +691,7 @@ const CORE_PORTS: readonly Port[] = [
     installForms: {
       // `~> 0.1.0` accepts every 0.1.N release, as the package README's
       // `~> 0.1` does. A prerelease is pinned exactly.
-      stable: { code: '{:libtmux, "~> {version}"}', lang: 'elixir' },
+      release: { code: '{:libtmux, "~> {version}"}', lang: 'elixir' },
       prerelease: { code: '{:libtmux, "== {version}"}', lang: 'elixir' },
       git: { code: '{:libtmux, github: "libtmux/libtmux-elixir", tag: "{tag}"}', lang: 'elixir' },
     },
@@ -845,7 +845,7 @@ const CORE_PORTS: readonly Port[] = [
     registry: { name: 'npm', url: 'https://www.npmjs.com/package/libtmux', icon: 'npm' },
     initProject: { code: 'bun init', lang: 'console' },
     installForms: {
-      stable: { code: 'bun add libtmux', lang: 'console' },
+      release: { code: 'bun add libtmux', lang: 'console' },
       prerelease: { code: 'bun add libtmux@{version}', lang: 'console' },
       // A git install takes the workspace root, which is `@libtmux/repo` and
       // carries no library, so the import fails with "Cannot find module".
@@ -900,7 +900,7 @@ const CORE_PORTS: readonly Port[] = [
     registry: { name: 'crates.io', url: 'https://crates.io/crates/libtmux', icon: 'crates' },
     initProject: { code: 'cargo init', lang: 'console' },
     installForms: {
-      stable: { code: 'cargo add libtmux', lang: 'console' },
+      release: { code: 'cargo add libtmux', lang: 'console' },
       // Pinned so the command matches the version the prompt names. Cargo
       // resolves the alpha without it, having no release to prefer.
       prerelease: { code: 'cargo add libtmux@{version}', lang: 'console' },
@@ -964,7 +964,7 @@ const CORE_PORTS: readonly Port[] = [
     registry: { name: 'pkg.go.dev', url: 'https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux', icon: 'go' },
     initProject: { code: 'go mod init example.com/tmuxdemo', lang: 'console' },
     installForms: {
-      stable: { code: 'go get github.com/libtmux/libtmux-go', lang: 'console' },
+      release: { code: 'go get github.com/libtmux/libtmux-go', lang: 'console' },
       // Pinned for the same reason as Rust. The proxy serves the alpha to a
       // bare `go get` too, since the module has no release yet.
       prerelease: { code: 'go get github.com/libtmux/libtmux-go@{version}', lang: 'console' },
@@ -1047,7 +1047,7 @@ const CORE_PORTS: readonly Port[] = [
       // Gradle has no unpinned form, so every spelling carries the version.
       // This is the field that used to read `:VERSION` and shipped that word
       // to readers as if it were a command.
-      stable: { code: 'implementation("io.github.libtmux:libtmux:{version}")', lang: 'kotlin' },
+      release: { code: 'implementation("io.github.libtmux:libtmux:{version}")', lang: 'kotlin' },
       prerelease: { code: 'implementation("io.github.libtmux:libtmux:{version}")', lang: 'kotlin' },
       git: { code: 'git clone --branch {tag} https://github.com/libtmux/libtmux-java && (cd libtmux-java && ./gradlew publishToMavenLocal)', lang: 'console' },
     },
@@ -1075,7 +1075,7 @@ const CORE_PORTS: readonly Port[] = [
     registry: { name: 'NuGet', url: 'https://www.nuget.org/packages/LibTmux', icon: 'nuget' },
     initProject: { code: 'dotnet new console', lang: 'console' },
     installForms: {
-      stable: { code: 'dotnet add package LibTmux', lang: 'console' },
+      release: { code: 'dotnet add package LibTmux', lang: 'console' },
       // `--version` rather than `--prerelease`: the latter takes whatever is
       // newest, which moves under a reader following a prompt that named a
       // version.
@@ -1183,7 +1183,7 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
       lang: 'text',
     },
     installForms: {
-      stable: { code: 'vcpkg install libtmux-cxx', lang: 'console' },
+      release: { code: 'vcpkg install libtmux-cxx', lang: 'console' },
       prerelease: { code: 'vcpkg install libtmux-cxx', lang: 'console' },
       // There is no vcpkg port yet, so this is the only form that works today.
       // FetchContent rather than a clone: it pins the tag in the build file,
@@ -1246,7 +1246,7 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
     installForms: {
       // `from: "0.1.0"` means ">= 0.1.0, < 1.0.0", the form the package
       // README recommends for a final release.
-      stable: { code: '.package(url: "https://github.com/libtmux/libtmux-swift", from: "{version}")', lang: 'swift' },
+      release: { code: '.package(url: "https://github.com/libtmux/libtmux-swift", from: "{version}")', lang: 'swift' },
       // A prerelease sorts below its final, so a `from:` range skips it and
       // `exact:` is the only form that resolves one.
       prerelease: { code: '.package(url: "https://github.com/libtmux/libtmux-swift", exact: "{version}")', lang: 'swift' },
@@ -1276,7 +1276,7 @@ const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
     ],
     initProject: { code: 'gradle init --type kotlin-application --dsl kotlin', lang: 'console' },
     installForms: {
-      stable: { code: 'implementation("io.github.libtmux:libtmux-kotlin:{version}")', lang: 'kotlin' },
+      release: { code: 'implementation("io.github.libtmux:libtmux-kotlin:{version}")', lang: 'kotlin' },
       prerelease: { code: 'implementation("io.github.libtmux:libtmux-kotlin:{version}")', lang: 'kotlin' },
       git: { code: 'git clone --branch {tag} https://github.com/libtmux/libtmux-java && (cd libtmux-java && ./gradlew :libtmux:publishToMavenLocal :libtmux-kotlin:publishToMavenLocal)', lang: 'console' },
     },
@@ -1296,7 +1296,7 @@ const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
     ],
     initProject: { code: 'sbt new scala/scala3.g8', lang: 'console' },
     installForms: {
-      stable: { code: 'libraryDependencies += "io.github.libtmux" %% "libtmux-scala" % "{version}"', lang: 'scala' },
+      release: { code: 'libraryDependencies += "io.github.libtmux" %% "libtmux-scala" % "{version}"', lang: 'scala' },
       prerelease: { code: 'libraryDependencies += "io.github.libtmux" %% "libtmux-scala" % "{version}"', lang: 'scala' },
       git: { code: 'git clone --branch {tag} https://github.com/libtmux/libtmux-java && (cd libtmux-java && ./gradlew :libtmux:publishToMavenLocal :libtmux-scala:publishToMavenLocal)', lang: 'console' },
     },
@@ -1311,7 +1311,7 @@ const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
     installs: nugetInstalls('LibTmux.FSharp', true),
     initProject: { code: 'dotnet new console --language F#', lang: 'console' },
     installForms: {
-      stable: { code: 'dotnet package add LibTmux.FSharp', lang: 'console' },
+      release: { code: 'dotnet package add LibTmux.FSharp', lang: 'console' },
       prerelease: { code: 'dotnet package add LibTmux.FSharp --version {version}', lang: 'console' },
       git: { code: 'dotnet add reference ../libtmux-dotnet/src/LibTmux.FSharp/LibTmux.FSharp.fsproj', lang: 'console' },
     },
@@ -1588,17 +1588,24 @@ export function portHomeUrl(port: Port, version: string): string {
  * module must stay importable by bare Node for `build-site.sh` — so it takes
  * the entry as an argument rather than importing the JSON itself.
  */
-export type RegistryStatus = 'stable' | 'prerelease' | 'unpublished'
+export type RegistryStatus = 'release' | 'prerelease' | 'unpublished'
+
+/**
+ * A final release's series: its major number and `.x`, such as `0.x`. Any
+ * libtmux release may change the API, so a badge names the series a release
+ * belongs to and promises nothing about it.
+ */
+export type ReleaseSeries = `${number}.x`
 
 /** How far along a package's releases are, as its registry or its version names the stage. */
-export type Maturity = 'pre-alpha' | 'alpha' | 'beta' | 'rc' | 'stable' | 'unreleased'
+export type Maturity = 'pre-alpha' | 'alpha' | 'beta' | 'rc' | ReleaseSeries | 'unreleased'
 
 export interface RegistryEntry {
   status: RegistryStatus
   /** Newest installable version, or null when the registry has no package. */
   version: string | null
-  /** Newest non-prerelease, or null when there has never been one. */
-  stable: string | null
+  /** Newest final release, or null when there has never been one. */
+  release: string | null
   /** Newest release tag in the repository, prefix included where one is used. */
   tag: string | null
   /** The stage the registry itself declares, such as PyPI's Development Status classifier. */
@@ -1608,7 +1615,7 @@ export interface RegistryEntry {
 }
 
 export interface RegistryData {
-  schema: 1
+  schema: 2
   ports: Record<string, RegistryEntry>
 }
 
@@ -1620,20 +1627,29 @@ export interface RegistryData {
  */
 const FINAL_RELEASE = /^(?:[A-Za-z][\w.-]*[@/])?v?(?:0|[1-9]\d*)(?:\.(?:0|[1-9]\d*)){2}$/
 
+/** A final release's major number, label and `v` allowed, as in `libtmux@v0.1.0` or `0.1.0-1`. */
+const MAJOR = /^(?:[A-Za-z][\w.-]*[@/])?v?(\d+)\./
+
+/** The series a final release belongs to, `0.x` for `0.1.0`. */
+const releaseSeries = (name: string | null): ReleaseSeries => `${Number(MAJOR.exec(name ?? '')?.[1] ?? 0)}.x`
+
+/** Whether a maturity names a final release's series rather than a prerelease stage. */
+export const isReleaseSeries = (maturity: Maturity): maturity is ReleaseSeries => /^\d+\.x$/.test(maturity)
+
 /**
  * A package's release maturity: the stage its registry declares, else the one
- * its version or repository tag names. A final release name is stable whether
- * or not a registry carries it yet. A package with no release and no tag is
- * unreleased. Throws on a name whose marker is neither a stage nor absent, so
- * a new spelling fails a test rather than a reader's badge.
+ * its version or repository tag names. A final release reads as its series,
+ * such as `0.x`, whether or not a registry carries it yet. A package with no
+ * release and no tag is unreleased. Throws on a name whose marker is neither a
+ * stage nor absent, so a new spelling fails a test rather than a reader's badge.
  */
 export function releaseMaturity(entry: RegistryEntry): Maturity {
   if (entry.maturity) return entry.maturity
-  if (entry.status === 'stable') return 'stable'
+  if (entry.status === 'release') return releaseSeries(entry.release ?? entry.version ?? entry.tag)
   const name = entry.version ?? entry.tag
   if (!name) return 'unreleased'
   // Before the stage search, so a stage word in a package label is not the release's stage.
-  if (FINAL_RELEASE.test(name)) return 'stable'
+  if (FINAL_RELEASE.test(name)) return releaseSeries(name)
   const stage = /alpha|beta|rc(?=[\d.-]|$)|(?<=\d)[ab](?=\d)/i.exec(name)?.[0].toLowerCase()
   if (stage === 'alpha' || stage === 'a') return 'alpha'
   if (stage === 'beta' || stage === 'b') return 'beta'
@@ -1644,18 +1660,21 @@ export function releaseMaturity(entry: RegistryEntry): Maturity {
 /** What a product's badge states: its release maturity, or `concept` for a working example. */
 export type ProductStatus = 'concept' | Maturity
 
-/**
- * The one short line under each badge's toggletip and in the picker's
- * description. The full explanation lives on the page that the toggletip links to.
- */
-export const PRODUCT_STATUS_LINE: Readonly<Record<ProductStatus, string>> = {
+const STAGE_LINE: Readonly<Record<Exclude<ProductStatus, ReleaseSeries>, string>> = {
   concept: 'Working example; may change without notice.',
   'pre-alpha': 'Early development; expect breaking changes.',
   alpha: 'Alpha release; the API may change.',
   beta: 'Beta release; the API may still change.',
   rc: 'Release candidate; close to final.',
-  stable: 'Stable release.',
   unreleased: 'Not published yet; install from source.',
+}
+
+/**
+ * The one short line under each badge's toggletip and in the picker's
+ * description. The full explanation lives on the page that the toggletip links to.
+ */
+export function productStatusLine(status: ProductStatus): string {
+  return status === 'concept' || !isReleaseSeries(status) ? STAGE_LINE[status as keyof typeof STAGE_LINE] : 'Released; the API may change.'
 }
 
 /** The link under every toggletip line. */
@@ -1699,7 +1718,7 @@ export function installCommand(port: Port, entry: RegistryEntry): InstallForm {
     code: form.code.replaceAll(token, value),
     lang: form.lang,
   })
-  if (entry.status === 'stable' && entry.stable) return fill(forms.stable, '{version}', entry.stable)
+  if (entry.status === 'release' && entry.release) return fill(forms.release, '{version}', entry.release)
   if (entry.status === 'prerelease' && entry.version) {
     return fill(forms.prerelease, '{version}', entry.version)
   }
@@ -1719,11 +1738,11 @@ export function installCommand(port: Port, entry: RegistryEntry): InstallForm {
 
 /** How to say what the reader is installing, for a prompt that must not overclaim. */
 export function releaseWording(port: Port, entry: RegistryEntry): string {
-  if (entry.status === 'stable') {
-    return `${port.packageName} ${entry.stable} is the current release on ${port.registry?.name ?? 'its registry'}.`
+  if (entry.status === 'release') {
+    return `${port.packageName} ${entry.release} is the current release on ${port.registry?.name ?? 'its registry'}.`
   }
   if (entry.status === 'prerelease') {
-    return `${port.packageName} has no stable release. ${entry.version} is the newest prerelease on ${port.registry?.name ?? 'its registry'}, and the command below names it because the resolver skips prereleases otherwise.`
+    return `${port.packageName} has no final release. ${entry.version} is the newest prerelease on ${port.registry?.name ?? 'its registry'}, and the command below names it because the resolver skips prereleases otherwise.`
   }
   const registry = port.registry?.name ?? 'its registry'
   if (!entry.tag) {

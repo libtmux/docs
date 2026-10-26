@@ -24,8 +24,8 @@ import type { InstallForm, Port } from './ports'
  *
  * The widget rewrites this after the reader picks a version, the same shape
  * `McpInstall` uses for its cooldown values (`COOLDOWN_DURATION_SENTINEL`).
- * It has to be a string that never occurs in prose: `latest` and `stable` are
- * ordinary English words and appear in several topic bodies, so substituting
+ * It has to be a string that never occurs in prose: `latest` is an ordinary
+ * English word and appears in several topic bodies, so substituting
  * on the slug itself would rewrite sentences.
  */
 export const VERSION_SENTINEL = '__LIBTMUX_VERSION__'
@@ -373,20 +373,20 @@ function linkList(entries: readonly (readonly [string, string])[], width = 80): 
  * The install step, stated so an agent knows whether to trust the pin.
  *
  * Two sentences and a command. The wording comes from the registry state
- * rather than from a fixed template, because "there is no stable release" and
+ * rather than from a fixed template, because "there is no final release" and
  * "this is the current release" call for opposite advice about checking for
  * something newer.
  */
-function installStep(port: Port, stable: boolean, install: InstallForm, wording: string): string {
+function installStep(port: Port, released: boolean, install: InstallForm, wording: string): string {
   const lines = [wrap(`3. Add the dependency. ${wording}`, 76, '').replace(/\n/g, '\n   ')]
   // Indented as a block rather than prefixed with `$`: half these forms are
   // manifest lines, not shell commands, and a prompt that tells an agent to
   // run `implementation("...")` in a shell gets exactly that.
   lines.push(install.code.split('\n').map((line) => `       ${line}`).join('\n'))
   const check =
-    stable
+    released
       ? `Check ${(port.registry?.url ?? `https://github.com/${port.repo}`)} if you need a different version.`
-      : `Check ${(port.registry?.url ?? `https://github.com/${port.repo}`)} for a newer version, and prefer a stable release over this one if there now is any.`
+      : `Check ${(port.registry?.url ?? `https://github.com/${port.repo}`)} for a newer version, and prefer a final release over this prerelease if there now is one.`
   lines.push(wrap(check, 76, '   '))
   if (port.installNote) lines.push(wrap(port.installNote, 76, '   '))
   return lines.join('\n')
@@ -430,14 +430,14 @@ export function sharedParts(ctx: PromptContext): SharedParts {
  */
 export function portParts(args: {
   port: Port
-  /** `releaseMaturity(entry) === 'stable'`; passed in so this module imports no values. */
-  stable: boolean
+  /** Whether `releaseMaturity(entry)` is a final release's series; passed in so this module imports no values. */
+  released: boolean
   install: InstallForm
   /** `releaseWording(port, entry)`; passed in so this module imports no values. */
   wording: string
   ctx: PromptContext
 }): PortParts {
-  const { port, stable, install, wording, ctx } = args
+  const { port, released, install, wording, ctx } = args
 
   const reading: (readonly [string, string])[] = [
     [portUrl(ctx, port, 'llms.txt'), `every page for ${port.name}, as a list`],
@@ -472,7 +472,7 @@ export function portParts(args: {
           `       ${port.initProject.code}`,
         ]),
     '   Skip this in a project that already exists, and match what is here.',
-    installStep(port, stable, install, wording),
+    installStep(port, released, install, wording),
     '4. Write the smallest program that proves the install works: connect to a',
     '   tmux server, create a session, confirm it is there, then kill it. Give',
     '   that server a socket of its own rather than using the default one, so',

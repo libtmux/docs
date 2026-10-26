@@ -34,7 +34,7 @@ describe('Ruby port metadata', () => {
       'libtmux-mcp',
       'libtmux-workspace',
     ])
-    expect(Object.values(registry.ports.ruby.packages).every((entry) => entry.version === '0.1.0.alpha.1')).toBe(true)
+    expect(Object.values(registry.ports.ruby.packages).every((entry) => entry.version === '0.1.0')).toBe(true)
   })
 
   it('offers install or build instructions for each available workspace app', () => {
@@ -69,10 +69,10 @@ describe('Lua port metadata', () => {
       productAvailability: { mcp: 'unpublished', workspace: 'unpublished' },
     })
     expect(registry.ports.lua).toMatchObject({
-      status: 'prerelease',
-      version: '0.1.0alpha1-1',
-      stable: null,
-      tag: 'v0.1.0alpha1',
+      status: 'release',
+      version: '0.1.0-1',
+      release: '0.1.0-1',
+      tag: 'v0.1.0',
     })
   })
 })
@@ -185,7 +185,7 @@ describe('port destinations', () => {
     const powershell = PORT_BY_SLUG.powershell!
     const tree = (ref: string) => `https://github.com/libtmux/libtmux-powershell/tree/${ref}/src/LibTmux.PowerShell`
     expect(portDestinations({ port: powershell, version: 'latest' }).source).toMatchObject({ url: tree('master'), path: 'src/LibTmux.PowerShell', ref: 'master' })
-    expect(portDestinations({ port: powershell, version: 'stable' }).source.url).toBe(tree('master'))
+    expect(portDestinations({ port: powershell, version: 'next' }).source.url).toBe(tree('master'))
     expect(portDestinations({ port: powershell, version: 'v0.1.0-alpha2' }).source).toMatchObject({ url: tree('v0.1.0-alpha2'), ref: 'v0.1.0-alpha2' })
     expect(portDestinations({ port: powershell, version: 'v0.1.0-alpha2', revision: 'abc123' }).source.url).toBe(tree('abc123'))
     expect(portDestinations({ port: powershell, version: 'latest', revision: 'abc123' }).source.url).toBe(tree('abc123'))
@@ -216,7 +216,7 @@ describe('port destinations', () => {
     expect(portDestinations({ port: ts, product: 'mcp', version: 'latest', revision: 'abc123' }).source.url).toBe(tree('master'))
     expect(portDestinations({ port: ts, product: 'mcp', version: 'v0.1.0-alpha.12' }).source.url).toBe(tree('v0.1.0-alpha.12'))
     expect(portDestinations({ port: ts, product: 'mcp', version: 'v0.1.0-alpha.12', revision: 'abc123' }).source.url).toBe(tree('v0.1.0-alpha.12'))
-    expect(portDestinations({ port: ts, product: 'mcp', version: 'stable', revision: 'abc123' }).source.url).toBe(tree('abc123'))
+    expect(portDestinations({ port: ts, product: 'mcp', version: 'next', revision: 'abc123' }).source.url).toBe(tree('abc123'))
   })
 
   it('links only the repository for a product without a directory or package', () => {

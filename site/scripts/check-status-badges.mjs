@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { CONCEPT_DESCRIPTION, PICKER_GROUP_SUMMARY, PORT_BY_SLUG, PRODUCT_STATUS_GUIDE, PRODUCT_STATUS_LINE, PRODUCT_STATUS_LINK, productAvailable, productStatus } from '../src/lib/ports.ts'
+import { CONCEPT_DESCRIPTION, PICKER_GROUP_SUMMARY, PORT_BY_SLUG, PRODUCT_STATUS_GUIDE, PRODUCT_STATUS_LINK, productStatusLine, productAvailable, productStatus } from '../src/lib/ports.ts'
 import registry from '../src/data/registry.json' with { type: 'json' }
 import { HOVER_OPEN } from '../src/lib/status-toggletip.ts'
 
@@ -128,7 +128,7 @@ async function checkRows(page, picker, slug, where, kind) {
       assert(Math.abs(gap - listGap) <= 1, `${where}: the trigger's badge sits ${gap.toFixed(1)}px from its name, the list's ${listGap.toFixed(1)}px`)
     }
     const description = await picker.locator(':scope > summary').getAttribute('aria-description')
-    assert.equal(description, PRODUCT_STATUS_LINE[rows[0].status], `${where}: the trigger is described by the short line`)
+    assert.equal(description, productStatusLine(rows[0].status), `${where}: the trigger is described by the short line`)
   }
 }
 
@@ -142,7 +142,7 @@ async function checkToggletip(page, picker, badge, status, label, where) {
   assert.equal((await card.locator('.status-toggletip__title').innerText()).trim(), status, `${where}: the card is titled with the stage`)
   const line = (await card.locator('.status-toggletip__line').innerText()).trim()
   assert(line.length <= TOGGLETIP_BUDGET, `${where}: the card's line is ${line.length} characters, over the ${TOGGLETIP_BUDGET} budget: "${line}"`)
-  assert.equal(line, PRODUCT_STATUS_LINE[status], `${where}: the card holds the ${status} line`)
+  assert.equal(line, productStatusLine(status), `${where}: the card holds the ${status} line`)
   assert.equal(await card.getAttribute('role'), 'group', `${where}: the card is a named group`)
   assert.equal(await card.getAttribute('aria-label'), `${status}: ${label}`, `${where}: the card names its product`)
   const box = await card.boundingBox()
@@ -296,7 +296,7 @@ export async function checkStatusBadgesFail(browser, base) {
     }, /has exactly one status badge/],
     ['a wrong stage', picker, {
       script: () => document.querySelector('.status-toggletip > .status-badge').setAttribute('data-status', 'concept'),
-    }, /Core Library states alpha/],
+    }, /Core Library states (?!concept\b)\S+/],
     ['a badge far from its name', picker, {
       css: '.surface-entry > .surface-entry__badge { left: auto !important; right: 2.1rem !important; top: 1.15rem !important; translate: none !important }',
     }, /badge sits beside its name/],

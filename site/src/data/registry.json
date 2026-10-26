@@ -1,165 +1,162 @@
 {
-  "schema": 1,
+  "schema": 2,
   "ports": {
     "py": {
-      "status": "stable",
+      "status": "release",
       "version": "0.62.0",
-      "stable": "0.62.0",
+      "release": "0.62.0",
       "tag": "v0.62.0",
-      "maturity": "stable",
       "packages": {
         "libtmux": {
-          "status": "stable",
+          "status": "release",
           "version": "0.62.0",
-          "stable": "0.62.0",
-          "tag": "v0.62.0",
-          "maturity": "stable"
+          "release": "0.62.0",
+          "tag": "v0.62.0"
         },
         "libtmux-mcp": {
           "status": "prerelease",
           "version": "0.1.0a22",
-          "stable": null,
+          "release": null,
           "tag": null,
           "maturity": "pre-alpha"
         },
         "tmuxp": {
-          "status": "stable",
-          "version": "1.74.0",
-          "stable": "1.74.0",
-          "tag": null,
-          "maturity": "stable"
+          "status": "release",
+          "version": "1.76.0",
+          "release": "1.76.0",
+          "tag": null
         }
       }
     },
     "ruby": {
-      "status": "prerelease",
-      "version": "0.1.0.alpha.1",
-      "stable": null,
-      "tag": "v0.1.0.alpha.1",
+      "status": "release",
+      "version": "0.1.0",
+      "release": "0.1.0",
+      "tag": "v0.1.0",
       "packages": {
         "libtmux": {
-          "status": "prerelease",
-          "version": "0.1.0.alpha.1",
-          "stable": null,
-          "tag": "v0.1.0.alpha.1"
+          "status": "release",
+          "version": "0.1.0",
+          "release": "0.1.0",
+          "tag": "v0.1.0"
         },
         "libtmux-async": {
-          "status": "prerelease",
-          "version": "0.1.0.alpha.1",
-          "stable": null,
-          "tag": "v0.1.0.alpha.1"
+          "status": "release",
+          "version": "0.1.0",
+          "release": "0.1.0",
+          "tag": "v0.1.0"
         },
         "libtmux-mcp": {
-          "status": "prerelease",
-          "version": "0.1.0.alpha.1",
-          "stable": null,
-          "tag": "v0.1.0.alpha.1"
+          "status": "release",
+          "version": "0.1.0",
+          "release": "0.1.0",
+          "tag": "v0.1.0"
         },
         "libtmux-workspace": {
-          "status": "prerelease",
-          "version": "0.1.0.alpha.1",
-          "stable": null,
-          "tag": "v0.1.0.alpha.1"
+          "status": "release",
+          "version": "0.1.0",
+          "release": "0.1.0",
+          "tag": "v0.1.0"
         }
       }
     },
     "lua": {
-      "status": "prerelease",
-      "version": "0.1.0alpha1-1",
-      "stable": null,
-      "tag": "v0.1.0alpha1"
+      "status": "release",
+      "version": "0.1.0-1",
+      "release": "0.1.0-1",
+      "tag": "v0.1.0"
     },
     "powershell": {
-      "status": "prerelease",
-      "version": "0.1.0-alpha2",
-      "stable": null,
-      "tag": "v0.1.0-alpha2",
+      "status": "release",
+      "version": "0.1.0",
+      "release": "0.1.0",
+      "tag": "v0.1.0",
       "packages": {
         "LibTmux": {
-          "status": "prerelease",
-          "version": "0.1.0-alpha2",
-          "stable": null,
-          "tag": "v0.1.0-alpha2"
+          "status": "release",
+          "version": "0.1.0",
+          "release": "0.1.0",
+          "tag": "v0.1.0"
         },
         "LibTmux.Workspace": {
-          "status": "prerelease",
-          "version": "0.1.0-alpha2",
-          "stable": null,
-          "tag": "v0.1.0-alpha2"
+          "status": "release",
+          "version": "0.1.0",
+          "release": "0.1.0",
+          "tag": "v0.1.0"
         }
       }
     },
     "julia": {
       "status": "unpublished",
       "version": null,
-      "stable": null,
-      "tag": null
+      "release": null,
+      "tag": "v0.1.1-alpha.2"
     },
     "elixir": {
-      "status": "prerelease",
-      "version": "0.0.1-alpha.1",
-      "stable": null,
-      "tag": "v0.0.1-alpha.1"
+      "status": "release",
+      "version": "0.1.0",
+      "release": "0.1.0",
+      "tag": "v0.1.0"
     },
     "ts": {
-      "status": "prerelease",
-      "version": "0.1.0-alpha.12",
-      "stable": null,
-      "tag": "v0.1.0-alpha.12"
+      "status": "release",
+      "version": "0.1.0",
+      "release": "0.1.0",
+      "tag": "v0.1.0"
     },
     "rs": {
-      "status": "prerelease",
-      "version": "0.1.0-alpha.14",
-      "stable": null,
-      "tag": "libtmux@v0.1.0-alpha.14"
+      "status": "release",
+      "version": "0.1.0",
+      "release": "0.1.0",
+      "tag": "libtmux@v0.1.0"
     },
     "go": {
-      "status": "prerelease",
-      "version": "v0.0.1-alpha.9",
-      "stable": null,
-      "tag": "v0.0.1-alpha.9"
+      "status": "release",
+      "version": "v0.1.0",
+      "release": "v0.1.0",
+      "tag": "v0.1.0"
     },
     "java": {
-      "status": "prerelease",
-      "version": "0.0.1-alpha.17",
-      "stable": null,
-      "tag": "v0.0.1-alpha.17"
+      "status": "release",
+      "version": "0.1.0",
+      "release": "0.1.0",
+      "tag": "v0.1.0"
     },
     "kotlin": {
-      "status": "prerelease",
-      "version": "0.0.1-alpha.17",
-      "stable": null,
-      "tag": "v0.0.1-alpha.17"
+      "status": "release",
+      "version": "0.1.0",
+      "release": "0.1.0",
+      "tag": "v0.1.0"
     },
     "scala": {
-      "status": "prerelease",
-      "version": "0.0.1-alpha.17",
-      "stable": null,
-      "tag": "v0.0.1-alpha.17"
+      "status": "release",
+      "version": "0.1.0",
+      "release": "0.1.0",
+      "tag": "v0.1.0"
     },
     "csharp": {
-      "status": "prerelease",
-      "version": "0.0.0-alpha.17",
-      "stable": null,
-      "tag": "v0.0.0-alpha.17"
+      "status": "release",
+      "version": "0.1.0",
+      "release": "0.1.0",
+      "tag": "v0.1.0"
     },
     "fsharp": {
-      "status": "prerelease",
-      "version": "0.0.0-alpha.17",
-      "stable": null,
-      "tag": "v0.0.0-alpha.17"
+      "status": "release",
+      "version": "0.1.0",
+      "release": "0.1.0",
+      "tag": "v0.1.0"
     },
     "cxx": {
       "status": "unpublished",
       "version": null,
-      "stable": null,
-      "tag": "v0.1.0-alpha.11"
+      "release": null,
+      "tag": "v0.1.0-alpha.13"
     },
     "swift": {
-      "status": "prerelease",
-      "version": "0.1.0-alpha.6",
-      "stable": null,
-      "tag": "0.1.0-alpha.6"
+      "status": "release",
+      "version": "0.1.0",
+      "release": "0.1.0",
+      "tag": "0.1.0"
     }
   }
 }

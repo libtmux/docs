@@ -95,7 +95,7 @@ for (const [name, mutate] of mutations) {
     const baseline = structuredClone(seed)
     delete baseline.ports.powershell
     delete baseline.ports.julia
-    baseline.ports.csharp = { status: 'stable', version: '1.2.3', stable: '1.2.3', tag: 'v1.2.3' }
+    baseline.ports.csharp = { status: 'release', version: '1.2.3', release: '1.2.3', tag: 'v1.2.3' }
     writeFileSync(join(dir, 'published.json'), JSON.stringify(baseline))
     writeFileSync(join(dir, 'fetch.mjs'), `
       import { readFileSync } from 'node:fs'
@@ -161,10 +161,16 @@ for (const [name, mutate] of mutations) {
     check('a package Hex does not carry is unpublished',
       unlisted.ports.elixir?.status === 'unpublished' && unlisted.ports.elixir?.version === null, `${JSON.stringify(unlisted.ports.elixir)} ${unlisted.error}`)
     check('an unavailable existing port retains its newer published entry', same(result.ports.csharp, baseline.ports.csharp), result.error)
+    // A published copy written under another schema names other fields, so it is no fallback.
+    writeFileSync(join(dir, 'published.json'), JSON.stringify({ ...baseline, schema: 1 }))
+    result = invoke(replies)
+    check('a baseline under another schema is ignored', same(result.ports.csharp, seed.ports.csharp), `${JSON.stringify(result.ports.csharp)} ${result.error}`)
+    writeFileSync(join(dir, 'published.json'), JSON.stringify(baseline))
+    result = invoke(replies)
 
     // The baseline names a tag the repository never published. Tags the
     // repository still carries keep their recorded entry; tags it lacks do not.
-    const staleJulia = { status: 'unpublished', version: null, stable: null, tag: 'v0.1.0-alpha.1' }
+    const staleJulia = { status: 'unpublished', version: null, release: null, tag: 'v0.1.0-alpha.1' }
     writeFileSync(join(dir, 'published.json'), JSON.stringify({ ...baseline, ports: { ...baseline.ports, julia: staleJulia } }))
     const julia = 'https://api.github.com/repos/libtmux/libtmux-julia/tags?per_page=100'
     result = invoke({ ...replies, [julia]: { body: '[]' }, [general]: { status: 404, body: '404: Not Found' } })
@@ -184,7 +190,7 @@ for (const [name, mutate] of mutations) {
     const unread = (resolved) => {
       const count = Object.keys(resolved.ports).length
       if (count !== PORTS.length) return [`the resolver wrote ${count} of ${PORTS.length} ports: ${resolved.error}`]
-      const registry = { schema: 1, ports: resolved.ports }
+      const registry = { schema: 2, ports: resolved.ports }
       return PORTS.flatMap((port) => [
         ...['core', 'mcp', 'workspace'].filter((product) => product === 'core' || productAvailable(port, product))
           .map((product) => [`${port.slug} ${product}`, () => productStatus(port, product, registry)]),
@@ -204,7 +210,7 @@ for (const [name, mutate] of mutations) {
     const notInGeneral = { status: 404, body: '404: Not Found' }
     const prereleaseOnly = { body: `["0.1.0-alpha.2"]\ngit-tree-sha1 = "${'c'.repeat(40)}"\n` }
     for (const [state, repository, registry, stage] of [
-      ['a final tag General does not carry yet', ['v0.1.0'], notInGeneral, 'stable'],
+      ['a final tag General does not carry yet', ['v0.1.0'], notInGeneral, '0.x'],
       ['a prerelease tag General does not carry yet', ['v0.1.0-alpha.1'], notInGeneral, 'alpha'],
       ['a prerelease General carries', ['v0.1.0-alpha.2'], prereleaseOnly, 'alpha'],
       ['a prerelease General carries beside a final tag it lacks', ['v0.1.0-alpha.2', 'v0.1.0'], prereleaseOnly, 'alpha'],
@@ -212,16 +218,16 @@ for (const [name, mutate] of mutations) {
     ]) {
       result = invoke({ ...replies, [julia]: tagged(...repository), [general]: registry })
       const failures = unread(result)
-      const read = failures.length === 0 ? productStatus(juliaPort, 'core', { schema: 1, ports: result.ports }) : undefined
+      const read = failures.length === 0 ? productStatus(juliaPort, 'core', { schema: 2, ports: result.ports }) : undefined
       check(`every badge reads ${state} as ${stage}`, read === stage, `${read} ${JSON.stringify(failures)}`)
     }
     result = invoke({ ...replies, [julia]: tagged('v0.1.0'), [general]: notInGeneral })
     check('a final tag General does not carry yet is recorded as the live registry recorded it',
-      same(result.ports.julia, { status: 'unpublished', version: null, stable: null, tag: 'v0.1.0' }), `${JSON.stringify(result.ports.julia)} ${result.error}`)
+      same(result.ports.julia, { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' }), `${JSON.stringify(result.ports.julia)} ${result.error}`)
     // Once the registry lists a release, a newer tag it lacks is not recorded; the support page says so.
     result = invoke({ ...replies, [julia]: tagged('v0.1.0-alpha.2', 'v0.1.0'), [general]: prereleaseOnly })
     check('a final tag beside a registry that lists only a prerelease is not recorded',
-      same(result.ports.julia, { status: 'prerelease', version: '0.1.0-alpha.2', stable: null, tag: 'v0.1.0-alpha.2' }), `${JSON.stringify(result.ports.julia)} ${result.error}`)
+      same(result.ports.julia, { status: 'prerelease', version: '0.1.0-alpha.2', release: null, tag: 'v0.1.0-alpha.2' }), `${JSON.stringify(result.ports.julia)} ${result.error}`)
 
     // The reads above pass only if the read can fail, so name the port and the tag it could not place.
     result = invoke({ ...replies, [julia]: tagged('v0.1.0-dev.3'), [general]: notInGeneral })
