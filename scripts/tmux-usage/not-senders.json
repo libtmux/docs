@@ -417,13 +417,13 @@
       "why": "These send next-layout and previous-layout, and last-pane, and not select-layout or select-window.",
       "evidence": [
         {
-          "at": "src/LibTmux/Window.Layout.cs:122",
+          "at": "src/LibTmux/Window.Layout.cs:126",
           "has": [
             "\"next-layout\""
           ]
         },
         {
-          "at": "src/LibTmux/Window.Layout.cs:135",
+          "at": "src/LibTmux/Window.Layout.cs:139",
           "has": [
             "\"previous-layout\""
           ]
