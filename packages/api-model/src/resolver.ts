@@ -100,7 +100,7 @@ export const DEFAULT_TEMPLATES: UrlTemplate[] = [
 export function notASymbol(text: string): string | undefined {
   if (/^[a-z][a-z0-9+.-]*:\/\//i.test(text)) return 'a protocol URI'
   if (/^(?:net|v)?\d+\.\d+(?:\.\d+)?(?:[a-z]|[-+][\w.-]+)?$/.test(text)) return 'a version'
-  if (/^(?:net|v)?\d+(?:\.\d+)*\.x$/.test(text)) return 'a version line'
+  if (/^(?:net|v)?\d+(?:\.\d+)*\.[xXnN]$/.test(text)) return 'a version line'
   if (/^\w+(?:\.\w+)+:[\w.-]+(?::[\w.<>{}-]+)?$/.test(text)) return 'a dependency coordinate'
   // `objects.inv` is the published Sphinx inventory, named by the setup guides next to a Python fence.
   if (/\.(?:tsv|html|inv)$/.test(text)) return 'a filename'
