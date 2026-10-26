@@ -19,6 +19,7 @@ export async function compose({ directory, runtime, catalogs, bucket, locale }) 
   const targets = shared.targets.filter((target) => target.scope === 'site' || target.scope.startsWith('tmux@'))
   const inputs = []
   const compatibility = []
+  const missing = []
   for (const [port, versions] of Object.entries(manifest.ports)) {
     if (!versions.length) continue
     const version = manifest.defaultVersion[port]
@@ -29,9 +30,20 @@ export async function compose({ directory, runtime, catalogs, bucket, locale }) 
       file = resolve(catalogs, relative)
       if (bucket) {
         mkdirSync(resolve(file, '..'), { recursive: true })
-        execFileSync('aws', ['s3', 'cp', `s3://${bucket}/${locale}/${relative}`, file, '--only-show-errors'], { stdio: 'inherit' })
+        try {
+          execFileSync('aws', ['s3', 'cp', `s3://${bucket}/${locale}/${relative}`, file, '--only-show-errors'], { stdio: ['ignore', 'inherit', 'pipe'], encoding: 'utf8' })
+        } catch (error) {
+          // Only a missing object is absence; credentials, network and permission errors still fail.
+          if (!/\(404\)|Not Found/.test(String(error.stderr ?? ''))) {
+            process.stderr.write(String(error.stderr ?? ''))
+            throw error
+          }
+        }
       }
-      if (!existsSync(file)) throw new Error(`Publish ${locale}/${relative} before advertising its full inventory`)
+    }
+    if (!existsSync(file)) {
+      missing.push({ port, version, catalog: `${base}${relative}` })
+      continue
     }
     const bytes = readFileSync(file)
     const catalog = JSON.parse(bytes.toString())
@@ -64,8 +76,9 @@ export async function compose({ directory, runtime, catalogs, bucket, locale }) 
   }
   writeFileSync(resolve(out, 'objects-full.inv'), full)
   writeFileSync(resolve(out, 'objects.inv'), legacy)
-  writeFileSync(resolve(out, 'targets.json'), `${JSON.stringify({ schema: 1, base, defaults: manifest.defaultVersion, coverage: { inputs }, targets })}\n`)
-  return { targets: targets.length, inputs }
+  writeFileSync(resolve(out, 'targets.json'), `${JSON.stringify({ schema: 1, base, defaults: manifest.defaultVersion, coverage: { inputs, missing }, targets })}\n`)
+  for (const { port, version, catalog } of missing) console.log(`Left out of the full inventory: ${port}/${version} has not published ${catalog}`)
+  return { targets: targets.length, inputs, missing }
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
