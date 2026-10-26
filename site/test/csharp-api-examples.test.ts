@@ -16,7 +16,7 @@ const hash = (code: string) => createHash('sha256').update(code).digest('hex')
  */
 const WAIVED = {
   programId: 'csharp-InputCapture',
-  revision: '0e25b51502c3a3879325aa0dbc1868f5940b233f',
+  revision: '472c2bcfbda6735139849324cc109ad70300001e',
   line: '// PS1 rides on the command because a non-interactive bash default-shell drops it from the environment.',
   length: 103,
 }
