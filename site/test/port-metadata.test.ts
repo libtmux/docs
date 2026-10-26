@@ -185,7 +185,7 @@ describe('port destinations', () => {
     const powershell = PORT_BY_SLUG.powershell!
     const tree = (ref: string) => `https://github.com/libtmux/libtmux-powershell/tree/${ref}/src/LibTmux.PowerShell`
     expect(portDestinations({ port: powershell, version: 'latest' }).source).toMatchObject({ url: tree('master'), path: 'src/LibTmux.PowerShell', ref: 'master' })
-    expect(portDestinations({ port: powershell, version: 'stable' }).source.url).toBe(tree('master'))
+    expect(portDestinations({ port: powershell, version: 'next' }).source.url).toBe(tree('master'))
     expect(portDestinations({ port: powershell, version: 'v0.1.0-alpha2' }).source).toMatchObject({ url: tree('v0.1.0-alpha2'), ref: 'v0.1.0-alpha2' })
     expect(portDestinations({ port: powershell, version: 'v0.1.0-alpha2', revision: 'abc123' }).source.url).toBe(tree('abc123'))
     expect(portDestinations({ port: powershell, version: 'latest', revision: 'abc123' }).source.url).toBe(tree('abc123'))
@@ -216,7 +216,7 @@ describe('port destinations', () => {
     expect(portDestinations({ port: ts, product: 'mcp', version: 'latest', revision: 'abc123' }).source.url).toBe(tree('master'))
     expect(portDestinations({ port: ts, product: 'mcp', version: 'v0.1.0-alpha.12' }).source.url).toBe(tree('v0.1.0-alpha.12'))
     expect(portDestinations({ port: ts, product: 'mcp', version: 'v0.1.0-alpha.12', revision: 'abc123' }).source.url).toBe(tree('v0.1.0-alpha.12'))
-    expect(portDestinations({ port: ts, product: 'mcp', version: 'stable', revision: 'abc123' }).source.url).toBe(tree('abc123'))
+    expect(portDestinations({ port: ts, product: 'mcp', version: 'next', revision: 'abc123' }).source.url).toBe(tree('abc123'))
   })
 
   it('links only the repository for a product without a directory or package', () => {
@@ -244,7 +244,7 @@ describe('port destinations', () => {
     expect(portHomeUrl(ports[0]!, 'latest')).toMatch(/^\/pr-42\/en\//)
     for (const port of ports) {
       for (const product of [undefined, 'mcp', 'workspace'] as (DocProduct | undefined)[]) {
-        for (const version of ['latest', 'stable', 'v1.2.3']) {
+        for (const version of ['latest', 'next', 'v1.2.3']) {
           const { source, registry: packageRegistry, ecosystem } = destinations({ port, product, version })
           for (const url of [source.url, packageRegistry?.url, ecosystem?.url]) {
             if (!url) continue

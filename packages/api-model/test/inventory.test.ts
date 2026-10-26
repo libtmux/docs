@@ -5,7 +5,7 @@ import type { ApiSymbol } from '../src/model.ts'
 
 const entry: InventoryEntry = { name: 'sample', type: 'std:label', priority: 1, uri: 'guide/#sample', dispname: 'Example' }
 const options = { project: 'libtmux', version: 'test' }
-const target: InventoryTarget = { scope: 'cxx', product: 'core', category: 'api', identity: 'libtmux::Pane', display: 'Pane', href: '/pr-42/en/cxx/stable/reference/pane/#Pane', version: 'stable' }
+const target: InventoryTarget = { scope: 'cxx', product: 'core', category: 'api', identity: 'libtmux::Pane', display: 'Pane', href: '/pr-42/en/cxx/v0.1.0/reference/pane/#Pane', version: 'v0.1.0' }
 
 describe('inventory records', () => {
   it('is byte-stable regardless of collection order and preserves spaces in option names', () => {
@@ -59,9 +59,9 @@ describe('durable portable references', () => {
     expect(targetKey(target)).toBe('cxx:core:api:libtmux%3a%3a%50ane')
   })
   it('separates identity and display from the current page URL', () => {
-    const moved = { ...target, display: 'A new title', href: '/pr-42/en/cxx/stable/new-page/#retained' }
+    const moved = { ...target, display: 'A new title', href: '/pr-42/en/cxx/v0.1.0/new-page/#retained' }
     expect(targetKey(moved)).toBe(targetKey(target))
-    expect(targetEntries([moved], '/pr-42/en/')[0].uri).toBe('cxx/stable/new-page/#retained')
+    expect(targetEntries([moved], '/pr-42/en/')[0].uri).toBe('cxx/v0.1.0/new-page/#retained')
   })
   it('normalizes glossary aliases for the case-insensitive standard term role', () => {
     const entries = targetEntries([{ ...target, native: [{ type: 'std:term', name: 'Blocking Call' }] }], '/pr-42/en/', true)
@@ -97,7 +97,7 @@ describe('durable portable references', () => {
   it('retains qualified native aliases when short names are ambiguous across products', () => {
     const core = { ...target, native: [{ type: 'cpp:class', name: 'Pane' }] }
     const workspace = { ...core, product: 'workspace', href: core.href.replace('reference/', 'workspace/reference/') }
-    const names = targetEntries([core, workspace], '/pr-42/en/cxx/stable/', true).filter((entry) => entry.type === 'cpp:class').map((entry) => entry.name)
+    const names = targetEntries([core, workspace], '/pr-42/en/cxx/v0.1.0/', true).filter((entry) => entry.type === 'cpp:class').map((entry) => entry.name)
     expect(names).toEqual(['cxx:core:Pane', 'cxx:workspace:Pane'])
   })
 })

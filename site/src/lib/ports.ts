@@ -209,7 +209,7 @@ export interface ApiDependencyNavigation {
 }
 
 export interface Port {
-  /** URL segment under the site root, e.g. `py` in /py/stable/. */
+  /** URL segment under the site root, e.g. `py` in /py/latest/. */
   slug: string
   /** Artwork palette and compact navigation label. */
   logoLanguage: string

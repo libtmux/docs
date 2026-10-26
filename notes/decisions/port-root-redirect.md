@@ -57,7 +57,7 @@ permanently, by design:
 Only **py, ts, cxx** have both a published local version tree and a
 CloudFront-level bare-root redirect (`infra/cloudfront-function.js` rule 1:
 `/en/py` or `/en/py/` with no further path segment does a KVS lookup on
-`<slug>:default` and 302s to `/en/py/stable/` before the request ever reaches
+`<slug>:default` and 302s to `/en/py/<default>/`, its newest release tag, before the request ever reaches
 the origin). Rule 1 is anchored on the locale segment, so the unprefixed
 `/py` is claimed by nothing and 404s — the short form stays unowned, which is
 what keeps a port slug from colliding with a locale code. For those three, `dist/py/index.html` is legitimately
@@ -94,9 +94,9 @@ assets to reconcile, only the one HTML file.
 
 Per-port deploys can't collide with that file even by accident:
 `reusable-deploy.yml` validates `path-prefix` is never bare (`"$p" == "$r"`
-is rejected with "qualify it, e.g. '$r/stable'"), so a port's own `sync
+is rejected with "qualify it, e.g. '$r/latest'"), so a port's own `sync
 --delete` always runs scoped to `<slug>/<version>/`, never `<slug>/`. The
-shell's `<slug>/index.html` and a port's `<slug>/stable/` tree are disjoint
+shell's `<slug>/index.html` and a port's `<slug>/<version>/` tree are disjoint
 keys; putting one can never race or clobber the other.
 
 ### A correction this decision surfaced, then outgrew
@@ -104,7 +104,7 @@ keys; putting one can never race or clobber the other.
 The traced request table used to carry a stale row:
 
 ```
-| `/rs`  | 1 (KVS)  | 302 -> `/rs/stable/` — ecosystem ports still carry
+| `/rs`  | 1 (KVS)  | 302 -> `/rs/latest/` — ecosystem ports still carry
                        a guides prefix even though their API reference is
                        external (ports.ts referenceUrl) |
 ```

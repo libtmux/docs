@@ -24,7 +24,7 @@ import type { InstallForm, Port } from './ports'
  *
  * The widget rewrites this after the reader picks a version, the same shape
  * `McpInstall` uses for its cooldown values (`COOLDOWN_DURATION_SENTINEL`).
- * It has to be a string that never occurs in prose: `latest` and `stable` are
+ * It has to be a string that never occurs in prose: `latest` and `next` are
  * ordinary English words and appear in several topic bodies, so substituting
  * on the slug itself would rewrite sentences.
  */

@@ -23,11 +23,11 @@ function fixture(published = true, wrongScope = false) {
     return { ...value, key: targetKey(value), legacy: [{ type: 'std:label', name: 'Pane' }] }
   }
   write('shell-paths.json', { portTrees: ['rs'] })
-  write('dist/versions.json', { schema: 1, ports: { rs: [{ slug: 'stable' }] }, defaultVersion: { rs: 'stable' } })
+  write('dist/versions.json', { schema: 1, ports: { rs: [{ slug: 'v0.1.0' }] }, defaultVersion: { rs: 'v0.1.0' } })
   write('dist/targets.json', { schema: 1, base: '/en/', targets: [target('rs', 'latest')] })
   write('dist/rs/latest/targets.json', { schema: 1, base: '/en/rs/latest/', scope: 'rs', version: 'latest', targets: [target('rs', 'latest')] })
-  const catalog = { schema: 1, base: '/en/rs/stable/', scope: 'rs', version: 'stable', targets: [target(wrongScope ? 'py' : 'rs', 'stable')] }
-  if (published) write('published/rs/stable/targets.json', catalog)
+  const catalog = { schema: 1, base: '/en/rs/v0.1.0/', scope: 'rs', version: 'v0.1.0', targets: [target(wrongScope ? 'py' : 'rs', 'v0.1.0')] }
+  if (published) write('published/rs/v0.1.0/targets.json', catalog)
   return { path, catalog }
 }
 
@@ -36,13 +36,13 @@ function compose(path: string) {
 }
 
 describe('published default inventory composition', () => {
-  it('uses the published stable catalog instead of a locally assembled latest tree', () => {
+  it('uses the published release catalog instead of a locally assembled latest tree', () => {
     const { path } = fixture()
     const result = JSON.parse(compose(path))
     const catalog = JSON.parse(readFileSync(join(path, 'dist/targets.json'), 'utf8'))
-    expect(catalog.targets.map((target: { version: string }) => target.version)).toEqual(['stable'])
-    expect(readInventory(readFileSync(join(path, 'dist/objects-full.inv'))).entries[0].uri).toContain('rs/stable/')
-    expect(result.inputs[0].sha256).toBe(createHash('sha256').update(readFileSync(join(path, 'published/rs/stable/targets.json'))).digest('hex'))
+    expect(catalog.targets.map((target: { version: string }) => target.version)).toEqual(['v0.1.0'])
+    expect(readInventory(readFileSync(join(path, 'dist/objects-full.inv'))).entries[0].uri).toContain('rs/v0.1.0/')
+    expect(result.inputs[0].sha256).toBe(createHash('sha256').update(readFileSync(join(path, 'published/rs/v0.1.0/targets.json'))).digest('hex'))
   })
   it('replaces stale root compatibility entries with the selected published API', () => {
     const { path } = fixture()
@@ -53,16 +53,16 @@ describe('published default inventory composition', () => {
     })), { project: 'libtmux rs', version: 'latest', legacyCaseSensitiveLabels: true }))
     compose(path)
     expect(readInventory(readFileSync(file)).entries.map(({ name, type, uri }) => ({ name, type, uri }))).toEqual([
-      { name: 'Pane', type: 'std:label', uri: '../../rs/stable/reference/pane/#Pane' },
+      { name: 'Pane', type: 'std:label', uri: '../../rs/v0.1.0/reference/pane/#Pane' },
     ])
   })
   it('refuses to advertise a default whose catalog has not been published', () => {
-    expect(() => compose(fixture(false).path)).toThrow('Publish en/rs/stable/targets.json before advertising')
+    expect(() => compose(fixture(false).path)).toThrow('Publish en/rs/v0.1.0/targets.json before advertising')
   })
   it('rejects a catalog containing another port before writing the aggregate', () => {
     const { path } = fixture(true, true)
     const full = join(path, 'dist/objects-full.inv'); writeFileSync(full, 'retained')
-    expect(() => compose(path)).toThrow('outside rs/stable')
+    expect(() => compose(path)).toThrow('outside rs/v0.1.0')
     expect(readFileSync(full, 'utf8')).toBe('retained')
   })
 })

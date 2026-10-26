@@ -492,8 +492,8 @@ describe.skipIf(!SITE_BUILT)(`published prompt routes${SITE_BUILT ? '' : ` (${SK
 
   /**
    * Composed at the version the manifest records, not at a version this file
-   * picked. `build-site.sh` gives each port its own default and Python's is
-   * `stable` while the rest are `latest`, so a hard-coded version here tests
+   * picked. `build-site.sh` gives each port its own default and a released
+   * port's is its newest release tag while the rest are `latest`, so a hard-coded version here tests
    * the suite's assumption rather than the build's output.
    */
   it('publishes the same bytes the widget composes', () => {
