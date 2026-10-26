@@ -239,7 +239,7 @@ export async function checkDevSample(browser, base) {
           'A declaration permalink lands on its signature bar')
         assert.equal(await declaration.locator('.section-anchor-alias').getAttribute('id'), `${identity}.declaration`,
           'The previous declaration fragment remains available')
-        const equivalents = page.locator('.api-elsewhere a')
+        const equivalents = page.locator('section:has(> #api-other-ports) .tmux-usage a')
         const hrefs = await equivalents.evaluateAll((links) => links.map((link) => link.getAttribute('href')))
         const java = hrefs.find((href) => /\/java\/latest\/reference\/.*capture/.test(href))
         assert(java, 'Pane.capture has its verified Java equivalent')

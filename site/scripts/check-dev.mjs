@@ -19,7 +19,7 @@ import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample, checkRowPermalinks } from './check-dev-sample.mjs'
 import { checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkMemberBodyInsets, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
 import { checkBadgeCentring, checkChipGrowth, checkMentionDensity, checkUsageChips } from './check-badge-centring.mjs'
-import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkKindBadgeLinksFail, checkRequiredAppearance, checkTmuxReferencePreviews, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
+import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkKindBadgeLinksFail, checkRequiredAppearance, checkTmuxReferencePreviews, checkTmuxReferencePreviewsFail, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
 import { checkTypeParameters } from './check-type-parameters.mjs'
 import { checkTmuxKeys, TMUX_KEY_PAGES } from './check-tmux-keys.mjs'
 import { checkSidebarDemo } from './check-sidebar-demo.mjs'
@@ -754,11 +754,24 @@ async function checkReferenceAndHeroes(browser, base) {
       qualifiedName: 'io.github.libtmux.Server', namespace: 'io.github.libtmux',
     }, 'Java manifest records source identity alongside its stable declaration URL')
     await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server/`)
-    const javaEquivalent = page.locator('.api-elsewhere a[href$="/java/latest/reference/io-github-libtmux-server-server/"]')
-    assert.equal(await javaEquivalent.locator(':scope > code').textContent(), 'io.github.libtmux.Server',
-      'Equivalent Java API labels use the target source identity while retaining its stable URL')
-    assert.equal(await javaEquivalent.locator(':scope > .api-badge--kind-class[aria-hidden="true"]').textContent(), 'C',
-      'The decorative kind badge remains separate from the exact source name')
+    // The equivalent is a row of the In other ports table: the target's source name in code, led by its decorative kind badge.
+    const javaEquivalent = page.locator('section:has(> #api-other-ports) .tmux-usage a[href$="/java/latest/reference/io-github-libtmux-server-server/"]')
+    const assertJavaEquivalent = async () => {
+      assert.equal(await javaEquivalent.count(), 1, 'The In other ports table links the Java equivalent')
+      assert.equal(await javaEquivalent.locator(':scope > code').count(), 1, 'The Java equivalent names its target in code')
+      assert.equal(await javaEquivalent.locator(':scope > code').textContent(), 'io.github.libtmux.Server',
+        'Equivalent Java API labels use the target source identity while retaining its stable URL')
+      assert.equal(await javaEquivalent.locator(':scope > .api-badge--kind-class[aria-hidden="true"]').count(), 1,
+        'The Java equivalent keeps its decorative kind badge')
+      assert.equal(await javaEquivalent.locator(':scope > .api-badge--kind-class[aria-hidden="true"]').textContent(), 'C',
+        'The decorative kind badge remains separate from the exact source name')
+    }
+    await assertJavaEquivalent()
+    // The control: the same assertions fail once the badge or the code is gone.
+    await javaEquivalent.locator(':scope > .api-badge--kind-class').evaluate((badge) => badge.remove())
+    await assert.rejects(assertJavaEquivalent(), /keeps its decorative kind badge/)
+    await javaEquivalent.locator(':scope > code').evaluate((code) => code.replaceWith(document.createElement('span')))
+    await assert.rejects(assertJavaEquivalent(), /names its target in code/)
     console.log('Java names: source package and exact qualified names render without changing declaration anchors')
   } finally {
     await page.close()
@@ -830,6 +843,7 @@ try {
     await checkUsageChips(browser, base)
   } else if (referencePreviewsOnly) {
     await retryReload(() => checkTmuxReferencePreviews(browser, base, { served: servedBuild(base) }))
+    await checkTmuxReferencePreviewsFail(browser, base)
   } else if (referencePreferencesOnly) {
     await retryReload(() => checkReferencePreferences(browser, base))
     await retryReload(() => checkGlobalHeader(browser, base))
@@ -913,7 +927,8 @@ try {
       .then(() => checkChipGrowth(browser, base))
       .then(() => checkUsageChips(browser, base)))
     const blockLinks = schedule(() => retryReload(() => checkBlockLinksUndecorated(browser, base)))
-    const referencePreviews = schedule(() => retryReload(() => checkTmuxReferencePreviews(browser, base, { served: servedBuild(base) })))
+    const referencePreviews = schedule(() => retryReload(() => checkTmuxReferencePreviews(browser, base, { served: servedBuild(base) }))
+      .then(() => checkTmuxReferencePreviewsFail(browser, base)))
     await apiAnchors
     const apiSticky = schedule(() => retryReload(() => checkApiStickyHeadings(browser, base))
       .then(() => checkApiStickyHeadingsFail(browser, base)))
@@ -1068,7 +1083,9 @@ try {
       const response = await page.goto(`${base}/${path}/`, { waitUntil: 'load' })
       assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
       await page.evaluate(() => document.fonts.ready)
+      // A product page's members keep the collapsed disclosure; the page's own equivalents are a table that is always open.
       await page.locator('.api-elsewhere').evaluateAll((entries) => entries.forEach((entry) => { entry.open = true }))
+      assert(await page.locator('.api-elsewhere, section:has(> #api-other-ports) .tmux-usage table').count() > 0, `${path}: no equivalents were open to measure`)
       for (const width of [1440, 768, 390]) {
         await page.setViewportSize({ width, height: 1000 })
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)
