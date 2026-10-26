@@ -76,9 +76,15 @@ interface Props {
   showBases?: boolean
   /** Previous fragment for the same declaration. */
   legacyId?: string
+  /**
+   * Show the tmux and cross-port links as small rows under the declaration. A page whose subject is this symbol
+   * lists them as sections of its own (`ApiTmuxSections.astro`) and turns the rows off; a member listed on an
+   * aggregate page keeps them.
+   */
+  linkRows?: boolean
 }
 const { symbol, index, sourceUrl, port, language = port, manualLinks, catalogLinks, alternativesFor, heading = false, member = false,
-  showSummary = true, showBases = true, legacyId, nameHref } = Astro.props as Props
+  showSummary = true, showBases = true, legacyId, nameHref, linkRows = true } = Astro.props as Props
 const anchor = symbol.publicId ?? symbol.id
 const kind = symbol.kind
 const nativeEntries = language === 'c' ? symbol.signatures.filter((signature) => signature.raw) : symbol.signatures
@@ -117,7 +123,7 @@ const domain = language ? (DOMAIN[language] ?? 'std') : 'py'
  */
 const absentParts = (text?: string) => (text ?? '').split(/`([^`]+)`/)
 
-const elsewhere = port ? (alternativesFor?.(symbol) ?? referenceAlternatives(port, anchor)).map((group) => ({
+const elsewhere = port && linkRows ? (alternativesFor?.(symbol) ?? referenceAlternatives(port, anchor)).map((group) => ({
   ...group,
   ports: group.ports.filter((entry) => entry.port !== port).map((entry) => {
     const target = entry.publicId ? API_MODELS[entry.port]?.symbols.find((symbol) =>
@@ -180,14 +186,14 @@ const references = symbol.doc?.references ?? []
  * to the reference, and this sends them back. Grouped by section, because
  * "explained in a concept" and "used in an example" are different offers.
  */
-const mentions = port ? mentionsOf(port, symbol.id) : []
+const mentions = port && linkRows ? mentionsOf(port, symbol.id) : []
 // A command the symbol sends comes with its scope and C function; one it only has an equivalent for is a plain link.
-const tmuxCommands = manualLinks ?? (port ? tmuxCommandsFor(port, anchor).map((command) => ({ ...command, href: tmuxManualUrl('latest', command.name) })) : [])
-const commandRows = tmuxCommandRows(port && !manualLinks ? tmuxSymbolSends(port, anchor) : [], tmuxCommands)
+const tmuxCommands = !linkRows ? [] : manualLinks ?? (port ? tmuxCommandsFor(port, anchor).map((command) => ({ ...command, href: tmuxManualUrl('latest', command.name) })) : [])
+const commandRows = tmuxCommandRows(linkRows && port && !manualLinks ? tmuxSymbolSends(port, anchor) : [], tmuxCommands)
 const commandItems = tmuxCommandItems(commandRows)
 const commandSeparator = tmuxCommandSeparator(commandItems)
 // Members that wrap options or hooks lead to the catalog of what they take.
-const catalogEntries = catalogLinks ?? (port && !manualLinks ? tmuxCatalogKindsForSymbol(port, symbol).map((kind) => ({ name: CATALOG_KINDS[kind].label, href: tmuxCatalogUrl('latest', kind) })) : [])
+const catalogEntries = !linkRows ? [] : catalogLinks ?? (port && !manualLinks ? tmuxCatalogKindsForSymbol(port, symbol).map((kind) => ({ name: CATALOG_KINDS[kind].label, href: tmuxCatalogUrl('latest', kind) })) : [])
 const mentionSections = [...new Set(mentions.map((m) => m.section ?? 'docs'))].sort()
 
 const badges = [

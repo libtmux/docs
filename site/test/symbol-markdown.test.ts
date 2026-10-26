@@ -86,10 +86,10 @@ describe('API Markdown content parity', () => {
     const symbol = model.symbols.find((symbol) => symbol.id === 'libtmux::Server')!
     const text = symbolMarkdown({ model, symbol })
     expect(text).toContain('## In other ports')
-    expect(text).toContain('PowerShell: [`LibTmux\\New-TmuxServer`]')
+    expect(text).toContain('| PowerShell | [`LibTmux\\New-TmuxServer`]')
     expect(text).toContain('(cmdlet). This cmdlet constructs a shared .NET `LibTmux.Server`')
-    expect(text).toContain('Julia: [`LibTmux.Server`]')
-    expect(text).toContain('F#: [`LibTmux.FSharp.Server`]')
+    expect(text).toContain('| Julia | [`LibTmux.Server`]')
+    expect(text).toContain('| F# | [`LibTmux.FSharp.Server`]')
     expect(text).toContain('(module). This F# module provides functions')
     const snapshot = API_MODELS.julia.symbols.find((symbol) => symbol.id === 'LibTmux.snapshot')!
     const acquisition = symbolMarkdown({ model: API_MODELS.julia, symbol: snapshot })

@@ -14,6 +14,7 @@ import { NATIVE_API_GLOSSARIES } from '../src/lib/api-glossary-native'
 import * as models from '../src/lib/api-models'
 import * as sections from '../src/lib/api-sections'
 import * as relationships from '../src/lib/api-relationships'
+import * as tmuxSections from '../src/lib/api-tmux-sections'
 import * as tree from '../src/lib/api-tree'
 import * as search from '../src/lib/api-search'
 import * as apiSidebar from '../src/lib/api-sidebar'
@@ -57,7 +58,7 @@ async function components(stubs: Readonly<Record<string, string>> = {}) {
     '@libtmux/api-model': model,
     ...Object.fromEntries(Object.entries({
       'api-glossary': glossary, 'api-models': models, 'api-sections': sections,
-      'api-relationships': relationships, 'api-tree': tree, 'api-search': search, 'api-sidebar': apiSidebar,
+      'api-relationships': relationships, 'api-tmux-sections': tmuxSections, 'api-tree': tree, 'api-search': search, 'api-sidebar': apiSidebar,
       'api-labels': labels, 'word-break': wordBreak, 'native-name': nativeName, ports, 'product-api': products,
       versions, 'site-root': roots, sidebar, 'documentation-navigation': documentation,
       'page-ports-for': pagePorts, 'markdown-twins': markdown, 'tmux-manual-data': manual, 'tmux-reference': reference, 'tmux-catalog': catalog,

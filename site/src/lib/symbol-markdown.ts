@@ -3,11 +3,10 @@ import { fromMarkdown } from 'mdast-util-from-markdown'
 import { toMarkdown } from 'mdast-util-to-markdown'
 import { boundLabel, membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
-import { PORT_NAME, referenceAlternatives } from './api-models'
+import { PORT_NAME } from './api-models'
+import { apiTmuxSections, type ApiTmuxSection } from './api-tmux-sections'
 import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasScalarMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
-import { tmuxCommandsFor, tmuxManualUrl } from './tmux-manual-data'
-import { tmuxCommandItems, tmuxCommandRows, tmuxCommandSeparator, tmuxSymbolSends, type ResolvedUsage } from './tmux-reference'
-import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl } from './tmux-catalog'
+import type { ResolvedUsage } from './tmux-reference'
 import { tmuxCommandMentions, tmuxMentionMarkdown } from './tmux-links'
 import { productApiIndex } from './product-api'
 import { defaultVersionFor } from './versions'
@@ -150,6 +149,45 @@ function usageMarkdown(usage: ResolvedUsage): string[] {
   return lines
 }
 
+/** The sections the page shows between its relationships and its related types, in the same order and with the same rows. */
+function tmuxSectionMarkdown(section: ApiTmuxSection): string[] {
+  const out = [`## ${section.label}`, '', section.intro, '']
+  const link = (name: string, href: string) => `[${inlineCode(name)}](${href})`
+  if (section.type === 'commands') {
+    for (const item of section.items) {
+      const scope = item.scope ? ` ${item.scope.flag || item.scope.target ? inlineCode(`-${item.scope.flag || item.scope.target}`) : item.scope.label}` : ''
+      out.push(`- ${link(item.command, item.href)}${scope}${item.when ? ` (${item.when})` : ''}`)
+    }
+  } else if (section.type === 'c-api') {
+    for (const item of section.direct) out.push(`- ${link(item.name, item.href)} (${item.kind}), degree 1`)
+    for (const path of section.paths) {
+      out.push('', `### ${path.title}`, '')
+      for (const item of path.items) out.push(`- ${link(item.name, item.href)} (${item.kind}), degree ${item.degree}, from ${inlineCode(path.from.name)}`)
+    }
+  } else if (section.type === 'catalog') {
+    for (const item of section.items) out.push(`- [${item.name}](${item.href}) (${section.catalog})`)
+  } else if (section.type === 'guides') {
+    for (const group of section.groups) {
+      if (section.groups.length > 1) out.push(`### ${group.label}`, '')
+      for (const item of group.items) out.push(`- [${item.title}](${item.href})`)
+      out.push('')
+    }
+  } else {
+    out.length = 2
+    const cell = (text: string) => text.replaceAll('|', '\\|').replaceAll('\n', ' ')
+    for (const group of section.groups) {
+      out.push(group.label, '', `| Language | ${group.table.groups[0].heading} |`, '| --- | --- |')
+      for (const row of group.table.groups[0].ports) {
+        const links = row.links.map((entry) => `${link(entry.label, entry.href)}${entry.kind ? ` (${entry.kind})` : ''}`)
+        out.push(`| ${row.name} | ${cell([...links, row.note].filter(Boolean).join(row.links.length && row.note ? '. ' : ''))} |`)
+      }
+      out.push('', ...(group.table.absent ? [group.table.absent, ''] : []))
+    }
+  }
+  while (out.at(-1) === '') out.pop()
+  return out
+}
+
 export function symbolMarkdown(ctx: MarkdownContext): string {
   const { model, symbol } = ctx
   const port = 'port' in model ? model.port : undefined
@@ -191,19 +229,9 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   }
   if (ctx.canonical) facts.push(`- **Page:** ${ctx.canonical}`)
   if (facts.length) out.push(...facts, '')
-  const commands = ctx.manualLinks ?? (port ? tmuxCommandsFor(port, symbol.publicId ?? symbol.id)
-    .map((command) => ({ ...command, href: tmuxManualUrl('latest', command.name) })) : [])
-  for (const send of port && !ctx.manualLinks ? tmuxSymbolSends(port, symbol.publicId ?? symbol.id) : []) {
-    // The same items as the method page: each scope names the command and then its C function, set apart by a comma, and
-    // the scopes by a semicolon. A condition follows the scope it holds for.
-    const items = tmuxCommandItems(tmuxCommandRows([send], []))
-    const written = items.map((item) => `[\`${item.command}\`](${item.href})${item.scope ? ` ${item.scope.label.toLowerCase()} scope${item.function ? `, [\`${item.function.name}\`](${item.function.href})` : ''}` : ''}${item.when ? ` (${item.when})` : ''}`)
-    out.push(`tmux command: ${written.join(tmuxCommandSeparator(items))}`, '')
-  }
-  for (const command of commands) out.push(`tmux command: [\`${command.name}\`](${command.href})`, '')
-  const catalog = ctx.catalogLinks ?? (port && !ctx.manualLinks ? tmuxCatalogKindsForSymbol(port, symbol)
-    .map((kind) => ({ name: CATALOG_KINDS[kind].label, href: tmuxCatalogUrl('latest', kind) })) : [])
-  if (catalog.length) out.push(`tmux catalog: ${catalog.map((entry) => `[${entry.name}](${entry.href})`).join(', ')}`, '')
+  // A C declaration keeps its lines; a library symbol's links are the sections written after the relationships.
+  for (const command of ctx.manualLinks ?? []) out.push(`tmux command: [\`${command.name}\`](${command.href})`, '')
+  if (ctx.catalogLinks?.length) out.push(`tmux catalog: ${ctx.catalogLinks.map((entry) => `[${entry.name}](${entry.href})`).join(', ')}`, '')
   if (symbol.apiScope === 'supporting') {
     out.push('This type appears in public signatures. It is not a package entry point.', '')
   }
@@ -375,18 +403,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     out.push('')
   }
 
-  const alternatives = port ? referenceAlternatives(port, symbol.publicId ?? symbol.id) : []
-  if (alternatives.length) {
-    out.push('## In other ports', '')
-    for (const group of alternatives) {
-      out.push(`### ${group.label}`, '')
-      for (const entry of group.ports.filter((entry) => entry.port !== port && entry.href)) {
-        out.push(`- ${entry.name}: [${inlineCode(entry.publicId!)}](${entry.href})${entry.kind ? ` (${entry.kind})` : ''}${entry.note ? `. ${entry.note}` : ''}`)
-      }
-      out.push('')
-    }
-  }
-
+  for (const section of ctx.manualLinks ? [] : apiTmuxSections(port, symbol)) out.push(...tmuxSectionMarkdown(section), '')
   if (ctx.usage?.length) {
     out.push('## In libtmux', '')
     for (const entry of ctx.usage) out.push(...usageMarkdown(entry), '')

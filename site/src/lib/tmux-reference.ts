@@ -213,6 +213,37 @@ export function tmuxSourceCommands(version: string, symbol: ApiSymbol) {
     .filter((entry, index, all) => all.findIndex((other) => other.name === entry.name) === index)
 }
 
+/** One link in a language's cell of a usage table. A link from the recorded usage carries the lines that show it. */
+export interface UsageTableLink {
+  href: string
+  kind: string
+  label: string
+  when?: string
+  evidence?: string[]
+  reviewed?: boolean
+  via?: { symbol: string; evidence: string[] }
+}
+
+/**
+ * What `TmuxUsage.astro` draws: a Language column and one column per group, a row for each language that has a link or a
+ * note, and one closing sentence for the rest. The recorded usage of a command fits it, and so does a concept's
+ * equivalents in other ports.
+ */
+export interface UsageTable {
+  command: string
+  /** Read by assistive technology in place of the default caption. */
+  caption?: string
+  /** The closing sentence, in place of the default one about absent methods; `null` for none. */
+  absent?: string | null
+  groups: {
+    scope?: TmuxScope
+    /** The column heading of a group with no scope. */
+    heading?: string
+    function?: { name: string; href: string }
+    ports: { port: string; name: string; links: UsageTableLink[]; note?: string; noteIndex?: SymbolIndex }[]
+  }[]
+}
+
 export interface ResolvedUsageGroup extends UsageGroup {
   /** The C function behind the scope, in the release the page describes. */
   function?: { name: string; href: string }
@@ -235,12 +266,15 @@ export function tmuxResolvedUsage(version: string, command: string, scope?: stri
     }),
   }
 }
-export function tmuxCommandSources(version: string, name: string) {
+/** The C declarations a command ends in: its entry, its callback and the function behind each scope. */
+export function tmuxCommandDeclarations(version: string, name: string): ApiSymbol[] {
   const model = tmuxSourceModel(version)
   const command = model.commands.find((entry) => entry.name === name)
   const scoped = tmuxScopes(name).flatMap((scope) => tmuxScopeFunction(version, name, scope, { inline: false }) ?? [])
-  return command ? [...[command.entry, command.callback].flatMap((id) => model.symbols.find((entry) => entry.id === id) ?? []), ...scoped]
-    .map((symbol) => ({ name: symbol.name, kind: symbol.kind, href: tmuxReferenceUrl(version, symbol) })) : []
+  return command ? [...[command.entry, command.callback].flatMap((id) => model.symbols.find((entry) => entry.id === id) ?? []), ...scoped] : []
+}
+export function tmuxCommandSources(version: string, name: string) {
+  return tmuxCommandDeclarations(version, name).map((symbol) => ({ name: symbol.name, kind: symbol.kind, href: tmuxReferenceUrl(version, symbol) }))
 }
 
 export interface SymbolSend extends Omit<SymbolUsage, 'scopes'> {

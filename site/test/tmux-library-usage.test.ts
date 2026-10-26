@@ -499,13 +499,19 @@ describe('from a method to the command and its C function', () => {
     const model = API_MODELS.powershell
     const symbol = model.symbols.find((entry) => (entry.publicId ?? entry.id) === 'LibTmux\\Get-TmuxPane')!
     const text = symbolMarkdown({ model, symbol })
-    const lines = text.split('\n').filter((entry) => entry.startsWith('tmux command: [`list-panes`]'))
     const manual = tmuxManualUrl('latest', 'list-panes')
-    const of = (scope: string) => `[\`list-panes\`](${manual}) ${scope} scope, [\`cmd_list_panes_${scope}\`](/tmux/latest/reference/c-function-cmd-list-panes-c-cmd_list_panes_${scope}/)`
-    expect(lines).toEqual([['server', 'session', 'window'].map(of).join('; ')].map((entry) => `tmux command: ${entry}`))
+    const section = (heading: string) => text.split(`## ${heading}\n`)[1].split('\n## ')[0].split('\n').filter((line) => line.startsWith('- '))
+    // Each scope is a line of the tmux command section, and its C function a line of the tmux C API section.
+    const flags = { server: '-a', session: '-s', window: '-t' }
+    expect(section('tmux command').filter((line) => line.includes('`list-panes`'))).toEqual(
+      Object.values(flags).map((flag) => `- [\`list-panes\`](${manual}) \`${flag}\``))
+    const functions = section('tmux C API').filter((line) => line.includes('cmd_list_panes_'))
+    for (const scope of Object.keys(flags)) {
+      expect(functions).toContain(`- [\`cmd_list_panes_${scope}\`](/tmux/latest/reference/c-function-cmd-list-panes-c-cmd_list_panes_${scope}/) (function), degree 1`)
+    }
     // The control: a command with no scope is the command alone.
     const swift = API_MODELS.swift.symbols.find((entry) => (entry.publicId ?? entry.id) === 'Server.panes()')!
-    expect(symbolMarkdown({ model: API_MODELS.swift, symbol: swift })).toContain(`tmux command: [\`list-panes\`](${manual}) server scope, [\`cmd_list_panes_server\`](`)
+    expect(symbolMarkdown({ model: API_MODELS.swift, symbol: swift })).toContain(`- [\`list-panes\`](${manual}) \`-a\`\n`)
   })
 
   it('does not link a method that only reads a capture, whatever the concepts call it equivalent to', () => {
@@ -919,7 +925,6 @@ describe('the manual page', () => {
       expect(new Set(links.map((a) => a.querySelector('.api-nav__kind')!.textContent)).size, slug).toBeGreaterThan(1)
     }
   })
-
 
   it('ends with Use from a library, after the C implementation and everything else', async () => {
     for (const slug of ['list-panes', 'capture-pane']) {

@@ -3,6 +3,8 @@ import type { ApiModel, ApiSymbol, SourceApiModel, SymbolIndex } from '@libtmux/
 import { membersOf, memberTier, docSummaryText, memberSignals, parameterId, qualifiedNameOf, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model'
 import mentionsData from '../../data/mentions.json'
 import ApiEntry from '../../components/api/ApiEntry.astro'
+import ApiTmuxSections from './ApiTmuxSections.astro'
+import { apiTmuxSections } from '../../lib/api-tmux-sections'
 import ApiScalarMembers from './ApiScalarMembers.astro'
 import ApiRelationships from './ApiRelationships.astro'
 import { apiRelationshipSections, type ApiRelationshipPath } from '../../lib/api-relationships'
@@ -370,6 +372,9 @@ const paths = (source?.paths ?? []).filter((path) => !owner || path.symbols.some
 if (relationshipSections.some((section) => ['api-calls', 'api-called-by'].includes(section.id))) pageSections.push({ id: 'api-call-network', label: 'Call neighborhood' })
 if (paths.length) pageSections.push({ id: 'api-source-paths', label: 'Paths through the source', count: paths.length })
 pageSections.push(...relationshipSections.map((section) => ({ id: section.id, label: section.label, count: section.items.length })))
+// A library symbol's tmux and cross-port links are sections of its page; a C declaration keeps its rows.
+const tmuxSections = owner && port && !source?.manualLinks ? apiTmuxSections(port, owner) : []
+pageSections.push(...tmuxSections.map((section) => ({ id: section.id, label: section.label, count: section.count })))
 const related = owner && model ? relatedTypeLinks(model, owner, members, index, hrefFor, { language, repeated: ownerNames, includeInternal: Boolean(source) }) : []
 if (related.length) pageSections.push({ id: 'api-related-types', label: 'Related types', count: related.length })
 // The methods that send the command are what a reader of the C needs last, after the code around it.
@@ -771,6 +776,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                 language={language}
                 manualLinks={source?.manualLinks}
                 catalogLinks={source?.catalogLinks}
+                linkRows={!(owner && port && !source?.manualLinks)}
                 heading={isMemberOwner(owner)}
                 member={!isMemberOwner(owner)}
                 showSummary={false}
@@ -838,6 +844,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
               </>
             )}
             <ApiRelationships owner={owner} model={model} sections={relationshipSections} paths={paths} hrefFor={hrefFor} />
+            <ApiTmuxSections sections={tmuxSections} />
             {related.length > 0 && <section class="api-related-types" aria-labelledby="api-related-types">
               <h2 class="api-section-heading text-lg font-semibold" id="api-related-types">Related types<a class="api-heading-link" href="#api-related-types" aria-label="Link to Related types">#</a></h2>
               <div class="api-related-cards">

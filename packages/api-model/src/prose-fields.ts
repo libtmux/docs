@@ -126,6 +126,7 @@ export const RENDERED_TEXTS: Record<string, string> = {
   'fact.value': 'commandFacts and parameterBindingFacts',
   'parameterBindingText(p)!': 'parameterBindingText',
   'e.note': 'conceptNotes',
+  'cell.note': 'conceptNotes',
   'block.text': 'ApiProse blocks',
   'item.text': 'ApiProse blocks',
 }
