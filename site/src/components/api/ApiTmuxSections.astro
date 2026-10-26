@@ -21,7 +21,7 @@ const flagOf = (scope: { flag: string; target?: string }) => scope.flag || scope
   {section.type === 'commands' && <div class="tmux-usage"><span class="tmux-usage__links">
     {section.items.map((item) => <span class="tmux-usage__item">
       <a href={item.href}><code>{item.command}</code></a>
-      {item.scope && <span class="tmux-send" title={item.evidence}>{flagOf(item.scope) ? <code>{flagOf(item.scope)}</code> : <span>{item.scope.label}</span>}</span>}
+      {item.scope && <span class="tmux-send" title={item.evidence}>{flagOf(item.scope) && <code>{flagOf(item.scope)}</code>}{' '}<span>{item.scope.label.toLowerCase()} scope</span>{item.function && <>{', '}<a href={item.function.href}><code>{item.function.name}</code></a></>}</span>}
       {item.when && <span class="tmux-when" data-when={item.when}>({item.when})</span>}
     </span>)}
   </span></div>}

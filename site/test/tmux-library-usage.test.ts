@@ -10,7 +10,7 @@ import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { TMUX_MANUALS, tmuxApiLinks, tmuxCommandsFor, tmuxLibrarySection, tmuxManualHeadings, tmuxManualUrl } from '../src/lib/tmux-manual-data'
 import { TMUX_USAGE, isListed, namesCommand, tmuxScopes, tmuxUsage, tmuxUsageOf, type UsageUse } from '../src/lib/tmux-library-usage'
 import {
-  sharedWhen, tmuxCommandRows, tmuxCommandSources, tmuxReferenceContext, tmuxReferenceIndex, tmuxReferenceUrl, tmuxResolvedUsage, tmuxSourceModel, tmuxSymbolSends,
+  sharedWhen, tmuxCommandItems, tmuxCommandRows, tmuxCommandSources, tmuxReferenceContext, tmuxReferenceIndex, tmuxReferenceUrl, tmuxResolvedUsage, tmuxSourceModel, tmuxSymbolSends,
 } from '../src/lib/tmux-reference'
 import { loadAstroTemplate, renderAstroTemplate, withoutScope } from './astro-templates'
 
@@ -501,17 +501,24 @@ describe('from a method to the command and its C function', () => {
     const text = symbolMarkdown({ model, symbol })
     const manual = tmuxManualUrl('latest', 'list-panes')
     const section = (heading: string) => text.split(`## ${heading}\n`)[1].split('\n## ')[0].split('\n').filter((line) => line.startsWith('- '))
-    // Each scope is a line of the tmux command section, and its C function a line of the tmux C API section.
+    // Each scope is a line of the tmux command section with its flag, its scope, the C function behind it and the line that sends.
     const flags = { server: '-a', session: '-s', window: '-t' }
+    const url = (scope: string) => `/tmux/latest/reference/c-function-cmd-list-panes-c-cmd_list_panes_${scope}/`
+    const evidence = Object.fromEntries(tmuxCommandItems(tmuxCommandRows(tmuxSymbolSends('powershell', 'LibTmux\\Get-TmuxPane'), [])).filter((item) => item.command === 'list-panes')
+      .map((item) => [item.scope!.id, item.evidence]))
     expect(section('tmux command').filter((line) => line.includes('`list-panes`'))).toEqual(
-      Object.values(flags).map((flag) => `- [\`list-panes\`](${manual}) \`${flag}\``))
+      Object.entries(flags).map(([scope, flag]) => `- [\`list-panes\`](${manual}) \`${flag}\` ${scope} scope, [\`cmd_list_panes_${scope}\`](${url(scope)}) (source: \`${evidence[scope]}\`)`))
+    // The C functions are the symbol's degree 1, one for each scope it sends.
     const functions = section('tmux C API').filter((line) => line.includes('cmd_list_panes_'))
     for (const scope of Object.keys(flags)) {
-      expect(functions).toContain(`- [\`cmd_list_panes_${scope}\`](/tmux/latest/reference/c-function-cmd-list-panes-c-cmd_list_panes_${scope}/) (function)`)
+      expect(functions).toContain(`- [\`cmd_list_panes_${scope}\`](${url(scope)}) (function)`)
     }
-    // The control: a command with no scope is the command alone.
+    // The control: a command at one scope names that scope and its function only.
     const swift = API_MODELS.swift.symbols.find((entry) => (entry.publicId ?? entry.id) === 'Server.panes()')!
-    expect(symbolMarkdown({ model: API_MODELS.swift, symbol: swift })).toContain(`- [\`list-panes\`](${manual}) \`-a\`\n`)
+    const server = symbolMarkdown({ model: API_MODELS.swift, symbol: swift })
+    expect(server).toContain(`- [\`list-panes\`](${manual}) \`-a\` server scope, [\`cmd_list_panes_server\`](${url('server')})`)
+    expect(server).not.toContain('cmd_list_panes_session')
+    expect(server).not.toContain('cmd_list_panes_window')
   })
 
   it('does not link a method that only reads a capture, whatever the concepts call it equivalent to', () => {

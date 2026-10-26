@@ -34,6 +34,8 @@ export interface MarkdownContext {
   /** The library methods that send the command a C declaration implements. */
   usage?: ResolvedUsage[]
   catalogLinks?: { name: string; href: string }[]
+  /** Equivalents in other ports, where the page links them by version (a product page) rather than as the reference does. */
+  alternatives?: Parameters<typeof apiTmuxSections>[2]
   paths?: ApiRelationshipPath[]
   symbol: ApiSymbol
   /** Absolute URL of the HTML page this describes. */
@@ -154,9 +156,11 @@ function tmuxSectionMarkdown(section: ApiTmuxSection): string[] {
   const out = [`## ${section.label}`, '', section.intro, '']
   const link = (name: string, href: string) => `[${inlineCode(name)}](${href})`
   if (section.type === 'commands') {
+    // The scope, the C function behind it and the source line that sends, as the page shows them.
     for (const item of section.items) {
-      const scope = item.scope ? ` ${item.scope.flag || item.scope.target ? inlineCode(`-${item.scope.flag || item.scope.target}`) : item.scope.label}` : ''
-      out.push(`- ${link(item.command, item.href)}${scope}${item.when ? ` (${item.when})` : ''}`)
+      const flag = item.scope && (item.scope.flag || item.scope.target) ? ` ${inlineCode(`-${item.scope.flag || item.scope.target}`)}` : ''
+      const scope = item.scope ? `${flag} ${item.scope.label.toLowerCase()} scope${item.function ? `, ${link(item.function.name, item.function.href)}` : ''}` : ''
+      out.push(`- ${link(item.command, item.href)}${scope}${item.when ? ` (${item.when})` : ''}${item.evidence ? ` (source: ${inlineCode(item.evidence)})` : ''}`)
     }
   } else if (section.type === 'c-api') {
     for (const item of section.direct) out.push(`- ${link(item.name, item.href)} (${item.kind})`)
@@ -404,7 +408,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     out.push('')
   }
 
-  for (const section of ctx.manualLinks ? [] : apiTmuxSections(port, symbol)) out.push(...tmuxSectionMarkdown(section), '')
+  for (const section of ctx.manualLinks ? [] : apiTmuxSections(port, symbol, ctx.alternatives)) out.push(...tmuxSectionMarkdown(section), '')
   if (ctx.usage?.length) {
     out.push('## In libtmux', '')
     for (const entry of ctx.usage) out.push(...usageMarkdown(entry), '')

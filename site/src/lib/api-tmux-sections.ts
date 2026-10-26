@@ -13,7 +13,7 @@ import { SITE_ROOT } from './site-root'
 import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl, type CatalogKind } from './tmux-catalog'
 import { tmuxCommandsFor, tmuxManualUrl } from './tmux-manual-data'
 import {
-  tmuxCommandDeclarations, tmuxCommandItems, tmuxCommandRows, tmuxReferencePaths, tmuxReferenceUrl, tmuxSymbolSends,
+  tmuxCommandItems, tmuxDirectDeclarations, tmuxCommandRows, tmuxReferencePaths, tmuxReferenceUrl, tmuxSymbolSends,
   type CommandItem, type UsageTable,
 } from './tmux-reference'
 import { defaultVersionFor } from './versions'
@@ -59,13 +59,10 @@ function otherPorts(port: string, alternatives: Alternatives): OtherPortsSection
         return [{ port: entry.port, name: entry.name, links: [{ href: entry.href, kind: entry.kind ?? '', label: qualified! }],
           ...(entry.note ? { note: entry.note, noteIndex: noteIndex(entry.port) } : {}) }]
       }
-      if (entry.publicId) {
-        return [{ port: entry.port, name: entry.name, links: [], note: `\`${qualified}\`${entry.note ? `. ${entry.note}` : ''}`, noteIndex: noteIndex(entry.port) }]
-      }
       // A reason says why this language has none; a language with no reason is one of the closing sentence's.
       return entry.absent && !GENERIC_ABSENCE.test(entry.absent) ? [{ port: entry.port, name: entry.name, links: [], note: entry.absent }] : []
     })
-    const bare = ports.filter(({ entry }) => !entry.href && !entry.publicId && !(entry.absent && !GENERIC_ABSENCE.test(entry.absent)))
+    const bare = ports.filter(({ entry }) => !entry.href && !(entry.absent && !GENERIC_ABSENCE.test(entry.absent)))
       .sort((a, b) => order(a.entry.port) - order(b.entry.port)).map(({ entry }) => entry.name)
     return {
       label: group.label,
@@ -93,13 +90,12 @@ export function apiTmuxSections(
       intro: `The tmux commands behind \`${symbol.name}\`.` })
   }
 
-  // The functions each command's rows already name come first, then the rest of what the data records for it.
+  // Degree 1 is what the symbol itself reaches: the entry of each command it sends and the function at each scope it sends.
+  // A command it only has an equivalent for contributes none.
+  const sent = new Set(tmuxSymbolSends(port, anchor).map((send) => send.command))
   const direct: (CApiItem & { symbol: ApiSymbol })[] = []
-  for (const row of rows) {
-    const linked = new Set(row.scopes.map((use) => use.function?.href))
-    const declarations = tmuxCommandDeclarations(VERSION, row.command)
-    const ordered = [...declarations.filter((entry) => linked.has(tmuxReferenceUrl(VERSION, entry))), ...declarations.filter((entry) => !linked.has(tmuxReferenceUrl(VERSION, entry)))]
-    for (const entry of ordered) {
+  for (const row of rows.filter((entry) => sent.has(entry.command))) {
+    for (const entry of tmuxDirectDeclarations(VERSION, row.command, row.scopes.map((use) => use.scope!))) {
       if (!direct.some((found) => found.id === entry.id)) direct.push({ id: entry.id, name: entry.name, href: tmuxReferenceUrl(VERSION, entry), kind: entry.kind, symbol: entry })
     }
   }
@@ -113,7 +109,7 @@ export function apiTmuxSections(
     })
     sections.push({
       type: 'c-api', id: 'api-tmux-c-api', label: 'tmux C API', direct: direct.map(({ symbol: _, ...rest }) => rest), paths,
-      count: direct.length + paths.reduce((total, path) => total + path.items.length - 1, 0),
+      count: new Set([...direct, ...paths.flatMap((path) => path.items)].map((item) => item.id)).size,
       intro: 'The C declarations in tmux that implement these commands.',
       ...(paths.length ? { note: 'Each path starts at a function a command runs, which is degree 1. The degree counts calls from there: degree 2 is called by that function, degree 3 by the next, and so on.' } : {}),
     })
@@ -139,7 +135,8 @@ export function apiTmuxSections(
   const tables = otherPorts(port, alternatives)
   if (tables.length) {
     sections.push({ type: 'ports', id: 'api-other-ports', label: 'In other ports', groups: tables,
-      count: tables.reduce((total, group) => total + group.table.groups[0].ports.filter((entry) => entry.links.length).length, 0),
+      // The rows the tables draw: a language with a link or a reason, and not the languages of the closing sentence.
+      count: tables.reduce((total, group) => total + group.table.groups[0].ports.length, 0),
       intro: `Equivalents of \`${symbol.name}\` in the other languages.` })
   }
   return sections
