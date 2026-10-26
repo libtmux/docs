@@ -1074,3 +1074,17 @@ html[data-api-sections-measured] .api-section-links {
 .api-prose-code + .api-prose-code {
   margin-block-start: 1rem;
 }
+
+/*
+ * A path through the tmux source: the Paths through the source of a C reference page and the paths of a symbol's tmux C API
+ * section. Global because both pages draw it, and a product page imports this file but not the C reference's component.
+ */
+.api-source-path { margin-top: 1rem; }
+.api-source-path h3 { margin-bottom: .4rem; }
+.api-source-path ol { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
+.api-source-path li { display: flex; align-items: center; gap: .5rem; min-width: 0; max-width: 100%; margin: 0; }
+.api-source-path li a { display: block; min-width: 0; padding: .45rem .6rem; border: 1px solid var(--color-edge); border-radius: .35rem; font-family: var(--font-mono); font-size: .8rem; overflow-wrap: anywhere; text-decoration: none; }
+.api-source-path li a > .api-nav__kind { margin-inline-end: .35rem; }
+.api-source-path [aria-current="page"] { background: color-mix(in srgb, var(--theme-primary) 10%, transparent); font-weight: 600; }
+.api-source-path a:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.api-source-path__edge { font-size: .75rem; flex-shrink: 0; }

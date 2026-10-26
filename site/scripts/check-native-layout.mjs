@@ -451,13 +451,15 @@ export function measureMemberBodies(page) {
 }
 
 /**
- * Pages that give each port a member body of every common shape: only "In other
- * ports", parameters first, a description or example last, Methods, a type,
+ * Pages that give each port a member body of every common shape: a member listed on
+ * a product page, whose last row is the collapsed "In other ports" disclosure (a page's own
+ * symbol lists its equivalents as a section instead), parameters first, a description or example last, Methods, a type,
  * a command and an MCP object. The second field names a direct child the page
  * must still render, so a content change cannot quietly retire the sample.
  */
 const MEMBER_BODY_PAGES = [
-  ['go/latest/reference/tmux-server-configfile/', 'details.api-elsewhere'],
+  ['py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder/', 'details.api-elsewhere'],
+  ['java/latest/workspace/reference/io-github-libtmux-workspace-workspacebuilder-workspacebuilder/', 'details.api-elsewhere'],
   ['go/latest/reference/tmux-window-setotherpanewidth/', 'div.gp-sphinx-api-parameters'],
   ['julia/latest/reference/libtmux-snapshot-1gv6/', 'div.gp-sphinx-api-methods'],
   ['julia/latest/reference/libtmux-kill_window/', 'div.gp-sphinx-api-description'],
@@ -465,10 +467,9 @@ const MEMBER_BODY_PAGES = [
   ['ruby/latest/workspace/reference/libtmux-workspace-configerror/', 'p.gp-sphinx-api-facts'],
   ['py/latest/reference/libtmux-server-new_session/', 'div.gp-sphinx-api-examples'],
   ['py/latest/reference/libtmux-common-has_lt_version/', 'div.gp-sphinx-api-parameters'],
-  ['ts/latest/reference/server-server-configfile/', 'details.api-elsewhere'],
+  ['swift/latest/reference/server-loadbuffer(from-named-)/', 'div.gp-sphinx-api-parameters'],
+  ['ts/latest/reference/server-server-configfile/', 'div.gp-sphinx-api-examples'],
   ['ts/latest/reference/types-newsessionoptions/', 'div.gp-sphinx-api-description'],
-  ['swift/latest/reference/pane-index/', 'details.api-elsewhere'],
-  ['csharp/latest/reference/libtmux-window-height/', 'details.api-elsewhere'],
   ['csharp/latest/reference/libtmux-server-searchclientsasync/', 'div.gp-sphinx-api-parameters'],
   ['java/latest/reference/io-github-libtmux-windowlayout-windowlayout/', 'div.gp-sphinx-api-examples'],
   ['java/latest/mcp/reference/io-github-libtmux-mcp-main-main/', 'div.gp-sphinx-api-examples'],
@@ -490,7 +491,7 @@ export async function checkMemberBodyInsets(browser, base) {
         await page.goto(`${base}/${path}`, { waitUntil: 'load' })
         await page.evaluate(() => document.fonts.ready)
         const bodies = await measureMemberBodies(page)
-        assert(bodies.some((body) => body.children.includes(shape)), `${path}: still renders ${shape}`)
+        assert(bodies.some((body) => body.children.includes(shape)), `${path}: still renders ${shape} (its bodies hold ${JSON.stringify(bodies.map((body) => body.children))})`)
         for (const body of bodies) {
           measured += 1
           const { top, bottom, padding } = body
