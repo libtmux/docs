@@ -46,11 +46,11 @@ function mount({ header = 53, row = 48, members = 180, hash = '', scripting = tr
     current: () => win.document.querySelector('.api-section-links [aria-current="location"]')?.getAttribute('href') }
 }
 
-function mountMembers({ kind = 'grouped', scripting = true, ...options }: Parameters<typeof mount>[0] & { kind?: 'grouped' | 'single' | 'scalar' | 'empty' } = {}) {
+function mountMembers({ kind = 'grouped', scripting = true, fieldsFirst = false, ...options }: Parameters<typeof mount>[0] & { kind?: 'grouped' | 'single' | 'scalar' | 'empty'; fieldsFirst?: boolean } = {}) {
   const page = mount({ ...options, scripting: false })
   const grouped = kind === 'grouped'
   const sections = ['collections', 'operations', 'other']
-  win.document.getElementById('api-members')!.outerHTML = kind === 'empty' ? '' : `<div class="api-members">
+  win.document.getElementById('api-members')!.outerHTML = kind === 'empty' ? '' : `${fieldsFirst ? `<div class="api-field-table"><h2 id="api-fields" class="api-section-heading">Fields<span class="api-section-count">2</span></h2><table><tbody><tr id="member-field"><td>a</td></tr></tbody></table></div>` : ''}<div class="api-members">
     <h2 id="api-members" class="api-section-heading">${kind === 'scalar' ? 'Fields' : 'Members'}<span class="api-section-count">3</span><a class="api-heading-link" href="#api-members" aria-label="Link to members">#</a></h2>
     ${kind === 'scalar' ? '<table><tbody><tr id="member-value"><td>Up</td><td>U</td></tr></tbody></table>'
       : sections.slice(0, grouped ? 3 : 1).map((id) => `<section class="api-member-group" data-group="${id}" ${grouped ? '' : `id="api-${id}"`}>
@@ -294,6 +294,18 @@ it.each(['single', 'scalar'] as const)('keeps a %s member section to one real ow
   expect(page.members!.querySelector('[style*="--api-group-heading"]')).toBeNull()
 })
 
+it('binds sticky member headings to the Members block when a Fields block precedes it', () => {
+  const page = mountMembers({ fieldsFirst: true })
+  const fields = win.document.querySelector('.api-field-table')!
+  expect(win.document.querySelectorAll('.api-members')).toHaveLength(1)
+  expect(fields.nextElementSibling).toBe(page.members)
+  expect(page.members!.hasAttribute('data-api-sticky-members')).toBe(true)
+  expect(fields.hasAttribute('data-api-sticky-members')).toBe(false)
+  expect(page.heading!.textContent).toContain('Members')
+  expect(page.members!.querySelectorAll('h3')).toHaveLength(3)
+  expect(fields.querySelector('[style*="--api-"]')).toBeNull()
+})
+
 it('does not create member headings for an empty owner', () => {
   mountMembers({ kind: 'empty' })
   expect(win.document.querySelector('.api-members')).toBeNull()
@@ -460,7 +472,7 @@ it('tints a member bar for the anchor arrival cue instead of replacing its opaqu
   }
   const keyframes = css.match(/@keyframes api-member-bar-arrival \{([\s\S]*?)\n\}/)![1]
   expect(keyframes.match(/background-color: [^;]*var\(--api-member-bar\)/g)).toHaveLength(2)
-  expect(css).toMatch(/prefers-reduced-motion: reduce\) \{\s*\.api-members > h2\[data-anchor-arrival\][^{]*\{\s*background-color: [^;]*var\(--api-member-bar\)\) !important/)
+  expect(css).toMatch(/prefers-reduced-motion: reduce\) \{\s*(?:\.api-field-table > h2\[data-anchor-arrival\],\s*)?\.api-members > h2\[data-anchor-arrival\][^{]*\{\s*background-color: [^;]*var\(--api-member-bar\)\) !important/)
   // The same heading outside the owner section keeps the shared cue.
   const outside = win.document.createElement('h3')
   outside.setAttribute('data-anchor-arrival', '')

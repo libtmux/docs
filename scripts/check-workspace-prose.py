@@ -7,6 +7,8 @@ Usage: python3 scripts/check-workspace-prose.py --port go --binary /path/to/tmux
 Node, tmux and the CLI runtime must be on PATH. --report saves the run results.
 """
 
+from __future__ import annotations
+
 import argparse
 import hashlib
 import json
@@ -88,9 +90,7 @@ evidence = {
     "port": args.port,
     "binary": str(BINARY),
     "entrypoint_sha256": hashlib.sha256(BINARY.read_bytes()).hexdigest(),
-    "pages": {
-        name: hashlib.sha256(body.encode()).hexdigest() for name, body in bodies.items()
-    },
+    "pages": {name: hashlib.sha256(body.encode()).hexdigest() for name, body in bodies.items()},
     "positive": [],
     "negative": [],
     "skipped": []
@@ -119,12 +119,15 @@ with tempfile.TemporaryDirectory(
     editor.chmod(0o755)
     configs = here / "config"
     configs.mkdir()
-    doc = "session_name: workspace-guide\nwindows:\n  - window_name: editor\n    layout: even-horizontal\n    panes:\n      - printf ready\n      - printf second\n"
+    doc = (
+        "session_name: workspace-guide\nwindows:\n  - window_name: editor\n"
+        "    layout: even-horizontal\n    panes:\n      - printf ready\n      - printf second\n"
+    )
     (here / "workspace.yaml").write_text(doc)
     (configs / "workspace.yaml").write_text(doc)
     for body in bodies.values():
         for match in re.finditer(
-            r'```(?:yaml|json) title="([\w.-]+)"\n(.*?)\n```', body, re.S
+            r'```(?:yaml|json) title="([\w.-]+)"\n(.*?)\n```', body, re.DOTALL
         ):
             (here / match[1]).write_text(match[2] + "\n")
     env = dict(
@@ -146,6 +149,7 @@ with tempfile.TemporaryDirectory(
         env.pop(name, None)
 
     def run(command, success=True):
+        """Run a documented command and check its expected exit status."""
         result = subprocess.run(
             command,
             cwd=here,
@@ -154,6 +158,7 @@ with tempfile.TemporaryDirectory(
             capture_output=True,
             timeout=30,
             shell=isinstance(command, str),
+            check=False,
         )
         if success and result.returncode:
             raise AssertionError((command, result.returncode, result.stderr[-1500:]))
@@ -176,7 +181,7 @@ with tempfile.TemporaryDirectory(
             ]
         )
         for name, body in bodies.items():
-            for match in re.finditer(r"```console\n(.*?)\n```", body, re.S):
+            for match in re.finditer(r"```console\n(.*?)\n```", body, re.DOTALL):
                 command = match[1].removeprefix("$ ")
                 result = run(command)
                 if "--json" in command:
@@ -189,11 +194,9 @@ with tempfile.TemporaryDirectory(
                 )
         for name in CONFIGURATIONS:
             body = bodies["configuration/" + name]
-            document = re.search(r'```yaml title="([\w.-]+)"\n(.*?)\n```', body, re.S)
+            document = re.search(r'```yaml title="([\w.-]+)"\n(.*?)\n```', body, re.DOTALL)
             assert document, name
-            result = run(
-                [str(BINARY), "load", "-S", str(socket), "-d", "--json", document[1]]
-            )
+            result = run([str(BINARY), "load", "-S", str(socket), "-d", "--json", document[1]])
             json.loads(result.stdout)
             evidence["positive"].append(
                 {
@@ -204,9 +207,7 @@ with tempfile.TemporaryDirectory(
             )
 
         for document in ["gallery-blank.yaml", "gallery-commands.yaml"]:
-            result = run(
-                [str(BINARY), "load", "-S", str(socket), "-d", "--json", document]
-            )
+            result = run([str(BINARY), "load", "-S", str(socket), "-d", "--json", document])
             json.loads(result.stdout)
             evidence["positive"].append(
                 {
@@ -217,6 +218,7 @@ with tempfile.TemporaryDirectory(
             )
 
         def tmux(*command):
+            """Query only the workspace runner's private tmux endpoint."""
             return run([TMUX, "-S", str(socket), *command]).stdout.strip()
 
         expected_panes = {
@@ -231,20 +233,13 @@ with tempfile.TemporaryDirectory(
             "hooks-example": 1,
         }
         for session, count in expected_panes.items():
-            panes = tmux(
-                "list-panes", "-s", "-t", "=" + session, "-F", "#{pane_id}"
-            ).splitlines()
+            panes = tmux("list-panes", "-s", "-t", "=" + session, "-F", "#{pane_id}").splitlines()
             assert len(panes) == count, (session, panes)
         session_ids = dict(
             line.split("\t")
-            for line in tmux(
-                "list-sessions", "-F", "#{session_name}\t#{session_id}"
-            ).splitlines()
+            for line in tmux("list-sessions", "-F", "#{session_name}\t#{session_id}").splitlines()
         )
-        assert (
-            tmux("show-options", "-v", "-t", session_ids["session-example"], "status")
-            == "off"
-        )
+        assert tmux("show-options", "-v", "-t", session_ids["session-example"], "status") == "off"
         assert (
             tmux(
                 "show-window-options",
@@ -261,10 +256,7 @@ with tempfile.TemporaryDirectory(
             )
             == "on"
         )
-        assert (
-            tmux("list-windows", "-t", "=windows-example", "-F", "#{window_index}")
-            == "2"
-        )
+        assert tmux("list-windows", "-t", "=windows-example", "-F", "#{window_index}") == "2"
         assert tmux(
             "list-panes", "-t", "=panes-example:work", "-F", "#{pane_active}"
         ).splitlines() == ["0", "1"]
@@ -280,6 +272,7 @@ with tempfile.TemporaryDirectory(
         ).splitlines()
 
         def await_text(pane, expected):
+            """Wait briefly for a documented pane output."""
             deadline = time.monotonic() + 3
             while True:
                 output = tmux("capture-pane", "-p", "-t", pane)
@@ -331,13 +324,9 @@ with tempfile.TemporaryDirectory(
         editor.write_text("#!/bin/sh\nexit 17\n")
         failed = run("EDITOR=vi tmux-workspace edit workspace.yaml", False)
         assert failed.returncode == 17
-        evidence["negative"].append(
-            {"case": "editor status propagated", "exit": failed.returncode}
-        )
+        evidence["negative"].append({"case": "editor status propagated", "exit": failed.returncode})
         failed = run([str(BINARY), "search", "--json", "["], False)
-        evidence["negative"].append(
-            {"case": "invalid regex fails", "exit": failed.returncode}
-        )
+        evidence["negative"].append({"case": "invalid regex fails", "exit": failed.returncode})
         (here / "invalid.yaml").write_text(
             "session_name: invalid\nbogus: true\nwindows: [{window_name: shell, panes: [null]}]\n"
         )
@@ -345,9 +334,7 @@ with tempfile.TemporaryDirectory(
             [str(BINARY), "load", "-S", str(socket), "-d", "--json", "invalid.yaml"],
             False,
         )
-        evidence["negative"].append(
-            {"case": "invalid workspace fails", "exit": failed.returncode}
-        )
+        evidence["negative"].append({"case": "invalid workspace fails", "exit": failed.returncode})
     finally:
         if socket.exists():
             subprocess.run(
@@ -358,7 +345,8 @@ with tempfile.TemporaryDirectory(
 if args.report:
     args.report.write_text(json.dumps(evidence, indent=2) + "\n")
 print(
-    f"PASS: {len(evidence['positive'])} documented commands, {len(evidence['negative'])} failure checks for {args.port}"
+    f"PASS: {len(evidence['positive'])} documented commands, "
+    f"{len(evidence['negative'])} failure checks for {args.port}"
 )
 for skipped in evidence["skipped"]:
     print(f"SKIPPED: {skipped}")

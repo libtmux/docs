@@ -31,6 +31,57 @@ html[data-native-shell] body {
 html[data-native-shell] dl.gp-sphinx-api-container:not(.fixture) > dt.gp-sphinx-api-header:not(:target) {
   background: color-mix(in srgb, var(--background-color), var(--text-color) 6%);
 }
+/*
+ * Declaration controls share the vertical centre of the signature's first
+ * line, as on the shared reference pages. Native rows centre every child on
+ * the whole block, so the permalink, source link and badges drop to the middle
+ * of a signature that wraps over several lines.
+ */
+html[data-native-shell] dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--desktop {
+  align-items: flex-start;
+}
+html[data-native-shell] dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--desktop > .gp-sphinx-api-layout-left {
+  align-items: flex-start;
+}
+html[data-native-shell] dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--desktop > .gp-sphinx-api-layout-right {
+  align-items: baseline;
+}
+html[data-native-shell] dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--desktop > .gp-sphinx-api-layout-right > :is(.gp-sphinx-api-badge-container, .gp-sphinx-api-slot) {
+  align-self: center;
+}
+html[data-native-shell] dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--desktop > .gp-sphinx-api-layout-right .gp-sphinx-api-badge-container {
+  display: flex;
+  align-items: center;
+}
+/*
+ * A top-level class declaration stays pinned under the site header while the
+ * reader scrolls through its members, and releases when the class ends
+ * because the row can only stick inside its own dl. Nested classes, methods
+ * and functions stay in flow so bars never stack. Below 48em the sheet makes
+ * the article column a scroll container, where nothing can pin to the page, so
+ * narrow layouts keep the row in flow. NativeSphinxScript sets
+ * data-native-class-rows after its first measurement; without it, the row's
+ * height is unknown, so the rows stay in flow rather than cover anchored members.
+ */
+@media screen and (min-width: 48.01em) {
+  html[data-native-shell][data-native-class-rows] section > dl.py.class.gp-sphinx-api-container > dt.gp-sphinx-api-header {
+    position: sticky;
+    top: var(--native-header-height);
+    z-index: 5;
+  }
+  /* The pinned row must hide what scrolls beneath it; a target keeps its highlight. */
+  html[data-native-shell][data-native-class-rows] section > dl.py.class.gp-sphinx-api-container > dt.gp-sphinx-api-header:not(:target) {
+    background-color: color-mix(in srgb, var(--background-color), var(--text-color) 6%);
+  }
+  /*
+   * An anchored member lands below the pinned row instead of under it. The
+   * shell's scroll padding already clears the header and 1.25rem more, and
+   * NativeSphinxScript writes the row's measured height on the class.
+   */
+  html[data-native-shell][data-native-class-rows] section > dl.py.class.gp-sphinx-api-container > dd [id] {
+    scroll-margin-top: max(0px, calc(var(--native-class-row-height, 0px) - 0.75rem));
+  }
+}
 html[data-native-shell] .sidebar-sticky,
 html[data-native-shell] .toc-sticky {
   top: var(--native-header-height);

@@ -140,7 +140,7 @@ function footerOf(html: string): Footer | undefined {
   const alternate = links.find((tag) => value(tag, 'rel') === 'alternate' && value(tag, 'type') === 'text/markdown')
   const canonical = links.find((tag) => value(tag, 'rel') === 'canonical')
   return {
-    source: /<code>([^<]+)<\/code>/.exec(block)?.[1],
+    source: /<code\b[^>]*>([^<]+)<\/code>/.exec(block)?.[1],
     markdown: hrefs.find((href) => href.endsWith('.md')),
     raw: hrefs.find((href) => href.startsWith('https://github.com/')),
     manifest: hrefs.find((href) => href.endsWith('/docs.json')),
@@ -152,12 +152,20 @@ function footerOf(html: string): Footer | undefined {
   }
 }
 
+describe('machine-readable footer parsing', () => {
+  it.each(['', ' data-astro-cid-footer'])('reads the source path with code attributes %j', (attributes) => {
+    const html = `<div class="page-source">Source: <code${attributes}>README.md</code></div>`
+    expect(footerOf(html)?.source).toBe('README.md')
+  })
+})
+
 describe.skipIf(!SITE_BUILT)('machine-readable footer', () => {
   it('links every page to its source and to Markdown, docs.json and llms files that exist', () => {
     const tracked = trackedFiles()
     const problems: string[] = []
     let checked = 0
     for (const page of htmlFiles()) {
+      if (problems.length >= 40) break
       const html = readFileSync(join(BUCKET_ROOT, page), 'utf8')
       if (/http-equiv=(?:"refresh"|refresh)/.test(html)) continue
       if (NATIVE.test(page)) continue

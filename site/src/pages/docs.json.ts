@@ -170,7 +170,9 @@ export const GET: APIRoute = async ({ site }) => {
       // Not in gp-sphinx's schema. Additive rather than a rename, so a reader
       // of the original shape is unaffected, and it is the entry point that
       // matters most for an agent that already speaks Sphinx.
-      inventory: `${refBase}objects.inv`,
+      inventory: port ? `${refBase}${port}/${versionFor(port)}/objects.inv` : `${refBase}objects-full.inv`,
+      inventoryFull: `${refBase}objects-full.inv`,
+      targets: port ? `${refBase}${port}/${versionFor(port)}/targets.json` : `${refBase}targets.json`,
     },
     ports: visiblePorts.map((p) => ({
       slug: p.slug,
@@ -197,7 +199,7 @@ export const GET: APIRoute = async ({ site }) => {
         ? {
             symbols: API_MODELS[p.slug].symbols.length,
             extractor: API_MODELS[p.slug].extractor,
-            inventory: `${refBase}${p.slug}/${versionFor(p.slug)}/reference/objects.inv`,
+            inventory: `${refBase}${p.slug}/${versionFor(p.slug)}/objects.inv`,
           }
         : null,
       documentation: documentationAreas(p.slug).map((area) => ({

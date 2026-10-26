@@ -49,6 +49,9 @@ import { DOC_PRODUCTS, PORT_BY_SLUG, portPageUrl, referenceUrl, productAvailable
  */
 interface Props {
   title: string
+  inventoryId?: string
+  inventoryAliases?: string[]
+  inventoryExclude?: boolean
   /** Render an API identifier as code while retaining its plain metadata title. */
   symbolTitle?: boolean
   description?: string
@@ -99,6 +102,9 @@ interface Props {
 
 const {
   title,
+  inventoryId,
+  inventoryAliases,
+  inventoryExclude,
   symbolTitle = false,
   description,
   port,
@@ -150,7 +156,8 @@ const surfaces = port ? await getDocumentationSurfaces(port, version, locale) : 
 const selectedDocumentation = surfaces.length ? currentDocumentation(surfaces, currentPath) : undefined
 const selectedSection = selectedDocumentation?.section
 // A tmux page's sidebar links tmux releases; the build slug names a docs build.
-const sidebarNavigation = navigation ?? selectedSection?.items ?? await getSidebar(port, contextVersion, locale, product)
+const sidebarNavigation = navigation ?? selectedSection?.items ?? await getSidebar(port, contextVersion, locale, product,
+  /^meta(?:\/|$)/.test(pagePath) ? 'meta' : 'tmux')
 const libraryReference = port && API_MODELS[port] && (selectedSection?.id === 'reference' || /^api(?:\/|$)/.test(pagePath))
 const referenceInventory = libraryReference ? product ? productReferenceTree(API_MODELS[port!], product, version) : referenceTree(port!) : undefined
 const apiNavigation = requestedApiNavigation ?? (referenceInventory ? {
@@ -167,6 +174,9 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
 
 <BaseLayout
   title={title}
+  inventoryId={inventoryId}
+  inventoryAliases={inventoryAliases}
+  inventoryExclude={inventoryExclude}
   description={description}
   pagePath={pagePath}
   portSlug={port}

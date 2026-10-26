@@ -1,15 +1,8 @@
 /**
  * Sidebar query logic, shared by Sidebar.astro and DocsLayout.astro.
  *
- * One code path serves two cases: pages tagged with a `port` frontmatter
- * field get that port's nav (scoped by `entry.data.port === port`); the
- * shell's own shared pages (concepts, guides, examples — no `port` set)
- * get the same grouping mechanism over the same query, since `port ===
- * undefined` matches them just as precisely. This generalizes the
- * `currentPath.startsWith("/lib/") ? ... : ...` two-branch scoping in
- * ~/work/typescript/social-embed's Sidebar.astro (per
- * notes/research/24-astro-shell.md §3) to a single filter predicate instead
- * of a growing set of hardcoded branches.
+ * Port pages use their language's navigation. Root pages separate tmux
+ * documentation from site metadata, using the same grouping and ordering.
  *
  * `entryPath` is the seam for `[...slug].astro` (or whatever else builds
  * `getStaticPaths()` for the docs collection) to stay in sync with: it must
@@ -247,16 +240,16 @@ export function portAreas(port: string, version: string): SidebarGroupItem {
  * render as flat top-level links rather than a synthetic single-item group.
  *
  * `port` scopes the query — `entry.data.port === port` — so `undefined`
- * returns the shell's shared pages (concepts, guides, examples) and a port
- * slug returns that port's own pages, with the reference-tree entry
- * appended only in the port-scoped case. An unrecognized `port` throws
- * rather than silently rendering an empty sidebar.
+ * returns the selected root section and a port slug returns that port's
+ * own pages. The root `section` keeps site metadata separate from tmux
+ * prose and references. An unrecognized `port` throws.
  */
 export async function getSidebar(
   port: string | undefined,
   version: string,
   locale: Locale = DEFAULT_LOCALE,
   product?: DocProduct,
+  section: 'tmux' | 'meta' = 'tmux',
 ): Promise<SidebarItem[]> {
   if (port !== undefined && !PORT_BY_SLUG[port]) throw new Error(`sidebar.ts: unknown port slug "${port}"`)
 
@@ -277,6 +270,7 @@ export async function getSidebar(
     (entry) =>
       (entry.data.port === undefined || entry.data.port === port) &&
       entry.data.product === product &&
+      (port !== undefined || /^meta(?:\/|$)/.test(entryPath(entry)) === (section === 'meta')) &&
       localeOf(entry.id) === DEFAULT_LOCALE,
   ), port)
 
@@ -343,6 +337,7 @@ export async function getSidebar(
    * is the notices page and nothing else — so sending it to the end is the
    * general form of "notices last" rather than a special case for one file.
    */
+  if (port === undefined && section === 'meta') return [...groups, ...ungrouped]
   // The tmux docs end with the three references every section points into.
   if (port === undefined) return [...groups,
     { type: 'link', label: 'CLI Manual', href: tmuxManualUrl(version) },

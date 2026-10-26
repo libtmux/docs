@@ -1,4 +1,9 @@
 ---
+inventoryTables:
+  arguments-and-flags:
+    type: std:cmdoption
+    identity: cli/import-tmuxinator
+    prefix: "tmuxp import tmuxinator "
 description: Translate a tmuxinator project into a workspace document.
 product: workspace
 sidebar:

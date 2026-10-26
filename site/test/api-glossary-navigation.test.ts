@@ -13,6 +13,7 @@ import * as glossary from '../src/lib/api-glossary'
 import { NATIVE_API_GLOSSARIES } from '../src/lib/api-glossary-native'
 import * as models from '../src/lib/api-models'
 import * as sections from '../src/lib/api-sections'
+import * as inventory from '../src/lib/inventory-targets'
 import * as relationships from '../src/lib/api-relationships'
 import * as tree from '../src/lib/api-tree'
 import * as search from '../src/lib/api-search'
@@ -56,7 +57,7 @@ async function components(stubs: Readonly<Record<string, string>> = {}) {
   const modules: Record<string, object> = {
     '@libtmux/api-model': model,
     ...Object.fromEntries(Object.entries({
-      'api-glossary': glossary, 'api-models': models, 'api-sections': sections,
+      'api-glossary': glossary, 'api-models': models, 'api-sections': sections, 'inventory-targets': inventory,
       'api-relationships': relationships, 'api-tree': tree, 'api-search': search, 'api-sidebar': apiSidebar,
       'api-labels': labels, 'word-break': wordBreak, 'native-name': nativeName, ports, 'product-api': products,
       versions, 'site-root': roots, sidebar, 'documentation-navigation': documentation,

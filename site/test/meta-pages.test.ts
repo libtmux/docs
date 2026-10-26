@@ -51,6 +51,38 @@ const hasSource = (route: string) => existsSync(join(PAGES, `${route || 'index'}
 const hrefs = (items: SidebarItem[]): string[] => items.flatMap((item) =>
   item.type === 'link' ? [item.href] : [...(item.href ? [item.href] : []), ...hrefs(item.items)])
 
+describe('shared documentation sidebars', () => {
+  it('keeps meta pages and tmux documentation in separate navigation trees', async () => {
+    const entries = contentEntries(CONTENT)
+    vi.mocked(getCollection<'docs'>).mockImplementation(async (_collection, filter) => entries.filter((entry) => !filter || filter(entry)))
+    const meta = hrefs(await getSidebar(undefined, 'latest', 'en', undefined, 'meta'))
+    expect(meta).toContain('/meta/ai-policy/')
+    expect(meta).toContain('/meta/intersphinx/')
+    expect(meta).toContain('/meta/intersphinx/examples/')
+    expect(meta).toContain('/meta/third-party-notices/')
+    expect(meta.every((href) => href.startsWith('/meta/'))).toBe(true)
+
+    const tmux = hrefs(await getSidebar(undefined, 'latest'))
+    expect(tmux).toContain('/tmux/guides/getting-started/')
+    expect(tmux).toContain('/tmux/latest/manual/')
+    expect(tmux).toContain('/tmux/latest/catalog/')
+    expect(tmux).toContain('/tmux/latest/reference/')
+    expect(tmux.every((href) => href.startsWith('/tmux/'))).toBe(true)
+    // The reported regression: site metadata listed inside the tmux guide tree.
+    expect(tmux).not.toContain('/meta/ai-policy/')
+    expect(tmux).not.toContain('/meta/third-party-notices/')
+  })
+
+  it('preserves a port sidebar when its documentation contains meta pages', async () => {
+    const entries = contentEntries(CONTENT)
+    vi.mocked(getCollection<'docs'>).mockImplementation(async (_collection, filter) => entries.filter((entry) => !filter || filter(entry)))
+    const normal = hrefs(await getSidebar('py', 'latest'))
+    expect(normal).toContain('/py/latest/reference/')
+    expect(normal).toContain('/py/latest/meta/third-party-notices/')
+    expect(hrefs(await getSidebar('py', 'latest', 'en', undefined, 'meta'))).toEqual(normal)
+  })
+})
+
 describe('the moved concept page', () => {
   const OLD = 'tmux/guides/concept-examples'
 

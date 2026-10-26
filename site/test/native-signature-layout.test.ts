@@ -1,6 +1,7 @@
 import assert, { AssertionError } from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { runInNewContext } from 'node:vm'
+import ts from 'typescript'
 import { Window, type Element, type HTMLElement } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
 import * as nativeLayoutChecks from '../scripts/check-native-layout.mjs'
@@ -300,5 +301,236 @@ describe('formatter-owned painted rows', () => {
   it('rejects nonempty lines whose text has no painted glyphs', async () => {
     const record = { text: 'Missing', rows: [{ line: 1, text: 'Missing', glyphs: 0, topSpread: 0 }] }
     await expect(nativeLayoutChecks.checkNativeSignatureLines({ evaluate: async () => [record] })).rejects.toThrow(/painted text/)
+  })
+})
+
+/** The stylesheets a native Sphinx Python page receives: the published gp-sphinx layout sheet, then the shell's. */
+describe('native Sphinx declarations', () => {
+  const sheet = readFileSync(new URL('./fixtures/native-gp-sphinx-layout.css', import.meta.url), 'utf8')
+  // happy-dom ignores rules inside @layer. Unwrapping each layer lets its rules compete by specificity, which is
+  // stricter than a browser, where every unlayered shell rule beats every layered one.
+  const unlayer = (css: string): string => {
+    const start = css.indexOf('@layer gp-sphinx {')
+    if (start < 0) return css
+    const inner = start + '@layer gp-sphinx {'.length
+    let depth = 1, end = inner
+    for (; depth > 0 && end < css.length; end++) depth += css[end] === '{' ? 1 : css[end] === '}' ? -1 : 0
+    return unlayer(css.slice(0, start) + css.slice(inner, end - 1) + css.slice(end))
+  }
+  // The Furo sheet's own (important) rule that highlights a targeted declaration, with its theme colour.
+  const highlight = 'rgb(255, 255, 204)'
+  const furoTarget = readFileSync(new URL('./fixtures/native-furo-target.css', import.meta.url), 'utf8')
+  const published = `${unlayer(sheet)}\n${furoTarget}\nbody { --color-highlight-on-target: ${highlight}; }`
+  const shellCss = (source = readFileSync(new URL('../src/styles/native-sphinx.css', import.meta.url), 'utf8')) => source
+  const dt = (type: string, id: string) => `<dt class="sig gp-sphinx-api-header" id="${id}"><div class="gp-sphinx-api-layout gp-sphinx-api-layout--desktop"><div class="gp-sphinx-api-layout-left"><div class="gp-sphinx-api-signature">f(\n  a,\n  b)</div><a class="headerlink gp-sphinx-api-link">&para;</a></div><div class="gp-sphinx-api-layout-right"><span class="gp-sphinx-api-badge-container"><span class="gp-sphinx-badge">${type}</span></span><span class="gp-sphinx-api-source-link"><a>[source]</a></span></div></div></dt>`
+  const dl = (type: string, id: string, body = '') => `<dl class="py ${type} gp-sphinx-api-container">${dt(type, id)}<dd>${body}</dd></dl>`
+  const page = dl('class', 'Outer', dl('method', 'Outer.run') + dl('class', 'Outer.Inner', dl('method', 'Outer.Inner.go'))) + dl('function', 'helper')
+  const open = (shell: boolean, css = shellCss(), width = 1024, hash = '', marker = true) => {
+    const win = new Window({ width, url: `https://libtmux.org/api/${hash}` })
+    win.document.documentElement.toggleAttribute('data-native-shell', shell)
+    win.document.documentElement.toggleAttribute('data-native-class-rows', marker)
+    win.document.head.innerHTML = `<style>${published}\n${css}</style>`
+    win.document.body.innerHTML = `<article><section id="m">${page}</section></article>`
+    const style = (id: string, selector?: string) => {
+      const row = win.document.getElementById(id)!
+      return win.getComputedStyle(selector ? row.querySelector(selector)! : row)
+    }
+    return { win, style }
+  }
+  const controls = (shell: boolean, css?: string) => {
+    const { win, style } = open(shell, css)
+    try {
+      const read = (selector: string) => style('Outer.run', selector)
+      return {
+        row: read('.gp-sphinx-api-layout--desktop').alignItems, code: read('.gp-sphinx-api-layout-left').alignItems,
+        controls: read('.gp-sphinx-api-layout-right').alignItems, badge: read('.gp-sphinx-api-badge-container').alignSelf,
+      }
+    } finally { void win.happyDOM.abort() }
+  }
+  const sticky = (id: string, shell = true, css?: string, width?: number, marker = true) => {
+    const { win, style } = open(shell, css, width, '', marker)
+    try { const { position, top } = style(id); return { position, top } } finally { void win.happyDOM.abort() }
+  }
+  const computed = (id: string, hash = '', css?: string, rowHeight?: string, marker = true) => {
+    const { win, style } = open(true, css, 1024, hash, marker)
+    try {
+      if (rowHeight) (win.document.getElementById('Outer')!.closest('dl') as unknown as HTMLElement).style.setProperty('--native-class-row-height', rowHeight)
+      const { backgroundColor, zIndex, scrollMarginTop } = style(id); return { backgroundColor, zIndex, scrollMarginTop } } finally { void win.happyDOM.abort() }
+  }
+
+  it('starts the permalink, source link and badges on the first signature line', () => {
+    expect(controls(true)).toEqual({ row: 'flex-start', code: 'flex-start', controls: 'baseline', badge: 'center' })
+  })
+
+  it('keeps the published block-centred rows outside the native shell', () => {
+    expect(controls(false)).toEqual({ row: 'center', code: 'center', controls: 'center', badge: '' })
+  })
+
+  it('fails when the shell no longer overrides the published row', () => {
+    const without = shellCss().replace(/(--desktop \{\s*)align-items: flex-start;/, '$1')
+    expect(without).not.toBe(shellCss())
+    expect(controls(true, without).row).toBe('center')
+  })
+
+  it('pins a top-level class declaration under the site header', () => {
+    expect(sticky('Outer')).toEqual({ position: 'sticky', top: 'calc(52px + 1px)' })
+  })
+
+  it.each(['Outer.run', 'Outer.Inner', 'Outer.Inner.go', 'helper'])('keeps the %s row in flow', (id) => {
+    expect(sticky(id).position).not.toBe('sticky')
+  })
+
+  it('keeps the class row in flow outside the shell and on narrow screens', () => {
+    expect(sticky('Outer', false).position).not.toBe('sticky')
+    expect(sticky('Outer', true, undefined, 400).position).not.toBe('sticky')
+    expect(sticky('Outer', true, undefined, 700).position).not.toBe('sticky')
+  })
+
+  it('fails when the class row rule is removed', () => {
+    const without = shellCss().replace(/position: sticky;/, '')
+    expect(without).not.toBe(shellCss())
+    expect(sticky('Outer', true, without).position).not.toBe('sticky')
+  })
+
+  it('pins only after the script has measured the rows', () => {
+    expect(sticky('Outer', true, undefined, undefined, false).position).not.toBe('sticky')
+    expect(computed('Outer.run', '', undefined, '98px', false).scrollMarginTop).not.toContain('98px')
+    const ungated = shellCss().replaceAll('[data-native-class-rows]', '')
+    expect(ungated).not.toBe(shellCss())
+    expect(sticky('Outer', true, ungated, undefined, false).position).toBe('sticky')
+    expect(computed('Outer.run', '', ungated, '98px', false).scrollMarginTop).toContain('98px')
+  })
+
+  it('pins at widths between 48em and 1024px', () => {
+    expect(sticky('Outer', true, undefined, 900).position).toBe('sticky')
+    expect(sticky('Outer', true, undefined, 769).position).toBe('sticky')
+    const raised = shellCss().replace('min-width: 48.01em', 'min-width: 64.01em')
+    expect(raised).not.toBe(shellCss())
+    expect(sticky('Outer', true, raised, 900).position).not.toBe('sticky')
+  })
+
+  it('leaves the gap below the pinned row that the shell scroll padding implies', () => {
+    const css = shellCss()
+    const padding = Number(css.match(/scroll-padding-top: calc\(var\(--native-header-height\) \+ ([\d.]+)rem\)/)?.[1])
+    const subtracted = Number(css.match(/calc\(var\(--native-class-row-height, 0px\) - ([\d.]+)rem\)/)?.[1])
+    // An anchored member sits at header + padding + (row - subtracted); the row ends at header + row.
+    expect(padding - subtracted).toBeCloseTo(0.5, 5)
+  })
+
+  it('hides what scrolls beneath the pinned row and stays under the 40 of the site header', () => {
+    const rule = shellCss().match(/dt\.gp-sphinx-api-header:not\(:target\) \{\s*background-color: color-mix\(in srgb, var\(--background-color\), var\(--text-color\) (\d+)%\);/)
+    expect(rule, 'the pinned row mixes two opaque page colours').not.toBeNull()
+    expect(Number(rule![1])).toBeGreaterThan(0)
+    expect(Number(rule![1])).toBeLessThan(100)
+    const { zIndex } = computed('Outer')
+    expect(Number(zIndex)).toBeGreaterThan(0)
+    expect(Number(zIndex)).toBeLessThan(40)
+    expect(computed('Outer', '', shellCss().replace(/z-index: 5;/, 'z-index: 50;')).zIndex).toBe('50')
+    expect(Number(computed('Outer', '', shellCss().replace(/z-index: 5;/, 'z-index: 50;')).zIndex)).toBeGreaterThanOrEqual(40)
+  })
+
+  describe('target highlight on the pinned row', () => {
+    // happy-dom cannot resolve color-mix, so the fill is swapped for a plain colour.
+    const fill = 'rgb(10, 20, 30)'
+    const plain = (css: string) => css.replace(/color-mix\([^;]*\)/g, fill)
+    const withoutFuro = (hash: string, css: string) => {
+      const { win, style } = open(true, css, 1024, hash)
+      try {
+        for (const sheetElement of win.document.querySelectorAll('style')) sheetElement.textContent = `${unlayer(sheet)}\n${css}`
+        return style('Outer').backgroundColor
+      } finally { void win.happyDOM.abort() }
+    }
+
+    it('shows the published highlight on a targeted row and the fill otherwise', () => {
+      expect(computed('Outer', '#Outer', plain(shellCss())).backgroundColor).toBe(highlight)
+      expect(computed('Outer', '', plain(shellCss())).backgroundColor).toBe(fill)
+    })
+
+    it('never applies the fill to the target', () => {
+      expect(withoutFuro('#Outer', plain(shellCss()))).not.toBe(fill)
+      expect(withoutFuro('', plain(shellCss()))).toBe(fill)
+    })
+
+    it('fails when the fill no longer excludes the target', () => {
+      const flattened = shellCss().replace(/dt\.gp-sphinx-api-header:not\(:target\) \{\s*background-color/, 'dt.gp-sphinx-api-header {\n    background-color')
+      expect(flattened).not.toBe(shellCss())
+      expect(withoutFuro('#Outer', plain(flattened))).toBe(fill)
+    })
+  })
+
+  it('lands anchored members below the measured row height', () => {
+    expect(computed('Outer.run', '', undefined, '98px').scrollMarginTop).toBe('max(0px, calc(98px - 0.75rem))')
+    expect(computed('Outer.Inner.go', '', undefined, '98px').scrollMarginTop).toBe('max(0px, calc(98px - 0.75rem))')
+    expect(computed('helper', '', undefined, '98px').scrollMarginTop).not.toContain('98px')
+    const fixed = shellCss().replace(/max\(0px, calc\(var\(--native-class-row-height, 0px\)[^;]*;/, '1.5rem;')
+    expect(fixed).not.toBe(shellCss())
+    expect(computed('Outer.run', '', fixed, '98px').scrollMarginTop).not.toContain('98px')
+  })
+
+  describe('row measuring script', () => {
+    const script = readFileSync(new URL('../src/components/docs/NativeSphinxScript.astro', import.meta.url), 'utf8')
+    const run = (source: string, heights: Record<string, number>, options: { html?: string; observer?: boolean } = {}) => {
+      const win = new Window({ url: 'https://libtmux.org/api/' })
+      const observed: { callback: () => void; rows: Element[] }[] = []
+      Object.assign(win, {
+        layoutBeforeAppearance: (work: () => void) => work(),
+        ...options.observer === false ? { ResizeObserver: undefined } : { ResizeObserver: class { rows: Element[] = []; constructor(callback: () => void) { observed.push({ callback, rows: this.rows }) }
+          observe(row: Element) { this.rows.push(row) }; disconnect() {} } },
+      })
+      win.HTMLElement.prototype.getBoundingClientRect = function (this: HTMLElement) {
+        return new win.DOMRect(0, 0, 400, heights[this.id] ?? 0)
+      }
+      win.document.body.innerHTML = `<article><section>${options.html ?? page}</section></article>`
+      win.eval(ts.transpileModule(source.replace(/^  import .*$/gm, ''), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText)
+      return { win, observed, height: (id: string) => (win.document.getElementById(id)!.closest('dl') as unknown as HTMLElement).style.getPropertyValue('--native-class-row-height') }
+    }
+    const body = script.match(/<script>([\s\S]*?)<\/script>/)![1]
+
+    it('writes each top-level class row height on its class and follows resizes', () => {
+      const heights = { Outer: 39.4, 'Outer.Inner': 70, 'Outer.run': 30, helper: 30 }
+      const { win, observed, height } = run(body, heights)
+      try {
+        expect(win.document.documentElement.hasAttribute('data-native-class-rows')).toBe(true)
+        expect(height('Outer')).toBe('39.4px')
+        expect(height('Outer.Inner')).toBe('')
+        expect(height('helper')).toBe('')
+        expect(observed).toHaveLength(1)
+        expect(observed[0].rows.map((row) => row.id)).toEqual(['Outer'])
+        heights.Outer = 98
+        observed[0].callback()
+        expect(height('Outer')).toBe('98px')
+      } finally { void win.happyDOM.abort() }
+    })
+
+    it('still marks the page when a class has no declaration row', () => {
+      const { win, observed } = run(body, {}, { html: '<dl class="py class gp-sphinx-api-container"><dd>Body</dd></dl>' })
+      try {
+        expect(win.document.documentElement.hasAttribute('data-native-class-rows')).toBe(true)
+        expect(win.document.querySelector('dl')!.style.getPropertyValue('--native-class-row-height')).toBe('')
+        expect(observed).toHaveLength(0)
+      } finally { void win.happyDOM.abort() }
+    })
+
+    it('measures once without ResizeObserver', () => {
+      const { win, height } = run(body, { Outer: 52 }, { observer: false })
+      try {
+        expect(height('Outer')).toBe('52px')
+        expect(win.document.documentElement.hasAttribute('data-native-class-rows')).toBe(true)
+      } finally { void win.happyDOM.abort() }
+    })
+
+    it('fails when the script no longer marks the page', () => {
+      const broken = body.replace("document.documentElement.setAttribute('data-native-class-rows', '')", '')
+      expect(broken).not.toBe(body)
+      const { win } = run(broken, { Outer: 39.4 })
+      try { expect(win.document.documentElement.hasAttribute('data-native-class-rows')).toBe(false) } finally { void win.happyDOM.abort() }
+    })
+
+    it('fails when the script no longer measures the rows', () => {
+      const broken = body.replace('--native-class-row-height', '--native-unmeasured')
+      expect(broken).not.toBe(body)
+      const { win, height } = run(broken, { Outer: 39.4 })
+      try { expect(height('Outer')).toBe('') } finally { void win.happyDOM.abort() }
+    })
   })
 })

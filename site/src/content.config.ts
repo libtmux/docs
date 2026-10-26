@@ -23,6 +23,12 @@ const docs = defineCollection({
   loader: workspaceDocsLoader(),
   schema: z.looseObject({
     title: z.string(),
+    inventoryId: z.string().min(1).optional(),
+    inventoryAliases: z.array(z.string().min(1)).optional(),
+    inventoryTables: z.record(z.string(), z.object({
+      type: z.enum(['std:confval', 'std:cmdoption', 'std:envvar', 'std:term']),
+      identity: z.string().min(1), prefix: z.string().optional(),
+    })).optional(),
     description: z.string().optional(),
     /** Restricts a page to one port's section, e.g. 'py'. Omit for shared pages. */
     port: z.string().optional(),

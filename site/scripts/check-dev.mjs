@@ -727,7 +727,7 @@ async function checkReferenceAndHeroes(browser, base) {
         `${qualifiedName}: complete source name remains in accessible HTML`)
       if (!qualifiedName.endsWith('.sessions')) {
         const declaration = page.locator(`dt[data-symbol-id="${legacyId}"]`)
-        assert.equal(await declaration.locator('.section-anchor-alias').getAttribute('id'), `${legacyId}.declaration`)
+        assert.equal(await declaration.locator(':scope > .section-anchor-alias').getAttribute('id'), `${legacyId}.declaration`)
         for (const width of [1440, 390]) {
           await page.setViewportSize({ width, height: 900 })
           const signature = declaration.locator('.gp-sphinx-api-signature:visible')

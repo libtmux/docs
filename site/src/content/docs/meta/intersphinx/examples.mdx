@@ -1,0 +1,324 @@
+---
+title: Intersphinx examples
+description: >-
+  Compare Sphinx and MyST references to APIs, tmux C declarations, hooks,
+  format variables, CLI commands and schema fields.
+inventoryId: intersphinx-examples
+sidebar:
+  group: Linking and consuming our docs
+  order: 91
+---
+
+import { referenceHref } from '../../../../lib/api-models'
+
+Copy a reference and compare its destination below. These examples cover
+native language roles, portable labels, full and scoped inventories, and
+links into tmux C declarations, hooks, format variables and CLI commands.
+
+## Configure the inventories
+
+Add these mappings to your Sphinx project's `conf.py`:
+
+```python
+extensions = ["sphinx.ext.intersphinx"]
+intersphinx_mapping = {
+    "full": (
+        "https://libtmux.org/en/",
+        "https://libtmux.org/en/objects-full.inv",
+    ),
+    "py": ("https://libtmux.org/en/py/latest/", None),
+    "tmux": ("https://libtmux.org/en/tmux/", None),
+    "tmux-3-7c": ("https://libtmux.org/en/tmux/3.7c/", None),
+}
+```
+
+`None` discovers `objects.inv` at the mapping's base URL. The full inventory
+uses each port's advertised default version. The `py` mapping explicitly
+selects `latest`; `tmux` selects the latest tmux manual and C reference.
+Use the root URL from an inventory's footer link when selecting a preview
+or another release.
+
+## Native Python roles
+
+A named inventory selects the Python tree:
+
+```rst
+:external+py:py:class:`libtmux.Pane`
+```
+
+Destination: [Pane](/py/latest/reference/libtmux-pane/#libtmux.Pane).
+
+The full inventory qualifies native names by port:
+
+```rst
+:external+full:py:class:`py:libtmux.Pane`
+```
+
+Destination: <a href={`${referenceHref('py', 'libtmux.Pane')}#libtmux.Pane`}>Pane in the Python default version</a>.
+
+For automatic lookup, use the ordinary role. A local definition takes
+precedence over Intersphinx:
+
+```rst
+:py:class:`libtmux.Pane`
+```
+
+Destination: [Pane](/py/latest/reference/libtmux-pane/#libtmux.Pane).
+
+## Portable labels
+
+Portable labels work with the standard reference role, including languages
+that have no built-in Sphinx domain. Copy the key from `targets.json`.
+
+```rst
+:external+full:ref:`Pane <py:core:api:libtmux.%50ane>`
+:external+py:ref:`Pane <py:core:api:libtmux.%50ane>`
+```
+
+Destinations: <a href={`${referenceHref('py', 'libtmux.Pane')}#libtmux.Pane`}>Full inventory: Pane</a>,
+[Scoped inventory: Pane](/py/latest/reference/libtmux-pane/#libtmux.Pane).
+
+The external role searches the configured inventories without selecting one.
+This native name is unqualified only in the scoped Python inventory:
+
+```rst
+:external:py:class:`libtmux.Pane`
+```
+
+Destination: [Pane](/py/latest/reference/libtmux-pane/#libtmux.Pane).
+
+## MyST roles and inventory URLs
+
+Enable `myst_parser` alongside `sphinx.ext.intersphinx` for Markdown sources.
+Named roles accept the same targets as reStructuredText:
+
+```markdown
+{external+py:py:class}`libtmux.Pane`
+```
+
+Destination: [Pane](/py/latest/reference/libtmux-pane/#libtmux.Pane).
+
+Portable labels retain their percent escapes inside reference roles:
+
+```markdown
+{external+full:ref}`Pane <py:core:api:libtmux.%50ane>`
+```
+
+Destination: <a href={`${referenceHref('py', 'libtmux.Pane')}#libtmux.Pane`}>Pane in the Python default version</a>.
+
+MyST's inventory URL syntax also supports native aliases:
+
+```markdown
+[Pane](inv:py:py:class#libtmux.Pane)
+```
+
+Destination: [Pane](/py/latest/reference/libtmux-pane/#libtmux.Pane).
+
+Use role syntax for percent-encoded portable keys: MyST normalizes escapes
+in `inv:` URLs. Keep mapping names free of dots, as in `tmux-3-7c`, so MyST
+can parse the role name. When using an inventory URL, specify its domain and
+object type if a name is both a document and a label.
+
+## tmux C declarations
+
+The tmux mapping provides Sphinx's built-in C roles:
+
+```rst
+:external+tmux:c:struct:`cmd`
+:external+tmux:c:func:`cmd_find_target`
+```
+
+Destinations: [cmd](/tmux/latest/reference/c-struct-cmd/#c%3Astruct%3Acmd),
+[cmd_find_target](/tmux/latest/reference/c-function-cmd_find_target/#c%3Afunction%3Acmd_find_target).
+
+Select a release with its own mapping. The full inventory also offers
+version-qualified native aliases:
+
+```rst
+:external+tmux-3-7c:c:func:`cmd_find_target`
+:external+full:c:func:`tmux@3.7c:cmd_find_target`
+:external+full:c:func:`tmux@latest:cmd_find_target`
+```
+
+Destinations: [Scoped: cmd_find_target in 3.7c](/tmux/3.7c/reference/c-function-cmd_find_target/#c%3Afunction%3Acmd_find_target),
+[Full: cmd_find_target in 3.7c](/tmux/3.7c/reference/c-function-cmd_find_target/#c%3Afunction%3Acmd_find_target),
+[Full: cmd_find_target in latest](/tmux/latest/reference/c-function-cmd_find_target/#c%3Afunction%3Acmd_find_target).
+
+MyST supports the same C roles and a typed inventory URL:
+
+```markdown
+{external+tmux:c:struct}`cmd`
+{external+tmux:c:func}`cmd_find_target`
+{external+full:c:func}`tmux@3.7c:cmd_find_target`
+[cmd_find_target](inv:tmux:c:function#cmd_find_target)
+```
+
+Destinations: [MyST: cmd](/tmux/latest/reference/c-struct-cmd/#c%3Astruct%3Acmd),
+[MyST: cmd_find_target](/tmux/latest/reference/c-function-cmd_find_target/#c%3Afunction%3Acmd_find_target),
+[MyST full: cmd_find_target in 3.7c](/tmux/3.7c/reference/c-function-cmd_find_target/#c%3Afunction%3Acmd_find_target),
+[Inventory URL: cmd_find_target](/tmux/latest/reference/c-function-cmd_find_target/#c%3Afunction%3Acmd_find_target).
+
+The C reference links each declaration to its source file and revision.
+Portable labels also address its signatures, parameters, and sections.
+
+## tmux hooks
+
+Link a hook name to its catalog page with a portable label. The same key
+works in the scoped tmux inventory and the full inventory:
+
+```rst
+:external+tmux:ref:`after-new-session <tmux%40latest:core:doc:tmux%2flatest%2fcatalog%2fhooks%2fafter-new-session>`
+:external+full:ref:`after-new-session <tmux%40latest:core:doc:tmux%2flatest%2fcatalog%2fhooks%2fafter-new-session>`
+```
+
+Destinations: [Scoped: after-new-session](/tmux/latest/catalog/hooks/after-new-session/),
+[Full: after-new-session](/tmux/latest/catalog/hooks/after-new-session/).
+
+In MyST, use the same key inside a reference role. Preserve its percent
+escapes:
+
+```markdown
+{external+tmux:ref}`after-new-session <tmux%40latest:core:doc:tmux%2flatest%2fcatalog%2fhooks%2fafter-new-session>`
+{external+full:ref}`after-new-session <tmux%40latest:core:doc:tmux%2flatest%2fcatalog%2fhooks%2fafter-new-session>`
+```
+
+Destinations: [MyST scoped: after-new-session](/tmux/latest/catalog/hooks/after-new-session/),
+[MyST full: after-new-session](/tmux/latest/catalog/hooks/after-new-session/).
+
+## tmux formats
+
+Link a format variable such as `#{session_name}` to its catalog entry:
+
+```rst
+:external+tmux:ref:`session_name <tmux%40latest:core:doc:tmux%2flatest%2fcatalog%2fformats%2fsession_name>`
+:external+full:ref:`session_name <tmux%40latest:core:doc:tmux%2flatest%2fcatalog%2fformats%2fsession_name>`
+```
+
+Destinations: [Scoped: session_name](/tmux/latest/catalog/formats/session_name/),
+[Full: session_name](/tmux/latest/catalog/formats/session_name/).
+
+The MyST references select the same scoped or full inventory:
+
+```markdown
+{external+tmux:ref}`session_name <tmux%40latest:core:doc:tmux%2flatest%2fcatalog%2fformats%2fsession_name>`
+{external+full:ref}`session_name <tmux%40latest:core:doc:tmux%2flatest%2fcatalog%2fformats%2fsession_name>`
+```
+
+Destinations: [MyST scoped: session_name](/tmux/latest/catalog/formats/session_name/),
+[MyST full: session_name](/tmux/latest/catalog/formats/session_name/).
+
+## tmux CLI manual
+
+The same tmux inventory covers command pages:
+
+```rst
+:external+tmux:ref:`capture-pane <tmux%40latest:core:doc:tmux%2flatest%2fmanual%2fcapture-pane>`
+```
+
+Destination: [capture-pane](/tmux/latest/manual/capture-pane/).
+
+The document role works when the target is a whole page:
+
+```rst
+:external+tmux:doc:`Full manual <tmux%40latest:core:doc:tmux%2flatest%2fmanual%2ffull>`
+```
+
+Destination: [Full tmux manual](/tmux/latest/manual/full/).
+
+Select a command's manual page with the document role. Its portable key
+also works in the full inventory:
+
+```rst
+:external+tmux:doc:`tmux new-session <tmux%40latest:core:doc:tmux%2flatest%2fmanual%2fnew-session>`
+:external+full:doc:`tmux new-session <tmux%40latest:core:doc:tmux%2flatest%2fmanual%2fnew-session>`
+```
+
+Destinations: [Scoped: new-session](/tmux/latest/manual/new-session/),
+[Full: new-session](/tmux/latest/manual/new-session/).
+
+Use the same document role in MyST:
+
+```markdown
+{external+tmux:doc}`tmux new-session <tmux%40latest:core:doc:tmux%2flatest%2fmanual%2fnew-session>`
+{external+full:doc}`tmux new-session <tmux%40latest:core:doc:tmux%2flatest%2fmanual%2fnew-session>`
+```
+
+Destinations: [MyST scoped: new-session](/tmux/latest/manual/new-session/),
+[MyST full: new-session](/tmux/latest/manual/new-session/).
+
+## Command options, environment variables, and terms
+
+The Python port's workspace documentation exports standard-domain objects.
+Set the program context before referencing an option:
+
+```rst
+.. program:: tmuxp load
+
+:external+py:option:`--append`
+```
+
+Destination: [tmuxp load --append](/py/latest/workspace/cli/load/#arguments-and-flags-a-append).
+
+Environment variables and glossary terms use their own roles. Qualify the
+product when a term appears in more than one glossary:
+
+```rst
+:external+py:envvar:`COLUMNS`
+:external+py:term:`async <py:core:async>`
+```
+
+Destinations: [COLUMNS](/py/latest/workspace/configuration/environment/#cli-and-runtime-variables-columns-lines-rows),
+[async](/py/latest/reference/glossary/#async).
+
+## MCP tools and schema fields
+
+Portable labels also address protocol objects and individual JSON Schema
+fields. No custom MCP domain is required:
+
+```markdown
+{external+py:ref}`Read tools batch <py:mcp:tool:call_read_tools_batch>`
+{external+py:ref}`on_error <py:mcp:schema:mcp.tool.call_read_tools_batch.input%2fproperties%2fon_error>`
+```
+
+Destinations: [Read tools batch](/py/latest/mcp/tools/call_read_tools_batch/#mcp.tool.call_read_tools_batch),
+[on_error](/py/latest/mcp/tools/call_read_tools_batch/#mcp.tool.call_read_tools_batch.input%2Fproperties%2Fon_error).
+
+## Shared documentation and headings
+
+The full inventory includes the shared documentation:
+
+```rst
+:external+full:doc:`Inventory guide <site:core:doc:intersphinx>`
+:external+full:ref:`Configure Intersphinx <site:core:heading:intersphinx%23configure-intersphinx>`
+```
+
+Destinations: [Inventory guide](/meta/intersphinx/),
+[Configure Intersphinx](/meta/intersphinx/#configure-intersphinx).
+
+## Local files and fallback locations
+
+Download an inventory and pass its filename as the second mapping value.
+The first value remains the documentation URL used in generated links:
+
+```python
+extensions = ["sphinx.ext.intersphinx"]
+intersphinx_mapping = {
+    "py": ("https://libtmux.org/en/py/latest/", "python.inv"),
+}
+```
+
+An ordered list tries a local copy before the HTTP inventory:
+
+```python
+extensions = ["sphinx.ext.intersphinx"]
+intersphinx_mapping = {
+    "py": (
+        "https://libtmux.org/en/py/latest/",
+        ("python.inv", "https://libtmux.org/en/py/latest/objects.inv"),
+    ),
+}
+```
+
+See the [inventory guide](/meta/intersphinx/) for key stability and the
+[Sphinx Intersphinx reference](https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html)
+for configuration options.

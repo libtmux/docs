@@ -8,6 +8,7 @@ import { normalizeNativeShell } from '../../scripts/normalize-native-shell.mjs'
 import { nativeArticle, nativeHash } from '../../scripts/native-shell-context.mjs'
 import { recordBuild, verifyBuild } from '../../scripts/publication-provenance.mjs'
 import { installAnchorNavigation } from '../public/_shell/anchors.js'
+import { renderedTargets } from '../src/lib/inventory-targets'
 
 /** Compose the pinned native widget and actual shell arrival callbacks. */
 async function nativeLayout(coordinated = true, sharedFirst = false) {
@@ -269,13 +270,17 @@ describe('native shell URL normalization', () => {
       }
       const contextFile = join(directory, 'context.json')
       writeFileSync(contextFile, JSON.stringify(context))
-      const envelope = `<html data-native-shell-export><head data-native-shell-assets><link rel="stylesheet" href="/pr-42/en/py/v0.62.0/_astro/shell.css"><script type="module" src="/pr-42/en/py/v0.62.0/_astro/shell.js"></script></head><body><template data-native-boundary="header-start"></template><header class="site-header">Shared header $&amp; $$</header><template data-native-boundary="header-end"></template><template data-native-boundary="sidebar-start"></template><div class="api-nav-column">Selectable sidebar $&amp; $$</div><template data-native-boundary="sidebar-end"></template><template data-native-boundary="footer-start"></template><footer class="shared-footer">Shared footer $&amp; $$</footer><template data-native-boundary="footer-end"></template></body></html>`
+      const metadata = { scope: 'py', product: 'core', version: 'v0.62.0', identity: 'native-api:api/pane', title: 'Pane' }
+      const envelope = `<html data-native-shell-export><head data-native-shell-assets><meta name="libtmux-inventory" content='${JSON.stringify(metadata)}'><link rel="stylesheet" href="/pr-42/en/py/v0.62.0/_astro/shell.css"><script type="module" src="/pr-42/en/py/v0.62.0/_astro/shell.js"></script></head><body><template data-native-boundary="header-start"></template><header class="site-header">Shared header $&amp; $$</header><template data-native-boundary="header-end"></template><template data-native-boundary="sidebar-start"></template><div class="api-nav-column">Selectable sidebar $&amp; $$</div><template data-native-boundary="sidebar-end"></template><template data-native-boundary="footer-start"></template><footer class="shared-footer">Shared footer $&amp; $$</footer><template data-native-boundary="footer-end"></template></body></html>`
       writeFileSync(join(shell, 'api/api/pane/index.html'), envelope)
       writeFileSync(join(shell, 'api/tree.json'), '{"port":"py","buckets":[],"members":{}}')
       const options = { sphinxPort: 'py', version: 'v0.62.0', contextFile, shellDirectory: shell }
       await normalizeNativeShell(native, '/pr-42/en', options)
       const html = readFileSync(page, 'utf8')
       expect(nativeArticle(html)).toBe(article)
+      const targets = renderedTargets(html, `${context.base}api/pane/`)
+      expect(targets.map((target) => target.category)).toEqual(['doc', 'heading'])
+      expect(targets[1]).toMatchObject({ scope: 'py', version: 'v0.62.0', href: `${context.base}api/pane/#capture` })
       expect(html).toContain('<div class="api-nav-column">Selectable sidebar $&amp; $$</div>')
       // Replacement tokens in any compiled region are page text, never instructions to the splice.
       expect(html).toContain('<header class="site-header">Shared header $&amp; $$</header>')

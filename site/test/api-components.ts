@@ -42,6 +42,7 @@ export async function apiComponents() {
   const commands = await compile('../src/components/api/ApiCommandParameters.astro', {
     '@libtmux/api-model': bridge, '../../lib/api-sections': bridge, './ApiType.astro': type, './ApiDoc.astro': doc, './ApiFieldOverloads.astro': overloads,
   })
+  const members = await compile('../src/components/api/ApiScalarMembers.astro', { './ApiDoc.astro': doc, './ApiType.astro': type })
   const load = async (url: string) => (await import(/* @vite-ignore */ url)).default
-  return { doc: await load(doc), type: await load(type), commands: await load(commands) }
+  return { doc: await load(doc), type: await load(type), commands: await load(commands), members: await load(members) }
 }
