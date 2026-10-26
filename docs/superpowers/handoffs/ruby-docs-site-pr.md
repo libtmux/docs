@@ -22,7 +22,7 @@ Docs(feat): Export versioned Ruby documentation
 ### Documentation workflow
 
 - **Revision binding**: Verify the requested source ref resolves to the checked-out commit before generating or publishing documentation.
-- **Release handling**: Publish prerelease tags under immutable version prefixes and update `next` without treating an alpha as stable.
+- **Release handling**: Publish prerelease tags under immutable version prefixes and update `next` without treating an alpha as a final release.
 - **Credential boundaries**: Use the preview role for `pr-*` publication, the production role for release and branch trees, and a separate cleanup role for closed previews.
 
 ## Integrated version

@@ -19,14 +19,14 @@ fixed-TTL policy that ignores the header outright.
 | --- | --- | --- | --- | --- | --- |
 | Immutable tag | `/en/py/v0.46.2/` | `tag` | `public, max-age=31536000, immutable` | once, at release, never rewritten | never — the bytes never change |
 | Rebuilt version prefix | `/en/py/v0.x/` | `branch` | `public, max-age=0, s-maxage=300` | every push to that branch | no — expires in 5 min |
-| Mutable alias | `/en/py/stable/`, `/en/py/latest/` | `alias`, `trunk` | `public, max-age=0, s-maxage=300` | every release / every push to trunk | no — expires in 5 min |
+| Mutable alias | `/en/py/next/`, `/en/py/latest/` | `alias`, `trunk` | `public, max-age=0, s-maxage=300` | every prerelease / every push to trunk | no — expires in 5 min |
 | PR preview | `/pr-123/en/` | `pr` | `public, max-age=0, s-maxage=300` | every push to the PR | no — expires in 5 min, and is deleted when the PR closes |
 | Version manifest | `/en/versions.json` | — | `public, max-age=0, s-maxage=60` (or `no-cache`) | every publish, any port | no — its own TTL is already a minute |
 | Locale landing page | `/en/`, `/ja/` | — | `public, max-age=0, s-maxage=300` | every shell push | **yes** — the one path still spent |
 | Origin root | `/` | — | `public, max-age=0, s-maxage=300` | never written; the edge function answers it | cannot be — generated per request, never stored |
 | Shell prose | `/en/concepts/…` | — | `public, max-age=0, s-maxage=300` | every shell push | no — expires in 5 min |
 | Error page | `/en/404.html` | — | `public, max-age=0, s-maxage=300` | every shell push | no — expires in 5 min |
-| Content-hashed assets (optional 3rd pass) | `/py/stable/_astro/*.css` | — | `public, max-age=31536000, immutable` | every push that changes the hash | never (name changes instead) |
+| Content-hashed assets (optional 3rd pass) | `/py/latest/_astro/*.css` | — | `public, max-age=31536000, immutable` | every push that changes the hash | never (name changes instead) |
 
 Only a `tag` prefix is immutable. A `branch` version (`v0.x`) *looks* like a
 version prefix the same shape as a tag, but `versions.ts` documents it as
@@ -67,8 +67,8 @@ $ aws s3 sync ./dist-v0.46.2/ \
 ```
 
 ```console
-$ aws s3 sync ./dist-stable/ \
-    s3://libtmux-docs/py/stable/ \
+$ aws s3 sync ./dist-latest/ \
+    s3://libtmux-docs/py/latest/ \
     --delete \
     --cache-control "public, max-age=0, s-maxage=300"
 ```
@@ -92,8 +92,8 @@ before this policy existed has no `Cache-Control` at all and needs one
 backfill pass to pick up its class's header without re-uploading content:
 
 ```console
-$ aws s3 cp s3://libtmux-docs/py/stable/ \
-    s3://libtmux-docs/py/stable/ \
+$ aws s3 cp s3://libtmux-docs/py/latest/ \
+    s3://libtmux-docs/py/latest/ \
     --recursive \
     --metadata-directive REPLACE \
     --cache-control "public, max-age=0, s-maxage=300"

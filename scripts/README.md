@@ -86,7 +86,7 @@ $ ./scripts/build-site.sh --skip-pagefind
 
 `--ports` limits which ports get a shell build and a reference
 generation pass (comma-separated slugs from `site/src/lib/ports.ts`).
-`--versions` overrides the default `latest,stable`. `--skip-refs` builds
+`--versions` overrides the default `latest`. `--skip-refs` builds
 only the shell and search index. `--skip-pagefind` skips the final
 indexing pass, useful while iterating on everything before it.
 
@@ -529,13 +529,13 @@ $ node scripts/gen-registry.mjs
 ```
 
 Regenerates `site/src/data/registry.json`, which records what each port's
-package registry carries right now: a stable release, a prerelease only, or
+package registry carries right now: a final release, a prerelease only, or
 nothing at all. `installCommand` in
 [ports.ts](../site/src/lib/ports.ts) composes that with the install spellings
 to produce the command a page or an agent prompt shows, so the command cannot
 name a version the registry does not have.
 
-It matters because most ports have no stable release, and several
+It matters because most ports have no final release, and several
 resolve nothing unless the prerelease is named: Cargo treats an alpha as out of
 range for a plain requirement, `go get` without a version resolves the highest
 release and a prerelease is not one, and SwiftPM's `from:` excludes prereleases
@@ -630,9 +630,8 @@ Entries are derived per port from each checkout named in
 `site/src/lib/ports.ts` (`~/work/python/libtmux`, and so on): git tags
 matching that port's grammar become `tag` entries, local branches matching `vX.x`
 become `branch` entries, the checkout's current `HEAD` is always `latest`
-(kind `trunk`), and `stable` is an `alias` resolving to the newest
-non-prerelease tag. A prerelease-only port gets `next`; it does not get a
-fabricated `stable`. RubyGems and LuaRocks release spellings keep their native
+(kind `trunk`). The newest non-prerelease tag is the port's default version.
+A prerelease-only port gets `next` and keeps `latest` as its default. RubyGems and LuaRocks release spellings keep their native
 forms. A port whose checkout is absent falls back to the same latest-only seed
 that `--seed` produces, with a note on stderr. Set
 `LIBTMUX_DOCS_CHECKOUT_<PORT>` to derive refs from an exact CI checkout.
