@@ -275,14 +275,14 @@ export function tmuxCommandDeclarations(version: string, name: string): ApiSymbo
 }
 /**
  * The C declarations a library symbol reaches directly through a command it sends: the command's entry and, for each scope
- * it sends the command at, that scope's function, or the command's callback when it sends it at no scope.
+ * it sends the command at, that scope's function, and the command's callback when it also sends it at no scope.
  */
-export function tmuxDirectDeclarations(version: string, command: string, scopes: TmuxScope[]): ApiSymbol[] {
+export function tmuxDirectDeclarations(version: string, command: string, scopes: TmuxScope[], unscoped = scopes.length === 0): ApiSymbol[] {
   const model = tmuxSourceModel(version)
   const found = model.commands.find((entry) => entry.name === command)
   if (!found) return []
   const byId = (id: string) => model.symbols.find((symbol) => symbol.id === id)
-  const targets = scopes.length ? scopes.map((scope) => tmuxScopeFunction(version, command, scope)) : [byId(found.callback)]
+  const targets = [...scopes.map((scope) => tmuxScopeFunction(version, command, scope)), ...(unscoped || !scopes.length ? [byId(found.callback)] : [])]
   return [byId(found.entry), ...targets].filter((symbol): symbol is ApiSymbol => symbol !== undefined)
 }
 export function tmuxCommandSources(version: string, name: string) {

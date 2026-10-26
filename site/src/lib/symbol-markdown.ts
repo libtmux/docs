@@ -167,7 +167,7 @@ function tmuxSectionMarkdown(section: ApiTmuxSection): string[] {
     if (section.note) out.push('', section.note)
     for (const path of section.paths) {
       out.push('', `### ${path.title}`, '')
-      for (const item of path.items) out.push(`${item.degree}. ${item.degree > 1 ? 'calls → ' : ''}${link(item.name, item.href)} (${item.kind})`)
+      for (const item of path.items) out.push(`${item.degree}. ${item.edge ? `${item.edge === 'call' ? 'calls' : 'references'} → ` : ''}${link(item.name, item.href)} (${item.kind})`)
     }
   } else if (section.type === 'catalog') {
     for (const item of section.items) out.push(`- [${item.name}](${item.href}) (${section.catalog})`)

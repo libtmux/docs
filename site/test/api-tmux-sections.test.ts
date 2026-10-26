@@ -9,9 +9,9 @@ import { PORTS } from '../src/lib/ports'
 import { productApiAlternatives } from '../src/lib/product-api'
 import { apiTmuxSections, type ApiTmuxSection } from '../src/lib/api-tmux-sections'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
-import { TMUX_USAGE } from '../src/lib/tmux-library-usage'
+import { TMUX_USAGE, tmuxScopes } from '../src/lib/tmux-library-usage'
 import { tmuxManualUrl } from '../src/lib/tmux-manual-data'
-import { tmuxReferenceUrl, tmuxSourceModel } from '../src/lib/tmux-reference'
+import { tmuxDirectDeclarations, tmuxReferenceUrl, tmuxSourceModel } from '../src/lib/tmux-reference'
 import { loadAstroTemplate, withoutScope } from './astro-templates'
 
 vi.mock('astro:content', () => ({ getCollection: async () => [] }))
@@ -138,13 +138,13 @@ describe('the tmux C API of a method that creates a session', () => {
     expect(steps[1].querySelector(':scope > .api-source-path__edge')!.textContent).toBe('calls →')
     // The degree-1 declarations stay as chips above the paths, and the degrees are explained once.
     expect(cApi.querySelectorAll(':scope > .tmux-usage a').length).toBe(2)
-    expect(cApi.textContent!.match(/degree counts calls/g)).toHaveLength(1)
+    expect(cApi.textContent!.match(/degree counts steps/g)).toHaveLength(1)
     expect(cApi.textContent).not.toContain('from cmd_new_session_exec')
     const text = symbolMarkdown({ model: API_MODELS.ts, symbol })
     const body = text.split('## tmux C API\n')[1].split('\n## ')[0]
     expect(body).toContain('### Create a session and its first pane\n\n1. [`cmd_new_session_exec`]')
     expect(body).toMatch(/\n5\. calls → \[`window_pane_create`\]\(\/tmux\/latest\/reference\/c-function-window-c-window_pane_create\/\) \(function\)/)
-    expect(body.match(/degree counts calls/g)).toHaveLength(1)
+    expect(body.match(/degree counts steps/g)).toHaveLength(1)
   })
 })
 
@@ -277,7 +277,7 @@ describe('the reference page of pane.Pane.sendKeys', () => {
     // Each count is what its section draws, counted from the page and not from the derivation.
     const section = (id: string) => document.getElementById(id)!.closest('section')!
     expect(section('api-tmux-command').querySelectorAll('.tmux-usage__item').length).toBe(wanted[0].count)
-    expect(section('api-tmux-c-api').querySelectorAll('.tmux-usage__item a').length).toBe(wanted[1].count)
+    expect(new Set([...section('api-tmux-c-api').querySelectorAll('a:not(.api-heading-link)')].map((a) => a.getAttribute('href'))).size).toBe(wanted[1].count)
     expect(section('api-guides').querySelectorAll('p a').length).toBe(wanted[2].count)
     expect(section('api-other-ports').querySelectorAll('tbody tr').length).toBe(wanted[3].count)
   })
@@ -329,9 +329,19 @@ describe('the styles the lists borrow', () => {
     for (const selector of selectors) expect(selector.trim(), selector).toMatch(/^\.tmux-usage/)
   })
 
-  it('reach the path sequence of the tmux C API section', () => {
-    const relationships = read('api/ApiRelationships.astro')
-    for (const selector of ['.api-source-path ol', '.api-source-path li', '.api-source-path li a', '.api-source-path__edge']) expect(relationships, selector).toContain(`:global(${selector})`)
+  it('reach the path sequence on every page that draws one: the rules are in api.css, which both page types import', () => {
+    const css = readFileSync(new URL('../src/styles/api.css', import.meta.url), 'utf8')
+    for (const selector of ['.api-source-path ol', '.api-source-path li', '.api-source-path li a', '.api-source-path__edge', '.api-source-path li a > .api-nav__kind']) {
+      expect(css, selector).toMatch(new RegExp(`^${selector.replaceAll('.', '\\.').replaceAll('>', '>')} \\{`, 'm'))
+    }
+    // Not in a component's scoped style, where another component's markup would miss them.
+    expect(read('api/ApiRelationships.astro').split('<style>')[1]).not.toContain('api-source-path')
+    // Every page that renders the section loads the stylesheet.
+    const users = ['api/ApiReference.astro', 'api/ProductApiPage.astro']
+    for (const file of users) {
+      expect(read(file), file).toContain('ApiTmuxSections')
+      expect(read(file), file).toMatch(/import '\.\.\/\.\.\/styles\/api\.css'/)
+    }
   })
 })
 
@@ -344,6 +354,36 @@ describe('a command item of a method that sends at a scope', () => {
       tmuxManualUrl('latest', 'list-panes'), '/tmux/latest/reference/c-function-cmd-list-panes-c-cmd_list_panes_server/',
     ])
     expect(item.querySelector('.tmux-send')!.getAttribute('title')).toMatch(/^(?:Calls .+: )?[^ ]+:\d+$/)
+  })
+})
+
+describe('the path steps of a symbol that splits a window', () => {
+  const symbol = symbolOf('ts', 'pane.Pane.split')
+  const path = () => {
+    const cApi = sections('ts', symbol).find((section) => section.type === 'c-api')
+    if (cApi?.type !== 'c-api') throw new Error('no C API section')
+    return cApi
+  }
+
+  it('say what each step is: cmd_split_window_exec references spawn_pane as a callback and calls the rest', async () => {
+    const cApi = path()
+    const steps = cApi.paths.find((entry) => entry.title === 'Split a window')!.items
+    expect(steps.map((step) => [step.name, step.degree, step.edge])).toEqual([
+      ['cmd_split_window_exec', 1, undefined], ['spawn_pane', 2, 'reference'], ['window_add_pane', 3, 'call'], ['window_pane_create', 4, 'call'],
+    ])
+    const document = await html(sections('ts', symbol))
+    const labels = [...document.querySelectorAll('#api-tmux-c-api ~ .api-source-path li > .api-source-path__edge')].map((edge) => edge.textContent)
+    expect(labels).toEqual(['references →', 'calls →', 'calls →'])
+    const body = symbolMarkdown({ model: API_MODELS.ts, symbol }).split('## tmux C API\n')[1].split('\n## ')[0]
+    const written = body.split('\n').filter((line) => /^[0-9][.] /.test(line)).map((line) => line.slice(0, line.indexOf('](') + 1))
+    expect(written).toEqual([
+      '1. [`cmd_split_window_exec`]', '2. references \u2192 [`spawn_pane`]', '3. calls \u2192 [`window_add_pane`]', '4. calls \u2192 [`window_pane_create`]',
+    ])
+  })
+
+  it('are explained by a note that covers calls and references', () => {
+    expect(path().note).toContain('a call or a reference')
+    expect(path().note).not.toMatch(/called by/)
   })
 })
 
@@ -362,6 +402,13 @@ describe('the degree-1 functions', () => {
     expect(list.find((section) => section.type === 'commands')).toBeUndefined()
   })
 
+  it('include the callback when a send mixes scoped and unscoped uses, which the recorded data never does', () => {
+    const server = tmuxScopes('list-panes')[0]
+    expect(tmuxDirectDeclarations('latest', 'list-panes', [server]).map((entry) => entry.name)).toEqual(['cmd_list_panes_entry', 'cmd_list_panes_server'])
+    expect(tmuxDirectDeclarations('latest', 'list-panes', [server], true).map((entry) => entry.name)).toEqual(['cmd_list_panes_entry', 'cmd_list_panes_server', 'cmd_list_panes_exec'])
+    expect(tmuxDirectDeclarations('latest', 'send-keys', []).map((entry) => entry.name)).toEqual(['cmd_send_keys_entry', 'cmd_send_keys_exec'])
+  })
+
   it('count a function once when a path passes through it', () => {
     const cApi = sections('ts', symbolOf('ts', 'server.Server.newSession')).find((section) => section.type === 'c-api')
     if (cApi?.type !== 'c-api') throw new Error('no C API section')
@@ -373,14 +420,20 @@ describe('the degree-1 functions', () => {
 describe('a note in a table of other ports', () => {
   it('is the concept\'s note, resolved against the index of the port it names', () => {
     // The first symbol whose table has a row with both a link and a note.
-    const found = Object.entries(API_MODELS).flatMap(([port, model]) => model.symbols.map((symbol) => ({ port, symbol })))
-      .map(({ port, symbol }) => ({ port, symbol, rows: sections(port, symbol).flatMap((section) => section.type === 'ports' ? section.groups : [])
-        .flatMap((group) => group.table.groups[0].ports).filter((row) => row.links.length && row.note) }))
-      .find((entry) => entry.rows.length)!
+    let found: { port: string; symbol: ApiSymbol; rows: ReturnType<typeof noted> } | undefined
+    const noted = (list: ApiTmuxSection[]) => list.flatMap((section) => section.type === 'ports' ? section.groups : [])
+      .flatMap((group) => group.table.groups[0].ports).filter((row) => row.links.length && row.note)
+    search: for (const [port, model] of Object.entries(API_MODELS)) {
+      for (const symbol of model.symbols) {
+        const rows = noted(sections(port, symbol))
+        if (rows.length) { found = { port, symbol, rows }; break search }
+      }
+    }
     expect(found, 'a symbol with a noted equivalent').toBeDefined()
-    for (const row of found.rows) {
+    const { port, symbol, rows } = found!
+    for (const row of rows) {
       expect(row.noteIndex, row.port).toBeDefined()
-      expect(conceptsFor(found.port, found.symbol.publicId ?? found.symbol.id).map((concept) => concept.notes?.[row.port])).toContain(row.note)
+      expect(conceptsFor(port, symbol.publicId ?? symbol.id).map((concept) => concept.notes?.[row.port])).toContain(row.note)
     }
   })
 

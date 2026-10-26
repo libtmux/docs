@@ -35,7 +35,7 @@ const flagOf = (scope: { flag: string; target?: string }) => scope.flag || scope
     {section.paths.map((path) => <div class="api-source-path">
       <h3 class="text-sm font-semibold">{path.title}</h3>
       <ol>{path.items.map((item, i) => <li>
-        {i > 0 && <span class="api-source-path__edge">calls →</span>}
+        {item.edge && <span class="api-source-path__edge">{item.edge === 'call' ? 'calls' : 'references'} →</span>}
         <a href={item.href}><span class="api-source-path__edge">{item.degree}</span> <ApiBadge label={item.kind} variant="kind" value={item.kind} compact preview={false} /><code>{item.name}</code></a>
       </li>)}</ol>
     </div>)}
