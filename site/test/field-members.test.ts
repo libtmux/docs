@@ -104,14 +104,19 @@ describe('Rust field tables', () => {
     const children = () => raw.symbols.filter((entry) => entry.parent === id)
     const hrefs = (symbols: ApiSymbol[]) => symbols.map((entry) => hrefFor(model.symbols.find((m) => m.id === entry.id)!))
     const linkedIn = (lines: string[]) => lines.map((line) => /\]\(([^)]*)\)/.exec(line)![1])
+    // Each part ends at the next top-level section; later sections link elsewhere.
+    const nextSection = (lines: string[], from: number) => {
+      const at = lines.findIndex((line, i) => i > from && line.startsWith('## '))
+      return at < 0 ? lines.length : at
+    }
     const split = (symbols = model.symbols) => {
       const lines = symbolMarkdown({ model: { ...model, symbols }, symbol: owner, index, hrefFor }).split('\n')
       const fieldsAt = lines.indexOf('## Fields')
       const membersAt = lines.indexOf('## Members')
       return {
         fieldsAt, membersAt,
-        table: linkedIn(lines.slice(fieldsAt).filter((line) => line.startsWith('| [`'))),
-        list: linkedIn(lines.slice(membersAt).filter((line) => line.startsWith('- ['))),
+        table: linkedIn(lines.slice(fieldsAt, nextSection(lines, fieldsAt)).filter((line) => line.startsWith('| [`'))),
+        list: linkedIn(lines.slice(membersAt, nextSection(lines, membersAt)).filter((line) => line.startsWith('- ['))),
       }
     }
 
