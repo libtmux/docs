@@ -1,11 +1,11 @@
 import type { ApiModel, ApiSymbol, Signature, SourceApiModel, SymbolIndex } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { toMarkdown } from 'mdast-util-to-markdown'
-import { boundLabel, membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model'
+import { aliasMembersTarget, aliasTarget, boundLabel, pageMembersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { PORT_NAME } from './api-models'
 import { apiTmuxSections, type ApiTmuxSection } from './api-tmux-sections'
-import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasFieldMembers, hasScalarMembers, splitFieldMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
+import { aliasDeclaration, apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasFieldMembers, hasScalarMembers, splitFieldMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
 import type { ResolvedUsage } from './tmux-reference'
 import { tmuxCommandMentions, tmuxMentionMarkdown } from './tmux-links'
 import { productApiIndex } from './product-api'
@@ -218,20 +218,21 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   if (symbol.exportedFrom) facts.push(`- **Exported from:** ${symbol.exportedFrom}`)
   if (symbol.inheritedFrom) facts.push(`- **Inherited from:** ${symbol.inheritedFrom}`)
   if (symbol.publicOwner && symbol.publicOwner !== symbol.id) facts.push(`- **Public owner:** ${symbol.publicOwner}`)
-  if (symbol.extends?.length) {
-    const bases = symbol.extends.map((base) => {
-      const parts: string[] = []
-      let plain = ''
-      for (const part of index?.linkType(base, symbol) ?? [{ text: base }]) {
-        if (!part.link) { plain += part.text; continue }
-        if (plain) { parts.push(inlineCode(plain)); plain = '' }
-        parts.push(`[${inlineCode(part.text)}](${part.link.href})`)
-      }
-      if (plain) parts.push(inlineCode(plain))
-      return parts.join('')
-    })
-    facts.push(`- **Bases:** ${bases.join(', ')}`)
+  // A type with its names linked where the site resolves them; the rest stays code.
+  const linkedType = (type: string) => {
+    const parts: string[] = []
+    let plain = ''
+    for (const part of index?.linkType(type, symbol) ?? [{ text: type }]) {
+      if (!part.link) { plain += part.text; continue }
+      if (plain) { parts.push(inlineCode(plain)); plain = '' }
+      parts.push(`[${inlineCode(part.text)}](${part.link.href})`)
+    }
+    if (plain) parts.push(inlineCode(plain))
+    return parts.join('')
   }
+  if (symbol.extends?.length) facts.push(`- **Bases:** ${symbol.extends.map(linkedType).join(', ')}`)
+  const aliased = aliasDeclaration(symbol, language) ? aliasTarget(model, symbol) : undefined
+  if (aliased && symbol.type) facts.push(`- **Alias of:** ${linkedType(symbol.type.trim())}`)
   if (ctx.canonical) facts.push(`- **Page:** ${ctx.canonical}`)
   if (facts.length) out.push(...facts, '')
   // A C declaration keeps its lines; a library symbol's links are the sections written after the relationships.
@@ -245,6 +246,8 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   if (language === 'julia' && symbol.kind === 'typealias' && symbol.type) {
     out.push(fencedCode(`${symbol.name} = ${symbol.type}`, 'julia'), '')
   }
+  const alias = aliasDeclaration(symbol, language)
+  if (alias) out.push(fencedCode(alias.text, language ?? ''), '')
   const signatures = language === 'c' ? symbol.signatures.filter((signature) => signature.raw) : symbol.signatures
   // A parameter set names its declaration whether or not the text was laid out.
   const setLabel = (entry: Signature) => entry.label && entry.label !== '__AllParameterSets' ? `${entry.label}${entry.isDefault ? ' (default)' : ''}:\n` : ''
@@ -359,9 +362,13 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   }
 
   const signals = memberSignals(port ?? '', mentions.mentions)
-  const members = membersOf(model, symbol, signals)
+  const members = pageMembersOf(model, symbol, signals)
   const declared = members.filter((member) => !member.inheritedFrom || memberTier(member, signals) === 'parent')
   const inherited = members.filter((member) => member.inheritedFrom && memberTier(member, signals) !== 'parent')
+  const symbolLinkText = (target: ApiSymbol) => {
+    const name = inlineCode(target.name)
+    return ctx.hrefFor ? `[${name}](${ctx.hrefFor(target)})` : name
+  }
   const appendMembers = (entries: ApiSymbol[]) => {
     for (const member of entries) {
       out.push(`- ${ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)} (${symbol.variant && member.type ? inlineCode(member.type) : member.kind})${member.inheritedFrom ? `, inherited from ${inlineCode(member.inheritedFrom)}` : ''}${member.doc?.summary ? `: ${member.doc.summary}` : ''}`)
@@ -384,7 +391,8 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
       out.push('')
     }
     if (rest.length) {
-      out.push(symbol.variant ? '## Fields' : '## Members', '')
+      const aliasedMembers = aliasMembersTarget(model, symbol)
+      out.push(symbol.variant ? '## Fields' : aliasedMembers ? `## Members of ${symbolLinkText(aliasedMembers)}` : '## Members', '')
       if (hasScalarMembers(symbol, rest)) {
         out.push('| Name | Value | Description |', '| --- | --- | --- |')
         for (const member of rest) out.push(`| ${cell(link(member))} | ${cell(inlineCode(member.value!))} | ${cell(member.doc?.summary ?? '')} |`)

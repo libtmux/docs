@@ -14,7 +14,7 @@ import ApiDoc from './ApiDoc.astro'
 import ApiProse from './ApiProse.astro'
 import ApiType from './ApiType.astro'
 import { asideFor } from '../../lib/aside'
-import { apiCommandFacts, apiCommandRelatedLinks, apiOverloadId, apiOverloadIdentity, apiEntryFields, apiMethodDetails, anonymousDeclarationLabel, nativeSignatureText as unformattedNativeSignatureText, parameterBindingText, usesNativeSignatures } from '../../lib/api-sections'
+import { aliasDeclaration, apiCommandFacts, apiCommandRelatedLinks, apiOverloadId, apiOverloadIdentity, apiEntryFields, apiMethodDetails, anonymousDeclarationLabel, nativeSignatureText as unformattedNativeSignatureText, parameterBindingText, usesNativeSignatures } from '../../lib/api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from '../../lib/tmux-manual-data'
 import { tmuxCommandItems, tmuxCommandRows, tmuxCommandSeparator, tmuxSymbolSends } from '../../lib/tmux-reference'
 import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl } from '../../lib/tmux-catalog'
@@ -230,6 +230,7 @@ const badges = [
  * source reads. The model carried `value` all along and nothing displayed it.
  */
 const value = (symbol as { value?: string }).value
+const alias = aliasDeclaration(symbol, language)
 
 /**
  * A signature long enough to hide behind a summary.
@@ -344,9 +345,17 @@ const hasBody =
               data-code-columns={signatureLayouts.get(sig)?.limit} data-code-width-status={signatureLayouts.has(sig) ? (signatureLayouts.get(sig)!.failures.length ? 'unresolved' : 'fits') : undefined} data-code-width-failures={signatureLayouts.get(sig)?.failures.length ? JSON.stringify(signatureLayouts.get(sig)!.failures) : undefined}>{sig.label && sig.label !== '__AllParameterSets' && <span class="api-native-signature-label">{sig.label}{sig.isDefault ? ' (default)' : ''}: </span>}<ApiType type={nativeSignatureText(symbol, sig, language)} index={index} context={symbol} signature={sig} nameHref={nameHref} layout={signatureLayouts.get(sig)} /></span>
           )) : <span class="api-native-signature">{anonymousDeclarationLabel(symbol)}</span>) : <>
           {keyword && <em class="property"><span class="pre">{keyword}</span> </em>}
-          {prename && <span class="sig-prename descclassname"><span class="pre">{prename}</span></span>}<span class="sig-name descname">{nameHref ? <a class="api-signature-name-link pre" href={nameHref}>{symbol.name}</a> : <span class="pre">{symbol.name}</span>}</span>
+          {prename && <span class="sig-prename descclassname"><span class="pre">{prename}</span></span>}<span class="sig-name descname">{nameHref ? <a class="api-signature-name-link pre" href={nameHref}>{symbol.name}</a> : <span class="pre">{symbol.name}</span>}</span>{alias?.typeParams && <ApiType type={alias.typeParams} index={index} context={symbol} />}
           {
-            symbol.signatures.length === 0 && symbol.type && (
+            alias && (
+              <>
+                <span class="o"> = </span>
+                <span class="api-alias-value"><ApiType type={alias.value} index={index} context={symbol} /></span>
+              </>
+            )
+          }
+          {
+            !alias && symbol.signatures.length === 0 && symbol.type && (
               <>
                 <span class="sig-paren">: </span>
                 <ApiType type={symbol.type} index={index} context={symbol} />

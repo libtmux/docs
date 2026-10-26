@@ -1,6 +1,6 @@
 ---
 import type { ApiModel, ApiSymbol, SourceApiModel, SymbolIndex } from '@libtmux/api-model'
-import { membersOf, memberTier, docSummaryText, memberSignals, parameterId, qualifiedNameOf, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model'
+import { aliasMembersTarget, membersOf, pageMembersOf, memberTier, docSummaryText, memberSignals, parameterId, qualifiedNameOf, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model'
 import mentionsData from '../../data/mentions.json'
 import ApiEntry from '../../components/api/ApiEntry.astro'
 import ApiTmuxSections from './ApiTmuxSections.astro'
@@ -227,7 +227,7 @@ const sourceUrl = (symbol: ApiSymbol): string | undefined => model
   ? apiSourceUrl(model, symbol, refBase)
   : undefined
 
-const members = owner && model ? membersOf(model, owner, signals) : []
+const members = owner && model ? pageMembersOf(model, owner, signals) : []
 
 const owners = (model ? topLevelTypesOf(model) : []).sort((a, b) => a.name.localeCompare(b.name))
 
@@ -361,7 +361,8 @@ const shown = fieldsAndRest ? split.rest : listed
 const memberGroups = apiMemberGroups(shown, signals)
 const tableColumns = owner ? memberTableColumns(owner, listed, port) : undefined
 const showMemberGroups = !tableColumns && memberGroups.length > 1
-const membersLabel = owner?.variant || tableColumns === 'fields' || (language === 'julia' && owner?.kind === 'struct' && shown.every((member) => member.kind === 'property')) ? 'Fields' : 'Members'
+const aliasedMembers = owner && model ? aliasMembersTarget(model, owner) : undefined
+const membersLabel = aliasedMembers ? `Members of ${aliasedMembers.name}` : owner?.variant || tableColumns === 'fields' || (language === 'julia' && owner?.kind === 'struct' && shown.every((member) => member.kind === 'property')) ? 'Fields' : 'Members'
 const glossaryContext = apiGlossary(`${refBase}glossary/`)
 const pageSections: ApiSection[] = glossary ? apiGlossaryHeadings(glossaryContext.path).map((heading) => ({
   id: heading.slug, label: heading.text, nested: heading.depth === 3,
@@ -808,7 +809,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
             )}
             {shown.length > 0 && (
               <div class="api-members mt-8">
-                <h2 class="api-section-heading text-lg font-semibold" id="api-members">{membersLabel}<span class="api-section-count">{shown.length}</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersLabel}`}>#</a></h2>
+                <h2 class="api-section-heading text-lg font-semibold" id="api-members">{aliasedMembers ? <>Members of <a class="api-members-target" href={hrefFor(aliasedMembers)}><code>{aliasedMembers.name}</code></a></> : membersLabel}<span class="api-section-count">{shown.length}</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersLabel}`}>#</a></h2>
                 {tableColumns ? <ApiScalarMembers owner={owner} members={listed} index={index} hrefFor={hrefFor} columns={tableColumns} /> : memberGroups.map((group) => <section id={showMemberGroups ? undefined : group.id} class:list={['api-member-group', !showMemberGroups && 'api-member-group--single']} aria-labelledby={showMemberGroups ? group.id : 'api-members'}>
                 {showMemberGroups && <h3 id={group.id}>{group.label}<span class="api-section-count">{group.members.length}</span><a class="api-heading-link" href={`#${group.id}`} aria-label={`Link to ${group.label}`}>#</a></h3>}
                 <ul class="api-member-list mt-3">
