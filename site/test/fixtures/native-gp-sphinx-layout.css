@@ -1,0 +1,600 @@
+/* sphinx_ux_autodoc_layout — layout.css
+ * Stable api-* component wrappers and disclosure styling.
+ *
+ * All rules land in @layer gp-sphinx so precedence is declarative
+ * against Furo's @layer components.  Layer order is established in
+ * gp-furo-theme/web/src/styles/index.css.
+ *
+ * Dual-variant header
+ * -------------------
+ * Every managed `<dt class="gp-sphinx-api-header">` ships two sibling
+ * subtrees: a `gp-sphinx-api-layout--desktop` (signature-left,
+ * toolbar-right) and a `gp-sphinx-api-layout--mobile` (toolbar-top,
+ * signature-bottom).  The `dl.gp-sphinx-api-container` shell sets up a
+ * size container so a `@container` rule can switch between the two by
+ * inline-size, regardless of viewport width — this lets a Furo article
+ * column get the desktop variant while a narrow sidebar embed gets the
+ * mobile variant on the same page.  Each variant carries its own natural
+ * DOM order so we never rely on flex order overrides that would
+ * otherwise split visual order from accessibility tree order.
+ *
+ * Header metadata
+ * ---------------
+ * The Python builder emits ``data-domain``, ``data-objtype``,
+ * ``data-has-source``, ``data-has-badges``, ``data-badge-count``, and
+ * ``data-has-fold`` attributes on the rendered ``<dt>``, mirrored as
+ * ``gp-sphinx-api-header--has-{source,badges,fold}`` modifier classes.
+ * Theme CSS can branch on facts the cascade alone cannot compute (e.g.
+ * `dt[data-has-source="true"][data-has-badges="false"]`).
+ */
+
+@layer gp-sphinx {
+
+/* ── Content sections ───────────────────────────────── */
+.gp-sphinx-api-region + .gp-sphinx-api-region {
+  margin-top: 1rem;
+}
+
+.gp-sphinx-api-footer,
+.gp-sphinx-api-region--members {
+  margin-top: 1.5rem;
+}
+
+.gp-sphinx-api-summary table {
+  margin-top: 0;
+}
+
+/* ── Container query setup ──────────────────────────── *
+ *
+ * `inline-size` measures the inline (column) axis only, which is what
+ * we want — the entry width is what dictates whether the toolbar
+ * fits beside the signature.  Both managed `dl` shells and the
+ * `gp-sphinx-api-card-shell` wrapper become size containers so non-Python
+ * card consumers (FastMCP tools, etc.) inherit the same query basis. */
+dl.gp-sphinx-api-container,
+.gp-sphinx-api-card-shell {
+  container-type: inline-size;
+  container-name: gp-sphinx-api-entry;
+}
+
+/* ── Default mobile visibility ───────────────────────── *
+ *
+ * The mobile variant is hidden by default.  The matching toggle that
+ * swaps the variants when the entry's inline-size drops below 36rem
+ * lives at the bottom of this file (after every default layout rule)
+ * so its `@container` overrides win the cascade — `@container` does
+ * not bump specificity, so source order matters: the toggle has to
+ * appear AFTER the `--desktop { display: flex }` defaults below or
+ * those defaults would override the toggle's `display: none`.
+ *
+ * The 36rem threshold is deliberately below Furo's `.content { width:
+ * 46em }` article column so a typical Furo article gets the desktop
+ * variant; only genuinely narrow embeds (sidebar widgets, sub-1em
+ * card shells, viewports < ~600px once Furo's content goes fluid)
+ * cross into mobile.  Going higher (e.g. 52rem) would have mobile win
+ * unconditionally inside Furo articles since their inline-size is
+ * always ~46rem. */
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--mobile,
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout--mobile {
+  display: none;
+}
+
+/* ── Suppress inherited transitions/animations ─────── *
+ *
+ * Furo's `.sig:not(.sig-inline)` rule (in @layer components) declares
+ * `transition: background .1s ease-out` for hover smoothing.  Our
+ * managed `<dt>` retains the upstream `sig sig-object py` classes, so
+ * that transition cascades onto every header and runs on every theme
+ * swap, producing a visible mid-blend during the toggle.  The same
+ * applies to card-mode headers (`<div class="gp-sphinx-api-header">`).
+ *
+ * Kill any inherited transitions/animations on the managed header
+ * itself.  Lives in @layer gp-sphinx so it beats Furo's @layer
+ * components regardless of selector specificity.  Descendants are
+ * intentionally left untouched so future signature/fold animations
+ * can opt in. */
+.gp-sphinx-api-header {
+  transition: none;
+  animation: none;
+}
+
+/* ── API shell ──────────────────────────────────────── */
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--desktop {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-left {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header[data-signature-expanded="true"] {
+  display: flex;
+  align-items: flex-start;
+}
+
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header[data-signature-expanded="true"] > .gp-sphinx-api-layout--desktop {
+  align-items: flex-start;
+}
+
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header[data-signature-expanded="true"] .gp-sphinx-api-layout-left {
+  align-items: flex-start;
+}
+
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header[data-signature-expanded="true"] .gp-sphinx-api-layout-right {
+  align-items: flex-start;
+}
+
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-right:empty {
+  display: none;
+}
+
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-source-link {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ── Mobile variant: toolbar-top, signature-bottom ──── */
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-layout-top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
+}
+
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-layout-bottom {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Mirror the desktop split inside the mobile toolbar row itself: badges
+ * remain flush-left as the type/scope anchor; the source link floats to
+ * the right edge as the secondary action. */
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-source-link {
+  margin-left: auto;
+}
+
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-layout-top:empty {
+  display: none;
+}
+
+/* ── Signature row ──────────────────────────────────── */
+.gp-sphinx-api-header .gp-sphinx-api-signature code.literal {
+  background: transparent;
+}
+
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-signature {
+  flex: 1 1 auto;
+  font-family: var(--font-stack--monospace);
+  min-width: 0;
+}
+
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-link {
+  margin-left: 0.1rem;
+  flex: 0 0 auto;
+  visibility: hidden;
+}
+
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:hover .gp-sphinx-api-link,
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-link:focus-visible {
+  visibility: visible;
+}
+
+/* The mobile variant has no hover affordance on touch devices, so the
+ * permalink anchor is always reachable when the mobile layout is the
+ * one being shown. */
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-link {
+  visibility: visible;
+}
+
+.gp-sphinx-api-signature-toggle {
+  appearance: none;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  font-family: var(--font-stack--monospace);
+  padding: 0;
+}
+
+.gp-sphinx-api-signature-toggle .gp-sphinx-api-signature-preview {
+  color: var(--color-foreground-muted);
+}
+
+.gp-sphinx-api-signature-toggle:hover .gp-sphinx-api-signature-preview,
+.gp-sphinx-api-signature-toggle:focus-visible .gp-sphinx-api-signature-preview {
+  color: var(--color-link);
+}
+
+.gp-sphinx-api-signature-toggle[aria-expanded="true"] {
+  display: none;
+}
+
+/* ── Expanded signature wrapper ─────────────────────── */
+.gp-sphinx-api-signature-expanded {
+  display: contents;
+}
+
+.gp-sphinx-api-signature-expanded[hidden] {
+  display: none;
+}
+
+.gp-sphinx-api-signature-expanded > dl {
+  margin: 0;
+  padding-inline-start: var(--gp-sphinx-api-signature-indent, 1rem);
+}
+
+.gp-sphinx-api-signature-expanded > dl > dd {
+  margin: 0;
+  margin-inline-start: 0 !important;
+  margin-left: 0 !important;
+}
+
+.gp-sphinx-api-signature-expanded > .sig-paren:last-of-type {
+  margin-right: 0.35rem;
+}
+
+.gp-sphinx-api-sig-collapse {
+  appearance: none;
+  background: none;
+  border: 0;
+  color: var(--color-foreground-muted);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  padding: 0;
+}
+
+.gp-sphinx-api-sig-collapse:hover,
+.gp-sphinx-api-sig-collapse:focus-visible {
+  color: var(--color-link);
+}
+
+/* ── Field-list grid + label typography (authoritative) ─────
+ * `sphinx-ux-autodoc-layout` owns the `.gp-sphinx-api-parameters`
+ * and `.gp-sphinx-api-facts` wrapper classes (added by
+ * `_wrap_content_runs`), so the styling for the transformed
+ * autodoc-card field-list lives here.  Mirror rules in api-style /
+ * pytest-fixtures stay direct-child (`> dd > dl.field-list`)
+ * intentionally so they only fire in standalone installs without
+ * sphinx-ux-autodoc-layout — see those packages' "standalone
+ * fallback" comments. */
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list,
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.25rem 1rem;
+  border-top: 1px solid var(--color-background-border);
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list > dt,
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list > dt {
+  grid-column: 1;
+  font-size: var(--gp-sphinx-type-metadata);
+  font-weight: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  color: var(--color-foreground-muted);
+}
+
+/* Field body reads at metadata size so the monospace prefix wrapper
+ * inside doesn't visually outsize the surrounding sans prose.  The
+ * eyebrow <dt> (also metadata size) and the body now sit in the same
+ * data-band register; hierarchy is carried by uppercase + muted color
+ * on the label, not by a size delta. */
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list > dd,
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list > dd {
+  grid-column: 2;
+  margin-top: 0.25rem;
+  margin-left: 0;
+  font-size: var(--gp-sphinx-type-metadata);
+  line-height: 1.5;
+}
+
+/* Restore chip padding on fact values (typehints_gp zeroes it for
+ * tight type annotations; standalone fact chips want it back). */
+.gp-sphinx-api-facts .field-list code.literal {
+  padding-inline: 0.2em;
+}
+
+/* Override docutils' tight `simple` list convention.  `<ul.simple>
+ * > li > p` collapses to `margin: 4px 0`, leaving only ~8px between
+ * adjacent rows against a 25.6px line-height.  Flex-gap delivers a
+ * cleaner ~12px without fighting per-row margin collapse.
+ *
+ * `margin-left: 0` cancels Furo's `api.css` rule that pulls the
+ * `<ul>` 1.2rem to the left (`dl[class]:not(...).field-list dd > ul
+ * { margin-left: -1.2rem }`).  Combined with the inherited
+ * `padding-left: 1.2rem`, that negative margin would leak the first
+ * `<li>` marker into the column gap while subsequent markers stay at
+ * the dd's edge, leaving the first bullet flush against the eyebrow
+ * label and breaking row-to-row alignment. */
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list > dd > ul.simple,
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list > dd > ul.simple {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0;
+  margin-bottom: 0;
+  margin-left: 0;
+}
+
+/* Zero `<p>` margins both inside `<ul.simple>` (parameter rows)
+ * and on direct children of `<dd>` (single-paragraph Returns,
+ * Yields, Raises). Without the latter selector the Return body
+ * keeps docutils' default `margin: 4px 0`, producing asymmetric
+ * spacing the moment the Return description spans more than one
+ * line.  Symmetric here keeps the field-list a coherent data band. */
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list > dd > p,
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list > dd > p,
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list > dd > ul.simple > li > p,
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list > dd > ul.simple > li > p {
+  margin: 0;
+}
+
+/* Field-list grid collapse mirrors the header's mobile breakpoint so
+ * the parameters band reflows at the same width the toolbar/signature
+ * stack does.  Container-query basis matches the variant toggle below. */
+@container gp-sphinx-api-entry (max-width: 36rem) {
+  dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list,
+  dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list {
+    grid-template-columns: 1fr;
+  }
+  dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list > dt,
+  dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list > dd,
+  dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list > dt,
+  dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list > dd {
+    grid-column: 1;
+  }
+}
+
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-options > .rst.directive-option + .rst.directive-option {
+  margin-top: 1rem;
+}
+
+/* ── Fold (block disclosure) ────────────────────────── */
+details.gp-sphinx-api-fold {
+  margin: 0;
+}
+
+details.gp-sphinx-api-fold > summary.gp-sphinx-api-fold-summary {
+  cursor: pointer;
+  color: var(--color-foreground-muted);
+  font-size: 0.85em;
+  font-weight: 600;
+  padding: 0.25rem 0;
+  list-style: none;
+}
+
+details.gp-sphinx-api-fold > summary.gp-sphinx-api-fold-summary::-webkit-details-marker {
+  display: none;
+}
+
+details.gp-sphinx-api-fold > summary.gp-sphinx-api-fold-summary::before {
+  content: "\25B8  ";
+}
+
+details.gp-sphinx-api-fold[open] > summary.gp-sphinx-api-fold-summary::before {
+  content: "\25BE  ";
+}
+
+details.gp-sphinx-api-fold > summary.gp-sphinx-api-fold-summary:hover {
+  color: var(--color-link);
+}
+
+/* ── Card box for non-Python managed entries ────────── */
+/* rst:directive, rst:role, std:confval — Furo only cards dl.py.*  */
+dl.gp-sphinx-api-container:not(.py) {
+  border: 1px solid var(--color-background-border);
+  border-radius: 0.5rem;
+  padding: 0;
+  margin-bottom: 1.5rem;
+  overflow: visible;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+dl.gp-sphinx-api-container:not(.py) > dt.gp-sphinx-api-header {
+  background: var(--color-background-secondary);
+  border-bottom: 1px solid var(--color-background-border);
+  padding: 0.5rem 0.75rem 0.5rem 1rem;
+  text-indent: 0;
+  margin: 0;
+  min-height: 2rem;
+}
+
+dl.gp-sphinx-api-container:not(.py) > dt.gp-sphinx-api-header:hover {
+  background: var(--color-api-background-hover);
+}
+
+dl.gp-sphinx-api-container:not(.py) > dd.gp-sphinx-api-content {
+  padding: 0.75rem 1rem;
+  margin-left: 0 !important;
+}
+
+.gp-sphinx-api-card-shell {
+  border: 1px solid var(--color-background-border);
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  margin-bottom: 1.5rem;
+  overflow: clip;
+}
+
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header {
+  background: var(--color-background-secondary);
+  border-bottom: 1px solid var(--color-background-border);
+  padding: 0.5rem 0.75rem 0.5rem 1rem;
+}
+
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header:hover {
+  background: var(--color-api-background-hover);
+}
+
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-link {
+  visibility: hidden;
+}
+
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header:hover .gp-sphinx-api-link,
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-link:focus-visible {
+  visibility: visible;
+}
+
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout--desktop {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+}
+
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-layout-left {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-signature {
+  min-width: 0;
+  font-family: var(--font-stack--monospace);
+}
+
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-layout-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-layout-top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
+}
+
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-layout-bottom {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-source-link {
+  margin-left: auto;
+}
+
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-content {
+  padding: 0.75rem 1rem;
+}
+
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-content > * + * {
+  margin-top: 0.75rem;
+}
+
+/* Nested entries — lighter (e.g. rst:directive:option inside rst:directive) */
+dl.gp-sphinx-api-container:not(.py) .gp-sphinx-api-footer dl.gp-sphinx-api-container:not(.py) {
+  border-color: var(--color-background-border);
+  box-shadow: none;
+  margin-bottom: 1rem;
+}
+
+dl.gp-sphinx-api-container:not(.py) .gp-sphinx-api-footer dl.gp-sphinx-api-container:not(.py) > dt.gp-sphinx-api-header {
+  background: transparent;
+  border-bottom-color: var(--color-background-border);
+  padding-left: 0.75rem;
+}
+
+dl.gp-sphinx-api-container:not(.py) .gp-sphinx-api-footer dl.gp-sphinx-api-container:not(.py) > dt.gp-sphinx-api-header:hover {
+  background: var(--color-api-background-hover);
+}
+
+/* ── Variant visibility toggle ──────────────────────── *
+ *
+ * Placed AFTER every default layout rule above so the cascade flips
+ * from desktop-default to mobile-default once the entry's container
+ * inline-size drops below 36rem.  `@container` does not bump
+ * specificity, so this block must appear last in source order — the
+ * `--desktop { display: flex }` defaults higher in this file would
+ * otherwise win and the toggle would be a no-op.
+ *
+ * Threshold rationale: Furo's `.content { width: 46em }` keeps the
+ * article inline-size at ~46rem regardless of viewport, so any
+ * threshold ≥ 46rem makes mobile win unconditionally inside Furo.
+ * 36rem leaves headroom for the article (mobile only triggers in
+ * narrower embeds) and aligns with the field-list collapse above. */
+@container gp-sphinx-api-entry (max-width: 36rem) {
+  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--desktop,
+  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout--desktop {
+    display: none;
+  }
+  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--mobile,
+  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout--mobile {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 0.25rem;
+  }
+  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-signature,
+  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-signature {
+    overflow-wrap: anywhere;
+  }
+}
+
+/* ── Tiny viewports (< 30rem) ────────────────────────── *
+ *
+ * Below ~480px even the mobile variant's signature row needs help: we
+ * prefer to break long identifiers at any point over per-character
+ * wrapping that Furo's default `overflow-wrap: break-word` produces.
+ * At the 280px low end this lets `demo_session_factory` wrap once or
+ * twice instead of one character per line.  Below ~480px we drop the
+ * safety net in favour of horizontal scroll, since `overflow-wrap:
+ * anywhere` starts breaking unbreakable identifiers like `transport`
+ * mid-token (`tra` / `nsport`).  `scrollbar-width: thin` keeps the
+ * scrollbar visually quiet on platforms that honour the property. */
+@container gp-sphinx-api-entry (max-width: 30rem) {
+  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-signature,
+  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-signature {
+    overflow-wrap: normal;
+    word-break: keep-all;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+}
+
+
+}  /* end @layer gp-sphinx */
