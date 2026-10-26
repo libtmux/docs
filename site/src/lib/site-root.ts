@@ -3,12 +3,12 @@
  *
  * Almost always `/`. A PR preview is the exception: the whole site is
  * published under `/pr-42/`, and every root-relative link a component emits
- * — `/search/`, `/py/stable/`, `/versions.json` — would otherwise walk the
+ * — `/search/`, `/py/latest/`, `/versions.json` — would otherwise walk the
  * reader straight out of the preview and onto production, silently, with the
  * preview's own header still on screen.
  *
  * `import.meta.env.BASE_URL` cannot stand in for this. A per-port build has
- * `base=/py/stable/` and a preview has `base=/pr-42/`; the two are the same
+ * `base=/py/latest/` and a preview has `base=/pr-42/`; the two are the same
  * shape and only one of them moves the root. Which it is, is something only
  * the build knows, so it says so explicitly.
  *
@@ -75,7 +75,7 @@ export const IS_ROOT_BUILD: boolean = !process.env.LIBTMUX_DOCS_PORT
  * They are rendered in the default locale only — translating the reference is
  * out of scope, and per-port prose is the language-filtered English — so a
  * page in another locale links across to them rather than expecting a copy
- * beneath itself. A Japanese page linking at `/ja/py/stable/` names a tree
+ * beneath itself. A Japanese page linking at `/ja/py/latest/` names a tree
  * nothing builds.
  *
  * Supplied by the assembly rather than derived here, because it also has to

@@ -31,7 +31,7 @@ export function sourceIdOf(entryId: string): string {
  * Whether this build may emit non-default locales.
  *
  * `[...slug].astro` runs in every one of the fourteen shell builds, so without
- * a guard a Japanese page would also be emitted at `/py/stable/ja/concepts/`
+ * a guard a Japanese page would also be emitted at `/py/latest/ja/concepts/`
  * — a URL that means nothing, since the reference is never localised and the
  * per-port prose is already the language-filtered English.
  *

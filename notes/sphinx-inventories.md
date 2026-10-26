@@ -120,7 +120,7 @@ catalog for a shell-owned default tree. For independently published trees or
 versions absent from the shell artifact, it reads the selected version's
 published catalog from the bucket. The aggregate records each catalog's hash.
 This prevents a locally built `latest` tree from replacing the inventory of
-a published `stable` default.
+a published release-tag default.
 
 Publish updated port artifacts, including their root `objects.inv` and
 `targets.json`, before the first root publication. A missing catalog fails

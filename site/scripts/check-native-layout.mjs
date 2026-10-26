@@ -458,7 +458,7 @@ export function measureMemberBodies(page) {
  * must still render, so a content change cannot quietly retire the sample.
  */
 const MEMBER_BODY_PAGES = [
-  ['py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder/', 'details.api-elsewhere'],
+  ['py/v0.46.2/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder/', 'details.api-elsewhere'],
   ['java/latest/workspace/reference/io-github-libtmux-workspace-workspacebuilder-workspacebuilder/', 'details.api-elsewhere'],
   ['go/latest/reference/tmux-window-setotherpanewidth/', 'div.gp-sphinx-api-parameters'],
   ['julia/latest/reference/libtmux-snapshot-1gv6/', 'div.gp-sphinx-api-methods'],

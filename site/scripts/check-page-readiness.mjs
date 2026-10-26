@@ -205,7 +205,7 @@ export async function checkRequiredAppearance(browser, base) {
           // Exercise insertion even when a new preview's actual manifest has
           // only one published version for the selected port.
           const entries = [
-            { slug: 'stable', label: 'stable', supported: true },
+            { slug: 'v0.46.2', label: 'v0.46.2', supported: true },
             { slug: 'latest', label: 'latest', supported: true },
           ]
           await route.fulfill({ json: { schema: 1, ports: { py: entries, ts: entries } } })
@@ -292,7 +292,7 @@ const BADGE_GAP = { min: .21, max: .29 }
  * and centres one on the whole row when a long name wraps, so only the
  * decorations are measured here; the badge-centring check owns the geometry.
  */
-const SIDEBAR_PAGE = '/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/'
+const SIDEBAR_PAGE = '/py/v0.46.2/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/'
 const SIDEBAR_BADGE_LINKS = [
   { label: 'sidebar member link', path: SIDEBAR_PAGE, badges: 'a.api-nav__leaf > .api-nav__kind', gap: false, centre: false },
   { label: 'sidebar type row', path: SIDEBAR_PAGE, badges: 'div.api-nav__row > .api-nav__kind', gap: false, centre: false },
@@ -305,15 +305,15 @@ const SIDEBAR_BADGE_LINKS = [
  */
 /** An equivalent in another port, in the In other ports table of a symbol's page. */
 const EQUIVALENT_BADGE_LINK = {
-  label: 'API equivalent', path: '/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/',
+  label: 'API equivalent', path: '/py/v0.46.2/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/',
   badges: 'section:has(> #api-other-ports) .tmux-usage a > .api-nav__kind', gap: false, sample: true,
 }
 const BADGE_LINKS = [
   { label: 'prose link', path: '/rs/latest/concepts/server-session-window-pane/', badges: 'p a > .api-link-kind', line: true, fixtures: true, sample: true },
-  { label: 'guide prose link', path: '/py/stable/guides/attaching-to-tmux/', badges: 'p a > .api-link-kind', line: true, sample: true },
-  { label: 'MCP prose link', path: '/py/stable/mcp/tools/capture_pane/', badges: 'p a > .api-link-kind', line: true },
-  { label: 'MCP index card', path: '/py/stable/mcp/tools/', badges: '.api-index-card a > .api-nav__kind', gap: false, centre: false, sample: true },
-  { label: 'MCP catalog heading', path: '/py/stable/mcp/tools/', badges: 'h2 a > .api-nav__kind', gap: false, centre: false },
+  { label: 'guide prose link', path: '/py/v0.46.2/guides/attaching-to-tmux/', badges: 'p a > .api-link-kind', line: true, sample: true },
+  { label: 'MCP prose link', path: '/py/v0.46.2/mcp/tools/capture_pane/', badges: 'p a > .api-link-kind', line: true },
+  { label: 'MCP index card', path: '/py/v0.46.2/mcp/tools/', badges: '.api-index-card a > .api-nav__kind', gap: false, centre: false, sample: true },
+  { label: 'MCP catalog heading', path: '/py/v0.46.2/mcp/tools/', badges: 'h2 a > .api-nav__kind', gap: false, centre: false },
   EQUIVALENT_BADGE_LINK,
   ...SIDEBAR_BADGE_LINKS,
   // The MCP tree draws no marks under a group of one kind, so its leaf marks are measured on an API tree.
@@ -493,7 +493,7 @@ export async function checkKindBadgeLinks(browser, base, { sample = false, entri
  */
 export async function checkKindBadgeLinksFail(browser, base) {
   for (const entry of [...SIDEBAR_BADGE_LINKS, EQUIVALENT_BADGE_LINK]) {
-    await assert.rejects(checkKindBadgeLinks(browser, base, { entries: [{ ...entry, path: '/py/stable/workspace/guides/' }] }),
+    await assert.rejects(checkKindBadgeLinks(browser, base, { entries: [{ ...entry, path: '/py/v0.46.2/workspace/guides/' }] }),
       new RegExp(`no ${entry.label} badge to measure`))
   }
   console.log(`Kind badges: a sidebar without badged rows fails each of its ${SIDEBAR_BADGE_LINKS.length + 1} selectors PASS`)
@@ -585,7 +585,7 @@ function coreReference(pathname, { root, ports, segment }) {
  *
  * The build under test serves one version of each port's core reference: `version`, the one its own target names. A link
  * to another version of a port's reference leaves for a tree this build does not contain, such as the Python reference that
- * the other ports' pages link to at its default, `stable`. That tree exists in the assembly, where the port's own shell build
+ * the other ports' pages link to at its default version. That tree exists in the assembly, where the port's own shell build
  * renders it at `/<slug>/<version>/reference/` with its payloads; `reference-previews.test.ts` checks them there.
  * Everything else is served at whatever version a link names: tmux's pages, a product's pages, the glossary.
  *
@@ -655,7 +655,7 @@ export async function checkTmuxReferencePreviewsFail(browser, base) {
     await assert.rejects(functionLinkMarked(page), /no C function link marked for a preview/)
     await page.evaluate(() => document.querySelector('#api-tmux-command')?.closest('section')?.remove())
     await assert.rejects(functionLinkMarked(page), /no C function link marked for a preview/)
-    await page.goto(`${base}/py/stable/workspace/guides/`, { waitUntil: 'load' })
+    await page.goto(`${base}/py/v0.46.2/workspace/guides/`, { waitUntil: 'load' })
     await assert.rejects(functionLinkMarked(page), /no C function link marked for a preview/)
     console.log('Reference previews: a page without the marked C function link fails the check PASS')
   } finally {
@@ -710,7 +710,7 @@ export async function checkTmuxReferencePreviews(browser, base, { served: build 
     // left out and not reported, so the sweep cannot go green by skipping what it should have asked.
     if (served) {
       const kept = `${build.root}/${build.ports[0].slug}/${build.version}/${build.segment}/no-such-declaration/`
-      const elsewhere = build.version === 'stable' ? 'latest' : 'stable'
+      const elsewhere = build.version === 'latest' ? 'v0.46.2' : 'latest'
       const away = `${build.root}/${build.ports.find((port) => port.versionedDocs).slug}/${elsewhere}/${build.segment}/no-such-declaration/`
       const control = await payloadGaps(page.request, origin, [kept, away], served)
       assert.deepEqual(control.missing, [`${kept} answers 404`], 'A payload missing on a served port was not reported')

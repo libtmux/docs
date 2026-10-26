@@ -28,7 +28,7 @@ const rows = (entries: ReturnType<typeof plan>) =>
   entries.map((e: Record<string, unknown>) => [e.port, e.sourceRef, e.version, e.kind, e.isDefault, e.resolvesTo])
 
 describe('publish plan', () => {
-  it('publishes every dispatchable default branch as latest, the default until a stable release', () => {
+  it('publishes every dispatchable default branch as latest, the default until a final release', () => {
     expect(rows(run({}))).toEqual([
       ['py', 'master', 'latest', 'trunk', false, ''],
       ['rs', 'master', 'latest', 'trunk', true, ''],
@@ -37,10 +37,9 @@ describe('publish plan', () => {
     ])
   })
 
-  it('republishes each newest release with the alias its grammar implies', () => {
+  it('republishes each newest release as the default, with `next` for a prerelease', () => {
     expect(rows(run({ ref: 'release' }))).toEqual([
-      ['py', 'v0.62.0post1', 'v0.62.0post1', 'tag', false, ''],
-      ['py', 'v0.62.0post1', 'stable', 'alias', true, 'v0.62.0post1'],
+      ['py', 'v0.62.0post1', 'v0.62.0post1', 'tag', true, ''],
       ['rs', 'libtmux@v0.1.0-alpha.14', 'v0.1.0-alpha.14', 'tag', false, ''],
       ['rs', 'libtmux@v0.1.0-alpha.14', 'next', 'alias', false, 'v0.1.0-alpha.14'],
       ['go', 'v1.10.0-alpha.1', 'v1.10.0-alpha.1', 'tag', false, ''],
@@ -52,8 +51,14 @@ describe('publish plan', () => {
     expect(rows(run({ ports: 'go', ref: 'v1.9.0', version: 'v1.9.0', versionKind: 'tag' }))).toEqual([
       ['go', 'v1.9.0', 'v1.9.0', 'tag', false, ''],
     ])
-    expect(rows(run({ ports: 'go', ref: 'v1.9.0', version: 'stable', versionKind: 'alias', resolvesTo: 'v1.9.0', isDefault: true })))
-      .toEqual([['go', 'v1.9.0', 'stable', 'alias', true, 'v1.9.0']])
+    expect(rows(run({ ports: 'go', ref: 'v1.9.0', version: 'next', versionKind: 'alias', resolvesTo: 'v1.9.0' })))
+      .toEqual([['go', 'v1.9.0', 'next', 'alias', false, 'v1.9.0']])
+  })
+
+  it('plans only latest, a release tag or next, for any ref', () => {
+    for (const ref of ['latest', 'release']) {
+      for (const { version } of run({ ref }) as { version: string }[]) expect(version).toMatch(/^(?:latest|next|(?:[A-Za-z][\w.-]*[@/])?v?\d[\w.-]*)$/)
+    }
   })
 
   it('selects each parent and wrapper once through its owning repository', () => {

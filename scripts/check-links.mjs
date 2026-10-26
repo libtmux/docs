@@ -16,7 +16,7 @@
  * fast path after a reference change and is meaningful against any build.
  *
  * --all checks every internal href and is only meaningful against a full
- * assembly: every port-and-version path like `/py/stable/` is produced by a
+ * assembly: every port-and-version path like `/py/latest/` is produced by a
  * different `astro build`, so a root-only build reports thousands of them
  * missing and is right to.
  */

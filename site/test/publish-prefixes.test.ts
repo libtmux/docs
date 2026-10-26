@@ -180,7 +180,7 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
       else expect(args, destination).toContain('--delete')
       expect(destination === `s3://docs-test/${locale}/_astro/` || productPrefixes.has(destination), destination).toBe(true)
       for (const port of PORTS) {
-        const preserved = ['stable/api/index.html', 'v0.1.0/mcp/index.html',
+        const preserved = ['v0.46.2/api/index.html', 'v0.1.0/mcp/index.html',
           ...(NATIVE_API.includes(port.slug) ? ['latest/api/index.html'] : [])]
         for (const path of preserved) {
           expect(`s3://docs-test/${locale}/${port.slug}/${path}`.startsWith(destination), `${destination} preserves ${path}`).toBe(false)
@@ -259,7 +259,7 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
     expect(result.commands).toEqual([])
   })
 
-  it.each(['go/stable/guides', 'unknown/latest/guides', 'go/latest/../api'])(
+  it.each(['go/v0.46.2/guides', 'unknown/latest/guides', 'go/latest/../api'])(
     'rejects declared path %s outside latest shell ownership', (path) => {
       const directory = fixture()
       const metadata = join(directory, 'shell-paths.json')
@@ -274,7 +274,7 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
   )
 
   it.each([
-    'py/latest/api/index.html', 'go/stable/mcp/index.html', 'go/v0.1.0/mcp/index.html',
+    'py/latest/api/index.html', 'go/v0.46.2/mcp/index.html', 'go/v0.1.0/mcp/index.html',
     'go/unknown/index.html', 'go/.unknown/index.html', 'go/latest/unknown/index.html', 'go/latest/.unknown/index.html',
   ])('rejects unexpected %s before any AWS operation', (path) => {
     const directory = fixture()

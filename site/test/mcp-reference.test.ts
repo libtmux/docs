@@ -76,12 +76,12 @@ it('keeps different effects and unavailable tools out of the equivalents', () =>
 
 it('links only registered tool mentions in description prose', async () => {
   const description = 'Use capture_since after `capture_pane`. Keep `missing_tool` plain.\n\n[send_keys](https://example.com/) already has a link.\n\n```json\n{"name":"capture_pane"}\n```'
-  const html = await renderToolDescription(description, { port: 'py', version: 'stable', toolName: 'capture_since' })
-  expect(html).toContain('/py/stable/mcp/tools/capture_pane/"')
-  expect(html).not.toContain('/py/stable/mcp/tools/capture_since/"')
+  const html = await renderToolDescription(description, { port: 'py', version: 'v0.46.2', toolName: 'capture_since' })
+  expect(html).toContain('/py/v0.46.2/mcp/tools/capture_pane/"')
+  expect(html).not.toContain('/py/v0.46.2/mcp/tools/capture_since/"')
   expect(html).not.toContain('/mcp/tools/missing_tool/')
   expect(html).not.toContain('/mcp/tools/send_keys/')
-  expect(html.match(/\/py\/stable\/mcp\/tools\/capture_pane\/"/g)).toHaveLength(1)
+  expect(html.match(/\/py\/v0.46.2\/mcp\/tools\/capture_pane\/"/g)).toHaveLength(1)
   expect(html).toContain('<span class="api-symbol-link__name"><code class="api-literal api-literal--link">capture_pane</code></span></a>')
   const dotnet = await renderToolDescription('Use capture_pane or `run_shell_command`.', { port: 'csharp', version: 'latest' })
   expect(dotnet).toContain('/csharp/latest/mcp/tools/capture_pane/')
@@ -135,8 +135,8 @@ it('does not invent protocol objects for ports without a captured contract', () 
     expect(mcpReferenceRoutes(port, {}, 'latest')).toEqual([])
     expect(resolveMcpObject(port, 'mcp:tool:list_sessions')).toBeUndefined()
   }
-  const routes = mcpReferenceRoutes(undefined, { py: 'stable', ts: 'next' }, 'ignored')
-  expect(routes.find((route) => route.port === 'py' && route.section === 'prompts' && !route.itemSlug)?.path).toBe('py/stable/mcp/prompts')
+  const routes = mcpReferenceRoutes(undefined, { py: 'v0.46.2', ts: 'next' }, 'ignored')
+  expect(routes.find((route) => route.port === 'py' && route.section === 'prompts' && !route.itemSlug)?.path).toBe('py/v0.46.2/mcp/prompts')
   expect(routes.find((route) => route.port === 'ts' && route.section === 'resources' && !route.itemSlug)?.path).toBe('ts/next/mcp/resources')
   expect(new Set(routes.map((route) => route.path)).size).toBe(routes.length)
 })

@@ -87,22 +87,22 @@ distribution is out of scope for the three files above, which configure
 
 ## The bare-language-root redirect and its KeyValueStore
 
-`/en/py` and `/en/py/` 302 to that port's current default version (normally
-`/en/py/stable/`). The destination comes from one CloudFront KeyValueStore,
+`/en/py` and `/en/py/` 302 to that port's current default version (the newest
+final release tag, such as `/en/py/v0.46.2/`, or `latest` while the port has none). The destination comes from one CloudFront KeyValueStore,
 associated with `cloudfront-function.js`, holding one key per port that
 publishes a version prefix:
 
 ```
-py:default     -> "stable"
+py:default     -> "v0.46.2"
 ruby:default   -> "latest"
 lua:default    -> "latest"
-ts:default     -> "stable"
+ts:default     -> "latest"
 rs:default     -> "latest"
 go:default     -> "latest"
 java:default   -> "latest"
-csharp:default -> "stable"
-cxx:default    -> "stable"
-swift:default  -> "stable"
+csharp:default -> "latest"
+cxx:default    -> "latest"
+swift:default  -> "latest"
 ```
 
 Every port gets a row: every port publishes a versioned prose tree, including
@@ -139,7 +139,7 @@ The KVS holds **only** these bare-root pointers, never a rewrite target for
 an already-qualified `/<port>/<version>/...` path. DocC bakes an absolute
 `--hosting-base-path` into every page it renders; if the edge silently
 swapped the version under an already-loaded DocC page, the page's own router
-would desync from `location.pathname`. `/py/v0.46.2` and `/py/stable` (note:
+would desync from `location.pathname`. `/py/v0.46.2` and `/py/latest` (note:
 no trailing slash) are handled by the *generic* extensionless-redirect rule,
 not this one — see the self-check table inside `cloudfront-function.js` for
 the full trace, including why the bare-root check has to run before the two
@@ -175,16 +175,15 @@ them and trusts the KeyValueStore lookup to miss for anything that is not one.
 | --- | --- | --- |
 | `/` | 0 (origin root) | 302 to `/en/`, the one redirect off an unprefixed path |
 | `/en/` | 2 (directory index) | rewrite to `/en/index.html` |
-| `/en/py` | 1 (KVS, `parts[3]` undefined) | 302 to `/en/py/stable/`, or whatever `py:default` holds |
-| `/en/py/` | 1 (KVS, `parts[3]` empty) | 302 to `/en/py/stable/` |
+| `/en/py` | 1 (KVS, `parts[3]` undefined) | 302 to `/en/py/v0.46.2/`, or whatever `py:default` holds |
+| `/en/py/` | 1 (KVS, `parts[3]` empty) | 302 to `/en/py/v0.46.2/` |
 | `/en/rs` | 1 (KVS) | 302 to `/en/rs/latest/`, or whatever `rs:default` holds. When the row is missing, rule 3 301s to `/en/rs/` and rule 2 serves its redirect page |
-| `/en/py/stable` | 3 (extensionless) | 301 to `/en/py/stable/` |
 | `/en/py/latest` | 3 | 301 to `/en/py/latest/`, never the KVS default — `parts[3]` is truthy |
 | `/en/py/v0.46.2` | 3 (`2` is not an asset extension) | 301 to `/en/py/v0.46.2/` |
-| `/en/dotnet/stable/api/libtmux.client` | documentation rename | 301 to `/en/csharp/stable/api/libtmux.client/`, preserving query parameters |
-| `/en/csharp/stable/api/libtmux.client` | 3 (`client` is not an asset extension) | 301 with a trailing slash |
-| `/en/py/stable/reference/objects.inv` | none (`inv` is an asset extension) | passes through — this is how an external Sphinx project resolves intersphinx into this site |
-| `/en/py/stable/api/.buildinfo` | none (`buildinfo` is an asset extension) | passes through; a leading dot is a separator like any other |
+| `/en/dotnet/latest/api/libtmux.client` | documentation rename | 301 to `/en/csharp/latest/api/libtmux.client/`, preserving query parameters |
+| `/en/csharp/latest/api/libtmux.client` | 3 (`client` is not an asset extension) | 301 with a trailing slash |
+| `/en/py/latest/reference/objects.inv` | none (`inv` is an asset extension) | passes through — this is how an external Sphinx project resolves intersphinx into this site |
+| `/en/py/latest/api/.buildinfo` | none (`buildinfo` is an asset extension) | passes through; a leading dot is a separator like any other |
 | `/en/pagefind/pagefind.js` | none (`js` is an asset extension) | passes through |
 | `/en/versions.json` | none (dot excludes rule 1, `json` is an asset extension) | passes through |
 | `/robots.txt` | none | passes through; it sits above every locale |

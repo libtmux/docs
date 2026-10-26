@@ -50,6 +50,33 @@ it('derives refs from an explicit source checkout instead of a local docs worktr
   }
 })
 
+it('defaults a port to its newest final release tag and emits no other alias than next', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'libtmux-version-default-'))
+  try {
+    execFileSync('git', ['init', '-q', directory])
+    execFileSync('git', ['-C', directory, 'config', 'user.name', 'Version Test'])
+    execFileSync('git', ['-C', directory, 'config', 'user.email', 'version-test@example.invalid'])
+    writeFileSync(join(directory, 'README.md'), 'default fixture\n')
+    execFileSync('git', ['-C', directory, 'add', 'README.md'])
+    execFileSync('git', ['-C', directory, 'commit', '-qm', 'fixture'])
+    for (const name of ['v0.45.9', 'v0.46.2', 'v0.47.0a1']) execFileSync('git', ['-C', directory, 'tag', name])
+
+    const generated = execFileSync(process.execPath, [
+      new URL('../../scripts/gen-versions.mjs', import.meta.url).pathname,
+    ], { encoding: 'utf8', env: { ...process.env, LIBTMUX_DOCS_CHECKOUT_PY: directory } })
+    const manifest = JSON.parse(generated) as VersionManifest
+    expect(manifest.defaultVersion.py).toBe('v0.46.2')
+    const slugs = manifest.ports.py.map((entry) => entry.slug)
+    expect(slugs).toEqual(expect.arrayContaining(['next', 'v0.45.9', 'v0.46.2', 'v0.47.0a1']))
+    expect(manifest.ports.py.find((entry) => entry.slug === 'next')?.resolvesTo).toBe('v0.47.0a1')
+    for (const entries of Object.values(manifest.ports)) {
+      for (const { slug } of entries) expect(slug).toMatch(/^(?:latest|next|(?:[A-Za-z][\w.-]*[@/])?v?\d[\w.-]*)$/)
+    }
+  } finally {
+    rmSync(directory, { recursive: true, force: true })
+  }
+})
+
 // The bookkeeping the build sources, driven here rather than reassembled from
 // the script's text.
 const bookkeeping = fileURLToPath(new URL('../../scripts/version-bookkeeping.sh', import.meta.url))
@@ -59,26 +86,26 @@ describe('assembly version selection', () => {
     schema: 1,
     ports: {
       py: [
-        { slug: 'stable', label: 'stable', kind: 'alias', resolvesTo: 'v0.62.0', supported: true },
+        { slug: 'next', label: 'next', kind: 'alias', resolvesTo: 'v0.63.0a1', supported: true },
         { slug: 'latest', label: 'latest', kind: 'trunk', supported: true },
         { slug: 'v0.62.0', label: 'v0.62.0', kind: 'tag', supported: true },
       ],
       go: [{ slug: 'latest', label: 'latest', kind: 'trunk', supported: true }],
     },
-    defaultVersion: { py: 'stable', go: 'latest' },
+    defaultVersion: { py: 'v0.62.0', go: 'latest' },
   }
 
   it('keeps alias metadata without inventing versions or mutating the candidate', () => {
     const original = structuredClone(candidate)
-    const selected = selectBuildVersions(candidate, ['stable'])
+    const selected = selectBuildVersions(candidate, ['next'])
     expect(selected.ports).toEqual({ py: [candidate.ports.py[0]], go: [] })
-    expect(selected.defaultVersion).toEqual({ py: 'stable' })
+    expect(selected.defaultVersion).toEqual({ py: 'next' })
     expect(candidate).toEqual(original)
   })
 
   it.each([
     ['latest', 'latest'],
-    ['latest,stable', 'stable'],
+    ['latest,v0.62.0', 'v0.62.0'],
   ])('sets rendered defaults from --versions %s before building', (selected, pythonDefault) => {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-build-versions-'))
     try {
@@ -92,11 +119,13 @@ describe('assembly version selection', () => {
           site_dir: new URL('../', import.meta.url).pathname,
           locale: 'en', versions_arg: selected,
           TEST_VERSION_MANIFEST: JSON.stringify(candidate),
+          LIBTMUX_DOCS_PORT: 'py', LIBTMUX_DOCS_VERSION: 'v0.62.0', LIBTMUX_DOCS_VERSION_KIND: 'tag',
+          LIBTMUX_DOCS_SOURCE_SHA: 'a'.repeat(40),
         },
       })
       expect(JSON.parse(output)).toEqual({ py: pythonDefault, go: 'latest' })
       const manifest = JSON.parse(readFileSync(join(directory, 'versions.json'), 'utf8')) as VersionManifest
-      expect(manifest.ports.py.map((entry) => entry.slug)).toEqual(selected === 'latest' ? ['latest'] : ['stable', 'latest'])
+      expect(manifest.ports.py.map((entry) => entry.slug)).toEqual(selected === 'latest' ? ['latest'] : ['latest', 'v0.62.0'])
       expect(manifest.defaultVersion).toEqual({ py: pythonDefault, go: 'latest' })
     } finally {
       rmSync(directory, { recursive: true, force: true })
@@ -116,8 +145,10 @@ describe('assembly version selection', () => {
           ...process.env, scratch: directory, script_dir: directory,
           repo_root: new URL('../../', import.meta.url).pathname,
           site_dir: new URL('../', import.meta.url).pathname,
-          locale: 'en', versions_arg: 'stable',
+          locale: 'en', versions_arg: 'next',
           TEST_VERSION_MANIFEST: JSON.stringify(candidate),
+          LIBTMUX_DOCS_PORT: 'py', LIBTMUX_DOCS_VERSION: 'next', LIBTMUX_DOCS_VERSION_KIND: 'alias',
+          LIBTMUX_DOCS_SOURCE_SHA: 'a'.repeat(40), LIBTMUX_DOCS_RESOLVES_TO: 'v0.63.0a1',
         },
       })
       expect(result.status).toBe(1)
@@ -230,9 +261,9 @@ describe('sortVersions', () => {
     const entries: VersionEntry[] = [
       { slug: 'v0.1.0', label: 'v0.1.0', kind: 'tag', supported: true },
       { slug: 'latest', label: 'latest', kind: 'trunk', supported: true },
-      { slug: 'stable', label: 'stable', kind: 'alias', supported: true },
+      { slug: 'next', label: 'next', kind: 'alias', supported: true },
     ]
-    expect(sortVersions(entries).map((e) => e.slug)).toEqual(['stable', 'latest', 'v0.1.0'])
+    expect(sortVersions(entries).map((e) => e.slug)).toEqual(['next', 'latest', 'v0.1.0'])
   })
 })
 

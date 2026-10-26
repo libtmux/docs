@@ -418,7 +418,7 @@ describe('port publisher contract', () => {
   it('assembles previews from the integrated source guide inputs', () => {
     sourceCheckoutContract(testWorkflow)
     expect(testWorkflow).toContain('pnpm test:publication --preview "$PREVIEW_PREFIX"')
-    expect(publicationAudit).toContain('./scripts/build-site.sh --versions latest,stable')
+    expect(publicationAudit).toContain('./scripts/build-site.sh --versions latest')
     expect(publicationAudit.indexOf("step 'unit tests'")).toBeLessThan(publicationAudit.indexOf("step 'build'"))
     expect(shell).not.toMatch(/^  (pull_request|build-preview|publish-preview|check-publish-preview):/m)
   })

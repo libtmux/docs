@@ -64,12 +64,12 @@ describe('the payloads a root build writes', () => {
 
   it('answer with the card, and the versions a port is built at', async () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', '')
-    vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', JSON.stringify({ go: 'stable' }))
-    const path = (await getStaticPaths()).find(({ params }) => params.slug === 'go/stable/workspace/reference/exit-codes')!
+    vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', JSON.stringify({ go: 'v0.46.2' }))
+    const path = (await getStaticPaths()).find(({ params }) => params.slug === 'go/v0.46.2/workspace/reference/exit-codes')!
     expect(path).toBeDefined()
     const card = await (await GET({ props: path.props } as unknown as Parameters<typeof GET>[0])).json()
     expect(card).toMatchObject({ schema: 1, title: 'Exit codes and errors', description: 'Use process status to handle failures.', actionLabel: 'Open page' })
-    expect(card.href).toMatch(/\/go\/stable\/workspace\/reference\/exit-codes\/$/)
+    expect(card.href).toMatch(/\/go\/v0.46.2\/workspace\/reference\/exit-codes\/$/)
   })
 })
 
@@ -77,8 +77,8 @@ describe('the payloads a port build writes', () => {
   // A port build reads its root and base when its modules load, as the assembly sets them.
   async function portBuild() {
     vi.stubEnv('LIBTMUX_DOCS_PORT', 'go')
-    vi.stubEnv('LIBTMUX_DOCS_VERSION', 'stable')
-    vi.stubEnv('LIBTMUX_DOCS_BASE', '/en/go/stable/')
+    vi.stubEnv('LIBTMUX_DOCS_VERSION', 'v0.46.2')
+    vi.stubEnv('LIBTMUX_DOCS_BASE', '/en/go/v0.46.2/')
     vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '/en')
     vi.resetModules()
     return import('../src/pages/[...slug].preview.json')
@@ -93,6 +93,6 @@ describe('the payloads a port build writes', () => {
     expect(written).not.toContain('workspace/reference')
     expect(written.filter((slug) => slug.startsWith('rs/') || slug.includes('/rs/'))).toEqual([])
     const path = paths.find(({ params }) => params.slug === 'reference/migrating')!
-    expect((await (await route.GET({ props: path.props } as unknown as Parameters<typeof route.GET>[0])).json()).href).toBe('/en/go/stable/reference/migrating/')
+    expect((await (await route.GET({ props: path.props } as unknown as Parameters<typeof route.GET>[0])).json()).href).toBe('/en/go/v0.46.2/reference/migrating/')
   })
 })

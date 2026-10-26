@@ -31,7 +31,7 @@ function fixture(run: (out: string, routes: ReturnType<typeof mcpReferenceRoutes
     for (const route of routes) {
       const source = MCP_REFERENCE.go.registrations.find((tool) => tool.wireName === route.toolName)?.source
       write(join(out, route.path, 'index.html'), `<html><head>
-<link rel="canonical" href="https://libtmux.org/en/go/stable/${route.path}/">
+<link rel="canonical" href="https://libtmux.org/en/go/v0.46.2/${route.path}/">
 <link rel="alternate" type="text/markdown" data-twin="rendered" href="${base}${route.path}.md">
 <meta name="description" content="Resolved Go contract for ${route.toolName ?? 'catalog'}">
 </head><body><main><h1>${route.toolName ?? 'Go MCP tools'}</h1>
@@ -81,7 +81,7 @@ it.each(['en', 'ja'])('adds every selected-port MCP contract when the requested 
       expect(JSON.parse(fence![1])).toEqual(schema)
     }
     expect(full).not.toContain('/py/')
-    expect(full).not.toContain('/stable/')
+    expect(full).not.toContain('/v0.46.2/')
   })
 })
 

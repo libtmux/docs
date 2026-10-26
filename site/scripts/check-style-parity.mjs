@@ -3,7 +3,7 @@
  * The reference looks like gp-sphinx's, asserted rather than eyeballed.
  *
  * Both pages describe `libtmux.Server`, from the same tree: gp-sphinx renders
- * it at `/py/stable/api/api/libtmux.server/` and this site at
+ * it at `/py/latest/api/api/libtmux.server/` and this site at
  * `/reference/py/libtmux-server/`. That coincidence is the only oracle
  * available — the other seven ports have no gp-sphinx twin — so it is worth
  * using precisely.
@@ -20,7 +20,7 @@
 import { chromium } from 'playwright'
 
 const base = process.argv[2] ?? 'http://localhost:8080'
-const SPHINX = `${base}/py/stable/api/api/libtmux.server/`
+const SPHINX = `${base}/py/latest/api/api/libtmux.server/`
 /*
  * A member's page, not the type's.
  *
@@ -31,7 +31,7 @@ const SPHINX = `${base}/py/stable/api/api/libtmux.server/`
  * shows them did, and pointing at the old one reported all seven treatments
  * as "not found on this site" rather than as different.
  */
-const OURS = `${base}/py/stable/reference/libtmux-server-new_session/`
+const OURS = `${base}/py/latest/reference/libtmux-server-new_session/`
 
 /*
  * A second page, because a page is now one symbol.
@@ -41,7 +41,7 @@ const OURS = `${base}/py/stable/reference/libtmux-server-new_session/`
  * it — and now each symbol has its own, so no single URL carries both. A case
  * names the page it needs; the default is the method page.
  */
-const OURS_ATTRIBUTE = `${base}/py/stable/reference/libtmux-_internal-constants-hooks-after_capture_pane/`
+const OURS_ATTRIBUTE = `${base}/py/latest/reference/libtmux-_internal-constants-hooks-after_capture_pane/`
 
 /**
  * Equivalent elements, and the properties that carry the look.

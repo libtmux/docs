@@ -32,7 +32,7 @@ import { isLegacyTmuxManualPath } from './src/lib/tmux-manual-data.ts'
  * falls back to a root-mounted trunk build so the site is browsable with no
  * environment set at all.
  *
- *   LIBTMUX_DOCS_VERSION       'latest' | 'stable' | 'v0.46.2' | 'v0.x' | 'pr-123'
+ *   LIBTMUX_DOCS_VERSION       'latest' | 'next' | 'v0.46.2' | 'v0.x' | 'pr-123'
  *   LIBTMUX_DOCS_VERSION_KIND  'trunk' | 'tag' | 'branch' | 'pr' | 'alias'
  *   LIBTMUX_DOCS_IS_DEFAULT    'true' on the one build that may be indexed
  *   LIBTMUX_DOCS_BASE          override the URL base; defaults to '/'

@@ -50,7 +50,7 @@ const FAMILIES = ['IBM Plex Sans', 'IBM Plex Mono']
 const ARCHETYPES = [
   ['home', '/', true],
   ['port page', '/py/', true],
-  ['reference entry', '/py/stable/reference/libtmux-server/', true],
+  ['reference entry', '/py/latest/reference/libtmux-server/', true],
   ['reference index', '/go/latest/reference/', true],
   ['symbol index', '/reference/symbols/p/', true],
   ['topic', '/tmux/topics/traversal/', true],
@@ -58,7 +58,7 @@ const ARCHETYPES = [
   // Sphinx builds this one and emits its own preloads. It is checked — a
   // vendored page still has to open with the type it declares — but its
   // preload list is gp-sphinx's to choose, so it does not vote on ours.
-  ['vendored gp-sphinx', '/py/stable/api/api/libtmux.server/', false],
+  ['vendored gp-sphinx', '/py/latest/api/api/libtmux.server/', false],
   // One reference entry per port. The layout is shared, but the content is
   // not: a C++ signature and a Go one reach for different faces, and the
   // goal is no missing text in *any* port rather than in the one that was
@@ -66,7 +66,7 @@ const ARCHETYPES = [
   // `libtmux.Server`, not a `_compat` shim: the reference stopped publishing
   // the vendored and compatibility modules, and a sample page has to be one
   // the port actually exports if it is to keep being built.
-  ['ref py', '/py/stable/reference/libtmux-server/', true],
+  ['ref py', '/py/latest/reference/libtmux-server/', true],
   ['ref ts', '/ts/latest/reference/builder-applywindowcontext/', true],
   ['ref rs', '/rs/latest/reference/blocking-runtime/', true],
   ['ref go', '/go/latest/reference/tmux-activityaction/', true],
@@ -78,7 +78,7 @@ const ARCHETYPES = [
   // lists its members, the member carries the signature. The italic type
   // annotations in a signature live only here, so an archetype list without
   // one reports Mono 400 italic as preloaded and unused.
-  ['member py', '/py/stable/reference/libtmux-server-wait_for/', true],
+  ['member py', '/py/latest/reference/libtmux-server-wait_for/', true],
   ['member dotnet', '/csharp/latest/reference/libtmux-pane-clearhistoryasync/', true],
 ]
 

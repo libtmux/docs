@@ -9,12 +9,14 @@
 #   branch's context, where checking out and running a pull request's head
 #   could poison its caches.
 # - A push to the default branch publishes `latest`. It is the default version
-#   only until the port's first stable release: from then on `stable` is, and
-#   a push to trunk must not take the default back. TAGS lists the port's
-#   tags, one per line.
-# - A release tag publishes its version plus an alias: `next` for a
-#   prerelease, `stable` (the default) for a release. TAG_PREFIX is stripped
-#   first, so libtmux-rs's `libtmux@v0.1.0` publishes `v0.1.0`.
+#   only until the port's first final release: from then on the newest final
+#   release tag is, and a push to trunk must not take the default back. TAGS
+#   lists the port's tags, one per line.
+# - A release tag publishes its version alone, plus `next` for a prerelease.
+#   A final release is the default only when no newer final release tag
+#   exists, so a backport tag never takes the default from a newer release.
+#   TAG_PREFIX is stripped first, so libtmux-rs's `libtmux@v0.1.0` publishes
+#   `v0.1.0`.
 # - A dispatch publishes exactly what its inputs name, at any ref.
 #
 # Reads the event from the environment and writes source_ref, matrix and
@@ -28,6 +30,20 @@ entry() {
 }
 
 slug='^[A-Za-z0-9][A-Za-z0-9._-]*$'
+
+# The final release versions in TAGS, prefix stripped. Any letter after the
+# leading v marks a prerelease, whatever the grammar: 0.1.0-alpha.1, 0.62.0a1,
+# 0.1.0.alpha.1, 0.1.0alpha1.
+final_versions() {
+  local name version
+  while IFS= read -r name; do
+    [[ "$name" == "$TAG_PREFIX"* ]] || continue
+    version="${name#"$TAG_PREFIX"}"
+    if [[ "$version" =~ ^v?[0-9]+\.[0-9]+ && ! "${version#v}" =~ [A-Za-z] ]]; then
+      printf '%s\n' "$version"
+    fi
+  done <<< "${TAGS:-}"
+}
 
 case "$EVENT" in
   pull_request)
@@ -56,24 +72,19 @@ case "$EVENT" in
         echo "unsupported release tag: $REF_NAME" >&2
         exit 1
       }
-      entries=$(entry "$version" tag false '' true)
-      # Any letter after the leading v marks a prerelease, whatever the
-      # grammar: 0.1.0-alpha.1, 0.62.0a1, 0.1.0.alpha.1, 0.1.0alpha1.
       if [[ "${version#v}" =~ [A-Za-z] ]]; then
+        entries=$(entry "$version" tag false '' true)
         entries+=$'\n'$(entry next alias false "$version" true)
       else
-        entries+=$'\n'$(entry stable alias true "$version" true)
+        # Newest by version order among every final tag and this one.
+        newest=$(printf '%s\n%s\n' "$(final_versions)" "$version" | sed '/^$/d; s/^v//' | sort -V | tail -n 1)
+        is_default=false
+        [[ "${version#v}" == "$newest" ]] && is_default=true
+        entries=$(entry "$version" tag "$is_default" '' true)
       fi
     elif [[ "$REF_NAME" == "$DEFAULT_BRANCH" ]]; then
       default=true
-      while IFS= read -r name; do
-        [[ "$name" == "$TAG_PREFIX"* ]] || continue
-        version="${name#"$TAG_PREFIX"}"
-        if [[ "$version" =~ ^v?[0-9]+\.[0-9]+ && ! "${version#v}" =~ [A-Za-z] ]]; then
-          default=false
-          break
-        fi
-      done <<< "${TAGS:-}"
+      [[ -n "$(final_versions)" ]] && default=false
       entries=$(entry latest trunk "$default" '' true)
     else
       echo "unsupported documentation branch: $REF_NAME" >&2

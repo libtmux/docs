@@ -20,9 +20,11 @@ import { chromium } from 'playwright'
  *
  * `p` and `$` are not measured: their ink hangs below the baseline.
  */
+/** The version the dev build mounts a port's prose pages at: its default, as check-dev sets it. */
+const defaultVersion = (port) => JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')[port] ?? 'latest'
 const PAGES = [
   { label: 'Rust MCP reference', path: '/rs/latest/mcp/reference/mcp-caller-calleridentity-from_env/' },
-  { label: 'Python attaching-to-tmux', path: '/py/stable/guides/attaching-to-tmux/' },
+  { label: 'Python attaching-to-tmux', get path() { return `/py/${defaultVersion('py')}/guides/attaching-to-tmux/` } },
   { label: 'TypeScript reference', path: '/ts/latest/reference/client-client/' },
   { label: 'Go reference', path: '/go/latest/reference/tmux-server-server/' },
   { label: 'tmux manual', path: '/tmux/latest/manual/list-clients/' },
@@ -634,7 +636,7 @@ export async function checkMentionDensity(browser, base) {
       }
       return found
     })
-    await page.goto(`${base}/py/stable/guides/attaching-to-tmux/`, { waitUntil: 'load' })
+    await page.goto(`${base}/py/${defaultVersion('py')}/guides/attaching-to-tmux/`, { waitUntil: 'load' })
     await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
     const marked = await page.locator('a:has(> .api-link-kind)').count()
     assert(marked > 0, 'No marked mention to check')

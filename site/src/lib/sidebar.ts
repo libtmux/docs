@@ -254,7 +254,7 @@ export async function getSidebar(
   if (port !== undefined && !PORT_BY_SLUG[port]) throw new Error(`sidebar.ts: unknown port slug "${port}"`)
 
   // Shared prose (no `port` frontmatter) belongs to every language build:
-  // /py/stable/concepts/ is the same page as /concepts/ with Python's code
+  // /py/latest/concepts/ is the same page as /concepts/ with Python's code
   // fences kept. Matching only `entry.data.port === port` emptied the whole
   // sidebar the moment builds started setting a port, since no shared page
   // carries the field. A page that *does* name a port stays exclusive to it.
@@ -328,7 +328,7 @@ export async function getSidebar(
    * Reference first, miscellany last.
    *
    * This read `[...ungrouped, ...groups, referenceEntry(...)]`, which put the
-   * two entries in exactly the wrong places: on /ts/stable/concepts/ the
+   * two entries in exactly the wrong places: on /ts/latest/concepts/ the
    * 29-entry sidebar opened with "Third-party notices" and closed with "API
    * reference". The licence list had the position a reader's eye lands on and
    * the thing they came for was below twenty-seven other links.

@@ -4,6 +4,9 @@ import registry from '../src/data/registry.json' with { type: 'json' }
 import mcpCatalogs from '../src/data/mcp-tools.json' with { type: 'json' }
 import { checkPickerFilters } from './check-picker-filters.mjs'
 
+/** The version the dev build mounts a port's prose pages at: its default, as check-dev sets it. */
+const defaultVersion = (port) => JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')[port] ?? 'latest'
+
 /** Optional scripts injected at the end of the body cannot gate navigation. */
 export async function checkNavigationBeforeAnalytics(browser, base) {
   const page = await browser.newPage({ viewport: { width: 390, height: 900 }, reducedMotion: 'reduce' })
@@ -1045,7 +1048,7 @@ export async function checkNavigation(page, base) {
     'Back preserves the saved language preference')
   console.log('Navigation: native documents, Back, search, code tabs, menu and saved theme/cooldown pass')
 
-  for (const [port, version] of [['ts', 'latest'], ['py', 'stable']]) {
+  for (const [port, version] of [['ts', 'latest'], ['py', defaultVersion('py')]]) {
     const prefix = new URL(`${base}/${port}/${version}/`).pathname
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 900 })

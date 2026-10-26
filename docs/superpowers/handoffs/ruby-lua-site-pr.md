@@ -29,7 +29,7 @@ Add first-class Ruby and Lua documentation
 ### Versioning and publication
 
 - **Revision identity**: Require the requested source ref to resolve to the checked-out commit and carry that identity through generated models and pages.
-- **Release policy**: Keep prereleases out of stable defaults, protect immutable release prefixes, and distinguish trunk, maintenance branch, pull-request, tag, and alias builds.
+- **Release policy**: Keep prereleases out of default versions, protect immutable release prefixes, and distinguish trunk, maintenance branch, pull-request, tag, and alias builds.
 - **Scoped deployment**: Publish port-owned version trees and manifests through the reusable workflow, merge them in the shell job, and remove only the closed preview's prefix.
 
 ## Integrated versions

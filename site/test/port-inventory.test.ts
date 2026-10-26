@@ -247,7 +247,7 @@ describe('port inventory', () => {
           expect(parsed.search + parsed.hash, where).toBe('')
           // A candidate is another host's own URL, so only what the site links must be free of our prefixes.
           if (linked.some((destination) => destination.url === url)) {
-            expect(parsed.pathname, where).not.toMatch(/^\/(?:pr-\d+\/)?(?:en|ja)\/|\/(?:latest|stable)(?:\/|$)/)
+            expect(parsed.pathname, where).not.toMatch(/^\/(?:pr-\d+\/)?(?:en|ja)\/|\/latest(?:\/|$)/)
           }
           if (kind === 'package' && host in PACKAGE_HOSTS) expect(servedBy(PACKAGE_HOSTS[host as keyof typeof PACKAGE_HOSTS], parsed.hostname), `${where} ${parsed.hostname}`).toBe(true)
           if (kind === 'api' && host in API_HOSTS) expect(servedBy(API_HOSTS[host as keyof typeof API_HOSTS], parsed.hostname), `${where} ${parsed.hostname}`).toBe(true)

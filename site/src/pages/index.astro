@@ -22,7 +22,7 @@ import { documentationCards } from '../lib/port-documentation'
 
 /**
  * A port+version build mounts this route at /<port>/<version>/, so the site
- * home was being emitted there — /py/stable/ served "libtmux" rather than
+ * home was being emitted there — /py/latest/ served "libtmux" rather than
  * anything Python. That is a real URL a version switcher lands on, so it
  * renders the version root for that port instead: the same hero and cards as
  * the port home, but scoped to the version actually being built.

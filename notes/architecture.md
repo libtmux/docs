@@ -67,19 +67,20 @@ Every build is one Astro invocation targeting exactly one version, driven by
 environment variables read in `site/astro.config.ts` and
 `site/src/lib/versions.ts`:
 
-- `LIBTMUX_DOCS_VERSION` — the slug: `latest`, `stable`, `v0.46.2`, `v0.x`,
+- `LIBTMUX_DOCS_VERSION` — the slug: `latest`, `next`, `v0.46.2`, `v0.x`,
   `pr-123`.
 - `LIBTMUX_DOCS_VERSION_KIND` — `trunk | tag | branch | pr | alias`.
 - `LIBTMUX_DOCS_IS_DEFAULT` — `'true'` on exactly one build per port: the one
-  the default alias (normally `stable`) currently resolves to.
+  the port's default version names: its newest final release tag, or `latest`
+  while it has none.
 - `LIBTMUX_DOCS_BASE` — the Astro `base`, so the build's own links and
   canonical tag land under the right prefix.
 - `LIBTMUX_DOCS_SITE` — the absolute origin, for canonical/sitemap URLs.
 - `LIBTMUX_DOCS_DEFAULT_VERSION` — read by `BaseLayout.astro` (defaults to
-  `'stable'`) to know which alias this port's pages canonicalise toward; not
+  `'latest'`) to know which version this port's pages canonicalise toward; not
   listed in `astro.config.ts`'s own header comment, so look here instead.
 
-`/stable/` and `/latest/` are real, separate builds — not a rewrite of one
+`/next/` and `/latest/` are real, separate builds — not a rewrite of one
 build served at two prefixes. `sortVersions()` orders the switcher: aliases
 first, then trunk, then tags, then branches, newest first within each kind.
 
@@ -99,14 +100,14 @@ duplicates against each other unless told which one wins.
 
 - **One indexable version per port.** `robotsFor(entry, isDefault)` in
   `versions.ts` returns `noindex, nofollow` for a `pr` build, `noindex,
-  follow` for anything marked `eol`, `index, follow` for the default-alias
+  follow` for anything marked `eol`, `index, follow` for the default-version
   build, and `noindex, follow` for every other version. Shell pages that
   don't belong to a port (the landing page, concepts, guides) have no
   version axis at all and are always indexable.
-- **Canonical to the default alias.** `canonicalUrl()` points a non-default
+- **Canonical to the default version.** `canonicalUrl()` points a non-default
   version's page at the same path under `defaultVersion` for that port —
   e.g. a reader on `/py/v0.40.0/guides/panes/` gets a canonical tag pointing
-  at `/py/stable/guides/panes/`. A page that exists only in that one version
+  at `/py/v0.46.2/guides/panes/`. A page that exists only in that one version
   (`existsInDefault: false`) canonicalises to itself instead, so a real page
   is never told its canonical URL is a 404.
 - **Sitemap only from the default build.** `astro.config.ts` computes

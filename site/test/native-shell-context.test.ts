@@ -46,7 +46,7 @@ describe('native shell context', () => {
   })
   it('keeps repeated native declarations on their own pages with nested ownership', () => {
     const context = { port: 'py', pages: ['api/server/', 'internals/server/'].map((path) => ({ path, title: 'Server',
-      url: `/pr-42/en/py/stable/api/${path}`, declarations: [
+      url: `/pr-42/en/py/v0.46.2/api/${path}`, declarations: [
         { id: 'Server', name: 'Server', kind: 'class' },
         { id: 'Server.sessions', name: 'sessions', kind: 'property', parent: 'Server' },
       ] })) } as NativeShellContext
@@ -54,7 +54,7 @@ describe('native shell context', () => {
     const members = searchApi(json, 'sessions')
     expect(new Set(members.map((member) => member.id)).size).toBe(2)
     expect(members.map((member) => apiTreeHref('/ignored/', member, json.hrefs))).toEqual([
-      '/pr-42/en/py/stable/api/api/server/#Server.sessions', '/pr-42/en/py/stable/api/internals/server/#Server.sessions',
+      '/pr-42/en/py/v0.46.2/api/api/server/#Server.sessions', '/pr-42/en/py/v0.46.2/api/internals/server/#Server.sessions',
     ])
     expect(json.members['api/server/#Server'][0][2]).toBe('api/server/#Server.sessions')
   })

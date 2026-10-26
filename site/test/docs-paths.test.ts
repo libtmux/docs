@@ -48,7 +48,7 @@ describe('product document URLs', () => {
     const ports = `${prefix}/en`
     for (const port of PORTS) {
       for (const path of [`/${port.slug}/`, `/${port.slug}/next/examples/capture-pane-output/?view=full#output`]) {
-        expect(proseHref(path, root, 'go', 'stable', ports)).toBe(`${ports}${path}`)
+        expect(proseHref(path, root, 'go', 'v0.46.2', ports)).toBe(`${ports}${path}`)
       }
     }
     for (const path of ['/tmux/latest/manual/full/#FORMATS', '/tmux/3.5a/reference/?q=server#members']) {
@@ -76,9 +76,9 @@ describe('product document URLs', () => {
   })
 
   it('retires duplicate Julia and F# API overviews in root and selected-version builds', () => {
-    expect(sourceGuideRedirects(undefined, { fsharp: 'stable' })).toEqual([
+    expect(sourceGuideRedirects(undefined, { fsharp: 'v0.46.2' })).toEqual([
       { path: 'julia/latest/guides/api-overview', target: 'julia/latest/reference' },
-      { path: 'fsharp/stable/guides/api-overview', target: 'fsharp/stable/reference' },
+      { path: 'fsharp/v0.46.2/guides/api-overview', target: 'fsharp/v0.46.2/reference' },
     ])
     expect(sourceGuideRedirects('julia')).toEqual([
       { path: 'guides/api-overview', target: 'reference' },
@@ -89,7 +89,7 @@ describe('product document URLs', () => {
     expect(sourceGuideRedirects('py')).toEqual([])
   })
   it('uses the same path in root and per-port builds', () => {
-    expect(docsRoutePath(pythonGuide, undefined, { py: 'stable' })).toBe('py/stable/workspace/guides')
+    expect(docsRoutePath(pythonGuide, undefined, { py: 'v0.46.2' })).toBe('py/v0.46.2/workspace/guides')
     expect(docsRoutePath(pythonGuide, 'py')).toBe('workspace/guides')
     expect(docsPath(pythonGuide)).toBe('workspace/guides')
   })

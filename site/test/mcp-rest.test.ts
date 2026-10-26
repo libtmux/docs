@@ -4,10 +4,10 @@ import { visit } from 'unist-util-visit'
 import { MCP_REFERENCE, plainSummary, renderToolDescription } from '../src/lib/mcp-reference'
 import { restToMarkdown } from '../src/lib/mcp-rest'
 
-beforeEach(() => vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"py":"stable"}'))
+beforeEach(() => vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"py":"v0.46.2"}'))
 afterEach(() => vi.unstubAllEnvs())
 
-const py = { port: 'py', version: 'stable' }
+const py = { port: 'py', version: 'v0.46.2' }
 const tool = (name: string) => MCP_REFERENCE.py.registrations.find((entry) => entry.wireName === name)!
 /** Each link with its visible text, excluding the aria-hidden kind badge. */
 const anchors = (html: string) => {
@@ -25,11 +25,11 @@ const anchors = (html: string) => {
 
 it('rewrites roles to the pages that document their targets and leaves the rest as code', () => {
   expect(restToMarkdown(':func:`~libtmux_mcp.tools.hook_tools.show_hooks` lists them.', py))
-    .toBe('[`show_hooks`](/py/stable/mcp/tools/show_hooks/) lists them.')
+    .toBe('[`show_hooks`](/py/v0.46.2/mcp/tools/show_hooks/) lists them.')
   expect(restToMarkdown('Returns :class:`~libtmux_mcp.models.HookEntry` rows.', py))
-    .toBe('Returns [`HookEntry`](/py/stable/mcp/reference/libtmux_mcp-models-hookentry/) rows.')
+    .toBe('Returns [`HookEntry`](/py/v0.46.2/mcp/reference/libtmux_mcp-models-hookentry/) rows.')
   expect(restToMarkdown('See :data:`SHOW_BUFFER_DEFAULT_MAX_LINES`.', py))
-    .toMatch(/^See \[`SHOW_BUFFER_DEFAULT_MAX_LINES`\]\(\/py\/stable\/mcp\/reference\/[^)]+\)\.$/)
+    .toMatch(/^See \[`SHOW_BUFFER_DEFAULT_MAX_LINES`\]\(\/py\/v0.46.2\/mcp\/reference\/[^)]+\)\.$/)
   // A private helper has no page: the full dotted path stays as code.
   expect(restToMarkdown('described in :func:`libtmux_mcp._utils._coerce_dict_arg`.', py))
     .toBe('described in `libtmux_mcp._utils._coerce_dict_arg`.')
@@ -39,9 +39,9 @@ it('rewrites roles to the pages that document their targets and leaves the rest 
 })
 
 it('resolves a tool function to its protocol page, not a library symbol of the same name', () => {
-  expect(restToMarkdown(':func:`split_window`', py)).toBe('[`split_window`](/py/stable/mcp/tools/split_window/)')
+  expect(restToMarkdown(':func:`split_window`', py)).toBe('[`split_window`](/py/v0.46.2/mcp/tools/split_window/)')
   const send = restToMarkdown(':meth:`libtmux.Pane.send_keys`', py)
-  expect(send).toContain('/py/stable/reference/libtmux-pane-send_keys/')
+  expect(send).toContain('/py/v0.46.2/reference/libtmux-pane-send_keys/')
   expect(send).not.toContain('/mcp/tools/')
 })
 
@@ -56,7 +56,7 @@ it('turns a directive and its indented body into an aside and resumes the prose'
   const markdown = restToMarkdown(text, py)
   expect(markdown).toContain('<aside class="lm-aside lm-aside--caution lm-aside--hybrid" role="note">')
   expect(markdown).toContain('<span>Warning</span>')
-  expect(markdown).toContain('Writes anywhere. See [`split_window`](/py/stable/mcp/tools/split_window/).\n\nBe careful.')
+  expect(markdown).toContain('Writes anywhere. See [`split_window`](/py/v0.46.2/mcp/tools/split_window/).\n\nBe careful.')
   expect(markdown.endsWith('</aside>\n\n\nAfter the aside.') || markdown.endsWith('</aside>\n\nAfter the aside.')).toBe(true)
   expect(markdown).not.toMatch(/\.\. warning::/)
 })

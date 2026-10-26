@@ -5,7 +5,7 @@ Decided 2026-09-02, implemented the same day.
 ## The problem
 
 The site is one shell serving eight ports. Until now every port showed the
-same prose: `/cxx/stable/concepts/transports/` was a byte-identical copy of
+same prose: `/cxx/latest/concepts/transports/` was a byte-identical copy of
 `/concepts/transports/`, marked `noindex` and canonicalised back to the root
 precisely because it carried nothing of its own.
 
@@ -52,13 +52,13 @@ prevent.
 
 ## The asymmetry, stated deliberately
 
-Self-hosted ports carry prose at a versioned prefix, `/py/stable/concepts/`.
+Self-hosted ports carry prose at a versioned prefix, `/py/latest/concepts/`.
 Ecosystem ports carry it unversioned, `/rs/concepts/`.
 
 This looks inconsistent and is intentional. A version segment has to mean
 something, and for Rust, Go and Java the only versioned artifact is the
 reference — which lives on docs.rs, pkg.go.dev and javadoc.io, each of which
-already versions it properly. Inventing `/rs/stable/` here would promise a
+already versions it properly. Inventing `/rs/latest/` here would promise a
 versioned tree this site does not build and cannot keep honest.
 
 `portPageUrl()` in `lib/ports.ts` is the single place that knows this. Every

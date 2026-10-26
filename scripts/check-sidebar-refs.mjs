@@ -39,10 +39,10 @@ function pageUnder(portDir) {
   const unversioned = join(portDir, 'concepts', 'index.html')
   if (existsSync(unversioned)) return unversioned
   /*
-   * Whichever versions were built, rather than a slug guessed in advance.
-   * `stable` was the guess, and it is absent for a port with no release — so
-   * this reported seven ports as having no shell page at all when what they
-   * had was a shell page somewhere this function did not look.
+   * Whichever versions were built, rather than a slug guessed in advance: a
+   * port with no release has no release tree, and guessing one reported
+   * seven ports as having no shell page at all when what they had was a shell
+   * page somewhere this function did not look.
    */
   if (!existsSync(portDir)) return undefined
   for (const version of readdirSync(portDir)) {

@@ -37,7 +37,7 @@ it('shares endpoint rules with deferred behavior, including protocol objects', (
 it('marks parser-added eligible links without fetching or binding interactions', async () => {
   const fetch = vi.fn(); vi.stubGlobal('fetch', fetch)
   initializeLinkPreviewPaint(policy())
-  append('<p><a id="python" href="/en/py/stable/reference/libtmux-server/">Python</a><a id="from-env" href="../libtmux-from_env/">from_env</a></p>')
+  append('<p><a id="python" href="/en/py/v0.46.2/reference/libtmux-server/">Python</a><a id="from-env" href="../libtmux-from_env/">from_env</a></p>')
   await parsed()
   expect(marked('python')).toBe(true)
   expect(marked('from-env')).toBe(true)

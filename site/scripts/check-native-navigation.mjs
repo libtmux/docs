@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { chromium } from 'playwright'
 
 const base = (process.argv.find((arg) => arg.startsWith('http')) ?? 'http://localhost:8080/en').replace(/\/$/, '')
-const version = process.argv.find((arg) => arg.startsWith('--version='))?.slice('--version='.length) ?? 'stable'
+const version = process.argv.find((arg) => arg.startsWith('--version='))?.slice('--version='.length) ?? 'latest'
 const root = `${base}/py/${version}/api/`
 const browser = await chromium.launch({ channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL })
 

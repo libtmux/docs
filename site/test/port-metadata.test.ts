@@ -244,7 +244,7 @@ describe('port destinations', () => {
     expect(portHomeUrl(ports[0]!, 'latest')).toMatch(/^\/pr-42\/en\//)
     for (const port of ports) {
       for (const product of [undefined, 'mcp', 'workspace'] as (DocProduct | undefined)[]) {
-        for (const version of ['latest', 'stable', 'v1.2.3']) {
+        for (const version of ['latest', 'next', 'v1.2.3']) {
           const { source, registry: packageRegistry, ecosystem } = destinations({ port, product, version })
           for (const url of [source.url, packageRegistry?.url, ecosystem?.url]) {
             if (!url) continue

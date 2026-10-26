@@ -12,7 +12,7 @@ import { inventory } from '../src/integrations/inventory'
 import { withPortRoot } from '../src/lib/site-root'
 import { inventoryLinks, tmuxInventoryVersion } from '../src/lib/inventory-links'
 
-const page: InventoryPage = { scope: 'rs', product: 'mcp', identity: 'tool:inspect', title: 'Inspect', version: 'stable' }
+const page: InventoryPage = { scope: 'rs', product: 'mcp', identity: 'tool:inspect', title: 'Inspect', version: 'v0.1.0' }
 const html = (page: InventoryPage, content: string) => `<html><head><meta name="libtmux-inventory" content='${JSON.stringify(page)}'></head><body><nav id="chrome">Navigation</nav><main>${content}</main></body></html>`
 const dirs: string[] = []
 afterEach(() => {
@@ -46,9 +46,9 @@ describe('rendered inventory targets', () => {
     expect(apiInventoryIdentity(updated, 'c', 'enum')).toBe(apiInventoryIdentity(symbol, 'c', 'enum'))
   })
   it('uses actual fragments, including nested pointers, and ignores repeated member presentations', () => {
-    const result = renderedTargets(html(page, '<h2 id="arguments">Arguments</h2><li id="inspect.input/$defs/A~1B" data-inventory-category="schema" data-inventory-id="inspect.input/$defs/A~1B">A</li><dl data-inventory-ignore><dt id="other">Other member</dt></dl>'), '/pr-42/en/rs/stable/mcp/tools/inspect/')
+    const result = renderedTargets(html(page, '<h2 id="arguments">Arguments</h2><li id="inspect.input/$defs/A~1B" data-inventory-category="schema" data-inventory-id="inspect.input/$defs/A~1B">A</li><dl data-inventory-ignore><dt id="other">Other member</dt></dl>'), '/pr-42/en/rs/v0.1.0/mcp/tools/inspect/')
     expect(result.map((target) => target.category)).toEqual(['doc', 'heading', 'schema'])
-    expect(result[2].href).toBe('/pr-42/en/rs/stable/mcp/tools/inspect/#inspect.input%2F%24defs%2FA~1B')
+    expect(result[2].href).toBe('/pr-42/en/rs/v0.1.0/mcp/tools/inspect/#inspect.input%2F%24defs%2FA~1B')
     expect(result[2].identity).toBe('inspect.input/$defs/A~1B')
     expect(result.some((target) => target.href.endsWith('#chrome'))).toBe(false)
   })
@@ -57,8 +57,8 @@ describe('rendered inventory targets', () => {
   })
   it('exports native headings and citations without their colliding navigation aliases', () => {
     const content = html(page, '<section id="panes"><span id="id1"></span><h1>Panes</h1></section><p><a id="id1" class="reference internal" href="#pane-manual">[pane_manual]</a></p><div id="pane-manual" role="doc-biblioentry">Pane manual</div>').replace('<html>', '<html data-native-shell>')
-    const targets = renderedTargets(content, '/en/py/stable/api/api/libtmux.pane/')
-    expect(targets.map((target) => target.href)).toEqual(['/en/py/stable/api/api/libtmux.pane/', '/en/py/stable/api/api/libtmux.pane/#panes', '/en/py/stable/api/api/libtmux.pane/#pane-manual'])
+    const targets = renderedTargets(content, '/en/py/v0.1.0/api/api/libtmux.pane/')
+    expect(targets.map((target) => target.href)).toEqual(['/en/py/v0.1.0/api/api/libtmux.pane/', '/en/py/v0.1.0/api/api/libtmux.pane/#panes', '/en/py/v0.1.0/api/api/libtmux.pane/#pane-manual'])
   })
   it('keeps unique native aliases and rejects duplicate content IDs beside citation links', () => {
     const native = (content: string) => html(page, content).replace('<html>', '<html data-native-shell>')
@@ -101,9 +101,9 @@ describe('rendered inventory targets', () => {
     expect(renderedTargets(content, '/en/api/chrome/')).toEqual([])
   })
   it('keeps an old declaration in archived snapshots while aliasing its renamed latest identity', () => {
-    const old = renderedTargets(html(page, ''), '/en/rs/stable/old/')[0]
+    const old = renderedTargets(html(page, ''), '/en/rs/v0.1.0/old/')[0]
     const current = { ...old, identity: 'renamed', href: '/en/rs/latest/new/', version: 'latest' }
-    const archivedNew = { ...current, href: '/en/rs/stable/new/', version: 'stable' }
+    const archivedNew = { ...current, href: '/en/rs/v0.1.0/new/', version: 'v0.1.0' }
     const targets = mergeTargets([old, current, archivedNew], [{ scope: 'rs', from: targetKey(old), to: targetKey(current) }])
     expect(targets.find((target) => target.href === old.href)?.aliases).toBeUndefined()
     expect(targets.find((target) => target.href === archivedNew.href)?.aliases).toBeUndefined()
@@ -144,7 +144,7 @@ describe('inventory footer links', () => {
     expect(tmuxInventoryVersion('tmux/guides/reference')).toBeUndefined()
     expect(tmuxInventoryVersion('tmux/latest/manual-other')).toBeUndefined()
     expect(inventoryLinks(undefined, 'latest', 'guides/capturing-output').scoped).toBeUndefined()
-    expect(inventoryLinks('py', 'stable', 'tmux/latest/manual').scoped).toBe(withPortRoot('/py/stable/objects.inv'))
+    expect(inventoryLinks('py', 'v0.1.0', 'tmux/latest/manual').scoped).toBe(withPortRoot('/py/v0.1.0/objects.inv'))
   })
 })
 
@@ -184,7 +184,7 @@ describe('assembled inventories', () => {
     const out = mkdtempSync(join(tmpdir(), 'libtmux-inventory-html-')); dirs.push(out)
     mkdirSync(join(out, 'api'))
     writeFileSync(join(out, 'api/genindex.html'), html(page, '<h1 id="index">Index</h1>'))
-    expect(collectInventoryTargets(out, '/en/rs/stable/')[0].href).toBe('/en/rs/stable/api/genindex.html')
+    expect(collectInventoryTargets(out, '/en/rs/v0.1.0/')[0].href).toBe('/en/rs/v0.1.0/api/genindex.html')
   })
   it('selects configured defaults, keeps tmux versions distinct, and makes each port discoverable', () => {
     const out = mkdtempSync(join(tmpdir(), 'libtmux-inventories-')); dirs.push(out)
@@ -192,21 +192,21 @@ describe('assembled inventories', () => {
       const file = join(out, path, 'index.html'); mkdirSync(dirname(file), { recursive: true }); writeFileSync(file, html(metadata, body))
     }
     writePage('', { ...page, scope: 'site', product: 'core', version: undefined, identity: 'index' })
-    for (const version of ['latest', 'stable']) writePage(`rs/${version}/`, { ...page, version }, '<dt id="Pane" data-inventory-category="api" data-inventory-id="Pane" data-inventory-legacy-type="std:label" data-inventory-legacy-name="Pane">Pane</dt>')
+    for (const version of ['latest', 'v0.1.0']) writePage(`rs/${version}/`, { ...page, version }, '<dt id="Pane" data-inventory-category="api" data-inventory-id="Pane" data-inventory-legacy-type="std:label" data-inventory-legacy-name="Pane">Pane</dt>')
     writePage('tmux/', { ...page, scope: 'site', product: 'core', version: undefined, identity: 'tmux' })
     for (const version of ['latest', '3.6', '3.7']) {
       const context = { ...page, scope: `tmux@${version}`, product: 'core', version }
       writePage(`tmux/${version}/reference/cmd/`, { ...context, identity: `tmux/${version}/reference/cmd` }, '<dt id="cmd" data-inventory-id="cmd" data-inventory-category="api" data-inventory-native=\'[{"type":"c:struct","name":"cmd"}]\' data-inventory-legacy-type="c:struct" data-inventory-legacy-name="cmd">cmd</dt>')
       for (const section of ['manual', 'catalog']) writePage(`tmux/${version}/${section}/`, { ...context, identity: `tmux/${version}/${section}` })
     }
-    const manifest: VersionManifest = { schema: 1, defaultVersion: { rs: 'stable' }, ports: {
-      rs: ['latest', 'stable'].map((slug) => ({ slug, label: slug, kind: 'alias', supported: true })), py: [],
+    const manifest: VersionManifest = { schema: 1, defaultVersion: { rs: 'v0.1.0' }, ports: {
+      rs: ['latest', 'v0.1.0'].map((slug) => ({ slug, label: slug, kind: 'alias', supported: true })), py: [],
     } }
     const result = publishAssembledInventories(out, '/pr-42/en/', manifest)
     expect(result.excluded).toEqual(['py'])
     const entries = readInventory(readFileSync(join(out, 'objects-full.inv'))).entries
     expect(entries.some((entry) => entry.uri.startsWith('rs/latest/'))).toBe(false)
-    expect(entries.some((entry) => entry.uri.startsWith('rs/stable/'))).toBe(true)
+    expect(entries.some((entry) => entry.uri.startsWith('rs/v0.1.0/'))).toBe(true)
     expect(entries.filter((entry) => entry.type === 'c:struct').map((entry) => entry.name)).toContain('tmux@3.7:cmd')
     for (const version of ['latest', '3.6', '3.7']) {
       const scoped = readInventory(readFileSync(join(out, `tmux/${version}/objects.inv`))).entries
@@ -223,10 +223,10 @@ describe('assembled inventories', () => {
     const tmuxCatalog = JSON.parse(readFileSync(join(out, 'tmux/latest/targets.json'), 'utf8'))
     expect(tmuxCatalog.scope).toBe('tmux@latest')
     expect(tmuxCatalog.targets.every((target: { scope: string }) => target.scope === 'tmux@latest')).toBe(true)
-    const port = readInventory(readFileSync(join(out, 'rs/stable/objects.inv'))).entries
+    const port = readInventory(readFileSync(join(out, 'rs/v0.1.0/objects.inv'))).entries
     expect(port.every((entry) => !entry.uri.startsWith('/') && !entry.uri.includes('latest/'))).toBe(true)
     const compatibility = readInventory(readFileSync(join(out, 'reference/rs/objects.inv'))).entries
-    expect(compatibility.map(({ name, uri }) => ({ name, uri }))).toEqual([{ name: 'Pane', uri: '../../rs/stable/#Pane' }])
+    expect(compatibility.map(({ name, uri }) => ({ name, uri }))).toEqual([{ name: 'Pane', uri: '../../rs/v0.1.0/#Pane' }])
     expect(() => publishAssembledInventories(out, '/pr-42/en/', { ...manifest, defaultVersion: { rs: 'missing' } })).toThrow('not assembled')
   })
 })
