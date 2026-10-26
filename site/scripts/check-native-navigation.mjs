@@ -39,7 +39,7 @@ async function checkToctree(page, current) {
     for (let item = here?.closest('li')?.parentElement?.closest('li'); item; item = item.parentElement?.closest('li')) {
       ancestors.push({ label: item.querySelector(':scope > .api-nav__row .api-nav__label')?.textContent.trim(), expanded: item.getAttribute('aria-expanded') })
     }
-    const external = [...tree.querySelectorAll('a[target="_blank"]')].map((link) => ({ label: link.textContent.replace(/\s+/g, ' ').trim(), rel: link.rel, mark: Boolean(link.querySelector('.api-nav__external')) }))
+    const external = [...tree.querySelectorAll('a[target="_blank"]')].map((link) => ({ label: link.textContent.replace(/\s+/g, ' ').trim(), rel: link.rel, mark: link.hasAttribute('data-external-link') && !link.querySelector('.api-nav__external'), sr: /opens in a new tab/.test(link.textContent) }))
     const depth = Math.max(0, ...[...tree.querySelectorAll('[aria-level]')].map((item) => Number(item.getAttribute('aria-level'))))
     return { rows, top: [...tree.querySelectorAll(':scope > li')].map((item) => item.querySelector('.api-nav__label')?.textContent.trim()), here: here?.pathname, ancestors, external, depth,
       groups: tree.querySelectorAll('[role="group"]').length, flat: tree.querySelector('.api-nav__section:not(.api-nav__caption)') !== null }
@@ -52,7 +52,7 @@ async function checkToctree(page, current) {
   assert(!state.flat, `${where}: a flat section list is back`)
   assert(state.here?.endsWith(current), `${where}: the current page is not marked: ${state.here}`)
   assert(state.ancestors.length >= 1 && state.ancestors.every((item) => item.expanded === 'true'), `${where}: ancestors are not open: ${JSON.stringify(state.ancestors)}`)
-  assert(state.external.some((item) => item.label.startsWith('GitHub') && item.mark && /noopener/.test(item.rel)), `${where}: GitHub is not marked as leaving the site: ${JSON.stringify(state.external)}`)
+  assert(state.external.some((item) => item.label.startsWith('GitHub') && item.mark && item.sr && /noopener/.test(item.rel)), `${where}: GitHub is not marked as leaving the site: ${JSON.stringify(state.external)}`)
   assert(!state.rows.some((row) => row.startsWith('page:')), `${where}: a row is labelled with an id: ${state.rows.find((row) => row.startsWith('page:'))}`)
 }
 

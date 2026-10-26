@@ -98,7 +98,6 @@ const items = nodes.filter((node) => !node.section && !node.heading)
             {node.labelHtml ? <Fragment set:html={node.labelHtml} /> : <SymbolName name={node.label} />}
           </span>
           {node.count !== undefined && <span class="api-nav__count">{node.count}</span>}
-          {node.external && <span class="api-nav__external" aria-hidden="true">&#8599;&#65038;</span>}
           {node.external && <span class="sr-only"> (opens in a new tab)</span>}
         </a>
       </li>
