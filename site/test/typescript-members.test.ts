@@ -1,8 +1,6 @@
-import { mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { pathToFileURL } from 'node:url'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window } from 'happy-dom'
 import { describe, expect, it, vi } from 'vitest'
@@ -11,7 +9,7 @@ import { API_MODELS, ownersOf } from '../src/lib/api-models'
 import { membersByTypeFor, navTreeFor, referenceTreeFor } from '../src/lib/api-tree'
 import { hasScalarMembers } from '../src/lib/api-sections'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
-import { linkTmuxDoc } from '../src/lib/tmux-links'
+import { apiComponents } from './api-components'
 import { symbolPreview } from '../src/lib/link-preview'
 import { GET as referenceMarkdown } from '../src/pages/reference/[...slug].md'
 import { PORT_ROOT } from '../src/lib/site-root'
@@ -105,28 +103,12 @@ describe('TypeScript named values', () => {
   })
 })
 
-const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
-async function scalarTableComponent() {
-  const { transform } = await import(astroRequire.resolve('@astrojs/compiler-rs'))
-  const compiled = new Map<string, string>()
-  for (const name of ['ApiDoc', 'ApiScalarMembers']) {
-    const file = new URL(`../src/components/api/${name}.astro`, import.meta.url)
-    const result = await transform(readFileSync(file, 'utf8'), { filename: file.pathname, internalURL: 'astro/compiler-runtime', resultScopedSlot: true, resolvePath: (specifier: string) => specifier })
-    expect(result.diagnostics.filter((item: { severity: string }) => item.severity === 'error')).toEqual([])
-    const linker = 'data:text/javascript,export const linkTmuxDoc = globalThis.__scalarMemberDocLinker'
-    let code = result.code.replaceAll('"astro/compiler-runtime"', JSON.stringify(pathToFileURL(astroRequire.resolve('astro/compiler-runtime')).href))
-      .replaceAll('"../../lib/tmux-links"', JSON.stringify(linker))
-    for (const [dependency, url] of compiled) code = code.replaceAll(`"./${dependency}.astro"`, JSON.stringify(url))
-    compiled.set(name, `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`)
-  }
-  return (await import(/* @vite-ignore */ compiled.get('ApiScalarMembers')!)).default
-}
+const scalarTableComponent = async () => (await apiComponents()).members
 
 it('renders linked scalar values as a semantic table with exact literal text', async () => {
   const owner = model.symbols.find((symbol) => symbol.id === 'constants.ResizeAdjustmentDirection')!
   const members = membersOf(model, owner)
   const window = new Window()
-  vi.stubGlobal('__scalarMemberDocLinker', linkTmuxDoc)
   try {
     const container = await experimental_AstroContainer.create()
     window.document.body.innerHTML = await container.renderToString(await scalarTableComponent(), { props: { owner, members, index, hrefFor } })
@@ -141,5 +123,5 @@ it('renders linked scalar values as a semantic table with exact literal text', a
       expect(row.querySelector('code')?.textContent).toBe(member.value)
       expect(row.querySelector('td:last-child')?.textContent).toBe('')
     }
-  } finally { await window.happyDOM.abort(); vi.unstubAllGlobals() }
+  } finally { await window.happyDOM.abort() }
 })

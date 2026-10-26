@@ -18,6 +18,40 @@ export function hasScalarMembers(owner: ApiSymbol, members: ApiSymbol[]): boolea
       member.modifiers.includes('readonly') && member.value !== undefined)
 }
 
+/** Ports whose extracted fields carry a name, a type and a summary for every struct and payload variant. */
+const FIELD_TABLE_PORTS: ReadonlySet<string> = new Set(['rs'])
+
+/** The typed fields of a Rust struct or payload variant, apart from every other member, in member order. */
+export function splitFieldMembers(owner: ApiSymbol, members: ApiSymbol[], port?: string): { fields: ApiSymbol[]; rest: ApiSymbol[] } {
+  if (!FIELD_TABLE_PORTS.has(port ?? '') || !(owner.kind === 'struct' || owner.variant === 'struct' || owner.variant === 'tuple')) {
+    return { fields: [], rest: members }
+  }
+  const isField = (member: ApiSymbol) => member.kind === 'attribute' && member.type !== undefined
+  return { fields: members.filter(isField), rest: members.filter((member) => !isField(member)) }
+}
+
+/** A record-like type whose members are all typed fields uses one Name/Type/Description table. */
+export function hasFieldMembers(owner: ApiSymbol, members: ApiSymbol[], port?: string): boolean {
+  const { fields, rest } = splitFieldMembers(owner, members, port)
+  return fields.length > 0 && rest.length === 0
+}
+
+/** The member entries of a type page's section navigation: a Fields block beside the member list, then its groups. */
+export function apiMemberSections(options: {
+  fields: number; members: number; label: string; groups: { id: string; label: string }[]
+}): ApiSection[] {
+  return [
+    ...(options.fields ? [{ id: 'api-fields', label: 'Fields', count: options.fields }] : []),
+    ...(options.members ? [{ id: 'api-members', label: options.label, count: options.members },
+      ...options.groups.map((group) => ({ id: group.id, label: group.label, nested: true }))] : []),
+  ]
+}
+
+/** The table a type page lists its members in, or none for the grouped list. */
+export function memberTableColumns(owner: ApiSymbol, members: ApiSymbol[], port?: string): 'fields' | 'value' | undefined {
+  return hasFieldMembers(owner, members, port) ? 'fields' : hasScalarMembers(owner, members) ? 'value' : undefined
+}
+
 /** Match the rendered declaration in HTML and Markdown, including long lists. */
 export function signatureParameterText(param: Param, port?: string): string {
   const variadic = param.variadic === 'keyword' ? '**' : param.variadic ? (port === 'ts' ? '...' : '*') : ''

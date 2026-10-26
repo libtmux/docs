@@ -4,7 +4,7 @@ import { toMarkdown } from 'mdast-util-to-markdown'
 import { boundLabel, membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { PORT_NAME, referenceAlternatives } from './api-models'
-import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasScalarMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
+import { apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasFieldMembers, hasScalarMembers, splitFieldMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from './tmux-manual-data'
 import { tmuxCommandItems, tmuxCommandRows, tmuxCommandSeparator, tmuxSymbolSends, type ResolvedUsage } from './tmux-reference'
 import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl } from './tmux-catalog'
@@ -336,18 +336,30 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     out.push('')
   }
   if (declared.length) {
-    out.push(symbol.variant ? '## Fields' : '## Members', '')
-    if (hasScalarMembers(symbol, declared)) {
-      out.push('| Name | Value | Description |', '| --- | --- | --- |')
-      const cell = (text: string) => text.replaceAll('|', '\\|').replaceAll('\n', ' ')
-      for (const member of declared) {
-        const name = ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)
-        out.push(`| ${cell(name)} | ${cell(inlineCode(member.value!))} | ${cell(member.doc?.summary ?? '')} |`)
+    const split = splitFieldMembers(symbol, declared, port)
+    const fieldTable = split.fields.length > 0
+    // Fields and other members: the fields get their own table, the rest keep the member list.
+    const rest = fieldTable ? split.rest : declared
+    const cell = (text: string) => text.replaceAll('|', '\\|').replaceAll('\n', ' ')
+    const link = (member: ApiSymbol) => ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)
+    if (fieldTable) {
+      out.push('## Fields', '', '| Name | Type | Description |', '| --- | --- | --- |')
+      for (const member of split.fields) {
+        const type = referenceMarkdown({ label: member.type!, parts: index?.linkType(member.type!, member) }) ?? inlineCode(member.type!)
+        out.push(`| ${cell(link(member))} | ${cell(type)} | ${cell(member.doc?.summary ?? '')} |`)
       }
       out.push('')
-    } else for (const group of apiMemberGroups(declared, signals)) {
-      out.push(`### ${group.label}`, '')
-      appendMembers(group.members)
+    }
+    if (rest.length) {
+      out.push(symbol.variant ? '## Fields' : '## Members', '')
+      if (hasScalarMembers(symbol, rest)) {
+        out.push('| Name | Value | Description |', '| --- | --- | --- |')
+        for (const member of rest) out.push(`| ${cell(link(member))} | ${cell(inlineCode(member.value!))} | ${cell(member.doc?.summary ?? '')} |`)
+        out.push('')
+      } else for (const group of apiMemberGroups(rest, signals)) {
+        out.push(`### ${group.label}`, '')
+        appendMembers(group.members)
+      }
     }
   }
   if (inherited.length) {
