@@ -167,6 +167,16 @@ function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
         li.append(link)
         results.append(li)
       }
+      // The tree is hidden while searching, so the glossary stays reachable as the last result.
+      if (nav.dataset.glossaryHref) {
+        const li = document.createElement('li')
+        const link = document.createElement('a')
+        link.href = nav.dataset.glossaryHref
+        link.dataset.apiGlossary = ''
+        link.textContent = nav.dataset.glossaryLabel ?? ''
+        li.append(link)
+        results.append(li)
+      }
     } catch {
       if (generation === ownGeneration && !signal.aborted) {
         status.textContent = 'API names could not load. Try again.'

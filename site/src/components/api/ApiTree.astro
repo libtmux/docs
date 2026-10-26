@@ -146,7 +146,7 @@ const ownerLabel = catalog?.ownerLabel ?? 'type'
 const ownerPlural = catalog?.ownerPlural ?? 'types'
 // The glossary is the tree's last row, so it is reached after every declaration.
 const nodes = presentation && inventory ? [...sidebarNodes(inventory, base, presentation, selectedSymbol), ...glossaryNode]
-  : [...(indexLabel ? [indexNode] : []), ...glossaryNode, ...tree.map((b) => bucketNode(b, 1, false))]
+  : [...(indexLabel ? [indexNode] : []), ...tree.map((b) => bucketNode(b, 1, false)), ...glossaryNode]
 
 if (marks === 'mixed') quietSidebarKinds(nodes)
 

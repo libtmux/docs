@@ -35,6 +35,41 @@ export async function checkSidebarDemo(browser, url, options = {}) {
     if (await f.locator('.api-nav').evaluate((nav) => nav.inert)) await f.locator('[data-api-nav-toggle]').click()
   }
   const waitSelection = (f, symbol) => f.waitForFunction((id) => document.querySelector('.api-nav')?.dataset.symbol === id && document.querySelector('h1[data-preview-title]')?.textContent === id, symbol)
+  // Guide lines, heading weight and the glossary row, measured on the rendered tree. Each negative control breaks one of them on purpose.
+  const checkTreeDecoration = async (f, variant, where, collapsed = false) => {
+    const control = values['negative-control']
+    const tree = f.locator('.api-nav__tree')
+    if (control === 'guide') await f.addStyleTag({ content: '.api-nav__label::before { border-inline-start: 0 solid !important; }' })
+    if (control === 'weight') await f.addStyleTag({ content: '.api-nav__item > .api-nav__row > .api-nav__label { font-weight: 400 !important; }' })
+    if (control === 'glossary-first') await tree.evaluate((node) => { const last = node.querySelector(':scope > li:last-child'); if (last?.querySelector('a[href$="/glossary/"]')) node.prepend(last) })
+    if (control === 'glossary-twice') await tree.evaluate((node) => { const last = node.querySelector(':scope > li:last-child'); if (last?.querySelector('a[href$="/glossary/"]')) node.append(last.cloneNode(true)) })
+    if (control === 'guide-top') await f.addStyleTag({ content: '[aria-level="1"] > .api-nav__row > .api-nav__label::before, a[aria-level="1"] > .api-nav__label::before { content: "" !important; position: absolute; top: 0; bottom: 0; border-inline-start: 1px solid red !important; }' })
+    const rows = await tree.evaluate((node) => [...node.querySelectorAll('[role="treeitem"]')].filter((row) => row.getClientRects().length).map((row) => {
+      const label = row.matches('a') ? row.querySelector('.api-nav__label') : row.querySelector(':scope > .api-nav__row > .api-nav__label')
+      const level = Number(row.getAttribute('aria-level'))
+      return { text: label?.textContent.trim(), href: row.getAttribute('href'), leaf: row.classList.contains('api-nav__leaf'), level,
+        subgroup: row.matches("[data-lazy^='group:']"), line: label ? getComputedStyle(label, '::before').borderInlineStartWidth : '0px',
+        weight: Number(label ? getComputedStyle(label).fontWeight : 0), heading: row.matches('.api-nav__item') && level === 1 }
+    }))
+    // Every nested row carries the guide line, kind subgroups included, in each layout that nests.
+    const nested = rows.filter((row) => row.level > 1)
+    if (variant !== 'focus' && !collapsed) assert(nested.length > 0, `${where}: the layout shows nested rows`)
+    if (variant === 'grouped' && !collapsed) assert(nested.some((row) => /^Methods?\b/.test(row.text) && row.subgroup), `${where}: the Grouped kind subgroup is a nested row`)
+    for (const row of nested) assert.equal(row.line, '1px', `${where}: nested row ${row.text} shows its guide line`)
+    // Clean control: a top-level row and the glossary never draw one.
+    for (const row of rows.filter((row) => row.level === 1)) assert.equal(row.line, '0px', `${where}: top-level row ${row.text} has no guide line`)
+    // Bucket headings read as headings in the layouts that group.
+    if (variant !== 'focus') {
+      const headings = rows.filter((row) => row.heading)
+      assert(headings.length > 0, `${where}: bucket headings are present`)
+      for (const row of headings) assert(row.weight >= 600, `${where}: heading ${row.text} is bold`)
+    }
+    // The glossary is one ordinary row and the tree's last, reached after every declaration.
+    const glossary = rows.filter((row) => /\/glossary\/$/.test(row.href ?? ''))
+    assert.equal(glossary.length, 1, `${where}: the glossary appears exactly once`)
+    assert.equal(rows.at(-1), glossary[0], `${where}: no row after the glossary, and none before it links to it`)
+    assert.deepEqual({ text: glossary[0].text, leaf: glossary[0].leaf, level: glossary[0].level }, { text: 'API glossary', leaf: true, level: 1 }, `${where}: the glossary is an ordinary row`)
+  }
   const screenshot = async (name) => {
     if (!values.screenshots) return
     await mkdir(values.screenshots, { recursive: true })
@@ -184,21 +219,7 @@ export async function checkSidebarDemo(browser, url, options = {}) {
           const ownerCount = f.locator('.api-nav__tree .api-nav__row:has(> .api-nav__kind)').filter({ has: f.locator('.api-nav__label').filter({ hasText: /^Server$/ }) }).first().locator('.api-nav__count')
           if (values['negative-control'] === 'count') await ownerCount.evaluate((node) => { node.textContent = '0' })
           assert.equal(await ownerCount.textContent(), String(serverCount))
-          // Every nested row carries the guide line, kind subgroups included, in each layout that nests.
-          const guides = await f.locator('.api-nav__tree').evaluate((tree) => [...tree.querySelectorAll(
-            ".api-nav__item:is([aria-description], [data-lazy^='group:']):not([aria-level='1']) > .api-nav__row > .api-nav__label, .api-nav__leaf[aria-description]:not([aria-level='1']) > .api-nav__label")]
-            .filter((label) => label.getClientRects().length).map((label) => ({ text: label.textContent.trim(), line: getComputedStyle(label, '::before').borderInlineStartWidth })))
-          if (variant !== 'focus') assert(guides.length > 0, `${variant}/${viewport}/${theme}: the layout shows nested rows`)
-          if (variant === 'grouped') assert(guides.some((row) => /^Methods?\b/.test(row.text)), `${viewport}/${theme}: the Grouped kind subgroup is a nested row`)
-          for (const row of guides) assert.equal(row.line, '1px', `${variant}/${viewport}/${theme}: nested row ${row.text} shows its guide line`)
-          // The glossary is the tree's last row, an ordinary item reached after every declaration.
-          const last = await f.locator('.api-nav__tree').evaluate((tree) => {
-            const rows = [...tree.querySelectorAll('[role="treeitem"]')].filter((row) => row.getClientRects().length)
-            const row = rows.at(-1)
-            return { text: row?.textContent.trim(), href: row?.getAttribute('href'), leaf: row?.classList.contains('api-nav__leaf'), above: document.querySelector('.api-nav__reference-link') !== null }
-          })
-          assert.deepEqual({ text: last.text, leaf: last.leaf, above: last.above }, { text: 'API glossary', leaf: true, above: false }, `${variant}/${viewport}/${theme}: the glossary is the last tree row`)
-          assert.match(last.href, /\/glossary\/$/)
+          await checkTreeDecoration(f, variant, `${variant}/${viewport}/${theme}`)
           const geometry = await f.locator('.api-nav').evaluate((nav) => ({ width: nav.clientWidth, overflow: nav.scrollWidth > nav.clientWidth, role: nav.getAttribute('role') }))
           assert.equal(geometry.overflow, false, `${variant}/${viewport}/${theme}: no sidebar overflow`)
           if (viewport === 'desktop') assert.equal(geometry.role, null)
@@ -219,6 +240,25 @@ export async function checkSidebarDemo(browser, url, options = {}) {
       }
     }
     console.log('PASS: 18 mode / viewport / theme combinations')
+
+    // The same row rules hold with every bucket folded, and again with the first one opened.
+    await select('viewport', 'desktop')
+    for (const variant of ['outline', 'grouped']) {
+      await select('variant', variant)
+      await f.waitForFunction((mode) => document.querySelector('.api-nav')?.dataset.presentation === mode, variant)
+      await action(f, 'collapse')
+      await checkTreeDecoration(f, variant, `${variant}/collapsed`, true)
+      const first = f.locator('.api-nav__tree > .api-nav__item > .api-nav__row').first()
+      await first.click()
+      await f.waitForFunction(() => document.querySelector('.api-nav__tree > .api-nav__item[aria-expanded="true"] > [role="group"] [role="treeitem"]'))
+      await checkTreeDecoration(f, variant, `${variant}/bucket opened`)
+    }
+    console.log('PASS: glossary last, guide lines and heading weight with folded and opened buckets')
+    // The tree is hidden while searching, so the glossary is the last result.
+    await f.locator('#api-symbol-search').fill('Window')
+    await f.locator('[data-api-search-results] a[data-api-glossary]').waitFor()
+    assert.equal(await f.locator('[data-api-search-results] li:last-child > a').getAttribute('data-api-glossary'), '', 'Search results end with the glossary')
+    await f.locator('#api-symbol-search').fill('')
 
     await select('viewport', 'desktop')
     await select('variant', 'outline')
