@@ -467,6 +467,7 @@ const MEMBER_BODY_PAGES = [
   ['ruby/latest/workspace/reference/libtmux-workspace-configerror/', 'p.gp-sphinx-api-facts'],
   ['py/latest/reference/libtmux-server-new_session/', 'div.gp-sphinx-api-examples'],
   ['py/latest/reference/libtmux-common-has_lt_version/', 'div.gp-sphinx-api-parameters'],
+  ['swift/latest/reference/server-loadbuffer(from-named-)/', 'div.gp-sphinx-api-parameters'],
   ['ts/latest/reference/server-server-configfile/', 'div.gp-sphinx-api-examples'],
   ['ts/latest/reference/types-newsessionoptions/', 'div.gp-sphinx-api-description'],
   ['csharp/latest/reference/libtmux-server-searchclientsasync/', 'div.gp-sphinx-api-parameters'],
