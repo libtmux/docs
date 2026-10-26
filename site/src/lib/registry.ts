@@ -2,7 +2,7 @@
  * Typed access to the generated registry state.
  *
  * `site/src/data/registry.json` is written by `scripts/gen-registry.mjs` and
- * says what each port's package registry carries today: a stable release, a
+ * says what each port's package registry carries today: a final release, a
  * prerelease only, or nothing at all. `ports.ts` owns the install *spellings*
  * and stays importable by bare Node for `build-site.sh`, which is why it takes
  * a `RegistryEntry` as an argument rather than importing this.
@@ -13,7 +13,7 @@
  * assertion and could drift on how it handles a missing port.
  */
 import data from '../data/registry.json'
-import { installCommand, releaseMaturity, releaseWording, type InstallCommand, type InstallForm, type Port, type RegistryData, type RegistryEntry } from './ports'
+import { installCommand, isReleaseSeries, releaseMaturity, releaseWording, type InstallCommand, type InstallForm, type Port, type RegistryData, type RegistryEntry } from './ports'
 import { releaseTag } from './versions'
 import { portParts, type PortParts, type PromptContext } from './prompts'
 
@@ -91,7 +91,7 @@ export function promptInputs(port: Port, ctx: PromptContext) {
   const entry = registryFor(port)
   return {
     port,
-    stable: releaseMaturity(entry) === 'stable',
+    released: isReleaseSeries(releaseMaturity(entry)),
     install: installCommand(port, entry),
     wording: releaseWording(port, entry),
     ctx,

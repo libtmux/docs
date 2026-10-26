@@ -1,5 +1,5 @@
 ---
-import { PRODUCT_STATUS_GUIDE, PRODUCT_STATUS_LINE, PRODUCT_STATUS_LINK, type ProductStatus } from '../lib/ports'
+import { PRODUCT_STATUS_GUIDE, PRODUCT_STATUS_LINK, productStatusLine, type ProductStatus } from '../lib/ports'
 import { withRoot } from '../lib/site-root'
 
 /**
@@ -24,7 +24,7 @@ const { status, product, id, class: className } = Astro.props
   <button type="button" class="status-badge" data-status={status} popovertarget={id} aria-expanded="false" aria-controls={id}>{status}<span class="sr-only"> status of {product}</span></button>
   <span id={id} class="status-toggletip__card" popover="manual" role="group" aria-label={`${status}: ${product}`}>
     <code class="status-toggletip__title">{status}</code>
-    <span class="status-toggletip__line">{PRODUCT_STATUS_LINE[status]}</span>
+    <span class="status-toggletip__line">{productStatusLine(status)}</span>
     <a href={withRoot(PRODUCT_STATUS_GUIDE)}>{PRODUCT_STATUS_LINK}</a>
   </span>
 </span> : <span class:list={['status-badge', className]} data-status={status}>{status}</span>}

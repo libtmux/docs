@@ -57,13 +57,13 @@ the caller owns the server and any other sessions on it.
 
 Use an empty directory on Linux with PowerShell 7.4, POSIX shell, and tmux
 installed. Run the following commands in a POSIX shell. Install the
-[LibTmux 0.1.0-alpha2 module](https://www.powershellgallery.com/packages/LibTmux/0.1.0-alpha2)
+[LibTmux 0.1.0 module](https://www.powershellgallery.com/packages/LibTmux/0.1.0)
 with PSResourceGet:
 
 ```console
 $ pwsh -NoLogo -NoProfile -Command '
   $ErrorActionPreference = "Stop"
-  Install-PSResource -Name LibTmux -Version 0.1.0-alpha2 -Prerelease `
+  Install-PSResource -Name LibTmux -Version 0.1.0 `
     -Repository PSGallery -Scope CurrentUser -TrustRepository
 '
 ```
