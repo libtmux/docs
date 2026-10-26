@@ -55,7 +55,8 @@ export function nativeReferenceTree(context: NativeShellContext): ApiTreeJson {
       ;(members[parent] ??= []).push([entry.name, '', declarationId, entry.kind,
         ['class', 'exception', 'module'].includes(entry.kind) || declarations.some((child) => child.parent === entry.id) ? 'types' : 'members', '', entry.id])
     }
-    return { id, name: page.title || page.path || 'Overview', slug: page.path, kind: 'section', category: 'pages', m: declarations.length ? 1 as const : 0 as const }
+    // `id` is a key, never a label: results show the title and the page path.
+    return { id, name: page.title || page.path || 'Overview', qualifiedName: page.path.replace(/\/$/, '') || 'index', slug: page.path, kind: 'section', category: 'pages', m: declarations.length ? 1 as const : 0 as const }
   })
   const json = { port: context.port, ownerLabel: 'item', ownerPlural: 'items', buckets: [{ id: 'native', label: 'Reference', count: types.length, slug: null, types, children: [] }], members, hrefs }
   trees.set(context, json)

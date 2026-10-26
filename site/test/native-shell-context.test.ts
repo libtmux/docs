@@ -58,6 +58,16 @@ describe('native shell context', () => {
     ])
     expect(json.members['api/server/#Server'][0][2]).toBe('api/server/#Server.sessions')
   })
+  it('never shows a page id as a name, path or summary', () => {
+    const context = { port: 'py', toctree: [], pages: ['api/libtmux.client/', ''].map((path) => ({ path, title: path ? 'Client' : 'API Reference',
+      url: `/en/py/latest/api/${path}`, declarations: path ? [{ id: 'libtmux.Client', name: 'Client', kind: 'class' }, { id: 'libtmux.Client.cmd', name: 'cmd', kind: 'method', parent: 'libtmux.Client' }] : [] })) } as unknown as NativeShellContext
+    const records = searchApi(nativeReferenceTree(context), '')
+    expect(records.length).toBeGreaterThan(2)
+    for (const record of records) {
+      for (const text of [record.name, record.symbolName, record.qualifiedName, record.shortName ?? '']) expect(text).not.toMatch(/^page:/)
+    }
+    expect(records.find((record) => record.kind === 'section' && record.name === 'Client')?.qualifiedName).toBe('api/libtmux.client')
+  })
   it('binds real source, exact Markdown and native article bytes, without inventing generated-index targets', async () => {
     const { artifact, options, article, source, sourceSha } = fixture()
     const context = await collectNativeContext(artifact, options)
