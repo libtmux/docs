@@ -29,6 +29,8 @@ interface Props {
   /** A shared reference presentation, with the reader's saved choice applied on arrival. */
   presentation?: SidebarPresentation
   inventory?: ApiTreeJson
+  /** Rows a reference supplies itself, such as a Sphinx global toctree; they replace the generated tree and its layouts. */
+  navigation?: TreeNode[]
   inventorySrc?: string
   selectedSymbol?: string
   /** A containing preview supplies client selection through setApiSidebar. */
@@ -74,7 +76,7 @@ interface Props {
 }
 
 const {
-  presentation, inventory, inventorySrc, selectedSymbol = '', controlled = false,
+  presentation, inventory, navigation, inventorySrc, selectedSymbol = '', controlled = false,
   referenceBase, portName, tree, hrefs, currentRoot, currentBucket, currentTypeId, ownerNavId, ownerId,
   members, ancestorMembers, withMembers, currentPath, version,
   indexLabel = 'Reference overview', treeLabel = `${portName} API`,
@@ -145,7 +147,8 @@ const selectedParent = catalog?.symbols.get(catalog.parent.get(selectedSymbol) ?
 const ownerLabel = catalog?.ownerLabel ?? 'type'
 const ownerPlural = catalog?.ownerPlural ?? 'types'
 // The glossary is the tree's last row, so it is reached after every declaration.
-const nodes = presentation && inventory ? [...sidebarNodes(inventory, base, presentation, selectedSymbol), ...glossaryNode]
+const nodes = navigation ? navigation
+  : presentation && inventory ? [...sidebarNodes(inventory, base, presentation, selectedSymbol), ...glossaryNode]
   : [...(indexLabel ? [indexNode] : []), ...tree.map((b) => bucketNode(b, 1, false)), ...glossaryNode]
 
 if (marks === 'mixed') quietSidebarKinds(nodes)
@@ -154,7 +157,7 @@ if (marks === 'mixed') quietSidebarKinds(nodes)
 const mark = (list: TreeNode[]): boolean =>
   list.some((n) => (n.current ? ((n.tab = true), true) : n.children ? mark(n.children) : false))
 if (!mark(nodes)) {
-  const first = nodes.find((node) => !node.section)
+  const first = nodes.find((node) => !node.section && !node.heading)
   if (first) first.tab = true
 }
 ---

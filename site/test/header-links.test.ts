@@ -314,7 +314,7 @@ describe('header links in the native documentation shell', () => {
     props: {
       context: {
         schema: 1, port: slug, version, locale: 'en', root: '', base: `/en/${slug}/${version}/api/`,
-        source: { repository: 'tmux-python/libtmux', sha }, artifactSha256: '', pages: [], redirects: [],
+        source: { repository: 'tmux-python/libtmux', sha }, artifactSha256: '', pages: [], toctree: [], redirects: [],
       },
       page: {
         file: `api/${path}index.html`, path: `api/${path}`, url: `/en/${slug}/${version}/api/api/${path}`,
@@ -337,7 +337,7 @@ describe('header links in the native documentation shell', () => {
     const html = await renderAstroTemplate(templates.nativeShell, {
       url: 'https://libtmux.org/en/py/v0.62.0/api/api/libtmux.server/',
       props: {
-        context: { schema: 1, port: 'py', version: 'v0.62.0', locale: 'en', root: '', base: '/en/py/v0.62.0/api/', source: { repository: 'tmux-python/libtmux', sha }, artifactSha256: '', pages: [], redirects: [] },
+        context: { schema: 1, port: 'py', version: 'v0.62.0', locale: 'en', root: '', base: '/en/py/v0.62.0/api/', source: { repository: 'tmux-python/libtmux', sha }, artifactSha256: '', pages: [], toctree: [], redirects: [] },
         page: { file: 'api/libtmux.server/index.html', path: 'api/libtmux.server/', url: '/en/py/v0.62.0/api/api/libtmux.server/', sourcePath: 'py/v0.62.0/api/api/libtmux.server/', htmlSha256: '', articleSha256: '', hasTableOfContents: false, signatures: [] },
       },
     })

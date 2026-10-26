@@ -13,6 +13,12 @@ export interface SidebarNode {
   kind?: string
   section?: string
   quiet?: boolean
+  /** A group heading, such as a Sphinx toctree caption: text only, no row. */
+  heading?: boolean
+  /** The label with inline `<code>`; already escaped. */
+  labelHtml?: string
+  /** The row leaves this site. */
+  external?: boolean
   href?: string
   /** Where a row that only opens in a script leads without one. */
   fallbackHref?: string
