@@ -171,7 +171,10 @@ const markdownHref = typeof markdown === 'object'
   ? markdown.href
   : markdownPath(Astro.url.pathname, markdownIndex ?? Astro.url.pathname === buildBase)
 const versionRoot = portSlug ? withPortRoot(`/${portSlug}/${target.version}/`) : undefined
-const llmsRoot = versionRoot && Astro.url.pathname.startsWith(versionRoot) ? versionRoot : withRoot('/')
+// A port's demo or landing page sits outside its version tree, where no
+// per-version llms files or objects.inv exist.
+const inVersionTree = Boolean(versionRoot && Astro.url.pathname.startsWith(versionRoot))
+const llmsRoot = inVersionTree ? versionRoot! : withRoot('/')
 // The repository the page documents: a product's own, else the one its source
 // is in, else its port's. Python's MCP server and tmuxp are separate repos.
 const githubRepo = repository
@@ -194,7 +197,7 @@ const inventoryPage: InventoryPage = {
   title, version: portSlug ? target.version : tmuxVersion, source,
   previousScopes: !portSlug && tmuxVersion && pagePath.startsWith(`tmux/${tmuxVersion}/catalog`) ? ['site'] : undefined,
   aliases: inventoryAliases, exclude: inventoryExclude || bare ||
-    Boolean(process.env.LIBTMUX_DOCS_PORT && (!versionRoot || !Astro.url.pathname.startsWith(versionRoot))) ||
+    Boolean(process.env.LIBTMUX_DOCS_PORT && !inVersionTree) ||
     /^(?:demo(?:\/|$)|404$|search$)/.test(routePath),
 }
 
@@ -274,7 +277,7 @@ const inventoryPage: InventoryPage = {
       <div data-pagefind-filter={`section:${section}`} data-pagefind-ignore="all" hidden></div>
       <slot />
     </div>
-    <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} port={portSlug} version={target.version} pagePath={pagePath} githubUrl={githubUrl} flush={flush} compact={bare} />
+    <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} port={inVersionTree ? portSlug : undefined} version={inVersionTree ? target.version : undefined} pagePath={pagePath} githubUrl={githubUrl} flush={flush} compact={bare} />
     <BackToTop />
     <SearchModal port={navPort} version={navVersion} />
     <LinkPreview />

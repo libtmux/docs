@@ -44,7 +44,7 @@ variables, CLI commands and schema fields, paired with their destinations.
 
 ## Discover and index pages
 
-Use the [sitemap](/sitemap-index.xml) to discover indexable pages. Follow
+Use the [sitemap](https://libtmux.org/en/sitemap-index.xml) to discover indexable pages. Follow
 [robots.txt](https://libtmux.org/robots.txt) and each page's robots metadata:
 pull-request previews, component demos and search-index shards are excluded
 from crawling, and alternate versions can carry `noindex`.
