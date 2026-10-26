@@ -50,7 +50,7 @@ describe('C# documentation redirects at the edge', () => {
       ['', '/'], ['/', '/'], ['/index.html', '/'],
       ['/latest', '/latest/'], ['/v0.0.0-alpha.20/', '/v0.0.0-alpha.20/'],
       ['/pr-8/reference/libtmux-pane/', '/pr-8/reference/libtmux-pane/'],
-      ['/stable/api/libtmux.client', '/stable/api/libtmux.client/'],
+      ['/v0.46.2/api/libtmux.client', '/v0.46.2/api/libtmux.client/'],
       ['/latest/reference/libtmux-server/index.html', '/latest/reference/libtmux-server/'],
       ['/latest/reference/libtmux-server.md', '/latest/reference/libtmux-server.md'],
       ['/latest/objects.inv', '/latest/objects.inv'], ['/docs.json', '/docs.json'],

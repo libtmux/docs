@@ -15,7 +15,7 @@ import { DEFAULT_LOCALE, isLocale } from '../i18n/locales'
  * Prompts belong to the root build of the default locale, and nothing else.
  *
  * Every port+version build renders the same routes, so without this guard
- * `/cxx/stable/prompts/` appears in eight trees that nothing links to. The
+ * `/cxx/latest/prompts/` appears in eight trees that nothing links to. The
  * locale half is the same rule `[port]/index.astro` and the reference route
  * already apply: prompts cite English pages and carry absolute URLs, so a
  * translated copy would be the English text at a Japanese URL.

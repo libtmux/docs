@@ -102,10 +102,10 @@ describe('MCP protocol links in site prose', () => {
   it('keeps references in the selected build version and honors cross-port defaults', async () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', 'py')
     vi.stubEnv('LIBTMUX_DOCS_VERSION', 'next')
-    vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"ts":"stable"}')
+    vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"ts":"v0.46.2"}')
     const link = createProseLinker()
     expect(link('mcp:prompt:run_and_wait', { pagePort: 'py' })).toMatchObject({ href: '/py/next/mcp/prompts/run_and_wait/' })
-    expect(link('mcp:resource:tmux://capabilities', { pagePort: 'ts' })).toMatchObject({ href: '/ts/stable/mcp/resources/capabilities/' })
+    expect(link('mcp:resource:tmux://capabilities', { pagePort: 'ts' })).toMatchObject({ href: '/ts/v0.46.2/mcp/resources/capabilities/' })
   })
 
   it('marks the actual relative or absolute destination, excluding ordinary pages, fields and foreign hosts', async () => {

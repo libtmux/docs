@@ -25,7 +25,7 @@ const portSlugs = PORTS.map((p) => p.slug)
 // stale across repeated astro builds in one tree (see BaseLayout.astro).
 //
 // A map, not one value. The hint below is built for whichever port the reader
-// hit, so a single default sent readers of seven ports at a `stable` tree
+// hit, so a single default sent readers of seven ports at a release tree
 // nothing builds.
 const portDefaults: Record<string, string> = (() => {
   try {

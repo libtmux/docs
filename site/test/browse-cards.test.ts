@@ -41,7 +41,7 @@ describe('shared browse cards', () => {
           .map((card) => card.href)).toEqual(['batching-commands/', 'control-mode/'])
         expect(selected).toHaveLength(count + 2)
       } else expect(selected).toEqual(shared)
-      for (const version of ['latest', 'stable', 'v0.1']) {
+      for (const version of ['latest', 'v0.46.2', 'v0.1']) {
         const base = `https://libtmux.org/pr-42/en/${port}/${version}/${section}/`
         for (const card of selected) {
           expect(new URL(card.href, base).pathname)
@@ -57,7 +57,7 @@ describe('shared browse cards', () => {
     expect(selected.map((card) => card.label)).toEqual([
       'Server, session, window, pane', 'Native guides',
     ])
-    for (const version of ['latest', 'stable', 'v0.1']) {
+    for (const version of ['latest', 'v0.46.2', 'v0.1']) {
       const base = `https://libtmux.org/pr-42/en/${port}/${version}/concepts/`
       expect(selected.map((card) => new URL(card.href, base).pathname)).toEqual([
         `/pr-42/en/${port}/${version}/concepts/server-session-window-pane/`,

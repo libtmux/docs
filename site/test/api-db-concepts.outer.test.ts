@@ -81,7 +81,7 @@ describeIfSeeded('concept projection', () => {
     for (const concept of Object.values(CONCEPTS)) {
       for (const [port, symbolId] of Object.entries(concept.symbols)) {
         total += 1
-        if (symbolById(port, 'latest', symbolId) || symbolById(port, 'stable', symbolId)) hits += 1
+        if (symbolById(port, 'latest', symbolId) || symbolById(port, 'v0.46.2', symbolId)) hits += 1
       }
     }
     expect(total).toBeGreaterThan(0)

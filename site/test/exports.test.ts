@@ -168,7 +168,7 @@ describeIfAssembled('published exports', () => {
   })
 
   describe('native shell assets', () => {
-    for (const version of ['latest', 'stable']) {
+    for (const version of ['latest', 'v0.46.2']) {
       it.skipIf(!has(`${SITE_PREFIX}py/${version}/api/api/libtmux.session/index.html`))(
         `${version} uses compiled shared chrome and the native palette adapter`, () => {
           const html = read(`py/${version}/api/api/libtmux.session/index.html`)

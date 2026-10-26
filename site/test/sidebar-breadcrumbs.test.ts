@@ -53,30 +53,30 @@ describe('sidebar-derived breadcrumbs', () => {
       ] },
     ] }]
     const nav = { ...API_NAV.scala, placement: { [owner.id]: 'pane' } }
-    const crumbs = referenceBreadcrumbs(model, nav, tree, member, '/en/scala/stable/reference/', (entry) => `/en/scala/stable/reference/${entry.slug}/`)
+    const crumbs = referenceBreadcrumbs(model, nav, tree, member, '/en/scala/v0.46.2/reference/', (entry) => `/en/scala/v0.46.2/reference/${entry.slug}/`)
     expect(crumbs.map((entry) => entry.name)).toEqual(['Queries', 'Fields', 'Pane fields', 'PaneFields', member.name])
     expect(crumbs.slice(0, 2).every((entry) => entry.url === undefined)).toBe(true)
-    expect(crumbs[2].url).toBe('/en/scala/stable/reference/#section-pane')
+    expect(crumbs[2].url).toBe('/en/scala/v0.46.2/reference/#section-pane')
     expect(bucketAncestors(tree, 'pane').map((bucket) => bucket.id)).toEqual(['queries', 'fields', 'pane'])
   })
 
   it('uses actual nested sidebar labels and retains a namespace without a page', () => {
-    const items = [{ type: 'group' as const, label: 'Language API', href: '/ja/julia/stable/mcp/reference/', items: [
+    const items = [{ type: 'group' as const, label: 'Language API', href: '/ja/julia/v0.46.2/mcp/reference/', items: [
       { type: 'group' as const, label: 'ModelContextProtocol', kind: 'module', items: [
-        { type: 'group' as const, label: 'Application', kind: 'struct', href: '/ja/julia/stable/mcp/reference/application/', items: [
-          { type: 'link' as const, label: 'close', kind: 'method', href: '/ja/julia/stable/mcp/reference/application-close/' },
+        { type: 'group' as const, label: 'Application', kind: 'struct', href: '/ja/julia/v0.46.2/mcp/reference/application/', items: [
+          { type: 'link' as const, label: 'close', kind: 'method', href: '/ja/julia/v0.46.2/mcp/reference/application-close/' },
         ] },
       ] },
     ] }]
-    const prefix = [{ name: 'Julia', url: '/ja/julia/stable/' }, { name: 'MCP', url: '/ja/julia/stable/mcp/' },
-      { name: 'API reference', url: '/ja/julia/stable/mcp/reference/' },
-      { name: 'Application.close', url: '/ja/julia/stable/mcp/reference/application-close/' }]
-    const crumbs = withSidebarBreadcrumbs(prefix, items, '/ja/julia/stable/mcp/reference/application-close/?mode=full#parameter')
+    const prefix = [{ name: 'Julia', url: '/ja/julia/v0.46.2/' }, { name: 'MCP', url: '/ja/julia/v0.46.2/mcp/' },
+      { name: 'API reference', url: '/ja/julia/v0.46.2/mcp/reference/' },
+      { name: 'Application.close', url: '/ja/julia/v0.46.2/mcp/reference/application-close/' }]
+    const crumbs = withSidebarBreadcrumbs(prefix, items, '/ja/julia/v0.46.2/mcp/reference/application-close/?mode=full#parameter')
     expect(crumbs.map((entry) => entry.name)).toEqual(['Julia', 'MCP', 'API reference', 'ModelContextProtocol', 'Application', 'close'])
     expect(crumbs[3].url).toBeUndefined()
     expect(crumbs.at(-1)?.symbol).toBe(true)
     expect(sidebarBreadcrumbs(items, '/ja/julia/latest/mcp/reference/application-close/')).toEqual([])
-    expect(withSidebarBreadcrumbs([], items, '/ja/julia/stable/mcp/reference/application/')).toEqual([])
+    expect(withSidebarBreadcrumbs([], items, '/ja/julia/v0.46.2/mcp/reference/application/')).toEqual([])
   })
 
   it('does not mistake disabled or external entries for the current page', () => {

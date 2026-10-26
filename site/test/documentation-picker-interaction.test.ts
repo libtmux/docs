@@ -193,8 +193,8 @@ it('keeps matching native glossary fragments and drops absent terms during keybo
 it('renders section fallbacks as truthful overview exits without repeated destination titles', async () => {
   const entries: PagePortLink[] = [
     { port: 'julia', name: 'Julia', links: [{ href: '/pr-42/en/julia/v1.2.3/topics/ownership/' }] },
-    { port: 'py', name: 'Python', links: [{ href: '/pr-42/en/py/stable/topics/', label: 'Topics overview', fallback: 'section' }],
-      home: { href: '/pr-42/en/py/stable/', label: 'Go to Python home' } },
+    { port: 'py', name: 'Python', links: [{ href: '/pr-42/en/py/v0.46.2/topics/', label: 'Topics overview', fallback: 'section' }],
+      home: { href: '/pr-42/en/py/v0.46.2/', label: 'Go to Python home' } },
     { port: 'lua', name: 'Lua', links: [], home: { href: '/pr-42/en/lua/latest/', label: 'Go to Lua home' } },
   ]
   await renderPicker(entries)
@@ -264,7 +264,7 @@ it.each([
 ])('renders source-verified workspace construction equivalents from %s', async (port, id) => {
   const symbol = API_MODELS[port].symbols.find((entry) => entry.id === id)!
   const entries = pagePortLinks({ pagePath: `workspace/reference/${symbol.slug}`, portSlug: port,
-    version: 'latest', defaults: { py: 'stable' }, docs: [] })
+    version: 'latest', defaults: { py: 'v0.46.2' }, docs: [] })
   await renderPicker(entries, port)
   const links = Array.from(win.document.querySelectorAll('a[data-port]'))
   const published = PORTS.filter((target) => productAvailable(target, 'workspace'))
@@ -278,7 +278,7 @@ it.each([
     if (target !== port) expect(link.getAttribute('aria-label')).toContain(kind)
   }
   expect(win.document.querySelector('a[data-port="py"]')!.getAttribute('href'))
-    .toBe('/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/')
+    .toBe('/py/v0.46.2/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/')
   expect(win.document.querySelectorAll('a[data-port][aria-current="page"]')).toHaveLength(1)
   expect(win.document.querySelector('a[data-port][aria-current="page"]')!.getAttribute('data-port')).toBe(port)
   const unmatched = Array.from(win.document.querySelectorAll('.doc-picker-option--unmatched'))
@@ -302,8 +302,8 @@ it.each(['workspace/guides', 'workspace/internals/guides'])('keeps %s counterpar
       data: { port, product: 'workspace', route: 'workspace/source-guide', aliases: [] } })),
   ]
   const portSlug = pagePath === 'workspace/guides' ? 'py' : 'ts'
-  const entries = pagePortLinks({ pagePath, portSlug, version: portSlug === 'py' ? 'stable' : 'latest',
-    defaults: { py: 'stable' }, docs })
+  const entries = pagePortLinks({ pagePath, portSlug, version: portSlug === 'py' ? 'v0.46.2' : 'latest',
+    defaults: { py: 'v0.46.2' }, docs })
   await renderPicker(entries, portSlug)
   const matched = pagePath === 'workspace/guides' ? guidePorts : builderPorts
   expect(Array.from(win.document.querySelectorAll('a[data-port]')).map((link) => link.getAttribute('data-port')).sort())
@@ -313,7 +313,7 @@ it.each(['workspace/guides', 'workspace/internals/guides'])('keeps %s counterpar
   for (const row of unmatched) {
     const port = PORTS.find((target) => target.slug === row.getAttribute('data-port'))!
     const workspace = productAvailable(port, 'workspace')
-    const version = port.slug === 'py' ? 'stable' : 'latest'
+    const version = port.slug === 'py' ? 'v0.46.2' : 'latest'
     expect(row.tagName).toBe('DIV')
     expect(row.hasAttribute('aria-disabled')).toBe(false)
     expect(row.querySelector('a[data-port]')).toBeNull()

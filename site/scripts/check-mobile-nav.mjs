@@ -134,7 +134,7 @@ for (const [w, want] of [[360, true], [390, true], [768, true], [1023, true], [1
   await p.close()
 }
 // The shared picker stays reachable while the API drawer opens and resizes.
-for (const path of ['/go/latest/reference/', '/py/stable/reference/libtmux-server/']) {
+for (const path of ['/go/latest/reference/', '/py/latest/reference/libtmux-server/']) {
   const p = await page(path)
   const menu = p.locator('[data-documentation-context] [data-surface-picker]')
   const trigger = menu.locator(':scope > summary')

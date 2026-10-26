@@ -223,8 +223,8 @@ describe('product reference equivalents', () => {
       target: 'workspace/reference/workspacebuildererror', symbol: { id: 'WorkspaceBuilderError' } })
     expect(productApiRoutes({ swift: model }, 'swift', {}, 'latest')
       .some((route) => route.path === routes[0].path)).toBe(false)
-    expect(productApiRedirects({ swift: model }, undefined, { swift: 'stable' }, 'latest')[0].path)
-      .toBe(`swift/stable/${routes[0].path}`)
+    expect(productApiRedirects({ swift: model }, undefined, { swift: 'v0.46.2' }, 'latest')[0].path)
+      .toBe(`swift/v0.46.2/${routes[0].path}`)
     expect(productApiRedirects({ swift: model }, 'go', {}, 'latest')).toEqual([])
     expect(productApiRedirects({}, 'swift', {}, 'latest')).toEqual([])
     const oldModel = { ...model, symbols: [...model.symbols, {
@@ -236,16 +236,16 @@ describe('product reference equivalents', () => {
   it('keeps body links in the product with the correct target version', () => {
     const model = API_MODELS.go
     const symbol = model.symbols.find((entry) => entry.id === 'workspace.Build')!
-    const group = productApiAlternatives(model, symbol, 'v1.2.3', { ts: 'stable' })[0]
+    const group = productApiAlternatives(model, symbol, 'v1.2.3', { ts: 'v0.46.2' })[0]
     expect(group.ports.find((entry) => entry.port === 'go')?.href).toBe('/go/v1.2.3/workspace/reference/workspace-build/')
-    expect(group.ports.find((entry) => entry.port === 'ts')?.href).toBe('/ts/stable/workspace/reference/builder-applyworkspace/')
+    expect(group.ports.find((entry) => entry.port === 'ts')?.href).toBe('/ts/v0.46.2/workspace/reference/builder-applyworkspace/')
     expect(group.ports.find((entry) => entry.port === 'rs')?.href).toBe('/rs/latest/workspace/reference/src-workspacebuilder-build/')
     expect(referenceAlternatives('go', symbol.id)[0].ports.find((entry) => entry.port === 'ts')?.href).toBe('/ts/latest/workspace/reference/builder-applyworkspace/')
   })
 
   it('publishes every product declaration in its own reference', () => {
     for (const [port, model] of Object.entries(API_MODELS)) {
-      const routes = productApiRoutes({ [port]: model }, port, {}, 'stable')
+      const routes = productApiRoutes({ [port]: model }, port, {}, 'v0.46.2')
       for (const product of ['workspace', 'mcp']) {
         const declarations = routes.filter((route) => route.symbol.product === product)
         if (productAvailable(PORT_BY_SLUG[port], product as 'workspace' | 'mcp')) {
@@ -256,7 +256,7 @@ describe('product reference equivalents', () => {
         for (const route of declarations) {
           const section = `${product}/reference`
           expect(route.path).toBe(`${section}/${route.symbol.slug}`)
-          expect(route.version).toBe('stable')
+          expect(route.version).toBe('v0.46.2')
         }
       }
     }

@@ -11,7 +11,7 @@ import { SITE_BUILT, SITE_PREFIX, SITE_ROOT } from './site-root'
  *
  * The preview policy marks a link to `/<tree>/reference/<page>/` for a card, and the card asks for `<page>.preview.json`. The
  * browser check of the dev build serves one version of each port's reference, so it cannot ask for the trees at the other
- * versions the assembly builds, such as the Python reference that the other ports link to at `stable`. Those trees are the
+ * versions the assembly builds, such as the Python reference that the other ports link to at `v0.46.2`. Those trees are the
  * shell's own: each port's shell build renders `/<slug>/<version>/reference/` (the native Sphinx output of a port is `api/`),
  * and `publishesOwnTree` says the port's publisher owns the subtree, not that it is made another way. This reads the assembly.
  *
@@ -120,14 +120,14 @@ describe('the walk over a tree', () => {
 
   it('passes a tree whose pages each have a payload that leads back to them, and names the page that has none', () => {
     const root = tree({
-      'py/stable/reference/a/index.html': '', 'py/stable/reference/a.preview.json': card('/en/py/stable/reference/a/'),
+      'py/v0.46.2/reference/a/index.html': '', 'py/v0.46.2/reference/a.preview.json': card('/en/py/v0.46.2/reference/a/'),
       'ruby/latest/mcp/reference/b/index.html': '', 'ruby/latest/mcp/reference/b.preview.json': card('/en/ruby/latest/mcp/reference/b/'),
       // Not pages a link is marked for: the index of the tree, and a page two segments down.
-      'py/stable/reference/index.html': '', 'py/stable/reference/symbols/a/index.html': '',
+      'py/v0.46.2/reference/index.html': '', 'py/v0.46.2/reference/symbols/a/index.html': '',
     })
-    expect(referencePayloadProblems(root)).toEqual({ pages: ['/py/stable/reference/a/', '/ruby/latest/mcp/reference/b/'], stubs: [], problems: [] })
-    const missing = tree({ 'py/stable/reference/a/index.html': '', 'py/stable/reference/b/index.html': '', 'py/stable/reference/a.preview.json': card('/en/py/stable/reference/a/') })
-    expect(referencePayloadProblems(missing).problems).toEqual(['/py/stable/reference/b/ has no payload at /py/stable/reference/b.preview.json'])
+    expect(referencePayloadProblems(root)).toEqual({ pages: ['/py/v0.46.2/reference/a/', '/ruby/latest/mcp/reference/b/'], stubs: [], problems: [] })
+    const missing = tree({ 'py/v0.46.2/reference/a/index.html': '', 'py/v0.46.2/reference/b/index.html': '', 'py/v0.46.2/reference/a.preview.json': card('/en/py/v0.46.2/reference/a/') })
+    expect(referencePayloadProblems(missing).problems).toEqual(['/py/v0.46.2/reference/b/ has no payload at /py/v0.46.2/reference/b.preview.json'])
   })
 
   it('sets apart a page that is only a redirect, and still names a page with no payload beside it', async () => {

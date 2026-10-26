@@ -8,9 +8,9 @@
 #
 # The assertion is on the guard's message, not on the exit code. Both were
 # tried; exit code is worthless here. `--versions latest` on its own exits 1
-# because a tree with no /py/stable/ has dangling cross-port links — a real
-# failure, unrelated to this guard, that made the control look like a pass for
-# the wrong reason. A control that fails for its own reasons proves nothing.
+# when the partial build it starts fails for its own reasons — a real failure,
+# unrelated to this guard, that made the control look like a pass for the wrong
+# reason. A control that fails for its own reasons proves nothing.
 #
 # Honest slugs are checked with a timeout: the guard fires within a second, so
 # if the message has not appeared by then it never will, and there is no need
@@ -57,7 +57,6 @@ check v1      1 'unrecognised, treated as a branch'
 
 # The controls. Without them a guard that refused everything would pass above.
 check latest  0 'trunk, which is what HEAD is'
-check stable  0 'an alias, resolved at render time'
 
 if [ "$failures" -gt 0 ]; then
   echo
@@ -65,4 +64,4 @@ if [ "$failures" -gt 0 ]; then
   exit 1
 fi
 echo
-echo 'check-versions.negative: only latest and stable build; every other slug is refused'
+echo 'check-versions.negative: only latest builds; every other slug is refused'

@@ -28,7 +28,7 @@ function cases(): Case[] {
   for (const slug of ['powershell', 'julia', 'elixir', 'kotlin', 'scala', 'rs']) {
     const port = bySlug(slug)
     add(`${slug} v1.2.3`, { port, version: 'v1.2.3' })
-    add(`${slug} stable`, { port, version: 'stable' })
+    add(`${slug} next`, { port, version: 'next' })
     add(`${slug} latest @revision`, { port, version: 'latest', revision: REVISION })
   }
   for (const port of PORTS.filter((entry) => entry.packages?.some(({ id }) => id === 'mcp' || id === 'workspace'))) {

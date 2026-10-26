@@ -59,7 +59,7 @@ describe('viewport prefetch across client navigation', () => {
 
   it.each([
     ['/en/swift/latest/topics/', 'architecture/', '/en/swift/latest/topics/architecture/'],
-    ['/en/py/stable/api/', 'quickstart/', '/en/py/stable/api/internals/'],
+    ['/en/py/v0.46.2/api/', 'quickstart/', '/en/py/v0.46.2/api/internals/'],
     ['/pr-42/ja/tmux/topics/', '../concepts/', '/pr-42/ja/tmux/topics/architecture/'],
   ])('drops a removed relative link from %s before reading its rebased URL', (source, href, destination) => {
     win.history.replaceState(null, '', source)

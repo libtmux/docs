@@ -4,7 +4,7 @@ import { chromium } from 'playwright'
 import { checkNativeFirstPaint, checkNativeHeader } from './check-native-layout.mjs'
 
 const base = (process.argv.find((arg) => arg.startsWith('http')) ?? 'http://localhost:8080/en').replace(/\/$/, '')
-const version = process.argv.find((arg) => arg.startsWith('--version='))?.slice('--version='.length) ?? 'stable'
+const version = process.argv.find((arg) => arg.startsWith('--version='))?.slice('--version='.length) ?? 'latest'
 const browser = await chromium.launch({ channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL })
 try {
   for (const javaScriptEnabled of [true, false]) {

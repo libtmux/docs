@@ -218,7 +218,7 @@ describe('indexFor attaches the inventories', () => {
     const signature = reader.signatures[0]
     const annotation = signature.params.find((param) => param.name === 'file')!.type!
     const core = indexFor(model, href)
-    for (const version of ['latest', 'stable']) {
+    for (const version of ['latest', 'v0.46.2']) {
       const product = productApiIndex(model, version)
       const external = product.linkType(annotation, reader).find((span) => span.text === 'Path')?.link
       expect(external, `${version} workspace file parameter`).toMatchObject({
