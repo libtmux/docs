@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { ApiModel } from '../src/model.ts'
 import { LinkedOwners, pageMentions, proseMentions, type LinkedOwner } from '../src/mentions.ts'
 import { Resolver } from '../src/resolver.ts'
+import { parentInventory } from '../src/parent-inventory.ts'
 import { isLikelyReference, notApiReason } from '../src/prose.ts'
 
 const LABELS = { Python: 'py', TypeScript: 'ts', Go: 'go' }
@@ -176,5 +177,37 @@ describe('a name that earlier links on the page gave an owner', () => {
     expect(owners.recur('csharp', 'PaneExited')).toBe(WAIT)
     expect(owners.recur('csharp', 'PollingFallback')).toBeUndefined()
     expect(owners.recur(undefined, 'PaneExited')).toBeUndefined()
+  })
+})
+
+describe('a bare member after the qualified type its paragraph names', () => {
+  const sym = (id: string, kind: string, product = 'core') => ({ id, name: id.split('.').at(-1), kind, product, slug: id.toLowerCase().replaceAll('.', '-'), signatures: [], docs: [] })
+  const csharp = { port: 'csharp', version: '0', symbols: [
+    sym('LibTmux.TmuxUnsupportedOnReleaseException', 'class'),
+    sym('LibTmux.TmuxUnsupportedOnReleaseException.Command', 'property'),
+    sym('LibTmux.SelectLayoutRequest', 'class'),
+    sym('LibTmux.SelectLayoutRequest.Command', 'property'),
+    sym('LibTmux.Workspace.WorkspaceFormatException', 'class', 'workspace'),
+    sym('LibTmux.Workspace.WorkspaceFormatException.Command', 'property', 'workspace'),
+  ] }
+  const powershell = { port: 'powershell', version: '0', symbols: [sym('LibTmux\\Get-TmuxPane', 'function')] }
+  const models = { csharp, powershell } as unknown as Record<string, ApiModel>
+  const resolver = new Resolver([csharp, powershell] as unknown as ApiModel[])
+  resolver.addInventory('Library API', '', parentInventory(csharp as unknown as ApiModel, (s) => `/reference/csharp/${s.slug}/`), ['powershell'])
+  const page = (body: string) => pageMentions({
+    body, portAt: () => 'powershell', portByLabel: LABELS, page: '/guide/', nativeTmux: false, resolver, models, authoredTarget: () => undefined,
+  }).dangling.map((row) => row.text)
+
+  it('resolves a name only one named type has, and names a workspace type by its qualified name', () => {
+    expect(page('Raises `LibTmux.TmuxUnsupportedOnReleaseException`. It carries `Command`.')).toEqual([])
+    expect(page('See `LibTmux.Workspace.WorkspaceFormatException`.')).toEqual([])
+  })
+
+  it('leaves the name unresolved when no named type, or two, has it', () => {
+    // Controls: nothing named before it, a type without the member, two types with it, and a short workspace name.
+    expect(page('It carries `Command`.')).toEqual(['Command'])
+    expect(page('Raises `LibTmux.Workspace.Missing`. It carries `Command`.')).toEqual(['LibTmux.Workspace.Missing', 'Command'])
+    expect(page('Raises `LibTmux.TmuxUnsupportedOnReleaseException` or `LibTmux.SelectLayoutRequest`. It carries `Command`.')).toEqual(['Command'])
+    expect(page('See `WorkspaceFormatException`.')).toEqual(['WorkspaceFormatException'])
   })
 })
