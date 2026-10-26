@@ -9432,6 +9432,13 @@
   {
    "port": "py",
    "symbol": "libtmux.pane.Pane",
+   "page": "/meta/intersphinx/",
+   "title": "Link to libtmux from Sphinx",
+   "section": "meta"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane",
    "page": "/py/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
    "section": "concepts"

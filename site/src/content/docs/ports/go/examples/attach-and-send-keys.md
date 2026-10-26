@@ -37,8 +37,8 @@ The server goes to `run`, so a test can pass in an isolated one.
 ```go file="examples/pane-io/main.go" from="ctx, cancel := context.WithTimeout" to="return run(ctx, server)"
 ```
 
-<a id="2-find-or-create-the-session"></a>
-<a id="3-add-a-window"></a>
+<span id="2-find-or-create-the-session" data-inventory-category="heading" data-inventory-display="2. Find or create the session"></span>
+<span id="3-add-a-window" data-inventory-category="heading" data-inventory-display="3. Add a window"></span>
 
 ## 2. Create the session
 
@@ -56,7 +56,9 @@ links that pattern.
 ```go file="examples/pane-io/main.go" from="session, err := server.NewSession" to="=\t}"
 ```
 
-<a id="4-pick-the-pane"></a>
+<span id="4-pick-the-pane" data-inventory-category="heading" data-inventory-display="4. Pick the pane"></span>
+
+<span id="3-use-the-sessions-window" data-inventory-category="heading" data-inventory-display="3. Use the session's window"></span>
 
 ## 3. Pick the pane
 
@@ -70,7 +72,7 @@ explains why code addresses a pane by identity.
 ```go file="examples/pane-io/main.go" from="pane, err := session.ResolveActivePane" to="=\t}"
 ```
 
-<a id="5-watch-the-panes-output"></a>
+<span id="5-watch-the-panes-output" data-inventory-category="heading" data-inventory-display="5. Watch the pane's output"></span>
 
 ## 4. Watch the pane's output
 
@@ -83,7 +85,7 @@ which the deferred call does. Open it before typing, so no output is missed.
 ```go file="examples/pane-io/main.go" from="output, err := pane.OpenObservation" to="output.Close()"
 ```
 
-<a id="6-send-a-command"></a>
+<span id="6-send-a-command" data-inventory-category="heading" data-inventory-display="6. Send a command"></span>
 
 ## 5. Send a command
 
@@ -137,6 +139,8 @@ server exits when its last session is gone.
 
 ```go file="examples/pane-io/main.go" from="=\tdefer func() {" to="=\t}()"
 ```
+
+<span id="setup-and-run" data-inventory-category="heading" data-inventory-display="Setup and run"></span>
 
 ## The complete program
 

@@ -1,5 +1,7 @@
 """Check the native producer's public using-declaration XML before building C++."""
 
+from __future__ import annotations
+
 import re
 import subprocess
 import sys
@@ -9,9 +11,11 @@ from pathlib import Path
 
 
 def check(binary: str, expected: str) -> None:
+    """Verify the Doxygen version and its public using-declaration output."""
     version = subprocess.check_output([binary, "--version"], text=True, timeout=10).strip()
     if not re.fullmatch(re.escape(expected) + r"(?: \([0-9a-f]+\))?", version):
-        raise ValueError(f"Expected Doxygen {expected}, got {version}")
+        msg = f"Expected Doxygen {expected}, got {version}"
+        raise ValueError(msg)
     with tempfile.TemporaryDirectory(prefix="libtmux-doxygen-smoke-") as directory:
         root = Path(directory)
         (root / "query.hpp").write_text("""namespace libtmux {
@@ -32,12 +36,12 @@ template <typename Entity> [[nodiscard]] auto matching(BoolFieldHandle<Entity> f
 using tmuxq::matching;
 }
 """)
-        config = "\n".join([
-            "INPUT = query.hpp", "FILE_PATTERNS = *.hpp", "GENERATE_XML = YES",
-            "GENERATE_HTML = NO", "GENERATE_LATEX = NO", "XML_PROGRAMLISTING = NO",
-            "EXTRACT_ALL = NO", "EXTRACT_PRIVATE = NO", "EXTRACT_STATIC = NO",
-            "HIDE_UNDOC_MEMBERS = YES", "WARN_AS_ERROR = FAIL_ON_WARNINGS", "QUIET = YES",
-        ])
+        config = (
+            "INPUT = query.hpp\nFILE_PATTERNS = *.hpp\nGENERATE_XML = YES\n"
+            "GENERATE_HTML = NO\nGENERATE_LATEX = NO\nXML_PROGRAMLISTING = NO\n"
+            "EXTRACT_ALL = NO\nEXTRACT_PRIVATE = NO\nEXTRACT_STATIC = NO\n"
+            "HIDE_UNDOC_MEMBERS = YES\nWARN_AS_ERROR = FAIL_ON_WARNINGS\nQUIET = YES"
+        )
         subprocess.run([binary, "-"], input=config, text=True, cwd=root, check=True, timeout=30)
         members = [
             member
@@ -46,8 +50,11 @@ using tmuxq::matching;
         ]
         names = [member.findtext("qualifiedname") for member in members]
         if names.count("libtmux::matching") != 1 or names.count("libtmux::tmuxq::matching") != 2:
-            raise ValueError("Doxygen must emit the public libtmux::matching using-declaration "
-                             "and both libtmux::tmuxq::matching overloads")
+            msg = (
+                "Doxygen must emit the public libtmux::matching using-declaration "
+                "and both libtmux::tmuxq::matching overloads"
+            )
+            raise ValueError(msg)
     print(f"Doxygen {version}: public using-declaration and two original overloads verified")
 
 

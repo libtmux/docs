@@ -57,6 +57,8 @@ describe('shared documentation sidebars', () => {
     vi.mocked(getCollection<'docs'>).mockImplementation(async (_collection, filter) => entries.filter((entry) => !filter || filter(entry)))
     const meta = hrefs(await getSidebar(undefined, 'latest', 'en', undefined, 'meta'))
     expect(meta).toContain('/meta/ai-policy/')
+    expect(meta).toContain('/meta/intersphinx/')
+    expect(meta).toContain('/meta/intersphinx/examples/')
     expect(meta).toContain('/meta/third-party-notices/')
     expect(meta.every((href) => href.startsWith('/meta/'))).toBe(true)
 

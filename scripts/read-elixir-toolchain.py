@@ -9,38 +9,47 @@ Appends otp-version and elixir-version to the file named by GITHUB_OUTPUT.
 Nothing is written when a version is missing, inexact or not selected.
 """
 
+from __future__ import annotations
+
 import json
 import os
 import pathlib
 import re
 import sys
 
-PATTERNS = {'erlang': r'[0-9]+\.[0-9]+(?:\.[0-9]+){0,2}', 'elixir': r'[0-9]+\.[0-9]+\.[0-9]+'}
+PATTERNS = {"erlang": r"[0-9]+\.[0-9]+(?:\.[0-9]+){0,2}", "elixir": r"[0-9]+\.[0-9]+\.[0-9]+"}
 
 
 def read(source: pathlib.Path) -> dict[str, str]:
-    reference = json.loads((source / 'priv/tmux/support.json').read_text())['reference']
-    selected = {'erlang': reference.get('otp'), 'elixir': reference.get('elixir')}
+    """Return the exact pinned versions, or raise when one is missing or unselected."""
+    reference = json.loads((source / "priv/tmux/support.json").read_text())["reference"]
+    selected = {"erlang": reference.get("otp"), "elixir": reference.get("elixir")}
     for tool, version in selected.items():
         if not isinstance(version, str) or not re.fullmatch(PATTERNS[tool], version):
-            raise ValueError(f'elixir: selected source must pin an exact {tool} version')
-    lines = [line.split() for line in (source / '.tool-versions').read_text().splitlines()]
+            message = f"elixir: selected source must pin an exact {tool} version"
+            raise ValueError(message)
+    lines = [line.split() for line in (source / ".tool-versions").read_text().splitlines()]
     for tool, version in selected.items():
         selectors = [line for line in lines if line and line[0] == tool]
-        if len(selectors) != 1 or len(selectors[0]) != 2 or not (
-                version == selectors[0][1] or version.startswith(selectors[0][1] + '.')):
-            raise ValueError(f'elixir: .tool-versions must select the pinned {tool} {version}')
+        if (
+            len(selectors) != 1
+            or len(selectors[0]) != 2
+            or not (version == selectors[0][1] or version.startswith(selectors[0][1] + "."))
+        ):
+            message = f"elixir: .tool-versions must select the pinned {tool} {version}"
+            raise ValueError(message)
     return selected
 
 
 def main() -> None:
+    """Append the exact versions to the GitHub Actions output file."""
     if len(sys.argv) != 2:
         raise SystemExit(__doc__)
     selected = read(pathlib.Path(sys.argv[1]))
-    with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+    with pathlib.Path(os.environ["GITHUB_OUTPUT"]).open("a") as output:
         output.write(f"otp-version={selected['erlang']}\n")
         output.write(f"elixir-version={selected['elixir']}\n")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -3,6 +3,8 @@ import { Window } from 'happy-dom'
 import { demoConfig, demoUrl } from '../src/lib/sidebar-demo'
 import { API_MODEL_PORTS } from '../src/lib/ports'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
+import { buildLocale } from '../src/i18n/locales'
+import { parseHtml, renderPage } from './header-page'
 
 afterEach(() => vi.unstubAllEnvs())
 
@@ -53,8 +55,9 @@ async function footer(props: Record<string, unknown>) {
 it('keeps the page-source line on an embedded preview and drops the site navigation', async () => {
   const embedded = await footer({ compact: true })
   const line = embedded.document.querySelector('.page-source')!
-  expect([...line.querySelectorAll('a')].map((link) => link.getAttribute('href')!.replace(/^.*\//, '')))
-    .toEqual(['py.md', '[port].astro', 'docs.json', 'llms.txt', 'llms-full.txt'])
+  expect([...line.querySelectorAll('a')].map((link) => link.getAttribute('href')!.replace(/\/$/, '').replace(/^.*\//, '')))
+    // The inventory download and its help page sit on the same line, so a preview names them too.
+    .toEqual(['py.md', '[port].astro', 'docs.json', 'llms.txt', 'llms-full.txt', 'objects-full.inv', 'intersphinx', 'intersphinx'])
   expect(line.querySelector('code')!.textContent).toBe('site/src/pages/demo/sidebar/preview/[port].astro')
   expect(embedded.document.querySelector('footer a[aria-label="GitHub"]')!.getAttribute('href')).toBe('https://github.com/libtmux/docs/')
   expect(embedded.document.querySelectorAll('footer li')).toHaveLength(0)
@@ -63,4 +66,17 @@ it('keeps the page-source line on an embedded preview and drops the site navigat
   expect(full.document.querySelectorAll('footer li').length).toBeGreaterThan(API_MODEL_PORTS.length)
   expect(full.document.querySelector('.page-source')!.innerHTML).toBe(line.innerHTML)
   await Promise.all([embedded.happyDOM.abort(), full.happyDOM.abort()])
+})
+
+it('links a port inventory only from pages inside that port\'s version tree', async () => {
+  // `i18n/resolve` reads Astro content collections, which a bare vitest run cannot load.
+  const layout = await loadAstroTemplate('layouts/BaseLayout.astro', { real: ['components/SiteFooter.astro'], modules: { '../i18n/resolve': { buildLocale } } })
+  const scoped = async (url: string) => [...parseHtml(await renderPage(layout, url, { portSlug: 'ts' }), url).document.querySelectorAll('.page-source a')]
+    .map((link) => link.getAttribute('href')!).filter((href) => href.endsWith('/objects.inv'))
+  // A preview build's version is its PR label, and no `ts/pr-42/` tree exists.
+  vi.stubEnv('LIBTMUX_DOCS_VERSION', 'pr-42')
+  expect(await scoped('https://libtmux.org/en/demo/sidebar/preview/ts/')).toEqual([])
+  // Site roots are fixed at import, so this run's roots carry no locale prefix.
+  vi.stubEnv('LIBTMUX_DOCS_VERSION', 'latest')
+  expect(await scoped('https://libtmux.org/ts/latest/guides/')).toEqual([expect.stringMatching(/\/ts\/latest\/objects\.inv$/)])
 })

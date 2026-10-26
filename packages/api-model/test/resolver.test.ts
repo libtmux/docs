@@ -71,6 +71,11 @@ d('resolver', () => {
     expect('symbol' in res ? res.symbol.publicId : res.how).toBe('libtmux.Server:new_session')
   })
 
+  it('treats Sphinx inventory files as filenames, and leaves a similarly spelled member a symbol', () => {
+    for (const text of ['objects.inv', 'objects-full.inv', 'reference/objects.inv']) expect(notASymbol(text), text).toBe('a filename')
+    for (const text of ['pane.invoke', 'server.inventory', 'inv']) expect(notASymbol(text), text).toBeUndefined()
+  })
+
   it('treats C, Lua and Ruby source files as filenames', () => {
     for (const text of ['options-table.c', 'tmux.h', 'lua/libtmux/init.lua', 'lib/libtmux.rb']) {
       expect(notASymbol(text)).toBe('a filename')

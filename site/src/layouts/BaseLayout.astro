@@ -1,6 +1,8 @@
 ---
 import { buildLocale } from '../i18n/resolve'
 import { localeSourcePath } from '../i18n/locales'
+import type { InventoryPage } from '../lib/inventory-targets'
+import { tmuxInventoryVersion } from '../lib/inventory-links'
 import BackToTop from '../components/BackToTop.astro'
 import Seo from '../components/Seo.astro'
 import BrandIcons from '../components/BrandIcons.astro'
@@ -31,6 +33,9 @@ import type { LocaleStatus } from '../i18n/resolve'
  */
 interface Props {
   title: string
+  inventoryId?: string
+  inventoryAliases?: string[]
+  inventoryExclude?: boolean
   description?: string
   /** Path within the current port+version, e.g. 'guides/panes'. */
   pagePath?: string
@@ -81,6 +86,9 @@ interface Props {
 
 const {
   title,
+  inventoryId,
+  inventoryAliases,
+  inventoryExclude = false,
   description,
   pagePath: requestedPagePath,
   portSlug,
@@ -163,7 +171,10 @@ const markdownHref = typeof markdown === 'object'
   ? markdown.href
   : markdownPath(Astro.url.pathname, markdownIndex ?? Astro.url.pathname === buildBase)
 const versionRoot = portSlug ? withPortRoot(`/${portSlug}/${target.version}/`) : undefined
-const llmsRoot = versionRoot && Astro.url.pathname.startsWith(versionRoot) ? versionRoot : withRoot('/')
+// A port's demo or landing page sits outside its version tree, where no
+// per-version llms files or objects.inv exist.
+const inVersionTree = Boolean(versionRoot && Astro.url.pathname.startsWith(versionRoot))
+const llmsRoot = inVersionTree ? versionRoot! : withRoot('/')
 // The repository the page documents: a product's own, else the one its source
 // is in, else its port's. Python's MCP server and tmuxp are separate repos.
 const githubRepo = repository
@@ -178,6 +189,18 @@ const homeBrands = homeLauncher
   ? Object.fromEntries(Object.values(PORT_BY_SLUG).map((port) => [port.slug, port.logoLanguage]))
   : undefined
 
+const tmuxVersion = tmuxInventoryVersion(pagePath)
+const inventoryPage: InventoryPage = {
+  scope: portSlug ?? (tmuxVersion ? `tmux@${tmuxVersion}` : 'site'),
+  product: /^(?:mcp|workspace)(?:\/|$)/.exec(pagePath)?.[0].replace(/\/$/, '') ?? 'core',
+  identity: inventoryId ?? (pagePath || 'index'),
+  title, version: portSlug ? target.version : tmuxVersion, source,
+  previousScopes: !portSlug && tmuxVersion && pagePath.startsWith(`tmux/${tmuxVersion}/catalog`) ? ['site'] : undefined,
+  aliases: inventoryAliases, exclude: inventoryExclude || bare ||
+    Boolean(process.env.LIBTMUX_DOCS_PORT && !inVersionTree) ||
+    /^(?:demo(?:\/|$)|404$|search$)/.test(routePath),
+}
+
 ---
 
 <!doctype html>
@@ -185,6 +208,7 @@ const homeBrands = homeLauncher
   data-home-ports={homeLauncher ? Object.keys(PORT_BY_SLUG).join(' ') : undefined}
   data-home-brands={homeBrands ? JSON.stringify(homeBrands) : undefined}>
   <head>
+    <meta name="libtmux-inventory" content={JSON.stringify(inventoryPage)} />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <BrandIcons portSlug={navPort} pagePath={pagePath} />
@@ -253,7 +277,7 @@ const homeBrands = homeLauncher
       <div data-pagefind-filter={`section:${section}`} data-pagefind-ignore="all" hidden></div>
       <slot />
     </div>
-    <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} githubUrl={githubUrl} flush={flush} compact={bare} />
+    <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} port={inVersionTree ? portSlug : undefined} version={inVersionTree ? target.version : undefined} pagePath={pagePath} githubUrl={githubUrl} flush={flush} compact={bare} />
     <BackToTop />
     <SearchModal port={navPort} version={navVersion} />
     <LinkPreview />

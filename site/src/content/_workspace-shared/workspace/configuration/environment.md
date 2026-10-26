@@ -1,4 +1,9 @@
 ---
+inventoryTables:
+  cli-and-runtime-variables:
+    type: std:envvar
+    identity: environment
+    prefix: ""
 title: Workspace environment
 description: Configure the loader process and the variables available to pane commands.
 product: workspace

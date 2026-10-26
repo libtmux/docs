@@ -48,7 +48,7 @@ async function signatureComponent() {
   const setupEnd = source.indexOf('\n\n', setupStart)
   expect(setupStart).toBeGreaterThan(0)
   expect(setupEnd).toBeGreaterThan(setupStart)
-  const wrapper = `---\nimport ApiType from './ApiType.astro'\nimport { apiSignatureLayouts } from '../../lib/code-layout'\nimport { nativeSignatureText as unformattedNativeSignatureText } from '../../lib/api-sections'\nconst { symbol, sig, port, language, index, nameHref } = Astro.props\n${source.slice(setupStart, setupEnd)}\n---\n${fragment}`
+  const wrapper = `---\nimport ApiType from './ApiType.astro'\nimport { apiSignatureLayouts } from '../../lib/code-layout'\nimport { nativeSignatureText as unformattedNativeSignatureText } from '../../lib/api-sections'\nconst { symbol, sig, port, language, index, nameHref, signatureTargets = [{}], i = 0 } = Astro.props\n${source.slice(setupStart, setupEnd)}\n---\n${fragment}`
   return (await import(/* @vite-ignore */ await compile('../src/components/api/ApiEntry.astro', {
     './ApiType.astro': type,
     '../../lib/code-layout': helpers,

@@ -1,3 +1,5 @@
+import { readFileSync, rmSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
 
@@ -45,5 +47,20 @@ describe('API links in port sections', () => {
     expect(nested.children?.[0].properties?.href).toMatch(/github.com\/.*\/src\/libtmux\/pane.py$/)
     expect(other.children?.[0].properties?.href).toBe('/go/latest/reference/tmux-session-panes/')
     expect(shared.children?.[0].tagName).toBe('code')
+  })
+
+  it('leaves a published inventory file plain after a Python fence, without reporting it dangling', () => {
+    const report = fileURLToPath(new URL('../.astro/dangling-refs.json', import.meta.url))
+    rmSync(report, { force: true })
+    const fence = element('pre', element('code'))
+    fence.children![0].properties = { className: ['language-python'] }
+    const inventory = element('p', element('code', text('objects.inv')), element('code', text('reference/objects.inv')))
+    const symbol = element('p', element('code', text('libtmux.Server')))
+    const missing = element('p', element('code', text('Nope.thing()')))
+    rehypeApiLinks()({ type: 'root', children: [fence, inventory, symbol, missing] })
+    expect(inventory.children?.map((child) => child.tagName)).toEqual(['code', 'code'])
+    expect(symbol.children?.[0].properties?.href).toBe('/py/latest/reference/libtmux-server/')
+    // The control: the gate still records a Python name that nothing defines.
+    expect(readFileSync(report, 'utf8').trim().split('\n').map((line) => JSON.parse(line).text)).toEqual(['Nope.thing()'])
   })
 })

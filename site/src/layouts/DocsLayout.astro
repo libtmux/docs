@@ -49,6 +49,9 @@ import { DOC_PRODUCTS, PORT_BY_SLUG, portPageUrl, referenceUrl, productAvailable
  */
 interface Props {
   title: string
+  inventoryId?: string
+  inventoryAliases?: string[]
+  inventoryExclude?: boolean
   /** Render an API identifier as code while retaining its plain metadata title. */
   symbolTitle?: boolean
   description?: string
@@ -99,6 +102,9 @@ interface Props {
 
 const {
   title,
+  inventoryId,
+  inventoryAliases,
+  inventoryExclude,
   symbolTitle = false,
   description,
   port,
@@ -168,6 +174,9 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
 
 <BaseLayout
   title={title}
+  inventoryId={inventoryId}
+  inventoryAliases={inventoryAliases}
+  inventoryExclude={inventoryExclude}
   description={description}
   pagePath={pagePath}
   portSlug={port}

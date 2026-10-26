@@ -1,0 +1,61 @@
+[project]
+name = "libtmux-docs"
+version = "0.0.0"
+description = "Python tooling for the libtmux.org documentation site"
+requires-python = ">=3.12,<4"
+
+[dependency-groups]
+dev = [
+    { include-group = "lint" },
+    { include-group = "testing" },
+]
+docs = [
+    "breathe>=4.36.0,<5",
+    "furo>=2025.12.19",
+    "sphinx>=9.1.0,<10",
+]
+lint = [
+    "ruff>=0.16.1",
+    "ty>=0.0.35",
+]
+testing = [
+    "sphinx>=9.1.0,<10",
+    "myst-parser>=5.1.0,<6",
+]
+
+[tool.uv]
+package = false
+exclude-newer = "3 days"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+include = ["scripts/**/*.py"]
+extend-exclude = ["output"]
+
+[tool.ruff.lint]
+extend-select = [
+    "E", "F", "I", "UP", "A", "B", "C4", "COM", "EM", "Q", "PTH",
+    "SIM", "TRY", "PERF", "RUF", "D", "FA100",
+]
+ignore = ["COM812"]
+extend-safe-fixes = ["UP006", "UP007"]
+
+[tool.ruff.lint.pyupgrade]
+keep-runtime-typing = false
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+required-imports = ["from __future__ import annotations"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ty.environment]
+python-version = "3.12"
+
+[tool.ty.src]
+include = ["scripts"]
+
+[tool.ty.terminal]
+error-on-warning = true
