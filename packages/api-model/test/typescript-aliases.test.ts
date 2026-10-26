@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { aliasTarget, membersOf, pageMembersOf } from '../src/member-order.ts'
+import { SymbolIndex } from '../src/link.ts'
 import { extractProject } from '../src/project.ts'
 
 const dirs: string[] = []
@@ -93,5 +94,31 @@ describe('TypeScript type aliases', () => {
     expect(target('a.Local')).toBe('a.Shared')
     expect(target('b.Remote')).toBe('b.Shared')
     expect(target('c.Elsewhere')).toBeUndefined()
+  })
+
+  it('gives the words a type binds or reserves a grammar role instead of leaving them plain', async () => {
+    const model = await extract(`
+export interface Foo { a: string }
+declare const brand: unique symbol;
+export type Mapped<Key extends string> = { readonly [K in Key]: K | Foo };
+export type Guard = (x: unknown) => x is Foo;
+export type Branded = string & { readonly [brand]: 1 };
+export type Unwrapped<T> = T extends Array<infer Item> ? Item : never;
+export type Named = { is: string; in?: number };
+export type Engine = { readonly endpoint?: true; execute(request: Foo): Promise<Foo> };
+`)
+    const index = new SymbolIndex(model.symbols, (symbol) => `/${symbol.slug}/`, 'ts')
+    const roles = (name: string) => {
+      const alias = model.symbols.find((symbol) => symbol.id === `types.${name}`)!
+      return index.linkType(alias.type!, alias).filter((span) => /^[A-Za-z_$]/.test(span.text))
+        .map((span) => `${span.text}:${span.keyword ? 'keyword' : span.nonReference ? 'syntax' : span.declaration ? 'name' : span.link ? 'link' : 'plain'}`)
+    }
+    expect(roles('Mapped')).toEqual(['readonly:keyword', 'K:name', 'in:keyword', 'Key:name', 'K:name', 'Foo:link'])
+    expect(roles('Guard')).toEqual(['x:name', 'unknown:link', 'x:name', 'is:keyword', 'Foo:link'])
+    expect(roles('Branded')).toEqual(['string:link', 'readonly:keyword', 'brand:name'])
+    expect(roles('Unwrapped')).toEqual(['T:name', 'extends:keyword', 'Array:link', 'infer:keyword', 'Item:name', 'Item:name', 'never:link'])
+    expect(roles('Engine')).toEqual(['readonly:keyword', 'endpoint:name', 'true:syntax', 'execute:name', 'request:name', 'Foo:link', 'Promise:link', 'Foo:link'])
+    // A field that is called `is` or `in` stays a field name.
+    expect(roles('Named')).toEqual(['is:name', 'string:link', 'in:name', 'number:link'])
   })
 })

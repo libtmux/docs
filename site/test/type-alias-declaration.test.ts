@@ -33,6 +33,9 @@ async function declaration(id: string) {
     text: signature.textContent!.replace(/\s+/g, ' ').trim(),
     links: [...signature.querySelectorAll('a.api-type-link')].map((a) => [a.textContent, a.getAttribute('href')]),
     value: signature.querySelector('.api-alias-value')?.textContent ?? undefined,
+    // What scripts/check-type-links.mjs counts: an identifier in a plain punctuation span.
+    plain: [...signature.querySelectorAll('span.api-punct')].filter((span) => span.getAttribute('data-api-role') !== 'syntax')
+      .map((span) => span.textContent!.trim()).filter((text) => /^[A-Za-z_][A-Za-z0-9_]*$/.test(text)),
   }
 }
 
@@ -65,6 +68,12 @@ describe('TypeScript type alias declarations', () => {
     expect(shown.text).toBe('type common.TmuxId<Kind extends TmuxIdKind> = string & { readonly [tmuxIdBrand]: Kind; }')
     expect(shown.value).toBe('string & {\n  readonly [tmuxIdBrand]: Kind;\n}')
     expect(shown.links).toContainEqual(['TmuxIdKind', hrefFor(symbolOf('common.TmuxIdKind'))])
+  })
+
+  it('gives mapped-type bindings, predicates and computed keys a role, not a plain name', async () => {
+    // Key and K are bound by `[Key in ...]`, `in` is syntax and tmuxIdBrand is the key of a member.
+    expect((await declaration('field_types.RowWithIdentities')).plain.filter((name) => ['Key', 'K', 'in', 'is'].includes(name))).toEqual([])
+    expect((await declaration('common.TmuxId')).plain).not.toContain('tmuxIdBrand')
   })
 
   it('declares a union without resolving members', async () => {
