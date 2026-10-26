@@ -25,10 +25,10 @@ function fixture() {
   git('-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', '-c', 'commit.gpgsign=false', 'commit', '-m', 'Native source fixture')
   const sourceSha = git('rev-parse', 'HEAD')
   const article = '<h1>Server</h1><dt class="sig" id="libtmux.Server"><code>Server</code></dt>\n<pre>  exact &amp; bytes\n</pre>'
-  const html = `<html><head><title>Server</title></head><body><article>${article}</article><footer><div class="page-source"><code>docs/api/libtmux.server.md</code></div></footer></body></html>`
+  const html = `<html><head><title>Server</title></head><body><div class="sidebar-tree"><ul><li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Server</a></li></ul></div><article>${article}</article><footer><div class="page-source"><code>docs/api/libtmux.server.md</code></div></footer></body></html>`
   writeFileSync(join(artifact, 'api/libtmux.server/index.html'), html)
   writeFileSync(join(artifact, 'api/libtmux.server.md'), source)
-  writeFileSync(join(artifact, 'genindex/index.html'), '<html><head></head><body><article>Generated index</article></body></html>')
+  writeFileSync(join(artifact, 'genindex/index.html'), '<html><head></head><body><div class="sidebar-tree"><ul><li class="toctree-l1"><a class="reference internal" href="../api/libtmux.server/">Server</a></li></ul></div><article>Generated index</article></body></html>')
   writeFileSync(join(artifact, 'docs.json'), JSON.stringify({ pages: [{ url: '/api/libtmux.server/', markdownUrl: '/api/libtmux.server.md' }] }))
   const options = { prefix: '/pr-42/en', sphinxPort: 'py', version: 'v0.62.0', checkout, sourceSha }
   return { artifact, checkout, options, article, html, source, sourceSha }
@@ -73,6 +73,16 @@ describe('native shell context', () => {
     expect(index.source).toBeUndefined()
     expect(index.markdownHref).toBeUndefined()
     expect(await collectNativeContext(artifact, options)).toEqual(context)
+  })
+
+  it('binds the global toctree once, on published URLs, and rejects pages that disagree', async () => {
+    const { artifact, options, html } = fixture()
+    const context = await collectNativeContext(artifact, options)
+    expect(context.toctree).toEqual([{ title: 'Server', url: '/pr-42/en/py/v0.62.0/api/api/libtmux.server/', children: [] }])
+    writeFileSync(join(artifact, 'genindex/index.html'), html.replace('<code>docs/api/libtmux.server.md</code>', '').replace('>Server</a>', '>Other</a>'))
+    await expect(collectNativeContext(artifact, options)).rejects.toThrow('global toctree differs')
+    writeFileSync(join(artifact, 'genindex/index.html'), '<html><body><article>Generated index</article></body></html>')
+    await expect(collectNativeContext(artifact, options)).rejects.toThrow('no global toctree')
   })
 
   it('offers contents only for real destinations beyond the page title', async () => {

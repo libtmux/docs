@@ -33,6 +33,67 @@ function localPath(value, field) {
   return value
 }
 
+const escapeHtml = (text) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+/** A title as Sphinx renders it: text, with inline literals kept as `<code>`. */
+function navigationTitle(link) {
+  let html = ''
+  let plain = ''
+  let code = false
+  const walk = (node) => {
+    for (const child of node.childNodes) {
+      if (child.nodeType === 3) {
+        const text = child.textContent.replace(/\s+/g, ' ')
+        plain += text
+        html += escapeHtml(text)
+      } else if (child.nodeType === 1) {
+        if (child.localName === 'svg') continue
+        const literal = child.localName === 'code'
+        if (literal) { code = true; html += '<code>' }
+        walk(child)
+        if (literal) html += '</code>'
+      }
+    }
+  }
+  walk(link)
+  return { title: plain.trim(), ...(code ? { html: html.trim() } : {}) }
+}
+
+/**
+ * The global toctree one page carries, as nested data on published URLs.
+ *
+ * gp-furo-theme renders it with `toctree(collapse=False, maxdepth=-1,
+ * titles_only=True, includehidden=True)`: every page lists the whole tree,
+ * with hrefs relative to that page, so the current-page markers and the
+ * relative spelling are the only differences between pages. A top-level
+ * `p.caption` heading owns the `ul` that follows it.
+ */
+export function captureToctree(sidebar, pageUrl) {
+  const resolve = (href) => {
+    if (/^[a-z][a-z\d+.-]*:/i.test(href)) return { url: href, external: true }
+    const url = new URL(href, `https://native.invalid${pageUrl}`)
+    return { url: `${url.pathname}${url.hash}` }
+  }
+  const items = (list) => [...list.children].filter((child) => child.localName === 'li').map((item) => {
+    const link = [...item.children].find((child) => child.localName === 'a')
+    if (!link) throw new Error('Native toctree entry has no link')
+    const nested = [...item.children].find((child) => child.localName === 'ul')
+    return { ...navigationTitle(link), ...resolve(link.getAttribute('href')), children: nested ? items(nested) : [] }
+  })
+  const tree = []
+  for (const child of sidebar.children) {
+    if (child.localName === 'p' && child.classList.contains('caption')) {
+      tree.push({ title: child.textContent.trim(), caption: true, children: [] })
+    } else if (child.localName === 'ul') {
+      const entries = items(child)
+      const last = tree.at(-1)
+      if (last?.caption && !last.children.length) last.children = entries
+      else tree.push(...entries)
+    }
+  }
+  return tree
+}
+
 /** Bind native routes, exported Markdown and source files before Astro renders their shell. */
 export async function collectNativeContext(directory, { prefix, sphinxPort, version, checkout, sourceSha }) {
   const port = PORT_BY_SLUG[sphinxPort]
@@ -56,6 +117,8 @@ export async function collectNativeContext(directory, { prefix, sphinxPort, vers
   }
   const pages = []
   const redirects = []
+  let toctree
+  let toctreeFile
   const window = new Window({ settings: { disableJavaScriptEvaluation: true, disableCSSFileLoading: true, disableJavaScriptFileLoading: true } })
   try {
     for (const file of files.filter((path) => path.endsWith('.html') && !path.startsWith('_sources/'))) {
@@ -68,6 +131,13 @@ export async function collectNativeContext(directory, { prefix, sphinxPort, vers
       const path = file.replace(/index\.html$/, '')
       const entry = metadata.get(`/${path}`)
       window.document.body.innerHTML = html
+      const sidebar = window.document.querySelector('.sidebar-tree')
+      if (!sidebar) throw new Error(`Native page has no global toctree: ${file}`)
+      const captured = captureToctree(sidebar, `${base}${path}`)
+      if (!toctree) { toctree = captured; toctreeFile = file }
+      else if (JSON.stringify(captured) !== JSON.stringify(toctree)) {
+        throw new Error(`Native global toctree differs between ${toctreeFile} and ${file}`)
+      }
       const sourcePath = window.document.querySelector('.page-source code')?.textContent?.trim()
       let source
       let markdownHref
@@ -117,7 +187,7 @@ export async function collectNativeContext(directory, { prefix, sphinxPort, vers
   return {
     schema: 1, port: port.slug, version, locale, root, base,
     source: { repository: port.repo, sha },
-    artifactSha256: nativeHash(JSON.stringify(hashes)), pages, redirects,
+    artifactSha256: nativeHash(JSON.stringify(hashes)), pages, redirects, toctree: toctree ?? [],
   }
 }
 
