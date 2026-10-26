@@ -225,7 +225,7 @@ describe('header links', () => {
         expect(parsed.protocol, url).toBe('https:')
         expect(hosts.some((host) => servedBy(host, parsed.hostname)), url).toBe(true)
         expect(parsed.search + parsed.hash, url).toBe('')
-        expect(parsed.pathname, url).not.toMatch(/^\/(?:pr-\d+\/)?(?:en|ja)\/|\/(?:latest|stable)(?:\/|$)/)
+        expect(parsed.pathname, url).not.toMatch(/^\/(?:pr-\d+\/)?(?:en|ja)\/|\/latest(?:\/|$)/)
       }
     }
   })

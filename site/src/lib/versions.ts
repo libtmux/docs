@@ -32,7 +32,7 @@ export interface PublicationReceipt {
 }
 
 export interface VersionEntry {
-  /** URL segment: 'latest', 'stable', 'v0.46.2', 'v0.x', 'pr-123'. */
+  /** URL segment: 'latest', 'next', 'v0.46.2', 'v0.x', 'pr-123'. */
   slug: string
   /** Label for the switcher. */
   label: string
@@ -76,10 +76,11 @@ export function selectBuildVersions(manifest: VersionManifest, selected: readonl
 /**
  * Robots policy per version kind.
  *
- * Only one version per port is indexable — the alias that `defaultVersion`
- * points at, normally `stable`. Everything else is either a duplicate of it
- * (tags, trunk) or noise (PR previews), and indexing duplicates splits
- * ranking across URLs that all say the same thing.
+ * Only one version per port is indexable — the one `defaultVersion` names:
+ * the newest final release tag, or `latest` while the port has none.
+ * Everything else is either a duplicate of it (older tags, trunk) or noise
+ * (PR previews), and indexing duplicates splits ranking across URLs that all
+ * say the same thing.
  */
 export function robotsFor(entry: VersionEntry, isDefault: boolean): string {
   if (entry.kind === 'pr') return 'noindex, nofollow'
@@ -258,7 +259,7 @@ export function newestPublishedTag(
   return newest.name
 }
 
-/** Whether a package registry version precedes its matching stable release. */
+/** Whether a package registry version precedes its matching final release. */
 export function packageVersionIsPrerelease(version: string, grammar: TagGrammar): boolean {
   const parsed = parseTag(packageVersion(version, grammar).tag, grammar)
   if (!parsed?.pre) return false

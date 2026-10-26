@@ -288,7 +288,7 @@ step 'build'
 if [[ -n "$preview" ]]; then
   LIBTMUX_DOCS_LOCALES_ROOT="$preview" LIBTMUX_DOCS_VERSION="${preview#/}" \
     LIBTMUX_DOCS_VERSION_KIND=pr LIBTMUX_DOCS_IS_DEFAULT=false \
-    ./scripts/build-site.sh --versions latest,stable
+    ./scripts/build-site.sh --versions latest
 
   # Production robots, sitemaps and indexing must still render on a PR.
   # Two root locale renders cover those contracts without rebuilding ports.
@@ -419,7 +419,7 @@ node scripts/check-api-fidelity.mjs "$site_out"
 # twin as well — which only a full assembly produces. Both run against a
 # running server; `pnpm test:publication` reports that they were not run rather than
 # implying they passed.
-if curl --connect-timeout 1 --max-time 3 -sf -o /dev/null "$SERVE_SITE/py/stable/reference/libtmux-server/"; then
+if curl --connect-timeout 1 --max-time 3 -sf -o /dev/null "$SERVE_SITE/py/latest/reference/libtmux-server/"; then
   # Type is checked here rather than with the static suites because half of
   # it is a rendering question: which faces a page opens with is answered by
   # laying the page out, not by reading its HTML.
@@ -444,7 +444,7 @@ if curl --connect-timeout 1 --max-time 3 -sf -o /dev/null "$SERVE_SITE/py/stable
   step 'Ruby and Lua browser coverage'
   (cd site && node scripts/check-ruby-lua.mjs "$SERVE_SITE")
 
-  if curl --connect-timeout 1 --max-time 3 -sf -o /dev/null "$SERVE_SITE/py/stable/api/api/libtmux.server/"; then
+  if curl --connect-timeout 1 --max-time 3 -sf -o /dev/null "$SERVE_SITE/py/latest/api/api/libtmux.server/"; then
     step 'native page navigation'
     (cd site && node scripts/check-native-shell.mjs "$SERVE_SITE")
     (cd site && node scripts/check-native-navigation.mjs "$SERVE_SITE")

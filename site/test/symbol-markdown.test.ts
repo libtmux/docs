@@ -237,8 +237,8 @@ describe('API Markdown content parity', () => {
       source: { file: 'example.fs' }, slug: 'sample',
     }
     const model = { ...API_MODELS.fsharp, symbols: [error, symbol] }
-    const text = symbolMarkdown({ model, symbol, version: 'stable' })
-    expect(text).toContain('[`ArgumentException`](' + referenceUrl(PORT_BY_SLUG.fsharp, 'stable') + 'argument-exception/)')
+    const text = symbolMarkdown({ model, symbol, version: 'v0.46.2' })
+    expect(text).toContain('[`ArgumentException`](' + referenceUrl(PORT_BY_SLUG.fsharp, 'v0.46.2') + 'argument-exception/)')
     expect(text).not.toContain('learn.microsoft.com')
   })
 

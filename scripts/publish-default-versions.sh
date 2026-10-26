@@ -31,8 +31,8 @@ if ! jq -e '.schema == 1 and (.defaultVersion | type == "object")' "$manifest" >
   exit 1
 fi
 
-# `latest` is the fallback: every port publishes one, `stable` only after a
-# release.
+# `latest` is the fallback: every port publishes one, a release tag only after
+# the port's first final release.
 declare -A desired
 while IFS= read -r slug; do
   [[ -z "$slug" ]] && continue

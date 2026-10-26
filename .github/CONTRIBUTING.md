@@ -190,7 +190,7 @@ A link the page marks for a preview card must have a card to show. The preview
 check hovers the C function link of a method page, then asks for the payload of
 every marked link on four pages. It asks only for destinations the dev build
 serves: one version of each port's reference, as its build target says, so the
-Python reference that the other ports link to at `stable` is not asked for. What
+Python reference that the other ports link to at its default version is not asked for. What
 it leaves out is bounded: only reference trees whose publisher owns the version
 tree (`publishesOwnTree`), at versions the dev build does not serve. A payload
 missing on a port the build does serve is reported, and the check fails if it

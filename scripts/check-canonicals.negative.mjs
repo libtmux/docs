@@ -76,6 +76,35 @@ const check = (name, ok, detail) => {
 }
 
 {
+  // A port whose default is a release tag: every other version canonicalises
+  // to that tag, and the tag to itself. The control is the tree that does;
+  // the failure is trunk claiming itself while the manifest names the tag.
+  const tree = (latestCanonical) => {
+    const dir = mkdtempSync(join(tmpdir(), 'check-canonicals-default-'))
+    for (const version of ['latest', 'v0.46.2']) {
+      const page = join(dir, 'py', version, 'reference', 'pane')
+      mkdirSync(page, { recursive: true })
+      const target = version === 'latest' ? latestCanonical : 'v0.46.2'
+      writeFileSync(join(page, 'index.html'), `<html><head><link rel="canonical" href="${ORIGIN}/py/${target}/reference/pane/"></head></html>`)
+    }
+    writeFileSync(join(dir, 'versions.json'), JSON.stringify({ schema: 1, ports: {}, defaultVersion: { py: 'v0.46.2' } }))
+    return dir
+  }
+  const control = tree('v0.46.2')
+  const passed = run(control)
+  check('trunk canonicalising to the default release tag passes', passed.code === 0, `exited ${passed.code}:\n${passed.out}`)
+  rmSync(control, { recursive: true, force: true })
+  const wrong = tree('latest')
+  const failed = run(wrong)
+  check(
+    'trunk canonicalising to itself while a release is the default fails',
+    failed.code !== 0 && failed.out.includes('canonicalise somewhere other than themselves'),
+    `exited ${failed.code}:\n${failed.out}`,
+  )
+  rmSync(wrong, { recursive: true, force: true })
+}
+
+{
   const dir = mkdtempSync(join(tmpdir(), 'check-canonicals-bare-'))
   mkdirSync(join(dir, 'py', 'latest', 'reference'), { recursive: true })
   writeFileSync(join(dir, 'py', 'latest', 'reference', 'index.html'), '<html><head></head></html>')

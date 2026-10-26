@@ -79,18 +79,18 @@ describe('staged port guide links', () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', 'julia')
     vi.stubEnv('LIBTMUX_DOCS_VERSION', 'pr-32')
     vi.stubEnv('LIBTMUX_DOCS_VERSION_KIND', 'pr')
-    vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"julia":"stable"}')
+    vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"julia":"v0.46.2"}')
     const page = stagedPortGuides('julia', juliaGuides).get('julia/concepts/queries/index.md')!
     expect(page).toContain('[`snapshot`](/julia/pr-32/reference/')
-    expect(page).not.toMatch(/\/julia\/(?:latest|stable)\/reference\//)
+    expect(page).not.toMatch(/\/julia\/(?:latest|v0\.46\.2)\/reference\//)
   })
 
   it.each(['selected', 'other-port'])('uses the %s Julia version for native API overview links', (selection) => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', selection === 'selected' ? 'julia' : 'ruby')
     vi.stubEnv('LIBTMUX_DOCS_VERSION', 'pr-32')
     vi.stubEnv('LIBTMUX_DOCS_VERSION_KIND', 'pr')
-    vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"julia":"stable"}')
-    const version = selection === 'selected' ? 'pr-32' : 'stable'
+    vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"julia":"v0.46.2"}')
+    const version = selection === 'selected' ? 'pr-32' : 'v0.46.2'
     for (const [module, product] of [['LibTmux', ''], ['LibTmuxMCP', 'mcp/'], ['LibTmuxWorkspace', 'workspace/']]) {
       const page = expandDocumenter(`\`\`\`@autodocs\nModules = [${module}]\n\`\`\``, 'docs/src/api.md')
       expect(page).toBe(`Browse the [${module} API reference](/julia/${version}/${product}reference/).`)

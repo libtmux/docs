@@ -168,13 +168,13 @@ describe('native metadata', () => {
     expect(nativeBrandHead(html, options)).toBe(html)
   })
   it('replaces legacy image tags, preserves policy, and is idempotent', () => {
-    const source = '<html lang="en"><head><title>Server</title><link rel="canonical" href="https://libtmux.org/en/py/stable/api/server/"><meta name="robots" content="noindex, follow"><link rel="icon" href="old.ico"><meta property="og:image" content="old.png"></head><body>Server API</body></html>'
+    const source = '<html lang="en"><head><title>Server</title><link rel="canonical" href="https://libtmux.org/en/py/v0.46.2/api/server/"><meta name="robots" content="noindex, follow"><link rel="icon" href="old.ico"><meta property="og:image" content="old.png"></head><body>Server API</body></html>'
     const options = { port: 'py', pagePath: 'api/server/', root: '/pr-42/en' }
     const html = nativeBrandHead(source, options)
     expect(html).toContain('data-brand="python"')
     expect(html).toContain('https://libtmux.org/pr-42/en/brand/python/library/opengraph-light.png')
     expect(html).toContain('<meta name="robots" content="noindex, follow">')
-    expect(html).toContain('href="https://libtmux.org/en/py/stable/api/server/"')
+    expect(html).toContain('href="https://libtmux.org/en/py/v0.46.2/api/server/"')
     expect(html).not.toContain('old.png')
     expect(html).not.toContain('old.ico')
     expect(html).toContain('href="/pr-42/en/brand/python/library/site.webmanifest"')

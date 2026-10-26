@@ -59,8 +59,8 @@ describe('shell default-version publication', { timeout: 30_000 }, () => {
   it('writes only the rows that changed, with "latest" for a port that has no default', () => {
     const rest = PORTS.slice(1)
     const directory = fixture(
-      Object.fromEntries(rest.map((port) => [port.slug, 'stable'])),
-      rest.map((port) => ({ Key: `${port.slug}:default`, Value: 'stable' })),
+      Object.fromEntries(rest.map((port) => [port.slug, 'v0.46.2'])),
+      rest.map((port) => ({ Key: `${port.slug}:default`, Value: 'v0.46.2' })),
     )
     const result = publish(directory)
     expect(result.status, result.stderr).toBe(0)
@@ -107,7 +107,7 @@ describe('shell default-version publication', { timeout: 30_000 }, () => {
   })
 
   it.each(['describe-key-value-store', 'list-keys'])('fails without writing when %s fails', (failing) => {
-    const directory = fixture({ [PORTS[0].slug]: 'stable' }, [])
+    const directory = fixture({ [PORTS[0].slug]: 'v0.46.2' }, [])
     const result = publish(directory, { FAIL: failing })
     expect(result.status).not.toBe(0)
     expect(result.stderr).toContain('AccessDenied')

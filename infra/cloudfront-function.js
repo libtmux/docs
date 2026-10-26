@@ -31,7 +31,7 @@ const DEFAULT_LOCALE = 'en'
 async function handler(event) {
     const request = event.request
     const uri = request.uri
-    const parts = uri.split('/') // '/py/stable/' -> ['', 'py', 'stable', '']
+    const parts = uri.split('/') // '/py/latest/' -> ['', 'py', 'latest', '']
 
     // --- 0. The origin root. Every page is published under a locale, so the
     // bare root is the one URL with nothing behind it.
@@ -91,7 +91,7 @@ async function handler(event) {
     //   - !parts[2].includes('.'):    excludes files that sit directly under
     //     the locale — "/en/versions.json", "/en/404.html" — each of which
     //     would otherwise pay for a lookup that can only miss.
-    //   - !parts[3]:                  nothing follows the port. "/en/py/stable"
+    //   - !parts[3]:                  nothing follows the port. "/en/py/latest"
     //     already names a version and must get its own trailing slash from
     //     rule 3, not be redirected to a different one.
     if (parts[1] === DEFAULT_LOCALE && parts[2] && !parts[2].includes('.') && !parts[3]) {
@@ -132,14 +132,14 @@ async function handler(event) {
     }
 
     // --- 3. Page path without its trailing slash: redirect, don't rewrite.
-    // A rewrite would serve the same bytes at two URLs ("/py/stable" and
-    // "/py/stable/"); a redirect keeps exactly one canonical URL per page,
+    // A rewrite would serve the same bytes at two URLs ("/py/latest" and
+    // "/py/latest/"); a redirect keeps exactly one canonical URL per page,
     // which is what Seo.astro's canonical tag and the sitemap both assume.
     //
     // "Is this a file?" is decided by the extension, not by "contains a
     // dot". Testing for a dot looks equivalent and is not: three kinds of
     // real page carry one in their last segment — a version tag
-    // ("/py/v0.46.2"), a .NET type ("/csharp/stable/api/libtmux.client",
+    // ("/py/v0.46.2"), a .NET type ("/csharp/latest/api/libtmux.client",
     // 215 of them), and a locale-tagged path — and each was silently
     // treated as a file, passed through, and 403'd at the origin. The
     // allowlist below is every extension this build actually emits.

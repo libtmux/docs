@@ -9,11 +9,11 @@ const base = '/pr-42/en'
 const manifest = {
   schema: 1,
   ports: { py: [{ slug: 'latest', label: 'latest', supported: true }] },
-  defaultVersion: { ts: 'stable', rs: 'latest' },
+  defaultVersion: { ts: 'v0.46.2', rs: 'latest' },
 }
 const pageLinks = {
   schema: 1,
-  indexes: { py: `${base}/py/stable/reference/`, ts: `${base}/ts/latest/reference/` },
+  indexes: { py: `${base}/py/v0.46.2/reference/`, ts: `${base}/ts/latest/reference/` },
   symbols: {
     py: {
       'libtmux.Session': [{ port: 'ts', href: `${base}/ts/latest/reference/session-session/`, label: 'Session' }],
@@ -57,7 +57,7 @@ describe('native API page switchers', () => {
     expect(header.querySelector('select option')?.getAttribute('value')).toBe('latest')
     expect(header.querySelector('nav[aria-label="Documentation destinations"]')).toBeNull()
     expect(document.querySelector('[data-lt-shell="footer"] [data-port-home="ts"]')?.getAttribute('href'))
-      .toBe(`${base}/ts/stable/`)
+      .toBe(`${base}/ts/v0.46.2/`)
     expect(header.querySelector('[data-page-port-switcher] a[href$="session-session/"]')).not.toBeNull()
   })
 

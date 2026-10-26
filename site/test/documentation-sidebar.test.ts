@@ -106,7 +106,7 @@ it('saves current position before navigation and restores it in the same scope',
   expect(second.secondary.open).toBe(true)
 })
 
-it.each(['/en/julia/latest/mcp/reference/', '/en/cxx/latest/workspace/reference/', '/en/cxx/stable/mcp/reference/', '/fr/cxx/latest/mcp/reference/'])(
+it.each(['/en/julia/latest/mcp/reference/', '/en/cxx/latest/workspace/reference/', '/en/cxx/v0.46.2/mcp/reference/', '/fr/cxx/latest/mcp/reference/'])(
   'does not inherit state in %s', (section) => {
     saveState(700, { [JSON.stringify([scope, 'Other'])]: true })
     const { start, scroll, secondary } = mount({ section, rowOffset: 100 })

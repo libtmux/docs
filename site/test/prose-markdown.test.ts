@@ -289,7 +289,7 @@ describe('prose Markdown links', () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', ports)
     vi.stubEnv('LIBTMUX_DOCS_PORT', 'go')
     vi.stubEnv('LIBTMUX_DOCS_VERSION', 'next')
-    vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"py":"stable","rs":"v0.1"}')
+    vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"py":"v0.46.2","rs":"v0.1"}')
     vi.resetModules()
     const { llmsPage: deployedPage } = await import('../src/lib/llms')
     const { rehypeApiLinks: deployedApiLinks } = await import('../src/plugins/rehype-api-links')
@@ -310,7 +310,7 @@ describe('prose Markdown links', () => {
       })
       const html = (await renderer.render(content, { frontmatter })).code
       const htmlLinks = [...html.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map((match) => new URL(match[1], 'https://libtmux.org').href)
-      const defaults: Record<string, string> = { py: 'stable', rs: 'v0.1' }
+      const defaults: Record<string, string> = { py: 'v0.46.2', rs: 'v0.1' }
       const version = owner === port ? 'next' : defaults[owner] ?? 'latest'
       const target = `https://libtmux.org${ports}/${owner}/${version}/workspace/`
       expect(htmlLinks, `${owner}/${port || 'root'} HTML`).toContain(target)
@@ -350,10 +350,10 @@ describe('prose Markdown links', () => {
 
   it('preserves explicit ownership in shared prose and avoids ambiguous file links', () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', '')
-    vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"go":"next","py":"stable"}')
+    vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"go":"next","py":"v0.46.2"}')
     const source = '<!-- port:go -->Use `Session.Panes`.<!-- /port -->\n\n<!-- port:py -->Use `Session.panes` and `list`.<!-- /port -->'
     expect(urls(linkProseMarkdown(source))).toEqual([
-      '/go/next/reference/tmux-session-panes/', '/py/stable/reference/libtmux-session-panes/',
+      '/go/next/reference/tmux-session-panes/', '/py/v0.46.2/reference/libtmux-session-panes/',
       'https://docs.python.org/3/builtins/stdtypes.html#list',
     ])
     expect(linkProseMarkdown('A `settings.rs` file and `missing-rust-file.rs`.', 'rs')).toBe('A `settings.rs` file and `missing-rust-file.rs`.')

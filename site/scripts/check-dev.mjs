@@ -56,11 +56,11 @@ Object.assign(process.env, {
   LIBTMUX_DOCS_SITE: 'https://libtmux.org',
   LIBTMUX_DOCS_BASE: '/en/', LIBTMUX_DOCS_ROOT: '/en', LIBTMUX_DOCS_PORT_ROOT: '/en',
   LIBTMUX_DOCS_LOCALES_ROOT: '', LIBTMUX_DOCS_LOCALE: 'en', LIBTMUX_DOCS_PORT: '',
-  LIBTMUX_DOCS_VERSION: 'latest', LIBTMUX_DOCS_PORT_DEFAULTS: '{"py":"stable"}',
+  LIBTMUX_DOCS_VERSION: 'latest', LIBTMUX_DOCS_PORT_DEFAULTS: '{"py":"v0.46.2"}',
 })
 // The one version of each port's reference this build serves: its own target, as the site's build target says it. A port's core
 // reference is a tree of its own, so a link to another version of it (the Python reference that the other ports link to at its
-// default, `stable`) names a tree this build does not contain. The routes below and the checks that ask what is served read it here.
+// default version) names a tree this build does not contain. The routes below and the checks that ask what is served read it here.
 const MIRRORED_VERSION = buildTarget(process.env).version
 // Astro always writes root/.astro, so a separate cacheDir alone cannot isolate it.
 const source = fileURLToPath(new URL('../', import.meta.url))
@@ -784,7 +784,7 @@ try {
   const firstPage = homeLauncherOnly || homeControlsOnly ? '/'
     : keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
     : apiStickyOnly ? '/swift/latest/reference/server/'
-    : badgeCentringOnly ? '/py/stable/guides/attaching-to-tmux/'
+    : badgeCentringOnly ? '/py/v0.46.2/guides/attaching-to-tmux/'
     : referencePreviewsOnly ? '/cxx/latest/reference/libtmux-server-panes/'
     : documentationNavigationOnly || headerMenuSectionsOnly || statusBadgesOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
     : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/'
@@ -938,7 +938,7 @@ try {
     const typeParameters = schedule(() => retryReload(() => checkTypeParameters(browser, base)))
     await typeParameters
     const paths = ['tmux/concepts/server-session-window-pane', 'tmux/examples/attach-and-send-keys', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
-      'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
+      'ts/latest/workspace/internals/guides', 'py/v0.46.2/workspace/guides',
       'ts/latest/mcp/tools', 'csharp/latest/mcp/tools/capture_pane']
     for (const path of paths) await retryReload(async () => {
       await page.setViewportSize({ width: 1440, height: 1000 })
@@ -965,13 +965,13 @@ try {
         })
         assert(geometry.above && geometry.contextAbove, `${path}: context controls precede the breadcrumb and heading`)
       }
-      const expected = isReference ? '/en/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/' : path.includes('workspace/') ? `/en/${path}/`
-        : path === 'csharp/latest/mcp/tools/capture_pane' ? '/en/py/stable/mcp/tools/capture_pane/' : `/en/py/stable/${path.replace(/^(?:ts\/latest\/|tmux\/)/, '')}/`
+      const expected = isReference ? '/en/py/v0.46.2/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/' : path.includes('workspace/') ? `/en/${path}/`
+        : path === 'csharp/latest/mcp/tools/capture_pane' ? '/en/py/v0.46.2/mcp/tools/capture_pane/' : `/en/py/v0.46.2/${path.replace(/^(?:ts\/latest\/|tmux\/)/, '')}/`
       if (hasSwitcher) {
         assert.equal(await portLinks.first().getAttribute('href'), expected)
         assert.equal(await switcher.locator('.tmux-area a').getAttribute('href'), '/en/tmux/')
       }
-      if (path === 'py/stable/workspace/guides') {
+      if (path === 'py/v0.46.2/workspace/guides') {
         // Native PowerShell and Julia articles live at workspace/source-guide,
         // not this guide index; product availability alone is not a counterpart.
         const guidePorts = ['py', 'ruby', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift']
@@ -1000,7 +1000,7 @@ try {
         assert.match(await python.textContent(), /No matching page/)
         assert.equal(await python.locator('a[data-port]').count(), 0)
         assert.equal(await python.getAttribute('aria-disabled'), null)
-        assert.equal(await python.locator('[data-picker-home]').getAttribute('href'), '/en/py/stable/workspace/')
+        assert.equal(await python.locator('[data-picker-home]').getAttribute('href'), '/en/py/v0.46.2/workspace/')
         assert.equal(await python.locator('[data-picker-home]').getAttribute('aria-label'), 'Go to Python Workspace Manager home')
       }
       if (path === 'csharp/latest/mcp/tools/capture_pane') {
@@ -1009,7 +1009,7 @@ try {
           port: link.dataset.port, href: link.getAttribute('href'),
         })))).sort((a, b) => a.port.localeCompare(b.port)),
         capturePorts.map((port) => ({
-          port, href: `/en/${port}/${port === 'py' ? 'stable' : 'latest'}/mcp/tools/capture_pane/`,
+          port, href: `/en/${port}/${port === 'py' ? 'v0.46.2' : 'latest'}/mcp/tools/capture_pane/`,
         })).sort((a, b) => a.port.localeCompare(b.port)))
         assert.equal(await switcher.locator('a[aria-current="page"]').getAttribute('href'), `/en/${path}/`)
       }
@@ -1077,7 +1077,7 @@ try {
     }, page)
     for (const path of [
       'py/latest/reference/libtmux-server',
-      'py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder',
+      'py/v0.46.2/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder',
       'java/latest/workspace/reference/io-github-libtmux-workspace-workspacebuilder-workspacebuilder',
     ]) await retryReload(async () => {
       const response = await page.goto(`${base}/${path}/`, { waitUntil: 'load' })
@@ -1139,7 +1139,7 @@ try {
     for (const mode of ['light', 'dark']) {
       await page.locator(`.scheme-switch input[value="${mode}"]`).check({ force: true })
       let reference
-      for (const port of ['py/stable', 'swift/latest', 'go/latest', 'cxx/latest']) {
+      for (const port of ['py/v0.46.2', 'swift/latest', 'go/latest', 'cxx/latest']) {
         await page.goto(`${base}/${port}/workspace/`, { waitUntil: 'load' })
         const reading = await page.evaluate(() => {
           const tokens = getComputedStyle(document.documentElement)

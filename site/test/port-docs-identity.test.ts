@@ -75,7 +75,7 @@ describe('port docs identity', () => {
     expect(result.stderr).toContain('preview requires a numeric pull request number')
   })
 
-  it('publishes latest from the default branch only, as the default until a stable release', () => {
+  it('publishes latest from the default branch only, as the default until a final release', () => {
     const trunk = identity({ EVENT: 'push', REF_NAME: 'master' })
     expect(versions(trunk.entries)).toEqual([['latest', 'trunk', true, '']])
     expect(trunk.outputs.should_publish).toBe('true')
@@ -84,18 +84,18 @@ describe('port docs identity', () => {
     expect(versions(prerelease.entries), 'another package\'s release').toEqual([['latest', 'trunk', true, '']])
     const released = identity({ EVENT: 'push', REF_NAME: 'master', TAG_PREFIX: 'libtmux@',
       TAGS: 'libtmux@v0.1.0-alpha.14\nlibtmux@v0.1.0' })
-    expect(versions(released.entries), 'after a stable release').toEqual([['latest', 'trunk', false, '']])
+    expect(versions(released.entries), 'after a final release').toEqual([['latest', 'trunk', false, '']])
     const other = identity({ EVENT: 'push', REF_NAME: 'docs-site' })
     expect(other.status).toBe(1)
     expect(other.stderr).toContain('unsupported documentation branch')
   })
 
-  it('publishes a tag and the alias its grammar implies, for every port grammar', () => {
-    const cases: [string, string, string, string][] = [
+  it('publishes a tag for every port grammar, the default only for a final release', () => {
+    const cases: [string, string, string, string | null][] = [
       ['libtmux@v0.1.0-alpha.14', 'libtmux@', 'v0.1.0-alpha.14', 'next'],
-      ['libtmux@v1.0.0', 'libtmux@', 'v1.0.0', 'stable'],
+      ['libtmux@v1.0.0', 'libtmux@', 'v1.0.0', null],
       ['0.1.0-alpha.6', '', '0.1.0-alpha.6', 'next'],
-      ['v0.62.0', '', 'v0.62.0', 'stable'],
+      ['v0.62.0', '', 'v0.62.0', null],
       ['v0.63.0a1', '', 'v0.63.0a1', 'next'],
       ['v0.1.0.alpha.1', '', 'v0.1.0.alpha.1', 'next'],
       ['v0.1.0alpha1', '', 'v0.1.0alpha1', 'next'],
@@ -104,9 +104,31 @@ describe('port docs identity', () => {
       const result = tag(name, prefix)
       expect(result.status, `${name}: ${result.stderr}`).toBe(0)
       expect(versions(result.entries), name).toEqual([
-        [version, 'tag', false, ''],
-        [alias, 'alias', alias === 'stable', version],
+        [version, 'tag', alias === null, ''],
+        ...(alias ? [[alias, 'alias', false, version]] : []),
       ])
+    }
+  })
+
+  it('keeps the default on the newest final release when an older tag is pushed', () => {
+    const push = (name: string, tags: string) => identity({ EVENT: 'push', REF_TYPE: 'tag', REF_NAME: name, TAGS: tags })
+    const tags = 'v0.45.9\nv0.46.2\nv0.47.0a1\nv0.9.0'
+    expect(versions(push('v0.45.9', tags).entries), 'older backport').toEqual([['v0.45.9', 'tag', false, '']])
+    expect(versions(push('v0.9.0', tags).entries), 'lower minor that sorts last as text').toEqual([['v0.9.0', 'tag', false, '']])
+    expect(versions(push('v0.46.2', tags).entries), 'the newest final').toEqual([['v0.46.2', 'tag', true, '']])
+    expect(versions(push('v0.47.0', `${tags}\nv0.47.0`).entries), 'a newer final').toEqual([['v0.47.0', 'tag', true, '']])
+    expect(versions(push('v0.47.0a1', tags).entries), 'a prerelease').toEqual([
+      ['v0.47.0a1', 'tag', false, ''], ['next', 'alias', false, 'v0.47.0a1']])
+  })
+
+  it('emits only latest, a pull request, a release tag or next, for any event', () => {
+    const results = [
+      tag('v1.0.0'), tag('v1.0.0-alpha.1'), identity({ EVENT: 'push', REF_NAME: 'master', TAGS: 'v1.0.0' }),
+      identity({ EVENT: 'push', REF_NAME: 'master' }), identity({ EVENT: 'pull_request', REF_NAME: '1/merge' }),
+    ]
+    for (const { entries } of results) {
+      expect(entries.length).toBeGreaterThan(0)
+      for (const { version } of entries) expect(version).toMatch(/^(?:latest|next|pr-\d+|(?:[A-Za-z][\w.-]*[@/])?v?\d[\w.-]*)$/)
     }
   })
 
