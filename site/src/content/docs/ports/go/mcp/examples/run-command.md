@@ -16,8 +16,8 @@ The client checks completion and output before reporting the result.
 ## Run the example
 
 Use Go 1.26 or newer and tmux 3.3a or newer on Linux, macOS, or WSL.
-The project pins the [core library](https://github.com/libtmux/libtmux-go/tree/3f6f99dd41f077aaac2fa18acf7c82d99f58c7cd)
-and [MCP executable](https://github.com/libtmux/libtmux-go/tree/6e7420927f4cb717fe089a710328e44e8d551025/mcp)
+The project pins the [core library](https://github.com/libtmux/libtmux-go/tree/c21afc69867e989410e15b3616a8c0f0b1073c33)
+and [MCP executable](https://github.com/libtmux/libtmux-go/tree/59aed98c06984e2f8613fd1df6ec8943f5f1eed3/mcp)
 to their published releases. The client uses the official Go MCP SDK.
 
 Create an empty directory:
@@ -36,7 +36,7 @@ Install the MCP executable inside the project:
 
 ```console
 $ GOBIN="$PWD/.tools" go install \
-    github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp@v0.0.1-alpha.12
+    github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp@v0.1.0
 ```
 
 Save the module file:
@@ -47,7 +47,7 @@ module example.com/command-runner
 go 1.26.0
 
 require (
-	github.com/libtmux/libtmux-go v0.0.1-alpha.9
+	github.com/libtmux/libtmux-go v0.1.0
 	github.com/modelcontextprotocol/go-sdk v1.6.1
 )
 

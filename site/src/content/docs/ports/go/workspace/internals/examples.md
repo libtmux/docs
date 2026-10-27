@@ -17,22 +17,14 @@ application or log file.
 
 ## Prepare the project
 
-Use Go 1.26, Git, and tmux 3.3a or newer on Unix. Create an empty project and
-fetch the source revision used by this example:
+Use Go 1.26 and tmux 3.3a or newer on Unix. Create an empty project:
 
 ```console
 $ mkdir go-workspace-example && cd go-workspace-example
 ```
 
-```console
-$ git init libtmux-source && \
-    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-go.git && \
-    git -C libtmux-source fetch --depth=1 origin bb06e26e116e941813ca40bf45e7e3a47d38f52a && \
-    git -C libtmux-source checkout --detach FETCH_HEAD
-```
-
-Create the module file. Both replacements select that checkout, so the core
-and workspace libraries use the same source revision:
+Create the module file. It requires the published core and workspace
+modules at `v0.1.0`; the indirect YAML dependency is what `go mod tidy` resolves:
 
 ```go title="go.mod"
 module example.com/workspace
@@ -40,15 +32,11 @@ module example.com/workspace
 go 1.26.0
 
 require (
-	github.com/libtmux/libtmux-go v0.0.1-alpha.9
-	github.com/libtmux/libtmux-go/workspace v0.0.0
+	github.com/libtmux/libtmux-go v0.1.0
+	github.com/libtmux/libtmux-go/workspace v0.1.0
 )
 
 require go.yaml.in/yaml/v3 v3.0.5 // indirect
-
-replace github.com/libtmux/libtmux-go => ./libtmux-source
-
-replace github.com/libtmux/libtmux-go/workspace => ./libtmux-source/workspace
 ```
 
 Create the workspace file in the same directory:
@@ -189,5 +177,5 @@ selected server and choose when to stop it.
 <a id="where-this-comes-from"></a>
 <a id="source-inclusion"></a>
 
-[Builder source](https://github.com/libtmux/libtmux-go/blob/bb06e26e116e941813ca40bf45e7e3a47d38f52a/workspace/builder.go);
-[configuration source](https://github.com/libtmux/libtmux-go/blob/bb06e26e116e941813ca40bf45e7e3a47d38f52a/workspace/workspace.go).
+[Builder source](https://github.com/libtmux/libtmux-go/blob/59aed98c06984e2f8613fd1df6ec8943f5f1eed3/workspace/builder.go);
+[configuration source](https://github.com/libtmux/libtmux-go/blob/59aed98c06984e2f8613fd1df6ec8943f5f1eed3/workspace/workspace.go).

@@ -66,7 +66,7 @@ plugins {
 
 repositories { mavenCentral() }
 dependencies {
-    implementation("io.github.libtmux:libtmux-kotlin:0.0.1-alpha.17-SNAPSHOT")
+    implementation("io.github.libtmux:libtmux-kotlin:0.1.0")
 }
 kotlin {
     jvmToolchain(25)
@@ -79,7 +79,6 @@ Save this file beside the program using the displayed filename.
 
 ```kotlin title="settings.gradle.kts"
 rootProject.name = "connect"
-includeBuild("libtmux-source")
 ```
 
 Save this file beside the program using the displayed filename.
@@ -123,11 +122,11 @@ export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
 "$binary" -S "$socket" has-session -t '=work'
 ```
 
-Fetch the verified library revision, build, and run:
+Fetch the Gradle wrapper from the 0.1.0 release, build, and run:
 
 ```console
 $ git clone https://github.com/libtmux/libtmux-java libtmux-source &&
-  git -C libtmux-source checkout 85ebf6955e56703c5be74e2afd34a18309044741 &&
+  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59 &&
   sh run.sh ./libtmux-source/gradlew --project-dir . run --console=plain --max-workers=2
 ```
 

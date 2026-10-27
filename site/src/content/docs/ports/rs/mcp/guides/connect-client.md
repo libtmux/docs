@@ -13,19 +13,15 @@ sidebar:
 the executable and exchanges JSON-RPC messages over stdin and stdout.
 The launcher writes diagnostics to stderr.
 
-Use Rust 1.88 or newer, Git, and tmux 3.3a or newer on Linux or macOS.
+Use Rust 1.88 or newer and tmux 3.3a or newer on Linux or macOS.
 The command below uses the tested Rust 1.97.1 toolchain and installs the
-source revision used by this documentation's MCP reference. Cargo's
-binary directory must be on the path available to your MCP client.
+published `tmux-mcp` 0.1.0 crate. Cargo's binary directory must be on the
+path available to your MCP client.
 
 ## Install and connect
 
 ```console
-$ cargo +1.97.1 install \
-    --git https://github.com/libtmux/libtmux-rs \
-    --rev a6fc2a65674177b92b17fa380757155d2ba150fd \
-    --locked \
-    tmux-mcp
+$ cargo +1.97.1 install --locked tmux-mcp@0.1.0
 ```
 
 Check that the installed command runs:
@@ -37,7 +33,7 @@ $ tmux-mcp --version
 Expected output:
 
 ```text
-tmux-mcp 0.1.0-alpha.16
+tmux-mcp 0.1.0
 ```
 
 For a client that accepts `mcpServers`, add this entry to its configuration:

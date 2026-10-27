@@ -62,6 +62,12 @@ export const OTHER_FLOORS = [
     why: 'the Elixir quickstart prerequisites; priv/tmux/support.json declares tmux_minimum 3.3',
   },
   {
+    path: 'site/src/data/home-examples.json',
+    version: '3.4',
+    near: /tmux 3\.4 or newer on Linux\/macOS/,
+    why: 'the F# quickstart prerequisites; the quickstart runs a command in a pane, which LibTmux 0.1.0 refuses below tmux 3.4 because earlier releases act on the most recent buffer when the named one is missing',
+  },
+  {
     path: 'site/src/lib/ports.ts',
     version: '3.3',
     near: /Elixir \d/,
@@ -77,6 +83,18 @@ export const OTHER_FLOORS = [
     version: '3.7',
     near: /history limit/,
     why: 'a tmux behaviour of the history-limit option from tmux 3.7, not a library minimum',
+  },
+  {
+    path: 'site/src/content/docs/ports/kotlin/concepts/transports.md',
+    version: '3.7',
+    near: /Managed control/,
+    why: 'the managed control program; libtmux 0.1.0 refuses managed control below tmux 3.7 (ControlAcquisition.supports)',
+  },
+  {
+    path: 'site/src/content/docs/ports/scala/concepts/transports.md',
+    version: '3.7',
+    near: /Managed control/,
+    why: 'the managed control program; libtmux 0.1.0 refuses managed control below tmux 3.7 (ControlAcquisition.supports)',
   },
 ]
 

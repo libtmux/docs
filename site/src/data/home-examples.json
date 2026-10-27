@@ -33,8 +33,8 @@
   "ruby": {
     "lang": "ruby",
     "sourceRepository": "libtmux/libtmux-ruby",
-    "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-    "sourceTree": "61f4a53afc47b42ac9dbffcca05f704599e11d35",
+    "sourceRevision": "c8b839595d5a30e271e3f9be0d0fe811ddb11b7e",
+    "sourceTree": "0cf427e8bbe586e4e86ab6fc66d325edb62e6646",
     "program": "quickstart.rb",
     "excerpt": {
       "startLine": 1,
@@ -51,17 +51,17 @@
       {
         "name": "Gemfile",
         "lang": "ruby",
-        "code": "source \"https://rubygems.org\"\ngem \"libtmux\", path: \"source/gems/libtmux\"\n"
+        "code": "source \"https://rubygems.org\"\ngem \"libtmux\", \"~> 0.1\"\n"
       },
       {
         "name": "Gemfile.lock",
         "lang": "text",
-        "code": "PATH\n  remote: source/gems/libtmux\n  specs:\n    libtmux (0.1.0.alpha.1)\n      fiddle (~> 1.1)\n      io-console (~> 0.8)\n      json (~> 3.0.2)\n      securerandom (~> 0.4)\n      tmpdir (~> 0.3)\n\nGEM\n  remote: https://rubygems.org/\n  specs:\n    fiddle (1.1.8)\n    fileutils (1.8.0)\n    io-console (0.9.4)\n    json (3.0.2)\n    securerandom (0.4.1)\n    tmpdir (0.3.1)\n      fileutils\n\nPLATFORMS\n  ruby\n  x86_64-linux\n\nDEPENDENCIES\n  libtmux!\n\nCHECKSUMS\n  fiddle (1.1.8) sha256=7fa8ee3627271497f3add5503acdbc3f40b32f610fc1cf49634f083ef3f32eee\n  fileutils (1.8.0) sha256=8c6b1df54e2540bdb2f39258f08af78853aa70bad52b4d394bbc6424593c6e02\n  io-console (0.9.4) sha256=a403304f32928ee85e56d457b4612ca43f2703b561a3258844992bd24085fbb1\n  json (3.0.2) sha256=8e6d7e7b11384c21230430cef90b71f14849a34a1f4452796670f7c981bd19df\n  libtmux (0.1.0.alpha.1)\n  securerandom (0.4.1) sha256=cc5193d414a4341b6e225f0cb4446aceca8e50d5e1888743fac16987638ea0b1\n  tmpdir (0.3.1) sha256=908e9729bb31ce104ba27fc03cfc8293a7f858a8dc9e3a1d7cfd112919a3513d\n\nBUNDLED WITH\n  4.0.20\n"
+        "code": "GEM\n  remote: https://rubygems.org/\n  specs:\n    fiddle (1.1.8)\n    fileutils (1.8.1)\n    io-console (0.9.4)\n    json (3.0.2)\n    libtmux (0.1.0)\n      fiddle (~> 1.1)\n      io-console (~> 0.8)\n      json (~> 3.0.2)\n      securerandom (~> 0.4)\n      tmpdir (~> 0.3)\n    securerandom (0.4.1)\n    tmpdir (0.3.2)\n      fileutils\n\nPLATFORMS\n  ruby\n  x86_64-linux\n\nDEPENDENCIES\n  libtmux (~> 0.1)\n\nCHECKSUMS\n  fiddle (1.1.8) sha256=7fa8ee3627271497f3add5503acdbc3f40b32f610fc1cf49634f083ef3f32eee\n  fileutils (1.8.1) sha256=2d541a1ee34a9ed5c4f054be8fb819a26b5d654488a31dc8806917cf448b9cc3\n  io-console (0.9.4) sha256=a403304f32928ee85e56d457b4612ca43f2703b561a3258844992bd24085fbb1\n  json (3.0.2) sha256=8e6d7e7b11384c21230430cef90b71f14849a34a1f4452796670f7c981bd19df\n  libtmux (0.1.0) sha256=e1cc928de46d517fc9956ba6161a5b9d205ae8ed337bfd31689b1adb75f3ef00\n  securerandom (0.4.1) sha256=cc5193d414a4341b6e225f0cb4446aceca8e50d5e1888743fac16987638ea0b1\n  tmpdir (0.3.2) sha256=e276ef386182169f8d417d9e90f12dba82a54e81646df0caf21de4a7987a0c27\n\nBUNDLED WITH\n  4.0.20\n"
       }
     ],
-    "prerequisites": "POSIX shell, Git, tmux 3.3a or newer, Ruby 4.0.7, Bundler 4.0.20 and a C build toolchain for gems.",
+    "prerequisites": "POSIX shell, tmux 3.3a or newer, Ruby 4.0.7, Bundler 4.0.20, a C build toolchain for gems and access to rubygems.org.",
     "commands": [
-      "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-ruby.git \\\n  9b1545562a112353c2c893a1d3e8c0d9b4b51f8d\ngit -C source checkout -q --detach FETCH_HEAD\nbundle config set --local path vendor/bundle\nbundle install --jobs 2",
+      "bundle config set --local path vendor/bundle\nbundle install --jobs 2",
       "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\nbundle exec ruby quickstart.rb"
     ],
     "expectedOutput": "main: %0\nlogs: %1, %2\n",
@@ -142,8 +142,8 @@
   "rs": {
     "lang": "rust",
     "sourceRepository": "libtmux/libtmux-rs",
-    "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-    "sourceTree": "865aef72a40135bade83eb5d44c0b78ea018a270",
+    "sourceRevision": "ce7610a3b46376c377292e5a640b3798c18708fe",
+    "sourceTree": "32c8792ffcd03d4d1c58d1f25b8d29fd36fc2287",
     "program": "src/main.rs",
     "excerpt": {
       "startLine": 1,
@@ -160,12 +160,12 @@
       {
         "name": "Cargo.toml",
         "lang": "toml",
-        "code": "[package]\nname = \"libtmux-home-quickstart\"\nversion = \"0.0.0\"\nedition = \"2024\"\npublish = false\n\n[dependencies]\nlibtmux = { path = \"source/crates/libtmux\" }\ntempfile = \"3.20\"\ntokio = { version = \"1.40\", features = [\"macros\", \"rt\", \"time\"] }\n"
+        "code": "[package]\nname = \"libtmux-home-quickstart\"\nversion = \"0.0.0\"\nedition = \"2024\"\npublish = false\n\n[dependencies]\nlibtmux = \"0.1.0\"\ntempfile = \"3.20\"\ntokio = { version = \"1.40\", features = [\"macros\", \"rt\", \"time\"] }\n"
       },
       {
         "name": "Cargo.lock",
         "lang": "toml",
-        "code": "# This file is automatically @generated by Cargo.\n# It is not intended for manual editing.\nversion = 4\n\n[[package]]\nname = \"aho-corasick\"\nversion = \"1.1.5\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"c982642fa9e8606056828ee9a8505737230110bb1099153c79efe865c59d12ba\"\ndependencies = [\n \"memchr\",\n]\n\n[[package]]\nname = \"bitflags\"\nversion = \"2.13.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"3ded4057c258ba199e2d26386d3af3780957ecaee6c4ef4041c6b4b8b97c0b06\"\n\n[[package]]\nname = \"bytes\"\nversion = \"1.12.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"fc652a48c352aef3ea3aed32080501cf3ef6ed5da78602a020c991775b0aff04\"\n\n[[package]]\nname = \"caseless\"\nversion = \"0.2.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"8b6fd507454086c8edfd769ca6ada439193cdb209c7681712ef6275cccbfe5d8\"\ndependencies = [\n \"unicode-normalization\",\n]\n\n[[package]]\nname = \"cfg-if\"\nversion = \"1.0.5\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"4e7648175b45a9a48536d676f68d918270699102aa8dab5496df06904c914600\"\n\n[[package]]\nname = \"errno\"\nversion = \"0.3.14\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb\"\ndependencies = [\n \"libc\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"fastrand\"\nversion = \"2.5.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"da7c62ceae207dd37ea5b845da6a0696c799f85e97da1ab5b7910be3c1c80223\"\n\n[[package]]\nname = \"getrandom\"\nversion = \"0.4.3\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"300e883d756b2e4ec94e02791f39b04b522276138852cfc41d9fb7e904106099\"\ndependencies = [\n \"cfg-if\",\n \"libc\",\n \"r-efi\",\n]\n\n[[package]]\nname = \"libc\"\nversion = \"0.2.190\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ce5d3ddc6d3fa000eb1536d85e147bfe31aacaba692ed6a876f95cb7c855be78\"\n\n[[package]]\nname = \"libtmux\"\nversion = \"0.1.0-alpha.15\"\ndependencies = [\n \"caseless\",\n \"regex\",\n \"rustix\",\n \"thiserror\",\n \"tokio\",\n]\n\n[[package]]\nname = \"libtmux-home-quickstart\"\nversion = \"0.0.0\"\ndependencies = [\n \"libtmux\",\n \"tempfile\",\n \"tokio\",\n]\n\n[[package]]\nname = \"linux-raw-sys\"\nversion = \"0.12.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53\"\n\n[[package]]\nname = \"memchr\"\nversion = \"2.8.3\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98\"\n\n[[package]]\nname = \"mio\"\nversion = \"1.2.3\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"4b18443e9c262bfe8fa82f51666e2642c53393f7e5c27b3e1aeab922cff5b9d8\"\ndependencies = [\n \"libc\",\n \"wasi\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"once_cell\"\nversion = \"1.21.4\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50\"\n\n[[package]]\nname = \"pin-project-lite\"\nversion = \"0.2.17\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd\"\n\n[[package]]\nname = \"proc-macro2\"\nversion = \"1.0.107\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"985e7ec9bb745e6ce6535b544d84d6cd6f7ad8bd711c398938ae983b91a766d9\"\ndependencies = [\n \"unicode-ident\",\n]\n\n[[package]]\nname = \"quote\"\nversion = \"1.0.47\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"1fbf4db142a473a8d80c26bbf18454ed458bf8d26c8219c331daecfdbd079001\"\ndependencies = [\n \"proc-macro2\",\n]\n\n[[package]]\nname = \"r-efi\"\nversion = \"6.0.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf\"\n\n[[package]]\nname = \"regex\"\nversion = \"1.13.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f020237b6c8eed93db2e2cb53c00c60a8e1bc73da7d073199a1180401450218d\"\ndependencies = [\n \"aho-corasick\",\n \"memchr\",\n \"regex-automata\",\n \"regex-syntax\",\n]\n\n[[package]]\nname = \"regex-automata\"\nversion = \"0.4.18\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ad8553b9b26413251cbf30e620595c7a41b3887f03da04579c0e6b0d6a06b4b2\"\ndependencies = [\n \"aho-corasick\",\n \"memchr\",\n \"regex-syntax\",\n]\n\n[[package]]\nname = \"regex-syntax\"\nversion = \"0.8.11\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4\"\n\n[[package]]\nname = \"rustix\"\nversion = \"1.1.5\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"891efababe418670775f199f0d233d84843c227a0949a883ce15b37c78d6629d\"\ndependencies = [\n \"bitflags\",\n \"errno\",\n \"libc\",\n \"linux-raw-sys\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"signal-hook-registry\"\nversion = \"1.4.8\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"c4db69cba1110affc0e9f7bcd48bbf87b3f4fc7c61fc9155afd4c469eb3d6c1b\"\ndependencies = [\n \"errno\",\n \"libc\",\n]\n\n[[package]]\nname = \"syn\"\nversion = \"3.0.6\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"8593e8e72159ed2257d083c7a454a85cbf854f37a0966d8d483aff8c8a3ebcee\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"unicode-ident\",\n]\n\n[[package]]\nname = \"tempfile\"\nversion = \"3.27.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd\"\ndependencies = [\n \"fastrand\",\n \"getrandom\",\n \"once_cell\",\n \"rustix\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"thiserror\"\nversion = \"2.0.21\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"09e52cb86a36cede5cb101bf8908837b3e4c6e5e59fe7fd85c23fb56200d189e\"\ndependencies = [\n \"thiserror-impl\",\n]\n\n[[package]]\nname = \"thiserror-impl\"\nversion = \"2.0.21\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"fe5197923287db20a58125f0bc85c062f7f2c892de97b18c356f9efb14b28524\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"syn\",\n]\n\n[[package]]\nname = \"tinyvec\"\nversion = \"1.13.3\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"fd3ca314f692efd6c868f8408f53fe444634a845f96c028b97d35f6a1f79f0ee\"\n\n[[package]]\nname = \"tokio\"\nversion = \"1.53.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"e95f91fcc7a621e8b030f6aa23c71fe9838ae2fb4d8118b75602a328f5144044\"\ndependencies = [\n \"bytes\",\n \"libc\",\n \"mio\",\n \"pin-project-lite\",\n \"signal-hook-registry\",\n \"tokio-macros\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"tokio-macros\"\nversion = \"2.7.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"78773a2a397f451582ce068015985c33193cf6dea8b74d2a639fe457b2f07b0e\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"syn\",\n]\n\n[[package]]\nname = \"unicode-ident\"\nversion = \"1.0.26\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"d245f478577f809a851594d02313b640fb437e0bb33866753cff937863096954\"\n\n[[package]]\nname = \"unicode-normalization\"\nversion = \"0.1.25\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"5fd4f6878c9cb28d874b009da9e8d183b5abc80117c40bbd187a1fde336be6e8\"\ndependencies = [\n \"tinyvec\",\n]\n\n[[package]]\nname = \"wasi\"\nversion = \"0.11.1+wasi-snapshot-preview1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ccf3ec651a847eb01de73ccad15eb7d99f80485de043efb2f370cd654f4ea44b\"\n\n[[package]]\nname = \"windows-link\"\nversion = \"0.2.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f0805222e57f7521d6a62e36fa9163bc891acd422f971defe97d64e70d0a4fe5\"\n\n[[package]]\nname = \"windows-sys\"\nversion = \"0.61.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ae137229bcbd6cdf0f7b80a31df61766145077ddf49416a728b02cb3921ff3fc\"\ndependencies = [\n \"windows-link\",\n]\n"
+        "code": "# This file is automatically @generated by Cargo.\n# It is not intended for manual editing.\nversion = 4\n\n[[package]]\nname = \"aho-corasick\"\nversion = \"1.1.5\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"c982642fa9e8606056828ee9a8505737230110bb1099153c79efe865c59d12ba\"\ndependencies = [\n \"memchr\",\n]\n\n[[package]]\nname = \"bitflags\"\nversion = \"2.13.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"3ded4057c258ba199e2d26386d3af3780957ecaee6c4ef4041c6b4b8b97c0b06\"\n\n[[package]]\nname = \"bytes\"\nversion = \"1.12.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"fc652a48c352aef3ea3aed32080501cf3ef6ed5da78602a020c991775b0aff04\"\n\n[[package]]\nname = \"caseless\"\nversion = \"0.2.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"8b6fd507454086c8edfd769ca6ada439193cdb209c7681712ef6275cccbfe5d8\"\ndependencies = [\n \"unicode-normalization\",\n]\n\n[[package]]\nname = \"cfg-if\"\nversion = \"1.0.5\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"4e7648175b45a9a48536d676f68d918270699102aa8dab5496df06904c914600\"\n\n[[package]]\nname = \"errno\"\nversion = \"0.3.14\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb\"\ndependencies = [\n \"libc\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"fastrand\"\nversion = \"2.5.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"da7c62ceae207dd37ea5b845da6a0696c799f85e97da1ab5b7910be3c1c80223\"\n\n[[package]]\nname = \"getrandom\"\nversion = \"0.4.3\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"300e883d756b2e4ec94e02791f39b04b522276138852cfc41d9fb7e904106099\"\ndependencies = [\n \"cfg-if\",\n \"libc\",\n \"r-efi\",\n]\n\n[[package]]\nname = \"libc\"\nversion = \"0.2.191\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"65cd87c9a6d60536580b316ad985726104730a5151c99845f2490428ef91240a\"\n\n[[package]]\nname = \"libtmux\"\nversion = \"0.1.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"d5a6ac3b0304461e4d8825397b931cbaab705e9cacfcc485974ff5a4252fffb6\"\ndependencies = [\n \"caseless\",\n \"regex\",\n \"rustix\",\n \"thiserror\",\n \"tokio\",\n]\n\n[[package]]\nname = \"libtmux-home-quickstart\"\nversion = \"0.0.0\"\ndependencies = [\n \"libtmux\",\n \"tempfile\",\n \"tokio\",\n]\n\n[[package]]\nname = \"linux-raw-sys\"\nversion = \"0.12.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53\"\n\n[[package]]\nname = \"memchr\"\nversion = \"2.8.3\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98\"\n\n[[package]]\nname = \"mio\"\nversion = \"1.2.4\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"1788edb87fdc09c7e26304471e2f5be8cdefb1b6930d6e3985fc02ff53bf86ee\"\ndependencies = [\n \"libc\",\n \"wasi\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"once_cell\"\nversion = \"1.21.4\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50\"\n\n[[package]]\nname = \"pin-project-lite\"\nversion = \"0.2.17\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd\"\n\n[[package]]\nname = \"proc-macro2\"\nversion = \"1.0.107\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"985e7ec9bb745e6ce6535b544d84d6cd6f7ad8bd711c398938ae983b91a766d9\"\ndependencies = [\n \"unicode-ident\",\n]\n\n[[package]]\nname = \"quote\"\nversion = \"1.0.47\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"1fbf4db142a473a8d80c26bbf18454ed458bf8d26c8219c331daecfdbd079001\"\ndependencies = [\n \"proc-macro2\",\n]\n\n[[package]]\nname = \"r-efi\"\nversion = \"6.0.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf\"\n\n[[package]]\nname = \"regex\"\nversion = \"1.13.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f020237b6c8eed93db2e2cb53c00c60a8e1bc73da7d073199a1180401450218d\"\ndependencies = [\n \"aho-corasick\",\n \"memchr\",\n \"regex-automata\",\n \"regex-syntax\",\n]\n\n[[package]]\nname = \"regex-automata\"\nversion = \"0.4.18\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ad8553b9b26413251cbf30e620595c7a41b3887f03da04579c0e6b0d6a06b4b2\"\ndependencies = [\n \"aho-corasick\",\n \"memchr\",\n \"regex-syntax\",\n]\n\n[[package]]\nname = \"regex-syntax\"\nversion = \"0.8.11\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4\"\n\n[[package]]\nname = \"rustix\"\nversion = \"1.1.6\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"e5e76742e5294153d4dde1207dbec5bdd81eef6fabdc0d2118babadabfd858aa\"\ndependencies = [\n \"bitflags\",\n \"errno\",\n \"libc\",\n \"linux-raw-sys\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"signal-hook-registry\"\nversion = \"1.4.8\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"c4db69cba1110affc0e9f7bcd48bbf87b3f4fc7c61fc9155afd4c469eb3d6c1b\"\ndependencies = [\n \"errno\",\n \"libc\",\n]\n\n[[package]]\nname = \"syn\"\nversion = \"3.0.9\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"d78c8dee4c7bf0e14673097256fed6142ce9d3b85a408189d07482442145823b\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"unicode-ident\",\n]\n\n[[package]]\nname = \"tempfile\"\nversion = \"3.27.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd\"\ndependencies = [\n \"fastrand\",\n \"getrandom\",\n \"once_cell\",\n \"rustix\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"thiserror\"\nversion = \"2.0.21\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"09e52cb86a36cede5cb101bf8908837b3e4c6e5e59fe7fd85c23fb56200d189e\"\ndependencies = [\n \"thiserror-impl\",\n]\n\n[[package]]\nname = \"thiserror-impl\"\nversion = \"2.0.21\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"fe5197923287db20a58125f0bc85c062f7f2c892de97b18c356f9efb14b28524\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"syn\",\n]\n\n[[package]]\nname = \"tinyvec\"\nversion = \"1.13.3\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"fd3ca314f692efd6c868f8408f53fe444634a845f96c028b97d35f6a1f79f0ee\"\n\n[[package]]\nname = \"tokio\"\nversion = \"1.54.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"b52fd3255258d26fac7264ab5a76b53c13367136dc011d3d6ad4f8ed070396a3\"\ndependencies = [\n \"bytes\",\n \"libc\",\n \"mio\",\n \"pin-project-lite\",\n \"signal-hook-registry\",\n \"tokio-macros\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"tokio-macros\"\nversion = \"2.7.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"78773a2a397f451582ce068015985c33193cf6dea8b74d2a639fe457b2f07b0e\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"syn\",\n]\n\n[[package]]\nname = \"unicode-ident\"\nversion = \"1.0.27\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"a2c754d6c33795a1c324727428e5a7dedb5b06195f9890bdbcba760d3e246563\"\n\n[[package]]\nname = \"unicode-normalization\"\nversion = \"0.1.26\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"75cd3fb03d5288b3ba9a1ee103ac7e9cbb59f0b03d64f8ddfcc04dd42758a85d\"\ndependencies = [\n \"tinyvec\",\n]\n\n[[package]]\nname = \"wasi\"\nversion = \"0.11.1+wasi-snapshot-preview1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ccf3ec651a847eb01de73ccad15eb7d99f80485de043efb2f370cd654f4ea44b\"\n\n[[package]]\nname = \"windows-link\"\nversion = \"0.2.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f0805222e57f7521d6a62e36fa9163bc891acd422f971defe97d64e70d0a4fe5\"\n\n[[package]]\nname = \"windows-sys\"\nversion = \"0.61.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ae137229bcbd6cdf0f7b80a31df61766145077ddf49416a728b02cb3921ff3fc\"\ndependencies = [\n \"windows-link\",\n]\n"
       },
       {
         "name": "rust-toolchain.toml",
@@ -173,9 +173,9 @@
         "code": "[toolchain]\nchannel = \"1.97.1\"\ncomponents = [\"clippy\", \"rust-src\", \"rustfmt\"]\nprofile = \"minimal\"\n"
       }
     ],
-    "prerequisites": "POSIX shell, Git, tmux 3.3a or newer, rustup with Rust 1.97.1 (rust-toolchain.toml), and a C linker.",
+    "prerequisites": "POSIX shell, tmux 3.3a or newer, rustup with Rust 1.97.1 (rust-toolchain.toml), and a C linker.",
     "commands": [
-      "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-rs.git \\\n  a6fc2a65674177b92b17fa380757155d2ba150fd\ngit -C source checkout -q --detach FETCH_HEAD\ncargo build --locked --jobs 2",
+      "cargo build --locked --jobs 2",
       "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\ncargo run --quiet --locked"
     ],
     "expectedOutput": "hello\n",
@@ -224,8 +224,8 @@
   "java": {
     "lang": "java",
     "sourceRepository": "libtmux/libtmux-java",
-    "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
-    "sourceTree": "342c76ca1ad7257b3655c7a47d7258b486b26975",
+    "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
+    "sourceTree": "546ecf68a8a31e0503e18323ba82ce3a490490ab",
     "program": "src/main/java/Main.java",
     "excerpt": {
       "startLine": 1,
@@ -237,12 +237,12 @@
       {
         "name": "build.gradle.kts",
         "lang": "kotlin",
-        "code": "plugins {\n    application\n}\n\nrepositories { mavenCentral() }\n\ndependencies {\n    implementation(\"io.github.libtmux:libtmux:0.0.1-alpha.17-SNAPSHOT\")\n}\n\njava { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }\n\napplication { mainClass.set(providers.gradleProperty(\"exampleMain\")) }\n"
+        "code": "plugins {\n    application\n}\n\nrepositories { mavenCentral() }\n\ndependencies {\n    implementation(\"io.github.libtmux:libtmux:0.1.0\")\n}\n\njava { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }\n\napplication { mainClass.set(providers.gradleProperty(\"exampleMain\")) }\n"
       },
       {
         "name": "settings.gradle.kts",
         "lang": "kotlin",
-        "code": "rootProject.name = \"api-example\"\n\nincludeBuild(\"libtmux-source\")\n"
+        "code": "rootProject.name = \"api-example\"\n"
       },
       {
         "name": "gradle.properties",
@@ -257,7 +257,7 @@
     ],
     "prerequisites": "JDK 25 and tmux on Linux/macOS",
     "commands": [
-      "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach a0ecbc16da00140e2520462d478a2af470878272\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=Main\nSHELL=/bin/sh build/install/api-example/bin/api-example"
+      "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach 5c181887918351119bfdb3a046719fa792048e59\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=Main\nSHELL=/bin/sh build/install/api-example/bin/api-example"
     ],
     "expectedOutput": "hello from libtmux\n",
     "variants": {
@@ -269,8 +269,8 @@
   "kotlin": {
     "lang": "kotlin",
     "sourceRepository": "libtmux/libtmux-java",
-    "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
-    "sourceTree": "342c76ca1ad7257b3655c7a47d7258b486b26975",
+    "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
+    "sourceTree": "546ecf68a8a31e0503e18323ba82ce3a490490ab",
     "program": "src/main/kotlin/Main.kt",
     "excerpt": {
       "startLine": 1,
@@ -282,12 +282,12 @@
       {
         "name": "build.gradle.kts",
         "lang": "kotlin",
-        "code": "plugins {\n    kotlin(\"jvm\") version \"2.4.10\"\n    application\n}\n\nrepositories { mavenCentral() }\n\ndependencies {\n    implementation(\"io.github.libtmux:libtmux-kotlin:0.0.1-alpha.17-SNAPSHOT\")\n}\n\njava { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }\nkotlin { jvmToolchain(25) }\n\napplication { mainClass.set(providers.gradleProperty(\"exampleMain\")) }\n"
+        "code": "plugins {\n    kotlin(\"jvm\") version \"2.4.10\"\n    application\n}\n\nrepositories { mavenCentral() }\n\ndependencies {\n    implementation(\"io.github.libtmux:libtmux-kotlin:0.1.0\")\n}\n\njava { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }\nkotlin { jvmToolchain(25) }\n\napplication { mainClass.set(providers.gradleProperty(\"exampleMain\")) }\n"
       },
       {
         "name": "settings.gradle.kts",
         "lang": "kotlin",
-        "code": "rootProject.name = \"api-example\"\n\nincludeBuild(\"libtmux-source\")\n"
+        "code": "rootProject.name = \"api-example\"\n"
       },
       {
         "name": "gradle.properties",
@@ -302,7 +302,7 @@
     ],
     "prerequisites": "JDK 25 and tmux on Linux/macOS; Gradle resolves Kotlin 2.4.10",
     "commands": [
-      "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach a0ecbc16da00140e2520462d478a2af470878272\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=MainKt\nSHELL=/bin/sh build/install/api-example/bin/api-example"
+      "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach 5c181887918351119bfdb3a046719fa792048e59\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=MainKt\nSHELL=/bin/sh build/install/api-example/bin/api-example"
     ],
     "expectedOutput": "ready; exit 3\n",
     "variants": {
@@ -314,8 +314,8 @@
   "scala": {
     "lang": "scala",
     "sourceRepository": "libtmux/libtmux-java",
-    "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
-    "sourceTree": "342c76ca1ad7257b3655c7a47d7258b486b26975",
+    "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
+    "sourceTree": "546ecf68a8a31e0503e18323ba82ce3a490490ab",
     "program": "src/main/scala/Main.scala",
     "excerpt": {
       "startLine": 1,
@@ -327,12 +327,12 @@
       {
         "name": "build.gradle.kts",
         "lang": "kotlin",
-        "code": "plugins {\n    scala\n    application\n}\n\nrepositories { mavenCentral() }\n\ndependencies {\n    implementation(\"io.github.libtmux:libtmux-scala_3:0.0.1-alpha.17-SNAPSHOT\")\n    implementation(\"org.scala-lang:scala3-library_3:3.9.0\")\n}\n\njava { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }\n\napplication { mainClass.set(providers.gradleProperty(\"exampleMain\")) }\n"
+        "code": "plugins {\n    scala\n    application\n}\n\nrepositories { mavenCentral() }\n\ndependencies {\n    implementation(\"io.github.libtmux:libtmux-scala_3:0.1.0\")\n    implementation(\"org.scala-lang:scala3-library_3:3.9.0\")\n}\n\njava { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }\n\napplication { mainClass.set(providers.gradleProperty(\"exampleMain\")) }\n"
       },
       {
         "name": "settings.gradle.kts",
         "lang": "kotlin",
-        "code": "rootProject.name = \"api-example\"\n\nincludeBuild(\"libtmux-source\") {\n    dependencySubstitution {\n        substitute(module(\"io.github.libtmux:libtmux-scala_3\"))\n            .using(project(\":libtmux-scala\"))\n    }\n}\n"
+        "code": "rootProject.name = \"api-example\"\n"
       },
       {
         "name": "gradle.properties",
@@ -347,7 +347,7 @@
     ],
     "prerequisites": "JDK 25 and tmux on Linux/macOS; Scala 3.9.0 Direct facade",
     "commands": [
-      "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach a0ecbc16da00140e2520462d478a2af470878272\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=Main\nSHELL=/bin/sh build/install/api-example/bin/api-example"
+      "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach 5c181887918351119bfdb3a046719fa792048e59\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=Main\nSHELL=/bin/sh build/install/api-example/bin/api-example"
     ],
     "expectedOutput": "work: 2 panes\ncommands: sh\n",
     "variants": {
@@ -359,8 +359,8 @@
   "csharp": {
     "lang": "csharp",
     "sourceRepository": "libtmux/libtmux-dotnet",
-    "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-    "sourceTree": "2bed2dca445fd23ad3f627f0c8f8eba76436aeb4",
+    "sourceRevision": "472c2bcfbda6735139849324cc109ad70300001e",
+    "sourceTree": "4ef96f46e6f60db9f55e7349ed3e5ab60315af1a",
     "program": "app/Program.cs",
     "excerpt": {
       "startLine": 1,
@@ -377,22 +377,17 @@
       {
         "name": "app/Example.csproj",
         "lang": "xml",
-        "code": "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <PropertyGroup>\n    <OutputType>Exe</OutputType>\n    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>\n    <LangVersion>12.0</LangVersion>\n    <Nullable>enable</Nullable>\n    <ImplicitUsings>disable</ImplicitUsings>\n    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>\n    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>\n    <AnalysisLevel>10-recommended</AnalysisLevel>\n  </PropertyGroup>\n  <ItemGroup>\n    <Compile Include=\"Program.cs\" />\n    <PackageReference Include=\"LibTmux\" Version=\"[0.0.0-alpha.18]\" />\n  </ItemGroup>\n</Project>\n"
+        "code": "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <PropertyGroup>\n    <OutputType>Exe</OutputType>\n    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>\n    <LangVersion>12.0</LangVersion>\n    <Nullable>enable</Nullable>\n    <ImplicitUsings>disable</ImplicitUsings>\n    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>\n    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>\n    <AnalysisLevel>10-recommended</AnalysisLevel>\n  </PropertyGroup>\n  <ItemGroup>\n    <Compile Include=\"Program.cs\" />\n    <PackageReference Include=\"LibTmux\" Version=\"[0.1.0]\" />\n  </ItemGroup>\n</Project>\n"
       },
       {
         "name": "app/global.json",
         "lang": "json",
-        "code": "{\n  \"sdk\": {\n    \"version\": \"10.0.302\",\n    \"rollForward\": \"disable\",\n    \"allowPrerelease\": false\n  },\n  \"test\": {\n    \"runner\": \"Microsoft.Testing.Platform\"\n  }\n}\n"
-      },
-      {
-        "name": "app/NuGet.config",
-        "lang": "xml",
-        "code": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<configuration>\n  <packageSources>\n    <clear />\n    <add key=\"libtmux-source\" value=\"../libtmux-source/artifacts/api-example-packages\" />\n    <add key=\"nuget.org\" value=\"https://api.nuget.org/v3/index.json\" />\n  </packageSources>\n  <packageSourceMapping>\n    <clear />\n    <packageSource key=\"libtmux-source\">\n      <package pattern=\"LibTmux\" />\n      <package pattern=\"LibTmux.*\" />\n    </packageSource>\n    <packageSource key=\"nuget.org\">\n      <package pattern=\"*\" />\n    </packageSource>\n  </packageSourceMapping>\n</configuration>\n"
+        "code": "{\n  \"sdk\": {\n    \"version\": \"10.0.303\",\n    \"rollForward\": \"disable\",\n    \"allowPrerelease\": false\n  },\n  \"test\": {\n    \"runner\": \"Microsoft.Testing.Platform\"\n  }\n}\n"
       }
     ],
-    "prerequisites": ".NET SDK 10.0.302, .NET 8 and 10 runtimes, tmux on Linux/macOS",
+    "prerequisites": ".NET SDK 10.0.303, .NET 8 and 10 runtimes, tmux on Linux/macOS",
     "commands": [
-      "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source\ngit -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef\nexport NUGET_PACKAGES=\"$PWD/packages\"\ncd libtmux-source\ndotnet restore src/LibTmux.FSharp/LibTmux.FSharp.fsproj --locked-mode\ndotnet pack src/LibTmux/LibTmux.csproj -c Release --no-restore \\\n  -p:ContinuousIntegrationBuild=true --output artifacts/api-example-packages\ncd ../app\ndotnet restore Example.csproj --configfile NuGet.config\ndotnet build Example.csproj -c Release --no-restore --warnaserror\nexport TMUX_TMPDIR=/tmp/libtmux-dotnet-dev\nmkdir -p \"$TMUX_TMPDIR\"\nunset TMUX TMUX_PANE\ndotnet bin/Release/net8.0/Example.dll\ndotnet bin/Release/net10.0/Example.dll"
+      "# Save the files above at their displayed relative paths.\ncd app\ndotnet restore Example.csproj\ndotnet build Example.csproj -c Release --no-restore --warnaserror\nexport TMUX_TMPDIR=/tmp/libtmux-dotnet-dev\nmkdir -p \"$TMUX_TMPDIR\"\nunset TMUX TMUX_PANE\ndotnet bin/Release/net8.0/Example.dll\ndotnet bin/Release/net10.0/Example.dll"
     ],
     "expectedOutput": "hello-from-libtmux\n",
     "variants": {
@@ -404,8 +399,8 @@
   "fsharp": {
     "lang": "fsharp",
     "sourceRepository": "libtmux/libtmux-dotnet",
-    "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-    "sourceTree": "2bed2dca445fd23ad3f627f0c8f8eba76436aeb4",
+    "sourceRevision": "472c2bcfbda6735139849324cc109ad70300001e",
+    "sourceTree": "4ef96f46e6f60db9f55e7349ed3e5ab60315af1a",
     "program": "app/Program.fs",
     "excerpt": {
       "startLine": 1,
@@ -422,22 +417,17 @@
       {
         "name": "app/Example.fsproj",
         "lang": "xml",
-        "code": "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <PropertyGroup>\n    <OutputType>Exe</OutputType>\n    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>\n    <LangVersion>10.0</LangVersion>\n    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>\n    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>\n    <DisableImplicitLibraryPacksFolder>true</DisableImplicitLibraryPacksFolder>\n  </PropertyGroup>\n  <ItemGroup>\n    <Compile Include=\"Program.fs\" />\n    <PackageReference Include=\"FSharp.Core\" Version=\"[10.1.302]\" />\n    <PackageReference Include=\"LibTmux.FSharp\" Version=\"[0.0.0-alpha.18]\" />\n  </ItemGroup>\n</Project>\n"
+        "code": "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <PropertyGroup>\n    <OutputType>Exe</OutputType>\n    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>\n    <LangVersion>10.0</LangVersion>\n    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>\n    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>\n    <DisableImplicitLibraryPacksFolder>true</DisableImplicitLibraryPacksFolder>\n  </PropertyGroup>\n  <ItemGroup>\n    <Compile Include=\"Program.fs\" />\n    <PackageReference Include=\"FSharp.Core\" Version=\"[10.1.303]\" />\n    <PackageReference Include=\"LibTmux.FSharp\" Version=\"[0.1.0]\" />\n  </ItemGroup>\n</Project>\n"
       },
       {
         "name": "app/global.json",
         "lang": "json",
-        "code": "{\n  \"sdk\": {\n    \"version\": \"10.0.302\",\n    \"rollForward\": \"disable\",\n    \"allowPrerelease\": false\n  },\n  \"test\": {\n    \"runner\": \"Microsoft.Testing.Platform\"\n  }\n}\n"
-      },
-      {
-        "name": "app/NuGet.config",
-        "lang": "xml",
-        "code": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<configuration>\n  <packageSources>\n    <clear />\n    <add key=\"libtmux-source\" value=\"../libtmux-source/artifacts/api-example-packages\" />\n    <add key=\"nuget.org\" value=\"https://api.nuget.org/v3/index.json\" />\n  </packageSources>\n  <packageSourceMapping>\n    <clear />\n    <packageSource key=\"libtmux-source\">\n      <package pattern=\"LibTmux\" />\n      <package pattern=\"LibTmux.*\" />\n    </packageSource>\n    <packageSource key=\"nuget.org\">\n      <package pattern=\"*\" />\n    </packageSource>\n  </packageSourceMapping>\n</configuration>\n"
+        "code": "{\n  \"sdk\": {\n    \"version\": \"10.0.303\",\n    \"rollForward\": \"disable\",\n    \"allowPrerelease\": false\n  },\n  \"test\": {\n    \"runner\": \"Microsoft.Testing.Platform\"\n  }\n}\n"
       }
     ],
-    "prerequisites": ".NET SDK 10.0.302, .NET 8 and 10 runtimes, tmux on Linux/macOS",
+    "prerequisites": ".NET SDK 10.0.303, .NET 8 and 10 runtimes, tmux 3.4 or newer on Linux/macOS",
     "commands": [
-      "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source\ngit -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef\nexport NUGET_PACKAGES=\"$PWD/packages\"\ncd libtmux-source\ndotnet restore src/LibTmux.FSharp/LibTmux.FSharp.fsproj --locked-mode\ndotnet pack src/LibTmux/LibTmux.csproj -c Release --no-restore \\\n  -p:ContinuousIntegrationBuild=true --output artifacts/api-example-packages\ndotnet pack src/LibTmux.FSharp/LibTmux.FSharp.fsproj -c Release --no-restore \\\n  -p:ContinuousIntegrationBuild=true --output artifacts/api-example-packages\ncd ../app\ndotnet restore Example.fsproj --configfile NuGet.config\ndotnet build Example.fsproj -c Release --no-restore --warnaserror\nexport TMUX_TMPDIR=/tmp/libtmux-dotnet-dev\nmkdir -p \"$TMUX_TMPDIR\"\nunset TMUX TMUX_PANE\ndotnet bin/Release/net8.0/Example.dll\ndotnet bin/Release/net10.0/Example.dll"
+      "# Save the files above at their displayed relative paths.\ncd app\ndotnet restore Example.fsproj\ndotnet build Example.fsproj -c Release --no-restore --warnaserror\nexport TMUX_TMPDIR=/tmp/libtmux-dotnet-dev\nmkdir -p \"$TMUX_TMPDIR\"\nunset TMUX TMUX_PANE\ndotnet bin/Release/net8.0/Example.dll\ndotnet bin/Release/net10.0/Example.dll"
     ],
     "expectedOutput": "other sessions: web, worker\nwait found: true\nrun: exit 3, output [\"ok\"]\n",
     "variants": {
@@ -519,8 +509,8 @@
   "powershell": {
     "lang": "powershell",
     "sourceRepository": "libtmux/libtmux-powershell",
-    "sourceRevision": "fcd0634e9ca887b70d88915c2d8e26c5da2737e5",
-    "sourceTree": "e842e7d382a31131e73b2e9967d2b5d977304a0a",
+    "sourceRevision": "2c30121b7733bf772d17140231a49332e5a470ab",
+    "sourceTree": "3752a58d6d5ff6852c5446cee4f4d95ad826ef8c",
     "program": "quickstart.ps1",
     "excerpt": {
       "startLine": 1,
@@ -537,7 +527,7 @@
     ],
     "prerequisites": "PowerShell 7.4.20 with PSResourceGet 1.1.1, POSIX shell and tmux on Linux.",
     "commands": [
-      "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  $null = New-Item -ItemType Directory -Path ./modules -Force\n  Save-PSResource -Name LibTmux -Version 0.1.0-alpha2 `\n    -Prerelease -Path ./modules -TrustRepository\n'",
+      "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  $null = New-Item -ItemType Directory -Path ./modules -Force\n  Save-PSResource -Name LibTmux -Version 0.1.0 `\n    -Path ./modules -TrustRepository\n'",
       "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\npwsh -NoLogo -NoProfile -File quickstart.ps1"
     ],
     "expectedOutput": "editor: %0, %1\nlogs: %2\n",
@@ -581,8 +571,8 @@
   "elixir": {
     "lang": "elixir",
     "sourceRepository": "libtmux/libtmux-elixir",
-    "sourceRevision": "6e6e88e886bdd9267fcd8be66f561dc5d5462476",
-    "sourceTree": "82a927e2c306379461b7cfba69cf31c9109c01f7",
+    "sourceRevision": "cac4252bfc52069980d47db2b7803dc9b33f36f1",
+    "sourceTree": "f2c639ac8c99fa284acf6d122aa7af7177e068a9",
     "program": "quickstart.exs",
     "excerpt": {
       "startLine": 1,
@@ -594,7 +584,7 @@
       {
         "name": "quickstart.exs",
         "lang": "elixir",
-        "code": "Mix.install([{:libtmux, \"== 0.0.1-alpha.1\"}])\n\nalias LibTmux.{Command, Selection, Server, Snapshot}\n\ntmux = System.find_executable(\"tmux\") || raise \"tmux is not on PATH\"\nid = Base.encode16(:crypto.strong_rand_bytes(8), case: :lower)\ndir = Path.join(System.tmp_dir!(), \"libtmux-\" <> id)\nsocket = Path.join(dir, \"tmux.sock\")\nFile.mkdir!(dir)\nFile.chmod!(dir, 0o700)\n\ntry do\n  # libtmux works on a running server, so tmux itself starts the private one.\n  create = [\"new-session\", \"-d\", \"-s\", \"demo\", \"/bin/cat\"]\n  {_, 0} = System.cmd(tmux, [\"-S\", socket, \"-f\", \"/dev/null\" | create])\n\n  server = Server.new(executable: tmux, socket: socket)\n  split = Command.new(\"split-window\", [\"-t\", \"demo\", \"/bin/cat\"])\n  logs = Command.new(\"new-window\", [\"-t\", \"demo\", \"-n\", \"logs\", \"/bin/cat\"])\n  {:ok, _} = Server.run(server, split)\n  {:ok, _} = Server.run(server, logs)\n\n  snapshot = Server.snapshot!(server)\n  session = snapshot |> Snapshot.sessions() |> Selection.one!()\n  windows = snapshot |> Snapshot.windows() |> Selection.size()\n  panes = snapshot |> Snapshot.panes() |> Selection.size()\n  IO.puts(\"#{session.name}: #{windows} windows, #{panes} panes\")\nafter\n  System.cmd(tmux, [\"-S\", socket, \"kill-server\"], stderr_to_stdout: true)\n  File.rm_rf(dir)\nend\n"
+        "code": "Mix.install([{:libtmux, \"~> 0.1\"}])\n\nalias LibTmux.{Command, Selection, Server, Snapshot}\n\ntmux = System.find_executable(\"tmux\") || raise \"tmux is not on PATH\"\nid = Base.encode16(:crypto.strong_rand_bytes(8), case: :lower)\ndir = Path.join(System.tmp_dir!(), \"libtmux-\" <> id)\nsocket = Path.join(dir, \"tmux.sock\")\nFile.mkdir!(dir)\nFile.chmod!(dir, 0o700)\n\ntry do\n  # libtmux works on a running server, so tmux itself starts the private one.\n  create = [\"new-session\", \"-d\", \"-s\", \"demo\", \"/bin/cat\"]\n  {_, 0} = System.cmd(tmux, [\"-S\", socket, \"-f\", \"/dev/null\" | create])\n\n  server = Server.new(executable: tmux, socket: socket)\n  split = Command.new(\"split-window\", [\"-t\", \"demo\", \"/bin/cat\"])\n  logs = Command.new(\"new-window\", [\"-t\", \"demo\", \"-n\", \"logs\", \"/bin/cat\"])\n  {:ok, _} = Server.run(server, split)\n  {:ok, _} = Server.run(server, logs)\n\n  snapshot = Server.snapshot!(server)\n  session = snapshot |> Snapshot.sessions() |> Selection.one!()\n  windows = snapshot |> Snapshot.windows() |> Selection.size()\n  panes = snapshot |> Snapshot.panes() |> Selection.size()\n  IO.puts(\"#{session.name}: #{windows} windows, #{panes} panes\")\nafter\n  System.cmd(tmux, [\"-S\", socket, \"kill-server\"], stderr_to_stdout: true)\n  File.rm_rf(dir)\nend\n"
       }
     ],
     "prerequisites": "POSIX shell, tmux 3.3 or newer, Elixir 1.20.4 or newer, Erlang/OTP 29.1.2 or a newer 29.x release, access to hex.pm, and a C11 compiler on Linux.",
@@ -604,9 +594,9 @@
     "expectedOutput": "demo: 2 windows, 3 panes\n",
     "withoutErrorHandling": "An unmatched result or a raised error ends the script with its message and stack trace, so there is no separate error handling to add. Every version checks required results.",
     "variants": {
-      "concise": "Mix.install([{:libtmux, \"== 0.0.1-alpha.1\"}])\n\nalias LibTmux.{Command, Selection, Server, Snapshot}\n\ntmux = System.find_executable(\"tmux\") || raise \"tmux is not on PATH\"\nid = Base.encode16(:crypto.strong_rand_bytes(8), case: :lower)\ndir = Path.join(System.tmp_dir!(), \"libtmux-\" <> id)\nsocket = Path.join(dir, \"tmux.sock\")\nFile.mkdir!(dir)\nFile.chmod!(dir, 0o700)\n\n# libtmux works on a running server, so tmux itself starts the private one.\ncreate = [\"new-session\", \"-d\", \"-s\", \"demo\", \"/bin/cat\"]\n{_, 0} = System.cmd(tmux, [\"-S\", socket, \"-f\", \"/dev/null\" | create])\n\nserver = Server.new(executable: tmux, socket: socket)\nsplit = Command.new(\"split-window\", [\"-t\", \"demo\", \"/bin/cat\"])\nlogs = Command.new(\"new-window\", [\"-t\", \"demo\", \"-n\", \"logs\", \"/bin/cat\"])\n{:ok, _} = Server.run(server, split)\n{:ok, _} = Server.run(server, logs)\n\nsnapshot = Server.snapshot!(server)\nsession = snapshot |> Snapshot.sessions() |> Selection.one!()\nwindows = snapshot |> Snapshot.windows() |> Selection.size()\npanes = snapshot |> Snapshot.panes() |> Selection.size()\nIO.puts(\"#{session.name}: #{windows} windows, #{panes} panes\")\n",
-      "errors": "Mix.install([{:libtmux, \"== 0.0.1-alpha.1\"}])\n\nalias LibTmux.{Command, Selection, Server, Snapshot}\n\ntmux = System.find_executable(\"tmux\") || raise \"tmux is not on PATH\"\nid = Base.encode16(:crypto.strong_rand_bytes(8), case: :lower)\ndir = Path.join(System.tmp_dir!(), \"libtmux-\" <> id)\nsocket = Path.join(dir, \"tmux.sock\")\nFile.mkdir!(dir)\nFile.chmod!(dir, 0o700)\n\n# libtmux works on a running server, so tmux itself starts the private one.\ncreate = [\"new-session\", \"-d\", \"-s\", \"demo\", \"/bin/cat\"]\n{_, 0} = System.cmd(tmux, [\"-S\", socket, \"-f\", \"/dev/null\" | create])\n\nserver = Server.new(executable: tmux, socket: socket)\nsplit = Command.new(\"split-window\", [\"-t\", \"demo\", \"/bin/cat\"])\nlogs = Command.new(\"new-window\", [\"-t\", \"demo\", \"-n\", \"logs\", \"/bin/cat\"])\n{:ok, _} = Server.run(server, split)\n{:ok, _} = Server.run(server, logs)\n\nsnapshot = Server.snapshot!(server)\nsession = snapshot |> Snapshot.sessions() |> Selection.one!()\nwindows = snapshot |> Snapshot.windows() |> Selection.size()\npanes = snapshot |> Snapshot.panes() |> Selection.size()\nIO.puts(\"#{session.name}: #{windows} windows, #{panes} panes\")\n",
-      "cleanup": "Mix.install([{:libtmux, \"== 0.0.1-alpha.1\"}])\n\nalias LibTmux.{Command, Selection, Server, Snapshot}\n\ntmux = System.find_executable(\"tmux\") || raise \"tmux is not on PATH\"\nid = Base.encode16(:crypto.strong_rand_bytes(8), case: :lower)\ndir = Path.join(System.tmp_dir!(), \"libtmux-\" <> id)\nsocket = Path.join(dir, \"tmux.sock\")\nFile.mkdir!(dir)\nFile.chmod!(dir, 0o700)\n\ntry do\n  # libtmux works on a running server, so tmux itself starts the private one.\n  create = [\"new-session\", \"-d\", \"-s\", \"demo\", \"/bin/cat\"]\n  {_, 0} = System.cmd(tmux, [\"-S\", socket, \"-f\", \"/dev/null\" | create])\n\n  server = Server.new(executable: tmux, socket: socket)\n  split = Command.new(\"split-window\", [\"-t\", \"demo\", \"/bin/cat\"])\n  logs = Command.new(\"new-window\", [\"-t\", \"demo\", \"-n\", \"logs\", \"/bin/cat\"])\n  {:ok, _} = Server.run(server, split)\n  {:ok, _} = Server.run(server, logs)\n\n  snapshot = Server.snapshot!(server)\n  session = snapshot |> Snapshot.sessions() |> Selection.one!()\n  windows = snapshot |> Snapshot.windows() |> Selection.size()\n  panes = snapshot |> Snapshot.panes() |> Selection.size()\n  IO.puts(\"#{session.name}: #{windows} windows, #{panes} panes\")\nafter\n  System.cmd(tmux, [\"-S\", socket, \"kill-server\"], stderr_to_stdout: true)\n  File.rm_rf(dir)\nend\n"
+      "concise": "Mix.install([{:libtmux, \"~> 0.1\"}])\n\nalias LibTmux.{Command, Selection, Server, Snapshot}\n\ntmux = System.find_executable(\"tmux\") || raise \"tmux is not on PATH\"\nid = Base.encode16(:crypto.strong_rand_bytes(8), case: :lower)\ndir = Path.join(System.tmp_dir!(), \"libtmux-\" <> id)\nsocket = Path.join(dir, \"tmux.sock\")\nFile.mkdir!(dir)\nFile.chmod!(dir, 0o700)\n\n# libtmux works on a running server, so tmux itself starts the private one.\ncreate = [\"new-session\", \"-d\", \"-s\", \"demo\", \"/bin/cat\"]\n{_, 0} = System.cmd(tmux, [\"-S\", socket, \"-f\", \"/dev/null\" | create])\n\nserver = Server.new(executable: tmux, socket: socket)\nsplit = Command.new(\"split-window\", [\"-t\", \"demo\", \"/bin/cat\"])\nlogs = Command.new(\"new-window\", [\"-t\", \"demo\", \"-n\", \"logs\", \"/bin/cat\"])\n{:ok, _} = Server.run(server, split)\n{:ok, _} = Server.run(server, logs)\n\nsnapshot = Server.snapshot!(server)\nsession = snapshot |> Snapshot.sessions() |> Selection.one!()\nwindows = snapshot |> Snapshot.windows() |> Selection.size()\npanes = snapshot |> Snapshot.panes() |> Selection.size()\nIO.puts(\"#{session.name}: #{windows} windows, #{panes} panes\")\n",
+      "errors": "Mix.install([{:libtmux, \"~> 0.1\"}])\n\nalias LibTmux.{Command, Selection, Server, Snapshot}\n\ntmux = System.find_executable(\"tmux\") || raise \"tmux is not on PATH\"\nid = Base.encode16(:crypto.strong_rand_bytes(8), case: :lower)\ndir = Path.join(System.tmp_dir!(), \"libtmux-\" <> id)\nsocket = Path.join(dir, \"tmux.sock\")\nFile.mkdir!(dir)\nFile.chmod!(dir, 0o700)\n\n# libtmux works on a running server, so tmux itself starts the private one.\ncreate = [\"new-session\", \"-d\", \"-s\", \"demo\", \"/bin/cat\"]\n{_, 0} = System.cmd(tmux, [\"-S\", socket, \"-f\", \"/dev/null\" | create])\n\nserver = Server.new(executable: tmux, socket: socket)\nsplit = Command.new(\"split-window\", [\"-t\", \"demo\", \"/bin/cat\"])\nlogs = Command.new(\"new-window\", [\"-t\", \"demo\", \"-n\", \"logs\", \"/bin/cat\"])\n{:ok, _} = Server.run(server, split)\n{:ok, _} = Server.run(server, logs)\n\nsnapshot = Server.snapshot!(server)\nsession = snapshot |> Snapshot.sessions() |> Selection.one!()\nwindows = snapshot |> Snapshot.windows() |> Selection.size()\npanes = snapshot |> Snapshot.panes() |> Selection.size()\nIO.puts(\"#{session.name}: #{windows} windows, #{panes} panes\")\n",
+      "cleanup": "Mix.install([{:libtmux, \"~> 0.1\"}])\n\nalias LibTmux.{Command, Selection, Server, Snapshot}\n\ntmux = System.find_executable(\"tmux\") || raise \"tmux is not on PATH\"\nid = Base.encode16(:crypto.strong_rand_bytes(8), case: :lower)\ndir = Path.join(System.tmp_dir!(), \"libtmux-\" <> id)\nsocket = Path.join(dir, \"tmux.sock\")\nFile.mkdir!(dir)\nFile.chmod!(dir, 0o700)\n\ntry do\n  # libtmux works on a running server, so tmux itself starts the private one.\n  create = [\"new-session\", \"-d\", \"-s\", \"demo\", \"/bin/cat\"]\n  {_, 0} = System.cmd(tmux, [\"-S\", socket, \"-f\", \"/dev/null\" | create])\n\n  server = Server.new(executable: tmux, socket: socket)\n  split = Command.new(\"split-window\", [\"-t\", \"demo\", \"/bin/cat\"])\n  logs = Command.new(\"new-window\", [\"-t\", \"demo\", \"-n\", \"logs\", \"/bin/cat\"])\n  {:ok, _} = Server.run(server, split)\n  {:ok, _} = Server.run(server, logs)\n\n  snapshot = Server.snapshot!(server)\n  session = snapshot |> Snapshot.sessions() |> Selection.one!()\n  windows = snapshot |> Snapshot.windows() |> Selection.size()\n  panes = snapshot |> Snapshot.panes() |> Selection.size()\n  IO.puts(\"#{session.name}: #{windows} windows, #{panes} panes\")\nafter\n  System.cmd(tmux, [\"-S\", socket, \"kill-server\"], stderr_to_stdout: true)\n  File.rm_rf(dir)\nend\n"
     }
   }
 }

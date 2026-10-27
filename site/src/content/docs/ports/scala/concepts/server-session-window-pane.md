@@ -20,16 +20,10 @@ A session holds window placements; a window holds panes. A linked window can app
 
 Use an empty directory on Linux with Git, tmux 3.3a or newer, and JDK 25. Save the project files and launcher below, then save any complete program on this page. Each program has its own imports and entry point.
 
-The pinned source checkout supplies the Gradle wrapper and the library dependency.
+The pinned source checkout supplies the Gradle wrapper. Gradle resolves the library from Maven Central.
 
 ```kotlin title="settings.gradle.kts"
 rootProject.name = "connect"
-includeBuild("libtmux-source") {
-    dependencySubstitution {
-        substitute(module("io.github.libtmux:libtmux-scala_3"))
-            .using(project(":libtmux-scala"))
-    }
-}
 ```
 
 ```kotlin title="build.gradle.kts"
@@ -43,7 +37,7 @@ plugins {
 repositories { mavenCentral() }
 dependencies {
     implementation("org.scala-lang:scala3-library_3:3.9.0")
-    implementation("io.github.libtmux:libtmux-scala_3:0.0.1-alpha.17-SNAPSHOT")
+    implementation("io.github.libtmux:libtmux-scala_3:0.1.0")
 }
 java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
 sourceSets.main { scala.srcDir("."); scala.include("${example}.scala") }
@@ -88,11 +82,11 @@ export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
 "$binary" -S "$socket" has-session -t '=work-one'
 ```
 
-Fetch the library revision used by these examples:
+Fetch the Gradle wrapper from the 0.1.0 release:
 
 ```console
 $ git clone https://github.com/libtmux/libtmux-java libtmux-source &&
-  git -C libtmux-source checkout be1d62fbaa1aa634c687e1c50bceeb09ef0b8a15
+  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59
 ```
 
 Each run starts from the same two-session fixture. Programs do not depend on another example having run first. Their assertions fail if the observed result differs.

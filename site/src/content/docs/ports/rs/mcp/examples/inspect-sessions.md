@@ -19,9 +19,9 @@ that server before exiting. The socket lives in a temporary directory under
 
 ## Run the example
 
-Use Git, Rust 1.97.1, and tmux 3.3a or newer on Linux or macOS. Both libtmux
-crates below use the source revision documented by the MCP reference.
-The example was run on Linux with tmux 3.2a and 3.7c.
+Use Rust 1.97.1 and tmux 3.3a or newer on Linux or macOS. Both libtmux
+crates below are the published [0.1.0 release](https://github.com/libtmux/libtmux-rs/tree/ce7610a3b46376c377292e5a640b3798c18708fe).
+The example was run on Linux with tmux 3.3a and 3.7c.
 
 Create a directory for the program:
 
@@ -47,8 +47,8 @@ edition = "2024"
 publish = false
 
 [dependencies]
-libtmux = { git = "https://github.com/libtmux/libtmux-rs", rev = "a6fc2a65674177b92b17fa380757155d2ba150fd" }
-tmux-mcp = { git = "https://github.com/libtmux/libtmux-rs", rev = "a6fc2a65674177b92b17fa380757155d2ba150fd" }
+libtmux = "0.1.0"
+tmux-mcp = "0.1.0"
 rmcp = { version = "=3.1.2", features = ["client", "server", "transport-io"] }
 serde_json = "=1.0.151"
 tempfile = "=3.27.0"
