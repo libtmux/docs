@@ -1227,8 +1227,8 @@
       "port": "powershell",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-powershell",
-      "sourceRevision": "fcd0634e9ca887b70d88915c2d8e26c5da2737e5",
-      "sourceTree": "e842e7d382a31131e73b2e9967d2b5d977304a0a",
+      "sourceRevision": "2c30121b7733bf772d17140231a49332e5a470ab",
+      "sourceTree": "3752a58d6d5ff6852c5446cee4f4d95ad826ef8c",
       "files": [
         {
           "name": "quickstart.ps1",
@@ -1237,7 +1237,7 @@
         }
       ],
       "shellRecipe": [
-        "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  $null = New-Item -ItemType Directory -Path ./modules -Force\n  Save-PSResource -Name LibTmux -Version 0.1.0-alpha2 `\n    -Prerelease -Path ./modules -TrustRepository\n'",
+        "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  $null = New-Item -ItemType Directory -Path ./modules -Force\n  Save-PSResource -Name LibTmux -Version 0.1.0 `\n    -Path ./modules -TrustRepository\n'",
         "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\npwsh -NoLogo -NoProfile -File quickstart.ps1"
       ],
       "expectedOutputs": [
@@ -1249,7 +1249,7 @@
       ],
       "excerptSha256": "2e0437140b5dc07e1fc5ad142052afd74cb550a7828f41e441c958bd1423cc72",
       "tmuxVersions": [
-        "3.7d"
+        "3.8"
       ],
       "variants": {
         "concise": {
