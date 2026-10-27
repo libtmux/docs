@@ -207,7 +207,7 @@
     {
       "port": "go",
       "language": "go",
-      "sourceRevision": "bb06e26e116e941813ca40bf45e7e3a47d38f52a",
+      "sourceRevision": "59aed98c06984e2f8613fd1df6ec8943f5f1eed3",
       "sourceRepository": "libtmux/libtmux-go",
       "files": [
         {
@@ -216,7 +216,7 @@
         },
         {
           "name": "go.mod",
-          "sha256": "389de8aafa2051802de5153ff5020de1529ad034732da91885cff3b9265e324d"
+          "sha256": "6756a23475ee988412ed9249698083c7685c5658b49cc830ad4c76f81183918f"
         },
         {
           "name": "workspace.yaml",
@@ -224,16 +224,15 @@
         }
       ],
       "toolchain": [
-        "Go 1.26.8"
+        "Go 1.26.5"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/go/workspace/internals/examples",
       "shellRecipe": [
         "mkdir go-workspace-example && cd go-workspace-example",
-        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-go.git && \\\n    git -C libtmux-source fetch --depth=1 origin bb06e26e116e941813ca40bf45e7e3a47d38f52a && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
         "go mod tidy",
         "go run ."
       ]
@@ -426,12 +425,12 @@
     {
       "port": "go",
       "language": "go",
-      "sourceRevision": "6e7420927f4cb717fe089a710328e44e8d551025",
+      "sourceRevision": "59aed98c06984e2f8613fd1df6ec8943f5f1eed3",
       "sourceRepository": "libtmux/libtmux-go",
       "files": [
         {
           "name": "go.mod",
-          "sha256": "96275c7f48d59c0b5fab40050b874c791afa26c33e91caa75c2f86d8bfe96247"
+          "sha256": "11837e181881db11ded5043877a62be815e4bd6828c4e39ecdbf674cde2eb3c8"
         },
         {
           "name": "main.go",
@@ -440,19 +439,19 @@
       ],
       "toolchain": [
         "Go 1.26.5",
-        "github.com/libtmux/libtmux-go v0.0.1-alpha.9",
-        "github.com/libtmux/libtmux-go/mcp v0.0.1-alpha.12",
+        "github.com/libtmux/libtmux-go v0.1.0",
+        "github.com/libtmux/libtmux-go/mcp v0.1.0",
         "github.com/modelcontextprotocol/go-sdk v1.6.1"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/go/mcp/examples/inspect-sessions",
       "shellRecipe": [
         "mkdir inspect-mcp-sessions",
         "cd inspect-mcp-sessions",
-        "GOBIN=\"$PWD/.tools\" go install \\\n    github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp@v0.0.1-alpha.12",
+        "GOBIN=\"$PWD/.tools\" go install \\\n    github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp@v0.1.0",
         "go mod tidy",
         "go run ."
       ]
@@ -460,12 +459,12 @@
     {
       "port": "go",
       "language": "go",
-      "sourceRevision": "6e7420927f4cb717fe089a710328e44e8d551025",
+      "sourceRevision": "59aed98c06984e2f8613fd1df6ec8943f5f1eed3",
       "sourceRepository": "libtmux/libtmux-go",
       "files": [
         {
           "name": "go.mod",
-          "sha256": "08431445630b8c2f989a6294e939a9746857bf2d88e28903cb28a72d67461fd0"
+          "sha256": "27926a7fbebb1ea920e7b3192c556f8b2c5e9e8b3366a4906a9b4ba4ce63d6c1"
         },
         {
           "name": "main.go",
@@ -474,19 +473,19 @@
       ],
       "toolchain": [
         "Go 1.26.5",
-        "github.com/libtmux/libtmux-go v0.0.1-alpha.9",
-        "github.com/libtmux/libtmux-go/mcp v0.0.1-alpha.12",
+        "github.com/libtmux/libtmux-go v0.1.0",
+        "github.com/libtmux/libtmux-go/mcp v0.1.0",
         "github.com/modelcontextprotocol/go-sdk v1.6.1"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/go/mcp/examples/run-command",
       "shellRecipe": [
         "mkdir run-mcp-command",
         "cd run-mcp-command",
-        "GOBIN=\"$PWD/.tools\" go install \\\n    github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp@v0.0.1-alpha.12",
+        "GOBIN=\"$PWD/.tools\" go install \\\n    github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp@v0.1.0",
         "go mod tidy",
         "go run ."
       ]
