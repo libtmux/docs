@@ -65,8 +65,8 @@
       "port": "ruby",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-      "sourceTree": "61f4a53afc47b42ac9dbffcca05f704599e11d35",
+      "sourceRevision": "c8b839595d5a30e271e3f9be0d0fe811ddb11b7e",
+      "sourceTree": "0cf427e8bbe586e4e86ab6fc66d325edb62e6646",
       "files": [
         {
           "name": "quickstart.rb",
@@ -75,17 +75,17 @@
         },
         {
           "name": "Gemfile",
-          "sha256": "5d2222a5c0820dbcae11867dcd9678440e8ddfbc49eb7db9fe7bdb9366dac019",
-          "clipboardSha256": "0304eb8570960bb3f198032b4ef806e1cd690a72a136ec617bb7b2023d200e9e"
+          "sha256": "8a41c6ffc694da32d1f5d9885135e38acb7b8891e5708d223b6e1dd5f6432142",
+          "clipboardSha256": "822a519a27a65be3bd3feedea6ca2338b5aec03410f65959642ec352ca6bc157"
         },
         {
           "name": "Gemfile.lock",
-          "sha256": "ae6b8472c320b8eafede9c07daa10e1f4132a501f116ccdfd694c2a95fda2c31",
-          "clipboardSha256": "309689fd2e789e91b0d1a25b287d3d4a65cb2d7337ceb38ef6ef0a0db9f57717"
+          "sha256": "8d7e466a3a679c7cddd6a2231d1b4d6f13dfc3bb2fd46683f87426c37d455b85",
+          "clipboardSha256": "b332eddd94d8530b773c941417ba6bbd840ca28b95f77ae9fba7ae521379d764"
         }
       ],
       "shellRecipe": [
-        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-ruby.git \\\n  9b1545562a112353c2c893a1d3e8c0d9b4b51f8d\ngit -C source checkout -q --detach FETCH_HEAD\nbundle config set --local path vendor/bundle\nbundle install --jobs 2",
+        "bundle config set --local path vendor/bundle\nbundle install --jobs 2",
         "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\nbundle exec ruby quickstart.rb"
       ],
       "expectedOutputs": [
@@ -97,8 +97,8 @@
       ],
       "excerptSha256": "01a8dfb7d28e85966191445cf912045fd6435ff20805845d63282bc534898e1f",
       "tmuxVersions": [
-        "3.2a",
-        "3.7c"
+        "3.3a",
+        "3.8a"
       ],
       "variants": {
         "concise": {
@@ -110,13 +110,13 @@
             },
             {
               "name": "Gemfile",
-              "sha256": "5d2222a5c0820dbcae11867dcd9678440e8ddfbc49eb7db9fe7bdb9366dac019",
-              "clipboardSha256": "0304eb8570960bb3f198032b4ef806e1cd690a72a136ec617bb7b2023d200e9e"
+              "sha256": "8a41c6ffc694da32d1f5d9885135e38acb7b8891e5708d223b6e1dd5f6432142",
+              "clipboardSha256": "822a519a27a65be3bd3feedea6ca2338b5aec03410f65959642ec352ca6bc157"
             },
             {
               "name": "Gemfile.lock",
-              "sha256": "ae6b8472c320b8eafede9c07daa10e1f4132a501f116ccdfd694c2a95fda2c31",
-              "clipboardSha256": "309689fd2e789e91b0d1a25b287d3d4a65cb2d7337ceb38ef6ef0a0db9f57717"
+              "sha256": "8d7e466a3a679c7cddd6a2231d1b4d6f13dfc3bb2fd46683f87426c37d455b85",
+              "clipboardSha256": "b332eddd94d8530b773c941417ba6bbd840ca28b95f77ae9fba7ae521379d764"
             }
           ],
           "excerptSha256": "e9417db23319b374411d6b8089329dd0be7345a4e719ad4cf810e368a040c7da"
@@ -130,13 +130,13 @@
             },
             {
               "name": "Gemfile",
-              "sha256": "5d2222a5c0820dbcae11867dcd9678440e8ddfbc49eb7db9fe7bdb9366dac019",
-              "clipboardSha256": "0304eb8570960bb3f198032b4ef806e1cd690a72a136ec617bb7b2023d200e9e"
+              "sha256": "8a41c6ffc694da32d1f5d9885135e38acb7b8891e5708d223b6e1dd5f6432142",
+              "clipboardSha256": "822a519a27a65be3bd3feedea6ca2338b5aec03410f65959642ec352ca6bc157"
             },
             {
               "name": "Gemfile.lock",
-              "sha256": "ae6b8472c320b8eafede9c07daa10e1f4132a501f116ccdfd694c2a95fda2c31",
-              "clipboardSha256": "309689fd2e789e91b0d1a25b287d3d4a65cb2d7337ceb38ef6ef0a0db9f57717"
+              "sha256": "8d7e466a3a679c7cddd6a2231d1b4d6f13dfc3bb2fd46683f87426c37d455b85",
+              "clipboardSha256": "b332eddd94d8530b773c941417ba6bbd840ca28b95f77ae9fba7ae521379d764"
             }
           ],
           "excerptSha256": "03a72a7fb00f53f0ef023e515783172c76b5e6379270c5ff6187656c1528cf44"
@@ -150,13 +150,13 @@
             },
             {
               "name": "Gemfile",
-              "sha256": "5d2222a5c0820dbcae11867dcd9678440e8ddfbc49eb7db9fe7bdb9366dac019",
-              "clipboardSha256": "0304eb8570960bb3f198032b4ef806e1cd690a72a136ec617bb7b2023d200e9e"
+              "sha256": "8a41c6ffc694da32d1f5d9885135e38acb7b8891e5708d223b6e1dd5f6432142",
+              "clipboardSha256": "822a519a27a65be3bd3feedea6ca2338b5aec03410f65959642ec352ca6bc157"
             },
             {
               "name": "Gemfile.lock",
-              "sha256": "ae6b8472c320b8eafede9c07daa10e1f4132a501f116ccdfd694c2a95fda2c31",
-              "clipboardSha256": "309689fd2e789e91b0d1a25b287d3d4a65cb2d7337ceb38ef6ef0a0db9f57717"
+              "sha256": "8d7e466a3a679c7cddd6a2231d1b4d6f13dfc3bb2fd46683f87426c37d455b85",
+              "clipboardSha256": "b332eddd94d8530b773c941417ba6bbd840ca28b95f77ae9fba7ae521379d764"
             }
           ],
           "excerptSha256": "c4d6f09d4b055c31f4830c9c8b62751cd4efa3115a61877ae5ca41b7178d71ed"

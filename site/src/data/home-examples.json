@@ -33,8 +33,8 @@
   "ruby": {
     "lang": "ruby",
     "sourceRepository": "libtmux/libtmux-ruby",
-    "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-    "sourceTree": "61f4a53afc47b42ac9dbffcca05f704599e11d35",
+    "sourceRevision": "c8b839595d5a30e271e3f9be0d0fe811ddb11b7e",
+    "sourceTree": "0cf427e8bbe586e4e86ab6fc66d325edb62e6646",
     "program": "quickstart.rb",
     "excerpt": {
       "startLine": 1,
@@ -51,17 +51,17 @@
       {
         "name": "Gemfile",
         "lang": "ruby",
-        "code": "source \"https://rubygems.org\"\ngem \"libtmux\", path: \"source/gems/libtmux\"\n"
+        "code": "source \"https://rubygems.org\"\ngem \"libtmux\", \"~> 0.1\"\n"
       },
       {
         "name": "Gemfile.lock",
         "lang": "text",
-        "code": "PATH\n  remote: source/gems/libtmux\n  specs:\n    libtmux (0.1.0.alpha.1)\n      fiddle (~> 1.1)\n      io-console (~> 0.8)\n      json (~> 3.0.2)\n      securerandom (~> 0.4)\n      tmpdir (~> 0.3)\n\nGEM\n  remote: https://rubygems.org/\n  specs:\n    fiddle (1.1.8)\n    fileutils (1.8.0)\n    io-console (0.9.4)\n    json (3.0.2)\n    securerandom (0.4.1)\n    tmpdir (0.3.1)\n      fileutils\n\nPLATFORMS\n  ruby\n  x86_64-linux\n\nDEPENDENCIES\n  libtmux!\n\nCHECKSUMS\n  fiddle (1.1.8) sha256=7fa8ee3627271497f3add5503acdbc3f40b32f610fc1cf49634f083ef3f32eee\n  fileutils (1.8.0) sha256=8c6b1df54e2540bdb2f39258f08af78853aa70bad52b4d394bbc6424593c6e02\n  io-console (0.9.4) sha256=a403304f32928ee85e56d457b4612ca43f2703b561a3258844992bd24085fbb1\n  json (3.0.2) sha256=8e6d7e7b11384c21230430cef90b71f14849a34a1f4452796670f7c981bd19df\n  libtmux (0.1.0.alpha.1)\n  securerandom (0.4.1) sha256=cc5193d414a4341b6e225f0cb4446aceca8e50d5e1888743fac16987638ea0b1\n  tmpdir (0.3.1) sha256=908e9729bb31ce104ba27fc03cfc8293a7f858a8dc9e3a1d7cfd112919a3513d\n\nBUNDLED WITH\n  4.0.20\n"
+        "code": "GEM\n  remote: https://rubygems.org/\n  specs:\n    fiddle (1.1.8)\n    fileutils (1.8.1)\n    io-console (0.9.4)\n    json (3.0.2)\n    libtmux (0.1.0)\n      fiddle (~> 1.1)\n      io-console (~> 0.8)\n      json (~> 3.0.2)\n      securerandom (~> 0.4)\n      tmpdir (~> 0.3)\n    securerandom (0.4.1)\n    tmpdir (0.3.2)\n      fileutils\n\nPLATFORMS\n  ruby\n  x86_64-linux\n\nDEPENDENCIES\n  libtmux (~> 0.1)\n\nCHECKSUMS\n  fiddle (1.1.8) sha256=7fa8ee3627271497f3add5503acdbc3f40b32f610fc1cf49634f083ef3f32eee\n  fileutils (1.8.1) sha256=2d541a1ee34a9ed5c4f054be8fb819a26b5d654488a31dc8806917cf448b9cc3\n  io-console (0.9.4) sha256=a403304f32928ee85e56d457b4612ca43f2703b561a3258844992bd24085fbb1\n  json (3.0.2) sha256=8e6d7e7b11384c21230430cef90b71f14849a34a1f4452796670f7c981bd19df\n  libtmux (0.1.0) sha256=e1cc928de46d517fc9956ba6161a5b9d205ae8ed337bfd31689b1adb75f3ef00\n  securerandom (0.4.1) sha256=cc5193d414a4341b6e225f0cb4446aceca8e50d5e1888743fac16987638ea0b1\n  tmpdir (0.3.2) sha256=e276ef386182169f8d417d9e90f12dba82a54e81646df0caf21de4a7987a0c27\n\nBUNDLED WITH\n  4.0.20\n"
       }
     ],
-    "prerequisites": "POSIX shell, Git, tmux 3.3a or newer, Ruby 4.0.7, Bundler 4.0.20 and a C build toolchain for gems.",
+    "prerequisites": "POSIX shell, tmux 3.3a or newer, Ruby 4.0.7, Bundler 4.0.20, a C build toolchain for gems and access to rubygems.org.",
     "commands": [
-      "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-ruby.git \\\n  9b1545562a112353c2c893a1d3e8c0d9b4b51f8d\ngit -C source checkout -q --detach FETCH_HEAD\nbundle config set --local path vendor/bundle\nbundle install --jobs 2",
+      "bundle config set --local path vendor/bundle\nbundle install --jobs 2",
       "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\nbundle exec ruby quickstart.rb"
     ],
     "expectedOutput": "main: %0\nlogs: %1, %2\n",
