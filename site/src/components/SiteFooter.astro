@@ -82,7 +82,8 @@ const inventories = inventoryLinks(port, version, pagePath)
   .inventory-tooltip { position: fixed; bottom: 3.5rem; right: 1rem; width: 15rem; max-width: calc(100vw - 2rem); padding: .5rem .75rem; border: 1px solid var(--color-edge); border-radius: .25rem; background: var(--color-surface); color: var(--color-fg); font-size: .75rem; opacity: 0; visibility: hidden; z-index: 10; transition: opacity .1s, visibility .1s; transition-delay: .1s; }
   .inventory-tooltip::after { content: ''; position: absolute; inset: 100% 0 auto; height: .5rem; }
   .inventory-tooltip[data-below]::after { inset: auto 0 100%; }
-  .inventory-help:hover .inventory-tooltip, .inventory-help:focus-within .inventory-tooltip { opacity: 1; visibility: visible; transition-delay: 0s; }
+  /* Showing flips visibility at once, so the link inside is tabbable as soon as the help link has focus; only the opacity fades. */
+  .inventory-help:hover .inventory-tooltip, .inventory-help:focus-within .inventory-tooltip { opacity: 1; visibility: visible; transition: opacity .1s 0s, visibility 0s 0s; }
   .inventory-help[data-dismissed] .inventory-tooltip { opacity: 0; visibility: hidden; pointer-events: none; transition: none; }
 </style>
 
