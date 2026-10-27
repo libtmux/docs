@@ -98,7 +98,7 @@
       "excerptSha256": "01a8dfb7d28e85966191445cf912045fd6435ff20805845d63282bc534898e1f",
       "tmuxVersions": [
         "3.3a",
-        "3.8a"
+        "3.8"
       ],
       "variants": {
         "concise": {
@@ -1311,7 +1311,8 @@
       ],
       "excerptSha256": "fcbea45d0f895ae82f18d7b5efb5d51e074fcec65d9b4d65eb3f6102149a1e78",
       "tmuxVersions": [
-        "3.7d"
+        "3.7c",
+        "3.8"
       ],
       "variants": {
         "concise": {
@@ -1370,7 +1371,7 @@
       "excerptSha256": "a0a04cbe7b9922255ba1f93d776ab775a5eab839c8479a4d25c57801b4a6769d",
       "tmuxVersions": [
         "3.3a",
-        "3.8a"
+        "3.8"
       ],
       "variants": {
         "concise": {
