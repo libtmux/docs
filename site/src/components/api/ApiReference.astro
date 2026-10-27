@@ -472,7 +472,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
           {owner.doc?.since && <span>Since {owner.doc.since}</span>}
           <span class="api-badge api-badge--mod api-reference-version"><span class="api-badge__label">{version}</span></span>
         </div>}
-        <h1 class="scroll-mt-24 font-mono text-2xl font-semibold tracking-tight">
+        <h1 class="scroll-mt-24 text-2xl font-semibold tracking-tight">
           <SymbolName name={displayName} />
         </h1>
         {owner && <>
