@@ -3,20 +3,20 @@
     {
       "port": "kotlin",
       "page": "ports/kotlin/concepts/server-session-window-pane",
-      "sourceRevision": "be1d62fbaa1aa634c687e1c50bceeb09ef0b8a15",
+      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
       "runtime": "Temurin JDK 25.0.3",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "files": [
         {
           "name": "settings.gradle.kts",
-          "sha256": "b00ae8397b15423ec37743ffe34966e3123fa2a21996d36457953dff131d60bc"
+          "sha256": "8a9a1cef4b025e20741219b949c5a591444f9f3b850534f1cc5b2f9164b9c126"
         },
         {
           "name": "build.gradle.kts",
-          "sha256": "7c086e8a937a8219dd20df5b5380048d993b0c0ed9aea65e13a017428e3b50b7"
+          "sha256": "8c58be9952882697a411fe07d19d7f5a4d79e4ef64bde65facc97ee7d8e5822f"
         },
         {
           "name": "gradle.properties",
@@ -36,7 +36,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout be1d62fbaa1aa634c687e1c50bceeb09ef0b8a15",
+        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59",
         "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Hierarchy --console=plain --max-workers=2",
         "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Refresh --console=plain --max-workers=2"
       ],
@@ -51,25 +51,25 @@
           "editor -> renamed"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and pinned library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and the library from Maven Central 0.1.0. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "kotlin",
       "page": "ports/kotlin/concepts/queries",
-      "sourceRevision": "be1d62fbaa1aa634c687e1c50bceeb09ef0b8a15",
+      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
       "runtime": "Temurin JDK 25.0.3",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "files": [
         {
           "name": "settings.gradle.kts",
-          "sha256": "b00ae8397b15423ec37743ffe34966e3123fa2a21996d36457953dff131d60bc"
+          "sha256": "8a9a1cef4b025e20741219b949c5a591444f9f3b850534f1cc5b2f9164b9c126"
         },
         {
           "name": "build.gradle.kts",
-          "sha256": "7c086e8a937a8219dd20df5b5380048d993b0c0ed9aea65e13a017428e3b50b7"
+          "sha256": "8c58be9952882697a411fe07d19d7f5a4d79e4ef64bde65facc97ee7d8e5822f"
         },
         {
           "name": "gradle.properties",
@@ -93,7 +93,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout be1d62fbaa1aa634c687e1c50bceeb09ef0b8a15",
+        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59",
         "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Local --console=plain --max-workers=2",
         "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Cardinality --console=plain --max-workers=2",
         "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Relations --console=plain --max-workers=2"
@@ -113,25 +113,24 @@
           "no editor: work-two"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and pinned library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and the library from Maven Central 0.1.0. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "kotlin",
       "page": "ports/kotlin/concepts/transports",
-      "sourceRevision": "be1d62fbaa1aa634c687e1c50bceeb09ef0b8a15",
+      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
       "runtime": "Temurin JDK 25.0.3",
       "tmuxVersions": [
-        "3.2a",
         "3.7c"
       ],
       "files": [
         {
           "name": "settings.gradle.kts",
-          "sha256": "b00ae8397b15423ec37743ffe34966e3123fa2a21996d36457953dff131d60bc"
+          "sha256": "8a9a1cef4b025e20741219b949c5a591444f9f3b850534f1cc5b2f9164b9c126"
         },
         {
           "name": "build.gradle.kts",
-          "sha256": "7c086e8a937a8219dd20df5b5380048d993b0c0ed9aea65e13a017428e3b50b7"
+          "sha256": "8c58be9952882697a411fe07d19d7f5a4d79e4ef64bde65facc97ee7d8e5822f"
         },
         {
           "name": "gradle.properties",
@@ -151,7 +150,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout be1d62fbaa1aa634c687e1c50bceeb09ef0b8a15",
+        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59",
         "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Local --console=plain --max-workers=2",
         "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Control --console=plain --max-workers=2"
       ],
@@ -165,25 +164,25 @@
           "control client closed; server still running"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and pinned library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and the library from Maven Central 0.1.0. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "kotlin",
       "page": "ports/kotlin/concepts/workspaces",
-      "sourceRevision": "be1d62fbaa1aa634c687e1c50bceeb09ef0b8a15",
+      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
       "runtime": "Temurin JDK 25.0.3",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "files": [
         {
           "name": "settings.gradle.kts",
-          "sha256": "b00ae8397b15423ec37743ffe34966e3123fa2a21996d36457953dff131d60bc"
+          "sha256": "8a9a1cef4b025e20741219b949c5a591444f9f3b850534f1cc5b2f9164b9c126"
         },
         {
           "name": "build.gradle.kts",
-          "sha256": "7c086e8a937a8219dd20df5b5380048d993b0c0ed9aea65e13a017428e3b50b7"
+          "sha256": "8c58be9952882697a411fe07d19d7f5a4d79e4ef64bde65facc97ee7d8e5822f"
         },
         {
           "name": "gradle.properties",
@@ -203,7 +202,7 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout be1d62fbaa1aa634c687e1c50bceeb09ef0b8a15",
+        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59",
         "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Layout --console=plain --max-workers=2",
         "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=ReuseLayout --console=plain --max-workers=2"
       ],
@@ -216,7 +215,7 @@
           "one tools window after two calls"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and pinned library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and the library from Maven Central 0.1.0. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "scala",

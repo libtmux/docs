@@ -84,6 +84,12 @@ export const OTHER_FLOORS = [
     near: /history limit/,
     why: 'a tmux behaviour of the history-limit option from tmux 3.7, not a library minimum',
   },
+  {
+    path: 'site/src/content/docs/ports/kotlin/concepts/transports.md',
+    version: '3.7',
+    near: /Managed control/,
+    why: 'the managed control program; libtmux 0.1.0 refuses managed control below tmux 3.7 (ControlAcquisition.supports)',
+  },
 ]
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')

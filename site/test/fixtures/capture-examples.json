@@ -214,7 +214,7 @@
     {
       "port": "kotlin",
       "language": "kotlin",
-      "sourceRevision": "85ebf6955e56703c5be74e2afd34a18309044741",
+      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
       "sourceRepository": "libtmux/libtmux-java",
       "files": [
         {
@@ -223,11 +223,11 @@
         },
         {
           "name": "build.gradle.kts",
-          "sha256": "a705fe6e99a1931cb90267adf81650a44a93b6580c5277f0657d468287be5068"
+          "sha256": "dcb4c29ed651d0f463ce0d19d4a4e85c79c59f50642f5341435f57414e7a091e"
         },
         {
           "name": "settings.gradle.kts",
-          "sha256": "7c01a4d1d8620741df4852dad3a03e0eac7a084a2bbb20e53016064cab1f958b"
+          "sha256": "623c7967842d9b0330b5016fab47d4351151dc1cffcf295a9298c7378b7561aa"
         },
         {
           "name": "gradle.properties",
@@ -239,28 +239,28 @@
         "Kotlin 2.4.10"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/kotlin/examples/capture-pane-output",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 85ebf6955e56703c5be74e2afd34a18309044741 &&\n  ./libtmux-source/gradlew --project-dir . run --console=plain --max-workers=2"
+        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59 &&\n  ./libtmux-source/gradlew --project-dir . run --console=plain --max-workers=2"
       ],
       "verification": {
         "platform": "Linux",
         "checks": [
           {
-            "name": "positive-3.2a",
-            "tmux": "3.2a",
+            "name": "positive-3.3a",
+            "tmux": "3.3a",
             "exit": 0,
-            "seconds": 2.282,
+            "seconds": 2.924,
             "remainingSocketDirectories": 0
           },
           {
             "name": "positive-3.7c",
             "tmux": "3.7c",
             "exit": 0,
-            "seconds": 2.183,
+            "seconds": 11.445,
             "remainingSocketDirectories": 0
           },
           {
