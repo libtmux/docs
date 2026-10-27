@@ -430,80 +430,82 @@
       "port": "go",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-go",
-      "sourceRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
-      "sourceTree": "96e6d6d4f688bf26503e46a541a88d6fce71663c",
+      "sourceRevision": "c21afc69867e989410e15b3616a8c0f0b1073c33",
+      "sourceTree": "827524d332b79227dd4bd82b0d99e5fc12a1156e",
       "files": [
         {
           "name": "quickstart.go",
-          "sha256": "85addf0cc79c3ca1f77bda2b34c0d0ca434f34cdb7fd750639426bd635a8d503",
-          "clipboardSha256": "d2e7591ed34f2327708e04ec106f2d1ef0436fe3c676d6e6872e5755cf8cd101"
+          "sha256": "c51b65a6e41f6c87c15a2285b855152da03c3746895d04f287636872861b5d22",
+          "clipboardSha256": "9118bd7e00ca0ba049e7d60b11cd039c25dde81845bd51bcc2c91cb6db8bcbac"
         },
         {
           "name": "go.mod",
-          "sha256": "c26c608d0f6c9df7d32357b0596e66ee5129f70ddacb6b85208c3c8afb2715bc",
-          "clipboardSha256": "89f4e696c56b6072d58a587880e7bd471cc8d35fd88f0cb61b2132896c88d83a"
+          "sha256": "20c363066c251c11cd573bf3616d53b394e6c9f2299190325a8b98533cb0452a",
+          "clipboardSha256": "19fc58b8672ca13cf69e6217bd2c85a55eddc2b65fbb84d001c5666516f6259e"
         }
       ],
       "shellRecipe": [
-        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-go.git \\\n  6f3df55f8a41999e41225eefb3940545b834e6a2\ngit -C source checkout -q --detach FETCH_HEAD\ngo build -p 2 -o quickstart quickstart.go",
+        "go mod tidy\ngo build -p 2 -o quickstart quickstart.go",
         "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\n./quickstart"
       ],
       "expectedOutputs": [
         [],
         [
-          "libtmux ready"
+          "hello from tmux",
+          "exit status: 0"
         ]
       ],
-      "excerptSha256": "d2e7591ed34f2327708e04ec106f2d1ef0436fe3c676d6e6872e5755cf8cd101",
+      "excerptSha256": "9118bd7e00ca0ba049e7d60b11cd039c25dde81845bd51bcc2c91cb6db8bcbac",
       "tmuxVersions": [
-        "3.2a",
-        "3.7c"
+        "3.3a",
+        "3.7c",
+        "3.8"
       ],
       "variants": {
         "concise": {
           "files": [
             {
               "name": "quickstart.go",
-              "sha256": "8bc0d2eff603953dea98027efe89e3f5f65d3a4a723b2b29646711843e4d7ae9",
-              "clipboardSha256": "ed5db7fb3044eaac4bfc29c23476c3a7d4d8ca1cf81002a116be1b9d02785caa"
+              "sha256": "83541f3d63a31d9b1f7a779139aaa081fd6e5810ccc3fbf33d05092cbacbd499",
+              "clipboardSha256": "fa77d71de25d9ffa18a791b8fca7223076b0ddbf46f72ca5ae045e6d0f6db269"
             },
             {
               "name": "go.mod",
-              "sha256": "c26c608d0f6c9df7d32357b0596e66ee5129f70ddacb6b85208c3c8afb2715bc",
-              "clipboardSha256": "89f4e696c56b6072d58a587880e7bd471cc8d35fd88f0cb61b2132896c88d83a"
+              "sha256": "20c363066c251c11cd573bf3616d53b394e6c9f2299190325a8b98533cb0452a",
+              "clipboardSha256": "19fc58b8672ca13cf69e6217bd2c85a55eddc2b65fbb84d001c5666516f6259e"
             }
           ],
-          "excerptSha256": "ed5db7fb3044eaac4bfc29c23476c3a7d4d8ca1cf81002a116be1b9d02785caa"
+          "excerptSha256": "fa77d71de25d9ffa18a791b8fca7223076b0ddbf46f72ca5ae045e6d0f6db269"
         },
         "errors": {
           "files": [
             {
               "name": "quickstart.go",
-              "sha256": "7804fb33e014497593f5b632c9ce0c452b5b2dbbcd596b5597068ebe0ea11e72",
-              "clipboardSha256": "664687296a8b5f04d823e873d8e99857825c8f999efb0506606304c3c6bc4a27"
+              "sha256": "df42c02a9e33c8213629978b8eeb42a523f791b09b2c6b3c22ea33f6c24cdb45",
+              "clipboardSha256": "f4f7369f21ed20711f16e7269bbe9ad3ec92a6dbf820e9629f508051a201a1ce"
             },
             {
               "name": "go.mod",
-              "sha256": "c26c608d0f6c9df7d32357b0596e66ee5129f70ddacb6b85208c3c8afb2715bc",
-              "clipboardSha256": "89f4e696c56b6072d58a587880e7bd471cc8d35fd88f0cb61b2132896c88d83a"
+              "sha256": "20c363066c251c11cd573bf3616d53b394e6c9f2299190325a8b98533cb0452a",
+              "clipboardSha256": "19fc58b8672ca13cf69e6217bd2c85a55eddc2b65fbb84d001c5666516f6259e"
             }
           ],
-          "excerptSha256": "664687296a8b5f04d823e873d8e99857825c8f999efb0506606304c3c6bc4a27"
+          "excerptSha256": "f4f7369f21ed20711f16e7269bbe9ad3ec92a6dbf820e9629f508051a201a1ce"
         },
         "cleanup": {
           "files": [
             {
               "name": "quickstart.go",
-              "sha256": "91649731bbff2152b8193908653cb495ce6635a1ad00a9947ef9d1dd8634cf85",
-              "clipboardSha256": "2b33a9cb789e3e6aab480b41684265b10c95236f3ebff01ce145e62266d3aacc"
+              "sha256": "90e5ca6c3d294c515ee98f023bac290e8744b112edcf3d210c7ae46c2dc6519b",
+              "clipboardSha256": "88dbbc3bc8be0a0048d18dac69c14069b6717698998076dec602e51ee256d7d1"
             },
             {
               "name": "go.mod",
-              "sha256": "c26c608d0f6c9df7d32357b0596e66ee5129f70ddacb6b85208c3c8afb2715bc",
-              "clipboardSha256": "89f4e696c56b6072d58a587880e7bd471cc8d35fd88f0cb61b2132896c88d83a"
+              "sha256": "20c363066c251c11cd573bf3616d53b394e6c9f2299190325a8b98533cb0452a",
+              "clipboardSha256": "19fc58b8672ca13cf69e6217bd2c85a55eddc2b65fbb84d001c5666516f6259e"
             }
           ],
-          "excerptSha256": "2b33a9cb789e3e6aab480b41684265b10c95236f3ebff01ce145e62266d3aacc"
+          "excerptSha256": "88dbbc3bc8be0a0048d18dac69c14069b6717698998076dec602e51ee256d7d1"
         }
       }
     },
