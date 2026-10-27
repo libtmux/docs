@@ -330,12 +330,12 @@
     {
       "port": "rs",
       "language": "rust",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "ce7610a3b46376c377292e5a640b3798c18708fe",
       "sourceRepository": "libtmux/libtmux-rs",
       "files": [
         {
           "name": "Cargo.toml",
-          "sha256": "5ec266b05567cb1799d2df65b3dcf6f5db69cab7c8878616d43f21da192d2562"
+          "sha256": "ebfa2c0baa9217baa3f61ca3b00f4d485f3a0f992c31109a9441dc4a4aff22c3"
         },
         {
           "name": "src/main.rs",
@@ -346,7 +346,7 @@
         "Rust 1.97.1"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/rs/mcp/examples/inspect-sessions",

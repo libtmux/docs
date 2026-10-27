@@ -309,8 +309,8 @@
       "port": "rs",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-      "sourceTree": "865aef72a40135bade83eb5d44c0b78ea018a270",
+      "sourceRevision": "ce7610a3b46376c377292e5a640b3798c18708fe",
+      "sourceTree": "32c8792ffcd03d4d1c58d1f25b8d29fd36fc2287",
       "files": [
         {
           "name": "src/main.rs",
@@ -319,13 +319,13 @@
         },
         {
           "name": "Cargo.toml",
-          "sha256": "25770faf80da67fd495e9e7a5d525bcdc055b94cab33549739a5159a01dd037a",
-          "clipboardSha256": "87a03c24caaeb6c8957f624b5465633b4794908ad16719a9d4063cca08168f11"
+          "sha256": "0886a13de14b8c6642db2c46926c95a5d5bc7a979e64c989ba6b91308e42f678",
+          "clipboardSha256": "11ed755469ef808e06d92029f18eca7fd76c6d73f8d5c7935ac25cbcc6026aa0"
         },
         {
           "name": "Cargo.lock",
-          "sha256": "891b66eec409ff90621097ed80f476ecd0f8f6907776ce6973465f85373e5a43",
-          "clipboardSha256": "9df8639553925b9a72d291720bf12e747378dc75a9348811d9a47c2acabe3b3a"
+          "sha256": "1bd0b462408850261d8c59d3ab2884ae594607af3fdd522f2726989517674538",
+          "clipboardSha256": "1c0b3ecf064cad986bea6e1e904a8290469750bdaa947699847d655ab11e8e9f"
         },
         {
           "name": "rust-toolchain.toml",
@@ -334,7 +334,7 @@
         }
       ],
       "shellRecipe": [
-        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-rs.git \\\n  a6fc2a65674177b92b17fa380757155d2ba150fd\ngit -C source checkout -q --detach FETCH_HEAD\ncargo build --locked --jobs 2",
+        "cargo build --locked --jobs 2",
         "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\ncargo run --quiet --locked"
       ],
       "expectedOutputs": [
@@ -345,7 +345,7 @@
       ],
       "excerptSha256": "2322ba9f0427da9f242413dbde8fe60567d2dfa89e5d3fcf3d3a2e4608dc2dd6",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "variants": {
@@ -358,13 +358,13 @@
             },
             {
               "name": "Cargo.toml",
-              "sha256": "25770faf80da67fd495e9e7a5d525bcdc055b94cab33549739a5159a01dd037a",
-              "clipboardSha256": "87a03c24caaeb6c8957f624b5465633b4794908ad16719a9d4063cca08168f11"
+              "sha256": "0886a13de14b8c6642db2c46926c95a5d5bc7a979e64c989ba6b91308e42f678",
+              "clipboardSha256": "11ed755469ef808e06d92029f18eca7fd76c6d73f8d5c7935ac25cbcc6026aa0"
             },
             {
               "name": "Cargo.lock",
-              "sha256": "891b66eec409ff90621097ed80f476ecd0f8f6907776ce6973465f85373e5a43",
-              "clipboardSha256": "9df8639553925b9a72d291720bf12e747378dc75a9348811d9a47c2acabe3b3a"
+              "sha256": "1bd0b462408850261d8c59d3ab2884ae594607af3fdd522f2726989517674538",
+              "clipboardSha256": "1c0b3ecf064cad986bea6e1e904a8290469750bdaa947699847d655ab11e8e9f"
             },
             {
               "name": "rust-toolchain.toml",
@@ -383,13 +383,13 @@
             },
             {
               "name": "Cargo.toml",
-              "sha256": "25770faf80da67fd495e9e7a5d525bcdc055b94cab33549739a5159a01dd037a",
-              "clipboardSha256": "87a03c24caaeb6c8957f624b5465633b4794908ad16719a9d4063cca08168f11"
+              "sha256": "0886a13de14b8c6642db2c46926c95a5d5bc7a979e64c989ba6b91308e42f678",
+              "clipboardSha256": "11ed755469ef808e06d92029f18eca7fd76c6d73f8d5c7935ac25cbcc6026aa0"
             },
             {
               "name": "Cargo.lock",
-              "sha256": "891b66eec409ff90621097ed80f476ecd0f8f6907776ce6973465f85373e5a43",
-              "clipboardSha256": "9df8639553925b9a72d291720bf12e747378dc75a9348811d9a47c2acabe3b3a"
+              "sha256": "1bd0b462408850261d8c59d3ab2884ae594607af3fdd522f2726989517674538",
+              "clipboardSha256": "1c0b3ecf064cad986bea6e1e904a8290469750bdaa947699847d655ab11e8e9f"
             },
             {
               "name": "rust-toolchain.toml",
@@ -408,13 +408,13 @@
             },
             {
               "name": "Cargo.toml",
-              "sha256": "25770faf80da67fd495e9e7a5d525bcdc055b94cab33549739a5159a01dd037a",
-              "clipboardSha256": "87a03c24caaeb6c8957f624b5465633b4794908ad16719a9d4063cca08168f11"
+              "sha256": "0886a13de14b8c6642db2c46926c95a5d5bc7a979e64c989ba6b91308e42f678",
+              "clipboardSha256": "11ed755469ef808e06d92029f18eca7fd76c6d73f8d5c7935ac25cbcc6026aa0"
             },
             {
               "name": "Cargo.lock",
-              "sha256": "891b66eec409ff90621097ed80f476ecd0f8f6907776ce6973465f85373e5a43",
-              "clipboardSha256": "9df8639553925b9a72d291720bf12e747378dc75a9348811d9a47c2acabe3b3a"
+              "sha256": "1bd0b462408850261d8c59d3ab2884ae594607af3fdd522f2726989517674538",
+              "clipboardSha256": "1c0b3ecf064cad986bea6e1e904a8290469750bdaa947699847d655ab11e8e9f"
             },
             {
               "name": "rust-toolchain.toml",
