@@ -39,8 +39,10 @@ export const PORT_FLOORS = [
  * Single statements elsewhere that name another floor on purpose, usually in
  * a file that speaks for several ports. `near` selects the statement by its
  * paragraph (its line, outside Markdown), so a wrong floor elsewhere in the
- * same file still fails. An entry that matches no statement fails, so an
- * exemption cannot outlive the text it covers.
+ * same file still fails. `within` selects a statement by the top-level key of
+ * the JSON object that holds it, for text that several objects share. An entry
+ * that matches no statement fails, so an exemption cannot outlive the text it
+ * covers.
  */
 export const OTHER_FLOORS = [
   {
@@ -64,8 +66,14 @@ export const OTHER_FLOORS = [
   {
     path: 'site/src/data/home-examples.json',
     version: '3.4',
-    near: /tmux 3\.4 or newer on Linux\/macOS/,
+    within: 'fsharp',
     why: 'the F# quickstart prerequisites; the quickstart runs a command in a pane, which LibTmux 0.1.0 refuses below tmux 3.4 because earlier releases act on the most recent buffer when the named one is missing',
+  },
+  {
+    path: 'site/src/content/docs/ports/csharp/mcp/examples/run-command.md',
+    version: '3.4',
+    near: /run_shell_command/,
+    why: 'the run_shell_command example; the tool stages its command in a named tmux buffer, which LibTmux 0.1.0 refuses to use below tmux 3.4',
   },
   {
     path: 'site/src/lib/ports.ts',
@@ -148,8 +156,8 @@ export function minimums(text: string): string[] {
   return scan(text).map((found) => found.version)
 }
 
-interface Floor { path: string, version: string, near?: RegExp }
-interface Statement { path: string, version: string, context: string }
+interface Floor { path: string, version: string, near?: RegExp, within?: string }
+interface Statement { path: string, version: string, context: string, owner?: string }
 
 /** The paragraph around an index in Markdown, otherwise its line. */
 function around(path: string, text: string, index: number): string {
@@ -159,15 +167,24 @@ function around(path: string, text: string, index: number): string {
   return text.slice(before < 0 ? 0 : before + separator.length, after < 0 ? text.length : after)
 }
 
+/** The top-level key of the JSON object around an index, such as "fsharp". */
+function ownerOf(path: string, text: string, index: number): string | undefined {
+  if (!path.endsWith('.json')) return undefined
+  return [...text.slice(0, index).matchAll(/^ {2}"([^"]+)": \{$/gm)].at(-1)?.[1]
+}
+
 export function statementsIn(path: string, text: string): Statement[] {
-  return scan(text).map(({ version, index }) => ({ path, version, context: around(path, text, index) }))
+  return scan(text).map(({ version, index }) => ({
+    path, version, context: around(path, text, index), owner: ownerOf(path, text, index),
+  }))
 }
 
 /** Statements that disagree with their floor, then entries that excuse or require nothing. */
 export function mismatches(statements: Statement[], ports: Floor[], others: Floor[]): string[] {
   const covers = (entry: Floor, statement: Statement) =>
     statement.version === entry.version && statement.path.startsWith(entry.path) &&
-    (entry.near?.test(statement.context) ?? true)
+    (entry.near?.test(statement.context) ?? true) &&
+    (entry.within === undefined || entry.within === statement.owner)
   const expected = (statement: Statement) =>
     ports.find((port) => statement.path.startsWith(port.path))?.version ?? FLOOR
   const wrong = statements
@@ -175,7 +192,7 @@ export function mismatches(statements: Statement[], ports: Floor[], others: Floo
     .map((statement) => `${statement.path}: tmux ${statement.version}, expected ${expected(statement)}`)
   const unused = [...ports, ...others]
     .filter((entry) => !statements.some((statement) => covers(entry, statement)))
-    .map((entry) => `stale entry: ${entry.path} names tmux ${entry.version}${entry.near ? ` near ${entry.near}` : ''}, which no statement there states`)
+    .map((entry) => `stale entry: ${entry.path} names tmux ${entry.version}${entry.near ? ` near ${entry.near}` : ''}${entry.within ? ` within ${entry.within}` : ''}, which no statement there states`)
   return [...wrong, ...unused]
 }
 
@@ -296,6 +313,53 @@ describe('tmux minimum statements', () => {
     const paragraphs = 'The Elixir port needs tmux 3.3 or newer.\n\nThe Go port needs tmux 3.3 or newer.'
     expect(mismatches(statementsIn('m.md', paragraphs), [], [{ path: 'm.md', version: '3.3', near: /Elixir/ }])).toEqual([
       'm.md: tmux 3.3, expected 3.3a',
+    ])
+  })
+
+  it('limits a JSON exemption to the object that holds the statement', () => {
+    const others = [{ path: 'm.json', version: '3.4', within: 'fsharp' }]
+    const object = (port: string) => `  "${port}": {\n    "prerequisites": "tmux 3.4 or newer on Linux/macOS"\n  }`
+    const document = (...ports: string[]) => `{\n${ports.map(object).join(',\n')}\n}\n`
+    expect(mismatches(statementsIn('m.json', document('fsharp')), [], others)).toEqual([])
+    expect(mismatches(statementsIn('m.json', document('csharp', 'fsharp')), [], others)).toEqual([
+      'm.json: tmux 3.4, expected 3.3a',
+    ])
+    expect(mismatches(statementsIn('m.json', document('csharp')), [], others)).toEqual([
+      'm.json: tmux 3.4, expected 3.3a',
+      'stale entry: m.json names tmux 3.4 within fsharp, which no statement there states',
+    ])
+  })
+
+  /** One file against the floors that cover it, so other files' entries are not stale. */
+  const checkFile = (path: string, text: string) => mismatches(
+    statementsIn(path, text),
+    PORT_FLOORS.filter((port) => path.startsWith(port.path)),
+    OTHER_FLOORS.filter((entry) => path.startsWith(entry.path)),
+  )
+
+  it('keeps the F# exemption off the C# homepage prerequisites', () => {
+    const path = 'site/src/data/home-examples.json'
+    const csharp = '".NET SDK 10.0.303, .NET 8 and 10 runtimes, tmux on Linux/macOS"'
+    const text = readFileSync(join(ROOT, path), 'utf8')
+    expect(text).toContain(csharp)
+    expect(checkFile(path, text)).toEqual([])
+    const probe = text.replace(csharp, csharp.replace('tmux on', 'tmux 3.4 or newer on'))
+    expect(checkFile(path, probe)).toEqual([
+      `${path}: tmux 3.4, expected 3.3a`,
+    ])
+  })
+
+  it('limits the C# run-command exemption to its run_shell_command paragraph', () => {
+    const path = 'site/src/content/docs/ports/csharp/mcp/examples/run-command.md'
+    const text = readFileSync(join(ROOT, path), 'utf8')
+    expect(checkFile(path, text)).toEqual([])
+    const elsewhere = `${text}\nThe server must be tmux 3.4 or newer.\n`
+    expect(checkFile(path, elsewhere)).toEqual([
+      `${path}: tmux 3.4, expected 3.3a`,
+    ])
+    const wrong = text.replace('tmux 3.4 or newer', 'tmux 3.3a or newer')
+    expect(checkFile(path, wrong)).toEqual([
+      `stale entry: ${path} names tmux 3.4 near /run_shell_command/, which no statement there states`,
     ])
   })
 })
