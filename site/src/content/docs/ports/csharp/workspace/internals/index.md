@@ -40,8 +40,8 @@ tmux server. The package adds YAML parsing separately from the core client.
 ## Package and runtime
 
 The package targets .NET 8 and .NET 10 and uses YamlDotNet. tmux must run on
-the host. Pin the prerelease selected by your package manager because public
-contracts can change between alpha versions.
+the host. Pin an exact version because public contracts can change between
+0.1.N releases.
 
 The parser rejects unknown fields. The caller reads the file and selects
 the server; parsing does not search configuration directories or load

@@ -14,7 +14,7 @@ import ApiDoc from './ApiDoc.astro'
 import ApiProse from './ApiProse.astro'
 import ApiType from './ApiType.astro'
 import { asideFor } from '../../lib/aside'
-import { apiCommandFacts, apiCommandRelatedLinks, apiOverloadId, apiOverloadIdentity, apiEntryFields, apiMethodDetails, anonymousDeclarationLabel, nativeSignatureText as unformattedNativeSignatureText, parameterBindingText, usesNativeSignatures } from '../../lib/api-sections'
+import { aliasDeclaration, apiCommandFacts, apiCommandRelatedLinks, apiOverloadId, apiOverloadIdentity, apiEntryFields, apiMethodDetails, anonymousDeclarationLabel, nativeSignatureText as unformattedNativeSignatureText, parameterBindingText, usesNativeSignatures } from '../../lib/api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from '../../lib/tmux-manual-data'
 import { tmuxCommandItems, tmuxCommandRows, tmuxCommandSeparator, tmuxSymbolSends } from '../../lib/tmux-reference'
 import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl } from '../../lib/tmux-catalog'
@@ -78,9 +78,15 @@ interface Props {
   showBases?: boolean
   /** Previous fragment for the same declaration. */
   legacyId?: string
+  /**
+   * Show the tmux and cross-port links as small rows under the declaration. A page whose subject is this symbol
+   * lists them as sections of its own (`ApiTmuxSections.astro`) and turns the rows off; a member listed on an
+   * aggregate page keeps them.
+   */
+  linkRows?: boolean
 }
 const { symbol, parentKind, index, sourceUrl, port, language = port, manualLinks, catalogLinks, alternativesFor, heading = false, member = false,
-  showSummary = true, showBases = true, legacyId, nameHref } = Astro.props as Props
+  showSummary = true, showBases = true, legacyId, nameHref, linkRows = true } = Astro.props as Props
 const anchor = symbol.publicId ?? symbol.id
 const inventory = apiInventoryAttributes(symbol, language ?? '', parentKind ?? (symbol.parent ? API_MODELS[port ?? '']?.symbols.find((parent) => parent.id === symbol.parent)?.kind : undefined))
 const kind = symbol.kind
@@ -129,7 +135,7 @@ const domain = language ? (DOMAIN[language] ?? 'std') : 'py'
  */
 const absentParts = (text?: string) => (text ?? '').split(/`([^`]+)`/)
 
-const elsewhere = port ? (alternativesFor?.(symbol) ?? referenceAlternatives(port, anchor)).map((group) => ({
+const elsewhere = port && linkRows ? (alternativesFor?.(symbol) ?? referenceAlternatives(port, anchor)).map((group) => ({
   ...group,
   ports: group.ports.filter((entry) => entry.port !== port).map((entry) => {
     const target = entry.publicId ? API_MODELS[entry.port]?.symbols.find((symbol) =>
@@ -192,14 +198,14 @@ const references = symbol.doc?.references ?? []
  * to the reference, and this sends them back. Grouped by section, because
  * "explained in a concept" and "used in an example" are different offers.
  */
-const mentions = port ? mentionsOf(port, symbol.id) : []
+const mentions = port && linkRows ? mentionsOf(port, symbol.id) : []
 // A command the symbol sends comes with its scope and C function; one it only has an equivalent for is a plain link.
-const tmuxCommands = manualLinks ?? (port ? tmuxCommandsFor(port, anchor).map((command) => ({ ...command, href: tmuxManualUrl('latest', command.name) })) : [])
-const commandRows = tmuxCommandRows(port && !manualLinks ? tmuxSymbolSends(port, anchor) : [], tmuxCommands)
+const tmuxCommands = !linkRows ? [] : manualLinks ?? (port ? tmuxCommandsFor(port, anchor).map((command) => ({ ...command, href: tmuxManualUrl('latest', command.name) })) : [])
+const commandRows = tmuxCommandRows(linkRows && port && !manualLinks ? tmuxSymbolSends(port, anchor) : [], tmuxCommands)
 const commandItems = tmuxCommandItems(commandRows)
 const commandSeparator = tmuxCommandSeparator(commandItems)
 // Members that wrap options or hooks lead to the catalog of what they take.
-const catalogEntries = catalogLinks ?? (port && !manualLinks ? tmuxCatalogKindsForSymbol(port, symbol).map((kind) => ({ name: CATALOG_KINDS[kind].label, href: tmuxCatalogUrl('latest', kind) })) : [])
+const catalogEntries = !linkRows ? [] : catalogLinks ?? (port && !manualLinks ? tmuxCatalogKindsForSymbol(port, symbol).map((kind) => ({ name: CATALOG_KINDS[kind].label, href: tmuxCatalogUrl('latest', kind) })) : [])
 const mentionSections = [...new Set(mentions.map((m) => m.section ?? 'docs'))].sort()
 
 const badges = [
@@ -224,6 +230,7 @@ const badges = [
  * source reads. The model carried `value` all along and nothing displayed it.
  */
 const value = (symbol as { value?: string }).value
+const alias = aliasDeclaration(symbol, language)
 
 /**
  * A signature long enough to hide behind a summary.
@@ -338,9 +345,17 @@ const hasBody =
               data-code-columns={signatureLayouts.get(sig)?.limit} data-code-width-status={signatureLayouts.has(sig) ? (signatureLayouts.get(sig)!.failures.length ? 'unresolved' : 'fits') : undefined} data-code-width-failures={signatureLayouts.get(sig)?.failures.length ? JSON.stringify(signatureLayouts.get(sig)!.failures) : undefined}>{sig.label && sig.label !== '__AllParameterSets' && <span class="api-native-signature-label">{sig.label}{sig.isDefault ? ' (default)' : ''}: </span>}<ApiType type={nativeSignatureText(symbol, sig, language)} index={index} context={symbol} signature={sig} nameHref={nameHref} layout={signatureLayouts.get(sig)} /></span>
           )) : <span class="api-native-signature">{anonymousDeclarationLabel(symbol)}</span>) : <>
           {keyword && <em class="property"><span class="pre">{keyword}</span> </em>}
-          {prename && <span class="sig-prename descclassname"><span class="pre">{prename}</span></span>}<span class="sig-name descname">{nameHref ? <a class="api-signature-name-link pre" href={nameHref}>{symbol.name}</a> : <span class="pre">{symbol.name}</span>}</span>
+          {prename && <span class="sig-prename descclassname"><span class="pre">{prename}</span></span>}<span class="sig-name descname">{nameHref ? <a class="api-signature-name-link pre" href={nameHref}>{symbol.name}</a> : <span class="pre">{symbol.name}</span>}</span>{alias?.typeParams && <ApiType type={alias.typeParams} index={index} context={symbol} />}
           {
-            symbol.signatures.length === 0 && symbol.type && (
+            alias && (
+              <>
+                <span class="o"> = </span>
+                <span class="api-alias-value"><ApiType type={alias.value} index={index} context={symbol} /></span>
+              </>
+            )
+          }
+          {
+            !alias && symbol.signatures.length === 0 && symbol.type && (
               <>
                 <span class="sig-paren">: </span>
                 <ApiType type={symbol.type} index={index} context={symbol} />

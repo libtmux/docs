@@ -356,8 +356,8 @@ export const SERVERS: Readonly<Record<string, ServerSpec>> = {
           ? ['exec', 'libtmux-mcp', '--socket-name', 'libtmux-docs', '--endpoint', 'local']
           : ['--socket-name', 'libtmux-docs', '--endpoint', 'local'],
         prereq: method.id === 'bundler'
-          ? 'bundle add libtmux-mcp --version 0.1.0.alpha.1'
-          : 'gem install --version 0.1.0.alpha.1 libtmux-mcp',
+          ? 'bundle add libtmux-mcp'
+          : 'gem install libtmux-mcp',
         note: 'The server borrows an existing named socket. Start it first with `tmux -L libtmux-docs new-session -d`; `--endpoint` is only its public alias.',
       }
       return command
@@ -412,8 +412,8 @@ export const SERVERS: Readonly<Record<string, ServerSpec>> = {
       return {
         command: 'tmux-mcp',
         args: [],
-        prereq: 'cargo install tmux-mcp --version 0.1.0-alpha.13',
-        note: 'Cargo requires an explicit prerelease version. The installed `tmux-mcp` binary speaks MCP on stdin and stdout.',
+        prereq: 'cargo install tmux-mcp',
+        note: 'The installed `tmux-mcp` binary speaks MCP on stdin and stdout.',
       }
     },
   },
@@ -456,15 +456,15 @@ export const SERVERS: Readonly<Record<string, ServerSpec>> = {
       if (method.id === 'dnx') {
         return {
           command: 'dnx',
-          args: ['LibTmux.Mcp', '--prerelease', '--yes'],
+          args: ['LibTmux.Mcp', '--yes'],
           note: 'Runs the server from NuGet without installing it; needs the .NET 10 SDK. Write LibTmux.Mcp@<version> to pin a version.',
         }
       }
       return {
         command: 'libtmux-mcp',
         args: [],
-        prereq: 'dotnet tool install --global LibTmux.Mcp --prerelease',
-        note: '--prerelease is required: every release so far carries an -alpha tag, and NuGet skips those unless asked.',
+        prereq: 'dotnet tool install --global LibTmux.Mcp',
+        note: 'Installs the `libtmux-mcp` tool from NuGet.',
       }
     },
   },

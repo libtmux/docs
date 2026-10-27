@@ -38,7 +38,7 @@ export function getStaticPaths() {
       port,
       topicId: topic.id,
       // The port's own default, not one value for all eight: their defaults
-      // differ, and `stable` is the entry that may be absent.
+      // differ, and a release tag is the entry that may be absent.
       version: defaults[port.slug] ?? process.env.LIBTMUX_DOCS_DEFAULT_VERSION ?? 'latest',
     } satisfies Props,
   }))

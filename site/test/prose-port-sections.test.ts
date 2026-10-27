@@ -12,10 +12,10 @@ describe('API links in port sections', () => {
 
   it('links authored product declarations under the port default in a root build', () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', '')
-    vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"go":"stable"}')
+    vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"go":"v0.46.2"}')
     const paragraph = element('p', element('code', text('workspace.Parse')))
     rehypeApiLinks()({ type: 'root', children: [paragraph] }, { data: { astro: { frontmatter: { port: 'go', product: 'workspace' } } } })
-    expect(paragraph.children?.[0].properties?.href).toBe('/go/stable/workspace/reference/workspace-parse/')
+    expect(paragraph.children?.[0].properties?.href).toBe('/go/v0.46.2/workspace/reference/workspace-parse/')
   })
 
   it('keeps the current product version while preserving core reference URLs', () => {

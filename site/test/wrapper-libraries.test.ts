@@ -57,10 +57,10 @@ describe('wrapper library identities', () => {
     expect(port.repo).toBe('libtmux/libtmux-java')
     expect(portSourceUrl(port)).toBe(`${root}master${path}`)
     expect(portSourceUrl(port, 'v0.0.1-alpha.17')).toBe(`${root}v0.0.1-alpha.17${path}`)
-    for (const version of ['latest', 'stable', 'next', 'pr-42', 'v0.0.1-alpha.17']) {
+    for (const version of ['latest', 'next', 'pr-42', 'v0.0.1-alpha.17']) {
       expect(portSourceUrl(port, version, 'a'.repeat(40))).toBe(`${root}${'a'.repeat(40)}${path}`)
     }
-    for (const version of ['stable', 'next', 'pr-42']) {
+    for (const version of ['next', 'pr-42']) {
       expect(portSourceUrl(port, version)).toBe(`${root}master${path}`)
     }
     expect(portSourceUrl(port, 'latest', 'feature/source-links')).toBe(`${root}feature%2Fsource-links${path}`)

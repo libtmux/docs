@@ -1,0 +1,56 @@
+---
+/**
+ * The sections that relate a symbol to tmux and to the rest of the site, peers of Related types.
+ *
+ * Items use the chip lists of the tmux usage tables (`TmuxUsage.astro`): an intro sentence, then each entry with its
+ * kind badge. `apiTmuxSections` derives the sections, and the Markdown export writes the same ones.
+ */
+import TmuxUsage from '../tmux/TmuxUsage.astro'
+import ApiBadge from './ApiBadge.astro'
+import type { ApiTmuxSection, CApiItem } from '../../lib/api-tmux-sections'
+
+interface Props { sections: ApiTmuxSection[] }
+const { sections } = Astro.props as Props
+// An intro names the symbol in backticks, which render as code here and stay as Markdown in the export.
+const introParts = (text: string) => text.split(/`([^`]+)`/)
+const flagOf = (scope: { flag: string; target?: string }) => scope.flag || scope.target ? `-${scope.flag || scope.target}` : ''
+---
+{sections.map((section) => <section class="api-tmux-section mt-8" aria-labelledby={section.id}>
+  <h2 class="api-section-heading text-lg font-semibold" id={section.id}>{section.label}<a class="api-heading-link" href={`#${section.id}`} aria-label={`Link to ${section.label}`}>#</a></h2>
+  {section.type !== 'ports' && <p>{introParts(section.intro).map((part, i) => i % 2 ? <code>{part}</code> : part)}</p>}
+  {section.type === 'commands' && <div class="tmux-usage"><span class="tmux-usage__links">
+    {section.items.map((item) => <span class="tmux-usage__item">
+      <a href={item.href}><code>{item.command}</code></a>
+      {item.scope && <span class="tmux-send" title={item.evidence}>{flagOf(item.scope) && <code>{flagOf(item.scope)}</code>}{' '}<span>{item.scope.label.toLowerCase()} scope</span>{item.function && <>{', '}<a href={item.function.href}><code>{item.function.name}</code></a></>}</span>}
+      {item.when && <span class="tmux-when" data-when={item.when}>({item.when})</span>}
+    </span>)}
+  </span></div>}
+  {section.type === 'c-api' && <>
+    <div class="tmux-usage"><span class="tmux-usage__links">
+      {section.direct.map((item: CApiItem) => <span class="tmux-usage__item">
+        <a href={item.href}><ApiBadge label={item.kind} variant="kind" value={item.kind} compact preview={false} /><code>{item.name}</code></a>
+      </span>)}
+    </span></div>
+    {section.note && <p class="text-sm opacity-75">{section.note}</p>}
+    {section.paths.map((path) => <div class="api-source-path">
+      <h3 class="text-sm font-semibold">{path.title}</h3>
+      <ol>{path.items.map((item, i) => <li>
+        {item.edge && <span class="api-source-path__edge">{item.edge === 'call' ? 'calls' : 'references'} →</span>}
+        <a href={item.href}><span class="api-source-path__edge">{item.degree}</span> <ApiBadge label={item.kind} variant="kind" value={item.kind} compact preview={false} /><code>{item.name}</code></a>
+      </li>)}</ol>
+    </div>)}
+  </>}
+  {section.type === 'catalog' && <div class="tmux-usage"><span class="tmux-usage__links">
+    {section.items.map((item) => <span class="tmux-usage__item">
+      <a href={item.href}><ApiBadge label={section.catalog} variant="kind" value={section.catalog} compact preview={false} />{item.name}</a>
+    </span>)}
+  </span></div>}
+  {section.type === 'guides' && section.groups.map((group) => <>
+    {section.groups.length > 1 && <h3 class="text-sm font-semibold">{group.label}</h3>}
+    <p>{group.items.map((item, i) => <>{i > 0 && ', '}<a href={item.href}>{item.title}</a></>)}</p>
+  </>)}
+  {section.type === 'ports' && section.groups.map((group) => <>
+    <p>{group.label}</p>
+    <TmuxUsage usage={group.table} />
+  </>)}
+</section>)}

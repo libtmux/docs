@@ -438,11 +438,11 @@
       "toolchain": [
         "PowerShell 7.4.20",
         "PSResourceGet 1.1.1",
-        "LibTmux 0.1.0-alpha2"
+        "LibTmux 0.1.0"
       ],
       "page": "ports/powershell/guides/attaching-to-tmux",
       "shellRecipe": [
-        "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  Install-PSResource -Name LibTmux -Version 0.1.0-alpha2 -Prerelease `\n    -Repository PSGallery -Scope CurrentUser -TrustRepository\n'",
+        "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  Install-PSResource -Name LibTmux -Version 0.1.0 `\n    -Repository PSGallery -Scope CurrentUser -TrustRepository\n'",
         "sh run.sh pwsh -NoLogo -NoProfile -File connect.ps1"
       ],
       "expectedOutputs": [

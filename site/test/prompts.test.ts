@@ -1,7 +1,7 @@
 import { existsSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { installCommand, PORT_BY_SLUG, PORTS, releaseMaturity, releaseWording, type Port, type RegistryEntry } from '../src/lib/ports'
+import { installCommand, isReleaseSeries, PORT_BY_SLUG, PORTS, releaseMaturity, releaseWording, type Port, type RegistryEntry } from '../src/lib/ports'
 import {
   composeFromParts,
   composePrompt,
@@ -40,7 +40,7 @@ function partsFor(port: Port) {
   const entry = registryFor(port)
   return portParts({
     port,
-    stable: releaseMaturity(entry) === 'stable',
+    released: isReleaseSeries(releaseMaturity(entry)),
     install: installCommand(port, entry),
     wording: releaseWording(port, entry),
     ctx,
@@ -64,7 +64,7 @@ function promptFor(port: Port, topicId: string, version = ctx.version, docsBase 
   const entry = registryFor(port)
   const text = composePrompt({
     port,
-    stable: releaseMaturity(entry) === 'stable',
+    released: isReleaseSeries(releaseMaturity(entry)),
     install: installCommand(port, entry),
     wording: releaseWording(port, entry),
     ctx: { docsBase, version },
@@ -312,13 +312,13 @@ describe('registry data', () => {
   it('carries what its own status claims', () => {
     for (const port of PORTS) {
       const entry = registryFor(port)
-      if (entry.status === 'stable') {
-        expect(entry.stable, `${port.slug} is stable with no stable version`).toBeTruthy()
-        expect(entry.version, `${port.slug} version tracks stable`).toBe(entry.stable)
+      if (entry.status === 'release') {
+        expect(entry.release, `${port.slug} is released with no release version`).toBeTruthy()
+        expect(entry.version, `${port.slug} version tracks its release`).toBe(entry.release)
       }
       if (entry.status === 'prerelease') {
         expect(entry.version, `${port.slug} is prerelease with no version`).toBeTruthy()
-        expect(entry.stable, `${port.slug} is prerelease yet names a stable`).toBeNull()
+        expect(entry.release, `${port.slug} is prerelease yet names a release`).toBeNull()
       }
       if (entry.status === 'unpublished') {
         expect(entry.version, `${port.slug} is unpublished yet names a version`).toBeNull()
@@ -333,7 +333,7 @@ describe('registry data', () => {
   it('refuses a tag-less entry whose git form needs a tag', () => {
     const base = PORT_BY_SLUG.py!
     const withGit = (code: string): Port => ({ ...base, installForms: { ...base.installForms, git: { code, lang: 'console' } } })
-    const tagless: RegistryEntry = { status: 'unpublished', version: null, stable: null, tag: null }
+    const tagless: RegistryEntry = { status: 'unpublished', version: null, release: null, tag: null }
     expect(() => installCommand(withGit('git clone --branch {tag} repo'), tagless)).toThrow(/no release tag/)
     const fixed = withGit('git clone --branch main repo')
     expect(installCommand(fixed, tagless).code).toBe('git clone --branch main repo')
@@ -344,7 +344,7 @@ describe('registry data', () => {
   it('names the tag only where the git form installs it', () => {
     // Julia installs the default branch, so a release tag beside the command is not what runs.
     const julia = PORT_BY_SLUG.julia!
-    const tagged: RegistryEntry = { status: 'unpublished', version: null, stable: null, tag: 'v0.1.0' }
+    const tagged: RegistryEntry = { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' }
     expect(installCommand(julia, tagged).code).toContain('rev="master"')
     expect(releaseWording(julia, tagged)).toContain('default branch')
     expect(releaseWording(julia, tagged)).toContain('v0.1.0')
@@ -355,25 +355,25 @@ describe('registry data', () => {
     expect(releaseWording(cxx, alpha)).toContain('at tag v0.1.0-alpha.12')
   })
 
-  it('sends an agent looking for a stable release only where the newest tag is not already one', () => {
+  it('sends an agent looking for a final release only where the newest tag is not already one', () => {
     const julia = PORT_BY_SLUG.julia!
     const prompt = (entry: RegistryEntry) => composePrompt({
-      port: julia, stable: releaseMaturity(entry) === 'stable', install: installCommand(julia, entry),
+      port: julia, released: isReleaseSeries(releaseMaturity(entry)), install: installCommand(julia, entry),
       wording: releaseWording(julia, entry), ctx, topicId: 'setup',
     }).replace(/\s+/g, ' ')
-    const finalTag: RegistryEntry = { status: 'unpublished', version: null, stable: null, tag: 'v0.1.0' }
+    const finalTag: RegistryEntry = { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' }
     expect(prompt(finalTag)).toContain('if you need a different version.')
-    expect(prompt(finalTag)).not.toContain('prefer a stable release')
-    expect(prompt({ ...finalTag, tag: 'v0.1.0-alpha.2' })).toContain('prefer a stable release over this one if there now is any.')
+    expect(prompt(finalTag)).not.toContain('prefer a final release')
+    expect(prompt({ ...finalTag, tag: 'v0.1.0-alpha.2' })).toContain('prefer a final release over this prerelease if there now is one.')
   })
 
   it('composes the site’s prompt from the entry the registry holds', () => {
     const julia = PORT_BY_SLUG.julia!
     const recorded = REGISTRY.ports.julia!
     // What the deploy's resolver wrote once v0.1.0 was tagged and General did not carry it.
-    REGISTRY.ports.julia = { status: 'unpublished', version: null, stable: null, tag: 'v0.1.0' }
+    REGISTRY.ports.julia = { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' }
     try {
-      expect(promptInputs(julia, ctx).stable).toBe(true)
+      expect(promptInputs(julia, ctx).released).toBe(true)
       expect(promptPartsFor(julia, ctx).setup.replace(/\s+/g, ' ')).toContain('if you need a different version.')
     } finally {
       REGISTRY.ports.julia = recorded
@@ -492,8 +492,8 @@ describe.skipIf(!SITE_BUILT)(`published prompt routes${SITE_BUILT ? '' : ` (${SK
 
   /**
    * Composed at the version the manifest records, not at a version this file
-   * picked. `build-site.sh` gives each port its own default and Python's is
-   * `stable` while the rest are `latest`, so a hard-coded version here tests
+   * picked. `build-site.sh` gives each port its own default version, so a
+   * hard-coded version here tests
    * the suite's assumption rather than the build's output.
    */
   it('publishes the same bytes the widget composes', () => {

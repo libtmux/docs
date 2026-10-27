@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { plainSummary, renderToolDescription, toolSummary } from '../src/lib/mcp-reference'
 import { auditHtml, auditPlain, auditPort, MCP_PORTS, type Render } from './mcp-description-audit'
 
-beforeEach(() => vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"py":"stable"}'))
+beforeEach(() => vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"py":"v0.46.2"}'))
 afterEach(() => vi.unstubAllEnvs())
 
 const CLEAN = { role: 0, directive: 0, backtick: 0, tmux: 0, literal: 0 }

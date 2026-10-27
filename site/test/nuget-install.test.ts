@@ -35,7 +35,7 @@ describe('NuGet installation recipes', () => {
     expect(commands[5].note).toContain('F# .fsx')
     expect(commands[3].additionalBlocks?.[0].code).toBe(`<PackageReference Include="${port.packageName}" />`)
     expect(commands[3].code).toContain('<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>')
-    expect(commands[0].code).toBe(slug === 'csharp' ? 'dotnet package add LibTmux --prerelease' : `dotnet package add LibTmux.FSharp --version ${version}`)
+    expect(commands[0].code).toBe(slug === 'csharp' ? 'dotnet package add LibTmux' : `dotnet package add LibTmux.FSharp --version ${version}`)
   })
 
   it.each(['csharp', 'fsharp'])('gives the selected historical %s release priority over the model and registry', (slug) => {
@@ -289,7 +289,7 @@ describe('NuGet widget rendering and copied fragments', () => {
   it('does not hide Source fallback when storage remembers an unavailable manager', async () => {
     const originalEntry = REGISTRY.ports.fsharp, originalSources = fsharp.sources
     try {
-      REGISTRY.ports.fsharp = { status: 'unpublished', version: null, stable: null, tag: 'v0.0.0-alpha.18' }
+      REGISTRY.ports.fsharp = { status: 'unpublished', version: null, release: null, tag: 'v0.0.0-alpha.18' }
       fsharp.sources = []
       const win = await render('fsharp', '3')
       const source = win.document.querySelector('.lm-pkg-install__cmd')!

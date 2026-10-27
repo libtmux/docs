@@ -36,12 +36,12 @@ answer beside it, at `/<slug>/<version>/workspace/reference/` and
 
 Five ports used to answer "the API" twice, in three different visual systems:
 Sphinx+Breathe for C++, DocC for Swift, staged Markdown for TypeScript and
-.NET, and this site's own components. A reader arriving at `/cxx/stable/api/`
+.NET, and this site's own components. A reader arriving at `/cxx/latest/api/`
 met a page with no cards, no badges, no source links and no prose at all,
 while this site's reference had all four. Whatever else parity means, it
 cannot mean two answers.
 
-Python keeps its generated tree because `/py/stable/api/` is not a duplicate:
+Python keeps its generated tree because `/py/latest/api/` is not a duplicate:
 it is gp-sphinx rendering upstream's own documentation, which is a different
 document from this site's extracted reference, and it is the oracle
 `check-style-parity.mjs` measures against. Deleting it would delete the

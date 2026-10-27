@@ -82,10 +82,10 @@ Nine broken internal links, found by crawling every page from `/`:
 
 | Was | Cause | Fix |
 |---|---|---|
-| `/dotnet/stable/api/`, `/swift/stable/api/` | Landing page and port grid linked a reference that was never built | Ports carry `referencePublished`; the UI says "Reference not published yet" |
+| `/dotnet/latest/api/`, `/swift/latest/api/` | Landing page and port grid linked a reference that was never built | Ports carry `referencePublished`; the UI says "Reference not published yet" |
 | `/rs/latest/`, `/go/latest/`, `/java/latest/` | Port switcher emitted a local version prefix for ecosystem ports, which have no local tree | `portHomeUrl()` sends ecosystem ports to their landing page |
 | `/third-party-notices/` | The footer linked a page nobody had written | Page written, including the Doxygen GPL note |
-| `/ts/stable/README.md` | The generated TypeScript reference links `../README.md`, relative to its own checkout | Staging rewrites it to the file on GitHub |
+| `/ts/latest/README.md` | The generated TypeScript reference links `../README.md`, relative to its own checkout | Staging rewrites it to the file on GitHub |
 
 ### The version switcher was mostly fiction
 
@@ -100,8 +100,8 @@ switcher is suppressed for them entirely.
 
 ### Structural duplication
 
-Every port-plus-version build rendered the `[port]` route, so `/cxx/stable/`
-also emitted `/cxx/stable/py/`, `/cxx/stable/rs/` and six more — **76 nonsense
+Every port-plus-version build rendered the `[port]` route, so `/cxx/latest/`
+also emitted `/cxx/latest/py/`, `/cxx/latest/rs/` and six more — **76 nonsense
 pages** nothing linked to. Port landings are now scoped to the root build.
 Total pages fell from 509 to 433.
 
@@ -137,7 +137,7 @@ already existed in the worktree: the design-token adapter
 and the `_templates/search.html` override that redirects Furo's dead-end
 search page to `/search/`. Fixed with a one-line addition to the case
 statement. Confirmed with `node scripts/inject-shell.mjs` (now passes for
-`py/latest` and `py/stable`, previously failing every check per
+`py/latest` and `py/<version>`, previously failing every check per
 `site/public/_shell/README.md`'s own "known failure" note) and with the
 crawl (`/py/*/api/search.md`'s broken link is gone; see below).
 
@@ -245,8 +245,8 @@ a hardcoded list that predated checking.
 
 `pages/index.astro` had no root-only guard, so every port+version
 sub-build rendered its own copy of the site home page at that build's `/`
-route. `/py/stable/` — where the version switcher lands — said "libtmux"
-instead of "Python stable". Ecosystem ports had the louder version of the
+route. `/py/latest/` — where the version switcher lands — said "libtmux"
+instead of "Python latest". Ecosystem ports had the louder version of the
 same bug, their real landing pages overwritten. Both now branch on the
 build's own port.
 
@@ -428,7 +428,7 @@ Two of the three bugs found afterwards were not about .NET at all:
   difference. Found by following a link on the built page, not by reading
   the code.
 - **The CloudFront function decided "is this a file?" by looking for a
-  dot**, so `/dotnet/stable/api/libtmux.client` passed through to the
+  dot**, so `/dotnet/latest/api/libtmux.client` passed through to the
   origin as an asset instead of redirecting to the trailing-slash form.
   Now an allowlist of extensions the build actually emits, which also
   closes the same hole for `/py/v0.46.2` — a residual the old comment
@@ -479,13 +479,13 @@ emits an absolute URL. `scripts/check-preview.sh` fails the build if any
 escape: 33 pages, zero escapes.
 
 Worth recording because it looks wrong: `import.meta.env.BASE_URL` cannot
-stand in for this. A per-port build has `base=/py/stable/` and a preview
+stand in for this. A per-port build has `base=/py/latest/` and a preview
 has `base=/pr-42/` — same shape, and only one moves the site root.
 
 ### llms.txt, built from resolved content rather than source
 
 `/llms.txt` and `/llms-full.txt` now exist, and a per-port build gets a
-per-port pair: `/ts/stable/llms-full.txt` carries TypeScript and no other
+per-port pair: `/ts/latest/llms-full.txt` carries TypeScript and no other
 language. That is the per-language mechanism applied to the one consumer
 that cannot see the language switcher.
 
@@ -557,7 +557,7 @@ public repositories, so they are reported rather than patched here.
 
 ### Shared prose is copied into every build
 
-`/cxx/stable/concepts/queries/` and its siblings are byte-identical copies
+`/cxx/latest/concepts/queries/` and its siblings are byte-identical copies
 of `/concepts/queries/`. Correctness is handled — `noindex` plus a
 canonical back to the root — but the page this note is copied into is now
 bigger: 28 prose pages (5 concepts, 7 guides, 4 examples, 11 topics, plus

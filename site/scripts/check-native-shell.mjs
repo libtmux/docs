@@ -4,7 +4,7 @@ import { chromium } from 'playwright'
 import { checkNativeFirstPaint, checkNativeHeader } from './check-native-layout.mjs'
 
 const base = (process.argv.find((arg) => arg.startsWith('http')) ?? 'http://localhost:8080/en').replace(/\/$/, '')
-const version = process.argv.find((arg) => arg.startsWith('--version='))?.slice('--version='.length) ?? 'stable'
+const version = process.argv.find((arg) => arg.startsWith('--version='))?.slice('--version='.length) ?? 'latest'
 const browser = await chromium.launch({ channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL })
 try {
   for (const javaScriptEnabled of [true, false]) {
@@ -30,6 +30,17 @@ try {
   page.on('response', (response) => {
     if (response.ok()) loaded.add(response.url())
   })
+  // The column is the Sphinx global toctree, still present without a script.
+  const nested = () => page.evaluate(() => {
+    const tree = document.querySelector('.api-nav__tree')
+    return { groups: tree.querySelectorAll('[role="group"] [role="treeitem"], [role="group"] a[href]').length, labelled: tree.querySelectorAll('.api-nav__label').length,
+      ids: [...tree.querySelectorAll('.api-nav__label')].filter((label) => /^page:/.test(label.textContent.trim())).length }
+  })
+  await page.goto(`${base}/py/${version}/api/api/libtmux.session/`, { waitUntil: 'load' })
+  const toctree = await nested()
+  assert(toctree.groups > 10 && toctree.ids === 0, `Native sidebar is not the nested toctree: ${JSON.stringify(toctree)}`)
+  await page.evaluate(() => document.querySelectorAll('.api-nav__tree [role="group"]').forEach((group) => group.remove()))
+  assert.equal((await nested()).groups, 0, 'The nesting probe cannot tell a flat list from a nested tree')
   for (const width of [1440, 1062, 1027, 768, 688, 641, 390]) {
     for (const colorScheme of ['light', 'dark']) {
       await page.setViewportSize({ width, height: 900 })

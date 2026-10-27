@@ -6,9 +6,9 @@ import { buildTarget } from '../lib/versions.ts'
  * Rewrite root-relative links against the deploy root.
  *
  * A page is built once per port and version, so the same Markdown renders at
- * /guides/x/ and at /cxx/stable/guides/x/. A relative link cannot express
+ * /guides/x/ and at /cxx/latest/guides/x/. A relative link cannot express
  * "the site root" across both: ../../py/ resolves to /py/ from the first and
- * to /cxx/stable/py/ from the second, which is how 104 links broke the moment
+ * to /cxx/latest/py/ from the second, which is how 104 links broke the moment
  * per-language builds started.
  *
  * So content writes /py/ and this prefixes the deploy root — '/' normally,

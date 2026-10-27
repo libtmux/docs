@@ -183,11 +183,11 @@ and API maturity are separate facts.
 - [x] Add Ruby tag parsing and Lua tag parsing to `versions.ts`. Normalize
   LuaRocks rock revisions separately: `0.1.0alpha1-1` installs the rock,
   while `v0.1.0alpha1` identifies its source. Avoid relabeling these as SemVer.
-- [x] Exercise alpha.2 versus alpha.10, alpha versus stable, invalid tags,
+- [x] Exercise alpha.2 versus alpha.10, alpha versus final release, invalid tags,
   and different rock revisions. Preserve all existing grammar tests.
 - [x] Keep `latest` as the initial default for these prerelease-only ports.
   Expose `next` or immutable release URLs only after building their exact
-  source; do not synthesize a `stable` release.
+  source; do not synthesize a final release.
 - [x] Replace all-port MCP assumptions with capability checks. Set Ruby's
   workspace command to `libtmux-workspace load`; Lua exposes status only.
 

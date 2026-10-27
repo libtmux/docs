@@ -13,7 +13,7 @@
         }
       ],
       "shellRecipe": [
-        "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  Install-PSResource -Name LibTmux -Prerelease `\n    -Repository PSGallery -Scope CurrentUser -TrustRepository\n'",
+        "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  Install-PSResource -Name LibTmux `\n    -Repository PSGallery -Scope CurrentUser -TrustRepository\n'",
         "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\npwsh -NoLogo -NoProfile -File quickstart.ps1"
       ],
       "expectedOutputs": [
@@ -37,7 +37,7 @@
         }
       ],
       "shellRecipe": [
-        "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  Install-PSResource -Name LibTmux -Prerelease `\n    -Repository PSGallery -Scope CurrentUser -TrustRepository\n'",
+        "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  Install-PSResource -Name LibTmux `\n    -Repository PSGallery -Scope CurrentUser -TrustRepository\n'",
         "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\npwsh -NoLogo -NoProfile -File command-completion.ps1"
       ],
       "expectedOutputs": [
@@ -60,7 +60,7 @@
         }
       ],
       "shellRecipe": [
-        "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  Install-PSResource -Name LibTmux -Prerelease `\n    -Repository PSGallery -Scope CurrentUser -TrustRepository\n'",
+        "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  Install-PSResource -Name LibTmux `\n    -Repository PSGallery -Scope CurrentUser -TrustRepository\n'",
         "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\npwsh -NoLogo -NoProfile -File wait-for-service.ps1"
       ],
       "expectedOutputs": [

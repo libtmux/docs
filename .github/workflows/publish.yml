@@ -3,7 +3,7 @@ name: publish
 # One dispatch publishes any set of ports at a ref (scripts/publish-plan.mjs):
 #
 #   ports: all                  ref: latest    every default branch as latest
-#   ports: all                  ref: release   every newest release, + alias
+#   ports: all                  ref: release   every newest release, + next if prerelease
 #   ports: rs                   ref: <ref>     one exact ref, as the inputs name
 #
 # The plan runs everywhere and needs no credentials, so a dry run (the

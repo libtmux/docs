@@ -86,10 +86,10 @@ describe('API Markdown content parity', () => {
     const symbol = model.symbols.find((symbol) => symbol.id === 'libtmux::Server')!
     const text = symbolMarkdown({ model, symbol })
     expect(text).toContain('## In other ports')
-    expect(text).toContain('PowerShell: [`LibTmux\\New-TmuxServer`]')
+    expect(text).toContain('| PowerShell | [`LibTmux\\New-TmuxServer`]')
     expect(text).toContain('(cmdlet). This cmdlet constructs a shared .NET `LibTmux.Server`')
-    expect(text).toContain('Julia: [`LibTmux.Server`]')
-    expect(text).toContain('F#: [`LibTmux.FSharp.Server`]')
+    expect(text).toContain('| Julia | [`LibTmux.Server`]')
+    expect(text).toContain('| F# | [`LibTmux.FSharp.Server`]')
     expect(text).toContain('(module). This F# module provides functions')
     const snapshot = API_MODELS.julia.symbols.find((symbol) => symbol.id === 'LibTmux.snapshot')!
     const acquisition = symbolMarkdown({ model: API_MODELS.julia, symbol: snapshot })
@@ -237,8 +237,8 @@ describe('API Markdown content parity', () => {
       source: { file: 'example.fs' }, slug: 'sample',
     }
     const model = { ...API_MODELS.fsharp, symbols: [error, symbol] }
-    const text = symbolMarkdown({ model, symbol, version: 'stable' })
-    expect(text).toContain('[`ArgumentException`](' + referenceUrl(PORT_BY_SLUG.fsharp, 'stable') + 'argument-exception/)')
+    const text = symbolMarkdown({ model, symbol, version: 'v0.46.2' })
+    expect(text).toContain('[`ArgumentException`](' + referenceUrl(PORT_BY_SLUG.fsharp, 'v0.46.2') + 'argument-exception/)')
     expect(text).not.toContain('learn.microsoft.com')
   })
 

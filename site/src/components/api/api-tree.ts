@@ -167,6 +167,16 @@ function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
         li.append(link)
         results.append(li)
       }
+      // The tree is hidden while searching, so the glossary stays reachable as the last result.
+      if (nav.dataset.glossaryHref) {
+        const li = document.createElement('li')
+        const link = document.createElement('a')
+        link.href = nav.dataset.glossaryHref
+        link.dataset.apiGlossary = ''
+        link.textContent = nav.dataset.glossaryLabel ?? ''
+        li.append(link)
+        results.append(li)
+      }
     } catch {
       if (generation === ownGeneration && !signal.aborted) {
         status.textContent = 'API names could not load. Try again.'
@@ -491,6 +501,7 @@ export async function setApiSidebar(nav: HTMLElement, mode: SidebarPresentation,
   delete nav.dataset.apiTreeInteracted
   const nodes = sidebarNodes(json, nav.dataset.base ?? '/', mode, selected, options.allTypes)
   if (nav.dataset.marks === 'mixed') quietSidebarKinds(nodes)
+  if (nav.dataset.glossaryHref) nodes.push({ id: 'api-nav-glossary', label: nav.dataset.glossaryLabel ?? '', href: nav.dataset.glossaryHref, level: 1 })
   tree.replaceChildren(...presentationRows(nodes))
   selectPresentation(nav)
   const tab = tree.querySelector<HTMLElement>('[aria-current="page"]')?.closest<HTMLElement>(ITEM) ?? rows(tree)[0]

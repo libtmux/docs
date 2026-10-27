@@ -70,9 +70,9 @@ default_version_for() {
 
 # Whether this port's manifest actually lists a version slug.
 #
-# `stable` is absent for a port with no release, so building one would serve a
-# tree the switcher does not list and the reader cannot reach by any offered
-# route. site/test/site-pruning.test.ts asserts the two agree.
+# A slug the manifest does not list would serve a tree the switcher does not
+# offer and the reader cannot reach by any offered route.
+# site/test/site-pruning.test.ts asserts the two agree.
 port_lists_version() {
   LIBTMUX_DOCS_MANIFEST="$manifest" LIBTMUX_DOCS_PORT="$1" LIBTMUX_DOCS_VERSION_SLUG="$2" node -e '
     const fs = require("node:fs")
@@ -83,8 +83,8 @@ port_lists_version() {
 }
 
 # Every port's default version, as JSON, for the components that link across
-# ports. `stable` is not a safe constant any more: a port with no release has
-# no stable entry, so a switcher hard-coding it links at a tree nothing builds.
+# ports. A port's default is its newest final release tag, or `latest` while it
+# has none, so no slug is a safe constant.
 port_defaults_json() {
   LIBTMUX_DOCS_MANIFEST="$manifest" node -e '
     const fs = require("node:fs")
@@ -100,7 +100,6 @@ kind_for_version() {
   fi
   case "$1" in
     latest) echo trunk ;;
-    stable) echo alias ;;
     pr-*) echo pr ;;
     v*.x) echo branch ;;
     v*.*.*) echo tag ;;
@@ -135,7 +134,7 @@ for version in "${versions[@]}"; do
       fi
       die "cannot build '$version': this script renders the checkout at HEAD and
   never checks anything out, so this slug would publish current content at
-  /<port>/$version/ as though it came from that source. Use latest or stable."
+  /<port>/$version/ as though it came from that source. Use latest."
       ;;
   esac
 done

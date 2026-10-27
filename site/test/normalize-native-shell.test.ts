@@ -181,7 +181,7 @@ describe('native shell URL normalization', () => {
 
   it('completes pinned Sphinx highlighting during appearance layout without a timer', async () => {
     const directory = mkdtempSync(join(tmpdir(), 'native-highlight-'))
-    const win = new Window({ url: 'https://libtmux.org/en/py/stable/api/?highlight=window' })
+    const win = new Window({ url: 'https://libtmux.org/en/py/v0.46.2/api/?highlight=window' })
     try {
       mkdirSync(join(directory, '_static'))
       const file = join(directory, '_static/sphinx_highlight.js')

@@ -204,8 +204,8 @@ Its publisher role must grant that family's prefixes and manifest fragments.
 defaultVersion: Record<slug, string> }`). Adding a port means:
 
 - a new key in `ports` holding that port's `VersionEntry[]` — at minimum a
-  `trunk` entry. Add `next` for a built prerelease or `stable` for a built
-  stable release; never point a release alias at trunk;
+  `trunk` entry. Add `next` for a built prerelease and the release tag's own
+  entry for a built final release; never point a release alias at trunk;
 - a new key in `defaultVersion` naming which of those entries is the
   indexable one (`robotsFor()` and the sitemap gate both key off this).
 
@@ -225,7 +225,7 @@ against the port repo; do not push it yourself, and never push anything to a
 port repo's remote from an agent session. See `AGENTS.md`'s push policy.
 
 The caller's `path-prefix` input must be version-qualified —
-`<slug>/<version>` (e.g. `ts/v0.1.0`, or `ts/stable` on the alias rebuild),
+`<slug>/<version>` (e.g. `ts/v0.1.0`, or `ts/next` on the prerelease alias rebuild),
 never the bare `<slug>/*` — because the called workflow runs
 `aws s3 sync --delete` scoped to exactly that prefix. An unqualified prefix
 widens the delete to the port's whole tree, wiping every previously

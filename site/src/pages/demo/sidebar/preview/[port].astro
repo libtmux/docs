@@ -26,7 +26,7 @@ const src = withRoot(`/demo/sidebar/preview/${port}.json`)
     </div>
     <div class="sidebar-preview__layout">
       <ApiTree referenceBase={base} portName={label} tree={[]} members={[]} withMembers={new Set()}
-        currentPath="" version={key} presentation="outline" inventory={inventory} inventorySrc={src} selectedSymbol={selected} controlled
+        currentPath="" version={key} presentation="outline" inventory={inventory} inventorySrc={src} selectedSymbol={selected} controlled glossaryHref={port === 'tmux' ? undefined : `${base}glossary/`}
         searchLabel={port === 'tmux' ? 'Find a command' : undefined} searchPlaceholder={port === 'tmux' ? 'Find command' : undefined}
         filters={port === 'tmux' ? [{ id: 'all', label: 'All' }, { id: 'types', label: 'Sections' }, { id: 'members', label: 'Commands' }] : undefined} />
       <main class="sidebar-preview__article" id="preview-article" tabindex="-1">

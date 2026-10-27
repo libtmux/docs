@@ -61,7 +61,7 @@ without harness bindings in scope.
 ## Open, and not ours to close
 
 - **Python has no user-facing examples and no benchmarks.** It is the reference
-  port and the only one with a stable release, so this is the largest single
+  port and the only one with a final release, so this is the largest single
   gap. Its origin is `tmux-python`, a different organisation from the other
   seven, so changes there need the maintainer.
 - **TypeScript exports no test fixture.** `TestServer` exists under

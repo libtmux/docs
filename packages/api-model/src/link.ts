@@ -1077,6 +1077,11 @@ export class SymbolIndex {
     const out: TypeSpan[] = []
     const rustPayload = this.lang === 'rs' && (context?.variant || (context?.parent && this.byDeclared.get(context.parent)?.variant))
     const variantDelimiters: string[] = []
+    // Names a TypeScript type binds inside its own text: `[Key in Keys]` and `infer Item`.
+    const innerBound = new Set<string>()
+    if (this.lang === 'ts') {
+      for (const bound of annotation.matchAll(/\[\s*([A-Za-z_$][\w$]*)\s+in\s|\binfer\s+([A-Za-z_$][\w$]*)/g)) innerBound.add(bound[1] ?? bound[2]!)
+    }
     // A bound name never takes a same-named global type's URL; it links to its declaration instead.
     const bindings = this.typeParameterBindings(context, signature)
     // Identifiers, including dotted ones; everything else is punctuation,
@@ -1140,6 +1145,34 @@ export class SymbolIndex {
       if (this.lang === 'rs' && annotation[m.index! - 1] === "'") {
         out.push({ text: ident })
         continue
+      }
+      if (this.lang === 'ts') {
+        const before = annotation.slice(0, m.index)
+        const after = annotation.slice(m.index! + ident.length)
+        // Type predicates, mapped types and assertions: syntax, unless a field is called `is` or `in`.
+        if (/^(?:is|in|as|asserts)$/.test(ident) && !/^\s*\??\s*:/.test(after)) {
+          out.push({ text: ident, keyword: true })
+          continue
+        }
+        if ((innerBound.has(ident) && !before.endsWith('.')) || /^\s+is\s/.test(after)) {
+          out.push({ text: ident, declaration: true })
+          continue
+        }
+        if (/^(?:true|false)$/.test(ident) && !/^\s*\??\s*:/.test(after)) {
+          out.push({ text: ident, nonReference: true })
+          continue
+        }
+        // A method signature in an object type, `{ execute(request: Request): Result }`, names its member.
+        if (/^\s*\??\s*[(<]/.test(after) && /(?:^|[{;,])(?:\s|\/\*[\s\S]*?\*\/|\/\/[^\n]*)*(?:readonly\s+)?$/.test(before) && /\{/.test(before)) {
+          out.push({ text: ident, declaration: true })
+          continue
+        }
+        // A computed key, `readonly [brand]: Kind`, names the member it declares.
+        if (/^\s*\]\s*\??\s*:(?!:)/.test(after) &&
+            /(?:^|[{;,])(?:\s|\/\*[\s\S]*?\*\/|\/\/[^\n]*)*(?:readonly\s+)?\[\s*$/.test(before)) {
+          out.push({ text: ident, declaration: true })
+          continue
+        }
       }
       const bound = declaresValue(annotation.slice(0, m.index), annotation.slice(m.index! + ident.length))
         ? undefined : this.boundSpans(ident, bindings)

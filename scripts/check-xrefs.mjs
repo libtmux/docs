@@ -53,7 +53,7 @@ function countIn(dir) {
 }
 
 // Core and companion references share one floor within a version. Count each
-// version separately: a healthy stable tree must not conceal broken latest
+// version separately: a healthy release tree must not conceal broken latest
 // references, and building both versions must not double the recorded floor.
 const versionCounts = Object.fromEntries(PORTS.map((port) => {
   const versions = {}

@@ -49,7 +49,7 @@ caller cannot hand an immutable tag a five-minute TTL by copy-paste:
 | `tag` | `py/v0.46.2` | `public, max-age=31536000, immutable` |
 | `trunk` | `py/latest` | `public, max-age=0, s-maxage=300` |
 | `branch` | `py/v0.x` | `public, max-age=0, s-maxage=300` |
-| `alias` | `py/stable` | `public, max-age=0, s-maxage=300` |
+| `alias` | `py/next` | `public, max-age=0, s-maxage=300` |
 | `pr` | `ruby/pr-42` | `public, max-age=0, s-maxage=300` |
 
 No column for invalidation, because this workflow issues none. Every mutable
@@ -63,28 +63,27 @@ per request, so CloudFront never caches it — it returns
 `x-cache: FunctionGeneratedResponse` every time — and invalidating a URL that
 is generated rather than stored clears nothing.
 
-A tag push on a port repo normally calls `reusable-deploy.yml` twice — once
-with `version-kind: tag` at the immutable prefix, once more with
-`version-kind: alias` at `stable` if that tag becomes the new default — since
-`/stable/` and `/latest/` are separate builds with their own base path and
-canonical URL, never edge rewrites of the tag's bytes. The second call adds
-`resolves-to` so the manifest entry carries `VersionEntry.resolvesTo`:
+A tag push on a port repo calls `reusable-deploy.yml` once with
+`version-kind: tag` at the immutable prefix. A final release that is newer than
+every other final release tag also passes `is-default: true`, so the manifest's
+`defaultVersion` names it; an older backport tag never takes the default. A
+prerelease adds a second call with `version-kind: alias` at `next`, which
+carries `resolves-to` so the manifest entry has `VersionEntry.resolvesTo`:
 
 ```yaml
     with:
-      path-prefix: py/stable
-      artifact: docs-html-stable
+      path-prefix: py/next
+      artifact: docs-html-next
       version-kind: alias
       port: py
-      version: stable
-      resolves-to: v0.46.2
-      is-default: true
+      version: next
+      resolves-to: v0.47.0a1
       environment: docs
 ```
 
-The prefix a caller passes is its own — `py/stable`, `py/v0.46.2` — and the
+The prefix a caller passes is its own — `py/next`, `py/v0.46.2` — and the
 workflow prepends the locale before writing, so those objects land at
-`en/py/stable` and `en/py/v0.46.2`. That is applied on this side rather than
+`en/py/next` and `en/py/v0.46.2`. That is applied on this side rather than
 asked of the caller because the caller is each port's own repository, and
 moving a segment would otherwise be a coordinated edit across ten of them. A
 pull-request preview keeps its own shape: it owns its whole prefix and nests
@@ -264,9 +263,9 @@ The events it answers (`scripts/port-docs-identity.sh`):
 
 - A pull request builds `latest` at its merge commit and publishes nothing.
 - A push to the default branch publishes `latest`. It is the default only
-  until the port's first stable release tag.
-- A release tag publishes its version plus `next` (prerelease) or `stable`
-  (release, the default).
+  until the port's first final release tag.
+- A release tag publishes its version, plus `next` for a prerelease. A final
+  release is the default only when no newer final release tag exists.
 - A dispatch publishes exactly what it names, at any ref. From the port's
   checkout:
 
@@ -299,7 +298,7 @@ The dispatcher plans first and stops there by default:
 | `ports` | `ref` | Publishes |
 |---|---|---|
 | `all` or a list | `latest` | each default branch as `latest` |
-| `all` or a list | `release` | each newest release tag, plus `next` or `stable` |
+| `all` or a list | `release` | each newest release tag, the default when final, plus `next` when a prerelease |
 | one port | an exact ref | that ref, as `version` and `version-kind` name it |
 
 ```console
@@ -378,7 +377,7 @@ A branch or tag containing the publisher is insufficient for role assumption.
 ## This repo's own deploy (`deploy-shell.yml`)
 
 The shell has no versioned URL space: the bucket root is always "whatever's
-on trunk," never `/latest/` or `/stable/` the way a port's prefix is. A tag
+on trunk," never `/latest/` the way a port's prefix is. A tag
 on this repo is a release marker for this repo's own history and deploys to
 the same root a trunk push does — not a second prefix. Release branches are
 a per-port version concept (`versions.ts`'s `'branch'` kind, e.g. `v0.x`)

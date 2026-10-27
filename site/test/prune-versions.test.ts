@@ -18,7 +18,7 @@ describe('deployed version pruning', () => {
     ports: {
       py: [
         { slug: 'latest', supported: true },
-        { slug: 'stable', supported: true },
+        { slug: 'v0.46.2', supported: true },
         { slug: 'v0.46', supported: false, eol: true },
       ],
       ts: [{ slug: 'latest', supported: true }],
@@ -32,7 +32,7 @@ describe('deployed version pruning', () => {
   })
 
   it('deletes a version the manifest no longer mentions', () => {
-    const present = new Map([['py', ['latest', 'stable', 'v0.9']]])
+    const present = new Map([['py', ['latest', 'v0.46.2', 'v0.9']]])
     expect(toPrune(keptVersions(manifest), present)).toEqual(['py/v0.9'])
   })
 
@@ -40,14 +40,14 @@ describe('deployed version pruning', () => {
     // EOL is not deletion. The version is still published, still linked from
     // the switcher with a banner, and every link anyone wrote to it still
     // works. What gets pruned is a version the manifest stopped mentioning.
-    const present = new Map([['py', ['latest', 'stable', 'v0.46']]])
+    const present = new Map([['py', ['latest', 'v0.46.2', 'v0.46']]])
     expect(toPrune(keptVersions(manifest), present)).toEqual([])
   })
 
   it('leaves a port with no manifest entries entirely alone', () => {
     // An ecosystem port has no local tree and no entries — and so does a
     // half-written manifest. The safe reading of "no entry" is "not mine".
-    const present = new Map([['rs', ['latest', 'stable']]])
+    const present = new Map([['rs', ['latest', 'v0.46.2']]])
     expect(toPrune(keptVersions(manifest), present)).toEqual([])
   })
 
@@ -65,17 +65,17 @@ describe('deployed version pruning', () => {
   })
 
   it('agrees with the published manifest that nothing is stale', () => {
-    // The real one, against what the assembly builds: latest and stable per
+    // The real one, against what the assembly builds: latest and a release per
     // self-hosted port. If this ever finds something to prune, either a
     // version was retired or the manifest lost an entry it should have kept.
     const present = new Map([
-      ['py', ['latest', 'stable']],
-      ['ts', ['latest', 'stable']],
+      ['py', ['latest', 'v0.46.2']],
+      ['ts', ['latest', 'v0.46.2']],
     ])
     const real = {
       ports: {
-        py: [{ slug: 'latest' }, { slug: 'stable' }],
-        ts: [{ slug: 'latest' }, { slug: 'stable' }],
+        py: [{ slug: 'latest' }, { slug: 'v0.46.2' }],
+        ts: [{ slug: 'latest' }, { slug: 'v0.46.2' }],
       },
     }
     expect(toPrune(keptVersions(real), present)).toEqual([])

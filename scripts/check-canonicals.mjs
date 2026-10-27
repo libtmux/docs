@@ -57,13 +57,21 @@ if (siteDir === defaultSite && existsSync(lock)) {
 }
 
 /**
- * Each port's default version, read from the tree that was built: a port
- * publishing one prefix is its own default, and Python's two make `stable`
- * the canonical one.
+ * Each port's default version, read from the tree that was built: the
+ * manifest's `defaultVersion` when that version was built, else the one
+ * prefix a port published.
  */
+const MANIFEST = (() => {
+  try {
+    return JSON.parse(readFileSync(join(siteDir, 'versions.json'), 'utf8'))
+  } catch {
+    return {}
+  }
+})()
 const DEFAULTS = Object.fromEntries(PORTS.map((port) => {
   const built = referenceDirs(siteDir, port).map((dir) => dir.split('/').at(-2))
-  return [port, built.includes('stable') ? 'stable' : built[0]]
+  const declared = MANIFEST.defaultVersion?.[port]
+  return [port, built.includes(declared) ? declared : built[0]]
 }).filter(([, version]) => version))
 
 const roots = PORTS.flatMap((port) => referenceDirs(siteDir, port, { products: true }))

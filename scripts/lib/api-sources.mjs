@@ -176,6 +176,8 @@ export const BARE_OWNERS = Object.fromEntries(Object.entries({
   py: { typing: ['Unpack', 'TypeGuard', 'TypeAlias'], 'collections.abc': ['Mapping', 'Sequence', 'Callable', 'Iterator'] },
   powershell: {
     'System.IO': ['FileInfo'], 'System.Management.Automation': ['ApplicationInfo'],
+    // The guides name an exception's property and an error record's category member bare.
+    'System.Exception': ['InnerException'], 'System.Management.Automation.ErrorCategory': ['NotImplemented'],
     'microsoft.powershell.utility': ['Get-Member', 'Invoke-WebRequest'], 'microsoft.powershell.core': ['Where-Object', 'Receive-Job', 'CommonParameters'],
     // PSResourceGet ships with PowerShell 7.4 and is documented under its own module.
     'microsoft.powershell.psresourceget': ['Install-PSResource'],

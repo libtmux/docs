@@ -194,6 +194,9 @@ export const BUILTINS: Record<string, Record<string, string>> = {
       'ArgumentException'].map((name) => [`System.${name}`, dotnet(`system.${name.toLowerCase()}`)])),
     // PSResourceGet ships with PowerShell 7.4 but is documented under its own view.
     'Install-PSResource': 'https://learn.microsoft.com/powershell/module/microsoft.powershell.psresourceget/install-psresource?view=powershellget-3.x',
+    // `InnerException` is the property every .NET exception carries; `NotImplemented` is the ErrorCategory member the error record reports.
+    InnerException: dotnet('system.exception.innerexception'),
+    NotImplemented: `${dotnet('system.management.automation.errorcategory')}?view=powershellsdk-7.4.0#system-management-automation-errorcategory-notimplemented`,
     'System.Nullable': dotnet('system.nullable-1'),
     'System.Management.Automation.SwitchParameter': `${dotnet('system.management.automation.switchparameter')}?view=powershellsdk-7.4.0`,
     'System.Management.Automation.ActionPreference': `${dotnet('system.management.automation.actionpreference')}?view=powershellsdk-7.4.0`,

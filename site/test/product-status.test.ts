@@ -1,18 +1,18 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
-  CONCEPT_DESCRIPTION, PORT_BY_SLUG, PORTS, PRODUCT_STATUS_GUIDE, PRODUCT_STATUS_LINE, PRODUCT_STATUS_LINK, productAvailable, productStatus, releaseMaturity,
+  CONCEPT_DESCRIPTION, PORT_BY_SLUG, PORTS, PRODUCT_STATUS_GUIDE, PRODUCT_STATUS_LINK, productAvailable, productStatusLine, isReleaseSeries, productStatus, releaseMaturity,
   type ProductStatus, type RegistryEntry,
 } from '../src/lib/ports'
 import { REGISTRY } from '../src/lib/registry'
 import { newestPublishedTag, releaseTag, type TagGrammar } from '../src/lib/versions'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
-const entry = (overrides: Partial<RegistryEntry>): RegistryEntry => ({ status: 'prerelease', version: null, stable: null, tag: null, ...overrides })
+const entry = (overrides: Partial<RegistryEntry>): RegistryEntry => ({ status: 'prerelease', version: null, release: null, tag: null, ...overrides })
 
 // What the registry resolver recorded for Julia when its first final release
 // was tagged and General did not carry it yet.
-const JULIA_FINAL_TAG: RegistryEntry = { status: 'unpublished', version: null, stable: null, tag: 'v0.1.0' }
+const JULIA_FINAL_TAG: RegistryEntry = { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' }
 
 describe('release maturity', () => {
   it.each([
@@ -27,30 +27,48 @@ describe('release maturity', () => {
     expect(releaseMaturity(entry({ status: 'unpublished' }))).toBe('unreleased')
   })
 
-  it('lets a registry declaration outrank the version and a stable release outrank the rest', () => {
+  it('lets a registry declaration outrank the version and a final release outrank the rest', () => {
     expect(releaseMaturity(entry({ version: '0.1.0a22', maturity: 'pre-alpha' }))).toBe('pre-alpha')
-    expect(releaseMaturity(entry({ status: 'stable', version: '1.74.0', stable: '1.74.0' }))).toBe('stable')
-    // Neither outcome comes from the name: a declared stage beats a final name, and a stable
+    expect(releaseMaturity(entry({ status: 'release', version: '1.74.0', release: '1.74.0' }))).toBe('1.x')
+    // Neither outcome comes from the name: a declared stage beats a final name, and a release
     // status beats a LuaRocks revision (`-1`) that the name grammar refuses.
     expect(releaseMaturity(entry({ version: '1.74.0', maturity: 'beta' }))).toBe('beta')
-    expect(releaseMaturity(entry({ status: 'stable', version: '0.1.0-1' }))).toBe('stable')
+    expect(releaseMaturity(entry({ status: 'release', version: '0.1.0-1' }))).toBe('0.x')
   })
 
   it('refuses a prerelease whose stage it cannot read', () => {
     expect(() => releaseMaturity(entry({ version: '0.1.0-dev.3' }))).toThrow(/no release stage in "0.1.0-dev.3"/)
   })
 
-  it('reads the live Julia entry, a final tag that General does not carry yet, as stable', () => {
-    expect(releaseMaturity(JULIA_FINAL_TAG)).toBe('stable')
+  it('reads the live Julia entry, a final tag that General does not carry yet, as 0.x', () => {
+    expect(releaseMaturity(JULIA_FINAL_TAG)).toBe('0.x')
   })
 
   it.each([
-    'v0.1.0', '0.1.0', 'v10.20.30', 'libtmux@v0.1.0', 'libtmux@0.1.0', 'tmux-workspace@v0.1.0', 'workspace/v0.1.0', 'mcp/v1.2.3',
+    'v0.1.0', '0.1.0', 'libtmux@v0.1.0', 'libtmux@0.1.0', 'tmux-workspace@v0.1.0', 'workspace/v0.1.0',
+  ])('reads the final release %s, below 1.0, as 0.x, from a tag or a version', (name) => {
+    expect(releaseMaturity(entry({ status: 'unpublished', tag: name }))).toBe('0.x')
+    expect(releaseMaturity(entry({ version: name }))).toBe('0.x')
+  })
+
+  it.each([
+    'v10.20.30', 'v1.0.0', 'mcp/v1.2.3',
     // A stage word in the package label is not the release's stage.
     'arc-tools@v1.0.0',
-  ])('reads the final release %s as stable, from a tag or a version', (name) => {
-    expect(releaseMaturity(entry({ status: 'unpublished', tag: name }))).toBe('stable')
-    expect(releaseMaturity(entry({ version: name }))).toBe('stable')
+  ])('reads the final release %s, from 1.0, as its series, from a tag or a version', (name) => {
+    const series = `${/(\d+)\.\d+\.\d+$/.exec(name)![1]}.x`
+    expect(releaseMaturity(entry({ status: 'unpublished', tag: name }))).toBe(series)
+    expect(releaseMaturity(entry({ version: name }))).toBe(series)
+  })
+
+  it('reads a registry release as its series and never names a stage beyond rc', () => {
+    expect(releaseMaturity(entry({ status: 'release', version: '0.1.0', release: '0.1.0' }))).toBe('0.x')
+    expect(releaseMaturity(entry({ status: 'release', version: 'v0.1.0', release: 'v0.1.0', tag: 'v0.1.0' }))).toBe('0.x')
+    expect(releaseMaturity(entry({ status: 'release', version: '1.76.0', release: '1.76.0' }))).toBe('1.x')
+    for (const value of Object.values(REGISTRY.ports).flatMap((port) => [port, ...Object.values(port.packages ?? {})])) {
+      expect(['pre-alpha', 'alpha', 'beta', 'rc', 'unreleased'].includes(releaseMaturity(value)) ||
+        isReleaseSeries(releaseMaturity(value))).toBe(true)
+    }
   })
 
   it.each([
@@ -72,7 +90,7 @@ describe('release maturity', () => {
     // The resolver stores a tag only when the port's own grammar accepts it.
     expect(releaseTag(final, port), final).not.toBeNull()
     expect(releaseTag(alpha, port), alpha).not.toBeNull()
-    expect(releaseMaturity(entry({ status: 'unpublished', tag: final })), final).toBe('stable')
+    expect(releaseMaturity(entry({ status: 'unpublished', tag: final })), final).toBe('0.x')
     expect(releaseMaturity(entry({ status: 'unpublished', tag: alpha })), alpha).toBe('alpha')
   })
 
@@ -93,8 +111,8 @@ describe('product status', () => {
       .map((product) => [product, productStatus(port, product, REGISTRY)]))
   }
 
-  it('states the stage Python declares for each of its PyPI projects', () => {
-    expect(table('py')).toEqual({ core: 'stable', mcp: 'pre-alpha', workspace: 'stable' })
+  it('states the stage or series of each of Python\'s PyPI projects', () => {
+    expect(table('py')).toEqual({ core: '0.x', mcp: 'pre-alpha', workspace: '1.x' })
     const { packages } = REGISTRY.ports.py!
     expect(Object.keys(packages!).sort()).toEqual(['libtmux', 'libtmux-mcp', 'tmuxp'])
     // The MCP server and tmuxp release from their own repositories, so libtmux's tag is not theirs.
@@ -103,10 +121,10 @@ describe('product status', () => {
   })
 
   it('badges the library with its stage and every other port companion as a concept', () => {
-    expect(table('go')).toEqual({ core: 'alpha', mcp: 'concept', workspace: 'concept' })
-    expect(table('java')).toEqual({ core: 'alpha', mcp: 'concept', workspace: 'concept' })
-    expect(table('powershell')).toEqual({ core: 'alpha', workspace: 'concept' })
-    expect(table('kotlin')).toEqual({ core: 'alpha' })
+    expect(table('go')).toEqual({ core: '0.x', mcp: 'concept', workspace: 'concept' })
+    expect(table('java')).toEqual({ core: '0.x', mcp: 'concept', workspace: 'concept' })
+    expect(table('powershell')).toEqual({ core: '0.x', workspace: 'concept' })
+    expect(table('kotlin')).toEqual({ core: '0.x' })
   })
 
   it.each(PORTS)('gives every available product of $slug a badge', (port) => {
@@ -114,27 +132,27 @@ describe('product status', () => {
       if (product !== 'core' && !productAvailable(port, product)) continue
       const status = productStatus(port, product, REGISTRY)
       expect(status, `${port.slug} ${product}`).toBeDefined()
-      expect(PRODUCT_STATUS_LINE[status as ProductStatus].length).toBeGreaterThan(10)
+      expect(productStatusLine(status as ProductStatus).length).toBeGreaterThan(10)
     }
   })
 
-  it('badges Julia stable from its final tag and states the line without naming a registry', async () => {
+  it('badges Julia 0.x from its final tag and states the line without naming a registry', async () => {
     const julia = PORT_BY_SLUG.julia!
-    const status = productStatus(julia, 'core', { schema: 1, ports: { julia: JULIA_FINAL_TAG } })
-    expect(status).toBe('stable')
-    // Python's stable release is on PyPI and Julia's is not on General; one line has to be true of both.
-    expect(PRODUCT_STATUS_LINE.stable).not.toMatch(/registry/i)
+    const status = productStatus(julia, 'core', { schema: 2, ports: { julia: JULIA_FINAL_TAG } })
+    expect(status).toBe('0.x')
+    // Python's releases are on PyPI and Julia's is not on General; one line has to be true of both.
+    expect(productStatusLine('0.x')).not.toMatch(/registry/i)
     const html = await renderAstroTemplate(await loadAstroTemplate('components/StatusBadge.astro'), {
       props: { status, product: julia.projectName, id: 'julia-core-status' },
     })
-    expect(html).toContain('data-status="stable"')
-    expect(html).toContain(`<span class="status-toggletip__line">${PRODUCT_STATUS_LINE.stable}</span>`)
+    expect(html).toContain('data-status="0.x"')
+    expect(html).toContain(`<span class="status-toggletip__line">${productStatusLine('0.x')}</span>`)
   })
 
   it.each([
-    ['General lists nothing', null, { status: 'unpublished', version: null, stable: null, tag: 'v0.1.0' }, 'stable'],
-    ['General lists only 0.1.0-alpha.2', ['0.1.0-alpha.2'], { status: 'prerelease', version: '0.1.0-alpha.2', stable: null, tag: 'v0.1.0-alpha.2' }, 'alpha'],
-    ['General lists 0.1.0', ['0.1.0'], { status: 'stable', version: '0.1.0', stable: '0.1.0', tag: 'v0.1.0' }, 'stable'],
+    ['General lists nothing', null, { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' }, '0.x'],
+    ['General lists only 0.1.0-alpha.2', ['0.1.0-alpha.2'], { status: 'prerelease', version: '0.1.0-alpha.2', release: null, tag: 'v0.1.0-alpha.2' }, 'alpha'],
+    ['General lists 0.1.0', ['0.1.0'], { status: 'release', version: '0.1.0', release: '0.1.0', tag: 'v0.1.0' }, '0.x'],
   ] as const)('reads the newest release tag only while the registry lists no release: %s', (_state, published, resolved, stage) => {
     // The repository carries both tags in every state; the resolver records v0.1.0 only when nothing or v0.1.0 is listed.
     expect(newestPublishedTag(['v0.1.0-alpha.2', 'v0.1.0'], PORT_BY_SLUG.julia!, published)).toBe(resolved.tag)
@@ -148,14 +166,15 @@ describe('product status', () => {
   })
 
   it('keeps each badge line short, apart from the long description that only the guide and data carry', () => {
-    for (const [status, line] of Object.entries(PRODUCT_STATUS_LINE)) {
+    const statuses: ProductStatus[] = ['concept', 'pre-alpha', 'alpha', 'beta', 'rc', '0.x', '1.x', 'unreleased']
+    for (const [status, line] of statuses.map((status) => [status, productStatusLine(status)] as const)) {
       // About eight words and sixty characters: a toggletip is a label, not a paragraph.
       expect(line.length, status).toBeLessThanOrEqual(60)
       expect(line.split(/\s+/).length, status).toBeLessThanOrEqual(8)
       expect(line, status).toMatch(/^[A-Z][^.]*\.$/)
       expect(line, status).not.toBe(CONCEPT_DESCRIPTION)
     }
-    expect(Object.keys(PRODUCT_STATUS_LINE).sort()).toEqual(['alpha', 'beta', 'concept', 'pre-alpha', 'rc', 'stable', 'unreleased'])
+    expect(new Set(statuses.map(productStatusLine)).size).toBe(statuses.length - 1)
     expect(PRODUCT_STATUS_LINK).toBe('Read more')
     expect(PRODUCT_STATUS_GUIDE).toBe('/meta/support/#concept-and-alpha')
   })

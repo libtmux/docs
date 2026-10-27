@@ -19,7 +19,7 @@ import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample, checkRowPermalinks } from './check-dev-sample.mjs'
 import { checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkMemberBodyInsets, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
 import { checkBadgeCentring, checkChipGrowth, checkMentionDensity, checkUsageChips } from './check-badge-centring.mjs'
-import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkKindBadgeLinksFail, checkRequiredAppearance, checkTmuxReferencePreviews, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
+import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkKindBadgeLinksFail, checkRequiredAppearance, checkTmuxReferencePreviews, checkTmuxReferencePreviewsFail, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
 import { checkTypeParameters } from './check-type-parameters.mjs'
 import { checkTmuxKeys, TMUX_KEY_PAGES } from './check-tmux-keys.mjs'
 import { checkSidebarDemo } from './check-sidebar-demo.mjs'
@@ -56,11 +56,11 @@ Object.assign(process.env, {
   LIBTMUX_DOCS_SITE: 'https://libtmux.org',
   LIBTMUX_DOCS_BASE: '/en/', LIBTMUX_DOCS_ROOT: '/en', LIBTMUX_DOCS_PORT_ROOT: '/en',
   LIBTMUX_DOCS_LOCALES_ROOT: '', LIBTMUX_DOCS_LOCALE: 'en', LIBTMUX_DOCS_PORT: '',
-  LIBTMUX_DOCS_VERSION: 'latest', LIBTMUX_DOCS_PORT_DEFAULTS: '{"py":"stable"}',
+  LIBTMUX_DOCS_VERSION: 'latest', LIBTMUX_DOCS_PORT_DEFAULTS: '{"py":"v0.46.2"}',
 })
 // The one version of each port's reference this build serves: its own target, as the site's build target says it. A port's core
 // reference is a tree of its own, so a link to another version of it (the Python reference that the other ports link to at its
-// default, `stable`) names a tree this build does not contain. The routes below and the checks that ask what is served read it here.
+// default version) names a tree this build does not contain. The routes below and the checks that ask what is served read it here.
 const MIRRORED_VERSION = buildTarget(process.env).version
 // Astro always writes root/.astro, so a separate cacheDir alone cannot isolate it.
 const source = fileURLToPath(new URL('../', import.meta.url))
@@ -754,11 +754,24 @@ async function checkReferenceAndHeroes(browser, base) {
       qualifiedName: 'io.github.libtmux.Server', namespace: 'io.github.libtmux',
     }, 'Java manifest records source identity alongside its stable declaration URL')
     await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server/`)
-    const javaEquivalent = page.locator('.api-elsewhere a[href$="/java/latest/reference/io-github-libtmux-server-server/"]')
-    assert.equal(await javaEquivalent.locator(':scope > code').textContent(), 'io.github.libtmux.Server',
-      'Equivalent Java API labels use the target source identity while retaining its stable URL')
-    assert.equal(await javaEquivalent.locator(':scope > .api-badge--kind-class[aria-hidden="true"]').textContent(), 'C',
-      'The decorative kind badge remains separate from the exact source name')
+    // The equivalent is a row of the In other ports table: the target's source name in code, led by its decorative kind badge.
+    const javaEquivalent = page.locator('section:has(> #api-other-ports) .tmux-usage a[href$="/java/latest/reference/io-github-libtmux-server-server/"]')
+    const assertJavaEquivalent = async () => {
+      assert.equal(await javaEquivalent.count(), 1, 'The In other ports table links the Java equivalent')
+      assert.equal(await javaEquivalent.locator(':scope > code').count(), 1, 'The Java equivalent names its target in code')
+      assert.equal(await javaEquivalent.locator(':scope > code').textContent(), 'io.github.libtmux.Server',
+        'Equivalent Java API labels use the target source identity while retaining its stable URL')
+      assert.equal(await javaEquivalent.locator(':scope > .api-badge--kind-class[aria-hidden="true"]').count(), 1,
+        'The Java equivalent keeps its decorative kind badge')
+      assert.equal(await javaEquivalent.locator(':scope > .api-badge--kind-class[aria-hidden="true"]').textContent(), 'C',
+        'The decorative kind badge remains separate from the exact source name')
+    }
+    await assertJavaEquivalent()
+    // The control: the same assertions fail once the badge or the code is gone.
+    await javaEquivalent.locator(':scope > .api-badge--kind-class').evaluate((badge) => badge.remove())
+    await assert.rejects(assertJavaEquivalent(), /keeps its decorative kind badge/)
+    await javaEquivalent.locator(':scope > code').evaluate((code) => code.replaceWith(document.createElement('span')))
+    await assert.rejects(assertJavaEquivalent(), /names its target in code/)
     console.log('Java names: source package and exact qualified names render without changing declaration anchors')
   } finally {
     await page.close()
@@ -771,7 +784,7 @@ try {
   const firstPage = homeLauncherOnly || homeControlsOnly ? '/'
     : keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
     : apiStickyOnly ? '/swift/latest/reference/server/'
-    : badgeCentringOnly ? '/py/stable/guides/attaching-to-tmux/'
+    : badgeCentringOnly ? '/py/v0.46.2/guides/attaching-to-tmux/'
     : referencePreviewsOnly ? '/cxx/latest/reference/libtmux-server-panes/'
     : documentationNavigationOnly || headerMenuSectionsOnly || statusBadgesOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
     : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/'
@@ -830,6 +843,7 @@ try {
     await checkUsageChips(browser, base)
   } else if (referencePreviewsOnly) {
     await retryReload(() => checkTmuxReferencePreviews(browser, base, { served: servedBuild(base) }))
+    await checkTmuxReferencePreviewsFail(browser, base)
   } else if (referencePreferencesOnly) {
     await retryReload(() => checkReferencePreferences(browser, base))
     await retryReload(() => checkGlobalHeader(browser, base))
@@ -913,7 +927,8 @@ try {
       .then(() => checkChipGrowth(browser, base))
       .then(() => checkUsageChips(browser, base)))
     const blockLinks = schedule(() => retryReload(() => checkBlockLinksUndecorated(browser, base)))
-    const referencePreviews = schedule(() => retryReload(() => checkTmuxReferencePreviews(browser, base, { served: servedBuild(base) })))
+    const referencePreviews = schedule(() => retryReload(() => checkTmuxReferencePreviews(browser, base, { served: servedBuild(base) }))
+      .then(() => checkTmuxReferencePreviewsFail(browser, base)))
     await apiAnchors
     const apiSticky = schedule(() => retryReload(() => checkApiStickyHeadings(browser, base))
       .then(() => checkApiStickyHeadingsFail(browser, base)))
@@ -923,7 +938,7 @@ try {
     const typeParameters = schedule(() => retryReload(() => checkTypeParameters(browser, base)))
     await typeParameters
     const paths = ['tmux/concepts/server-session-window-pane', 'tmux/examples/attach-and-send-keys', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
-      'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
+      'ts/latest/workspace/internals/guides', 'py/v0.46.2/workspace/guides',
       'ts/latest/mcp/tools', 'csharp/latest/mcp/tools/capture_pane']
     for (const path of paths) await retryReload(async () => {
       await page.setViewportSize({ width: 1440, height: 1000 })
@@ -950,13 +965,13 @@ try {
         })
         assert(geometry.above && geometry.contextAbove, `${path}: context controls precede the breadcrumb and heading`)
       }
-      const expected = isReference ? '/en/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/' : path.includes('workspace/') ? `/en/${path}/`
-        : path === 'csharp/latest/mcp/tools/capture_pane' ? '/en/py/stable/mcp/tools/capture_pane/' : `/en/py/stable/${path.replace(/^(?:ts\/latest\/|tmux\/)/, '')}/`
+      const expected = isReference ? '/en/py/v0.46.2/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/' : path.includes('workspace/') ? `/en/${path}/`
+        : path === 'csharp/latest/mcp/tools/capture_pane' ? '/en/py/v0.46.2/mcp/tools/capture_pane/' : `/en/py/v0.46.2/${path.replace(/^(?:ts\/latest\/|tmux\/)/, '')}/`
       if (hasSwitcher) {
         assert.equal(await portLinks.first().getAttribute('href'), expected)
         assert.equal(await switcher.locator('.tmux-area a').getAttribute('href'), '/en/tmux/')
       }
-      if (path === 'py/stable/workspace/guides') {
+      if (path === 'py/v0.46.2/workspace/guides') {
         // Native PowerShell and Julia articles live at workspace/source-guide,
         // not this guide index; product availability alone is not a counterpart.
         const guidePorts = ['py', 'ruby', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift']
@@ -985,7 +1000,7 @@ try {
         assert.match(await python.textContent(), /No matching page/)
         assert.equal(await python.locator('a[data-port]').count(), 0)
         assert.equal(await python.getAttribute('aria-disabled'), null)
-        assert.equal(await python.locator('[data-picker-home]').getAttribute('href'), '/en/py/stable/workspace/')
+        assert.equal(await python.locator('[data-picker-home]').getAttribute('href'), '/en/py/v0.46.2/workspace/')
         assert.equal(await python.locator('[data-picker-home]').getAttribute('aria-label'), 'Go to Python Workspace Manager home')
       }
       if (path === 'csharp/latest/mcp/tools/capture_pane') {
@@ -994,7 +1009,7 @@ try {
           port: link.dataset.port, href: link.getAttribute('href'),
         })))).sort((a, b) => a.port.localeCompare(b.port)),
         capturePorts.map((port) => ({
-          port, href: `/en/${port}/${port === 'py' ? 'stable' : 'latest'}/mcp/tools/capture_pane/`,
+          port, href: `/en/${port}/${port === 'py' ? 'v0.46.2' : 'latest'}/mcp/tools/capture_pane/`,
         })).sort((a, b) => a.port.localeCompare(b.port)))
         assert.equal(await switcher.locator('a[aria-current="page"]').getAttribute('href'), `/en/${path}/`)
       }
@@ -1033,8 +1048,8 @@ try {
         assert.equal(result.redundantHeaderLinks, 0, 'Surface destinations are absent from the header bar')
         assert(result.headerControls.every((control) => Math.abs(control.height - result.headerControls[0].height) < 0.1
           && Math.abs(control.top - result.headerControls[0].top) < 0.1), `${path} at ${width}px: header controls align at equal heights`)
-        // tmux pages document tmux itself, so the libtmux alpha notice is absent there.
-        if (path.startsWith('tmux/')) assert.equal(result.badgeForeground, null, `${path}: no libtmux alpha notice`)
+        // tmux pages document tmux itself, so the libtmux release notice is absent there.
+        if (path.startsWith('tmux/')) assert.equal(result.badgeForeground, null, `${path}: no libtmux release notice`)
         else assert.equal(result.badgeForeground, 'rgb(255, 255, 255)', 'Filled badge uses white foreground')
         if (width < 1536) assert(result.schemeLabelWidth <= 1, 'Compact color-scheme controls hide their text visually')
         assert(result.overflow <= 1, `${path} at ${width}px: page overflow ${result.overflow}px`)
@@ -1062,13 +1077,15 @@ try {
     }, page)
     for (const path of [
       'py/latest/reference/libtmux-server',
-      'py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder',
+      'py/v0.46.2/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder',
       'java/latest/workspace/reference/io-github-libtmux-workspace-workspacebuilder-workspacebuilder',
     ]) await retryReload(async () => {
       const response = await page.goto(`${base}/${path}/`, { waitUntil: 'load' })
       assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
       await page.evaluate(() => document.fonts.ready)
+      // A product page's members keep the collapsed disclosure; the page's own equivalents are a table that is always open.
       await page.locator('.api-elsewhere').evaluateAll((entries) => entries.forEach((entry) => { entry.open = true }))
+      assert(await page.locator('.api-elsewhere, section:has(> #api-other-ports) .tmux-usage table').count() > 0, `${path}: no equivalents were open to measure`)
       for (const width of [1440, 768, 390]) {
         await page.setViewportSize({ width, height: 1000 })
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)
@@ -1122,7 +1139,7 @@ try {
     for (const mode of ['light', 'dark']) {
       await page.locator(`.scheme-switch input[value="${mode}"]`).check({ force: true })
       let reference
-      for (const port of ['py/stable', 'swift/latest', 'go/latest', 'cxx/latest']) {
+      for (const port of ['py/v0.46.2', 'swift/latest', 'go/latest', 'cxx/latest']) {
         await page.goto(`${base}/${port}/workspace/`, { waitUntil: 'load' })
         const reading = await page.evaluate(() => {
           const tokens = getComputedStyle(document.documentElement)

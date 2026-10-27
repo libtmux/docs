@@ -58,10 +58,9 @@ const BRANCH_RE = /^v\d+\.x$/
 /**
  * The entry every port gets when there is no checkout to inspect.
  *
- * Trunk alone. A seeded `stable` could only resolve to `latest`, which is an
- * alias from the word for "the released version" to the unreleased one — the
- * claim this generator exists to stop making. Absent is honest: it says we do
- * not know of a release, rather than naming trunk as one.
+ * Trunk alone. A seeded release entry could only name trunk as the released
+ * version, the claim this generator exists to stop making. Absent is honest:
+ * it says we do not know of a release.
  *
  * This is the normal path in CI, which has no port checkouts, so the seed is
  * what most builds actually publish.
@@ -109,23 +108,19 @@ function deriveEntries(port) {
     headDate = undefined
   }
 
-  // `tags` is already newest-first, so the first match in each case is the one
-  // the alias should name. A suffix decides these, not a hyphen: `v0.11.0b0`
-  // has no hyphen and is not a release.
-  const stableTag = tags.find((t) => t.pre === null)?.name
+  // `tags` is already newest-first, so the first match in each case is the
+  // newest one. A suffix decides these, not a hyphen: `v0.11.0b0` has no hyphen
+  // and is not a release. The newest final tag is the default version.
+  const defaultTag = tags.find((t) => t.pre === null)?.name
   const preTag = tags.find((t) => t.pre !== null)?.name
 
   const entries = [
     { slug: 'latest', label: 'latest', kind: 'trunk', supported: true, ...(headDate ? { published: headDate } : {}) },
-    // Absent, not pointed at trunk. An alias called `stable` that resolves to
-    // an unreleased HEAD tells a reader — and, through robotsFor, a search
-    // engine — the opposite of the truth.
-    ...(stableTag ? [{ slug: 'stable', label: 'stable', kind: 'alias', resolvesTo: stableTag, supported: true }] : []),
     ...(preTag ? [{ slug: 'next', label: 'next', kind: 'alias', resolvesTo: preTag, supported: true }] : []),
     ...tags.map((t) => ({ slug: t.name, label: t.name, kind: 'tag', supported: true, ...(t.date ? { published: t.date } : {}) })),
     ...branches.map((b) => ({ slug: b.name, label: b.name, kind: 'branch', supported: true, ...(b.date ? { published: b.date } : {}) })),
   ]
-  return { entries, defaultVersion: stableTag ? 'stable' : 'latest', note: undefined }
+  return { entries, defaultVersion: defaultTag ?? 'latest', note: undefined }
 }
 
 function mergeOverrides(manifest, overridesPath) {
@@ -160,9 +155,7 @@ function main() {
       : deriveEntries(port)
     if (derived.note) process.stderr.write(`gen-versions: ${port.slug}: ${derived.note}\n`)
     manifest.ports[port.slug] = sortVersions(derived.entries, port.tagGrammar, port.tagPrefix)
-    // Not unconditionally 'stable' any more: a port with no release has no
-    // stable entry to point at, and naming one anyway is what made seven of
-    // eight ports advertise trunk as their released version.
+    // The newest final release tag, or `latest` while the port has none.
     manifest.defaultVersion[port.slug] = derived.defaultVersion
   }
 

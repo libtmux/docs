@@ -88,6 +88,42 @@ export function memberSignals(
 
 const idOf = (s: ApiSymbol) => s.publicId ?? s.id
 
+const TYPE_KINDS: ReadonlySet<ApiSymbol['kind']> = new Set(['class', 'interface', 'struct', 'union', 'enum', 'trait', 'typealias', 'exception'])
+/** A name, possibly qualified: no type arguments, unions, object types or functions. */
+const BARE_REFERENCE = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*$/
+
+/**
+ * The declaration a type alias names, when its right-hand side is one bare reference.
+ *
+ * `type ConnectOptions = ConnectionOptions` is the same type as its target, so its page
+ * shows the target's members. A reference with type arguments, a union or an object
+ * type is a new type and has none to show. The alias's own module wins over a same-named
+ * declaration elsewhere; otherwise the name must be unique in the model.
+ */
+export function aliasTarget(model: ApiModelBase, alias: ApiSymbol): ApiSymbol | undefined {
+  const reference = alias.kind === 'typealias' ? alias.type?.trim() : undefined
+  if (!reference || !BARE_REFERENCE.test(reference)) return undefined
+  const name = reference.slice(reference.lastIndexOf('.') + 1)
+  const named = model.symbols.filter((symbol) => symbol !== alias && symbol.name === name && TYPE_KINDS.has(symbol.kind))
+  const scope = alias.parent ?? alias.id.slice(0, Math.max(0, alias.id.length - alias.name.length - 1))
+  const local = named.filter((symbol) => symbol.id === `${scope}.${name}` || (scope === '' && symbol.id === name))
+  const found = local.length ? local : named
+  return found.length === 1 ? found[0] : undefined
+}
+
+/** Ports whose `type` on an alias is its right-hand side, as written, and whose alias pages are covered by tests. */
+const ALIAS_MEMBER_PORTS: ReadonlySet<string> = new Set(['ts'])
+
+/**
+ * The declaration whose members an alias page lists: an alias that owns no member and names
+ * one declaration, on a port that has opted in.
+ */
+export function aliasMembersTarget(model: ApiModelBase & { port?: string }, owner: ApiSymbol): ApiSymbol | undefined {
+  if (!ALIAS_MEMBER_PORTS.has(model.port ?? (model as { language?: string }).language ?? '')) return undefined
+  if (model.symbols.some((symbol) => symbol.parent === owner.id)) return undefined
+  return aliasTarget(model, owner)
+}
+
 /** Include explicit public re-exports without inferring access from private bases. */
 export function membersOf(model: ApiModelBase & { port?: string }, owner: ApiSymbol, signals = memberSignals(model.port ?? '')): ApiSymbol[] {
   const members = model.symbols.filter((symbol) => symbol.parent === owner.id)
@@ -97,8 +133,28 @@ export function membersOf(model: ApiModelBase & { port?: string }, owner: ApiSym
       members.push({ ...source, parent: owner.id, inheritedFrom: source.parent })
     }
   }
-  return owner.variant || owner.declarations?.some((declaration) => declaration.kind === 'constant')
+  return sortMembers(owner, members, signals)
+}
+
+const sortMembers = (owner: ApiSymbol, members: ApiSymbol[], signals: MemberSignals) =>
+  owner.variant || owner.declarations?.some((declaration) => declaration.kind === 'constant')
     ? members : members.sort(compareMembers(signals))
+
+/**
+ * The members a type's own page lists: `membersOf`, and for an alias of one declaration that
+ * declaration's members too. An alias is another name, so each keeps its id and page.
+ *
+ * Only the alias page and its Markdown export call this. The navigation tree, sidebar, search
+ * and inventories take `membersOf`, where a member has exactly one owner.
+ */
+export function pageMembersOf(model: ApiModelBase & { port?: string }, owner: ApiSymbol, signals = memberSignals(model.port ?? ''), seen = new Set<string>()): ApiSymbol[] {
+  const members = membersOf(model, owner, signals)
+  const target = members.length ? undefined : aliasMembersTarget(model, owner)
+  if (!target || seen.has(target.id)) return members
+  seen.add(owner.id)
+  // The target's members keep their own inheritance marks; an alias adds none.
+  const listed = pageMembersOf(model, target, signals, seen).map((member) => ({ ...member, parent: owner.id }))
+  return sortMembers(owner, listed, signals)
 }
 
 /**

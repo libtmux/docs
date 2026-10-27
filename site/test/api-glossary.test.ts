@@ -237,7 +237,7 @@ describe('API glossary coverage', () => {
   it('keeps MCP annotation definitions and previews in the current port, version, and preview prefix', () => {
     const annotations = MCP_GLOSSARY_GROUPS.flatMap((group) => group.terms)
     expect(annotations.map((term) => term.id).sort()).toEqual(['destructiveHint', 'idempotentHint', 'openWorldHint', 'readOnlyHint', 'title'])
-    for (const base of ['/en/cxx/latest/', '/preview-17/en/rs/stable/', '/en/julia/latest/']) {
+    for (const base of ['/en/cxx/latest/', '/preview-17/en/rs/v0.46.2/', '/en/julia/latest/']) {
       const href = `${base}mcp/reference/glossary/`
       const preview = glossaryPreview(href)
       for (const term of annotations) {

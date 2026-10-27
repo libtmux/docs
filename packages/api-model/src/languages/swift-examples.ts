@@ -20,8 +20,9 @@ interface SwiftExamples {
  *
  * The port's consumer package depends on a checkout by path; readers get the
  * same package depending on the repository at the release the documented
- * revision declares, which moves only in release commits. `exact:` is the
- * only requirement SwiftPM resolves for a prerelease.
+ * revision declares, which moves only in release commits. A final release
+ * takes `from:`, the range the package README recommends; a prerelease takes
+ * `exact:`, the only requirement SwiftPM resolves for one.
  */
 export function attachCompleteSwiftExamples(
   symbols: ApiSymbol[],
@@ -56,8 +57,11 @@ export function attachCompleteSwiftExamples(
   const pathDependency = '.package(name: "libtmux", path: "libtmux-source")'
   require(localPackage.split(pathDependency).length === 2 && localPackage.includes('package: "libtmux")'),
     'consumer package must depend on the checkout by path')
+  const prerelease = release!.includes('-')
+  const requirement = prerelease ? `exact: "${release}"` : `from: "${release}"`
+  const fetched = prerelease ? `at release ${release}` : `from release ${release}`
   const packageCode = localPackage
-    .replace(pathDependency, `.package(url: "https://github.com/${source.repo}.git", exact: "${release}")`)
+    .replace(pathDependency, `.package(url: "https://github.com/${source.repo}.git", ${requirement})`)
     .replaceAll('package: "libtmux")', `package: "${source.repo.split('/')[1]}")`)
   const names = new Set<string>()
   const targets = new Set<string>()
@@ -79,7 +83,7 @@ export function attachCompleteSwiftExamples(
     const blocks: NonNullable<DocBlock['examples']> = [
       {
         lang: 'swift',
-        intro: `${example.title}. ${example.description.replace(/\n/g, ' ')} Use Swift ${tools} or newer and tmux 3.3a or newer on Linux or macOS. In an empty directory, save this consumer package as \`Package.swift\`; SwiftPM fetches the library at release ${release}:`,
+        intro: `${example.title}. ${example.description.replace(/\n/g, ' ')} Use Swift ${tools} or newer and tmux 3.3a or newer on Linux or macOS. In an empty directory, save this consumer package as \`Package.swift\`; SwiftPM fetches the library ${fetched}:`,
         code: packageCode,
       },
       {

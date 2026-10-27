@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Validate the compiled native shell and its complete static asset closure.
-// Usage: node scripts/inject-shell.mjs --site _site [--version stable]
+// Usage: node scripts/inject-shell.mjs --site _site [--version latest]
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'

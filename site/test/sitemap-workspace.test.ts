@@ -108,7 +108,7 @@ describe('canonical workspace sitemap routes', () => {
     const run = async (name: keyof typeof hooks, value: unknown) => {
       await (hooks[name] as (input: unknown) => unknown)(value)
     }
-    const kept = ['ts/latest/workspace/guides/', 'go/latest/workspace/examples/', 'py/stable/workspace/guides/', 'ruby/latest/workspace/topics/', 'powershell/latest/guides/mcp/', 'julia/latest/reference/']
+    const kept = ['ts/latest/workspace/guides/', 'go/latest/workspace/examples/', 'py/v0.46.2/workspace/guides/', 'ruby/latest/workspace/topics/', 'powershell/latest/guides/mcp/', 'julia/latest/reference/']
     const omitted = ['ts/latest/workspace/topics/', 'go/latest/workspace/api/builder/', 'lua/latest/workspace/guides/', 'kotlin/latest/workspace/examples/', 'powershell/latest/mcp/', 'julia/latest/guides/api-overview/']
     try {
       await run('astro:config:done', { config: { site: 'https://libtmux.org', base: '/en/', trailingSlash: 'always', build: { format: 'directory' } } })

@@ -60,20 +60,20 @@ const CASES = [
   { name: 'port unrecorded', built: 0, floor: 10, omit: ['go'], mustFail: true, says: 'no floor recorded for go' },
   {
     name: 'version masks fall', built: 10, floor: 10, mustFail: true,
-    setup: (dir) => { version(dir, 'py', 'latest', 2); version(dir, 'py', 'stable', 20) },
+    setup: (dir) => { version(dir, 'py', 'latest', 2); version(dir, 'py', 'v0.46.2', 20) },
     says: 'resolution fell on py',
   },
   {
     name: 'both versions hold', built: 10, floor: 10, mustFail: false,
-    setup: (dir) => version(dir, 'py', 'stable', 10),
+    setup: (dir) => version(dir, 'py', 'v0.46.2', 10),
   },
   {
     name: 'products share version', built: 10, floor: 10, mustFail: false,
     setup: (dir) => {
       version(dir, 'py', 'latest', 6)
       version(dir, 'py', 'latest/mcp', 4)
-      version(dir, 'py', 'stable', 5)
-      version(dir, 'py', 'stable/workspace', 5)
+      version(dir, 'py', 'v0.46.2', 5)
+      version(dir, 'py', 'v0.46.2/workspace', 5)
     },
   },
 ]
@@ -129,11 +129,11 @@ const GUARDS = [
   {
     name: 'version lowering refused', built: 10, floor: 10, wantCode: 1, wantFloor: 10,
     port: 'py', says: 'refusing to lower',
-    setup: (dir) => { version(dir, 'py', 'latest', 2); version(dir, 'py', 'stable', 20) },
+    setup: (dir) => { version(dir, 'py', 'latest', 2); version(dir, 'py', 'v0.46.2', 20) },
   },
   {
     name: 'version count not added', built: 10, floor: 10, wantCode: 0, wantFloor: 10,
-    port: 'py', setup: (dir) => version(dir, 'py', 'stable', 10),
+    port: 'py', setup: (dir) => version(dir, 'py', 'v0.46.2', 10),
   },
 ]
 
