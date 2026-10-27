@@ -869,8 +869,8 @@
       "port": "csharp",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-      "sourceTree": "2bed2dca445fd23ad3f627f0c8f8eba76436aeb4",
+      "sourceRevision": "472c2bcfbda6735139849324cc109ad70300001e",
+      "sourceTree": "4ef96f46e6f60db9f55e7349ed3e5ab60315af1a",
       "files": [
         {
           "name": "app/Program.cs",
@@ -879,22 +879,17 @@
         },
         {
           "name": "app/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "5f86230b0760f6cda27f409af90150803d04dcc493c24a16ab9e6ed8bedd7f4e",
+          "clipboardSha256": "4543e328ee0a4e45f73ebb504dd01cff171a7b3ee2ccbbfb5121fd90a8db82e6"
         },
         {
           "name": "app/global.json",
-          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
-          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
-        },
-        {
-          "name": "app/NuGet.config",
-          "sha256": "e977519a23f7c0ea4961461102d6c78b91828cdc97e5e75d31758bd2bd440eb3",
-          "clipboardSha256": "8787f78945d068677587e2794dfa18753c6043ca88c900201b3a3cadb8c9ee7f"
+          "sha256": "c5a832e5d1033966cc9354ad344d64cd85c11c4f8165324f97322eeb46e336b9",
+          "clipboardSha256": "11c4f249624d34097497a6b8dbac72acadc2216d9736e033258e2397a0f945a6"
         }
       ],
       "shellRecipe": [
-        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source\ngit -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef\nexport NUGET_PACKAGES=\"$PWD/packages\"\ncd libtmux-source\ndotnet restore src/LibTmux.FSharp/LibTmux.FSharp.fsproj --locked-mode\ndotnet pack src/LibTmux/LibTmux.csproj -c Release --no-restore \\\n  -p:ContinuousIntegrationBuild=true --output artifacts/api-example-packages\ncd ../app\ndotnet restore Example.csproj --configfile NuGet.config\ndotnet build Example.csproj -c Release --no-restore --warnaserror\nexport TMUX_TMPDIR=/tmp/libtmux-dotnet-dev\nmkdir -p \"$TMUX_TMPDIR\"\nunset TMUX TMUX_PANE\ndotnet bin/Release/net8.0/Example.dll\ndotnet bin/Release/net10.0/Example.dll"
+        "# Save the files above at their displayed relative paths.\ncd app\ndotnet restore Example.csproj\ndotnet build Example.csproj -c Release --no-restore --warnaserror\nexport TMUX_TMPDIR=/tmp/libtmux-dotnet-dev\nmkdir -p \"$TMUX_TMPDIR\"\nunset TMUX TMUX_PANE\ndotnet bin/Release/net8.0/Example.dll\ndotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
         [
@@ -903,7 +898,7 @@
       ],
       "excerptSha256": "b929ea7aef844d63bdc65d28749ad6023a7ebff4762fe4f3b95cb7e7cfde3e3b",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "variants": {
@@ -916,18 +911,13 @@
             },
             {
               "name": "app/Example.csproj",
-              "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-              "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+              "sha256": "5f86230b0760f6cda27f409af90150803d04dcc493c24a16ab9e6ed8bedd7f4e",
+              "clipboardSha256": "4543e328ee0a4e45f73ebb504dd01cff171a7b3ee2ccbbfb5121fd90a8db82e6"
             },
             {
               "name": "app/global.json",
-              "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
-              "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
-            },
-            {
-              "name": "app/NuGet.config",
-              "sha256": "e977519a23f7c0ea4961461102d6c78b91828cdc97e5e75d31758bd2bd440eb3",
-              "clipboardSha256": "8787f78945d068677587e2794dfa18753c6043ca88c900201b3a3cadb8c9ee7f"
+              "sha256": "c5a832e5d1033966cc9354ad344d64cd85c11c4f8165324f97322eeb46e336b9",
+              "clipboardSha256": "11c4f249624d34097497a6b8dbac72acadc2216d9736e033258e2397a0f945a6"
             }
           ],
           "excerptSha256": "18a511f52d30e5117c9393fcf9dfd471223738f31b9cf5c5b78ce3ba54fe5488"
@@ -941,18 +931,13 @@
             },
             {
               "name": "app/Example.csproj",
-              "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-              "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+              "sha256": "5f86230b0760f6cda27f409af90150803d04dcc493c24a16ab9e6ed8bedd7f4e",
+              "clipboardSha256": "4543e328ee0a4e45f73ebb504dd01cff171a7b3ee2ccbbfb5121fd90a8db82e6"
             },
             {
               "name": "app/global.json",
-              "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
-              "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
-            },
-            {
-              "name": "app/NuGet.config",
-              "sha256": "e977519a23f7c0ea4961461102d6c78b91828cdc97e5e75d31758bd2bd440eb3",
-              "clipboardSha256": "8787f78945d068677587e2794dfa18753c6043ca88c900201b3a3cadb8c9ee7f"
+              "sha256": "c5a832e5d1033966cc9354ad344d64cd85c11c4f8165324f97322eeb46e336b9",
+              "clipboardSha256": "11c4f249624d34097497a6b8dbac72acadc2216d9736e033258e2397a0f945a6"
             }
           ],
           "excerptSha256": "8700a98b89c2f6f1937bdbc0a644a81242d56b342f496b7090e58cad622c9ea4"
@@ -966,18 +951,13 @@
             },
             {
               "name": "app/Example.csproj",
-              "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-              "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+              "sha256": "5f86230b0760f6cda27f409af90150803d04dcc493c24a16ab9e6ed8bedd7f4e",
+              "clipboardSha256": "4543e328ee0a4e45f73ebb504dd01cff171a7b3ee2ccbbfb5121fd90a8db82e6"
             },
             {
               "name": "app/global.json",
-              "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
-              "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
-            },
-            {
-              "name": "app/NuGet.config",
-              "sha256": "e977519a23f7c0ea4961461102d6c78b91828cdc97e5e75d31758bd2bd440eb3",
-              "clipboardSha256": "8787f78945d068677587e2794dfa18753c6043ca88c900201b3a3cadb8c9ee7f"
+              "sha256": "c5a832e5d1033966cc9354ad344d64cd85c11c4f8165324f97322eeb46e336b9",
+              "clipboardSha256": "11c4f249624d34097497a6b8dbac72acadc2216d9736e033258e2397a0f945a6"
             }
           ],
           "excerptSha256": "2803c70899673755433036a6539790ce05b25ad87a8c6c22a2c79840d711ae52"
@@ -988,8 +968,8 @@
       "port": "fsharp",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-      "sourceTree": "2bed2dca445fd23ad3f627f0c8f8eba76436aeb4",
+      "sourceRevision": "472c2bcfbda6735139849324cc109ad70300001e",
+      "sourceTree": "4ef96f46e6f60db9f55e7349ed3e5ab60315af1a",
       "files": [
         {
           "name": "app/Program.fs",
@@ -998,22 +978,17 @@
         },
         {
           "name": "app/Example.fsproj",
-          "sha256": "4d7013dc6880249e3a34a104c27d4a85374ccbf5468165f22677fbdf1bfbbeaf",
-          "clipboardSha256": "7e11b837ac061657bb407a4d16a3e44f089272499af7156187d10e0384fc5d0f"
+          "sha256": "b52f2c94dc6349e917eba205573e2eb361c286aadcb8261557ddcf052baca861",
+          "clipboardSha256": "ca7c5193ba23f5fa1128a7889fc08e692f6ad3d85adb85e6ab2b7851a91a6ef7"
         },
         {
           "name": "app/global.json",
-          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
-          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
-        },
-        {
-          "name": "app/NuGet.config",
-          "sha256": "e977519a23f7c0ea4961461102d6c78b91828cdc97e5e75d31758bd2bd440eb3",
-          "clipboardSha256": "8787f78945d068677587e2794dfa18753c6043ca88c900201b3a3cadb8c9ee7f"
+          "sha256": "c5a832e5d1033966cc9354ad344d64cd85c11c4f8165324f97322eeb46e336b9",
+          "clipboardSha256": "11c4f249624d34097497a6b8dbac72acadc2216d9736e033258e2397a0f945a6"
         }
       ],
       "shellRecipe": [
-        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source\ngit -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef\nexport NUGET_PACKAGES=\"$PWD/packages\"\ncd libtmux-source\ndotnet restore src/LibTmux.FSharp/LibTmux.FSharp.fsproj --locked-mode\ndotnet pack src/LibTmux/LibTmux.csproj -c Release --no-restore \\\n  -p:ContinuousIntegrationBuild=true --output artifacts/api-example-packages\ndotnet pack src/LibTmux.FSharp/LibTmux.FSharp.fsproj -c Release --no-restore \\\n  -p:ContinuousIntegrationBuild=true --output artifacts/api-example-packages\ncd ../app\ndotnet restore Example.fsproj --configfile NuGet.config\ndotnet build Example.fsproj -c Release --no-restore --warnaserror\nexport TMUX_TMPDIR=/tmp/libtmux-dotnet-dev\nmkdir -p \"$TMUX_TMPDIR\"\nunset TMUX TMUX_PANE\ndotnet bin/Release/net8.0/Example.dll\ndotnet bin/Release/net10.0/Example.dll"
+        "# Save the files above at their displayed relative paths.\ncd app\ndotnet restore Example.fsproj\ndotnet build Example.fsproj -c Release --no-restore --warnaserror\nexport TMUX_TMPDIR=/tmp/libtmux-dotnet-dev\nmkdir -p \"$TMUX_TMPDIR\"\nunset TMUX TMUX_PANE\ndotnet bin/Release/net8.0/Example.dll\ndotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
         [
@@ -1024,7 +999,7 @@
       ],
       "excerptSha256": "ad1792892d6af026eaf952694f0d5462ddd858b4dc12671773012b47320e2a97",
       "tmuxVersions": [
-        "3.2a",
+        "3.4",
         "3.7c"
       ],
       "variants": {
@@ -1037,18 +1012,13 @@
             },
             {
               "name": "app/Example.fsproj",
-              "sha256": "4d7013dc6880249e3a34a104c27d4a85374ccbf5468165f22677fbdf1bfbbeaf",
-              "clipboardSha256": "7e11b837ac061657bb407a4d16a3e44f089272499af7156187d10e0384fc5d0f"
+              "sha256": "b52f2c94dc6349e917eba205573e2eb361c286aadcb8261557ddcf052baca861",
+              "clipboardSha256": "ca7c5193ba23f5fa1128a7889fc08e692f6ad3d85adb85e6ab2b7851a91a6ef7"
             },
             {
               "name": "app/global.json",
-              "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
-              "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
-            },
-            {
-              "name": "app/NuGet.config",
-              "sha256": "e977519a23f7c0ea4961461102d6c78b91828cdc97e5e75d31758bd2bd440eb3",
-              "clipboardSha256": "8787f78945d068677587e2794dfa18753c6043ca88c900201b3a3cadb8c9ee7f"
+              "sha256": "c5a832e5d1033966cc9354ad344d64cd85c11c4f8165324f97322eeb46e336b9",
+              "clipboardSha256": "11c4f249624d34097497a6b8dbac72acadc2216d9736e033258e2397a0f945a6"
             }
           ],
           "excerptSha256": "e235031ac538f209036df425383c0279b849d7f65c2eefae63dfcccfb2ec4480"
@@ -1062,18 +1032,13 @@
             },
             {
               "name": "app/Example.fsproj",
-              "sha256": "4d7013dc6880249e3a34a104c27d4a85374ccbf5468165f22677fbdf1bfbbeaf",
-              "clipboardSha256": "7e11b837ac061657bb407a4d16a3e44f089272499af7156187d10e0384fc5d0f"
+              "sha256": "b52f2c94dc6349e917eba205573e2eb361c286aadcb8261557ddcf052baca861",
+              "clipboardSha256": "ca7c5193ba23f5fa1128a7889fc08e692f6ad3d85adb85e6ab2b7851a91a6ef7"
             },
             {
               "name": "app/global.json",
-              "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
-              "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
-            },
-            {
-              "name": "app/NuGet.config",
-              "sha256": "e977519a23f7c0ea4961461102d6c78b91828cdc97e5e75d31758bd2bd440eb3",
-              "clipboardSha256": "8787f78945d068677587e2794dfa18753c6043ca88c900201b3a3cadb8c9ee7f"
+              "sha256": "c5a832e5d1033966cc9354ad344d64cd85c11c4f8165324f97322eeb46e336b9",
+              "clipboardSha256": "11c4f249624d34097497a6b8dbac72acadc2216d9736e033258e2397a0f945a6"
             }
           ],
           "excerptSha256": "119cb2671cababa87cb2e11875c3ef4f5232d1090755fe3c4363bb294f321715"
@@ -1087,18 +1052,13 @@
             },
             {
               "name": "app/Example.fsproj",
-              "sha256": "4d7013dc6880249e3a34a104c27d4a85374ccbf5468165f22677fbdf1bfbbeaf",
-              "clipboardSha256": "7e11b837ac061657bb407a4d16a3e44f089272499af7156187d10e0384fc5d0f"
+              "sha256": "b52f2c94dc6349e917eba205573e2eb361c286aadcb8261557ddcf052baca861",
+              "clipboardSha256": "ca7c5193ba23f5fa1128a7889fc08e692f6ad3d85adb85e6ab2b7851a91a6ef7"
             },
             {
               "name": "app/global.json",
-              "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
-              "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
-            },
-            {
-              "name": "app/NuGet.config",
-              "sha256": "e977519a23f7c0ea4961461102d6c78b91828cdc97e5e75d31758bd2bd440eb3",
-              "clipboardSha256": "8787f78945d068677587e2794dfa18753c6043ca88c900201b3a3cadb8c9ee7f"
+              "sha256": "c5a832e5d1033966cc9354ad344d64cd85c11c4f8165324f97322eeb46e336b9",
+              "clipboardSha256": "11c4f249624d34097497a6b8dbac72acadc2216d9736e033258e2397a0f945a6"
             }
           ],
           "excerptSha256": "89e4d781c4499d2dc8db65da4de720e6b783289e260576777e7baf98d7ace27b"

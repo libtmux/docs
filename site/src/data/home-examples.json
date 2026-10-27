@@ -359,8 +359,8 @@
   "csharp": {
     "lang": "csharp",
     "sourceRepository": "libtmux/libtmux-dotnet",
-    "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-    "sourceTree": "2bed2dca445fd23ad3f627f0c8f8eba76436aeb4",
+    "sourceRevision": "472c2bcfbda6735139849324cc109ad70300001e",
+    "sourceTree": "4ef96f46e6f60db9f55e7349ed3e5ab60315af1a",
     "program": "app/Program.cs",
     "excerpt": {
       "startLine": 1,
@@ -377,22 +377,17 @@
       {
         "name": "app/Example.csproj",
         "lang": "xml",
-        "code": "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <PropertyGroup>\n    <OutputType>Exe</OutputType>\n    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>\n    <LangVersion>12.0</LangVersion>\n    <Nullable>enable</Nullable>\n    <ImplicitUsings>disable</ImplicitUsings>\n    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>\n    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>\n    <AnalysisLevel>10-recommended</AnalysisLevel>\n  </PropertyGroup>\n  <ItemGroup>\n    <Compile Include=\"Program.cs\" />\n    <PackageReference Include=\"LibTmux\" Version=\"[0.0.0-alpha.18]\" />\n  </ItemGroup>\n</Project>\n"
+        "code": "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <PropertyGroup>\n    <OutputType>Exe</OutputType>\n    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>\n    <LangVersion>12.0</LangVersion>\n    <Nullable>enable</Nullable>\n    <ImplicitUsings>disable</ImplicitUsings>\n    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>\n    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>\n    <AnalysisLevel>10-recommended</AnalysisLevel>\n  </PropertyGroup>\n  <ItemGroup>\n    <Compile Include=\"Program.cs\" />\n    <PackageReference Include=\"LibTmux\" Version=\"[0.1.0]\" />\n  </ItemGroup>\n</Project>\n"
       },
       {
         "name": "app/global.json",
         "lang": "json",
-        "code": "{\n  \"sdk\": {\n    \"version\": \"10.0.302\",\n    \"rollForward\": \"disable\",\n    \"allowPrerelease\": false\n  },\n  \"test\": {\n    \"runner\": \"Microsoft.Testing.Platform\"\n  }\n}\n"
-      },
-      {
-        "name": "app/NuGet.config",
-        "lang": "xml",
-        "code": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<configuration>\n  <packageSources>\n    <clear />\n    <add key=\"libtmux-source\" value=\"../libtmux-source/artifacts/api-example-packages\" />\n    <add key=\"nuget.org\" value=\"https://api.nuget.org/v3/index.json\" />\n  </packageSources>\n  <packageSourceMapping>\n    <clear />\n    <packageSource key=\"libtmux-source\">\n      <package pattern=\"LibTmux\" />\n      <package pattern=\"LibTmux.*\" />\n    </packageSource>\n    <packageSource key=\"nuget.org\">\n      <package pattern=\"*\" />\n    </packageSource>\n  </packageSourceMapping>\n</configuration>\n"
+        "code": "{\n  \"sdk\": {\n    \"version\": \"10.0.303\",\n    \"rollForward\": \"disable\",\n    \"allowPrerelease\": false\n  },\n  \"test\": {\n    \"runner\": \"Microsoft.Testing.Platform\"\n  }\n}\n"
       }
     ],
-    "prerequisites": ".NET SDK 10.0.302, .NET 8 and 10 runtimes, tmux on Linux/macOS",
+    "prerequisites": ".NET SDK 10.0.303, .NET 8 and 10 runtimes, tmux on Linux/macOS",
     "commands": [
-      "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source\ngit -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef\nexport NUGET_PACKAGES=\"$PWD/packages\"\ncd libtmux-source\ndotnet restore src/LibTmux.FSharp/LibTmux.FSharp.fsproj --locked-mode\ndotnet pack src/LibTmux/LibTmux.csproj -c Release --no-restore \\\n  -p:ContinuousIntegrationBuild=true --output artifacts/api-example-packages\ncd ../app\ndotnet restore Example.csproj --configfile NuGet.config\ndotnet build Example.csproj -c Release --no-restore --warnaserror\nexport TMUX_TMPDIR=/tmp/libtmux-dotnet-dev\nmkdir -p \"$TMUX_TMPDIR\"\nunset TMUX TMUX_PANE\ndotnet bin/Release/net8.0/Example.dll\ndotnet bin/Release/net10.0/Example.dll"
+      "# Save the files above at their displayed relative paths.\ncd app\ndotnet restore Example.csproj\ndotnet build Example.csproj -c Release --no-restore --warnaserror\nexport TMUX_TMPDIR=/tmp/libtmux-dotnet-dev\nmkdir -p \"$TMUX_TMPDIR\"\nunset TMUX TMUX_PANE\ndotnet bin/Release/net8.0/Example.dll\ndotnet bin/Release/net10.0/Example.dll"
     ],
     "expectedOutput": "hello-from-libtmux\n",
     "variants": {
@@ -404,8 +399,8 @@
   "fsharp": {
     "lang": "fsharp",
     "sourceRepository": "libtmux/libtmux-dotnet",
-    "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-    "sourceTree": "2bed2dca445fd23ad3f627f0c8f8eba76436aeb4",
+    "sourceRevision": "472c2bcfbda6735139849324cc109ad70300001e",
+    "sourceTree": "4ef96f46e6f60db9f55e7349ed3e5ab60315af1a",
     "program": "app/Program.fs",
     "excerpt": {
       "startLine": 1,
@@ -422,22 +417,17 @@
       {
         "name": "app/Example.fsproj",
         "lang": "xml",
-        "code": "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <PropertyGroup>\n    <OutputType>Exe</OutputType>\n    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>\n    <LangVersion>10.0</LangVersion>\n    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>\n    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>\n    <DisableImplicitLibraryPacksFolder>true</DisableImplicitLibraryPacksFolder>\n  </PropertyGroup>\n  <ItemGroup>\n    <Compile Include=\"Program.fs\" />\n    <PackageReference Include=\"FSharp.Core\" Version=\"[10.1.302]\" />\n    <PackageReference Include=\"LibTmux.FSharp\" Version=\"[0.0.0-alpha.18]\" />\n  </ItemGroup>\n</Project>\n"
+        "code": "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <PropertyGroup>\n    <OutputType>Exe</OutputType>\n    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>\n    <LangVersion>10.0</LangVersion>\n    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>\n    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>\n    <DisableImplicitLibraryPacksFolder>true</DisableImplicitLibraryPacksFolder>\n  </PropertyGroup>\n  <ItemGroup>\n    <Compile Include=\"Program.fs\" />\n    <PackageReference Include=\"FSharp.Core\" Version=\"[10.1.303]\" />\n    <PackageReference Include=\"LibTmux.FSharp\" Version=\"[0.1.0]\" />\n  </ItemGroup>\n</Project>\n"
       },
       {
         "name": "app/global.json",
         "lang": "json",
-        "code": "{\n  \"sdk\": {\n    \"version\": \"10.0.302\",\n    \"rollForward\": \"disable\",\n    \"allowPrerelease\": false\n  },\n  \"test\": {\n    \"runner\": \"Microsoft.Testing.Platform\"\n  }\n}\n"
-      },
-      {
-        "name": "app/NuGet.config",
-        "lang": "xml",
-        "code": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<configuration>\n  <packageSources>\n    <clear />\n    <add key=\"libtmux-source\" value=\"../libtmux-source/artifacts/api-example-packages\" />\n    <add key=\"nuget.org\" value=\"https://api.nuget.org/v3/index.json\" />\n  </packageSources>\n  <packageSourceMapping>\n    <clear />\n    <packageSource key=\"libtmux-source\">\n      <package pattern=\"LibTmux\" />\n      <package pattern=\"LibTmux.*\" />\n    </packageSource>\n    <packageSource key=\"nuget.org\">\n      <package pattern=\"*\" />\n    </packageSource>\n  </packageSourceMapping>\n</configuration>\n"
+        "code": "{\n  \"sdk\": {\n    \"version\": \"10.0.303\",\n    \"rollForward\": \"disable\",\n    \"allowPrerelease\": false\n  },\n  \"test\": {\n    \"runner\": \"Microsoft.Testing.Platform\"\n  }\n}\n"
       }
     ],
-    "prerequisites": ".NET SDK 10.0.302, .NET 8 and 10 runtimes, tmux on Linux/macOS",
+    "prerequisites": ".NET SDK 10.0.303, .NET 8 and 10 runtimes, tmux 3.4 or newer on Linux/macOS",
     "commands": [
-      "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source\ngit -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef\nexport NUGET_PACKAGES=\"$PWD/packages\"\ncd libtmux-source\ndotnet restore src/LibTmux.FSharp/LibTmux.FSharp.fsproj --locked-mode\ndotnet pack src/LibTmux/LibTmux.csproj -c Release --no-restore \\\n  -p:ContinuousIntegrationBuild=true --output artifacts/api-example-packages\ndotnet pack src/LibTmux.FSharp/LibTmux.FSharp.fsproj -c Release --no-restore \\\n  -p:ContinuousIntegrationBuild=true --output artifacts/api-example-packages\ncd ../app\ndotnet restore Example.fsproj --configfile NuGet.config\ndotnet build Example.fsproj -c Release --no-restore --warnaserror\nexport TMUX_TMPDIR=/tmp/libtmux-dotnet-dev\nmkdir -p \"$TMUX_TMPDIR\"\nunset TMUX TMUX_PANE\ndotnet bin/Release/net8.0/Example.dll\ndotnet bin/Release/net10.0/Example.dll"
+      "# Save the files above at their displayed relative paths.\ncd app\ndotnet restore Example.fsproj\ndotnet build Example.fsproj -c Release --no-restore --warnaserror\nexport TMUX_TMPDIR=/tmp/libtmux-dotnet-dev\nmkdir -p \"$TMUX_TMPDIR\"\nunset TMUX TMUX_PANE\ndotnet bin/Release/net8.0/Example.dll\ndotnet bin/Release/net10.0/Example.dll"
     ],
     "expectedOutput": "other sessions: web, worker\nwait found: true\nrun: exit 3, output [\"ok\"]\n",
     "variants": {

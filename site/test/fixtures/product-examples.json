@@ -362,12 +362,12 @@
     {
       "port": "csharp",
       "language": "csharp",
-      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+      "sourceRevision": "472c2bcfbda6735139849324cc109ad70300001e",
       "sourceRepository": "libtmux/libtmux-dotnet",
       "files": [
         {
           "name": "McpExample.csproj",
-          "sha256": "a17e9ff530230a986888f38654225c5aaae0a6bff2ddc0c40e5ef312d3d3d370"
+          "sha256": "b0a6b06aa978bc41310fb31181445fdc77246efebbef414d2a9308f486f4f21c"
         },
         {
           "name": "Program.cs",
@@ -377,29 +377,29 @@
       "toolchain": [
         ".NET SDK 10.0.400; .NET 10 runtime",
         "ModelContextProtocol 2.2.0",
-        "LibTmux and LibTmux.Mcp 0.0.0-alpha.20"
+        "LibTmux and LibTmux.Mcp 0.1.0"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/csharp/mcp/examples/inspect-sessions",
       "shellRecipe": [
         "mkdir inspect-mcp-sessions",
         "cd inspect-mcp-sessions",
-        "dotnet tool install \\\n    --tool-path .tools \\\n    --version 0.0.0-alpha.20 \\\n    LibTmux.Mcp",
+        "dotnet tool install \\\n    --tool-path .tools \\\n    --version 0.1.0 \\\n    LibTmux.Mcp",
         "dotnet run --project McpExample.csproj --no-launch-profile"
       ]
     },
     {
       "port": "csharp",
       "language": "csharp",
-      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+      "sourceRevision": "472c2bcfbda6735139849324cc109ad70300001e",
       "sourceRepository": "libtmux/libtmux-dotnet",
       "files": [
         {
           "name": "McpExample.csproj",
-          "sha256": "a17e9ff530230a986888f38654225c5aaae0a6bff2ddc0c40e5ef312d3d3d370"
+          "sha256": "b0a6b06aa978bc41310fb31181445fdc77246efebbef414d2a9308f486f4f21c"
         },
         {
           "name": "Program.cs",
@@ -409,17 +409,17 @@
       "toolchain": [
         ".NET SDK 10.0.400; .NET 10 runtime",
         "ModelContextProtocol 2.2.0",
-        "LibTmux and LibTmux.Mcp 0.0.0-alpha.20"
+        "LibTmux and LibTmux.Mcp 0.1.0"
       ],
       "tmux": [
-        "3.2a",
+        "3.4",
         "3.7c"
       ],
       "page": "ports/csharp/mcp/examples/run-command",
       "shellRecipe": [
         "mkdir run-mcp-command",
         "cd run-mcp-command",
-        "dotnet tool install \\\n    --tool-path .tools \\\n    --version 0.0.0-alpha.20 \\\n    LibTmux.Mcp",
+        "dotnet tool install \\\n    --tool-path .tools \\\n    --version 0.1.0 \\\n    LibTmux.Mcp",
         "dotnet run --project McpExample.csproj --no-launch-profile"
       ]
     },
