@@ -298,7 +298,7 @@
     {
       "port": "scala",
       "language": "scala",
-      "sourceRevision": "85ebf6955e56703c5be74e2afd34a18309044741",
+      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
       "sourceRepository": "libtmux/libtmux-java",
       "toolchain": [
         "JDK 25.0.3",
@@ -306,7 +306,7 @@
       ],
       "page": "ports/scala/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 85ebf6955e56703c5be74e2afd34a18309044741 &&\n  sh run.sh ./libtmux-source/gradlew --project-dir . run --console=plain --max-workers=2"
+        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59 &&\n  sh run.sh ./libtmux-source/gradlew --project-dir . run --console=plain --max-workers=2"
       ],
       "expectedOutput": "work",
       "files": [
@@ -316,11 +316,11 @@
         },
         {
           "name": "build.gradle.kts",
-          "sha256": "745dadde4e2fff287d2bb57ee8b2679d19921af02745857b9a9a0c62c1dc04e9"
+          "sha256": "8b263bf130f131ebbabc1addd90642e0b5f7c83075adeadcd1038fcdde86cb05"
         },
         {
           "name": "settings.gradle.kts",
-          "sha256": "84f6f8c1760984676ed15761a8838fba725ee18fee25a28b8cc3f94ad3e24b99"
+          "sha256": "8a9a1cef4b025e20741219b949c5a591444f9f3b850534f1cc5b2f9164b9c126"
         },
         {
           "name": "gradle.properties",
@@ -332,7 +332,7 @@
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },

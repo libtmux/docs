@@ -749,18 +749,18 @@
       "port": "scala",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-java",
-      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
-      "sourceTree": "342c76ca1ad7257b3655c7a47d7258b486b26975",
+      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
+      "sourceTree": "546ecf68a8a31e0503e18323ba82ce3a490490ab",
       "files": [
         {
           "name": "build.gradle.kts",
-          "sha256": "3a40bd1fad7697618812767784a0971b03184f5b23f811cc0cd3f0c917ff27fb",
-          "clipboardSha256": "557ed4083bb64e48c6f88ac3f5ae819f8e422bc35b5545fb8dd5e62912641cc1"
+          "sha256": "25cf12ecf6b6edda898a18fe2ae7bd9341952dbcb943513582b79e5da226caf9",
+          "clipboardSha256": "027b815eb60ff8d6a2ff4a4e19f60a20670807cf5da6c3242645fa8855cf7745"
         },
         {
           "name": "settings.gradle.kts",
-          "sha256": "bff153085e5944d96e7efc63bc5f8f281013c2d410c05eabb4faf09161d4d806",
-          "clipboardSha256": "510b2e425ae160ae4d4abd9ab911b5d8d6b0e194c518f6c5cb5dfa8501cf4a46"
+          "sha256": "9ef47986c06cc0ec9eff93a196500d6cd2bcf3cb43878de4cef410da792667d7",
+          "clipboardSha256": "558639ca13041c333e86fc82975aff130cfcd0cc910a6965d02eb769c9db9e7c"
         },
         {
           "name": "gradle.properties",
@@ -774,7 +774,7 @@
         }
       ],
       "shellRecipe": [
-        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach a0ecbc16da00140e2520462d478a2af470878272\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=Main\nSHELL=/bin/sh build/install/api-example/bin/api-example"
+        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach 5c181887918351119bfdb3a046719fa792048e59\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=Main\nSHELL=/bin/sh build/install/api-example/bin/api-example"
       ],
       "expectedOutputs": [
         [
@@ -784,7 +784,7 @@
       ],
       "excerptSha256": "0d52e72c9363570f0e992167f486298ea1312a467d4de38ecb1f54d4b0136195",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "variants": {
@@ -792,13 +792,13 @@
           "files": [
             {
               "name": "build.gradle.kts",
-              "sha256": "3a40bd1fad7697618812767784a0971b03184f5b23f811cc0cd3f0c917ff27fb",
-              "clipboardSha256": "557ed4083bb64e48c6f88ac3f5ae819f8e422bc35b5545fb8dd5e62912641cc1"
+              "sha256": "25cf12ecf6b6edda898a18fe2ae7bd9341952dbcb943513582b79e5da226caf9",
+              "clipboardSha256": "027b815eb60ff8d6a2ff4a4e19f60a20670807cf5da6c3242645fa8855cf7745"
             },
             {
               "name": "settings.gradle.kts",
-              "sha256": "bff153085e5944d96e7efc63bc5f8f281013c2d410c05eabb4faf09161d4d806",
-              "clipboardSha256": "510b2e425ae160ae4d4abd9ab911b5d8d6b0e194c518f6c5cb5dfa8501cf4a46"
+              "sha256": "9ef47986c06cc0ec9eff93a196500d6cd2bcf3cb43878de4cef410da792667d7",
+              "clipboardSha256": "558639ca13041c333e86fc82975aff130cfcd0cc910a6965d02eb769c9db9e7c"
             },
             {
               "name": "gradle.properties",
@@ -817,13 +817,13 @@
           "files": [
             {
               "name": "build.gradle.kts",
-              "sha256": "3a40bd1fad7697618812767784a0971b03184f5b23f811cc0cd3f0c917ff27fb",
-              "clipboardSha256": "557ed4083bb64e48c6f88ac3f5ae819f8e422bc35b5545fb8dd5e62912641cc1"
+              "sha256": "25cf12ecf6b6edda898a18fe2ae7bd9341952dbcb943513582b79e5da226caf9",
+              "clipboardSha256": "027b815eb60ff8d6a2ff4a4e19f60a20670807cf5da6c3242645fa8855cf7745"
             },
             {
               "name": "settings.gradle.kts",
-              "sha256": "bff153085e5944d96e7efc63bc5f8f281013c2d410c05eabb4faf09161d4d806",
-              "clipboardSha256": "510b2e425ae160ae4d4abd9ab911b5d8d6b0e194c518f6c5cb5dfa8501cf4a46"
+              "sha256": "9ef47986c06cc0ec9eff93a196500d6cd2bcf3cb43878de4cef410da792667d7",
+              "clipboardSha256": "558639ca13041c333e86fc82975aff130cfcd0cc910a6965d02eb769c9db9e7c"
             },
             {
               "name": "gradle.properties",
@@ -842,13 +842,13 @@
           "files": [
             {
               "name": "build.gradle.kts",
-              "sha256": "3a40bd1fad7697618812767784a0971b03184f5b23f811cc0cd3f0c917ff27fb",
-              "clipboardSha256": "557ed4083bb64e48c6f88ac3f5ae819f8e422bc35b5545fb8dd5e62912641cc1"
+              "sha256": "25cf12ecf6b6edda898a18fe2ae7bd9341952dbcb943513582b79e5da226caf9",
+              "clipboardSha256": "027b815eb60ff8d6a2ff4a4e19f60a20670807cf5da6c3242645fa8855cf7745"
             },
             {
               "name": "settings.gradle.kts",
-              "sha256": "bff153085e5944d96e7efc63bc5f8f281013c2d410c05eabb4faf09161d4d806",
-              "clipboardSha256": "510b2e425ae160ae4d4abd9ab911b5d8d6b0e194c518f6c5cb5dfa8501cf4a46"
+              "sha256": "9ef47986c06cc0ec9eff93a196500d6cd2bcf3cb43878de4cef410da792667d7",
+              "clipboardSha256": "558639ca13041c333e86fc82975aff130cfcd0cc910a6965d02eb769c9db9e7c"
             },
             {
               "name": "gradle.properties",

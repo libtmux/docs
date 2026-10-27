@@ -90,6 +90,12 @@ export const OTHER_FLOORS = [
     near: /Managed control/,
     why: 'the managed control program; libtmux 0.1.0 refuses managed control below tmux 3.7 (ControlAcquisition.supports)',
   },
+  {
+    path: 'site/src/content/docs/ports/scala/concepts/transports.md',
+    version: '3.7',
+    near: /Managed control/,
+    why: 'the managed control program; libtmux 0.1.0 refuses managed control below tmux 3.7 (ControlAcquisition.supports)',
+  },
 ]
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
