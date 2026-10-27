@@ -495,7 +495,7 @@
     {
       "port": "elixir",
       "language": "elixir",
-      "sourceRevision": "b72452c198917433229bdc266a68c163541b6127",
+      "sourceRevision": "cac4252bfc52069980d47db2b7803dc9b33f36f1",
       "sourceRepository": "libtmux/libtmux-elixir",
       "toolchain": [
         "Elixir 1.20.4",
@@ -513,7 +513,7 @@
       "files": [
         {
           "name": "connect.exs",
-          "sha256": "75ce60ad895fd506eabf88108abd51d3af2f882d62d035fbacd9ff9c90c43e62"
+          "sha256": "3e31d5064fb69384b1a618275ae0f027f9515c52cf1de2555c87fce022990b8e"
         },
         {
           "name": "run.sh",
