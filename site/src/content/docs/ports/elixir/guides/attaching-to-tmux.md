@@ -22,8 +22,9 @@ covers interactive attachment and detaching.
 
 Save the complete program as `connect.exs`. The environment variable
 `LIBTMUX_SOCKET_PATH` selects the existing server. The launcher below sets it
-to a private socket for trying the example. The first line installs the
-released 0.1 series from Hex.
+to a private socket for trying the example. The first line installs libtmux
+from Hex. Its requirement, `~> 0.1`, accepts any release from 0.1.0 up to, but
+not including, 1.0.0.
 
 ```elixir title="connect.exs"
 Mix.install([{:libtmux, "~> 0.1"}])
