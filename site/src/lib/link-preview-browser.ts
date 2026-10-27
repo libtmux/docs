@@ -4,6 +4,9 @@ import { paintCard, previewLabel } from './link-preview-card'
 export { linkPreviewTarget } from './link-preview-paint'
 
 const cache = new Map<string, LinkPreview>()
+/** How long a pointer or focus rests on a link before its card opens. */
+const PREVIEW_DWELL_MS = 180
+const GLOSSARY_DWELL_MS = 1000
 let dispose = () => {}
 
 /** Keep keyword help and fetched previews inside the same viewport gutter. */
@@ -121,7 +124,9 @@ export function initLinkPreviews() {
     if (current === link) return
     // A new target owns the intent immediately, even while its dwell timer runs.
     close()
-    timer = setTimeout(() => { void show(link) }, 180)
+    // A glossary card would cover the prose around its link, so it waits until the reader stops on it.
+    const dwell = linkPreviewTarget(link.href, location.origin)?.glossary ? GLOSSARY_DWELL_MS : PREVIEW_DWELL_MS
+    timer = setTimeout(() => { void show(link) }, dwell)
   }
   const dismissUnused = () => {
     clearTimeout(closeTimer)
@@ -161,7 +166,10 @@ export function initLinkPreviews() {
     place()
   }, { signal })
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && (current || panel.matches(':popover-open'))) { event.preventDefault(); close(pinned) }
+    if (event.key !== 'Escape') return
+    // A card still waiting out its dwell is cancelled too; only an open one consumes the key.
+    clearTimeout(timer)
+    if (current || panel.matches(':popover-open')) { event.preventDefault(); close(pinned) }
   }, { signal, capture: true })
   panel.addEventListener('toggle', (event) => {
     if ((event as ToggleEvent).newState === 'closed' && shown && !panel.matches(':popover-open')) close()

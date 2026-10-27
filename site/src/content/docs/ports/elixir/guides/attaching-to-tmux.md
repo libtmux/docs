@@ -23,10 +23,10 @@ covers interactive attachment and detaching.
 Save the complete program as `connect.exs`. The environment variable
 `LIBTMUX_SOCKET_PATH` selects the existing server. The launcher below sets it
 to a private socket for trying the example. The first line installs the
-published alpha from Hex.
+released 0.1 series from Hex.
 
 ```elixir title="connect.exs"
-Mix.install([{:libtmux, "== 0.0.1-alpha.1"}])
+Mix.install([{:libtmux, "~> 0.1"}])
 
 alias LibTmux.{Selection, Server, Snapshot}
 
@@ -106,5 +106,5 @@ between those operations. Handle the creation error as well as the lookup.
 [Capture a pane and read it](../../examples/capture-and-read/) is a complete
 program that runs against an isolated server.
 
-The [library source revision](https://github.com/libtmux/libtmux-elixir/tree/b72452c198917433229bdc266a68c163541b6127)
+The [library source revision](https://github.com/libtmux/libtmux-elixir/tree/cac4252bfc52069980d47db2b7803dc9b33f36f1)
 records the implementation used by this example.

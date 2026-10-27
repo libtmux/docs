@@ -16,11 +16,11 @@ go to stderr, which the client should retain in its server log.
 ## Install the command
 
 Use Go 1.26 or newer and tmux 3.3a or newer on Linux, macOS, or WSL. Install the
-[published MCP module](https://github.com/libtmux/libtmux-go/tree/6e7420927f4cb717fe089a710328e44e8d551025/mcp):
+[published MCP module](https://github.com/libtmux/libtmux-go/tree/59aed98c06984e2f8613fd1df6ec8943f5f1eed3/mcp):
 
 ```console
 $ go install \
-    github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp@v0.0.1-alpha.12
+    github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp@v0.1.0
 ```
 
 Make the Go installation directory available in the MCP client's `PATH`, or
@@ -32,7 +32,7 @@ Check the executable the client will launch:
 $ libtmux-mcp -version
 ```
 
-The installed release reports `libtmux-mcp v0.0.1-alpha.12`. The
+The installed release reports `libtmux-mcp v0.1.0`. The
 [complete SDK example](../../examples/inspect-sessions/) installs this same
 release into a local `.tools` directory and supplies the client code.
 

@@ -2,6 +2,8 @@
 html[data-native-shell] {
   font-size: 100%;
   --native-header-height: calc(3.25rem + 1px);
+  /* NativeSphinxScript writes the measured pinned class row height on each class; 0px until it does. */
+  --native-class-row-height: 0px;
   scroll-padding-top: calc(var(--native-header-height) + 1.25rem);
   /* Native Tailwind defaults must not replace the shared downloaded faces. */
   --font-sans: var(--font-ibm-plex-sans);

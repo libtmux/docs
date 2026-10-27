@@ -13,17 +13,17 @@ Configure your MCP client to launch `libtmux-mcp`. The executable selects one
 tmux socket and its tools at startup, then serves MCP over stdin and stdout.
 Use Linux, macOS, or WSL with tmux 3.3a or newer and a compatible .NET runtime.
 
-The examples here use the [published package](https://www.nuget.org/packages/LibTmux.Mcp/0.0.0-alpha.20)
-and its [source contract](https://github.com/libtmux/libtmux-dotnet/blob/ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc/src/LibTmux.Mcp/README.md).
+The examples here use the [published package](https://www.nuget.org/packages/LibTmux.Mcp/0.1.0)
+and its [source contract](https://github.com/libtmux/libtmux-dotnet/blob/472c2bcfbda6735139849324cc109ad70300001e/src/LibTmux.Mcp/README.md).
 
 ## Install the tool
 
-Install the pinned alpha release with the .NET SDK:
+Install the pinned release with the .NET SDK:
 
 ```console
 $ dotnet tool install \
     --global \
-    --version 0.0.0-alpha.20 \
+    --version 0.1.0 \
     LibTmux.Mcp
 ```
 
@@ -114,7 +114,7 @@ Restart the MCP connection after changing its environment. Changing a
 terminal's environment does not reconfigure a server process already running
 inside another client.
 
-The [startup implementation](https://github.com/libtmux/libtmux-dotnet/blob/ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc/src/LibTmux.Mcp/Policy/McpStartup.cs)
+The [startup implementation](https://github.com/libtmux/libtmux-dotnet/blob/472c2bcfbda6735139849324cc109ad70300001e/src/LibTmux.Mcp/Policy/McpStartup.cs)
 defines socket selection and ownership. The
-[tool-selection implementation](https://github.com/libtmux/libtmux-dotnet/blob/ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc/src/LibTmux.Mcp/Policy/CapabilitySelection.cs)
+[tool-selection implementation](https://github.com/libtmux/libtmux-dotnet/blob/472c2bcfbda6735139849324cc109ad70300001e/src/LibTmux.Mcp/Policy/CapabilitySelection.cs)
 defines registration and filter precedence.

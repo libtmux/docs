@@ -16,28 +16,25 @@ server. Use a POSIX host with tmux on `PATH` and JDK 25.
 
 ## Create the project
 
-In a new directory, fetch the source revision used by this documentation:
+In a new directory, fetch the 0.1.0 release, which supplies the Gradle wrapper:
 
 ```console
 $ mkdir java-workspace-example
 $ cd java-workspace-example
 $ git init -q libtmux-source
 $ git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-java.git
-$ git -C libtmux-source fetch --depth=1 origin 842228310449e879ebcaa3f910597757c9dbffd6
+$ git -C libtmux-source fetch --depth=1 origin 5c181887918351119bfdb3a046719fa792048e59
 $ git -C libtmux-source checkout --detach FETCH_HEAD
 $ mkdir -p src/main/java
 ```
 
-Save the following settings file. The included build supplies the workspace
-module and its core dependency from the selected source. Its toolchain resolver
-downloads the Temurin 21 compiler for those libraries when needed.
+Save the following settings file:
 
 ```kotlin title="settings.gradle.kts"
 rootProject.name = "workspace-example"
-includeBuild("libtmux-source")
 ```
 
-Save the following build file:
+Save the following build file. Gradle resolves the workspace module and its core dependency from Maven Central:
 
 ```kotlin title="build.gradle.kts"
 plugins {
@@ -49,7 +46,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.libtmux:libtmux-workspace:0.0.1-alpha.12-SNAPSHOT")
+    implementation("io.github.libtmux:libtmux-workspace:0.1.0")
 }
 
 java {
@@ -128,4 +125,4 @@ those programs to finish. Keep the session running instead of calling
 <a id="where-this-comes-from"></a>
 <a id="source-inclusion"></a>
 
-[Workspace API source](https://github.com/libtmux/libtmux-java/tree/842228310449e879ebcaa3f910597757c9dbffd6/libtmux-workspace/src/main/java/io/github/libtmux/workspace)
+[Workspace API source](https://github.com/libtmux/libtmux-java/tree/5c181887918351119bfdb3a046719fa792048e59/libtmux-workspace/src/main/java/io/github/libtmux/workspace)

@@ -105,7 +105,6 @@ Save `settings.gradle.kts` beside `Capture.kt`.
 
 ```kotlin title="settings.gradle.kts"
 rootProject.name = "capture"
-includeBuild("libtmux-source")
 ```
 
 Save `build.gradle.kts` beside `Capture.kt`.
@@ -118,7 +117,7 @@ plugins {
 
 repositories { mavenCentral() }
 dependencies {
-    implementation("io.github.libtmux:libtmux-kotlin:0.0.1-alpha.17-SNAPSHOT")
+    implementation("io.github.libtmux:libtmux-kotlin:0.1.0")
 }
 kotlin {
     jvmToolchain(25)
@@ -135,11 +134,11 @@ kotlin.daemon.jvmargs=-Xmx2g
 org.gradle.workers.max=2
 ```
 
-The commands pin the library revision used to run this program.
+The commands fetch the Gradle wrapper from the 0.1.0 release; Gradle resolves the library from Maven Central.
 
 ```console
 $ git clone https://github.com/libtmux/libtmux-java libtmux-source &&
-  git -C libtmux-source checkout 85ebf6955e56703c5be74e2afd34a18309044741 &&
+  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59 &&
   ./libtmux-source/gradlew --project-dir . run --console=plain --max-workers=2
 ```
 
@@ -148,4 +147,4 @@ $ git clone https://github.com/libtmux/libtmux-java libtmux-source &&
 ## Where this comes from
 
 The displayed files were compiled or loaded with their native tools and run
-on Linux with tmux 3.2a and 3.7c. The rendering checks preserve those file bytes.
+on Linux with tmux 3.3a and 3.7c. The rendering checks preserve those file bytes.

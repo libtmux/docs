@@ -16,8 +16,8 @@ client. The program stops its owned server when the request succeeds or fails.
 ## Run the example
 
 Use the .NET 10 SDK and tmux 3.3a or newer on Linux, macOS, or WSL. The project
-pins the library and tool to the same published alpha release. The package
-source is [libtmux-dotnet at the documented release](https://github.com/libtmux/libtmux-dotnet/tree/ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc).
+pins the library and tool to the same published release, 0.1.0. The package
+source is [libtmux-dotnet at the documented release](https://github.com/libtmux/libtmux-dotnet/tree/472c2bcfbda6735139849324cc109ad70300001e).
 
 Create an empty directory:
 
@@ -34,7 +34,7 @@ Install the MCP executable into that directory:
 ```console
 $ dotnet tool install \
     --tool-path .tools \
-    --version 0.0.0-alpha.20 \
+    --version 0.1.0 \
     LibTmux.Mcp
 ```
 
@@ -49,7 +49,7 @@ Save the project file:
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="LibTmux" Version="0.0.0-alpha.20" />
+    <PackageReference Include="LibTmux" Version="0.1.0" />
     <PackageReference Include="ModelContextProtocol" Version="2.2.0" />
   </ItemGroup>
 </Project>
@@ -248,5 +248,5 @@ it prints the retained directory for inspection.
 
 The [connection guide](../../guides/) covers connecting to an existing server.
 The [tool reference](../../tools/list_sessions/) describes the session fields,
-and the [owned-server implementation](https://github.com/libtmux/libtmux-dotnet/blob/ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc/src/LibTmux/Server.Lifecycle.cs)
+and the [owned-server implementation](https://github.com/libtmux/libtmux-dotnet/blob/472c2bcfbda6735139849324cc109ad70300001e/src/LibTmux/Server.Lifecycle.cs)
 defines daemon ownership and cleanup.

@@ -20,27 +20,24 @@ For a client configured to launch the server itself, use the
 ## Create the project
 
 Use JDK 25, Git, tmux 3.3a or newer, and a Unix host with `env -u`. Create an
-empty project and fetch the source revision used by this example:
+empty project and fetch the 0.1.0 release, which supplies the Gradle wrapper:
 
 ```console
 $ mkdir java-mcp-example && cd java-mcp-example && \
     git init libtmux-source && \
     git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-java.git && \
-    git -C libtmux-source fetch --depth=1 origin 842228310449e879ebcaa3f910597757c9dbffd6 && \
+    git -C libtmux-source fetch --depth=1 origin 5c181887918351119bfdb3a046719fa792048e59 && \
     git -C libtmux-source checkout --detach FETCH_HEAD && \
     mkdir -p src/main/java
 ```
 
-Save the settings file. The included build supplies the MCP and core libraries
-from the same selected source. Its toolchain resolver downloads the Temurin 21
-compiler for those libraries when needed.
+Save the settings file:
 
 ```kotlin title="settings.gradle.kts"
 rootProject.name = "mcp-example"
-includeBuild("libtmux-source")
 ```
 
-Save the build file. Its SDK and JSON dependencies match the selected library:
+Save the build file. Gradle resolves the MCP library from Maven Central. Its SDK and JSON dependencies match that release:
 
 ```kotlin title="build.gradle.kts"
 plugins {
@@ -52,7 +49,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.libtmux:libtmux-mcp:0.0.1-alpha.12-SNAPSHOT")
+    implementation("io.github.libtmux:libtmux-mcp:0.1.0")
     implementation("io.modelcontextprotocol.sdk:mcp-json-jackson2:2.0.1")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.21.5")
     runtimeOnly("org.slf4j:slf4j-nop:2.0.17")
@@ -184,5 +181,5 @@ to discover a pane and call `run_shell_command`. Read the typed exit status
 and output. Use `capture_since` for subsequent screen changes; a prompt redraw
 can arrive after command completion.
 
-[Server entry points](https://github.com/libtmux/libtmux-java/blob/842228310449e879ebcaa3f910597757c9dbffd6/libtmux-mcp/src/main/java/io/github/libtmux/mcp/TmuxMcpServer.java);
-[upstream MCP tests](https://github.com/libtmux/libtmux-java/tree/842228310449e879ebcaa3f910597757c9dbffd6/libtmux-mcp/src/test).
+[Server entry points](https://github.com/libtmux/libtmux-java/blob/5c181887918351119bfdb3a046719fa792048e59/libtmux-mcp/src/main/java/io/github/libtmux/mcp/TmuxMcpServer.java);
+[upstream MCP tests](https://github.com/libtmux/libtmux-java/tree/5c181887918351119bfdb3a046719fa792048e59/libtmux-mcp/src/test).

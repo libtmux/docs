@@ -173,6 +173,28 @@ const title = () => win.document.querySelector('[data-preview-title]')!.textCont
 const escape = () => win.document.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
 
 describe('preview lifecycle', () => {
+  it('waits a second over a glossary link and the usual moment over any other', async () => {
+    win.document.body.insertAdjacentHTML('afterbegin', '<a id="g" href="/en/ts/latest/mcp/reference/glossary/">glossary</a>')
+    hover('g'); await vi.advanceTimersByTimeAsync(999)
+    expect(opened).toBe(false)
+    expect(requests).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(1); await settle()
+    expect(opened).toBe(true)
+    escape()
+    // Control: an ordinary reference link opens after the usual short dwell.
+    hover('a'); await settle()
+    expect(opened).toBe(true)
+  })
+
+  it('cancels a glossary card that is still waiting out its dwell when Escape is pressed', async () => {
+    win.document.body.insertAdjacentHTML('afterbegin', '<a id="g" href="/en/ts/latest/mcp/reference/glossary/">glossary</a>')
+    hover('g'); await vi.advanceTimersByTimeAsync(500)
+    escape()
+    await vi.advanceTimersByTimeAsync(1000); await settle()
+    expect(opened).toBe(false)
+    expect(requests).not.toHaveBeenCalled()
+  })
+
   it('repositions open keyword help when a declaration scrolls without bubbling', async () => {
     const source = readFileSync(new URL('../src/components/api/ApiKeyword.astro', import.meta.url), 'utf8')
     const script = source.match(/<script>([\s\S]*?)<\/script>/)![1].replace(/^\s*import .*$/gm, '')

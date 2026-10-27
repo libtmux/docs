@@ -81,7 +81,10 @@ html[data-theme-mode='dark'] .api-nav { --api-nav-guide: color-mix(in srgb, var(
   inset-inline-start: calc(0.5rem + round(1.35em, 2px) + 0.5rem + (var(--level) - 2) * var(--api-nav-indent));
   border-inline-start: 1px solid var(--api-nav-guide); pointer-events: none;
 }
-.api-nav[data-marks='mixed'][data-presentation] .api-nav__row > .api-nav__label::before {
+/* Mixed marks have no kind-mark gutter, so the guide sits under the parent's label.
+   It repeats the guide's own selector so its specificity is at least as high. */
+.api-nav[data-marks='mixed'][data-presentation] :is(.api-nav__item:is([aria-description], [data-lazy^='group:']):not([aria-level='1']) > .api-nav__row, .api-nav__item[data-lazy^='more:'] > .api-nav__row, .api-nav__leaf[aria-description]:not([aria-level='1'])) > .api-nav__label::before,
+.api-nav[data-marks='mixed'][data-presentation] .api-nav__item[data-lazy^='more:'] > .api-nav__row > noscript > .api-nav__label::before {
   inset-inline-start: calc(0.5rem + (var(--level) - 2) * var(--api-nav-indent));
 }
 .api-nav[data-presentation] :is(.api-nav__leaf[aria-current='page'], .api-nav__row:has(> [aria-current='page'])) {
