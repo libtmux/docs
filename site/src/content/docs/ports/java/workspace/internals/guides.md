@@ -15,7 +15,7 @@ libtmux modules:
 
 ```kotlin title="build.gradle.kts"
 dependencies {
-    implementation(platform("io.github.libtmux:libtmux-bom:0.0.1-alpha.10"))
+    implementation(platform("io.github.libtmux:libtmux-bom:0.1.0"))
     implementation("io.github.libtmux:libtmux-workspace")
 }
 ```

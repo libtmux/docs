@@ -224,8 +224,8 @@
   "java": {
     "lang": "java",
     "sourceRepository": "libtmux/libtmux-java",
-    "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
-    "sourceTree": "342c76ca1ad7257b3655c7a47d7258b486b26975",
+    "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
+    "sourceTree": "546ecf68a8a31e0503e18323ba82ce3a490490ab",
     "program": "src/main/java/Main.java",
     "excerpt": {
       "startLine": 1,
@@ -237,12 +237,12 @@
       {
         "name": "build.gradle.kts",
         "lang": "kotlin",
-        "code": "plugins {\n    application\n}\n\nrepositories { mavenCentral() }\n\ndependencies {\n    implementation(\"io.github.libtmux:libtmux:0.0.1-alpha.17-SNAPSHOT\")\n}\n\njava { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }\n\napplication { mainClass.set(providers.gradleProperty(\"exampleMain\")) }\n"
+        "code": "plugins {\n    application\n}\n\nrepositories { mavenCentral() }\n\ndependencies {\n    implementation(\"io.github.libtmux:libtmux:0.1.0\")\n}\n\njava { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }\n\napplication { mainClass.set(providers.gradleProperty(\"exampleMain\")) }\n"
       },
       {
         "name": "settings.gradle.kts",
         "lang": "kotlin",
-        "code": "rootProject.name = \"api-example\"\n\nincludeBuild(\"libtmux-source\")\n"
+        "code": "rootProject.name = \"api-example\"\n"
       },
       {
         "name": "gradle.properties",
@@ -257,7 +257,7 @@
     ],
     "prerequisites": "JDK 25 and tmux on Linux/macOS",
     "commands": [
-      "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach a0ecbc16da00140e2520462d478a2af470878272\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=Main\nSHELL=/bin/sh build/install/api-example/bin/api-example"
+      "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach 5c181887918351119bfdb3a046719fa792048e59\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=Main\nSHELL=/bin/sh build/install/api-example/bin/api-example"
     ],
     "expectedOutput": "hello from libtmux\n",
     "variants": {
