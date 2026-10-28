@@ -8,7 +8,8 @@ import { createHash } from 'node:crypto'
 import type { TreeBucket } from './api-tree'
 import type { ApiTreeJson } from './api-search'
 import { referenceSectionTree } from './api-tree'
-import { kindMark, markClass } from './api-labels'
+import { mentionBadge } from './mention-badge'
+import { mentionBadgeHast } from './mention-badge-hast'
 
 export * from './mcp-catalog'
 
@@ -102,10 +103,7 @@ function rehypeMcpToolLinks() {
     const link = (object: McpObject, node: HtmlNode): HtmlNode => ({
       type: 'element', tagName: 'a',
       properties: { href: portPageUrl(PORT_BY_SLUG[context.port], context.version, object.path) },
-      children: [{ type: 'element', tagName: 'span', properties: {
-        className: ['api-link-kind', 'api-nav__kind', `api-badge--kind-${object.kind}`],
-        ariaHidden: 'true', dataApiKind: object.kind, title: object.kind,
-      }, children: [{ type: 'element', tagName: 'span', properties: { className: ['api-badge__label'], dataMark: markClass(kindMark(object.kind) ?? '') }, children: [{ type: 'text', value: kindMark(object.kind) }] }] },
+      children: [mentionBadgeHast(mentionBadge(object.kind, object.kind)!) as HtmlNode,
       { type: 'element', tagName: 'span', properties: { className: ['api-symbol-link__name'] }, children: [node] }],
     })
     const walk = (node: HtmlNode) => {

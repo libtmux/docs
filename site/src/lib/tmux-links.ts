@@ -146,7 +146,8 @@ export function tmuxMentions(text: string, { code = false, version = 'latest', b
   return found.sort((a, b) => a.start - b.start)
 }
 
-type LinkedDocSpan = DocSpan & { link?: LinkTarget; parts?: ReturnType<SymbolIndex['linkLiteral']> }
+/** `tmux` is the kind of a tmux name that stands alone, as a badge shows it. */
+type LinkedDocSpan = DocSpan & { link?: LinkTarget; parts?: ReturnType<SymbolIndex['linkLiteral']>; tmux?: TmuxEntityKind }
 
 /** Add native tmux links after language API and authored-link resolution. */
 export function linkTmuxDoc(spans: LinkedDocSpan[], version = 'latest'): LinkedDocSpan[] {
@@ -157,12 +158,13 @@ export function linkTmuxDoc(spans: LinkedDocSpan[], version = 'latest'): LinkedD
     const code = span.kind !== 'text'
     const mentions = tmuxMentions(text, { code, version, before: wording(spans[index - 1]), after: wording(spans[index + 1]) })
     if (!mentions.length) return [span]
-    if (code && mentions.length === 1) return [{ kind: 'link', text, code: true, href: mentions[0].href }]
+    if (code && mentions.length === 1) return [{ kind: 'link', text, code: true, href: mentions[0].href, tmux: mentions[0].kind }]
     const linked: LinkedDocSpan[] = []
     let end = 0
     for (const mention of mentions) {
       if (mention.start > end) linked.push({ kind: code ? 'code' : 'text', text: text.slice(end, mention.start) })
-      linked.push({ kind: 'link', text: mention.text, href: mention.href, code })
+      // A name inside a longer code run keeps the run's flow, so only prose carries the kind.
+      linked.push({ kind: 'link', text: mention.text, href: mention.href, code, ...(code ? {} : { tmux: mention.kind }) })
       end = mention.end
     }
     if (end < text.length) linked.push({ kind: code ? 'code' : 'text', text: text.slice(end) })

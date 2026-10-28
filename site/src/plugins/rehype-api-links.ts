@@ -6,7 +6,8 @@ import { isLikelyReference, notApiReason, type ApiProduct } from '@libtmux/api-m
 import { createProseLinker, PORT_BY_LABEL, protocolRunMentions } from '../lib/prose-resolver'
 import { PORT_BY_SLUG } from '../lib/ports'
 import { API_MODELS, pageSlug } from '../lib/api-models'
-import { kindMark, markClass } from '../lib/api-labels'
+import { mentionBadge, plainMention, TMUX_KIND_TITLES, type First, type MentionBadge } from '../lib/mention-badge'
+import { mentionBadgeHast } from '../lib/mention-badge-hast'
 import { docsPath, isTmuxProse } from '../lib/docs-paths'
 import { MCP_REFERENCE, mcpObjects } from '../lib/mcp-catalog'
 import { mergeMentions, tmuxMentions, type Mention } from '../lib/tmux-links'
@@ -94,38 +95,20 @@ const BLOCKS = new Set(['p', 'li', 'td', 'th', 'dd', 'dt', 'figcaption', 'blockq
 type El = { type?: string; tagName?: string; value?: string; properties?: Record<string, unknown>; children?: El[] }
 const containsAnchor = (node: El): boolean => node.tagName === 'a' || Boolean(node.children?.some(containsAnchor))
 
-/** tmux kinds read as words in the badge's tooltip; the glyph stays in `kindMark`. */
-const TMUX_KIND_TITLES: Record<string, string> = {
-  command: 'tmux command', option: 'tmux option', hook: 'tmux hook', format: 'tmux format variable',
-}
-
 /** The same kind badge that API mentions carry, so both inherit one treatment. */
-function withKindBadge(anchor: El, kind: string, mark: string, title?: string): El {
+function withKindBadge(anchor: El, badge: MentionBadge): El {
   anchor.children = [{ type: 'element', tagName: 'span', properties: {
     className: ['api-symbol-link__name'],
   }, children: anchor.children }]
-  anchor.children.unshift({ type: 'element', tagName: 'span', properties: {
-    className: ['api-link-kind', 'api-nav__kind', `api-badge--kind-${kind}`],
-    dataApiKind: kind, ariaHidden: 'true', title,
-  }, children: [{ type: 'element', tagName: 'span', properties: { className: ['api-badge__label'], dataMark: markClass(mark) }, children: [{ type: 'text', value: mark }] }] })
+  anchor.children.unshift(mentionBadgeHast(badge) as El)
   return anchor
 }
 
-/** The kind as a word, for a tooltip and an accessible name. */
-const kindWord = (kind: string) => TMUX_KIND_TITLES[kind] ?? kind.replace(/-/g, ' ')
-
-/**
- * A later mention in a section: the link alone. The kind stays in the tooltip and
- * the accessible name, so the reader who needs it can hover or listen for it.
- */
+/** A later mention in a section: the link alone. */
 function plainKind(anchor: El, kind: string, title?: string): El {
-  const word = kindWord(kind)
-  anchor.properties = { ...anchor.properties, title: title ?? word, dataApiKind: kind, ariaLabel: `${word}: ${textOf(anchor).trim()}` }
+  anchor.properties = { ...anchor.properties, ...plainMention(kind, textOf(anchor), title) }
   return anchor
 }
-
-/** Mark the first mention of a name in a section; every later one stays a plain code link. */
-type First = (key: string) => boolean
 
 function mentionAnchor(mention: Mention, children: El[], badge = true, first: First = () => true): El {
   const anchor: El = { type: 'element', tagName: 'a', properties: { href: mention.href }, children }
@@ -133,7 +116,7 @@ function mentionAnchor(mention: Mention, children: El[], badge = true, first: Fi
   anchor.properties!.className = [`${mention.family ?? 'tmux'}-mention`]
   const title = mention.title ?? TMUX_KIND_TITLES[mention.kind]
   if (!first(`${mention.kind}:${mention.href}`)) return plainKind(anchor, mention.kind, title)
-  return withKindBadge(anchor, mention.kind, kindMark(mention.kind)!, title)
+  return withKindBadge(anchor, mentionBadge(mention.kind, title)!)
 }
 
 /** Names in prose carry a badge; inside one code run they keep the run's own flow. */
@@ -187,11 +170,10 @@ function addKindBadge(anchor: El, port?: string, route?: string, first: First = 
     kind = object.kind
     title = `MCP ${kind}`
   }
-  if (!kind) return
-  const mark = kindMark(kind)
-  if (!mark) return
+  const badge = kind && mentionBadge(kind, title)
+  if (!kind || !badge) return
   if (!first(`${kind}:${url.pathname}${fragment ? `#${fragment}` : ''}`)) plainKind(anchor, kind, title)
-  else withKindBadge(anchor, kind, mark, title)
+  else withKindBadge(anchor, badge)
 }
 
 /**

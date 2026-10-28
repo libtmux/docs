@@ -42,7 +42,7 @@ async function parameterComponents() {
     // A native type layout loads its grammar lazily, which only Vitest's own loader resolves.
     '../../lib/code-layout': bridge,
   })
-  const doc = await compile('../src/components/api/ApiDoc.astro', { '../../lib/tmux-links': bridge })
+  const doc = await compile('../src/components/api/ApiDoc.astro', { '../../lib/tmux-links': bridge, '../../lib/mention-badge': new URL('../src/lib/mention-badge.ts', import.meta.url).href })
   const overloads = await compile('../src/components/api/ApiFieldOverloads.astro')
   const imports = { '@libtmux/api-model': bridge, '../../lib/api-sections': bridge,
     './ApiType.astro': type, './ApiDoc.astro': doc, './ApiFieldOverloads.astro': overloads }
@@ -58,6 +58,8 @@ import ApiType from './ApiType.astro'
 import ApiDoc from './ApiDoc.astro'
 import ApiFieldOverloads from './ApiFieldOverloads.astro'
 const { p, symbol, index, language, overloadTargets } = Astro.props
+// The entry's shared first mention; a fragment of it is rendered alone.
+const first = undefined
 ---
 ${source.slice(start, end)}`
   const ordinary = await compile('../src/components/api/ApiEntry.astro', imports, wrapper)

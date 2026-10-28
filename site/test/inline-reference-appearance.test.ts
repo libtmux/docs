@@ -123,6 +123,7 @@ async function docComponent() {
   const linker = `data:text/javascript,export const linkTmuxDoc = globalThis.__apiDocSourceLinker`
   const code = result.code.replaceAll('"astro/compiler-runtime"', JSON.stringify(pathToFileURL(astroRequire.resolve('astro/compiler-runtime')).href))
     .replaceAll('"../../lib/tmux-links"', JSON.stringify(linker))
+    .replaceAll('"../../lib/mention-badge"', JSON.stringify(new URL('../src/lib/mention-badge.ts', import.meta.url).href))
   return (await import(/* @vite-ignore */ `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`)).default
 }
 
@@ -206,5 +207,7 @@ it('leaves unrelated hashes, source comments and URL fragments unchanged', async
   const text = '`C#` `F#` `# comment` `https://example.test/#fragment` `#{pane_id}`'
   win.document.body.innerHTML = await container.renderToString(await docComponent(), { props: { text, index } })
   expect(win.document.querySelectorAll('.api-reference-separator')).toHaveLength(0)
+  // The format variable leads with its badge; the words are the ones written.
+  win.document.querySelectorAll('.api-link-kind').forEach((badge) => badge.remove())
   expect(win.document.body.textContent).toBe('C# F# # comment https://example.test/#fragment #{pane_id}')
 })

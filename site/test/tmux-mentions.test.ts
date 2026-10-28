@@ -137,7 +137,7 @@ describe('tmux name detection', () => {
       { kind: 'code', text: 'session_attached' }, { kind: 'code', text: 'session_unknown' },
       { kind: 'text', text: 'session_attached is only a word here' },
     ])).toEqual([
-      { kind: 'link', text: 'session_attached', code: true, href: '/tmux/latest/catalog/formats/session_attached/' },
+      { kind: 'link', text: 'session_attached', code: true, href: '/tmux/latest/catalog/formats/session_attached/', tmux: 'format' },
       { kind: 'code', text: 'session_unknown' },
       { kind: 'text', text: 'session_attached is only a word here' },
     ])
