@@ -1,5 +1,6 @@
 <script>
   import { layoutBeforeAppearance } from '../../lib/page-readiness'
+  import { markNativeXrefs } from '../../lib/native-xrefs'
   let controller: AbortController | undefined
   const syncTheme = () => {
     document.documentElement.classList.remove('no-js')
@@ -12,6 +13,14 @@
     controller = new AbortController()
     const { signal } = controller
     syncTheme()
+    // Decoration: a page that cannot be marked still needs its navigation and scroll tracking.
+    try {
+      const article = document.querySelector('article[role="main"]')
+      const kinds = document.querySelector('[data-native-xref-kinds]')?.textContent
+      if (article && kinds) markNativeXrefs(article, JSON.parse(kinds))
+    } catch (error) {
+      console.error('Native cross-references were not marked', error)
+    }
     const data = document.querySelector<HTMLScriptElement>('[data-native-page-ports]')
     if (data) {
       const context: {

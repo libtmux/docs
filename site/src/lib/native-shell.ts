@@ -20,6 +20,8 @@ export interface NativePageContext {
   signatures: string[]
   title?: string
   declarations?: { id: string; name: string; kind: string; parent?: string }[]
+  /** The kind of each declaration this page's cross-references point at, by the target's fragment. */
+  xrefKinds?: Record<string, string>
 }
 
 /** One row of the Sphinx global toctree, on the artifact's published URLs. */

@@ -149,3 +149,13 @@ html.no-js[data-native-shell]:has(#__toc:focus-visible) #mobile-toc-toggle {
   html[data-native-shell] .sidebar-drawer,
   html[data-native-shell] .toc-drawer { transition: none; }
 }
+/*
+ * A cross-reference leads with its kind badge, as a guide's mention of the same name does. A line on the link would
+ * run through the badge, so the name carries the dotted underline instead.
+ */
+html[data-native-shell] a.api-mention:has(> .api-link-kind) > .api-symbol-link__name {
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: currentColor;
+  text-underline-offset: 0.2em;
+}

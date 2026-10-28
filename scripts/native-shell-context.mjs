@@ -116,6 +116,8 @@ export async function collectNativeContext(directory, { prefix, sphinxPort, vers
     metadata.set(url, entry)
   }
   const pages = []
+  // What each page's cross-references point at, resolved once every page's declarations are known.
+  const references = []
   const redirects = []
   let toctree
   let toctreeFile
@@ -158,6 +160,13 @@ export async function collectNativeContext(directory, { prefix, sphinxPort, vers
       } else if (!['genindex/index.html', 'py-modindex/index.html'].includes(file) || sourcePath) {
         throw new Error(`Native page has no docs.json entry: ${file}`)
       }
+      references.push({
+        fragments: [...window.document.querySelectorAll('article a.reference.internal')].flatMap((link) => {
+          if (link.children.length !== 1 || !link.firstElementChild.matches('code.xref')) return []
+          try { return [decodeURIComponent(new URL(link.getAttribute('href'), `https://native.invalid/${path}`).hash.slice(1))] } catch { return [] }
+        }),
+        modules: [...window.document.querySelectorAll('[id^="module-"]')].map((element) => element.id),
+      })
       pages.push({
         file, path, url: `${base}${path}`, sourcePath: `${port.slug}/${version}/api/${path}`,
         title: window.document.querySelector('article h1')?.textContent?.replace(/¶$/, '').trim() ?? path,
@@ -170,6 +179,8 @@ export async function collectNativeContext(directory, { prefix, sphinxPort, vers
           return Boolean(target?.closest('article') && !target.matches('h1') && !target.querySelector(':scope > h1'))
         }),
         signatures: [...window.document.querySelectorAll('dt.sig[id]')].map((element) => element.id),
+        // Filled in once every page's declarations are known.
+        xrefKinds: {},
         declarations: [...window.document.querySelectorAll('dt.sig[id]')].map((element) => {
           const owner = element.parentElement
           const kind = ['class', 'exception', 'method', 'staticmethod', 'classmethod', 'property', 'attribute', 'data', 'function', 'module']
@@ -182,6 +193,16 @@ export async function collectNativeContext(directory, { prefix, sphinxPort, vers
     }
   } finally {
     await window.happyDOM.close()
+  }
+  // The kind of a cross-reference's target, from the declaration Sphinx wrote for it: a property is not an attribute,
+  // and an exception is not a class, whatever role the reference was written with.
+  const kinds = new Map()
+  for (const [index, page] of pages.entries()) {
+    for (const { id, kind } of page.declarations) if (kind !== 'section' && !kinds.has(id)) kinds.set(id, kind)
+    for (const id of references[index].modules) if (!kinds.has(id)) kinds.set(id, 'module')
+  }
+  for (const [index, page] of pages.entries()) {
+    page.xrefKinds = Object.fromEntries([...new Set(references[index].fragments)].filter((id) => kinds.has(id)).sort().map((id) => [id, kinds.get(id)]))
   }
   if (metadata.size) throw new Error(`Native docs.json names missing pages: ${[...metadata.keys()].join(', ')}`)
   return {

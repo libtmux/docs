@@ -44,6 +44,20 @@ describe('native shell context', () => {
       id: 'libtmux.Server.sessions', name: 'sessions', kind: 'property', parent: 'libtmux.Server',
     })
   })
+  it('records the kind of the declaration each cross-reference points at, not the role it was written with', async () => {
+    const { artifact, options, html } = fixture()
+    const xref = (role: string, href: string, label: string) => `<a class="reference internal" href="${href}"><code class="xref py ${role}"><span class="pre">${label}</span></code></a>`
+    const declarations = '<dl class="py class"><dt class="sig" id="libtmux.Server"><span class="sig-name">Server</span></dt><dd><dl class="py property"><dt class="sig" id="libtmux.Server.sessions"><span class="sig-name">sessions</span></dt></dl></dd></dl>'
+      + '<dl class="py exception"><dt class="sig" id="libtmux.exc.LibTmuxException"><span class="sig-name">LibTmuxException</span></dt></dl><span id="module-libtmux.server"></span>'
+      + `<p>${xref('py-attr', '#libtmux.Server.sessions', 'sessions')} ${xref('py-class', '#libtmux.exc.LibTmuxException', 'LibTmuxException')} ${xref('py-mod', '#module-libtmux.server', 'libtmux.server')}`
+      + ` ${xref('py-class', '#libtmux.nonesuch', 'nonesuch')} <a class="reference internal" href="#libtmux.Server">no code</a> <a class="reference external" href="https://example.invalid/#libtmux.Server"><code class="xref py py-class">external</code></a></p>`
+    writeFileSync(join(artifact, 'api/libtmux.server/index.html'), html.replace(/<dt class="sig".*?<\/dt>/, declarations))
+    const context = await collectNativeContext(artifact, options)
+    expect(context.pages.find((page) => page.file === 'api/libtmux.server/index.html')?.xrefKinds).toEqual({
+      'libtmux.Server.sessions': 'property', 'libtmux.exc.LibTmuxException': 'exception', 'module-libtmux.server': 'module',
+    })
+    expect(context.pages.find((page) => page.file === 'genindex/index.html')?.xrefKinds).toEqual({})
+  })
   it('keeps repeated native declarations on their own pages with nested ownership', () => {
     const context = { port: 'py', pages: ['api/server/', 'internals/server/'].map((path) => ({ path, title: 'Server',
       url: `/pr-42/en/py/v0.46.2/api/${path}`, declarations: [
