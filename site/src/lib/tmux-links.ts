@@ -1,5 +1,5 @@
 import type { DocSpan, LinkTarget, SymbolIndex } from '@libtmux/api-model'
-import { tmuxCatalogHref } from './tmux-catalog'
+import { catalogKindForSegment, tmuxCatalogEntry, tmuxCatalogHref } from './tmux-catalog'
 import { tmuxCatalogMentions, tmuxCatalogProseReferences } from './tmux-catalog-links'
 import { tmuxManual, tmuxManualEntityHref, type TmuxEntityKind } from './tmux-manual-data'
 
@@ -14,6 +14,24 @@ export type { TmuxEntityKind } from './tmux-manual-data'
  */
 export function tmuxEntityHref(kind: TmuxEntityKind, name: string, version = 'latest'): string | undefined {
   return kind === 'command' ? tmuxManualEntityHref(kind, name, version) : tmuxCatalogHref(kind, name, version)
+}
+
+/**
+ * The tmux name a page of this site documents, from its path: the reverse of `tmuxEntityHref`.
+ * A command's manual page and an option, hook or format variable's catalog page name one entity each;
+ * the full manual, an index and a release the data lacks name none.
+ */
+export function tmuxEntityAt(pathname: string): { kind: TmuxEntityKind; name: string } | undefined {
+  const match = /\/tmux\/([^/]+)\/(manual|catalog)\/(?:([^/]+)\/)?([^/]+)\/?$/.exec(pathname)
+  if (!match) return undefined
+  const [, version, area, segment, leaf] = match
+  try {
+    const name = decodeURIComponent(leaf!)
+    if (area === 'manual') return segment === undefined && tmuxManual(version!).commands.some((command) => command.name === name) ? { kind: 'command', name } : undefined
+    const kind = catalogKindForSegment(segment)
+    const entry = kind && tmuxCatalogEntry(version!, kind, name)
+    return kind && entry ? { kind, name: entry.name } : undefined
+  } catch { return undefined }
 }
 
 type Command = ReturnType<typeof tmuxManual>['commands'][number]

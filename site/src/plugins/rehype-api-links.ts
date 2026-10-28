@@ -2,7 +2,7 @@ import { appendFileSync, mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { visit } from 'unist-util-visit'
-import { isLikelyReference, notApiReason, type ApiProduct } from '@libtmux/api-model'
+import { isLikelyReference, modulesIn, notApiReason, type ApiProduct } from '@libtmux/api-model'
 import { createProseLinker, PORT_BY_LABEL, protocolRunMentions } from '../lib/prose-resolver'
 import { PORT_BY_SLUG } from '../lib/ports'
 import { API_MODELS, pageSlug } from '../lib/api-models'
@@ -10,7 +10,7 @@ import { mentionBadge, plainMention, TMUX_KIND_TITLES, type First, type MentionB
 import { mentionBadgeHast } from '../lib/mention-badge-hast'
 import { docsPath, isTmuxProse } from '../lib/docs-paths'
 import { MCP_REFERENCE, mcpObjects } from '../lib/mcp-catalog'
-import { mergeMentions, tmuxMentions, type Mention } from '../lib/tmux-links'
+import { mergeMentions, tmuxEntityAt, tmuxMentions, type Mention } from '../lib/tmux-links'
 import { isLibraryPage, workspaceNames } from '../lib/workspace-links'
 
 /** Link inline API and source references using their prose ownership. */
@@ -140,6 +140,25 @@ const protocolByPage = new Map(Object.keys(MCP_REFERENCE).flatMap(port => mcpObj
   `${port}/${object.path}`, object,
 ] as const)))
 
+const modulesByPort = new Map<string, Set<string>>()
+/** A module, package or namespace the port's reference index gives an anchor of its own. */
+function hasModule(port: string, name: string): boolean {
+  let names = modulesByPort.get(port)
+  if (!names) modulesByPort.set(port, names = new Set(API_MODELS[port] ? modulesIn(API_MODELS[port]).map((module) => module.name) : []))
+  return names.has(name)
+}
+
+/**
+ * The link's words are the entity's name, with the flags a command line adds, as a code span or a bare word.
+ * `Enter` linked to `send-keys` is a key, and `send-keys reference` a phrase about the command: neither is the name.
+ */
+function namesEntity(anchor: El, name: string, kind: string): boolean {
+  if (!anchor.children?.every((child) => child.type === 'text' || child.tagName === 'code')) return false
+  const words = textOf(anchor).trim().replace(/^(["'])(.*)\1$/, '$2')
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`^${kind === 'command' ? '(?:tmux\\s+)?' : ''}${escaped}(?:\\s+-{1,2}[A-Za-z0-9][\\w-]*)*$`).test(words)
+}
+
 /** Only mark links whose actual destination names a known declaration. */
 function addKindBadge(anchor: El, port?: string, route?: string, first: First = () => true): void {
   const href = anchor.properties?.href
@@ -153,6 +172,8 @@ function addKindBadge(anchor: El, port?: string, route?: string, first: First = 
   try { fragment = decodeURIComponent(url.hash.slice(1)) } catch { return }
   const match = /\/([^/]+)\/[^/]+\/(?:(mcp|workspace)\/)?reference\/([^/]+)\/?$/.exec(url.pathname)
   const protocol = /\/([^/]+)\/[^/]+\/(mcp\/(?:tools|prompts|resources)\/.+?)\/?$/.exec(url.pathname)
+  // The port is the link's, not the page's: a module is anchored on the index of the port the link names.
+  const modulePort = /\/([^/]+)\/[^/]+\/reference\/?$/.exec(url.pathname)?.[1]
   let kind: string | undefined
   let title: string | undefined
   if (match && PORT_BY_SLUG[match[1]!]) {
@@ -169,6 +190,16 @@ function addKindBadge(anchor: El, port?: string, route?: string, first: First = 
     if (!object || (fragment && fragment !== object.id)) return
     kind = object.kind
     title = `MCP ${kind}`
+  } else if (modulePort && PORT_BY_SLUG[modulePort] && hasModule(modulePort, fragment)) {
+    kind = 'module'
+    title = kind
+  } else {
+    // A link written by hand to a tmux manual or catalog page, as the name it documents is written in prose.
+    const entity = tmuxEntityAt(url.pathname)
+    if (!entity || !namesEntity(anchor, entity.name, entity.kind)) return
+    kind = entity.kind
+    title = TMUX_KIND_TITLES[kind]
+    anchor.properties = { ...anchor.properties, className: [...(Array.isArray(anchor.properties?.className) ? anchor.properties.className as string[] : []), 'tmux-mention'] }
   }
   const badge = kind && mentionBadge(kind, title)
   if (!kind || !badge) return
