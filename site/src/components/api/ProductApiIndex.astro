@@ -2,6 +2,7 @@
 import { qualifiedNameOf, docSummaryText } from '@libtmux/api-model'
 import { API_MODELS } from '../../lib/api-models'
 import { productApiHref, productApiRoots } from '../../lib/product-api'
+import { mentionBadge, mentionBadgeHtml } from '../../lib/mention-badge'
 import type { DocProduct } from '../../lib/ports'
 interface Props { port: string; product: DocProduct; version: string }
 const { port, product, version } = Astro.props
@@ -19,9 +20,13 @@ const groups = [
   {groups.filter((group) => group.symbols.length).map((group) => <section>
     <h3>{group.title}</h3>
     {group.title === 'Types used in signatures' && <p>These types describe returned values or parameters; they are not package entry points.</p>}
-    <dl>{group.symbols.map((symbol) => <>
-        <dt><a href={productApiHref(model, symbol, version)}><code>{qualifiedNameOf(symbol)}</code></a></dt>
+    <dl>{group.symbols.map((symbol) => {
+      // Each declaration is listed once, so each leads with its kind: the list mixes classes, functions and constants.
+      const badge = mentionBadge(symbol.kind, symbol.command?.kind ?? symbol.kind)
+      return <>
+        <dt><a class="api-mention" href={productApiHref(model, symbol, version)}>{badge && <Fragment set:html={mentionBadgeHtml(badge)} />}<span class="api-symbol-link__name"><code>{qualifiedNameOf(symbol)}</code></span></a></dt>
         {symbol.doc?.summary && <dd>{docSummaryText(symbol.doc.summary, port)}</dd>}
-      </>)}</dl>
+      </>
+    })}</dl>
   </section>)}
 </section>
