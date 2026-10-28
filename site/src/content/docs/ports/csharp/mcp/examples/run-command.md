@@ -19,10 +19,10 @@ sessions.
 
 ## Run the example
 
-Use the .NET 10 SDK and tmux 3.3a or newer on Linux, macOS, or WSL. The library
+Use the .NET 10 SDK and tmux 3.4 or newer on Linux, macOS, or WSL. The library
 and tool use the same [published source revision](https://github.com/libtmux/libtmux-dotnet/tree/472c2bcfbda6735139849324cc109ad70300001e).
-`run_shell_command` stages its command in a named tmux buffer, so this example
-needs a server at version 3.4 or later; on 3.3a the tool refuses the request.
+`run_shell_command` stages its command in a named tmux buffer, so the tool
+refuses the request on an earlier server, such as 3.3a.
 
 Create an empty directory:
 
