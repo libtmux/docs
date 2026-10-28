@@ -298,8 +298,18 @@ The dispatcher plans first and stops there by default:
 | `ports` | `ref` | Publishes |
 |---|---|---|
 | `all` or a list | `latest` | each default branch as `latest` |
-| `all` or a list | `release` | each newest release tag, the default when final, plus `next` when a prerelease |
+| `all` or a list | `release` | each port's newest final release tag as the default, plus a newer prerelease and `next`. A port with no final release publishes its newest prerelease and `next` and keeps `latest` as its default |
 | one port | an exact ref | that ref, as `version` and `version-kind` name it |
+
+A tag tree is immutable, and its `build-provenance.json` names the docs
+revision that built it. Republishing a tag therefore fails the immutable-tag
+check when the caller pins a different docs revision from the one that
+published it; an unchanged pin can re-verify the tree and still set the
+default. Otherwise a maintainer with bucket access moves the default by
+rewriting `defaultVersion` in the port's manifest (the manifest key is
+otherwise written only by that port's role); a dispatched or push-triggered
+shell deploy then repoints the port root (a scheduled one rebuilds only when
+the registry moved).
 
 ```console
 $ gh workflow run publish.yml \
