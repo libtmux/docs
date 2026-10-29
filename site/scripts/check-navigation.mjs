@@ -701,11 +701,18 @@ export async function checkPermalinkReveal(browser, base, { only, sabotage } = {
   }
   // Whether the pointer is the fine one the quiet hash is written for.
   const fineInput = (page) => page.evaluate(() => matchMedia('(hover: hover) and (pointer: fine)').matches)
+  // A cold dev server can reach `load` before a reference body is in the document, so a link is
+  // waited for, not counted once. A page that never gets it fails with what was missing.
+  const present = async (link, what) => {
+    await within(what, link.waitFor({ state: 'attached', timeout })).catch((error) => {
+      assert.fail(`${what} (${error.name}: not attached within ${timeout}ms)`)
+    })
+  }
   const subjectsOf = async (page, list, path) => {
     const found = []
     for (const [name, selector] of list) {
       const link = page.locator(selector).first()
-      assert(await link.count() > 0, `${engine}: ${path} has ${name} (${selector})`)
+      await present(link, `${engine}: ${path} has ${name} (${selector})`)
       found.push({ name, link, id: await link.evaluate((node) => node.closest('[id]').id) })
     }
     return found
@@ -821,7 +828,7 @@ export async function checkPermalinkReveal(browser, base, { only, sabotage } = {
         await visit(page, SECTION_SIGN_PAGE)
         await park(page)
         const sign = page.locator(SECTION_SIGN).first()
-        assert(await sign.count() > 0, `${engine}: ${SECTION_SIGN_PAGE} has a section sign`)
+        await present(sign, `${engine}: ${SECTION_SIGN_PAGE} has a section sign`)
         assert.equal(await pseudoOpacity(sign), '0', `${engine}/${mode}/${SECTION_SIGN_PAGE}: the section sign is quiet at rest`)
       }
     } finally {
@@ -859,7 +866,7 @@ export async function checkPermalinkReveal(browser, base, { only, sabotage } = {
         progress(scenario, path)
         await visit(page, path)
         const link = page.locator(selector).first()
-        assert(await link.count() > 0, `${engine}: ${path} has ${name}`)
+        await present(link, `${engine}: ${path} has ${name}`)
         assert.equal(await read(link), '1', `${engine}/${path}: ${name} is ${claim}`)
       }
     } finally {
