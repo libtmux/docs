@@ -157,7 +157,7 @@ describe('prose Markdown links', () => {
     expect(rendered.code.match(/data-api-kind="function"/g)).toHaveLength(2)
     expect(rendered.code.match(/data-api-kind="class"/g)).toHaveLength(1)
     expect(rendered.code.match(/data-api-kind="struct"/g)).toHaveLength(1)
-    expect(rendered.code).toContain('aria-hidden="true" title="cmdlet"><span class="api-badge__label" data-mark="asc">f</span></span><span class="api-symbol-link__name"><code>New-TmuxSession</code></span>')
+    expect(rendered.code).toContain('aria-hidden="true" title="cmdlet" data-pagefind-ignore="all"><span class="api-badge__label" data-mark="asc">f</span></span><span class="api-symbol-link__name"><code>New-TmuxSession</code></span>')
     expect(rendered.code.match(/class="api-symbol-link__name"/g)).toHaveLength(4)
     expect(rendered.code).toContain('<pre><code class="language-powershell">New-TmuxSession\n</code></pre>')
     expect(linkProseMarkdown(content, 'powershell')).not.toContain('data-api-kind')

@@ -18,8 +18,9 @@ const css = (marks: string): string[] => sheets.map((name) => (name === 'kind-ma
 const CURRENT = readFileSync(join(STYLES, 'kind-marks.css'), 'utf8')
 
 /** The usage rules as they were when they applied to every chip: the scope this change narrows. */
-const SITEWIDE = CURRENT.replace(/^\.tmux-usage a:has\(> \.api-nav__kind\)/gm, ':is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a:has(> .api-nav__kind)')
-  .replace(/^ {2}\.tmux-usage a:has\(> \.api-nav__kind\)/gm, '  :is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a:has(> .api-nav__kind)')
+const MARK = '.api-nav__kind:where(:not(.api-link-kind))'
+const SITEWIDE = CURRENT.replace(/^\.tmux-usage a:has\(> \.api-nav__kind:where\(:not\(\.api-link-kind\)\)\)/gm, `:is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a:has(> ${MARK})`)
+  .replace(/^ {2}\.tmux-usage a:has\(> \.api-nav__kind:where\(:not\(\.api-link-kind\)\)\)/gm, `  :is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a:has(> ${MARK})`)
 
 const mark = '<span class="api-nav__kind api-badge--kind-method" aria-hidden="true"><span class="api-badge__label" data-mark="cap">m</span></span>'
 const chip = (id: string, wrap: (link: string) => string) => `<p>${wrap(`<a id="${id}" href="#${id}">${mark}<code>Server.panes</code></a>`)}</p>`

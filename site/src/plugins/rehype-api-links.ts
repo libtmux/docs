@@ -1,19 +1,19 @@
 import { appendFileSync, mkdirSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { dirname } from 'node:path'
 import { visit } from 'unist-util-visit'
-import { isLikelyReference, notApiReason, type ApiProduct } from '@libtmux/api-model'
+import { isLikelyReference, modulesIn, notApiReason, type ApiProduct } from '@libtmux/api-model'
 import { createProseLinker, PORT_BY_LABEL, protocolRunMentions } from '../lib/prose-resolver'
 import { PORT_BY_SLUG } from '../lib/ports'
 import { API_MODELS, pageSlug } from '../lib/api-models'
-import { kindMark, markClass } from '../lib/api-labels'
+import { mentionBadge, plainMention, TMUX_KIND_TITLES, type First, type MentionBadge } from '../lib/mention-badge'
+import { mentionBadgeHast } from '../lib/mention-badge-hast'
 import { docsPath, isTmuxProse } from '../lib/docs-paths'
 import { MCP_REFERENCE, mcpObjects } from '../lib/mcp-catalog'
-import { mergeMentions, tmuxMentions, type Mention } from '../lib/tmux-links'
+import { mergeMentions, tmuxEntityAt, tmuxMentions, type Mention } from '../lib/tmux-links'
 import { isLibraryPage, workspaceNames } from '../lib/workspace-links'
+import { danglingReportPath } from '../lib/dangling-report-path'
 
 /** Link inline API and source references using their prose ownership. */
-const here = dirname(fileURLToPath(import.meta.url))
 
 export interface DanglingReference {
   port: string
@@ -45,8 +45,6 @@ export interface DanglingReference {
  * report success from a pass that never ran: an absent file means "did not
  * run", which is a different answer from "ran and found nothing".
  */
-const REPORT = join(here, '../../.astro/dangling-refs.json')
-
 /**
  * Ensure this build's report exists, so an absent file has exactly one
  * meaning: the linking pass never ran.
@@ -64,9 +62,11 @@ const REPORT = join(here, '../../.astro/dangling-refs.json')
  * integration's `rmSync` at config setup is the single truncation point.
  */
 function begin(): void {
+  const report = danglingReportPath()
+  if (!report) return
   try {
-    mkdirSync(dirname(REPORT), { recursive: true })
-    appendFileSync(REPORT, '')
+    mkdirSync(dirname(report), { recursive: true })
+    appendFileSync(report, '')
   } catch {
     /* reporting must never fail a render */
   }
@@ -81,8 +81,10 @@ function begin(): void {
  * prevent.
  */
 function record(entry: DanglingReference): void {
+  const report = danglingReportPath()
+  if (!report) return
   try {
-    appendFileSync(REPORT, JSON.stringify(entry) + '\n')
+    appendFileSync(report, JSON.stringify(entry) + '\n')
   } catch {
     /* reporting must never fail a render */
   }
@@ -94,38 +96,20 @@ const BLOCKS = new Set(['p', 'li', 'td', 'th', 'dd', 'dt', 'figcaption', 'blockq
 type El = { type?: string; tagName?: string; value?: string; properties?: Record<string, unknown>; children?: El[] }
 const containsAnchor = (node: El): boolean => node.tagName === 'a' || Boolean(node.children?.some(containsAnchor))
 
-/** tmux kinds read as words in the badge's tooltip; the glyph stays in `kindMark`. */
-const TMUX_KIND_TITLES: Record<string, string> = {
-  command: 'tmux command', option: 'tmux option', hook: 'tmux hook', format: 'tmux format variable',
-}
-
 /** The same kind badge that API mentions carry, so both inherit one treatment. */
-function withKindBadge(anchor: El, kind: string, mark: string, title?: string): El {
+function withKindBadge(anchor: El, badge: MentionBadge): El {
   anchor.children = [{ type: 'element', tagName: 'span', properties: {
     className: ['api-symbol-link__name'],
   }, children: anchor.children }]
-  anchor.children.unshift({ type: 'element', tagName: 'span', properties: {
-    className: ['api-link-kind', 'api-nav__kind', `api-badge--kind-${kind}`],
-    dataApiKind: kind, ariaHidden: 'true', title,
-  }, children: [{ type: 'element', tagName: 'span', properties: { className: ['api-badge__label'], dataMark: markClass(mark) }, children: [{ type: 'text', value: mark }] }] })
+  anchor.children.unshift(mentionBadgeHast(badge) as El)
   return anchor
 }
 
-/** The kind as a word, for a tooltip and an accessible name. */
-const kindWord = (kind: string) => TMUX_KIND_TITLES[kind] ?? kind.replace(/-/g, ' ')
-
-/**
- * A later mention in a section: the link alone. The kind stays in the tooltip and
- * the accessible name, so the reader who needs it can hover or listen for it.
- */
+/** A later mention in a section: the link alone. */
 function plainKind(anchor: El, kind: string, title?: string): El {
-  const word = kindWord(kind)
-  anchor.properties = { ...anchor.properties, title: title ?? word, dataApiKind: kind, ariaLabel: `${word}: ${textOf(anchor).trim()}` }
+  anchor.properties = { ...anchor.properties, ...plainMention(kind, textOf(anchor), title) }
   return anchor
 }
-
-/** Mark the first mention of a name in a section; every later one stays a plain code link. */
-type First = (key: string) => boolean
 
 function mentionAnchor(mention: Mention, children: El[], badge = true, first: First = () => true): El {
   const anchor: El = { type: 'element', tagName: 'a', properties: { href: mention.href }, children }
@@ -133,7 +117,7 @@ function mentionAnchor(mention: Mention, children: El[], badge = true, first: Fi
   anchor.properties!.className = [`${mention.family ?? 'tmux'}-mention`]
   const title = mention.title ?? TMUX_KIND_TITLES[mention.kind]
   if (!first(`${mention.kind}:${mention.href}`)) return plainKind(anchor, mention.kind, title)
-  return withKindBadge(anchor, mention.kind, kindMark(mention.kind)!, title)
+  return withKindBadge(anchor, mentionBadge(mention.kind, title)!)
 }
 
 /** Names in prose carry a badge; inside one code run they keep the run's own flow. */
@@ -157,6 +141,25 @@ const protocolByPage = new Map(Object.keys(MCP_REFERENCE).flatMap(port => mcpObj
   `${port}/${object.path}`, object,
 ] as const)))
 
+const modulesByPort = new Map<string, Set<string>>()
+/** A module, package or namespace the port's reference index gives an anchor of its own. */
+function hasModule(port: string, name: string): boolean {
+  let names = modulesByPort.get(port)
+  if (!names) modulesByPort.set(port, names = new Set(API_MODELS[port] ? modulesIn(API_MODELS[port]).map((module) => module.name) : []))
+  return names.has(name)
+}
+
+/**
+ * The link's words are the entity's name, with the flags a command line adds, as a code span or a bare word.
+ * `Enter` linked to `send-keys` is a key, and `send-keys reference` a phrase about the command: neither is the name.
+ */
+function namesEntity(anchor: El, name: string, kind: string): boolean {
+  if (!anchor.children?.every((child) => child.type === 'text' || child.tagName === 'code')) return false
+  const words = textOf(anchor).trim().replace(/^(["'])(.*)\1$/, '$2')
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`^${kind === 'command' ? '(?:tmux\\s+)?' : ''}${escaped}(?:\\s+-{1,2}[A-Za-z0-9][\\w-]*)*$`).test(words)
+}
+
 /** Only mark links whose actual destination names a known declaration. */
 function addKindBadge(anchor: El, port?: string, route?: string, first: First = () => true): void {
   const href = anchor.properties?.href
@@ -170,6 +173,8 @@ function addKindBadge(anchor: El, port?: string, route?: string, first: First = 
   try { fragment = decodeURIComponent(url.hash.slice(1)) } catch { return }
   const match = /\/([^/]+)\/[^/]+\/(?:(mcp|workspace)\/)?reference\/([^/]+)\/?$/.exec(url.pathname)
   const protocol = /\/([^/]+)\/[^/]+\/(mcp\/(?:tools|prompts|resources)\/.+?)\/?$/.exec(url.pathname)
+  // The port is the link's, not the page's: a module is anchored on the index of the port the link names.
+  const modulePort = /\/([^/]+)\/[^/]+\/reference\/?$/.exec(url.pathname)?.[1]
   let kind: string | undefined
   let title: string | undefined
   if (match && PORT_BY_SLUG[match[1]!]) {
@@ -186,12 +191,21 @@ function addKindBadge(anchor: El, port?: string, route?: string, first: First = 
     if (!object || (fragment && fragment !== object.id)) return
     kind = object.kind
     title = `MCP ${kind}`
+  } else if (modulePort && PORT_BY_SLUG[modulePort] && hasModule(modulePort, fragment)) {
+    kind = 'module'
+    title = kind
+  } else {
+    // A link written by hand to a tmux manual or catalog page, as the name it documents is written in prose.
+    const entity = tmuxEntityAt(url.pathname)
+    if (!entity || !namesEntity(anchor, entity.name, entity.kind)) return
+    kind = entity.kind
+    title = TMUX_KIND_TITLES[kind]
+    anchor.properties = { ...anchor.properties, className: [...(Array.isArray(anchor.properties?.className) ? anchor.properties.className as string[] : []), 'tmux-mention'] }
   }
-  if (!kind) return
-  const mark = kindMark(kind)
-  if (!mark) return
+  const badge = kind && mentionBadge(kind, title)
+  if (!kind || !badge) return
   if (!first(`${kind}:${url.pathname}${fragment ? `#${fragment}` : ''}`)) plainKind(anchor, kind, title)
-  else withKindBadge(anchor, kind, mark, title)
+  else withKindBadge(anchor, badge)
 }
 
 /**

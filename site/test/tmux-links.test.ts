@@ -3,7 +3,7 @@ import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { experimental_AstroContainer } from 'astro/container'
 import { SymbolIndex } from '@libtmux/api-model'
-import { Window } from 'happy-dom'
+import { Window, type Element as DomElement } from 'happy-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { API_MODELS, indexFor } from '../src/lib/api-models'
 import { tmuxCommandMentions, linkTmuxDoc, tmuxMentionMarkdown } from '../src/lib/tmux-links'
@@ -31,6 +31,7 @@ async function docComponent() {
   const linker = 'data:text/javascript,export const linkTmuxDoc = globalThis.__tmuxDocLinker'
   const code = result.code.replaceAll('"astro/compiler-runtime"', JSON.stringify(pathToFileURL(astroRequire.resolve('astro/compiler-runtime')).href))
     .replaceAll('"../../lib/tmux-links"', JSON.stringify(linker))
+    .replaceAll('"../../lib/mention-badge"', JSON.stringify(new URL('../src/lib/mention-badge.ts', import.meta.url).href))
   return (await import(/* @vite-ignore */ `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`)).default
 }
 
@@ -49,6 +50,13 @@ async function renderedJuliaSummary(id: string, overload?: number) {
     props: { text, index, context: symbol },
   })
   return { win, text }
+}
+
+/** The words a reader reads: a kind badge is decoration and not part of the text. */
+const readText = (node: DomElement) => {
+  const copy = node.cloneNode(true) as DomElement
+  copy.querySelectorAll('.api-link-kind').forEach((badge) => badge.remove())
+  return copy.textContent
 }
 
 describe('contextual tmux command mentions', () => {
@@ -73,15 +81,16 @@ describe('contextual tmux command mentions', () => {
     expect(code!.querySelectorAll('a')).toHaveLength(0)
     const link = code!.closest('a')
     expect(link?.getAttribute('href')).toBe(`/tmux/latest/manual/${command}/`)
-    expect(link?.textContent).toBe(label)
+    expect(readText(link!)).toBe(label)
   })
 
   it('renders a native paste-buffer mention as linked prose without changing its text', async () => {
     const { win, text } = await renderedJuliaSummary('LibTmux.BufferID')
     const link = win.document.querySelector('a[href="/tmux/latest/manual/paste-buffer/"]')
-    expect(link?.textContent).toBe('paste-buffer')
+    expect(readText(link!)).toBe('paste-buffer')
+    expect(link?.querySelector(':scope > .api-link-kind.api-badge--kind-command')).not.toBeNull()
     expect(link?.querySelector('code')).toBeNull()
-    expect(win.document.body.textContent).toBe(text)
+    expect(readText(win.document.body)).toBe(text)
   })
 
   it('resolves canonical names and explicit invocation aliases from the selected native catalog', () => {

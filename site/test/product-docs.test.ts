@@ -1,13 +1,14 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { createHash } from 'node:crypto'
-import { Window } from 'happy-dom'
+import { Window, type Element as DomElement } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
 import { CONCEPT_DESCRIPTION, PORTS, productAvailable, productDescription, productIsConcept, productInDevelopment, productStatus, workspaceOverviewNotice, type Port } from '../src/lib/ports'
 import { REGISTRY } from '../src/lib/registry'
 import { LANG_TO_PORT } from '../src/plugins/remark-port-code.mjs'
 import { SITE_BUILT, SITE_PREFIX, PREVIEW_PREFIX, productionPath, publishedPath, sitePath } from './site-root'
 import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects } from '../src/lib/mcp-catalog'
+import { mentionBadge, mentionBadgeHtml } from '../src/lib/mention-badge'
 import type { ApiTreeJson } from '../src/lib/api-search'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
@@ -44,6 +45,12 @@ const primaryPorts = PORTS.filter((port) => !port.parentLibrary)
 /** A regular-expression alternation over the registered ports, so a new port is covered without editing a list. */
 const portSlugs = (ports: readonly Port[] = PORTS) => ports.map((port) => port.slug).join('|')
 const read = (path: string) => readFileSync(sitePath(path), 'utf8')
+/** An index entry's name as a reader hears it: the kind badge that leads the link is hidden decoration. */
+function declarationName(link: DomElement) {
+  const name = link.cloneNode(true) as DomElement
+  for (const decoration of name.querySelectorAll('[aria-hidden="true"]')) decoration.remove()
+  return name.textContent.trim()
+}
 // Earlier product checks parse these indexes. Reuse only plain link facts,
 // keyed by the current HTML bytes, rather than keeping their large DOMs alive.
 const declarationIndexes = new Map<string, { href: string; title: string }[]>()
@@ -52,7 +59,7 @@ function referenceDeclarations(html: string, document?: Window['document']) {
   const saved = declarationIndexes.get(identity)
   if (saved || !document) return saved
   const declarations = [...document.querySelectorAll('[aria-labelledby="generated-api"] a[href]')]
-    .map((link) => ({ href: link.getAttribute('href')!, title: link.textContent.trim() }))
+    .map((link) => ({ href: link.getAttribute('href')!, title: declarationName(link) }))
   declarationIndexes.set(identity, declarations)
   return declarations
 }
@@ -172,6 +179,18 @@ it('reuses declaration facts only for identical HTML without retaining a documen
     window.document.body.innerHTML = changed
     expect(referenceDeclarations(changed, window.document)).toEqual([{ href: '/reference/pane/', title: 'Pane' }])
     expect(referenceDeclarations(html)).toEqual(first)
+  } finally {
+    await window.happyDOM.close()
+  }
+})
+
+it('names an index entry without the kind badge that leads its link', async () => {
+  const window = new Window()
+  try {
+    const html = `<section aria-labelledby="generated-api"><a href="/reference/argumentmap/">${mentionBadgeHtml(mentionBadge('typealias')!)}<code>ArgumentMap</code></a></section>`
+    window.document.body.innerHTML = html
+    expect(window.document.querySelector('a')!.textContent).not.toBe('ArgumentMap')
+    expect(referenceDeclarations(html, window.document)).toEqual([{ href: '/reference/argumentmap/', title: 'ArgumentMap' }])
   } finally {
     await window.happyDOM.close()
   }

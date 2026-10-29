@@ -37,14 +37,88 @@ describe('publish plan', () => {
     ])
   })
 
-  it('republishes each newest release as the default, with `next` for a prerelease', () => {
+  it('republishes the newest final release as the default, and a newer prerelease with `next`', () => {
     expect(rows(run({ ref: 'release' }))).toEqual([
       ['py', 'v0.62.0post1', 'v0.62.0post1', 'tag', true, ''],
       ['rs', 'libtmux@v0.1.0-alpha.14', 'v0.1.0-alpha.14', 'tag', false, ''],
       ['rs', 'libtmux@v0.1.0-alpha.14', 'next', 'alias', false, 'v0.1.0-alpha.14'],
+      ['go', 'v1.9.0', 'v1.9.0', 'tag', true, ''],
       ['go', 'v1.10.0-alpha.1', 'v1.10.0-alpha.1', 'tag', false, ''],
       ['go', 'v1.10.0-alpha.1', 'next', 'alias', false, 'v1.10.0-alpha.1'],
     ])
+  })
+
+  describe('with ref release', () => {
+    const ports = [
+      { slug: 'julia', repo: 'libtmux/libtmux-julia', tagGrammar: 'semver', docsDispatch: { workflow: 'docs.yml' } },
+      { slug: 'cxx', repo: 'libtmux/libtmux-cxx', tagGrammar: 'semver', docsDispatch: { workflow: 'docs.yml' } },
+      { slug: 'ts', repo: 'libtmux/libtmux-ts', tagGrammar: 'semver', docsDispatch: { workflow: 'docs.yml' } },
+      { slug: 'backport', repo: 'libtmux/libtmux-backport', tagGrammar: 'semver', docsDispatch: { workflow: 'docs.yml' } },
+      { slug: 'rs', repo: 'libtmux/libtmux-rs', tagPrefix: 'libtmux@', tagGrammar: 'semver', docsDispatch: { workflow: 'docs.yml' } },
+      { slug: 'py', repo: 'tmux-python/libtmux', tagGrammar: 'pep440', docsDispatch: { workflow: 'docs.yml' } },
+    ]
+    const releaseTags: Record<string, string[]> = {
+      'libtmux/libtmux-julia': ['v0.1.1-alpha.2', 'v0.1.1-alpha.1', 'v0.1.0', 'v0.1.0-alpha.2'],
+      'libtmux/libtmux-cxx': Array.from({ length: 14 }, (_, i) => `v0.1.0-alpha.${i + 1}`),
+      'libtmux/libtmux-ts': ['v0.1.0-alpha.2', 'v0.1.0', 'v0.1.0-alpha.1'],
+      // Listed oldest last, as a backport tag pushed after a newer release.
+      'libtmux/libtmux-backport': ['v1.10.0', 'v1.11.0-alpha.1', 'v1.9.1', 'v1.9.0'],
+      'libtmux/libtmux-rs': ['libtmux@v0.2.0-alpha.1', 'libtmux@v0.1.0', 'tmux-mcp@v9.0.0'],
+      'tmux-python/libtmux': ['v0.62.0post1', 'v0.62.0', 'v0.63.0a1'],
+    }
+    const planned = (slug: string, tagsFor = releaseTags) => rows(plan(
+      { ports: slug, ref: 'release' }, ports, (repo) => ({ defaultBranch: 'master', tags: tagsFor[repo] ?? [] }), versions))
+
+    it('plans the newest final release as the default ahead of a newer prerelease', () => {
+      expect(planned('julia')).toEqual([
+        ['julia', 'v0.1.0', 'v0.1.0', 'tag', true, ''],
+        ['julia', 'v0.1.1-alpha.2', 'v0.1.1-alpha.2', 'tag', false, ''],
+        ['julia', 'v0.1.1-alpha.2', 'next', 'alias', false, 'v0.1.1-alpha.2'],
+      ])
+    })
+
+    it('plans only the prerelease and next while a port has no final release', () => {
+      expect(planned('cxx')).toEqual([
+        ['cxx', 'v0.1.0-alpha.14', 'v0.1.0-alpha.14', 'tag', false, ''],
+        ['cxx', 'v0.1.0-alpha.14', 'next', 'alias', false, 'v0.1.0-alpha.14'],
+      ])
+    })
+
+    it('plans only the final release when it is the newest tag', () => {
+      expect(planned('ts')).toEqual([['ts', 'v0.1.0', 'v0.1.0', 'tag', true, '']])
+    })
+
+    it('keeps an older final tag from taking the default, whatever order the tags are listed in', () => {
+      expect(planned('backport')).toEqual([
+        ['backport', 'v1.10.0', 'v1.10.0', 'tag', true, ''],
+        ['backport', 'v1.11.0-alpha.1', 'v1.11.0-alpha.1', 'tag', false, ''],
+        ['backport', 'v1.11.0-alpha.1', 'next', 'alias', false, 'v1.11.0-alpha.1'],
+      ])
+      const reversed = { 'libtmux/libtmux-backport': [...releaseTags['libtmux/libtmux-backport']].reverse() }
+      expect(planned('backport', reversed)).toEqual(planned('backport'))
+      expect(planned('backport', { 'libtmux/libtmux-backport': ['v1.9.0', 'v1.10.0'] }))
+        .toEqual([['backport', 'v1.10.0', 'v1.10.0', 'tag', true, '']])
+    })
+
+    it('reads a prefixed or PEP 440 tag, counting a post-release as final', () => {
+      expect(planned('rs')).toEqual([
+        ['rs', 'libtmux@v0.1.0', 'v0.1.0', 'tag', true, ''],
+        ['rs', 'libtmux@v0.2.0-alpha.1', 'v0.2.0-alpha.1', 'tag', false, ''],
+        ['rs', 'libtmux@v0.2.0-alpha.1', 'next', 'alias', false, 'v0.2.0-alpha.1'],
+      ])
+      expect(planned('py')).toEqual([
+        ['py', 'v0.62.0post1', 'v0.62.0post1', 'tag', true, ''],
+        ['py', 'v0.63.0a1', 'v0.63.0a1', 'tag', false, ''],
+        ['py', 'v0.63.0a1', 'next', 'alias', false, 'v0.63.0a1'],
+      ])
+    })
+
+    it('makes at most one version per port the default', () => {
+      const entries = plan({ ports: 'all', ref: 'release' }, ports, (repo) => ({ defaultBranch: 'master', tags: releaseTags[repo] ?? [] }), versions)
+      for (const { slug } of ports) {
+        expect(entries.filter((entry) => entry.port === slug && entry.isDefault), slug).toHaveLength(slug === 'cxx' ? 0 : 1)
+      }
+    })
   })
 
   it('publishes one port at an exact ref as the inputs name it', () => {

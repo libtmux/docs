@@ -80,6 +80,7 @@ const equivalents = { port, primary: page.signatures[0], symbols, indexes: page.
     <BackToTop />
     <SearchModal port={port} version={version} />
     <script type="application/json" data-native-page-ports set:html={JSON.stringify(equivalents).replaceAll('<', '\\u003c')} />
+    <script type="application/json" data-native-xref-kinds set:html={JSON.stringify(page.xrefKinds ?? {}).replaceAll('<', '\\u003c')} />
     <DocumentationScript />
     <NativeSphinxScript />
     <template data-native-boundary="footer-end"></template>

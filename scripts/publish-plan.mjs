@@ -6,7 +6,16 @@
 //   default version only while the port has no final release, the rule a
 //   trunk push follows (scripts/port-docs-identity.sh).
 // - `release` republishes each port's newest release tag, plus `next` for a
-//   prerelease. A final release is the default, as a tag push makes it.
+//   prerelease. The default is the newest final release. When the newest tag
+//   is a prerelease and the port has a final release, that final release is
+//   planned first as the default, then the prerelease and `next`. A final tag
+//   never takes the default from a newer final tag. "Final" is
+//   packageVersionIsPrerelease's reading, which counts a PEP 440 post-release
+//   as final, while a tag push (port-docs-identity.sh) and gen-versions.mjs
+//   treat one as a prerelease.
+//   Republishing a tag fails the immutable-tag check when the caller pins a
+//   different docs revision from the one that published it; an unchanged pin
+//   can re-verify the tree and still set the default.
 // - Any other ref is one port's exact ref, published as the inputs name it.
 //
 // Dispatch capability and the caller branch come from the port catalog.
@@ -87,6 +96,15 @@ export function plan(inputs, catalog, lookup, versions) {
       if (!tag) continue
       const version = versionOf(tag, port)
       const prerelease = versions.packageVersionIsPrerelease(version, port.tagGrammar)
+      if (prerelease) {
+        // The default is the newest final release, not the newest tag. The
+        // legs run concurrently, each caller's queue serializes their
+        // publications, and only this leg writes the manifest's
+        // defaultVersion, so leg order does not matter.
+        const finals = releases.filter((name) => !versions.packageVersionIsPrerelease(versionOf(name, port), port.tagGrammar))
+        const finalTag = versions.newestPublishedTag(finals, port, null)
+        if (finalTag) entries.push({ ...base, sourceRef: finalTag, version: versionOf(finalTag, port), kind: 'tag', isDefault: true, resolvesTo: '' })
+      }
       entries.push({ ...base, sourceRef: tag, version, kind: 'tag', isDefault: !prerelease, resolvesTo: '' })
       if (prerelease) entries.push({ ...base, sourceRef: tag, version: 'next', kind: 'alias', isDefault: false, resolvesTo: version })
     } else {

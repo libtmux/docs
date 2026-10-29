@@ -10,6 +10,8 @@ import { judgeChipGrowth, railProblems } from '../scripts/check-badge-centring.m
 const marks = readFileSync(new URL('../src/styles/kind-marks.css', import.meta.url), 'utf8')
 
 const CHIPS = ':is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related)'
+/** The mark of a chip: a mention's badge, which leads a name in running text, is not its cap. */
+const MARK = '.api-nav__kind:where(:not(.api-link-kind))'
 /** The declarations of the rule whose selector is `selector`, comments removed. */
 function declarations(css: string, selector: string): Record<string, string> | undefined {
   const plain = css.replace(/\/\*[\s\S]*?\*\//g, '')
@@ -25,9 +27,9 @@ function declarations(css: string, selector: string): Record<string, string> | u
 
 /** What a reader sees go wrong in a chip whose name wraps; empty means the stylesheet rules each out. */
 function styleProblems(css: string): string[] {
-  const chip = declarations(css, `${CHIPS} a:has(> .api-nav__kind)`)
-  const mark = declarations(css, `${CHIPS} a > .api-nav__kind`)
-  const name = declarations(css, `${CHIPS} a > .api-nav__kind + code`)
+  const chip = declarations(css, `${CHIPS} a:has(> ${MARK})`)
+  const mark = declarations(css, `${CHIPS} a > ${MARK}`)
+  const name = declarations(css, `${CHIPS} a > ${MARK} + code`)
   if (!chip || !mark || !name) return ['the chip, its mark or its name has no rule']
   const problems: string[] = []
   if ('height' in chip) problems.push('the chip has a fixed height, so a name that wraps spills out of it')
