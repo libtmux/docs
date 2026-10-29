@@ -61,3 +61,15 @@ The check assumes tmux's built-in commands keep their meaning. A
 [`command-alias`](/tmux/latest/manual/full/#OPTIONS) that redefines a built-in command the library uses to
 identify or guard the daemon is outside this guarantee, as are the contents
 of user-written aliases and shell programs a library only forwards.
+
+## Release candidates
+
+Release candidates are not supported. While a tmux release exists only as
+candidates, a port can gate a feature on one of them, written `X.Y-rcN`, so
+the feature works before the release ships. When the release ships, every
+gate, test, CI job and page that names one of its candidates moves to the
+release or is removed, and the candidates are no longer mentioned.
+
+A candidate's version still parses and ranks below its release, as
+[the core minimum](#the-core-minimum) describes. Beyond that ordering, no
+port promises how it behaves against a candidate server.
