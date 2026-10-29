@@ -38,6 +38,8 @@ const PAGES = [
   { label: 'TypeScript readonly attribute', path: '/ts/latest/reference/client-client-clientbrand/' },
 ]
 const SPLIT = '.api-elsewhere-value, .api-command-related, nav.api-related'
+// The cap of a split chip. The badge that leads a mention in a note of the usage table or of an other-port entry is not one.
+const CHIP_MARK = '.api-nav__kind:where(:not(.api-link-kind))'
 // A compact mark that leads a bare name: an index or tool card, and a member list row.
 const ROW_MARKS = '.api-index-card:not(.api-related-card) .api-index-card__link > .api-nav__kind:first-child, .api-member-list li > span:first-child > .api-nav__kind:first-child'
 const PER_GROUP = 12
@@ -174,9 +176,9 @@ export function judge(label, result, kind, { skipBaseline = false } = {}) {
 }
 
 const GROUPS = [
-  { kind: 'mark', selector: `.api-nav__kind:not(:is(${SPLIT.split(', ').map((s) => `${s} a > .api-nav__kind`).join(', ')}))`, name: 'mark' },
+  { kind: 'mark', selector: `.api-nav__kind:not(:is(${SPLIT.split(', ').map((s) => `${s} a > ${CHIP_MARK}`).join(', ')}))`, name: 'mark' },
   { kind: 'leg', selector: '.api-leg', name: 'legend chip' },
-  { kind: 'split', selector: SPLIT.split(', ').map((s) => `${s} a:has(> .api-nav__kind)`).join(', '), name: 'split chip' },
+  { kind: 'split', selector: SPLIT.split(', ').map((s) => `${s} a:has(> ${CHIP_MARK})`).join(', '), name: 'split chip' },
   { kind: 'row', selector: ROW_MARKS, name: 'card and list mark' },
   { kind: 'mod', selector: '.api-badge--mod', name: 'modifier chip' },
 ]
@@ -269,7 +271,7 @@ export function judgeChipGrowth(chips) {
 export async function chipGrowthProblems(page, scope = { list: 'nav.api-related', where: 'Related APIs column' }) {
   const chips = await page.evaluate(({ list, where, ink }) => {
     const plain = (r) => ({ top: r.top, bottom: r.bottom, left: r.left, right: r.right })
-    return [...document.querySelectorAll(`${list} a:has(> .api-nav__kind)`)].filter((a) => a.offsetParent).map((a) => {
+    return [...document.querySelectorAll(`${list} a:has(> .api-nav__kind:where(:not(.api-link-kind)))`)].filter((a) => a.offsetParent).map((a) => {
       const name = a.querySelector(':scope > .api-nav__kind + code')
       const range = document.createRange()
       range.selectNodeContents(name)
@@ -727,7 +729,7 @@ export async function checkUsageChips(browser, base) {
     assert.deepEqual(qualified.problems, [], `A qualifier took room from its chip:\n${qualified.problems.join('\n')}`)
     // A narrow container with a name that fits, one that wraps twice and one that wraps three times.
     await page.evaluate(() => {
-      const model = document.querySelector('.tmux-usage a:has(> .api-nav__kind)')
+      const model = document.querySelector('.tmux-usage a:has(> .api-nav__kind:where(:not(.api-link-kind)))')
       const box = document.createElement('div')
       box.className = 'tmux-usage'
       box.dataset.control = 'narrow'
@@ -759,7 +761,7 @@ export async function checkUsageChips(browser, base) {
       await page.reload({ waitUntil: 'load' })
       await ready()
     }
-    const CHIP = '.tmux-usage a:has(> .api-nav__kind)'
+    const CHIP = `.tmux-usage a:has(> ${CHIP_MARK})`
     // Control 1: a chip held to one line's height cannot hold a name of two lines, so the name spills out of it.
     await fresh()
     await page.addStyleTag({ content: `${CHIP} { height: var(--sp-h) !important; min-height: 0 !important; }` })
@@ -780,7 +782,7 @@ export async function checkUsageChips(browser, base) {
     // Control 4: a chip moved onto the one above it overlaps.
     await fresh()
     await page.evaluate(() => {
-      const items = [...document.querySelectorAll('.tmux-usage__item a:has(> .api-nav__kind)')]
+      const items = [...document.querySelectorAll('.tmux-usage__item a:has(> .api-nav__kind:where(:not(.api-link-kind)))')]
       const second = items.find((chip, index) => items[index - 1] && chip.parentElement === items[index - 1].parentElement) ?? items[1]
       second.style.transform = 'translateY(-12px)'
     })

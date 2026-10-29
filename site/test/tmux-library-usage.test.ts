@@ -1065,6 +1065,19 @@ const MARKS_CSS = readFileSync(new URL('../src/styles/kind-marks.css', import.me
 /** The chips that were there before the usage table, whose hover and focus stay as they were. */
 const OLDER_CHIPS = /\.api-elsewhere-value|\.api-command-related|nav\.api-related/
 const squash = (selector: string) => selector.replace(/\s+/g, ' ').trim()
+/** The selector without its `:has(...)` groups, whatever they nest. */
+function withoutHas(selector: string): string {
+  for (let start = selector.indexOf(':has('); start >= 0; start = selector.indexOf(':has(')) {
+    let depth = 0
+    let end = start + ':has'.length
+    do { depth += selector[end] === '(' ? 1 : selector[end] === ')' ? -1 : 0; end++ } while (depth > 0)
+    selector = selector.slice(0, start) + selector.slice(end)
+  }
+  return selector
+}
+/** A chip's mark: the badge that leads a mention in running text is not its cap. */
+const MARK = '.api-nav__kind:where(:not(.api-link-kind))'
+const MARK_PATTERN = '\\.api-nav__kind:where\\(:not\\(\\.api-link-kind\\)\\)'
 
 /**
  * What a reader sees go wrong when the pointer or the keyboard reaches a split chip: the tree's
@@ -1075,11 +1088,11 @@ const squash = (selector: string) => selector.replace(/\s+/g, ' ').trim()
 function chipStateProblems(css: string): string[] {
   const all = parseRules(css)
   const problems: string[] = []
-  const inChip = (rule: { selector: string }) => rule.selector.includes('.tmux-usage') && !OLDER_CHIPS.test(rule.selector) && rule.selector.includes('a:has(> .api-nav__kind)')
+  const inChip = (rule: { selector: string }) => rule.selector.includes('.tmux-usage') && !OLDER_CHIPS.test(rule.selector) && rule.selector.includes('a:has(> .api-nav__kind')
   const chipRules = all.filter((rule) => !rule.at && inChip(rule))
   const reachesChip = (rule: { selector: string }, state: string) => squash(rule.selector).includes(state)
   /** The selector without the `:has(> .api-nav__kind)` that picks out the chip, so `> .api-nav__kind` means its mark. */
-  const targetsMark = (rule: { selector: string }) => squash(rule.selector).replace(/:has\([^)]*\)/g, '').includes('> .api-nav__kind')
+  const targetsMark = (rule: { selector: string }) => withoutHas(squash(rule.selector)).includes('> .api-nav__kind')
 
   const hovered = chipRules.find((rule) => reachesChip(rule, ':is(:hover, :focus-visible)') && !targetsMark(rule))
   if (!hovered?.body.background || !hovered.body['border-color']) problems.push('a hovered chip changes its surface but not its border')
@@ -1102,7 +1115,7 @@ function chipStateProblems(css: string): string[] {
   if (!forcedReset || forcedReset.body.background !== 'Canvas') problems.push("forced colours light a hovered chip's mark alone")
 
   // The chips that were there before it keep their hover and focus: nothing that reaches one of them takes the border, the outline or the reset of the mark.
-  const older = all.filter((rule) => OLDER_CHIPS.test(rule.selector) && /:hover|:focus-visible/.test(rule.selector) && rule.selector.includes('a:has(> .api-nav__kind)'))
+  const older = all.filter((rule) => OLDER_CHIPS.test(rule.selector) && /:hover|:focus-visible/.test(rule.selector) && rule.selector.includes('a:has(> .api-nav__kind'))
   if (older.some((rule) => 'border-color' in rule.body || 'outline' in rule.body || 'outline-offset' in rule.body || targetsMark(rule))) problems.push('the usage table\'s hover and focus reach the other chips')
 
   // The control: the tree still selects a node with the ring.
@@ -1131,17 +1144,17 @@ describe('the hover and focus of a split chip', () => {
   })
 
   it('catches the mark-only ring, the surface-only hover and a focus that rings the mark', () => {
-    const chipReset = /\.tmux-usage a:has\(> \.api-nav__kind\):is\(:hover, :focus-visible\) > \.api-nav__kind \{[^}]*\}\n/
+    const chipReset = new RegExp(`\\.tmux-usage a:has\\(> ${MARK_PATTERN}\\):is\\(:hover, :focus-visible\\) > \\.api-nav__kind \\{[^}]*\\}\n`)
     expect(MARKS_CSS).toMatch(chipReset)
     expect(chipStateProblems(MARKS_CSS.replace(chipReset, ''))).toEqual(["a hovered chip's mark takes the active ring"])
-    expect(chipStateProblems(MARKS_CSS.replace(/(\.tmux-usage a:has\(> \.api-nav__kind\):is\(:hover, :focus-visible\) \{\n[^}]*?)\n  border-color:[^\n]*/, '$1')))
+    expect(chipStateProblems(MARKS_CSS.replace(new RegExp(`(\\.tmux-usage a:has\\(> ${MARK_PATTERN}\\):is\\(:hover, :focus-visible\\) \\{\\n[^}]*?)\\n  border-color:[^\\n]*`), '$1')))
       .toEqual(['a hovered chip changes its surface but not its border'])
-    expect(chipStateProblems(MARKS_CSS.replace(/(\.tmux-usage a:has\(> \.api-nav__kind\):focus-visible \{\n)  outline: [^\n]*\n  outline-offset: [^\n]*\n/, '$1  box-shadow: var(--mk-act-ring, none);\n')))
+    expect(chipStateProblems(MARKS_CSS.replace(new RegExp(`(\\.tmux-usage a:has\\(> ${MARK_PATTERN}\\):focus-visible \\{\\n)  outline: [^\\n]*\\n  outline-offset: [^\\n]*\\n`), '$1  box-shadow: var(--mk-act-ring, none);\n')))
       .toEqual(expect.arrayContaining(['focus is not one outline clear of the whole chip', 'focus rings the chip with a shadow', 'a chip rule sets the active ring']))
   })
 
   it('catches the usage table\'s rules reaching the other chips', () => {
-    const widened = MARKS_CSS.replace('.tmux-usage a:has(> .api-nav__kind):focus-visible {', ':is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a:has(> .api-nav__kind):focus-visible {')
+    const widened = MARKS_CSS.replace(`.tmux-usage a:has(> ${MARK}):focus-visible {`, `:is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a:has(> ${MARK}):focus-visible {`)
     expect(widened).not.toBe(MARKS_CSS)
     expect(chipStateProblems(widened)).toEqual(expect.arrayContaining(["the usage table's hover and focus reach the other chips"]))
   })
