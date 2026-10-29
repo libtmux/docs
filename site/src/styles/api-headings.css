@@ -15,3 +15,19 @@
 }
 .api-heading-link:hover { color: var(--color-link); }
 .api-heading-link:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+
+/* A fine pointer sees the hash only once its heading, or the parameter line
+   that owns it, is hovered, holds focus or is the target. The link keeps its
+   layout box, its tab stop and its accessible name; only its opacity changes.
+   A section's wrapper can own the id instead of the heading, so a target also
+   reaches the heading one level down. Anything else shows the hash always. */
+@media (hover: hover) and (pointer: fine) {
+  .api-heading-link { opacity: 0; }
+  .api-heading-link:focus-visible,
+  :is(:hover, :focus-within, :target) > .api-heading-link,
+  :target > :is(h2, h3, p) > .api-heading-link { opacity: 1; }
+}
+/* Touch has no hover, and a forced palette must not lose the hash. */
+@media (hover: none), (forced-colors: active) {
+  .api-heading-link { opacity: 1; }
+}

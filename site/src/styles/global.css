@@ -257,14 +257,13 @@ html:has(.site-header :focus) {
   left: calc(100% + .25rem);
   top: 0;
   font-weight: 400;
-  opacity: 0;
 }
-.anchored-entry:is(:hover, :target, :focus-within) .row-label-link::after { opacity: 1; }
 .section-anchor-alias { position: absolute; }
-/* A table row's permalink trails its first cell's text and stays quiet until
-   the row is hovered, focused or targeted, as the section ¶ does. It keeps its
-   static position at the end of the last line and leaves the flow, so it never
-   takes room from the label or wraps onto a line of its own. */
+/* A table row's permalink trails its first cell's text. It keeps its static
+   position at the end of the last line and leaves the flow, so it never takes
+   room from the label or wraps onto a line of its own. A fine pointer sees it
+   once the row is hovered, focused or targeted, as the section ¶ does; touch
+   and forced palettes keep it in view. */
 .prose .row-anchor-cell { position: relative; }
 .prose .row-anchor-link {
   position: absolute;
@@ -273,11 +272,21 @@ html:has(.site-header :focus) {
   color: var(--theme-primary);
   font-weight: 400;
   text-decoration: none;
-  opacity: 0;
 }
 .prose .row-anchor-link:hover { color: var(--theme-secondary); }
 html[data-theme-mode="dark"] .prose .row-anchor-link:hover { color: var(--theme-accent); }
-.anchored-entry:is(:hover, :target, :focus-within) .row-anchor-link { opacity: 1; }
+@media (hover: hover) and (pointer: fine) {
+  .prose .row-label-link::after,
+  .prose .row-anchor-link { opacity: 0; }
+  .anchored-entry:is(:hover, :target, :focus-within) .row-label-link::after,
+  .anchored-entry:is(:hover, :target, :focus-within) .row-anchor-link,
+  .prose .row-label-link:focus-visible::after,
+  .prose .row-anchor-link:focus-visible { opacity: 1; }
+}
+@media (hover: none), (forced-colors: active) {
+  .prose .row-label-link::after,
+  .prose .row-anchor-link { opacity: 1; }
+}
 .prose :is(.row-anchor-link, .row-label-link):focus-visible {
   outline: 2px solid var(--theme-primary);
   outline-offset: 3px;
