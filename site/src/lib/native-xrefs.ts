@@ -20,8 +20,11 @@ export function markNativeXrefs(article: Element, kinds: Readonly<Record<string,
   for (const node of article.querySelectorAll<HTMLAnchorElement>('h1, h2, h3, h4, h5, h6, a.reference.internal')) {
     if (/^H[1-6]$/.test(node.tagName)) { first = firstMention(); continue }
     const code = node.children.length === 1 && node.firstElementChild?.matches('code.xref') ? node.firstElementChild : undefined
+    // The fragment is read from the attribute, not the resolved href, so it does not depend on the document's base:
+    // a relative href in a document without one (about:blank) resolves differently across Node releases.
+    const href = node.getAttribute('href') ?? ''
     let target = ''
-    try { target = decodeURIComponent(new URL(node.href).hash.slice(1)) } catch { /* A malformed fragment names no declaration. */ }
+    try { target = href.includes('#') ? decodeURIComponent(href.slice(href.indexOf('#') + 1)) : '' } catch { /* A malformed fragment names no declaration. */ }
     const kind = Object.hasOwn(kinds, target) ? kinds[target] : undefined
     const badge = kind ? mentionBadge(kind, kind) : undefined
     if (!code || !badge || node.classList.contains('api-mention') || node.closest('dt.sig')) continue

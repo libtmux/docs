@@ -38,7 +38,7 @@ function article() {
 const links = (root: Element, scope = 'a.reference.internal') => [...root.querySelectorAll<HTMLAnchorElement>(scope)]
 const marked = (link: Element) => Boolean(link.querySelector(':scope > .api-link-kind'))
 const kindOf = (link: Element) => link.querySelector(':scope > .api-link-kind')?.getAttribute('data-api-kind')
-const target = (link: HTMLAnchorElement) => decodeURIComponent(new URL(link.href).hash.slice(1))
+const target = (link: HTMLAnchorElement) => { const href = link.getAttribute('href') ?? ''; return href.includes('#') ? decodeURIComponent(href.slice(href.indexOf('#') + 1)) : '' }
 
 /** What is wrong with how an article leads its cross-references, so a control can show the check is able to fail. */
 function problems(root: Element): string[] {
