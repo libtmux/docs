@@ -654,6 +654,13 @@ html[data-theme="purple"][data-theme-mode="dark"] {
     }
   }
 
+  /* A forced palette must not lose the anchor. */
+  @media (forced-colors: active) {
+    .anchor-link {
+      @apply opacity-100;
+    }
+  }
+
   /* Ensure proper spacing for different heading sizes */
   .prose h1 .anchor-link {
     @apply ml-3;

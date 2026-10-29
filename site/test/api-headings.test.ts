@@ -64,16 +64,32 @@ const inMedia = (rule: Rule, feature: string) => rule.media.some((media) => medi
 const hides = (rule: Rule) => rule.declarations.opacity === '0'
 const shows = (rule: Rule) => rule.declarations.opacity === '1'
 
+/**
+ * The elements a selector names as holding `owner`, with whether the owner is their child.
+ * The state belongs to the holder: `:is(:hover) > .link` reveals the link while its heading is hovered,
+ * and `.link:is(:hover)` would reveal it only while the pointer is on the hash itself.
+ */
+function holders(selectors: string[], owner: string) {
+  return selectors.flatMap((selector) => {
+    if (!selector.endsWith(owner)) return []
+    const before = selector.slice(0, -owner.length)
+    const combinator = /\s*[>+~]\s*$|\s+$/.exec(before)
+    return combinator ? [{ holder: before.slice(0, combinator.index), child: combinator[0].includes('>') }] : []
+  })
+}
+
 /** What a permalink revealed on a fine pointer owes touch, forced colours, focus and assistive technology. */
-function revealViolations(css: string, owner: string, options: { rest: RegExp; focus: RegExp }): string[] {
+function revealViolations(css: string, owner: string, options: { rest: RegExp; focus: RegExp; child?: boolean }): string[] {
   const rules = parseRules(css).filter((rule) => rule.selectors.some((selector) => selector.includes(owner)))
   const found: string[] = []
   const quiet = rules.filter((rule) => hides(rule) && rule.selectors.some((selector) => options.rest.test(selector)))
   if (quiet.length === 0) found.push('nothing hides the permalink at rest')
   if (rules.some((rule) => hides(rule) && !inFinePointer(rule))) found.push('the permalink is hidden outside a fine-pointer query')
   const revealing = rules.filter((rule) => shows(rule) && inFinePointer(rule)).flatMap((rule) => rule.selectors)
+  // The holder is one element: a rule through a wrapper (`:target > h2 > link`) does not stand for the heading's own target.
+  const direct = holders(revealing, owner).filter((entry) => (!options.child || entry.child) && !entry.holder.includes('>'))
   for (const state of [':hover', ':focus-within', ':target']) {
-    if (!revealing.some((selector) => selector.includes(state))) found.push(`a fine pointer does not reveal it on ${state}`)
+    if (!direct.some((entry) => entry.holder.includes(state))) found.push(`no element holding the permalink reveals it on ${state}`)
   }
   if (!revealing.some((selector) => options.focus.test(selector))) found.push('a fine pointer does not reveal it on its own :focus-visible')
   if (!rules.some((rule) => shows(rule) && inMedia(rule, '(hover: none)'))) found.push('touch does not keep it visible')
@@ -83,11 +99,13 @@ function revealViolations(css: string, owner: string, options: { rest: RegExp; f
 
 /** The API heading hash: the contract above plus the ways a hash can be hidden from the keyboard. */
 function headingViolations(css: string): string[] {
-  const found = revealViolations(css, '.api-heading-link', { rest: /^\.api-heading-link$/, focus: /\.api-heading-link:focus-visible$/ })
+  const found = revealViolations(css, '.api-heading-link', { rest: /^\.api-heading-link$/, focus: /\.api-heading-link:focus-visible$/, child: true })
   const rules = parseRules(css).filter((rule) => rule.selectors.some((selector) => selector.includes('.api-heading-link')))
   const revealing = rules.filter((rule) => shows(rule) && inFinePointer(rule)).flatMap((rule) => rule.selectors)
   // A section wrapper owns the id in ApiEntry, so the target is one level above the heading.
-  if (!revealing.some((selector) => /:target\s*>\s*[^>]+>\s*\.api-heading-link$/.test(selector))) found.push('a target on a section wrapper does not reach its heading')
+  if (!holders(revealing, '.api-heading-link').some((entry) => entry.child && entry.holder.includes(':target') && entry.holder.includes('>'))) {
+    found.push('a target on a section wrapper does not reach its heading')
+  }
   for (const rule of rules) {
     if (rule.declarations.display === 'none') found.push('display: none takes the permalink out of the tab order')
     if (rule.declarations.visibility === 'hidden') found.push('visibility: hidden takes the permalink out of the tab order')
@@ -171,9 +189,15 @@ describe('API heading permalinks', () => {
     for (const rule of quiet) expect(inFinePointer(rule), rule.selectors.join()).toBe(true)
   })
 
-  it('reveal on hover, focus within, own focus and target', () => {
-    const revealing = parseRules(headings).filter((rule) => shows(rule) && inFinePointer(rule)).flatMap((rule) => rule.selectors).join('\n')
-    for (const state of [':hover', ':focus-within', ':target', '.api-heading-link:focus-visible']) expect(revealing).toContain(state)
+  it('reveal from the heading that holds the hash on hover, focus within and target, and on its own focus', () => {
+    const revealing = parseRules(headings).filter((rule) => shows(rule) && inFinePointer(rule)).flatMap((rule) => rule.selectors)
+    const direct = holders(revealing, '.api-heading-link').filter((entry) => entry.child && !entry.holder.includes('>'))
+    for (const state of [':hover', ':focus-within', ':target']) {
+      expect(direct.some((entry) => entry.holder.includes(state)), `${state} is on the heading, the link its child`).toBe(true)
+    }
+    expect(revealing).toContain('.api-heading-link:focus-visible')
+    // No state is carried by the hash alone, which a pointer elsewhere on the heading never reaches.
+    for (const selector of revealing) expect(selector, selector).not.toMatch(/\.api-heading-link:(hover|focus-within|target|is\()/)
   })
 
   it('force the hash visible under hover: none and forced colours', () => {
@@ -194,9 +218,9 @@ describe('API heading permalinks', () => {
     it('fail against the stylesheet before permalinks were revealed', () => {
       expect(headingViolations(MAIN_HEADINGS)).toEqual([
         'nothing hides the permalink at rest',
-        'a fine pointer does not reveal it on :hover',
-        'a fine pointer does not reveal it on :focus-within',
-        'a fine pointer does not reveal it on :target',
+        'no element holding the permalink reveals it on :hover',
+        'no element holding the permalink reveals it on :focus-within',
+        'no element holding the permalink reveals it on :target',
         'a fine pointer does not reveal it on its own :focus-visible',
         'touch does not keep it visible',
         'forced colours do not keep it visible',
@@ -208,11 +232,11 @@ describe('API heading permalinks', () => {
       ['hiding it on every pointer', (css: string) => edit(css, '@media (hover: hover) and (pointer: fine) {', '@media screen {'),
         'the permalink is hidden outside a fine-pointer query'],
       ['no reveal on hover', (css: string) => edit(css, ':is(:hover, :focus-within, :target) >', ':is(:focus-within, :target) >'),
-        'a fine pointer does not reveal it on :hover'],
+        'no element holding the permalink reveals it on :hover'],
       ['no reveal on focus within', (css: string) => edit(css, ':is(:hover, :focus-within, :target) >', ':is(:hover, :target) >'),
-        'a fine pointer does not reveal it on :focus-within'],
+        'no element holding the permalink reveals it on :focus-within'],
       ['no reveal on target', (css: string) => edit(edit(css, ':is(:hover, :focus-within, :target) >', ':is(:hover, :focus-within) >'), /\s*:target > :is\(h2, h3, p\) > \.api-heading-link/, ''),
-        'a fine pointer does not reveal it on :target'],
+        'no element holding the permalink reveals it on :target'],
       ['no reveal through a wrapper target', (css: string) => edit(css, /,\s*:target > :is\(h2, h3, p\) > \.api-heading-link/, ''),
         'a target on a section wrapper does not reach its heading'],
       ['no reveal on its own focus', (css: string) => edit(css, '.api-heading-link:focus-visible,\n  :is(', ':is('),
@@ -231,6 +255,15 @@ describe('API heading permalinks', () => {
         'a transition runs under reduced motion'],
     ])('fail with %s', (_name, mutate, violation) => {
       expect(headingViolations(mutate(headings))).toContain(violation)
+    })
+
+    it('fail with the reveal moved onto the hash itself, which only its own hover would reach', () => {
+      const moved = edit(headings, ':is(:hover, :focus-within, :target) > .api-heading-link,', '.api-heading-link:is(:hover, :focus-within, :target),')
+      expect(headingViolations(moved)).toEqual(expect.arrayContaining([
+        'no element holding the permalink reveals it on :hover',
+        'no element holding the permalink reveals it on :focus-within',
+        'no element holding the permalink reveals it on :target',
+      ]))
     })
 
     it('accept a fade that waits for motion to be allowed', () => {
@@ -266,6 +299,15 @@ describe('prose row permalinks', () => {
       expect(found).toContain('a fine pointer does not reveal it on its own :focus-visible')
     })
 
+    it('fail with the section sign revealed from the link itself', () => {
+      const moved = edit(rows, '.anchored-entry:is(:hover, :target, :focus-within) .row-label-link::after,', '.prose .row-label-link:is(:hover, :target, :focus-within)::after,')
+      expect(rowViolations(moved)).toEqual(expect.arrayContaining([
+        'no element holding the permalink reveals it on :hover',
+        'no element holding the permalink reveals it on :target',
+        'no element holding the permalink reveals it on :focus-within',
+      ]))
+    })
+
     it.each([
       ['hiding both on every pointer', (css: string) => edit(css, '@media (hover: hover) and (pointer: fine) {', '@media screen {'),
         'the permalink is hidden outside a fine-pointer query'],
@@ -276,6 +318,21 @@ describe('prose row permalinks', () => {
     ])('fail with %s', (_name, mutate, violation) => {
       expect(rowViolations(mutate(rows))).toContain(violation)
     })
+  })
+})
+
+describe('prose heading anchors', () => {
+  const full = style('global.css')
+  const touch = /@media \(hover: none\) \{\s*\.anchor-link \{\s*@apply opacity-50;/
+  const forced = /@media \(forced-colors: active\) \{\s*\.anchor-link \{\s*@apply opacity-100;/
+
+  it('stay in view on touch and in forced colours', () => {
+    expect(full).toMatch(touch)
+    expect(full).toMatch(forced)
+  })
+
+  it('fail without the forced-colours rule', () => {
+    expect(edit(full, forced, '')).not.toMatch(forced)
   })
 })
 
