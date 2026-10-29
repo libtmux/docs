@@ -1,5 +1,6 @@
-import { readFileSync, rmSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
 
@@ -50,8 +51,10 @@ describe('API links in port sections', () => {
   })
 
   it('leaves a published inventory file plain after a Python fence, without reporting it dangling', () => {
-    const report = fileURLToPath(new URL('../.astro/dangling-refs.json', import.meta.url))
-    rmSync(report, { force: true })
+    // The test names a report of its own: the build's is not a place for a test to write.
+    const directory = mkdtempSync(join(tmpdir(), 'dangling-'))
+    const report = join(directory, 'report.jsonl')
+    vi.stubEnv('LIBTMUX_DOCS_DANGLING_REPORT', report)
     const fence = element('pre', element('code'))
     fence.children![0].properties = { className: ['language-python'] }
     const inventory = element('p', element('code', text('objects.inv')), element('code', text('reference/objects.inv')))
@@ -62,5 +65,6 @@ describe('API links in port sections', () => {
     expect(symbol.children?.[0].properties?.href).toBe('/py/latest/reference/libtmux-server/')
     // The control: the gate still records a Python name that nothing defines.
     expect(readFileSync(report, 'utf8').trim().split('\n').map((line) => JSON.parse(line).text)).toEqual(['Nope.thing()'])
+    rmSync(directory, { recursive: true, force: true })
   })
 })

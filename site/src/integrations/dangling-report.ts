@@ -1,7 +1,8 @@
 import { existsSync, readFileSync, rmSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { AstroIntegration } from 'astro'
+import { danglingReportPath } from '../lib/dangling-report-path'
 
 interface DanglingReference { port: string; text: string; why: string }
 
@@ -14,14 +15,12 @@ interface DanglingReference { port: string; text: string; why: string }
  * nor `globalThis` reaches this hook. Two earlier versions reported "no
  * dangling API references" from builds that had them.
  *
- * An absent file therefore means the linking pass did not run — a cached
- * build, or a broken plugin — and that is reported as unknown rather than as
- * success. A report that says "clean" without looking is worse than none.
- */
-const here = dirname(fileURLToPath(import.meta.url))
-const REPORT = join(here, '../../.astro/dangling-refs.json')
-
-/**
+ * An absent file therefore means the linking pass did not run — a broken
+ * plugin, or a process that could not write the file — and a root build fails
+ * on it rather than passing: a report that says "clean" without looking is
+ * worse than none. (Astro's content layer is not a reason to be absent; the
+ * build clears its cache before it runs.)
+ *
  * `maxDangling` is a regression guard, not a quality target.
  *
  * 60 is the current measurement taken from a report that actually ran — the
@@ -38,8 +37,16 @@ export function danglingReport(maxDangling = 60): AstroIntegration {
       // Clear before the run so a stale file cannot be mistaken for this
       // build's result.
       'astro:config:setup': ({ command, config }) => {
+        // A build that inherits VITEST names no report and writes none, so the ceiling would find nothing to count.
+        if (command === 'build' && process.env.VITEST && !process.env.LIBTMUX_DOCS_DANGLING_REPORT) {
+          throw new Error(
+            'libtmux:dangling-refs: VITEST is set in this build, so the linking pass writes no report. ' +
+              'Unset it, or name a report with LIBTMUX_DOCS_DANGLING_REPORT.',
+          )
+        }
         try {
-          rmSync(REPORT, { force: true })
+          const report = danglingReportPath()
+          if (report) rmSync(report, { force: true })
         } catch {
           /* nothing to clear */
         }
@@ -63,11 +70,14 @@ export function danglingReport(maxDangling = 60): AstroIntegration {
       },
       'astro:build:done': ({ logger }) => {
         if (process.env.LIBTMUX_DOCS_PORT) return
-        if (!existsSync(REPORT)) {
-          logger.info('API link check did not run (content served from cache)')
-          return
+        const report = danglingReportPath()
+        if (!report || !existsSync(report)) {
+          throw new Error(
+            `libtmux:dangling-refs: no report${report ? ` at ${report}` : ''}, so the linking pass did not run ` +
+              `and there is nothing to hold to the ceiling of ${maxDangling}.`,
+          )
         }
-        const dangling = readFileSync(REPORT, 'utf8')
+        const dangling = readFileSync(report, 'utf8')
           .split('\n')
           .filter(Boolean)
           .map((line) => JSON.parse(line) as DanglingReference)

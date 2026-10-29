@@ -1,6 +1,5 @@
 import { appendFileSync, mkdirSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { dirname } from 'node:path'
 import { visit } from 'unist-util-visit'
 import { isLikelyReference, modulesIn, notApiReason, type ApiProduct } from '@libtmux/api-model'
 import { createProseLinker, PORT_BY_LABEL, protocolRunMentions } from '../lib/prose-resolver'
@@ -12,9 +11,9 @@ import { docsPath, isTmuxProse } from '../lib/docs-paths'
 import { MCP_REFERENCE, mcpObjects } from '../lib/mcp-catalog'
 import { mergeMentions, tmuxEntityAt, tmuxMentions, type Mention } from '../lib/tmux-links'
 import { isLibraryPage, workspaceNames } from '../lib/workspace-links'
+import { danglingReportPath } from '../lib/dangling-report-path'
 
 /** Link inline API and source references using their prose ownership. */
-const here = dirname(fileURLToPath(import.meta.url))
 
 export interface DanglingReference {
   port: string
@@ -46,8 +45,6 @@ export interface DanglingReference {
  * report success from a pass that never ran: an absent file means "did not
  * run", which is a different answer from "ran and found nothing".
  */
-const REPORT = join(here, '../../.astro/dangling-refs.json')
-
 /**
  * Ensure this build's report exists, so an absent file has exactly one
  * meaning: the linking pass never ran.
@@ -65,9 +62,11 @@ const REPORT = join(here, '../../.astro/dangling-refs.json')
  * integration's `rmSync` at config setup is the single truncation point.
  */
 function begin(): void {
+  const report = danglingReportPath()
+  if (!report) return
   try {
-    mkdirSync(dirname(REPORT), { recursive: true })
-    appendFileSync(REPORT, '')
+    mkdirSync(dirname(report), { recursive: true })
+    appendFileSync(report, '')
   } catch {
     /* reporting must never fail a render */
   }
@@ -82,8 +81,10 @@ function begin(): void {
  * prevent.
  */
 function record(entry: DanglingReference): void {
+  const report = danglingReportPath()
+  if (!report) return
   try {
-    appendFileSync(REPORT, JSON.stringify(entry) + '\n')
+    appendFileSync(report, JSON.stringify(entry) + '\n')
   } catch {
     /* reporting must never fail a render */
   }
