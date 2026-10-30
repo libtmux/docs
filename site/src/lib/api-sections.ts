@@ -326,7 +326,7 @@ export function apiEntryFields(symbol: ApiSymbol, port?: string) {
       // Python, Rust and Lua spell the receiver as a first parameter; the call never passes it.
       // A C function's `self` is an argument like any other.
       const receiver = (param: Param, position: number) => port !== 'c' && position === 0 && !param.doc &&
-        (param.name === 'self' || (port === 'py' && param.name === 'cls'))
+        (param.name === 'self' || (port === 'py' && param.name === 'cls') || (port === 'rs' && isRustReceiver(param.name)))
       return signature.params.filter((param, position) => !receiver(param, position) &&
         (!declared || declared.some((entry) => entry.index === position)))
     }),
@@ -334,6 +334,9 @@ export function apiEntryFields(symbol: ApiSymbol, port?: string) {
     raises: collect((signature) => signature.raises ?? []),
   }
 }
+
+/** Rust spells the receiver `self`, `mut self`, `&self`, `&mut self`, or a borrow with a lifetime, as in `&'a self`. */
+export const isRustReceiver = (name: string) => /^(?:&\s*(?:'\w+\s+)?)?(?:mut\s+)?self$/.test(name)
 
 /** The parameters of enclosing declarations that the symbol's own types mention. */
 export function apiInheritedTypeParameters(symbol: ApiSymbol, index?: SymbolIndex) {
