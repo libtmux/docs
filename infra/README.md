@@ -110,9 +110,8 @@ version search engines index. Only the port root ignores it.
 
 A miss falls through to the directory-index rule and serves
 `/en/<port>/index.html`, a `noindex` meta-refresh page the shell builds to the
-port's pinned default version, which can differ from the `latest` a row
-names (`site/src/pages/[port]/index.astro`). The traced table below records
-that path.
+same destination (`site/src/pages/[port]/index.astro`). The traced table
+below records that path.
 
 The key is the port slug, never the locale: the redirect is only reachable
 under a locale prefix (rule 1 is anchored on it) and every locale resolves a

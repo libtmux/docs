@@ -1,17 +1,17 @@
 ---
 import { PORTS, portHomeUrl, type Port } from '../../lib/ports'
 import { IS_ROOT_BUILD } from '../../lib/site-root'
-import { defaultVersionFor } from '../../lib/versions'
 import { DEFAULT_LOCALE } from '../../i18n/locales'
 import { buildLocale } from '../../i18n/resolve'
 import RedirectPage from '../../components/docs/RedirectPage.astro'
 
 /**
- * `/<port>/`: a redirect to the port's default version.
+ * `/<port>/`: a redirect to the port's `latest` docs.
  *
  * The edge function answers this URL with a 302 from its KeyValueStore
  * (infra/cloudfront-function.js rule 1), so readers reach this page only
- * when that lookup misses. The static fallback preserves query strings and
+ * when that lookup misses. Both go to `latest`, whatever version the port
+ * pins as its default. The static fallback preserves query strings and
  * section links, with a meta refresh for browsers without JavaScript.
  */
 export function getStaticPaths() {
@@ -31,7 +31,7 @@ interface Props {
 }
 
 const { port } = Astro.props as Props
-const destination = portHomeUrl(port, defaultVersionFor(port.slug))
+const destination = portHomeUrl(port, 'latest')
 ---
 
 <RedirectPage destination={destination} title={`${port.name} documentation`} />

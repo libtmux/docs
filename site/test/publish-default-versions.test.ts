@@ -3,8 +3,12 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { PORTS } from '../src/lib/ports'
+import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
+
+// The page imports the locale resolver, which reads the content collection.
+vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
 
 // The publisher the deploy runs, not a copy of it.
 const script = fileURLToPath(new URL('../../scripts/publish-default-versions.sh', import.meta.url))
@@ -133,5 +137,26 @@ describe('shell default-version publication', { timeout: 30_000 }, () => {
     expect(result.status).not.toBe(0)
     expect(result.stderr).toContain('AccessDenied')
     expect(subcommands(result.commands)).not.toContain('update-keys')
+  })
+})
+
+describe('the static fallback for a missed lookup', () => {
+  afterEach(() => vi.unstubAllEnvs())
+
+  it('sends each port root where its row does, whatever the port pins as its default', async () => {
+    const rows = new Map(putsOf(publish(fixture([])).commands).map((put): [string, string] => {
+      const [, slug, value] = /^Key=([^:]+):default,Value=(.+)$/.exec(put)!
+      return [slug!, value!]
+    }))
+    expect([...rows.keys()].sort()).toEqual(PORTS.map((port) => port.slug).sort())
+
+    vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '/en')
+    vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', JSON.stringify(Object.fromEntries(PORTS.map((port) => [port.slug, 'v0.46.2']))))
+    vi.resetModules()
+    const page = await loadAstroTemplate('pages/[port]/index.astro', { real: ['components/docs/RedirectPage.astro'] })
+    for (const port of PORTS) {
+      const html = await renderAstroTemplate(page, { props: { port } })
+      expect(html, port.slug).toContain(`<noscript><meta http-equiv="refresh" content="0;url=/en/${port.slug}/${rows.get(port.slug)}/"></noscript>`)
+    }
   })
 })
