@@ -57,7 +57,7 @@ permanently, by design:
 Only **py, ts, cxx** have both a published local version tree and a
 CloudFront-level bare-root redirect (`infra/cloudfront-function.js` rule 1:
 `/en/py` or `/en/py/` with no further path segment does a KVS lookup on
-`<slug>:default` and 302s to `/en/py/<default>/`, its newest release tag, before the request ever reaches
+`<slug>:default` and 302s to `/en/py/latest/` before the request ever reaches
 the origin). Rule 1 is anchored on the locale segment, so the unprefixed
 `/py` is claimed by nothing and 404s — the short form stays unowned, which is
 what keeps a port slug from colliding with a locale code. For those three, `dist/py/index.html` is legitimately

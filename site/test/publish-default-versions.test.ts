@@ -14,13 +14,16 @@ const scratch: string[] = []
 afterEach(() => scratch.splice(0).forEach((path) => rmSync(path, { recursive: true, force: true })))
 
 // A recording `aws` that answers the two reads from a fixed store, and fails
-// whichever subcommand FAIL names.
-function fixture(defaultVersion: Record<string, string>, storeItems: { Key: string; Value: string }[]): string {
+// whichever subcommand FAIL names. A manifest is written only when a test
+// passes `defaultVersion`, since the publisher must not depend on one.
+function fixture(storeItems: { Key: string; Value: string }[], defaultVersion?: Record<string, string>): string {
   const directory = mkdtempSync(join(tmpdir(), 'libtmux-publish-default-versions-'))
   scratch.push(directory)
-  mkdirSync(join(directory, 'dist'), { recursive: true })
   writeFileSync(join(directory, 'reserved-prefixes.txt'), `${PORTS.map((port) => port.slug).join('\n')}\n`)
-  writeFileSync(join(directory, 'dist/versions.json'), JSON.stringify({ schema: 1, ports: {}, defaultVersion }))
+  if (defaultVersion) {
+    mkdirSync(join(directory, 'dist'), { recursive: true })
+    writeFileSync(join(directory, 'dist/versions.json'), JSON.stringify({ schema: 1, ports: {}, defaultVersion }))
+  }
   writeFileSync(join(directory, 'store.json'), JSON.stringify({ Items: storeItems }))
   const executable = join(directory, 'bin/aws')
   mkdirSync(dirname(executable), { recursive: true })
@@ -55,33 +58,60 @@ function publish(directory: string, env: Record<string, string> = {}) {
 
 const subcommands = (commands: string[][]) => commands.map((args) => args[1])
 
+const rowFor = (port: { slug: string }, value: string) => ({ Key: `${port.slug}:default`, Value: value })
+const putsOf = (commands: string[][]) => {
+  const update = commands.find((args) => args[1] === 'update-keys')
+  return update ? update.slice(update.indexOf('--puts') + 1) : []
+}
+
 describe('shell default-version publication', { timeout: 30_000 }, () => {
-  it('writes only the rows that changed, with "latest" for a port that has no default', () => {
-    const rest = PORTS.slice(1)
-    const directory = fixture(
-      Object.fromEntries(rest.map((port) => [port.slug, 'v0.46.2'])),
-      rest.map((port) => ({ Key: `${port.slug}:default`, Value: 'v0.46.2' })),
+  it('points every port root at "latest", whatever versions.json pins as the default', () => {
+    const directory = fixture([], Object.fromEntries(PORTS.map((port) => [port.slug, 'v0.46.2'])))
+    const result = publish(directory)
+    expect(result.status, result.stderr).toBe(0)
+    expect(putsOf(result.commands).sort()).toEqual(
+      PORTS.map((port) => `Key=${port.slug}:default,Value=latest`).sort(),
     )
+  })
+
+  it('writes a row for each listed slug and none for a slug only the manifest names', () => {
+    const directory = fixture([], { py: 'v0.46.2', tmux: 'v1' })
+    writeFileSync(join(directory, 'reserved-prefixes.txt'), 'py\n\nts\n')
+    const result = publish(directory)
+    expect(result.status, result.stderr).toBe(0)
+    expect(putsOf(result.commands).sort()).toEqual(['Key=py:default,Value=latest', 'Key=ts:default,Value=latest'])
+  })
+
+  it('needs no version manifest', () => {
+    const directory = fixture([])
+    expect(existsSync(join(directory, 'dist/versions.json'))).toBe(false)
+    const result = publish(directory)
+    expect(result.status, result.stderr).toBe(0)
+    expect(putsOf(result.commands)).toHaveLength(PORTS.length)
+  })
+
+  it('rewrites only the rows that still hold a pinned release', () => {
+    const [first, ...rest] = PORTS
+    const directory = fixture([rowFor(first, 'latest'), ...rest.map((port) => rowFor(port, 'v0.46.2'))])
     const result = publish(directory)
     expect(result.status, result.stderr).toBe(0)
     const update = result.commands.find((args) => args[1] === 'update-keys')
     expect(update, result.stderr).toBeDefined()
     expect(update).toEqual(expect.arrayContaining(['--if-match', 'etag-1']))
-    expect(update!.slice(update!.indexOf('--puts') + 1)).toEqual([`Key=${PORTS[0].slug}:default,Value=latest`])
+    expect(putsOf(result.commands).sort()).toEqual(
+      rest.map((port) => `Key=${port.slug}:default,Value=latest`).sort(),
+    )
   })
 
   it('writes nothing when every row already matches the store', () => {
-    const directory = fixture(
-      Object.fromEntries(PORTS.map((port) => [port.slug, 'latest'])),
-      PORTS.map((port) => ({ Key: `${port.slug}:default`, Value: 'latest' })),
-    )
+    const directory = fixture(PORTS.map((port) => rowFor(port, 'latest')))
     const result = publish(directory)
     expect(result.status, result.stderr).toBe(0)
     expect(subcommands(result.commands)).toEqual(['describe-key-value-store', 'list-keys'])
   })
 
   it('rejects missing port metadata before any AWS operation', () => {
-    const directory = fixture({}, [])
+    const directory = fixture([])
     rmSync(join(directory, 'reserved-prefixes.txt'))
     const result = publish(directory)
     expect(result.status).toBe(1)
@@ -89,17 +119,8 @@ describe('shell default-version publication', { timeout: 30_000 }, () => {
     expect(result.commands).toEqual([])
   })
 
-  it('rejects a manifest that is not a version manifest before any AWS operation', () => {
-    const directory = fixture({}, [])
-    writeFileSync(join(directory, 'dist/versions.json'), JSON.stringify({ notAManifest: true }))
-    const result = publish(directory)
-    expect(result.status).toBe(1)
-    expect(result.stderr).toContain('versions.json')
-    expect(result.commands).toEqual([])
-  })
-
   it('warns and skips when KVS_ARN is unset', () => {
-    const directory = fixture({}, [])
+    const directory = fixture([])
     const result = publish(directory, { KVS_ARN: '' })
     expect(result.status, result.stderr).toBe(0)
     expect(result.stderr).toContain('::warning::KVS_ARN is not set')
@@ -107,7 +128,7 @@ describe('shell default-version publication', { timeout: 30_000 }, () => {
   })
 
   it.each(['describe-key-value-store', 'list-keys'])('fails without writing when %s fails', (failing) => {
-    const directory = fixture({ [PORTS[0].slug]: 'v0.46.2' }, [])
+    const directory = fixture([])
     const result = publish(directory, { FAIL: failing })
     expect(result.status).not.toBe(0)
     expect(result.stderr).toContain('AccessDenied')

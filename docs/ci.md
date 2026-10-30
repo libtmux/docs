@@ -308,8 +308,9 @@ published it; an unchanged pin can re-verify the tree and still set the
 default. Otherwise a maintainer with bucket access moves the default by
 rewriting `defaultVersion` in the port's manifest (the manifest key is
 otherwise written only by that port's role); a dispatched or push-triggered
-shell deploy then repoints the port root (a scheduled one rebuilds only when
-the registry moved).
+shell deploy then publishes the merged `versions.json` (a scheduled one
+rebuilds only when the registry moved). The bare port root is unaffected: it
+always opens `latest`.
 
 ```console
 $ gh workflow run publish.yml \
