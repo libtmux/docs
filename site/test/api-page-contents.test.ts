@@ -271,6 +271,74 @@ it('clips a yielding group before it can paint over the owner bar', () => {
   expect(page.members!.style.getPropertyValue('--api-member-heading-clip')).toBe('0px')
 })
 
+/** Whether the Members bar and each group bar are marked as one stuck toolbar. */
+const joins = (page: ReturnType<typeof mountMembers>) => ({
+  owner: page.heading!.hasAttribute('data-api-joined'),
+  groups: [...page.members!.querySelectorAll('h3')].map((bar) => bar.hasAttribute('data-api-stuck')),
+})
+
+it('joins the Members bar and the group bar resting against it, and parts them when they separate', () => {
+  const page = mountMembers()
+  expect(joins(page)).toEqual({ owner: false, groups: [false, false, false] })
+  // Scrolled until the first group bar stacks directly under the stuck Members bar.
+  page.stack.top = -600
+  page.stack.collections.top = -400
+  page.resize(); page.flush()
+  expect(joins(page)).toEqual({ owner: true, groups: [true, false, false] })
+  expect(win.getComputedStyle(page.group('collections').querySelector('h3')!).borderTopColor).toBe('transparent')
+  expect(win.getComputedStyle(page.group('operations').querySelector('h3')!).borderTopColor).not.toBe('transparent')
+  // Scrolled back, the bars part again and nothing stays marked.
+  page.stack.top = 180
+  page.stack.collections.top = 240
+  page.resize(); page.flush()
+  expect(joins(page)).toEqual({ owner: false, groups: [false, false, false] })
+  expect(win.getComputedStyle(page.group('collections').querySelector('h3')!).borderTopColor).not.toBe('transparent')
+})
+
+it('leaves the bars apart while a gap, even a small one, separates the group bar from the Members bar', () => {
+  const page = mountMembers()
+  page.stack.top = -600
+  page.stack.collections.top = 160
+  page.resize(); page.flush()
+  expect(page.group('collections').querySelector('h3')!.getBoundingClientRect().top).toBeGreaterThan(page.heading!.getBoundingClientRect().bottom + 1)
+  expect(joins(page)).toEqual({ owner: false, groups: [false, false, false] })
+})
+
+it('does not join a group bar that is leaving upward behind the Members bar', () => {
+  const page = mountMembers()
+  // The last rows of the first group scroll away: its bar yields upward, ends above the Members bar's lower edge.
+  page.stack.top = -500
+  page.stack.collections.top = -300
+  page.stack.collections.bottom = 170
+  page.resize(); page.flush()
+  expect(page.group('collections').querySelector('h3')!.getBoundingClientRect().top).toBeLessThan(page.heading!.getBoundingClientRect().bottom - 1)
+  expect(joins(page)).toEqual({ owner: false, groups: [false, false, false] })
+})
+
+it('does not join bars that are in ordinary flow even where they touch, and clears the marks when the controller leaves', () => {
+  const flow = mountMembers({ height: 400, header: 97, row: 96, fontSize: 32 })
+  expect(flow.members!.hasAttribute('data-api-sticky-members')).toBe(false)
+  flow.stack.top = 100
+  flow.stack.collections.top = 140.2
+  flow.resize(); flow.flush()
+  expect(flow.group('collections').querySelector('h3')!.getBoundingClientRect().top).toBeCloseTo(flow.heading!.getBoundingClientRect().bottom)
+  expect(joins(flow)).toEqual({ owner: false, groups: [false, false, false] })
+  const page = mountMembers()
+  page.stack.top = -600
+  page.stack.collections.top = -400
+  page.resize(); page.flush()
+  expect(joins(page).owner).toBe(true)
+  win.document.querySelector('api-page-contents')!.remove()
+  expect(joins(page)).toEqual({ owner: false, groups: [false, false, false] })
+})
+
+it('draws the join only inside the screen block that makes the bars sticky, ahead of the gap cover', () => {
+  const join = css.indexOf('[data-api-joined]')
+  expect(join).toBeGreaterThan(css.lastIndexOf('@media screen', css.indexOf('> h2 {\n    position: sticky')))
+  expect(join).toBeLessThan(css.indexOf('The page background closes the gap'))
+  expect(css.slice(join, css.indexOf('The page background closes the gap'))).toMatch(/h3\[data-api-stuck\] \{\s*border-top-color: transparent;/)
+})
+
 it('releases the last group and owner together before the content ends', () => {
   const page = mountMembers()
   page.stack.top = -1500

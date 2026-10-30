@@ -107,16 +107,24 @@ const { sections, related } = Astro.props as Props
         setLength(members, '--api-member-heading-top', readingTop + release)
         const ownerBounds = memberHeading.getBoundingClientRect()
         setLength(members, '--api-member-heading-clip', Math.min(memberHeight, Math.max(0, readingTop - ownerBounds.top)))
+        let groupStuck = false
         for (const entry of groupHeadings) {
           setLength(entry.group, '--api-group-heading-height', entry.height)
           setLength(entry.group, '--api-group-heading-top', readingTop + memberHeight + release)
           const bounds = entry.heading.getBoundingClientRect()
           setLength(entry.group, '--api-group-heading-clip', Math.min(entry.height, Math.max(0, Math.max(readingTop, ownerBounds.bottom) - bounds.top)))
+          // A group bar resting against the owner bar joins it: one rule between them, square corners where they meet.
+          const stuck = stickyMembers && Math.abs(bounds.top - ownerBounds.bottom) < 1
+          entry.heading.toggleAttribute('data-api-stuck', stuck)
+          groupStuck ||= stuck
         }
+        memberHeading.toggleAttribute('data-api-joined', groupStuck)
       }
       this.resetMembers = () => {
         endArrival()
         members?.removeAttribute('data-api-sticky-members')
+        memberHeading?.removeAttribute('data-api-joined')
+        for (const entry of groupHeadings) entry.heading.removeAttribute('data-api-stuck')
         for (const name of ['height', 'top', 'clip']) {
           members?.style.removeProperty(`--api-member-heading-${name}`)
           for (const entry of groupHeadings) entry.group.style.removeProperty(`--api-group-heading-${name}`)

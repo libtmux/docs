@@ -1065,6 +1065,14 @@ html[data-api-sections-measured] .api-section-links {
     top: auto;
     clip-path: none;
   }
+  /* Stuck together, the owner and group bars read as one toolbar. The group bar's top border stays, transparent, so
+     nothing moves when the two meet or part. */
+  .api-members[data-api-sticky-members] > h2[data-api-joined] { border-end-start-radius: 0; border-end-end-radius: 0; }
+  .api-members[data-api-sticky-members] > .api-member-group > h3[data-api-stuck] {
+    border-top-color: transparent;
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+  }
   /* The page background closes the gap between the section row and the bars, so scrolled text does not show in it. */
   .api-members[data-api-sticky-members]::before {
     content: "";
