@@ -702,10 +702,12 @@ export async function checkPermalinkReveal(browser, base, { only, sabotage } = {
   // Whether the pointer is the fine one the quiet hash is written for.
   const fineInput = (page) => page.evaluate(() => matchMedia('(hover: hover) and (pointer: fine)').matches)
   // A cold dev server can reach `load` before a reference body is in the document, so a link is
-  // waited for, not counted once. A page that never gets it fails with what was missing.
+  // waited for, not counted once. A page that never gets it fails with what was missing; any other
+  // error, such as a destroyed context, passes through for `retryReload` to recognise.
   const present = async (link, what) => {
     await within(what, link.waitFor({ state: 'attached', timeout })).catch((error) => {
-      assert.fail(`${what} (${error.name}: not attached within ${timeout}ms)`)
+      if (error?.name !== 'TimeoutError') throw error
+      assert.fail(`${what} (not attached within ${timeout}ms)`)
     })
   }
   const subjectsOf = async (page, list, path) => {
