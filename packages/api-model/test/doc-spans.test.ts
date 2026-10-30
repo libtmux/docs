@@ -63,6 +63,35 @@ describe('doc spans', () => {
   })
 })
 
+describe('a path in plain Rust code', () => {
+  const field = (id: string, kind: ApiSymbol['kind']): ApiSymbol => ({ ...symbol(id), kind })
+  const symbols = [field('server.Server', 'struct'), field('server.Server.kill', 'method'), field('text.TmuxText', 'struct')]
+  const index = new SymbolIndex(symbols, (item) => `/${item.id}/`, 'rs')
+  const refs = (text: string, lang = 'rs') => tokenizeDoc(text, lang).filter((span) => span.kind === 'ref')
+
+  it('links the item it names, as the bracketed path does', () => {
+    const [plain] = index.docSpans('`Server::kill` stops its daemon.')
+    expect(plain).toMatchObject({ kind: 'ref', target: 'Server.kill', label: 'Server::kill', link: { href: '/server.Server.kill/' } })
+    const [bracketed] = index.docSpans('[`Server::kill`] stops its daemon.')
+    expect('link' in bracketed && bracketed.link?.href).toBe('/server.Server.kill/')
+  })
+
+  it('resolves a crate path and a path on the current type the way the bracketed form does', () => {
+    expect(refs('`crate::server::Server::kill`')).toMatchObject([{ target: 'server.Server.kill', label: 'crate::server::Server::kill' }])
+    expect(refs('`Self::kill`')).toMatchObject([{ target: '.kill', label: 'Self::kill' }])
+  })
+
+  it('leaves a call, an expression and a bare name as written', () => {
+    for (const text of ['TmuxText::from(value)', 'Server::kill()', 'Server::<Pane>::kill', 'Server::kill::', 'Server']) {
+      expect(refs(`\`${text}\``), text).toEqual([{ kind: 'ref', role: 'any', target: text, label: text }])
+    }
+  })
+
+  it.each(['cxx', 'py', 'ts', 'go'])('does not change the target in %s, whose `::` is not a Rust path', (lang) => {
+    expect(refs('`Server::kill`', lang)).toEqual([{ kind: 'ref', role: 'any', target: 'Server::kill', label: 'Server::kill' }])
+  })
+})
+
 describe('a literal that names a call or a path', () => {
   const field = (id: string, kind: ApiSymbol['kind']): ApiSymbol => ({ ...symbol(id), kind })
   const symbols = [

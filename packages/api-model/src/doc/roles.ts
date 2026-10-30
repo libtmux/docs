@@ -115,6 +115,14 @@ const INTRA_DOC_PAREN_RE =
 const INTRA_DOC_TICK_RE = /\[`([A-Za-z_]\w*)`\](?![(:])/g
 
 /**
+ * A path written as plain code: `` `Server::kill` ``.
+ *
+ * rustdoc links only the bracketed forms, but prose also names an item by its path in code, and the path means
+ * the same item. Anything past the path, such as the call in `TmuxText::from(value)`, is an expression and not a name.
+ */
+const RUST_CODE_PATH_RE = /^(?:[A-Za-z_]\w*::)+[A-Za-z_]\w*$/
+
+/**
  * `crate::`, `self::` and `super::` address the crate, not the item.
  *
  * `Self::run` is rustdoc's "on this type", which the resolver reads as a
@@ -589,7 +597,7 @@ function tokenizeRun(text: string, lang?: string): DocSpan[] {
   } else {
     for (const code of markdownCode(text, masked.join(''))) {
       const span: DocSpan = code.ticks === 1
-        ? { kind: 'ref', role: 'any', target: code.text, label: code.text }
+        ? { kind: 'ref', role: 'any', target: syntax.has('intra-doc') && RUST_CODE_PATH_RE.test(code.text) ? rustTarget(code.text) : code.text, label: code.text }
         : syntax.has('docc') && code.ticks === 2
           ? { kind: 'ref', role: 'any', target: doccTarget(code.text), label: code.text }
           : { kind: 'code', text: code.text }
