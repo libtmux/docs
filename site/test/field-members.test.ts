@@ -84,7 +84,7 @@ describe('Rust field tables', () => {
 
   it('keeps the Fields block out of every .api-members selector, and styled like it', () => {
     const page = readFileSync(new URL('../src/components/api/ApiReference.astro', import.meta.url), 'utf8')
-    const block = /<div class="([^"]*)">\s*<h2[^>]*id="api-fields"/.exec(page)![1]
+    const block = /<div class="([^"]*)">\s*<h2[^>]*id=\{table\.id\}/.exec(page)![1]
     // Its own class: .api-members would capture the sticky members logic, and .api-fields is the field-list rule.
     expect(block.split(' ')).toContain('api-field-table')
     expect(block.split(' ')).not.toContain('api-members')

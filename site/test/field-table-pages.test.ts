@@ -9,7 +9,7 @@ import { experimental_AstroContainer } from 'astro/container'
 import { createComponent, renderTemplate } from 'astro/runtime/server/index.js'
 import { SymbolIndex } from '@libtmux/api-model'
 import { API_MODELS } from '../src/lib/api-models'
-import { splitFieldMembers } from '../src/lib/api-sections'
+import { memberTable } from '../src/lib/api-sections'
 import { apiComponents } from './api-components'
 import { loadAstroTemplate, withoutScope } from './astro-templates'
 
@@ -125,6 +125,8 @@ function stackingViolations(css: string): string[] {
   if (cells['overflow-wrap'] !== 'break-word') found.push('a cell breaks inside a word before its line is full')
   if (cells.padding !== '0') found.push('a cell keeps the padding of a column')
   if (!/(^|\s)100%$/.test(declared('.api-scalar-members td:last-child').flex ?? '')) found.push('the description does not take a line of its own')
+  // The chips of the second column clone their padding and border onto each wrapped line: 0.2em and 1px of a 13px chip.
+  if (!(Number.parseFloat(declared('.api-scalar-members td:nth-child(2)')['padding-inline-end'] ?? '') >= 0.25)) found.push('a wrapped chip overhangs the cell by its end padding and border')
   const head = declared('.api-scalar-members thead')
   if (head.display === 'none' || head.visibility === 'hidden') found.push('the header row leaves assistive technology')
   else if (head.position !== 'absolute' || head.overflow !== 'hidden') found.push('the header row stays on screen')
@@ -169,6 +171,7 @@ describe('the narrow layout of a table of fields', () => {
     ['a cell keeps the prose minimum width', () => edit('    min-width: 0;\n', ''), 'minimum width'],
     ['a heading keeps nowrap', () => edit('    white-space: normal;\n', ''), 'nowrap'],
     ['a word breaks early', () => edit('overflow-wrap: break-word;', 'overflow-wrap: anywhere;'), 'inside a word'],
+    ['the cell loses its room for a wrapped chip', () => edit(' padding-inline-end: 0.25rem;', ''), 'overhangs the cell'],
     ['the description shares a line', () => edit('.api-scalar-members td:last-child { flex: 1 0 100%; }', '.api-scalar-members td:last-child { flex: 1 1 auto; }'), 'line of its own'],
     ['the header row is removed from assistive technology', () => edit('    position: absolute;\n', '    display: none;\n'), 'leaves assistive technology'],
     ['the header row is left on screen', () => edit('    overflow: hidden;\n    clip-path', '    clip-path'), 'stays on screen'],
@@ -248,11 +251,11 @@ describe('every repeated type name on a product page', () => {
       '../../lib/sidebar': { pageBreadcrumbs: async () => [] },
     },
   })
-  /** The product declarations of a port that draw a Fields table. */
+  /** The product declarations of a port that draw a table: a Fields table, or the Variants of a Rust enum. */
   function owners(port: Port) {
     const model = API_MODELS[port]
     const members = (id: string) => model.symbols.filter((entry) => entry.parent === id && entry.product === model.symbols.find((owner) => owner.id === id)?.product)
-    return model.symbols.filter((owner) => owner.product && owner.product !== 'core' && owner.apiScope !== 'internal' && splitFieldMembers(owner, members(owner.id), port).fields.length > 0)
+    return model.symbols.filter((owner) => owner.product && owner.product !== 'core' && owner.apiScope !== 'internal' && memberTable(owner, members(owner.id), port) !== undefined)
   }
   async function product(port: Port, id: string) {
     const model = API_MODELS[port]
@@ -275,7 +278,8 @@ describe('every repeated type name on a product page', () => {
     const originals = spans('span.api-punct:not(.api-type-repeat)')
     // Everything flagged lies in the table, whose cells are the only ones that carry the flag.
     expect(document.querySelectorAll('span.api-type-repeat')).toHaveLength(repeats.length)
-    const tableOriginals = spans('.api-field-table span.api-punct:not(.api-type-repeat)')
+    // The punctuation a payload writes around its types is syntax, which the gate does not count.
+    const tableOriginals = spans('.api-field-table span.api-punct:not(.api-type-repeat):not([data-api-role="syntax"])')
     expect(tableOriginals, 'a table cell drawn without the flag counts the name a second time').toEqual([])
     return [...new Set(repeats)].filter((text) => originals.filter((original) => original === text).length < repeats.filter((repeat) => repeat === text).length)
   }

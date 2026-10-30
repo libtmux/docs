@@ -67,22 +67,96 @@ export function hasFieldMembers(owner: ApiSymbol, members: ApiSymbol[], port?: s
   return fields.length > 0 && rest.length === 0
 }
 
-/** The member entries of a type page's section navigation: a Fields block beside the member list, then its groups. */
+/** Ports whose enums list their cases in a Variants table: Rust names a case a variant. */
+const VARIANT_TABLE_PORTS: ReadonlySet<string> = new Set(['rs'])
+
+/**
+ * A variant is a constant of an enum. The extractor leaves the shape off a variant it does not read (a field with an
+ * attribute, or an owner marked `#[doc(hidden)]`), so those have none; a `const` item always has a type annotation,
+ * a variant never does.
+ */
+const isVariant = (member: ApiSymbol) => member.kind === 'constant' && (member.variant !== undefined || member.type === undefined)
+
+/** The variants an enum declares, apart from its methods, in member order. A port without a variants table leaves every member in `rest`. */
+export function splitVariantMembers(owner: ApiSymbol, members: ApiSymbol[], port?: string): { variants: ApiSymbol[]; rest: ApiSymbol[] } {
+  if (!VARIANT_TABLE_PORTS.has(port ?? '') || owner.kind !== 'enum') return { variants: [], rest: members }
+  const variant = (member: ApiSymbol) => !member.inheritedFrom && isVariant(member)
+  return { variants: members.filter(variant), rest: members.filter((member) => !variant(member)) }
+}
+
+export interface MemberTable {
+  /** `fields` draws a Type per row, `variants` the Payload that the variant carries. */
+  columns: 'fields' | 'variants'
+  rows: ApiSymbol[]
+  /** The members that stay in the usual list below the table. */
+  rest: ApiSymbol[]
+  /** The section's heading, in the word its language uses. */
+  label: string
+  /** The section's id: its role, whatever the word. */
+  id: 'api-fields' | 'api-variants'
+}
+
+/** The table that opens a type's members, if its port has one: typed fields, else the variants of an enum. */
+export function memberTable(owner: ApiSymbol, members: ApiSymbol[], port?: string): MemberTable | undefined {
+  const { fields, rest } = splitFieldMembers(owner, members, port)
+  if (fields.length > 0) return { columns: 'fields', rows: fields, rest, label: fieldsLabel(port), id: 'api-fields' }
+  const { variants, rest: others } = splitVariantMembers(owner, members, port)
+  return variants.length > 0 ? { columns: 'variants', rows: variants, rest: others, label: 'Variants', id: 'api-variants' } : undefined
+}
+
+/** What a Payload cell says of a variant when it carries no fields. */
+const NO_PAYLOAD = 'No payload'
+const PAYLOAD_NOT_EXTRACTED = 'Not extracted'
+
+/**
+ * What a variant's Payload cell holds. `fields` is the payload as Rust writes it: `{ pane: PaneId }` for named fields,
+ * `(PaneId)` for a tuple. `none` is a variant the model read as carrying nothing, and `unknown` one it holds no shape
+ * for, which may carry fields the model did not keep; the cell says so rather than read as an empty payload.
+ */
+export type VariantPayload =
+  | { kind: 'fields'; open: string; close: string; named: boolean; fields: ApiSymbol[] }
+  | { kind: 'none'; label: string }
+  | { kind: 'unknown'; label: string }
+
+/**
+ * The payload of each of these variants, by variant id.
+ * HTML and Markdown read the same entries, so the two draw the same text.
+ */
+export function variantPayloads(symbols: readonly ApiSymbol[], variants: readonly ApiSymbol[]): Map<string, VariantPayload> {
+  const byId = new Map(variants.map((variant) => [variant.id, variant]))
+  const payloads = new Map<string, VariantPayload>(variants.map((variant) => [variant.id,
+    variant.variant === undefined ? { kind: 'unknown', label: PAYLOAD_NOT_EXTRACTED } : { kind: 'none', label: NO_PAYLOAD }]))
+  for (const symbol of symbols) {
+    const variant = symbol.parent === undefined ? undefined : byId.get(symbol.parent)
+    if (!variant?.variant || !typedAttribute(symbol)) continue
+    const tuple = variant.variant === 'tuple'
+    const payload = payloads.get(variant.id)
+    const fields = payload?.kind === 'fields' ? payload : { kind: 'fields' as const, open: tuple ? '(' : '{ ', close: tuple ? ')' : ' }', named: !tuple, fields: [] }
+    fields.fields.push(symbol)
+    payloads.set(variant.id, fields)
+  }
+  return payloads
+}
+
+/** The member entries of a type page's section navigation: a table block beside the member list, then its groups. */
 export function apiMemberSections(options: {
   fields: number; members: number; label: string; groups: { id: string; label: string }[]
-  /** The port's word for its fields, see `fieldsLabel`. */
+  /** The table block's heading: the port's word for its fields, see `fieldsLabel`, or Variants. */
   fieldsLabel?: string
+  /** The table block's id, `api-fields` unless it lists variants. */
+  fieldsId?: string
 }): ApiSection[] {
   return [
-    ...(options.fields ? [{ id: 'api-fields', label: options.fieldsLabel ?? 'Fields', count: options.fields }] : []),
+    ...(options.fields ? [{ id: options.fieldsId ?? 'api-fields', label: options.fieldsLabel ?? 'Fields', count: options.fields }] : []),
     ...(options.members ? [{ id: 'api-members', label: options.label, count: options.members },
       ...options.groups.map((group) => ({ id: group.id, label: group.label, nested: true }))] : []),
   ]
 }
 
 /** The table a type page lists its members in, or none for the grouped list. */
-export function memberTableColumns(owner: ApiSymbol, members: ApiSymbol[], port?: string): 'fields' | 'value' | undefined {
-  return hasFieldMembers(owner, members, port) ? 'fields' : hasScalarMembers(owner, members) ? 'value' : undefined
+export function memberTableColumns(owner: ApiSymbol, members: ApiSymbol[], port?: string): 'fields' | 'variants' | 'value' | undefined {
+  const table = memberTable(owner, members, port)
+  return table && table.rest.length === 0 ? table.columns : hasScalarMembers(owner, members) ? 'value' : undefined
 }
 
 /** Match the rendered declaration in HTML and Markdown, including long lists. */

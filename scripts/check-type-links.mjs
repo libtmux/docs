@@ -65,9 +65,11 @@ function attributes(source) {
 /**
  * Keep the recorded single-class metric; type chips need their own inventory.
  *
- * A span also classed `api-type-repeat` is a repeat of a type already drawn on the same page, such as a table row that
- * summarizes an entry (`ApiType`'s `repeated`). The name is counted where it is drawn first, so the repeat adds none.
- * site/test/field-table-pages.test.ts requires that every repeat has its original on its page.
+ * A span also classed `api-type-repeat` is a repeat of a type drawn in full elsewhere, such as a table row that
+ * summarizes an entry or a variant's page (`ApiType`'s `repeated`). The name is counted where its declaration is drawn,
+ * which is the entry on the same page for a product page and the variant's own page for an enum page, so the repeat
+ * adds none. site/test/field-table-pages.test.ts requires that every product-page repeat has its original on its page,
+ * and site/test/enum-variants.test.ts that every enum-page repeat has one on its variant's page.
  */
 function singleClass(classes, name) {
   return classes.length === 1 && classes[0] === name
