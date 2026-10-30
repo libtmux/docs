@@ -1,7 +1,7 @@
 ---
 import type { ApiSymbol, SymbolIndex, LinkTarget } from '@libtmux/api-model'
 import { linkTmuxDoc } from '../../lib/tmux-links'
-import { firstMention, mentionBadge, mentionBadgeHtml, plainMention, TMUX_KIND_TITLES, type First } from '../../lib/mention-badge'
+import { plainMention, TMUX_KIND_TITLES } from '../../lib/mention-badge'
 
 /**
  * Doc-comment prose with its cross-references resolved.
@@ -25,26 +25,18 @@ interface Props {
    * the link would resolve to nothing. The label still reads correctly.
    */
   citations?: boolean
-  /**
-   * The mentions already marked in the entry this text belongs to. A name is marked once in an entry, not once in
-   * each summary, parameter and example of it; a text rendered alone keeps its own.
-   */
-  first?: First
 }
-const { text, index, context, citations = true, first = firstMention() } = Astro.props as Props
+const { text, index, context, citations = true } = Astro.props as Props
 // Through the index, so the tokenizer knows which language's spelling of a
 // cross-reference it is reading. Tokenizing here meant reST for all eight.
 const spans = linkTmuxDoc(index.docSpans(text, context))
 const memberReference = /^(?:[\w$]+(?:\.[\w$]+)*)?#[^\s#]+(?:\([^#]*\))?$/
 const labelParts = (label: string, qualified: boolean) => qualified ? label.split(/(#)/) : [label]
 
-// The first mention of a name carries the kind's mark; a later one is the link alone and keeps the kind in its tooltip.
-/** How a link to a declaration of this site leads: with its kind's mark, or, when the text already named it, without. */
+/** A link to a declaration of this site names its kind in the tooltip and the accessible name; api.css tints it, so prose draws no badge. */
 function mentionOf(link: LinkTarget | undefined, kind: string | undefined, title: string | undefined, label: string) {
-  const badge = kind && !link?.external ? mentionBadge(kind, title) : undefined
-  const href = link?.href
-  if (!badge || href === undefined) return undefined
-  return first(`${kind}:${href}`) ? { badge } : { plain: plainMention(kind!, label, title) }
+  if (!kind || link?.external || link?.href === undefined) return undefined
+  return plainMention(kind, label, title)
 }
 ---
 <span>{
@@ -52,8 +44,7 @@ function mentionOf(link: LinkTarget | undefined, kind: string | undefined, title
     if (span.kind === 'link') {
       const mention = span.tmux ? mentionOf({ href: span.href, external: false }, span.tmux, TMUX_KIND_TITLES[span.tmux], span.text) : undefined
       const name = span.code ? <code class="api-literal api-literal--link">{span.text}</code> : span.text
-      if (mention?.badge) return <a class="tmux-mention" href={span.href} rel="noopener"><Fragment set:html={mentionBadgeHtml(mention.badge)} /><span class="api-symbol-link__name">{name}</span></a>
-      if (mention?.plain) return <a class="tmux-mention" href={span.href} rel="noopener" title={mention.plain.title} data-api-kind={mention.plain.dataApiKind} aria-label={mention.plain.ariaLabel}>{name}</a>
+      if (mention) return <a class="tmux-mention api-doc-link" href={span.href} rel="noopener" title={mention.title} data-api-kind={mention.dataApiKind} aria-label={mention.ariaLabel}>{name}</a>
       return <a href={span.href} rel="noopener">{name}</a>
     }
     if (span.kind === 'code') return <code class="api-literal">{span.text}</code>
@@ -76,11 +67,8 @@ function mentionOf(link: LinkTarget | undefined, kind: string | undefined, title
     const symbol = span.link?.symbol
     const mention = mentionOf(span.link, symbol?.kind, symbol?.command?.kind ?? symbol?.kind, span.label)
     const name = <code class="api-literal api-literal--link">{labelParts(span.label, qualified).map((text) => qualified && text === '#' ? <span class="api-reference-separator">{text}</span> : text)}</code>
-    if (span.link && mention?.badge) return (
-      <a class="api-xref api-mention" href={span.link.href}><Fragment set:html={mentionBadgeHtml(mention.badge)} /><span class="api-symbol-link__name">{name}</span></a>
-    )
-    if (span.link && mention?.plain) return (
-      <a class="api-xref api-mention" href={span.link.href} title={mention.plain.title} data-api-kind={mention.plain.dataApiKind} aria-label={mention.plain.ariaLabel}>{name}</a>
+    if (span.link && mention) return (
+      <a class="api-xref api-mention api-doc-link" href={span.link.href} title={mention.title} data-api-kind={mention.dataApiKind} aria-label={mention.ariaLabel}>{name}</a>
     )
     return span.link ? (
       <a class="api-xref" href={span.link.href} rel={span.link.external ? 'nofollow noopener' : undefined}>{name}</a>

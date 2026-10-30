@@ -20,6 +20,10 @@
   --mark-meta-bg: #ffe4e6; --mark-meta-fg: #be123c; --mark-meta-hue: #f43f5e; --mark-meta-solid: #e11d48;
   --mark-tools-bg: #a5f3fc; --mark-tools-fg: #164e63; --mark-tools-hue: #06b6d4; --mark-tools-solid: #0891b2;
 
+  /* Ink for a name in running prose: the family's colour as text on the page, 4.5:1 or better. */
+  --mark-types-ink: #1d4ed8; --mark-traits-ink: #6d28d9; --mark-callables-ink: #92400e;
+  --mark-members-ink: #047857; --mark-meta-ink: #be123c; --mark-tools-ink: #0e7490;
+
   /* Signature and prose accents that are not badges keep their own inks. */
   --api-ink-param: #475569;
   --api-ink-keyword: #be123c;
@@ -38,6 +42,8 @@
     --mark-members-bg: #14532d; --mark-members-fg: #bbf7d0;
     --mark-meta-bg: #881337; --mark-meta-fg: #fda4af;
     --mark-tools-bg: #155e75; --mark-tools-fg: #cffafe;
+    --mark-types-ink: #93c5fd; --mark-traits-ink: #c4b5fd; --mark-callables-ink: #fcd34d;
+    --mark-members-ink: #6ee7b7; --mark-meta-ink: #fda4af; --mark-tools-ink: #67e8f9;
 
     --api-ink-param: #cbd5e1;
     --api-ink-keyword: #fda4af;
@@ -56,6 +62,8 @@
   --mark-members-bg: #14532d; --mark-members-fg: #bbf7d0;
   --mark-meta-bg: #881337; --mark-meta-fg: #fda4af;
   --mark-tools-bg: #155e75; --mark-tools-fg: #cffafe;
+  --mark-types-ink: #93c5fd; --mark-traits-ink: #c4b5fd; --mark-callables-ink: #fcd34d;
+  --mark-members-ink: #6ee7b7; --mark-meta-ink: #fda4af; --mark-tools-ink: #67e8f9;
 
   --api-ink-param: #cbd5e1;
   --api-ink-keyword: #fda4af;

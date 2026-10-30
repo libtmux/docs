@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 const css = readFileSync(new URL('../src/styles/api-kinds.css', import.meta.url), 'utf8')
+const brand = readFileSync(new URL('../src/styles/brand.css', import.meta.url), 'utf8')
 const FAMILIES = ['types', 'traits', 'callables', 'members', 'meta', 'tools']
 
 const channel = (value: number) => {
@@ -19,8 +20,16 @@ const ratio = (a: string, b: string) => {
 }
 
 /** The tokens one theme block declares, by name. */
-const tokens = (block: string) => Object.fromEntries([...block.matchAll(/--mark-([a-z]+)-(bg|fg|hue|solid):\s*(#[0-9a-f]{6})/gi)]
+const tokens = (block: string) => Object.fromEntries([...block.matchAll(/--mark-([a-z]+)-(bg|fg|hue|solid|ink):\s*(#[0-9a-f]{6})/gi)]
   .map(([, family, part, value]) => [`${family}-${part}`, value!]))
+
+/** The page and panel backgrounds the brands declare: one colour per mode, however many brands repeat it. */
+const surface = (name: 'primary' | 'secondary') => {
+  const values = [...new Set([...brand.matchAll(new RegExp(`--color-background-${name}:\\s*(#[0-9a-f]{6})`, 'gi'))].map(([, value]) => value!.toLowerCase()))]
+  expect(values, `${name} background`).toHaveLength(2)
+  const [dark, light] = values.sort((a, b) => luminance(a) - luminance(b))
+  return { light: light!, dark: dark! }
+}
 
 const light = tokens(css.slice(css.indexOf(':root {'), css.indexOf('@media (prefers-color-scheme: dark)')))
 const dark = tokens(css.slice(css.indexOf(':root:not([data-color-scheme=\'light\'])'), css.indexOf('[data-color-scheme=\'dark\'] {')))
@@ -30,6 +39,14 @@ describe('kind palette contrast', () => {
   it.each(FAMILIES)('the %s glyph clears 4.5:1 on its fill in light and dark', (family) => {
     expect(ratio(light[`${family}-fg`]!, light[`${family}-bg`]!), `light ${family}`).toBeGreaterThanOrEqual(4.5)
     expect(ratio(dark[`${family}-fg`]!, dark[`${family}-bg`]!), `dark ${family}`).toBeGreaterThanOrEqual(4.5)
+  })
+
+  it.each(FAMILIES)('the %s ink clears 4.5:1 on the page and panel backgrounds in light and dark', (family) => {
+    for (const name of ['primary', 'secondary'] as const) {
+      const background = surface(name)
+      expect(ratio(light[`${family}-ink`]!, background.light), `light ${family} on ${name}`).toBeGreaterThanOrEqual(4.5)
+      expect(ratio(dark[`${family}-ink`]!, background.dark), `dark ${family} on ${name}`).toBeGreaterThanOrEqual(4.5)
+    }
   })
 
   it('declares the dark preference and an explicit dark choice alike', () => {
@@ -51,6 +68,9 @@ describe('kind palette contrast', () => {
   describe('negative controls', () => {
     it('measures white on yellow as failing', () => {
       expect(ratio('#ffffff', '#fde047')).toBeLessThan(4.5)
+    })
+    it('measures a family hue on the light page as failing, so the ink check tells ink from hue', () => {
+      expect(ratio(light['callables-hue']!, surface('primary').light)).toBeLessThan(4.5)
     })
     it('measures black on white as passing', () => {
       expect(ratio('#000000', '#ffffff')).toBeGreaterThan(20)

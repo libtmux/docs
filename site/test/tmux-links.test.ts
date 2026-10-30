@@ -52,12 +52,8 @@ async function renderedJuliaSummary(id: string, overload?: number) {
   return { win, text }
 }
 
-/** The words a reader reads: a kind badge is decoration and not part of the text. */
-const readText = (node: DomElement) => {
-  const copy = node.cloneNode(true) as DomElement
-  copy.querySelectorAll('.api-link-kind').forEach((badge) => badge.remove())
-  return copy.textContent
-}
+/** The words a reader reads: prose draws no badge, so a mark in front of a name would show up here as a stray letter. */
+const readText = (node: DomElement) => node.textContent
 
 describe('contextual tmux command mentions', () => {
   it.each([
@@ -88,7 +84,10 @@ describe('contextual tmux command mentions', () => {
     const { win, text } = await renderedJuliaSummary('LibTmux.BufferID')
     const link = win.document.querySelector('a[href="/tmux/latest/manual/paste-buffer/"]')
     expect(readText(link!)).toBe('paste-buffer')
-    expect(link?.querySelector(':scope > .api-link-kind.api-badge--kind-command')).not.toBeNull()
+    expect(link?.querySelector('.api-link-kind')).toBeNull()
+    // The kind is the link's colour, and stays in the tooltip, the data attribute and the accessible name.
+    expect([link?.getAttribute('title'), link?.getAttribute('data-api-kind'), link?.getAttribute('aria-label')])
+      .toEqual(['tmux command', 'command', 'tmux command: paste-buffer'])
     expect(link?.querySelector('code')).toBeNull()
     expect(readText(win.document.body)).toBe(text)
   })

@@ -3,7 +3,6 @@ import type { ApiSymbol, SymbolIndex } from '@libtmux/api-model'
 import { Code } from 'astro-expressive-code/components'
 import { parseApiProse, type ProseBlock, type ProseItem } from '../../lib/api-prose'
 import { codeLang } from '../../lib/highlight'
-import { firstMention, type First } from '../../lib/mention-badge'
 import ApiDoc from './ApiDoc.astro'
 
 /** Normalized docstring blocks; inline spans still use the native API resolver. */
@@ -12,10 +11,8 @@ interface Props {
   items?: ProseItem[]
   index: SymbolIndex
   context?: ApiSymbol
-  /** The mentions already marked in the entry; a docstring's paragraphs share them, so each name is marked once. */
-  first?: First
 }
-const { text, items, index, context, first = firstMention() } = Astro.props as Props
+const { text, items, index, context } = Astro.props as Props
 const blocks: ProseBlock[] = items ? [{ kind: 'ul', items }] : parseApiProse(text ?? '')
 const { self: ApiProse } = Astro
 ---
@@ -29,15 +26,15 @@ const { self: ApiProse } = Astro
       <p class="rubric">{block.text}</p>
     ) : block.kind === 'p' ? (
       <p>
-        <ApiDoc text={block.text} index={index} context={context} first={first} />
+        <ApiDoc text={block.text} index={index} context={context} />
       </p>
     ) : (
       <List start={block.kind === 'ol' ? block.start : undefined}>
         {block.items.map((item) => (
           <li>
-            <ApiDoc text={item.text} index={index} context={context} first={first} />
+            <ApiDoc text={item.text} index={index} context={context} />
             {item.children.length > 0 && (
-              <ApiProse items={item.children} index={index} context={context} first={first} />
+              <ApiProse items={item.children} index={index} context={context} />
             )}
           </li>
         ))}

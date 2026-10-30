@@ -1129,3 +1129,34 @@ html[data-api-sections-measured] .api-section-links {
 .api-source-path [aria-current="page"] { background: color-mix(in srgb, var(--theme-primary) 10%, transparent); font-weight: 600; }
 .api-source-path a:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 .api-source-path__edge { font-size: .75rem; flex-shrink: 0; }
+
+/*
+ * A name in a doc comment's prose. The kind is the name's colour, not a badge in front of it: a page that names many
+ * methods in a row stays readable, and the kind stays in the tooltip and the accessible name. The chip frame goes
+ * too; plain code keeps it, so a link and a literal still differ. ApiDoc marks the links it writes with
+ * api-doc-link; a Markdown or Sphinx page keeps its own mentions as they are.
+ */
+.api-doc-link[data-api-kind] { --api-kind-ink: var(--color-link); }
+.api-doc-link:is([data-api-kind='class'], [data-api-kind='struct'], [data-api-kind='enum'], [data-api-kind='union'], [data-api-kind='typealias'], [data-api-kind='module']) { --api-kind-ink: var(--mark-types-ink); }
+.api-doc-link:is([data-api-kind='interface'], [data-api-kind='trait']) { --api-kind-ink: var(--mark-traits-ink); }
+.api-doc-link:is([data-api-kind='function'], [data-api-kind='method'], [data-api-kind='command']) { --api-kind-ink: var(--mark-callables-ink); }
+.api-doc-link:is([data-api-kind='property'], [data-api-kind='attribute'], [data-api-kind='constant'], [data-api-kind='key'], [data-api-kind='option']) { --api-kind-ink: var(--mark-members-ink); }
+.api-doc-link:is([data-api-kind='exception'], [data-api-kind='prompt'], [data-api-kind='resource-template'], [data-api-kind='format']) { --api-kind-ink: var(--mark-meta-ink); }
+.api-doc-link:is([data-api-kind='tool'], [data-api-kind='resource'], [data-api-kind='hook']) { --api-kind-ink: var(--mark-tools-ink); }
+
+a.api-doc-link[data-api-kind],
+a.api-doc-link[data-api-kind][data-link-preview]:not(.api-badge) {
+  color: var(--api-kind-ink);
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: color-mix(in srgb, currentColor 70%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: .22em;
+}
+a.api-doc-link[data-api-kind] .api-literal--link {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+}
+a.api-doc-link[data-api-kind]:hover { text-decoration-style: solid; }

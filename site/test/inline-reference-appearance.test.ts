@@ -114,6 +114,54 @@ it('draws one dotted underline in the ink of its text, with one offset and thick
   expect(win.getComputedStyle(win.document.getElementById('inside')!.closest('code')!).textDecorationLine).not.toContain('underline')
 })
 
+/** The kinds a link to a declaration can name, by the family whose ink tints them. */
+const INK_FAMILIES: Record<string, string> = {
+  class: 'types', struct: 'types', enum: 'types', module: 'types', interface: 'traits', trait: 'traits',
+  function: 'callables', method: 'callables', command: 'callables', property: 'members', attribute: 'members',
+  option: 'members', exception: 'meta', format: 'meta', tool: 'tools', hook: 'tools',
+}
+
+it('tints a link to a declaration by its kind, without the code frame that plain code keeps', () => {
+  const kinds = Object.keys(INK_FAMILIES)
+  win.document.body.innerHTML = `<p>${kinds.map((kind) => `
+    <a id="${kind}" class="api-xref api-mention api-doc-link" href="../${kind}/" data-api-kind="${kind}" title="${kind}"><code class="api-literal api-literal--link">Name</code></a>`).join('')}
+    <a id="tmux" class="tmux-mention api-doc-link" href="/tmux/latest/manual/paste-buffer/" data-api-kind="command">paste-buffer</a>
+    <a id="section" class="api-xref api-mention api-doc-link" href="../section/" data-api-kind="section"><code class="api-literal api-literal--link">Name</code></a>
+    <a id="markdown" class="api-mention" href="../server/"><span class="api-link-kind api-nav__kind"></span><code>Server</code></a>
+    <a id="markdown-later" class="api-mention" href="../server/" title="class" data-api-kind="class" aria-label="class: Server"><code>Server</code></a>
+    <a id="tmux-later" class="tmux-mention" href="/tmux/latest/manual/paste-buffer/" title="tmux command" data-api-kind="command" aria-label="tmux command: paste-buffer">paste-buffer</a>
+    <a id="plain" class="api-xref" href="../server/"><code class="api-literal api-literal--link">Server</code></a>
+    <code id="literal" class="api-literal">Server</code></p>`
+  markPreviews()
+  const root = win.getComputedStyle(win.document.documentElement)
+  const inks = Object.fromEntries(new Set(Object.values(INK_FAMILIES)).values().map((family) => [family, root.getPropertyValue(`--mark-${family}-ink`)]))
+  expect(Object.values(inks).every(Boolean), 'every family declares an ink').toBe(true)
+  expect(new Set(Object.values(inks)).size, 'the families differ').toBe(Object.keys(inks).length)
+  for (const kind of kinds) {
+    const link = win.document.getElementById(kind)!
+    expect(win.getComputedStyle(link).getPropertyValue('--api-kind-ink'), kind).toBe(inks[INK_FAMILIES[kind]])
+    const code = win.getComputedStyle(link.querySelector('code')!)
+    expect([code.borderTopStyle, code.backgroundColor, code.paddingTop], `${kind} drops the frame`).toEqual(['initial', 'none', '0px'])
+    const owners = [link, ...link.querySelectorAll('*')].filter((node) => win.getComputedStyle(node).textDecorationLine.includes('underline'))
+    expect(owners, `${kind} keeps one preview underline`).toEqual([link])
+    expect(win.getComputedStyle(link).textDecorationStyle, kind).toBe('dotted')
+  }
+  // A name with no code inside shows the colour on the link itself.
+  expect(win.getComputedStyle(win.document.getElementById('tmux')!).color).toBe(inks.callables)
+  // A kind with no family falls back to the page's link colour. A Markdown or Sphinx mention is not tinted, a later
+  // one that carries its kind included, and neither is plain code.
+  expect(win.getComputedStyle(win.document.getElementById('section')!).getPropertyValue('--api-kind-ink')).toBe('#6f1a24')
+  for (const id of ['markdown', 'markdown-later', 'tmux-later']) {
+    const link = win.document.getElementById(id)!
+    expect(win.getComputedStyle(link).getPropertyValue('--api-kind-ink'), id).toBe('')
+    expect(win.getComputedStyle(link).color, id).not.toBe(inks.callables)
+  }
+  for (const id of ['plain', 'literal']) {
+    const code = win.getComputedStyle(win.document.getElementById(id)!.matches('code') ? win.document.getElementById(id)! : win.document.getElementById(id)!.querySelector('code')!)
+    expect(code.borderTopStyle, `${id} keeps its frame`).toBe('solid')
+  }
+})
+
 async function docComponent() {
   const { transform } = await import(astroRequire.resolve('@astrojs/compiler-rs'))
   const file = new URL('../src/components/api/ApiDoc.astro', import.meta.url)
