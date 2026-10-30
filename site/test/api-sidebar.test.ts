@@ -1,11 +1,16 @@
-import { describe, expect, it } from 'vitest'
+import { experimental_AstroContainer } from 'astro/container'
+import { Window } from 'happy-dom'
+import { describe, expect, it, vi } from 'vitest'
 import { sidebarCatalog, sidebarInventory, sidebarNodes, sidebarSelection, quietSidebarKinds, SIDEBAR_MIN_GAP, SIDEBAR_PRESENTATIONS, SIDEBAR_WINDOW, type SidebarNode } from '../src/lib/api-sidebar'
 import { apiTreeHref, searchApi, type ApiSearchResult, type ApiTreeJson } from '../src/lib/api-search'
 import { API_MODELS, pageSlug } from '../src/lib/api-models'
 import { API_MODEL_PORTS } from '../src/lib/ports'
 import { coreApiSymbols } from '../src/lib/product-api'
-import { referenceTree } from '../src/lib/api-tree'
+import { referenceTree, treeRowSymbol } from '../src/lib/api-tree'
 import { tmuxReferenceTree, tmuxReferenceUrl, tmuxSourceModel } from '../src/lib/tmux-reference'
+import { loadAstroTemplate } from './astro-templates'
+
+vi.mock('astro:content', () => ({ getCollection: async () => [] }))
 
 const json: ApiTreeJson = {
   port: 'sample',
@@ -331,11 +336,55 @@ describe('first paint of a reference page', () => {
   it.each(API_MODEL_PORTS.map((port) => port.slug))('marks its own row in the first paint of every %s declaration page', (slug) => {
     const json = referenceTree(slug)
     const base = `/en/${slug}/latest/reference/`
-    const pages = coreApiSymbols(API_MODELS[slug]!).map((symbol) => ({ symbol, href: `${base}${symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id)}/` }))
+    const model = API_MODELS[slug]!
+    // A page marks its own row, except a tuple variant's payload field, which has none and marks its variant's.
+    const pages = coreApiSymbols(model).map((symbol) => {
+      const row = treeRowSymbol(model, symbol)!
+      return { symbol: row, href: `${base}${row.slug ?? pageSlug(row.publicId ?? row.id)}/` }
+    })
     const { wrong, shown } = misses(json, base, pages)
     expect(wrong.slice(0, 5), `${slug}: pages whose own row is missing`).toEqual([])
     expect(shown).toBe(pages.length)
   }, 60_000)
+
+  it('marks the variant\'s row on the page of a tuple variant\'s payload field, which has no row', () => {
+    const model = API_MODELS.rs!
+    const json = referenceTree('rs')
+    const base = '/en/rs/latest/reference/'
+    const fields = coreApiSymbols(model).filter((symbol) => /^\d+$/.test(symbol.name) && model.symbols.find((entry) => entry.id === symbol.parent)?.variant === 'tuple')
+    expect(fields.length).toBeGreaterThan(0)
+    for (const field of fields) {
+      const variant = model.symbols.find((entry) => entry.id === field.parent)!
+      const current = rowsOf(sidebarNodes(json, base, 'outline', sidebarSelection(json, treeRowSymbol(model, field)))).filter((node) => node.current)
+      expect(current.map((node) => node.href), field.id).toEqual([`${base}${variant.slug ?? pageSlug(variant.publicId ?? variant.id)}/`])
+    }
+    // Selecting the field by its own id finds no row, which is why the page selects its variant.
+    expect(rowsOf(sidebarNodes(json, base, 'outline', fields[0]!.id)).filter((node) => node.current)).toEqual([])
+  })
+
+  it('hands the sidebar the variant of a payload field, through the reference page itself', async () => {
+    const model = API_MODELS.rs!
+    const json = referenceTree('rs')
+    const field = coreApiSymbols(model).find((symbol) => /^\d+$/.test(symbol.name) && model.symbols.find((entry) => entry.id === symbol.parent)?.variant === 'tuple')!
+    const variant = model.symbols.find((entry) => entry.id === field.parent)!
+    // The page's tree reports the selection it was given, so the page's own call decides what this reads.
+    const template = await loadAstroTemplate('components/api/ApiReference.astro', {
+      stubs: { 'components/api/ApiTree.astro': '---\nconst { selectedSymbol } = Astro.props\n---\n<div class="api-nav" data-symbol={selectedSymbol} />' },
+    })
+    const container = await experimental_AstroContainer.create({ astroConfig: { site: 'https://libtmux.org' } } as never)
+    const selected = async (owner: typeof field) => {
+      const win = new Window()
+      try {
+        win.document.body.innerHTML = await container.renderToString(template as never, {
+          request: new Request(`https://libtmux.org/en/rs/latest/reference/${owner.slug}/`), params: { slug: owner.slug }, props: { model, owner },
+        })
+        return win.document.querySelector('.api-nav')?.getAttribute('data-symbol')
+      } finally { await win.happyDOM.abort() }
+    }
+    expect(await selected(field), `the page of ${field.id} selects its variant`).toBe(sidebarSelection(json, variant))
+    expect(await selected(variant), 'the variant\'s own page selects it').toBe(sidebarSelection(json, variant))
+    expect(sidebarSelection(json, variant)).not.toBe(sidebarSelection(json, field))
+  })
 
   it.each(['3.7c', '3.2a'])('marks its own row in the first paint of every tmux %s C reference page, and none for what the sidebar leaves out', (version) => {
     const json = tmuxReferenceTree(version)

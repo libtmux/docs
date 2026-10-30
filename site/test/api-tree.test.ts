@@ -113,7 +113,10 @@ describe('core reference inventory', () => {
     const core = model.symbols.filter((symbol) =>
       !['mcp', 'workspace'].includes(symbol.product ?? 'core') || symbol.apiScope === 'internal')
     const coreIds = new Set(core.map((symbol) => symbol.id))
-    const expected = [...coreIds].sort()
+    // A tuple variant's positional fields are its payload: its page shows them and the tree does not.
+    const tuples = new Set(model.symbols.filter((symbol) => symbol.variant === 'tuple').map((symbol) => symbol.id))
+    const payload = new Set(core.filter((symbol) => tuples.has(symbol.parent!) && /^\d+$/.test(symbol.name)).map((symbol) => symbol.id))
+    const expected = [...coreIds].filter((id) => !payload.has(id)).sort()
     const identities = new Map(model.symbols.flatMap((symbol) =>
       [[symbol.id, symbol.id], [symbol.publicId ?? symbol.id, symbol.id]] as const))
     const allMembers = navigation.members

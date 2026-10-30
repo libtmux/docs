@@ -64,6 +64,37 @@ describe('Rust payload documentation surfaces', () => {
     expect(hasScalarMembers(variant, membersOf(model, variant))).toBe(false)
   })
 
+  it('gives a tuple variant no tree children, and keeps the named fields of a struct variant', () => {
+    const tuple: ApiSymbol = { id: 'control.Event.Text', name: 'Text', parent: 'control.Event', kind: 'constant', variant: 'tuple', modifiers: [],
+      signatures: [{ raw: 'Text(TmuxText, bool)', params: [] }], source }
+    const positional: ApiSymbol[] = [['0', 'TmuxText'], ['1', 'bool']].map(([name, type]) => ({
+      id: `${tuple.id}.${name}`, name, parent: tuple.id, kind: 'attribute', type, modifiers: [], signatures: [], source }))
+    const fixture: ApiModel = { ...model, symbols: [...symbols, tuple, ...positional] }
+    // The variant's page and the enum's Variants table still show the payload.
+    expect(isMemberOwner(tuple)).toBe(true)
+    expect(membersOf(fixture, tuple).map((field) => field.name)).toEqual(['0', '1'])
+    const members = membersByTypeFor('rs', fixture)
+    expect(members.has(tuple.id)).toBe(false)
+    expect(members.get(variant.id)?.map((field) => field.name)).toEqual(['pane', 'bytes'])
+    const nav = navSidecarFor('rs', fixture, { buckets: [{ id: 'events', label: 'Events', match: { kind: 'id', is: 'control.Event' } }] })
+    const tree = referenceTreeFor('rs', fixture, navTreeFor(fixture, nav))
+    // A row with children has a chevron and a count; the enum lists both variants, and only the named one has either.
+    expect(tree.members['control.Event']?.map((row) => row[0])).toEqual(expect.arrayContaining(['Output', 'Text']))
+    expect(tree.members[tuple.id]).toBeUndefined()
+    expect(tree.members[variant.id]).toHaveLength(2)
+  })
+
+  it('gives no tuple variant of the Rust model tree children, and keeps its struct variants', () => {
+    const rust = API_MODELS.rs
+    const tuples = rust.symbols.filter((symbol) => symbol.variant === 'tuple')
+    expect(tuples.length).toBeGreaterThan(0)
+    const members = membersByTypeFor('rs', rust)
+    expect(tuples.filter((tuple) => members.has(tuple.publicId ?? tuple.id))).toEqual([])
+    const named = rust.symbols.filter((symbol) => symbol.variant === 'struct' && members.has(symbol.publicId ?? symbol.id))
+    expect(named.length).toBeGreaterThan(0)
+    for (const list of members.values()) expect(list.filter((member) => /^\d+$/.test(member.name))).toEqual([])
+  })
+
   it('exports structural payload text and linked typed fields without a parameter section', () => {
     const markdown = symbolMarkdown({ model, symbol: variant, index, hrefFor })
     expect(markdown).toContain(variant.signatures[0].raw)
