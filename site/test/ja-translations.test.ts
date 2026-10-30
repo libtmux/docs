@@ -6,6 +6,7 @@ import type { CollectionEntry } from 'astro:content'
 import { describe, expect, it, vi } from 'vitest'
 
 // `i18n/resolve` imports Astro's content module, which a bare vitest run cannot load.
+// Its config module is aliased in vitest.config.ts, with `site/` as the Astro root.
 vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
 const { translationState } = await import('../src/i18n/resolve')
 
@@ -14,15 +15,15 @@ const LANDING = 'src/content/docs/ja/index.md'
 const CONCEPTS = 'src/content/docs/ja/concepts/index.md'
 const CONCEPTS_SOURCE = 'src/content/docs/concepts/index.md'
 
-// Absolute paths keep each lookup independent of the directory the runner starts in.
 const absolute = (relative: string) => fileURLToPath(new URL(`../${relative}`, import.meta.url))
 
+// The content loader reports `filePath` relative to the Astro root, as these are.
 function entryFor(relative: string, data: Record<string, unknown> = {}): CollectionEntry<'docs'> {
   const { frontmatter } = parseFrontmatter(readFileSync(absolute(relative), 'utf8'))
-  return { id: relative, data: { ...frontmatter, ...data }, filePath: absolute(relative) } as unknown as CollectionEntry<'docs'>
+  return { id: relative, data: { ...frontmatter, ...data }, filePath: relative } as unknown as CollectionEntry<'docs'>
 }
 
-const sourceFor = (relative: string) => ({ id: relative, data: {}, filePath: absolute(relative) }) as unknown as CollectionEntry<'docs'>
+const sourceFor = (relative: string) => ({ id: relative, data: {}, filePath: relative }) as unknown as CollectionEntry<'docs'>
 
 function git(...args: string[]): string | undefined {
   try {
