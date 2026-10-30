@@ -27,6 +27,10 @@ interface Props {
   citations?: boolean
 }
 const { text, index, context, citations = true } = Astro.props as Props
+const CALLABLE = new Set(['method', 'function'])
+// Only a name written as a path reads as a call. A label with arguments, an Elixir `name/arity`, a PowerShell cmdlet, an
+// operator or the words an author chose for the link says how it is invoked already.
+const callPath = /^(?!unary_)[.#]?[\w$]+(?:(?:::|\.|#)[\w$]+)*!?$/
 // Through the index, so the tokenizer knows which language's spelling of a
 // cross-reference it is reading. Tokenizing here meant reST for all eight.
 const spans = linkTmuxDoc(index.docSpans(text, context))
@@ -65,8 +69,11 @@ function mentionOf(link: LinkTarget | undefined, kind: string | undefined, title
     const parts = span.link ? [] : span.parts ?? index.linkLiteral(span.label, context)
     const qualified = memberReference.test(span.label) && Boolean(span.link || parts.some((part) => part.link))
     const symbol = span.link?.symbol
-    const mention = mentionOf(span.link, symbol?.kind, symbol?.command?.kind ?? symbol?.kind, span.label)
-    const name = <code class="api-literal api-literal--link">{labelParts(span.label, qualified).map((text) => qualified && text === '#' ? <span class="api-reference-separator">{text}</span> : text)}</code>
+    // A callable reads as a call wherever it is named, as Sphinx writes a method: `kill()`, `Server::shutdown()`.
+    const label = symbol && CALLABLE.has(symbol.kind) && callPath.test(span.label) ? `${span.label}()` : span.label
+    // The accessible name holds the text a reader sees, parentheses included.
+    const mention = mentionOf(span.link, symbol?.kind, symbol?.command?.kind ?? symbol?.kind, label)
+    const name = <code class="api-literal api-literal--link">{labelParts(label, qualified).map((text) => qualified && text === '#' ? <span class="api-reference-separator">{text}</span> : text)}</code>
     if (span.link && mention) return (
       <a class="api-xref api-mention api-doc-link" href={span.link.href} title={mention.title} data-api-kind={mention.dataApiKind} aria-label={mention.ariaLabel}>{name}</a>
     )

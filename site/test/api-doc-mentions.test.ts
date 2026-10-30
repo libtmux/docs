@@ -5,7 +5,7 @@ import { createMarkdownProcessor } from '@astrojs/markdown-remark'
 import { fromHtml } from 'hast-util-from-html'
 import { select, selectAll } from 'astro-expressive-code/hast'
 import { SymbolIndex, type ApiSymbol } from '@libtmux/api-model'
-import { API_MODELS } from '../src/lib/api-models'
+import { API_MODELS, indexFor } from '../src/lib/api-models'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
 import { mentionBadge, mentionBadgeHtml } from '../src/lib/mention-badge'
 import { apiComponents } from './api-components'
@@ -27,9 +27,9 @@ let doc: Awaited<ReturnType<typeof apiComponents>>['doc']
 beforeAll(async () => { doc = (await apiComponents()).doc })
 afterAll(async () => { await window.happyDOM.abort() })
 
-async function render(text: string, context?: ApiSymbol) {
+async function render(text: string, context?: ApiSymbol, from: SymbolIndex = index) {
   const container = await experimental_AstroContainer.create()
-  window.document.body.innerHTML = await container.renderToString(doc, { props: { text, index, context } })
+  window.document.body.innerHTML = await container.renderToString(doc, { props: { text, index: from, context } })
   return window.document
 }
 
@@ -104,6 +104,50 @@ describe('a doc comment cross-reference', () => {
     const badge = '<span class="api-link-kind"></span><code>Pane</code>'
     marked.innerHTML = `<a class="api-xref api-mention" href="/p/" title="class" data-api-kind="class" aria-label="class: Pane">${badge}</a>`
     expect(problems(marked)).toEqual(['/p/: carries a kind badge'])
+  })
+})
+
+describe('a callable named in prose', () => {
+  const declare = (id: string, kind: ApiSymbol['kind']): ApiSymbol => ({
+    id, publicId: id, name: id.split('.').at(-1)!, kind, slug: id.replaceAll('.', '-').toLowerCase(),
+    modifiers: [], signatures: [], source: { file: 'pane.ts' },
+  })
+  const local = new SymbolIndex([
+    declare('pane.Pane', 'class'), declare('pane.Pane.kill', 'method'), declare('pane.Pane.id', 'property'), declare('pane.open', 'function'),
+  ], (symbol) => `/en/ts/latest/reference/${symbol.slug}/`, 'ts')
+  const linked = (root: Pick<DomElement, 'querySelectorAll'>) => [...root.querySelectorAll<DomAnchor>('a.api-mention')].map((link) => [link.textContent, link.dataset.apiKind])
+
+  it('reads as a call when it is a method or a function, and as written when it is not', async () => {
+    const root = await render('Call `Pane.kill` or `open`; read `Pane.id` of a `Pane`.', undefined, local)
+    expect(linked(root)).toEqual([['Pane.kill()', 'method'], ['open()', 'function'], ['Pane.id', 'property'], ['Pane', 'class']])
+    // The accessible name holds the visible text, parentheses included, so a voice command that says it works.
+    expect([...root.querySelectorAll('a.api-mention')].map((link) => link.getAttribute('aria-label')))
+      .toEqual(['method: Pane.kill()', 'function: open()', 'property: Pane.id', 'class: Pane'])
+  })
+
+  it('leaves the words an author chose for the link, and an operator, as written', async () => {
+    const java = new SymbolIndex([declare('pane.Pane', 'class'), declare('pane.Pane.kill', 'method')], (symbol) => `/en/java/latest/reference/${symbol.slug}/`, 'java')
+    const explicit = await render('Wait for the {@link Pane#kill readiness callback}.', undefined, java)
+    expect(linked(explicit)).toEqual([['readiness callback', 'method']])
+    expect(explicit.querySelector('a.api-mention')?.getAttribute('aria-label')).toBe('method: readiness callback')
+    // An operator resolves beside its own declaration: Swift's `==` from `hash(into:)`, Scala's `&&` and `||` from themselves.
+    const operator = async (port: 'swift' | 'scala', owner: string, label: string) => {
+      const context = API_MODELS[port].symbols.find((symbol) => symbol.id === owner)!
+      const root = await render(`Compare with \`${label}\`.`, context, indexFor(API_MODELS[port], (symbol) => `/en/${port}/latest/reference/${symbol.slug}/`))
+      return linked(root)
+    }
+    expect(await operator('swift', 'Server.hash(into:)', '==')).toEqual([['==', 'function']])
+    expect(await operator('scala', 'io.github.libtmux.scaladsl.query.Expr.&&', '&&')).toEqual([['&&', 'method']])
+    expect(await operator('scala', 'io.github.libtmux.scaladsl.query.Expr.||', '||')).toEqual([['||', 'method']])
+  })
+
+  it('keeps a label that already says how it is invoked', async () => {
+    expect(linked(await render('Call `Pane.kill()`.', undefined, local))).toEqual([['Pane.kill()', 'method']])
+    // Elixir writes a function with its arity and PowerShell invokes a cmdlet by name.
+    const elixir = await render('See `LibTmux.Capture.fetch/2`.', undefined, indexFor(API_MODELS.elixir, (symbol) => `/en/elixir/latest/reference/${symbol.slug}/`))
+    expect(linked(elixir)).toEqual([['LibTmux.Capture.fetch/2', 'function']])
+    const powershell = await render('See `Connect-TmuxServer`.', undefined, indexFor(API_MODELS.powershell, (symbol) => `/en/powershell/latest/reference/${symbol.slug}/`))
+    expect(linked(powershell)).toEqual([['Connect-TmuxServer', 'function']])
   })
 })
 

@@ -237,7 +237,7 @@ it('keeps a keyword argument plain while its bare name still links', async () =>
   const text = '`cancel:` `clients: true` `where:` `cancel`'
   win.document.body.innerHTML = await container.renderToString(await docComponent(), { props: { text, index } })
   const codes = [...win.document.querySelectorAll('code.api-literal')]
-  expect(codes.map((code) => code.textContent)).toEqual(['cancel:', 'clients: true', 'where:', 'cancel'])
+  expect(codes.map((code) => code.textContent)).toEqual(['cancel:', 'clients: true', 'where:', 'cancel()'])
   expect(codes.slice(0, 3).map((code) => code.querySelectorAll('a').length)).toEqual([0, 0, 0])
   expect(win.document.querySelectorAll('a[href*="cancellation-cancel"]')).toHaveLength(1)
   // Markdown links code literals for TypeScript; the same rule keeps an option key plain there.
