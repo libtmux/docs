@@ -369,6 +369,10 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
 .api-command-parameters > li + li { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--color-edge); }
 .api-command-parameters .api-parameter-heading { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.4rem; }
 .api-parameter-signature { min-width: 0; }
+/* A parameter reads as its signature does: the name and the type names take their inks, and what surrounds them recedes. */
+.api-parameters:not(.mcp-parameters) .api-parameter-signature strong code { color: var(--api-ink-name); }
+.api-parameters:not(.mcp-parameters) .api-type { color: var(--color-muted); }
+.api-parameters:not(.mcp-parameters) .api-type .api-type-link { color: var(--api-ink-type); }
 .api-parameters .api-parameter-heading { margin-bottom: 0.4rem; }
 .api-parameters > li:has(.api-parameter-heading) + li { margin-top: 1rem; }
 .api-command-parameters .api-parameter-heading code { background: none; padding: 0; font-size: inherit; }
@@ -719,6 +723,24 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
 @container gp-sphinx-api-entry (width > 36rem) {
   dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:not(.api-native-header) > .gp-sphinx-api-layout--responsive {
     align-items: baseline;
+  }
+  /*
+   * A parameter's label shares a baseline with the first line of its value, and both stay at the top of their row. The
+   * label takes the value's line height, or the taller line that holds the value's permalink, and the value's own top
+   * margin moves into the row gap. Baseline alignment would push the label down instead, and the entry's body would
+   * inset it more than its padding. A label taller than its value would also stretch the value past its last line.
+   */
+  dl.py.gp-sphinx-api-container > dd .gp-sphinx-api-parameters > dl.field-list {
+    row-gap: 0.5rem;
+  }
+  dl.py.gp-sphinx-api-container > dd .gp-sphinx-api-parameters > dl.field-list > dd {
+    margin-top: 0;
+  }
+  dl.py.gp-sphinx-api-container > dd .gp-sphinx-api-parameters > dl.field-list > dt {
+    line-height: 1.5;
+  }
+  dl.py.gp-sphinx-api-container > dd .gp-sphinx-api-parameters > dl.field-list > dt:has(+ dd .api-heading-link) {
+    line-height: calc(1.5em + 2 * var(--api-permalink-pad));
   }
 }
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .gp-sphinx-api-layout-right {
