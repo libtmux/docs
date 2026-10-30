@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 const css = readFileSync(new URL('../src/styles/api-kinds.css', import.meta.url), 'utf8')
 const brand = readFileSync(new URL('../src/styles/brand.css', import.meta.url), 'utf8')
+const apiCss = readFileSync(new URL('../src/styles/api.css', import.meta.url), 'utf8')
 const FAMILIES = ['types', 'traits', 'callables', 'members', 'meta', 'tools']
 
 const channel = (value: number) => {
@@ -23,13 +24,38 @@ const ratio = (a: string, b: string) => {
 const tokens = (block: string) => Object.fromEntries([...block.matchAll(/--mark-([a-z]+)-(bg|fg|hue|solid|ink):\s*(#[0-9a-f]{6})/gi)]
   .map(([, family, part, value]) => [`${family}-${part}`, value!]))
 
-/** The page and panel backgrounds the brands declare: one colour per mode, however many brands repeat it. */
-const surface = (name: 'primary' | 'secondary') => {
-  const values = [...new Set([...brand.matchAll(new RegExp(`--color-background-${name}:\\s*(#[0-9a-f]{6})`, 'gi'))].map(([, value]) => value!.toLowerCase()))]
-  expect(values, `${name} background`).toHaveLength(2)
-  const [dark, light] = values.sort((a, b) => luminance(a) - luminance(b))
-  return { light: light!, dark: dark! }
+/**
+ * A colour the brands declare, one per mode however many brands repeat it: `background-primary`, `inline-code-background`.
+ * A surface is light in the light mode; text is the reverse.
+ */
+const brandColour = (name: string, text = false) => {
+  const values = [...new Set([...brand.matchAll(new RegExp(`--color-${name}:\\s*(#[0-9a-f]{6})`, 'gi'))].map(([, value]) => value!.toLowerCase()))]
+  expect(values, name).toHaveLength(2)
+  const [darker, lighter] = values.sort((a, b) => luminance(a) - luminance(b))
+  return text ? { light: darker!, dark: lighter! } : { light: lighter!, dark: darker! }
 }
+/** The page and panel backgrounds. */
+const surface = (name: 'primary' | 'secondary') => brandColour(`background-${name}`)
+
+/** `color-mix(in srgb, a p%, b)` as the 8-bit colour the browser paints. */
+const mix = (a: string, percent: number, b: string) => '#' + [1, 3, 5].map((index) => {
+  const [x, y] = [a, b].map((hex) => Number.parseInt(hex.slice(index, index + 2), 16))
+  return Math.round((percent / 100) * x! + (1 - percent / 100) * y!).toString(16).padStart(2, '0')
+}).join('')
+
+/** The declarations of the rule that holds `selector`. */
+const ruleOf = (selector: string) => {
+  const start = apiCss.indexOf(selector)
+  expect(start, selector).toBeGreaterThan(-1)
+  return apiCss.slice(start, apiCss.indexOf('}', start))
+}
+/** The share of the family ink that the rule's `background: color-mix(...)` paints, read from the stylesheet. */
+const tintOf = (selector: string) => {
+  const rule = ruleOf(selector)
+  return Number(/background:\s*color-mix\(in srgb,\s*var\(--api-kind-ink,\s*var\(--color-link\)\)\s+(\d+)%/.exec(rule)?.[1])
+}
+/** How much of the ink a lit name keeps; the rest is the page's text colour. */
+const litShare = Number(/--api-kind-ink-lit:\s*color-mix\(in srgb,\s*var\(--api-kind-ink\)\s+(\d+)%,\s*var\(--color-foreground-primary\)\)/.exec(apiCss)?.[1])
 
 const light = tokens(css.slice(css.indexOf(':root {'), css.indexOf('@media (prefers-color-scheme: dark)')))
 const dark = tokens(css.slice(css.indexOf(':root:not([data-color-scheme=\'light\'])'), css.indexOf('[data-color-scheme=\'dark\'] {')))
@@ -47,6 +73,39 @@ describe('kind palette contrast', () => {
       expect(ratio(light[`${family}-ink`]!, background.light), `light ${family} on ${name}`).toBeGreaterThanOrEqual(4.5)
       expect(ratio(dark[`${family}-ink`]!, background.dark), `dark ${family} on ${name}`).toBeGreaterThanOrEqual(4.5)
     }
+  })
+
+  describe('a lit name', () => {
+    const modes = { light, dark } as const
+    /** Ink text on its own tint over a surface: what a hovered chip or a cross-lit name paints. */
+    const lit = (mode: 'light' | 'dark', family: string, percent: number, surfaceColour: string, deepened = true) => {
+      const ink = modes[mode][`${family}-ink`]!
+      const text = deepened ? mix(ink, litShare, brandColour('foreground-primary', true)[mode]) : ink
+      return { text, background: mix(ink, percent, surfaceColour) }
+    }
+    const chipHoverRule = '.api-directory a.api-mention--chip:focus-visible .api-literal--link'
+    const chipHover = tintOf(chipHoverRule)
+
+    it('reads the tints from the stylesheet, so a renamed rule fails here and is not skipped', () => {
+      expect([litShare, chipHover].every(Number.isFinite)).toBe(true)
+      // The check below measures the deepened ink, so the rule must paint it.
+      expect(ruleOf(chipHoverRule)).toMatch(/\bcolor:\s*var\(--api-kind-ink-lit/)
+    })
+
+    it.each(FAMILIES)('the %s ink clears 4.5:1 on a hovered chip in light and dark', (family) => {
+      for (const mode of ['light', 'dark'] as const) {
+        const { text, background } = lit(mode, family, chipHover, brandColour('inline-code-background')[mode])
+        expect(ratio(text, background), `${mode} ${family}`).toBeGreaterThanOrEqual(4.5)
+      }
+    })
+
+    it('would not, with the ink undeepened on its tint, so the check above can fail', () => {
+      const failing = FAMILIES.filter((family) => {
+        const { text, background } = lit('light', family, chipHover, brandColour('inline-code-background').light, false)
+        return ratio(text, background) < 4.5
+      })
+      expect(failing).toEqual(['members', 'tools'])
+    })
   })
 
   it('declares the dark preference and an explicit dark choice alike', () => {

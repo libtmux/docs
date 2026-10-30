@@ -167,6 +167,46 @@ describe('a name repeated in one docstring', () => {
   })
 })
 
+describe('a capability directory in a doc comment', () => {
+  const declare = (id: string, kind: ApiSymbol['kind']): ApiSymbol => ({
+    id, publicId: id, name: id.split('.').at(-1)!, kind, slug: id.replaceAll('.', '-').toLowerCase(),
+    modifiers: [], signatures: [], source: { file: 'pane.ts' },
+  })
+  const pane = declare('pane.Pane', 'class')
+  const local = new SymbolIndex([pane, declare('pane.Pane.kill', 'method'), declare('pane.Pane.id', 'property'), declare('pane.open', 'function')],
+    (symbol) => `/en/ts/latest/reference/${symbol.slug}/`, 'ts')
+  const rows = (...pairs: [string, string][]) => pairs.map(([title, refs]) => `**${title}.** What these are for.\n\n${refs}`).join('\n\n')
+  const text = rows(['Control', '{@link Pane.kill}, {@link Pane.id}'], ['Read', '{@link Pane.id}'], ['Open', '{@link open}'])
+  const chips = (root: Pick<DomElement, 'querySelectorAll'>) => [...root.querySelectorAll<DomAnchor>('dl.api-directory a.api-mention--chip')].map((link) => link.textContent)
+
+  it('draws a title and its guidance beside the member chips, each chip a link that keeps its kind', async () => {
+    const root = await renderProse(text, undefined, local)
+    const rowsOf = [...root.querySelectorAll('dl.api-directory > .api-directory__row')]
+    expect(rowsOf.map((row) => row.querySelector('dt')!.textContent)).toEqual(['Control', 'Read', 'Open'])
+    expect(rowsOf.map((row) => row.querySelector('dd.api-directory__guidance')!.textContent!.trim())).toEqual(Array(3).fill('What these are for.'))
+    expect(chips(root)).toEqual(['Pane.kill()', 'Pane.id', 'Pane.id', 'open()'])
+    expect([...root.querySelectorAll<DomAnchor>('a.api-mention--chip')].map((link) => link.dataset.apiKind)).toEqual(['method', 'property', 'property', 'function'])
+    expect(root.querySelector('.api-link-kind')).toBeNull()
+  })
+
+  it('drops the owner from a chip on the owner\'s page and keeps it elsewhere', async () => {
+    expect(chips(await renderProse(text, pane, local))).toEqual(['kill()', 'id', 'id', 'open()'])
+    expect(chips(await renderProse(text, undefined, local))).toEqual(['Pane.kill()', 'Pane.id', 'Pane.id', 'open()'])
+  })
+
+  it('drops the owner written with a hash, as Java and Ruby spell a member', async () => {
+    const hashed = rows(['Control', '{@link Pane#kill}, {@link #id}'], ['Read', '{@link Pane#id}'], ['Open', '{@link open}'])
+    expect(chips(await renderProse(hashed, pane, local))).toEqual(['kill()', 'id', 'id', 'open()'])
+    expect(chips(await renderProse(hashed, undefined, local))).toEqual(['Pane#kill()', '#id', 'Pane#id', 'open()'])
+  })
+
+  it('leaves a run of fewer than three rows as paragraphs', async () => {
+    const root = await renderProse(rows(['Control', '{@link Pane.kill}'], ['Read', '{@link Pane.id}']), undefined, local)
+    expect(root.querySelector('.api-directory')).toBeNull()
+    expect(root.querySelectorAll('p')).toHaveLength(4)
+  })
+})
+
 describe('a pipe table in a doc comment', () => {
   const text = 'Every handle:\n\n| To | Call |\n| --- | :-: |\n| read one | `Pane` |\n| write | `Window` and `a\\|b` |\n\nAfter.'
 

@@ -25,8 +25,10 @@ interface Props {
    * the link would resolve to nothing. The label still reads correctly.
    */
   citations?: boolean
+  /** A name in a directory: drawn as a chip, without its owner's name on the owner's page. */
+  chip?: boolean
 }
-const { text, index, context, citations = true } = Astro.props as Props
+const { text, index, context, citations = true, chip = false } = Astro.props as Props
 const CALLABLE = new Set(['method', 'function'])
 // Only a name written as a path reads as a call. A label with arguments, an Elixir `name/arity`, a PowerShell cmdlet, an
 // operator or the words an author chose for the link says how it is invoked already.
@@ -67,15 +69,18 @@ function mentionOf(link: LinkTarget | undefined, kind: string | undefined, title
       )
     }
     const parts = span.link ? [] : span.parts ?? index.linkLiteral(span.label, context)
-    const qualified = memberReference.test(span.label) && Boolean(span.link || parts.some((part) => part.link))
+    const qualified = !chip && memberReference.test(span.label) && Boolean(span.link || parts.some((part) => part.link))
     const symbol = span.link?.symbol
+    // A chip on its owner's page drops the owner: `Server.Open` reads `Open()` beside Server's other members.
+    const own = chip && context ? [`${context.name}.`, `${context.name}::`, `${context.name}#`, '#'].find((prefix) => span.label.startsWith(prefix)) : undefined
+    const bare = own ? span.label.slice(own.length) : span.label
     // A callable reads as a call wherever it is named, as Sphinx writes a method: `kill()`, `Server::shutdown()`.
-    const label = symbol && CALLABLE.has(symbol.kind) && callPath.test(span.label) ? `${span.label}()` : span.label
+    const label = symbol && CALLABLE.has(symbol.kind) && callPath.test(bare) ? `${bare}()` : bare
     // The accessible name holds the text a reader sees, parentheses included.
     const mention = mentionOf(span.link, symbol?.kind, symbol?.command?.kind ?? symbol?.kind, label)
     const name = <code class="api-literal api-literal--link">{labelParts(label, qualified).map((text) => qualified && text === '#' ? <span class="api-reference-separator">{text}</span> : text)}</code>
     if (span.link && mention) return (
-      <a class="api-xref api-mention api-doc-link" href={span.link.href} title={mention.title} data-api-kind={mention.dataApiKind} aria-label={mention.ariaLabel}>{name}</a>
+      <a class:list={['api-xref api-mention api-doc-link', { 'api-mention--chip': chip }]} href={span.link.href} title={mention.title} data-api-kind={mention.dataApiKind} aria-label={mention.ariaLabel}>{name}</a>
     )
     return span.link ? (
       <a class="api-xref" href={span.link.href} rel={span.link.external ? 'nofollow noopener' : undefined}>{name}</a>

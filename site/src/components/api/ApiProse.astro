@@ -1,7 +1,8 @@
 ---
 import type { ApiSymbol, SymbolIndex } from '@libtmux/api-model'
 import { Code } from 'astro-expressive-code/components'
-import { parseApiProse, type ProseBlock, type ProseItem } from '../../lib/api-prose'
+import { parseApiProse, type ProseItem } from '../../lib/api-prose'
+import { groupDirectory, type DirectoryBlock } from '../../lib/api-directory'
 import { codeLang } from '../../lib/highlight'
 import ApiDoc from './ApiDoc.astro'
 
@@ -13,13 +14,33 @@ interface Props {
   context?: ApiSymbol
 }
 const { text, items, index, context } = Astro.props as Props
-const blocks: ProseBlock[] = items ? [{ kind: 'ul', items }] : parseApiProse(text ?? '')
+const blocks: DirectoryBlock[] = items ? [{ kind: 'ul', items }] : groupDirectory(parseApiProse(text ?? ''))
 const { self: ApiProse } = Astro
 ---
 
 {
   blocks.map((block) => {
     const List = block.kind === 'ol' ? 'ol' : 'ul'
+    if (block.kind === 'directory') return (
+      <dl class="api-directory">
+        {block.rows.map((row) => (
+          <div class="api-directory__row">
+            <dt class="api-directory__title">{row.title}</dt>
+            {row.guidance && <dd class="api-directory__guidance"><ApiDoc text={row.guidance} index={index} context={context} /></dd>}
+            <dd class="api-directory__members">
+              {row.groups.map((group) => (
+                <div class="api-directory__group">
+                  {group.label && <span class="api-directory__label">{group.label}</span>}
+                  <ul class="api-directory__chips">
+                    {group.refs.map((ref) => <li><ApiDoc text={ref} index={index} context={context} chip /></li>)}
+                  </ul>
+                </div>
+              ))}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    )
     if (block.kind === 'table') return (
       <div class="api-prose-table" role="region" aria-label="Table" tabindex="0">
         <table class="table not-prose">

@@ -130,6 +130,8 @@ export const RENDERED_TEXTS: Record<string, string> = {
   'block.text': 'ApiProse blocks',
   'item.text': 'ApiProse blocks',
   cell: 'ApiProse blocks',
+  'row.guidance': 'ApiProse blocks',
+  ref: 'ApiProse blocks',
 }
 
 export interface ProseText {
