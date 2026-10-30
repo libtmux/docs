@@ -5,6 +5,7 @@ import { API_MODELS } from '../src/lib/api-models'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { parseApiProse } from '../src/lib/api-prose'
 import { groupDirectory } from '../src/lib/api-directory'
+import { parseXmlDoc } from '../../packages/api-model/src/doc/csharp'
 import { createRenderer } from 'astro-expressive-code'
 import { select, toHtml } from 'astro-expressive-code/hast'
 import config from '../ec.config.mjs'
@@ -36,6 +37,15 @@ describe('shared API prose blocks', () => {
       { kind: 'ol', start: 3, items: [{ text: 'Read a snapshot.', children: [] }, { text: 'Match the records.', children: [] }] },
       { kind: 'code', lang: 'go', code: 'matched := Matching(panes, filter)' },
       { kind: 'ul', items: [{ text: 'Inspect errors.', children: [] }] },
+    ])
+  })
+
+  it('reads a wrapped C# list item as one item of one list', () => {
+    const { doc } = parseXmlDoc('<summary>S.</summary><remarks>\nSteps:\n<list type="bullet">\n  <item><description>Open the server, and wait\n  for the first window.</description></item>\n  <item><description>Close it.</description></item>\n</list>\nDone.\n</remarks>')
+    expect(parseApiProse(doc.body!)).toEqual([
+      { kind: 'p', text: 'Steps:' },
+      { kind: 'ul', items: [{ text: 'Open the server, and wait for the first window.', children: [] }, { text: 'Close it.', children: [] }] },
+      { kind: 'p', text: 'Done.' },
     ])
   })
 
