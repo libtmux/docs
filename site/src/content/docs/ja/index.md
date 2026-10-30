@@ -1,16 +1,18 @@
 ---
-title: libtmux 日本語ドキュメント
-description: tmux 制御ライブラリ libtmux の日本語ドキュメント。
+# English sources: src/pages/index.astro (title, description) and
+# src/components/HomeIntro.astro (lead line). source_commit names the newer
+# of their latest commits.
+title: "libtmux: お使いの言語で tmux を操る"
+description: 普段お使いの言語で、アプリケーションから tmux を制御します。インストール、タスク別ガイド、API リファレンス。
 sidebar:
   label: 日本語
   order: 0
-translator: claude-opus-5
+source_commit: e80507d6fa215ed1a53e6c80c17f005564b6bac4
+translator: claude-sonnet-5-5
 reviewed: false
 ---
 
-libtmux は tmux を制御する型付きライブラリで、Python、TypeScript、Rust、Go、
-Java、C#、C++、Swift の実装があります。ドキュメントはすべての実装で
-一つのサイトを共有しています。
+アプリケーションから tmux を制御します。セッションを作成し、ペインを配置し、入力を送り、出力を取得できます。
 
 ## 翻訳済みのページ
 
@@ -18,14 +20,11 @@ Java、C#、C++、Swift の実装があります。ドキュメントはすべ�
 
 翻訳されていないページには、英語の原文と翻訳を始めるためのリンクが表示されます。
 
-どのページが翻訳済みで、どのページがまだかは[翻訳の進捗](/meta/translations/)に
-一覧があります。
+どのページが翻訳済みで、どのページがまだかは[翻訳の進捗](/meta/translations/)に一覧があります。
 
 ## API リファレンスは翻訳しません
 
-各実装の API リファレンスはソースコードのドキュメンテーションコメントから
-生成されるため、翻訳の対象外です。バージョンごとに再生成されるものを翻訳
-し続けることはできません。
+各実装の API リファレンスはソースコードのドキュメンテーションコメントから生成されるため、翻訳の対象外です。バージョンごとに再生成されるものを翻訳し続けることはできません。
 
 - [実装ごとの一覧](/meta/parity/)
 

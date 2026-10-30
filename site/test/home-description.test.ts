@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { parseFrontmatter } from '@astrojs/markdown-remark'
 import { describe, expect, it, vi } from 'vitest'
 import versions from '../public/versions.json'
 import { PORTS } from '../src/lib/ports'
@@ -41,5 +43,13 @@ describe('landing page description', () => {
 
   it('fits a search result in English', async () => {
     expect((await englishDescription()).length).toBeLessThanOrEqual(MAX_LENGTH)
+  })
+
+  it('names every port or none in the Japanese page, and fits a search result', () => {
+    const { frontmatter, content } = parseFrontmatter(readFileSync(new URL('../src/content/docs/ja/index.md', import.meta.url), 'utf8'))
+    const description = String(frontmatter.description)
+    expect([0, PORTS.length], description).toContain(portsNamed(description))
+    expect([0, PORTS.length], content).toContain(portsNamed(content))
+    expect(description.length).toBeLessThanOrEqual(MAX_LENGTH)
   })
 })
