@@ -9,7 +9,7 @@ import { experimental_AstroContainer } from 'astro/container'
 import { createComponent, renderTemplate } from 'astro/runtime/server/index.js'
 import { SymbolIndex } from '@libtmux/api-model'
 import { API_MODELS } from '../src/lib/api-models'
-import { memberTable } from '../src/lib/api-sections'
+import { fieldsRepeated, memberTable } from '../src/lib/api-sections'
 import { apiComponents } from './api-components'
 import { loadAstroTemplate, withoutScope } from './astro-templates'
 
@@ -40,8 +40,9 @@ describe('a type page with a table of fields', () => {
   }
   const contents = (document: Window['document']) => [...document.querySelectorAll('nav[aria-label="On this page"] a')].map((link) => [link.getAttribute('href'), link.textContent])
 
-  it.each([['csharp', 'LibTmux.TmuxCommand', 'Properties'], ['go', 'tmux.SessionFilter', 'Fields']] as const)(
-    '%s %s names its table %s in the heading, its permalink, its caption and its contents entry', async (port, id, word) => {
+  // C# rows repeat what each property's own page draws; Go and Rust rows are the only place a type page draws theirs.
+  it.each([['csharp', 'LibTmux.TmuxCommand', 'Properties', true], ['go', 'tmux.SessionFilter', 'Fields', false]] as const)(
+    '%s %s names its table %s in the heading, its permalink, its caption and its contents entry', async (port, id, word, repeated) => {
       const document = await page(port, id)
       const heading = document.querySelector('h2#api-fields')!
       expect(heading.firstChild?.textContent).toBe(word)
@@ -51,10 +52,10 @@ describe('a type page with a table of fields', () => {
       expect(contents(document)).toContainEqual(['#api-fields', word])
       // The rest of the members keep their own heading and id.
       expect(document.querySelector('.api-members > h2#api-members')?.firstChild?.textContent).toBe('Members')
-      // A type page draws each type once, in the table, so the gate that counts plain names must see it there.
+      // The gate that counts plain names sees a type where it is drawn in full: a repeat is counted on its own page.
       const cells = [...document.querySelectorAll('.api-field-table [data-type]')]
       expect(cells.length).toBeGreaterThan(0)
-      expect(cells.every((cell) => cell.getAttribute('data-repeated') === 'false')).toBe(true)
+      expect(cells.every((cell) => cell.getAttribute('data-repeated') === String(repeated))).toBe(true)
     }, 60_000)
 
   it('names the one heading of a C# type of only properties Properties, and keeps it the sticky Members bar', async () => {
@@ -66,6 +67,17 @@ describe('a type page with a table of fields', () => {
     expect(contents(document)).toContainEqual(['#api-members', 'Properties'])
     expect(document.querySelector('.api-members caption')?.textContent).toContain(' properties')
   }, 60_000)
+
+  it.each([['csharp', 'LibTmux.ClientAttachment', true], ['rs', 'pane.CapturedLine', false]] as const)(
+    'sets the repeat flag of the one table of %s %s to %s', async (port, id, repeated) => {
+      const cells = [...(await page(port, id)).querySelectorAll('.api-members [data-type]')]
+      expect(cells.length).toBeGreaterThan(0)
+      expect(cells.every((cell) => cell.getAttribute('data-repeated') === String(repeated))).toBe(true)
+    }, 60_000)
+
+  it('repeats the types of a C# table only, so Rust and Go rows stay counted where they stand', () => {
+    expect([fieldsRepeated('csharp'), fieldsRepeated('rs'), fieldsRepeated('go'), fieldsRepeated('py'), fieldsRepeated(undefined)]).toEqual([true, false, false, false, false])
+  })
 })
 
 interface Rule { container?: string; layered: boolean; selectors: string[]; declarations: Record<string, string> }
@@ -313,5 +325,72 @@ describe('every repeated type name on a product page', () => {
     // Take the entry's own drawing of the unresolved name away, as a change to ApiEntry would.
     for (const span of document.querySelectorAll('.api-members span.api-punct:not(.api-type-repeat)')) if (span.textContent!.trim() === 'TRequest') span.remove()
     expect(orphans(document)).toEqual(['TRequest'])
+  }, 120_000)
+})
+
+describe('every repeated type name in a C# properties table', () => {
+  // The real entry, table and type, as a core page draws them; the shell around the page is not needed.
+  const load = () => loadAstroTemplate('components/api/ApiReference.astro', {
+    real: ['components/api/ApiEntry.astro', 'components/api/ApiScalarMembers.astro', 'components/api/ApiType.astro', 'components/api/SymbolName.astro', 'components/api/ApiBadge.astro', 'components/api/ApiPageContents.astro'],
+    modules: {
+      'astro-expressive-code/components': { Code: createComponent(() => renderTemplate``) },
+      '../../lib/page-ports-for': { pagePortsFor: async () => [] },
+      '../../lib/sidebar': { pageBreadcrumbs: async () => [] },
+    },
+  })
+  const model = API_MODELS.csharp
+  const byAnchor = new Map(model.symbols.map((symbol) => [symbol.publicId ?? symbol.id, symbol]))
+  async function render(template: unknown, id: string) {
+    const owner = model.symbols.find((entry) => entry.id === id)!
+    const container = await experimental_AstroContainer.create({ astroConfig: { site: 'https://libtmux.org' } } as never)
+    const win = new Window()
+    windows.push(win)
+    win.document.body.innerHTML = withoutScope(await container.renderToString(template as never, {
+      request: new Request(`https://libtmux.org/en/csharp/latest/reference/${owner.slug}/`), params: { slug: owner.slug }, props: { model, owner },
+    }))
+    return win.document
+  }
+  const texts = (document: Window['document'], selector: string) => [...document.querySelectorAll(selector)].map((span) => span.textContent!.trim())
+  /** The texts of `wanted` that `drawn` does not hold as many times, the way a repeat needs its original. */
+  const missing = (wanted: string[], drawn: string[]) => [...new Set(wanted)].filter((text) => drawn.filter((entry) => entry === text).length < wanted.filter((entry) => entry === text).length)
+
+  /** Every row of every core C# class and struct table, with the property whose own page must hold what the row repeats. */
+  async function rows(template: unknown) {
+    const found: { owner: string; property: string; repeats: string[] }[] = []
+    for (const owner of model.symbols.filter((entry) => ['class', 'struct'].includes(entry.kind) && (!entry.product || entry.product === 'core' || entry.apiScope === 'internal'))) {
+      const document = await render(template, owner.id)
+      // Nothing in a table cell is drawn without the flag, or the gate would count the name on both pages.
+      expect(texts(document, 'table.api-scalar-members span.api-punct:not(.api-type-repeat)'), owner.id).toEqual([])
+      for (const row of document.querySelectorAll('table.api-scalar-members tbody tr')) {
+        const repeats = [...row.querySelectorAll('span.api-type-repeat')].map((span) => span.textContent!.trim())
+        if (repeats.length) found.push({ owner: owner.id, property: row.id.replace(/^member-/, ''), repeats })
+      }
+    }
+    return found
+  }
+
+  it('is drawn in full, unflagged, on the property\'s own page', async () => {
+    const template = await load()
+    const found = await rows(template)
+    expect(found.length).toBeGreaterThan(100)
+    expect(found.map((row) => row.repeats).flat()).toContain('TmuxInterceptor')
+    const problems: string[] = []
+    for (const row of found) {
+      const property = byAnchor.get(row.property)!
+      expect(property?.kind, row.property).toBe('property')
+      const lacking = missing(row.repeats, texts(await render(template, property.id), 'span.api-punct:not(.api-type-repeat)'))
+      if (lacking.length) problems.push(`${row.owner} ${property.name}: ${lacking.join(', ')}`)
+    }
+    expect(problems).toEqual([])
+  }, 300_000)
+
+  it('is found missing when a property\'s own page stops drawing its type (control)', async () => {
+    const template = await load()
+    const row = (await rows(template)).find((entry) => entry.property === 'LibTmux.ServerConnectionOptions.Interceptor')!
+    expect(row.repeats).toContain('TmuxInterceptor')
+    const own = await render(template, row.property)
+    expect(missing(row.repeats, texts(own, 'span.api-punct:not(.api-type-repeat)'))).toEqual([])
+    for (const span of own.querySelectorAll('span.api-punct')) if (span.textContent!.trim() === 'TmuxInterceptor') span.remove()
+    expect(missing(row.repeats, texts(own, 'span.api-punct:not(.api-type-repeat)'))).toEqual(['TmuxInterceptor'])
   }, 120_000)
 })

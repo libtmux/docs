@@ -66,10 +66,12 @@ function attributes(source) {
  * Keep the recorded single-class metric; type chips need their own inventory.
  *
  * A span also classed `api-type-repeat` is a repeat of a type drawn in full elsewhere, such as a table row that
- * summarizes an entry or a variant's page (`ApiType`'s `repeated`). The name is counted where its declaration is drawn,
- * which is the entry on the same page for a product page and the variant's own page for an enum page, so the repeat
- * adds none. site/test/field-table-pages.test.ts requires that every product-page repeat has its original on its page,
- * and site/test/enum-variants.test.ts that every enum-page repeat has one on its variant's page.
+ * summarizes an entry, a variant's page or a property's page (`ApiType`'s `repeated`). The name is counted where its
+ * declaration is drawn in full: the entry on the same page for a product page, the variant's own page for an enum page,
+ * and the property's own page for a C# class page. The repeat adds none. Rows of Rust and Go struct fields carry no such
+ * class and are counted where they stand. site/test/field-table-pages.test.ts requires that every product-page repeat has
+ * its original on its page and every C# class-page repeat one on its property's page, and site/test/enum-variants.test.ts
+ * that every enum-page repeat has one on its variant's page.
  */
 function singleClass(classes, name) {
   return classes.length === 1 && classes[0] === name

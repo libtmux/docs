@@ -33,8 +33,9 @@ interface Props {
   /** Link an inline member declaration to its own page. */
   nameHref?: string
   /**
-   * The page draws this annotation in full elsewhere, as a table row summarizes an entry. A name that fails to resolve
-   * is reported by that drawing, so this one carries a second class and `check-type-links` counts the name once.
+   * The annotation is drawn in full elsewhere, in an entry on this page or on the member's own page, as a table row
+   * summarizes a member. A name that fails to resolve is reported by that drawing, so this one carries a second class and
+   * `check-type-links` counts the name once.
    */
   repeated?: boolean
 }

@@ -25,6 +25,11 @@ interface FieldTable {
   field: (member: ApiSymbol) => boolean
   /** What the port calls them: C# declares properties, Rust and Go fields. */
   label: string
+  /**
+   * Whether a row repeats a type that its field's own page also draws, so `check-type-links` counts the name there.
+   * A row that does not is counted where it stands.
+   */
+  repeated: boolean
 }
 
 const isRecord = (owner: ApiSymbol) => owner.kind === 'struct' || owner.variant === 'struct' || owner.variant === 'tuple'
@@ -38,13 +43,19 @@ const typedAttribute = (member: ApiSymbol) => member.kind === 'attribute' && mem
  * constant, so it stays in the member list.
  */
 const FIELD_TABLES: Readonly<Partial<Record<string, FieldTable>>> = {
-  rs: { owner: isRecord, field: typedAttribute, label: 'Fields' },
-  go: { owner: isRecord, field: typedAttribute, label: 'Fields' },
+  rs: { owner: isRecord, field: typedAttribute, label: 'Fields', repeated: false },
+  go: { owner: isRecord, field: typedAttribute, label: 'Fields', repeated: false },
   csharp: {
     owner: (owner) => owner.kind === 'class' || owner.kind === 'struct',
     field: (member) => member.kind === 'property' && member.type !== undefined && !member.modifiers.includes('static'),
     label: 'Properties',
+    repeated: true,
   },
+}
+
+/** Whether the rows of a port's Fields table repeat types that each field's own page draws and the gate counts. */
+export function fieldsRepeated(port?: string): boolean {
+  return FIELD_TABLES[port ?? '']?.repeated ?? false
 }
 
 /** The heading of a port's Fields table, in the word its language uses. The section keeps one id, `api-fields`, whatever the word. */
