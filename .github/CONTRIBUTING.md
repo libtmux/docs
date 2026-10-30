@@ -245,6 +245,40 @@ loads `src/test/setup.ts`, whose serializer normalizes only the Tailwind
 version banner. Preserve that setup; changes to selectors or CSS structure
 must remain visible in snapshots.
 
+### Example line width
+
+Code in `site/src/content/docs` stays within 80 columns, counting a tab as
+eight and a wide glyph as two (`CODE_COLUMNS.example` in
+[`code-layout.ts`](../site/src/lib/code-layout.ts)). Many pages already run
+over, so [`example-columns.test.ts`](../site/test/example-columns.test.ts) holds
+each page to the count recorded in
+[`example-columns.json`](../site/test/fixtures/example-columns.json) rather
+than to zero. It fails when a page's count grows, when a page the baseline
+does not list has any line over, and when a count shrinks while the baseline
+still holds the old number. A fix lowers the baseline in the same commit.
+
+Every code block counts, fenced or indented, at any depth in a list or a
+quotation. That includes `text` fences, which also label diagrams, and the
+command lines of a `console` session, which
+[WRITING.md](../WRITING.md#markdown-and-examples) says to split with `\`.
+Two kinds of recorded output are exempt, because a reader cannot reformat
+them: `output` and `log` fences, and the output lines of a `console` or
+`shellsession` block, as the site's own prompt reader sees them. The exemption
+is a rule, not a record of current lines. A `file=` or `excerpt=` fence has no
+text in the page; the port's formatter sets its width. Pages staged from a
+port's repository (`_staged/`) are generated, gitignored and owned there.
+
+After shortening lines, lower the baseline:
+
+```console
+$ node scripts/gen-example-columns.mjs
+```
+
+The script refuses to raise a count or to record a page that is not listed.
+A page moved to a new path keeps its entry with `--rename old=new`, which
+accepts a page that has no more lines over than the entry recorded. Pass
+`--force` only when growth is intended, and say why in the commit.
+
 ### Links between ports and guides
 
 [`concepts.ts`](../packages/api-model/src/concepts.ts) maps equivalent APIs by
