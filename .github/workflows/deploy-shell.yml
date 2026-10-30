@@ -117,7 +117,13 @@ jobs:
       matrix:
         locale: ${{ fromJSON(needs.locales.outputs.list) }}
     steps:
+      # translationState compares each translation's source_commit with the
+      # English page's last commit in git, so the build needs the history. A
+      # blobless clone takes every commit and tree, and the files of HEAD only.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          filter: blob:none
 
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
