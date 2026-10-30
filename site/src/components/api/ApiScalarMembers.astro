@@ -16,7 +16,8 @@ interface Props {
 const { owner, members, index, hrefFor, columns = 'value', label = 'Fields' } = Astro.props
 const fields = columns === 'fields'
 ---
-<table class="api-scalar-members">
+<div class="api-scalar-box">
+<table class="api-scalar-members table">
   <caption class="sr-only">{owner.name} {fields ? label.toLowerCase() : 'constant object properties'}</caption>
   <thead><tr><th scope="col">Name</th><th scope="col">{fields ? 'Type' : 'Value'}</th><th scope="col">Description</th></tr></thead>
   <tbody>
@@ -27,3 +28,4 @@ const fields = columns === 'fields'
     </tr>)}
   </tbody>
 </table>
+</div>
