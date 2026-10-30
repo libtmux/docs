@@ -10,12 +10,14 @@ interface Props {
   hrefFor: (symbol: ApiSymbol) => string
   /** `fields` swaps the Value column for a linked Type column. */
   columns?: 'value' | 'fields'
+  /** The heading's word for the `fields` rows, in the port's language. */
+  label?: string
 }
-const { owner, members, index, hrefFor, columns = 'value' } = Astro.props
+const { owner, members, index, hrefFor, columns = 'value', label = 'Fields' } = Astro.props
 const fields = columns === 'fields'
 ---
 <table class="api-scalar-members">
-  <caption class="sr-only">{owner.name} {fields ? 'fields' : 'constant object properties'}</caption>
+  <caption class="sr-only">{owner.name} {fields ? label.toLowerCase() : 'constant object properties'}</caption>
   <thead><tr><th scope="col">Name</th><th scope="col">{fields ? 'Type' : 'Value'}</th><th scope="col">Description</th></tr></thead>
   <tbody>
     {members.map((member) => <tr id={`member-${member.publicId ?? member.id}`}>

@@ -18,19 +18,50 @@ export function hasScalarMembers(owner: ApiSymbol, members: ApiSymbol[]): boolea
       member.modifiers.includes('readonly') && member.value !== undefined)
 }
 
-/** Ports whose extracted fields carry a name, a type and a summary for every struct and payload variant. */
-const FIELD_TABLE_PORTS: ReadonlySet<string> = new Set(['rs', 'go'])
+interface FieldTable {
+  /** Whether an owner of this shape holds the data that a Fields table lists. */
+  owner: (owner: ApiSymbol) => boolean
+  /** Whether a member of such an owner is one of its fields. */
+  field: (member: ApiSymbol) => boolean
+  /** What the port calls them: C# declares properties, Rust and Go fields. */
+  label: string
+}
 
-/** The typed fields of a struct or payload variant, apart from every other member, in member order. */
+const isRecord = (owner: ApiSymbol) => owner.kind === 'struct' || owner.variant === 'struct' || owner.variant === 'tuple'
+const typedAttribute = (member: ApiSymbol) => member.kind === 'attribute' && member.type !== undefined
+
+/**
+ * Ports whose extracted fields carry a name, a type and a summary, and where each keeps them.
+ *
+ * Rust and Go declare fields on a struct or payload variant. A C# type declares its data as
+ * properties, on classes and structs alike; a static property is a named value of the type, like a
+ * constant, so it stays in the member list.
+ */
+const FIELD_TABLES: Readonly<Partial<Record<string, FieldTable>>> = {
+  rs: { owner: isRecord, field: typedAttribute, label: 'Fields' },
+  go: { owner: isRecord, field: typedAttribute, label: 'Fields' },
+  csharp: {
+    owner: (owner) => owner.kind === 'class' || owner.kind === 'struct',
+    field: (member) => member.kind === 'property' && member.type !== undefined && !member.modifiers.includes('static'),
+    label: 'Properties',
+  },
+}
+
+/** The heading of a port's Fields table, in the word its language uses. The section keeps one id, `api-fields`, whatever the word. */
+export function fieldsLabel(port?: string): string {
+  return FIELD_TABLES[port ?? '']?.label ?? 'Fields'
+}
+
+/** The typed fields an owner declares, apart from every other member, in member order. */
 export function splitFieldMembers(owner: ApiSymbol, members: ApiSymbol[], port?: string): { fields: ApiSymbol[]; rest: ApiSymbol[] } {
-  if (!FIELD_TABLE_PORTS.has(port ?? '') || !(owner.kind === 'struct' || owner.variant === 'struct' || owner.variant === 'tuple')) {
-    return { fields: [], rest: members }
-  }
-  const isField = (member: ApiSymbol) => member.kind === 'attribute' && member.type !== undefined
+  const table = FIELD_TABLES[port ?? '']
+  if (!table?.owner(owner)) return { fields: [], rest: members }
+  // A table describes what the type holds, so a member it only inherits stays in the list.
+  const isField = (member: ApiSymbol) => !member.inheritedFrom && table.field(member)
   return { fields: members.filter(isField), rest: members.filter((member) => !isField(member)) }
 }
 
-/** A record-like type whose members are all typed fields uses one Name/Type/Description table. */
+/** A type whose members are all typed fields uses one Name/Type/Description table. */
 export function hasFieldMembers(owner: ApiSymbol, members: ApiSymbol[], port?: string): boolean {
   const { fields, rest } = splitFieldMembers(owner, members, port)
   return fields.length > 0 && rest.length === 0
@@ -39,9 +70,11 @@ export function hasFieldMembers(owner: ApiSymbol, members: ApiSymbol[], port?: s
 /** The member entries of a type page's section navigation: a Fields block beside the member list, then its groups. */
 export function apiMemberSections(options: {
   fields: number; members: number; label: string; groups: { id: string; label: string }[]
+  /** The port's word for its fields, see `fieldsLabel`. */
+  fieldsLabel?: string
 }): ApiSection[] {
   return [
-    ...(options.fields ? [{ id: 'api-fields', label: 'Fields', count: options.fields }] : []),
+    ...(options.fields ? [{ id: 'api-fields', label: options.fieldsLabel ?? 'Fields', count: options.fields }] : []),
     ...(options.members ? [{ id: 'api-members', label: options.label, count: options.members },
       ...options.groups.map((group) => ({ id: group.id, label: group.label, nested: true }))] : []),
   ]

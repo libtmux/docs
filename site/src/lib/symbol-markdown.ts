@@ -5,7 +5,7 @@ import { aliasMembersTarget, aliasTarget, boundLabel, pageMembersOf, memberSigna
 import mentions from '../data/mentions.json'
 import { PORT_NAME } from './api-models'
 import { apiTmuxSections, type ApiTmuxSection } from './api-tmux-sections'
-import { aliasDeclaration, apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasFieldMembers, hasScalarMembers, splitFieldMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
+import { aliasDeclaration, apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, fieldsLabel, hasFieldMembers, hasScalarMembers, splitFieldMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
 import type { ResolvedUsage } from './tmux-reference'
 import { tmuxCommandMentions, tmuxMentionMarkdown } from './tmux-links'
 import { productApiIndex } from './product-api'
@@ -383,7 +383,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     const cell = (text: string) => text.replaceAll('|', '\\|').replaceAll('\n', ' ')
     const link = (member: ApiSymbol) => ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)
     if (fieldTable) {
-      out.push('## Fields', '', '| Name | Type | Description |', '| --- | --- | --- |')
+      out.push(`## ${fieldsLabel(port)}`, '', '| Name | Type | Description |', '| --- | --- | --- |')
       for (const member of split.fields) {
         const type = referenceMarkdown({ label: member.type!, parts: index?.linkType(member.type!, member) }) ?? inlineCode(member.type!)
         out.push(`| ${cell(link(member))} | ${cell(type)} | ${cell(member.doc?.summary ?? '')} |`)

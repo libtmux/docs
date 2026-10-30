@@ -14,7 +14,7 @@ import { apiGlossary, apiGlossaryHeadings, API_GLOSSARY_TITLE, apiGlossaryHref }
 import ApiQualifiedName from '../../components/api/ApiQualifiedName.astro'
 import ApiType from '../../components/api/ApiType.astro'
 import ApiPageContents from '../../components/api/ApiPageContents.astro'
-import { apiEntryFields, apiEntrySections, apiMemberGroups, apiMemberSections, memberTableColumns, relatedTypeLinks, splitFieldMembers, type ApiSection } from '../../lib/api-sections'
+import { apiEntryFields, apiEntrySections, apiMemberGroups, apiMemberSections, fieldsLabel, memberTableColumns, relatedTypeLinks, splitFieldMembers, type ApiSection } from '../../lib/api-sections'
 import PageToolbar from '../../components/PageToolbar.astro'
 import PagePortSwitcher from '../../components/PagePortSwitcher.astro'
 import DocumentationContext from '../../components/docs/DocumentationContext.astro'
@@ -362,14 +362,16 @@ const memberGroups = apiMemberGroups(shown, signals)
 const tableColumns = owner ? memberTableColumns(owner, listed, port) : undefined
 const showMemberGroups = !tableColumns && memberGroups.length > 1
 const aliasedMembers = owner && model ? aliasMembersTarget(model, owner) : undefined
-const membersLabel = aliasedMembers ? `Members of ${aliasedMembers.name}` : owner?.variant || tableColumns === 'fields' || (language === 'julia' && owner?.kind === 'struct' && shown.every((member) => member.kind === 'property')) ? 'Fields' : 'Members'
+// A table of fields takes its port's word for them; the section keeps the id `api-fields`.
+const fieldsHeading = fieldsLabel(port)
+const membersLabel = aliasedMembers ? `Members of ${aliasedMembers.name}` : tableColumns === 'fields' ? fieldsHeading : owner?.variant || (language === 'julia' && owner?.kind === 'struct' && shown.every((member) => member.kind === 'property')) ? 'Fields' : 'Members'
 const glossaryContext = apiGlossary(`${refBase}glossary/`)
 const pageSections: ApiSection[] = glossary ? apiGlossaryHeadings(glossaryContext.path).map((heading) => ({
   id: heading.slug, label: heading.text, nested: heading.depth === 3,
 })) : owner ? [
   { id: 'api-overview', label: 'Overview' },
   ...apiEntrySections(owner, language, index),
-  ...apiMemberSections({ fields: fieldsAndRest ? split.fields.length : 0, members: shown.length, label: membersLabel, groups: showMemberGroups ? memberGroups : [] }),
+  ...apiMemberSections({ fields: fieldsAndRest ? split.fields.length : 0, members: shown.length, label: membersLabel, fieldsLabel: fieldsHeading, groups: showMemberGroups ? memberGroups : [] }),
   ...(otherInherited.length ? [{ id: 'api-inherited', label: 'Inherited members', count: otherInherited.length }] : []),
 ] : []
 const relationshipSections = owner && model ? apiRelationshipSections(model, owner) : []
@@ -803,14 +805,14 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
             */}
             {fieldsAndRest && owner && (
               <div class="api-field-table mt-8">
-                <h2 class="api-section-heading text-lg font-semibold" id="api-fields">Fields<span class="api-section-count">{split.fields.length}</span><a class="api-heading-link" href="#api-fields" aria-label="Link to Fields">#</a></h2>
-                <ApiScalarMembers owner={owner} members={split.fields} index={index} hrefFor={hrefFor} columns="fields" />
+                <h2 class="api-section-heading text-lg font-semibold" id="api-fields">{fieldsHeading}<span class="api-section-count">{split.fields.length}</span><a class="api-heading-link" href="#api-fields" aria-label={`Link to ${fieldsHeading}`}>#</a></h2>
+                <ApiScalarMembers owner={owner} members={split.fields} index={index} hrefFor={hrefFor} columns="fields" label={fieldsHeading} />
               </div>
             )}
             {shown.length > 0 && (
               <div class="api-members mt-8">
                 <h2 class="api-section-heading text-lg font-semibold" id="api-members">{aliasedMembers ? <>Members of <a class="api-members-target" href={hrefFor(aliasedMembers)}><code>{aliasedMembers.name}</code></a></> : membersLabel}<span class="api-section-count">{shown.length}</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersLabel}`}>#</a></h2>
-                {tableColumns ? <ApiScalarMembers owner={owner} members={listed} index={index} hrefFor={hrefFor} columns={tableColumns} /> : memberGroups.map((group) => <section id={showMemberGroups ? undefined : group.id} class:list={['api-member-group', !showMemberGroups && 'api-member-group--single']} aria-labelledby={showMemberGroups ? group.id : 'api-members'}>
+                {tableColumns ? <ApiScalarMembers owner={owner} members={listed} index={index} hrefFor={hrefFor} columns={tableColumns} label={fieldsHeading} /> : memberGroups.map((group) => <section id={showMemberGroups ? undefined : group.id} class:list={['api-member-group', !showMemberGroups && 'api-member-group--single']} aria-labelledby={showMemberGroups ? group.id : 'api-members'}>
                 {showMemberGroups && <h3 id={group.id}>{group.label}<span class="api-section-count">{group.members.length}</span><a class="api-heading-link" href={`#${group.id}`} aria-label={`Link to ${group.label}`}>#</a></h3>}
                 <ul class="api-member-list mt-3">
                   {group.members.map((m) => (
