@@ -10,6 +10,41 @@ export type ProseBlock =
   | { kind: 'ol'; start: number; items: ProseItem[] }
   /** `# Errors`, `# Panics`, `# Safety` — Rust's convention, and Go's. */
   | { kind: 'rubric'; text: string }
+  /** A pipe table, as rustdoc and DocC draw one; each cell is inline prose. */
+  | { kind: 'table'; head: string[]; align: TableAlign[]; rows: string[][] }
+
+export type TableAlign = 'left' | 'center' | 'right' | undefined
+
+const TABLE_RULE = /^\s*\|?\s*:?-+:?\s*(?:\|\s*:?-+:?\s*)*\|?\s*$/
+
+/** A table row's cells: split on pipes outside code spans, and a `\|` stays a pipe. */
+function tableCells(line: string): string[] {
+  const cells: string[] = []
+  let cell = ''
+  let fence = 0
+  const text = line.trim().replace(/^\|/, '').replace(/(?<!\\)\|$/, '')
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]
+    if (ch === '\\' && text[i + 1] === '|') { cell += '|'; i++; continue }
+    if (ch === '`') {
+      let run = 1
+      while (text[i + run] === '`') run++
+      fence = fence === run ? 0 : fence || run
+      cell += '`'.repeat(run)
+      i += run - 1
+      continue
+    }
+    if (ch === '|' && !fence) { cells.push(cell.trim()); cell = ''; continue }
+    cell += ch
+  }
+  cells.push(cell.trim())
+  return cells
+}
+
+function tableAlign(rule: string): TableAlign[] {
+  return tableCells(rule).map((cell) => cell.startsWith(':') && cell.endsWith(':') ? 'center'
+    : cell.endsWith(':') ? 'right' : cell.startsWith(':') ? 'left' : undefined)
+}
 
 /**
  * Group lines into paragraphs and bullet lists.
@@ -57,6 +92,19 @@ export function parseApiProse(source: string): ProseBlock[] {
       flushPara()
       flushList()
       blocks.push({ kind: 'rubric', text: heading[1].trim() })
+      continue
+    }
+    if (/^\s*\|/.test(raw) && TABLE_RULE.test(lines[i + 1] ?? '')) {
+      flushPara()
+      flushList()
+      const head = tableCells(raw)
+      const align = tableAlign(lines[++i])
+      const rows: string[][] = []
+      while (i + 1 < lines.length && /^\s*\|/.test(lines[i + 1])) {
+        const cells = tableCells(lines[++i])
+        rows.push(head.map((_, n) => cells[n] ?? ''))
+      }
+      blocks.push({ kind: 'table', head, align, rows })
       continue
     }
     const bullet = /^(\s*)(?:([-*+•])|(\d+)[.)])\s+(.*)$/.exec(raw)

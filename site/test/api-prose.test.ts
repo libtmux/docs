@@ -38,6 +38,32 @@ describe('shared API prose blocks', () => {
     ])
   })
 
+  it('reads a pipe table as a table block, not a paragraph of pipes', () => {
+    const blocks = parseApiProse('Every handle:\n\n| To | Call |\n| --- | :--: |\n| read one | `typed_option` |\n| write `a|b` | [`set_option`] |\n\nAfter.')
+    expect(blocks).toEqual([
+      { kind: 'p', text: 'Every handle:' },
+      { kind: 'table', head: ['To', 'Call'], align: [undefined, 'center'], rows: [['read one', '`typed_option`'], ['write `a|b`', '[`set_option`]']] },
+      { kind: 'p', text: 'After.' },
+    ])
+  })
+
+  it('reads alignment from the rule row, an escaped pipe as a pipe, and a ragged row as the header\'s width', () => {
+    const [table] = parseApiProse('| a | b | c |\n|:--|--:|---|\n| one \\| two | x |\n| 1 | 2 | 3 | 4 |')
+    expect(table).toEqual({
+      kind: 'table', head: ['a', 'b', 'c'], align: ['left', 'right', undefined],
+      rows: [['one | two', 'x', ''], ['1', '2', '3']],
+    })
+  })
+
+  it('ends a table at a line without a leading pipe and opens one straight after a paragraph line', () => {
+    expect(parseApiProse('Lead line\n| a |\n| - |\n| 1 |\ntrailing line').map((block) => block.kind)).toEqual(['p', 'table', 'p'])
+  })
+
+  it('leaves pipes in prose alone when no rule line follows', () => {
+    expect(parseApiProse('| not a table |\nstill prose')).toEqual([{ kind: 'p', text: '| not a table | still prose' }])
+    expect(parseApiProse('a | b\n| - |')).toEqual([{ kind: 'p', text: 'a | b | - |' }])
+  })
+
   it('renders and exports the source-bound Go Matching example without changing Copy text', async () => {
     const model = API_MODELS.go
     const symbol = model.symbols.find((entry) => entry.id === 'tmuxq.Matching')!

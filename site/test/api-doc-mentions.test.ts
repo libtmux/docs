@@ -33,6 +33,13 @@ async function render(text: string, context?: ApiSymbol, from: SymbolIndex = ind
   return window.document
 }
 
+/** Doc-comment prose as `ApiProse` draws it: its blocks, each with the links `ApiDoc` writes. */
+async function renderProse(text: string, context?: ApiSymbol, from: SymbolIndex = index) {
+  const prose = await loadAstroTemplate('components/api/ApiProse.astro', { real: ['components/api/ApiDoc.astro'], modules: { 'astro-expressive-code/components': { Code: () => '' } } })
+  window.document.body.innerHTML = await renderAstroTemplate(prose, { props: { text, index: from, context } })
+  return window.document
+}
+
 /** What is wrong with the way a page writes its links to declarations, so a test can name the failure and a control can prove it is able to fail. */
 function problems(root: Pick<DomElement, 'querySelectorAll'>): string[] {
   const found: string[] = []
@@ -153,11 +160,29 @@ describe('a callable named in prose', () => {
 
 describe('a name repeated in one docstring', () => {
   it('is the link alone in every paragraph, each keeping its kind', async () => {
-    const prose = await loadAstroTemplate('components/api/ApiProse.astro', { real: ['components/api/ApiDoc.astro'], modules: { 'astro-expressive-code/components': { Code: () => '' } } })
-    window.document.body.innerHTML = await renderAstroTemplate(prose, { props: { text: 'Read a `Pane`.\n\nThen a `Pane` again.', index } })
-    expect(window.document.querySelectorAll('a.api-xref')).toHaveLength(2)
-    expect(window.document.querySelector('.api-link-kind')).toBeNull()
-    expect(problems(window.document)).toEqual([])
+    const root = await renderProse('Read a `Pane`.\n\nThen a `Pane` again.')
+    expect(root.querySelectorAll('a.api-xref')).toHaveLength(2)
+    expect(root.querySelector('.api-link-kind')).toBeNull()
+    expect(problems(root)).toEqual([])
+  })
+})
+
+describe('a pipe table in a doc comment', () => {
+  const text = 'Every handle:\n\n| To | Call |\n| --- | :-: |\n| read one | `Pane` |\n| write | `Window` and `a\\|b` |\n\nAfter.'
+
+  it('renders as a table whose cells link their references, not as a paragraph of pipes', async () => {
+    const root = await renderProse(text)
+    const table = root.querySelector('.api-prose-table > table')!
+    expect(table).not.toBeNull()
+    // A wide table scrolls inside its region, which a keyboard must reach and a reader must hear named.
+    const region = table.parentElement!
+    expect([region.getAttribute('role'), region.getAttribute('aria-label'), region.getAttribute('tabindex')]).toEqual(['region', 'Table', '0'])
+    expect([...table.querySelectorAll('thead th')].map((cell) => cell.textContent)).toEqual(['To', 'Call'])
+    expect([...table.querySelectorAll('thead th')].map((cell) => cell.getAttribute('style'))).toEqual([null, 'text-align: center'])
+    expect([...table.querySelectorAll('tbody tr')].map((row) => [...row.querySelectorAll('td')].map((cell) => cell.textContent)))
+      .toEqual([['read one', 'Pane'], ['write', 'Window and a|b']])
+    expect([...table.querySelectorAll('tbody a.api-mention')].map((link) => link.getAttribute('data-api-kind'))).toEqual(['class', 'class'])
+    expect([...root.querySelectorAll('p')].map((paragraph) => paragraph.textContent!.trim())).toEqual(['Every handle:', 'After.'])
   })
 })
 

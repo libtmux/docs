@@ -20,6 +20,18 @@ const { self: ApiProse } = Astro
 {
   blocks.map((block) => {
     const List = block.kind === 'ol' ? 'ol' : 'ul'
+    if (block.kind === 'table') return (
+      <div class="api-prose-table" role="region" aria-label="Table" tabindex="0">
+        <table class="table not-prose">
+          <thead><tr>{block.head.map((cell, n) => <th style={block.align[n] ? `text-align: ${block.align[n]}` : undefined}><ApiDoc text={cell} index={index} context={context} /></th>)}</tr></thead>
+          <tbody>
+            {block.rows.map((row) => (
+              <tr>{row.map((cell, n) => <td style={block.align[n] ? `text-align: ${block.align[n]}` : undefined}><ApiDoc text={cell} index={index} context={context} /></td>)}</tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )
     return block.kind === 'code' ? (
       <div class="api-prose-code"><Code code={block.code} lang={codeLang(block.lang)} title="" /></div>
     ) : block.kind === 'rubric' ? (
