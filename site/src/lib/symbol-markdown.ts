@@ -5,7 +5,7 @@ import { aliasMembersTarget, aliasTarget, boundLabel, pageMembersOf, memberSigna
 import mentions from '../data/mentions.json'
 import { PORT_NAME } from './api-models'
 import { apiTmuxSections, type ApiTmuxSection } from './api-tmux-sections'
-import { aliasDeclaration, apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasFieldMembers, hasScalarMembers, splitFieldMembers, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures } from './api-sections'
+import { aliasDeclaration, apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasFieldMembers, hasScalarMembers, memberTable, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures, variantPayloads, type VariantPayload } from './api-sections'
 import type { ResolvedUsage } from './tmux-reference'
 import { tmuxCommandMentions, tmuxMentionMarkdown } from './tmux-links'
 import { productApiIndex } from './product-api'
@@ -376,18 +376,34 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     out.push('')
   }
   if (declared.length) {
-    const split = splitFieldMembers(symbol, declared, port)
-    const fieldTable = split.fields.length > 0
-    // Fields and other members: the fields get their own table, the rest keep the member list.
-    const rest = fieldTable ? split.rest : declared
+    const table = memberTable(symbol, declared, port)
+    // A table of fields or variants and other members: the table gets its own section, the rest keep the member list.
+    const rest = table ? table.rest : declared
     const cell = (text: string) => text.replaceAll('|', '\\|').replaceAll('\n', ' ')
     const link = (member: ApiSymbol) => ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)
-    if (fieldTable) {
-      out.push('## Fields', '', '| Name | Type | Description |', '| --- | --- | --- |')
-      for (const member of split.fields) {
+    if (table?.columns === 'fields') {
+      out.push(`## ${table.label}`, '', '| Name | Type | Description |', '| --- | --- | --- |')
+      for (const member of table.rows) {
         const type = referenceMarkdown({ label: member.type!, parts: index?.linkType(member.type!, member) }) ?? inlineCode(member.type!)
         out.push(`| ${cell(link(member))} | ${cell(type)} | ${cell(member.doc?.summary ?? '')} |`)
       }
+      out.push('')
+    } else if (table) {
+      const payloads = variantPayloads(model.symbols, table.rows)
+      // The payload is one run of parts, so its punctuation joins the code spans beside it; two spans side by side would fuse.
+      const payloadText = (payload: VariantPayload | undefined) => {
+        // A unit variant's cell stays empty; one the model holds no shape for says so, as the page does.
+        if (payload?.kind === 'unknown') return `*${payload.label}*`
+        if (payload?.kind !== 'fields') return ''
+        const parts = [{ text: payload.open }, ...payload.fields.flatMap((field, position) => [
+          { text: `${position > 0 ? ', ' : ''}${payload.named ? `${field.name}: ` : ''}` },
+          ...(index?.linkType(field.type!, field) ?? [{ text: field.type! }]),
+        ]), { text: payload.close }]
+        const label = parts.map((part) => part.text).join('')
+        return referenceMarkdown({ label, parts }) ?? inlineCode(label)
+      }
+      out.push(`## ${table.label}`, '', '| Case | Payload | Description |', '| --- | --- | --- |')
+      for (const member of table.rows) out.push(`| ${cell(link(member))} | ${cell(payloadText(payloads.get(member.id)))} | ${cell(member.doc?.summary ?? '')} |`)
       out.push('')
     }
     if (rest.length) {

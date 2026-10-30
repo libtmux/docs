@@ -32,8 +32,14 @@ interface Props {
   language?: string
   /** Link an inline member declaration to its own page. */
   nameHref?: string
+  /**
+   * The annotation is drawn in full elsewhere, in an entry on this page or on the member's own page, as a table row
+   * summarizes a member. A name that fails to resolve is reported by that drawing, so this one carries a second class and
+   * `check-type-links` counts the name once.
+   */
+  repeated?: boolean
 }
-const { type, index, context, chip, signature, nameHref, layout: declared, language } = Astro.props as Props
+const { type, index, context, chip, signature, nameHref, layout: declared, language, repeated } = Astro.props as Props
 const layout = declared ?? (language ? await typeLayout(type, language) : undefined)
 const spans: SignatureSpan[] = layout && context
   ? signatureSpans(layout, index, context, signature) : index.linkType(type, context, signature)
@@ -67,6 +73,7 @@ const isOperator = (text: string) => /^(->|=>|<:|:>)$/.test(text)
         span.declaration && (isDeclarationName(span) ? 'api-declaration-name' : 'api-parameter-name'),
         span.enclosingContext && 'api-signature-context',
         chip && NAME.test(span.text) && 'api-literal',
+        repeated && !(span.declaration || span.keyword) && 'api-type-repeat',
       ]} data-api-role={span.nonReference ? 'syntax' : undefined}>{literalParts(span.text).map((part) => isOperator(part)
         ? <span class="api-operator">{part}</span> : part)}</span>
     ),

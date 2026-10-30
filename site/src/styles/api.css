@@ -219,6 +219,45 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   vertical-align: top;
 }
 .api-scalar-members th[scope="row"] { font-weight: inherit; }
+/* A variant with no recorded shape says so in its Payload cell; the cell of a unit variant stays empty. */
+.api-payload-unknown { opacity: 0.65; font-style: italic; }
+/* Three columns do not fit a narrow box. Each row stacks instead: the name and the type share a line, the description
+   takes the next, and the header row stays for assistive technology. These rules are not layered, so they also beat the
+   prose table rules of a docs page, which keep a heading on one line and a cell at six rem. */
+.api-scalar-box { container: api-scalar-members / inline-size; }
+@container api-scalar-members (max-width: 34rem) {
+  .api-scalar-members,
+  .api-scalar-members tbody { display: block; }
+  .api-scalar-members thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .api-scalar-members tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+    padding: 0.65rem 0.75rem;
+    border-bottom: 1px solid var(--color-edge);
+  }
+  .api-scalar-members :is(th, td) {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+  /* A chip that wraps clones its padding and border onto each line, and the end of a full line lies 0.2em and 1px past
+     the cell; the cell keeps that room, so no chip edge overflows its box. */
+  .api-scalar-members td:nth-child(2) { flex: 1 1 8rem; padding-inline-end: 0.25rem; }
+  .api-scalar-members td:last-child { flex: 1 0 100%; }
+  .api-scalar-members td:is(:empty, .api-payload-none) { display: none; }
+}
 .api-member-group { margin-block: 1.5rem 2rem; }
 .api-member-group--single { margin-top: 0.75rem; }
 .api-members, .api-field-table { display: flow-root; }

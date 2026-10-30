@@ -14,7 +14,7 @@ import { apiGlossary, apiGlossaryHeadings, API_GLOSSARY_TITLE, apiGlossaryHref }
 import ApiQualifiedName from '../../components/api/ApiQualifiedName.astro'
 import ApiType from '../../components/api/ApiType.astro'
 import ApiPageContents from '../../components/api/ApiPageContents.astro'
-import { apiEntryFields, apiEntrySections, apiMemberGroups, apiMemberSections, memberTableColumns, relatedTypeLinks, splitFieldMembers, type ApiSection } from '../../lib/api-sections'
+import { apiEntryFields, apiEntrySections, apiMemberGroups, apiMemberSections, fieldsLabel, fieldsRepeated, memberTable, memberTableColumns, relatedTypeLinks, variantPayloads, type ApiSection } from '../../lib/api-sections'
 import PageToolbar from '../../components/PageToolbar.astro'
 import PagePortSwitcher from '../../components/PagePortSwitcher.astro'
 import DocumentationContext from '../../components/docs/DocumentationContext.astro'
@@ -354,22 +354,28 @@ const legacyIndexAnchors = (symbol: ApiSymbol) => [...new Set([
 const inherited = members.filter((m) => m.inheritedFrom)
 const listed = members.filter((m) => !m.inheritedFrom || memberTier(m, signals) === 'parent')
 const otherInherited = inherited.filter((m) => memberTier(m, signals) !== 'parent')
-// A type with typed fields and other members shows the fields as a table, then the rest as the usual list.
-const split = owner ? splitFieldMembers(owner, listed, port) : { fields: [] as ApiSymbol[], rest: listed }
-const fieldsAndRest = split.fields.length > 0 && split.rest.length > 0
-const shown = fieldsAndRest ? split.rest : listed
+// A type with typed fields, or an enum with variants, and other members shows them as a table, then the rest as the usual list.
+const table = owner ? memberTable(owner, listed, port) : undefined
+const fieldsAndRest = table !== undefined && table.rest.length > 0
+const shown = fieldsAndRest ? table.rest : listed
 const memberGroups = apiMemberGroups(shown, signals)
 const tableColumns = owner ? memberTableColumns(owner, listed, port) : undefined
 const showMemberGroups = !tableColumns && memberGroups.length > 1
 const aliasedMembers = owner && model ? aliasMembersTarget(model, owner) : undefined
-const membersLabel = aliasedMembers ? `Members of ${aliasedMembers.name}` : owner?.variant || tableColumns === 'fields' || (language === 'julia' && owner?.kind === 'struct' && shown.every((member) => member.kind === 'property')) ? 'Fields' : 'Members'
+// A table takes its language's word for its rows: Fields, Properties or Variants. A fields block keeps the id `api-fields`, a variants block `api-variants`.
+const tableHeading = table?.label ?? fieldsLabel(port)
+// Each payload type is drawn in full on its variant's own page, where check-type-links counts it; the rows here are repeats of that page.
+const payloads = table?.columns === 'variants' && model ? variantPayloads(model.symbols, table.rows) : undefined
+// A row repeats a type drawn in full elsewhere when a variant has a page of its own, or when the port's fields do: C# properties.
+const rowsRepeat = (columns?: string) => columns === 'variants' || (columns === 'fields' && fieldsRepeated(port))
+const membersLabel = aliasedMembers ? `Members of ${aliasedMembers.name}` : tableColumns === 'fields' || tableColumns === 'variants' ? tableHeading : owner?.variant || (language === 'julia' && owner?.kind === 'struct' && shown.every((member) => member.kind === 'property')) ? 'Fields' : 'Members'
 const glossaryContext = apiGlossary(`${refBase}glossary/`)
 const pageSections: ApiSection[] = glossary ? apiGlossaryHeadings(glossaryContext.path).map((heading) => ({
   id: heading.slug, label: heading.text, nested: heading.depth === 3,
 })) : owner ? [
   { id: 'api-overview', label: 'Overview' },
   ...apiEntrySections(owner, language, index),
-  ...apiMemberSections({ fields: fieldsAndRest ? split.fields.length : 0, members: shown.length, label: membersLabel, groups: showMemberGroups ? memberGroups : [] }),
+  ...apiMemberSections({ fields: fieldsAndRest ? table.rows.length : 0, members: shown.length, label: membersLabel, fieldsLabel: tableHeading, fieldsId: table?.id, groups: showMemberGroups ? memberGroups : [] }),
   ...(otherInherited.length ? [{ id: 'api-inherited', label: 'Inherited members', count: otherInherited.length }] : []),
 ] : []
 const relationshipSections = owner && model ? apiRelationshipSections(model, owner) : []
@@ -803,14 +809,14 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
             */}
             {fieldsAndRest && owner && (
               <div class="api-field-table mt-8">
-                <h2 class="api-section-heading text-lg font-semibold" id="api-fields">Fields<span class="api-section-count">{split.fields.length}</span><a class="api-heading-link" href="#api-fields" aria-label="Link to Fields">#</a></h2>
-                <ApiScalarMembers owner={owner} members={split.fields} index={index} hrefFor={hrefFor} columns="fields" />
+                <h2 class="api-section-heading text-lg font-semibold" id={table.id}>{tableHeading}<span class="api-section-count">{table.rows.length}</span><a class="api-heading-link" href={`#${table.id}`} aria-label={`Link to ${tableHeading}`}>#</a></h2>
+                <ApiScalarMembers owner={owner} members={table.rows} index={index} hrefFor={hrefFor} columns={table.columns} label={tableHeading} payloads={payloads} repeated={rowsRepeat(table.columns)} />
               </div>
             )}
             {shown.length > 0 && (
               <div class="api-members mt-8">
                 <h2 class="api-section-heading text-lg font-semibold" id="api-members">{aliasedMembers ? <>Members of <a class="api-members-target" href={hrefFor(aliasedMembers)}><code>{aliasedMembers.name}</code></a></> : membersLabel}<span class="api-section-count">{shown.length}</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersLabel}`}>#</a></h2>
-                {tableColumns ? <ApiScalarMembers owner={owner} members={listed} index={index} hrefFor={hrefFor} columns={tableColumns} /> : memberGroups.map((group) => <section id={showMemberGroups ? undefined : group.id} class:list={['api-member-group', !showMemberGroups && 'api-member-group--single']} aria-labelledby={showMemberGroups ? group.id : 'api-members'}>
+                {tableColumns ? <ApiScalarMembers owner={owner} members={listed} index={index} hrefFor={hrefFor} columns={tableColumns} label={tableHeading} payloads={payloads} repeated={rowsRepeat(tableColumns)} /> : memberGroups.map((group) => <section id={showMemberGroups ? undefined : group.id} class:list={['api-member-group', !showMemberGroups && 'api-member-group--single']} aria-labelledby={showMemberGroups ? group.id : 'api-members'}>
                 {showMemberGroups && <h3 id={group.id}>{group.label}<span class="api-section-count">{group.members.length}</span><a class="api-heading-link" href={`#${group.id}`} aria-label={`Link to ${group.label}`}>#</a></h3>}
                 <ul class="api-member-list mt-3">
                   {group.members.map((m) => (

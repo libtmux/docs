@@ -177,9 +177,12 @@ and builds against that installed prefix. The native source suite checks the
 same files against private tmux servers, including operation failure and cleanup.
 
 Put explanatory comments on separate lines above the code they describe.
-Limit example comments to 100 columns, including indentation; prefer shorter
-lines that fit the code panel. Put long source links and attribution in prose
-outside the code block.
+Limit each line you write in an example, comments included, to 80 columns
+with tabs counted as eight;
+[Example line width](.github/CONTRIBUTING.md#example-line-width) explains how
+the check treats pages that already run over. A `file=` or `excerpt=` fence
+shows the port's own source, and the port's formatter sets its width. Put long
+source links and attribution in prose outside the code block.
 
 ### Examples across ports
 

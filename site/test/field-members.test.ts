@@ -2,15 +2,27 @@ import { readFileSync } from 'node:fs'
 import { Window } from 'happy-dom'
 import { afterAll, describe, expect, it, vi } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
-import { membersOf, SymbolIndex, type ApiSymbol } from '@libtmux/api-model'
+import { membersOf, memberSignals, memberTier, SymbolIndex, type ApiSymbol } from '@libtmux/api-model'
 import { API_MODELS } from '../src/lib/api-models'
-import { apiMemberSections, hasFieldMembers, memberTableColumns, splitFieldMembers } from '../src/lib/api-sections'
+import { apiMemberSections, fieldsLabel, hasFieldMembers, memberTableColumns, splitFieldMembers } from '../src/lib/api-sections'
+import mentionsData from '../src/data/mentions.json'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { apiComponents } from './api-components'
 
 vi.mock('astro:content', () => ({ getCollection: () => { throw new Error('Core Markdown must use its API model') } }))
 
-type FieldPort = 'rs' | 'go'
+type FieldPort = 'rs' | 'go' | 'csharp'
+
+/**
+ * What the committed file calls an owner of fields and a field, written out apart from the predicate under test.
+ * A C# static property is a named value of its type, as a constant is, so the oracle leaves it out.
+ */
+const isRecord = (entry: ApiSymbol) => entry.kind === 'struct' || entry.variant === 'struct' || entry.variant === 'tuple'
+const RAW_RULES: Record<FieldPort, { owner: (entry: ApiSymbol) => boolean; field: (entry: ApiSymbol) => boolean }> = {
+  rs: { owner: isRecord, field: (entry) => entry.kind === 'attribute' },
+  go: { owner: isRecord, field: (entry) => entry.kind === 'attribute' },
+  csharp: { owner: (entry) => entry.kind === 'class' || entry.kind === 'struct', field: (entry) => entry.kind === 'property' && !entry.modifiers.includes('static') },
+}
 
 /** One port's model, its address scheme, and the committed file the oracle reads instead of the model. */
 function portFixture(port: FieldPort) {
@@ -23,9 +35,10 @@ function portFixture(port: FieldPort) {
   const markdown = (owner: ApiSymbol, symbols = model.symbols) => symbolMarkdown({ model: { ...model, symbols }, symbol: owner, index, hrefFor })
   const markdownRows = (owner: ApiSymbol) => markdown(owner)
     .split('\n').filter((line) => line.startsWith('| ') && !line.startsWith('| Name') && !line.startsWith('| ---'))
-  // The raw attributes an owner declares, in the file's order, whatever the model orders or filters.
-  const rawFields = (owner: ApiSymbol) => raw.symbols.filter((entry) => entry.parent === owner.id && entry.kind === 'attribute')
-  return { port, model, hrefFor, index, raw, symbol, fieldsOf, markdown, markdownRows, rawFields }
+  // The raw fields an owner declares, in the file's order, whatever the model orders or filters.
+  const isRawField = RAW_RULES[port].field
+  const rawFields = (owner: ApiSymbol) => raw.symbols.filter((entry) => entry.parent === owner.id && isRawField(entry))
+  return { port, model, hrefFor, index, raw, symbol, fieldsOf, markdown, markdownRows, rawFields, isRawField, isRawOwner: RAW_RULES[port].owner }
 }
 
 const { model, hrefFor, index, symbol, fieldsOf, markdownRows } = portFixture('rs')
@@ -71,7 +84,7 @@ describe('Rust field tables', () => {
 
   it('keeps the Fields block out of every .api-members selector, and styled like it', () => {
     const page = readFileSync(new URL('../src/components/api/ApiReference.astro', import.meta.url), 'utf8')
-    const block = /<div class="([^"]*)">\s*<h2[^>]*id="api-fields"/.exec(page)![1]
+    const block = /<div class="([^"]*)">\s*<h2[^>]*id=\{table\.id\}/.exec(page)![1]
     // Its own class: .api-members would capture the sticky members logic, and .api-fields is the field-list rule.
     expect(block.split(' ')).toContain('api-field-table')
     expect(block.split(' ')).not.toContain('api-members')
@@ -94,23 +107,25 @@ describe('Rust field tables', () => {
   })
 })
 
-// Per port: a struct of only fields (the one the sabotage cases remove a field from), structs with methods
-// beside their fields, and a type the model keeps no field of.
-const PURE: Record<FieldPort, string> = { rs: 'pane.CapturedLine', go: 'tmux.DisplayMessageRequest' }
+// Per port: a type of only fields (the one the sabotage cases remove a field from), types with methods or
+// static values beside their fields, and a type the model keeps no field of.
+const PURE: Record<FieldPort, string> = { rs: 'pane.CapturedLine', go: 'tmux.DisplayMessageRequest', csharp: 'LibTmux.ClientAttachment' }
 const MIXED: Record<FieldPort, string[]> = {
   rs: ['config.Workspace', 'config.ShellCommand', 'mcp.cli.Options'],
   go: ['tmux.SessionFilter', 'tmux.CommandError', 'tmux.CommandTrace'],
+  // ServerConnectionOptions also declares a static property, which belongs to the list.
+  csharp: ['LibTmux.TmuxCommand', 'LibTmux.Client', 'LibTmux.ServerConnectionOptions'],
 }
-const FIELDLESS: Record<FieldPort, string> = { rs: 'blocking.Runtime', go: 'tmux.Connection' }
+// LibTmuxInfo declares typed properties too, all of them static.
+const FIELDLESS: Record<FieldPort, string> = { rs: 'blocking.Runtime', go: 'tmux.Connection', csharp: 'LibTmux.LibTmuxInfo' }
 
-describe.each(['rs', 'go'] as const)('%s field tables against the committed data', (port) => {
+describe.each(['rs', 'go', 'csharp'] as const)('%s field tables against the committed data', (port) => {
   const f = portFixture(port)
-  const isRecord = (owner: ApiSymbol) => owner.kind === 'struct' || owner.variant === 'struct' || owner.variant === 'tuple'
   const hasTable = (owner: ApiSymbol) => splitFieldMembers(owner, f.fieldsOf(owner), port).fields.length > 0
   // The rows of the Fields table: from its heading to the next top-level section.
   const tableRows = (owner: ApiSymbol, symbols = f.model.symbols) => {
     const lines = f.markdown(owner, symbols).split('\n')
-    const start = lines.indexOf('## Fields')
+    const start = lines.indexOf(`## ${fieldsLabel(port)}`)
     if (start < 0) return []
     const end = lines.findIndex((line, i) => i > start && line.startsWith('## '))
     return lines.slice(start, end < 0 ? undefined : end).filter((line) => line.startsWith('| [`'))
@@ -129,7 +144,7 @@ describe.each(['rs', 'go'] as const)('%s field tables against the committed data
   it('renders one row per raw field for every eligible type, and for every type that has raw fields', () => {
     const results = sweep(f.model.symbols)
     expect(results.filter((entry) => entry.rows !== entry.expected)).toEqual([])
-    const withFields = f.raw.symbols.filter((owner) => isRecord(owner) && f.rawFields(owner).some((field) => field.type !== undefined))
+    const withFields = f.raw.symbols.filter((owner) => f.isRawOwner(owner) && f.rawFields(owner).some((field) => field.type !== undefined))
     expect(results.map((entry) => entry.id).toSorted()).toEqual(withFields.map((owner) => owner.id).toSorted())
   })
 
@@ -169,7 +184,7 @@ describe.each(['rs', 'go'] as const)('%s field tables against the committed data
     }
     const split = (symbols = f.model.symbols) => {
       const lines = f.markdown(owner, symbols).split('\n')
-      const fieldsAt = lines.indexOf('## Fields')
+      const fieldsAt = lines.indexOf(`## ${fieldsLabel(port)}`)
       const membersAt = lines.indexOf('## Members')
       return {
         fieldsAt, membersAt,
@@ -179,8 +194,8 @@ describe.each(['rs', 'go'] as const)('%s field tables against the committed data
     }
 
     it('splits the raw children into a Fields table and the remaining list, with none lost or repeated', () => {
-      const fields = children().filter((entry) => entry.kind === 'attribute')
-      const others = children().filter((entry) => entry.kind !== 'attribute')
+      const fields = children().filter(f.isRawField)
+      const others = children().filter((entry) => !f.isRawField(entry))
       expect(fields.length).toBeGreaterThan(0)
       expect(others.length).toBeGreaterThan(0)
       const parts = splitFieldMembers(owner, f.fieldsOf(owner), port)
@@ -201,17 +216,17 @@ describe.each(['rs', 'go'] as const)('%s field tables against the committed data
     it('lists Fields before Members in the section navigation, each with its own count', () => {
       const { fields, rest } = splitFieldMembers(owner, f.fieldsOf(owner), port)
       const groups = [{ id: 'api-other-members', label: 'Other members' }]
-      expect(apiMemberSections({ fields: fields.length, members: rest.length, label: 'Members', groups })).toEqual([
-        { id: 'api-fields', label: 'Fields', count: fields.length },
+      expect(apiMemberSections({ fields: fields.length, members: rest.length, label: 'Members', fieldsLabel: fieldsLabel(port), groups })).toEqual([
+        { id: 'api-fields', label: fieldsLabel(port), count: fields.length },
         { id: 'api-members', label: 'Members', count: rest.length },
         { id: 'api-other-members', label: 'Other members', nested: true },
       ])
     })
 
     it('fails the split when a field is dropped from a copy of the data', () => {
-      const victim = children().find((entry) => entry.kind === 'attribute')!.id
+      const victim = children().find(f.isRawField)!.id
       const out = split(f.model.symbols.filter((entry) => entry.id !== victim))
-      expect(out.table).toHaveLength(children().filter((entry) => entry.kind === 'attribute').length - 1)
+      expect(out.table).toHaveLength(children().filter(f.isRawField).length - 1)
     })
   })
 })
@@ -258,6 +273,127 @@ describe('Go field tables', () => {
       expect(htmlRow('Delay').querySelector('td a.api-type-link')?.getAttribute('href')).toBe('https://pkg.go.dev/time#Duration')
       expect(htmlRow('Delay').querySelector('td:last-child')?.textContent).toContain(field('Delay').doc!.summary)
     } finally { await window.happyDOM.abort() }
+  })
+})
+
+describe('C# field tables', () => {
+  const cs = portFixture('csharp')
+  const owner = cs.symbol('LibTmux.TmuxCommand')
+  const field = (name: string) => cs.fieldsOf(owner).find((member) => member.name === name)!
+
+  it('writes the type of every property as C# does, in the Markdown row of every class and struct that has them', () => {
+    let checked = 0
+    for (const record of cs.model.symbols.filter((entry) => cs.isRawOwner(entry) && cs.rawFields(entry).length > 0)) {
+      const rows = cs.markdownRows(record).filter((row) => row.startsWith('| [`'))
+      for (const raw of cs.rawFields(record)) {
+        const row = rows.find((candidate) => candidate.includes(`](${cs.hrefFor(raw)})`))
+        expect(row, raw.id).toBeDefined()
+        expect(typeText(row!), raw.id).toBe(raw.type)
+        checked++
+      }
+    }
+    expect(checked).toBe(cs.raw.symbols.filter((entry) => cs.isRawField(entry) && cs.isRawOwner(cs.raw.symbols.find((parent) => parent.id === entry.parent)!)).length)
+  })
+
+  it('keeps a static property in the member list, beside the fields of its type', () => {
+    const options = cs.symbol('LibTmux.ServerConnectionOptions')
+    const named = cs.raw.symbols.find((entry) => entry.id === 'LibTmux.ServerConnectionOptions.Default')!
+    expect(named).toMatchObject({ kind: 'property', modifiers: ['static'] })
+    const { fields, rest } = splitFieldMembers(options, cs.fieldsOf(options), 'csharp')
+    expect(fields.map((entry) => entry.id)).not.toContain(named.id)
+    expect(rest.map((entry) => entry.id)).toContain(named.id)
+    const markdown = cs.markdown(options)
+    expect(markdown.slice(markdown.indexOf('## Properties'), markdown.indexOf('## Members'))).not.toContain('`Default`')
+    expect(markdown.slice(markdown.indexOf('## Members'))).toContain(`[\`Default\`](${cs.hrefFor(named)}) (property)`)
+  })
+
+  it('lists only property members: an attribute or a constant on the same type stays in the member list', () => {
+    const cases = ['attribute', 'constant'] as const
+    for (const kind of cases) {
+      const extra: ApiSymbol = { ...field('RequiredGeneration'), id: `${owner.id}.Extra`, name: 'Extra', kind }
+      const { fields, rest } = splitFieldMembers(owner, [...cs.fieldsOf(owner), extra], 'csharp')
+      expect(fields.map((entry) => entry.id), kind).not.toContain(extra.id)
+      expect(rest.map((entry) => entry.id), kind).toContain(extra.id)
+    }
+    // An interface states a contract, and its properties are not what an instance holds.
+    const contract: ApiSymbol = { ...owner, kind: 'interface' }
+    expect(splitFieldMembers(contract, cs.fieldsOf(owner), 'csharp').fields).toEqual([])
+  })
+
+  it('lists only the properties a type declares, not the ones it inherits', () => {
+    const borrowed = field('RequiredGeneration')
+    const members = cs.fieldsOf(owner).map((entry) => entry === borrowed ? { ...entry, inheritedFrom: 'LibTmux.TmuxChain' } : entry)
+    const { fields, rest } = splitFieldMembers(owner, members, 'csharp')
+    expect(fields.map((entry) => entry.id)).not.toContain(borrowed.id)
+    expect(rest.map((entry) => entry.id)).toContain(borrowed.id)
+    expect(fields.map((entry) => entry.id)).toEqual(splitFieldMembers(owner, cs.fieldsOf(owner), 'csharp').fields.map((entry) => entry.id).filter((id) => id !== borrowed.id))
+  })
+
+  it('shows a struct that holds a nullable property beside static values as a Fields table', () => {
+    const position = cs.symbol('LibTmux.CapturePanePosition')
+    expect(position.kind).toBe('struct')
+    expect(cs.markdownRows(position).filter((row) => row.startsWith('| [`'))).toHaveLength(cs.rawFields(position).length)
+    expect(typeText(cs.markdownRows(position).find((row) => row.startsWith('| [`LineNumber`]'))!)).toBe('int?')
+  })
+
+  it('keeps nullability and generic arguments, and links each declared type, in Markdown and HTML', async () => {
+    const generation = cs.index.linkType('ServerGeneration?', field('RequiredGeneration')).find((span) => span.link)!.link!.href
+    const row = (owning: ApiSymbol, name: string) => cs.markdownRows(owning).find((candidate) => candidate.startsWith(`| [\`${name}\`]`))!
+    expect(row(owner, 'RequiredGeneration')).toContain(`[\`ServerGeneration\`](${generation})\`?\``)
+    const chain = cs.symbol('LibTmux.TmuxChain')
+    const listed = cs.fieldsOf(chain).find((member) => member.name === 'Commands')!
+    const commands = cs.index.linkType('TmuxCommand', listed).find((span) => span.link)!.link!.href
+    expect(row(chain, 'Commands')).toContain('[`IReadOnlyList`](https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1)')
+    expect(row(chain, 'Commands')).toContain(`[\`TmuxCommand\`](${commands})`)
+
+    const { members } = await apiComponents()
+    const window = new Window()
+    try {
+      const container = await experimental_AstroContainer.create()
+      window.document.body.innerHTML = await container.renderToString(members, { props: { owner, members: splitFieldMembers(owner, cs.fieldsOf(owner), 'csharp').fields, index: cs.index, hrefFor: cs.hrefFor, columns: 'fields' } })
+      expect([...window.document.querySelectorAll('thead th')].map((cell) => cell.textContent)).toEqual(['Name', 'Type', 'Description'])
+      const htmlRows = [...window.document.querySelectorAll('tbody tr')]
+      expect(htmlRows).toHaveLength(cs.rawFields(owner).length)
+      const htmlRow = (name: string) => htmlRows.find((candidate) => candidate.querySelector('th a')?.textContent === name)!
+      expect(htmlRow('RequiredGeneration').querySelector('td:nth-child(2)')?.textContent).toBe('ServerGeneration?')
+      expect(htmlRow('RequiredGeneration').querySelector('td a.api-type-link')?.getAttribute('href')).toBe(generation)
+      expect(htmlRow('RequiredGeneration').querySelector('td:last-child')?.textContent).toContain(field('RequiredGeneration').doc!.summary)
+    } finally { await window.happyDOM.abort() }
+  })
+})
+
+describe('a port\'s word for its fields', () => {
+  it('is Properties for C#, whose types declare properties, and Fields for Rust, Go and any other port', () => {
+    expect(fieldsLabel('csharp')).toBe('Properties')
+    for (const port of ['rs', 'go', 'py', undefined]) expect(fieldsLabel(port), String(port)).toBe('Fields')
+  })
+
+  it.each([['rs', 'pane.CapturedLine', 'Fields'], ['go', 'tmux.DisplayMessageRequest', 'Fields'], ['csharp', 'LibTmux.ClientAttachment', 'Properties']] as const)(
+    'heads the Markdown table of %s %s with %s, and with no other word', (port, id, word) => {
+      const f = portFixture(port)
+      const headings = f.markdown(f.symbol(id)).split('\n').filter((line) => line.startsWith('## '))
+      expect(headings).toContain(`## ${word}`)
+      expect(headings).not.toContain(`## ${word === 'Fields' ? 'Properties' : 'Fields'}`)
+    })
+
+  it('is the contents entry beside the count, under the same id', () => {
+    const sections = apiMemberSections({ fields: 3, members: 2, label: 'Members', fieldsLabel: fieldsLabel('csharp'), groups: [] })
+    expect(sections).toEqual([{ id: 'api-fields', label: 'Properties', count: 3 }, { id: 'api-members', label: 'Members', count: 2 }])
+    expect(apiMemberSections({ fields: 3, members: 0, label: 'Members', groups: [] })).toEqual([{ id: 'api-fields', label: 'Fields', count: 3 }])
+  })
+
+  it('keeps the parent objects of a type at the head of its table, as they led its member list', () => {
+    const cs = portFixture('csharp')
+    const signals = memberSignals('csharp', mentionsData.mentions)
+    for (const id of ['LibTmux.Pane', 'LibTmux.Session', 'LibTmux.Window']) {
+      const owner = cs.symbol(id)
+      const fields = splitFieldMembers(owner, membersOf(cs.model, owner, signals), 'csharp').fields
+      const parents = fields.filter((field) => memberTier(field, signals) === 'parent')
+      expect(parents.length, id).toBeGreaterThan(0)
+      expect(fields.slice(0, parents.length).map((field) => field.id), id).toEqual(parents.map((field) => field.id))
+      const rows = cs.markdown(owner).split('\n').filter((line) => line.startsWith('| [`'))
+      expect(rows.slice(0, parents.length).map((row) => /\]\(([^)]*)\)/.exec(row)![1]), id).toEqual(parents.map((field) => cs.hrefFor(field)))
+    }
   })
 })
 

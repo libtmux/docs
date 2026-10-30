@@ -4,7 +4,9 @@ import { Window } from 'happy-dom'
 import { afterEach, describe, expect, it } from 'vitest'
 import { parameterId, symbolsForProduct, type ApiSymbol, type Param } from '@libtmux/api-model'
 import { API_MODELS } from '../src/lib/api-models'
-import { productApiRoots } from '../src/lib/product-api'
+import { splitFieldMembers } from '../src/lib/api-sections'
+import { productApiHref, productApiRoots } from '../src/lib/product-api'
+import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { productAvailable, PORTS, type DocProduct } from '../src/lib/ports'
 import { loadAstroTemplate } from './astro-templates'
 
@@ -422,4 +424,112 @@ describe('product reference pages', () => {
     // The count sits between the label and the hash, as it does on a type page.
     expect([...heading.children].map((child) => child.className)).toEqual(['api-section-count', 'api-heading-link'])
   }, 60_000)
+
+  describe('with the owner renderer', () => {
+    // Each entry and the table's cells draw only what the assertions read: which symbol, as a member, linked where.
+    const load = () => loadAstroTemplate('components/api/ProductApiPage.astro', {
+      real: ['components/api/ApiScalarMembers.astro'],
+      stubs: {
+        'components/api/ApiEntry.astro': `---
+const { symbol, member, nameHref } = Astro.props
+---
+<dl data-entry={symbol.id} data-member={String(Boolean(member))} data-name-href={nameHref}></dl>`,
+        'components/api/ApiType.astro': '---\nconst { type, repeated } = Astro.props\n---\n<span data-type data-repeated={String(Boolean(repeated))}>{type}</span>',
+        'components/api/ApiDoc.astro': '---\nconst { text } = Astro.props\n---\n{text}',
+      },
+    })
+    async function render(port: string, id: string) {
+      const model = API_MODELS[port]!
+      const symbol = model.symbols.find((entry) => entry.id === id)!
+      const members = symbolsForProduct(model, symbol.product as DocProduct).filter((entry) => entry.parent === id)
+      const container = await experimental_AstroContainer.create()
+      const win = new Window({ url: 'https://libtmux.org/en/' })
+      windows.push(win)
+      win.document.body.innerHTML = await container.renderToString(await load() as never, {
+        props: { model, symbol, version: 'latest' }, request: new Request('https://libtmux.org/en/'),
+      })
+      return { model, symbol, members, document: win.document }
+    }
+    // The raw rule, apart from the predicate under test: a typed attribute or non-static property.
+    const isField = (member: ApiSymbol) => ['attribute', 'property'].includes(member.kind) && member.type !== undefined && !member.modifiers.includes('static')
+
+    // A struct and a class with methods beside their fields, and a class of only properties, each in its port's word.
+    it.each([
+      ['rs', 'config.Workspace', 'Fields'], ['go', 'workspace.Workspace', 'Fields'],
+      ['csharp', 'LibTmux.Workspace.WorkspaceAction', 'Properties'], ['csharp', 'LibTmux.Workspace.WorkspaceActionOutcome', 'Properties'],
+    ])('%s %s lists its typed fields as %s in a counted table ahead of its member details', async (port, id, word) => {
+      const { model, members, document, symbol } = await render(port, id)
+      const fields = members.filter(isField)
+      expect(fields.length).toBeGreaterThan(0)
+      expect(splitFieldMembers(symbol, members, port).fields.map((entry) => entry.id)).toEqual(fields.map((entry) => entry.id))
+
+      const heading = document.querySelector('h2#api-fields')!
+      expect(heading.classList.contains('api-section-heading')).toBe(true)
+      expect(heading.firstChild?.textContent).toBe(word)
+      expect(heading.querySelector('.api-section-count')?.textContent).toBe(String(fields.length))
+      expect(heading.querySelector('a.api-heading-link')?.getAttribute('href')).toBe('#api-fields')
+      expect(heading.querySelector('a.api-heading-link')?.getAttribute('aria-label')).toBe(`Link to ${word}`)
+      expect([...heading.children].map((child) => child.className)).toEqual(['api-section-count', 'api-heading-link'])
+
+      // Its own wrapper: .api-members would hand the Fields bar to the sticky Members logic.
+      const block = heading.parentElement!
+      expect(block.classList.contains('api-field-table')).toBe(true)
+      expect(block.classList.contains('api-members')).toBe(false)
+      expect([...block.querySelectorAll('thead th')].map((cell) => cell.textContent)).toEqual(['Name', 'Type', 'Description'])
+      // The article is prose, whose table rule makes a table a block that stops short of its box; `table` restores the grid.
+      expect(block.querySelector('table.api-scalar-members')?.classList.contains('table')).toBe(true)
+      // Each entry below draws the type again in full, so the table's drawing is the repeat and the entry's the count.
+      const drawn = [...block.querySelectorAll('[data-type]')]
+      expect(drawn).toHaveLength(fields.length)
+      expect(drawn.every((cell) => cell.getAttribute('data-repeated') === 'true')).toBe(true)
+      // The box a container query measures, so a narrow page stacks the rows.
+      expect(block.querySelector(':scope > .api-scalar-box > table.api-scalar-members')).not.toBeNull()
+      expect(block.querySelector('caption')?.textContent).toContain(` ${word.toLowerCase()}`)
+      const rows = [...block.querySelectorAll('tbody tr')]
+      expect(rows.map((row) => row.id)).toEqual(fields.map((field) => `member-${field.publicId ?? field.id}`))
+      rows.forEach((row, i) => {
+        const field = fields[i]!
+        expect(row.querySelector('th a')?.textContent).toBe(field.name)
+        expect(row.querySelector('th a')?.getAttribute('href')).toBe(productApiHref(model, field, 'latest'))
+        expect(row.querySelector('td:nth-child(2)')?.textContent).toBe(field.type)
+        expect(row.querySelector('td:last-child')?.textContent).toBe(field.doc?.summary ?? '')
+      })
+
+      // The Markdown export of the same declaration lists the same fields.
+      const markdown = symbolMarkdown({ model, symbol, hrefFor: (entry) => productApiHref(model, entry, 'latest') }).split('\n')
+      const start = markdown.indexOf(`## ${word}`)
+      const end = markdown.findIndex((line, i) => i > start && line.startsWith('## '))
+      const exported = markdown.slice(start, end < 0 ? undefined : end).filter((line) => line.startsWith('| [`'))
+        .map((line) => /\]\(([^)]*)\)/.exec(line)![1])
+      expect(exported.toSorted()).toEqual(rows.map((row) => row.querySelector('th a')!.getAttribute('href')!).toSorted())
+
+      // The entries keep every member, fields included, so under the table they are its detail; the count is theirs.
+      const membersHeading = document.querySelector('.api-members > h2#api-members')!
+      expect(membersHeading.firstChild?.textContent).toBe('Member details')
+      expect(membersHeading.querySelector('a.api-heading-link')?.getAttribute('aria-label')).toBe('Link to Member details')
+      expect(membersHeading.querySelector('.api-section-count')?.textContent).toBe(String(members.length))
+      expect(heading.compareDocumentPosition(membersHeading) & 4, 'Fields come before Members').toBeGreaterThan(0)
+      const ids = [...document.querySelectorAll('[id]')].map((element) => element.id)
+      expect(new Set(ids).size, 'every id on the page is unique').toBe(ids.length)
+    }, 60_000)
+
+    it('keeps one entry per member, in order, under the Members heading', async () => {
+      const { model, members, document } = await render('rs', 'config.Workspace')
+      const entries = [...document.querySelectorAll('.api-members > dl[data-entry]')]
+      expect(entries.map((entry) => entry.getAttribute('data-entry'))).toEqual(members.map((member) => member.id))
+      expect(entries.every((entry) => entry.getAttribute('data-member') === 'true')).toBe(true)
+      expect(entries.map((entry) => entry.getAttribute('data-name-href'))).toEqual(members.map((member) => productApiHref(model, member, 'latest')))
+      // The page's own declaration stays above both blocks.
+      expect(document.querySelector('.api-reference-content > dl[data-entry="config.Workspace"]')).not.toBeNull()
+    }, 60_000)
+
+    it('leaves a port without a field table with the counted Members and its entries alone', async () => {
+      const { members, document } = await render('swift', 'CallerIdentity')
+      expect(members.filter(isField).length).toBeGreaterThan(0)
+      expect(document.querySelector('#api-fields, .api-field-table, table')).toBeNull()
+      expect(document.querySelector('.api-members > h2#api-members')?.firstChild?.textContent).toBe('Members')
+      expect(document.querySelector('.api-members > h2#api-members .api-section-count')?.textContent).toBe(String(members.length))
+      expect(document.querySelectorAll('.api-members > dl[data-entry]')).toHaveLength(members.length)
+    }, 60_000)
+  })
 })
