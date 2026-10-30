@@ -1,5 +1,7 @@
-import { execFileSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
+import { root } from 'astro:config/server'
 import { getCollection, type CollectionEntry } from 'astro:content'
+import { lastCommitOf } from './last-commit.ts'
 import { DEFAULT_LOCALE, LOCALES, isLocale, type Locale } from './locales.ts'
 
 /**
@@ -71,26 +73,6 @@ export type TranslationState = 'translated' | 'stale' | 'missing'
 export type LocaleStatus = 'translated' | 'stale' | 'placeholder'
 
 /**
- * The commit that last touched a file, or null when git cannot answer.
- *
- * Absence is not staleness: a shallow CI checkout, an export tarball, or a
- * file that is staged but not yet committed all produce no sha, and none of
- * those means the translation drifted. Callers treat null as "cannot tell"
- * and leave the page in its declared state.
- */
-function lastCommitOf(filePath: string): string | null {
-  try {
-    const out = execFileSync('git', ['log', '-1', '--format=%H', '--', filePath], {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    })
-    return out.trim() || null
-  } catch {
-    return null
-  }
-}
-
-/**
  * Three states, not Astro's two.
  *
  * A translation that exists but predates a change to its English source is not
@@ -106,7 +88,7 @@ export function translationState(
   if (!source) return 'missing'
   const declared = entry.data.source_commit
   if (!declared) return 'stale'
-  const current = lastCommitOf(source.filePath ?? '')
+  const current = lastCommitOf(source.filePath ?? '', fileURLToPath(root))
   if (!current) return 'translated'
   return current === declared ? 'translated' : 'stale'
 }
