@@ -1161,6 +1161,24 @@ html[data-api-sections-measured] .api-section-links {
 .api-source-path__edge { font-size: .75rem; flex-shrink: 0; }
 
 /*
+ * The pages that discuss a symbol, one to a line: by kind of page under a quiet label where there is more than one kind,
+ * as a bare list where there is one. A title can hold commas ("Server, session, window, pane"), so titles are never
+ * joined into one sentence.
+ */
+.api-guides { display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: baseline; gap: 0.6rem 1.5rem; margin: 0.85rem 0 0; }
+.api-guides__group { display: contents; }
+.api-guides dt { color: var(--color-muted); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.api-guides dd { margin: 0; }
+.api-guides-list { display: grid; gap: 0.3rem; margin: 0; padding: 0; list-style: none; }
+.api-tmux-section > .api-guides-list { margin-top: 0.85rem; }
+.api-guides-list a { color: var(--color-link); text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); text-underline-offset: 0.2em; }
+.api-guides-list a:hover { text-decoration-color: currentColor; }
+@media (max-width: 30rem) {
+  .api-guides { grid-template-columns: minmax(0, 1fr); gap: 0.25rem; }
+  .api-guides__group + .api-guides__group dt { margin-top: 0.6rem; }
+}
+
+/*
  * A name in a doc comment's prose. The kind is the name's colour, not a badge in front of it: a page that names many
  * methods in a row stays readable, and the kind stays in the tooltip and the accessible name. The chip frame goes
  * too; plain code keeps it, so a link and a literal still differ. ApiDoc marks the links it writes with

@@ -160,15 +160,57 @@ describe('the wording of the sections', () => {
     expect(symbolMarkdown({ model: API_MODELS.ts, symbol })).toContain('The tmux commands behind `newSession`.')
   })
 
-  it('separates the guides of one group with commas', async () => {
-    const symbol = symbolOf('ts', 'server.Server.newSession')
-    const list = sections('ts', symbol).find((section) => section.type === 'guides')
+  // Pages of rs `Server` carry commas in their titles, so a comma-joined list would run two pages into one sentence.
+  it('puts each guide on a line of its own under the label of its kind of page', async () => {
+    const symbol = symbolOf('rs', 'server.Server')
+    const list = sections('rs', symbol).find((section) => section.type === 'guides')
     if (list?.type !== 'guides') throw new Error('no guides')
-    const group = list.groups.find((entry) => entry.items.length > 1)!
-    expect(group, 'two mentions in one group').toBeDefined()
+    const group = list.groups.find((entry) => entry.items.filter((item) => item.title.includes(',')).length > 1)!
+    expect(group, 'two titles with commas in one group').toBeDefined()
     const document = await html([list])
-    const paragraph = [...document.querySelectorAll('section p')].find((p) => p.querySelectorAll('a').length === group.items.length && p.textContent!.includes(group.items[0].title))!
-    expect(paragraph.textContent).toBe(group.items.map((item) => item.title).join(', '))
+    const shown = [...document.querySelectorAll('dl.api-guides > .api-guides__group')].map((entry) => ({
+      label: entry.querySelector('dt')!.textContent,
+      pages: [...entry.querySelectorAll('dd > ul.api-guides-list > li')].map((item) => [item.querySelector('a')!.textContent, item.querySelector('a')!.getAttribute('href')]),
+    }))
+    expect(shown).toEqual(list.groups.map((entry) => ({ label: entry.label, pages: entry.items.map((item) => [item.title, item.href]) })))
+    expect(document.querySelectorAll('section p a')).toHaveLength(0)
+    // The Markdown export lists the same labels and pages, in the same order.
+    const body = symbolMarkdown({ model: API_MODELS.rs, symbol }).split('\n## Guides\n')[1].split('\n## ')[0]
+    expect(body.split('\n').filter((line) => /^(### |- )/.test(line))).toEqual(
+      list.groups.flatMap((entry) => [`### ${entry.label}`, ...entry.items.map((item) => `- [${item.title}](${item.href})`)]))
+  })
+
+  it('lists a single kind of page bare, one to a line, in the page and in the Markdown', async () => {
+    const symbol = symbolOf('csharp', 'LibTmux.Client')
+    const list = sections('csharp', symbol).find((section) => section.type === 'guides')
+    if (list?.type !== 'guides') throw new Error('no guides')
+    expect(list.groups).toHaveLength(1)
+    const [group] = list.groups
+    expect(group.items.some((item) => item.title.includes(',')), 'a title with a comma').toBe(true)
+    const document = await html([list])
+    expect(document.querySelector('dl.api-guides, dt')).toBeNull()
+    expect([...document.querySelectorAll('section > ul.api-guides-list > li')].map((item) => [item.textContent, item.querySelector('a')!.getAttribute('href')]))
+      .toEqual(group.items.map((item) => [item.title, item.href]))
+    const body = symbolMarkdown({ model: API_MODELS.csharp, symbol }).split('\n## Guides\n')[1].split('\n## ')[0]
+    expect(body).not.toContain('### ')
+    expect(body.split('\n').filter((line) => line.startsWith('- '))).toEqual(group.items.map((item) => `- [${item.title}](${item.href})`))
+  })
+
+  it('sets the kind beside its pages as a quiet label, and stacks them below 30rem', async () => {
+    const css = readFileSync(new URL('../src/styles/api.css', import.meta.url), 'utf8')
+    const layout = async (width: number) => {
+      const win = new Window({ width, height: 800, settings: { disableCSSFileLoading: true, disableJavaScriptEvaluation: true } })
+      windows.push(win)
+      win.document.documentElement.style.fontSize = '16px'
+      win.document.head.innerHTML = `<style>:root { --color-muted: #53606d; }${css}</style>`
+      win.document.body.innerHTML = '<dl class="api-guides"><div class="api-guides__group"><dt>Concepts</dt><dd><ul><li><a href="#a">A</a></li></ul></dd></div></dl>'
+      const style = (selector: string) => win.getComputedStyle(win.document.querySelector(selector)!)
+      return { columns: style('.api-guides').gridTemplateColumns, align: style('.api-guides').alignItems, label: style('dt'), group: style('.api-guides__group').display }
+    }
+    const wide = await layout(481)
+    expect([wide.columns, wide.align, wide.group]).toEqual(['max-content minmax(0, 1fr)', 'baseline', 'contents'])
+    expect([wide.label.textTransform, wide.label.fontSize, wide.label.color]).toEqual(['uppercase', '12px', '#53606d'])
+    expect((await layout(480)).columns).toBe('minmax(0, 1fr)')
   })
 
   it('collapses the generic absences of send-keys into one sentence and keeps Java\'s reason as a row', () => {
@@ -278,7 +320,7 @@ describe('the reference page of pane.Pane.sendKeys', () => {
     const section = (id: string) => document.getElementById(id)!.closest('section')!
     expect(section('api-tmux-command').querySelectorAll('.tmux-usage__item').length).toBe(wanted[0].count)
     expect(new Set([...section('api-tmux-c-api').querySelectorAll('a:not(.api-heading-link)')].map((a) => a.getAttribute('href'))).size).toBe(wanted[1].count)
-    expect(section('api-guides').querySelectorAll('p a').length).toBe(wanted[2].count)
+    expect(section('api-guides').querySelectorAll('.api-guides-list a').length).toBe(wanted[2].count)
     expect(section('api-other-ports').querySelectorAll('tbody tr').length).toBe(wanted[3].count)
   })
 
