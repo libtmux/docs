@@ -39,7 +39,7 @@ const tmuxSections = apiTmuxSections(model.port, symbol, alternativesFor(symbol)
   <ApiEntry symbol={symbol} index={index} port={model.port} alternativesFor={alternativesFor} heading linkRows={false} sourceUrl={(entry) => sourceUrl(model, entry)} />
   <ApiTmuxSections sections={tmuxSections} />
   {members.length > 0 && <section>
-    <h2>Members</h2>
+    <h2 class="api-section-heading text-lg font-semibold" id="api-members">Members<span class="api-section-count">{members.length}</span><a class="api-heading-link" href="#api-members" aria-label="Link to Members">#</a></h2>
     {members.map((member) => <ApiEntry symbol={member} index={index} port={model.port} alternativesFor={alternativesFor} member nameHref={hrefFor(member)} sourceUrl={(entry) => sourceUrl(model, entry)} />)}
   </section>}
   </div>

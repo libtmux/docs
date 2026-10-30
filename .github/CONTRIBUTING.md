@@ -164,6 +164,17 @@ focus, link, repeated link and typed hash arrivals in each engine:
 $ node site/scripts/check-dev.mjs --api-sticky
 ```
 
+A heading's `#` permalink stays quiet on a fine pointer and appears when its
+heading is hovered, focused with the keyboard or targeted by the URL. Touch and
+forced colours keep it in view. The check reads computed opacity, the tab stop
+and the accessible name on a Swift and a Python reference page, in light and
+dark, with and without JavaScript, and ends with controls that break each
+state and require the check to notice:
+
+```console
+$ node site/scripts/check-dev.mjs --permalink-reveal
+```
+
 Kind marks centre their ink by measurement, and a legend chip, split chip or
 modifier chip is one line of text. The badge gate reads the pixels of real pages
 at 1x and at a real 2x device scale factor (Chromium launched with the factor,

@@ -1,11 +1,13 @@
 # Decision: `/<port>/` keeps its landing page; the deploy denylist gets a hole
 
 **Superseded 2026-09-26.** `/<port>/` is now a `noindex` redirect to the
-port's default version, not a landing page. Both premises below lapsed:
-every port sets `versionedDocs: true`, so none lacks a version tree to
-redirect to, and the edge redirect's KeyValueStore was never written, so
-the landing page served every request rather than an occasional miss. The
-shell's `publish-root` job now writes the rows
+port's `latest` docs, not a landing page. The port's default version, its
+newest final release tag or `latest` while it has none, still decides
+canonical URLs and indexing, but the port root ignores it. Both premises
+below lapsed: every port sets `versionedDocs: true`, so none lacks a
+version tree to redirect to, and the edge redirect's KeyValueStore was
+never written, so the landing page served every request rather than an
+occasional miss. The shell's `publish-root` job now writes the rows
 (`scripts/publish-default-versions.sh`), and the page at `/<port>/` only
 answers a lookup that misses. The deploy side of decision B, one
 `index.html` per reserved prefix, still holds.
@@ -57,7 +59,7 @@ permanently, by design:
 Only **py, ts, cxx** have both a published local version tree and a
 CloudFront-level bare-root redirect (`infra/cloudfront-function.js` rule 1:
 `/en/py` or `/en/py/` with no further path segment does a KVS lookup on
-`<slug>:default` and 302s to `/en/py/<default>/`, its newest release tag, before the request ever reaches
+`<slug>:default` and 302s to `/en/py/latest/` before the request ever reaches
 the origin). Rule 1 is anchored on the locale segment, so the unprefixed
 `/py` is claimed by nothing and 404s — the short form stays unowned, which is
 what keeps a port slug from colliding with a locale code. For those three, `dist/py/index.html` is legitimately

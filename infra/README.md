@@ -87,30 +87,30 @@ distribution is out of scope for the three files above, which configure
 
 ## The bare-language-root redirect and its KeyValueStore
 
-`/en/py` and `/en/py/` 302 to that port's current default version (the newest
-final release tag, such as `/en/py/v0.46.2/`, or `latest` while the port has none). The destination comes from one CloudFront KeyValueStore,
-associated with `cloudfront-function.js`, holding one key per port that
-publishes a version prefix:
+`/en/py` and `/en/py/` 302 to `/en/py/latest/`, and every other port root does
+the same, so the bare URL always opens the newest docs rather than a pinned
+release. The destination comes from one CloudFront KeyValueStore, associated
+with `cloudfront-function.js`, holding one key per port:
 
 ```
-py:default     -> "v0.46.2"
-ruby:default   -> "latest"
-lua:default    -> "latest"
-ts:default     -> "latest"
-rs:default     -> "latest"
-go:default     -> "latest"
-java:default   -> "latest"
-csharp:default -> "latest"
-cxx:default    -> "latest"
-swift:default  -> "latest"
+<port>:default -> "latest"
 ```
 
-Every port gets a row: every port publishes a versioned prose tree, including
-the ports whose reference lives on docs.rs, pkg.go.dev or javadoc.io.
+The key keeps the name `default` because the function looks it up by that
+name; the value is always `latest`. Every port gets a row because every port
+publishes a `latest` prose tree, including the ports whose reference lives on
+docs.rs, pkg.go.dev or javadoc.io. The lookup also tells the function which
+slugs are ports: a path with no row, such as `/en/tmux/`, falls through to the
+generic rules.
+
+A port's pinned default version (`defaultVersion` in `versions.json`: its
+newest final release tag, or `latest` while it has none) is unchanged. It
+still decides canonical URLs, the version switcher's default and which
+version search engines index. Only the port root ignores it.
 
 A miss falls through to the directory-index rule and serves
-`/en/<port>/index.html`, a `noindex` meta-refresh page the shell builds to
-the same default (`site/src/pages/[port]/index.astro`). The traced table
+`/en/<port>/index.html`, a `noindex` meta-refresh page the shell builds to the
+same destination (`site/src/pages/[port]/index.astro`). The traced table
 below records that path.
 
 The key is the port slug, never the locale: the redirect is only reachable
@@ -118,13 +118,11 @@ under a locale prefix (rule 1 is anchored on it) and every locale resolves a
 port to the same version, so a per-locale key would be the same value written
 `LOCALES` times and one more thing to keep in step.
 
-This mirrors `versions.ts`'s `VersionManifest.defaultVersion` — a
-`Record<portSlug, versionSlug>` — for the ports it covers; it exists in the KVS at all
-only because a CloudFront Function cannot read `/versions.json` off the
-origin at request time. The shell's `publish-root` job writes the rows
-(`scripts/publish-default-versions.sh`) from `dist/versions.json` after
-merging every port's published fragment, the one place that holds every
-port's default. It diffs the store's `list-keys` against the manifest and
+A CloudFront Function cannot read `/versions.json` off the origin at request
+time, which is why the destination lives in a store at all. The shell's
+`publish-root` job writes the rows (`scripts/publish-default-versions.sh`)
+from `reserved-prefixes.txt`, which `scripts/publication-metadata.mjs` emits
+from `ports.ts`. It diffs the store's `list-keys` against that list and
 writes only changed rows with `update-keys --if-match <etag>`, so two
 deploys racing the store fail rather than overwrite each other. AWS
 documents no propagation-delay SLA between that write and a running function
@@ -175,8 +173,8 @@ them and trusts the KeyValueStore lookup to miss for anything that is not one.
 | --- | --- | --- |
 | `/` | 0 (origin root) | 302 to `/en/`, the one redirect off an unprefixed path |
 | `/en/` | 2 (directory index) | rewrite to `/en/index.html` |
-| `/en/py` | 1 (KVS, `parts[3]` undefined) | 302 to `/en/py/v0.46.2/`, or whatever `py:default` holds |
-| `/en/py/` | 1 (KVS, `parts[3]` empty) | 302 to `/en/py/v0.46.2/` |
+| `/en/py` | 1 (KVS, `parts[3]` undefined) | 302 to `/en/py/latest/`, or whatever `py:default` holds |
+| `/en/py/` | 1 (KVS, `parts[3]` empty) | 302 to `/en/py/latest/` |
 | `/en/rs` | 1 (KVS) | 302 to `/en/rs/latest/`, or whatever `rs:default` holds. When the row is missing, rule 3 301s to `/en/rs/` and rule 2 serves its redirect page |
 | `/en/py/latest` | 3 | 301 to `/en/py/latest/`, never the KVS default — `parts[3]` is truthy |
 | `/en/py/v0.46.2` | 3 (`2` is not an asset extension) | 301 to `/en/py/v0.46.2/` |

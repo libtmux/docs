@@ -653,6 +653,255 @@ export async function checkApiAnchorArrival(browser, base) {
   console.log(`API anchors: ${paths.size} declarations across ${PORTS.length} ports, primary and retained fragments, phone/desktop, both themes and no-JavaScript navigation pass`)
 }
 
+/**
+ * A heading's hash is quiet on a fine pointer and appears with the heading's hover, keyboard focus or
+ * target; touch and forced colours keep it in view, and it never leaves the tab order or the
+ * accessibility tree. `only` limits the scenarios, and `sabotage` adds a style (`css`) or a script
+ * (`script`) to each page, for the control below.
+ */
+export async function checkPermalinkReveal(browser, base, { only, sabotage } = {}) {
+  const engine = browser.browserType().name()
+  const timeout = process.env.CI ? 20000 : 10000
+  const wants = (scenario) => !only || only.includes(scenario)
+  // A hash beside a heading that owns its id, beside a heading whose section wrapper owns it, and on a parameter line.
+  const pages = [
+    ['swift/latest/reference/server/', [['the Members heading', '.api-members > h2 a.api-heading-link'],
+      ['a member group heading', '.api-members > .api-member-group > h3[id] a.api-heading-link']]],
+    ['py/latest/reference/libtmux-server-new_session/', [['a heading in a section wrapper', '.gp-sphinx-api-description > h2 a.api-heading-link'],
+      ['a parameter line', 'ul.api-parameters > li[id] > p > a.api-heading-link']]],
+  ]
+  const open = async (options) => {
+    const context = await browser.newContext({ reducedMotion: 'reduce', ...options })
+    if (sabotage?.css) await context.addInitScript((css) => document.addEventListener('DOMContentLoaded', () => {
+      document.head.append(Object.assign(document.createElement('style'), { textContent: css }))
+    }), sabotage.css)
+    if (sabotage?.script) await context.addInitScript(sabotage.script)
+    const page = await context.newPage()
+    page.setDefaultTimeout(timeout)
+    return { context, page }
+  }
+  // A page-side promise has no timeout of its own, and a context without JavaScript never settles a
+  // frame or timer callback. Only a wait that settles there may be awaited, and a stall names its step.
+  const within = async (step, work) => {
+    let timer
+    try {
+      return await Promise.race([work, new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`${step}: no answer within ${timeout}ms`)), timeout)
+      })])
+    } finally {
+      clearTimeout(timer)
+    }
+  }
+  const progress = (...parts) => { if (!only) console.log(`Permalink reveal: ${engine}/${parts.join('/')}`) }
+  const visit = async (page, path, hash = '') => {
+    const response = await page.goto(`${base}/${path}${hash}`, { waitUntil: 'load' })
+    // A fragment change on the open page is a same-document navigation and has no response.
+    if (!hash) assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
+    await within(`${path}${hash}: fonts load`, page.evaluate(() => document.fonts.ready))
+  }
+  // Whether the pointer is the fine one the quiet hash is written for.
+  const fineInput = (page) => page.evaluate(() => matchMedia('(hover: hover) and (pointer: fine)').matches)
+  // A cold dev server can reach `load` before a reference body is in the document, so a link is
+  // waited for, not counted once. A page that never gets it fails with what was missing; any other
+  // error, such as a destroyed context, passes through for `retryReload` to recognise.
+  const present = async (link, what) => {
+    await within(what, link.waitFor({ state: 'attached', timeout })).catch((error) => {
+      if (error?.name !== 'TimeoutError') throw error
+      assert.fail(`${what} (not attached within ${timeout}ms)`)
+    })
+  }
+  const subjectsOf = async (page, list, path) => {
+    const found = []
+    for (const [name, selector] of list) {
+      const link = page.locator(selector).first()
+      await present(link, `${engine}: ${path} has ${name} (${selector})`)
+      found.push({ name, link, id: await link.evaluate((node) => node.closest('[id]').id) })
+    }
+    return found
+  }
+  const opacity = (link) => link.evaluate((node) => getComputedStyle(node).opacity)
+  const pseudoOpacity = (link) => link.evaluate((node) => getComputedStyle(node, '::after').opacity)
+  // The prose permalinks: a table row's link, and the section sign after an option's name.
+  const SECTION_SIGN_PAGE = 'tmux/latest/manual/capture-pane/'
+  const SECTION_SIGN = '.tmux-option-list a.row-label-link'
+  const proseLinks = [
+    ['tmux/concepts/server-session-window-pane/', 'a[data-row-permalink]', 'the row permalink', opacity],
+    [SECTION_SIGN_PAGE, SECTION_SIGN, 'the section sign', pseudoOpacity],
+  ]
+  const park = async (page) => {
+    await page.evaluate(() => document.activeElement?.blur())
+    await page.mouse.move(0, 0)
+  }
+  // Move the pointer onto the line that holds the hash, with nothing stacked over it.
+  const hover = async (page, link, where, javaScriptEnabled) => {
+    const line = link.locator('xpath=..')
+    await line.evaluate((node) => node.scrollIntoView({ block: 'center', behavior: 'instant' }))
+    // Scripts that react to the scroll settle in a frame; the instant scroll and the box below need none.
+    if (javaScriptEnabled) await within(`${where}: a frame after scrolling`, page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => resolve()))))
+    const box = await line.boundingBox()
+    const x = box.x + Math.min(12, box.width / 2)
+    const y = box.y + box.height / 2
+    assert(await line.evaluate((node, [x, y]) => node.contains(document.elementFromPoint(x, y)), [x, y]),
+      `${where}: nothing covers the line to hover`)
+    await page.mouse.move(x, y)
+  }
+  // Land on the tab stop before the hash, then press Tab as a keyboard user does.
+  const tabTo = async (page, link, where) => {
+    await page.keyboard.press('Shift')
+    const ready = await link.evaluate((node) => {
+      const stops = [...document.querySelectorAll('a[href], button, input, select, textarea, summary, [tabindex]')]
+        .filter((element) => element.tabIndex >= 0 && !element.disabled && element.checkVisibility({ visibilityProperty: true }))
+      const at = stops.indexOf(node)
+      if (at < 1) return false
+      stops[at - 1].focus({ preventScroll: true })
+      return true
+    })
+    assert(ready, `${where}: the hash has a tab stop before it`)
+    for (let press = 0; press < 3; press++) {
+      await page.keyboard.press('Tab')
+      if (await link.evaluate((node) => node === document.activeElement)) return
+    }
+    assert.fail(`${where}: Tab reaches the hash`)
+  }
+  const fine = { viewport: { width: 1440, height: 1000 } }
+  // Hover, focus and the target are plain CSS, so the same readings hold without JavaScript.
+  const variants = !['rest', 'hover', 'focus', 'target'].some(wants) ? []
+    : only ? [['light', true]] : [['light', true], ['dark', true], ['light', false], ['dark', false]]
+  for (const [colorScheme, javaScriptEnabled] of variants) {
+    const mode = `${colorScheme}/${javaScriptEnabled ? 'JavaScript' : 'no JavaScript'}`
+    const { context, page } = await open({ ...fine, colorScheme, javaScriptEnabled })
+    try {
+      for (const [path, list] of pages) {
+        const where = (name) => `${engine}/${mode}/${path} ${name}`
+        progress(mode, path)
+        await visit(page, path)
+        const subjects = await subjectsOf(page, list, path)
+        for (const { name, link } of subjects) {
+          if (wants('rest')) {
+            await park(page)
+            assert(await fineInput(page), `${where(name)}: the context has a fine pointer that can hover`)
+            const rest = await link.evaluate((node) => {
+              const style = getComputedStyle(node)
+              return { opacity: style.opacity, display: style.display, visibility: style.visibility,
+                transition: style.transitionDuration, tabIndex: node.tabIndex }
+            })
+            assert.equal(rest.opacity, '0', `${where(name)}: the hash is quiet at rest`)
+            assert(rest.display !== 'none' && rest.visibility === 'visible' && rest.tabIndex >= 0,
+              `${where(name)}: the quiet hash keeps its box and tab stop: ${JSON.stringify(rest)}`)
+            assert.equal(rest.transition, '0s', `${where(name)}: no transition runs under reduced motion`)
+            const label = await link.getAttribute('aria-label')
+            const named = page.getByRole('link', { name: label, exact: true })
+            assert(await named.evaluateAll((nodes, target) => nodes.includes(target), await link.elementHandle()),
+              `${where(name)}: the quiet hash keeps its accessible name "${label}"`)
+          }
+          if (wants('hover')) {
+            await park(page)
+            await hover(page, link, where(name), javaScriptEnabled)
+            assert.equal(await opacity(link), '1', `${where(name)}: the hash is revealed when its heading is hovered`)
+            await page.mouse.move(0, 0)
+            assert.equal(await opacity(link), '0', `${where(name)}: the hash is quiet again once the pointer leaves`)
+          }
+          if (wants('focus')) {
+            await park(page)
+            await tabTo(page, link, where(name))
+            assert(await link.evaluate((node) => node.matches(':focus-visible')), `${where(name)}: Tab gives the hash a focus ring`)
+            assert.equal(await opacity(link), '1', `${where(name)}: the hash is revealed on keyboard focus`)
+            await park(page)
+            assert.equal(await opacity(link), '0', `${where(name)}: the hash is quiet again once focus leaves`)
+          }
+        }
+        if (wants('target')) {
+          for (const { name, id } of subjects) {
+            await visit(page, path, `#${encodeURIComponent(id)}`)
+            await park(page)
+            for (const other of subjects) {
+              const targeted = other.id === id
+              assert.equal(await other.link.evaluate((node) => node.closest('[id]').matches(':target')), targeted,
+                `${where(name)}: ${other.name} ${targeted ? 'is' : 'is not'} the target of #${id}`)
+              assert.equal(await opacity(other.link), targeted ? '1' : '0',
+                targeted ? `${where(name)}: the hash is revealed when it is the target` : `${where(name)}: ${other.name} stays quiet when #${id} is the target`)
+            }
+          }
+        }
+      }
+      if (wants('rest')) {
+        // The section sign beside a prose row is a pseudo-element, so it is read through its owner.
+        progress(mode, SECTION_SIGN_PAGE)
+        await visit(page, SECTION_SIGN_PAGE)
+        await park(page)
+        const sign = page.locator(SECTION_SIGN).first()
+        await present(sign, `${engine}: ${SECTION_SIGN_PAGE} has a section sign`)
+        assert.equal(await pseudoOpacity(sign), '0', `${engine}/${mode}/${SECTION_SIGN_PAGE}: the section sign is quiet at rest`)
+      }
+    } finally {
+      await context.close()
+    }
+  }
+  // Touch has no hover and a forced palette has no quiet: both keep every hash in view, prose row permalinks included.
+  const touch = { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: engine !== 'firefox' }
+  const premises = {
+    touch: ['(hover: none)', 'visible on touch', touch],
+    forced: ['(forced-colors: active)', 'visible in forced colours', { ...fine, forcedColors: 'active' }],
+  }
+  for (const [scenario, [query, claim, options]] of Object.entries(premises)) {
+    if (!wants(scenario)) continue
+    const { context, page } = await open(options)
+    try {
+      progress(scenario, pages[0][0])
+      await visit(page, pages[0][0])
+      if (!await page.evaluate((query) => matchMedia(query).matches, query)) {
+        // Chromium is the engine the gate relies on; another engine may not emulate the input.
+        assert.notEqual(engine, 'chromium', `${engine}: the ${scenario} context matches ${query}`)
+        console.log(`Permalink reveal: ${engine} skips ${scenario}; its emulation does not match ${query}`)
+        continue
+      }
+      // A touch screen is not a fine pointer; a forced palette on a desktop still is one, so only quiet by its rule.
+      if (scenario === 'touch') assert(!await fineInput(page), `${engine}: the touch context is not a fine pointer`)
+      for (const [path, list] of pages) {
+        progress(scenario, path)
+        if (path !== pages[0][0]) await visit(page, path)
+        for (const { name, link } of await subjectsOf(page, list, path)) {
+          assert.equal(await opacity(link), '1', `${engine}/${path} ${name}: the hash is ${claim}`)
+        }
+      }
+      for (const [path, selector, name, read] of proseLinks) {
+        progress(scenario, path)
+        await visit(page, path)
+        const link = page.locator(selector).first()
+        await present(link, `${engine}: ${path} has ${name}`)
+        assert.equal(await read(link), '1', `${engine}/${path}: ${name} is ${claim}`)
+      }
+    } finally {
+      await context.close()
+    }
+  }
+  if (!only) console.log(`Permalink reveal: ${engine} keeps the hash quiet at rest and reveals it on hover, keyboard focus and target in light and dark, with and without JavaScript, and shows it on touch and in forced colours`)
+}
+
+/** The permalink check fails when a hash or section sign is always shown, never revealed, hidden from touch or removed from the tree. */
+export async function checkPermalinkRevealFail(browser, base) {
+  const engine = browser.browserType().name()
+  const never = '.api-heading-link { opacity: 0 !important }'
+  const controls = [
+    ['a hash shown at rest', { only: ['rest'], sabotage: { css: '.api-heading-link { opacity: 1 !important }' } }, /the hash is quiet at rest/],
+    ['a hash that cannot be tabbed to', { only: ['rest'], sabotage: { css: '.api-heading-link { visibility: hidden !important }' } }, /keeps its box and tab stop/],
+    ['a hash without an accessible name', { only: ['rest'], sabotage: { script: 'document.addEventListener("DOMContentLoaded", () => document.querySelectorAll(".api-heading-link").forEach((link) => link.setAttribute("aria-hidden", "true")))' } },
+      /keeps its accessible name/],
+    ['a hash that never appears on hover', { only: ['hover'], sabotage: { css: never } }, /revealed when its heading is hovered/],
+    ['a hash that never appears on focus', { only: ['focus'], sabotage: { css: never } }, /revealed on keyboard focus/],
+    ['a hash that never appears on its target', { only: ['target'], sabotage: { css: never } }, /revealed when it is the target/],
+    ['a hash hidden from touch', { only: ['touch'], sabotage: { css: `@media (hover: none) { ${never} }` } }, /visible on touch/],
+    ['a hash hidden in forced colours', { only: ['forced'], sabotage: { css: `@media (forced-colors: active) { ${never} }` } }, /visible in forced colours/],
+    ['a section sign hidden from touch', { only: ['touch'], sabotage: { css: '@media (hover: none) { .prose .row-label-link::after { opacity: 0 !important } }' } }, /the section sign is visible on touch/],
+    ['a section sign shown at rest', { only: ['rest'], sabotage: { css: '.prose .row-label-link::after { opacity: 1 !important }' } }, /the section sign is quiet at rest/],
+  ]
+  for (const [name, options, failure] of controls) {
+    console.log(`Permalink reveal: ${engine} control: ${name}`)
+    await assert.rejects(() => checkPermalinkReveal(browser, base, options), failure, `${engine}: the check fails with ${name}`)
+  }
+  console.log(`Permalink reveal: ${engine} fails with a hash shown at rest, one that is untabbable or unnamed, and one that never appears on hover, focus, target, touch or forced colours`)
+}
+
 /** The control for `checkApiNavigation`: a drawer whose close button does nothing must fail it. */
 export async function checkApiNavigationFail(browser, base) {
   const page = await browser.newPage({ reducedMotion: 'reduce' })

@@ -19,9 +19,9 @@ export function hasScalarMembers(owner: ApiSymbol, members: ApiSymbol[]): boolea
 }
 
 /** Ports whose extracted fields carry a name, a type and a summary for every struct and payload variant. */
-const FIELD_TABLE_PORTS: ReadonlySet<string> = new Set(['rs'])
+const FIELD_TABLE_PORTS: ReadonlySet<string> = new Set(['rs', 'go'])
 
-/** The typed fields of a Rust struct or payload variant, apart from every other member, in member order. */
+/** The typed fields of a struct or payload variant, apart from every other member, in member order. */
 export function splitFieldMembers(owner: ApiSymbol, members: ApiSymbol[], port?: string): { fields: ApiSymbol[]; rest: ApiSymbol[] } {
   if (!FIELD_TABLE_PORTS.has(port ?? '') || !(owner.kind === 'struct' || owner.variant === 'struct' || owner.variant === 'tuple')) {
     return { fields: [], rest: members }

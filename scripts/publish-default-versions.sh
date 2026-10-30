@@ -4,10 +4,14 @@
 # the edge function's bare-port-root rule reads (infra/README.md, "The
 # bare-language-root redirect and its KeyValueStore").
 #
+# Every row holds `latest`, so `/en/<slug>/` opens the port's newest docs
+# rather than the release `defaultVersion` pins in `versions.json`. The key
+# keeps its `:default` spelling because the deployed function looks it up by
+# that name.
+#
 # A file rather than a `run:` block so `site/test/publish-default-versions.test.ts`
-# drives the text the deploy runs. Reads KVS_ARN, plus `dist/versions.json`
-# (already merged with every port's published fragment) and
-# `reserved-prefixes.txt` from the working directory.
+# drives the text the deploy runs. Reads KVS_ARN and `reserved-prefixes.txt`
+# from the working directory.
 #
 # An unset KVS_ARN skips with a warning, so the secret and the Terraform grant
 # can land in either order. Once it is set, any failure fails the step: an
@@ -21,22 +25,18 @@ if [[ -z "$kvs_arn" ]]; then
   exit 0
 fi
 
-manifest=dist/versions.json
 if [[ ! -s reserved-prefixes.txt ]]; then
   echo "::error::reserved-prefixes.txt is missing or empty" >&2
   exit 1
 fi
-if ! jq -e '.schema == 1 and (.defaultVersion | type == "object")' "$manifest" > /dev/null; then
-  echo "::error::$manifest is not a version manifest" >&2
-  exit 1
-fi
 
-# `latest` is the fallback: every port publishes one, a release tag only after
-# the port's first final release.
+# Every listed slug is a port, and every port publishes a `latest` tree, so no
+# row points at a missing prefix. A path that is not a port, such as `tmux`,
+# gets no row and keeps its own page.
 declare -A desired
 while IFS= read -r slug; do
   [[ -z "$slug" ]] && continue
-  desired["$slug:default"]=$(jq -r --arg slug "$slug" '.defaultVersion[$slug] // "latest"' "$manifest")
+  desired["$slug:default"]=latest
 done < reserved-prefixes.txt
 
 etag=$(aws cloudfront-keyvaluestore describe-key-value-store --kvs-arn "$kvs_arn" --output json | jq -r '.ETag // empty')

@@ -71,8 +71,8 @@ export async function checkCompleteApiExamples(browser, base) {
 /** Exercise the installed widget scripts with accepted and refused clipboard writes. */
 export async function checkClipboard(page, base) {
   const widgets = [
-    // `ts/` (bare, no version) is now a noindex redirect to the default
-    // version (site/src/pages/[port]/index.astro), so the per-port install
+    // `ts/` (bare, no version) is now a noindex redirect to `latest`
+    // (site/src/pages/[port]/index.astro), so the per-port install
     // widget it used to carry is gone from the root build; the quickstart
     // widget on the site root (`''`) uses the same markup.
     ['', '.lm-pkg-install__copy', 'code'],

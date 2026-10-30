@@ -8,7 +8,7 @@ import { chromium, firefox, webkit } from 'playwright'
 import { API_MODEL_PORTS, PORTS, productAvailable, referenceSegment } from '../src/lib/ports.ts'
 import { buildTarget, defaultVersionFor } from '../src/lib/versions.ts'
 import { checkClipboard, checkCompleteApiExamples } from './check-clipboard.mjs'
-import { checkApiAnchorArrival, checkApiExampleOwnership, checkApiNavigation, checkApiNavigationFail, checkApiStickyHeadings, checkApiStickyHeadingsFail, checkReferenceSidebarBounds, checkReferenceSidebarBoundsFail, checkDocumentationNavigation, checkNavigation } from './check-navigation.mjs'
+import { checkApiAnchorArrival, checkApiExampleOwnership, checkApiNavigation, checkApiNavigationFail, checkApiStickyHeadings, checkApiStickyHeadingsFail, checkReferenceSidebarBounds, checkReferenceSidebarBoundsFail, checkDocumentationNavigation, checkNavigation, checkPermalinkReveal, checkPermalinkRevealFail } from './check-navigation.mjs'
 import { checkReferencePreferences, checkGlobalHeader, checkHeaderLinksFail } from './check-reference-preferences.mjs'
 import { checkHeaderMenuSections, checkHeaderMenuSectionsFail } from './check-header-menu-sections.mjs'
 import { checkStatusBadges, checkStatusBadgesFail } from './check-status-badges.mjs'
@@ -27,6 +27,7 @@ import { checkSidebarDemo } from './check-sidebar-demo.mjs'
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiAnchorsOnly = process.argv.includes('--api-anchors')
 const apiStickyOnly = process.argv.includes('--api-sticky')
+const permalinkRevealOnly = process.argv.includes('--permalink-reveal')
 const typeParametersOnly = process.argv.includes('--type-parameters')
 const apiSignaturesOnly = process.argv.includes('--api-signatures')
 const referenceLayoutOnly = process.argv.includes('--reference-layout')
@@ -783,14 +784,14 @@ try {
   // the running app. The outer loop still budgets this initial compilation.
   const firstPage = homeLauncherOnly || homeControlsOnly ? '/'
     : keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
-    : apiStickyOnly ? '/swift/latest/reference/server/'
+    : apiStickyOnly || permalinkRevealOnly ? '/swift/latest/reference/server/'
     : badgeCentringOnly ? '/py/v0.46.2/guides/attaching-to-tmux/'
     : referencePreviewsOnly ? '/cxx/latest/reference/libtmux-server-panes/'
     : documentationNavigationOnly || headerMenuSectionsOnly || statusBadgesOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
     : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/'
     : typeParametersOnly ? '/ts/latest/reference/selection-selection-where/' : '/tmux/concepts/server-session-window-pane/'
   const fullRun = ![homeLauncherOnly, homeControlsOnly, keywordHelpOnly, apiSignaturesOnly, referenceLayoutOnly, globalHeaderOnly, headerMenuSectionsOnly, statusBadgesOnly, badgeCentringOnly, referencePreviewsOnly,
-    referencePreferencesOnly, documentationNavigationOnly, apiNavigationOnly, apiAnchorsOnly, typeParametersOnly].some(Boolean)
+    referencePreferencesOnly, documentationNavigationOnly, apiNavigationOnly, apiAnchorsOnly, typeParametersOnly, permalinkRevealOnly].some(Boolean)
   const setupPages = sampleOnly ? [firstPage, '/demo/widgets/pickers/', ...TMUX_KEY_PAGES]
     : [firstPage, ...(fullRun ? TMUX_KEY_PAGES : [])]
   const ready = Promise.all(setupPages.map(async (path) => {
@@ -856,6 +857,9 @@ try {
     await checkApiNavigationFail(browser, base)
   } else if (apiAnchorsOnly) {
     await retryReload(() => checkApiAnchorArrival(browser, base))
+  } else if (permalinkRevealOnly) {
+    await retryReload(() => checkPermalinkReveal(browser, base))
+    await checkPermalinkRevealFail(browser, base)
   } else if (apiStickyOnly) {
     await checkReferenceSidebarBounds(browser, base)
     await checkReferenceSidebarBoundsFail(browser, base)
@@ -919,6 +923,8 @@ try {
     apiNavigationPage.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const apiNavigation = schedule(() => retryReload(() => checkApiNavigation(apiNavigationPage, base)).then(() => checkApiNavigationFail(browser, base)).finally(() => apiNavigationPage.close()))
     const apiAnchors = schedule(() => retryReload(() => checkApiAnchorArrival(browser, base)))
+    const permalinkReveal = schedule(() => retryReload(() => checkPermalinkReveal(browser, base))
+      .then(() => checkPermalinkRevealFail(browser, base)))
     // The failing control follows the clean run, so the same selectors pass on a reference page before they fail on a guide.
     const kindBadges = schedule(() => retryReload(() => checkKindBadgeLinks(browser, base))
       .then(() => checkKindBadgeLinksFail(browser, base)))
@@ -1233,7 +1239,7 @@ try {
     await page.close()
     const failures = (await Promise.all([
       navigation, apiExamples, reference, preferences, globalHeader, headerMenuSections, statusBadges, apiNavigation,
-      clipboard, documentationNavigation, homeLauncher, apiAnchors, apiSticky, typeParameters, kindBadges, badgeCentring, blockLinks, referencePreviews,
+      clipboard, documentationNavigation, homeLauncher, apiAnchors, permalinkReveal, apiSticky, typeParameters, kindBadges, badgeCentring, blockLinks, referencePreviews,
     ])).filter(Boolean)
     if (failures.length) throw new AggregateError(failures, 'Browser checks failed')
     await checkSidebarDemo(browser, `${base}/demo/sidebar/`)

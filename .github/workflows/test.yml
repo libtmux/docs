@@ -186,8 +186,6 @@ jobs:
           chmod +x bin/aws
           PATH="$PWD/bin:$PATH" bash publish-root.sh
 
-      # Against the build's own versions.json: a preview merges no published
-      # fragments.
       - name: Exercise the default-version publisher against the preview assembly
         env:
           KVS_ARN: reproduction
