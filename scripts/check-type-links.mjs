@@ -62,7 +62,13 @@ function attributes(source) {
   return result
 }
 
-/** Keep the recorded single-class metric; type chips need their own inventory. */
+/**
+ * Keep the recorded single-class metric; type chips need their own inventory.
+ *
+ * A span also classed `api-type-repeat` is a repeat of a type already drawn on the same page, such as a table row that
+ * summarizes an entry (`ApiType`'s `repeated`). The name is counted where it is drawn first, so the repeat adds none.
+ * site/test/field-table-pages.test.ts requires that every repeat has its original on its page.
+ */
 function singleClass(classes, name) {
   return classes.length === 1 && classes[0] === name
 }

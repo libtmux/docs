@@ -12,8 +12,10 @@ interface Props {
   columns?: 'value' | 'fields'
   /** The heading's word for the `fields` rows, in the port's language. */
   label?: string
+  /** The page also draws each member in full, so its type is a second drawing of one the entry makes. */
+  repeated?: boolean
 }
-const { owner, members, index, hrefFor, columns = 'value', label = 'Fields' } = Astro.props
+const { owner, members, index, hrefFor, columns = 'value', label = 'Fields', repeated = false } = Astro.props
 const fields = columns === 'fields'
 ---
 <div class="api-scalar-box">
@@ -23,7 +25,7 @@ const fields = columns === 'fields'
   <tbody>
     {members.map((member) => <tr id={`member-${member.publicId ?? member.id}`}>
       <th scope="row"><a class="api-member-link" href={hrefFor(member)}>{member.name}</a></th>
-      <td>{fields ? <code class="api-literal"><ApiType type={member.type!} index={index} context={member} /></code> : <code class="api-literal">{member.value}</code>}</td>
+      <td>{fields ? <code class="api-literal"><ApiType type={member.type!} index={index} context={member} repeated={repeated} /></code> : <code class="api-literal">{member.value}</code>}</td>
       <td>{member.doc?.summary && <ApiDoc text={member.doc.summary} index={index} context={member} citations={false} />}</td>
     </tr>)}
   </tbody>

@@ -434,7 +434,7 @@ describe('product reference pages', () => {
 const { symbol, member, nameHref } = Astro.props
 ---
 <dl data-entry={symbol.id} data-member={String(Boolean(member))} data-name-href={nameHref}></dl>`,
-        'components/api/ApiType.astro': '---\nconst { type } = Astro.props\n---\n{type}',
+        'components/api/ApiType.astro': '---\nconst { type, repeated } = Astro.props\n---\n<span data-type data-repeated={String(Boolean(repeated))}>{type}</span>',
         'components/api/ApiDoc.astro': '---\nconst { text } = Astro.props\n---\n{text}',
       },
     })
@@ -478,6 +478,10 @@ const { symbol, member, nameHref } = Astro.props
       expect([...block.querySelectorAll('thead th')].map((cell) => cell.textContent)).toEqual(['Name', 'Type', 'Description'])
       // The article is prose, whose table rule makes a table a block that stops short of its box; `table` restores the grid.
       expect(block.querySelector('table.api-scalar-members')?.classList.contains('table')).toBe(true)
+      // Each entry below draws the type again in full, so the table's drawing is the repeat and the entry's the count.
+      const drawn = [...block.querySelectorAll('[data-type]')]
+      expect(drawn).toHaveLength(fields.length)
+      expect(drawn.every((cell) => cell.getAttribute('data-repeated') === 'true')).toBe(true)
       // The box a container query measures, so a narrow page stacks the rows.
       expect(block.querySelector(':scope > .api-scalar-box > table.api-scalar-members')).not.toBeNull()
       expect(block.querySelector('caption')?.textContent).toContain(` ${word.toLowerCase()}`)

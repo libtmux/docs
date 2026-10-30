@@ -1,8 +1,16 @@
-import { readFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { Window } from 'happy-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
+import { createComponent, renderTemplate } from 'astro/runtime/server/index.js'
+import { SymbolIndex } from '@libtmux/api-model'
 import { API_MODELS } from '../src/lib/api-models'
+import { splitFieldMembers } from '../src/lib/api-sections'
+import { apiComponents } from './api-components'
 import { loadAstroTemplate, withoutScope } from './astro-templates'
 
 // A reference page asks the content collection for its sidebar; none of these checks reads one.
@@ -17,7 +25,10 @@ describe('a type page with a table of fields', () => {
   // The table, the contents rail and the badges are the page's own; the type and prose cells draw plain text.
   const PAGE = ['components/api/ApiPageContents.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiScalarMembers.astro']
   async function page(port: Port, id: string) {
-    const template = await loadAstroTemplate('components/api/ApiReference.astro', { real: PAGE })
+    const template = await loadAstroTemplate('components/api/ApiReference.astro', {
+      real: PAGE,
+      stubs: { 'components/api/ApiType.astro': '---\nconst { type, repeated } = Astro.props\n---\n<span data-type data-repeated={String(Boolean(repeated))}>{type}</span>' },
+    })
     const container = await experimental_AstroContainer.create({ astroConfig: { site: 'https://libtmux.org' } } as never)
     const win = new Window()
     windows.push(win)
@@ -40,6 +51,10 @@ describe('a type page with a table of fields', () => {
       expect(contents(document)).toContainEqual(['#api-fields', word])
       // The rest of the members keep their own heading and id.
       expect(document.querySelector('.api-members > h2#api-members')?.firstChild?.textContent).toBe('Members')
+      // A type page draws each type once, in the table, so the gate that counts plain names must see it there.
+      const cells = [...document.querySelectorAll('.api-field-table [data-type]')]
+      expect(cells.length).toBeGreaterThan(0)
+      expect(cells.every((cell) => cell.getAttribute('data-repeated') === 'false')).toBe(true)
     }, 60_000)
 
   it('names the one heading of a C# type of only properties Properties, and keeps it the sticky Members bar', async () => {
@@ -161,4 +176,138 @@ describe('the narrow layout of a table of fields', () => {
   ])('fails when %s', (_, sabotage, problem) => {
     expect(stackingViolations(sabotage()).join('\n')).toContain(problem)
   })
+})
+
+describe('the type names a product table repeats', () => {
+  const script = fileURLToPath(new URL('../../scripts/check-type-links.mjs', import.meta.url))
+
+  /** The plain names that `check-type-links` counts for csharp in a site whose one product reference page holds `html`. */
+  function plainNames(html: string): number {
+    const dir = mkdtempSync(join(tmpdir(), 'type-links-'))
+    try {
+      mkdirSync(join(dir, 'csharp', 'latest', 'reference'), { recursive: true })
+      const page = join(dir, 'csharp', 'latest', 'workspace', 'reference', 'workspaceaction')
+      mkdirSync(page, { recursive: true })
+      writeFileSync(join(page, 'index.html'), `<html><body>${html}</body></html>`)
+      const listing = execFileSync(process.execPath, [script, dir, '--list'], { encoding: 'utf8' })
+      return Number(/^csharp\s+\d+ linked\s+(\d+) plain/m.exec(listing)![1])
+    } finally { rmSync(dir, { recursive: true, force: true }) }
+  }
+
+  const model = API_MODELS.csharp
+  const hrefFor = (symbol: { slug?: string }) => `/en/csharp/latest/workspace/reference/${symbol.slug}/`
+  const index = new SymbolIndex(model.symbols, hrefFor, 'csharp')
+  const owner = model.symbols.find((entry) => entry.id === 'LibTmux.Workspace.WorkspaceAction')!
+  // WorkspaceAction<TRequest> and WorkspaceAction share one id, and the model keeps no type parameter on it.
+  const request = model.symbols.find((entry) => entry.id === 'LibTmux.Workspace.WorkspaceAction.Request')!
+
+  async function draw(repeated: boolean) {
+    const { type, members } = await apiComponents()
+    const container = await experimental_AstroContainer.create()
+    const entry = await container.renderToString(type, { props: { type: request.type, index, context: request } })
+    const row = await container.renderToString(members, { props: { owner, members: [request], index, hrefFor, columns: 'fields', repeated } })
+    return { entry, row }
+  }
+
+  it('leaves a name that fails to resolve counted once, where the entry draws it', async () => {
+    expect(request.type).toBe('TRequest')
+    expect(owner.typeParams).toBeUndefined()
+    const { entry, row: quiet } = await draw(true)
+    const { row: loud } = await draw(false)
+    expect(plainNames(entry), 'the entry alone').toBe(1)
+    expect(plainNames(entry + quiet), 'the entry and a row that repeats it').toBe(1)
+    // Without the flag the table counts the same name again: the case this guards.
+    expect(plainNames(entry + loud), 'the entry and a row that does not know it repeats').toBe(2)
+  }, 60_000)
+
+  it('draws the same text and links in a repeated row, so only the count differs', async () => {
+    const win = new Window()
+    windows.push(win)
+    const { members } = await apiComponents()
+    const container = await experimental_AstroContainer.create()
+    const cells = async (repeated: boolean) => {
+      win.document.body.innerHTML = await container.renderToString(members, { props: { owner, members: model.symbols.filter((entry) => entry.parent === owner.id && entry.kind === 'property' && entry.type), index, hrefFor, columns: 'fields', repeated } })
+      return [...win.document.querySelectorAll('tbody td:nth-child(2)')].map((cell) => ({
+        text: cell.textContent, links: [...cell.querySelectorAll('a')].map((link) => link.getAttribute('href')),
+      }))
+    }
+    expect(await cells(true)).toEqual(await cells(false))
+    win.document.body.innerHTML = await container.renderToString(members, { props: { owner, members: [request], index, hrefFor, columns: 'fields', repeated: true } })
+    expect(win.document.querySelector('tbody td:nth-child(2) .api-punct.api-type-repeat')?.textContent).toBe('TRequest')
+  }, 60_000)
+})
+
+describe('every repeated type name on a product page', () => {
+  // The real entry, table and type, as the page draws them; the shell around the page is not needed.
+  const load = () => loadAstroTemplate('components/api/ProductApiPage.astro', {
+    real: ['components/api/ApiEntry.astro', 'components/api/ApiScalarMembers.astro', 'components/api/ApiType.astro', 'components/api/SymbolName.astro', 'components/api/ApiBadge.astro'],
+    modules: {
+      // An example in a doc comment renders through this component; an empty Astro component stands in.
+      'astro-expressive-code/components': { Code: createComponent(() => renderTemplate``) },
+      '../../lib/page-ports-for': { pagePortsFor: async () => [] },
+      '../../lib/sidebar': { pageBreadcrumbs: async () => [] },
+    },
+  })
+  /** The product declarations of a port that draw a Fields table. */
+  function owners(port: Port) {
+    const model = API_MODELS[port]
+    const members = (id: string) => model.symbols.filter((entry) => entry.parent === id && entry.product === model.symbols.find((owner) => owner.id === id)?.product)
+    return model.symbols.filter((owner) => owner.product && owner.product !== 'core' && owner.apiScope !== 'internal' && splitFieldMembers(owner, members(owner.id), port).fields.length > 0)
+  }
+  async function product(port: Port, id: string) {
+    const model = API_MODELS[port]
+    const symbol = model.symbols.find((entry) => entry.id === id)!
+    const container = await experimental_AstroContainer.create()
+    const win = new Window({ url: 'https://libtmux.org/en/' })
+    windows.push(win)
+    win.document.body.innerHTML = withoutScope(await container.renderToString(await load() as never, {
+      props: { model, symbol, version: 'latest' }, request: new Request('https://libtmux.org/en/'),
+    }))
+    return win.document
+  }
+  /**
+   * What the repeats on a page owe the gate that counts plain names: each is a name drawn a second time, so the page
+   * must draw it first somewhere else. The repeats of a text may not outnumber its originals outside the table.
+   */
+  function orphans(document: Window['document']): string[] {
+    const spans = (selector: string) => [...document.querySelectorAll(selector)].map((span) => span.textContent!.trim())
+    const repeats = spans('.api-field-table span.api-type-repeat')
+    const originals = spans('span.api-punct:not(.api-type-repeat)')
+    // Everything flagged lies in the table, whose cells are the only ones that carry the flag.
+    expect(document.querySelectorAll('span.api-type-repeat')).toHaveLength(repeats.length)
+    const tableOriginals = spans('.api-field-table span.api-punct:not(.api-type-repeat)')
+    expect(tableOriginals, 'a table cell drawn without the flag counts the name a second time').toEqual([])
+    return [...new Set(repeats)].filter((text) => originals.filter((original) => original === text).length < repeats.filter((repeat) => repeat === text).length)
+  }
+
+  it('has its original drawn by the entry, so the gate counts the name once', async () => {
+    const document = await product('csharp', 'LibTmux.Workspace.WorkspaceAction')
+    const repeats = [...document.querySelectorAll('.api-field-table span.api-type-repeat')].map((span) => span.textContent!.trim())
+    // The name the model cannot resolve is among them, and so is the punctuation around resolved ones.
+    expect(repeats).toContain('TRequest')
+    expect(orphans(document)).toEqual([])
+  }, 120_000)
+
+  it.each(['rs', 'go', 'csharp'] as const)('has its original on every %s product page that draws a table', async (port) => {
+    const found = owners(port)
+    expect(found.length).toBeGreaterThan(0)
+    const problems: string[] = []
+    let repeated = 0
+    for (const owner of found) {
+      const document = await product(port, owner.id)
+      repeated += document.querySelectorAll('span.api-type-repeat').length
+      const lacking = orphans(document)
+      if (lacking.length) problems.push(`${owner.id}: ${lacking.join(', ')}`)
+    }
+    expect(problems).toEqual([])
+    // A port whose types were all links or keywords would pass without proving anything.
+    expect(repeated).toBeGreaterThan(0)
+  }, 600_000)
+
+  it('is found missing when the entry stops drawing the type (control)', async () => {
+    const document = await product('csharp', 'LibTmux.Workspace.WorkspaceAction')
+    // Take the entry's own drawing of the unresolved name away, as a change to ApiEntry would.
+    for (const span of document.querySelectorAll('.api-members span.api-punct:not(.api-type-repeat)')) if (span.textContent!.trim() === 'TRequest') span.remove()
+    expect(orphans(document)).toEqual(['TRequest'])
+  }, 120_000)
 })

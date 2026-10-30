@@ -212,6 +212,33 @@ for (const markup of [
   rmSync(dir, { recursive: true, force: true })
 }
 
+{
+  /*
+   * A repeat is a type already drawn on its page, such as a table row that summarizes an entry. The gate skips a span
+   * with a second class, so the name is counted where it is drawn first and the repeat adds none. It pairs nothing:
+   * a repeat with no original beside it is not counted either, and site/test/field-table-pages.test.ts is what fails
+   * a product page that draws one. These cases hold the boundary, so a change to either side is noticed.
+   */
+  const original = plain('Unknown')
+  const repeat = '<span class="api-type"><span class="api-punct api-type-repeat">Unknown</span></span>'
+  const listing = (markup) => {
+    const dir = site({ markup })
+    const { code, out } = run(dir, 99, ['--list'])
+    rmSync(dir, { recursive: true, force: true })
+    return { code, out }
+  }
+  const both = listing(original + repeat)
+  check('a name and its repeat are counted once', both.code === 0 && both.out.includes('Unknown(1)'), both.out)
+  const twice = listing(original + original)
+  check('the same name drawn twice without the flag is counted twice (control)', twice.code === 0 && twice.out.includes('Unknown(2)'), twice.out)
+  const orphan = listing(repeat)
+  check('a repeat with no original adds no name: the page test owns that pairing', orphan.code === 0 && !orphan.out.includes('Unknown'), orphan.out)
+  const dir = site({ markup: '<span class="api-type"><span class="api-punct api-type-repeat">s</span>:<span class="api-punct api-type-repeat">s8CopyableP</span></span>' })
+  const { code, out } = run(dir, 99)
+  check('a repeat cannot hide a mangled id', code !== 0 && out.includes('s:s8CopyableP'), `exited ${code}:\n${out}`)
+  rmSync(dir, { recursive: true, force: true })
+}
+
 for (const markup of [
   '<span data-api-role="syntax" class="api-type"><span class="api-punct" data-api-role="syntax">s</span>:<span class="api-punct" data-api-role="syntax">s8CopyableP</span></span>',
   "<span data-extra='x > y' class='api-type'><span class='api-punct'>s</span>:<span class='api-punct'>s8CopyableP</span></span>",

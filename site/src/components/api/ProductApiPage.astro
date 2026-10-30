@@ -47,7 +47,7 @@ const tmuxSections = apiTmuxSections(model.port, symbol, alternativesFor(symbol)
   <ApiTmuxSections sections={tmuxSections} />
   {fields.length > 0 && <div class="api-field-table mt-8">
     <h2 class="api-section-heading text-lg font-semibold" id="api-fields">{fieldsHeading}<span class="api-section-count">{fields.length}</span><a class="api-heading-link" href="#api-fields" aria-label={`Link to ${fieldsHeading}`}>#</a></h2>
-    <ApiScalarMembers owner={symbol} members={fields} index={index} hrefFor={hrefFor} columns="fields" label={fieldsHeading} />
+    <ApiScalarMembers owner={symbol} members={fields} index={index} hrefFor={hrefFor} columns="fields" label={fieldsHeading} repeated />
   </div>}
   {members.length > 0 && <div class="api-members mt-8">
     <h2 class="api-section-heading text-lg font-semibold" id="api-members">{membersHeading}<span class="api-section-count">{members.length}</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersHeading}`}>#</a></h2>
