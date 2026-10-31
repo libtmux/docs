@@ -1,4 +1,4 @@
-import { tokenizeDoc, type DocSpan } from './doc/roles.ts'
+import { RUST_CRATE_PREFIX, tokenizeDoc, type DocSpan } from './doc/roles.ts'
 import { symbolEntries, type InventoryEntry } from './inventory.ts'
 import type { ApiSymbol, Signature, SymbolKind, TypeParameter } from './model.ts'
 import { builtinHref, CURATED_BEFORE_INVENTORY, ELIXIR_STDLIB_MODULES, elixirStdlibHref, NOT_THE_JDKS } from './builtins.ts'
@@ -1304,11 +1304,13 @@ export class SymbolIndex {
         out.push({ text: ident, declaration: true })
         continue
       }
+      // A crate-relative path is looked up as the model spells it, without the prefix and with `.` between segments.
+      const path = this.lang === 'rs' && RUST_CRATE_PREFIX.test(ident) ? ident.replace(RUST_CRATE_PREFIX, '').replaceAll('::', '.') : ident
       // The model first, then the language's own documentation. Most of what
       // renders unlinked in a signature is a builtin — `bool`, `Task`,
       // `Result`, `string` — which nothing here defines and no intersphinx
       // inventory covers for five of the eight ports.
-      const link = this.resolveSymbol(ident, 'class', context)
+      const link = this.resolveSymbol(path, 'class', context)
       if (link || !['kotlin', 'scala'].includes(this.lang ?? '') || !ident.includes('.')) {
         out.push({ text: ident, link })
         continue

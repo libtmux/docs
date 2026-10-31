@@ -79,6 +79,8 @@ describe('a path in plain Rust code', () => {
   it('resolves a crate path and a path on the current type the way the bracketed form does', () => {
     expect(refs('`crate::server::Server::kill`')).toMatchObject([{ target: 'server.Server.kill', label: 'crate::server::Server::kill' }])
     expect(refs('`Self::kill`')).toMatchObject([{ target: '.kill', label: 'Self::kill' }])
+    // A path may climb more than one module, which a signature's `linkType` strips with the same pattern.
+    expect(refs('`super::super::server::Server::kill`')).toMatchObject([{ target: 'server.Server.kill', label: 'super::super::server::Server::kill' }])
   })
 
   it('leaves a call, an expression and a bare name as written', () => {
