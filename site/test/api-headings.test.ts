@@ -450,13 +450,16 @@ const { symbol, member, nameHref } = Astro.props
       })
       return { model, symbol, members, document: win.document }
     }
-    // The raw rule, apart from the predicate under test: a typed attribute or non-static property.
-    const isField = (member: ApiSymbol) => ['attribute', 'property'].includes(member.kind) && member.type !== undefined && !member.modifiers.includes('static')
+    // What a row draws as a field's type: the member's own `type`, but for a Swift property the text after `<name>: ` in its declaration.
+    const cellText = (port: string, field: ApiSymbol) => port === 'swift' ? field.type!.replace(new RegExp(`^(?:let|var) ${field.name}: `), '') : field.type
+    // The raw rule, apart from the predicate under test: a typed attribute or non-static property that the type declares.
+    const isField = (member: ApiSymbol) => ['attribute', 'property'].includes(member.kind) && member.type !== undefined && !member.modifiers.includes('static') && !member.inheritedFrom
 
     // A struct and a class with methods beside their fields, and a class of only properties, each in its port's word.
     it.each([
       ['rs', 'config.Workspace', 'Fields'], ['go', 'workspace.Workspace', 'Fields'],
       ['csharp', 'LibTmux.Workspace.WorkspaceAction', 'Properties'], ['csharp', 'LibTmux.Workspace.WorkspaceActionOutcome', 'Properties'],
+      ['swift', 'ServerConfiguration', 'Properties'], ['swift', 'ToolDefinition', 'Properties'],
     ])('%s %s lists its typed fields as %s in a counted table ahead of its member details', async (port, id, word) => {
       const { model, members, document, symbol } = await render(port, id)
       const fields = members.filter(isField)
@@ -491,7 +494,7 @@ const { symbol, member, nameHref } = Astro.props
         const field = fields[i]!
         expect(row.querySelector('th a')?.textContent).toBe(field.name)
         expect(row.querySelector('th a')?.getAttribute('href')).toBe(productApiHref(model, field, 'latest'))
-        expect(row.querySelector('td:nth-child(2)')?.textContent).toBe(field.type)
+        expect(row.querySelector('td:nth-child(2)')?.textContent).toBe(cellText(port, field))
         expect(row.querySelector('td:last-child')?.textContent).toBe(field.doc?.summary ?? '')
       })
 
@@ -523,8 +526,9 @@ const { symbol, member, nameHref } = Astro.props
       expect(document.querySelector('.api-reference-content > dl[data-entry="config.Workspace"]')).not.toBeNull()
     }, 60_000)
 
-    it('leaves a port without a field table with the counted Members and its entries alone', async () => {
-      const { members, document } = await render('swift', 'CallerIdentity')
+    // Ports with no table, whose structs hold typed properties or attributes, and a Swift enum, whose properties are computed from its cases.
+    it.each([['julia', 'LibTmuxWorkspace.CommandConfig'], ['cxx', 'libtmux::mcp::CallContext'], ['swift', 'JSONValue']])('leaves %s %s, which has no field table, with the counted Members and its entries alone', async (port, id) => {
+      const { members, document } = await render(port, id)
       expect(members.filter(isField).length).toBeGreaterThan(0)
       expect(document.querySelector('#api-fields, .api-field-table, table')).toBeNull()
       expect(document.querySelector('.api-members > h2#api-members')?.firstChild?.textContent).toBe('Members')

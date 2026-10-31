@@ -4,7 +4,7 @@ import DocsLayout from '../../layouts/DocsLayout.astro'
 import ApiEntry from './ApiEntry.astro'
 import ApiScalarMembers from './ApiScalarMembers.astro'
 import ApiTmuxSections from './ApiTmuxSections.astro'
-import { memberTable, variantPayloads } from '../../lib/api-sections'
+import { fieldCellType, memberTable, variantPayloads } from '../../lib/api-sections'
 import { apiTmuxSections } from '../../lib/api-tmux-sections'
 import { productApiAlternatives, productApiHref, productApiIndex } from '../../lib/product-api'
 import { DOC_PRODUCTS, PORT_BY_SLUG, portPageUrl, productApiPath, type DocProduct } from '../../lib/ports'
@@ -20,6 +20,8 @@ const members = symbolsForProduct(model, product).filter((entry) => entry.parent
 // Where the port keeps a type's data in a table, its fields or an enum's variants lead as a summary of the entries below, in their order.
 const table = memberTable(symbol, members, model.port)
 const payloads = table?.columns === 'variants' ? variantPayloads(model.symbols, table.rows) : undefined
+// A row draws the type its port keeps in a field's `type`, which for a Swift property is the declaration without its name.
+const cellType = (member: ApiSymbol) => fieldCellType(member, model.port)
 // Every member keeps its entry, so under a table the entries are the detail of its rows rather than a second list of the same members.
 const membersHeading = table ? 'Member details' : 'Members'
 const pagePath = `${productApiPath(product)}/${symbol.slug}`
@@ -47,7 +49,7 @@ const tmuxSections = apiTmuxSections(model.port, symbol, alternativesFor(symbol)
   <ApiTmuxSections sections={tmuxSections} />
   {table && <div class="api-field-table mt-8">
     <h2 class="api-section-heading text-lg font-semibold" id={table.id}>{table.label}<span class="api-section-count">{table.rows.length}</span><a class="api-heading-link" href={`#${table.id}`} aria-label={`Link to ${table.label}`}>#</a></h2>
-    <ApiScalarMembers owner={symbol} members={table.rows} index={index} hrefFor={hrefFor} columns={table.columns} label={table.label} payloads={payloads} repeated />
+    <ApiScalarMembers owner={symbol} members={table.rows} index={index} hrefFor={hrefFor} columns={table.columns} label={table.label} payloads={payloads} repeated cellType={cellType} />
   </div>}
   {members.length > 0 && <div class="api-members mt-8">
     <h2 class="api-section-heading text-lg font-semibold" id="api-members">{membersHeading}<span class="api-section-count">{members.length}</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersHeading}`}>#</a></h2>

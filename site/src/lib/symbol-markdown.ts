@@ -5,7 +5,7 @@ import { aliasMembersTarget, aliasTarget, boundLabel, pageMembersOf, memberSigna
 import mentions from '../data/mentions.json'
 import { PORT_NAME } from './api-models'
 import { apiTmuxSections, type ApiTmuxSection } from './api-tmux-sections'
-import { aliasDeclaration, apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasFieldMembers, hasScalarMembers, memberTable, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures, variantPayloads, type VariantPayload } from './api-sections'
+import { aliasDeclaration, apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, fieldCellType, hasFieldMembers, hasScalarMembers, memberTable, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures, variantPayloads, type VariantPayload } from './api-sections'
 import type { ResolvedUsage } from './tmux-reference'
 import { tmuxCommandMentions, tmuxMentionMarkdown } from './tmux-links'
 import { productApiIndex } from './product-api'
@@ -385,7 +385,8 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     if (table?.columns === 'fields') {
       out.push(`## ${table.label}`, '', '| Name | Type | Description |', '| --- | --- | --- |')
       for (const member of table.rows) {
-        const type = referenceMarkdown({ label: member.type!, parts: index?.linkType(member.type!, member) }) ?? inlineCode(member.type!)
+        const shown = fieldCellType(member, port)
+        const type = referenceMarkdown({ label: shown, parts: index?.linkType(shown, member) }) ?? inlineCode(shown)
         out.push(`| ${cell(link(member))} | ${cell(type)} | ${cell(member.doc?.summary ?? '')} |`)
       }
       out.push('')

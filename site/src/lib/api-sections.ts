@@ -23,34 +23,53 @@ interface FieldTable {
   owner: (owner: ApiSymbol) => boolean
   /** Whether a member of such an owner is one of its fields. */
   field: (member: ApiSymbol) => boolean
-  /** What the port calls them: C# declares properties, Rust and Go fields. */
+  /** What the port calls them: C# and Swift declare properties, Rust and Go fields. */
   label: string
   /**
    * Whether a row repeats a type that its field's own page also draws, so `check-type-links` counts the name there.
    * A row that does not is counted where it stands.
    */
   repeated: boolean
+  /** The type text a row draws, for a port whose member `type` holds more than the type. The member's own `type` when absent. */
+  cellType?: (member: ApiSymbol) => string
 }
 
 const isRecord = (owner: ApiSymbol) => owner.kind === 'struct' || owner.variant === 'struct' || owner.variant === 'tuple'
+const isClassOrStruct = (owner: ApiSymbol) => owner.kind === 'class' || owner.kind === 'struct'
 const typedAttribute = (member: ApiSymbol) => member.kind === 'attribute' && member.type !== undefined
+const typedInstanceProperty = (member: ApiSymbol) => member.kind === 'property' && member.type !== undefined && !member.modifiers.includes('static')
+
+/**
+ * A Swift property records its whole declaration as its type, `let name: Type`, and a row names the property in its own
+ * column, so the row draws what follows the name. A declaration of another shape, or of another name, stays whole.
+ */
+function swiftDeclaredType(member: ApiSymbol): string {
+  const type = member.type!
+  for (const keyword of ['let', 'var']) {
+    const head = `${keyword} ${member.name}: `
+    if (type.startsWith(head) && type.slice(head.length).trim() !== '') return type.slice(head.length)
+  }
+  return type
+}
 
 /**
  * Ports whose extracted fields carry a name, a type and a summary, and where each keeps them.
  *
- * Rust and Go declare fields on a struct or payload variant. A C# type declares its data as
+ * Rust and Go declare fields on a struct or payload variant. A C# or Swift type declares its data as
  * properties, on classes and structs alike; a static property is a named value of the type, like a
- * constant, so it stays in the member list.
+ * constant, so it stays in the member list. A Swift enum's properties are computed from its cases, so
+ * enums keep the member list.
  */
 const FIELD_TABLES: Readonly<Partial<Record<string, FieldTable>>> = {
   rs: { owner: isRecord, field: typedAttribute, label: 'Fields', repeated: false },
   go: { owner: isRecord, field: typedAttribute, label: 'Fields', repeated: false },
-  csharp: {
-    owner: (owner) => owner.kind === 'class' || owner.kind === 'struct',
-    field: (member) => member.kind === 'property' && member.type !== undefined && !member.modifiers.includes('static'),
-    label: 'Properties',
-    repeated: true,
-  },
+  csharp: { owner: isClassOrStruct, field: typedInstanceProperty, label: 'Properties', repeated: true },
+  swift: { owner: isClassOrStruct, field: typedInstanceProperty, label: 'Properties', repeated: true, cellType: swiftDeclaredType },
+}
+
+/** The type a field row draws: the member's `type`, unless its port keeps more than the type there. */
+export function fieldCellType(member: ApiSymbol, port?: string): string {
+  return FIELD_TABLES[port ?? '']?.cellType?.(member) ?? member.type!
 }
 
 /** Whether the rows of a port's Fields table repeat types that each field's own page draws and the gate counts. */
