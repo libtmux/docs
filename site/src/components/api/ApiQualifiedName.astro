@@ -1,14 +1,19 @@
 ---
 import SymbolName from './SymbolName.astro'
+import { splitQualifiedName } from '../../lib/api-labels'
 
 interface Props {
   /** The source-qualified name, shown and copied by the adjacent button. */
   name: string
+  /** The declaration's kind: its own name, the last segment, takes the kind's ink, and the path before it stays quiet. */
+  kind: string
 }
-const { name } = Astro.props as Props
+const { name, kind } = Astro.props as Props
+const [path, leaf] = splitQualifiedName(name)
 ---
 <span class="api-qualified-name">
-  <code><SymbolName name={name} /></code>
+  {/* A break may follow the path, where the whole name would have broken before its last dot. */}
+  <code>{path && <><span class="api-qualified-name__path"><SymbolName name={path} /></span><wbr /></>}<span class="api-qualified-name__leaf api-doc-link" data-api-kind={kind}><SymbolName name={leaf} /></span></code>
   <button type="button" class="api-copy-name" data-api-copy-name={name} aria-label="Copy fully qualified name" title={`Copy ${name}`}>
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
       <rect x="8" y="8" width="12" height="13" rx="2" />

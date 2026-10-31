@@ -41,6 +41,17 @@ export function abbreviateNamespace(namespace: string): string {
 }
 
 /**
+ * A qualified name as its path and the declaration's own name: `libtmux::pane::Pane::send_keys` is
+ * `libtmux::pane::Pane::` and `send_keys`. The separators are the ports': `::`, `.`, `#`, `:` and `\`.
+ * A Swift name ends in argument labels, `send(keys:)`, which belong to the name, so the search stops at the first `(`.
+ */
+export function splitQualifiedName(name: string): [path: string, leaf: string] {
+  const last = [...name.split('(')[0]!.matchAll(/::|[.#:\\]/g)].at(-1)
+  const cut = last ? last.index + last[0].length : 0
+  return cut < name.length ? [name.slice(0, cut), name.slice(cut)] : ['', name]
+}
+
+/**
  * Languages whose type names mean nothing without their module: Elixir writes a type as `name/arity` and calls
  * each module's main type `t`, so `t/0` outside its own module has to be `Snapshot.t/0`.
  */

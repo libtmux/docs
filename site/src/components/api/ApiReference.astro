@@ -715,7 +715,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
               <dl class="api-definition">
               {/* The module, namespace or package this symbol is in, and its full name with a button to copy it; the page heading above carries neither. */}
               <dt>Qualified name</dt>
-              <dd><ApiQualifiedName name={nativeQualifiedName(model, owner)} /></dd>
+              <dd><ApiQualifiedName name={nativeQualifiedName(model, owner)} kind={owner.kind} /></dd>
               {ownerModule && (
                 <>
                   <dt>{moduleLabel}</dt>

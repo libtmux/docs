@@ -965,6 +965,9 @@ dl.py.gp-sphinx-api-container > dd > .gp-sphinx-api-parameters:last-child > dl.f
   font-family: var(--font-mono, ui-monospace, monospace);
   overflow-wrap: anywhere;
 }
+/* A qualified name reads as a path to one declaration: the path quiet, the declaration's own name in its kind's ink. */
+.api-qualified-name__path { color: var(--color-muted); }
+.api-qualified-name__leaf[data-api-kind] { color: var(--api-kind-ink, inherit); }
 .api-copy-status:empty { display: none; }
 .api-copy-status {
   position: absolute;

@@ -5,11 +5,13 @@ import { pathToFileURL } from 'node:url'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window, type HTMLButtonElement } from 'happy-dom'
 import ts from 'typescript'
-import { abbreviateNamespace } from '../src/lib/api-labels'
+import { abbreviateNamespace, splitQualifiedName } from '../src/lib/api-labels'
 
 const windows: Window[] = []
 const sourceUrl = new URL('../src/components/api/ApiQualifiedName.astro', import.meta.url)
 const componentSource = readFileSync(sourceUrl, 'utf8')
+const apiCss = readFileSync(new URL('../src/styles/api.css', import.meta.url), 'utf8')
+const kindCss = readFileSync(new URL('../src/styles/api-kinds.css', import.meta.url), 'utf8')
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
 
 afterEach(async () => {
@@ -39,11 +41,12 @@ async function component() {
   return (await import(/* @vite-ignore */ url)).default
 }
 
-async function render(props: { name: string }) {
+async function render(props: { name: string; kind?: string }) {
   const win = new Window()
   windows.push(win)
   const container = await experimental_AstroContainer.create()
-  win.document.body.innerHTML = await container.renderToString(await component(), { props })
+  win.document.head.innerHTML = `<style>:root { --color-muted: #53606d; --color-link: #6f1a24; }${apiCss}${kindCss}</style>`
+  win.document.body.innerHTML = await container.renderToString(await component(), { props: { kind: 'class', ...props } })
   return win
 }
 
@@ -116,6 +119,54 @@ describe('qualified namespace labels', () => {
   })
 })
 
+describe('a qualified name as a path to one declaration', () => {
+  it.each([
+    ['Rust', 'libtmux::pane::Pane::send_keys', 'libtmux::pane::Pane::', 'send_keys'],
+    ['Rust tuple field', 'libtmux::control::Subscription::Pane.0', 'libtmux::control::Subscription::Pane.', '0'],
+    ['Python', 'libtmux.common.EnvironmentMixin', 'libtmux.common.', 'EnvironmentMixin'],
+    ['Ruby instance method', 'LibTmux::Async::Scope#close', 'LibTmux::Async::Scope#', 'close'],
+    ['Ruby operator', 'LibTmux::Entity#==', 'LibTmux::Entity#', '=='],
+    ['Lua method', 'libtmux.Buffer:reference', 'libtmux.Buffer:', 'reference'],
+    ['PowerShell cmdlet', 'LibTmux.Workspace\\ConvertTo-TmuxWorkspace', 'LibTmux.Workspace\\', 'ConvertTo-TmuxWorkspace'],
+    ['Elixir function', 'LibTmux.Capture.fetch/2', 'LibTmux.Capture.', 'fetch/2'],
+    // A Swift name ends in its argument labels, which are part of the name: their colons are not a separator.
+    ['Swift method', 'Window.filterFieldType(_:)', 'Window.', 'filterFieldType(_:)'],
+    ['Swift operator', 'Client.!=(_:_:)', 'Client.', '!=(_:_:)'],
+    ['a name with no owner', 'Server', '', 'Server'],
+    ['a name with no owner and labels', 'buffers(_:)', '', 'buffers(_:)'],
+  ])('splits %s at the declaration\'s own name', (_, name, path, leaf) => {
+    expect(splitQualifiedName(name)).toEqual([path, leaf])
+  })
+
+  it('draws the path quiet and the declaration in its kind, and still copies the whole name', async () => {
+    const name = 'libtmux::pane::Pane::send_keys'
+    const win = await render({ name, kind: 'method' })
+    const code = win.document.querySelector('.api-qualified-name code')!
+    expect(code.textContent).toBe(name)
+    expect(code.querySelector('.api-qualified-name__path')?.textContent).toBe('libtmux::pane::Pane::')
+    const leaf = code.querySelector('.api-qualified-name__leaf')!
+    expect([leaf.textContent, leaf.getAttribute('data-api-kind'), leaf.matches('.api-doc-link')]).toEqual(['send_keys', 'method', true])
+    expect(win.document.querySelector('[data-api-copy-name]')?.getAttribute('data-api-copy-name')).toBe(name)
+    const ink = (element: Parameters<Window['getComputedStyle']>[0]) => win.getComputedStyle(element).color
+    expect(ink(leaf)).toBe(win.getComputedStyle(win.document.documentElement).getPropertyValue('--mark-callables-ink'))
+    expect(ink(code.querySelector('.api-qualified-name__path')!)).toBe('#53606d')
+  })
+
+  it.each([
+    ['class', 'types'], ['trait', 'traits'], ['method', 'callables'], ['attribute', 'members'],
+  ])('tints a %s with the %s ink', async (kind, family) => {
+    const win = await render({ name: 'libtmux::pane::Thing', kind })
+    expect(win.getComputedStyle(win.document.querySelector('.api-qualified-name__leaf')!).color)
+      .toBe(win.getComputedStyle(win.document.documentElement).getPropertyValue(`--mark-${family}-ink`))
+  })
+
+  it('has no path to quiet for a name with no owner', async () => {
+    const win = await render({ name: 'Server', kind: 'class' })
+    expect(win.document.querySelector('.api-qualified-name__path')).toBeNull()
+    expect(win.document.querySelector('.api-qualified-name__leaf')?.textContent).toBe('Server')
+  })
+})
+
 /**
  * The qualified name lives in the source and package disclosure, not under the
  * heading: the heading carries the name, and the disclosure carries where it is.
@@ -126,7 +177,8 @@ function placement(source: string): string[] {
   const header = source.slice(source.indexOf('<header'), source.indexOf('</header>'))
   if (/ApiQualifiedName|api-qualified-name/.test(header)) problems.push('the heading still carries the qualified name')
   const panel = source.slice(source.indexOf('<details class="api-source-details"'), source.indexOf('</details>', source.indexOf('<details class="api-source-details"')))
-  if (!/<dt>Qualified name<\/dt>\s*<dd><ApiQualifiedName name=\{nativeQualifiedName\(model, owner\)\} \/><\/dd>/.test(panel)) problems.push('the disclosure has no qualified name row')
+  if (!/<dt>Qualified name<\/dt>\s*<dd><ApiQualifiedName name=\{nativeQualifiedName\(model, owner\)\}[^>]*\/><\/dd>/.test(panel)) problems.push('the disclosure has no qualified name row')
+  else if (!/<ApiQualifiedName [^>]*\bkind=\{owner\.kind\}/.test(panel)) problems.push('the qualified name is drawn without the declaration\'s kind')
   if (!/<dt>\{moduleLabel\}<\/dt>/.test(panel)) problems.push('the disclosure does not label its module row for the port')
   return problems
 }
@@ -146,6 +198,9 @@ describe('where the qualified name lives', () => {
     it('notices the line back under the heading', () => {
       const regressed = reference.replace('<h1 ', '<ApiQualifiedName name="x" /><h1 ')
       expect(placement(regressed)).toContain('the heading still carries the qualified name')
+    })
+    it('notices a qualified name drawn without the declaration\'s kind', () => {
+      expect(placement(reference.replace(' kind={owner.kind}', ''))).toEqual(['the qualified name is drawn without the declaration\'s kind'])
     })
     it('notices a disclosure with no qualified name', () => {
       expect(placement(reference.replace('<dt>Qualified name</dt>', '<dt>Name</dt>'))).toContain('the disclosure has no qualified name row')
