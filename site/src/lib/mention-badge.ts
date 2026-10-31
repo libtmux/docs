@@ -11,7 +11,7 @@ export const kindWord = (kind: string) => TMUX_KIND_TITLES[kind] ?? kind.replace
 
 /**
  * The kind badge that leads a mention link, as one description every renderer of the format reads.
- * Markdown pages, doc comments, reference indexes and the Sphinx pages draw it into different trees from
+ * Markdown pages, reference indexes and the Sphinx pages draw it into different trees from
  * `mentionBadgeHtml`, `mentionBadgeNode` and `mentionBadgeHast`, and none of them restates the classes.
  */
 export interface MentionBadge {
@@ -46,8 +46,8 @@ export const mentionBadgeHtml = (badge: MentionBadge): string => cardHtml([badge
 export const mentionBadgeNode = (document: Document, badge: MentionBadge): HTMLElement => cardDom(document, [badgeElement(badge)])[0] as HTMLElement
 
 /**
- * A later mention in a section is the link alone. The kind stays in the tooltip and the accessible name,
- * so the reader who needs it can hover or listen for it.
+ * A mention without a badge is the link alone: a later mention in a section of a Markdown page, and every mention in
+ * reference prose. The kind stays in the tooltip and the accessible name, so the reader who needs it can hover or listen for it.
  */
 export function plainMention(kind: string, text: string, title?: string) {
   const word = kindWord(kind)

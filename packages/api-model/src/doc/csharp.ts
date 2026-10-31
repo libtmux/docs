@@ -44,6 +44,10 @@ function sections(xml: string, tag: string): { attrs: string; body: string }[] {
 const attr = (attrs: string, name: string): string | undefined =>
   new RegExp(`${name}="([^"]*)"`).exec(attrs)?.[1]
 
+/** Stand in for `<list>` and `</list>` through the line trim, which tells an item's wrapped lines from the prose after it. */
+const LIST_OPEN = '\u0001'
+const LIST_CLOSE = '\u0002'
+
 /**
  * Tag soup to prose, keeping the marks a reader sees.
  *
@@ -55,20 +59,35 @@ const attr = (attrs: string, name: string): string | undefined =>
  * exists to stop.
  */
 function prose(xml: string): string {
-  return xml
+  let depth = 0
+  let item = false
+  const lines = xml
     .replace(/<(strong|b)>([\s\S]*?)<\/\1>/g, (_, __, inner: string) => markText(inner, '**'))
     .replace(/<(em|i)>([\s\S]*?)<\/\1>/g, (_, __, inner: string) => markText(inner, '*'))
     .replace(/<para\s*\/?>/g, '\n\n')
     .replace(/<\/para>/g, '')
-    .replace(/<list[^>]*>/g, '\n')
-    .replace(/<\/list>/g, '\n')
-    .replace(/<item>\s*(?:<description>)?/g, '\n- ')
+    .replace(/<list[^>]*>/g, `\n${LIST_OPEN}`)
+    .replace(/<\/list>/g, `\n${LIST_CLOSE}`)
+    .replace(/<item>\s*(?:<description>\s*)?/g, '\n- ')
     .replace(/<\/description>\s*<\/item>|<\/item>/g, '')
     .replace(/<(term|description)>|<\/(term|description)>/g, '')
     .replace(/<br\s*\/?>/g, '\n')
     .replace(/<\/?(remarks|summary|value|returns|example|inheritdoc)[^>]*>/g, '')
     .split('\n')
-    .map((l) => l.trim())
+  // A list item that wraps across source lines stays one item: its continuation keeps an indent, which the prose
+  // parser reads as part of the item, where a line at column zero would end the list.
+  return lines
+    .map((raw) => {
+      const opens = raw.startsWith(LIST_OPEN)
+      const closes = raw.startsWith(LIST_CLOSE)
+      if (closes) depth = Math.max(0, depth - 1)
+      if (depth === 0) item = false
+      const line = (opens || closes ? raw.slice(1) : raw).trim()
+      if (opens) depth++
+      if (depth === 0 || !line) return line
+      if (line.startsWith('- ')) item = true
+      return item && !line.startsWith('- ') ? `  ${line}` : line
+    })
     .join('\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim()

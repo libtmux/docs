@@ -1,9 +1,9 @@
 ---
 import type { ApiSymbol, SymbolIndex } from '@libtmux/api-model'
 import { Code } from 'astro-expressive-code/components'
-import { parseApiProse, type ProseBlock, type ProseItem } from '../../lib/api-prose'
+import { parseApiProse, type ProseItem } from '../../lib/api-prose'
+import { groupDirectory, type DirectoryBlock } from '../../lib/api-directory'
 import { codeLang } from '../../lib/highlight'
-import { firstMention, type First } from '../../lib/mention-badge'
 import ApiDoc from './ApiDoc.astro'
 
 /** Normalized docstring blocks; inline spans still use the native API resolver. */
@@ -12,32 +12,62 @@ interface Props {
   items?: ProseItem[]
   index: SymbolIndex
   context?: ApiSymbol
-  /** The mentions already marked in the entry; a docstring's paragraphs share them, so each name is marked once. */
-  first?: First
 }
-const { text, items, index, context, first = firstMention() } = Astro.props as Props
-const blocks: ProseBlock[] = items ? [{ kind: 'ul', items }] : parseApiProse(text ?? '')
+const { text, items, index, context } = Astro.props as Props
+const blocks: DirectoryBlock[] = items ? [{ kind: 'ul', items }] : groupDirectory(parseApiProse(text ?? ''))
 const { self: ApiProse } = Astro
 ---
 
 {
   blocks.map((block) => {
     const List = block.kind === 'ol' ? 'ol' : 'ul'
+    if (block.kind === 'directory') return (
+      <dl class="api-directory">
+        {block.rows.map((row) => (
+          <div class="api-directory__row">
+            <dt class="api-directory__title">{row.title}</dt>
+            {row.guidance && <dd class="api-directory__guidance"><ApiDoc text={row.guidance} index={index} context={context} /></dd>}
+            <dd class="api-directory__members">
+              {row.groups.map((group) => (
+                <div class="api-directory__group">
+                  {group.label && <span class="api-directory__label">{group.label}</span>}
+                  <ul class="api-directory__chips">
+                    {group.refs.map((ref) => <li><ApiDoc text={ref} index={index} context={context} chip /></li>)}
+                  </ul>
+                </div>
+              ))}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    )
+    if (block.kind === 'table') return (
+      <div class="api-prose-table" role="region" aria-label="Table" tabindex="0">
+        <table class="table not-prose">
+          <thead><tr>{block.head.map((cell, n) => <th style={block.align[n] ? `text-align: ${block.align[n]}` : undefined}><ApiDoc text={cell} index={index} context={context} /></th>)}</tr></thead>
+          <tbody>
+            {block.rows.map((row) => (
+              <tr>{row.map((cell, n) => <td style={block.align[n] ? `text-align: ${block.align[n]}` : undefined}><ApiDoc text={cell} index={index} context={context} /></td>)}</tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )
     return block.kind === 'code' ? (
       <div class="api-prose-code"><Code code={block.code} lang={codeLang(block.lang)} title="" /></div>
     ) : block.kind === 'rubric' ? (
       <p class="rubric">{block.text}</p>
     ) : block.kind === 'p' ? (
       <p>
-        <ApiDoc text={block.text} index={index} context={context} first={first} />
+        <ApiDoc text={block.text} index={index} context={context} />
       </p>
     ) : (
       <List start={block.kind === 'ol' ? block.start : undefined}>
         {block.items.map((item) => (
           <li>
-            <ApiDoc text={item.text} index={index} context={context} first={first} />
+            <ApiDoc text={item.text} index={index} context={context} />
             {item.children.length > 0 && (
-              <ApiProse items={item.children} index={index} context={context} first={first} />
+              <ApiProse items={item.children} index={index} context={context} />
             )}
           </li>
         ))}

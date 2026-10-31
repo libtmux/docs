@@ -137,3 +137,48 @@ ${remarks.split('\n').map((line) => `    /// ${line}`).join('\n')}
     expect(tokenizeDoc(body, 'csharp').some((span) => span.kind === 'strong' || span.kind === 'emphasis')).toBe(false)
   })
 })
+
+describe('C# lists in XML docs', () => {
+  const documented = (remarks: string) => extract(`namespace LibTmux;
+public class Accessor {
+    /// <summary>Forgets a cached server.</summary>
+    /// <remarks>
+${remarks.split('\n').map((line) => `    /// ${line}`).join('\n')}
+    /// </remarks>
+    public void Invalidate() {}
+}`).then((symbols) => symbols.find((symbol) => symbol.id === 'LibTmux.Accessor.Invalidate')!.doc!.body!)
+
+  it('keeps an item that wraps across source lines as one item, indenting its continuation', async () => {
+    const body = await documented([
+      'Forgetting a server:',
+      '<list type="bullet">',
+      '  <item><description>Drops the cached handle, so the next call',
+      '  opens a new one.</description></item>',
+      '  <item>',
+      '    <description>',
+      '      Leaves the tmux server running',
+      '      and its sessions open.',
+      '    </description>',
+      '  </item>',
+      '</list>',
+    ].join('\n'))
+    expect(body).toBe([
+      'Forgetting a server:',
+      '',
+      '- Drops the cached handle, so the next call',
+      '  opens a new one.',
+      '',
+      '- Leaves the tmux server running',
+      '  and its sessions open.',
+    ].join('\n'))
+  })
+
+  it('leaves the prose after a list at column zero, so the list ends where the XML does', async () => {
+    const body = await documented('<list type="bullet">\n<item><description>Wraps over\ntwo lines.</description></item>\n</list>\nAfter the list.')
+    expect(body).toBe('- Wraps over\n  two lines.\n\nAfter the list.')
+  })
+
+  it('writes items that each fit on one line as it always has', async () => {
+    expect(await documented('<list type="bullet">\n<item><description>One.</description></item>\n<item><description>Two.</description></item>\n</list>')).toBe('- One.\n\n- Two.')
+  })
+})

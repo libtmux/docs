@@ -136,6 +136,9 @@ export const KEYWORD_HELP: Record<string, Record<string, KeywordHelp>> = {
 /** A keyword argument (`cancel:`, `clients: true`) names a parameter, not a member. */
 export const keywordArgument = /^[A-Za-z_]\w*[?!]?:(?:\s|$)/
 
+/** A tmux control-mode marker (`%begin`, `%output`, `%session-changed`) names a protocol line, not the member that shares its word. */
+const controlMarker = /^%[\w-]+$/
+
 interface TypeSpan {
   text: string
   link?: LinkTarget
@@ -212,7 +215,7 @@ export interface TypeParameterBinding {
   parameter?: TypeParameter
 }
 
-const TYPE_KINDS: ReadonlySet<SymbolKind> = new Set(['class', 'interface', 'struct', 'union', 'enum', 'trait', 'typealias', 'exception'])
+export const TYPE_KINDS: ReadonlySet<SymbolKind> = new Set(['class', 'interface', 'struct', 'union', 'enum', 'trait', 'typealias', 'exception'])
 /** Roles whose target may name a type parameter; `typeparam` names nothing else. */
 const TYPE_PARAMETER_ROLES: ReadonlySet<string> = new Set(['any', 'class', 'obj', 'typeparam'])
 
@@ -1010,11 +1013,51 @@ export class SymbolIndex {
    *
    * A keyword argument such as `cancel:` or `clients: true` names a parameter
    * of the call being described, not the member elsewhere that shares its
-   * name, so it stays plain code. A variable and the text a program prints
-   * stay plain too (`neverLinks`), in `linkType`, which every path calls.
+   * name, so it stays plain code. So does a control-mode marker such as `%end`.
+   * A variable and the text a program prints stay plain too (`neverLinks`), in
+   * `linkType`, which every path calls.
    */
   linkLiteral(text: string, context?: ApiSymbol): TypeSpan[] {
-    return keywordArgument.test(text) ? [{ text }] : this.linkType(text, context)
+    if (keywordArgument.test(text) || controlMarker.test(text)) return [{ text }]
+    return this.plainArguments(this.linkPaths(this.linkType(text, context), context))
+  }
+
+  /**
+   * A path that names nothing whole links its longest prefix that names a type: `TmuxText::from` links
+   * `TmuxText` when the trait method is not a member of its own. Only a type: a variable's name could match
+   * an unrelated field.
+   */
+  private linkPaths(spans: TypeSpan[], context?: ApiSymbol): TypeSpan[] {
+    const separator = this.lang === 'rs' || this.lang === 'cxx' ? '::' : '.'
+    return spans.flatMap((span) => {
+      if (span.link || !span.text.includes(separator) || !/^[A-Za-z_$][\w$]*(?:[.:]+[A-Za-z_$][\w$]*)+$/.test(span.text)) return [span]
+      const segments = span.text.split(separator)
+      for (let n = segments.length - 1; n > 0; n--) {
+        const head = segments.slice(0, n).join(separator)
+        const linked = this.linkType(head, context)
+        if (linked.length === 1 && linked[0]!.link?.symbol && TYPE_KINDS.has(linked[0]!.link.symbol.kind)) {
+          return [linked[0]!, { text: span.text.slice(head.length) }]
+        }
+      }
+      return [span]
+    })
+  }
+
+  /**
+   * A bare name inside a call's parentheses is the caller's own value, not a reference to a member of another
+   * type that shares its name: `value` in `TmuxText::from(value)` is no field. A type, a builtin and a
+   * qualified name (`pane::index`, `.active().isTrue()`) keep their links.
+   */
+  private plainArguments(spans: TypeSpan[]): TypeSpan[] {
+    let depth = 0
+    let before = ''
+    return spans.map((span) => {
+      const symbol = span.link?.symbol
+      const value = depth > 0 && symbol && !TYPE_KINDS.has(symbol.kind) && !/[.:#/]/.test(span.text) && !/[.:#/>]$/.test(before.trimEnd())
+      if (!/^["'/]./.test(span.text)) for (const char of span.text) depth = Math.max(0, depth + (char === '(' ? 1 : char === ')' ? -1 : 0))
+      before += span.text
+      return value ? { text: span.text } : span
+    })
   }
 
   /**

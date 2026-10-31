@@ -1065,6 +1065,14 @@ html[data-api-sections-measured] .api-section-links {
     top: auto;
     clip-path: none;
   }
+  /* Stuck together, the owner and group bars read as one toolbar. The group bar's top border stays, transparent, so
+     nothing moves when the two meet or part. */
+  .api-members[data-api-sticky-members] > h2[data-api-joined] { border-end-start-radius: 0; border-end-end-radius: 0; }
+  .api-members[data-api-sticky-members] > .api-member-group > h3[data-api-stuck] {
+    border-top-color: transparent;
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+  }
   /* The page background closes the gap between the section row and the bars, so scrolled text does not show in it. */
   .api-members[data-api-sticky-members]::before {
     content: "";
@@ -1129,3 +1137,149 @@ html[data-api-sections-measured] .api-section-links {
 .api-source-path [aria-current="page"] { background: color-mix(in srgb, var(--theme-primary) 10%, transparent); font-weight: 600; }
 .api-source-path a:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 .api-source-path__edge { font-size: .75rem; flex-shrink: 0; }
+
+/*
+ * A name in a doc comment's prose. The kind is the name's colour, not a badge in front of it: a page that names many
+ * methods in a row stays readable, and the kind stays in the tooltip and the accessible name. The chip frame goes
+ * too; plain code keeps it, so a link and a literal still differ. ApiDoc marks the links it writes with
+ * api-doc-link; a Markdown or Sphinx page keeps its own mentions as they are.
+ */
+.api-doc-link[data-api-kind] {
+  --api-kind-ink: var(--color-link);
+  /* The ink for text on its own tint, deepened toward the page's text so a lit name keeps 4.5:1. */
+  --api-kind-ink-lit: color-mix(in srgb, var(--api-kind-ink) 70%, var(--color-foreground-primary));
+}
+.api-doc-link:is([data-api-kind='class'], [data-api-kind='struct'], [data-api-kind='enum'], [data-api-kind='union'], [data-api-kind='typealias'], [data-api-kind='module']) { --api-kind-ink: var(--mark-types-ink); }
+.api-doc-link:is([data-api-kind='interface'], [data-api-kind='trait']) { --api-kind-ink: var(--mark-traits-ink); }
+.api-doc-link:is([data-api-kind='function'], [data-api-kind='method'], [data-api-kind='command']) { --api-kind-ink: var(--mark-callables-ink); }
+.api-doc-link:is([data-api-kind='property'], [data-api-kind='attribute'], [data-api-kind='constant'], [data-api-kind='key'], [data-api-kind='option']) { --api-kind-ink: var(--mark-members-ink); }
+.api-doc-link:is([data-api-kind='exception'], [data-api-kind='prompt'], [data-api-kind='resource-template'], [data-api-kind='format']) { --api-kind-ink: var(--mark-meta-ink); }
+.api-doc-link:is([data-api-kind='tool'], [data-api-kind='resource'], [data-api-kind='hook']) { --api-kind-ink: var(--mark-tools-ink); }
+
+a.api-doc-link[data-api-kind]:not(.api-mention--chip),
+a.api-doc-link[data-api-kind][data-link-preview]:not(.api-badge):not(.api-mention--chip) {
+  color: var(--api-kind-text, var(--api-kind-ink));
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: color-mix(in srgb, currentColor 70%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: .22em;
+}
+a.api-doc-link[data-api-kind]:not(.api-mention--chip) .api-literal--link {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+}
+a.api-doc-link[data-api-kind]:not(.api-mention--chip):hover { text-decoration-style: solid; }
+
+/*
+ * A capability directory: each row says what a group of members is for, beside the members as chips. The
+ * guidance is the doc comment's own sentence; the chips are its references.
+ */
+.api-directory {
+  container-type: inline-size;
+  margin: 1rem 0 1.25rem;
+  border: 1px solid var(--color-background-border);
+  border-radius: .5rem;
+  overflow: hidden;
+}
+.api-directory__row {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  grid-template-areas: 'title members' 'guidance members';
+  grid-template-rows: auto 1fr;
+  column-gap: 1.5rem;
+  padding: .85rem 1rem;
+}
+.api-directory__row + .api-directory__row { border-top: 1px solid var(--color-background-border); }
+.api-directory__row:hover { background: color-mix(in srgb, var(--color-foreground-primary) 3%, transparent); }
+.api-directory .api-directory__title { grid-area: title; margin: 0; font-weight: 600; font-size: .9rem; line-height: 1.4; }
+.api-directory .api-directory__guidance {
+  grid-area: guidance;
+  margin: .3rem 0 0;
+  padding: 0;
+  font-size: .8125rem;
+  line-height: 1.6;
+  color: var(--color-foreground-secondary);
+}
+.api-directory .api-directory__members { grid-area: members; margin: 0; padding: 0; display: grid; gap: .6rem; align-content: start; }
+.api-directory__group { display: flex; align-items: flex-start; gap: .5rem; }
+.api-directory__label {
+  flex: none;
+  width: 5.5rem;
+  padding-top: .3em;
+  font-size: .75rem;
+  line-height: 1.3;
+  color: var(--color-foreground-secondary);
+}
+.api-directory .api-directory__group > .api-directory__chips { display: flex; flex-wrap: wrap; gap: .35rem; margin: 0; padding: 0; list-style: none; }
+.api-directory .api-directory__group > .api-directory__chips > li { display: flex; margin: 0; padding: 0; line-height: 1; }
+.api-directory .api-directory__group > .api-directory__chips > li::before, .api-directory .api-directory__group > .api-directory__chips > li::marker { content: none; }
+.api-directory a.api-mention--chip { display: inline-flex; text-decoration: none; }
+/* Chips stay neutral: the column is a list of names, and colour there would be the badges again. */
+.api-directory a.api-mention--chip .api-literal--link {
+  display: inline-block;
+  padding: .3em .5em;
+  border-radius: .3rem;
+  color: var(--color-foreground-primary);
+  line-height: 1.2;
+}
+.api-directory a.api-mention--chip:hover .api-literal--link,
+.api-directory a.api-mention--chip:focus-visible .api-literal--link {
+  border-color: var(--api-kind-ink, var(--color-link));
+  color: var(--api-kind-ink-lit, var(--color-link));
+  background: color-mix(in srgb, var(--api-kind-ink, var(--color-link)) 10%, var(--color-inline-code-background));
+}
+@container (max-width: 44rem) {
+  .api-directory__row { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'title' 'guidance' 'members'; grid-template-rows: auto; row-gap: .6rem; }
+  .api-directory__label { width: auto; min-width: 5rem; }
+  .api-directory__group { flex-wrap: wrap; }
+}
+@media print {
+  .api-directory__row { break-inside: avoid; }
+}
+/* The frame is the chip's affordance; the preview underline would run through it. */
+.api-directory .api-directory__chips a.api-mention--chip,
+.api-directory .api-directory__chips a.api-mention--chip[data-link-preview] { text-decoration-line: none; }
+
+/* A pipe table in a doc comment. `display: table` undoes the global block display, so rows span the width. The region
+   scrolls when a wide table overflows, so a keyboard reaches it. */
+.api-prose-table { margin: 1rem 0; overflow-x: auto; }
+.api-prose-table:focus-visible { outline: 2px solid var(--focus-ring-color, currentColor); outline-offset: 2px; }
+.api-prose-table > table { display: table; width: 100%; border-collapse: collapse; font-size: .875rem; line-height: 1.55; }
+.api-prose-table th, .api-prose-table td {
+  padding: .45rem .75rem;
+  border-bottom: 1px solid var(--color-background-border);
+  text-align: start;
+  vertical-align: top;
+}
+.api-prose-table th { font-weight: 600; border-bottom-width: 2px; }
+.api-prose-table tbody tr:last-child > td { border-bottom: 0; }
+
+/* Another link to the member being pointed at (see cross-highlight.ts). */
+a.api-doc-link.is-cross-lit:not(.api-mention--chip) { --api-kind-text: var(--api-kind-ink-lit); }
+/* The tint sits on the code box inside the link: the link's own inline box is taller and starts higher than the text. */
+a.api-doc-link.is-cross-lit:not(.api-mention--chip) .api-literal--link {
+  background: color-mix(in srgb, var(--api-kind-ink, var(--color-link)) 18%, transparent);
+  border-radius: .2em;
+  box-shadow: 0 0 0 .15em color-mix(in srgb, var(--api-kind-ink, var(--color-link)) 18%, transparent);
+}
+/* A link with no code inside, such as a tmux command named in words, takes the tint itself. */
+a.api-doc-link.is-cross-lit:not(.api-mention--chip):not(:has(.api-literal--link)) {
+  background: color-mix(in srgb, var(--api-kind-ink, var(--color-link)) 18%, transparent);
+  border-radius: .2em;
+  box-shadow: 0 0 0 .15em color-mix(in srgb, var(--api-kind-ink, var(--color-link)) 18%, transparent);
+}
+.api-directory a.api-mention--chip.is-cross-lit .api-literal--link {
+  border-color: var(--api-kind-ink, var(--color-link));
+  color: var(--api-kind-ink-lit, var(--color-link));
+  background: color-mix(in srgb, var(--api-kind-ink, var(--color-link)) 14%, var(--color-inline-code-background));
+}
+.api-nav__row.is-cross-lit, a.api-member-link.is-cross-lit {
+  background: color-mix(in srgb, var(--color-link) 10%, transparent);
+  box-shadow: inset 2px 0 0 var(--color-link);
+}
+@media (forced-colors: active) {
+  .is-cross-lit { outline: 2px solid Highlight; }
+}

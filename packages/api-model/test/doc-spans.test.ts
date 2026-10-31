@@ -62,3 +62,62 @@ describe('doc spans', () => {
     expect(index.linkLiteral('[object Object]')).toEqual([{ text: '[object Object]' }])
   })
 })
+
+describe('a literal that names a call or a path', () => {
+  const field = (id: string, kind: ApiSymbol['kind']): ApiSymbol => ({ ...symbol(id), kind })
+  const symbols = [
+    field('text.TmuxText', 'struct'),
+    field('pane.Pane', 'class'),
+    field('pane.Pane.value', 'attribute'),
+    field('pane.Pane.close', 'method'),
+    field('spec.SessionSpec', 'class'),
+  ]
+  const href = (item: ApiSymbol) => `/${item.id}/`
+  const index = new SymbolIndex(symbols, href, 'rs')
+  /** Each span's text, with a linked one in brackets: `[TmuxText]::from(value)`. */
+  const shape = (text: string, from = index) => from.linkLiteral(text).map((span) => (span.link ? `[${span.text}]` : span.text)).join('')
+
+  it('links what a call calls and leaves its arguments the caller\'s own', () => {
+    // The whole expression links `value` to the unrelated field of that name; a call's arguments do not.
+    expect(index.linkType('TmuxText::from(value)').some((span) => span.text === 'value' && span.link)).toBe(true)
+    expect(shape('TmuxText::from(value)')).toBe('[TmuxText]::from(value)')
+  })
+
+  it('links a callee that resolves whole and keeps the arguments plain', () => {
+    expect(shape('pane.Pane.close(value)')).toBe('[pane.Pane.close](value)')
+    expect(index.linkLiteral('pane.Pane.close(value)').map((span) => span.text).join('')).toBe('pane.Pane.close(value)')
+  })
+
+  it('keeps an argument that names a type, a builtin or a qualified member', () => {
+    expect(shape('TmuxText::from(Pane)')).toBe('[TmuxText]::from([Pane])')
+    expect(shape('get(String)')).toBe('get([String])')
+    expect(shape('sort(panes, {}, Pane.value)')).toBe('sort(panes, {}, [Pane.value])')
+    expect(shape('Pane#close(SessionSpec)', new SymbolIndex(symbols, href, 'java'))).toBe('[Pane]#[close]([SessionSpec])')
+  })
+
+  it('keeps the member that a chained call reaches', () => {
+    expect(shape('Pane.close().value', new SymbolIndex(symbols, href, 'py'))).toBe('[Pane.close]().[value]')
+    expect(shape('Pane::close().value')).toBe('[Pane]::close().[value]')
+  })
+
+  it('links the longest prefix that names a type when the whole path names nothing', () => {
+    expect(shape('TmuxText::from')).toBe('[TmuxText]::from')
+    expect(shape('TmuxText::from::inner')).toBe('[TmuxText]::from::inner')
+    expect(index.linkLiteral('TmuxText::from')[0]?.link?.symbol?.id).toBe('text.TmuxText')
+  })
+
+  it.each([['rs', 'value::len'], ['py', 'value.len']] as const)('never links a prefix that is not a type in %s: a variable could match an unrelated field', (lang, text) => {
+    expect(shape(text, new SymbolIndex(symbols, href, lang))).toBe(text)
+  })
+
+  it('leaves a control-mode marker plain, though the word after the percent sign names a member', () => {
+    const named = new SymbolIndex([...symbols, field('capture.CaptureOptions.end', 'attribute')], href, 'rs')
+    // `end` alone still links; `%end` is the protocol line that closes a reply and links nothing.
+    expect(shape('end', named)).toBe('[end]')
+    for (const marker of ['%end', '%begin', '%output', '%session-changed']) expect(shape(marker, named), marker).toBe(marker)
+  })
+
+  it('leaves a path whose prefixes name nothing plain', () => {
+    expect(shape('nothing::from(value)')).toBe('nothing::from(value)')
+  })
+})

@@ -129,6 +129,9 @@ export const RENDERED_TEXTS: Record<string, string> = {
   'cell.note': 'conceptNotes',
   'block.text': 'ApiProse blocks',
   'item.text': 'ApiProse blocks',
+  cell: 'ApiProse blocks',
+  'row.guidance': 'ApiProse blocks',
+  ref: 'ApiProse blocks',
 }
 
 export interface ProseText {

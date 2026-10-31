@@ -1,7 +1,6 @@
 ---
 import { parameterId, type ApiSymbol, type Param, type SymbolIndex } from '@libtmux/api-model'
 import { parameterBindingFacts, POWER_SHELL_COMMON_HELP, POWER_SHELL_COMMON_HELP_TITLE, powerShellCommonParameterHref, powerShellCommonParameterLabel } from '../../lib/api-sections'
-import type { First } from '../../lib/mention-badge'
 import ApiDoc from './ApiDoc.astro'
 import ApiType from './ApiType.astro'
 import ApiFieldOverloads from './ApiFieldOverloads.astro'
@@ -10,10 +9,8 @@ interface Props {
   params: (Param & { overloads: string[] })[]
   symbol: ApiSymbol
   index: SymbolIndex
-  /** The mentions already marked in the entry these parameters belong to. */
-  first?: First
 }
-const { params, symbol, index, first } = Astro.props as Props
+const { params, symbol, index } = Astro.props as Props
 const specific = params.filter((p) => !p.binding?.common)
 const common = params.filter((p) => p.binding?.common)
 const anchor = (param: Param) => params.find((p) => p.name === param.name) === param ? parameterId(symbol, param.name) : undefined
@@ -25,9 +22,9 @@ const anchor = (param: Param) => params.find((p) => p.name === param.name) === p
       <span class="api-parameter-signature"><strong><a href={`#${encodeURIComponent(parameterId(symbol, p.name))}`}><code>-{p.name}</code></a></strong>{p.type && <>{' ('}<ApiType type={p.type} index={index} context={symbol} />{')'}</>}<ApiFieldOverloads labels={p.overloads} /></span>
       <a class="api-heading-link" href={`#${encodeURIComponent(parameterId(symbol, p.name))}`} aria-label={`Link to -${p.name} parameter`} data-pagefind-ignore="all">#</a>
     </p>
-    {p.doc && <p><ApiDoc text={p.doc} index={index} context={symbol} first={first} /></p>}
+    {p.doc && <p><ApiDoc text={p.doc} index={index} context={symbol} /></p>}
     <dl class="api-definition api-parameter-facts">
-      {parameterBindingFacts(p).map((fact) => <><dt>{fact.label}</dt><dd><ApiDoc text={fact.value} index={index} context={symbol} first={first} /></dd></>)}
+      {parameterBindingFacts(p).map((fact) => <><dt>{fact.label}</dt><dd><ApiDoc text={fact.value} index={index} context={symbol} /></dd></>)}
     </dl>
   </li>)}
 </ul>
@@ -40,7 +37,7 @@ const anchor = (param: Param) => params.find((p) => p.name === param.name) === p
         <span class="api-parameter-signature"><strong><a href={`#${encodeURIComponent(parameterId(symbol, p.name))}`}><code>-{p.name}</code></a></strong>{p.type && <>{' ('}<ApiType type={p.type} index={index} context={symbol} />{')'}</>}</span>
         <a class="api-heading-link" href={`#${encodeURIComponent(parameterId(symbol, p.name))}`} aria-label={`Link to -${p.name} parameter`} data-pagefind-ignore="all">#</a>
       </p>
-      {p.doc && <p><ApiDoc text={p.doc} index={index} context={symbol} first={first} /></p>}
+      {p.doc && <p><ApiDoc text={p.doc} index={index} context={symbol} /></p>}
       <div class="api-parameter-resources">
         {p.binding && p.binding.aliases.length > 0 && <span>Aliases: {p.binding.aliases.map((alias, i) => <>{i > 0 && ', '}<a href={`#${encodeURIComponent(parameterId(symbol, p.name))}`}><code>{alias}</code></a></>)}</span>}
         <a href={powerShellCommonParameterHref(p.name)} aria-label={powerShellCommonParameterLabel(p.name)}>Microsoft Learn reference</a>

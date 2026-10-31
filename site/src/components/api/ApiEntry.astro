@@ -18,7 +18,6 @@ import { aliasDeclaration, apiCommandFacts, apiCommandRelatedLinks, apiOverloadI
 import { tmuxCommandsFor, tmuxManualUrl } from '../../lib/tmux-manual-data'
 import { tmuxCommandItems, tmuxCommandRows, tmuxCommandSeparator, tmuxSymbolSends } from '../../lib/tmux-reference'
 import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl } from '../../lib/tmux-catalog'
-import { firstMention } from '../../lib/mention-badge'
 import ApiFieldOverloads from './ApiFieldOverloads.astro'
 import ApiCommandParameters from './ApiCommandParameters.astro'
 import ApiSignatureParameters from './ApiSignatureParameters.astro'
@@ -88,8 +87,6 @@ interface Props {
 }
 const { symbol, parentKind, index, sourceUrl, port, language = port, manualLinks, catalogLinks, alternativesFor, heading = false, member = false,
   showSummary = true, showBases = true, legacyId, nameHref, linkRows = true } = Astro.props as Props
-// A name is marked once in an entry, not in each summary, parameter and example of it.
-const first = firstMention()
 const anchor = symbol.publicId ?? symbol.id
 const inventory = apiInventoryAttributes(symbol, language ?? '', parentKind ?? (symbol.parent ? API_MODELS[port ?? '']?.symbols.find((parent) => parent.id === symbol.parent)?.kind : undefined))
 const kind = symbol.kind
@@ -484,13 +481,13 @@ const hasBody =
 
     {showSummary && symbol.doc?.summary && (
       <p class="gp-sphinx-api-summary">
-        <ApiDoc text={symbol.doc.summary} index={index} context={symbol} first={first} />
+        <ApiDoc text={symbol.doc.summary} index={index} context={symbol} />
       </p>
     )}
     {symbol.doc?.body && (
       <div class="gp-sphinx-api-description" id={`${anchor}.description`}>
         <h2 class="rubric api-section-heading">Description<a class="api-heading-link" href={`#${anchor}.description`} aria-label="Link to Description">#</a></h2>
-        <ApiProse text={symbol.doc.body} index={index} context={symbol} first={first} />
+        <ApiProse text={symbol.doc.body} index={index} context={symbol} />
       </div>
     )}
 
@@ -498,7 +495,7 @@ const hasBody =
       <div class="gp-sphinx-api-command" id={`${anchor}.command`}>
         <h2 class="rubric api-section-heading">Command details<a class="api-heading-link" href={`#${anchor}.command`} aria-label="Link to Command details">#</a></h2>
         <dl class="api-definition api-command-facts">
-          {apiCommandFacts(symbol, Astro.url.pathname).map((fact) => <><dt>{fact.label}</dt><dd><ApiDoc text={fact.value} index={index} context={symbol} first={first} /></dd></>)}
+          {apiCommandFacts(symbol, Astro.url.pathname).map((fact) => <><dt>{fact.label}</dt><dd><ApiDoc text={fact.value} index={index} context={symbol} /></dd></>)}
         </dl>
         {apiCommandRelatedLinks(symbol, index).length > 0 && <div class="api-command-related">
           <span class="api-command-related__label">Related APIs</span>
@@ -519,8 +516,8 @@ const hasBody =
             {symbol.signatures.length > 1 ? <h3 class="api-native-signature"><ApiType type={nativeSignatureText(symbol, signature, language)} index={index} context={symbol} signature={signature} layout={signatureLayouts.get(signature)} />{methodSource && <span class="api-method-source">[<a href={methodSource} aria-label={`Source for ${label}`}>source</a>]</span>}<a class="api-heading-link" href={`#${id}`} aria-label="Link to method">#</a></h3>
               : methodSource && methodSource !== source && <p><span class="api-method-source">[<a href={methodSource} aria-label={`Source for ${label}`}>source</a>]</span></p>}
             {signature.extension && <p>Available when <code>{signature.extension}</code> is loaded.</p>}
-            {signature.doc?.summary && <ApiProse text={signature.doc.summary} index={index} context={symbol} first={first} />}
-            {signature.doc?.body && <ApiProse text={signature.doc.body} index={index} context={symbol} first={first} />}
+            {signature.doc?.summary && <ApiProse text={signature.doc.summary} index={index} context={symbol} />}
+            {signature.doc?.body && <ApiProse text={signature.doc.body} index={index} context={symbol} />}
           </section>
         )})}
       </div>
@@ -534,7 +531,7 @@ const hasBody =
             <>
               {(ex.intro || ex.sourceUrl) && (
                 <p class="gp-sphinx-api-example-intro">
-                  {ex.intro && <ApiDoc text={ex.intro} index={index} context={symbol} first={first} />}
+                  {ex.intro && <ApiDoc text={ex.intro} index={index} context={symbol} />}
                   {ex.sourceUrl && <a class="api-example-source" href={ex.sourceUrl}>View source</a>}
                 </p>
               )}
@@ -542,7 +539,7 @@ const hasBody =
                 {/* Preserve source comments, including Swift's required tools-version directive. */}
                 <Code code={ex.code} lang={codeLang(ex.lang)} title="" />
               </div>
-              {ex.outro && <div class="gp-sphinx-api-example-outro"><ApiDoc text={ex.outro} index={index} context={symbol} first={first} /></div>}
+              {ex.outro && <div class="gp-sphinx-api-example-outro"><ApiDoc text={ex.outro} index={index} context={symbol} /></div>}
             </>
           ))}
         </div>
@@ -559,7 +556,7 @@ const hasBody =
                 <dt id={`citation-${r.name}`}>[{r.name}]</dt>
                 <dd>
                   <p>
-                    <ApiDoc text={r.text} index={index} context={symbol} first={first} />
+                    <ApiDoc text={r.text} index={index} context={symbol} />
                   </p>
                 </dd>
               </>
@@ -572,7 +569,7 @@ const hasBody =
     {
       symbol.doc?.deprecated && (
         <Aside type="caution" title="Deprecated">
-          <ApiProse text={symbol.doc.deprecated} index={index} context={symbol} first={first} />
+          <ApiProse text={symbol.doc.deprecated} index={index} context={symbol} />
         </Aside>
       )
     }
@@ -580,7 +577,7 @@ const hasBody =
     {
       symbol.doc?.changed && (
         <Aside type="note" title="Changed">
-          <ApiProse text={symbol.doc.changed} index={index} context={symbol} first={first} />
+          <ApiProse text={symbol.doc.changed} index={index} context={symbol} />
         </Aside>
       )
     }
@@ -588,7 +585,7 @@ const hasBody =
     {
       (symbol.doc?.admonitions ?? []).map((a) => (
         <Aside type={asideFor(a.kind).type} title={asideFor(a.kind).title}>
-          <ApiProse text={a.text} index={index} context={symbol} first={first} />
+          <ApiProse text={a.text} index={index} context={symbol} />
         </Aside>
       ))
     }
@@ -618,7 +615,7 @@ const hasBody =
                             {p.default && <span class="api-type-parameter-fact"><span class="api-type-parameter-label">Default</span>{' '}<ApiType type={p.default} index={index} context={symbol} /></span>}
                           </p>
                         )}
-                        {p.doc && <ApiProse text={p.doc} index={index} context={symbol} first={first} />}
+                        {p.doc && <ApiProse text={p.doc} index={index} context={symbol} />}
                       </li>
                     ))}
                     {inheritedTypeParameters.map(({ owner, parameter: p, href, ownerHref, ownerLabel }) => (
@@ -635,7 +632,7 @@ const hasBody =
                             {p.default && <span class="api-type-parameter-fact"><span class="api-type-parameter-label">Default</span>{' '}<ApiType type={p.default} index={index} context={owner} /></span>}
                           </p>
                         )}
-                        {p.doc && <ApiProse text={p.doc} index={index} context={owner} first={first} />}
+                        {p.doc && <ApiProse text={p.doc} index={index} context={owner} />}
                       </li>
                     ))}
                   </ul>
@@ -646,7 +643,7 @@ const hasBody =
               <>
                 <dt class="field-odd" id={`${anchor}.parameters`}>Parameters</dt>
                 <dd class="field-odd">
-                  {symbol.command ? <ApiCommandParameters params={params} symbol={symbol} index={index} first={first} /> : <ul class="simple api-parameters">
+                  {symbol.command ? <ApiCommandParameters params={params} symbol={symbol} index={index} /> : <ul class="simple api-parameters">
                     {params.map((p, i) => (
                       <li id={params.findIndex((entry) => entry.name === p.name) === i ? parameterId(symbol, p.name) : undefined} data-inventory-category="parameter" data-inventory-id={parameterId(symbol, p.name)} data-inventory-display={`${anchor} (${p.name})`}>
                         <p class:list={[(language === 'julia' || language === 'ts') && 'api-parameter-heading']}>
@@ -655,7 +652,7 @@ const hasBody =
                             <strong><a href={`#${encodeURIComponent(parameterId(symbol, p.name))}`}><code>{p.name}</code></a></strong>{p.optional && '?'}{(language === 'julia' || language === 'ts') && p.default !== undefined && <>{' = '}<code>{p.default}</code></>}{p.type && <>{' ('}<ApiType type={p.type} index={index} context={symbol} language={language} />{') '}</>}
                           </span>
                           <a class="api-heading-link" href={`#${encodeURIComponent(parameterId(symbol, p.name))}`} aria-label={`Link to ${p.name} parameter`} data-pagefind-ignore="all">#</a>
-                          {p.doc && !['julia', 'ts'].includes(language ?? '') && <>{' – '}<ApiDoc text={p.doc} index={index} context={symbol} first={first} /></>}
+                          {p.doc && !['julia', 'ts'].includes(language ?? '') && <>{' – '}<ApiDoc text={p.doc} index={index} context={symbol} /></>}
                           {p.since && <span class="gp-sphinx-api-param-since">added {p.since}</span>}
                           {p.deprecated && (
                             <span class="gp-sphinx-api-param-deprecated">
@@ -664,8 +661,8 @@ const hasBody =
                           )}
                           <ApiFieldOverloads labels={p.overloads} targets={overloadTargets} />
                         </p>
-                        {p.doc && ['julia', 'ts'].includes(language ?? '') && <ApiProse text={p.doc} index={index} context={symbol} first={first} />}
-                        {p.binding && <p class="api-parameter-binding"><ApiDoc text={parameterBindingText(p)!} index={index} context={symbol} first={first} /></p>}
+                        {p.doc && ['julia', 'ts'].includes(language ?? '') && <ApiProse text={p.doc} index={index} context={symbol} />}
+                        {p.binding && <p class="api-parameter-binding"><ApiDoc text={parameterBindingText(p)!} index={index} context={symbol} /></p>}
                       </li>
                     ))}
                   </ul>}
@@ -678,7 +675,7 @@ const hasBody =
                 <dd class="field-even">
                   {returns.map((entry) => (
                     <p>
-                      <ApiDoc text={entry.doc} index={index} context={symbol} first={first} />
+                      <ApiDoc text={entry.doc} index={index} context={symbol} />
                       <ApiFieldOverloads labels={entry.overloads} targets={overloadTargets} />
                     </p>
                   ))}
@@ -697,7 +694,7 @@ const hasBody =
                           {r.doc && (
                             <>
                               {' – '}
-                              <ApiDoc text={r.doc} index={index} context={symbol} first={first} />
+                              <ApiDoc text={r.doc} index={index} context={symbol} />
                             </>
                           )}
                           <ApiFieldOverloads labels={r.overloads} targets={overloadTargets} />

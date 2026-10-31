@@ -58,8 +58,6 @@ import ApiType from './ApiType.astro'
 import ApiDoc from './ApiDoc.astro'
 import ApiFieldOverloads from './ApiFieldOverloads.astro'
 const { p, symbol, index, language, overloadTargets } = Astro.props
-// The entry's shared first mention; a fragment of it is rendered alone.
-const first = undefined
 ---
 ${source.slice(start, end)}`
   const ordinary = await compile('../src/components/api/ApiEntry.astro', imports, wrapper)
