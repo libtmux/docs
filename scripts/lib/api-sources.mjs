@@ -67,6 +67,8 @@ export const NAME_KINDS = {
   scala: { Using: 'object', String: 'object' },
   fsharp: { Seq: 'module', option: 'type', list: 'type' },
   cxx: { 'std.chrono': 'module', nullopt: 'member' },
+  // The prelude binds a variant of `Option` and `Result` to its own name, and rustdoc documents each under its enum.
+  rs: { None: 'member', Some: 'member', Ok: 'member', Err: 'member' },
   elixir: { 'Supervisor.child_spec': 'type' },
 }
 
@@ -163,7 +165,7 @@ export const BARE_OWNERS = Object.fromEntries(Object.entries({
     'System.Collections.Generic': ['IReadOnlyList', 'IAsyncEnumerable', 'IEnumerable'],
   },
   rs: {
-    'std.result': ['Result'], 'std.option': ['Option'], 'std.vec': ['Vec'], 'std.string': ['String'], 'std.time': ['Duration', 'Instant'],
+    'std.result': ['Result'], 'std.option': ['Option'], 'std.option.Option': ['None', 'Some'], 'std.result.Result': ['Ok', 'Err'], 'std.vec': ['Vec'], 'std.string': ['String'], 'std.time': ['Duration', 'Instant'],
     'std.collections': ['HashMap', 'BTreeMap'], 'std.path': ['PathBuf', 'Path'], 'std.sync': ['Arc'], 'std.borrow': ['Cow'],
     'std.convert': ['Into', 'From', 'AsRef'], 'std.iter': ['Iterator', 'IntoIterator'], 'std.fmt': ['Display'], 'std.ops': ['Drop'], 'std.ffi': ['OsStr', 'OsString'], 'std.error': ['Error'],
     'rmcp.model': ['ListResourcesResult', 'ListResourceTemplatesResult', 'ReadResourceResult', 'ErrorData'],

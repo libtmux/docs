@@ -310,6 +310,53 @@ describe('standard types in product signatures', () => {
   })
 })
 
+describe('Rust prelude variants', () => {
+  const VARIANTS = [
+    ['None', 'option/enum.Option.html#variant.None'], ['Some', 'option/enum.Option.html#variant.Some'],
+    ['Ok', 'result/enum.Result.html#variant.Ok'], ['Err', 'result/enum.Result.html#variant.Err'],
+  ] as const
+  const std = (page: string) => `https://doc.rust-lang.org/std/${page}`
+  const index = new SymbolIndex([], () => '#', 'rs')
+
+  it.each(VARIANTS)('links %s to its variant of the enum that declares it', (name, page) => {
+    expect(builtinHref('rs', name)).toBe(std(page))
+    expect(index.resolve(name)).toMatchObject({ href: std(page), external: true })
+  })
+
+  it('links a variant named in prose, in a literal and as a call, with its arguments left as written', () => {
+    const spans = index.docSpans('Returns `None` when absent, `Some(value)` otherwise, and `Ok(())` or `Err(error)` for a result.')
+    const refs = spans.filter((span) => span.kind === 'ref')
+    expect(refs.map((span) => [span.label, 'link' in span ? span.link?.href : undefined])).toEqual([
+      ['None', std('option/enum.Option.html#variant.None')],
+      ['Some(value)', undefined], ['Ok(())', undefined], ['Err(error)', undefined],
+    ])
+    // A call is an expression: the callee links and the arguments are the caller's own.
+    const calls = refs.slice(1).map((span) => 'parts' in span ? span.parts?.filter((part) => part.link).map((part) => [part.text, part.link!.href]) : undefined)
+    expect(calls).toEqual([
+      [['Some', std('option/enum.Option.html#variant.Some')]],
+      [['Ok', std('result/enum.Result.html#variant.Ok')]],
+      [['Err', std('result/enum.Result.html#variant.Err')]],
+    ])
+  })
+
+  it('leaves a name that merely contains one plain, and keeps the enums themselves linked', () => {
+    for (const text of ['NoneType', 'Something', 'Okay', 'Errors', 'none', 'ok', 'err']) expect(builtinHref('rs', text), text).toBeUndefined()
+    expect(builtinHref('rs', 'Option')).toBe(std('option/enum.Option.html'))
+    expect(builtinHref('rs', 'Result')).toBe(std('result/enum.Result.html'))
+  })
+
+  it('belongs to Rust: another port\'s None, Some, Ok and Err keep the documentation they have', () => {
+    for (const port of ['go', 'java', 'csharp', 'cxx', 'swift', 'ruby', 'lua', 'ts']) {
+      for (const [name] of VARIANTS) expect(builtinHref(port, name), `${port}:${name}`).toBeUndefined()
+    }
+  })
+
+  it('yields to a variant the crate declares itself', () => {
+    const local: ApiSymbol = { id: 'plan.Mode.None', name: 'None', kind: 'constant', parent: 'plan.Mode', modifiers: [], signatures: [], source: { file: 'plan.rs' } }
+    expect(new SymbolIndex([local], (symbol) => `#${symbol.id}`, 'rs').resolve('None')).toMatchObject({ href: '#plan.Mode.None', external: false })
+  })
+})
+
 describe('.NET exception references in F# and C#', () => {
   const exceptions = [
     ['System.Exception', 'system.exception'],
