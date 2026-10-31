@@ -6,7 +6,7 @@ import { API_MODELS, OWNER_KINDS } from '../src/lib/api-models'
 import { membersByType } from '../src/lib/api-tree'
 import { CONCEPT_DESCRIPTION, PORTS, PORT_BY_SLUG, referenceUrl } from '../src/lib/ports'
 import { symbolMarkdown, symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
-import { nativeSignatureText } from '../src/lib/api-sections'
+import { nativeSignatureText, splitFieldMembers } from '../src/lib/api-sections'
 
 function inlineCodes(text: string): string[] {
   const values: string[] = []
@@ -388,7 +388,10 @@ describe('API Markdown content parity', () => {
       const owner = byId.get(id) ?? model.symbols.find((symbol) => symbol.publicId === id)!
       const text = symbolMarkdown({ model, symbol: owner })
       const members = ordered.map((entry) => byId.get(entry.id)!)
-      const expected = [...members.filter((member) => !member.inheritedFrom), ...members.filter((member) => member.inheritedFrom)]
+      // A port with a fields table lists the fields of a type there, as rows, and keeps the rest in the member list.
+      const tabled = splitFieldMembers(owner, members.filter((member) => !member.inheritedFrom), port.slug).fields
+      for (const field of tabled) expect(text).toContain(`| \`${field.name}\` |`)
+      const expected = [...members.filter((member) => !member.inheritedFrom && !tabled.includes(member)), ...members.filter((member) => member.inheritedFrom)]
         .map((member) => member.name)
       const memberText = text.slice(text.search(/^## (?:Members|Inherited members)$/m))
       const names = [...memberText.matchAll(/^- `([^`]+)` \([a-z]+\)/gm)].map((match) => match[1])
