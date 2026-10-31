@@ -291,3 +291,51 @@ describe('the room around the summary', () => {
     } finally { await target.close() }
   })
 })
+
+describe('a card with no summary', () => {
+  const named = async (name: string) => (await cardPayloads()).find(([entry]) => entry === name)![1]
+  /** How far the box under the declaration, or under the header when there is none, stands from the footer, and whether the summary box is drawn. */
+  const stackedGap = (target: Page) => target.evaluate(() => {
+    const edge = (selector: string) => document.querySelector(selector)!.getBoundingClientRect()
+    const above = document.querySelector('[data-preview-signature]:not([hidden])') ? edge('[data-preview-signature]') : edge('.reference-link-preview__heading')
+    return { gap: edge('.reference-link-preview__footer').top - above.bottom, drawn: getComputedStyle(document.querySelector('.reference-link-preview__prose')!).display !== 'none' }
+  })
+
+  it('goes from the declaration, or from the header, straight to the footer', { timeout: 30_000 }, async () => {
+    const target = await browser.newPage()
+    try {
+      for (const name of ['declaration with a signature and no summary', 'declaration with nothing under its name']) {
+        for (const mode of ['light', 'dark'] as const) {
+          await open(target, await named(name), mode)
+          const { gap, drawn } = await stackedGap(target)
+          expect(drawn, `${name}, ${mode}`).toBe(false)
+          expect(Math.abs(gap), `${name}, ${mode}`).toBeLessThan(0.5)
+        }
+      }
+    } finally { await target.close() }
+  })
+
+  it('leaves a gap when the summary box is drawn anyway, so that the check above can fail', { timeout: 30_000 }, async () => {
+    const target = await browser.newPage()
+    try {
+      await open(target, await named('declaration with a signature and no summary'), 'light')
+      await target.addStyleTag({ content: '.reference-link-preview__prose { display: block !important; }' })
+      const { gap, drawn } = await stackedGap(target)
+      expect(drawn).toBe(true)
+      expect(gap).toBeGreaterThan(8)
+    } finally { await target.close() }
+  })
+
+  it('keeps the context line of a card whose only text is that, without a gap above it', { timeout: 30_000 }, async () => {
+    const target = await browser.newPage()
+    try {
+      await open(target, { schema: 1, title: 'inherited', kind: 'method', description: '', detail: 'Inherited from Base.', href: '/en/x/' }, 'light')
+      const seen = await target.evaluate(() => {
+        const prose = document.querySelector('.reference-link-preview__prose')!, detail = document.querySelector('[data-preview-detail]')!
+        return { display: getComputedStyle(prose).display, inset: detail.getBoundingClientRect().top - prose.getBoundingClientRect().top }
+      })
+      expect(seen.display).toBe('block')
+      expect(seen.inset).toBeCloseTo(9.6, 0)
+    } finally { await target.close() }
+  })
+})
