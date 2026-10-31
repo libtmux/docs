@@ -3,16 +3,16 @@ import { chromium, type Browser } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 // A reference page asks the content collection for its sidebar; the tables here are drawn without one.
 vi.mock('astro:content', () => ({ getCollection: async () => [] }))
-import { SymbolIndex } from '@libtmux/api-model'
+import { SymbolIndex, type ApiSymbol } from '@libtmux/api-model'
 import { API_MODELS } from '../src/lib/api-models'
-import { memberTable, variantPayloads } from '../src/lib/api-sections'
+import { fieldCellType, memberTable, variantPayloads } from '../src/lib/api-sections'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 import { siteCss } from './site-css'
 
 /**
  * The Name, Type and Description table of a type page, in a real browser with the site's compiled stylesheet and no
- * server: the Go fields, the C# properties and the Rust variants that one component draws, with the type cell as the
- * page draws it (linked names, each broken only where `SymbolName` allows). The reference column lets any word break,
+ * server: the Go fields, the C# and Swift properties and the Rust variants that one component draws, with the type cell
+ * as the page draws it (linked names, each broken only where `SymbolName` allows). The reference column lets any word break,
  * so a description with long lines used to squeeze the first two columns until a name broke between letters. Each table
  * sits in the page's own grid, so its box is the width a reader has at that screen.
  */
@@ -23,7 +23,7 @@ const RULES = /\/\* In the table, a name and a type are read whole[\s\S]*?\n\}\n
 /** Screens from a small phone to a wide desktop, and the boxes just above the width where the rows stop stacking. */
 const WIDTHS = [320, 360, 390, 640, 768, 1024, 1180, 1440]
 const BOXES = [740, 760, 800]
-const TABLES = [['go', 'tmux.ServerOptions'], ['csharp', 'LibTmux.Workspace.WorkspacePlan'], ['csharp', 'LibTmux.Workspace.WorkspaceResult'], ['rs', 'control.Event']] as const
+const TABLES = [['go', 'tmux.ServerOptions'], ['csharp', 'LibTmux.Workspace.WorkspacePlan'], ['csharp', 'LibTmux.Workspace.WorkspaceResult'], ['rs', 'control.Event'], ['swift', 'Client']] as const
 
 /** The real component and the real type cell, with the prose cells drawn as plain text. */
 async function tables() {
@@ -39,6 +39,7 @@ async function tables() {
     const hrefFor = (symbol: { slug?: string }) => `/en/${port}/latest/reference/${symbol.slug}/`
     html.push(await renderAstroTemplate(template, { props: {
       owner, members: table.rows, index: new SymbolIndex(model.symbols, hrefFor, port), hrefFor, columns: table.columns, label: table.label,
+      cellType: (member: ApiSymbol) => fieldCellType(member, port),
       payloads: table.columns === 'variants' ? variantPayloads(model.symbols, table.rows) : undefined,
     } }))
   }
@@ -188,6 +189,7 @@ describe('the Name, Type and Description table', () => {
     // A name such as `WorkspaceAction` is drawn `Workspace<wbr>Action`, and a narrow column breaks it there.
     const cut = seen.broken.filter((word) => / at (1180px|1440px|a \d+px box): [^:\s]*[a-z][A-Z]/.test(word))
     expect(cut.length, seen.broken.join('\n')).toBeGreaterThan(0)
+    expect(cut.filter((word) => word.startsWith('Client at ')), seen.broken.join('\n')).not.toEqual([])
   })
 
   it('cuts a name between letters without the table rules, so that the checks above can fail', { timeout: 180_000 }, async () => {
