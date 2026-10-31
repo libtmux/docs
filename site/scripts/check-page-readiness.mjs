@@ -544,8 +544,8 @@ export async function checkBlockLinksUndecorated(browser, base, { sample = false
       const cards = page.locator('main a[href]').filter({ has: page.locator('h1, h2, h3, h4, h5, h6, p') })
       for (let index = 0; index < Math.min(await cards.count(), 8); index++) {
         await cards.nth(index).hover()
-        // The preview waits 180ms before it marks a link, so wait past that dwell.
-        await page.waitForTimeout(400)
+        // The preview waits out its dwell before it marks a link, so wait past it.
+        await page.waitForTimeout(700)
       }
       await page.mouse.move(0, 0)
       const dotted = await page.evaluate(dottedDecorations)
@@ -730,7 +730,8 @@ export async function checkTmuxReferencePreviews(browser, base, { served: build 
     assert.equal(absent.status(), 404, 'The control address answered, so the sweep cannot show a missing payload')
     // The pointer arrives as the browser delivers it, to the link itself, so a sticky header over the top of the page cannot take it.
     await page.evaluate(() => document.getElementById('no-card').dispatchEvent(new PointerEvent('pointerover', { pointerType: 'mouse', bubbles: true })))
-    await page.waitForTimeout(700)
+    // Past the dwell and the request for the payload that is not there.
+    await page.waitForTimeout(1200)
     assert.equal(await opened(), false, 'A link with no payload opened a card')
     console.log(`Tmux reference previews: the C function link of a method page opens its card with its signature; ${asked} marked links on four pages each have a payload (${skipped.size} to trees this build does not serve were not asked); a payload missing on a served port is reported, and a link with none opens nothing PASS`)
   } finally { await context.close() }
