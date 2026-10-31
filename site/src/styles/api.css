@@ -983,15 +983,23 @@ dl.py.gp-sphinx-api-container > dd > .gp-sphinx-api-parameters:last-child > dl.f
   overflow-wrap: anywhere;
 }
 .api-copy-name {
+  position: relative;
   display: inline-grid;
   place-items: center;
   flex-shrink: 0;
-  width: 1.875rem;
-  height: 1.875rem;
+  /* The control is as tall as the line beside it, so the row keeps the height of the rows around it. */
+  width: 1lh;
+  height: 1lh;
   padding: 0;
   border-radius: 0.3rem;
   cursor: pointer;
   color: var(--color-muted);
+}
+/* A target 1.875rem across reaches past the control and takes no layout; the focus ring still frames the control. */
+.api-copy-name::before {
+  content: "";
+  position: absolute;
+  inset: min(0px, calc((1lh - 1.875rem) / 2));
 }
 .api-copy-name:hover { background: var(--color-surface-hover); color: var(--color-link); }
 .api-copy-name:focus-visible {
