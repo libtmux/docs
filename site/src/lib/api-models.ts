@@ -8,6 +8,7 @@ import dependencyInv from '../data/inventories/dependencies.entries.json'
 import registryData from '../data/registry.json'
 import { PORT_BY_SLUG, referenceUrl, type DocProduct, type RegistryData } from './ports'
 import { buildTarget, defaultVersionFor, registryVersion } from './versions'
+import { mcpToolSymbols } from './mcp-catalog'
 import powershellNav from '../data/api/powershell.nav.json'
 import juliaNav from '../data/api/julia.nav.json'
 import elixirNav from '../data/api/elixir.nav.json'
@@ -297,6 +298,7 @@ export function createApiIndex(model: ApiModelBase & { port?: string; language?:
   }
   const build = buildTarget(process.env)
   const tagged = (model.port ? PORT_BY_SLUG[model.port] : undefined) ?? { tagGrammar: 'semver' as const }
+  index.addMcpTools(mcpToolSymbols(model.port ?? '', model.symbols).map((symbol) => symbol.id))
   index.addCargoFeatures(model.sources ?? [], (source) => {
     // What the generated registry state says its package carries; a crate it lists no package for has nothing to match.
     const entry = (registryData as RegistryData).ports[model.port ?? '']

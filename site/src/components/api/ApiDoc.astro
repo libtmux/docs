@@ -2,6 +2,7 @@
 import type { ApiSymbol, SymbolIndex, LinkTarget } from '@libtmux/api-model'
 import { linkTmuxDoc } from '../../lib/tmux-links'
 import { plainMention, TMUX_KIND_TITLES } from '../../lib/mention-badge'
+import { ENVIRONMENT_VARIABLE, formKind, isWithin, writtenForm } from '../../lib/symbol-form'
 
 /**
  * Doc-comment prose with its cross-references resolved.
@@ -29,10 +30,6 @@ interface Props {
   chip?: boolean
 }
 const { text, index, context, citations = true, chip = false } = Astro.props as Props
-const CALLABLE = new Set(['method', 'function'])
-// Only a name written as a path reads as a call. A label with arguments, an Elixir `name/arity`, a PowerShell cmdlet, an
-// operator or the words an author chose for the link says how it is invoked already.
-const callPath = /^(?!unary_)[.#]?[\w$]+(?:(?:::|\.|#)[\w$]+)*!?$/
 // Through the index, so the tokenizer knows which language's spelling of a
 // cross-reference it is reading. Tokenizing here meant reST for all eight.
 const spans = linkTmuxDoc(index.docSpans(text, context))
@@ -48,12 +45,14 @@ function mentionOf(link: LinkTarget | undefined, kind: string | undefined, title
 <span>{
   spans.map((span) => {
     if (span.kind === 'link') {
-      const mention = span.tmux ? mentionOf({ href: span.href, external: false }, span.tmux, TMUX_KIND_TITLES[span.tmux], span.text) : undefined
-      const name = span.code ? <code class="api-literal api-literal--link">{span.text}</code> : span.text
+      // A tmux command is never written as a call, in any language.
+      const text = span.tmux === 'command' ? writtenForm({ lang: index.language, kind: 'command', label: span.text }) : span.text
+      const mention = span.tmux ? mentionOf({ href: span.href, external: false }, span.tmux, TMUX_KIND_TITLES[span.tmux], text) : undefined
+      const name = span.code ? <code class="api-literal api-literal--link">{text}</code> : text
       if (mention) return <a class="tmux-mention api-doc-link" href={span.href} rel="noopener" title={mention.title} data-api-kind={mention.dataApiKind} aria-label={mention.ariaLabel}>{name}</a>
       return <a href={span.href} rel="noopener">{name}</a>
     }
-    if (span.kind === 'code') return <code class="api-literal">{span.text}</code>
+    if (span.kind === 'code') return <code class="api-literal">{ENVIRONMENT_VARIABLE.test(span.text) ? writtenForm({ lang: index.language, kind: 'environment', label: span.text }) : span.text}</code>
     if (span.kind === 'kbd') return <kbd>{span.text}</kbd>
     if (span.kind === 'strong') return <strong>{span.text}</strong>
     if (span.kind === 'emphasis') return <em>{span.text}</em>
@@ -68,15 +67,22 @@ function mentionOf(link: LinkTarget | undefined, kind: string | undefined, title
         <span>{span.label}</span>
       )
     }
-    const parts = span.link ? [] : span.parts ?? index.linkLiteral(span.label, context)
-    const qualified = !chip && memberReference.test(span.label) && Boolean(span.link || parts.some((part) => part.link))
+    // An environment variable is named without the shell's sigil, and is no member to link.
+    const environment = !span.link && ENVIRONMENT_VARIABLE.test(span.label)
+    const parts = span.link ? [] : environment ? [{ text: writtenForm({ lang: index.language, kind: 'environment', label: span.label }) }] : span.parts ?? index.linkLiteral(span.label, context)
     const symbol = span.link?.symbol
-    // A chip on its owner's page drops the owner: `Server.Open` reads `Open()` beside Server's other members.
-    const own = chip && context ? [`${context.name}.`, `${context.name}::`, `${context.name}#`, '#'].find((prefix) => span.label.startsWith(prefix)) : undefined
+    // A chip on its owner's page drops the owner: `Server.Open` reads `Open` beside Server's other members.
+    const own = chip && context ? [`${context.name}.`, `${context.name}::`, `${context.name}#`, `${context.name}:`, `${context.name}/`, '#'].find((prefix) => span.label.startsWith(prefix)) : undefined
     const bare = own ? span.label.slice(own.length) : span.label
-    // A callable reads as a call wherever it is named, as Sphinx writes a method: `kill()`, `Server::shutdown()`.
-    const label = symbol && CALLABLE.has(symbol.kind) && callPath.test(bare) ? `${bare}()` : bare
-    // The accessible name holds the text a reader sees, parentheses included.
+    // A symbol is written the way its language's own documentation writes it: `kill()` in Python, `Server#kill` in Ruby.
+    const owner = symbol && index.parentOf(symbol)
+    // A tool is named on the wire, as a command is, and is not called by that name.
+    const label = symbol ? writtenForm({
+      lang: index.language, kind: index.isMcpTool(symbol) ? 'command' : formKind(index.language, symbol, owner), symbol, owner, label: bare, chip,
+      onOwnerPage: isWithin(context, owner, (scope) => index.parentOf(scope)),
+    }) : bare
+    const qualified = !chip && memberReference.test(label) && Boolean(span.link || parts.some((part) => part.link))
+    // The accessible name is the text a reader sees.
     const mention = mentionOf(span.link, symbol?.kind, symbol?.command?.kind ?? symbol?.kind, label)
     const name = <code class="api-literal api-literal--link">{labelParts(label, qualified).map((text) => qualified && text === '#' ? <span class="api-reference-separator">{text}</span> : text)}</code>
     if (span.link && mention) return (
