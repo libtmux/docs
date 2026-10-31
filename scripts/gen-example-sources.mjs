@@ -55,7 +55,7 @@ const digest = (content) => createHash('sha256').update(content).digest('hex')
 /** Read committed bytes; a working tree can be dirty or on a different branch. */
 export function cachedExample({ repository, revision, file, checkout, current }) {
   if (!/^[a-f0-9]{40}$/.test(revision)) throw new Error(`Invalid example revision: ${revision}`)
-  if (existsSync(join(checkout, '.git'))) {
+  if (checkout && existsSync(join(checkout, '.git'))) {
     const content = execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`],
       { encoding: 'utf8', maxBuffer: 4 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] })
     return { repository, revision, sha256: digest(content), content }
@@ -79,7 +79,7 @@ export function run() {
     const repository = provenance.repository ?? provenance.repo
     const revision = provenance.revision
     const checkout = checkoutFor(owner)
-    if (!existsSync(join(checkout, '.git'))) offline.add(owner)
+    if (!checkout || !existsSync(join(checkout, '.git'))) offline.add(owner)
     cache[key] = cachedExample({ repository, revision, file, checkout, current: previous[key] })
   }
   const merged = `${JSON.stringify(cache, null, 2)}\n`

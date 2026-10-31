@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /** Exercise revision binding and deliberately damaged example caches. */
 import assert from 'node:assert/strict'
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
@@ -33,6 +33,24 @@ try {
   assert.throws(() => cachedExample({ ...offline, current: undefined }), /no verified cache/)
   assert.throws(() => cachedExample({ ...request, file: 'missing.go' }))
   console.log('ok   missing files, wrong revisions, wrong repositories and damaged bytes fail')
+
+  // A port with no configured checkout has an empty path. joined with `.git` it names the
+  // current directory's repository, which is another project's and holds neither commit.
+  const decoy = join(scratch, 'decoy')
+  mkdirSync(decoy)
+  execFileSync('git', ['-C', decoy, 'init', '--quiet'])
+  writeFileSync(join(decoy, 'other.txt'), 'unrelated\n')
+  execFileSync('git', ['-C', decoy, 'add', 'other.txt'])
+  execFileSync('git', ['-C', decoy, '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '--quiet', '-m', 'Unrelated'])
+  const before = process.cwd()
+  process.chdir(decoy)
+  try {
+    assert.deepEqual(cachedExample({ ...offline, checkout: '' }), initial)
+    assert.throws(() => cachedExample({ ...offline, checkout: '', current: undefined }), /no verified cache/)
+  } finally {
+    process.chdir(before)
+  }
+  console.log('ok   an empty checkout path is absent, whatever repository the current directory holds')
 } finally {
   rmSync(scratch, { recursive: true, force: true })
 }
