@@ -323,13 +323,17 @@ library symbol or tmux name of the same spelling. `<program> <command>` links
 on any page of a port that ships the program. Internals pages and the language
 API index keep their library symbols.
 
-A port's workspace overview closes with example workspaces and a drawing of
-the panes each builds. An example appears only when a test in the port's own
+A port's workspace overview opens with a preset picker and closes with
+example workspaces and a drawing of the panes each builds. The presets are
+tmuxp's examples. An example appears only when a test in the port's own
 repository loads it, so `scripts/lib/workspace-showcase-sources.mjs` names
 each file with its tests, and the generator reads it at the revision the
-port's API model records for the workspace package. A port with no such
-document has no examples. After changing that list, or moving a port's pin,
-regenerate the data with the port checkouts present:
+port's API model records for the workspace package. It marks a file that is
+byte-identical to a tmuxp example, and it records, for every port, whether the
+port's loader supports each tmuxp example, with the line of source that shows
+a refusal. A preset the loader does not support cannot be shown. A port with
+no quotable document has no examples. After changing that list, or moving a
+port's pin, regenerate the data with the port checkouts present:
 
 ```console
 $ node scripts/gen-workspace-showcase.mjs

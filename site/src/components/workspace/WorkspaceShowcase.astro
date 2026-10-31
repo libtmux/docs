@@ -4,10 +4,11 @@
  *
  * Rendered from the workspace overview rather than from Markdown, because a
  * content-collection entry cannot import a component. The data and the
- * evidence for it come from `lib/workspace-showcase.ts`.
+ * evidence for it come from `lib/workspace-showcase.ts`. Every window of a
+ * file is drawn, so a reader without script sees the whole of it.
  */
 import {
-  previewLayout, revisionUrl, TOPICS, type ShowcaseExample, type TestVia, type WorkspaceShowcase,
+  previewWindows, revisionUrl, tmuxpExampleUrl, TOPICS, type ShowcaseExample, type TestVia, type WorkspaceShowcase,
 } from '../../lib/workspace-showcase'
 import WorkspaceConfig from './WorkspaceConfig.astro'
 import '../../styles/tmux-layout.css'
@@ -21,14 +22,16 @@ const topicTitle = (id: string) => TOPICS.find((topic) => topic.id === id)!.titl
 const examples = [...showcase.examples].sort(
   (a, b) => TOPICS.findIndex((topic) => topic.id === a.topic) - TOPICS.findIndex((topic) => topic.id === b.topic),
 )
+// Only `cli` is the command itself; the others say that it is not run.
 const VIA: Record<TestVia, string> = {
-  cli: 'runs the command',
-  loader: 'calls the loader the command uses',
-  builder: 'calls the builder the command uses',
-  library: 'calls the library parser',
+  cli: 'a test runs the command',
+  loader: 'loaded by the library in a test; the command is not run',
+  builder: 'built by the library in a test; the command is not run',
+  library: 'parsed by the library in a test; the command is not run',
+  scheduled: 'a scheduled parity run loads it, and no pull request runs it',
 }
 const slug = (example: ShowcaseExample) => `${showcase.port}-${example.topic}`
-const previews = new Map(examples.map((example) => [example.topic, previewLayout(JSON.parse(example.json), `ws-${slug(example)}`)]))
+const windows = new Map(examples.map((example) => [example.topic, previewWindows(JSON.parse(example.json), `ws-${slug(example)}`, showcase.support.defaultLayout?.layout)]))
 const parts = (text: string) => text.split('`')
 // An "also shows" link needs a section of its own to land on.
 const sections = new Set(examples.map((example) => example.topic))
@@ -36,12 +39,12 @@ const sections = new Set(examples.map((example) => example.topic))
 <section class="ws-showcase" data-workspace-showcase>
   <h2 id="example-workspaces">Example workspaces</h2>
   <p>
-    Each workspace below is a file that a test in <a href={`https://github.com/${showcase.repo}/tree/${showcase.revision}`}><code>{showcase.repo}</code></a>
-    loads. The drawing shows the panes of one window and the commands each pane receives.
+    Each workspace below is a file that <a href={`https://github.com/${showcase.repo}/tree/${showcase.revision}`}><code>{showcase.repo}</code></a>
+    loads in a test or a scheduled run, as the list under it says. The drawing shows the panes of each window and the commands each pane receives.
   </p>
   {examples.map((example) => {
     const topic = TOPICS.find((entry) => entry.id === example.topic)!
-    const preview = previews.get(example.topic)
+    const drawn = windows.get(example.topic)!
     const id = slug(example)
     return (
       <article class="ws-example">
@@ -50,14 +53,24 @@ const sections = new Set(examples.map((example) => example.topic))
         {example.also.length > 0 && (
           <p class="ws-also">Also shows: {example.also.map((also, index) => <>{index > 0 && ', '}{sections.has(also) ? <a href={`#example-${also}`}>{topicTitle(also).toLowerCase()}</a> : topicTitle(also).toLowerCase()}</>)}</p>
         )}
-        {preview && (
-          <figure class="gp-tmux-layout-wrapper">
-            <Fragment set:html={preview.svg} />
-            <figcaption>{preview.window ? <>Window <code>{preview.window}</code></> : 'The first window'}{preview.windows > 1 ? ` of ${preview.windows}` : ''}{preview.layout ? <>, layout <code>{preview.layout}</code></> : ', no layout set'}</figcaption>
-          </figure>
-        )}
-        <WorkspaceConfig id={id} yaml={example.yaml} json={example.json} note />
+        <div class="ws-body">
+          <WorkspaceConfig id={id} yaml={example.yaml} json={example.json} note />
+          {drawn.length > 0 && (
+            <div class="ws-windows">
+              {drawn.map((win) => (
+                <figure class="ws-win">
+                  <figcaption class="ws-win__name">{win.index}:{win.name ?? 'window'}</figcaption>
+                  <Fragment set:html={win.svg} />
+                  <figcaption>{win.caption}</figcaption>
+                </figure>
+              ))}
+            </div>
+          )}
+        </div>
         {example.note && <p class="ws-note">{parts(example.note).map((part, index) => (index % 2 ? <code>{part}</code> : part))}</p>}
+        {example.tmuxp && (
+          <p class="ws-source ws-same">Same file as tmuxp's <a href={tmuxpExampleUrl(example.tmuxp)}><code>examples/{example.tmuxp}.yaml</code></a>.</p>
+        )}
         <p class="ws-source">
           Source: <a href={revisionUrl(showcase, example.source.path, example.source.lines)}><code>{example.source.path}</code></a>
         </p>

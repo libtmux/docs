@@ -29,6 +29,8 @@ export interface AstroTemplateOptions {
   stubs?: Readonly<Record<string, string>>
   /** Replacement exports for a helper import, keyed by its specifier. */
   modules?: Readonly<Record<string, Exports>>
+  /** Keep `<script is:inline>` elements, which render in place; bundled scripts are always dropped. */
+  inlineScripts?: boolean
 }
 
 let loads = 0
@@ -51,7 +53,7 @@ export async function loadAstroTemplate(entry: string, options: AstroTemplateOpt
     const cached = compiled.get(file.href)
     if (cached) return cached
     const result = await transform(
-      source.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '').replace(/^import ['"][^'"\n]+\.css['"];?\s*$/gm, ''),
+      source.replace(options.inlineScripts ? /<script\b(?![^>]*\bis:inline\b)[^>]*>[\s\S]*?<\/script>/g : /<script\b[^>]*>[\s\S]*?<\/script>/g, '').replace(/^import ['"][^'"\n]+\.css['"];?\s*$/gm, ''),
       { filename: file.pathname, internalURL: 'astro/compiler-runtime', resultScopedSlot: true,
         scopedStyleStrategy: 'attribute', resolvePath: (specifier: string) => specifier },
     )

@@ -7,12 +7,13 @@ import DocCard from '../DocCard.astro'
 import PortLinks from '../PortLinks.astro'
 import McpInstall from '../widgets/McpInstall.astro'
 import McpShowcase from '../mcp/McpShowcase.astro'
+import WorkspacePicker from '../workspace/WorkspacePicker.astro'
 import WorkspaceShowcase from '../workspace/WorkspaceShowcase.astro'
 import PackageInstall from '../widgets/PackageInstall.astro'
 import ProductApiIndex from '../api/ProductApiIndex.astro'
 import { buildTarget } from '../../lib/versions'
 import { mcpShowcase, showcaseHeadings as mcpHeadings } from '../../lib/mcp-showcase'
-import { showcaseHeadings as workspaceHeadings, workspaceShowcase } from '../../lib/workspace-showcase'
+import { offersPicker, showcaseHeadings as workspaceHeadings, workspaceShowcase } from '../../lib/workspace-showcase'
 import { API_MODELS } from '../../lib/api-models'
 import { DEFAULT_LOCALE, LOCALE_LABEL, localeRoot, type Locale } from '../../i18n/locales'
 import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, contributeLink, repoPath } from '../../i18n/contribute'
@@ -137,6 +138,7 @@ const mcpTools = isMcpOverview && port ? await mcpShowcase(port, version ?? buil
   product={entry.data.product}
   version={version}
   headings={placeholderLocale ? [] : [
+    ...(workspaceExamples && offersPicker(workspaceExamples) ? [{ depth: 2, slug: 'try-a-preset', text: 'Try a preset' }] : []),
     ...(isMcpOverview || isWorkspaceOverview ? [{ depth: 2, slug: 'install', text: 'Install' }] : []),
     ...headings,
     ...(workspaceExamples ? workspaceHeadings(workspaceExamples) : []),
@@ -241,6 +243,7 @@ const mcpTools = isMcpOverview && port ? await mcpShowcase(port, version ?? buil
     product overview came to get the thing, and the boxes are where they go
     next. Both used to follow the whole page, below the fold.
   */}
+  {!placeholderLocale && workspaceExamples && <WorkspacePicker showcase={workspaceExamples} />}
   {!placeholderLocale && isMcpOverview && port && (
     <>
       <h2 id="install">Install</h2>
@@ -269,6 +272,9 @@ const mcpTools = isMcpOverview && port ? await mcpShowcase(port, version ?? buil
   )}
   {!placeholderLocale && <Content />}
   {!placeholderLocale && workspaceExamples && <WorkspaceShowcase showcase={workspaceExamples} />}
+  {!placeholderLocale && isWorkspaceOverview && !workspaceExamples && (
+    <p class="mt-6 text-sm opacity-75" data-workspace-coming>Tested example workspace files for this port are coming.</p>
+  )}
   {!placeholderLocale && mcpTools && <McpShowcase showcase={mcpTools} />}
   {!placeholderLocale && entry.data.product && productIsAvailable && isProductApi &&
     <ProductApiIndex port={port!} product={entry.data.product} version={version ?? buildTarget(process.env).version} />}
