@@ -19,6 +19,7 @@
   --api-surface: color-mix(in oklab, currentColor, transparent 96%);
   --api-border: color-mix(in oklab, currentColor, transparent 88%);
   --api-muted: color-mix(in oklab, currentColor, transparent 35%);
+  --api-member-radius: 0.45rem;
 }
 
 /* Match the shell before theme initialization and without JavaScript. */
@@ -197,7 +198,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   margin: 0;
   padding: 0;
   border: 1px solid var(--color-edge);
-  border-radius: 0.45rem;
+  border-radius: var(--api-member-radius);
   overflow: hidden;
 }
 
@@ -272,6 +273,13 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   border-radius: 0.35rem;
   background: var(--api-member-bar);
   overflow-wrap: anywhere;
+}
+/* A group's bar and its list are one panel: the bar rounds the top corners, the list the bottom ones, and the bar's
+   bottom border is the one divider between them. */
+.api-members > .api-member-group > h3 { border-radius: var(--api-member-radius) var(--api-member-radius) 0 0; }
+.api-members > .api-member-group > h3 + .api-member-list {
+  border-top: 0;
+  border-radius: 0 0 var(--api-member-radius) var(--api-member-radius);
 }
 /* The arrival cue tints the opaque bar instead of replacing it, so content never shows through. */
 .api-field-table > h2[data-anchor-arrival],
