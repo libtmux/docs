@@ -30,13 +30,18 @@ assert.throws(() => parseConfig('- just\n- a list'), /mapping/)
 assert.throws(() => parseConfig('a: [unterminated'))
 console.log('ok   a workspace document must be a mapping that parses')
 
-// A pinned revision stands in for the API model's only while it is newer than it.
+// A pinned revision stands in for the API model's only while the model records the revision it was chosen against.
 const OLDER = '46cccfef2a546de55ce8b308249b8c76339089a0'
 const NEWER = 'afd56d4dfa441b5bab9d9996ebd5b303fc5c4a3a'
-assert.doesNotThrow(() => assertPinNeeded('ts', NEWER, OLDER, () => false))
-assert.throws(() => assertPinNeeded('ts', NEWER, NEWER, () => false), /equals the API model's revision/)
-assert.throws(() => assertPinNeeded('ts', OLDER, NEWER, (older, newer) => older === OLDER && newer === NEWER), /is older than the API model's/)
-console.log('ok   a pin that the API model has caught up with is refused')
+const LATER = '0123456789abcdef0123456789abcdef01234567'
+assert.doesNotThrow(() => assertPinNeeded('ts', { pin: NEWER, generatedAgainst: OLDER }, OLDER))
+assert.throws(() => assertPinNeeded('ts', { pin: NEWER, generatedAgainst: OLDER }, NEWER), /equals the API model's revision/)
+assert.throws(() => assertPinNeeded('ts', { pin: OLDER, generatedAgainst: NEWER }, NEWER, (older, newer) => older === OLDER && newer === NEWER), /older than the API model's/)
+assert.throws(() => assertPinNeeded('ts', { pin: NEWER }, OLDER), /needs the model revision it was chosen against/)
+// The model moving past the pin, or to some revision the pin was not chosen against, refuses it with no checkout to ask.
+assert.throws(() => assertPinNeeded('ts', { pin: NEWER, generatedAgainst: OLDER }, LATER), /the API model moved from 46cccfef.* to 0123456789abcdef.* since SOURCES.ts.revision was chosen/)
+assert.throws(() => assertPinNeeded('ts', { pin: NEWER, generatedAgainst: OLDER }, NEWER.replace('a', 'b')), /moved from/)
+console.log('ok   a pin is refused once the API model records another revision than the one it was chosen against')
 
 // Revisions, tests and fixtures in a repository of their own.
 const scratch = mkdtempSync(join(tmpdir(), 'libtmux-workspace-showcase-'))
@@ -208,6 +213,11 @@ try {
   refused('py', (data) => { data.ports.py.examples[0].tests[0].checks += ' Hand edited.' })
   refused('rs', (data) => { first(data, 'rs', (test) => test.via === 'scheduled').test.checks = 'Runs on every pull request.' })
   console.log('ok   hand-edited checks text is refused')
+  // The JSON tab is converted from the YAML, so a JSON that is not what the YAML converts to is refused.
+  refused('go', (data) => { data.ports.go.examples[0].json = data.ports.go.examples[0].json.replace(/"(\w+)":/, '"$1_edited":') })
+  refused('py', (data) => { data.ports.py.examples[0].json = JSON.stringify({ not: 'the yaml' }, null, 2) })
+  refused('rs', (data) => { data.ports.rs.examples[0].json = JSON.stringify(JSON.parse(data.ports.rs.examples[0].json)) })
+  console.log('ok   a JSON that the YAML does not convert to is refused, whatever its shape')
   refused('julia', (data) => { data.ports.julia.examples.find((example) => example.note).note = 'Edited by hand.' })
   refused('julia', (data) => { delete data.ports.julia.examples.find((example) => example.note).note })
   refused('py', (data) => { data.ports.py.examples[0].note = 'Added by hand.' })

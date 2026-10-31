@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
+import { parseFrontmatter } from '@astrojs/markdown-remark'
 import { Window } from 'happy-dom'
 import { createComponent, renderTemplate } from 'astro/runtime/server/index.js'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -47,6 +48,15 @@ describe('the workspace showcase data source', () => {
     expect(model('ts').sources.find((entry) => entry.product === 'workspace')!.revision).not.toBe(data.ports.ts!.revision)
   })
 
+  it('keeps a pin only while the API model records the revision the pin was chosen against', () => {
+    for (const [port, spec] of Object.entries(SOURCES as Record<string, { revision?: string; modelRevision?: string }>)) {
+      if (!spec.revision) continue
+      // A model that has moved, to the pin or past it, means the pin must be chosen again; the generator refuses it, and so does this.
+      expect(spec.modelRevision, `${port} records what its pin was chosen against`).toBeDefined()
+      expect(model(port).sources.find((entry) => entry.product === 'workspace')!.revision, `${port}: the API model moved since its pin was chosen`).toBe(spec.modelRevision)
+    }
+  })
+
   it('describes exactly the sources the generator is told to read', () => {
     expect(Object.keys(data.ports).sort()).toEqual(Object.keys(SOURCES).sort())
     for (const [port, spec] of Object.entries(SOURCES)) {
@@ -72,10 +82,12 @@ describe('the workspace showcase data source', () => {
     }
   })
 
-  it('keeps the bytes it read: the digest, a JSON that parses and one YAML text per example', () => {
+  it('keeps the bytes it read: the digest, the JSON the YAML converts to and one YAML text per example', () => {
     for (const { port, example } of entries) {
       expect(createHash('sha256').update(example.yaml).digest('hex'), `${port} ${example.topic}`).toBe(example.sha256)
       expect(typeof parsed(example)).toBe('object')
+      // The JSON tab says it is converted from the tested YAML, so it is what converting that YAML gives, not merely JSON.
+      expect(example.json, `${port} ${example.topic}`).toBe(JSON.stringify(parseFrontmatter(`---\n${example.yaml}\n---\n`).frontmatter, null, 2))
       expect(example.yaml.endsWith('\n')).toBe(false)
     }
   })

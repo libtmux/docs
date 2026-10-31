@@ -128,11 +128,17 @@ export function readExample({ checkout, revision, example, tmuxp = {} }) {
 
 /**
  * A pin is for a port whose fixtures are newer than the revision its API model
- * records. It must go once the model has caught up, or the showcase would keep
- * reading older sources than the page cites.
+ * records. It was chosen against one model revision, `generatedAgainst`, and
+ * stands only while the model still records that one: any other means the
+ * model has moved, to the pin or past it, and the pin has to be chosen again
+ * or removed.
  */
-export function assertPinNeeded(port, pin, model, isAncestor) {
+export function assertPinNeeded(port, { pin, generatedAgainst }, model, isAncestor = () => false) {
+  if (!generatedAgainst) throw new Error(`${port}: SOURCES.${port}.revision needs the model revision it was chosen against, as modelRevision`)
   if (pin === model) throw new Error(`${port}: SOURCES.${port}.revision equals the API model's revision; remove the pin`)
+  if (generatedAgainst !== model) {
+    throw new Error(`${port}: the API model moved from ${generatedAgainst} to ${model} since SOURCES.${port}.revision was chosen; choose it again against ${model}, or remove it if the model has caught up`)
+  }
   if (isAncestor(pin, model)) throw new Error(`${port}: SOURCES.${port}.revision ${pin} is older than the API model's ${model}; remove the pin`)
 }
 
@@ -144,7 +150,7 @@ function workspaceSource(port) {
   const pin = SOURCES[port]?.revision
   if (!pin) return { repo: source.repo, revision: source.revision }
   const checkout = findCheckout(port, pin)
-  assertPinNeeded(port, pin, source.revision, (older, newer) => {
+  assertPinNeeded(port, { pin, generatedAgainst: SOURCES[port].modelRevision }, source.revision, (older, newer) => {
     if (!checkout || !hasRevision({ checkout, revision: newer })) return false
     try {
       execFileSync('git', ['-C', checkout, 'merge-base', '--is-ancestor', older, newer], { stdio: 'ignore' })
@@ -253,6 +259,8 @@ export function trustedBlock(block, { repo, revision, examples, support }, diges
   if (block.examples.length !== examples.length || committedInputs(block) !== supportInputs(support)) return false
   return block.examples.every((example, index) => {
     if (shapeOf(example) !== shapeOf(examples[index]) || !spansItsText(example) || example.sha256 !== digest(example.yaml)) return false
+    // The JSON tab says it is converted from the tested YAML, so it must be what that conversion gives.
+    if (example.json !== JSON.stringify(parseConfig(example.yaml), null, 2)) return false
     // An identical claim must still match the committed digest of tmuxp's example.
     return example.tmuxp ? digests[example.tmuxp] === example.sha256 : !Object.values(digests).includes(example.sha256)
   })

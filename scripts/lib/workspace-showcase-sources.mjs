@@ -89,10 +89,12 @@ export const TOPIC_EXAMPLES = {
 /**
  * The revision of libtmux-ts the showcase reads, until the docs' own pin for it
  * is newer. Its API model records an older revision, from before tmuxp's
- * examples became CLI-tested fixtures; the generator refuses this pin once the
- * model's revision has caught up with it.
+ * examples became CLI-tested fixtures, and `TS_MODEL` is that revision. The
+ * generator refuses the pin as soon as the model records any other, since the
+ * pin was chosen against that one and has to be chosen again.
  */
 const TS_PIN = 'afd56d4dfa441b5bab9d9996ebd5b303fc5c4a3a'
+const TS_MODEL = '46cccfef2a546de55ce8b308249b8c76339089a0'
 
 /** A fixture read whole. */
 const file = (path) => ({ path })
@@ -204,7 +206,7 @@ export const SOURCES = {
 
   // These ports ship a workspace manager whose tests give no document that can be quoted.
   // TypeScript is filled in below, from the fixtures its tests load.
-  ts: { revision: TS_PIN, examples: [] },
+  ts: { revision: TS_PIN, modelRevision: TS_MODEL, examples: [] },
   java: { examples: [] },
   swift: { examples: [] },
 
@@ -438,16 +440,16 @@ export const SOURCES = {
         topic: 'skip-send', also: [],
         source: file('tests/fixtures/workspace/tmuxp-v1.74.0-skip-send.yaml'),
         tests: [{
-          path: 'tests/WorkspaceCorpus.Tests.ps1', name: 'skip-send fixture', find: '$enterDeclarations["tmuxp-v1.74.0-skip-send.$format"]', needles: ['tmuxp-v1.74.0-skip-send.'], via: 'cli',
-          checks: 'Runs the workspace cmdlets Import-TmuxWorkspace and Get-TmuxWorkspacePlan on the file and its JSON twin and checks which commands are sent without Enter. Applies nothing.',
+          path: 'tests/WorkspaceCorpus.Tests.ps1', name: 'skip-send fixture', find: '$enterDeclarations["tmuxp-v1.74.0-skip-send.$format"]', needles: ['tmuxp-v1.74.0-skip-send.'], via: 'builder',
+          checks: 'Plans the file and its JSON twin with Get-TmuxWorkspacePlan and checks which commands are sent without Enter. Applies nothing.',
         }],
       },
       {
         topic: 'skip-send-pane-level', also: [],
         source: file('tests/fixtures/workspace/tmuxp-v1.74.0-skip-send-pane-level.yaml'),
         tests: [{
-          path: 'tests/WorkspaceCorpus.Tests.ps1', name: 'skip-send pane-level fixture', find: '$enterDeclarations["tmuxp-v1.74.0-skip-send-pane-level.$format"]', needles: ['tmuxp-v1.74.0-skip-send-pane-level.'], via: 'cli',
-          checks: 'Runs the workspace cmdlets Import-TmuxWorkspace and Get-TmuxWorkspacePlan on the file and its JSON twin and checks which commands are sent without Enter. Applies nothing.',
+          path: 'tests/WorkspaceCorpus.Tests.ps1', name: 'skip-send pane-level fixture', find: '$enterDeclarations["tmuxp-v1.74.0-skip-send-pane-level.$format"]', needles: ['tmuxp-v1.74.0-skip-send-pane-level.'], via: 'builder',
+          checks: 'Plans the file and its JSON twin with Get-TmuxWorkspacePlan and checks which commands are sent without Enter. Applies nothing.',
         }],
       },
     ],

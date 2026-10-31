@@ -3045,8 +3045,8 @@
               "path": "tests/WorkspaceCorpus.Tests.ps1",
               "name": "skip-send fixture",
               "line": 78,
-              "via": "cli",
-              "checks": "Runs the workspace cmdlets Import-TmuxWorkspace and Get-TmuxWorkspacePlan on the file and its JSON twin and checks which commands are sent without Enter. Applies nothing."
+              "via": "builder",
+              "checks": "Plans the file and its JSON twin with Get-TmuxWorkspacePlan and checks which commands are sent without Enter. Applies nothing."
             }
           ]
         },
@@ -3065,8 +3065,8 @@
               "path": "tests/WorkspaceCorpus.Tests.ps1",
               "name": "skip-send pane-level fixture",
               "line": 92,
-              "via": "cli",
-              "checks": "Runs the workspace cmdlets Import-TmuxWorkspace and Get-TmuxWorkspacePlan on the file and its JSON twin and checks which commands are sent without Enter. Applies nothing."
+              "via": "builder",
+              "checks": "Plans the file and its JSON twin with Get-TmuxWorkspacePlan and checks which commands are sent without Enter. Applies nothing."
             }
           ]
         }
