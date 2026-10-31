@@ -259,7 +259,10 @@ export const firstEntry = (b: TreeBucket) => {
 
 const membersCache = new Map<string, Map<string, TreeMember[]>>()
 
-/** Every owner's members, in the same useful-first order as its reference page. */
+/**
+ * Every owner's members, in its reference page's useful-first order, except that an enum lists its variants together
+ * ahead of its other members and a tuple variant lists none.
+ */
 export function membersByType(port: string): Map<string, TreeMember[]> {
   const cached = membersCache.get(port)
   if (cached) return cached
@@ -287,7 +290,11 @@ export function membersByTypeFor(scope: string, model: ApiModelBase): Map<string
   const out = new Map<string, TreeMember[]>()
   const signals = memberSignals(scope, mentions.mentions)
   for (const owner of model.symbols.filter(isMemberOwner)) {
-    const members = membersOf(model, owner, signals).filter((symbol) => !isTuplePayload(owner, symbol))
+    const listed = membersOf(model, owner, signals).filter((symbol) => !isTuplePayload(owner, symbol))
+    // An enum lists its variants together, then its other members; ranking by use interleaves them. A Java constant, a
+    // Swift case and some Rust variants carry no `variant` shape, so a constant counts as one.
+    const variant = (symbol: ApiSymbol) => Boolean(symbol.variant || symbol.kind === 'constant')
+    const members = owner.kind === 'enum' ? [...listed.filter(variant), ...listed.filter((symbol) => !variant(symbol))] : listed
     if (members.length) out.set(owner.publicId ?? owner.id, members.map((symbol) => ({
       id: symbol.id, name: symbol.name, slug: symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id),
     })))
