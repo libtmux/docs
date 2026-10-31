@@ -122,6 +122,29 @@ describe('a doc comment cross-reference', () => {
       .toEqual(Array(2).fill(['tmux command', 'command', 'tmux command: list-panes']))
   })
 
+  describe('a kebab-case word in a code literal', () => {
+    // Members named for the words in each, so a literal split at its hyphens would link them.
+    const members = new SymbolIndex([
+      { ...declare('access.AccessRule.mode'), kind: 'attribute' }, { ...declare('pane.Pane.activity'), kind: 'attribute' }, { ...declare('server.Server.session'), kind: 'method' },
+    ], (symbol) => `/en/rs/latest/reference/${symbol.slug}/`, 'rs')
+
+    it('stays plain code when nothing documents it, though a word in it names a member', async () => {
+      const root = await render('Build with `control-mode` or `unstable-fuzzing`.', undefined, members)
+      expect([...root.querySelectorAll('code.api-literal')].map((code) => [code.textContent, code.querySelectorAll('a').length])).toEqual([['control-mode', 0], ['unstable-fuzzing', 0]])
+    })
+
+    it('does not touch a tmux option or command written the same way: the tmux linker names the whole word first', async () => {
+      const root = await render('Set `monitor-activity`, then run `new-session`.', undefined, members)
+      const links = [...root.querySelectorAll<DomAnchor>('a.tmux-mention')]
+      expect(links.map((link) => [link.textContent, link.dataset.apiKind, link.getAttribute('href')?.startsWith('/tmux/latest/')])).toEqual([
+        ['monitor-activity', 'option', true], ['new-session', 'command', true],
+      ])
+      expect(root.querySelectorAll('a')).toHaveLength(2)
+      // The words of each name no member's: the literal's own parts stay plain, which is the linker's doing and not the tmux link's.
+      expect(members.docSpans('`monitor-activity` and `new-session`').filter((span) => span.kind === 'ref').map((span) => 'parts' in span && span.parts?.some((part) => part.link))).toEqual([false, false])
+    })
+  })
+
   it('is caught when a reference is plain or badged, so the check above can fail', () => {
     const plain = window.document.createElement('div')
     plain.innerHTML = '<a class="api-xref" href="/en/ts/latest/reference/pane-pane/"><code class="api-literal api-literal--link">Pane</code></a>'

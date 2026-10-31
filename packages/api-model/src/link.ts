@@ -140,6 +140,9 @@ export const keywordArgument = /^[A-Za-z_]\w*[?!]?:(?:\s|$)/
 /** A tmux control-mode marker (`%begin`, `%output`, `%session-changed`) names a protocol line, not the member that shares its word. */
 const controlMarker = /^%[\w-]+$/
 
+/** A kebab-case word (`control-mode`, a Cargo feature) is one name: its hyphen is no minus between two members, `control` and `mode`. */
+const kebabName = /^[a-z0-9]+(?:-[a-z0-9]+)+$/
+
 interface TypeSpan {
   text: string
   link?: LinkTarget
@@ -1038,12 +1041,15 @@ export class SymbolIndex {
    *
    * A keyword argument such as `cancel:` or `clients: true` names a parameter
    * of the call being described, not the member elsewhere that shares its
-   * name, so it stays plain code. So does a control-mode marker such as `%end`.
-   * A variable and the text a program prints stay plain too (`neverLinks`), in
-   * `linkType`, which every path calls.
+   * name, so it stays plain code. So does a control-mode marker such as `%end`,
+   * and a kebab-case word such as the feature `control-mode`, which names no
+   * member and was split at its hyphen into one that does. tmux options and
+   * commands written that way are named whole by the tmux linker, before the
+   * parts of a literal are drawn. A variable and the text a program prints stay
+   * plain too (`neverLinks`), in `linkType`, which every path calls.
    */
   linkLiteral(text: string, context?: ApiSymbol): TypeSpan[] {
-    if (keywordArgument.test(text) || controlMarker.test(text)) return [{ text }]
+    if (keywordArgument.test(text) || controlMarker.test(text) || kebabName.test(text)) return [{ text }]
     return this.plainArguments(this.linkPaths(this.linkType(text, context), context))
   }
 
