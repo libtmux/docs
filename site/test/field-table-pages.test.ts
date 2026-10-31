@@ -7,9 +7,9 @@ import { Window } from 'happy-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
 import { createComponent, renderTemplate } from 'astro/runtime/server/index.js'
-import { SymbolIndex } from '@libtmux/api-model'
+import { SymbolIndex, type ApiSymbol } from '@libtmux/api-model'
 import { API_MODELS } from '../src/lib/api-models'
-import { fieldsRepeated, memberTable } from '../src/lib/api-sections'
+import { fieldsRepeated, LONG_CELL_CHARACTERS, memberTable, scalarCellCharacters, scalarCellsAreLong } from '../src/lib/api-sections'
 import { apiComponents } from './api-components'
 import { loadAstroTemplate, withoutScope } from './astro-templates'
 
@@ -121,10 +121,12 @@ function stackingViolations(css: string): string[] {
   const box = rules.find((rule) => rule.selectors.includes('.api-scalar-box'))
   const name = /^(\S+) \/ inline-size$/.exec(box?.declarations.container ?? '')?.[1]
   if (!name) return ['the box that holds the table is not a container the query can measure']
-  const narrow = rules.filter((rule) => rule.container?.startsWith(name))
+  // The stacked layout answers the query for a narrow box; the table's own rules answer the one for a wide box.
+  const narrow = rules.filter((rule) => rule.container?.startsWith(name) && rule.container.includes('max-width'))
   const width = Number(/^\S+ \(max-width: (\d+(?:\.\d+)?)rem\)$/.exec(narrow[0]?.container ?? '')?.[1])
-  // A phone column is about 22rem and a tablet's about 40rem; below the first the table is cut, above the second it fits.
-  if (!(width >= 30 && width <= 48)) found.push(`the table stacks at ${width}rem, not between a phone and a tablet column`)
+  // The stacking width sits between a phone's column, where a table is cut, and a tablet's, where it fits.
+  const between = (rem: number) => rem >= 30 && rem <= 48
+  if (!between(width)) found.push(`the table stacks at ${width}rem, not between a phone and a tablet column`)
   const declared = (selector: string) => Object.assign({}, ...narrow.filter((rule) => rule.selectors.includes(selector)).map((rule) => rule.declarations))
   const cells = declared('.api-scalar-members :is(th, td)')
   for (const selector of ['.api-scalar-members', '.api-scalar-members tbody']) {
@@ -133,12 +135,22 @@ function stackingViolations(css: string): string[] {
   const row = declared('.api-scalar-members tr')
   if (row.display !== 'flex' || row['flex-wrap'] !== 'wrap') found.push('a row does not wrap its name, type and description over lines')
   if (cells['min-width'] !== '0') found.push('a cell keeps the minimum width of the prose rule, so a column is squeezed past its text')
+  const type = declared('.api-scalar-members td:nth-child(2)')
+  if (type.flex !== '1 0 auto' || type['max-width'] !== '100%') found.push('a type is squeezed beside the name instead of taking the line under it')
   if (cells['white-space'] !== 'normal') found.push('a heading cell keeps white-space: nowrap from the prose rule')
   if (cells['overflow-wrap'] !== 'break-word') found.push('a cell breaks inside a word before its line is full')
   if (cells.padding !== '0') found.push('a cell keeps the padding of a column')
   if (!/(^|\s)100%$/.test(declared('.api-scalar-members td:last-child').flex ?? '')) found.push('the description does not take a line of its own')
   // The chips of the second column clone their padding and border onto each wrapped line: 0.2em and 1px of a 13px chip.
   if (!(Number.parseFloat(declared('.api-scalar-members td:nth-child(2)')['padding-inline-end'] ?? '') >= 0.25)) found.push('a wrapped chip overhangs the cell by its end padding and border')
+  // A table whose cells ask for more room stacks in a wider box, with the stacked rules under its own class.
+  const wide = narrow.filter((rule) => rule.selectors.some((selector) => selector.startsWith('.api-scalar-members--long-cells')))
+  const wideDeclared = (selector: string) => Object.assign({}, ...wide.filter((rule) => rule.selectors.includes(selector)).map((rule) => rule.declarations))
+  const wideWidth = Number(/\(max-width: (\d+(?:\.\d+)?)rem\)$/.exec(wide[0]?.container ?? '')?.[1])
+  if (!(wideWidth > width && between(wideWidth))) found.push('a table with long cells does not stack in a wider box than the others')
+  if (wideDeclared('.api-scalar-members--long-cells').display !== 'block' || wideDeclared('.api-scalar-members--long-cells tr').display !== 'flex') {
+    found.push('a table with long cells keeps its columns in the wider box')
+  }
   const head = declared('.api-scalar-members thead')
   if (head.display === 'none' || head.visibility === 'hidden') found.push('the header row leaves assistive technology')
   else if (head.position !== 'absolute' || head.overflow !== 'hidden') found.push('the header row stays on screen')
@@ -146,6 +158,26 @@ function stackingViolations(css: string): string[] {
     found.push('a layered rule loses to the prose table rule it overrides')
   }
   return found
+}
+
+/**
+ * Where the stacked rules of the two widths differ. A table with long cells stacks in a wider box by the same rules under
+ * its own class, written out a second time; the copies must say the same thing.
+ */
+function stackingDrift(css: string): string[] {
+  const blocks = new Map<string, { selectors: string[]; declarations: Record<string, string> }[]>()
+  for (const rule of parseRules(css)) {
+    if (!rule.container?.startsWith('api-scalar-members') || !rule.container.includes('max-width')) continue
+    blocks.set(rule.container, [...blocks.get(rule.container) ?? [], { selectors: rule.selectors, declarations: rule.declarations }])
+  }
+  const [narrow, wide] = [...blocks.values()]
+  if (blocks.size !== 2 || !narrow || !wide) return [`expected two stacked blocks, found ${blocks.size}`]
+  const asNarrow = wide.map((rule) => ({ ...rule, selectors: rule.selectors.map((selector) => selector.replaceAll('.api-scalar-members--long-cells', '.api-scalar-members')) }))
+  return [...new Set([...narrow, ...asNarrow].flatMap((rule) => rule.selectors))].flatMap((selector) => {
+    const one = Object.assign({}, ...narrow.filter((rule) => rule.selectors.includes(selector)).map((rule) => rule.declarations))
+    const other = Object.assign({}, ...asNarrow.filter((rule) => rule.selectors.includes(selector)).map((rule) => rule.declarations))
+    return JSON.stringify(one) === JSON.stringify(other) ? [] : [`${selector}: ${JSON.stringify(one)} against ${JSON.stringify(other)}`]
+  })
 }
 
 describe('the narrow layout of a table of fields', () => {
@@ -164,6 +196,13 @@ describe('the narrow layout of a table of fields', () => {
     expect(stackingViolations(css)).toEqual([])
   })
 
+  it('stacks a table with long cells by the same declarations as the others, so that the two blocks cannot drift', () => {
+    expect(stackingDrift(css)).toEqual([])
+    // The control: a declaration changed in the wider block, or one left out of it, is found.
+    expect(stackingDrift(css.replace('.api-scalar-members--long-cells tr {\n    display: flex;', '.api-scalar-members--long-cells tr {\n    display: block;')).join('\n')).toContain('.api-scalar-members tr')
+    expect(stackingDrift(css.replace('  .api-scalar-members--long-cells td:last-child { flex: 1 0 100%; }\n', '')).join('\n')).toContain('.api-scalar-members td:last-child')
+  })
+
   it('answers the rules it overrides: the prose table keeps a heading on one line and a cell at six rem', () => {
     const rule = (selector: string) => Object.assign({}, ...parseRules(prose).filter((entry) => entry.selectors.includes(selector)).map((entry) => entry.declarations))
     expect(rule('.prose :where(th)')['white-space']).toBe('nowrap')
@@ -177,10 +216,13 @@ describe('the narrow layout of a table of fields', () => {
       expect(css).toContain(box)
       return css.replace(box, '.api-scalar-box { container-type: inline-size; }')
     }, 'not a container'],
-    ['a phone column is outside the query', () => edit('(max-width: 34rem)', '(max-width: 20rem)'), 'not between a phone and a tablet column'],
+    ['a phone column is outside the query', () => edit('(max-width: 36rem)', '(max-width: 20rem)'), 'not between a phone and a tablet column'],
+    ['a long-celled table stacks no wider than the others', () => edit('(max-width: 48rem)', '(max-width: 36rem)'), 'does not stack in a wider box'],
+    ['a long-celled table keeps its rows in the wider box', () => edit('.api-scalar-members--long-cells tr {\n    display: flex;', '.api-scalar-members--long-cells tr {\n    display: table-row;'), 'keeps its columns in the wider box'],
     ['the rows keep their columns', () => edit('.api-scalar-members tbody { display: block; }', '.api-scalar-members tbody { display: table-row-group; }'), 'rows keep their columns'],
     ['a row stops wrapping', () => edit('flex-wrap: wrap;', ''), 'wrap its name'],
     ['a cell keeps the prose minimum width', () => edit('    min-width: 0;\n', ''), 'minimum width'],
+    ['a type is squeezed beside the name', () => edit('flex: 1 0 auto; max-width: 100%;', 'flex: 1 1 8rem;'), 'squeezed beside the name'],
     ['a heading keeps nowrap', () => edit('    white-space: normal;\n', ''), 'nowrap'],
     ['a word breaks early', () => edit('overflow-wrap: break-word;', 'overflow-wrap: anywhere;'), 'inside a word'],
     ['the cell loses its room for a wrapped chip', () => edit(' padding-inline-end: 0.25rem;', ''), 'overhangs the cell'],
@@ -393,4 +435,21 @@ describe('every repeated type name in a C# properties table', () => {
     for (const span of own.querySelectorAll('span.api-punct')) if (span.textContent!.trim() === 'TmuxInterceptor') span.remove()
     expect(missing(row.repeats, texts(own, 'span.api-punct:not(.api-type-repeat)'))).toEqual(['TmuxInterceptor'])
   }, 120_000)
+})
+
+describe('the room the cells of a table ask for', () => {
+  const row = (name: string, type?: string) => ({ id: name, name, type }) as unknown as ApiSymbol
+
+  it('is the longest name and the longest run of a type that cannot break', () => {
+    // A type breaks at its spaces, so `Option<PaneId>,` is the run and the whole payload is not.
+    expect(scalarCellCharacters([row('Id', 'string'), row('ConfigFile', 'map[string]string')], 'fields')).toBe('ConfigFile'.length + 'map[string]string'.length)
+    expect(scalarCellCharacters([row('Pane', '{ pane: Option<PaneId>, text: TmuxText }')], 'fields')).toBe('Pane'.length + 'Option<PaneId>,'.length)
+    expect(scalarCellCharacters([], 'fields')).toBe(0)
+  })
+
+  it('marks a table long past the characters the narrow stacking width serves, and no sooner', () => {
+    const at = (characters: number) => [row('N', 'T'.repeat(characters - 1))]
+    expect(scalarCellsAreLong(at(LONG_CELL_CHARACTERS), 'fields')).toBe(false)
+    expect(scalarCellsAreLong(at(LONG_CELL_CHARACTERS + 1), 'fields')).toBe(true)
+  })
 })
