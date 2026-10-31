@@ -28,6 +28,7 @@ import { API_MODELS, API_NAV, PORT_NAME, indexFor, isMemberOwner, ownersOf, page
 import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
 import { productApiHref } from '../../lib/product-api'
 import { nativeQualifiedName } from '../../lib/native-name'
+import { plainMention } from '../../lib/mention-badge'
 import { symbolSource } from '../../lib/markdown-twins'
 import { localeSourcePath } from '../../i18n/locales'
 import { buildLocale } from '../../i18n/resolve'
@@ -201,6 +202,7 @@ const packageUrl = packageMeta?.registry ?? portMeta?.registry?.url ?? withRoot(
  * index actually has that anchor.
  */
 const declaringType = owner?.parent ? model?.symbols.find((s) => s.id === owner.parent) : undefined
+const declaringMention = declaringType ? plainMention(declaringType.kind, declaringType.name) : undefined
 const ownerModule = owner ? moduleOf(declaringType ?? owner) : undefined
 const moduleAnchors = new Set(model ? modulesIn(model).map((m) => m.name) : [])
 const moduleLabel = ['java', 'kotlin', 'scala', 'go'].includes(port ?? '') ? 'Package'
@@ -728,10 +730,11 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                   </dd>
                 </>
               )}
-              {declaringType && (
+              {declaringType && declaringMention && (
                 <>
                   <dt>Declared in</dt>
-                  <dd><a href={hrefFor(declaringType)}>{declaringType.name}</a></dd>
+                  {/* The owner is named the way prose names it: a code link in its kind's ink, the kind in the tooltip. */}
+                  <dd><a class="api-xref api-mention api-doc-link" href={hrefFor(declaringType)} title={declaringMention.title} data-api-kind={declaringMention.dataApiKind} aria-label={declaringMention.ariaLabel}><code class="api-literal api-literal--link">{declaringType.name}</code></a></dd>
                 </>
               )}
               {ownerPackage && (

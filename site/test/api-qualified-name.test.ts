@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { readFileSync, realpathSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
@@ -6,6 +6,10 @@ import { experimental_AstroContainer } from 'astro/container'
 import { Window, type HTMLButtonElement } from 'happy-dom'
 import ts from 'typescript'
 import { abbreviateNamespace, splitQualifiedName } from '../src/lib/api-labels'
+import { API_MODELS } from '../src/lib/api-models'
+import { loadAstroTemplate, renderAstroTemplate, withoutScope } from './astro-templates'
+
+vi.mock('astro:content', () => ({ getCollection: async () => [] }))
 
 const windows: Window[] = []
 const sourceUrl = new URL('../src/components/api/ApiQualifiedName.astro', import.meta.url)
@@ -164,6 +168,45 @@ describe('a qualified name as a path to one declaration', () => {
     const win = await render({ name: 'Server', kind: 'class' })
     expect(win.document.querySelector('.api-qualified-name__path')).toBeNull()
     expect(win.document.querySelector('.api-qualified-name__leaf')?.textContent).toBe('Server')
+  })
+})
+
+describe('the rows of the source and package disclosure', () => {
+  const model = API_MODELS.rs
+  const options = {
+    real: ['components/api/ApiType.astro', 'components/api/SymbolName.astro', 'components/api/ApiBadge.astro', 'components/api/ApiQualifiedName.astro'],
+    modules: {
+      'astro-expressive-code/components': { Code: () => '' },
+      '../../lib/page-ports-for': { pagePortsFor: async () => [] },
+      '../../lib/sidebar': { pageBreadcrumbs: async () => [] },
+    },
+  }
+
+  /** The real `ApiReference` page of one Rust member, with its shell stubbed. */
+  async function page(id: string) {
+    const template = await loadAstroTemplate('components/api/ApiReference.astro', options)
+    const win = new Window()
+    windows.push(win)
+    win.document.body.innerHTML = withoutScope(await renderAstroTemplate(template, { props: { model, owner: model.symbols.find((symbol) => symbol.id === id)! } }))
+    return win.document
+  }
+  /** The `dd` that follows the `dt` with this label. */
+  const row = (document: Awaited<ReturnType<typeof page>>, label: string) =>
+    [...document.querySelectorAll('.api-source-details dt')].find((term) => term.textContent === label)?.nextElementSibling
+
+  it('names the declaring type as a code link in the type\'s own ink, like a link in prose', async () => {
+    const link = row(await page('pane.Pane.send_keys'), 'Declared in')!.querySelector('a')!
+    expect(link.textContent).toBe('Pane')
+    expect(link.matches('.api-xref.api-mention.api-doc-link')).toBe(true)
+    expect([link.getAttribute('data-api-kind'), link.getAttribute('title'), link.getAttribute('aria-label')]).toEqual(['struct', 'struct', 'struct: Pane'])
+    expect(link.getAttribute('href')).toMatch(/\/reference\/pane-pane\/$/)
+    expect(link.querySelector(':scope > code.api-literal.api-literal--link')?.textContent).toBe('Pane')
+  })
+
+  it('draws the qualified name with its path quiet and the method in the method ink', async () => {
+    const name = row(await page('pane.Pane.send_keys'), 'Qualified name')!
+    expect(name.querySelector('.api-qualified-name__path')?.textContent).toBe('libtmux::pane::Pane::')
+    expect([name.querySelector('.api-qualified-name__leaf')?.textContent, name.querySelector('.api-qualified-name__leaf')?.getAttribute('data-api-kind')]).toEqual(['send_keys', 'method'])
   })
 })
 
