@@ -1150,7 +1150,7 @@ html[data-api-sections-measured] .api-section-links {
 
 a.api-doc-link[data-api-kind]:not(.api-mention--chip),
 a.api-doc-link[data-api-kind][data-link-preview]:not(.api-badge):not(.api-mention--chip) {
-  color: var(--api-kind-ink);
+  color: var(--api-kind-text, var(--api-kind-ink));
   text-decoration-line: underline;
   text-decoration-style: dotted;
   text-decoration-color: color-mix(in srgb, currentColor 70%, transparent);
@@ -1248,3 +1248,30 @@ a.api-doc-link[data-api-kind]:not(.api-mention--chip):hover { text-decoration-st
 }
 .api-prose-table th { font-weight: 600; border-bottom-width: 2px; }
 .api-prose-table tbody tr:last-child > td { border-bottom: 0; }
+
+/* Another link to the member being pointed at (see cross-highlight.ts). */
+a.api-doc-link.is-cross-lit:not(.api-mention--chip) { --api-kind-text: var(--api-kind-ink-lit); }
+/* The tint sits on the code box inside the link: the link's own inline box is taller and starts higher than the text. */
+a.api-doc-link.is-cross-lit:not(.api-mention--chip) .api-literal--link {
+  background: color-mix(in srgb, var(--api-kind-ink, var(--color-link)) 18%, transparent);
+  border-radius: .2em;
+  box-shadow: 0 0 0 .15em color-mix(in srgb, var(--api-kind-ink, var(--color-link)) 18%, transparent);
+}
+/* A link with no code inside, such as a tmux command named in words, takes the tint itself. */
+a.api-doc-link.is-cross-lit:not(.api-mention--chip):not(:has(.api-literal--link)) {
+  background: color-mix(in srgb, var(--api-kind-ink, var(--color-link)) 18%, transparent);
+  border-radius: .2em;
+  box-shadow: 0 0 0 .15em color-mix(in srgb, var(--api-kind-ink, var(--color-link)) 18%, transparent);
+}
+.api-directory a.api-mention--chip.is-cross-lit .api-literal--link {
+  border-color: var(--api-kind-ink, var(--color-link));
+  color: var(--api-kind-ink-lit, var(--color-link));
+  background: color-mix(in srgb, var(--api-kind-ink, var(--color-link)) 14%, var(--color-inline-code-background));
+}
+.api-nav__row.is-cross-lit, a.api-member-link.is-cross-lit {
+  background: color-mix(in srgb, var(--color-link) 10%, transparent);
+  box-shadow: inset 2px 0 0 var(--color-link);
+}
+@media (forced-colors: active) {
+  .is-cross-lit { outline: 2px solid Highlight; }
+}

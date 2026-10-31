@@ -83,28 +83,57 @@ describe('kind palette contrast', () => {
       const text = deepened ? mix(ink, litShare, brandColour('foreground-primary', true)[mode]) : ink
       return { text, background: mix(ink, percent, surfaceColour) }
     }
-    const chipHoverRule = '.api-directory a.api-mention--chip:focus-visible .api-literal--link'
-    const chipHover = tintOf(chipHoverRule)
+    /** The states that tint a name, with the rule that paints each and the surfaces it can sit on. */
+    const PROSE = 'a.api-doc-link.is-cross-lit:not(.api-mention--chip)'
+    const STATES: { state: string; rule: string; textRule?: string; text: RegExp; surfaces: string[] }[] = [
+      { state: 'a hovered chip', rule: '.api-directory a.api-mention--chip:focus-visible .api-literal--link', text: /\bcolor:\s*var\(--api-kind-ink-lit/, surfaces: ['inline-code-background'] },
+      { state: 'a cross-lit chip', rule: '.api-directory a.api-mention--chip.is-cross-lit .api-literal--link', text: /\bcolor:\s*var\(--api-kind-ink-lit/, surfaces: ['inline-code-background'] },
+      // The tint sits on the code box inside the link; the deeper text is set on the link, which the code box inherits.
+      { state: 'a cross-lit name in prose', rule: `${PROSE} .api-literal--link`, textRule: `${PROSE} {`, text: /--api-kind-text:\s*var\(--api-kind-ink-lit\)/, surfaces: ['background-primary', 'background-secondary'] },
+      { state: 'a cross-lit name in prose with no code inside', rule: `${PROSE}:not(:has(.api-literal--link))`, textRule: `${PROSE} {`, text: /--api-kind-text:\s*var\(--api-kind-ink-lit\)/, surfaces: ['background-primary', 'background-secondary'] },
+    ]
+    /** The families whose ink misses 4.5:1 in light on a state's surfaces, deepened or as the resting ink. */
+    const failing = (rule: string, surfaces: string[], deepened: boolean) => FAMILIES.filter((family) => surfaces.some((name) => {
+      const { text, background } = lit('light', family, tintOf(rule), brandColour(name).light, deepened)
+      return ratio(text, background) < 4.5
+    }))
 
     it('reads the tints from the stylesheet, so a renamed rule fails here and is not skipped', () => {
-      expect([litShare, chipHover].every(Number.isFinite)).toBe(true)
-      // The check below measures the deepened ink, so the rule must paint it.
-      expect(ruleOf(chipHoverRule)).toMatch(/\bcolor:\s*var\(--api-kind-ink-lit/)
-    })
-
-    it.each(FAMILIES)('the %s ink clears 4.5:1 on a hovered chip in light and dark', (family) => {
-      for (const mode of ['light', 'dark'] as const) {
-        const { text, background } = lit(mode, family, chipHover, brandColour('inline-code-background')[mode])
-        expect(ratio(text, background), `${mode} ${family}`).toBeGreaterThanOrEqual(4.5)
+      expect(Number.isFinite(litShare)).toBe(true)
+      for (const { rule, textRule, text } of STATES) {
+        expect(Number.isFinite(tintOf(rule)), rule).toBe(true)
+        // The check below measures the deepened ink, so the rule must paint it.
+        expect(ruleOf(textRule ?? rule), rule).toMatch(text)
       }
     })
 
-    it('would not, with the ink undeepened on its tint, so the check above can fail', () => {
-      const failing = FAMILIES.filter((family) => {
-        const { text, background } = lit('light', family, chipHover, brandColour('inline-code-background').light, false)
-        return ratio(text, background) < 4.5
+    describe.each(STATES)('$state', ({ rule, surfaces }) => {
+      it.each(FAMILIES)('the %s ink clears 4.5:1 in light and dark', (family) => {
+        for (const mode of ['light', 'dark'] as const) for (const name of surfaces) {
+          const { text, background } = lit(mode, family, tintOf(rule), brandColour(name)[mode])
+          expect(ratio(text, background), `${mode} ${family} on ${name}`).toBeGreaterThanOrEqual(4.5)
+        }
       })
-      expect(failing).toEqual(['members', 'tools'])
+
+      it('would not, with the ink undeepened on its tint, so the check above can fail', () => {
+        expect(failing(rule, surfaces, false)).toEqual(expect.arrayContaining(['members', 'tools']))
+        expect(failing(rule, surfaces, true)).toEqual([])
+      })
+    })
+
+    it('keeps the link colour of a lit member row or sidebar row at 4.5:1 on its tint, in every brand and mode', () => {
+      const percent = Number(/background:\s*color-mix\(in srgb,\s*var\(--color-link\)\s+(\d+)%/.exec(ruleOf('.api-nav__row.is-cross-lit'))?.[1])
+      expect(Number.isFinite(percent)).toBe(true)
+      const blocks = [...brand.matchAll(/(html\[[^{}]*)\{([^{}]*)\}/g)]
+        .map(([, selector, body]) => ({ selector: selector!.trim(), colours: Object.fromEntries([...body!.matchAll(/(--[\w-]+):\s*(#[0-9a-f]{6})/gi)].map(([, name, value]) => [name, value!.toLowerCase()])) as Record<string, string> }))
+        .filter(({ colours }) => colours['--color-link'])
+      expect(blocks.length).toBeGreaterThan(0)
+      const failures = (share: number) => blocks.flatMap(({ selector, colours }) => ['--color-background-primary', '--color-background-secondary']
+        .filter((surfaceName) => ratio(colours['--color-link']!, mix(colours['--color-link']!, share, colours[surfaceName]!)) < 4.5)
+        .map((surfaceName) => `${selector} ${surfaceName}`))
+      expect(failures(percent)).toEqual([])
+      // Control: a 14% tint, which the Rust palette fails in light mode, is caught.
+      expect(failures(14).some((entry) => entry.includes('data-brand="rust"'))).toBe(true)
     })
   })
 
