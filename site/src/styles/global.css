@@ -705,6 +705,23 @@ html[data-theme="purple"][data-theme-mode="dark"] {
 }
 
 /*
+ * An image in a line of text stays in the line. Preflight makes every image a
+ * block, which stacks the badges a README puts in one paragraph, and the
+ * typography margin would grow the line around each. A paragraph that holds
+ * one image, or one linked image, a figure and anything in `.not-prose` keep
+ * both, wherever they sit, in a loose list item or a cell. A selector cannot
+ * see the text around an image, so a paragraph of text and one image is one of
+ * them. In `utilities`, where the typography plugin's own image margin lives.
+ */
+@layer utilities {
+  .prose :where(p, li, td, th) img:not(:where(.not-prose, .not-prose *, figure *, p:has(> img:only-child, > a:only-child > img:only-child) *)) {
+    display: inline;
+    margin-block: 0;
+    vertical-align: middle;
+  }
+}
+
+/*
  * Key caps. The manual and the guides mark tmux keys as <kbd>; a key sequence
  * is an outer <kbd> around one cap per key, so only the inner caps are drawn.
  * Both tokens switch with the colour scheme, so neither mode needs its own rule.
