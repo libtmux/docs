@@ -79,6 +79,8 @@ describe('a path in plain Rust code', () => {
   it('resolves a crate path and a path on the current type the way the bracketed form does', () => {
     expect(refs('`crate::server::Server::kill`')).toMatchObject([{ target: 'server.Server.kill', label: 'crate::server::Server::kill' }])
     expect(refs('`Self::kill`')).toMatchObject([{ target: '.kill', label: 'Self::kill' }])
+    // A path may climb more than one module, which a signature's `linkType` strips with the same pattern.
+    expect(refs('`super::super::server::Server::kill`')).toMatchObject([{ target: 'server.Server.kill', label: 'super::super::server::Server::kill' }])
   })
 
   it('leaves a call, an expression and a bare name as written', () => {
@@ -148,5 +150,28 @@ describe('a literal that names a call or a path', () => {
 
   it('leaves a path whose prefixes name nothing plain', () => {
     expect(shape('nothing::from(value)')).toBe('nothing::from(value)')
+  })
+
+  describe('a kebab-case word', () => {
+    const named = new SymbolIndex([...symbols, field('access.AccessRule.mode', 'attribute'), field('pane.Pane.activity', 'attribute'), field('server.Server.session', 'method')], href, 'rs')
+
+    it('is one name, though a word in it names a member: `control-mode` is a Cargo feature, not `control` minus `mode`', () => {
+      expect(shape('mode', named)).toBe('[mode]')
+      for (const word of ['control-mode', 'unstable-fuzzing', 'monitor-activity', 'new-session', 'a-b-c', 'v2-mode', 'mode-2']) expect(shape(word, named), word).toBe(word)
+      expect(named.linkLiteral('control-mode')).toEqual([{ text: 'control-mode' }])
+    })
+
+    // Each still links the member its `mode` names: only a lowercase word joined by single hyphens is one name.
+    it.each(['Control-mode', 'control-mode()', '--control-mode', '-mode', 'mode-', 'control--mode', 'control-mode value'])('leaves %s to the linker', (text) => {
+      expect(shape(text, named)).toContain('[mode]')
+      expect(named.linkLiteral(text).map((span) => span.text).join('')).toBe(text)
+    })
+
+    it('keeps a capitalised PowerShell cmdlet a link, and the words of a lowercase one plain', () => {
+      const cmdlets = new SymbolIndex([field('LibTmux.Get-TmuxServer', 'function'), field('LibTmux.Server', 'class')], href, 'powershell')
+      expect(shape('Get-TmuxServer', cmdlets)).toBe('[Get-TmuxServer]')
+      expect(shape('Get-TmuxServer -Name', cmdlets)).toBe('[Get-TmuxServer] -Name')
+      expect(shape('get-tmuxserver', cmdlets)).toBe('get-tmuxserver')
+    })
   })
 })

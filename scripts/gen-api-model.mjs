@@ -28,6 +28,7 @@ import { attachCompleteCxxExamples } from '../packages/api-model/src/languages/c
 import { attachCompleteJvmExamples } from '../packages/api-model/src/languages/jvm-examples.ts'
 import { attachCompleteSwiftExamples } from '../packages/api-model/src/languages/swift-examples.ts'
 import { mapLine, parseHunks } from '../packages/api-model/src/source-lines.ts'
+import { cargoFeatureNames } from './lib/cargo-features.mjs'
 import { extractProject } from '../packages/api-model/src/project.ts'
 import { scopeProductSymbols } from '../packages/api-model/src/product-exports.ts'
 import { inheritProductFromOwners } from '../packages/api-model/src/products.ts'
@@ -76,13 +77,23 @@ function git(repo, ...args) {
   }
 }
 
+/** The directory under `crates/` that holds a Rust product's manifest. */
+const rustCrate = (product) => product === 'core' ? 'libtmux' : product === 'workspace' ? 'tmux-workspace' : 'tmux-mcp'
+
+/** The Cargo features a crate declares at the revision the model is extracted from, not in the working tree. */
+function rustFeatures(checkout, revision, product) {
+  return cargoFeatureNames(execFileSync('git', ['-C', checkout, 'show', `${revision}:crates/${rustCrate(product)}/Cargo.toml`], {
+    encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'inherit'],
+  }))
+}
+
 /** Read package versions from their owning manifest, independent of docs URL labels. */
 function packageVersion(checkout, port, product) {
   const read = (file) => existsSync(join(checkout, file)) ? readFileSync(join(checkout, file), 'utf8') : ''
   if (port === 'py') return /^version\s*=\s*"([^"]+)"/m.exec(read('pyproject.toml'))?.[1]
   if (port === 'ts') return JSON.parse(read(`packages/${product === 'core' ? 'libtmux' : product}/package.json`)).version
   if (port === 'rs') {
-    const crate = product === 'core' ? 'libtmux' : product === 'workspace' ? 'tmux-workspace' : 'tmux-mcp'
+    const crate = rustCrate(product)
     return /^version\s*=\s*"([^"]+)"/m.exec(read(`crates/${crate}/Cargo.toml`))?.[1]
       ?? /^version\s*=\s*"([^"]+)"/m.exec(read('Cargo.toml'))?.[1]
   }
@@ -832,6 +843,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
         product, package: unit.package ?? packages[port]?.[product] ?? portBySlug[port].packageName,
         repo: unit.repo, revision: unit.revision, extractedRevision: unit.head,
         version: packageVersion(unit.checkout, port, product),
+        ...(port === 'rs' ? { features: rustFeatures(unit.checkout, unit.head, product) } : {}),
       })
     }
   }

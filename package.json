@@ -30,6 +30,7 @@
     "mdast-util-from-markdown": "2.1.0",
     "mdast-util-to-markdown": "2.2.0",
     "oxlint": "catalog:",
+    "smol-toml": "1.9.1",
     "typescript": "catalog:"
   }
 }

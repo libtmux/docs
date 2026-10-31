@@ -122,6 +122,9 @@ const INTRA_DOC_TICK_RE = /\[`([A-Za-z_]\w*)`\](?![(:])/g
  */
 const RUST_CODE_PATH_RE = /^(?:[A-Za-z_]\w*::)+[A-Za-z_]\w*$/
 
+/** `crate::`, `self::` and `super::`, however many, start a path inside the crate. */
+export const RUST_CRATE_PREFIX = /^(?:(?:crate|self|super)::)+/
+
 /**
  * `crate::`, `self::` and `super::` address the crate, not the item.
  *
@@ -129,7 +132,7 @@ const RUST_CODE_PATH_RE = /^(?:[A-Za-z_]\w*::)+[A-Za-z_]\w*$/
  * leading dot the same way it reads javadoc's `#`.
  */
 function rustTarget(path: string): string {
-  const inner = path.replace(/^(?:crate|self|super)::/, '')
+  const inner = path.replace(RUST_CRATE_PREFIX, '')
   if (inner.startsWith('Self::')) return `.${inner.slice(6).replace(/::/g, '.')}`
   return inner.replace(/::/g, '.')
 }

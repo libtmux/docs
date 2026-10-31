@@ -1,6 +1,7 @@
-import { tokenizeDoc, type DocSpan } from './doc/roles.ts'
+import { RUST_CRATE_PREFIX, tokenizeDoc, type DocSpan } from './doc/roles.ts'
 import { symbolEntries, type InventoryEntry } from './inventory.ts'
-import type { ApiSymbol, Signature, SymbolKind, TypeParameter } from './model.ts'
+import type { ApiProduct, ApiSource, ApiSymbol, Signature, SymbolKind, TypeParameter } from './model.ts'
+import { cargoFeatureHref, documentedFeature } from './cargo-features.ts'
 import { builtinHref, CURATED_BEFORE_INVENTORY, ELIXIR_STDLIB_MODULES, elixirStdlibHref, NOT_THE_JDKS } from './builtins.ts'
 import { neverLinks } from './never-links.ts'
 import { qualifiedNameOf } from './modules.ts'
@@ -138,6 +139,9 @@ export const keywordArgument = /^[A-Za-z_]\w*[?!]?:(?:\s|$)/
 
 /** A tmux control-mode marker (`%begin`, `%output`, `%session-changed`) names a protocol line, not the member that shares its word. */
 const controlMarker = /^%[\w-]+$/
+
+/** A kebab-case word (`control-mode`, a Cargo feature) is one name: its hyphen is no minus between two members, `control` and `mode`. */
+const kebabName = /^[a-z0-9]+(?:-[a-z0-9]+)+$/
 
 interface TypeSpan {
   text: string
@@ -419,6 +423,30 @@ export class SymbolIndex {
     // page, and CPython's `search` is its search page, not a function of that name.
     for (const entry of symbolEntries(entries)) if (!byName.has(entry.name)) byName.set(entry.name, entry)
     this.external.push({ baseUrl: baseUrl.replace(/\/*$/, '/'), byName, langs, project })
+  }
+
+  /** A Rust product's crate, the Cargo features it documents and the crate version docs.rs shows for it. */
+  private readonly cargoCrates = new Map<ApiProduct, { crate: string; features: ReadonlySet<string>; version: string }>()
+
+  /**
+   * The Cargo features each product's crate declares, so `feature = "…"` in an attribute links to docs.rs only
+   * when the crate has that feature. `versionOf` names the crate version docs.rs should show for a source, or
+   * `latest`: the crates of one repository carry their own versions.
+   */
+  addCargoFeatures(sources: readonly ApiSource[], versionOf: (source: ApiSource) => string): void {
+    for (const source of sources) {
+      if (source.features) this.cargoCrates.set(source.product, { crate: source.package, features: new Set(source.features), version: versionOf(source) })
+    }
+  }
+
+  /**
+   * The docs.rs page of a feature of the crate that `context` is written in, or nothing when the crate has no such
+   * feature. A private feature, with a leading underscore, has no anchor on that page, so no list can make it link.
+   */
+  cargoFeature(feature: string, context: ApiSymbol): LinkTarget | undefined {
+    const declared = this.cargoCrates.get(context.product ?? 'core')
+    if (!declared?.features.has(feature) || !documentedFeature(feature)) return undefined
+    return { href: cargoFeatureHref(declared.crate, feature, declared.version), external: true, project: 'docs.rs features' }
   }
 
   private pick(
@@ -1013,12 +1041,15 @@ export class SymbolIndex {
    *
    * A keyword argument such as `cancel:` or `clients: true` names a parameter
    * of the call being described, not the member elsewhere that shares its
-   * name, so it stays plain code. So does a control-mode marker such as `%end`.
-   * A variable and the text a program prints stay plain too (`neverLinks`), in
-   * `linkType`, which every path calls.
+   * name, so it stays plain code. So does a control-mode marker such as `%end`,
+   * and a kebab-case word such as the feature `control-mode`, which names no
+   * member and was split at its hyphen into one that does. tmux options and
+   * commands written that way are named whole by the tmux linker, before the
+   * parts of a literal are drawn. A variable and the text a program prints stay
+   * plain too (`neverLinks`), in `linkType`, which every path calls.
    */
   linkLiteral(text: string, context?: ApiSymbol): TypeSpan[] {
-    if (keywordArgument.test(text) || controlMarker.test(text)) return [{ text }]
+    if (keywordArgument.test(text) || controlMarker.test(text) || kebabName.test(text)) return [{ text }]
     return this.plainArguments(this.linkPaths(this.linkType(text, context), context))
   }
 
@@ -1304,11 +1335,13 @@ export class SymbolIndex {
         out.push({ text: ident, declaration: true })
         continue
       }
+      // A crate-relative path is looked up as the model spells it, without the prefix and with `.` between segments.
+      const path = this.lang === 'rs' && RUST_CRATE_PREFIX.test(ident) ? ident.replace(RUST_CRATE_PREFIX, '').replaceAll('::', '.') : ident
       // The model first, then the language's own documentation. Most of what
       // renders unlinked in a signature is a builtin — `bool`, `Task`,
       // `Result`, `string` — which nothing here defines and no intersphinx
       // inventory covers for five of the eight ports.
-      const link = this.resolveSymbol(ident, 'class', context)
+      const link = this.resolveSymbol(path, 'class', context)
       if (link || !['kotlin', 'scala'].includes(this.lang ?? '') || !ident.includes('.')) {
         out.push({ text: ident, link })
         continue

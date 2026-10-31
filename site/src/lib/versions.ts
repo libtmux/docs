@@ -303,6 +303,26 @@ export function buildTarget(env: Record<string, string | undefined>) {
 }
 
 /**
+ * The package version a registry page should show for a docs build.
+ *
+ * A release build documents the version its own package declares: one repository publishes several packages with
+ * versions of their own, so the docs slug names none of them. `next` resolves to the newest prerelease tag, and
+ * its version is named only once the registry carries it, since a port tags before it publishes. Every other build,
+ * `latest`, a maintenance branch or a pull request, shows the registry's newest.
+ */
+export function registryVersion(
+  build: { version: string; kind: VersionKind },
+  declared: string | undefined,
+  published: readonly string[],
+  port: { tagGrammar: TagGrammar; tagPrefix?: string },
+): string {
+  if (!declared) return 'latest'
+  if (build.kind === 'tag') return declared
+  const carried = published.length > 0 && newestPublishedTag([`${port.tagPrefix ?? ''}v${declared}`], port, published) !== null
+  return build.version === 'next' && carried ? declared : 'latest'
+}
+
+/**
  * The version prefix another port's page lives under.
  *
  * A link that crosses ports — the concept map's equivalents, the prose

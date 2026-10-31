@@ -162,6 +162,24 @@ it('tints a link to a declaration by its kind, without the code frame that plain
   }
 })
 
+it('tints a name linked inside a code literal by its kind, inside the literal\'s own frame', () => {
+  win.document.body.innerHTML = `<p>
+    <code id="call" class="api-literal"><a id="type" class="api-xref api-literal--link api-mention api-doc-link" href="../text/" data-api-kind="struct">TmuxText</a>::from(value)</code>
+    <code id="std" class="api-literal"><a id="std-link" class="api-xref api-literal--link" href="https://doc.rust-lang.org/std/option/enum.Option.html">Option</a></code></p>`
+  markPreviews()
+  const root = win.getComputedStyle(win.document.documentElement)
+  const type = win.getComputedStyle(win.document.getElementById('type')!)
+  expect(type.getPropertyValue('--api-kind-ink')).toBe(root.getPropertyValue('--mark-types-ink'))
+  expect(type.color).toBe(root.getPropertyValue('--mark-types-ink'))
+  expect(type.textDecorationStyle).toBe('dotted')
+  // The literal around it keeps its frame; a link outside the site keeps the link colour.
+  for (const id of ['call', 'std']) {
+    const frame = win.getComputedStyle(win.document.getElementById(id)!)
+    expect([frame.borderTopStyle, frame.backgroundColor], id).toEqual(['solid', '#f3f5f7'])
+  }
+  expect(win.getComputedStyle(win.document.getElementById('std-link')!).color).toBe('#6f1a24')
+})
+
 async function docComponent() {
   const { transform } = await import(astroRequire.resolve('@astrojs/compiler-rs'))
   const file = new URL('../src/components/api/ApiDoc.astro', import.meta.url)

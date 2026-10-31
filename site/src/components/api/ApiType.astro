@@ -60,7 +60,7 @@ const isOperator = (text: string) => /^(->|=>|<:|:>)$/.test(text)
     ) : span.link ? (
       <a
         href={span.link.href}
-        class:list={['api-type-link', span.link.typeParameter ? 'api-type-parameter-name' : span.declaration && 'api-parameter-name', chip && 'api-literal api-literal--link', span.enclosingContext && 'api-signature-context']}
+        class:list={['api-type-link', span.link.typeParameter ? 'api-type-parameter-name' : span.declaration && 'api-parameter-name', span.role && `api-${span.role}`, chip && 'api-literal api-literal--link', span.enclosingContext && 'api-signature-context']}
         rel={span.link.external ? 'nofollow noopener' : undefined}
         title={span.link.external ? `${span.text} (${span.link.project ?? "external"})` : span.link.symbol ? qualifiedNameOf(span.link.symbol)
           : span.link.typeParameter ? `${span.link.typeParameter.parameter.name}, a type parameter of ${qualifiedNameOf(span.link.typeParameter.owner)}` : undefined}
@@ -68,7 +68,7 @@ const isOperator = (text: string) => /^(->|=>|<:|:>)$/.test(text)
       ><SymbolName name={span.text} /></a>
     ) : span.help ? <ApiKeyword text={span.text} help={span.help} /> : (
       <span class:list={[
-        span.declaration || span.keyword ? 'api-type-label' : 'api-punct',
+        span.role ? `api-${span.role}` : span.declaration || span.keyword ? 'api-type-label' : 'api-punct',
         span.keyword && 'api-keyword',
         span.declaration && (isDeclarationName(span) ? 'api-declaration-name' : 'api-parameter-name'),
         span.enclosingContext && 'api-signature-context',

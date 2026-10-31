@@ -425,3 +425,34 @@ pub trait Poller<T: Clone = String> { fn required(&self, value: T); }`)
       .toMatchObject({ parent: 'options.OptionScope', kind: 'constant' })
   })
 })
+
+describe('Rust crate-relative paths in a signature', () => {
+  const source = `pub struct ControlLimits; pub struct PaneOutput; pub struct Pane;
+    impl Pane {
+      pub fn stream(&self, limits: crate::ControlLimits) -> crate::query::PaneOutput {}
+      pub fn nested(&self, limits: self::ControlLimits) -> super::query::PaneOutput {}
+      pub fn external(&self, output: std::io::Result<()>, other: crate::missing::Gone) {}
+    }`
+
+  async function linked(name: string) {
+    const symbols = await extract(source)
+    const method = symbols.find((symbol) => symbol.id === `query.Pane.${name}`)!
+    const index = new SymbolIndex(symbols, (symbol) => `/reference/${pageSlug(symbol.id)}/`, 'rs')
+    const spans = index.linkType(method.signatures[0].raw!, method, method.signatures[0])
+    return { method, spans, id: (text: string) => spans.find((span) => span.text === text)?.link?.symbol?.id }
+  }
+
+  it.each(['stream', 'nested'])('links `crate::`, `self::` and `super::` paths in %s, and shows them as written', async (name) => {
+    const { method, spans, id } = await linked(name)
+    expect(spans.map((span) => span.text).join('')).toBe(method.signatures[0].raw)
+    const prefix = name === 'stream' ? ['crate::ControlLimits', 'crate::query::PaneOutput'] : ['self::ControlLimits', 'super::query::PaneOutput']
+    expect(id(prefix[0])).toBe('query.ControlLimits')
+    expect(id(prefix[1])).toBe('query.PaneOutput')
+  })
+
+  it('leaves a std path and a crate path that names nothing unlinked', async () => {
+    const { id } = await linked('external')
+    expect(id('std::io::Result')).toBeUndefined()
+    expect(id('crate::missing::Gone')).toBeUndefined()
+  })
+})

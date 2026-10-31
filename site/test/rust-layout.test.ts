@@ -1,9 +1,14 @@
 import { readFileSync } from 'node:fs'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { parserFor, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { apiSignatureLayouts, CODE_COLUMNS, codeWidthFailures, signatureSpans } from '../src/lib/code-layout'
+import { experimental_AstroContainer } from 'astro/container'
+import { Window } from 'happy-dom'
 import { apiEntryFields, usesNativeSignatures } from '../src/lib/api-sections'
+import { API_MODELS, createApiIndex } from '../src/lib/api-models'
+import registry from '../src/data/registry.json'
+import { apiComponents } from './api-components'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
 import { extractSourceWithSpec } from '../../packages/api-model/src/languages/spec'
 import { RUST } from '../../packages/api-model/src/languages/specs'
@@ -37,7 +42,11 @@ describe('Rust callable layouts', () => {
     expect(spans.filter((span) => span.declarationName).map((span) => span.text)).toEqual(['new'])
     expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => span.link!.href))
       .toEqual(['#command.Command.new.parameter.subcommand'])
-    expect(spans.find((span) => span.text.startsWith('#[must_use'))).toMatchObject({ nonReference: true })
+    // The attribute is its punctuation, its path and its string, none of them a reference.
+    expect(spans.filter((span) => span.role).map((span) => [span.text, span.role, span.nonReference])).toEqual([
+      ['#[', 'delimiter', true], ['must_use', 'attribute', true], ['=', 'delimiter', true],
+      ['"a command has no effect until it is dispatched"', 'string', true], [']', 'delimiter', true],
+    ])
     const markdown = await symbolMarkdownWithLayout({ model, symbol, index })
     const code = fromMarkdown(markdown).children.find((node) => node.type === 'code')
     expect(code?.type === 'code' && code.value).toBe(layout.text)
@@ -153,6 +162,202 @@ describe('Rust callable layouts', () => {
 })
 
 const extract = (source: string) => extractSourceWithSpec(RUST, source, 'probe.rs', 'probe')
+
+describe('Rust attributes in a signature', () => {
+  const roles = (spans: ReturnType<typeof signatureSpans>) => spans.filter((span) => span.role).map((span) => [span.text, span.role])
+  const spansOf = async (raw: string, declared: ApiSymbol[] = [], params: Signature['params'] = []) => {
+    const symbol = method(raw, params)
+    const layout = await layoutFor(symbol)
+    const index = new SymbolIndex([symbol, ...declared], (entry) => `/${entry.id}/`, 'rs')
+    return { symbol, layout, spans: signatureSpans(layout, index, symbol, symbol.signatures[0]!), index }
+  }
+
+  it('reads `#[must_use]` as punctuation around an attribute', async () => {
+    const { layout, spans } = await spansOf('#[must_use]\npub fn method()')
+    expect(roles(spans)).toEqual([['#[', 'delimiter'], ['must_use', 'attribute'], [']', 'delimiter']])
+    expect(spans.map((span) => span.text).join('')).toBe(layout.text)
+  })
+
+  it('reads a cfg predicate as an attribute, a quiet name and operator, and a string', async () => {
+    const { layout, spans } = await spansOf('#[cfg(feature = "control-mode")]\npub fn method()')
+    expect(layout.text).toBe('#[cfg(feature = "control-mode")]\npub fn method()')
+    expect(roles(spans)).toEqual([
+      ['#[', 'delimiter'], ['cfg', 'attribute'], ['(', 'delimiter'], ['=', 'delimiter'], ['"control-mode"', 'string'], [')]', 'delimiter'],
+    ])
+    // `feature` is a word of the predicate, not a role of its own, and the rest of the line keeps its keywords.
+    expect(spans.find((span) => span.text === 'feature')).toMatchObject({ nonReference: true })
+    expect(spans.find((span) => span.text === 'feature')?.role).toBeUndefined()
+    expect(spans.filter((span) => span.keyword).map((span) => span.text)).toEqual(['pub', 'fn'])
+  })
+
+  it('takes the whole path of a scoped attribute and every string of its arguments', async () => {
+    const { spans } = await spansOf('#[tool_router(router = contract_router, vis = "pub(super)")]\n#[clippy::must_use]\n#[doc = r#"raw"#]\npub fn method()')
+    expect(roles(spans)).toEqual([
+      ['#[', 'delimiter'], ['tool_router', 'attribute'], ['(', 'delimiter'], ['=', 'delimiter'], [',', 'delimiter'], ['=', 'delimiter'],
+      ['"pub(super)"', 'string'], [')]', 'delimiter'],
+      ['#[', 'delimiter'], ['clippy::must_use', 'attribute'], [']', 'delimiter'],
+      ['#[', 'delimiter'], ['doc', 'attribute'], ['=', 'delimiter'], ['r#"raw"#', 'string'], [']', 'delimiter'],
+    ])
+  })
+
+  it('links nothing inside an attribute, whatever its words name', async () => {
+    const pane = { ...method('pub struct Pane', [], 'Pane'), id: 'server.Pane', name: 'Pane', kind: 'struct' as const, signatures: [] }
+    const { spans } = await spansOf('#[tool(description = "Pane", meta = Pane, other = crate::Pane)]\npub fn method(pane: Pane)', [pane], [{ name: 'pane', type: 'Pane' }])
+    const attribute = spans.slice(0, spans.findIndex((span) => span.text === 'pub'))
+    expect(attribute.filter((span) => span.link)).toEqual([])
+    expect(spans.filter((span) => span.link?.href === '/server.Pane/')).toHaveLength(1)
+  })
+
+  it('keeps the copy text and the Markdown signature as they were', async () => {
+    const raw = '#[cfg(feature = "control-mode")]\n#[must_use = "use the returned builder to retain the limits"]\npub fn method(value: u8) -> u8'
+    const symbol = method(raw, [{ name: 'value', type: 'u8' }])
+    const layout = await layoutFor(symbol)
+    const model = { port: 'rs', extractor: 'test', symbols: [symbol] } as ApiModel
+    const markdown = await symbolMarkdownWithLayout({ model, symbol })
+    const code = fromMarkdown(markdown).children.find((node) => node.type === 'code')
+    expect(code?.type === 'code' && code.value).toBe(layout.text)
+    expect(layout.text).toBe('#[cfg(feature = "control-mode")]\n#[must_use =\n    "use the returned builder to retain the limits"\n]\npub fn method(value: u8) -> u8')
+  })
+
+  it('draws each role in its own class, none of them a plain name the type-link check would count', async () => {
+    const { symbol, layout, index } = await spansOf('#[cfg(feature = "control-mode")]\npub fn method()')
+    const { type } = await apiComponents()
+    const win = new Window()
+    try {
+      const container = await experimental_AstroContainer.create()
+      win.document.body.innerHTML = await container.renderToString(type, { props: { type: layout.text, index, context: symbol, signature: symbol.signatures[0], layout } })
+      const drawn = [...win.document.querySelectorAll('.api-type > span')].filter((node) => /\bapi-(delimiter|attribute|string)\b/.test(node.className))
+        .map((node) => [node.textContent, node.className, node.getAttribute('data-api-role')])
+      expect(drawn).toEqual([
+        ['#[', 'api-delimiter', 'syntax'], ['cfg', 'api-attribute', 'syntax'], ['(', 'api-delimiter', 'syntax'], ['=', 'api-delimiter', 'syntax'],
+        ['"control-mode"', 'api-string', 'syntax'], [')]', 'api-delimiter', 'syntax'],
+      ])
+      expect(win.document.querySelector('.api-type')?.textContent).toBe(layout.text)
+    } finally { await win.happyDOM.abort() }
+  })
+})
+
+describe('a Cargo feature named in a Rust attribute', () => {
+  const sources = [{ product: 'core' as const, package: 'libtmux', repo: 'libtmux/libtmux-rs', features: ['control-mode', 'query', '_internal'] }]
+  const feature = (name: string) => `https://docs.rs/crate/libtmux/latest/features#${name}`
+  const spansOf = async (raw: string) => {
+    const symbol = { ...method(raw), product: 'core' as const }
+    const layout = await layoutFor(symbol)
+    const index = new SymbolIndex([symbol], (entry) => `/${entry.id}/`, 'rs')
+    index.addCargoFeatures(sources, () => 'latest')
+    return { layout, spans: signatureSpans(layout, index, symbol, symbol.signatures[0]!) }
+  }
+  /** The text and destination of each span that links to docs.rs. */
+  const links = (spans: Awaited<ReturnType<typeof spansOf>>['spans']) => spans.filter((span) => span.link?.href.startsWith('https://docs.rs/')).map((span) => [span.text, span.link!.href])
+
+  it('links the name inside its quotes to the crate\'s features page, and leaves the quotes a string', async () => {
+    const { layout, spans } = await spansOf('#[cfg(feature = "control-mode")]\npub fn method()')
+    expect(links(spans)).toEqual([['control-mode', feature('control-mode')]])
+    expect(spans.map((span) => span.text).join('')).toBe(layout.text)
+    expect(spans.filter((span) => span.role === 'string').map((span) => span.text)).toEqual(['"', 'control-mode', '"'])
+    expect(spans.find((span) => span.text === 'control-mode')).toMatchObject({ nonReference: true, link: { external: true } })
+  })
+
+  it('links every feature of a predicate and one nested in doc(cfg(...))', async () => {
+    const { spans } = await spansOf('#[cfg(all(feature = "control-mode", not(feature = "query")))]\n#[cfg_attr(docsrs, doc(cfg(feature = "query")))]\npub fn method()')
+    expect(links(spans)).toEqual([['control-mode', feature('control-mode')], ['query', feature('query')], ['query', feature('query')]])
+  })
+
+  it.each([
+    ['a feature the crate does not declare', '#[cfg(feature = "native")]'],
+    ['a private feature the list holds, which docs.rs shows no anchor for', '#[cfg(feature = "_internal")]'],
+    ['a name that is not behind feature =', '#[cfg(target_os = "query")]'],
+    ['a feature outside a cfg', '#[tool(feature = "query")]'],
+    ['a raw string', '#[cfg(feature = r#"query"#)]'],
+    ['an escaped string', '#[cfg(feature = "qu\\u{65}ry")]'],
+    ['an attribute value', '#[must_use = "query"]'],
+  ])('links nothing for %s', async (_, attribute) => {
+    const { layout, spans } = await spansOf(`${attribute}\npub fn method()`)
+    expect(links(spans)).toEqual([])
+    expect(spans.map((span) => span.text).join('')).toBe(layout.text)
+  })
+
+  it('draws the link as a docs.rs link in the string, outside the type-link count', async () => {
+    const symbol = { ...method('#[cfg(feature = "control-mode")]\npub fn method()'), product: 'core' as const }
+    const layout = await layoutFor(symbol)
+    const index = new SymbolIndex([symbol], (entry) => `/${entry.id}/`, 'rs')
+    index.addCargoFeatures(sources, () => 'latest')
+    const { type } = await apiComponents()
+    const win = new Window()
+    try {
+      const container = await experimental_AstroContainer.create()
+      win.document.body.innerHTML = await container.renderToString(type, { props: { type: layout.text, index, context: symbol, signature: symbol.signatures[0], layout } })
+      const link = win.document.querySelector('a')!
+      expect([link.textContent, link.getAttribute('href'), link.getAttribute('rel'), link.getAttribute('title')]).toEqual(
+        ['control-mode', feature('control-mode'), 'nofollow noopener', 'control-mode (docs.rs features)'])
+      // Two classes: scripts/check-type-links.mjs counts an anchor with `api-type-link` alone as a resolved type.
+      expect(link.className.split(/\s+/).sort()).toEqual(['api-string', 'api-type-link'])
+      expect(win.document.querySelector('.api-type')?.textContent).toBe(layout.text)
+    } finally { await win.happyDOM.abort() }
+  })
+
+  describe('in the port\'s index', () => {
+    afterEach(() => { vi.unstubAllEnvs() })
+    const model = API_MODELS.rs
+    const source = (product: 'core' | 'workspace') => model.sources!.find((entry) => entry.product === product)!
+    const [core, workspace] = [source('core'), source('workspace')]
+    const stream = model.symbols.find((entry) => entry.id === 'pane.Pane.stream_output_with_limits')!
+    const inWorkspace = model.symbols.find((entry) => entry.product === 'workspace')!
+    // A feature each crate declares, whichever its manifest holds first.
+    const [coreFeature, workspaceFeature] = [core.features![0]!, workspace.features![0]!]
+    const page = (crate: string, version: string, name: string) => `https://docs.rs/crate/${crate}/${version}/features#${name}`
+    const featureOf = (name: string, symbol = stream, from = model) => createApiIndex(from, (entry) => `/${entry.id}/`).cargoFeature(name, symbol)?.href
+    /** The Rust model with each crate's version replaced. */
+    const versioned = (versions: Partial<Record<'core' | 'workspace', string>>) =>
+      ({ ...model, sources: model.sources!.map((entry) => ({ ...entry, version: versions[entry.product as 'core' | 'workspace'] ?? entry.version })) })
+    const build = (version: string, kind: string) => {
+      vi.stubEnv('LIBTMUX_DOCS_VERSION', version)
+      vi.stubEnv('LIBTMUX_DOCS_VERSION_KIND', kind)
+    }
+
+    it('takes the crates\' features from the model and links to latest on a trunk build', () => {
+      expect(featureOf(coreFeature)).toBe(page(core.package, 'latest', coreFeature))
+      expect(featureOf('not-a-feature')).toBeUndefined()
+      expect(featureOf(workspaceFeature, inWorkspace)).toBe(page(workspace.package, 'latest', workspaceFeature))
+    })
+
+    it('names the version each crate declares on a release build, as the crates of one repository carry their own', () => {
+      build('v0.1.0-alpha.15', 'tag')
+      const apart = versioned({ core: '1.2.3', workspace: '4.5.6' })
+      expect(featureOf(coreFeature, stream, apart)).toBe(page(core.package, '1.2.3', coreFeature))
+      expect(featureOf(workspaceFeature, inWorkspace, apart)).toBe(page(workspace.package, '4.5.6', workspaceFeature))
+      // The docs slug names neither: the crate's own version is what docs.rs carries.
+      expect(featureOf(coreFeature)).toBe(page(core.package, core.version!, coreFeature))
+    })
+
+    it('names the version `next` resolves to only when the registry carries it', () => {
+      const published = registry.ports.rs!.version!
+      build('next', 'alias')
+      expect(featureOf(coreFeature, stream, versioned({ core: published }))).toBe(page(core.package, published, coreFeature))
+      expect(featureOf(coreFeature, stream, versioned({ core: '99.0.0-alpha.1' }))).toBe(page(core.package, 'latest', coreFeature))
+      // A crate the registry lists no package for has no published version to match.
+      expect(featureOf(workspaceFeature, inWorkspace, versioned({ workspace: published }))).toBe(page(workspace.package, 'latest', workspaceFeature))
+    })
+
+    it.each([['latest', 'trunk'], ['v0.x', 'branch'], ['pr-12', 'pr']])('names the registry\'s newest on the %s build (%s), whatever the crate declares', (version, kind) => {
+      build(version, kind)
+      expect(featureOf(coreFeature, stream, versioned({ core: registry.ports.rs!.version! }))).toBe(page(core.package, 'latest', coreFeature))
+    })
+
+    it('has no features to link for a port whose crates do not declare any', () => {
+      const go = API_MODELS.go
+      expect(createApiIndex(go, (entry) => `/${entry.id}/`).cargoFeature('control-mode', go.symbols[0]!)).toBeUndefined()
+    })
+
+    it('finds every feature the Rust signatures name among its crate\'s own, so a name never stays plain for want of a list', () => {
+      const declared = new Map(model.sources!.map((source) => [source.product, new Set(source.features)]))
+      const named = model.symbols.flatMap((entry) => entry.signatures.flatMap((signature) => [signature.raw, signature.enclosingDeclaration])
+        .flatMap((text) => [...(text ?? '').matchAll(/#\[cfg(?:_attr)?\([^\n]*?feature\s*=\s*"([^"\\]+)"/g)].map((match) => [entry.product, match[1]!, entry.id])))
+      expect(named.length).toBeGreaterThan(10)
+      expect(named.filter(([product, name]) => !declared.get(product as never)?.has(name!)).map(([, name, id]) => `${id}: ${name}`)).toEqual([])
+    })
+  })
+})
 
 describe('Rust source grammar edge cases', () => {
   it('resolves owner references before callable-local generic bindings enter scope', async () => {

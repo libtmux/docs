@@ -27,6 +27,11 @@ let doc: Awaited<ReturnType<typeof apiComponents>>['doc']
 beforeAll(async () => { doc = (await apiComponents()).doc })
 afterAll(async () => { await window.happyDOM.abort() })
 
+const declare = (id: string): ApiSymbol => ({
+  id, publicId: id, name: id.split('.').at(-1)!, kind: 'class', slug: id.replaceAll('.', '-').toLowerCase(),
+  modifiers: [], signatures: [], source: { file: 'text.rs' },
+})
+
 async function render(text: string, context?: ApiSymbol, from: SymbolIndex = index) {
   const container = await experimental_AstroContainer.create()
   window.document.body.innerHTML = await container.renderToString(doc, { props: { text, index: from, context } })
@@ -83,11 +88,28 @@ describe('a doc comment cross-reference', () => {
     } finally { vi.unstubAllEnvs() }
   })
 
-  it('leaves a name inside a longer literal, and a name that links outside the site, as it was', async () => {
+  it('names each declaration linked inside a longer literal by its kind, and leaves plain code as it was', async () => {
     const root = await render('`Selection<Pane>` and `AbortSignal`')
     expect(root.querySelector('.api-link-kind')).toBeNull()
-    expect(root.querySelector('a.api-mention')).toBeNull()
-    expect(root.querySelectorAll('a')).not.toHaveLength(0)
+    const [literal, plain] = [...root.querySelectorAll('code.api-literal')]
+    // The literal keeps its frame; only the names it links take their kind.
+    expect([...literal.querySelectorAll<DomAnchor>('a.api-mention.api-doc-link')].map((link) => [link.textContent, link.dataset.apiKind, link.getAttribute('title'), link.getAttribute('aria-label')]))
+      .toEqual([['Selection', 'interface', 'interface', 'interface: Selection'], ['Pane', 'class', 'class', 'class: Pane']])
+    expect(literal.textContent).toBe('Selection<Pane>')
+    expect(plain.querySelector('a')).toBeNull()
+  })
+
+  it('names a Rust type linked inside a call or a generic, and not a std type or the path after it', async () => {
+    // `from` belongs to a trait, so the whole path names nothing and the link is the type before it.
+    const rust = new SymbolIndex([{ ...declare('text.TmuxText'), kind: 'struct' }], (symbol) => `/en/rs/latest/reference/${symbol.slug}/`, 'rs')
+    const root = await render('Build one with `TmuxText::from(value)`, or keep an `Option<TmuxText>`.', undefined, rust)
+    const [call, generic] = [...root.querySelectorAll('code.api-literal')]
+    expect([...call.querySelectorAll<DomAnchor>('a')].map((link) => [link.textContent, link.dataset.apiKind, link.matches('.api-mention.api-doc-link')])).toEqual([['TmuxText', 'struct', true]])
+    expect(call.textContent).toBe('TmuxText::from(value)')
+    // `Option` links to the standard library, which is not a declaration of this site.
+    expect([...generic.querySelectorAll<DomAnchor>('a')].map((link) => [link.textContent, link.dataset.apiKind, link.matches('.api-mention.api-doc-link')]))
+      .toEqual([['Option', undefined, false], ['TmuxText', 'struct', true]])
+    expect(problems(call)).toEqual([])
   })
 
   it('names a tmux command in the title, the data attribute and the accessible name, without a badge', async () => {
@@ -98,6 +120,29 @@ describe('a doc comment cross-reference', () => {
     expect(links.map((link) => link.classList.contains('api-doc-link'))).toEqual([true, true])
     expect(links.map((link) => [link.getAttribute('title'), link.dataset.apiKind, link.getAttribute('aria-label')]))
       .toEqual(Array(2).fill(['tmux command', 'command', 'tmux command: list-panes']))
+  })
+
+  describe('a kebab-case word in a code literal', () => {
+    // Members named for the words in each, so a literal split at its hyphens would link them.
+    const members = new SymbolIndex([
+      { ...declare('access.AccessRule.mode'), kind: 'attribute' }, { ...declare('pane.Pane.activity'), kind: 'attribute' }, { ...declare('server.Server.session'), kind: 'method' },
+    ], (symbol) => `/en/rs/latest/reference/${symbol.slug}/`, 'rs')
+
+    it('stays plain code when nothing documents it, though a word in it names a member', async () => {
+      const root = await render('Build with `control-mode` or `unstable-fuzzing`.', undefined, members)
+      expect([...root.querySelectorAll('code.api-literal')].map((code) => [code.textContent, code.querySelectorAll('a').length])).toEqual([['control-mode', 0], ['unstable-fuzzing', 0]])
+    })
+
+    it('does not touch a tmux option or command written the same way: the tmux linker names the whole word first', async () => {
+      const root = await render('Set `monitor-activity`, then run `new-session`.', undefined, members)
+      const links = [...root.querySelectorAll<DomAnchor>('a.tmux-mention')]
+      expect(links.map((link) => [link.textContent, link.dataset.apiKind, link.getAttribute('href')?.startsWith('/tmux/latest/')])).toEqual([
+        ['monitor-activity', 'option', true], ['new-session', 'command', true],
+      ])
+      expect(root.querySelectorAll('a')).toHaveLength(2)
+      // The words of each name no member's: the literal's own parts stay plain, which is the linker's doing and not the tmux link's.
+      expect(members.docSpans('`monitor-activity` and `new-session`').filter((span) => span.kind === 'ref').map((span) => 'parts' in span && span.parts?.some((part) => part.link))).toEqual([false, false])
+    })
   })
 
   it('is caught when a reference is plain or badged, so the check above can fail', () => {

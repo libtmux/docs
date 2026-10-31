@@ -25,6 +25,7 @@ export { looksLikeApiMention, tableMentions, proseMentions, pageMentions, Linked
 export { parseHunks, mapLine, type Hunk } from './source-lines.ts'
 export * from './prose.ts'
 export { BUILTINS, builtinHref } from './builtins.ts'
+export { cargoFeatureHref } from './cargo-features.ts'
 export * from './nav.ts'
 export { NAV } from './nav-config.ts'
 export { MEMBER_TIERS, memberSignals, memberTier, compareMembers, membersOf, pageMembersOf, aliasTarget, aliasMembersTarget, type MemberSignals, type MemberTier } from './member-order.ts'

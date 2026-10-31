@@ -784,6 +784,19 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .
 }
 .api-native-signature .api-keyword { color: var(--api-ink-keyword); }
 .api-native-signature .api-declaration-name { color: var(--api-ink-name); }
+/* A type a signature links reads in the type ink, as its keywords and name read in theirs. The enclosing context stays quiet, and a Cargo feature is a string. */
+.api-native-signature .api-type-link:not(.api-parameter-name):not(.api-signature-context):not(.api-string) { color: var(--api-ink-type); }
+/* A Rust attribute reads as an annotation: its punctuation recedes, its path takes the attribute ink and its strings the string ink. */
+.api-native-signature .api-delimiter { color: var(--color-muted); }
+.api-native-signature .api-attribute { color: var(--api-ink-attribute); }
+.api-native-signature .api-string { color: var(--api-ink-string); }
+/* A Cargo feature that links stays a string, and its underline says it links. */
+.api-native-signature .api-type-link.api-string {
+  color: var(--api-ink-string);
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: .2em;
+}
 .api-native-signature .api-signature-context { color: var(--color-foreground-secondary); }
 .api-native-signature .api-operator { white-space: nowrap; }
 /* A union or object type keeps the line breaks it is written with. */
@@ -965,6 +978,9 @@ dl.py.gp-sphinx-api-container > dd > .gp-sphinx-api-parameters:last-child > dl.f
   font-family: var(--font-mono, ui-monospace, monospace);
   overflow-wrap: anywhere;
 }
+/* A qualified name reads as a path to one declaration: the path quiet, the declaration's own name in its kind's ink. */
+.api-qualified-name__path { color: var(--color-muted); }
+.api-qualified-name__leaf[data-api-kind] { color: var(--api-kind-ink, inherit); }
 .api-copy-status:empty { display: none; }
 .api-copy-status {
   position: absolute;
@@ -980,15 +996,23 @@ dl.py.gp-sphinx-api-container > dd > .gp-sphinx-api-parameters:last-child > dl.f
   overflow-wrap: anywhere;
 }
 .api-copy-name {
+  position: relative;
   display: inline-grid;
   place-items: center;
   flex-shrink: 0;
-  width: 1.875rem;
-  height: 1.875rem;
+  /* The control is as tall as the line beside it, so the row keeps the height of the rows around it. */
+  width: 1lh;
+  height: 1lh;
   padding: 0;
   border-radius: 0.3rem;
   cursor: pointer;
   color: var(--color-muted);
+}
+/* A target 1.875rem across reaches past the control and takes no layout; the focus ring still frames the control. */
+.api-copy-name::before {
+  content: "";
+  position: absolute;
+  inset: min(0px, calc((1lh - 1.875rem) / 2));
 }
 .api-copy-name:hover { background: var(--color-surface-hover); color: var(--color-link); }
 .api-copy-name:focus-visible {

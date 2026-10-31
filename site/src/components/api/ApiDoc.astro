@@ -85,9 +85,14 @@ function mentionOf(link: LinkTarget | undefined, kind: string | undefined, title
     return span.link ? (
       <a class="api-xref" href={span.link.href} rel={span.link.external ? 'nofollow noopener' : undefined}>{name}</a>
     ) : (
-      <code class="api-literal">{parts.map((part) => part.link
-        ? <a class="api-xref api-literal--link" href={part.link.href}>{labelParts(part.text, qualified).map((text) => qualified && text === '#' ? <span class="api-reference-separator">{text}</span> : text)}</a>
-        : labelParts(part.text, qualified).map((text) => qualified && text === '#' ? <span class="api-reference-separator">{text}</span> : text))}</code>
+      <code class="api-literal">{parts.map((part) => {
+        const separated = labelParts(part.text, qualified).map((text) => qualified && text === '#' ? <span class="api-reference-separator">{text}</span> : text)
+        if (!part.link) return separated
+        // A name linked inside a longer literal is a mention like any other: its kind is its ink, and the literal keeps its frame.
+        const kind = part.link.symbol?.kind
+        const inside = mentionOf(part.link, kind, part.link.symbol?.command?.kind ?? kind, part.text)
+        return <a class:list={['api-xref api-literal--link', inside && 'api-mention api-doc-link']} href={part.link.href} title={inside?.title} data-api-kind={inside?.dataApiKind} aria-label={inside?.ariaLabel}>{separated}</a>
+      })}</code>
     )
   })
 }</span>

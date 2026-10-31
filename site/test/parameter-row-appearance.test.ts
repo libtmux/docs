@@ -4,7 +4,7 @@ import { afterEach, expect, it } from 'vitest'
 
 const sheet = (name: string) => readFileSync(new URL(`../src/styles/${name}`, import.meta.url), 'utf8')
 // Owned sheets first, then the vendored one, as the reference pages import them.
-const css = `:root { --color-muted: #53606d; }${sheet('api-kinds.css')}${sheet('api.css')}${sheet('vendor/gp-sphinx-api.css')}`
+const css = `:root { --color-muted: #53606d; --color-link: #6f1a24; --color-foreground-secondary: #5b6570; }${sheet('api-kinds.css')}${sheet('api.css')}${sheet('vendor/gp-sphinx-api.css')}`
 let win: Window
 afterEach(async () => { await win?.happyDOM.abort() })
 
@@ -14,7 +14,7 @@ const mount = (body = `<div class="gp-sphinx-api-parameters"><dl class="field-li
   win = new Window({ settings: { disableCSSFileLoading: true, disableJavaScriptEvaluation: true } })
   win.document.head.innerHTML = `<style>${css}</style>`
   win.document.body.innerHTML = `<dl class="py gp-sphinx-api-container"><dt>Declaration</dt><dd>${body}</dd></dl>
-    <i id="name-ink" style="color: var(--api-ink-name)"></i><i id="type-ink" style="color: var(--api-ink-type)"></i><i id="muted" style="color: var(--color-muted)"></i>`
+    <i id="name-ink" style="color: var(--api-ink-name)"></i><i id="type-ink" style="color: var(--api-ink-type)"></i><i id="muted" style="color: var(--color-muted)"></i><i id="link-ink" style="color: var(--color-link)"></i><i id="attribute-ink" style="color: var(--api-ink-attribute)"></i><i id="string-ink" style="color: var(--api-ink-string)"></i>`
   const style = (selector: string) => win.getComputedStyle(win.document.querySelector(selector)!)
   return { style, ink: (id: string) => win.getComputedStyle(win.document.getElementById(id)!).color }
 }
@@ -43,4 +43,45 @@ it('leaves an MCP or a command parameter as it was: its name, its type text and 
     expect(style(`${list} .api-type`).color, `${list}: type text`).not.toBe(ink('muted'))
     expect(style(`${list} .api-type-link`).color, `${list}: type link`).not.toBe(ink('type-ink'))
   }
+})
+
+it('leaves a type in an enclosing context line in the quieter ink of its context', () => {
+  // `impl Client` above a method: every span of the context line carries `api-signature-context`, its links too.
+  const { style, ink } = mount(`<code class="api-native-signature"><span class="api-type"><span class="api-keyword api-signature-context">impl</span> <a id="context-type" class="api-type-link api-signature-context" href="#client">Client</a>
+<span class="api-keyword">pub fn</span> get(<a id="plain-type" class="api-type-link" href="#str">str</a>)</span></code><i id="context-ink" style="color: var(--color-foreground-secondary)"></i>`)
+  expect(ink('context-ink')).not.toBe(ink('type-ink'))
+  expect(style('#context-type').color).toBe(ink('context-ink'))
+  expect(style('#plain-type').color).toBe(ink('type-ink'))
+})
+
+// A native signature as the entry renders it: a linked type, a linked type parameter, a link to a parameter's own entry and a keyword.
+const signature = `<code class="api-native-signature"><span class="api-type"><span class="api-keyword">pub fn</span> <a class="api-declaration-name" href="#send">send</a>(<a id="param" class="api-type-link api-parameter-name" href="#size">size</a>: <a id="type" class="api-type-link" href="#pane">Pane</a>, <a id="generic" class="api-type-link api-type-parameter-name" href="#t">T</a>)</span></code>`
+
+it('draws a type a signature links in the type ink, and a link to a parameter in the link colour', () => {
+  const { style, ink } = mount(signature)
+  expect(ink('type-ink')).not.toBe(ink('link-ink'))
+  expect(style('#type').color).toBe(ink('type-ink'))
+  expect(style('#generic').color).toBe(ink('type-ink'))
+  expect(style('#param').color).toBe(ink('link-ink'))
+  // The signature's other inks stay as they were.
+  expect(style('.api-declaration-name').color).toBe(ink('name-ink'))
+})
+
+it('draws an attribute in a signature with quiet punctuation, an attribute path and a string', () => {
+  const { style, ink } = mount(`<code class="api-native-signature"><span class="api-type"><span class="api-delimiter" data-api-role="syntax">#[</span><span class="api-attribute" data-api-role="syntax">cfg</span><span class="api-delimiter" data-api-role="syntax">(</span><span class="api-punct" data-api-role="syntax">feature</span><span class="api-string" data-api-role="syntax">"control-mode"</span><span class="api-keyword">pub</span></span></code>`)
+  expect(style('.api-delimiter').color).toBe(ink('muted'))
+  expect(style('.api-attribute').color).toBe(ink('attribute-ink'))
+  expect(style('.api-string').color).toBe(ink('string-ink'))
+  // Three roles, three inks, and the words between them keep the signature's own.
+  expect(new Set([ink('muted'), ink('attribute-ink'), ink('string-ink'), ink('type-ink')]).size).toBe(4)
+  expect(style('.api-punct').color).not.toBe(ink('string-ink'))
+})
+
+it('keeps the string ink on a Cargo feature that links, and underlines it as a link', () => {
+  const { style, ink } = mount(`<code class="api-native-signature"><span class="api-type"><span class="api-string" data-api-role="syntax">"</span><a id="feature" class="api-type-link api-string" href="https://docs.rs/crate/libtmux/latest/features#query">query</a><span class="api-string" data-api-role="syntax">"</span><a id="type" class="api-type-link" href="#pane">Pane</a></span></code>`)
+  expect(style('#feature').color).toBe(ink('string-ink'))
+  expect([style('#feature').textDecorationLine, style('#feature').textDecorationStyle]).toEqual(['underline', 'dotted'])
+  // A type beside it keeps the type ink and no underline at rest.
+  expect(style('#type').color).toBe(ink('type-ink'))
+  expect(style('#type').textDecorationLine).not.toContain('underline')
 })
