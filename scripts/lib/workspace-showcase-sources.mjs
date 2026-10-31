@@ -31,6 +31,8 @@
  * "calls", never "runs the command".
  */
 
+import { basename } from 'node:path'
+
 /** Every value `via` may take; the generator refuses any other. */
 export const VIA = ['cli', 'loader', 'builder', 'library', 'scheduled']
 
@@ -83,6 +85,14 @@ export const TOPIC_EXAMPLES = {
   environment: 'session-environment',
   'start-directory': 'start-directory',
 }
+
+/**
+ * The revision of libtmux-ts the showcase reads, until the docs' own pin for it
+ * is newer. Its API model records an older revision, from before tmuxp's
+ * examples became CLI-tested fixtures; the generator refuses this pin once the
+ * model's revision has caught up with it.
+ */
+const TS_PIN = 'afd56d4dfa441b5bab9d9996ebd5b303fc5c4a3a'
 
 /** A fixture read whole. */
 const file = (path) => ({ path })
@@ -193,7 +203,8 @@ export const SOURCES = {
   },
 
   // These ports ship a workspace manager whose tests give no document that can be quoted.
-  ts: { examples: [] },
+  // TypeScript is filled in below, from the fixtures its tests load.
+  ts: { revision: TS_PIN, examples: [] },
   java: { examples: [] },
   swift: { examples: [] },
 
@@ -443,6 +454,32 @@ export const SOURCES = {
   },
 }
 
+/** The one test that loads each of tmuxp's examples through `tmux-workspace load -d`. */
+const TS_LOADS = {
+  path: 'packages/workspace-cli/tests/tmuxp-examples.test.ts',
+  name: 'every tmuxp example workspace loads through the CLI',
+  via: 'cli',
+  checks: 'Runs the CLI\'s load -d on each of tmuxp\'s example files, each on its own tmux server, and checks the session, the windows and the panes tmux reports.',
+}
+
+/** What the test supplies to files that read their values from the environment. */
+const TS_SUBSTITUTIONS = {
+  'env-variables': 'The test supplies `MY_ENV_VAR`, `PWD` and `USER` and a `before_script` that leaves a marker; the file loads as written.',
+  options: 'The test supplies `MAIN_PANE_HEIGHT`, which the file reads from the environment; the file loads as written.',
+}
+
+// TypeScript loads the same files as Rust, as copies of tmuxp's examples that the test refuses to see edited.
+SOURCES.ts.examples = SOURCES.rs.examples.map((example) => {
+  const name = basename(example.source.path)
+  const topic = example.topic
+  const substitution = TS_SUBSTITUTIONS[topic]
+  return {
+    topic, also: example.also, source: file(`packages/workspace-cli/tests/fixtures/tmuxp-examples/${name}`),
+    ...(substitution ? { note: substitution } : {}),
+    tests: [TS_LOADS],
+  }
+})
+
 /**
  * What each port's `load` loader does with the keys of tmuxp's examples,
  * judged from its schema or normalizer at the pinned revision.
@@ -490,10 +527,11 @@ export const SUPPORT = {
   },
   ts: {
     caveats: {
-      options: { reason: 'A window option listed under the session\'s `options` applies to every window.' },
-      'plugin-system': { reason: 'A `plugins` key runs through a tmuxp Python bridge.' },
+      'env-variables': { reason: '`${NAME}` and `$NAME` in the file are read from the CLI\'s own environment, and `before_script` runs; the test supplies the variables.' },
+      options: { reason: 'A window option listed under the session\'s `options` applies to every window. `${MAIN_PANE_HEIGHT}` is read from the environment.' },
+      'plugin-system': { reason: 'A `plugins` key runs through a tmuxp Python bridge that needs tmuxp and the plugin\'s package, so the test asserts the refusal when neither is there.' },
     },
-    defaultLayout: { layout: 'tiled', cite: cite('packages/workspace-cli/README.md', 'a window that names no `layout`') },
+    defaultLayout: { layout: 'tiled', cite: cite('packages/workspace-cli/README.md', 'no `layout` tiles its panes') },
   },
   java: {
     caveats: {

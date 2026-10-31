@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createHash } from 'node:crypto'
-import { assertVia, hasRevision, parseConfig, quoteDocument, readExample, supportTable, testedStatus, trustedBlock, validateSupport } from './gen-workspace-showcase.mjs'
+import { assertPinNeeded, assertVia, hasRevision, parseConfig, quoteDocument, readExample, supportTable, testedStatus, trustedBlock, validateSupport } from './gen-workspace-showcase.mjs'
 import { VIA } from './lib/workspace-showcase-sources.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -29,6 +29,14 @@ assert.deepEqual(parseConfig('a: [1, 2]\nb: {c: d}'), { a: [1, 2], b: { c: 'd' }
 assert.throws(() => parseConfig('- just\n- a list'), /mapping/)
 assert.throws(() => parseConfig('a: [unterminated'))
 console.log('ok   a workspace document must be a mapping that parses')
+
+// A pinned revision stands in for the API model's only while it is newer than it.
+const OLDER = '46cccfef2a546de55ce8b308249b8c76339089a0'
+const NEWER = 'afd56d4dfa441b5bab9d9996ebd5b303fc5c4a3a'
+assert.doesNotThrow(() => assertPinNeeded('ts', NEWER, OLDER, () => false))
+assert.throws(() => assertPinNeeded('ts', NEWER, NEWER, () => false), /equals the API model's revision/)
+assert.throws(() => assertPinNeeded('ts', OLDER, NEWER, (older, newer) => older === OLDER && newer === NEWER), /is older than the API model's/)
+console.log('ok   a pin that the API model has caught up with is refused')
 
 // Revisions, tests and fixtures in a repository of their own.
 const scratch = mkdtempSync(join(tmpdir(), 'libtmux-workspace-showcase-'))

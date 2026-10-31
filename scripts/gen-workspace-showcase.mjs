@@ -126,12 +126,32 @@ export function readExample({ checkout, revision, example, tmuxp = {} }) {
   }
 }
 
-/** The package whose workspace pages cite this revision. */
+/**
+ * A pin is for a port whose fixtures are newer than the revision its API model
+ * records. It must go once the model has caught up, or the showcase would keep
+ * reading older sources than the page cites.
+ */
+export function assertPinNeeded(port, pin, model, isAncestor) {
+  if (pin === model) throw new Error(`${port}: SOURCES.${port}.revision equals the API model's revision; remove the pin`)
+  if (isAncestor(pin, model)) throw new Error(`${port}: SOURCES.${port}.revision ${pin} is older than the API model's ${model}; remove the pin`)
+}
+
+/** The package whose workspace pages cite this revision, or the newer one a port's sources pin. */
 function workspaceSource(port) {
   const model = JSON.parse(readFileSync(join(root, `site/src/data/api/${port}.json`), 'utf8'))
   const source = model.sources?.find((entry) => entry.product === 'workspace')
   if (!source) throw new Error(`${port}: the API model records no workspace package`)
-  return { repo: source.repo, revision: source.revision }
+  const pin = SOURCES[port]?.revision
+  if (!pin) return { repo: source.repo, revision: source.revision }
+  const checkout = findCheckout(port, pin)
+  assertPinNeeded(port, pin, source.revision, (older, newer) => {
+    if (!checkout || !hasRevision({ checkout, revision: newer })) return false
+    try {
+      execFileSync('git', ['-C', checkout, 'merge-base', '--is-ancestor', older, newer], { stdio: 'ignore' })
+      return true
+    } catch { return false }
+  })
+  return { repo: source.repo, revision: pin }
 }
 
 /** A checkout that has the revision's objects: the docs worktree is absent on most machines, the plain checkout shares its objects. */

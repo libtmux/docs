@@ -31,11 +31,20 @@ describe('the workspace showcase data source', () => {
     }
   })
 
-  it('reads each port at the revision its API model records for the workspace package', () => {
+  it('reads each port at the revision its API model records for the workspace package, or at the newer one its sources pin', () => {
     for (const [port, block] of Object.entries(data.ports)) {
       const source = model(port).sources.find((entry) => entry.product === 'workspace')!
-      expect({ repo: block.repo, revision: block.revision }, port).toEqual({ repo: source.repo, revision: source.revision })
+      const pin = (SOURCES as Record<string, { revision?: string }>)[port]?.revision
+      expect({ repo: block.repo, revision: block.revision }, port).toEqual({ repo: source.repo, revision: pin ?? source.revision })
+      // A pin that equals the model's revision is not one: the generator refuses it, and so does this.
+      if (pin) expect(pin, `${port} pin`).not.toBe(source.revision)
     }
+  })
+
+  it('pins TypeScript to the revision whose tests load tmuxp\'s examples, which the API model predates', () => {
+    expect((SOURCES as Record<string, { revision?: string }>).ts!.revision).toBe('afd56d4dfa441b5bab9d9996ebd5b303fc5c4a3a')
+    expect(data.ports.ts!.revision).toBe('afd56d4dfa441b5bab9d9996ebd5b303fc5c4a3a')
+    expect(model('ts').sources.find((entry) => entry.product === 'workspace')!.revision).not.toBe(data.ports.ts!.revision)
   })
 
   it('describes exactly the sources the generator is told to read', () => {
@@ -109,7 +118,7 @@ describe('the workspace showcase data source', () => {
   })
 
   it('has no entry for a port whose tests give no document it can quote', () => {
-    for (const port of ['ts', 'java', 'swift']) {
+    for (const port of ['java', 'swift']) {
       expect(productAvailable(PORT_BY_SLUG[port]!, 'workspace')).toBe(true)
       expect(workspaceShowcase(port), port).toBeUndefined()
     }
@@ -195,7 +204,9 @@ describe('what each port supports of tmuxp\'s examples', () => {
     expect(identical('rs')).toEqual(names.filter((name) => name !== 'plugin-system'))
     expect(identical('powershell')).toEqual(['skip-send-pane-level', 'skip-send'])
     expect(identical('py')).toEqual(['blank-panes'])
-    for (const port of ['ts', 'java', 'go', 'cxx', 'csharp', 'ruby', 'julia', 'swift']) expect(identical(port), port).toEqual([])
+    // TypeScript's test loads every one of tmuxp's examples but the plugin one, which it asserts is refused.
+    expect(identical('ts')).toEqual(names.filter((name) => name !== 'plugin-system'))
+    for (const port of ['java', 'go', 'cxx', 'csharp', 'ruby', 'julia', 'swift']) expect(identical(port), port).toEqual([])
     expect(Object.entries(data.ports.swift!.support.presets).filter(([, row]) => row.tested === 'library-only').map(([name]) => name))
       .toEqual(['2-pane-vertical', '3-pane', 'blank-panes', 'skip-send', 'sleep'])
   })
@@ -207,6 +218,20 @@ describe('what each port supports of tmuxp\'s examples', () => {
     expect(data.ports.ruby!.support.presets.minimal!.reason).toMatch(/window_name/)
     expect(data.ports.powershell!.support.presets['sleep']!.cite).toMatchObject({ from: 'csharp', find: '["cmd", "enter"]' })
     expect(refused('rs')).toEqual([])
+  })
+
+  it('shows TypeScript\'s examples as the files its CLI test loads, with the substitutions the test makes', () => {
+    const ts = workspaceShowcase('ts')!
+    expect(ts.examples.length).toBeGreaterThan(1)
+    for (const example of ts.examples) {
+      expect(example.tmuxp, example.topic).toBeDefined()
+      expect(example.source.path, example.topic).toBe(`packages/workspace-cli/tests/fixtures/tmuxp-examples/${example.tmuxp}.yaml`)
+      expect(example.tests.map((test) => [test.name, test.via]), example.topic).toEqual([['every tmuxp example workspace loads through the CLI', 'cli']])
+    }
+    const noted = ts.examples.filter((example) => example.note).map((example) => example.tmuxp)
+    expect(noted.sort()).toEqual(['env-variables', 'options'])
+    expect(ts.support.presets['plugin-system']).toMatchObject({ supported: 'caveat', tested: 'missing' })
+    expect(ts.examples.some((example) => example.tmuxp === 'plugin-system')).toBe(false)
   })
 
   it('records the layout a port gives a window that names none, where it documents one', () => {
