@@ -7,6 +7,7 @@ import { Window } from 'happy-dom'
 import { API_MODELS, createApiIndex, referenceAlternatives, topLevelTypesOf } from '../src/lib/api-models'
 import { coreApiSymbols, productApiAlternatives, productApiHref, productApiNavigation, productApiRedirects, productApiRoutes, productReferenceTree } from '../src/lib/product-api'
 import { searchApi, apiTreeHref } from '../src/lib/api-search'
+import { isTuplePayload } from '../src/lib/api-tree'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { PORT_BY_SLUG, productAvailable } from '../src/lib/ports'
 import { getResolver } from '../src/lib/prose-resolver'
@@ -51,15 +52,23 @@ describe('product declaration trees', () => {
     })
   })
   it('includes each public product declaration once, including deeply nested members', () => {
+    let payloads = 0
     for (const model of Object.values(API_MODELS)) for (const product of ['workspace', 'mcp'] as const) {
       const expected = symbolsForProduct(model, product).map((symbol) => productApiHref(model, symbol, 'v1.2.3')).sort()
       const actual = navigationLinks(productApiNavigation(model, product, 'v1.2.3')).sort()
       expect(actual, `${model.port} ${product}`).toEqual(expected)
       expect(new Set(actual).size).toBe(actual.length)
       const inventory = productReferenceTree(model, product, 'v1.2.3')
-      expect(searchApi(inventory, '').map((record) => apiTreeHref('/reference/', record, inventory.hrefs)).sort(),
-        `${model.port} ${product} selectable sidebar`).toEqual(expected)
+      const sidebar = searchApi(inventory, '').map((record) => apiTreeHref('/reference/', record, inventory.hrefs)).sort()
+      // The sidebar leaves out a tuple variant's positional fields, which its page shows, and nothing else.
+      const byId = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
+      const payload = symbolsForProduct(model, product).filter((symbol) => isTuplePayload(byId.get(symbol.parent ?? ''), symbol))
+        .map((symbol) => productApiHref(model, symbol, 'v1.2.3')).sort()
+      payloads += payload.length
+      expect(expected.filter((href) => !sidebar.includes(href)), `${model.port} ${product} left out of the sidebar`).toEqual(payload)
+      expect(sidebar, `${model.port} ${product} selectable sidebar`).toEqual(expected.filter((href) => !payload.includes(href)))
     }
+    expect(payloads, 'a product with a tuple variant').toBeGreaterThan(0)
   })
 
   it('opens the PowerShell workspace module into all nine cmdlets', () => {

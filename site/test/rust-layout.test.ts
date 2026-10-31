@@ -93,7 +93,7 @@ describe('Rust callable layouts', () => {
     expect(code?.type === 'code' && code.value).toBe(expected.join('\n\n'))
   })
 
-  it('wraps a native async hook header at 60 columns with shared Markdown and parameter links', async () => {
+  it('wraps a native async hook header at 60 columns with shared Markdown and parameter links, leaving the receiver plain', async () => {
     const symbol = method('pub async fn set_hook(&self, name: &str, command: impl Into<OsString>) -> Result<(), Error>', [
       { name: '&self' }, { name: 'name', type: '&str' }, { name: 'command', type: 'impl Into<OsString>' },
     ], 'set_hook')
@@ -108,11 +108,10 @@ describe('Rust callable layouts', () => {
     expect(spans.map((span) => span.text).join('')).toBe(expected)
     expect(spans.filter((span) => span.declarationName).map((span) => span.text)).toEqual(['set_hook'])
     expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => [span.text, span.link!.href])).toEqual([
-      ['&self', '#server.Server.set_hook.parameter.%26self'],
       ['name', '#server.Server.set_hook.parameter.name'],
       ['command', '#server.Server.set_hook.parameter.command'],
     ])
-    expect(apiEntryFields(symbol, 'rs').params.map((param) => param.name)).toEqual(['&self', 'name', 'command'])
+    expect(apiEntryFields(symbol, 'rs').params.map((param) => param.name)).toEqual(['name', 'command'])
     const document = await symbolMarkdownWithLayout({ model: { port: 'rs', extractor: 'fixture', symbols: [symbol] }, symbol, index })
     const signature = fromMarkdown(document).children.find((node) => node.type === 'code')
     expect(signature?.type === 'code' && signature.value).toBe(expected)
@@ -125,6 +124,19 @@ describe('Rust callable layouts', () => {
       expect(output.rootNode.hasError).toBe(false)
       expect(output.rootNode.toString()).toBe(input.rootNode.toString())
     } finally { input.delete(); output.delete(); parser.delete() }
+  })
+
+  it.each(['mut self', '&self', '&mut self', "&'a self"])('leaves an undocumented `%s` receiver plain, like `self`', async (receiver) => {
+    const symbol = method(`pub fn kill(${receiver}, reason: &str) -> Result<(), Error>`, [
+      { name: receiver }, { name: 'reason', type: '&str' },
+    ], 'kill')
+    const layout = await layoutFor(symbol)
+    const index = new SymbolIndex([symbol], (entry) => `/${entry.id}/`, 'rs')
+    const spans = signatureSpans(layout, index, symbol, symbol.signatures[0]!)
+    expect(apiEntryFields(symbol, 'rs').params.map((param) => param.name)).toEqual(['reason'])
+    expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => span.link!.href))
+      .toEqual(['#server.Server.kill.parameter.reason'])
+    expect(spans.find((span) => span.text === receiver)).toMatchObject({ keyword: true })
   })
 
   it('links only the parameters the entry lists, leaving an undocumented self receiver plain', async () => {
@@ -195,7 +207,8 @@ impl<U: Bound> Probe<U> {
     for (const name of ['U', 'V', 'N', 'label']) expect(spans.some((span) => span.link?.href === `/probe.${name}/`)).toBe(false)
     expect(spans.filter((span) => span.link?.href === '/probe.Bound/')).toHaveLength(2)
     expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => span.text))
-      .toEqual(signature.params.map((param) => param.name))
+      .toEqual(signature.params.slice(1).map((param) => param.name))
+    expect(signature.params[0]!.name).toBe("&'a mut self")
     for (const name of ['local', 'inherited', 'bytes']) {
       const type = signature.params.find((param) => param.name === name)!.type!
       expect(index.linkType(type, symbol, signature).some((span) => span.link?.href === `/probe.${type}/`)).toBe(false)

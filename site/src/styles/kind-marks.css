@@ -169,21 +169,25 @@
 /* ---- Navigation: the gutter, and the word that trails a result ---- */
 
 /*
- * In the API tree, marks sit in one fixed column and the names indent after
- * them, so a reader scans down the left edge to filter methods from properties.
- * A tree whose groups name their kind (`data-marks='mixed'`, the MCP sidebar)
- * has no gutter: a row's mark, where it has one, is inline before its name at
- * the row's normal gap, and a row without a mark starts at the row's indent.
+ * In an API tree without a presentation, marks sit in one fixed column and the
+ * names indent after them, so a reader scans down the left edge to filter
+ * methods from properties. A presentation indents each row whole instead
+ * (`api-tree.css`). A tree whose groups name their kind (`data-marks='mixed'`,
+ * the MCP sidebar) has no gutter: a row's mark, where it has one, is inline
+ * before its name at the row's normal gap, and a row without a mark starts at
+ * the row's indent.
  */
-.api-nav:not([data-marks='mixed']) .api-nav__row {
+.api-nav:not([data-marks='mixed']):not([data-presentation]) .api-nav__row {
   padding-inline-start: .5rem;
 }
-.api-nav:not([data-marks='mixed']) .api-nav__row > .api-nav__label {
+.api-nav:not([data-marks='mixed']):not([data-presentation]) .api-nav__row > .api-nav__label {
   padding-inline-start: calc((var(--level, 1) - 1) * var(--api-nav-indent));
 }
 .api-nav:not([data-marks='mixed']):not([data-presentation]) .api-nav__row:not(:has(> .api-nav__kind)) > .api-nav__label {
   padding-inline-start: calc(1.35em + .25rem + (var(--level, 1) - 1) * var(--api-nav-indent));
 }
+/* A presentation's rows align to their first line (`api-tree.css`), so the mark centres on line 1 of a name that wraps. */
+.api-nav[data-presentation] .api-nav__row > .api-nav__kind { align-self: flex-start; margin-block: calc((1.25rem - var(--mk-bh)) / 2); }
 .api-nav__results strong > .api-kind-word { margin-inline-start: auto; padding-inline-start: .5rem; font-weight: 400; }
 
 /* ---- A mark that leads a bare name ---- */

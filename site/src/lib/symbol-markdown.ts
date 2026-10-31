@@ -172,6 +172,7 @@ function tmuxSectionMarkdown(section: ApiTmuxSection): string[] {
   } else if (section.type === 'catalog') {
     for (const item of section.items) out.push(`- [${item.name}](${item.href}) (${section.catalog})`)
   } else if (section.type === 'guides') {
+    // The page names the kind of page only where a symbol has more than one, and the export matches.
     for (const group of section.groups) {
       if (section.groups.length > 1) out.push(`### ${group.label}`, '')
       for (const item of group.items) out.push(`- [${item.title}](${item.href})`)

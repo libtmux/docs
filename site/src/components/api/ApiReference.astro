@@ -35,7 +35,7 @@ import { buildTarget, defaultVersionFor } from '../../lib/versions'
 import ApiDoc from '../../components/api/ApiDoc.astro'
 import ApiTree from '../../components/api/ApiTree.astro'
 import type { PortNavData } from '../../lib/api-models'
-import { apiTreeVersion, bucketAncestors, bucketForSymbol, navTree, referenceTree, referenceTreeFor, referenceNavigation, referenceIndexSections, referenceIndexSectionsFor, type TreeBucket } from '../../lib/api-tree'
+import { apiTreeVersion, bucketAncestors, bucketForSymbol, navTree, referenceTree, referenceTreeFor, referenceNavigation, referenceIndexSections, referenceIndexSectionsFor, treeRowSymbol, type TreeBucket } from '../../lib/api-tree'
 import { sidebarSelection } from '../../lib/api-sidebar'
 import type { BreadcrumbItem } from '../../lib/sidebar'
 import SymbolName from '../../components/api/SymbolName.astro'
@@ -450,7 +450,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
       <ApiTree
         presentation="outline"
         inventory={sidebarInventory}
-        selectedSymbol={sidebarSelection(sidebarInventory, owner)}
+        selectedSymbol={sidebarSelection(sidebarInventory, treeRowSymbol(model, owner))}
         referenceBase={refBase}
         glossaryHref={port ? `${refBase}glossary/` : undefined}
         portName={label}

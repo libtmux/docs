@@ -113,7 +113,10 @@ describe('core reference inventory', () => {
     const core = model.symbols.filter((symbol) =>
       !['mcp', 'workspace'].includes(symbol.product ?? 'core') || symbol.apiScope === 'internal')
     const coreIds = new Set(core.map((symbol) => symbol.id))
-    const expected = [...coreIds].sort()
+    // A tuple variant's positional fields are its payload: its page shows them and the tree does not.
+    const tuples = new Set(model.symbols.filter((symbol) => symbol.variant === 'tuple').map((symbol) => symbol.id))
+    const payload = new Set(core.filter((symbol) => tuples.has(symbol.parent!) && /^\d+$/.test(symbol.name)).map((symbol) => symbol.id))
+    const expected = [...coreIds].filter((id) => !payload.has(id)).sort()
     const identities = new Map(model.symbols.flatMap((symbol) =>
       [[symbol.id, symbol.id], [symbol.publicId ?? symbol.id, symbol.id]] as const))
     const allMembers = navigation.members
@@ -146,6 +149,37 @@ describe('core reference inventory', () => {
         .map((member) => [member.name, member.slug, member.id]))
     }
     expect([...membersByType(port)]).toEqual(before)
+  })
+})
+
+describe('enum members in the tree', () => {
+  // The ranking by use puts a method between two cases of an enum in each of these ports, and in Rust a variant that the
+  // docs mention above the methods and the others below.
+  it.each(['rs', 'java', 'swift'])('lists the variants of every %s enum together, ahead of its other members, in their ranked order', (port) => {
+    const model = API_MODELS[port]
+    const byId = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
+    const variant = (symbol: { variant?: string; kind: string }) => Boolean(symbol.variant || symbol.kind === 'constant')
+    const partitioned = (flags: boolean[]) => [...flags].sort((a, b) => Number(b) - Number(a))
+    const signals = memberSignals(port, mentions.mentions)
+    const members = membersByType(port)
+    const enums = model.symbols.filter((symbol) => symbol.kind === 'enum' && members.has(symbol.publicId ?? symbol.id))
+    expect(enums.length).toBeGreaterThan(0)
+    const ranked = enums.filter((owner) => {
+      const flags = membersOf(model, owner, signals).map(variant)
+      return flags.some((flag, i) => flag !== partitioned(flags)[i])
+    })
+    expect(ranked.length, `${port}: an enum whose ranked order interleaves variants and methods`).toBeGreaterThan(0)
+    for (const owner of enums) {
+      const rows = members.get(owner.publicId ?? owner.id)!
+      const flags = rows.map((row) => variant(byId.get(row.id)!))
+      expect(flags, `${owner.id}: variants, then the rest`).toEqual(partitioned(flags))
+      // Each group keeps the order the ranking gave it.
+      const order = membersOf(model, owner, signals).map((symbol) => symbol.id)
+      for (const group of [true, false]) {
+        const ids = rows.filter((row) => variant(byId.get(row.id)!) === group).map((row) => row.id)
+        expect(ids, `${owner.id}: ${group ? 'variants' : 'other members'} keep their order`).toEqual(order.filter((id) => ids.includes(id)))
+      }
+    }
   })
 })
 

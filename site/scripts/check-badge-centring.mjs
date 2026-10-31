@@ -411,24 +411,27 @@ export function protocolSidebarProblems(page) {
 }
 
 /**
- * The API tree keeps its fixed gutter: every mark sits at the same distance
- * from the left of its row, whatever the row's level, so a reader scans down
- * one column.
+ * The API tree indents each row whole, mark and label together: a mark sits half a rem from the left of its row at the
+ * first two levels and one indent further in for each level after them, so a reader scans down one column of marks per
+ * level.
  */
 export function apiTreeGutterProblems(page) {
   return page.evaluate(() => {
     const nav = document.querySelector('.api-nav:not([data-marks])')
     if (!nav) return { marks: 0, problems: [] }
+    const probe = document.createElement('i')
+    probe.style.cssText = 'position: absolute; width: var(--api-nav-indent);'
+    nav.append(probe)
+    const indent = probe.getBoundingClientRect().width
+    probe.remove()
+    const start = 0.5 * parseFloat(getComputedStyle(document.documentElement).fontSize)
     const found = [...nav.querySelectorAll('.api-nav__row > .api-nav__kind')].filter((mark) => mark.offsetParent).map((mark) => {
       const row = mark.parentElement
       return { offset: mark.getBoundingClientRect().left - row.getBoundingClientRect().left, level: Number(getComputedStyle(row).getPropertyValue('--level')) }
     })
-    const problems = []
-    if (found.length) {
-      const offsets = found.map((entry) => entry.offset)
-      if (Math.max(...offsets) - Math.min(...offsets) > 1) problems.push(`marks do not share one gutter: offsets run ${Math.min(...offsets).toFixed(1)} to ${Math.max(...offsets).toFixed(1)}px across levels ${[...new Set(found.map((entry) => entry.level))].join(', ')}`)
-    }
-    return { marks: found.length, problems }
+    const problems = found.filter((entry) => Math.abs(entry.offset - (start + Math.max(0, entry.level - 2) * indent)) > 1)
+      .map((entry) => `a level ${entry.level} mark sits ${entry.offset.toFixed(1)}px from its row, not ${(start + Math.max(0, entry.level - 2) * indent).toFixed(1)}px`)
+    return { marks: found.length, problems: [...new Set(problems)] }
   })
 }
 
@@ -557,15 +560,15 @@ async function negativeControl(page, base, results) {
   results.sidebarMixedMarked = (await control(['tool', 'prompt'], true)).length
   assert(results.sidebarMixedMarked === 0, 'The sidebar check rejected marks in a group that mixes kinds')
 
-  // The API tree: breaking the shared gutter must fail.
+  // The API tree: rows that stop indenting a level at a time must fail.
   await page.goto(`${base}${PAGES[6].path}`, { waitUntil: 'load' })
   await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
   const gutter = await apiTreeGutterProblems(page)
-  assert(gutter.marks > 1 && gutter.problems.length === 0, `The API tree gutter is not clean before the control (${gutter.marks} marks): ${gutter.problems.join('; ')}`)
-  const ragged = await page.addStyleTag({ content: '.api-nav__row { padding-inline-start: calc(.75rem + (var(--level) - 1) * var(--api-nav-indent)) !important; }' })
+  assert(gutter.marks > 1 && gutter.problems.length === 0, `The API tree indent is not clean before the control (${gutter.marks} marks): ${gutter.problems.join('; ')}`)
+  const ragged = await page.addStyleTag({ content: '.api-nav__row { padding-inline-start: .5rem !important; }' })
   results.gutterControl = (await apiTreeGutterProblems(page)).problems.length
   await ragged.evaluate((node) => node.remove())
-  assert(results.gutterControl > 0, 'The gutter check did not notice marks that stopped sharing a column')
+  assert(results.gutterControl > 0, 'The indent check did not notice rows that stopped indenting a level at a time')
 
   // A permalink lifted off the line, and a mark pushed against its name and off its centre.
   await page.goto(`${base}${PAGES[7].path}`, { waitUntil: 'load' })
@@ -608,7 +611,7 @@ export async function checkBadgeCentring(browser, base, { sample: bounded = fals
   assert((results.counts['protocol sidebar group'] ?? 0) > 0, 'No protocol sidebar group was measured')
   assert((results.counts['API tree mark'] ?? 0) > 0, 'No API tree mark was measured, so the gutter was not checked')
   assert.deepEqual(results.failures, [], `Badge centring:\n${results.failures.join('\n')}`)
-  console.log(`Badge centring: ${results.measured} samples at 1x and a real 2x, light and dark (${Object.entries(results.counts).map(([k, v]) => `${v} ${k}`).join(', ')}); negative controls caught ${results.control} of ${results.controlTested} shifted marks, ${results.railControl} chip problems, ${results.headingControl} heading problem and ${results.rowControl} row problems, ${results.sidebarRedundant} redundant sidebar mark (a mixed group's marks: ${results.sidebarMixedMarked} complaints), ${results.gutterControl} broken gutter, ${results.modControl} shifted modifier word PASS`)
+  console.log(`Badge centring: ${results.measured} samples at 1x and a real 2x, light and dark (${Object.entries(results.counts).map(([k, v]) => `${v} ${k}`).join(', ')}); negative controls caught ${results.control} of ${results.controlTested} shifted marks, ${results.railControl} chip problems, ${results.headingControl} heading problem and ${results.rowControl} row problems, ${results.sidebarRedundant} redundant sidebar mark (a mixed group's marks: ${results.sidebarMixedMarked} complaints), ${results.gutterControl} broken indent, ${results.modControl} shifted modifier word PASS`)
 }
 
 /**

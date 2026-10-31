@@ -39,25 +39,30 @@ export async function checkSidebarDemo(browser, url, options = {}) {
   const checkTreeDecoration = async (f, variant, where, collapsed = false) => {
     const control = values['negative-control']
     const tree = f.locator('.api-nav__tree')
-    if (control === 'guide') await f.addStyleTag({ content: '.api-nav__label::before { border-inline-start: 0 solid !important; }' })
+    if (control === 'guide') await f.addStyleTag({ content: '.api-nav__row::after { background: none !important; }' })
     if (control === 'weight') await f.addStyleTag({ content: '.api-nav__item > .api-nav__row > .api-nav__label { font-weight: 400 !important; }' })
     if (control === 'glossary-first') await tree.evaluate((node) => { const last = node.querySelector(':scope > li:last-child'); if (last?.querySelector('a[href$="/glossary/"]')) node.prepend(last) })
     if (control === 'glossary-twice') await tree.evaluate((node) => { const last = node.querySelector(':scope > li:last-child'); if (last?.querySelector('a[href$="/glossary/"]')) node.append(last.cloneNode(true)) })
-    if (control === 'guide-top') await f.addStyleTag({ content: '[aria-level="1"] > .api-nav__row > .api-nav__label::before, a[aria-level="1"] > .api-nav__label::before { content: "" !important; position: absolute; top: 0; bottom: 0; border-inline-start: 1px solid red !important; }' })
+    if (control === 'guide-top') await f.addStyleTag({ content: '[aria-level="1"] > .api-nav__row::after, a[aria-level="1"]::after { width: 1px !important; background-image: linear-gradient(red, red) !important; }' })
     const rows = await tree.evaluate((node) => [...node.querySelectorAll('[role="treeitem"]')].filter((row) => row.getClientRects().length).map((row) => {
-      const label = row.matches('a') ? row.querySelector('.api-nav__label') : row.querySelector(':scope > .api-nav__row > .api-nav__label')
+      const holder = row.matches('a') ? row : row.querySelector(':scope > .api-nav__row')
+      const label = holder?.querySelector('.api-nav__label')
       const level = Number(row.getAttribute('aria-level'))
+      // The row's one gradient draws a guide for each ancestor level, so its width is an indent for each level past the second.
+      const guide = holder ? getComputedStyle(holder, '::after') : undefined
       return { text: label?.textContent.trim(), href: row.getAttribute('href'), leaf: row.classList.contains('api-nav__leaf'), level,
-        subgroup: row.matches("[data-lazy^='group:']"), line: label ? getComputedStyle(label, '::before').borderInlineStartWidth : '0px',
+        subgroup: row.matches("[data-lazy^='group:']"), line: guide && guide.backgroundImage !== 'none' ? guide.width : '0px',
         weight: Number(label ? getComputedStyle(label).fontWeight : 0), heading: row.matches('.api-nav__item') && level === 1 }
     }))
-    // Every nested row carries the guide line, kind subgroups included, in each layout that nests.
+    // Every row past the second level carries a guide for each ancestor level, kind subgroups included, in each layout that nests.
     const nested = rows.filter((row) => row.level > 1)
     if (variant !== 'focus' && !collapsed) assert(nested.length > 0, `${where}: the layout shows nested rows`)
     if (variant === 'grouped' && !collapsed) assert(nested.some((row) => /^Methods?\b/.test(row.text) && row.subgroup), `${where}: the Grouped kind subgroup is a nested row`)
-    for (const row of nested) assert.equal(row.line, '1px', `${where}: nested row ${row.text} shows its guide line`)
-    // Clean control: a top-level row and the glossary never draw one.
-    for (const row of rows.filter((row) => row.level === 1)) assert.equal(row.line, '0px', `${where}: top-level row ${row.text} has no guide line`)
+    const guided = rows.filter((row) => row.level > 2)
+    for (const row of guided) assert(parseFloat(row.line) > 0, `${where}: row ${row.text} at level ${row.level} shows its guide lines`)
+    assert.equal(new Set(guided.map((row) => parseFloat(row.line) / (row.level - 2))).size, Math.min(guided.length, 1), `${where}: each level past the second adds one indent of guides`)
+    // Clean control: a top-level row, a row under it and the glossary never draw one.
+    for (const row of rows.filter((row) => row.level <= 2)) assert.equal(row.line, '0px', `${where}: level ${row.level} row ${row.text} has no guide line`)
     // Bucket headings read as headings in the layouts that group.
     if (variant !== 'focus') {
       const headings = rows.filter((row) => row.heading)

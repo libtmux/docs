@@ -25,6 +25,22 @@ function declarations(css: string, selector: string): Record<string, string> | u
   return undefined
 }
 
+/**
+ * `css` without comments, with `from` replaced by `to` inside the rule whose selector is `selector` and nowhere else. A
+ * declaration such as `align-self: flex-start` also sits in other rules of the sheet, so a replacement across the sheet
+ * could change one that the check never reads.
+ */
+function mutate(css: string, selector: string, from: string, to: string): string {
+  const plain = css.replace(/\/\*[\s\S]*?\*\//g, '')
+  for (const match of plain.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    if (match[1]!.trim().replace(/\s+/g, ' ') !== selector) continue
+    expect(match[2], `the rule ${selector} holds ${from}`).toContain(from)
+    const start = match.index + match[0].indexOf('{') + 1
+    return plain.slice(0, start) + match[2]!.replace(from, to) + plain.slice(start + match[2]!.length)
+  }
+  throw new Error(`no rule ${selector}`)
+}
+
 /** What a reader sees go wrong in a chip whose name wraps; empty means the stylesheet rules each out. */
 function styleProblems(css: string): string[] {
   const chip = declarations(css, `${CHIPS} a:has(> ${MARK})`)
@@ -48,12 +64,11 @@ describe('the chip stylesheet', () => {
   })
 
   it.each([
-    ['a chip held to one line', 'min-height: var(--sp-h);', 'height: var(--sp-h);', 'the chip has a fixed height'],
-    ['a mark that stretches down the chip', 'align-self: flex-start;', 'align-self: stretch;', 'the mark is not held to the first line'],
-    ['lines that touch', 'line-height: 1.3;', 'line-height: 1;', 'the lines of a wrapped name touch'],
-  ])('catches %s', (_label, from, to, problem) => {
-    expect(marks).toContain(from)
-    expect(styleProblems(marks.replace(from, to))).toEqual(expect.arrayContaining([expect.stringContaining(problem)]))
+    ['a chip held to one line', `${CHIPS} a:has(> ${MARK})`, 'min-height: var(--sp-h)', 'height: var(--sp-h)', 'the chip has a fixed height'],
+    ['a mark that stretches down the chip', `${CHIPS} a > ${MARK}`, 'align-self: flex-start', 'align-self: stretch', 'the mark is not held to the first line'],
+    ['lines that touch', `${CHIPS} a > ${MARK} + code`, 'line-height: 1.3', 'line-height: 1', 'the lines of a wrapped name touch'],
+  ])('catches %s', (_label, selector, from, to, problem) => {
+    expect(styleProblems(mutate(marks, selector, from, to))).toEqual(expect.arrayContaining([expect.stringContaining(problem)]))
   })
 })
 

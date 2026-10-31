@@ -259,7 +259,10 @@ export const firstEntry = (b: TreeBucket) => {
 
 const membersCache = new Map<string, Map<string, TreeMember[]>>()
 
-/** Every owner's members, in the same useful-first order as its reference page. */
+/**
+ * Every owner's members, in its reference page's useful-first order, except that an enum lists its variants together
+ * ahead of its other members and a tuple variant lists none.
+ */
 export function membersByType(port: string): Map<string, TreeMember[]> {
   const cached = membersCache.get(port)
   if (cached) return cached
@@ -269,12 +272,29 @@ export function membersByType(port: string): Map<string, TreeMember[]> {
   return out
 }
 
+/**
+ * A tuple variant's positional field (`0`, `1`) is its payload, which its page and the enum's Variants table show; as
+ * a tree row it reads as an unnamed child behind a chevron.
+ */
+export const isTuplePayload = (owner: ApiSymbol | undefined, symbol: ApiSymbol) => owner?.variant === 'tuple' && /^\d+$/.test(symbol.name)
+
+/** The declaration whose tree row stands for a page: the page's own, or for a payload field the variant that holds it. */
+export function treeRowSymbol(model: ApiModelBase, symbol: ApiSymbol | undefined): ApiSymbol | undefined {
+  if (!symbol?.parent || !/^\d+$/.test(symbol.name)) return symbol
+  const owner = model.symbols.find((entry) => entry.id === symbol.parent)
+  return isTuplePayload(owner, symbol) ? owner : symbol
+}
+
 /** Compute each catalog independently; same-scope versions never share cached members. */
 export function membersByTypeFor(scope: string, model: ApiModelBase): Map<string, TreeMember[]> {
   const out = new Map<string, TreeMember[]>()
   const signals = memberSignals(scope, mentions.mentions)
   for (const owner of model.symbols.filter(isMemberOwner)) {
-    const members = membersOf(model, owner, signals)
+    const listed = membersOf(model, owner, signals).filter((symbol) => !isTuplePayload(owner, symbol))
+    // An enum lists its variants together, then its other members; ranking by use interleaves them. A Java constant, a
+    // Swift case and some Rust variants carry no `variant` shape, so a constant counts as one.
+    const variant = (symbol: ApiSymbol) => Boolean(symbol.variant || symbol.kind === 'constant')
+    const members = owner.kind === 'enum' ? [...listed.filter(variant), ...listed.filter((symbol) => !variant(symbol))] : listed
     if (members.length) out.set(owner.publicId ?? owner.id, members.map((symbol) => ({
       id: symbol.id, name: symbol.name, slug: symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id),
     })))

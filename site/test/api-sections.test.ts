@@ -107,6 +107,26 @@ describe('reference page navigation', () => {
     expect(apiEntryFields(method, 'lua').params.map((param) => param.name)).toEqual(['width'])
   })
 
+  it.each(['self', 'mut self', '&self', '&mut self', "&'a self", "&'a mut self"])(
+    'lists a Rust `%s` receiver nowhere, and keeps the parameters after it', (receiver) => {
+      const bare = symbol('Pane.kill', { kind: 'method', signatures: [{ params: [{ name: receiver }] }] })
+      expect(apiEntryFields(bare, 'rs').params).toEqual([])
+      expect(apiEntrySections(bare, 'rs').map((section) => section.label)).not.toContain('Parameters')
+      const method = symbol('Pane.resize', { kind: 'method', signatures: [{ params: [{ name: receiver }, { name: 'width', type: 'u16' }] }] })
+      expect(apiEntryFields(method, 'rs').params.map((param) => param.name)).toEqual(['width'])
+      expect(apiEntrySections(method, 'rs').map((section) => section.label)).toContain('Parameters')
+    })
+
+  it.each(['myself', 'self_', 'selfish', 'mut selfish'])('keeps the Rust parameter `%s`, whose name only resembles a receiver', (name) => {
+    const method = symbol('Pane.send', { kind: 'method', signatures: [{ params: [{ name, type: 'u8' }] }] })
+    expect(apiEntryFields(method, 'rs').params.map((param) => param.name)).toEqual([name])
+  })
+
+  it('keeps a Rust receiver that the page documents', () => {
+    const method = symbol('Pane.send', { kind: 'method', signatures: [{ params: [{ name: '&self', doc: 'The pane.' }] }] })
+    expect(apiEntryFields(method, 'rs').params.map((param) => param.name)).toEqual(['&self'])
+  })
+
   it('lists a C function\'s leading self, which the caller passes', () => {
     const exec = symbol('cmd_show_messages_exec', { kind: 'function', signatures: [{ params: [{ name: 'self', type: 'struct cmd *' }, { name: 'item', type: 'struct cmdq_item *' }] }] })
     expect(apiEntryFields(exec, 'c').params.map((param) => param.name)).toEqual(['self', 'item'])

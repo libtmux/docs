@@ -1,4 +1,5 @@
 /* Shared API and glossary permalinks stay beside the heading label. */
+:root { --api-permalink-pad: 0.2rem; }
 .api-heading-link {
   flex: none;
   display: inline-flex;
@@ -7,7 +8,7 @@
   min-inline-size: 1.5rem;
   min-block-size: 1.5rem;
   margin-inline-start: 0.25rem;
-  padding: 0.2rem 0.35rem;
+  padding: var(--api-permalink-pad) 0.35rem;
   color: var(--color-muted);
   font-size: 0.875rem;
   font-weight: 400;

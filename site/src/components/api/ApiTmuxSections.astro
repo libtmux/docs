@@ -45,10 +45,12 @@ const flagOf = (scope: { flag: string; target?: string }) => scope.flag || scope
       <a href={item.href}><ApiBadge label={section.catalog} variant="kind" value={section.catalog} compact preview={false} />{item.name}</a>
     </span>)}
   </span></div>}
-  {section.type === 'guides' && section.groups.map((group) => <>
-    {section.groups.length > 1 && <h3 class="text-sm font-semibold">{group.label}</h3>}
-    <p>{group.items.map((item, i) => <>{i > 0 && ', '}<a href={item.href}>{item.title}</a></>)}</p>
-  </>)}
+  {section.type === 'guides' && (section.groups.length > 1 ? <dl class="api-guides">
+    {section.groups.map((group) => <div class="api-guides__group">
+      <dt>{group.label}</dt>
+      <dd><ul class="api-guides-list">{group.items.map((item) => <li><a href={item.href}>{item.title}</a></li>)}</ul></dd>
+    </div>)}
+  </dl> : <ul class="api-guides-list">{section.groups.flatMap((group) => group.items).map((item) => <li><a href={item.href}>{item.title}</a></li>)}</ul>)}
   {section.type === 'ports' && section.groups.map((group) => <>
     <p>{group.label}</p>
     <TmuxUsage usage={group.table} />
