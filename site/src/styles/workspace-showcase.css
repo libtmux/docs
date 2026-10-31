@@ -1,0 +1,238 @@
+/*
+ * Workspace examples (components/workspace/WorkspaceConfig.astro and
+ * WorkspaceShowcase.astro), and what the picker shares with them.
+ *
+ * A configuration is one panel: a strip of tabs over the code, joined. The
+ * strip owns the divider, so the panel under it has no top border, and the
+ * active tab covers the divider where it meets the panel. One radius rounds
+ * the strip's top corners and the panel's bottom corners, and nothing inside
+ * the panel adds a border of its own.
+ *
+ * A configuration and the drawings of its windows sit in `.ws-body`, side by
+ * side when the section is wide enough for each to be useful and stacked when
+ * it is not.
+ */
+
+.ws-body,
+.ws-config {
+  --ws-radius: 0.45rem;
+  --ws-strip: 2rem;
+  --ws-ground: var(--background-color);
+}
+
+/* A radio button stands in for each tab, so the switch works without script. */
+.ws-config {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ws-config__radio {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ws-config__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  min-block-size: var(--ws-strip);
+  border: 1px solid var(--color-edge);
+  border-radius: var(--ws-radius) var(--ws-radius) 0 0;
+  background: var(--color-surface);
+}
+
+.ws-config__tabs label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  /* The tab reaches over the strip's bottom border, which is the divider. */
+  margin-block-end: -1px;
+  padding: 0 0.85rem 1px;
+  border: 0;
+  background: transparent;
+  color: var(--color-muted);
+  font: inherit;
+  font-size: 0.8rem;
+  /* One weight for every state, so choosing a tab never changes a width. */
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ws-config__tabs label:first-child {
+  border-top-left-radius: calc(var(--ws-radius) - 1px);
+}
+
+.ws-config__tabs label:hover {
+  color: inherit;
+}
+
+.ws-config__panel {
+  display: none;
+  flex: 1 1 auto;
+  min-block-size: 0;
+  border: 1px solid var(--color-edge);
+  border-block-start: 0;
+  border-radius: 0 0 var(--ws-radius) var(--ws-radius);
+  background: var(--ws-ground);
+  overflow: hidden;
+}
+
+.ws-config__radio:nth-of-type(1):checked ~ .ws-config__panel--yaml,
+.ws-config__radio:nth-of-type(2):checked ~ .ws-config__panel--json {
+  display: block;
+}
+
+.ws-config__radio:nth-of-type(1):checked ~ .ws-config__tabs label:nth-child(1),
+.ws-config__radio:nth-of-type(2):checked ~ .ws-config__tabs label:nth-child(2) {
+  background: var(--ws-ground);
+  color: var(--theme-primary, inherit);
+}
+
+.ws-config__radio:nth-of-type(1):focus-visible ~ .ws-config__tabs label:nth-child(1),
+.ws-config__radio:nth-of-type(2):focus-visible ~ .ws-config__tabs label:nth-child(2) {
+  outline: 2px solid var(--focus-ring-color, currentColor);
+  outline-offset: -2px;
+}
+
+/*
+ * The code fills the panel and draws no frame of its own: Expressive Code's
+ * frame carries a border and a radius, which would make a second box inside
+ * the panel's. These selectors outrank the frame's own.
+ */
+.ws-config .ws-config__panel .expressive-code,
+.ws-config .ws-config__panel .expressive-code .frame,
+.ws-config .ws-config__panel .expressive-code .frame .header,
+.ws-config .ws-config__panel .expressive-code pre {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.ws-config .ws-config__panel .expressive-code pre {
+  max-block-size: var(--ws-config-max, none);
+  overflow: auto;
+}
+
+.ws-config__note {
+  display: none;
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}
+
+.ws-config__radio:nth-of-type(2):checked ~ .ws-config__note {
+  display: block;
+}
+
+
+.ws-win {
+  min-width: 0;
+  margin: 0;
+}
+
+.ws-win .gp-tmux-layout {
+  margin-inline: auto;
+}
+
+.ws-win figcaption {
+  margin-block-start: 0.5rem;
+  font-size: 0.8125rem;
+  text-align: center;
+  color: var(--color-muted);
+}
+
+/* The examples show every window at once, each in its own card. */
+.ws-windows {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+}
+
+.ws-windows .ws-win {
+  display: block;
+  padding: 0.75rem;
+  border: 1px solid var(--color-edge);
+  border-radius: var(--ws-radius);
+  background: var(--color-surface);
+}
+
+.ws-windows .ws-win__name {
+  margin-block-end: 0.5rem;
+  font-family: var(--font-ibm-plex-mono, ui-monospace, 'SFMono-Regular', Menlo, monospace);
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+/* The configuration and the drawing, side by side when the section has room. */
+.ws-body {
+  display: grid;
+  align-items: stretch;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@container (min-width: 36rem) {
+  .ws-body {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  }
+
+  /* A configuration with nothing to draw takes the whole row. */
+  .ws-body:has(> :only-child) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The examples section. */
+.ws-showcase {
+  container-type: inline-size;
+}
+
+.ws-example {
+  margin-block: 2.5rem;
+}
+
+.ws-also,
+.ws-note,
+.ws-source {
+  font-size: 0.875rem;
+  color: var(--color-muted);
+}
+
+.ws-source {
+  margin-block: 0.5rem;
+}
+
+.ws-via {
+  color: var(--color-muted);
+}
+
+.ws-tests {
+  margin-block: 0.25rem 0;
+  padding-inline-start: 1.25rem;
+  font-size: 0.875rem;
+  list-style: disc;
+}
+
+/* A test name or a path is one long word; let it break at the section's edge. */
+.ws-also,
+.ws-note,
+.ws-source,
+.ws-tests {
+  overflow-wrap: anywhere;
+}
+
+.ws-source code,
+.ws-tests code,
+.ws-note code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

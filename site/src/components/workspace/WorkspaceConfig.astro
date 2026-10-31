@@ -1,0 +1,32 @@
+---
+/**
+ * A workspace file as one panel: YAML and JSON tabs joined to the code.
+ *
+ * A radio button stands in for each tab, so the switch works without script.
+ * `styles/workspace-showcase.css` draws the strip and the panel as one box with
+ * a single divider. The picker and the examples below it both use this.
+ */
+import { Code } from 'astro-expressive-code/components'
+import '../../styles/workspace-showcase.css'
+
+interface Props {
+  /** Unique on the page: it names the radio group and its ids. */
+  id: string
+  yaml: string
+  json: string
+  /** Say, under the JSON, that it was converted from the tested YAML. */
+  note?: boolean
+}
+const { id, yaml, json, note = false } = Astro.props as Props
+---
+<div class="ws-config" role="group" aria-label="Configuration format">
+  <input type="radio" name={`ws-cfg-${id}`} id={`ws-cfg-${id}-yaml`} class="ws-config__radio" checked aria-label="YAML" />
+  <input type="radio" name={`ws-cfg-${id}`} id={`ws-cfg-${id}-json`} class="ws-config__radio" aria-label="JSON" />
+  <div class="ws-config__tabs" aria-hidden="true">
+    <label for={`ws-cfg-${id}-yaml`}>YAML</label>
+    <label for={`ws-cfg-${id}-json`}>JSON</label>
+  </div>
+  <div class="ws-config__panel ws-config__panel--yaml"><Code code={yaml} lang="yaml" frame="none" /></div>
+  <div class="ws-config__panel ws-config__panel--json"><Code code={json} lang="json" frame="none" /></div>
+  {note && <p class="ws-config__note">Converted from the YAML; the tests load the YAML.</p>}
+</div>

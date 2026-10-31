@@ -1,0 +1,76 @@
+---
+/**
+ * Workspace files a port's own tests load, each beside the panes it builds.
+ *
+ * Rendered from the workspace overview rather than from Markdown, because a
+ * content-collection entry cannot import a component. The data and the
+ * evidence for it come from `lib/workspace-showcase.ts`.
+ */
+import {
+  previewLayout, revisionUrl, TOPICS, type ShowcaseExample, type TestVia, type WorkspaceShowcase,
+} from '../../lib/workspace-showcase'
+import WorkspaceConfig from './WorkspaceConfig.astro'
+import '../../styles/tmux-layout.css'
+import '../../styles/workspace-showcase.css'
+
+interface Props {
+  showcase: WorkspaceShowcase
+}
+const { showcase } = Astro.props as Props
+const topicTitle = (id: string) => TOPICS.find((topic) => topic.id === id)!.title
+const examples = [...showcase.examples].sort(
+  (a, b) => TOPICS.findIndex((topic) => topic.id === a.topic) - TOPICS.findIndex((topic) => topic.id === b.topic),
+)
+const VIA: Record<TestVia, string> = {
+  cli: 'runs the command',
+  loader: 'calls the loader the command uses',
+  builder: 'calls the builder the command uses',
+  library: 'calls the library parser',
+}
+const slug = (example: ShowcaseExample) => `${showcase.port}-${example.topic}`
+const previews = new Map(examples.map((example) => [example.topic, previewLayout(JSON.parse(example.json), `ws-${slug(example)}`)]))
+const parts = (text: string) => text.split('`')
+// An "also shows" link needs a section of its own to land on.
+const sections = new Set(examples.map((example) => example.topic))
+---
+<section class="ws-showcase" data-workspace-showcase>
+  <h2 id="example-workspaces">Example workspaces</h2>
+  <p>
+    Each workspace below is a file that a test in <a href={`https://github.com/${showcase.repo}/tree/${showcase.revision}`}><code>{showcase.repo}</code></a>
+    loads. The drawing shows the panes of one window and the commands each pane receives.
+  </p>
+  {examples.map((example) => {
+    const topic = TOPICS.find((entry) => entry.id === example.topic)!
+    const preview = previews.get(example.topic)
+    const id = slug(example)
+    return (
+      <article class="ws-example">
+        <h3 id={`example-${example.topic}`}>{topic.title}</h3>
+        <p>{topic.summary}</p>
+        {example.also.length > 0 && (
+          <p class="ws-also">Also shows: {example.also.map((also, index) => <>{index > 0 && ', '}{sections.has(also) ? <a href={`#example-${also}`}>{topicTitle(also).toLowerCase()}</a> : topicTitle(also).toLowerCase()}</>)}</p>
+        )}
+        {preview && (
+          <figure class="gp-tmux-layout-wrapper">
+            <Fragment set:html={preview.svg} />
+            <figcaption>{preview.window ? <>Window <code>{preview.window}</code></> : 'The first window'}{preview.windows > 1 ? ` of ${preview.windows}` : ''}{preview.layout ? <>, layout <code>{preview.layout}</code></> : ', no layout set'}</figcaption>
+          </figure>
+        )}
+        <WorkspaceConfig id={id} yaml={example.yaml} json={example.json} note />
+        {example.note && <p class="ws-note">{parts(example.note).map((part, index) => (index % 2 ? <code>{part}</code> : part))}</p>}
+        <p class="ws-source">
+          Source: <a href={revisionUrl(showcase, example.source.path, example.source.lines)}><code>{example.source.path}</code></a>
+        </p>
+        <p class="ws-source">Loaded by:</p>
+        <ul class="ws-tests">
+          {example.tests.map((test) => (
+            <li>
+              <a href={revisionUrl(showcase, test.path, test.line)}><code>{test.name}</code></a>: {test.checks}
+              {' '}<span class="ws-via">({test.path}; {VIA[test.via]})</span>
+            </li>
+          ))}
+        </ul>
+      </article>
+    )
+  })}
+</section>
