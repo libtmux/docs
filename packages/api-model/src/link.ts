@@ -364,6 +364,16 @@ export class SymbolIndex {
    */
   private readonly lang: string | undefined
 
+  /** The port this index describes, which decides how a page writes a symbol. */
+  get language(): string | undefined {
+    return this.lang
+  }
+
+  /** The declaration that owns `symbol`. */
+  parentOf(symbol: Pick<ApiSymbol, 'parent'>): ApiSymbol | undefined {
+    return symbol.parent ? this.byDeclared.get(symbol.parent) : undefined
+  }
+
   constructor(symbols: ApiSymbol[], hrefFor: (symbol: ApiSymbol) => string, lang?: string) {
     this.lang = lang
     this.hrefFor = hrefFor
@@ -455,6 +465,17 @@ export class SymbolIndex {
     // page, and CPython's `search` is its search page, not a function of that name.
     for (const entry of symbolEntries(entries)) if (!byName.has(entry.name)) byName.set(entry.name, entry)
     this.external.push({ baseUrl: baseUrl.replace(/\/*$/, '/'), byName, langs, project })
+  }
+
+  /** The callables a port's MCP server registers as tools, by id: a tool is named as a command is, and never called. */
+  private readonly mcpTools = new Set<string>()
+
+  addMcpTools(ids: Iterable<string>): void {
+    for (const id of ids) this.mcpTools.add(id)
+  }
+
+  isMcpTool(symbol: Pick<ApiSymbol, 'id'>): boolean {
+    return this.mcpTools.has(symbol.id)
   }
 
   /** A Rust product's crate, the Cargo features it documents and the crate version docs.rs shows for it. */
