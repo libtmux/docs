@@ -5,8 +5,9 @@ import jdkInv from '../data/inventories/jdk.entries.json'
 import pythonInv from '../data/inventories/python.entries.json'
 import juliaInv from '../data/inventories/julia.entries.json'
 import dependencyInv from '../data/inventories/dependencies.entries.json'
-import { PORT_BY_SLUG, referenceUrl, type DocProduct } from './ports'
-import { defaultVersionFor } from './versions'
+import registryData from '../data/registry.json'
+import { PORT_BY_SLUG, referenceUrl, type DocProduct, type RegistryData } from './ports'
+import { buildTarget, defaultVersionFor, registryVersion } from './versions'
 import powershellNav from '../data/api/powershell.nav.json'
 import juliaNav from '../data/api/julia.nav.json'
 import elixirNav from '../data/api/elixir.nav.json'
@@ -294,6 +295,14 @@ export function createApiIndex(model: ApiModelBase & { port?: string; language?:
     index.addInventory('', parentInventory(API_MODELS[dependency],
       (symbol) => referenceHref(dependency, symbol.publicId ?? symbol.id)!), [model.port!], `libtmux ${PORT_NAME[dependency]}`)
   }
+  const build = buildTarget(process.env)
+  const tagged = (model.port ? PORT_BY_SLUG[model.port] : undefined) ?? { tagGrammar: 'semver' as const }
+  index.addCargoFeatures(model.sources ?? [], (source) => {
+    // What the generated registry state says its package carries; a crate it lists no package for has nothing to match.
+    const entry = (registryData as RegistryData).ports[model.port ?? '']
+    const own = entry?.packages?.[source.package] ?? (source.product === 'core' ? entry : undefined)
+    return registryVersion(build, source.version, [own?.version, own?.release].filter((version): version is string => Boolean(version)), tagged)
+  })
   const sourceFiles = new Map<string, Map<string, string>>()
   for (const symbol of model.symbols) {
     const file = symbol.source.file

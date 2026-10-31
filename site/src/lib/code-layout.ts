@@ -6,7 +6,8 @@ export type CodeSurface = keyof typeof CODE_COLUMNS
 export interface CodeWidthFailure { line: number; columns: number; limit: number }
 export type CodeSyntax = { start: number; end: number } & (
   // `delimiter`, `attribute` and `string` are the parts of an annotation; `argument` is a word in one, which no reference reaches.
-  { kind: 'name' | 'literal' | 'keyword' | 'delimiter' | 'attribute' | 'argument' | 'string' } | { kind: 'parameter'; parameter: number }
+  // `feature` is a quoted Cargo feature name: a string whose name may link to the crate's features.
+  { kind: 'name' | 'literal' | 'keyword' | 'delimiter' | 'attribute' | 'argument' | 'string' | 'feature' } | { kind: 'parameter'; parameter: number }
 )
 export interface CodeLayout {
   text: string
@@ -49,7 +50,13 @@ export function signatureSpans(layout: SpanLayout, index: SymbolIndex, symbol: A
     } })
     else if (range.kind === 'keyword') spans.push({ text, keyword: true, nonReference: true })
     else if (range.kind === 'delimiter' || range.kind === 'attribute' || range.kind === 'string') spans.push({ text, role: range.kind, nonReference: true })
-    else spans.push({ text, nonReference: true })
+    else if (range.kind === 'feature') {
+      const name = text.slice(1, -1)
+      const link = index.cargoFeature(name, symbol)
+      const string = (part: string) => ({ text: part, role: 'string' as const, nonReference: true as const })
+      // The quotes stay a string; the name is the link.
+      spans.push(...link ? [string('"'), { ...string(name), link }, string('"')] : [string(text)])
+    } else spans.push({ text, nonReference: true })
     offset = range.end
   }
   spans.push(...linkText(offset, layout.text.length))

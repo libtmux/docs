@@ -1,6 +1,7 @@
 import { RUST_CRATE_PREFIX, tokenizeDoc, type DocSpan } from './doc/roles.ts'
 import { symbolEntries, type InventoryEntry } from './inventory.ts'
-import type { ApiSymbol, Signature, SymbolKind, TypeParameter } from './model.ts'
+import type { ApiProduct, ApiSource, ApiSymbol, Signature, SymbolKind, TypeParameter } from './model.ts'
+import { cargoFeatureHref, documentedFeature } from './cargo-features.ts'
 import { builtinHref, CURATED_BEFORE_INVENTORY, ELIXIR_STDLIB_MODULES, elixirStdlibHref, NOT_THE_JDKS } from './builtins.ts'
 import { neverLinks } from './never-links.ts'
 import { qualifiedNameOf } from './modules.ts'
@@ -419,6 +420,30 @@ export class SymbolIndex {
     // page, and CPython's `search` is its search page, not a function of that name.
     for (const entry of symbolEntries(entries)) if (!byName.has(entry.name)) byName.set(entry.name, entry)
     this.external.push({ baseUrl: baseUrl.replace(/\/*$/, '/'), byName, langs, project })
+  }
+
+  /** A Rust product's crate, the Cargo features it documents and the crate version docs.rs shows for it. */
+  private readonly cargoCrates = new Map<ApiProduct, { crate: string; features: ReadonlySet<string>; version: string }>()
+
+  /**
+   * The Cargo features each product's crate declares, so `feature = "…"` in an attribute links to docs.rs only
+   * when the crate has that feature. `versionOf` names the crate version docs.rs should show for a source, or
+   * `latest`: the crates of one repository carry their own versions.
+   */
+  addCargoFeatures(sources: readonly ApiSource[], versionOf: (source: ApiSource) => string): void {
+    for (const source of sources) {
+      if (source.features) this.cargoCrates.set(source.product, { crate: source.package, features: new Set(source.features), version: versionOf(source) })
+    }
+  }
+
+  /**
+   * The docs.rs page of a feature of the crate that `context` is written in, or nothing when the crate has no such
+   * feature. A private feature, with a leading underscore, has no anchor on that page, so no list can make it link.
+   */
+  cargoFeature(feature: string, context: ApiSymbol): LinkTarget | undefined {
+    const declared = this.cargoCrates.get(context.product ?? 'core')
+    if (!declared?.features.has(feature) || !documentedFeature(feature)) return undefined
+    return { href: cargoFeatureHref(declared.crate, feature, declared.version), external: true, project: 'docs.rs features' }
   }
 
   private pick(

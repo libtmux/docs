@@ -10,6 +10,7 @@ import {
   newestPublishedTag,
   packageVersionIsPrerelease,
   parseTag,
+  registryVersion,
   releaseTag,
   selectBuildVersions,
   sortVersions,
@@ -363,5 +364,35 @@ describe('package registry versions', () => {
     expect(packageVersionIsPrerelease('0.1.0', 'rubygems')).toBe(false)
     expect(packageVersionIsPrerelease('0.1.0alpha1-1', 'luarocks')).toBe(true)
     expect(packageVersionIsPrerelease('0.1.0-2', 'luarocks')).toBe(false)
+  })
+})
+
+describe('registryVersion', () => {
+  const rust = { tagGrammar: 'semver' as const, tagPrefix: 'libtmux@' }
+  const tag = { version: 'v0.1.0-alpha.15', kind: 'tag' as const }
+  const next = { version: 'next', kind: 'alias' as const }
+
+  it('names the version a release build\'s own crate declares, not the tag: one repository\'s crates carry their own', () => {
+    expect(registryVersion(tag, '0.1.0-alpha.15', [], rust)).toBe('0.1.0-alpha.15')
+    expect(registryVersion(tag, '0.1.0-alpha.16', [], rust)).toBe('0.1.0-alpha.16')
+    expect(registryVersion({ version: 'v1.2.3', kind: 'tag' }, '1.2.4', [], rust)).toBe('1.2.4')
+  })
+
+  it('names the tag `next` resolves to when its version is published, and the newest otherwise', () => {
+    expect(registryVersion(next, '0.1.1-alpha.2', ['0.1.1-alpha.2', '0.1.0'], rust)).toBe('0.1.1-alpha.2')
+    expect(registryVersion(next, '0.1.1-alpha.3', ['0.1.1-alpha.2', '0.1.0'], rust)).toBe('latest')
+    // A registry that carries nothing is not one that carries this.
+    expect(registryVersion(next, '0.1.1-alpha.2', [], rust)).toBe('latest')
+  })
+
+  it.each([
+    ['latest', 'trunk'], ['v0.x', 'branch'], ['pr-12', 'pr'], ['main', 'branch'],
+  ] as const)('shows the registry\'s newest for the %s (%s) build, though its crate declares a version', (version, kind) => {
+    expect(registryVersion({ version, kind }, '0.1.1-alpha.2', ['0.1.1-alpha.2'], rust)).toBe('latest')
+  })
+
+  it('shows the registry\'s newest when the crate declares no version', () => {
+    expect(registryVersion(tag, undefined, ['0.1.0'], rust)).toBe('latest')
+    expect(registryVersion(next, undefined, ['0.1.0'], rust)).toBe('latest')
   })
 })

@@ -76,3 +76,12 @@ it('draws an attribute in a signature with quiet punctuation, an attribute path 
   expect(new Set([ink('muted'), ink('attribute-ink'), ink('string-ink'), ink('type-ink')]).size).toBe(4)
   expect(style('.api-punct').color).not.toBe(ink('string-ink'))
 })
+
+it('keeps the string ink on a Cargo feature that links, and underlines it as a link', () => {
+  const { style, ink } = mount(`<code class="api-native-signature"><span class="api-type"><span class="api-string" data-api-role="syntax">"</span><a id="feature" class="api-type-link api-string" href="https://docs.rs/crate/libtmux/latest/features#query">query</a><span class="api-string" data-api-role="syntax">"</span><a id="type" class="api-type-link" href="#pane">Pane</a></span></code>`)
+  expect(style('#feature').color).toBe(ink('string-ink'))
+  expect([style('#feature').textDecorationLine, style('#feature').textDecorationStyle]).toEqual(['underline', 'dotted'])
+  // A type beside it keeps the type ink and no underline at rest.
+  expect(style('#type').color).toBe(ink('type-ink'))
+  expect(style('#type').textDecorationLine).not.toContain('underline')
+})

@@ -126,24 +126,35 @@ function bindingNames(owner?: NativeNode): Set<string> {
 
 /**
  * An attribute's tokens by role: the punctuation around it, its path, its strings, and the words between. Nothing in
- * an attribute names an API declaration, so none of it links.
+ * an attribute names an API declaration, so none of it links. The one reference an attribute makes is to a Cargo
+ * feature, `feature = "name"` in the arguments of a `cfg`, which `signatureSpans` links to the crate's features page
+ * when the crate declares it.
  */
 function attributeRanges(item: NativeNode): CodeSyntax[] {
   const path = children(children(item, true).find((child) => child.type === 'attribute')!, true)[0]
   const ranges: CodeSyntax[] = []
-  const visit = (node: NativeNode) => {
+  const visit = (node: NativeNode, cfg: boolean, feature: boolean) => {
     const range = { start: node.startIndex, end: node.endIndex }
     if (node.id === path?.id) ranges.push({ ...range, kind: 'attribute' })
-    else if (node.type === 'string_literal' || node.type === 'raw_string_literal') ranges.push({ ...range, kind: 'string' })
-    else if (comments.has(node.type) || !node.childCount) {
+    else if (node.type === 'string_literal' || node.type === 'raw_string_literal') {
+      // Only a plain string names a feature: an escape or a raw string is not a name to look up.
+      const name = node.text.slice(1, -1)
+      ranges.push({ ...range, kind: cfg && feature && node.type === 'string_literal' && name && !name.includes('\\') ? 'feature' : 'string' })
+    } else if (comments.has(node.type) || !node.childCount) {
       const delimiter = !node.isNamed && !/[\p{L}\p{N}_]/u.test(node.text)
       const previous = ranges.at(-1)
       // `#[` and `)]` are each one mark.
       if (delimiter && previous?.kind === 'delimiter' && previous.end === range.start) previous.end = range.end
       else ranges.push({ ...range, kind: delimiter ? 'delimiter' : 'argument' })
-    } else children(node).forEach(visit)
+    } else {
+      const nodes = children(node)
+      nodes.forEach((child, index) => visit(child,
+        // The arguments of `cfg` and `cfg_attr`, and of a `cfg` inside `doc(...)`, are conditions.
+        cfg || (child.type === 'token_tree' && ['cfg', 'cfg_attr'].includes(nodes[index - 1]?.text ?? '')),
+        nodes[index - 2]?.text === 'feature' && nodes[index - 1]?.text === '='))
+    }
   }
-  visit(item)
+  visit(item, false, false)
   return ranges
 }
 
