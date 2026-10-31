@@ -80,9 +80,8 @@ const { id = 'reference-link-preview', preview, class: className } = Astro.props
   html[data-theme-mode="dark"] .reference-link-preview__signature { color: var(--shiki-dark, inherit); }
   html[data-theme-mode="dark"] .reference-link-preview__signature span { font-style: var(--shiki-dark-font-style); font-weight: var(--shiki-dark-font-weight); text-decoration: var(--shiki-dark-text-decoration); }
 
-  /* Summary: tall lines leave room for the small kind marks of the names in it. */
-  .reference-link-preview__prose { display: block; padding: .55rem .8rem .7rem; font: 400 .8125rem/1.8 var(--font-sans); }
-  .reference-link-preview__signature:not([hidden]) + .reference-link-preview__prose { padding-top: .1rem; }
+  /* Summary: the same room above and below, whether or not a declaration sits over it. */
+  .reference-link-preview__prose { display: block; padding: .6rem .8rem; font: 400 .8125rem/1.55 var(--font-sans); }
   .reference-link-preview__summary { display: block; }
   .reference-link-preview__detail { display: block; margin-top: .25rem; color: var(--color-foreground-muted); font-size: .75rem; line-height: 1.5; }
 
