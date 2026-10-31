@@ -166,3 +166,33 @@ describe('sidebar rows and guide lines with the default marks', () => {
     expect(coarse.filter((row) => row.lineCount === 1).map((row) => row.height)).toEqual([44, 44, 44, 44])
   })
 })
+
+// A top-level bucket closed over the current page, in a tree with a presentation and in one without. The tint and weight
+// mark the page's row; no row draws a bar at its start edge, whatever the pseudo-element, border or shadow it would use.
+const closedBucket = (attributes: string) => `<div id="api-nav" class="api-nav"${attributes}><nav class="api-nav__nav"><ul role="tree" class="api-nav__tree">
+<li role="treeitem" class="api-nav__item" aria-level="1" aria-expanded="false" aria-description="class">
+  <div class="api-nav__row" style="--level:1"><span class="api-nav__chevron" aria-hidden="true"></span><a class="api-nav__label" href="#">Server</a><span class="api-nav__count">1</span></div>
+  <ul role="group" class="api-nav__group"><li role="none"><a role="treeitem" class="api-nav__row api-nav__leaf" aria-level="2" href="#" aria-current="page" style="--level:2"><span class="api-nav__label">kill</span></a></li></ul>
+</li></ul></nav></div>`
+
+describe.each([['without a presentation', ''], ['with a presentation', ' data-presentation="outline"']])('a closed top-level bucket over the current page, %s', (_mode, attributes) => {
+  it('is semibold and draws no bar at its start edge', async () => {
+    const target = await browser.newPage({ viewport: { width: 400, height: 300 } })
+    await target.setContent(page(`*, ::before, ::after { box-sizing: border-box; }\n${styles}`).replace(/<body>[\s\S]*<\/body>/, `<body>${closedBucket(attributes)}</body>`))
+    const rows = await target.evaluate(() => [...document.querySelectorAll('.api-nav__row')].map((row) => {
+      const style = getComputedStyle(row)
+      // A pseudo-element draws something when it has content and is not hidden.
+      const before = getComputedStyle(row, '::before')
+      return { text: row.textContent!.trim(), weight: style.fontWeight, before: before.display === 'none' ? 'none' : before.content, after: parseFloat(getComputedStyle(row, '::after').width) || 0,
+        edge: [style.borderInlineStartWidth, style.boxShadow] }
+    }))
+    await target.close()
+    expect(rows.map((row) => row.text.replace(/\d+$/, ''))).toEqual(['Server', 'kill'])
+    expect(rows[0].weight, 'the closed bucket keeps its weight').toBe('600')
+    for (const row of rows) {
+      expect(row.before, `${row.text}: ::before`).not.toContain('"')
+      expect(row.after, `${row.text}: ::after`).toBe(0)
+      expect(row.edge, `${row.text}: border and shadow`).toEqual(['0px', 'none'])
+    }
+  })
+})
