@@ -29,6 +29,9 @@
   --api-ink-keyword: #be123c;
   --api-ink-name: #1a56db;
   --api-ink-type: #4338ca;
+  /* An attribute is the members family's ink; a string is the colour the site's code blocks give one. */
+  --api-ink-attribute: #047857;
+  --api-ink-string: #755400;
   --api-ink-danger-border: #f43f5e;
 }
 
@@ -49,6 +52,8 @@
     --api-ink-keyword: #fda4af;
     --api-ink-name: #93c5fd;
     --api-ink-type: #a5b4fc;
+    --api-ink-attribute: #6ee7b7;
+    --api-ink-string: #e6c86e;
     --api-ink-danger-border: #fb7185;
   }
 }
@@ -69,6 +74,8 @@
   --api-ink-keyword: #fda4af;
   --api-ink-name: #93c5fd;
   --api-ink-type: #a5b4fc;
+  --api-ink-attribute: #6ee7b7;
+  --api-ink-string: #e6c86e;
   --api-ink-danger-border: #fb7185;
 }
 

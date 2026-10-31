@@ -68,7 +68,7 @@ const isOperator = (text: string) => /^(->|=>|<:|:>)$/.test(text)
       ><SymbolName name={span.text} /></a>
     ) : span.help ? <ApiKeyword text={span.text} help={span.help} /> : (
       <span class:list={[
-        span.declaration || span.keyword ? 'api-type-label' : 'api-punct',
+        span.role ? `api-${span.role}` : span.declaration || span.keyword ? 'api-type-label' : 'api-punct',
         span.keyword && 'api-keyword',
         span.declaration && (isDeclarationName(span) ? 'api-declaration-name' : 'api-parameter-name'),
         span.enclosingContext && 'api-signature-context',

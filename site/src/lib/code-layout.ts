@@ -5,7 +5,8 @@ export const CODE_COLUMNS = { api: 60, example: 80 } as const
 export type CodeSurface = keyof typeof CODE_COLUMNS
 export interface CodeWidthFailure { line: number; columns: number; limit: number }
 export type CodeSyntax = { start: number; end: number } & (
-  { kind: 'name' | 'literal' | 'keyword' } | { kind: 'parameter'; parameter: number }
+  // `delimiter`, `attribute` and `string` are the parts of an annotation; `argument` is a word in one, which no reference reaches.
+  { kind: 'name' | 'literal' | 'keyword' | 'delimiter' | 'attribute' | 'argument' | 'string' } | { kind: 'parameter'; parameter: number }
 )
 export interface CodeLayout {
   text: string
@@ -15,7 +16,11 @@ export interface CodeLayout {
   /** The leading native owner fragment, when it distinguishes callable scope. */
   contextEnd?: number
 }
-export type SignatureSpan = ReturnType<SymbolIndex['linkType']>[number] & { declarationName?: true; nonReference?: true; enclosingContext?: true }
+export type SignatureSpan = ReturnType<SymbolIndex['linkType']>[number] & {
+  declarationName?: true; nonReference?: true; enclosingContext?: true
+  /** How an annotation's token reads: its punctuation, its path, or a string in it. */
+  role?: 'delimiter' | 'attribute' | 'string'
+}
 /** The part of a layout that decides how text becomes spans. */
 export type SpanLayout = Pick<CodeLayout, 'text' | 'syntax' | 'contextEnd'>
 
@@ -43,6 +48,7 @@ export function signatureSpans(layout: SpanLayout, index: SymbolIndex, symbol: A
       href: `#${encodeURIComponent(parameterId(symbol, signature.params[range.parameter]!.name))}`, external: false,
     } })
     else if (range.kind === 'keyword') spans.push({ text, keyword: true, nonReference: true })
+    else if (range.kind === 'delimiter' || range.kind === 'attribute' || range.kind === 'string') spans.push({ text, role: range.kind, nonReference: true })
     else spans.push({ text, nonReference: true })
     offset = range.end
   }

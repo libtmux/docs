@@ -14,7 +14,7 @@ const mount = (body = `<div class="gp-sphinx-api-parameters"><dl class="field-li
   win = new Window({ settings: { disableCSSFileLoading: true, disableJavaScriptEvaluation: true } })
   win.document.head.innerHTML = `<style>${css}</style>`
   win.document.body.innerHTML = `<dl class="py gp-sphinx-api-container"><dt>Declaration</dt><dd>${body}</dd></dl>
-    <i id="name-ink" style="color: var(--api-ink-name)"></i><i id="type-ink" style="color: var(--api-ink-type)"></i><i id="muted" style="color: var(--color-muted)"></i><i id="link-ink" style="color: var(--color-link)"></i>`
+    <i id="name-ink" style="color: var(--api-ink-name)"></i><i id="type-ink" style="color: var(--api-ink-type)"></i><i id="muted" style="color: var(--color-muted)"></i><i id="link-ink" style="color: var(--color-link)"></i><i id="attribute-ink" style="color: var(--api-ink-attribute)"></i><i id="string-ink" style="color: var(--api-ink-string)"></i>`
   const style = (selector: string) => win.getComputedStyle(win.document.querySelector(selector)!)
   return { style, ink: (id: string) => win.getComputedStyle(win.document.getElementById(id)!).color }
 }
@@ -65,4 +65,14 @@ it('draws a type a signature links in the type ink, and a link to a parameter in
   expect(style('#param').color).toBe(ink('link-ink'))
   // The signature's other inks stay as they were.
   expect(style('.api-declaration-name').color).toBe(ink('name-ink'))
+})
+
+it('draws an attribute in a signature with quiet punctuation, an attribute path and a string', () => {
+  const { style, ink } = mount(`<code class="api-native-signature"><span class="api-type"><span class="api-delimiter" data-api-role="syntax">#[</span><span class="api-attribute" data-api-role="syntax">cfg</span><span class="api-delimiter" data-api-role="syntax">(</span><span class="api-punct" data-api-role="syntax">feature</span><span class="api-string" data-api-role="syntax">"control-mode"</span><span class="api-keyword">pub</span></span></code>`)
+  expect(style('.api-delimiter').color).toBe(ink('muted'))
+  expect(style('.api-attribute').color).toBe(ink('attribute-ink'))
+  expect(style('.api-string').color).toBe(ink('string-ink'))
+  // Three roles, three inks, and the words between them keep the signature's own.
+  expect(new Set([ink('muted'), ink('attribute-ink'), ink('string-ink'), ink('type-ink')]).size).toBe(4)
+  expect(style('.api-punct').color).not.toBe(ink('string-ink'))
 })

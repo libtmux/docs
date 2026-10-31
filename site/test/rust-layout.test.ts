@@ -3,7 +3,10 @@ import { describe, expect, it } from 'vitest'
 import { parserFor, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { apiSignatureLayouts, CODE_COLUMNS, codeWidthFailures, signatureSpans } from '../src/lib/code-layout'
+import { experimental_AstroContainer } from 'astro/container'
+import { Window } from 'happy-dom'
 import { apiEntryFields, usesNativeSignatures } from '../src/lib/api-sections'
+import { apiComponents } from './api-components'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
 import { extractSourceWithSpec } from '../../packages/api-model/src/languages/spec'
 import { RUST } from '../../packages/api-model/src/languages/specs'
@@ -37,7 +40,11 @@ describe('Rust callable layouts', () => {
     expect(spans.filter((span) => span.declarationName).map((span) => span.text)).toEqual(['new'])
     expect(spans.filter((span) => span.link?.href.startsWith('#')).map((span) => span.link!.href))
       .toEqual(['#command.Command.new.parameter.subcommand'])
-    expect(spans.find((span) => span.text.startsWith('#[must_use'))).toMatchObject({ nonReference: true })
+    // The attribute is its punctuation, its path and its string, none of them a reference.
+    expect(spans.filter((span) => span.role).map((span) => [span.text, span.role, span.nonReference])).toEqual([
+      ['#[', 'delimiter', true], ['must_use', 'attribute', true], ['=', 'delimiter', true],
+      ['"a command has no effect until it is dispatched"', 'string', true], [']', 'delimiter', true],
+    ])
     const markdown = await symbolMarkdownWithLayout({ model, symbol, index })
     const code = fromMarkdown(markdown).children.find((node) => node.type === 'code')
     expect(code?.type === 'code' && code.value).toBe(layout.text)
@@ -153,6 +160,80 @@ describe('Rust callable layouts', () => {
 })
 
 const extract = (source: string) => extractSourceWithSpec(RUST, source, 'probe.rs', 'probe')
+
+describe('Rust attributes in a signature', () => {
+  const roles = (spans: ReturnType<typeof signatureSpans>) => spans.filter((span) => span.role).map((span) => [span.text, span.role])
+  const spansOf = async (raw: string, declared: ApiSymbol[] = [], params: Signature['params'] = []) => {
+    const symbol = method(raw, params)
+    const layout = await layoutFor(symbol)
+    const index = new SymbolIndex([symbol, ...declared], (entry) => `/${entry.id}/`, 'rs')
+    return { symbol, layout, spans: signatureSpans(layout, index, symbol, symbol.signatures[0]!), index }
+  }
+
+  it('reads `#[must_use]` as punctuation around an attribute', async () => {
+    const { layout, spans } = await spansOf('#[must_use]\npub fn method()')
+    expect(roles(spans)).toEqual([['#[', 'delimiter'], ['must_use', 'attribute'], [']', 'delimiter']])
+    expect(spans.map((span) => span.text).join('')).toBe(layout.text)
+  })
+
+  it('reads a cfg predicate as an attribute, a quiet name and operator, and a string', async () => {
+    const { layout, spans } = await spansOf('#[cfg(feature = "control-mode")]\npub fn method()')
+    expect(layout.text).toBe('#[cfg(feature = "control-mode")]\npub fn method()')
+    expect(roles(spans)).toEqual([
+      ['#[', 'delimiter'], ['cfg', 'attribute'], ['(', 'delimiter'], ['=', 'delimiter'], ['"control-mode"', 'string'], [')]', 'delimiter'],
+    ])
+    // `feature` is a word of the predicate, not a role of its own, and the rest of the line keeps its keywords.
+    expect(spans.find((span) => span.text === 'feature')).toMatchObject({ nonReference: true })
+    expect(spans.find((span) => span.text === 'feature')?.role).toBeUndefined()
+    expect(spans.filter((span) => span.keyword).map((span) => span.text)).toEqual(['pub', 'fn'])
+  })
+
+  it('takes the whole path of a scoped attribute and every string of its arguments', async () => {
+    const { spans } = await spansOf('#[tool_router(router = contract_router, vis = "pub(super)")]\n#[clippy::must_use]\n#[doc = r#"raw"#]\npub fn method()')
+    expect(roles(spans)).toEqual([
+      ['#[', 'delimiter'], ['tool_router', 'attribute'], ['(', 'delimiter'], ['=', 'delimiter'], [',', 'delimiter'], ['=', 'delimiter'],
+      ['"pub(super)"', 'string'], [')]', 'delimiter'],
+      ['#[', 'delimiter'], ['clippy::must_use', 'attribute'], [']', 'delimiter'],
+      ['#[', 'delimiter'], ['doc', 'attribute'], ['=', 'delimiter'], ['r#"raw"#', 'string'], [']', 'delimiter'],
+    ])
+  })
+
+  it('links nothing inside an attribute, whatever its words name', async () => {
+    const pane = { ...method('pub struct Pane', [], 'Pane'), id: 'server.Pane', name: 'Pane', kind: 'struct' as const, signatures: [] }
+    const { spans } = await spansOf('#[tool(description = "Pane", meta = Pane, other = crate::Pane)]\npub fn method(pane: Pane)', [pane], [{ name: 'pane', type: 'Pane' }])
+    const attribute = spans.slice(0, spans.findIndex((span) => span.text === 'pub'))
+    expect(attribute.filter((span) => span.link)).toEqual([])
+    expect(spans.filter((span) => span.link?.href === '/server.Pane/')).toHaveLength(1)
+  })
+
+  it('keeps the copy text and the Markdown signature as they were', async () => {
+    const raw = '#[cfg(feature = "control-mode")]\n#[must_use = "use the returned builder to retain the limits"]\npub fn method(value: u8) -> u8'
+    const symbol = method(raw, [{ name: 'value', type: 'u8' }])
+    const layout = await layoutFor(symbol)
+    const model = { port: 'rs', extractor: 'test', symbols: [symbol] } as ApiModel
+    const markdown = await symbolMarkdownWithLayout({ model, symbol })
+    const code = fromMarkdown(markdown).children.find((node) => node.type === 'code')
+    expect(code?.type === 'code' && code.value).toBe(layout.text)
+    expect(layout.text).toBe('#[cfg(feature = "control-mode")]\n#[must_use =\n    "use the returned builder to retain the limits"\n]\npub fn method(value: u8) -> u8')
+  })
+
+  it('draws each role in its own class, none of them a plain name the type-link check would count', async () => {
+    const { symbol, layout, index } = await spansOf('#[cfg(feature = "control-mode")]\npub fn method()')
+    const { type } = await apiComponents()
+    const win = new Window()
+    try {
+      const container = await experimental_AstroContainer.create()
+      win.document.body.innerHTML = await container.renderToString(type, { props: { type: layout.text, index, context: symbol, signature: symbol.signatures[0], layout } })
+      const drawn = [...win.document.querySelectorAll('.api-type > span')].filter((node) => /\bapi-(delimiter|attribute|string)\b/.test(node.className))
+        .map((node) => [node.textContent, node.className, node.getAttribute('data-api-role')])
+      expect(drawn).toEqual([
+        ['#[', 'api-delimiter', 'syntax'], ['cfg', 'api-attribute', 'syntax'], ['(', 'api-delimiter', 'syntax'], ['=', 'api-delimiter', 'syntax'],
+        ['"control-mode"', 'api-string', 'syntax'], [')]', 'api-delimiter', 'syntax'],
+      ])
+      expect(win.document.querySelector('.api-type')?.textContent).toBe(layout.text)
+    } finally { await win.happyDOM.abort() }
+  })
+})
 
 describe('Rust source grammar edge cases', () => {
   it('resolves owner references before callable-local generic bindings enter scope', async () => {

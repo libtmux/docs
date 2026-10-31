@@ -124,10 +124,37 @@ function bindingNames(owner?: NativeNode): Set<string> {
   return names
 }
 
+/**
+ * An attribute's tokens by role: the punctuation around it, its path, its strings, and the words between. Nothing in
+ * an attribute names an API declaration, so none of it links.
+ */
+function attributeRanges(item: NativeNode): CodeSyntax[] {
+  const path = children(children(item, true).find((child) => child.type === 'attribute')!, true)[0]
+  const ranges: CodeSyntax[] = []
+  const visit = (node: NativeNode) => {
+    const range = { start: node.startIndex, end: node.endIndex }
+    if (node.id === path?.id) ranges.push({ ...range, kind: 'attribute' })
+    else if (node.type === 'string_literal' || node.type === 'raw_string_literal') ranges.push({ ...range, kind: 'string' })
+    else if (comments.has(node.type) || !node.childCount) {
+      const delimiter = !node.isNamed && !/[\p{L}\p{N}_]/u.test(node.text)
+      const previous = ranges.at(-1)
+      // `#[` and `)]` are each one mark.
+      if (delimiter && previous?.kind === 'delimiter' && previous.end === range.start) previous.end = range.end
+      else ranges.push({ ...range, kind: delimiter ? 'delimiter' : 'argument' })
+    } else children(node).forEach(visit)
+  }
+  visit(item)
+  return ranges
+}
+
 function syntaxRanges(parts: NativeNode[], bound: Set<string>, initial: CodeSyntax[] = []): CodeSyntax[] {
   const syntax = [...initial]
   const visit = (node: NativeNode) => {
     if (syntax.some((range) => range.start <= node.startIndex && range.end >= node.endIndex)) return
+    if (node.type === 'attribute_item') {
+      syntax.push(...attributeRanges(node))
+      return
+    }
     if (!node.isNamed && !node.childCount && /^[\p{L}_][\p{L}\p{N}_]*$/u.test(node.text)) {
       syntax.push({ start: node.startIndex, end: node.endIndex, kind: 'keyword' })
       return
