@@ -26,6 +26,8 @@ export interface ApiSource {
   revision?: string
   extractedRevision?: string
   version?: string
+  /** A Rust crate's documented Cargo features: the keys of its `[features]` table at the extracted revision, less the private ones. */
+  features?: string[]
 }
 
 /**
