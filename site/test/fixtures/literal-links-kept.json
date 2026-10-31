@@ -1,0 +1,13 @@
+[
+  {"port":"cxx","symbol":"libtmux::as_command_failure","literal":"pipe","word":"pipe","target":"libtmux::FailureKind::pipe"},
+  {"port":"cxx","symbol":"libtmux::CommandRuntime::wait_ready","literal":"closed","word":"closed","target":"libtmux::ReadyStatus::closed"},
+  {"port":"cxx","symbol":"libtmux::CommandRuntimeShutdown","literal":"close","word":"close","target":"libtmux::CommandRuntime::close"},
+  {"port":"cxx","symbol":"libtmux::ExecutorOptions","literal":"capabilities().supports(...)","word":"capabilities","target":"libtmux::Server::capabilities"},
+  {"port":"cxx","symbol":"libtmux::ExecutorOptions","literal":"tmux","word":"tmux","target":"libtmux::ServerImplementation::tmux"},
+  {"port":"cxx","symbol":"libtmux::Server::run","literal":"truncated","word":"truncated","target":"libtmux::FailureKind::truncated"},
+  {"port":"cxx","symbol":"libtmux::Session::expand","literal":"missing","word":"missing","target":"libtmux::FailureKind::missing"},
+  {"port":"cxx","symbol":"libtmux::Window::expand","literal":"missing","word":"missing","target":"libtmux::FailureKind::missing"},
+  {"port":"julia","symbol":"LibTmux.snapshot","literal":"acquired","word":"acquired","target":"LibTmux.Snapshot.acquired"},
+  {"port":"ts","symbol":"selection.StringFilterFields","literal":"where({ active: \"1\" })","word":"where","target":"selection.Selection.where"},
+  {"port":"ts","symbol":"selection.StringFilterFields","literal":"where({ active: true })","word":"where","target":"selection.Selection.where"}
+]

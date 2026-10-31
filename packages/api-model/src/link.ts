@@ -143,6 +143,34 @@ const controlMarker = /^%[\w-]+$/
 /** A kebab-case word (`control-mode`, a Cargo feature) is one name: its hyphen is no minus between two members, `control` and `mode`. */
 const kebabName = /^[a-z0-9]+(?:-[a-z0-9]+)+$/
 
+/**
+ * A code literal shaped like a file path: a `/` in it with the extension of a file after the last one
+ * (`src/main/java/ListWindows.java`), or a source directory at its start (`include/libtmux/`). Its segments are
+ * file and directory names, not members that share a word with them, so none of it links. A URL is no path, and
+ * neither is a qualified name that a language writes with a slash: Go's `net/http.Client`, `os/exec.Command` and
+ * Swift's `Server/Direction.up` end in a member, which is no file extension. Extensions are lowercase: `.HTML`,
+ * `.JS` and `.CSS` end Go's `html/template.HTML` and the types beside it.
+ */
+const SOURCE_ROOTS = /^(?:\.{1,2}\/|~\/)?(?:src|lib|include|test|tests|docs|examples|benches|scripts|cmd|pkg|internal|Sources|Tests)\//
+const FILE_EXTENSIONS: ReadonlySet<string> = new Set([
+  'java', 'kt', 'kts', 'scala', 'sc', 'rs', 'go', 'py', 'rb', 'lua', 'cs', 'csproj', 'fs', 'fsi', 'fsx', 'fsproj', 'jl', 'ex', 'exs',
+  'ps1', 'psm1', 'psd1', 'swift', 'ts', 'tsx', 'js', 'mjs', 'cjs', 'c', 'h', 'cc', 'cpp', 'cxx', 'hh', 'hpp',
+  'md', 'mdx', 'rst', 'txt', 'json', 'jsonc', 'toml', 'yaml', 'yml', 'xml', 'html', 'css', 'sh', 'bash', 'zsh', 'sql',
+  'conf', 'cfg', 'ini', 'lock', 'gradle', 'tmux',
+])
+export function isFilePath(text: string): boolean {
+  if (/\s/.test(text) || /^[a-z][a-z0-9+.-]*:\/\//i.test(text)) return false
+  if (SOURCE_ROOTS.test(text)) return true
+  const extension = /\/[^\s/]*\.([A-Za-z][A-Za-z0-9]{0,7})$/.exec(text)?.[1]
+  return extension !== undefined && FILE_EXTENSIONS.has(extension)
+}
+
+/**
+ * A plain lowercase word, such as `server` or `pane`. A name with an underscore, an inner capital or a qualifier
+ * (`send_keys`, `sendKeys`, `Server::kill`) is an identifier: it says which declaration it means, and keeps its link.
+ */
+const plainWord = /^[a-z][a-z0-9]*$/
+
 interface TypeSpan {
   text: string
   link?: LinkTarget
@@ -301,6 +329,10 @@ export class SymbolIndex {
   private readonly rubyRoots = new Set<string>()
   /** An Elixir module's members, by the module's id. */
   private readonly elixirMembers = new Map<string, ApiSymbol[]>()
+  /** The declarations each declaration owns, by its id. */
+  private readonly membersByOwner = new Map<string, ApiSymbol[]>()
+  /** The type declarations a symbol's own types name, by its id. */
+  private readonly typesNamed = new Map<string, Set<string>>()
 
   // A plain field, not a constructor parameter property. Node's
   // --experimental-strip-types rejects parameter properties outright
@@ -360,6 +392,7 @@ export class SymbolIndex {
       const list = this.byName.get(s.name) ?? []
       list.push(s)
       this.byName.set(s.name, list)
+      if (s.parent) this.membersByOwner.set(s.parent, [...(this.membersByOwner.get(s.parent) ?? []), s])
       if (this.lang === 'ruby' && pub.includes('::')) this.rubyRoots.add(pub.slice(0, pub.indexOf('::')))
       if (this.lang === 'elixir' && s.parent) this.elixirMembers.set(s.parent, [...(this.elixirMembers.get(s.parent) ?? []), s])
       const labels = this.lang === 'swift' ? pub.indexOf('(') : -1
@@ -1030,7 +1063,9 @@ export class SymbolIndex {
   linkDoc(spans: DocSpan[], context?: ApiSymbol): (DocSpan & { link?: LinkTarget })[] {
     return spans.map((span) => {
       if (span.kind !== 'ref') return span
-      const link = this.resolve(span.target, span.role, context)
+      const resolved = this.resolve(span.target, span.role, context)
+      const lone = /^([A-Za-z_$][\w$]*)(\(.*\))?$/s.exec(span.target)
+      const link = lone && this.isAnotherOwnersMember(lone[1]!, resolved, context, this.isCall(lone[2] ?? '')) ? undefined : resolved
       // A `typeparam` reference that names nothing in scope is a literal, not a lookup of a global.
       return !link && span.role === 'typeparam' ? { kind: 'code' as const, text: span.label } : { ...span, link }
     })
@@ -1045,12 +1080,149 @@ export class SymbolIndex {
    * and a kebab-case word such as the feature `control-mode`, which names no
    * member and was split at its hyphen into one that does. tmux options and
    * commands written that way are named whole by the tmux linker, before the
-   * parts of a literal are drawn. A variable and the text a program prints stay
+   * parts of a literal are drawn. A file path links nothing, and a plain word links
+   * no member of a type the referring symbol is not part of (`isAnotherOwnersMember`).
+   * A variable and the text a program prints stay
    * plain too (`neverLinks`), in `linkType`, which every path calls.
    */
   linkLiteral(text: string, context?: ApiSymbol): TypeSpan[] {
-    if (keywordArgument.test(text) || controlMarker.test(text) || kebabName.test(text)) return [{ text }]
-    return this.plainArguments(this.linkPaths(this.linkType(text, context), context))
+    if (keywordArgument.test(text) || controlMarker.test(text) || kebabName.test(text) || this.isPathLiteral(text)) return [{ text }]
+    return this.plainShortNames(this.plainArguments(this.linkPaths(this.linkType(text, context), context)), context)
+  }
+
+  /** Whether the literal is a file path, whose directory and file names are no members. */
+  private isPathLiteral(text: string): boolean {
+    return isFilePath(text)
+  }
+
+  /**
+   * Whether a plain lowercase word reached `hit` only by the short name of a member of a type that `context` has
+   * nothing to do with. `server` in the docs of `OptionArgs.scope` is the tmux scope a value names, not
+   * `TestServer::server`; a member of a type the page is about is what a bare name means there. An identifier
+   * (`typed_global_option`, `sendKeys`), a qualified name, a type and a module's function say which declaration they
+   * mean, and are not this.
+   */
+  private isAnotherOwnersMember(word: string, hit: LinkTarget | undefined, context?: ApiSymbol, called = false, whole = true): boolean {
+    const member = hit?.symbol
+    if (!context || !member || !plainWord.test(word) || TYPE_KINDS.has(member.kind) || member.kind === 'module') return false
+    const owner = member.parent ? this.byDeclared.get(member.parent) : undefined
+    if (!owner || !TYPE_KINDS.has(owner.kind)) return false
+    // A page of the public API links nothing into the library's internals.
+    if ((this.isInternal(member) || this.isInternal(owner)) && !this.isInternal(context)) return true
+    const chain = this.ownersOf(context)
+    if (chain.has(owner.id)) return false
+    // A language whose ids this index does not walk by `.` may hold the member in an enclosing type as well.
+    if ((this.byName.get(member.name) ?? []).some((other) => other.parent !== undefined && chain.has(other.parent))) return false
+    // A parameter of the page's own signature is that parameter, whatever type its name is also a member of.
+    if (context.signatures.some((signature) => signature.params.some((param) => param.name === word))) return true
+    // A word that is called is an identifier: `where({ active: true })` names the method, not a tmux scope.
+    if (called) return false
+    // A word among others, in `struct client` or `#{E:status-left}`, is part of a phrase and not a name the page's types claim.
+    return !whole || !this.isRelated(member, owner, context, chain)
+  }
+
+  /**
+   * Whether the text after a word calls it in a way that names the callee: with arguments, `where({ active: true })`, or
+   * with its result used, `capabilities().supports(...)`. A bare `iter()` or `close()` is as likely the method of that
+   * name on some other type, and is not this.
+   */
+  private isCall(rest: string): boolean {
+    return /^\((?!\s*\))/.test(rest) || /^\(\s*\)\s*(?:\.|->)/.test(rest)
+  }
+
+  /** A declaration of the library's internals: `detail::Row`, or one the model scopes as internal. */
+  private isInternal(symbol: ApiSymbol): boolean {
+    return symbol.apiScope === 'internal' || /(?:^|[.:])detail(?:[.:]|$)/.test(symbol.publicId ?? symbol.id)
+  }
+
+  /**
+   * Whether the type `owner` of `member` is one the page is about besides the types that enclose it: a type its
+   * signatures name, an enumeration their members or its own hold, a type whose `member` gives back the type the
+   * page documents, or the type a function is named for.
+   */
+  private isRelated(member: ApiSymbol, owner: ApiSymbol, context: ApiSymbol, chain: Set<string>): boolean {
+    const related = this.relatedTypes(context, chain)
+    if (related.has(owner.id)) return true
+    // `CommandRuntime::close` gives back the shutdown report that the page documents.
+    if (TYPE_KINDS.has(context.kind) && this.returnedTypes(member).has(context.id)) return true
+    // A function named for a type builds it, as `snapshot` builds a `Snapshot`.
+    return context.kind === 'function' && owner.name.toLowerCase() === context.name.replace(/\(.*$/s, '').toLowerCase()
+  }
+
+  /** The symbol and every declaration that encloses it. */
+  private ownersOf(symbol: ApiSymbol): Set<string> {
+    const chain = new Set<string>()
+    for (let scope: ApiSymbol | undefined = symbol; scope && !chain.has(scope.id); scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) chain.add(scope.id)
+    return chain
+  }
+
+  /**
+   * The types a page is about: those that enclose its symbol and those its signatures name (parameters, what it
+   * returns and what it raises). The enumerations that the members of those types, and of a type page itself, hold
+   * count too, since a value of a field is named in the field's own type: `Server::run` returns a `CommandFailure`
+   * whose `kind` is a `FailureKind`, so a `truncated` in its docs is that kind's.
+   */
+  private relatedTypes(symbol: ApiSymbol, chain: Set<string>): Set<string> {
+    const named = this.typesNamedByEvery(symbol)
+    const related = new Set([...chain, ...named])
+    const holders = [...named, ...(TYPE_KINDS.has(symbol.kind) ? [symbol.id] : [])]
+    for (const holder of holders) {
+      for (const member of this.membersByOwner.get(holder) ?? []) {
+        for (const type of this.typesNamedBy(member)) if (this.byDeclared.get(type)?.kind === 'enum') related.add(type)
+      }
+    }
+    return related
+  }
+
+  /** The ids of the type declarations that a symbol's signatures give back. */
+  private returnedTypes(symbol: ApiSymbol): Set<string> {
+    return new Set(symbol.signatures.flatMap((signature) => [...this.typesIn(signature.returns, symbol, signature)]))
+  }
+
+  /** The ids of the type declarations that one annotation names. */
+  private typesIn(annotation: string | undefined, symbol: ApiSymbol, signature?: Signature): Set<string> {
+    const named = new Set<string>()
+    for (const span of annotation ? this.linkType(annotation, symbol, signature) : []) {
+      const type = span.link?.symbol
+      if (type && TYPE_KINDS.has(type.kind)) named.add(type.id)
+    }
+    return named
+  }
+
+  /** The type declarations that one signature names: its parameters, what it returns and what it raises. */
+  private typesInSignature(symbol: ApiSymbol, signature: Signature): Set<string> {
+    return new Set([
+      ...signature.params.flatMap((param) => [...this.typesIn(param.type, symbol, signature)]),
+      ...this.typesIn(signature.returns, symbol, signature),
+      ...(signature.raises ?? []).flatMap((raised) => [...this.typesIn(raised.type, symbol, signature)]),
+    ])
+  }
+
+  /** The ids of the type declarations that a symbol's own type, parameters, result and raised errors name. */
+  private typesNamedBy(symbol: ApiSymbol): Set<string> {
+    const cached = this.typesNamed.get(symbol.id)
+    if (cached) return cached
+    const named = new Set([...this.typesIn(symbol.type, symbol), ...symbol.signatures.flatMap((signature) => [...this.typesInSignature(symbol, signature)])])
+    this.typesNamed.set(symbol.id, named)
+    return named
+  }
+
+  /** The type declarations that every signature of a symbol names, which shared prose may claim: no overload is selected. */
+  private typesNamedByEvery(symbol: ApiSymbol): Set<string> {
+    const each = symbol.signatures.map((signature) => this.typesInSignature(symbol, signature))
+    const shared = each.length ? [...each[0]!].filter((id) => each.every((named) => named.has(id))) : []
+    return new Set([...this.typesIn(symbol.type, symbol), ...shared])
+  }
+
+  /** A plain word in a literal that matched another type's member by its short name links nothing (`isAnotherOwnersMember`). */
+  private plainShortNames(spans: TypeSpan[], context?: ApiSymbol): TypeSpan[] {
+    let before = ''
+    return spans.map((span, at) => {
+      const qualified = /[.:#/>]$/.test(before.trimEnd())
+      before += span.text
+      const called = this.isCall(spans.slice(at + 1).map((next) => next.text).join(''))
+      return !qualified && this.isAnotherOwnersMember(span.text, span.link, context, called, spans.length === 1) ? { text: span.text } : span
+    })
   }
 
   /**
