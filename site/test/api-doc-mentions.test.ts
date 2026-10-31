@@ -27,6 +27,11 @@ let doc: Awaited<ReturnType<typeof apiComponents>>['doc']
 beforeAll(async () => { doc = (await apiComponents()).doc })
 afterAll(async () => { await window.happyDOM.abort() })
 
+const declare = (id: string): ApiSymbol => ({
+  id, publicId: id, name: id.split('.').at(-1)!, kind: 'class', slug: id.replaceAll('.', '-').toLowerCase(),
+  modifiers: [], signatures: [], source: { file: 'text.rs' },
+})
+
 async function render(text: string, context?: ApiSymbol, from: SymbolIndex = index) {
   const container = await experimental_AstroContainer.create()
   window.document.body.innerHTML = await container.renderToString(doc, { props: { text, index: from, context } })
@@ -83,11 +88,28 @@ describe('a doc comment cross-reference', () => {
     } finally { vi.unstubAllEnvs() }
   })
 
-  it('leaves a name inside a longer literal, and a name that links outside the site, as it was', async () => {
+  it('names each declaration linked inside a longer literal by its kind, and leaves plain code as it was', async () => {
     const root = await render('`Selection<Pane>` and `AbortSignal`')
     expect(root.querySelector('.api-link-kind')).toBeNull()
-    expect(root.querySelector('a.api-mention')).toBeNull()
-    expect(root.querySelectorAll('a')).not.toHaveLength(0)
+    const [literal, plain] = [...root.querySelectorAll('code.api-literal')]
+    // The literal keeps its frame; only the names it links take their kind.
+    expect([...literal.querySelectorAll<DomAnchor>('a.api-mention.api-doc-link')].map((link) => [link.textContent, link.dataset.apiKind, link.getAttribute('title'), link.getAttribute('aria-label')]))
+      .toEqual([['Selection', 'interface', 'interface', 'interface: Selection'], ['Pane', 'class', 'class', 'class: Pane']])
+    expect(literal.textContent).toBe('Selection<Pane>')
+    expect(plain.querySelector('a')).toBeNull()
+  })
+
+  it('names a Rust type linked inside a call or a generic, and not a std type or the path after it', async () => {
+    // `from` belongs to a trait, so the whole path names nothing and the link is the type before it.
+    const rust = new SymbolIndex([{ ...declare('text.TmuxText'), kind: 'struct' }], (symbol) => `/en/rs/latest/reference/${symbol.slug}/`, 'rs')
+    const root = await render('Build one with `TmuxText::from(value)`, or keep an `Option<TmuxText>`.', undefined, rust)
+    const [call, generic] = [...root.querySelectorAll('code.api-literal')]
+    expect([...call.querySelectorAll<DomAnchor>('a')].map((link) => [link.textContent, link.dataset.apiKind, link.matches('.api-mention.api-doc-link')])).toEqual([['TmuxText', 'struct', true]])
+    expect(call.textContent).toBe('TmuxText::from(value)')
+    // `Option` links to the standard library, which is not a declaration of this site.
+    expect([...generic.querySelectorAll<DomAnchor>('a')].map((link) => [link.textContent, link.dataset.apiKind, link.matches('.api-mention.api-doc-link')]))
+      .toEqual([['Option', undefined, false], ['TmuxText', 'struct', true]])
+    expect(problems(call)).toEqual([])
   })
 
   it('names a tmux command in the title, the data attribute and the accessible name, without a badge', async () => {
