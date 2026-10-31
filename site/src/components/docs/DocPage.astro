@@ -2,10 +2,11 @@
 import { getCollection, render, type CollectionEntry } from 'astro:content'
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import { docsPath, proseHref, tmuxProsePath } from '../../lib/docs-paths'
-import { PORT_BY_SLUG, hasPackageInstalls, productApiPath, productAvailable } from '../../lib/ports'
+import { PORT_BY_SLUG, hasPackageInstalls, productApiPath, productAvailable, referenceUrl } from '../../lib/ports'
 import DocCard from '../DocCard.astro'
 import PortLinks from '../PortLinks.astro'
 import McpInstall from '../widgets/McpInstall.astro'
+import ProductIntro from './ProductIntro.astro'
 import McpShowcase from '../mcp/McpShowcase.astro'
 import WorkspacePicker from '../workspace/WorkspacePicker.astro'
 import WorkspaceShowcase from '../workspace/WorkspaceShowcase.astro'
@@ -13,6 +14,7 @@ import PackageInstall from '../widgets/PackageInstall.astro'
 import ProductApiIndex from '../api/ProductApiIndex.astro'
 import { buildTarget } from '../../lib/versions'
 import { mcpShowcase, showcaseHeadings as mcpHeadings } from '../../lib/mcp-showcase'
+import { mcpIntro, workspaceIntro } from '../../lib/product-copy'
 import { offersPicker, showcaseHeadings as workspaceHeadings, workspaceShowcase } from '../../lib/workspace-showcase'
 import { API_MODELS } from '../../lib/api-models'
 import { DEFAULT_LOCALE, LOCALE_LABEL, localeRoot, type Locale } from '../../i18n/locales'
@@ -119,6 +121,13 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
 const workspaceExamples = isWorkspaceOverview && port ? workspaceShowcase(port) : undefined
 const mcpTools = isMcpOverview && port ? await mcpShowcase(port, version ?? buildTarget(process.env).version) : undefined
 
+// A product overview opens with what the product is, in the words of its port's
+// own data: the verbs, formats and SDK a port does not have are not named.
+const coreHome = port && PORT_BY_SLUG[port] ? referenceUrl(PORT_BY_SLUG[port], version ?? buildTarget(process.env).version) : undefined
+const productIntro = isProductOverview && port && coreHome
+  ? (entry.data.product === 'workspace' ? workspaceIntro(port, coreHome) : mcpIntro(port, coreHome, { grouped: mcpTools?.selectsToolsets ?? false }))
+  : undefined
+
 // `entry.data.port` is undefined for the shared pages (concepts, guides,
 // examples); DocsLayout and lib/sidebar.ts's `getSidebar` treat that as "the
 // shell's shared section", not an error.
@@ -130,6 +139,7 @@ const mcpTools = isMcpOverview && port ? await mcpShowcase(port, version ?? buil
 
 <DocsLayout
   title={entry.data.title}
+  documentTitle={entry.data.shortTitle}
   inventoryId={entry.data.inventoryId ?? sourceId}
   inventoryAliases={entry.data.inventoryAliases}
   inventoryExclude={Boolean(placeholderLocale)}
@@ -243,6 +253,7 @@ const mcpTools = isMcpOverview && port ? await mcpShowcase(port, version ?? buil
     product overview came to get the thing, and the boxes are where they go
     next. Both used to follow the whole page, below the fold.
   */}
+  {!placeholderLocale && productIntro && <ProductIntro parts={productIntro} />}
   {!placeholderLocale && workspaceExamples && <WorkspacePicker showcase={workspaceExamples} />}
   {!placeholderLocale && isMcpOverview && port && (
     <>

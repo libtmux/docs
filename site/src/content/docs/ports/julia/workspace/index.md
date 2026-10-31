@@ -1,5 +1,6 @@
 ---
-title: Workspace Manager
+title: tmux workspace manager, forged in Julia
+shortTitle: Julia-based tmux workspace manager
 description: Read, validate, plan and load tmux workspace files with LibTmuxWorkspace.
 port: julia
 product: workspace

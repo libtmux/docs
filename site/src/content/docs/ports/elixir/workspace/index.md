@@ -1,5 +1,5 @@
 ---
-title: tmux workspace manager for Elixir is not published
+title: tmux workspace manager, forged in Elixir, is not published
 description: The Elixir repository contains a workspace package scaffold, not a loader or supported builder API.
 port: elixir
 product: workspace

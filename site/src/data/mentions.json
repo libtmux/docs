@@ -6605,7 +6605,7 @@
    "port": "julia",
    "symbol": "LibTmuxMCP",
    "page": "/julia/latest/mcp/",
-   "title": "MCP server",
+   "title": "tmux MCP, built in Julia",
    "section": "ports"
   },
   {
@@ -6619,7 +6619,7 @@
    "port": "julia",
    "symbol": "LibTmuxWorkspace",
    "page": "/julia/latest/workspace/",
-   "title": "Workspace Manager",
+   "title": "tmux workspace manager, forged in Julia",
    "section": "ports"
   },
   {
@@ -7592,7 +7592,7 @@
    "port": "lua",
    "symbol": "libtmux.LiveQueryResult.plan",
    "page": "/lua/latest/workspace/",
-   "title": "tmux workspace manager for Lua is not published",
+   "title": "tmux workspace manager, forged in Lua, is not published",
    "section": "ports"
   },
   {
@@ -8390,7 +8390,7 @@
    "port": "powershell",
    "symbol": "LibTmux",
    "page": "/powershell/latest/workspace/",
-   "title": "Workspace Manager",
+   "title": "tmux workspace manager, forged in PowerShell",
    "section": "ports"
   },
   {
@@ -8404,7 +8404,7 @@
    "port": "powershell",
    "symbol": "LibTmux.Workspace",
    "page": "/powershell/latest/workspace/",
-   "title": "Workspace Manager",
+   "title": "tmux workspace manager, forged in PowerShell",
    "section": "ports"
   },
   {
@@ -12121,7 +12121,7 @@
    "port": "ruby",
    "symbol": "LibTmux::Workspace.load",
    "page": "/ruby/latest/workspace/",
-   "title": "tmux workspace manager for Ruby",
+   "title": "tmux workspace manager, forged in Ruby",
    "section": "ports"
   },
   {
@@ -12156,7 +12156,7 @@
    "port": "ruby",
    "symbol": "LibTmux::Workspace#plan",
    "page": "/ruby/latest/workspace/",
-   "title": "tmux workspace manager for Ruby",
+   "title": "tmux workspace manager, forged in Ruby",
    "section": "ports"
   },
   {

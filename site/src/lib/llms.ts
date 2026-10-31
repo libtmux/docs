@@ -120,7 +120,7 @@ export function llmsPage(entry: CollectionEntry<'docs'>, origin: string, base: s
   }
   // A locale's landing entry routes to '', which is the root itself.
   return {
-    title: entry.data.title,
+    title: entry.data.shortTitle ?? entry.data.title,
     description: entry.data.description ?? '',
     url,
     section: sectionOf(entry),

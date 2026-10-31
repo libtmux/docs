@@ -79,6 +79,8 @@ try {
     node('scripts/gen-workspace-entities.mjs', '--check'),
     node('scripts/gen-workspace-showcase.mjs', '--check'),
     node('scripts/gen-workspace-showcase.negative.mjs'),
+    node('scripts/gen-product-copy.mjs', '--check'),
+    node('scripts/gen-product-copy.negative.mjs'),
     node('scripts/gen-tmux-catalog.mjs', '--check'),
     node('scripts/gen-tmux-usage.mjs', '--check'),
     node('scripts/gen-shell-ports.mjs', '--check'),

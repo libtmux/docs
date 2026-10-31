@@ -147,6 +147,14 @@ node scripts/gen-workspace-showcase.mjs --check
 step 'workspace showcase (negative)'
 node scripts/gen-workspace-showcase.negative.mjs
 
+# The product pages' introductions name each port's verbs, formats and MCP SDK.
+# Each claim is read from the port's own files at the pinned revision.
+step 'product copy'
+node scripts/gen-product-copy.mjs --check
+
+step 'product copy (negative)'
+node scripts/gen-product-copy.negative.mjs
+
 # The tmux catalog is extracted from the C tables at the pinned tags and
 # committed. Without a tmux checkout this verifies its digests and shape; set
 # LIBTMUX_TMUX_SOURCE to a clone to regenerate and compare as well.

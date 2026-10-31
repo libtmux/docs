@@ -1,5 +1,5 @@
 ---
-title: tmux MCP for Swift
+title: tmux MCP, built in Swift
 description: Run the Swift MCP executable or embed its typed tool service with explicit authority.
 port: swift
 product: mcp

@@ -1,5 +1,5 @@
 ---
-title: tmux MCP for Lua is not published
+title: tmux MCP, built in Lua, is not published
 description: The Lua repository contains an MCP scaffold, not a usable or published server.
 port: lua
 product: mcp

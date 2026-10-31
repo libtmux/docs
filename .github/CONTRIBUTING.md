@@ -342,6 +342,18 @@ port's pin, regenerate the data with the port checkouts present:
 $ node scripts/gen-workspace-showcase.mjs
 ```
 
+A Workspace or MCP overview opens with a sentence that names the verbs the
+port's workspace tool has, the formats it reads and the SDK its MCP server is
+built on. `scripts/lib/product-copy-sources.mjs` lists each claim with the
+strings of the port's own files that show it, a missing command being shown by
+the string's absence, and the generator reads them at the revision the port's
+API model records. After changing that list, or moving a port's pin, regenerate
+the data with the port checkouts present:
+
+```console
+$ node scripts/gen-product-copy.mjs
+```
+
 The publication audit checks index freshness, rendered links, navigation targets,
 and table layout at desktop, tablet, and phone widths.
 

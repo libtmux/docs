@@ -1,5 +1,5 @@
 ---
-title: tmux MCP for Go
+title: tmux MCP, built in Go
 description: Connect an MCP client to tmux and read structured results from complete Go programs.
 port: go
 product: mcp
