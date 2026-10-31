@@ -145,6 +145,33 @@ describe('a doc comment cross-reference', () => {
     })
   })
 
+  describe('a file path or a tmux word in a code literal', () => {
+    // Members named for the words in each, so a path split at its slashes or a word matched by its short name would link them.
+    const owned = (id: string, kind: ApiSymbol['kind']): ApiSymbol => ({ ...declare(id), kind, parent: id.slice(0, id.lastIndexOf('.')) })
+    const scope = owned('model.OptionArgs.scope', 'attribute')
+    const members = new SymbolIndex([
+      declare('mcp.Main'), owned('mcp.Main.main', 'method'), declare('test.TestServer'), owned('test.TestServer.server', 'method'),
+      declare('model.OptionArgs'), scope, owned('model.OptionArgs.pane', 'attribute'), owned('test.TestServer.send_keys', 'method'),
+    ], (symbol) => `/en/java/latest/reference/${symbol.slug}/`, 'java')
+
+    it('links nothing inside the path of a source file, though a directory in it is named like a method', async () => {
+      const root = await render('Save this program as `src/main/java/ListWindows.java`.', scope, members)
+      expect([...root.querySelectorAll('code.api-literal')].map((code) => [code.textContent, code.querySelectorAll('a').length])).toEqual([['src/main/java/ListWindows.java', 0]])
+      expect(root.querySelectorAll('a')).toHaveLength(0)
+    })
+
+    it('links an identifier of another type\'s member, since an underscore says which declaration it means', async () => {
+      const root = await render('Send with `send_keys`, not the `server`.', scope, members)
+      expect([...root.querySelectorAll('a.api-xref')].map((link) => [link.textContent, link.getAttribute('href')])).toEqual([['send_keys()', '/en/java/latest/reference/test-testserver-send_keys/']])
+    })
+
+    it('links nothing for a word that is only the short name of a member of another type, and still links the documented type\'s own', async () => {
+      const root = await render('One of `server`, `session` or `pane`.', scope, members)
+      expect([...root.querySelectorAll('a.api-xref')].map((link) => [link.textContent, link.getAttribute('href')])).toEqual([['pane', '/en/java/latest/reference/model-optionargs-pane/']])
+      expect([...root.querySelectorAll('code.api-literal')].map((code) => code.textContent)).toEqual(['server', 'session', 'pane'])
+    })
+  })
+
   it('is caught when a reference is plain or badged, so the check above can fail', () => {
     const plain = window.document.createElement('div')
     plain.innerHTML = '<a class="api-xref" href="/en/ts/latest/reference/pane-pane/"><code class="api-literal api-literal--link">Pane</code></a>'
