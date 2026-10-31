@@ -14,7 +14,7 @@ import { apiGlossary, apiGlossaryHeadings, API_GLOSSARY_TITLE, apiGlossaryHref }
 import ApiQualifiedName from '../../components/api/ApiQualifiedName.astro'
 import ApiType from '../../components/api/ApiType.astro'
 import ApiPageContents from '../../components/api/ApiPageContents.astro'
-import { apiEntryFields, apiEntrySections, apiMemberGroups, apiMemberSections, fieldsLabel, fieldsRepeated, memberTable, memberTableColumns, relatedTypeLinks, variantPayloads, type ApiSection } from '../../lib/api-sections'
+import { apiEntryFields, apiEntrySections, apiMemberGroups, apiMemberSections, fieldCellType, fieldsLabel, fieldsRepeated, memberTable, memberTableColumns, relatedTypeLinks, variantPayloads, type ApiSection } from '../../lib/api-sections'
 import PageToolbar from '../../components/PageToolbar.astro'
 import PagePortSwitcher from '../../components/PagePortSwitcher.astro'
 import DocumentationContext from '../../components/docs/DocumentationContext.astro'
@@ -370,6 +370,8 @@ const tableHeading = table?.label ?? fieldsLabel(port)
 const payloads = table?.columns === 'variants' && model ? variantPayloads(model.symbols, table.rows) : undefined
 // A row repeats a type drawn in full elsewhere when a variant has a page of its own, or when the port's fields do: C# properties.
 const rowsRepeat = (columns?: string) => columns === 'variants' || (columns === 'fields' && fieldsRepeated(port))
+// A row draws the type its port keeps in a field's `type`, which for a Swift property is the declaration without its name.
+const cellType = (member: ApiSymbol) => fieldCellType(member, port)
 const membersLabel = aliasedMembers ? `Members of ${aliasedMembers.name}` : tableColumns === 'fields' || tableColumns === 'variants' ? tableHeading : owner?.variant || (language === 'julia' && owner?.kind === 'struct' && shown.every((member) => member.kind === 'property')) ? 'Fields' : 'Members'
 const glossaryContext = apiGlossary(`${refBase}glossary/`)
 const pageSections: ApiSection[] = glossary ? apiGlossaryHeadings(glossaryContext.path).map((heading) => ({
@@ -813,13 +815,13 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
             {fieldsAndRest && owner && (
               <div class="api-field-table mt-8">
                 <h2 class="api-section-heading text-lg font-semibold" id={table.id}>{tableHeading}<span class="api-section-count">{table.rows.length}</span><a class="api-heading-link" href={`#${table.id}`} aria-label={`Link to ${tableHeading}`}>#</a></h2>
-                <ApiScalarMembers owner={owner} members={table.rows} index={index} hrefFor={hrefFor} columns={table.columns} label={tableHeading} payloads={payloads} repeated={rowsRepeat(table.columns)} />
+                <ApiScalarMembers owner={owner} members={table.rows} index={index} hrefFor={hrefFor} columns={table.columns} label={tableHeading} payloads={payloads} repeated={rowsRepeat(table.columns)} cellType={cellType} />
               </div>
             )}
             {shown.length > 0 && (
               <div class="api-members mt-8">
                 <h2 class="api-section-heading text-lg font-semibold" id="api-members">{aliasedMembers ? <>Members of <a class="api-members-target" href={hrefFor(aliasedMembers)}><code>{aliasedMembers.name}</code></a></> : membersLabel}<span class="api-section-count">{shown.length}</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersLabel}`}>#</a></h2>
-                {tableColumns ? <ApiScalarMembers owner={owner} members={listed} index={index} hrefFor={hrefFor} columns={tableColumns} label={tableHeading} payloads={payloads} repeated={rowsRepeat(tableColumns)} /> : memberGroups.map((group) => <section id={showMemberGroups ? undefined : group.id} class:list={['api-member-group', !showMemberGroups && 'api-member-group--single']} aria-labelledby={showMemberGroups ? group.id : 'api-members'}>
+                {tableColumns ? <ApiScalarMembers owner={owner} members={listed} index={index} hrefFor={hrefFor} columns={tableColumns} label={tableHeading} payloads={payloads} repeated={rowsRepeat(tableColumns)} cellType={cellType} /> : memberGroups.map((group) => <section id={showMemberGroups ? undefined : group.id} class:list={['api-member-group', !showMemberGroups && 'api-member-group--single']} aria-labelledby={showMemberGroups ? group.id : 'api-members'}>
                 {showMemberGroups && <h3 id={group.id}>{group.label}<span class="api-section-count">{group.members.length}</span><a class="api-heading-link" href={`#${group.id}`} aria-label={`Link to ${group.label}`}>#</a></h3>}
                 <ul class="api-member-list mt-3">
                   {group.members.map((m) => (

@@ -5,7 +5,7 @@ import { afterAll, describe, expect, it, vi } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
 import { membersOf, memberSignals, memberTier, SymbolIndex, type ApiSymbol } from '@libtmux/api-model'
 import { API_MODELS } from '../src/lib/api-models'
-import { apiMemberSections, fieldsLabel, hasFieldMembers, memberTable, memberTableColumns, splitFieldMembers } from '../src/lib/api-sections'
+import { apiMemberSections, fieldCellType, fieldsLabel, hasFieldMembers, memberTable, memberTableColumns, splitFieldMembers } from '../src/lib/api-sections'
 import mentionsData from '../src/data/mentions.json'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { apiComponents } from './api-components'
@@ -408,18 +408,65 @@ describe('Swift field tables', () => {
     expect(rowsOf(owner).map((row) => /\]\((\S*?\/)\)/.exec(row)![1]).toSorted()).toEqual(instance.map((entry) => sw.hrefFor(entry)).toSorted())
   })
 
-  it('writes the type of every property as the model records it, in the Markdown row of every struct and class that has them', () => {
+  /** What follows `<name>: ` in a declaration, read apart from the hook under test; none when the declaration is of another shape. */
+  const afterName = (raw: ApiSymbol) => {
+    const declaration = /^(?:let|var) (\w+): ([\s\S]+)$/.exec(raw.type!)
+    return declaration && declaration[1] === raw.name ? declaration[2] : undefined
+  }
+  const tabled = () => sw.model.symbols.filter((entry) => sw.isRawOwner(entry) && sw.rawFields(entry).length > 0)
+
+  it('writes the bare type of every property, the text after its name, in the Markdown row of every struct and class that has them', () => {
     let checked = 0
-    for (const record of sw.model.symbols.filter((entry) => sw.isRawOwner(entry) && sw.rawFields(entry).length > 0)) {
+    for (const record of tabled()) {
       const rows = rowsOf(record)
       for (const raw of sw.rawFields(record)) {
         const row = rows.find((candidate) => candidate.includes(`](${sw.hrefFor(raw)})`))
         expect(row, raw.id).toBeDefined()
-        expect(shownType(row!), raw.id).toBe(raw.type)
+        expect(afterName(raw), raw.id).toBeDefined()
+        expect(shownType(row!), raw.id).toBe(afterName(raw))
         checked++
       }
     }
     expect(checked).toBe(sw.raw.symbols.filter((entry) => sw.isRawField(entry) && sw.isRawOwner(sw.raw.symbols.find((parent) => parent.id === entry.parent)!)).length)
+  })
+
+  it('derives the bare type from the declaration for every row, and none falls back to the whole declaration', () => {
+    const rows = tabled().flatMap((record) => sw.fieldsOf(record).filter((member) => sw.isRawField(member)))
+    expect(rows.length).toBeGreaterThan(0)
+    expect(rows.filter((member) => fieldCellType(member, 'swift') !== afterName(member)).map((member) => member.id)).toEqual([])
+    // A fall back would draw the declaration itself, so it is counted by comparing with the declaration.
+    expect(rows.filter((member) => fieldCellType(member, 'swift') === member.type).map((member) => member.id)).toEqual([])
+    expect(rows.map((member) => member.type!.split(': ')[0]).every((head) => /^(?:let|var) \w+$/.test(head))).toBe(true)
+  })
+
+  it('leaves the declaration whole when it is not `let` or `var`, this property\'s name and a type', () => {
+    const base = field('width')
+    expect(base.type).toBe('let width: Int?')
+    expect(fieldCellType(base, 'swift')).toBe('Int?')
+    for (const type of ['let height: Int?', 'var height: Int?', 'let widthX: Int?', 'static let width: Int?', 'width: Int?', 'Int?', 'let width:Int?', 'let width: ']) {
+      expect(fieldCellType({ ...base, type }, 'swift'), type).toBe(type)
+    }
+    expect(fieldCellType({ ...base, type: 'var width: Int?' }, 'swift')).toBe('Int?')
+    // The row of a mismatched declaration draws and exports the whole text, whose names still link.
+    const mismatched = { ...base, type: 'let height: Int?' }
+    const symbols = sw.model.symbols.map((entry) => entry.id === base.id ? mismatched : entry)
+    const row = sw.markdown(owner, symbols).split('\n').find((line) => line.startsWith(`| [\`width\`]`))!
+    expect(shownType(row)).toBe('let height: Int?')
+  })
+
+  it('keeps every type link of the declaration in the bare type', () => {
+    /** One entry per character: the character and the address it links to, if any. */
+    const marks = (spans: { text: string; link?: { href: string } }[]) => spans.flatMap((span) => [...span.text].map((char) => [char, span.link?.href ?? null]))
+    let compared = 0
+    for (const record of tabled()) {
+      for (const member of sw.fieldsOf(record).filter((entry) => sw.isRawField(entry))) {
+        const bare = fieldCellType(member, 'swift')
+        const whole = marks(sw.index.linkType(member.type!, member))
+        expect(marks(sw.index.linkType(bare, member)), member.id).toEqual(whole.slice(member.type!.length - bare.length))
+        compared++
+      }
+    }
+    expect(compared).toBeGreaterThan(0)
   })
 
   it('shows a property with no summary as an empty description, and writes none for it', async () => {
@@ -450,22 +497,26 @@ describe('Swift field tables', () => {
     expect(pane).toBe(sw.hrefFor(sw.symbol('PaneID')))
     expect(int).toBe('https://developer.apple.com/documentation/swift/int')
     const row = (name: string) => rowsOf(owner).find((candidate) => candidate.startsWith(`| [\`${name}\`]`))!
-    expect(row('activePaneID')).toContain(`[\`PaneID\`](${pane})\`?\``)
-    expect(row('height')).toContain(`[\`Int\`](${int})\`?\``)
+    // The cell is the linked type and nothing else: no keyword, and no link back to the property's own page.
+    expect(row('activePaneID').split(' | ')[1]).toBe(`[\`PaneID\`](${pane})\`?\``)
+    expect(row('height').split(' | ')[1]).toBe(`[\`Int\`](${int})\`?\``)
 
     const { members } = await apiComponents()
     const window = new Window()
     try {
       const container = await experimental_AstroContainer.create()
-      window.document.body.innerHTML = await container.renderToString(members, { props: { owner, members: splitFieldMembers(owner, sw.fieldsOf(owner), 'swift').fields, index: sw.index, hrefFor: sw.hrefFor, columns: 'fields', repeated: true } })
+      window.document.body.innerHTML = await container.renderToString(members, { props: { owner, members: splitFieldMembers(owner, sw.fieldsOf(owner), 'swift').fields, index: sw.index, hrefFor: sw.hrefFor, columns: 'fields', repeated: true, cellType: (member: ApiSymbol) => fieldCellType(member, 'swift') } })
       expect([...window.document.querySelectorAll('thead th')].map((cell) => cell.textContent)).toEqual(['Name', 'Type', 'Description'])
       const htmlRows = [...window.document.querySelectorAll('tbody tr')]
       expect(htmlRows).toHaveLength(sw.rawFields(owner).length)
       const htmlRow = (name: string) => htmlRows.find((candidate) => candidate.querySelector('th a')?.textContent === name)!
       const hrefs = (name: string) => [...htmlRow(name).querySelectorAll('td:nth-child(2) a.api-type-link')].map((link) => link.getAttribute('href'))
-      expect(htmlRow('activePaneID').querySelector('td:nth-child(2)')?.textContent).toBe(field('activePaneID').type)
-      expect(hrefs('activePaneID')).toContain(pane)
-      expect(hrefs('height')).toContain(int)
+      expect(htmlRow('activePaneID').querySelector('td:nth-child(2)')?.textContent).toBe('PaneID?')
+      expect(hrefs('activePaneID')).toEqual([pane])
+      expect(hrefs('height')).toEqual([int])
+      // Without the hook a row draws the member's `type` whole, as every other port's rows do.
+      window.document.body.innerHTML = await container.renderToString(members, { props: { owner, members: [field('activePaneID')], index: sw.index, hrefFor: sw.hrefFor, columns: 'fields' } })
+      expect(window.document.querySelector('td:nth-child(2)')?.textContent).toBe('let activePaneID: PaneID?')
       expect(htmlRow('activePaneID').querySelector('td:last-child')?.textContent).toContain(field('activePaneID').doc!.summary)
     } finally { await window.happyDOM.abort() }
   })
@@ -546,6 +597,28 @@ describe('Swift field tables', () => {
     expect(mixed).toMatchObject({ columns: 'fields', label: 'Properties', id: 'api-fields' })
     expect(mixed.rest.length).toBeGreaterThan(0)
     expect(memberTableColumns(owner, sw.fieldsOf(owner), 'swift')).toBeUndefined()
+  })
+})
+
+describe('the type a field row draws', () => {
+  it.each(['rs', 'go', 'csharp', 'py', undefined] as const)('is the member\'s own type for every symbol of %s, which has no hook', (port) => {
+    const typed = (API_MODELS[port ?? 'py'].symbols).filter((entry) => entry.type !== undefined)
+    expect(typed.length).toBeGreaterThan(0)
+    expect(typed.filter((entry) => fieldCellType(entry, port) !== entry.type).map((entry) => entry.id)).toEqual([])
+  })
+
+  it.each(['rs', 'go', 'csharp'] as const)('leaves every %s row of the Markdown export with the type text of the model', (port) => {
+    const f = portFixture(port)
+    let checked = 0
+    for (const record of f.model.symbols.filter((entry) => f.isRawOwner(entry) && f.rawFields(entry).length > 0)) {
+      const rows = f.markdownRows(record).filter((row) => row.startsWith('| [`'))
+      for (const raw of f.rawFields(record)) {
+        const row = rows.find((candidate) => candidate.includes(`](${f.hrefFor(raw)})`))
+        expect(typeText(row!), raw.id).toBe(raw.type!.replaceAll('\n', ' '))
+        checked++
+      }
+    }
+    expect(checked).toBeGreaterThan(0)
   })
 })
 

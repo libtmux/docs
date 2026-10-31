@@ -450,6 +450,8 @@ const { symbol, member, nameHref } = Astro.props
       })
       return { model, symbol, members, document: win.document }
     }
+    // What a row draws as a field's type: the member's own `type`, but for a Swift property the text after `<name>: ` in its declaration.
+    const cellText = (port: string, field: ApiSymbol) => port === 'swift' ? field.type!.replace(new RegExp(`^(?:let|var) ${field.name}: `), '') : field.type
     // The raw rule, apart from the predicate under test: a typed attribute or non-static property that the type declares.
     const isField = (member: ApiSymbol) => ['attribute', 'property'].includes(member.kind) && member.type !== undefined && !member.modifiers.includes('static') && !member.inheritedFrom
 
@@ -492,7 +494,7 @@ const { symbol, member, nameHref } = Astro.props
         const field = fields[i]!
         expect(row.querySelector('th a')?.textContent).toBe(field.name)
         expect(row.querySelector('th a')?.getAttribute('href')).toBe(productApiHref(model, field, 'latest'))
-        expect(row.querySelector('td:nth-child(2)')?.textContent).toBe(field.type)
+        expect(row.querySelector('td:nth-child(2)')?.textContent).toBe(cellText(port, field))
         expect(row.querySelector('td:last-child')?.textContent).toBe(field.doc?.summary ?? '')
       })
 

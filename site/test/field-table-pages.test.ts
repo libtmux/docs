@@ -18,6 +18,9 @@ vi.mock('astro:content', () => ({ getCollection: async () => [] }))
 
 type Port = 'rs' | 'go' | 'csharp' | 'swift'
 
+/** The plain spans `check-type-links` counts are identifiers. A row's punctuation may open a different span than its entry's: `[` for `: [`. */
+const counted = (text: string) => /^[A-Za-z_][A-Za-z0-9_]*$/.test(text)
+
 const windows: Window[] = []
 afterEach(async () => { for (const win of windows.splice(0)) await win.happyDOM.abort() })
 
@@ -74,6 +77,21 @@ describe('a type page with a table of fields', () => {
       const cells = [...(await page(port, id)).querySelectorAll('.api-members [data-type]')]
       expect(cells.length).toBeGreaterThan(0)
       expect(cells.every((cell) => cell.getAttribute('data-repeated') === String(repeated))).toBe(true)
+    }, 60_000)
+
+  // The row draws the text its port keeps as a field's type: a Swift property's declaration without its keyword and name, every other port's `type`.
+  it.each([['swift', 'Client'], ['swift', 'FilterSchema.Field'], ['csharp', 'LibTmux.TmuxCommand'], ['go', 'tmux.SessionFilter']] as const)(
+    'draws each row of %s %s with the type text its port keeps', async (port, id) => {
+      const document = await page(port, id)
+      const rows = [...document.querySelectorAll('table.api-scalar-members tbody tr')]
+      expect(rows.length).toBeGreaterThan(0)
+      for (const row of rows) {
+        const member = API_MODELS[port].symbols.find((entry) => (entry.publicId ?? entry.id) === row.id.replace(/^member-/, ''))!
+        const kept = port === 'swift' ? member.type!.replace(/^(?:let|var) \w+: /, '') : member.type
+        expect(kept, member.id).not.toBe('')
+        expect(row.querySelector('[data-type]')?.textContent, member.id).toBe(kept)
+        if (port === 'swift') expect(row.querySelector('[data-type]')?.textContent, member.id).not.toBe(member.type)
+      }
     }, 60_000)
 
   it('repeats the types of a C# or Swift table only, so Rust and Go rows stay counted where they stand', () => {
@@ -298,7 +316,7 @@ describe('every repeated type name on a product page', () => {
     // The punctuation a payload writes around its types is syntax, which the gate does not count.
     const tableOriginals = spans('.api-field-table span.api-punct:not(.api-type-repeat):not([data-api-role="syntax"])')
     expect(tableOriginals, 'a table cell drawn without the flag counts the name a second time').toEqual([])
-    return [...new Set(repeats)].filter((text) => originals.filter((original) => original === text).length < repeats.filter((repeat) => repeat === text).length)
+    return [...new Set(repeats)].filter(counted).filter((text) => originals.filter((original) => original === text).length < repeats.filter((repeat) => repeat === text).length)
   }
 
   it('has its original drawn by the entry, so the gate counts the name once', async () => {
@@ -335,9 +353,9 @@ describe('every repeated type name on a product page', () => {
 
 // A property's own page draws its type in full, unflagged. The control names a type the model cannot resolve, so the gate counts it there.
 describe.each([
-  { port: 'csharp', language: 'C#', control: 'LibTmux.ServerConnectionOptions.Interceptor', plain: 'TmuxInterceptor' },
-  { port: 'swift', language: 'Swift', control: 'TmuxReply.exitCode', plain: 'Int32' },
-] as const)('every repeated type name in a $language properties table', ({ port, control, plain }) => {
+  { port: 'csharp', language: 'C#', control: 'LibTmux.ServerConnectionOptions.Interceptor', plain: 'TmuxInterceptor', floor: 100 },
+  { port: 'swift', language: 'Swift', control: 'TmuxReply.exitCode', plain: 'Int32', floor: 20 },
+] as const)('every repeated type name in a $language properties table', ({ port, control, plain, floor }) => {
   // The real entry, table and type, as a core page draws them; the shell around the page is not needed.
   const load = () => loadAstroTemplate('components/api/ApiReference.astro', {
     real: ['components/api/ApiEntry.astro', 'components/api/ApiScalarMembers.astro', 'components/api/ApiType.astro', 'components/api/SymbolName.astro', 'components/api/ApiBadge.astro', 'components/api/ApiPageContents.astro'],
@@ -361,7 +379,7 @@ describe.each([
   }
   const texts = (document: Window['document'], selector: string) => [...document.querySelectorAll(selector)].map((span) => span.textContent!.trim())
   /** The texts of `wanted` that `drawn` does not hold as many times, the way a repeat needs its original. */
-  const missing = (wanted: string[], drawn: string[]) => [...new Set(wanted)].filter((text) => drawn.filter((entry) => entry === text).length < wanted.filter((entry) => entry === text).length)
+  const missing = (wanted: string[], drawn: string[]) => [...new Set(wanted)].filter(counted).filter((text) => drawn.filter((entry) => entry === text).length < wanted.filter((entry) => entry === text).length)
 
   /** Every row of every core class and struct table, with the property whose own page must hold what the row repeats. */
   async function rows(template: unknown) {
@@ -381,7 +399,7 @@ describe.each([
   it('is drawn in full, unflagged, on the property\'s own page', async () => {
     const template = await load()
     const found = await rows(template)
-    expect(found.length).toBeGreaterThan(100)
+    expect(found.length).toBeGreaterThan(floor)
     expect(found.map((row) => row.repeats).flat()).toContain(plain)
     const problems: string[] = []
     for (const row of found) {

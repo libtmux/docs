@@ -17,8 +17,10 @@ interface Props {
   payloads?: ReadonlyMap<string, VariantPayload>
   /** A page of its own, or an entry on this page, draws each member's types in full, so these are second drawings. */
   repeated?: boolean
+  /** The type text of a `fields` row, where the port's member `type` holds more than the type. Defaults to the `type`. */
+  cellType?: (member: ApiSymbol) => string
 }
-const { owner, members, index, hrefFor, columns = 'value', label = 'Fields', payloads, repeated = false } = Astro.props
+const { owner, members, index, hrefFor, columns = 'value', label = 'Fields', payloads, repeated = false, cellType = (member: ApiSymbol) => member.type! } = Astro.props
 const fields = columns === 'fields'
 const variants = columns === 'variants'
 const heads = variants ? ['Case', 'Payload'] : ['Name', fields ? 'Type' : 'Value']
@@ -36,7 +38,7 @@ const heads = variants ? ['Case', 'Payload'] : ['Name', fields ? 'Type' : 'Value
           ? payload?.kind === 'fields' ? <code class="api-literal"><span class="api-punct" data-api-role="syntax">{payload.open}</span>{payload.fields.map((field, position) => <>{position > 0 && <span class="api-punct" data-api-role="syntax">, </span>}{payload.named && <>{field.name}<span class="api-punct" data-api-role="syntax">: </span></>}<ApiType type={field.type!} index={index} context={field} repeated={repeated} /></>)}<span class="api-punct" data-api-role="syntax">{payload.close}</span></code>
             : payload?.kind === 'none' ? <span class="sr-only">{payload.label}</span>
             : payload?.kind === 'unknown' ? <span class="api-payload-unknown">{payload.label}</span> : undefined
-          : fields ? <code class="api-literal"><ApiType type={member.type!} index={index} context={member} repeated={repeated} /></code> : <code class="api-literal">{member.value}</code>}</td>
+          : fields ? <code class="api-literal"><ApiType type={cellType(member)} index={index} context={member} repeated={repeated} /></code> : <code class="api-literal">{member.value}</code>}</td>
         <td>{member.doc?.summary && <ApiDoc text={member.doc.summary} index={index} context={member} citations={false} />}</td>
       </tr>
     })}
