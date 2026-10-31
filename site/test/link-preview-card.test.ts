@@ -181,6 +181,36 @@ describe('one card, two renderers', () => {
   })
 })
 
+describe('a declaration with no summary', () => {
+  const named = async (name: string) => (await payloads()).find(([entry]) => entry === name)![1]
+
+  it.each(['declaration with a signature and no summary', 'declaration with nothing under its name'])('%s: shows its signature if it has one, and no placeholder body', async (name) => {
+    const preview = await named(name)
+    expect(preview.description).toBe('')
+    for (const shell of [await staticCard(preview), await paintedCard(preview)]) {
+      const summary = shell.querySelector('[data-preview-description]')!
+      expect(summary.hasAttribute('hidden'), name).toBe(true)
+      expect(summary.textContent, name).toBe('')
+      expect(shell.textContent, name).not.toContain('Read the reference')
+      const signature = shell.querySelector('[data-preview-signature]')!
+      expect(signature.hasAttribute('hidden'), name).toBe(!preview.signature)
+      expect(signature.textContent, name).toBe(preview.signature ?? '')
+    }
+  })
+
+  it('shows the summary again on the card after one that had none, and keeps the context line on a card with only that', async () => {
+    const shell = await paintedCard(await named('declaration with nothing under its name'))
+    const summary = shell.querySelector('[data-preview-description]')!
+    expect(summary.hasAttribute('hidden')).toBe(true)
+    paint(shell, { schema: 1, title: 'Next', description: 'Has a summary.', href: '/en/x/' }, { id: ID })
+    expect(summary.hasAttribute('hidden')).toBe(false)
+    expect(summary.textContent).toBe('Has a summary.')
+    paint(shell, { schema: 1, title: 'Inherited', description: '', href: '/en/x/' }, { id: ID, context: 'Inherited from Base.' })
+    expect(summary.hasAttribute('hidden')).toBe(true)
+    expect(shell.querySelector('[data-preview-detail]')!.textContent).toBe('Inherited from Base.')
+  })
+})
+
 describe('the header chip and the marks in the body', () => {
   const KINDS = ['class', 'struct', 'enum', 'interface', 'trait', 'function', 'method', 'command', 'property', 'attribute', 'constant', 'key', 'option', 'exception', 'prompt',
     'resource-template', 'format', 'tool', 'resource', 'hook', 'typealias', 'module', 'union', 'cmdlet']

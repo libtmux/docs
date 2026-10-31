@@ -5,7 +5,9 @@ export { linkPreviewTarget } from './link-preview-paint'
 
 const cache = new Map<string, LinkPreview>()
 /** How long a pointer or focus rests on a link before its card opens. */
-const PREVIEW_DWELL_MS = 180
+const PREVIEW_DWELL_MS = 450
+/** The wait for the next card while a reader moves from link to link with one open. */
+const CHAIN_DWELL_MS = 100
 const GLOSSARY_DWELL_MS = 1000
 let dispose = () => {}
 
@@ -45,6 +47,9 @@ export function initLinkPreviews() {
   let timer: ReturnType<typeof setTimeout> | undefined
   let closeTimer: ReturnType<typeof setTimeout> | undefined
   let pinned = false, restoringFocus = false, shown = false
+  // A card was open when the reader moved on to a link whose dwell is still running, and no pause off the links has
+  // ended the chain since. A card that is loading or open is a chain in itself, through `current`.
+  let chaining = false
   const expandTitle = panel.querySelector<HTMLButtonElement>('[data-preview-expand]')!
   // What the card shows, kept so that expanding the name paints the same payload again.
   let shownCard: { preview: LinkPreview; href: string; context?: string } | undefined
@@ -54,7 +59,7 @@ export function initLinkPreviews() {
   const close = (restoreFocus = false) => {
     clearTimeout(timer); clearTimeout(closeTimer); intent++
     const trigger = current
-    current = undefined; pinned = false; shown = false
+    current = undefined; pinned = false; shown = false; chaining = false
     if (panel.matches(':popover-open')) panel.hidePopover()
     trigger?.removeAttribute('aria-details')
     if (restoreFocus && trigger?.isConnected) {
@@ -122,10 +127,12 @@ export function initLinkPreviews() {
     if (!link || pinned || restoringFocus) return
     clearTimeout(timer); clearTimeout(closeTimer)
     if (current === link) return
+    const chained = shown || chaining || current !== undefined
     // A new target owns the intent immediately, even while its dwell timer runs.
     close()
+    chaining = chained
     // A glossary card would cover the prose around its link, so it waits until the reader stops on it.
-    const dwell = linkPreviewTarget(link.href, location.origin)?.glossary ? GLOSSARY_DWELL_MS : PREVIEW_DWELL_MS
+    const dwell = linkPreviewTarget(link.href, location.origin)?.glossary ? GLOSSARY_DWELL_MS : chained ? CHAIN_DWELL_MS : PREVIEW_DWELL_MS
     timer = setTimeout(() => { void show(link) }, dwell)
   }
   const dismissUnused = () => {

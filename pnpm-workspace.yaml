@@ -24,4 +24,4 @@ minimumReleaseAge: 4320
 minimumReleaseAgeStrict: false
 patchedDependencies:
   # Cancel viewport prefetch for links removed by a client navigation.
-  astro@7.4.2: patches/astro@7.4.2.patch
+  astro@7.4.4: patches/astro@7.4.4.patch
