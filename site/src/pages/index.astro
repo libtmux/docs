@@ -2,13 +2,12 @@
 import { ALL_TRANSLATED, buildLocale } from '../i18n/resolve'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import DocsLayout from '../layouts/DocsLayout.astro'
-import { DOC_PRODUCTS, PORTS, PORT_BY_SLUG, hasPackageInstalls, portHomeUrl, portPageUrl, productAvailable } from '../lib/ports'
+import { PORTS, PORT_BY_SLUG, portHomeUrl, portPageUrl } from '../lib/ports'
 import PortHero from '../components/PortHero.astro'
 import DocCard from '../components/DocCard.astro'
 import ApiReferences from '../components/ApiReferences.astro'
 import { buildTarget, defaultVersionFor } from '../lib/versions'
-import PackageInstall from '../components/widgets/PackageInstall.astro'
-import McpInstall from '../components/widgets/McpInstall.astro'
+import PortLanding from '../components/PortLanding.astro'
 import AgentPrompt from '../components/widgets/AgentPrompt.astro'
 import HomeIntro from '../components/HomeIntro.astro'
 import HomeLauncher from '../components/HomeLauncher.astro'
@@ -35,19 +34,6 @@ interface Props {
 const buildPort = Astro.props.port ?? (process.env.LIBTMUX_DOCS_PORT || undefined)
 const versionRootPort = buildPort ? PORT_BY_SLUG[buildPort] : undefined
 const { version: buildVersion } = buildTarget(process.env)
-
-/*
- * The companion packages a version root installs beside the library: the
- * workspace package where the port lists install forms for it, and the MCP
- * server where the port publishes one as a package. Each links to its own
- * overview, which carries the same widget.
- */
-const rootWorkspace = versionRootPort && hasPackageInstalls(versionRootPort, 'workspace')
-  ? versionRootPort.packages?.find((entry) => entry.id === 'workspace')
-  : undefined
-const rootMcp = versionRootPort && productAvailable(versionRootPort, 'mcp')
-  ? versionRootPort.packages?.find((entry) => entry.id === 'mcp')
-  : undefined
 
 const versionSections = versionRootPort
   ? [
@@ -154,46 +140,12 @@ const homeEntries = PORTS.map((port) => ({
         port dropdown to find a corresponding page in another language.
       </p>
       {/*
-        The install command, on the page a reader actually lands on.
-
-        This is where the port switcher, the version switcher and the sidebar
-        all point, and it said what the package was called without saying how
-        to get it — the install lived one level up at /<port>/, which is a URL
-        nothing in the navigation offers.
+        The example and install command for each product, on the page a reader
+        actually lands on. This is where the port switcher, the version
+        switcher and the sidebar all point, and the install used to live one
+        level up at /<port>/, which is a URL nothing in the navigation offers.
       */}
-      <section class="mt-10 max-w-3xl">
-        <h2 class="text-lg font-semibold">Install</h2>
-        {(rootWorkspace || rootMcp) && <h3 class="mt-4 font-semibold">Library <code class="text-sm font-normal">{versionRootPort.packageName}</code></h3>}
-        <div class="mt-3">
-          <PackageInstall ports={[versionRootPort.slug]} />
-        </div>
-        {rootWorkspace && (
-          <>
-            <h3 class="mt-8 font-semibold">
-              <a class="hover:underline" href={portPageUrl(versionRootPort, buildVersion, 'workspace')}>{DOC_PRODUCTS.workspace.label}</a>
-              {' '}<code class="text-sm font-normal">{rootWorkspace.name}</code>
-            </h3>
-            <p class="mt-1 text-sm text-muted">The workspace package is separate from the core library.</p>
-            <div class="mt-3">
-              <PackageInstall ports={[versionRootPort.slug]} packageId="workspace" />
-            </div>
-          </>
-        )}
-        {rootMcp && (
-          <>
-            <h3 class="mt-8 font-semibold">
-              <a class="hover:underline" href={portPageUrl(versionRootPort, buildVersion, 'mcp')}>{DOC_PRODUCTS.mcp.label}</a>
-              {' '}<code class="text-sm font-normal">{rootMcp.name}</code>
-            </h3>
-            <p class="mt-1 text-sm text-muted">
-              Choose your client and configuration scope, then run the command or paste the configuration.
-            </p>
-            <div class="mt-3">
-              <McpInstall port={versionRootPort.slug} />
-            </div>
-          </>
-        )}
-      </section>
+      <PortLanding port={versionRootPort} version={buildVersion} />
       <div class="mt-10 grid gap-4 sm:grid-cols-2">
         {versionSections.map((s) => (
           <DocCard href={s.href} label={s.label} body={s.body} />

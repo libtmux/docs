@@ -1,0 +1,150 @@
+---
+import { Code } from 'astro-expressive-code/components'
+import HomeExample from './HomeExample.astro'
+import McpInstall from './widgets/McpInstall.astro'
+import PackageInstall from './widgets/PackageInstall.astro'
+import { PORT_BY_SLUG, portPageUrl, type Port } from '../lib/ports'
+import { landingPanels, type CachedSource, type LandingTable } from '../lib/port-landing'
+import { QUICKSTARTS, homeCodeColumns } from '../lib/quickstarts'
+import LANDING from '../data/landing-examples.json'
+import SOURCES from '../data/example-sources.json'
+
+/**
+ * The tested example and the install widget for each product a port ships.
+ *
+ * Core API is the homepage's example block, fixed to the port's language. MCP
+ * and Workspace Manager show an excerpt of a program the port's CI runs, read
+ * from the revision-bound example cache by the `from` and `to` anchors in
+ * `landing-examples.json`. A port that ships only the library shows its
+ * panel without a selector, since there is nothing to choose.
+ */
+interface Props {
+  port: Port
+  version: string
+}
+const { port, version } = Astro.props as Props
+const panels = landingPanels(port, version, PORT_BY_SLUG, LANDING as LandingTable, SOURCES as Record<string, CachedSource>)
+const complete = QUICKSTARTS[port.slug]?.complete
+if (!complete) throw new Error(`PortLanding: ${port.slug} has no complete homepage example; add it to home-examples.json`)
+const panelId = (product: string) => `landing-panel-${product}`
+---
+<section class="port-landing mt-10" aria-label={`Start with ${port.name}`} data-port-landing={port.slug}>
+  {panels.length > 1 && <fieldset class="landing-products">
+    <legend class="sr-only">Product</legend>
+    {panels.map((panel, index) => <label>
+      <input type="radio" name="landing-product" value={panel.product} checked={index === 0} aria-controls={panelId(panel.product)} data-landing-product />
+      <span>{panel.label}</span>
+    </label>)}
+  </fieldset>}
+  {panels.map((panel) => <div class="landing-panel" id={panelId(panel.product)} data-landing-panel={panel.product}>
+    {panel.product === 'core' ? <>
+      <HomeExample port={port.slug} language={port.name} example={complete} />
+      <p class="landing-more"><a href={portPageUrl(port, version, 'examples')}>More {port.name} examples →</a></p>
+    </> : <>
+      <h2 class="landing-heading">Start with {panel.label}</h2>
+      {panel.servedBy && <p class="landing-note">
+        {port.name} has no {panel.label} package of its own. It uses the {panel.servedBy} port's <code>{panel.packageName}</code>.
+      </p>}
+      {panel.excerpt && <div class="landing-excerpt" data-landing-excerpt={panel.product}
+        style={`--home-code-columns: ${homeCodeColumns(panel.excerpt.code)}`}>
+        <Code code={panel.excerpt.code} lang={panel.excerpt.lang} title={panel.excerpt.file} frame="code" />
+        <p class="landing-source">
+          Excerpt of <a href={panel.excerpt.sourceUrl}><code>{panel.excerpt.file}</code></a>,
+          which <code>{panel.excerpt.ci.command}</code> runs in the repository's CI
+          (<code>{panel.excerpt.ci.workflow}</code>).
+        </p>
+      </div>}
+      <p class="landing-more"><a href={panel.href}>{panel.label} documentation →</a></p>
+    </>}
+    {panel.install && <div class="landing-install">
+      <h3>Install{panel.packageName && <>{' '}<code>{panel.packageName}</code></>}</h3>
+      {panel.product === 'core' && <PackageInstall ports={[port.slug]} />}
+      {panel.product === 'workspace' && panel.install.widget === 'package' && <>
+        <p>The workspace package is separate from the core library.</p>
+        <PackageInstall ports={[panel.install.port]} packageId="workspace" />
+      </>}
+      {panel.install.widget === 'mcp' && <>
+        <p>Choose your client and configuration scope, then run the command or paste the configuration.</p>
+        <McpInstall port={panel.install.port} />
+      </>}
+    </div>}
+  </div>)}
+</section>
+
+<script>
+  import { productFromSearch, searchWithProduct } from '../lib/landing-selection'
+
+  let controller: AbortController | undefined
+
+  function bindLandingSelector() {
+    controller?.abort()
+    const inputs = [...document.querySelectorAll<HTMLInputElement>('[data-landing-product]')]
+    if (!inputs.length) return
+    controller = new AbortController()
+    const { signal } = controller
+    const path = location.pathname
+    const select = (product: string) => {
+      const target = inputs.find((input) => input.value === product)
+      if (target) target.checked = true
+    }
+    // An address that names no product is the page's first.
+    const restore = () => {
+      if (location.pathname !== path) return
+      select(productFromSearch(location.search, inputs.map((input) => input.value)) ?? inputs[0]!.value)
+    }
+    document.addEventListener('change', (event) => {
+      const input = event.target
+      if (!(input instanceof HTMLInputElement) || !inputs.includes(input)) return
+      const search = searchWithProduct(location.search, input.value, inputs[0]!.value)
+      if (search !== location.search) history.replaceState(history.state, '', `${location.pathname}${search}${location.hash}`)
+    }, { signal })
+    window.addEventListener('popstate', restore, { signal })
+    restore()
+  }
+
+  bindLandingSelector()
+  document.addEventListener('astro:after-swap', bindLandingSelector)
+</script>
+
+<style>
+  .port-landing { container-type: inline-size; max-width: 56rem; }
+  .landing-products {
+    display: flex; flex-wrap: wrap; gap: .125rem; margin: 0 0 1.25rem; padding: 0;
+    border: 0; border-bottom: 1px solid var(--color-edge);
+  }
+  .landing-products label {
+    position: relative; display: inline-flex; align-items: center; min-height: 2.5rem; padding: 0 .9rem;
+    border: 1px solid transparent; border-bottom: 0; border-radius: .35rem .35rem 0 0;
+    font-size: .875rem; color: var(--color-muted); cursor: pointer;
+  }
+  .landing-products label:hover { color: inherit; }
+  .landing-products label:has(:checked) {
+    border-color: var(--color-edge); background: var(--color-surface-hover); color: inherit; font-weight: 600;
+  }
+  .landing-products label:has(:focus-visible) { outline: 2px solid var(--focus-ring-color, currentColor); outline-offset: -2px; }
+  /* The input covers its label, so a click anywhere on the tab selects it. */
+  .landing-products input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+
+  .landing-panel { display: none; }
+  .port-landing:not(:has([data-landing-product])) .landing-panel,
+  .port-landing:has([data-landing-product][value="core"]:checked) .landing-panel[data-landing-panel="core"],
+  .port-landing:has([data-landing-product][value="mcp"]:checked) .landing-panel[data-landing-panel="mcp"],
+  .port-landing:has([data-landing-product][value="workspace"]:checked) .landing-panel[data-landing-panel="workspace"] { display: block; }
+
+  .landing-heading { margin-bottom: .85rem; font-size: 1rem; font-weight: 600; }
+  .landing-excerpt :global(.expressive-code) {
+    --ec-codeFontSize: clamp(.8125rem, calc((100cqi - 2rem) / (var(--home-code-columns) * .625)), .9375rem);
+  }
+  /* An excerpt is short by construction, so it shows whole; a complete program scrolls past the homepage's height. */
+  .landing-note { margin-bottom: .85rem; font-size: .875rem; color: var(--color-muted); }
+  .landing-excerpt :global(.expressive-code pre) { overflow: auto; tab-size: 8; }
+  .landing-panel :global(.home-example .expressive-code pre) { max-height: 34rem; overflow: auto; tab-size: 8; scrollbar-gutter: stable; }
+  .landing-source, .landing-more { margin-top: .8rem; font-size: .8125rem; color: var(--color-muted); }
+  .landing-source a, .landing-more a { color: var(--color-link); }
+  /* A long command or path wraps instead of widening the page. */
+  .landing-source code { white-space: normal; overflow-wrap: anywhere; }
+  .landing-install { margin-top: 1.5rem; }
+  .landing-install h3 { margin-bottom: .5rem; font-weight: 600; }
+  .landing-install h3 code { font-size: .875rem; font-weight: 400; }
+  .landing-install > p { margin-bottom: .75rem; font-size: .875rem; color: var(--color-muted); }
+</style>
