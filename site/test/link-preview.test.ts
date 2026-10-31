@@ -168,12 +168,13 @@ afterEach(async () => {
 })
 const link = (id = 'a') => win.document.querySelector<HTMLAnchorElement>(`#${id}`)!
 const hover = (id = 'a', pointerType = 'mouse') => link(id).dispatchEvent(new win.PointerEvent('pointerover', { pointerType, bubbles: true }))
-const settle = () => vi.advanceTimersByTimeAsync(200)
+const settle = () => vi.advanceTimersByTimeAsync(450)
+const pointerOut = (id = 'a') => link(id).dispatchEvent(new win.PointerEvent('pointerout', { pointerType: 'mouse', bubbles: true }))
 const title = () => win.document.querySelector('[data-preview-title]')!.textContent
 const escape = () => win.document.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
 
 describe('preview lifecycle', () => {
-  it('waits a second over a glossary link and the usual moment over any other', async () => {
+  it('waits a second over a glossary link and 450 ms over any other', async () => {
     win.document.body.insertAdjacentHTML('afterbegin', '<a id="g" href="/en/ts/latest/mcp/reference/glossary/">glossary</a>')
     hover('g'); await vi.advanceTimersByTimeAsync(999)
     expect(opened).toBe(false)
@@ -181,9 +182,85 @@ describe('preview lifecycle', () => {
     await vi.advanceTimersByTimeAsync(1); await settle()
     expect(opened).toBe(true)
     escape()
-    // Control: an ordinary reference link opens after the usual short dwell.
-    hover('a'); await settle()
+    // Control: an ordinary reference link asks for its card when the dwell is over, not before.
+    requests.mockClear()
+    hover('a'); await vi.advanceTimersByTimeAsync(449)
+    expect(requests).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(1)
+    expect(requests).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(0)
     expect(opened).toBe(true)
+  })
+
+  describe('moving from link to link', () => {
+    const fetched = () => requests.mock.calls.length
+    const advance = async (ms: number) => { await vi.advanceTimersByTimeAsync(ms) }
+
+    it('opens the next card 100 ms after the pointer reaches it while a card is open', async () => {
+      hover('a'); await settle()
+      expect(opened).toBe(true); expect(title()).toBe('a')
+      hover('b'); await advance(99)
+      expect(fetched()).toBe(1)
+      await advance(1); await advance(0)
+      expect(fetched()).toBe(2); expect(opened).toBe(true); expect(title()).toBe('b')
+    })
+
+    it('chains when the pointer crosses within the close delay, and waits the full dwell after a pause', async () => {
+      hover('a'); await settle()
+      pointerOut('a'); await advance(179)
+      expect(opened).toBe(true)
+      hover('b'); await advance(100); await advance(0)
+      expect(title()).toBe('b')
+      // A pause off every link closes the card after the close delay, and the next link starts over.
+      pointerOut('b'); await advance(180)
+      expect(opened).toBe(false)
+      win.document.body.insertAdjacentHTML('afterbegin', `<a id="c" href="${prefix}-c/">c</a>`)
+      requests.mockClear()
+      hover('c'); await advance(449)
+      expect(fetched()).toBe(0)
+      await advance(1)
+      expect(fetched()).toBe(1)
+    })
+
+    it('keeps chaining past a link whose card never opened', async () => {
+      win.document.body.insertAdjacentHTML('afterbegin', `<a id="c" href="${prefix}-c/">c</a>`)
+      hover('a'); await settle()
+      expect(opened).toBe(true)
+      requests.mockClear()
+      hover('b'); await advance(50); pointerOut('b')
+      hover('c'); await advance(99)
+      expect(fetched()).toBe(0)
+      await advance(1)
+      expect(fetched()).toBe(1)
+    })
+
+    it('keeps chaining while the card before it is still loading', async () => {
+      win.document.body.insertAdjacentHTML('afterbegin', `<a id="c" href="${prefix}-c/">c</a>`)
+      hover('a'); await settle()
+      expect(opened).toBe(true)
+      let resolveB!: (value: Response) => void
+      requests.mockImplementationOnce(() => new Promise<Response>((resolve) => { resolveB = resolve }))
+      hover('b'); await advance(100)
+      // The request for b is in flight and no card is open, which is where a third link used to start the chain over.
+      expect(opened).toBe(false)
+      requests.mockClear()
+      hover('c'); await advance(99)
+      expect(fetched()).toBe(0)
+      await advance(1)
+      expect(fetched()).toBe(1)
+      resolveB(new Response(JSON.stringify({ schema: 1, title: 'late', description: '', href: `${prefix}-b/` })))
+    })
+
+    it('still waits a second for a glossary card while a card is open', async () => {
+      win.document.body.insertAdjacentHTML('afterbegin', '<a id="g" href="/en/ts/latest/mcp/reference/glossary/">glossary</a>')
+      hover('a'); await settle()
+      expect(opened).toBe(true)
+      // The glossary payload may already be cached by an earlier case, so the card itself says when it opened.
+      hover('g'); await advance(999); await advance(0)
+      expect(opened).toBe(false)
+      await advance(1); await advance(0)
+      expect(opened).toBe(true)
+    })
   })
 
   it('cancels a glossary card that is still waiting out its dwell when Escape is pressed', async () => {
