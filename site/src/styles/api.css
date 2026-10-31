@@ -784,6 +784,8 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .
 }
 .api-native-signature .api-keyword { color: var(--api-ink-keyword); }
 .api-native-signature .api-declaration-name { color: var(--api-ink-name); }
+/* A type a signature links reads in the type ink, as its keywords and name read in theirs. The enclosing context stays quiet. */
+.api-native-signature .api-type-link:not(.api-parameter-name):not(.api-signature-context) { color: var(--api-ink-type); }
 .api-native-signature .api-signature-context { color: var(--color-foreground-secondary); }
 .api-native-signature .api-operator { white-space: nowrap; }
 /* A union or object type keeps the line breaks it is written with. */

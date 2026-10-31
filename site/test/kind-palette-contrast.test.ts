@@ -137,6 +137,47 @@ describe('kind palette contrast', () => {
     })
   })
 
+  describe('a type a signature links', () => {
+    const rule = '.api-native-signature .api-type-link:not(.api-parameter-name)'
+    /** The `--api-ink-*` the rule paints, and its colour in the light and dark blocks of the kind palette. */
+    const ink = () => {
+      const name = /\bcolor:\s*var\((--api-ink-[a-z]+)\)/.exec(ruleOf(rule))?.[1]
+      expect(name, 'the rule paints an api ink').toBeDefined()
+      const values = [...css.matchAll(new RegExp(`${name}:\\s*(#[0-9a-f]{6})`, 'gi'))].map(([, value]) => value!.toLowerCase())
+      expect(values, `${name} in the light, dark and forced dark blocks`).toHaveLength(3)
+      return { name: name!, light: values[0]!, dark: values[1]! }
+    }
+    /** The signature surface in every brand and mode: the page colour with 6% of the text colour mixed in, as the header paints it. */
+    const surfaces = () => {
+      const share = Number(/dt\.gp-sphinx-api-header:not\(:target\)\s*\{\s*background:\s*color-mix\(in srgb,\s*var\(--background-color\),\s*var\(--text-color\)\s+(\d+)%\)/.exec(apiCss)?.[1])
+      expect(Number.isFinite(share), 'the signature surface is read from the stylesheet').toBe(true)
+      const blocks = [...brand.matchAll(/(html\[[^{}]*)\{([^{}]*)\}/g)]
+        .map(([, selector, body]) => ({ selector: selector!.trim(), colours: Object.fromEntries([...body!.matchAll(/(--[\w-]+):\s*(#[0-9a-f]{6})/gi)].map(([, name, value]) => [name, value!.toLowerCase()])) as Record<string, string> }))
+        .filter(({ colours }) => colours['--background-color'] && colours['--text-color'])
+      expect(blocks.length).toBeGreaterThan(0)
+      return blocks.map(({ selector, colours }) => ({
+        selector, mode: luminance(colours['--background-color']!) > 0.5 ? 'light' as const : 'dark' as const,
+        surface: mix(colours['--text-color']!, share, colours['--background-color']!),
+      }))
+    }
+    const failing = (colour: (mode: 'light' | 'dark') => string) => surfaces()
+      .filter(({ mode, surface }) => ratio(colour(mode), surface) < 4.5).map(({ selector }) => selector)
+
+    it('paints a type ink the stylesheet declares', () => {
+      expect(ink().name).toBe('--api-ink-type')
+    })
+
+    it('clears 4.5:1 on the signature surface in light and dark, in every brand', () => {
+      const { light, dark } = ink()
+      expect(failing((mode) => mode === 'light' ? light : dark)).toEqual([])
+    })
+
+    it('would not with the other mode\'s ink, so the check above can fail', () => {
+      const { light, dark } = ink()
+      expect(failing((mode) => mode === 'light' ? dark : light).length).toBeGreaterThan(0)
+    })
+  })
+
   it('declares the dark preference and an explicit dark choice alike', () => {
     expect(forced).toEqual(dark)
   })
