@@ -6,6 +6,7 @@ import { fromHtml } from 'hast-util-from-html'
 import { select, selectAll } from 'astro-expressive-code/hast'
 import { SymbolIndex, type ApiSymbol } from '@libtmux/api-model'
 import { API_MODELS, indexFor } from '../src/lib/api-models'
+import { MCP_REFERENCE } from '../src/lib/mcp-catalog'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
 import { mentionBadge, mentionBadgeHtml } from '../src/lib/mention-badge'
 import { apiComponents } from './api-components'
@@ -230,6 +231,112 @@ describe('a callable named in prose', () => {
   })
 })
 
+describe('a symbol written as its language writes it', () => {
+  /** The links of `text` in `port`'s real model, read from the page of `owner` (an id) when one is given. */
+  const write = async (port: string, text: string, owner?: string) => {
+    const model = API_MODELS[port]
+    const context = owner ? model.symbols.find((symbol) => symbol.id === owner) : undefined
+    if (owner) expect(context, owner).toBeTruthy()
+    const root = await render(text, context, indexFor(model, (symbol) => `/en/${port}/latest/reference/${symbol.slug}/`))
+    return [...root.querySelectorAll<DomAnchor>('a.api-mention')].map((link) => [link.textContent, link.dataset.apiKind, link.getAttribute('aria-label')])
+  }
+
+  // One method of each language through the real model: the text a reader sees, and the name a screen reader hears.
+  it.each([
+    ['py', '`Session.new_window`', undefined, 'Session.new_window()'],
+    ['ts', '`Server.clients`', undefined, 'Server.clients()'],
+    ['rs', '`Client::name`', undefined, 'Client::name()'],
+    ['java', '{@link #capture()}', 'io.github.libtmux.Pane.Pane', '#capture()'],
+    ['csharp', '`LibTmux.Server.RunShellAsync`', undefined, 'LibTmux.Server.RunShellAsync()'],
+    ['cxx', '`Window::zoomed()`', 'libtmux::Window', 'Window::zoomed()'],
+    ['lua', '`libtmux.Server:snapshot`', undefined, 'libtmux.Server:snapshot()'],
+    ['swift', '``Server/clients()``', undefined, 'Server.clients()'],
+    ['go', '`Server.Cmd`', undefined, 'Server.Cmd'],
+    ['kotlin', '`Server.newSession`', undefined, 'Server.newSession'],
+    ['julia', '`LibTmux.snapshot`', undefined, 'LibTmux.snapshot'],
+    ['ruby', '`Server#snapshot`', undefined, 'Server#snapshot'],
+  ])('%s: %s reads %s, and is announced as it reads', async (port, text, owner, shown) => {
+    const links = await write(port, `See ${text}.`, owner)
+    expect(links).toHaveLength(1)
+    const [[visible, kind, name]] = links
+    expect(['method', 'function']).toContain(kind)
+    expect([visible, name]).toEqual([shown, `${kind}: ${shown}`])
+  })
+
+  it('writes a Ruby method of the owner\'s page without its owner: `#snapshot`', async () => {
+    expect((await write('ruby', 'See `#snapshot`.', 'LibTmux::Server')).map(([text]) => text)).toEqual(['#snapshot'])
+  })
+})
+
+describe('a name that is not a call', () => {
+  const read = async (port: string, text: string, context?: string) => {
+    const model = API_MODELS[port]
+    const owner = context ? model.symbols.find((symbol) => symbol.id === context) : undefined
+    const root = await render(text, owner, indexFor(model, (symbol) => `/en/${port}/latest/reference/${symbol.slug}/`))
+    return [...root.querySelectorAll<DomAnchor>('a.api-mention')].map((link) => [link.textContent, link.dataset.apiKind, link.getAttribute('aria-label')])
+  }
+
+  it('writes an environment variable without the shell\'s sigil, in the prose of a real Python symbol', async () => {
+    const symbol = API_MODELS.py.symbols.find((entry) => entry.id === 'libtmux.exc.NotInsideTmux')!
+    expect(symbol.doc?.body).toContain('``$TMUX`` and ``$TMUX_PANE``')
+    const root = await render(symbol.doc!.body!, symbol, indexFor(API_MODELS.py, (entry) => `/en/py/latest/reference/${entry.slug}/`))
+    expect([...root.querySelectorAll('code')].map((code) => code.textContent)).toEqual(['TMUX', 'TMUX_PANE', 'from_env()'])
+    expect(root.body.textContent).not.toContain('$')
+  })
+
+  it('leaves a shell prompt, a variable of the reader\'s and other sigils as written', async () => {
+    const root = await render('Run `$ tmux ls`, set `$Server`, read `${TMUX}` or `$env:TMUX`; `$tmux` and `$TMUX_PANE`.', undefined, indexFor(API_MODELS.py, (entry) => `/en/py/latest/reference/${entry.slug}/`))
+    expect([...root.querySelectorAll('code')].map((code) => code.textContent)).toEqual(['$ tmux ls', '$Server', '${TMUX}', '$env:TMUX', '$tmux', 'TMUX_PANE'])
+  })
+
+  it('keeps the placeholders that real docs use to explain expansion: `$NAME`, `${NAME}`, `$VARS` and `$VAR`', async () => {
+    // Python: "shell-expanded (``~`` and ``$VARS``)"; Rust: "expands `~` and `$NAME` or `${NAME}`"; Swift: "leaves `$VAR` unexpanded".
+    for (const [port, id, shown] of [
+      ['py', 'tmuxp.workspace.builder.resolve_builder_paths', ['~', '$VARS']],
+      ['rs', 'config.Workspace.from_yaml', ['$NAME', '${NAME}']],
+      ['swift', 'Workspace', ['$VAR']],
+    ] as const) {
+      const symbol = API_MODELS[port].symbols.find((entry) => (entry.publicId ?? entry.id) === id)!
+      const root = await render(symbol.doc!.body!, symbol, indexFor(API_MODELS[port], (entry) => `/en/${port}/latest/reference/${entry.slug}/`))
+      const code = [...root.querySelectorAll('code')].map((element) => element.textContent)
+      for (const text of shown) expect(code, `${port} ${text}`).toContain(text)
+    }
+  })
+
+  it('names a Python MCP tool as a tool is named, not as a call', async () => {
+    const id = 'libtmux_mcp.tools.pane_tools.snapshot_pane'
+    expect(await read('py', `Call \`${id}\`.`)).toEqual([[id, 'function', `function: ${id}`]])
+    // A callable of the same package that is no tool is still a call.
+    expect(await read('py', 'Call `libtmux_mcp.tools.register_tools`.')).toEqual([['libtmux_mcp.tools.register_tools()', 'function', 'function: libtmux_mcp.tools.register_tools()']])
+    expect(await read('py', 'Call `Session.new_window`.')).toEqual([['Session.new_window()', 'method', 'method: Session.new_window()']])
+  })
+
+  it('names a Rust MCP tool as a tool is named, not as a call', async () => {
+    expect(await read('rs', 'Call `TmuxTools::snapshot_pane`.')).toEqual([['TmuxTools::snapshot_pane', 'method', 'method: TmuxTools::snapshot_pane']])
+    expect(await read('rs', 'Call `Pane::send_keys`.')).toEqual([['Pane::send_keys()', 'method', 'method: Pane::send_keys()']])
+  })
+
+  it('marks every tool a port registers and no other callable', () => {
+    const marked = (port: string) => indexFor(API_MODELS[port], (entry) => `/en/${port}/latest/reference/${entry.slug}/`)
+    const tools = (port: string) => API_MODELS[port].symbols.filter((symbol) => marked(port).isMcpTool(symbol))
+    expect(tools('py')).toHaveLength(MCP_REFERENCE.py.registrations.length)
+    expect(tools('rs')).toHaveLength(MCP_REFERENCE.rs.registrations.length)
+    expect(tools('py').every((symbol) => symbol.product === 'mcp' && symbol.id.startsWith('libtmux_mcp.tools.'))).toBe(true)
+    expect(tools('rs').every((symbol) => symbol.product === 'mcp' && symbol.parent === 'mcp.src.TmuxTools')).toBe(true)
+    // Ruby registers `close` and `run`, which other callables of its MCP product share: no match is complete, so none is a tool.
+    expect(tools('ruby')).toEqual([])
+  })
+
+  it('writes a tmux command found in a code span without parentheses, whatever the language', async () => {
+    for (const port of ['py', 'ruby', 'go']) {
+      const model = API_MODELS[port]
+      const root = await render('Run `new-session()`, or `new-session`.', undefined, indexFor(model, (symbol) => `/en/${port}/latest/reference/${symbol.slug}/`))
+      expect([...root.querySelectorAll<DomAnchor>('a.tmux-mention')].map((link) => [link.textContent, link.dataset.apiKind, link.getAttribute('aria-label')]), port)
+        .toEqual([['new-session', 'command', 'tmux command: new-session'], ['new-session', 'command', 'tmux command: new-session']])
+    }
+  })
+})
+
 describe('a name repeated in one docstring', () => {
   it('is the link alone in every paragraph, each keeping its kind', async () => {
     const root = await renderProse('Read a `Pane`.\n\nThen a `Pane` again.')
@@ -266,10 +373,12 @@ describe('a capability directory in a doc comment', () => {
     expect(chips(await renderProse(text, undefined, local))).toEqual(['Pane.kill()', 'Pane.id', 'Pane.id', 'open()'])
   })
 
-  it('drops the owner written with a hash, as Java and Ruby spell a member', async () => {
+  it('drops the owner written with a hash, as Java spells a member', async () => {
+    const java = new SymbolIndex([pane, declare('pane.Pane.kill', 'method'), declare('pane.Pane.id', 'property'), declare('pane.open', 'function')],
+      (symbol) => `/en/java/latest/reference/${symbol.slug}/`, 'java')
     const hashed = rows(['Control', '{@link Pane#kill}, {@link #id}'], ['Read', '{@link Pane#id}'], ['Open', '{@link open}'])
-    expect(chips(await renderProse(hashed, pane, local))).toEqual(['kill()', 'id', 'id', 'open()'])
-    expect(chips(await renderProse(hashed, undefined, local))).toEqual(['Pane#kill()', '#id', 'Pane#id', 'open()'])
+    expect(chips(await renderProse(hashed, pane, java))).toEqual(['kill()', 'id', 'id', 'open()'])
+    expect(chips(await renderProse(hashed, undefined, java))).toEqual(['Pane#kill()', '#id', 'Pane#id', 'open()'])
   })
 
   it('leaves a run of fewer than three rows as paragraphs', async () => {

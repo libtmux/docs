@@ -42,6 +42,25 @@ export interface McpReference {
 
 export const MCP_REFERENCE = data.ports as unknown as Record<string, McpReference>
 
+/**
+ * The callables of a port's MCP product that are registered as tools. A Rust tool carries `#[tool(` on its declaration.
+ * Elsewhere the registration names the tool and the file that registers it, and the declaration is the callable of that
+ * name in that directory: Python registers `capture_pane` in `pane_tools/__init__.py` and declares it in
+ * `pane_tools/io.py`. That match is used only when it is complete, one declaration for every registration and none left
+ * over; a port whose registrations share names with other callables (Ruby's `close` and `run`) marks nothing by it.
+ */
+export function mcpToolSymbols<T extends { name: string; kind: string; product?: string; source: { file: string }; signatures: { raw?: string }[] }>(port: string, symbols: readonly T[]): T[] {
+  const callables = symbols.filter((symbol) => symbol.product === 'mcp' && (symbol.kind === 'function' || symbol.kind === 'method'))
+  const attributed = callables.filter((symbol) => symbol.signatures.some((signature) => signature.raw?.trimStart().startsWith('#[tool(')))
+  const registrations = MCP_REFERENCE[port]?.registrations ?? []
+  const named = registrations.map((tool) => {
+    const directory = tool.source.file.slice(0, tool.source.file.lastIndexOf('/') + 1)
+    return callables.filter((symbol) => symbol.name === tool.name && symbol.source.file.startsWith(directory))
+  })
+  const complete = registrations.length > 0 && named.every((found) => found.length === 1) && new Set(named.flat()).size === registrations.length
+  return [...new Set([...attributed, ...(complete ? named.flat() : [])])]
+}
+
 export const MCP_SECTIONS = { tools: 'Tools', prompts: 'Prompts', resources: 'Resources' } as const
 export type McpSection = keyof typeof MCP_SECTIONS
 export type McpKind = 'tool' | 'prompt' | 'resource' | 'resource-template'

@@ -141,6 +141,7 @@ async function docComponent() {
   const code = result.code.replaceAll('"astro/compiler-runtime"', JSON.stringify(pathToFileURL(astroRequire.resolve('astro/compiler-runtime')).href))
     .replaceAll('"../../lib/tmux-links"', JSON.stringify(linker))
     .replaceAll('"../../lib/mention-badge"', JSON.stringify(new URL('../src/lib/mention-badge.ts', import.meta.url).href))
+    .replaceAll('"../../lib/symbol-form"', JSON.stringify(new URL('../src/lib/symbol-form.ts', import.meta.url).href))
   return (await import(/* @vite-ignore */ `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`)).default
 }
 
