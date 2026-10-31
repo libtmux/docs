@@ -99,6 +99,62 @@ or revision exits 2. `check-example-blocks.negative.mjs` builds a port whose
 later revision drops the line an anchor names, and requires the failure beside
 a clean pass at the first revision.
 
+## Landing page excerpts
+
+A port's version root (`/<port>/latest/`) offers Core API, MCP and Workspace
+Manager, each with a tested example. Core API shows the homepage program for
+the port. MCP and Workspace Manager show an excerpt of a program the port's
+own CI runs, named in `site/src/data/landing-examples.json`:
+
+```json
+{
+  "ts": {
+    "mcp": {
+      "file": "examples/mcp-agent/mcp-agent.ts",
+      "lang": "typescript",
+      "from": "export async function connectAgent",
+      "to": "=}",
+      "ci": {
+        "workflow": ".github/workflows/typescript.yml",
+        "command": "bun run typecheck && bun run test"
+      }
+    }
+  }
+}
+```
+
+`file`, `from` and `to` follow the excerpt fences above, against the file at the
+revision the port's API model records for that product. A workspace example
+shows its configuration and the code that builds it, which a file may keep far
+apart: `more` lists further ranges of the same file in file order, and the page
+separates the ranges with a blank line. Each range must be a whole unit.
+
+`ci` names the workflow and the command in one of its `run` steps that reaches
+the file. A test reads the workflow at that revision and requires the command
+there, with continued lines joined; a comment, a step name or an environment
+value that spells the command does not count. A port that
+serves a product with another port's package has no entry of its own:
+PowerShell's MCP is the .NET tool, so its panel quotes the C# entry.
+
+A product that ships without such a program is recorded as
+`{ "missing": "<reason>" }`. Its panel keeps the install widget and shows no
+example. A test requires every shipped product to have one entry or the other,
+and lists the gaps by name.
+
+Regenerate the cache after changing an entry or a model revision. Python's
+workspace manager and MCP server are read from the `tmuxp` and `libtmux-mcp`
+checkouts, set with `LIBTMUX_DOCS_WORKSPACE_PY` and `LIBTMUX_DOCS_MCP_PY`;
+point `LIBTMUX_DOCS_CHECKOUT_<PORT>` at a checkout that holds the revision for
+any other port whose `-docs` worktree is absent:
+
+```console
+$ node scripts/gen-example-sources.mjs
+```
+
+`scripts/check-example-blocks.mjs` fails when an excerpt matches no line, matches
+several, or ends inside a block. Its `--port` mode resolves the excerpts held
+in that port's repository against the revision it names.
+
 ## Converting a port
 
 1. Pick the tested source: the displayed `main.*` that the page's native run

@@ -7,7 +7,8 @@
  * other block is hand-typed text that can drift from what the page claims.
  */
 import { createHash } from 'node:crypto'
-import { ExcerptError, excerptRequest, pageSource, parseFenceAttributes, sliceExcerpt, type ExcerptFence } from './example-excerpt.ts'
+import { ExcerptError, excerptRequest, pageSource, parseFenceAttributes, sliceExcerpt, type ExcerptRequest } from './example-excerpt.ts'
+import type { LandingTable } from './port-landing.ts'
 
 /** What a recorded native run of a page covers. */
 export interface RunRecord {
@@ -101,7 +102,7 @@ export function unbalanced(text: string, language: string): string | undefined {
  * Why `source`, the text of a quoted file, cannot supply the excerpt, or
  * undefined when it supplies whole code.
  */
-function excerptProblem(source: string, request: ExcerptFence, name: string, language: string): string | undefined {
+function excerptProblem(source: string, request: ExcerptRequest, name: string, language: string): string | undefined {
   try {
     const why = unbalanced(sliceExcerpt(source, request, name), language)
     return why ? `the excerpt of ${name} ${why}; move the end anchor` : undefined
@@ -231,6 +232,41 @@ export function checkQuotedSources({ markdown, owner, ownerOf, readSource, where
     else if (request) {
       const problem = excerptProblem(source, request, file, fence.language)
       if (problem) report(problem)
+    }
+  }
+  return problems
+}
+
+export interface LandingCheck {
+  table: LandingTable
+  /** A product's file of the port that owns it, or undefined when the source has none. */
+  readSource: (owner: string, product: string, file: string) => string | undefined
+  /** Names the revision in messages, such as `at 2de249b6`; empty for the cache. */
+  where?: string
+  /** Limits the check to the products one repository holds. */
+  only?: (owner: string, product: string) => boolean
+}
+
+/**
+ * Every range of a port's landing page excerpts that its source cannot supply
+ * as whole code, one message each. A product with no program yet (`missing`)
+ * shows no excerpt and has nothing to resolve.
+ */
+export function checkLandingExcerpts({ table, readSource, where = '', only = () => true }: LandingCheck): string[] {
+  const problems: string[] = []
+  for (const [owner, products] of Object.entries(table)) {
+    for (const [product, entry] of Object.entries(products)) {
+      if ('missing' in entry || !only(owner, product)) continue
+      const report = (message: string) => problems.push(`landing page of ${owner}, ${product}: ${message}`)
+      const source = readSource(owner, product, entry.file)
+      if (source === undefined) report(`${entry.file} is not in ${where || 'the example cache'}`)
+      else {
+        // Each range is a unit of its own: the page shows them one after another.
+        for (const range of [entry, ...(entry.more ?? [])]) {
+          const problem = excerptProblem(source, range, entry.file, entry.lang)
+          if (problem) report(problem)
+        }
+      }
     }
   }
   return problems
