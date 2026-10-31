@@ -1,0 +1,245 @@
+{
+  "py": {
+    "mcp": {
+      "file": "tests/test_window_tools.py",
+      "lang": "python",
+      "from": "from fastmcp import Client",
+      "to": "result = asyncio.run(_call())",
+      "ci": {
+        "workflow": ".github/workflows/tests.yml",
+        "command": "uv run py.test"
+      }
+    },
+    "workspace": {
+      "file": "src/tmuxp/workspace/builder/classic.py",
+      "lang": "python",
+      "from": ">>> import yaml",
+      "to": "=    True",
+      "ci": {
+        "workflow": ".github/workflows/tests.yml",
+        "command": "uv run py.test"
+      }
+    }
+  },
+  "ruby": {
+    "mcp": {
+      "file": "examples/mcp_protocol.rb",
+      "lang": "ruby",
+      "from": "application = LibTmux::MCP::Application.new(",
+      "to": "runner = parent.async { transport.run }",
+      "ci": {
+        "workflow": ".github/workflows/compatibility.yml",
+        "command": "bundle exec scripts/matrix"
+      }
+    },
+    "workspace": {
+      "file": "examples/workspace_apply.rb",
+      "lang": "ruby",
+      "from": "workspace = LibTmux::Workspace.load(",
+      "to": "\"workspace apply failed\"",
+      "ci": {
+        "workflow": ".github/workflows/compatibility.yml",
+        "command": "bundle exec scripts/matrix"
+      }
+    }
+  },
+  "powershell": {
+    "workspace": {
+      "file": "examples/Guides.ps1",
+      "lang": "powershell",
+      "from": "$workspace = LibTmux.Workspace\\Import-TmuxWorkspace -Yaml @'",
+      "to": "='@",
+      "ci": {
+        "workflow": ".github/workflows/ci.yml",
+        "command": "eng/Test.ps1 -Suite Documentation"
+      }
+    }
+  },
+  "julia": {
+    "mcp": {
+      "missing": "No Julia program that starts or calls the MCP server is an example its CI runs. The CI-run Julia test, packages/LibTmuxMCP/test/tools.jl, calls the private LibTmuxMCP._invoke_tool through a helper, and the only CI-run client of the installed launcher is a Python script, packages/LibTmuxMCP/test/product_client.py."
+    },
+    "workspace": {
+      "file": "packages/LibTmuxWorkspace/examples/owned_load.jl",
+      "lang": "julia",
+      "from": "config = validate(",
+      "to": "@assert result.status == :complete",
+      "ci": {
+        "workflow": ".github/workflows/julia.yml",
+        "command": "dev/check-matrix.py run"
+      }
+    }
+  },
+  "ts": {
+    "mcp": {
+      "file": "examples/mcp-agent/mcp-agent.ts",
+      "lang": "typescript",
+      "from": "export async function connectAgent",
+      "to": "=}",
+      "ci": {
+        "workflow": ".github/workflows/typescript.yml",
+        "command": "bun run typecheck && bun run test"
+      }
+    },
+    "workspace": {
+      "file": "examples/workspace/workspace.ts",
+      "lang": "typescript",
+      "from": "export const DEVELOPMENT_WORKSPACE",
+      "to": "=}",
+      "ci": {
+        "workflow": ".github/workflows/typescript.yml",
+        "command": "bun run typecheck && bun run test"
+      }
+    }
+  },
+  "rs": {
+    "mcp": {
+      "file": "crates/tmux-mcp/examples/readonly.rs",
+      "lang": "rust",
+      "from": "use libtmux::Server;",
+      "to": "=}",
+      "ci": {
+        "workflow": ".github/workflows/ci.yml",
+        "command": "just check"
+      }
+    },
+    "workspace": {
+      "file": "crates/tmux-workspace/examples/build.rs",
+      "lang": "rust",
+      "from": "const WORKSPACE: &str = \"",
+      "to": "=\";",
+      "more": [
+        {
+          "from": "let workspace = Workspace::from_yaml(WORKSPACE)?;",
+          "to": "builder.build(&workspace)"
+        }
+      ],
+      "ci": {
+        "workflow": ".github/workflows/ci.yml",
+        "command": "just check"
+      }
+    }
+  },
+  "go": {
+    "mcp": {
+      "file": "mcp/examples/agent-workflow/main.go",
+      "lang": "go",
+      "from": "func connect(ctx context.Context",
+      "to": "=}",
+      "ci": {
+        "workflow": ".github/workflows/tests.yml",
+        "command": "go test -race -count=1"
+      }
+    },
+    "workspace": {
+      "file": "workspace/examples/build-workspace/main.go",
+      "lang": "go",
+      "from": "// document is a workspace file.",
+      "to": "=`",
+      "more": [
+        {
+          "from": "Parse refuses a field it does not know",
+          "to": "workspace.Build(ctx, server, parsed)"
+        }
+      ],
+      "ci": {
+        "workflow": ".github/workflows/tests.yml",
+        "command": "go test -race -count=1"
+      }
+    }
+  },
+  "java": {
+    "mcp": {
+      "file": "examples/src/main/java/io/github/libtmux/examples/ServeTmuxOverMcp.java",
+      "lang": "java",
+      "from": "ServerConfig config = ServerConfig.builder()",
+      "to": "=        }",
+      "ci": {
+        "workflow": ".github/workflows/ci.yml",
+        "command": "./gradlew :libtmux-mcp:test check"
+      }
+    },
+    "workspace": {
+      "file": "libtmux-workspace/src/test/java/io/github/libtmux/workspace/WorkspaceBuilderTest.java",
+      "lang": "java",
+      "from": "private static final String WORKSPACE = \"\"\"",
+      "to": "=            \"\"\";",
+      "more": [
+        {
+          "from": "void theDescribedSessionIsWhatGetsBuilt(Server server)",
+          "to": "=    }"
+        }
+      ],
+      "ci": {
+        "workflow": ".github/workflows/ci.yml",
+        "command": "./gradlew :libtmux-mcp:test check"
+      }
+    }
+  },
+  "csharp": {
+    "mcp": {
+      "file": "examples/LibTmux.Examples/Snippets/Mcp.cs",
+      "lang": "csharp",
+      "from": "Dictionary<string, string?> environment =",
+      "to": "cancellationToken: ct);",
+      "ci": {
+        "workflow": ".github/workflows/dotnet.yml",
+        "command": "dotnet test --project tests/LibTmux.ExampleTests/LibTmux.ExampleTests.csproj"
+      }
+    },
+    "workspace": {
+      "file": "src/LibTmux.Workspace.Cli/README.md",
+      "lang": "yaml",
+      "from": "session_name: myproject",
+      "to": "=      - npm run dev",
+      "ci": {
+        "workflow": ".github/workflows/dotnet-tmux.yml",
+        "command": "LibTmux.Workspace.Cli.Tests.dll"
+      }
+    }
+  },
+  "cxx": {
+    "mcp": {
+      "file": "apps/mcp/tests/mcp_test.cpp",
+      "lang": "cpp",
+      "from": "TEST(McpToolsTmux, ListsTheSessionsOfARealServer) {",
+      "to": "=}",
+      "ci": {
+        "workflow": ".github/workflows/ci.yml",
+        "command": "ctest --preset cxx-dev"
+      }
+    },
+    "workspace": {
+      "file": "examples/workspace/tests/tmuxp_test.cpp",
+      "lang": "yaml",
+      "from": "=session_name: work",
+      "to": "=      -",
+      "ci": {
+        "workflow": ".github/workflows/ci.yml",
+        "command": "ctest --preset cxx-dev"
+      }
+    }
+  },
+  "swift": {
+    "mcp": {
+      "file": "Examples/Sources/ExampleCode/MCPEmbedding.swift",
+      "lang": "swift",
+      "from": "public func useEmbeddedTools(on server: Server)",
+      "to": "=}",
+      "ci": {
+        "workflow": ".github/workflows/ci.yml",
+        "command": "swift test --package-path Examples"
+      }
+    },
+    "workspace": {
+      "file": "Examples/Sources/ExampleCode/Workspaces.swift",
+      "lang": "swift",
+      "from": "public func describeAWorkspaceInSwift()",
+      "to": "=}",
+      "ci": {
+        "workflow": ".github/workflows/ci.yml",
+        "command": "swift test --package-path Examples"
+      }
+    }
+  }
+}

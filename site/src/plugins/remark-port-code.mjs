@@ -54,6 +54,8 @@ export const CHECKOUTS = {
   py: '~/work/python/libtmux',
   ruby: '~/work/libtmux/libtmux-ruby-docs',
   lua: '~/work/libtmux/libtmux-lua-docs',
+  powershell: '~/work/libtmux/libtmux-powershell-docs-site',
+  julia: '~/work/libtmux/libtmux-julia-docs-site',
   ts: '~/work/libtmux/libtmux-ts-docs',
   rs: '~/work/libtmux/libtmux-rs-docs',
   go: '~/work/libtmux/libtmux-go-docs',
@@ -69,8 +71,23 @@ export const CHECKOUTS = {
 
 export const expand = (p) => (p.startsWith('~/') ? join(homedir(), p.slice(2)) : p)
 
-/** A source-bound CI build supplies its selected checkout through an override. */
-export function checkoutFor(owner) {
+/**
+ * Python's workspace manager and MCP server are packages of other
+ * repositories; every other port keeps its products beside the library.
+ * The overrides are the names `gen-api-model.mjs` reads for the same checkouts.
+ */
+const PRODUCT_CHECKOUTS = {
+  'py/workspace': { variable: 'LIBTMUX_DOCS_WORKSPACE_PY', fallback: '~/work/python/tmuxp' },
+  'py/mcp': { variable: 'LIBTMUX_DOCS_MCP_PY', fallback: '~/work/python/libtmux-mcp' },
+}
+
+/**
+ * A source-bound CI build supplies its selected checkout through an override.
+ * A product's file is read from the checkout of the repository that holds it.
+ */
+export function checkoutFor(owner, product) {
+  const own = product ? PRODUCT_CHECKOUTS[`${owner}/${product}`] : undefined
+  if (own) return expand(process.env[own.variable] || own.fallback)
   const override = process.env[`LIBTMUX_DOCS_CHECKOUT_${owner.toUpperCase()}`]
   return expand(override || CHECKOUTS[owner] || '')
 }

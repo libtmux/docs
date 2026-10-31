@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const plugin = join(root, 'site/src/plugins/remark-port-code.mjs')
 const { LANG_TO_PORT, checkoutFor, parseMeta } = await import(`file://${plugin}`)
+const { landingCacheKey } = await import(`file://${join(root, 'site/src/lib/port-landing.ts')}`)
 
 const CONTENT = join(root, 'site/src/content/docs')
 const outArg = process.argv.indexOf('--out')
@@ -50,7 +51,32 @@ for (const md of markdownFiles(CONTENT)) {
   }
 }
 
+/*
+ * A port's landing page quotes a program of each product it ships. Those files
+ * are cached under their product, because Python's products live in other
+ * repositories and every product has its own revision in the API model.
+ */
+const landingArg = process.argv.indexOf('--landing')
+const LANDING = JSON.parse(readFileSync(landingArg === -1 ? join(root, 'site/src/data/landing-examples.json') : resolve(process.argv[landingArg + 1]), 'utf8'))
+for (const [owner, products] of Object.entries(LANDING)) {
+  for (const [product, entry] of Object.entries(products)) {
+    if (entry.file) wanted.set(landingCacheKey(owner, product, entry.file), { owner, product, file: entry.file })
+  }
+}
+
 const digest = (content) => createHash('sha256').update(content).digest('hex')
+
+/** Where a product's file is read: the model records one repository and revision per product. */
+function sourceOf(owner, product, modelPath) {
+  if (!product) {
+    const provenance = existsSync(modelPath) ? JSON.parse(readFileSync(modelPath, 'utf8'))
+      : JSON.parse(readFileSync(join(root, `site/src/data/port-guides/${owner}.json`), 'utf8')).source
+    return { repository: provenance.repository ?? provenance.repo, revision: provenance.revision }
+  }
+  const source = JSON.parse(readFileSync(modelPath, 'utf8')).sources?.find((candidate) => candidate.product === product)
+  if (!source) throw new Error(`${owner}: the API model records no ${product} source for the landing page's example`)
+  return { repository: source.repo, revision: source.revision }
+}
 
 /** Read committed bytes; a working tree can be dirty or on a different branch. */
 export function cachedExample({ repository, revision, file, checkout, current }) {
@@ -72,14 +98,10 @@ export function run() {
   const previous = JSON.parse(current || '{}')
   const cache = {}
   const offline = new Set()
-  for (const [key, { owner, file }] of [...wanted].sort((a, b) => a[0].localeCompare(b[0]))) {
-    const modelPath = join(root, `site/src/data/api/${owner}.json`)
-    const provenance = existsSync(modelPath) ? JSON.parse(readFileSync(modelPath, 'utf8'))
-      : JSON.parse(readFileSync(join(root, `site/src/data/port-guides/${owner}.json`), 'utf8')).source
-    const repository = provenance.repository ?? provenance.repo
-    const revision = provenance.revision
-    const checkout = checkoutFor(owner)
-    if (!checkout || !existsSync(join(checkout, '.git'))) offline.add(owner)
+  for (const [key, { owner, product, file }] of [...wanted].sort((a, b) => a[0].localeCompare(b[0]))) {
+    const { repository, revision } = sourceOf(owner, product, join(root, `site/src/data/api/${owner}.json`))
+    const checkout = checkoutFor(owner, product)
+    if (!checkout || !existsSync(join(checkout, '.git'))) offline.add(product ? `${owner}/${product}` : owner)
     cache[key] = cachedExample({ repository, revision, file, checkout, current: previous[key] })
   }
   const merged = `${JSON.stringify(cache, null, 2)}\n`
