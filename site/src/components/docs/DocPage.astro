@@ -6,10 +6,12 @@ import { PORT_BY_SLUG, hasPackageInstalls, productApiPath, productAvailable } fr
 import DocCard from '../DocCard.astro'
 import PortLinks from '../PortLinks.astro'
 import McpInstall from '../widgets/McpInstall.astro'
+import McpShowcase from '../mcp/McpShowcase.astro'
 import WorkspaceShowcase from '../workspace/WorkspaceShowcase.astro'
 import PackageInstall from '../widgets/PackageInstall.astro'
 import ProductApiIndex from '../api/ProductApiIndex.astro'
 import { buildTarget } from '../../lib/versions'
+import { mcpShowcase, showcaseHeadings as mcpHeadings } from '../../lib/mcp-showcase'
 import { showcaseHeadings as workspaceHeadings, workspaceShowcase } from '../../lib/workspace-showcase'
 import { API_MODELS } from '../../lib/api-models'
 import { DEFAULT_LOCALE, LOCALE_LABEL, localeRoot, type Locale } from '../../i18n/locales'
@@ -111,8 +113,10 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
   && productIsAvailable
   && Boolean(port && hasPackageInstalls(PORT_BY_SLUG[port], 'workspace'))
 
-// The workspace overview closes with the workspace files its port's tests load.
+// Each overview closes with what its port's own sources can show: workspace
+// files its tests load, or the tools its server advertises.
 const workspaceExamples = isWorkspaceOverview && port ? workspaceShowcase(port) : undefined
+const mcpTools = isMcpOverview && port ? await mcpShowcase(port, version ?? buildTarget(process.env).version) : undefined
 
 // `entry.data.port` is undefined for the shared pages (concepts, guides,
 // examples); DocsLayout and lib/sidebar.ts's `getSidebar` treat that as "the
@@ -136,6 +140,7 @@ const workspaceExamples = isWorkspaceOverview && port ? workspaceShowcase(port) 
     ...(isMcpOverview || isWorkspaceOverview ? [{ depth: 2, slug: 'install', text: 'Install' }] : []),
     ...headings,
     ...(workspaceExamples ? workspaceHeadings(workspaceExamples) : []),
+    ...(mcpTools ? mcpHeadings(mcpTools) : []),
     ...(isProductApi ? [{ depth: 2, slug: 'generated-api', text: 'API declarations' }] : []),
   ]}
   pagePath={publicPagePath}
@@ -264,6 +269,7 @@ const workspaceExamples = isWorkspaceOverview && port ? workspaceShowcase(port) 
   )}
   {!placeholderLocale && <Content />}
   {!placeholderLocale && workspaceExamples && <WorkspaceShowcase showcase={workspaceExamples} />}
+  {!placeholderLocale && mcpTools && <McpShowcase showcase={mcpTools} />}
   {!placeholderLocale && entry.data.product && productIsAvailable && isProductApi &&
     <ProductApiIndex port={port!} product={entry.data.product} version={version ?? buildTarget(process.env).version} />}
 </DocsLayout>

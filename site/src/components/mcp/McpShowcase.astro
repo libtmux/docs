@@ -1,0 +1,166 @@
+---
+/**
+ * A port's MCP tools grouped by what they request, with a worked prompt.
+ *
+ * Rendered from the MCP overview rather than from Markdown, because a
+ * content-collection entry cannot import a component. Grouping, purposes and
+ * the example come from `lib/mcp-showcase.ts`, which reads the port's
+ * `tools/list` snapshot.
+ */
+import { Code } from 'astro-expressive-code/components'
+import { PORT_BY_SLUG } from '../../lib/ports'
+import type { McpShowcase, ShowcaseTool } from '../../lib/mcp-showcase'
+import { TIERS } from '../../lib/mcp-showcase'
+
+interface Props {
+  showcase: McpShowcase
+}
+const { showcase } = Astro.props as Props
+const grouped = showcase.groups.some((group) => group.tier)
+const tier = (tool: ShowcaseTool) => TIERS.find((entry) => entry.id === tool.tier)
+const call = (name: string, args: Record<string, unknown>) => JSON.stringify({ tool: name, arguments: args }, null, 2)
+const name = PORT_BY_SLUG[showcase.port].name
+---
+<section class="mcp-showcase" data-mcp-showcase>
+  <h2 id={grouped ? 'tools-by-tier' : 'tools'}>{grouped ? 'Tools by tier' : 'Tools'}</h2>
+  <p>
+    {grouped
+      ? <>The {name} server groups its tools by what they request. A tier badge tells you how far a call reaches before you approve it.</>
+      : <>The {name} server declares no toolsets, so its tools are listed together. Read each tool's page before enabling it.</>}
+    {showcase.selectsToolsets && <> Set <code>LIBTMUX_TOOLSETS</code> to a comma-separated list of tiers, such as <code>inspect,manage</code>, to offer only those tools.</>}
+  </p>
+  <div class="not-prose">
+    {showcase.groups.map((group) => (
+      <section class="mcp-group">
+        {group.tier && (
+          <>
+            <h3 class="mcp-group__title" id={`tier-${group.tier.id}`}>
+              <span class={`mcp-tier mcp-tier--${group.tier.id}`} title={group.tier.tooltip}>{group.tier.label}</span>
+            </h3>
+            <p class="mcp-group__summary">{group.tier.summary}</p>
+          </>
+        )}
+        <ul class="mcp-tools" role="list">
+          {group.tools.map((tool) => (
+            <li class="mcp-tool">
+              <span class="mcp-tool__head">
+                <a class="mcp-tool__name" href={tool.href}><code>{tool.name}</code></a>
+                {tier(tool) && <span class={`mcp-tier mcp-tier--${tool.tier}`} title={tier(tool)!.tooltip}>{tier(tool)!.label}</span>}
+              </span>
+              {tool.purpose && <span class="mcp-tool__purpose" title={tool.purpose}>{tool.purpose}</span>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+  <p><a href={showcase.toolsHref}>Browse every tool</a>, with its arguments, result and protocol data.</p>
+  {showcase.example && (
+    <>
+      <h2 id="worked-example">Worked example</h2>
+      <p>Given this prompt, an agent connected to the {name} server makes these calls.</p>
+      <blockquote class="mcp-prompt"><p>{showcase.example.prompt}</p></blockquote>
+      <ol class="mcp-steps">
+        {showcase.example.steps.map((step) => (
+          <li>
+            <p>
+              {step.caption} <a href={step.tool.href}><code>{step.tool.name}</code></a>
+              {tier(step.tool) && <> <span class={`mcp-tier mcp-tier--${step.tool.tier}`} title={tier(step.tool)!.tooltip}>{tier(step.tool)!.label}</span></>}
+            </p>
+            <Code code={call(step.tool.name, step.arguments)} lang="json" frame="none" />
+          </li>
+        ))}
+      </ol>
+    </>
+  )}
+</section>
+<style>
+  .mcp-group {
+    margin-block: 1.75rem;
+  }
+  .mcp-group__title {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  .mcp-group__summary {
+    margin-block: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+  .mcp-tools {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  }
+  .mcp-tool {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-edge);
+    border-radius: var(--card-radius, 0.5rem);
+    background: var(--color-surface);
+  }
+  .mcp-tool__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem 0.5rem;
+  }
+  .mcp-tool__name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+  .mcp-tool__name code {
+    font-size: inherit;
+    font-weight: inherit;
+  }
+  .mcp-tool__purpose {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+
+  /* A tier is one of the site's symbol families, so the badge follows the colour scheme. */
+  .mcp-tier {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.05rem 0.5rem;
+    border: 1px solid color-mix(in srgb, var(--tier-hue) var(--mark-border-alpha), transparent);
+    border-radius: 999px;
+    background: var(--tier-bg);
+    color: var(--tier-fg);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+  .mcp-tier--inspect { --tier-bg: var(--mark-members-bg); --tier-fg: var(--mark-members-fg); --tier-hue: var(--mark-members-hue); }
+  .mcp-tier--manage { --tier-bg: var(--mark-types-bg); --tier-fg: var(--mark-types-fg); --tier-hue: var(--mark-types-hue); }
+  .mcp-tier--execute { --tier-bg: var(--mark-callables-bg); --tier-fg: var(--mark-callables-fg); --tier-hue: var(--mark-callables-hue); }
+  .mcp-tier--teardown { --tier-bg: var(--mark-meta-bg); --tier-fg: var(--mark-meta-fg); --tier-hue: var(--mark-meta-hue); }
+
+  .mcp-prompt {
+    margin-inline: 0;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--color-edge);
+    border-radius: var(--card-radius, 0.5rem);
+    background: var(--color-surface);
+  }
+  .mcp-prompt p {
+    margin: 0;
+  }
+  .mcp-steps :global(.expressive-code) {
+    margin-block: 0.5rem 1rem;
+  }
+</style>
