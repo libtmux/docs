@@ -113,8 +113,6 @@ function mention(reference: PreviewReference): CardNode {
     h('span', { class: 'api-symbol-link__name' }, name))
 }
 
-const EMPTY_DESCRIPTION = 'Read the reference for this declaration.'
-
 /** The runs a card reads in place of `description`, when they are the same words with the references named. */
 function usableParts(preview: LinkPreview): (string | PreviewReference)[] | undefined {
   const parts = preview.descriptionParts
@@ -126,10 +124,11 @@ function usableParts(preview: LinkPreview): (string | PreviewReference)[] | unde
   return valid && parts.map(text).join('') === preview.description ? parts : undefined
 }
 
+/** The summary a card shows: nothing when the declaration has none, since the signature already says what it is. */
 function descriptionNodes(preview: LinkPreview | undefined): CardNode[] {
   if (!preview) return []
   const parts = usableParts(preview)
-  if (!parts) return [preview.description || EMPTY_DESCRIPTION]
+  if (!parts) return preview.description ? [preview.description] : []
   return parts.map((part) => typeof part === 'string' ? part : sitePath(part.href) ? mention(part) : part.text)
 }
 
@@ -213,6 +212,7 @@ export function previewCard(preview: LinkPreview | undefined, options: CardOptio
   const short = abbreviateNamespace(title)
   const expanded = !!options.expanded && short !== title
   const chip = legendChip(preview?.kind)
+  const summary = descriptionNodes(preview)
   const detail = detailText(preview, options.context)
   const footer = footerNodes(preview)
   const href = options.href ?? preview?.href
@@ -226,7 +226,7 @@ export function previewCard(preview: LinkPreview | undefined, options: CardOptio
       'aria-expanded': String(expanded), 'aria-controls': `${id}-title` }, expanded ? 'Collapse' : 'Show full name'),
     signatureSlot(preview),
     h('span', { class: 'reference-link-preview__prose' },
-      h('span', { 'data-preview-description': true, class: 'reference-link-preview__summary' }, ...descriptionNodes(preview)),
+      h('span', { 'data-preview-description': true, class: 'reference-link-preview__summary', hidden: summary.length ? undefined : true }, ...summary),
       h('span', { 'data-preview-detail': true, class: 'reference-link-preview__detail', hidden: detail ? undefined : true }, detail)),
     h('span', { class: 'reference-link-preview__footer' },
       h('span', { 'data-preview-footer': true, class: 'reference-link-preview__where', hidden: footer.length ? undefined : true }, ...footer),

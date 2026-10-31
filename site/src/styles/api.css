@@ -19,6 +19,7 @@
   --api-surface: color-mix(in oklab, currentColor, transparent 96%);
   --api-border: color-mix(in oklab, currentColor, transparent 88%);
   --api-muted: color-mix(in oklab, currentColor, transparent 35%);
+  --api-member-radius: 0.45rem;
 }
 
 /* Match the shell before theme initialization and without JavaScript. */
@@ -197,7 +198,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   margin: 0;
   padding: 0;
   border: 1px solid var(--color-edge);
-  border-radius: 0.45rem;
+  border-radius: var(--api-member-radius);
   overflow: hidden;
 }
 
@@ -219,13 +220,25 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   vertical-align: top;
 }
 .api-scalar-members th[scope="row"] { font-weight: inherit; }
+/* In the table, a name and a type are read whole. The reference column lets any word break, which gives a cell no
+   minimum width, so a description with long lines squeezed these columns to a letter, and a linked type breaks at each
+   `<wbr>` of its names. A name stays on one line, a type breaks at its spaces only, up to a cap, and the description
+   takes what is left. A table wider than its box scrolls inside it. These are the table's rules; the stacked rows
+   below override them. */
+.api-scalar-members th { white-space: nowrap; }
+.api-scalar-members :where(th[scope="row"], td:nth-child(2)) { overflow-wrap: normal; }
+.api-scalar-members :is(th[scope="row"], td:nth-child(2)) * { overflow-wrap: inherit; }
+.api-scalar-members :where(th[scope="row"], td:nth-child(2)) wbr { display: none; }
+.api-scalar-members td:nth-child(2) { max-width: 20rem; }
 /* A variant with no recorded shape says so in its Payload cell; the cell of a unit variant stays empty. */
 .api-payload-unknown { opacity: 0.65; font-style: italic; }
 /* Three columns do not fit a narrow box. Each row stacks instead: the name and the type share a line, the description
    takes the next, and the header row stays for assistive technology. These rules are not layered, so they also beat the
-   prose table rules of a docs page, which keep a heading on one line and a cell at six rem. */
+   prose table rules of a docs page, which keep a heading on one line and a cell at six rem. In a card, a word breaks
+   only when it is wider than the card, and then at a `<wbr>` of its names. */
 .api-scalar-box { container: api-scalar-members / inline-size; }
-@container api-scalar-members (max-width: 34rem) {
+.api-scalar-box { overflow-x: auto; }
+@container api-scalar-members (max-width: 36rem) {
   .api-scalar-members,
   .api-scalar-members tbody { display: block; }
   .api-scalar-members thead {
@@ -252,11 +265,47 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
     white-space: normal;
     overflow-wrap: break-word;
   }
+  .api-scalar-members :is(th, td) wbr { display: inline; }
   /* A chip that wraps clones its padding and border onto each line, and the end of a full line lies 0.2em and 1px past
-     the cell; the cell keeps that room, so no chip edge overflows its box. */
-  .api-scalar-members td:nth-child(2) { flex: 1 1 8rem; padding-inline-end: 0.25rem; }
+     the cell; the cell keeps that room, so no chip edge overflows its box. A type stays beside the name while it fits
+     there, takes the line under it when it does not, and wraps only when it is wider than the card. */
+  .api-scalar-members td:nth-child(2) { flex: 1 0 auto; max-width: 100%; padding-inline-end: 0.25rem; }
   .api-scalar-members td:last-child { flex: 1 0 100%; }
   .api-scalar-members td:is(:empty, .api-payload-none) { display: none; }
+}
+/* A table whose cells need more room than the card width allows beside a readable description stacks in a wider box.
+   The component marks it; the rules are the stacked rules above under the class. */
+@container api-scalar-members (max-width: 48rem) {
+  .api-scalar-members--long-cells,
+  .api-scalar-members--long-cells tbody { display: block; }
+  .api-scalar-members--long-cells thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .api-scalar-members--long-cells tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+    padding: 0.65rem 0.75rem;
+    border-bottom: 1px solid var(--color-edge);
+  }
+  .api-scalar-members--long-cells :is(th, td) {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+  .api-scalar-members--long-cells :is(th, td) wbr { display: inline; }
+  .api-scalar-members--long-cells td:nth-child(2) { flex: 1 0 auto; max-width: 100%; padding-inline-end: 0.25rem; }
+  .api-scalar-members--long-cells td:last-child { flex: 1 0 100%; }
+  .api-scalar-members--long-cells td:is(:empty, .api-payload-none) { display: none; }
 }
 .api-member-group { margin-block: 1.5rem 2rem; }
 .api-member-group--single { margin-top: 0.75rem; }
@@ -272,6 +321,13 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   border-radius: 0.35rem;
   background: var(--api-member-bar);
   overflow-wrap: anywhere;
+}
+/* A group's bar and its list are one panel: the bar rounds the top corners, the list the bottom ones, and the bar's
+   bottom border is the one divider between them. */
+.api-members > .api-member-group > h3 { border-radius: var(--api-member-radius) var(--api-member-radius) 0 0; }
+.api-members > .api-member-group > h3 + .api-member-list {
+  border-top: 0;
+  border-radius: 0 0 var(--api-member-radius) var(--api-member-radius);
 }
 /* The arrival cue tints the opaque bar instead of replacing it, so content never shows through. */
 .api-field-table > h2[data-anchor-arrival],

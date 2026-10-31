@@ -1,6 +1,6 @@
 ---
 import type { ApiSymbol, SymbolIndex } from '@libtmux/api-model'
-import type { VariantPayload } from '../../lib/api-sections'
+import { scalarCellsAreLong, type VariantPayload } from '../../lib/api-sections'
 import ApiDoc from './ApiDoc.astro'
 import ApiType from './ApiType.astro'
 
@@ -22,9 +22,11 @@ const { owner, members, index, hrefFor, columns = 'value', label = 'Fields', pay
 const fields = columns === 'fields'
 const variants = columns === 'variants'
 const heads = variants ? ['Case', 'Payload'] : ['Name', fields ? 'Type' : 'Value']
+// A table whose cells ask for a lot of room stacks in a wider box than the others; see `api.css`.
+const long = scalarCellsAreLong(members, columns, payloads)
 ---
 <div class="api-scalar-box">
-<table class="api-scalar-members table">
+<table class:list={['api-scalar-members table', long && 'api-scalar-members--long-cells']}>
   <caption class="sr-only">{owner.name} {fields || variants ? label.toLowerCase() : 'constant object properties'}</caption>
   <thead><tr><th scope="col">{heads[0]}</th><th scope="col">{heads[1]}</th><th scope="col">Description</th></tr></thead>
   <tbody>

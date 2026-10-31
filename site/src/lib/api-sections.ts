@@ -149,6 +149,36 @@ export function variantPayloads(symbols: readonly ApiSymbol[], variants: readonl
   return payloads
 }
 
+/**
+ * Characters of a table's longest name and longest unbreakable type together that still leave a readable description
+ * beside them in the narrow stacking width. A table over it stacks in a wider box; see `api.css`.
+ */
+export const LONG_CELL_CHARACTERS = 36
+
+/** The text of a Type, Payload or Value cell, as `ApiScalarMembers` writes it. */
+function cellText(member: ApiSymbol, columns: 'value' | 'fields' | 'variants', payloads?: ReadonlyMap<string, VariantPayload>): string {
+  if (columns === 'fields') return member.type ?? ''
+  if (columns === 'value') return String(member.value ?? '')
+  const payload = payloads?.get(member.id)
+  if (payload?.kind === 'fields') {
+    return `${payload.open}${payload.fields.map((field) => payload.named ? `${field.name}: ${field.type ?? ''}` : field.type ?? '').join(', ')}${payload.close}`
+  }
+  return payload?.kind === 'unknown' ? payload.label : ''
+}
+
+/**
+ * The room a table's cells ask for, in characters: its longest name and the longest run of a type that cannot break,
+ * since a name stays whole and a type breaks only at its spaces.
+ */
+export function scalarCellCharacters(members: readonly ApiSymbol[], columns: 'value' | 'fields' | 'variants', payloads?: ReadonlyMap<string, VariantPayload>): number {
+  const longest = (texts: Iterable<string>) => Math.max(0, ...[...texts].map((text) => text.length))
+  return longest(members.map((member) => member.name))
+    + longest(members.flatMap((member) => cellText(member, columns, payloads).split(/\s+/)))
+}
+
+/** Whether a table's cells ask for more room than the narrow stacking width leaves beside a description. */
+export const scalarCellsAreLong = (...args: Parameters<typeof scalarCellCharacters>) => scalarCellCharacters(...args) > LONG_CELL_CHARACTERS
+
 /** The member entries of a type page's section navigation: a table block beside the member list, then its groups. */
 export function apiMemberSections(options: {
   fields: number; members: number; label: string; groups: { id: string; label: string }[]

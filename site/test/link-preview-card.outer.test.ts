@@ -227,3 +227,115 @@ describe('the card in a browser', () => {
     } finally { await target.close() }
   })
 })
+
+/** The room above and below the summary: from the edge of what sits over it to its top, and from its bottom to the footer. */
+const summaryGaps = (target: Page) => target.evaluate(() => {
+  const box = document.querySelector('.reference-link-preview__prose')!.getBoundingClientRect()
+  const summary = document.querySelector('[data-preview-description]')!.getBoundingClientRect()
+  return { above: summary.top - box.top, below: box.bottom - summary.bottom }
+})
+
+describe('the room around the summary', () => {
+  const summary = 'Sends the keys to the pane and returns once tmux has accepted them, so a caller that needs the output waits for it separately.'
+  const declared: LinkPreview = { schema: 1, title: 'send_keys', kind: 'method', description: summary, signature: 'fn send_keys(&self, keys: &str)', href: '/en/x/' }
+  const bare: LinkPreview = { ...declared, signature: undefined }
+  // The padding the card had before: the summary sat close under a declaration and far above the footer.
+  const unequal = '.reference-link-preview__prose { padding: .55rem .8rem .7rem; } .reference-link-preview__signature:not([hidden]) + .reference-link-preview__prose { padding-top: .1rem; }'
+
+  it('is the same above and below, with a declaration over it or without, at a narrow and a wide card', { timeout: 30_000 }, async () => {
+    const target = await browser.newPage()
+    try {
+      for (const [name, preview] of [['with a declaration', declared], ['without one', bare]] as const) {
+        for (const width of [320, 480]) {
+          await open(target, preview, 'light', width)
+          const { above, below } = await summaryGaps(target)
+          expect(above, `${name} at ${width}px: above`).toBeGreaterThan(8)
+          expect(Math.abs(above - below), `${name} at ${width}px: ${above.toFixed(1)} above, ${below.toFixed(1)} below`).toBeLessThan(0.5)
+        }
+      }
+    } finally { await target.close() }
+  })
+
+  it('keeps every line of a summary that names a type the height of the others', { timeout: 30_000 }, async () => {
+    const [, preview] = (await cardPayloads())[0]!
+    const target = await browser.newPage()
+    try {
+      for (const width of [320, 480]) {
+        await open(target, preview, 'light', width)
+        const { lines, marks, ratio } = await target.evaluate(() => {
+          const summary = document.querySelector('[data-preview-description]') as HTMLElement
+          const style = getComputedStyle(summary)
+          return {
+            lines: summary.getBoundingClientRect().height / parseFloat(style.lineHeight),
+            // The marks of the named types are what the line height has to leave room for.
+            marks: summary.querySelectorAll('.api-link-kind').length,
+            ratio: parseFloat(style.lineHeight) / parseFloat(style.fontSize),
+          }
+        })
+        expect(marks, `${width}px: the summary names a type with a mark`).toBeGreaterThan(0)
+        expect(ratio, `${width}px: the line height`).toBeCloseTo(1.55, 2)
+        expect(Math.abs(lines - Math.round(lines)), `${width}px: ${lines} lines`).toBeLessThan(0.05)
+      }
+    } finally { await target.close() }
+  })
+
+  it('sees the old padding as gaps that differ, so that the checks above can fail', { timeout: 30_000 }, async () => {
+    const target = await browser.newPage()
+    try {
+      for (const [preview, least] of [[declared, 5], [bare, 1.5]] as const) {
+        await open(target, preview, 'light')
+        await target.addStyleTag({ content: unequal })
+        const { above, below } = await summaryGaps(target)
+        expect(below - above, preview.signature ? 'with a declaration' : 'without one').toBeGreaterThan(least)
+      }
+    } finally { await target.close() }
+  })
+})
+
+describe('a card with no summary', () => {
+  const named = async (name: string) => (await cardPayloads()).find(([entry]) => entry === name)![1]
+  /** How far the box under the declaration, or under the header when there is none, stands from the footer, and whether the summary box is drawn. */
+  const stackedGap = (target: Page) => target.evaluate(() => {
+    const edge = (selector: string) => document.querySelector(selector)!.getBoundingClientRect()
+    const above = document.querySelector('[data-preview-signature]:not([hidden])') ? edge('[data-preview-signature]') : edge('.reference-link-preview__heading')
+    return { gap: edge('.reference-link-preview__footer').top - above.bottom, drawn: getComputedStyle(document.querySelector('.reference-link-preview__prose')!).display !== 'none' }
+  })
+
+  it('goes from the declaration, or from the header, straight to the footer', { timeout: 30_000 }, async () => {
+    const target = await browser.newPage()
+    try {
+      for (const name of ['declaration with a signature and no summary', 'declaration with nothing under its name']) {
+        for (const mode of ['light', 'dark'] as const) {
+          await open(target, await named(name), mode)
+          const { gap, drawn } = await stackedGap(target)
+          expect(drawn, `${name}, ${mode}`).toBe(false)
+          expect(Math.abs(gap), `${name}, ${mode}`).toBeLessThan(0.5)
+        }
+      }
+    } finally { await target.close() }
+  })
+
+  it('leaves a gap when the summary box is drawn anyway, so that the check above can fail', { timeout: 30_000 }, async () => {
+    const target = await browser.newPage()
+    try {
+      await open(target, await named('declaration with a signature and no summary'), 'light')
+      await target.addStyleTag({ content: '.reference-link-preview__prose { display: block !important; }' })
+      const { gap, drawn } = await stackedGap(target)
+      expect(drawn).toBe(true)
+      expect(gap).toBeGreaterThan(8)
+    } finally { await target.close() }
+  })
+
+  it('keeps the context line of a card whose only text is that, without a gap above it', { timeout: 30_000 }, async () => {
+    const target = await browser.newPage()
+    try {
+      await open(target, { schema: 1, title: 'inherited', kind: 'method', description: '', detail: 'Inherited from Base.', href: '/en/x/' }, 'light')
+      const seen = await target.evaluate(() => {
+        const prose = document.querySelector('.reference-link-preview__prose')!, detail = document.querySelector('[data-preview-detail]')!
+        return { display: getComputedStyle(prose).display, inset: detail.getBoundingClientRect().top - prose.getBoundingClientRect().top }
+      })
+      expect(seen.display).toBe('block')
+      expect(seen.inset).toBeCloseTo(9.6, 0)
+    } finally { await target.close() }
+  })
+})

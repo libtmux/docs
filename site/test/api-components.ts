@@ -3,7 +3,7 @@ import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { expect, vi } from 'vitest'
 import { parameterId } from '@libtmux/api-model'
-import { parameterBindingFacts, POWER_SHELL_COMMON_HELP, POWER_SHELL_COMMON_HELP_TITLE, powerShellCommonParameterHref, powerShellCommonParameterLabel } from '../src/lib/api-sections'
+import { parameterBindingFacts, POWER_SHELL_COMMON_HELP, POWER_SHELL_COMMON_HELP_TITLE, powerShellCommonParameterHref, powerShellCommonParameterLabel, scalarCellsAreLong } from '../src/lib/api-sections'
 import { signatureSpans, typeLayout } from '../src/lib/code-layout'
 import { linkTmuxDoc } from '../src/lib/tmux-links'
 
@@ -26,9 +26,9 @@ export async function apiComponents() {
     for (const [specifier, url] of Object.entries(imports)) code = code.replaceAll(JSON.stringify(specifier), JSON.stringify(url))
     return `data:text/javascript;base64,${Buffer.from(`${code}\n//# sourceURL=${file.pathname}`).toString('base64')}`
   }
-  vi.stubGlobal('__apiOracleComponents', { parameterId, parameterBindingFacts, POWER_SHELL_COMMON_HELP, POWER_SHELL_COMMON_HELP_TITLE,
+  vi.stubGlobal('__apiOracleComponents', { parameterId, parameterBindingFacts, POWER_SHELL_COMMON_HELP, POWER_SHELL_COMMON_HELP_TITLE, scalarCellsAreLong,
     powerShellCommonParameterHref, powerShellCommonParameterLabel, linkTmuxDoc, signatureSpans, typeLayout })
-  const bridge = 'data:text/javascript,export const { parameterId, parameterBindingFacts, POWER_SHELL_COMMON_HELP, POWER_SHELL_COMMON_HELP_TITLE, powerShellCommonParameterHref, powerShellCommonParameterLabel, linkTmuxDoc, signatureSpans, typeLayout } = globalThis.__apiOracleComponents'
+  const bridge = 'data:text/javascript,export const { parameterId, parameterBindingFacts, POWER_SHELL_COMMON_HELP, POWER_SHELL_COMMON_HELP_TITLE, powerShellCommonParameterHref, powerShellCommonParameterLabel, scalarCellsAreLong, linkTmuxDoc, signatureSpans, typeLayout } = globalThis.__apiOracleComponents'
   const name = await compile('../src/components/api/SymbolName.astro', { '../../lib/word-break': new URL('../src/lib/word-break.ts', import.meta.url).href })
   const preview = await compile('../src/components/LinkPreview.astro', { '../lib/link-preview-card': new URL('../src/lib/link-preview-card.ts', import.meta.url).href })
   const keyword = await compile('../src/components/api/ApiKeyword.astro', { '../LinkPreview.astro': preview })
@@ -42,7 +42,7 @@ export async function apiComponents() {
   const commands = await compile('../src/components/api/ApiCommandParameters.astro', {
     '@libtmux/api-model': bridge, '../../lib/api-sections': bridge, './ApiType.astro': type, './ApiDoc.astro': doc, './ApiFieldOverloads.astro': overloads,
   })
-  const members = await compile('../src/components/api/ApiScalarMembers.astro', { './ApiDoc.astro': doc, './ApiType.astro': type })
+  const members = await compile('../src/components/api/ApiScalarMembers.astro', { '../../lib/api-sections': bridge, './ApiDoc.astro': doc, './ApiType.astro': type })
   const load = async (url: string) => (await import(/* @vite-ignore */ url)).default
   return { doc: await load(doc), type: await load(type), commands: await load(commands), members: await load(members) }
 }
