@@ -121,7 +121,8 @@ function stackingViolations(css: string): string[] {
   const box = rules.find((rule) => rule.selectors.includes('.api-scalar-box'))
   const name = /^(\S+) \/ inline-size$/.exec(box?.declarations.container ?? '')?.[1]
   if (!name) return ['the box that holds the table is not a container the query can measure']
-  const narrow = rules.filter((rule) => rule.container?.startsWith(name))
+  // The stacked layout answers the query for a narrow box; the table's own rules answer the one for a wide box.
+  const narrow = rules.filter((rule) => rule.container?.startsWith(name) && rule.container.includes('max-width'))
   const width = Number(/^\S+ \(max-width: (\d+(?:\.\d+)?)rem\)$/.exec(narrow[0]?.container ?? '')?.[1])
   // A phone column is about 22rem and a tablet's about 40rem; below the first the table is cut, above the second it fits.
   if (!(width >= 30 && width <= 48)) found.push(`the table stacks at ${width}rem, not between a phone and a tablet column`)
@@ -133,6 +134,8 @@ function stackingViolations(css: string): string[] {
   const row = declared('.api-scalar-members tr')
   if (row.display !== 'flex' || row['flex-wrap'] !== 'wrap') found.push('a row does not wrap its name, type and description over lines')
   if (cells['min-width'] !== '0') found.push('a cell keeps the minimum width of the prose rule, so a column is squeezed past its text')
+  const type = declared('.api-scalar-members td:nth-child(2)')
+  if (type.flex !== '1 0 auto' || type['max-width'] !== '100%') found.push('a type is squeezed beside the name instead of taking the line under it')
   if (cells['white-space'] !== 'normal') found.push('a heading cell keeps white-space: nowrap from the prose rule')
   if (cells['overflow-wrap'] !== 'break-word') found.push('a cell breaks inside a word before its line is full')
   if (cells.padding !== '0') found.push('a cell keeps the padding of a column')
@@ -177,10 +180,11 @@ describe('the narrow layout of a table of fields', () => {
       expect(css).toContain(box)
       return css.replace(box, '.api-scalar-box { container-type: inline-size; }')
     }, 'not a container'],
-    ['a phone column is outside the query', () => edit('(max-width: 34rem)', '(max-width: 20rem)'), 'not between a phone and a tablet column'],
+    ['a phone column is outside the query', () => edit('(max-width: 46rem)', '(max-width: 20rem)'), 'not between a phone and a tablet column'],
     ['the rows keep their columns', () => edit('.api-scalar-members tbody { display: block; }', '.api-scalar-members tbody { display: table-row-group; }'), 'rows keep their columns'],
     ['a row stops wrapping', () => edit('flex-wrap: wrap;', ''), 'wrap its name'],
     ['a cell keeps the prose minimum width', () => edit('    min-width: 0;\n', ''), 'minimum width'],
+    ['a type is squeezed beside the name', () => edit('flex: 1 0 auto; max-width: 100%;', 'flex: 1 1 8rem;'), 'squeezed beside the name'],
     ['a heading keeps nowrap', () => edit('    white-space: normal;\n', ''), 'nowrap'],
     ['a word breaks early', () => edit('overflow-wrap: break-word;', 'overflow-wrap: anywhere;'), 'inside a word'],
     ['the cell loses its room for a wrapped chip', () => edit(' padding-inline-end: 0.25rem;', ''), 'overhangs the cell'],
