@@ -1,0 +1,655 @@
+{
+  "ports": {
+    "py": {
+      "repo": "tmux-python/tmuxp",
+      "revision": "153acdf6ff1268b14d3d03ed488f545a7123c8f1",
+      "examples": [
+        {
+          "topic": "shorthand",
+          "also": [],
+          "source": {
+            "path": "tests/fixtures/workspace/expand2-unexpanded.yaml"
+          },
+          "yaml": "session_name: sample workspace\nstart_directory: '~'\nwindows:\n- window_name: focused window\n  layout: main-horizontal\n  focus: true\n  panes:\n  - shell_command:\n    - cd ~\n  - shell_command:\n    - cd /usr\n    focus: true\n  - shell_command:\n    - cd ~\n    - echo \"moo\"\n    - top\n- window_name: window 2\n  panes:\n  - shell_command:\n    - top\n    focus: true\n  - shell_command:\n    - echo \"hey\"\n  - shell_command:\n    - echo \"moo\"\n- window_name: window 3\n  panes:\n  - shell_command: cd /\n    focus: true\n  - pane\n  - pane",
+          "sha256": "213127e03aa17a4d078878d0b2ba85b31f4f0dc5f83029d97ea1f0728f1f31c4",
+          "json": "{\n  \"session_name\": \"sample workspace\",\n  \"start_directory\": \"~\",\n  \"windows\": [\n    {\n      \"window_name\": \"focused window\",\n      \"layout\": \"main-horizontal\",\n      \"focus\": true,\n      \"panes\": [\n        {\n          \"shell_command\": [\n            \"cd ~\"\n          ]\n        },\n        {\n          \"shell_command\": [\n            \"cd /usr\"\n          ],\n          \"focus\": true\n        },\n        {\n          \"shell_command\": [\n            \"cd ~\",\n            \"echo \\\"moo\\\"\",\n            \"top\"\n          ]\n        }\n      ]\n    },\n    {\n      \"window_name\": \"window 2\",\n      \"panes\": [\n        {\n          \"shell_command\": [\n            \"top\"\n          ],\n          \"focus\": true\n        },\n        {\n          \"shell_command\": [\n            \"echo \\\"hey\\\"\"\n          ]\n        },\n        {\n          \"shell_command\": [\n            \"echo \\\"moo\\\"\"\n          ]\n        }\n      ]\n    },\n    {\n      \"window_name\": \"window 3\",\n      \"panes\": [\n        {\n          \"shell_command\": \"cd /\",\n          \"focus\": true\n        },\n        \"pane\",\n        \"pane\"\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "tests/workspace/test_config.py",
+              "name": "test_workspace_expand2",
+              "line": 50,
+              "via": "loader",
+              "checks": "Expands the file and compares it with the expanded fixture. Starts no tmux."
+            }
+          ]
+        },
+        {
+          "topic": "two-pane",
+          "also": [],
+          "source": {
+            "path": "tests/fixtures/workspace/builder/two_pane.yaml"
+          },
+          "yaml": "session_name: sample workspace\nstart_directory: '~'\nwindows:\n- layout: main-vertical\n  panes:\n  - shell_command:\n    - cmd: vim\n  - shell_command:\n    - cmd: echo \"hey\"\n  window_name: editor\n- panes:\n  - shell_command:\n    - cmd: tail | echo 'hi'\n  window_name: logging\n- window_name: test\n  panes:\n  - shell_command:\n    - cmd: htop",
+          "sha256": "50c02a14d6e16d58a0f426c6467249650a5ad63e233f26f8d1229b2d564b6438",
+          "json": "{\n  \"session_name\": \"sample workspace\",\n  \"start_directory\": \"~\",\n  \"windows\": [\n    {\n      \"layout\": \"main-vertical\",\n      \"panes\": [\n        {\n          \"shell_command\": [\n            {\n              \"cmd\": \"vim\"\n            }\n          ]\n        },\n        {\n          \"shell_command\": [\n            {\n              \"cmd\": \"echo \\\"hey\\\"\"\n            }\n          ]\n        }\n      ],\n      \"window_name\": \"editor\"\n    },\n    {\n      \"panes\": [\n        {\n          \"shell_command\": [\n            {\n              \"cmd\": \"tail | echo 'hi'\"\n            }\n          ]\n        }\n      ],\n      \"window_name\": \"logging\"\n    },\n    {\n      \"window_name\": \"test\",\n      \"panes\": [\n        {\n          \"shell_command\": [\n            {\n              \"cmd\": \"htop\"\n            }\n          ]\n        }\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "tests/workspace/test_builder.py",
+              "name": "test_split_windows",
+              "line": 43,
+              "via": "builder",
+              "checks": "Creates each window and its panes in a tmux session and checks the window count."
+            },
+            {
+              "path": "tests/cli/test_load.py",
+              "name": "test_load_workspace",
+              "line": 30,
+              "via": "cli",
+              "checks": "Runs load_workspace, the function tmuxp load calls, and checks the session name."
+            }
+          ]
+        },
+        {
+          "topic": "main-horizontal",
+          "also": [
+            "three-pane"
+          ],
+          "source": {
+            "path": "tests/fixtures/workspace/builder/three_pane.yaml"
+          },
+          "yaml": "session_name: sample workspace\nstart_directory: '~'\nwindows:\n- window_name: test\n  layout: main-horizontal\n  panes:\n  - shell_command:\n    - cmd: vim\n  - shell_command:\n    - cmd: echo \"hey\"\n  - shell_command:\n    - cmd: echo \"moo\"",
+          "sha256": "b1aa534e6f135d90f163e197e74f48b8a9c246f7d926114e8cf07081d5947288",
+          "json": "{\n  \"session_name\": \"sample workspace\",\n  \"start_directory\": \"~\",\n  \"windows\": [\n    {\n      \"window_name\": \"test\",\n      \"layout\": \"main-horizontal\",\n      \"panes\": [\n        {\n          \"shell_command\": [\n            {\n              \"cmd\": \"vim\"\n            }\n          ]\n        },\n        {\n          \"shell_command\": [\n            {\n              \"cmd\": \"echo \\\"hey\\\"\"\n            }\n          ]\n        },\n        {\n          \"shell_command\": [\n            {\n              \"cmd\": \"echo \\\"moo\\\"\"\n            }\n          ]\n        }\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "tests/workspace/test_builder.py",
+              "name": "test_layout_main_horizontal",
+              "line": 1390,
+              "via": "builder",
+              "checks": "Builds the session and checks the pane count, the height of the top pane and the pane widths."
+            }
+          ]
+        },
+        {
+          "topic": "shell-command-before",
+          "also": [],
+          "source": {
+            "path": "tests/fixtures/workspace/shell_command_before_session.yaml"
+          },
+          "yaml": "shell_command_before:\n  - 'echo \"hi\"'\nsession_name: 'test'\nwindows:\n- window_name: editor\n  panes:\n  - shell_command:\n    - vim\n    - :Ex\n  - pane\n  - cd /usr\n- window_name: logging\n  panes:\n  - shell_command:\n    -\n  - shell_command:\n    - top\n    - emacs",
+          "sha256": "f73e429949ea29cf8922aa48dab35e7f09b27754b2915023a5c4f2079190d959",
+          "json": "{\n  \"shell_command_before\": [\n    \"echo \\\"hi\\\"\"\n  ],\n  \"session_name\": \"test\",\n  \"windows\": [\n    {\n      \"window_name\": \"editor\",\n      \"panes\": [\n        {\n          \"shell_command\": [\n            \"vim\",\n            \":Ex\"\n          ]\n        },\n        \"pane\",\n        \"cd /usr\"\n      ]\n    },\n    {\n      \"window_name\": \"logging\",\n      \"panes\": [\n        {\n          \"shell_command\": [\n            null\n          ]\n        },\n        {\n          \"shell_command\": [\n            \"top\",\n            \"emacs\"\n          ]\n        }\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "tests/workspace/test_config.py",
+              "name": "test_in_session_scope",
+              "line": 144,
+              "via": "loader",
+              "checks": "Validates and expands the file and compares it with the expected fixture. Starts no tmux."
+            }
+          ]
+        },
+        {
+          "topic": "environment",
+          "also": [],
+          "source": {
+            "path": "tests/fixtures/workspace/builder/environment_vars.yaml"
+          },
+          "yaml": "session_name: test env vars\nstart_directory: \"~\"\nenvironment:\n  FOO: SESSION\n  PATH: /tmp\nwindows:\n- window_name: no_overrides\n  panes:\n  - pane\n- window_name: window_overrides\n  environment:\n    FOO: WINDOW\n  panes:\n  - pane\n- window_name: pane_overrides\n  panes:\n  - environment:\n      FOO: PANE\n- window_name: both_overrides\n  environment:\n    FOO: WINDOW\n  panes:\n  - pane\n  - environment:\n      FOO: PANE\n# This test case it just needed for warnings issued in old versions of tmux.\n- window_name: both_overrides_on_first_pane\n  environment:\n    FOO: WINDOW\n  panes:\n  - environment:\n      FOO: PANE",
+          "sha256": "e84adad56538f623472d00a1b2515905c0175d1556011fe7abc867b9e8bc80fd",
+          "json": "{\n  \"session_name\": \"test env vars\",\n  \"start_directory\": \"~\",\n  \"environment\": {\n    \"FOO\": \"SESSION\",\n    \"PATH\": \"/tmp\"\n  },\n  \"windows\": [\n    {\n      \"window_name\": \"no_overrides\",\n      \"panes\": [\n        \"pane\"\n      ]\n    },\n    {\n      \"window_name\": \"window_overrides\",\n      \"environment\": {\n        \"FOO\": \"WINDOW\"\n      },\n      \"panes\": [\n        \"pane\"\n      ]\n    },\n    {\n      \"window_name\": \"pane_overrides\",\n      \"panes\": [\n        {\n          \"environment\": {\n            \"FOO\": \"PANE\"\n          }\n        }\n      ]\n    },\n    {\n      \"window_name\": \"both_overrides\",\n      \"environment\": {\n        \"FOO\": \"WINDOW\"\n      },\n      \"panes\": [\n        \"pane\",\n        {\n          \"environment\": {\n            \"FOO\": \"PANE\"\n          }\n        }\n      ]\n    },\n    {\n      \"window_name\": \"both_overrides_on_first_pane\",\n      \"environment\": {\n        \"FOO\": \"WINDOW\"\n      },\n      \"panes\": [\n        {\n          \"environment\": {\n            \"FOO\": \"PANE\"\n          }\n        }\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "tests/workspace/test_builder.py",
+              "name": "test_environment_variables",
+              "line": 385,
+              "via": "builder",
+              "checks": "Builds the session and checks the session environment and the value each pane sees."
+            }
+          ]
+        },
+        {
+          "topic": "start-directory",
+          "also": [
+            "two-pane"
+          ],
+          "source": {
+            "path": "tests/fixtures/workspace/builder/first_pane_start_directory.yaml"
+          },
+          "yaml": "session_name: sample workspace\nwindows:\n  - panes:\n    - start_directory: /usr\n    - start_directory: /etc",
+          "sha256": "2a3e7cc17c6df13851b2fb5f1bb95ed4b81502bebdcc84136ca6378957890d47",
+          "json": "{\n  \"session_name\": \"sample workspace\",\n  \"windows\": [\n    {\n      \"panes\": [\n        {\n          \"start_directory\": \"/usr\"\n        },\n        {\n          \"start_directory\": \"/etc\"\n        }\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "tests/workspace/test_builder.py",
+              "name": "test_first_pane_start_directory",
+              "line": 1360,
+              "via": "builder",
+              "checks": "Builds the session and checks each pane's working directory."
+            }
+          ]
+        }
+      ]
+    },
+    "rs": {
+      "repo": "libtmux/libtmux-rs",
+      "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "examples": [
+        {
+          "topic": "shorthand",
+          "also": [],
+          "source": {
+            "path": "crates/tmux-workspace/tests/fixtures/tmuxp/shorthands.yaml"
+          },
+          "yaml": "session_name: shorthands\nwindows:\n  - window_name: long form\n    panes:\n      - shell_command:\n          - echo 'did you know'\n          - echo 'you can inline'\n      - shell_command: echo 'single commands'\n      - echo 'for panes'",
+          "sha256": "81efab71a4013c5ac15d1d1479ded76cea8e15f5d3ab91f722e4a1595612fac6",
+          "json": "{\n  \"session_name\": \"shorthands\",\n  \"windows\": [\n    {\n      \"window_name\": \"long form\",\n      \"panes\": [\n        {\n          \"shell_command\": [\n            \"echo 'did you know'\",\n            \"echo 'you can inline'\"\n          ]\n        },\n        {\n          \"shell_command\": \"echo 'single commands'\"\n        },\n        \"echo 'for panes'\"\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "crates/tmux-workspace/tests/build.rs",
+              "name": "every_tmuxp_example_parses",
+              "line": 1286,
+              "via": "library",
+              "checks": "Parses every fixture in the directory."
+            },
+            {
+              "path": "scripts/tmuxp-parity.py",
+              "name": "tmuxp-parity.py",
+              "line": 51,
+              "via": "cli",
+              "checks": "Loads each fixture with tmux-workspace load and with tmuxp, and compares what they build. CI runs it on a schedule."
+            }
+          ]
+        },
+        {
+          "topic": "two-pane",
+          "also": [],
+          "source": {
+            "path": "crates/tmux-workspace/tests/fixtures/tmuxp/2-pane-vertical.yaml"
+          },
+          "yaml": "session_name: 2-pane-vertical\nwindows:\n  - window_name: my test window\n    panes:\n      - echo hello\n      - echo hello",
+          "sha256": "6662b24e292831a8ceb423d095a93c3b6362f9055822f23f7b261056e6812a88",
+          "json": "{\n  \"session_name\": \"2-pane-vertical\",\n  \"windows\": [\n    {\n      \"window_name\": \"my test window\",\n      \"panes\": [\n        \"echo hello\",\n        \"echo hello\"\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "crates/tmux-workspace/tests/build.rs",
+              "name": "every_tmuxp_example_parses",
+              "line": 1286,
+              "via": "library",
+              "checks": "Parses every fixture in the directory."
+            },
+            {
+              "path": "scripts/tmuxp-parity.py",
+              "name": "tmuxp-parity.py",
+              "line": 51,
+              "via": "cli",
+              "checks": "Loads each fixture with tmux-workspace load and with tmuxp, and compares what they build. CI runs it on a schedule."
+            }
+          ]
+        },
+        {
+          "topic": "three-pane",
+          "also": [
+            "shell-command-before"
+          ],
+          "source": {
+            "path": "crates/tmux-workspace/tests/fixtures/tmuxp/3-pane.yaml"
+          },
+          "yaml": "session_name: 3-panes\nwindows:\n  - window_name: dev window\n    layout: main-vertical\n    shell_command_before:\n      - cd ~/\n    panes:\n      - shell_command:\n          - cd /var/log\n          - ls -al | grep \\.log\n      - echo hello\n      - echo hello",
+          "sha256": "5e62b2989cf7874573ad0e6bbedcbcb5cd716a0aef5766b6da3faedf39caada2",
+          "json": "{\n  \"session_name\": \"3-panes\",\n  \"windows\": [\n    {\n      \"window_name\": \"dev window\",\n      \"layout\": \"main-vertical\",\n      \"shell_command_before\": [\n        \"cd ~/\"\n      ],\n      \"panes\": [\n        {\n          \"shell_command\": [\n            \"cd /var/log\",\n            \"ls -al | grep \\\\.log\"\n          ]\n        },\n        \"echo hello\",\n        \"echo hello\"\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "crates/tmux-workspace/tests/build.rs",
+              "name": "every_tmuxp_example_parses",
+              "line": 1286,
+              "via": "library",
+              "checks": "Parses every fixture in the directory."
+            },
+            {
+              "path": "scripts/tmuxp-parity.py",
+              "name": "tmuxp-parity.py",
+              "line": 51,
+              "via": "cli",
+              "checks": "Loads each fixture with tmux-workspace load and with tmuxp, and compares what they build. CI runs it on a schedule."
+            }
+          ]
+        },
+        {
+          "topic": "four-pane",
+          "also": [
+            "tiled"
+          ],
+          "source": {
+            "path": "crates/tmux-workspace/tests/fixtures/tmuxp/4-pane.yaml"
+          },
+          "yaml": "session_name: 4-pane-split\nwindows:\n  - window_name: dev window\n    layout: tiled\n    shell_command_before:\n      - cd ~/\n    panes:\n      - shell_command:\n          - cd /var/log\n          - ls -al | grep \\.log\n      - echo hello\n      - echo hello\n      - echo hello",
+          "sha256": "d6602c95663737398020a289f4e16a52992143b910a6389d719f2ec044bba75d",
+          "json": "{\n  \"session_name\": \"4-pane-split\",\n  \"windows\": [\n    {\n      \"window_name\": \"dev window\",\n      \"layout\": \"tiled\",\n      \"shell_command_before\": [\n        \"cd ~/\"\n      ],\n      \"panes\": [\n        {\n          \"shell_command\": [\n            \"cd /var/log\",\n            \"ls -al | grep \\\\.log\"\n          ]\n        },\n        \"echo hello\",\n        \"echo hello\",\n        \"echo hello\"\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "crates/tmux-workspace/tests/build.rs",
+              "name": "every_tmuxp_example_parses",
+              "line": 1286,
+              "via": "library",
+              "checks": "Parses every fixture in the directory."
+            },
+            {
+              "path": "scripts/tmuxp-parity.py",
+              "name": "tmuxp-parity.py",
+              "line": 51,
+              "via": "cli",
+              "checks": "Loads each fixture with tmux-workspace load and with tmuxp, and compares what they build. CI runs it on a schedule."
+            }
+          ]
+        },
+        {
+          "topic": "main-horizontal",
+          "also": [
+            "three-pane"
+          ],
+          "source": {
+            "path": "crates/tmux-workspace/tests/fixtures/tmuxp/main-pane-height.yaml"
+          },
+          "yaml": "session_name: main-pane-height\nstart_directory: \"~\"\nwindows:\n  - layout: main-horizontal\n    options:\n      main-pane-height: 30\n    panes:\n      - shell_command:\n          - top\n        start_directory: \"~\"\n      - shell_command:\n          - echo \"hey\"\n      - shell_command:\n          - echo \"moo\"\n    window_name: my window name",
+          "sha256": "2459e4ba0b9ff7232a4a3fd48b7ff5942d7aa52ee349a038763596eba6c9e42e",
+          "json": "{\n  \"session_name\": \"main-pane-height\",\n  \"start_directory\": \"~\",\n  \"windows\": [\n    {\n      \"layout\": \"main-horizontal\",\n      \"options\": {\n        \"main-pane-height\": 30\n      },\n      \"panes\": [\n        {\n          \"shell_command\": [\n            \"top\"\n          ],\n          \"start_directory\": \"~\"\n        },\n        {\n          \"shell_command\": [\n            \"echo \\\"hey\\\"\"\n          ]\n        },\n        {\n          \"shell_command\": [\n            \"echo \\\"moo\\\"\"\n          ]\n        }\n      ],\n      \"window_name\": \"my window name\"\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "crates/tmux-workspace/tests/build.rs",
+              "name": "every_tmuxp_example_parses",
+              "line": 1286,
+              "via": "library",
+              "checks": "Parses every fixture in the directory."
+            },
+            {
+              "path": "scripts/tmuxp-parity.py",
+              "name": "tmuxp-parity.py",
+              "line": 51,
+              "via": "cli",
+              "checks": "Loads each fixture with tmux-workspace load and with tmuxp, and compares what they build. CI runs it on a schedule."
+            }
+          ]
+        },
+        {
+          "topic": "environment",
+          "also": [],
+          "source": {
+            "path": "crates/tmux-workspace/tests/fixtures/tmuxp/session-environment.yaml"
+          },
+          "yaml": "session_name: Environment variables test\nenvironment:\n  EDITOR: /usr/bin/vim\n  DJANGO_SETTINGS_MODULE: my_app.settings.local\n  SERVER_PORT: \"8009\"\nwindows:\n  - window_name: Django project\n    panes:\n      - ./manage.py runserver 0.0.0.0:${SERVER_PORT}\n  - window_name: Another Django project\n    environment:\n      DJANGO_SETTINGS_MODULE: my_app.settings.local\n      SERVER_PORT: \"8010\"\n    panes:\n      - ./manage.py runserver 0.0.0.0:${SERVER_PORT}\n      - environment:\n          DJANGO_SETTINGS_MODULE: my_app.settings.local-testing\n          SERVER_PORT: \"8011\"\n        shell_command: ./manage.py runserver 0.0.0.0:${SERVER_PORT}",
+          "sha256": "049667c802bc6ba3dc8e5cd80370ae599eca29112d820b572379b2385327371b",
+          "json": "{\n  \"session_name\": \"Environment variables test\",\n  \"environment\": {\n    \"EDITOR\": \"/usr/bin/vim\",\n    \"DJANGO_SETTINGS_MODULE\": \"my_app.settings.local\",\n    \"SERVER_PORT\": \"8009\"\n  },\n  \"windows\": [\n    {\n      \"window_name\": \"Django project\",\n      \"panes\": [\n        \"./manage.py runserver 0.0.0.0:${SERVER_PORT}\"\n      ]\n    },\n    {\n      \"window_name\": \"Another Django project\",\n      \"environment\": {\n        \"DJANGO_SETTINGS_MODULE\": \"my_app.settings.local\",\n        \"SERVER_PORT\": \"8010\"\n      },\n      \"panes\": [\n        \"./manage.py runserver 0.0.0.0:${SERVER_PORT}\",\n        {\n          \"environment\": {\n            \"DJANGO_SETTINGS_MODULE\": \"my_app.settings.local-testing\",\n            \"SERVER_PORT\": \"8011\"\n          },\n          \"shell_command\": \"./manage.py runserver 0.0.0.0:${SERVER_PORT}\"\n        }\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "crates/tmux-workspace/tests/build.rs",
+              "name": "every_tmuxp_example_parses",
+              "line": 1286,
+              "via": "library",
+              "checks": "Parses every fixture in the directory."
+            },
+            {
+              "path": "scripts/tmuxp-parity.py",
+              "name": "tmuxp-parity.py",
+              "line": 51,
+              "via": "cli",
+              "checks": "Loads each fixture with tmux-workspace load and with tmuxp, and compares what they build. CI runs it on a schedule."
+            }
+          ]
+        },
+        {
+          "topic": "start-directory",
+          "also": [],
+          "source": {
+            "path": "crates/tmux-workspace/tests/fixtures/tmuxp/start-directory.yaml"
+          },
+          "yaml": "session_name: start directory\nstart_directory: /var/\nwindows:\n  - window_name: should be /var/\n    panes:\n      - shell_command:\n          - echo \"\\033c\n          - it trickles down from session-level\"\n      - echo hello\n  - window_name: should be /var/log\n    start_directory: log\n    panes:\n      - shell_command:\n          - echo '\\033c\n          - window start_directory concatenates to session start_directory\n          - if it is not absolute'\n      - echo hello\n  - window_name: should be ~\n    start_directory: \"~\"\n    panes:\n      - shell_command:\n          - 'echo \\\\033c ~ has precedence. note: remember to quote ~ in YAML'\n      - echo hello\n  - window_name: should be /bin\n    start_directory: /bin\n    panes:\n      - echo '\\033c absolute paths also have precedence.'\n      - echo hello\n  - window_name: should be workspace file's dir\n\n    start_directory: ./\n    panes:\n      - shell_command:\n          - echo '\\033c\n          - ./ is relative to workspace file location\n          - ../ will be parent of workspace file\n          - ./test will be \\\"test\\\" dir inside dir of workspace file'\n      - shell_command:\n          - echo '\\033c\n          - This way you can load up workspaces from projects and maintain\n          - relative paths.'",
+          "sha256": "66197ef11629617afa291ea351ec051b7f9ed382d980bd43fd04cb88c772b431",
+          "json": "{\n  \"session_name\": \"start directory\",\n  \"start_directory\": \"/var/\",\n  \"windows\": [\n    {\n      \"window_name\": \"should be /var/\",\n      \"panes\": [\n        {\n          \"shell_command\": [\n            \"echo \\\"\\\\033c\",\n            \"it trickles down from session-level\\\"\"\n          ]\n        },\n        \"echo hello\"\n      ]\n    },\n    {\n      \"window_name\": \"should be /var/log\",\n      \"start_directory\": \"log\",\n      \"panes\": [\n        {\n          \"shell_command\": [\n            \"echo '\\\\033c\",\n            \"window start_directory concatenates to session start_directory\",\n            \"if it is not absolute'\"\n          ]\n        },\n        \"echo hello\"\n      ]\n    },\n    {\n      \"window_name\": \"should be ~\",\n      \"start_directory\": \"~\",\n      \"panes\": [\n        {\n          \"shell_command\": [\n            \"echo \\\\\\\\033c ~ has precedence. note: remember to quote ~ in YAML\"\n          ]\n        },\n        \"echo hello\"\n      ]\n    },\n    {\n      \"window_name\": \"should be /bin\",\n      \"start_directory\": \"/bin\",\n      \"panes\": [\n        \"echo '\\\\033c absolute paths also have precedence.'\",\n        \"echo hello\"\n      ]\n    },\n    {\n      \"window_name\": \"should be workspace file's dir\",\n      \"start_directory\": \"./\",\n      \"panes\": [\n        {\n          \"shell_command\": [\n            \"echo '\\\\033c\",\n            \"./ is relative to workspace file location\",\n            \"../ will be parent of workspace file\",\n            \"./test will be \\\\\\\"test\\\\\\\" dir inside dir of workspace file'\"\n          ]\n        },\n        {\n          \"shell_command\": [\n            \"echo '\\\\033c\",\n            \"This way you can load up workspaces from projects and maintain\",\n            \"relative paths.'\"\n          ]\n        }\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "crates/tmux-workspace/tests/build.rs",
+              "name": "tmuxp_start_directory_example_builds_where_tmuxp_does",
+              "line": 1674,
+              "via": "library",
+              "checks": "Builds the file on a real tmux server and checks the directory of each window's first pane."
+            },
+            {
+              "path": "crates/tmux-workspace/tests/build.rs",
+              "name": "every_tmuxp_example_parses",
+              "line": 1286,
+              "via": "library",
+              "checks": "Parses every fixture in the directory."
+            },
+            {
+              "path": "scripts/tmuxp-parity.py",
+              "name": "tmuxp-parity.py",
+              "line": 51,
+              "via": "cli",
+              "checks": "Loads each fixture with tmux-workspace load and with tmuxp, and compares what they build. CI runs it on a schedule."
+            }
+          ]
+        }
+      ]
+    },
+    "go": {
+      "repo": "libtmux/libtmux-go",
+      "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+      "examples": [
+        {
+          "topic": "environment",
+          "also": [
+            "two-pane",
+            "start-directory"
+          ],
+          "source": {
+            "path": "workspace/internal/integration/cli_test.go",
+            "lines": [
+              455,
+              471
+            ]
+          },
+          "yaml": "session_name: native\nstart_directory: .\nenvironment: {SESSION_VALUE: session}\nwindows:\n- window_name: development\n  window_index: 3\n  layout: even-horizontal\n  environment: {WINDOW_VALUE: window}\n  panes:\n  - start_directory: one\n    shell_command: 'printf \"%s:%s:%s\" \"$SESSION_VALUE\" \"$WINDOW_VALUE\" \"$PANE_VALUE\" > result'\n  - start_directory: two\n    environment: {PANE_VALUE: pane}\n    shell_command: 'printf \"%s:%s:%s\" \"$SESSION_VALUE\" \"$WINDOW_VALUE\" \"$PANE_VALUE\" > result'\n- window_name: second\n  focus: true\n  panes: [blank]",
+          "sha256": "b9ab3564c998f3e609eb31992cfcb2d0de1427caf31700c91aace381f95367c1",
+          "json": "{\n  \"session_name\": \"native\",\n  \"start_directory\": \".\",\n  \"environment\": {\n    \"SESSION_VALUE\": \"session\"\n  },\n  \"windows\": [\n    {\n      \"window_name\": \"development\",\n      \"window_index\": 3,\n      \"layout\": \"even-horizontal\",\n      \"environment\": {\n        \"WINDOW_VALUE\": \"window\"\n      },\n      \"panes\": [\n        {\n          \"start_directory\": \"one\",\n          \"shell_command\": \"printf \\\"%s:%s:%s\\\" \\\"$SESSION_VALUE\\\" \\\"$WINDOW_VALUE\\\" \\\"$PANE_VALUE\\\" > result\"\n        },\n        {\n          \"start_directory\": \"two\",\n          \"environment\": {\n            \"PANE_VALUE\": \"pane\"\n          },\n          \"shell_command\": \"printf \\\"%s:%s:%s\\\" \\\"$SESSION_VALUE\\\" \\\"$WINDOW_VALUE\\\" \\\"$PANE_VALUE\\\" > result\"\n        }\n      ]\n    },\n    {\n      \"window_name\": \"second\",\n      \"focus\": true,\n      \"panes\": [\n        \"blank\"\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "workspace/internal/integration/cli_test.go",
+              "name": "TestLoadFreezeReloadAppendAndEnvironment",
+              "line": 444,
+              "via": "cli",
+              "checks": "Runs load on a real tmux server and reads the files the panes write, which show the layered environment and each pane's directory."
+            }
+          ]
+        }
+      ]
+    },
+    "cxx": {
+      "repo": "libtmux/libtmux-cxx",
+      "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "examples": [
+        {
+          "topic": "shorthand",
+          "also": [
+            "shell-command-before"
+          ],
+          "source": {
+            "path": "examples/workspace/tests/tmuxp_test.cpp",
+            "lines": [
+              412,
+              428
+            ]
+          },
+          "yaml": "session_name: inherited\nsuppress_history: false\nshell_command_before: root\nwindows:\n  - shell_command_before: window\n  - suppress_history: true\n    panes:\n      - [one, two]\n      - blank\n      - pane\n      - shell_command_before: pane-before\n        suppress_history: false\n        enter: false\n        sleep_after: 0.25\n        shell_command:\n          - {cmd: first, enter: true, sleep_after: 0}\n          - second",
+          "sha256": "2d1b9ec8aa022ef23965029f32efb5e3c537d731f894e6d429d47894c245b14e",
+          "json": "{\n  \"session_name\": \"inherited\",\n  \"suppress_history\": false,\n  \"shell_command_before\": \"root\",\n  \"windows\": [\n    {\n      \"shell_command_before\": \"window\"\n    },\n    {\n      \"suppress_history\": true,\n      \"panes\": [\n        [\n          \"one\",\n          \"two\"\n        ],\n        \"blank\",\n        \"pane\",\n        {\n          \"shell_command_before\": \"pane-before\",\n          \"suppress_history\": false,\n          \"enter\": false,\n          \"sleep_after\": 0.25,\n          \"shell_command\": [\n            {\n              \"cmd\": \"first\",\n              \"enter\": true,\n              \"sleep_after\": 0\n            },\n            \"second\"\n          ]\n        }\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "examples/workspace/tests/tmuxp_test.cpp",
+              "name": "ShorthandAndInheritedCommandsKeepPaneDefaults",
+              "line": 410,
+              "via": "loader",
+              "checks": "Parses the document with parse_tmuxp, which the load command calls, and checks the commands each pane inherits."
+            }
+          ]
+        },
+        {
+          "topic": "two-pane",
+          "also": [
+            "start-directory"
+          ],
+          "source": {
+            "path": "examples/workspace/tests/tmuxp_test.cpp",
+            "lines": [
+              31,
+              45
+            ]
+          },
+          "yaml": "session_name: work\nstart_directory: /tmp\nwindows:\n  - window_name: editor\n    layout: main-vertical\n    panes:\n      - shell_command:\n          - echo first\n          - echo second\n      - echo lone\n  - window_name: logs\n    root: /\n    panes:\n      - shell_command: echo tail\n      -",
+          "sha256": "296b1e0623a689fb33efa943fb7926697c29e113f5e0577a5665a0a8aa6f3d57",
+          "json": "{\n  \"session_name\": \"work\",\n  \"start_directory\": \"/tmp\",\n  \"windows\": [\n    {\n      \"window_name\": \"editor\",\n      \"layout\": \"main-vertical\",\n      \"panes\": [\n        {\n          \"shell_command\": [\n            \"echo first\",\n            \"echo second\"\n          ]\n        },\n        \"echo lone\"\n      ]\n    },\n    {\n      \"window_name\": \"logs\",\n      \"root\": \"/\",\n      \"panes\": [\n        {\n          \"shell_command\": \"echo tail\"\n        },\n        null\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "examples/workspace/tests/tmuxp_test.cpp",
+              "name": "ADocumentBecomesAWorkspace",
+              "line": 60,
+              "via": "loader",
+              "checks": "Parses the document with parse_tmuxp and checks the names, layout, commands and start directory."
+            },
+            {
+              "path": "examples/workspace/tests/tmuxp_test.cpp",
+              "name": "AParsedDocumentBuildsOnARealServer",
+              "line": 113,
+              "via": "loader",
+              "checks": "Builds the document on a real tmux server and checks the window count, the pane count and each pane's directory."
+            }
+          ]
+        },
+        {
+          "topic": "main-horizontal",
+          "also": [
+            "shell-command-before",
+            "start-directory"
+          ],
+          "source": {
+            "path": "examples/workspace/tests/tmuxp_test.cpp",
+            "lines": [
+              147,
+              163
+            ]
+          },
+          "yaml": "session_name: libtmux\nstart_directory: /tmp\nshell_command_before:\n  - echo setup\nwindows:\n  - window_name: work\n    focus: True\n    layout: main-horizontal\n    options:\n      main-pane-height: 60%\n    panes:\n      - focus: true\n      - echo second\n  - window_name: docs\n    shell_command_before: echo docs-setup\n    panes:\n      - echo only",
+          "sha256": "f74949e8b5937ff7c91153db70de5c676d40b5ac6d2df427aecb68964fc97574",
+          "json": "{\n  \"session_name\": \"libtmux\",\n  \"start_directory\": \"/tmp\",\n  \"shell_command_before\": [\n    \"echo setup\"\n  ],\n  \"windows\": [\n    {\n      \"window_name\": \"work\",\n      \"focus\": true,\n      \"layout\": \"main-horizontal\",\n      \"options\": {\n        \"main-pane-height\": \"60%\"\n      },\n      \"panes\": [\n        {\n          \"focus\": true\n        },\n        \"echo second\"\n      ]\n    },\n    {\n      \"window_name\": \"docs\",\n      \"shell_command_before\": \"echo docs-setup\",\n      \"panes\": [\n        \"echo only\"\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "examples/workspace/tests/tmuxp_test.cpp",
+              "name": "EveryKeyTheDocumentCarriesReachesTheWorkspace",
+              "line": 166,
+              "via": "loader",
+              "checks": "Parses the document and checks the setup commands, focus and the main-pane-height option."
+            },
+            {
+              "path": "examples/workspace/tests/tmuxp_test.cpp",
+              "name": "FocusAndOptionsLandOnTheBuiltSession",
+              "line": 380,
+              "via": "loader",
+              "checks": "Builds the document on a real tmux server and checks the active window, the main-pane-height option and the pane count."
+            }
+          ]
+        }
+      ]
+    },
+    "csharp": {
+      "repo": "libtmux/libtmux-dotnet",
+      "revision": "472c2bcfbda6735139849324cc109ad70300001e",
+      "examples": [
+        {
+          "topic": "two-pane",
+          "also": [
+            "start-directory"
+          ],
+          "source": {
+            "path": "src/LibTmux.Workspace.Cli/README.md",
+            "lines": [
+              44,
+              54
+            ]
+          },
+          "yaml": "session_name: myproject\nstart_directory: ~/code/myproject\nwindows:\n  - window_name: editor\n    layout: main-vertical\n    panes:\n      - vim\n      - git status\n  - window_name: server\n    panes:\n      - npm run dev",
+          "sha256": "fda930bb7c65b04dc56e4b352d758db9d4c85134ac042a0a99259b2f4229200c",
+          "json": "{\n  \"session_name\": \"myproject\",\n  \"start_directory\": \"~/code/myproject\",\n  \"windows\": [\n    {\n      \"window_name\": \"editor\",\n      \"layout\": \"main-vertical\",\n      \"panes\": [\n        \"vim\",\n        \"git status\"\n      ]\n    },\n    {\n      \"window_name\": \"server\",\n      \"panes\": [\n        \"npm run dev\"\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "tests/LibTmux.Workspace.Cli.Tests/ReadmeCommandTests.cs",
+              "name": "The_quickstart_workspace_builds_what_the_readme_describes",
+              "line": 95,
+              "via": "cli",
+              "checks": "Reads this block from the README, runs tmux-workspace load on it and checks the windows and their pane counts."
+            }
+          ]
+        }
+      ]
+    },
+    "ruby": {
+      "repo": "libtmux/libtmux-ruby",
+      "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "examples": [
+        {
+          "topic": "tiled",
+          "also": [
+            "two-pane",
+            "environment"
+          ],
+          "source": {
+            "path": "examples/workspace.yaml"
+          },
+          "yaml": "session_name: work\nenvironment:\n  PROJECT_MODE: development\nwindows:\n  - window_name: editor\n    window_index: 1\n    layout: tiled\n    panes:\n      - shell_command: printf 'editor ready\\n'\n      - {}",
+          "sha256": "fac5d74a610b51a9bc128c12d25dc1f0e56defa91748cb4978d669e13b41299b",
+          "json": "{\n  \"session_name\": \"work\",\n  \"environment\": {\n    \"PROJECT_MODE\": \"development\"\n  },\n  \"windows\": [\n    {\n      \"window_name\": \"editor\",\n      \"window_index\": 1,\n      \"layout\": \"tiled\",\n      \"panes\": [\n        {\n          \"shell_command\": \"printf 'editor ready\\\\n'\"\n        },\n        {}\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "test/packaging/package_test.rb",
+              "name": "test_installed_imports_use_declared_dependencies_without_starting_resources",
+              "line": 21,
+              "via": "cli",
+              "checks": "Runs the installed example programs listed in examples/manifest.json."
+            },
+            {
+              "path": "examples/workspace_apply.rb",
+              "name": "workspace_apply",
+              "line": 10,
+              "via": "cli",
+              "checks": "Loads the file with Workspace.load, then runs the libtmux-workspace executable's validate, plan and load on it."
+            }
+          ]
+        }
+      ]
+    },
+    "julia": {
+      "repo": "libtmux/libtmux-julia",
+      "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
+      "examples": [
+        {
+          "topic": "shell-command-before",
+          "also": [
+            "environment",
+            "start-directory",
+            "two-pane"
+          ],
+          "source": {
+            "path": "packages/LibTmuxWorkspace/test/config.jl",
+            "lines": [
+              137,
+              159
+            ]
+          },
+          "note": "`${PROJECT}` and `${UNKNOWN}` are variables the loader expands. The test sets `PROJECT` and leaves `UNKNOWN` literal.",
+          "yaml": "session_name: dev-${PROJECT}\nstart_directory: ./src\nshell_command_before: echo session\nenvironment:\n  COMMON: session\n  SESSION: yes-string\nwindows:\n  - window_name: api\n    start_directory: service\n    shell_command_before: echo window\n    environment:\n      COMMON: window\n      WINDOW: inherited\n    panes:\n      - start_directory: ../tools\n        shell_command_before: echo pane\n        shell_command:\n          - echo ${PROJECT}\n          - cmd: literal\n            enter: false\n      - environment:\n          COMMON: pane\n        shell_command: echo ${UNKNOWN}",
+          "sha256": "eb4b22be390453a5bfed12eba8aee87602d071c01898a579d892ad207868009f",
+          "json": "{\n  \"session_name\": \"dev-${PROJECT}\",\n  \"start_directory\": \"./src\",\n  \"shell_command_before\": \"echo session\",\n  \"environment\": {\n    \"COMMON\": \"session\",\n    \"SESSION\": \"yes-string\"\n  },\n  \"windows\": [\n    {\n      \"window_name\": \"api\",\n      \"start_directory\": \"service\",\n      \"shell_command_before\": \"echo window\",\n      \"environment\": {\n        \"COMMON\": \"window\",\n        \"WINDOW\": \"inherited\"\n      },\n      \"panes\": [\n        {\n          \"start_directory\": \"../tools\",\n          \"shell_command_before\": \"echo pane\",\n          \"shell_command\": [\n            \"echo ${PROJECT}\",\n            {\n              \"cmd\": \"literal\",\n              \"enter\": false\n            }\n          ]\n        },\n        {\n          \"environment\": {\n            \"COMMON\": \"pane\"\n          },\n          \"shell_command\": \"echo ${UNKNOWN}\"\n        }\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "packages/LibTmuxWorkspace/test/config.jl",
+              "name": "explicit expansion and inheritance",
+              "line": 135,
+              "via": "loader",
+              "checks": "Parses, validates and expands the document, as the load command does, and checks the resolved directories, commands and environment."
+            }
+          ]
+        }
+      ]
+    },
+    "powershell": {
+      "repo": "libtmux/libtmux-powershell",
+      "revision": "fddd118000e12dbdbe46c52276dfc08a73a7de37",
+      "examples": [
+        {
+          "topic": "main-horizontal",
+          "also": [
+            "three-pane"
+          ],
+          "source": {
+            "path": "tests/fixtures/workspace/tmuxp-v1.74.0-window_options.yaml"
+          },
+          "yaml": "session_name: test window options\nstart_directory: '~'\nwindows:\n- layout: main-horizontal\n  options:\n    main-pane-height: 5\n  panes:\n  - pane\n  - pane\n  - pane\n  window_name: editor",
+          "sha256": "e3c72e20fe1fefd93dc8ebb4c76f69c9860ae66c4d9078476911d5d97637ad50",
+          "json": "{\n  \"session_name\": \"test window options\",\n  \"start_directory\": \"~\",\n  \"windows\": [\n    {\n      \"layout\": \"main-horizontal\",\n      \"options\": {\n        \"main-pane-height\": 5\n      },\n      \"panes\": [\n        \"pane\",\n        \"pane\",\n        \"pane\"\n      ],\n      \"window_name\": \"editor\"\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "tests/WorkspaceCorpus.Tests.ps1",
+              "name": "window options fixture",
+              "line": 35,
+              "via": "cli",
+              "checks": "Plans and applies the file on real tmux and checks the layout, the main-pane-height option and each pane's directory."
+            }
+          ]
+        },
+        {
+          "topic": "shell-command-before",
+          "also": [
+            "environment",
+            "start-directory",
+            "two-pane"
+          ],
+          "source": {
+            "path": "tests/fixtures/workspace/corpus.yaml"
+          },
+          "note": "`${PROJECT_ROOT}` and `${OPTION_TAG}` are variables the loader expands.",
+          "yaml": "session_name: corpus\nstart_directory: ${PROJECT_ROOT}\noptions:\n  default-command: exec /bin/sh\n  '@corpus-session': yaml-original\nenvironment:\n  CORPUS_SESSION: yaml-root\n  CORPUS_LAYER: session\nshell_command_before:\n  - cmd: echo session >> order.txt\nwindows:\n  - window_name: yaml-editor\n    start_directory: window\n    layout: even-horizontal\n    focus: true\n    options:\n      '@corpus-window': '${OPTION_TAG}'\n    environment:\n      CORPUS_WINDOW: yaml-window\n      CORPUS_LAYER: window\n    shell_command_before:\n      - cmd: echo window >> order.txt\n    panes:\n      - shell_command:\n          - cmd: echo command >> order.txt\n          - 'echo \"$CORPUS_SESSION|$CORPUS_WINDOW|$CORPUS_PANE|$CORPUS_LAYER\" > environment.txt'\n          - tmux wait-for -S corpus-yaml-first\n      - start_directory: pane\n        focus: true\n        options:\n          '@corpus-pane': yaml\n        environment:\n          CORPUS_PANE: yaml-pane\n          CORPUS_LAYER: pane\n        shell_command_before:\n          - cmd: echo pane >> order.txt\n        shell_command:\n          - echo command >> order.txt\n          - 'echo \"$CORPUS_SESSION|$CORPUS_WINDOW|$CORPUS_PANE|$CORPUS_LAYER\" > environment.txt'\n          - tmux wait-for -S corpus-yaml-second",
+          "sha256": "876e50e4403c5f62c6977aaf9112d497f6032fb076efdb70b60ba0f0dbc3fb4c",
+          "json": "{\n  \"session_name\": \"corpus\",\n  \"start_directory\": \"${PROJECT_ROOT}\",\n  \"options\": {\n    \"default-command\": \"exec /bin/sh\",\n    \"@corpus-session\": \"yaml-original\"\n  },\n  \"environment\": {\n    \"CORPUS_SESSION\": \"yaml-root\",\n    \"CORPUS_LAYER\": \"session\"\n  },\n  \"shell_command_before\": [\n    {\n      \"cmd\": \"echo session >> order.txt\"\n    }\n  ],\n  \"windows\": [\n    {\n      \"window_name\": \"yaml-editor\",\n      \"start_directory\": \"window\",\n      \"layout\": \"even-horizontal\",\n      \"focus\": true,\n      \"options\": {\n        \"@corpus-window\": \"${OPTION_TAG}\"\n      },\n      \"environment\": {\n        \"CORPUS_WINDOW\": \"yaml-window\",\n        \"CORPUS_LAYER\": \"window\"\n      },\n      \"shell_command_before\": [\n        {\n          \"cmd\": \"echo window >> order.txt\"\n        }\n      ],\n      \"panes\": [\n        {\n          \"shell_command\": [\n            {\n              \"cmd\": \"echo command >> order.txt\"\n            },\n            \"echo \\\"$CORPUS_SESSION|$CORPUS_WINDOW|$CORPUS_PANE|$CORPUS_LAYER\\\" > environment.txt\",\n            \"tmux wait-for -S corpus-yaml-first\"\n          ]\n        },\n        {\n          \"start_directory\": \"pane\",\n          \"focus\": true,\n          \"options\": {\n            \"@corpus-pane\": \"yaml\"\n          },\n          \"environment\": {\n            \"CORPUS_PANE\": \"yaml-pane\",\n            \"CORPUS_LAYER\": \"pane\"\n          },\n          \"shell_command_before\": [\n            {\n              \"cmd\": \"echo pane >> order.txt\"\n            }\n          ],\n          \"shell_command\": [\n            \"echo command >> order.txt\",\n            \"echo \\\"$CORPUS_SESSION|$CORPUS_WINDOW|$CORPUS_PANE|$CORPUS_LAYER\\\" > environment.txt\",\n            \"tmux wait-for -S corpus-yaml-second\"\n          ]\n        }\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "tests/WorkspaceCorpus.Tests.ps1",
+              "name": "corpus fixture",
+              "line": 135,
+              "via": "cli",
+              "checks": "Applies the file on real tmux and checks the order of the commands, the environment each pane sees and each pane's directory."
+            }
+          ]
+        },
+        {
+          "topic": "environment",
+          "also": [],
+          "source": {
+            "path": "tests/fixtures/workspace/tmuxp-v1.74.0-environment_vars.yaml"
+          },
+          "yaml": "session_name: test env vars\nstart_directory: \"~\"\nenvironment:\n  FOO: SESSION\n  PATH: /tmp\nwindows:\n- window_name: no_overrides\n  panes:\n  - pane\n- window_name: window_overrides\n  environment:\n    FOO: WINDOW\n  panes:\n  - pane\n- window_name: pane_overrides\n  panes:\n  - environment:\n      FOO: PANE\n- window_name: both_overrides\n  environment:\n    FOO: WINDOW\n  panes:\n  - pane\n  - environment:\n      FOO: PANE\n# This test case it just needed for warnings issued in old versions of tmux.\n- window_name: both_overrides_on_first_pane\n  environment:\n    FOO: WINDOW\n  panes:\n  - environment:\n      FOO: PANE",
+          "sha256": "e84adad56538f623472d00a1b2515905c0175d1556011fe7abc867b9e8bc80fd",
+          "json": "{\n  \"session_name\": \"test env vars\",\n  \"start_directory\": \"~\",\n  \"environment\": {\n    \"FOO\": \"SESSION\",\n    \"PATH\": \"/tmp\"\n  },\n  \"windows\": [\n    {\n      \"window_name\": \"no_overrides\",\n      \"panes\": [\n        \"pane\"\n      ]\n    },\n    {\n      \"window_name\": \"window_overrides\",\n      \"environment\": {\n        \"FOO\": \"WINDOW\"\n      },\n      \"panes\": [\n        \"pane\"\n      ]\n    },\n    {\n      \"window_name\": \"pane_overrides\",\n      \"panes\": [\n        {\n          \"environment\": {\n            \"FOO\": \"PANE\"\n          }\n        }\n      ]\n    },\n    {\n      \"window_name\": \"both_overrides\",\n      \"environment\": {\n        \"FOO\": \"WINDOW\"\n      },\n      \"panes\": [\n        \"pane\",\n        {\n          \"environment\": {\n            \"FOO\": \"PANE\"\n          }\n        }\n      ]\n    },\n    {\n      \"window_name\": \"both_overrides_on_first_pane\",\n      \"environment\": {\n        \"FOO\": \"WINDOW\"\n      },\n      \"panes\": [\n        {\n          \"environment\": {\n            \"FOO\": \"PANE\"\n          }\n        }\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "tests/WorkspaceCorpus.Tests.ps1",
+              "name": "environment variables fixture",
+              "line": 34,
+              "via": "cli",
+              "checks": "Plans and applies the file on real tmux and checks the session environment and the value each pane prints."
+            }
+          ]
+        },
+        {
+          "topic": "start-directory",
+          "also": [
+            "two-pane"
+          ],
+          "source": {
+            "path": "tests/fixtures/workspace/tmuxp-v1.74.0-first_pane_start_directory.yaml"
+          },
+          "yaml": "session_name: sample workspace\nwindows:\n  - panes:\n    - start_directory: /usr\n    - start_directory: /etc",
+          "sha256": "2a3e7cc17c6df13851b2fb5f1bb95ed4b81502bebdcc84136ca6378957890d47",
+          "json": "{\n  \"session_name\": \"sample workspace\",\n  \"windows\": [\n    {\n      \"panes\": [\n        {\n          \"start_directory\": \"/usr\"\n        },\n        {\n          \"start_directory\": \"/etc\"\n        }\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "tests/WorkspaceCorpus.Tests.ps1",
+              "name": "first pane start directory fixture",
+              "line": 33,
+              "via": "cli",
+              "checks": "Plans and applies the file on real tmux and checks the directory of each pane."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
