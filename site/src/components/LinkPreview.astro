@@ -84,6 +84,9 @@ const { id = 'reference-link-preview', preview, class: className } = Astro.props
   .reference-link-preview__prose { display: block; padding: .6rem .8rem; font: 400 .8125rem/1.55 var(--font-sans); }
   .reference-link-preview__summary { display: block; }
   .reference-link-preview__detail { display: block; margin-top: .25rem; color: var(--color-foreground-muted); font-size: .75rem; line-height: 1.5; }
+  /* A declaration with no summary has nothing to say under its signature, so the box goes too. */
+  .reference-link-preview__prose:not(:has(> :not([hidden]))) { display: none; }
+  .reference-link-preview__summary[hidden] + .reference-link-preview__detail { margin-top: 0; }
 
   /*
    * A name in the summary reads as it does in prose: the kind's mark, then the name as a link. These rules are the

@@ -31,6 +31,10 @@ export async function cardPayloads(): Promise<[string, LinkPreview][]> {
     ['API method with a named type', symbolPreview(rs, referenced(rs, 'method'), 'latest')],
     ['API declaration without references', symbolPreview(API_MODELS.cxx, API_MODELS.cxx.symbols.find((symbol) => symbol.kind === 'class')!, 'latest')],
     ['API name long enough to abbreviate', symbolPreview(API_MODELS.swift, long, 'latest')],
+    // Written out: a model gaining a doc comment must not turn the cards that show an absent summary into ordinary ones.
+    ['declaration with a signature and no summary', { schema: 1, title: 'server', kind: 'property', description: '', signature: 'public val server: Server',
+      signatureLanguage: 'kotlin', footer: ['io.github.libtmux.kotlin', 'Batch'], href: '/en/kotlin/latest/reference/batch-server/' }],
+    ['declaration with nothing under its name', { schema: 1, title: 'TargetNotFoundError', kind: 'class', description: '', footer: ['libtmux'], href: '/en/ruby/latest/reference/targetnotfounderror/' }],
     ['glossary page', glossary],
     ['glossary term that is a kind', glossary.terms!.struct],
     ['glossary term that is not a kind', glossary.terms!.inherited],
