@@ -13,6 +13,7 @@
  */
 
 import { bindHomeHoverPreview } from './home-hover-preview'
+import { HOVER_OPEN } from './status-toggletip'
 
 export const STORAGE_PREFIX = 'libtmux-workspace-preset:'
 
@@ -184,6 +185,90 @@ function scrollControls(panel: HTMLElement, strip: HTMLElement, tabs: HTMLElemen
   return sync
 }
 
+const TIP_CLOSE = 250
+
+/**
+ * Full window names for the tabs whose text the strip clips with an ellipsis.
+ *
+ * One `role="tooltip"` serves every tab. It opens on hover after the status
+ * badges' delay and at once on keyboard focus, and only for a label that
+ * overflows, so a name that fits gets nothing. While it is open the tab names
+ * it in `aria-describedby`. It stays while the pointer is on the tab or the
+ * tooltip or focus is on the tab (WCAG 1.4.13), and Escape closes it without
+ * moving focus. The tab's own name is its full text; the ellipsis is only paint.
+ */
+function tabTips(tip: HTMLElement, tabs: HTMLElement[], signal: AbortSignal): void {
+  let owner: HTMLElement | undefined
+  let timer: ReturnType<typeof setTimeout> | undefined
+  let hovered: HTMLElement | undefined
+  let dismissed: HTMLElement | undefined
+  const label = (tab: HTMLElement) => tab.querySelector<HTMLElement>('.ws-layout__tab-label')
+  const clipped = (tab: HTMLElement) => {
+    const text = label(tab)
+    return !!text && text.scrollWidth > text.clientWidth
+  }
+  const hide = () => {
+    clearTimeout(timer)
+    timer = undefined
+    owner?.removeAttribute('aria-describedby')
+    owner = undefined
+    tip.hidden = true
+  }
+  const open = (tab: HTMLElement) => {
+    clearTimeout(timer)
+    timer = undefined
+    if (dismissed === tab || !clipped(tab)) return
+    hide()
+    owner = tab
+    tip.textContent = label(tab)?.textContent ?? ''
+    tip.hidden = false
+    tab.setAttribute('aria-describedby', tip.id)
+    const at = tab.getBoundingClientRect()
+    const width = document.documentElement.clientWidth
+    tip.style.left = `${Math.max(8, Math.min(at.left, width - tip.offsetWidth - 8))}px`
+    tip.style.top = `${at.bottom + 4}px`
+  }
+  const settle = (tab: HTMLElement) => {
+    clearTimeout(timer)
+    timer = setTimeout(() => {
+      timer = undefined
+      if (owner === tab && hovered !== tab && !tab.matches(':focus') && !tip.matches(':hover')) hide()
+    }, TIP_CLOSE)
+  }
+  for (const tab of tabs) {
+    tab.addEventListener('pointerenter', (event) => {
+      if (event.pointerType !== 'mouse') return
+      hovered = tab
+      clearTimeout(timer)
+      if (owner === tab) return
+      timer = setTimeout(() => open(tab), HOVER_OPEN)
+    }, { signal })
+    tab.addEventListener('pointerleave', () => {
+      if (hovered === tab) hovered = undefined
+      if (dismissed === tab && !tab.matches(':focus')) dismissed = undefined
+      if (owner === tab) settle(tab)
+      else clearTimeout(timer)
+    }, { signal })
+    tab.addEventListener('focus', () => open(tab), { signal })
+    tab.addEventListener('blur', () => {
+      if (dismissed === tab) dismissed = undefined
+      if (owner === tab && hovered !== tab) settle(tab)
+    }, { signal })
+  }
+  tip.addEventListener('pointerenter', () => clearTimeout(timer), { signal })
+  tip.addEventListener('pointerleave', () => { if (owner && hovered !== owner) settle(owner) }, { signal })
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || !owner) return
+    event.preventDefault()
+    event.stopPropagation()
+    dismissed = owner
+    hide()
+  }, { signal, capture: true })
+  document.addEventListener('scroll', hide, { signal, capture: true })
+  window.addEventListener('resize', hide, { signal })
+  signal.addEventListener('abort', hide, { once: true })
+}
+
 /**
  * Register `<libtmux-workspace-picker>`.
  *
@@ -298,6 +383,8 @@ export function defineWorkspacePicker(): void {
         }, { signal })
         if (strip) syncs.push(scrollControls(panel, strip, tabs, signal))
       }
+      const tip = this.querySelector<HTMLElement>('[data-tab-tip]')
+      if (tip) tabTips(tip, panels.flatMap((panel) => [...panel.querySelectorAll<HTMLElement>('[role="tab"]')]), signal)
       // A font or a resize changes what overflows, so every strip is read again.
       const syncAll = () => syncs.forEach((sync) => sync())
       if (typeof ResizeObserver !== 'undefined') {

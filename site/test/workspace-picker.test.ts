@@ -5,6 +5,7 @@ import ts from 'typescript'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { paintScript, readStoredPreset, resolvePreset, rollPreset, scrollForThumb, selectionRules, stepIndex, storePreset, STORAGE_PREFIX, thumbMetrics, withPreset } from '../src/lib/workspace-picker'
 import { HOME_PREVIEW_DELAY } from '../src/lib/home-hover-preview'
+import { HOVER_OPEN } from '../src/lib/status-toggletip'
 import { renderLayout } from '../src/lib/tmux-layout'
 import { configKeys, offersPicker, presetOptions, previewSize, previewWindows, TOPICS, workspaceShowcase } from '../src/lib/workspace-showcase'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
@@ -12,7 +13,8 @@ import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 const SOURCE = readFileSync(new URL('../src/lib/workspace-picker.ts', import.meta.url), 'utf8')
 /** The module as the browser runs it: types erased and its exports made local. */
 const HOVER = readFileSync(new URL('../src/lib/home-hover-preview.ts', import.meta.url), 'utf8')
-const CLIENT = [HOVER, SOURCE.replace(/^import .*$/m, '')]
+const TOGGLETIP = readFileSync(new URL('../src/lib/status-toggletip.ts', import.meta.url), 'utf8')
+const CLIENT = [HOVER, TOGGLETIP, SOURCE.replace(/^import .*$/gm, '')]
   .map((code) => ts.transpileModule(code, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText)
   .join('\n').replace(/^export /gm, '')
 
@@ -777,5 +779,94 @@ describe('previewing a preset on hover', () => {
     p.menu.open = false
     p.menu.dispatchEvent(new p.win.Event('toggle') as unknown as Event)
     expect(p.active()).toEqual([p.ids[0]])
+  })
+})
+
+describe('window tab names', () => {
+  const NAME = 'Another Django project'
+  /** A viewport narrower than the label clips it; layout is stubbed because the DOM has none. */
+  const setup = async (viewport: number) => {
+    vi.useFakeTimers()
+    const p = await page('rs')
+    p.win.setTimeout = ((fn: () => void, ms: number) => setTimeout(fn, ms)) as unknown as typeof p.win.setTimeout
+    p.win.clearTimeout = ((id: number) => clearTimeout(id)) as unknown as typeof p.win.clearTimeout
+    const panel = p.document.querySelector<HTMLElement>('[data-preset]:not([inert])')!
+    const tab = panel.querySelector<HTMLElement>('[role="tab"]')!
+    const label = tab.querySelector<HTMLElement>('.ws-layout__tab-label')!
+    label.textContent = `0:${NAME}`
+    Object.defineProperty(label, 'scrollWidth', { configurable: true, value: 200 })
+    Object.defineProperty(label, 'clientWidth', { configurable: true, value: viewport >= 1280 ? 240 : 120 })
+    const tip = p.document.querySelector<HTMLElement>('[role="tooltip"]')!
+    const hover = () => { tab.dispatchEvent(new p.win.PointerEvent('pointerenter', { pointerType: 'mouse' }) as unknown as Event); vi.advanceTimersByTime(HOVER_OPEN) }
+    const focus = () => tab.dispatchEvent(new p.win.FocusEvent('focus') as unknown as Event)
+    return { ...p, tab, label, tip, hover, focus }
+  }
+  afterEach(() => void vi.useRealTimers())
+
+  it('ellipsizes in the label, not the flex button, and names the tab by its full text', async () => {
+    const css = readFileSync(new URL('../src/styles/workspace-picker.css', import.meta.url), 'utf8')
+    expect(css).toMatch(/\.ws-layout__tab-label\s*\{[^}]*overflow: hidden;[^}]*text-overflow: ellipsis;[^}]*white-space: nowrap/)
+    const p = await setup(390)
+    expect(p.tab.textContent).toBe(`0:${NAME}`)
+    expect(p.tab.hasAttribute('title')).toBe(false)
+    expect(p.tab.hasAttribute('aria-label')).toBe(false)
+  })
+
+  it('wires a role=tooltip to a clipped tab on hover and focus at 390', async () => {
+    const p = await setup(390)
+    expect(p.tip.getAttribute('role')).toBe('tooltip')
+    expect(p.tip.hidden).toBe(true)
+    p.hover()
+    expect(p.tip.hidden).toBe(false)
+    expect(p.tip.textContent).toBe(`0:${NAME}`)
+    expect(p.tab.getAttribute('aria-describedby')).toBe(p.tip.id)
+    expect(p.document.getElementById(p.tip.id)).toBe(p.tip)
+    const q = await setup(390)
+    q.focus()
+    expect(q.tip.hidden).toBe(false)
+    expect(q.tab.getAttribute('aria-describedby')).toBe(q.tip.id)
+  })
+
+  it('waits the status badge delay before a hover opens it', async () => {
+    const p = await setup(390)
+    p.tab.dispatchEvent(new p.win.PointerEvent('pointerenter', { pointerType: 'mouse' }) as unknown as Event)
+    vi.advanceTimersByTime(HOVER_OPEN - 1)
+    expect(p.tip.hidden).toBe(true)
+    vi.advanceTimersByTime(1)
+    expect(p.tip.hidden).toBe(false)
+  })
+
+  it('dismisses with Escape, leaving focus where it is', async () => {
+    const p = await setup(390)
+    p.tab.focus()
+    p.focus()
+    expect(p.tip.hidden).toBe(false)
+    p.document.dispatchEvent(new p.win.KeyboardEvent('keydown', { key: 'Escape', cancelable: true }) as unknown as Event)
+    expect(p.tip.hidden).toBe(true)
+    expect(p.tab.hasAttribute('aria-describedby')).toBe(false)
+    expect(p.document.activeElement).toBe(p.tab)
+    p.focus()
+    expect(p.tip.hidden).toBe(true)
+  })
+
+  it('stays while the pointer moves onto the tooltip, and closes once it leaves', async () => {
+    const p = await setup(390)
+    p.hover()
+    p.tab.dispatchEvent(new p.win.PointerEvent('pointerleave') as unknown as Event)
+    p.tip.dispatchEvent(new p.win.PointerEvent('pointerenter') as unknown as Event)
+    vi.advanceTimersByTime(1000)
+    expect(p.tip.hidden).toBe(false)
+    p.tip.dispatchEvent(new p.win.PointerEvent('pointerleave') as unknown as Event)
+    vi.advanceTimersByTime(1000)
+    expect(p.tip.hidden).toBe(true)
+  })
+
+  it('gives a name that fits no tooltip', async () => {
+    const p = await setup(1280)
+    p.hover()
+    p.focus()
+    expect(p.tip.hidden).toBe(true)
+    expect(p.tab.hasAttribute('aria-describedby')).toBe(false)
+    expect(p.label.scrollWidth).toBeLessThanOrEqual(p.label.clientWidth)
   })
 })
