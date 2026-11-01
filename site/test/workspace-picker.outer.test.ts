@@ -23,9 +23,12 @@ import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
  * since the claims are about the panel's box and not about the code's colours.
  */
 const read = (name: string) => readFileSync(new URL(`../src/${name}`, import.meta.url), 'utf8')
-const script = (name: string) => ts.transpileModule(read(name), { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } })
-  .outputText.replace(/^export /gm, '')
-const CLIENT = script('lib/workspace-picker.ts')
+/** One classic script from modules: types erased, exports made local and imports dropped (the imported modules are listed first). */
+const script = (...names: string[]) => names
+  .map((name) => ts.transpileModule(read(name).replace(/^import .*$/gm, ''), { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText)
+  .join('\n').replace(/^export /gm, '')
+// The picker imports the home page's hover binding and the status badges' hover delay.
+const CLIENT = script('lib/home-hover-preview.ts', 'lib/status-toggletip.ts', 'lib/workspace-picker.ts')
 const MENU = script('components/docs/documentation-navigation.ts')
 const REROLL = /<style is:global>([\s\S]*?)<\/style>/.exec(read('components/RerollButton.astro'))![1]!
 
