@@ -366,42 +366,38 @@ export async function headingProblems(page) {
 
 
 /**
- * The protocol sidebar (MCP tools, prompts, resources): its groups name their
- * kind, so a row carries a mark only in a group that mixes kinds, and the mark
- * is inline at the row's normal gap. There is no gutter: a row without a mark
- * starts its text at the row's indent. The kind stays on every row for
- * assistive technology (`aria-description`).
+ * The protocol sidebar (MCP tools, prompts, resources) is the section menu. Its groups name their
+ * kind, so a row carries a mark only in a group that mixes kinds, and the mark is inline at the
+ * row's normal gap. There is no gutter: a row without a mark starts its text at the row's indent.
+ * The kind stays on every row for assistive technology (`aria-description`).
  */
 export function protocolSidebarProblems(page) {
   return page.evaluate(() => {
-    const nav = document.querySelector('.api-nav[data-marks="mixed"]')
+    const nav = [...document.querySelectorAll('[data-section-navigation] nav')].find((node) => node.offsetParent)
     if (!nav) return { groups: 0, marks: 0, rows: 0, problems: [] }
     const problems = []
     let groups = 0, marks = 0, rows = 0
-    for (const group of nav.querySelectorAll('ul[role="group"]')) {
-      const entries = [...group.querySelectorAll(':scope > li > a.api-nav__row, :scope > li > div.api-nav__row')].filter((row) => row.offsetParent)
+    for (const group of nav.querySelectorAll('details.sidebar-section')) {
+      const entries = [...group.querySelectorAll(':scope > .sidebar-section__children > a.sidebar-link')].filter((row) => row.offsetParent)
       if (!entries.length) continue
       groups++
-      const label = group.closest('li[role="treeitem"]')?.querySelector(':scope > .api-nav__row .api-nav__label')?.textContent?.trim() ?? 'a group'
-      const kindOf = (row) => row.getAttribute('aria-description') ?? row.closest('li[role="treeitem"]')?.getAttribute('aria-description') ?? undefined
-      const kinds = new Set(entries.map(kindOf).filter(Boolean))
+      const label = group.querySelector(':scope > summary')?.textContent?.trim() ?? 'a group'
+      const kinds = new Set(entries.map((row) => row.getAttribute('aria-description')).filter(Boolean))
       for (const row of entries) {
         rows++
         const mark = row.querySelector(':scope > .api-nav__kind')
-        const name = row.querySelector(':scope .api-nav__label')?.textContent?.trim() ?? ''
-        if (kindOf(row) === undefined) continue
+        const text = row.querySelector(':scope > span:not(.api-nav__kind)')
+        const name = text?.textContent?.trim() ?? ''
+        if (!row.hasAttribute('aria-description')) continue
         if (mark) marks++
         if (kinds.size <= 1 && mark) problems.push(`"${name}" under "${label}" repeats a kind the group already names`)
         if (kinds.size > 1 && !mark) problems.push(`"${name}" under "${label}" has no mark in a group that mixes kinds`)
-        if (!row.matches('a')) continue
         // No gutter: the first thing in the row starts at the row's own indent, and a mark is one gap from the name.
         const indent = row.getBoundingClientRect().left + parseFloat(getComputedStyle(row).paddingLeft)
-        const text = row.querySelector(':scope > .api-nav__label')
-        const textStart = text.getBoundingClientRect().left + parseFloat(getComputedStyle(text).paddingLeft)
-        const lead = mark ? mark.getBoundingClientRect().left : textStart
+        const lead = (mark ?? text).getBoundingClientRect().left
         if (Math.abs(lead - indent) > 1) problems.push(`"${name}" under "${label}" starts ${(lead - indent).toFixed(1)}px from its indent: a gutter`)
         if (mark) {
-          const gap = textStart - mark.getBoundingClientRect().right
+          const gap = text.getBoundingClientRect().left - mark.getBoundingClientRect().right
           if (gap < 3 || gap > 6) problems.push(`"${name}" under "${label}": the mark is ${gap.toFixed(1)}px from the name`)
         }
       }
@@ -530,11 +526,12 @@ async function negativeControl(page, base, results) {
   assert(sidebar.groups > 0 && sidebar.problems.length === 0, `The protocol sidebar is not clean before the control (${sidebar.groups} groups): ${sidebar.problems.join('; ')}`)
   // Rows copied out of an open group, with the kinds and marks the control gives them.
   const addGroup = (kinds, drawn) => page.evaluate(([kinds, drawn]) => {
-    const source = [...document.querySelectorAll('.api-nav[data-marks="mixed"] ul[role="group"]')].find((group) => group.querySelector(':scope > li > a.api-nav__leaf'))
+    const source = [...document.querySelectorAll('[data-section-navigation] details.sidebar-section[open]')].find((group) => group.offsetParent && group.querySelector(':scope > .sidebar-section__children > a.sidebar-link'))
     const group = source.cloneNode(true)
     group.dataset.control = ''
-    const leaves = [...group.querySelectorAll(':scope > li > a.api-nav__leaf')].slice(0, kinds.length)
-    for (const item of group.querySelectorAll(':scope > li')) if (!leaves.includes(item.querySelector('a'))) item.remove()
+    const children = group.querySelector(':scope > .sidebar-section__children')
+    const leaves = [...children.querySelectorAll(':scope > a.sidebar-link')].slice(0, kinds.length)
+    for (const row of [...children.children]) if (!leaves.includes(row)) row.remove()
     leaves.forEach((leaf, index) => {
       leaf.querySelector('.api-nav__kind')?.remove()
       leaf.setAttribute('aria-description', kinds[index])

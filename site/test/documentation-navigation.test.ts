@@ -3,10 +3,11 @@ vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
 import { buildDocumentationSurfaces, currentDocumentation, getDocumentationSurfaces } from '../src/lib/documentation-navigation'
 import { PORTS, portPageUrl, productStatus, releaseMaturity, type DocProduct, type ProductStatus } from '../src/lib/ports'
 import { REGISTRY } from '../src/lib/registry'
-import { sharesOneKind, type SidebarItem } from '../src/lib/sidebar'
-import { mcpObjects, MCP_REFERENCE } from '../src/lib/mcp-reference'
+import { sharesOneKind, type SidebarItem, type SidebarLinkItem } from '../src/lib/sidebar'
+import { mcpObjectGroup, mcpObjects, mcpSectionGroups, MCP_REFERENCE } from '../src/lib/mcp-reference'
 
 const link = (label: string, href: string): SidebarItem => ({ type: 'link', label, href })
+const leaves = (items: SidebarItem[]): SidebarLinkItem[] => items.flatMap((item) => item.type === 'link' ? [item] : leaves(item.items))
 const menus = (port: typeof PORTS[number], version: string) => Object.fromEntries(['core', 'mcp', 'workspace'].map((surface) => {
   const base = (path = '') => portPageUrl(port, version, [surface === 'core' ? '' : surface, path].filter(Boolean).join('/'))
   return [surface, [link('Overview', base()), link('Guides', base('guides')), link('Examples', base('examples')),
@@ -218,7 +219,8 @@ describe('documentation surface navigation', () => {
     const mcp = currentDocumentation(surfaces, portPageUrl(port, 'latest', 'mcp/tools/list_sessions'))
     expect(mcp.surface.id).toBe('mcp')
     expect(mcp.section.id).toBe('tools')
-    expect(mcp.section.items.map((item) => item.label)).toEqual(['Tools', ...MCP_REFERENCE.go.registrations.map((tool) => tool.wireName)])
+    expect(mcp.section.items[0].label).toBe('Tools')
+    expect(leaves(mcp.section.items.slice(1)).map((item) => item.label).sort()).toEqual(MCP_REFERENCE.go.registrations.map((tool) => tool.wireName).sort())
     expect(currentDocumentation(surfaces, '/go/latest/mcp/reference/').section.items.map((item) => item.label)).toEqual(['Language API'])
   })
 
@@ -235,15 +237,23 @@ describe('documentation surface navigation', () => {
         .find((item) => item.type === 'link' && item.href === section.href)
       expect(homeLink?.type === 'link' && Boolean(homeLink.disabled)).toBe(objects.length === 0)
       expect(section.href).toBe(`/${slug}/next/mcp/${id}/`)
-      // A section named for its kind needs no mark on each row, and the kind stays on the link; a section that mixes kinds keeps its marks.
-      const quiet = new Set(objects.map((object) => object.kind)).size <= 1
-      expect(section.items.slice(1)).toEqual(objects.map((object) => ({ type: 'link', label: object.name, kind: object.kind, href: `/${slug}/next/${object.path}/`, ...(quiet ? { quiet: true } : {}) })))
+      // The section's objects nest under their groups, in the order the index page lists them. A group names its kind, so its rows draw no mark and keep the kind for assistive technology.
+      const groups = section.items.slice(1)
+      expect(groups.every((item) => item.type === 'group'), `${slug} ${id} groups`).toBe(true)
+      expect(groups.map((group) => group.label), `${slug} ${id} group order`).toEqual(mcpSectionGroups(slug, id as 'tools').map((group) => group.label))
+      for (const group of groups) {
+        if (group.type !== 'group') continue
+        expect(group.href, `${slug} ${group.label} anchor`).toMatch(new RegExp(`^/${slug}/next/mcp/${id}/#${id}-`))
+        expect(group.items.every((item) => item.type === 'link' && item.quiet === true && item.kind), `${slug} ${group.label} rows`).toBe(true)
+        for (const item of leaves(group.items)) expect(mcpObjectGroup(objects.find((object) => `/${slug}/next/${object.path}/` === item.href)!), `${slug} ${item.label} group`).toBe(group.label)
+      }
+      expect(leaves(groups).map((item) => item.href).sort()).toEqual(objects.map((object) => `/${slug}/next/${object.path}/`).sort())
       for (const object of objects) expect(currentDocumentation(surfaces, `/${slug}/next/${object.path}/`).section.id).toBe(id)
     }
   })
 
-  it('quiets a protocol section of one kind and marks a section that mixes kinds', () => {
-    // No advertised registration set mixes kinds today, so the rule is held on its own, and the real sections on the data.
+  it('quiets a protocol group of one kind and marks a group that mixes kinds', () => {
+    // No advertised registration set mixes kinds in one group today, so the rule is held on its own, and the real groups on the data.
     expect(sharesOneKind(['tool', 'tool', 'tool'])).toBe(true)
     expect(sharesOneKind([])).toBe(true)
     expect(sharesOneKind(['resource', 'resource-template'])).toBe(false)
@@ -254,8 +264,19 @@ describe('documentation surface navigation', () => {
     for (const { slug, id } of quieted) {
       const port = PORTS.find((entry) => entry.slug === slug)!
       const section = buildDocumentationSurfaces(slug, 'next', menus(port, 'next')).find((surface) => surface.id === 'mcp')!.sections.find((entry) => entry.id === id)!
-      for (const link of section.items.slice(1)) expect(link.type === 'link' && link.quiet && link.kind, `${slug} ${id}`).toBeTruthy()
+      for (const link of leaves(section.items.slice(1))) expect(link.quiet && link.kind, `${slug} ${id}`).toBeTruthy()
     }
+  })
+
+  it('selects the protocol section from an object page, whatever group the object is in', () => {
+    const port = PORTS.find((entry) => entry.slug === 'py')!
+    const surfaces = buildDocumentationSurfaces('py', 'next', menus(port, 'next'))
+    const object = mcpObjects('py').find((entry) => entry.kind === 'resource-template')!
+    const selected = currentDocumentation(surfaces, `/py/next/${object.path}/`)
+    expect(selected.surface.id).toBe('mcp')
+    expect(selected.section.id).toBe('resources')
+    const group = selected.section.items.find((item) => item.type === 'group' && leaves(item.items).some((entry) => entry.href === `/py/next/${object.path}/`))
+    expect(group?.label).toBe('Resource templates')
   })
 
   it('keeps ecosystem and upstream references reachable from the picker above the core API tree', () => {

@@ -37,19 +37,24 @@ export function mcpObjectGroup(object: McpObject): string {
   return TOOL_GROUPS.find(([, pattern]) => pattern.test(object.name))?.[0] ?? 'Other tools'
 }
 
+const GROUP_ORDER: string[] = [...TOOL_GROUPS.map(([name]) => name), 'Other tools', 'Workflows', 'Fixed resources', 'Resource templates']
+
+/** One protocol section's objects by group, in reading order. `id` is the group's anchor on the section's index page. */
+export function mcpSectionGroups(port: string, section: McpSection): { id: string; label: string; objects: McpObject[] }[] {
+  const selected = mcpObjects(port).filter((entry) => entry.section === section)
+  return [...new Set(selected.map(mcpObjectGroup))].sort((a, b) => GROUP_ORDER.indexOf(a) - GROUP_ORDER.indexOf(b))
+    .map((label) => ({ id: `${section}-${label.toLowerCase().replaceAll(' ', '-')}`, label, objects: selected.filter((entry) => mcpObjectGroup(entry) === label) }))
+}
+
 /** The existing API tree, lazy loading and search consume this same catalog. */
 export function mcpNavigation(port: string): { tree: TreeBucket[]; json: ApiTreeJson; version: string } {
   const entries = mcpObjects(port)
-  const tree: TreeBucket[] = Object.entries(MCP_SECTIONS).map(([section, label]) => {
-    const selected = entries.filter((entry) => entry.section === section)
-    const order: string[] = [...TOOL_GROUPS.map(([name]) => name), 'Other tools', 'Workflows', 'Fixed resources', 'Resource templates']
-    const groups = [...new Set(selected.map(mcpObjectGroup))].sort((a, b) => order.indexOf(a) - order.indexOf(b))
-    return { id: section, label, collapsed: false, entries: [],
-      target: { id: `mcp.${section}`, name: label, slug: section, kind: 'mcp-section' },
-      children: groups.map((group) => ({ id: `${section}-${group.toLowerCase().replaceAll(' ', '-')}`, label: group,
-        collapsed: false, children: [], entries: selected.filter((entry) => mcpObjectGroup(entry) === group)
-          .map((entry) => ({ id: entry.id, name: entry.name, slug: entry.path.slice(4), kind: entry.kind })) })) }
-  })
+  const tree: TreeBucket[] = Object.entries(MCP_SECTIONS).map(([section, label]) => ({
+    id: section, label, collapsed: false, entries: [],
+    target: { id: `mcp.${section}`, name: label, slug: section, kind: 'mcp-section' },
+    children: mcpSectionGroups(port, section as McpSection).map((group) => ({ id: group.id, label: group.label,
+      collapsed: false, children: [], entries: group.objects.map((entry) => ({ id: entry.id, name: entry.name, slug: entry.path.slice(4), kind: entry.kind })) })),
+  }))
   const bucket = (entry: TreeBucket): ApiTreeJson['buckets'][number] => ({
     id: entry.id, label: entry.label, count: entry.entries.length + entry.children.reduce((n, child) => n + child.entries.length, 0),
     slug: entry.target?.slug ?? entry.entries[0]?.slug ?? null,
