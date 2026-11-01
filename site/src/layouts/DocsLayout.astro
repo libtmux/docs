@@ -277,6 +277,20 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
       </div>
     </aside>}
 
+    {/*
+      The contents rail is parsed before the article and drawn after it (`order-last`). Last in
+      source, it was laid out only once the parser reached the end of a page tens of thousands of
+      pixels tall, so the article was a column wider until then and every paragraph re-wrapped
+      when the rail arrived. Hidden below `xl`, it takes no room there.
+    */}
+    {
+      tocItems.length > 0 && (
+        <aside class="order-last hidden w-56 shrink-0 xl:block" data-toc-rail>
+          <TableOfContents items={tocItems} />
+        </aside>
+      )
+    }
+
     <main class="min-w-0 flex-1">
       {(!port || pagePath) && !(bare && breadcrumbs.length === 0) && <PageToolbar breadcrumbs={breadcrumbs} pagePorts={hasContext ? [] : pagePorts} port={port} editHref={editHref} editLabel={editLabel} />}
       {bare ? <slot /> : (
@@ -298,13 +312,6 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
       )}
     </main>
 
-    {
-      tocItems.length > 0 && (
-        <aside class="hidden w-56 shrink-0 xl:block">
-          <TableOfContents items={tocItems} />
-        </aside>
-      )
-    }
   </div>
   <script>
     // Mobile sidebar drawer. Same mechanism as MobileToC.astro's script
