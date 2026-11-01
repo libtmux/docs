@@ -2232,7 +2232,7 @@
     },
     "csharp": {
       "repo": "libtmux/libtmux-dotnet",
-      "revision": "472c2bcfbda6735139849324cc109ad70300001e",
+      "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
       "support": {
         "presets": {
           "2-pane-synchronized": {
@@ -2295,7 +2295,7 @@
             "cite": {
               "path": "src/LibTmux.Workspace.Cli/ExecutionCommands.cs",
               "find": "Python extension handoff is not yet supported",
-              "line": 62
+              "line": 73
             },
             "tested": "missing"
           },
@@ -2350,8 +2350,8 @@
           "source": {
             "path": "src/LibTmux.Workspace.Cli/README.md",
             "lines": [
-              44,
-              54
+              45,
+              55
             ]
           },
           "yaml": "session_name: myproject\nstart_directory: ~/code/myproject\nwindows:\n  - window_name: editor\n    layout: main-vertical\n    panes:\n      - vim\n      - git status\n  - window_name: server\n    panes:\n      - npm run dev",
@@ -2361,7 +2361,7 @@
             {
               "path": "tests/LibTmux.Workspace.Cli.Tests/ReadmeCommandTests.cs",
               "name": "The_quickstart_workspace_builds_what_the_readme_describes",
-              "line": 95,
+              "line": 94,
               "via": "cli",
               "checks": "Reads this block from the README, runs tmux-workspace load on it and checks the windows and their pane counts."
             }
@@ -2784,7 +2784,7 @@
     },
     "powershell": {
       "repo": "libtmux/libtmux-powershell",
-      "revision": "fddd118000e12dbdbe46c52276dfc08a73a7de37",
+      "revision": "06233d3c99b40a5bce966c9e1d358f346ff4de55",
       "support": {
         "presets": {
           "2-pane-synchronized": {

@@ -218,7 +218,7 @@
     },
     "csharp": {
       "repo": "libtmux/libtmux-dotnet",
-      "revision": "472c2bcfbda6735139849324cc109ad70300001e",
+      "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
       "verbs": [
         "load",
         "freeze",
@@ -432,7 +432,7 @@
     },
     "powershell": {
       "repo": "libtmux/libtmux-powershell",
-      "revision": "fddd118000e12dbdbe46c52276dfc08a73a7de37",
+      "revision": "06233d3c99b40a5bce966c9e1d358f346ff4de55",
       "verbs": [
         "load",
         "convert"
@@ -579,7 +579,7 @@
     },
     "csharp": {
       "repo": "libtmux/libtmux-dotnet",
-      "revision": "472c2bcfbda6735139849324cc109ad70300001e",
+      "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
       "sdk": {
         "name": "MCP C# SDK",
         "href": "https://github.com/modelcontextprotocol/csharp-sdk"
