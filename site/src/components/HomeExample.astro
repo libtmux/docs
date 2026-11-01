@@ -9,10 +9,12 @@ interface Props {
   example: HomeExample
   /** Show the "Start with" heading; a host that names the example itself turns it off. */
   heading?: boolean
+  /** Hold the code at one height whichever view the toggles select, scrolling inside it. */
+  fixed?: boolean
 }
-const { port, language, example, heading = true } = Astro.props
+const { port, language, example, heading = true, fixed = false } = Astro.props
 ---
-<div class="home-example" data-home-example={port}>
+<div class="home-example" data-home-example={port} data-fixed={fixed ? '' : undefined}>
   <div class="home-example-heading">
     {heading && <h2>Start with {language}</h2>}
     <fieldset class="home-example-options">
@@ -131,6 +133,7 @@ const { port, language, example, heading = true } = Astro.props
   .home-example-options label { display: inline-flex; align-items: center; gap: .375rem; white-space: nowrap; cursor: pointer; }
   .home-example-options input { accent-color: var(--color-link); }
   .home-example-view { display: none; }
+  .home-example[data-fixed] .home-example-view :global(.expressive-code pre) { height: 34rem; max-height: none; overflow: auto; tab-size: 8; scrollbar-gutter: stable; }
   .home-example:not(:has([data-example-errors]:checked)):not(:has([data-example-cleanup]:checked)) [data-home-view="concise"],
   .home-example:has([data-example-errors]:checked):not(:has([data-example-cleanup]:checked)) [data-home-view="errors"],
   .home-example:not(:has([data-example-errors]:checked)):has([data-example-cleanup]:checked) [data-home-view="cleanup"],

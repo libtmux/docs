@@ -70,7 +70,7 @@ describe('Core Library home page', () => {
     const Code = createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre data-code>${props.code}</pre>`)
     const template = await loadAstroTemplate('components/CoreHome.astro', {
       stubs: {
-        'components/HomeExample.astro': '---\n---\n<div data-example />',
+        'components/HomeExample.astro': '---\nconst { fixed } = Astro.props\n---\n<div data-example data-fixed={String(Boolean(fixed))} />',
         'components/CoreShowcase.astro': '---\n---\n<div data-showcase />',
         'components/DocCard.astro': '---\nconst { label } = Astro.props\n---\n<a data-card>{label}</a>',
       },
@@ -95,6 +95,7 @@ describe('Core Library home page', () => {
     if (slug === 'py') expect(doc.body.textContent).not.toContain('is pre-1.0')
     expect(doc.querySelector('[data-card]')).not.toBeNull()
     expect(doc.body.textContent).not.toMatch(/Documentation version/)
+    expect(doc.querySelector('[data-example]')?.getAttribute('data-fixed') ?? 'true').toBe('true')
     const order = [...doc.querySelectorAll('h2')].map((heading) => heading.id)
     expect(order.slice(0, 3)).toEqual(['install', 'at-a-glance', 'what-it-does'])
     expect(doc.querySelectorAll('[data-code]').length, 'one install block, not a card in a card').toBeGreaterThanOrEqual(1)

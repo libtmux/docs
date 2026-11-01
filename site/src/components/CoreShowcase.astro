@@ -53,7 +53,7 @@ const shown = [
   <div class="core-showcase__panels">
     {shown.map((item, index) => item.quickstart ? <section class="core-showcase__panel" data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}
       style={`--home-code-columns: ${homeCodeColumns(quickstartCode)}`}>
-      <HomeExample port={port} language={PORT_BY_SLUG[port]!.name} example={quickstart!} heading={false} />
+      <HomeExample port={port} language={PORT_BY_SLUG[port]!.name} example={quickstart!} heading={false} fixed />
     </section> : <section class="core-showcase__panel" data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}
       style={`--home-code-columns: ${homeCodeColumns(item.code)}`}>
       <Code code={item.code} lang={item.lang} title={item.file} frame="code" />

@@ -109,7 +109,8 @@ export async function pageBreadcrumbs(title: string, path: string, version: stri
     if (entry) items.push({ name: entry.data.title, url: url(route) })
     else if (route === 'reference') items.push({ name: 'API reference', url: url(route) })
   }
-  if (path && path !== 'tmux') items.push({ name: title, url: url(path) })
+  // The Core Library home keeps its navigation label; its H1 is the longer "tmux client library for <Language>".
+  if (path && path !== 'tmux') items.push({ name: port && path === 'core' ? 'Core Library' : title, url: url(path) })
   return items
 }
 

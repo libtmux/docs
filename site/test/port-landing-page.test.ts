@@ -376,3 +376,13 @@ describe('the selector script', () => {
     expect(chosen(control), 'control: no rebinding after a swap').toEqual(['core'])
   })
 })
+
+describe('the quickstart code height', () => {
+  it('is fixed wherever the quickstart is shown, so a toggle moves nothing', () => {
+    const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8')
+    expect(read('../src/components/HomeExample.astro')).toMatch(/\[data-fixed\] \.home-example-view :global\(\.expressive-code pre\) \{ height: 34rem;/)
+    for (const path of ['../src/components/CoreHome.astro', '../src/components/CoreShowcase.astro', '../src/components/PortLanding.astro']) {
+      expect(read(path), path).toMatch(/<HomeExample [^>]*\bfixed\b/)
+    }
+  })
+})

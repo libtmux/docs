@@ -80,7 +80,7 @@ const rest = (group: keyof typeof CAPABILITY_GROUPS) => home.capabilities[group]
 <h2 id="what-it-does">What it does</h2>
 {showcase.length > 0
   ? <div class="not-prose"><CoreShowcase port={port} /></div>
-  : example && <div class="not-prose"><HomeExample port={port} language={info.name} example={example} /></div>}
+  : example && <div class="not-prose"><HomeExample port={port} language={info.name} example={example} fixed /></div>}
 
 {Object.entries(CAPABILITY_GROUPS).map(([group, title]) => {
   const rows = rest(group as keyof typeof CAPABILITY_GROUPS)

@@ -84,7 +84,7 @@ const panelId = (product: string) => `landing-panel-${product}`
     return <div class="landing-panel" id={panelId(panel.product)} data-landing-panel={panel.product}>
     {panel.product === 'core' ? <>
       {hasShowcase ? <CoreShowcase port={port.slug} links={coreLinks} /> : <>
-        <HomeExample port={port.slug} language={port.name} example={complete} />
+        <HomeExample port={port.slug} language={port.name} example={complete} fixed />
         <p class="landing-more landing-more--lines">{coreLinks.map((link) => <a href={link.href}>{link.label}</a>)}</p>
       </>}
       <LandingInstall panel={panel} port={port.slug} />
