@@ -71,7 +71,7 @@ function untraced(frames: Frame[], steps: ReplayStep[]): string[] {
 }
 
 /** Calls in each port's worked example, which the frames and the replay follow. */
-const CALLS = { ts: 6, rs: 7, go: 7, py: 6, java: 7, csharp: 6, cxx: 7, swift: 7 }
+const CALLS = { ts: 6, rs: 7, go: 7, py: 6, java: 7, csharp: 6, cxx: 7, swift: 7, ruby: 2 }
 
 describe('the tmux state each recorded call leaves', () => {
   it('follows TypeScript: a session, a split, the layout it reports, then what each pane ran', async () => {
@@ -114,7 +114,7 @@ describe('the tmux state each recorded call leaves', () => {
     expect(frames[7]!.sessions).toEqual([])
   })
 
-  it.each(['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift'] as const)('draws nothing for %s that the recording does not contain', async (port) => {
+  it.each(['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift', 'ruby'] as const)('draws nothing for %s that the recording does not contain', async (port) => {
     const steps_ = await steps(port)
     expect(untraced(replayFrames(steps_), steps_)).toEqual([])
   })
@@ -161,6 +161,16 @@ describe('the tmux state each recorded call leaves', () => {
     expect(frames[5]!.sessions[0]!.windows[0]!.panes[1]!.output).toMatch(/checks finished/)
     expect(frames[6]!.sessions).toEqual([])
     expect(lastOutputLine('..\n2 passed in 0.00s\n$ ')).toBe('2 passed in 0.00s')
+  })
+
+  it('follows Ruby: the pane the snapshot lists appears with nothing said about a session', async () => {
+    const frames = replayFrames(await steps('ruby'))
+    expect(frames.map((frame) => frame.sessions.length)).toEqual([0, 0, 1])
+    expect(frames[1], 'tmux_capabilities lists no pane').toMatchObject({ sessions: [] })
+    const session = frames[2]!.sessions[0]!
+    expect(session.name, 'a pane snapshot names no session').toBeUndefined()
+    expect(session.windows[0]).toMatchObject({ id: '@0', panes: [{ id: '%0', command: 'cat', path: '/home/user/project', width: 80, height: 24 }] })
+    expect(frames[2]).toMatchObject({ reading: 'panes' })
   })
 
   it('has a control: a value the recording lacks, or states under another field, or only later, is reported', async () => {
@@ -304,7 +314,7 @@ describe('the replay component', () => {
     expect(layoutSvg.querySelectorAll('.divider').length, 'the split is drawn as one divider').toBe(1)
   })
 
-  it.each(['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift'])('draws only recorded words, besides tmux\'s own punctuation, in the %s preview', async (port) => {
+  it.each(['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift', 'ruby'])('draws only recorded words, besides tmux\'s own punctuation, in the %s preview', async (port) => {
     const { document } = await mount(port)
     const recordedWords = new Set((await steps(port)).flatMap((step) => JSON.stringify([step.arguments, step.structuredContent, step.content]).replace(/\\n/g, ' ').split(/[\s"{}\[\],:]+/)))
     for (const frame of document.querySelectorAll('[data-frame]')) {

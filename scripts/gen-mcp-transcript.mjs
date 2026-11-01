@@ -45,11 +45,21 @@ const SERVERS = {
   },
   // On a host without libxml2.so.2 (Debian's current libxml2 is .16), swift-build does not start; a directory holding a libxml2.so.2 link to it, on LD_LIBRARY_PATH, lets the toolchain run. The server it builds does not use it.
   swift: { prepare: [['swift', 'build', '--force-resolved-versions', '--product', 'libtmux-mcp', '--jobs', '2']], command: () => ['.build/debug/libtmux-mcp'] },
+  // These two servers borrow a tmux that is already running, so the recorder starts one on the sandbox's own tmpdir first.
+  ruby: {
+    borrowed: 'transcript',
+    // `bundle exec` needs the Gemfile; the session it borrows was started in the project directory.
+    inCheckout: true,
+    prepare: [['bundle', 'install']],
+    command: () => ['bundle', 'exec', 'libtmux-mcp', '--socket-name', 'transcript', '--endpoint', 'docs', ...['tmux_capture', 'tmux_wait', 'tmux_create', 'tmux_send', 'tmux_close', 'tmux_run'].flatMap((tool) => ['--enable-tool', tool])],
+  },
   go: { cwd: 'mcp', prepare: [], build: (sandbox) => [['go', 'build', '-mod=readonly', '-o', join(sandbox, 'libtmux-mcp'), './cmd/libtmux-mcp']], command: (_checkout, sandbox) => [join(sandbox, 'libtmux-mcp')] },
 }
 const TOOLSETS = { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' }
 // What each run step must have printed, in order: the project below has two passing tests and a log of two lines.
 const EXPECTED_OUTPUT = ['2 passed', 'checks finished']
+// Without a command to run, the last answer must still state this (a value the example's prompt asks about).
+const PRESENT = { ruby: ['%0'] }
 const LOG_FILE = '2026-01-01 checks started\n2026-01-01 checks finished\n'
 const TEST_FILE = 'def test_adds():\n    assert 1 + 1 == 2\n\n\ndef test_upper():\n    assert "tmux".upper() == "TMUX"\n'
 
@@ -80,6 +90,9 @@ try {
   const workdir = server.cwd ? join(checkout, server.cwd) : checkout
   for (const [command, ...args] of [...server.prepare, ...(server.build?.(sandbox) ?? [])]) execFileSync(command, args, { cwd: workdir, stdio: 'inherit' })
   const [command, ...args] = server.command(checkout, sandbox)
+  if (server.borrowed) {
+    execFileSync('tmux', ['-L', server.borrowed, '-f', '/dev/null', 'new-session', '-d', '-s', 'docs', '/bin/cat'], { cwd: project, env: { ...process.env, TMUX: '', TMUX_TMPDIR: sandbox }, stdio: 'inherit' })
+  }
     const environment = {
     TMUX: undefined, TMUX_PANE: undefined, TMUX_TMPDIR: sandbox, HOME: join(sandbox, 'home'), SHELL: '/bin/sh',
     // No user tmux configuration, whichever way tmux looks for it.
@@ -90,13 +103,13 @@ try {
   mkdirSync(environment.HOME)
   const run = await recordCalls({
     command: command.startsWith('/') || !command.includes('/') ? command : join(checkout, command), args: args.map((arg) => (arg.includes('/') && !arg.startsWith('-') ? join(checkout, arg) : arg)),
-    cwd: project, env: environment, calls: example.steps.map(({ tool, arguments: callArguments }) => ({ tool, arguments: callArguments })),
+    cwd: server.inCheckout ? workdir : project, env: environment, calls: example.steps.map(({ tool, arguments: callArguments }) => ({ tool, arguments: callArguments })),
   })
 
   const runTool = [...new Set(example.steps.map((step) => step.tool).filter((tool) => tool.startsWith('run_')))]
-  if (runTool.length !== 1) throw new Error(`${only}: the example must run commands through one run_ tool, found ${runTool.join(', ') || 'none'}`)
+  if (runTool.length > 1) throw new Error(`${only}: the example must run commands through one run_ tool, found ${runTool.join(', ')}`)
   try {
-    verifyRecording(run.steps, { port: only, runTool: runTool[0], expected: EXPECTED_OUTPUT })
+    verifyRecording(run.steps, { port: only, runTool: runTool[0] ?? '', expected: runTool.length ? EXPECTED_OUTPUT : [], present: PRESENT[only] ?? [] })
   } catch (error) {
     // The raw answers, for whoever is adding a port: nothing is written.
     if (process.argv.includes('--debug')) console.error(JSON.stringify(run.steps, null, 1))

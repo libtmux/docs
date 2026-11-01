@@ -149,7 +149,7 @@ export interface WorkedExample {
   recording?: Recording
 }
 
-/** `data/mcp-transcripts/<port>.json`, written by `scripts/gen-mcp-transcript.mjs` for each port it has recorded; the glob below picks up a new one (vitest caches this transform by its text, so a new recording needs an edit to this line to be seen). */
+/** `data/mcp-transcripts/<port>.json`, written by `scripts/gen-mcp-transcript.mjs` for each port it has recorded; the glob below picks up a new one (vitest caches the transform by its text, so a new recording needs an edit to this line to be seen). */
 export interface Transcript {
   repo: string
   revision: string
@@ -166,19 +166,29 @@ export async function transcriptFor(port: string): Promise<Transcript | undefine
 
 const LONG_TEXT = 240
 const LONG_LIST = 4
+const LONG_OBJECT = 12
+const DEEP = 5
 
 /**
  * A recorded value shortened for the page: a string past 240 characters is cut
- * with an ellipsis and a list past four entries keeps its first four and says
- * how many it left out. The recording keeps everything.
+ * with an ellipsis, a list past four entries keeps its first four and says how
+ * many it left out, an object past twelve keys keeps its first twelve, and
+ * anything nested more than five levels deep is replaced by an ellipsis. The
+ * recording keeps everything.
  */
-export function abbreviate(value: unknown): unknown {
+export function abbreviate(value: unknown, depth = 0): unknown {
   if (typeof value === 'string') return value.length > LONG_TEXT ? `${value.slice(0, LONG_TEXT)}…` : value
+  const nested = value !== null && typeof value === 'object' && Object.keys(value as object).length > 0
+  if (nested && depth >= DEEP) return '…'
   if (Array.isArray(value)) {
-    const shown = value.slice(0, LONG_LIST).map(abbreviate)
+    const shown = value.slice(0, LONG_LIST).map((item) => abbreviate(item, depth + 1))
     return value.length > LONG_LIST ? [...shown, `… ${value.length - LONG_LIST} more`] : shown
   }
-  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, abbreviate(item)]))
+  if (value && typeof value === 'object') {
+    const keys = Object.entries(value)
+    const shown = Object.fromEntries(keys.slice(0, LONG_OBJECT).map(([key, item]) => [key, abbreviate(item, depth + 1)]))
+    return keys.length > LONG_OBJECT ? { ...shown, '…': `${keys.length - LONG_OBJECT} more` } : shown
+  }
   return value
 }
 
@@ -234,7 +244,7 @@ export function buildShowcase(port: string, version: string, snapshot: ProtocolS
       && JSON.stringify(step.arguments) === JSON.stringify(definition.steps[index]!.arguments))
     ? transcript : undefined
   const full = recorded?.steps.map(stepResult) ?? []
-  const shown = full.map(abbreviate)
+  const shown = full.map((value) => abbreviate(value))
   const example: WorkedExample | undefined = definition && definition.steps.every((step) => tools.has(step.tool))
     ? {
       prompt: definition.prompt,

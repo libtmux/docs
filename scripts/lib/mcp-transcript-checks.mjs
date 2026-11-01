@@ -14,9 +14,9 @@ const answer = (step) => [step.content, step.structuredContent ?? null]
  * the expected text on its own word boundary and exited 0.
  *
  * @param {{ tool: string, arguments: unknown, isError: boolean, content: unknown[], structuredContent?: unknown }[]} steps
- * @param {{ port: string, runTool: string, expected: string[] }} options
+ * @param {{ port: string, runTool: string, expected: string[], present?: string[] }} options
  */
-export function verifyRecording(steps, { port, runTool, expected }) {
+export function verifyRecording(steps, { port, runTool, expected, present = [] }) {
   const returned = new Set()
   for (const step of steps) {
     if (step.isError) throw new Error(`${port}: ${step.tool} returned an error: ${JSON.stringify(answer(step)).slice(0, 400)}`)
@@ -25,6 +25,8 @@ export function verifyRecording(steps, { port, runTool, expected }) {
     }
     for (const id of idsIn(answer(step))) returned.add(id)
   }
+  const lastAnswer = JSON.stringify(answer(steps.at(-1) ?? { content: [] }))
+  for (const text of present) if (!lastAnswer.includes(text)) throw new Error(`${port}: the last answer lacks "${text}"`)
   const runs = steps.filter((step) => step.tool === runTool)
   if (runs.length !== expected.length) throw new Error(`${port}: expected ${expected.length} ${runTool} steps, found ${runs.length}`)
   runs.forEach((run, index) => {

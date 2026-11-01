@@ -71,6 +71,8 @@ const numeric = (value: unknown) => (typeof value === 'string' && /^\d+$/.test(v
 
 /** A server's structured answer, else its text parsed as JSON, else nothing. */
 function answerOf(step: ReplayStep): Record_ {
+  // Some servers wrap what a tool returns as { ok, data }.
+  if (isRecord(step.structuredContent) && 'ok' in step.structuredContent && isRecord(step.structuredContent.data)) return step.structuredContent.data
   if (isRecord(step.structuredContent)) return step.structuredContent
   const text = step.content.map((part) => part.text ?? '').join('')
   try {
@@ -200,6 +202,28 @@ function applyLayoutRead(sessions: SessionState[], step: ReplayStep, answer: Rec
   if (window) window.layout = layout
 }
 
+/** A snapshot of panes, each a `fields` record: the session and window may be unnamed, and the preview draws only what is named. */
+function applySnapshot(sessions: SessionState[], answer: Record_) {
+  for (const item of entries(answer.items)) {
+    if (item.kind !== 'pane' || !isRecord(item.fields)) continue
+    const fields = item.fields
+    if (sessions.length === 0) sessions.push({ windows: [] })
+    const session = sessions[0]!
+    const windowId = str(fields.windowId)
+    let window = session.windows.find((candidate) => windowId !== undefined && candidate.id === windowId)
+    if (!window) {
+      window = { ...(windowId ? { id: windowId } : {}), panes: [] }
+      session.windows.push(window)
+    }
+    const paneId = str(fields.id)
+    const pane = window.panes.find((candidate) => candidate.id === paneId) ?? (window.panes.push({}), window.panes.at(-1)!)
+    if (paneId) pane.id = paneId
+    if (str(fields.currentCommand)) pane.command = str(fields.currentCommand)!
+    if (str(fields.currentPath)) pane.path = str(fields.currentPath)!
+    for (const key of ['width', 'height'] as const) if (num(fields[key]) !== undefined) pane[key] = num(fields[key])!
+  }
+}
+
 function applyRun(sessions: SessionState[], step: ReplayStep, answer: Record_) {
   const id = paneOf(step.arguments) ?? str(answer.paneId) ?? str(answer.pane)
   const pane = findPane(sessions, id) ?? sessions[0]?.windows[0]?.panes[0]
@@ -218,7 +242,7 @@ function applyKill(sessions: SessionState[], answer: Record_, args: Record_): Se
   return sessions.filter((session) => session.id !== first && session.name !== first)
 }
 
-const READS: Record<string, Reading> = { list_sessions: 'sessions', list_windows: 'windows', list_panes: 'panes' }
+const READS: Record<string, Reading> = { list_sessions: 'sessions', list_windows: 'windows', list_panes: 'panes', tmux_snapshot: 'panes' }
 
 /** The frames of a recording: the state before the first call, then the state after each. */
 export function replayFrames(steps: readonly ReplayStep[]): Frame[] {
@@ -230,6 +254,7 @@ export function replayFrames(steps: readonly ReplayStep[]): Frame[] {
     if (step.tool === 'create_session' || step.tool === 'new_session') applyCreate(sessions, answer, step.arguments)
     else if (step.tool === 'list_windows') applyWindows(sessions, answer)
     else if (step.tool === 'list_panes') applyPanes(sessions, answer)
+    else if (step.tool === 'tmux_snapshot') applySnapshot(sessions, answer)
     else if (step.tool === 'split_window') applySplit(sessions, step, answer)
     else if (step.tool === 'get_tmux_variables' || step.tool === 'select_layout') applyLayoutRead(sessions, step, answer)
     else if (step.tool === 'run_shell_command' || step.tool === 'run_command') applyRun(sessions, step, answer)

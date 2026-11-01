@@ -116,10 +116,10 @@ const draw = (frame: Frame) => {
                     <ul>{drawn.panes.map((pane) => <li class="mcp-pane__id">{pane.id ?? ''}{pane.command ? ` ${pane.command}` : ''}</li>)}</ul>
                   </div>
                 ) : (
-                  <div class="mcp-tmux__screen mcp-tmux__screen--empty">{frame.done > 0 && <span>No sessions</span>}</div>
+                  <div class="mcp-tmux__screen mcp-tmux__screen--empty">{recording.frames.some((earlier) => earlier.done < frame.done && earlier.sessions.length > 0) && <span>No sessions</span>}</div>
                 )}
                 <div class={`mcp-tmux__status${frame.reading === 'sessions' ? ' is-reading' : ''}`}>
-                  {session && <span class="mcp-tmux__session">[{session.name ?? session.id}]</span>}
+                  {session && (session.name ?? session.id) && <span class="mcp-tmux__session">[{session.name ?? session.id}]</span>}
                   {session && (
                     <span class={`mcp-tmux__windows${frame.reading === 'windows' ? ' is-reading' : ''}`}>
                       {session.windows.map((window) => windowLabel(window) && (

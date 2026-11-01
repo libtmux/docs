@@ -412,20 +412,23 @@ describe('the showcase section', () => {
 })
 
 describe('recorded results', () => {
+  /** Ports whose example runs commands in panes. */
   const RECORDED = ['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift']
+  /** Every port with a recording; Ruby and Julia's examples only read. */
+  const ALL = [...RECORDED, 'ruby']
 
   it('has a recording for the ports whose servers the recorder has run', async () => {
-    for (const port of RECORDED) expect((await showcase(port)).example?.recording, port).toBeDefined()
+    for (const port of ALL) expect((await showcase(port)).example?.recording, port).toBeDefined()
   })
 
-  it.each(RECORDED)('records %s at the revision of its snapshot, with the calls the page shows and no error', async (port) => {
+  it.each(ALL)('records %s at the revision of its snapshot, with the calls the page shows and no error', async (port) => {
     const transcript = (await transcriptFor(port))!
     expect(transcript.revision).toBe(onDisk(port).revision)
     expect(transcript.steps.map((step) => [step.tool, step.arguments])).toEqual(EXAMPLES[port]!.steps.map((step) => [step.tool, step.arguments]))
     expect(transcript.steps.filter((step) => step.isError)).toEqual([])
   })
 
-  it.each(RECORDED)('records %s so that every id a request names was returned by an earlier result', async (port) => {
+  it.each(ALL)('records %s so that every id a request names was returned by an earlier result', async (port) => {
     const transcript = (await transcriptFor(port))!
     transcript.steps.forEach((step, index) => {
       for (const id of idsIn(step.arguments)) {
@@ -460,5 +463,9 @@ describe('recorded results', () => {
     expect(abbreviate([1, 2, 3, 4])).toEqual([1, 2, 3, 4])
     expect(abbreviate([1, 2, 3, 4, 5, 6])).toEqual([1, 2, 3, 4, '… 2 more'])
     expect(abbreviate({ a: ['y'.repeat(241)], b: 1 })).toEqual({ a: [`${'y'.repeat(240)}…`], b: 1 })
+    const wide = Object.fromEntries(Array.from({ length: 14 }, (_, index) => [`k${index}`, index]))
+    expect(Object.keys(abbreviate(wide) as object)).toEqual([...Object.keys(wide).slice(0, 12), '…'])
+    expect(abbreviate({ a: { b: { c: { d: { e: { f: 1 } } } } } })).toEqual({ a: { b: { c: { d: { e: '…' } } } } })
+    expect(abbreviate({ a: { b: { c: { d: { e: [] } } } } }), 'an empty value is not elided').toEqual({ a: { b: { c: { d: { e: [] } } } } })
   })
 })
