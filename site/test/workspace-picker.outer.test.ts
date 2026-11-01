@@ -1,4 +1,6 @@
 import { readFileSync } from 'node:fs'
+import { createServer } from 'node:http'
+import type { AddressInfo } from 'node:net'
 import { createComponent, renderTemplate } from 'astro/runtime/server/index.js'
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright'
 import ts from 'typescript'
@@ -88,6 +90,32 @@ async function open(context: BrowserContext, path = '', body = page): Promise<Pa
   const tab = await context.newPage()
   await tab.goto(`${ADDRESS}${path}`)
   return tab
+}
+
+/**
+ * The page as a slow connection delivers it: up to the second preset, then the rest once the browser
+ * has painted that much. A page served whole is parsed before it is first painted, so a test that
+ * relied on the speed of a load would pass or fail with the speed of the machine.
+ */
+async function serveInPieces(body: string): Promise<{ url: string; close: () => Promise<void> }> {
+  const panel = '<section class="ws-picker__panel"'
+  const second = body.indexOf(panel, body.indexOf(panel) + 1)
+  expect(second).toBeGreaterThan(0)
+  let painted = () => {}
+  const waiting = new Promise<void>((done) => { painted = done })
+  const server = createServer(async (request, response) => {
+    if (request.url === '/painted') {
+      painted()
+      response.writeHead(204).end()
+      return
+    }
+    response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' })
+    response.write(`${body.slice(0, second)}<script>requestAnimationFrame(() => requestAnimationFrame(() => fetch('/painted')))</script>`)
+    await waiting
+    response.end(body.slice(second))
+  })
+  await new Promise<void>((done) => server.listen(0, '127.0.0.1', done))
+  return { url: `http://127.0.0.1:${(server.address() as AddressInfo).port}/`, close: () => new Promise<void>((done) => { server.close(() => done()); server.closeAllConnections() }) }
 }
 
 const layoutShift = () => {
@@ -224,6 +252,36 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
       await context.close()
     })
   }
+
+  describe('while the page is still being parsed', () => {
+    // At 390 px the drawing stands under the configuration, so a stack that grows as each preset
+    // arrives pushes it down.
+    const loaded = async (body: string) => {
+      const context = await browser.newContext({ viewport: { width: 390, height: 900 } })
+      await context.addInitScript(layoutShift)
+      const served = await serveInPieces(body)
+      const tab = await context.newPage()
+      await tab.goto(served.url)
+      await settle(tab)
+      await tab.evaluate(() => new Promise<void>((done) => setTimeout(done, 300)))
+      const total = await shifts(tab)
+      expect((await measure(tab)).visible).toEqual([IDS[0]])
+      await context.close()
+      await served.close()
+      return total
+    }
+
+    it('shifts nothing, because the picker shows once every preset is parsed', async () => {
+      expect(page).toContain('ws-picker__end')
+      expect(await loaded(page)).toBe(0)
+    })
+
+    it('does shift when the picker shows as it is parsed, so the check can fail', async () => {
+      const shown = page.replace(/\.ws-picker:not\(:has\(\.ws-picker__end\)\)/g, '.ws-never')
+      expect(shown).not.toBe(page)
+      expect(await loaded(shown)).toBeGreaterThan(0)
+    })
+  })
 
   for (const width of [1440, 1024, 768]) {
     it(`puts the configuration and the drawing side by side at equal height at ${width} px`, async () => {

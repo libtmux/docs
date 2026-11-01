@@ -22,6 +22,18 @@ libtmux-workspace-picker {
   container-type: inline-size;
 }
 
+/*
+ * A browser may paint before the whole picker is parsed. The stage is as tall
+ * as its tallest preset only once every preset is in it, so an early paint
+ * would move the drawing under the configuration as each preset arrives, and
+ * the menu's parts as theirs do. Nothing of the picker is visible until its
+ * last element is parsed; the examples further down do not wait for it.
+ */
+.ws-picker:not(:has(.ws-picker__end)),
+.ws-picker:not(:has(.ws-picker__end)) * {
+  visibility: hidden !important;
+}
+
 .ws-picker__bar {
   display: none;
 }

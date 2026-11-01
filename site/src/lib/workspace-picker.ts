@@ -4,6 +4,7 @@
  * The page renders every preset into one stack. Which one shows is a single
  * attribute on the picker, `data-selected`, so the stack is as tall as the
  * tallest preset from the first paint and choosing never moves what is below.
+ * Nothing shows until the whole stack is parsed (`workspace-picker.css`).
  * A tiny script inside the picker sets the attribute while the page is still
  * being parsed, from `?preset=` or the last choice, and stylesheet rules keyed
  * on it (`selectionRules`) show the right preset and the right menu label
