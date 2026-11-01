@@ -4,6 +4,8 @@ import HomeExample from './HomeExample.astro'
 import { CAPABILITIES, portCapabilities, type CapabilityTable } from '../lib/core-capabilities'
 import { QUICKSTARTS, homeProgram } from '../lib/quickstarts'
 import { PORT_BY_SLUG } from '../lib/ports'
+import { apisUsed, CORE_APIS } from '../lib/core-apis'
+import { buildTarget } from '../lib/versions'
 import TABLE from '../data/core-capabilities.json'
 import SOURCES from '../data/example-sources.json'
 import type { CachedSource } from '../lib/port-landing'
@@ -35,6 +37,8 @@ const shown = [
   ...(quickstart ? [{ id: 'typed-graph', label: CAPABILITIES[0].label, quickstart: true as const, tmux: undefined as string | undefined }] : []),
   ...programs.map((item) => ({ ...item, quickstart: false as const })),
 ]
+const version = buildTarget(process.env).version
+const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port]?.[item.id] ?? [], item.quickstart ? quickstartCode : item.code, version, `${port}/${item.id}`)]))
 ---
 {programs.length > 0 && <div class="core-showcase" data-core-showcase={port}>
   <details class="core-showcase__picker" open>
@@ -63,6 +67,18 @@ const shown = [
       </p>
     </section>)}
   </div>
+  <div class="core-showcase__apis" data-core-apis>
+    <p class="core-showcase__apis-title">APIs used</p>
+    <div class="core-showcase__apis-lists">
+      {shown.map((item, index) => {
+        const used = apis.get(item.id)!
+        return <ul class="core-showcase__apilist" data-apis-for={item.id} data-default={index === 0 ? '' : undefined} aria-label={`APIs used: ${item.label}`}>
+          {used.shown.map((api) => <li><a href={api.href}><code>{api.label}</code></a></li>)}
+          {used.more > 0 && <li><a href={used.moreHref}>+{used.more} more</a></li>}
+        </ul>
+      })}
+    </div>
+  </div>
   {links.length > 0 && <p class="core-showcase__links">{links.map((link) => <a href={link.href}>{link.label}</a>)}</p>}
 </div>}
 
@@ -88,7 +104,7 @@ const shown = [
     const select = (id: string) => {
       for (const option of options) option.setAttribute('href', hrefFor(option.dataset.capabilityOption!))
       root.dataset.selected = id
-      for (const panel of root.querySelectorAll<HTMLElement>('[data-capability-panel]')) panel.classList.toggle('is-selected', panel.dataset.capabilityPanel === id)
+      for (const panel of root.querySelectorAll<HTMLElement>('[data-capability-panel], [data-apis-for]')) panel.classList.toggle('is-selected', (panel.dataset.capabilityPanel ?? panel.dataset.apisFor) === id)
       for (const option of options) {
         const on = option.dataset.capabilityOption === id
         if (on) option.setAttribute('aria-current', 'true'); else option.removeAttribute('aria-current')
@@ -136,8 +152,14 @@ const shown = [
   .core-showcase__option[aria-current='true'] { font-weight: 600; background: var(--color-surface-hover); }
   /* The panels share one grid cell, so the column is as tall as the tallest and switching moves nothing below. */
   .core-showcase__panels { display: grid; container-type: inline-size; }
-  .core-showcase__panel { grid-area: 1 / 1; visibility: hidden; }
-  .core-showcase:not([data-selected]) .core-showcase__panel[data-default], .core-showcase :global(.core-showcase__panel.is-selected) { visibility: visible; }
+  .core-showcase__panel, .core-showcase__apilist { grid-area: 1 / 1; visibility: hidden; }
+  .core-showcase:not([data-selected]) :is(.core-showcase__panel, .core-showcase__apilist)[data-default], .core-showcase :global(:is(.core-showcase__panel, .core-showcase__apilist).is-selected) { visibility: visible; }
+  .core-showcase__apis { min-width: 0; min-height: 0; overflow: auto; }
+  .core-showcase__apis-title { margin: 0 0 .35rem; font-size: .75rem; font-weight: 600; text-transform: none; color: var(--color-muted); }
+  .core-showcase__apis-lists { display: grid; }
+  .core-showcase__apilist { margin: 0; padding: 0; list-style: none; font-size: .8125rem; line-height: 1.5; }
+  .core-showcase__apilist a { color: var(--color-link); }
+  .core-showcase__apilist code { font-size: inherit; overflow-wrap: anywhere; }
   /* The treatment of the front page examples: column-fit type size, a fixed height, scrolling inside the block. */
   .core-showcase__panel :global(.expressive-code) {
     --ec-codeFontSize: clamp(.8125rem, calc((100cqi - 2rem) / (var(--home-code-columns, 80) * .625)), .9375rem);
@@ -152,10 +174,11 @@ const shown = [
   .core-showcase__source code { white-space: normal; overflow-wrap: anywhere; }
   .core-showcase :global(.expressive-code pre) { overflow: auto; tab-size: 8; }
   @media (min-width: 56rem) {
-    .core-showcase { grid-template-columns: 14rem minmax(0, 1fr); grid-template-rows: auto 1fr; align-items: start; column-gap: 1rem; }
+    .core-showcase { grid-template-columns: 14rem minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; align-items: start; column-gap: 1rem; }
     .core-showcase__picker { grid-column: 1; grid-row: 1; }
-    .core-showcase__panels { grid-column: 2; grid-row: 1 / span 2; }
-    .core-showcase__links { grid-column: 1; grid-row: 2; align-self: end; }
+    .core-showcase__panels { grid-column: 2; grid-row: 1 / span 3; }
+    .core-showcase__apis { grid-column: 1; grid-row: 2; align-self: stretch; }
+    .core-showcase__links { grid-column: 1; grid-row: 3; align-self: end; }
     .core-showcase__picker > summary { display: none !important; }
 
   }

@@ -174,6 +174,17 @@ describe('the showcase component', () => {
     expect(doc.querySelector('[data-capability-option]')!.getAttribute('href')).toBe('?capability=typed-graph')
     expect(doc.querySelector('input, label, [data-capability-search]'), 'no search box for a list this short').toBeNull()
     expect(doc.querySelectorAll('[data-capability-option]').length).toBeLessThanOrEqual(8)
+    // One APIs-used list per capability, each linking the reference and capped with a "+N more" link.
+    const lists = [...doc.querySelectorAll('[data-apis-for]')]
+    expect(lists.map((list) => list.getAttribute('data-apis-for'))).toEqual(options)
+    for (const list of lists) {
+      const hrefs = [...list.querySelectorAll('a')].map((a) => a.getAttribute('href'))
+      expect(hrefs.length).toBeGreaterThan(1)
+      expect(hrefs.every((href) => href!.startsWith('/rs/latest/reference/')), list.getAttribute('data-apis-for')!).toBe(true)
+    }
+    expect(lists[0]!.textContent).toContain('Server::new_session')
+    expect(lists[0]!.textContent).toMatch(/\+2 more/)
+    expect(doc.querySelector('.core-showcase__apis-title')!.textContent).toBe('APIs used')
     expect(doc.body.textContent).toContain('just check')
     expect(doc.body.textContent).toContain('The whole program')
     expect([...doc.querySelectorAll('.core-showcase__links a')].map((a) => a.textContent)).toEqual(['Core Library documentation →', 'More examples →'])
