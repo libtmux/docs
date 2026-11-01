@@ -99,11 +99,14 @@ function findPane(sessions: SessionState[], id: string | undefined): PaneState |
 }
 
 /** A command's output as text: a server may send one string or its lines. */
-const textOf = (value: unknown): string | undefined => (Array.isArray(value) && value.every((line) => typeof line === 'string') ? value.join('\n') : str(value))
+const textOf = (value: unknown): string | undefined => {
+  if (isRecord(value)) return textOf(value.lines)
+  return Array.isArray(value) && value.every((line) => typeof line === 'string') ? value.join('\n') : str(value)
+}
 
 const entries = (value: unknown): Record_[] => (Array.isArray(value) ? value.filter(isRecord) : [])
 
-function applyCreate(sessions: SessionState[], answer: Record_) {
+function applyCreate(sessions: SessionState[], answer: Record_, args: Record_) {
   const session = isRecord(answer.session) ? answer.session : answer
   const windowCount = num(session.windows) ?? numeric(session.window_count) ?? 1
   const windows: WindowState[] = Array.from({ length: Math.max(windowCount, 1) }, () => ({ panes: blank(1) }))
@@ -113,15 +116,16 @@ function applyCreate(sessions: SessionState[], answer: Record_) {
   const paneId = str(answer.paneId) ?? str(answer.active_pane_id)
   if (paneId) windows[0]!.panes[0]!.id = paneId
   const sessionId = str(session.id) ?? str(session.sessionId) ?? str(session.session_id)
-  const sessionName = str(session.name) ?? str(session.sessionName) ?? str(session.session_name)
+  // An answer that names no session was asked to create one by name.
+  const sessionName = str(session.name) ?? str(session.sessionName) ?? str(session.session_name) ?? str(args.name) ?? str(args.session_name)
   sessions.push({ ...(sessionId ? { id: sessionId } : {}), ...(sessionName ? { name: sessionName } : {}), windows })
 }
 
 function applyWindows(sessions: SessionState[], answer: Record_) {
   for (const item of [...entries(answer.windows), ...entries(answer.result)]) {
-    const owner = sessions.find((session) => session.id === str(item.session_id)) ?? sessions[0]
+    const owner = sessions.find((session) => session.id === (str(item.session_id) ?? str(item.sessionId))) ?? sessions[0]
     if (!owner) continue
-    const itemId = str(item.id) ?? str(item.window_id)
+    const itemId = str(item.id) ?? str(item.window_id) ?? str(item.windowId)
     const known = owner.windows.find((window) => window.id === itemId)
       ?? owner.windows.find((window) => window.id === undefined && window.index === undefined)
     const target: WindowState = known ?? { panes: [] }
@@ -134,7 +138,7 @@ function applyWindows(sessions: SessionState[], answer: Record_) {
     if (typeof item.active === 'boolean') target.active = item.active
     const layout = str(item.layout) ?? str(item.window_layout)
     if (layout) target.layout = layout
-    if (target.panes.length === 0) target.panes = blank(num(item.panes) ?? numeric(item.pane_count) ?? 1)
+    if (target.panes.length === 0) target.panes = blank(num(item.panes) ?? numeric(item.pane_count) ?? numeric(item.paneCount) ?? 1)
   }
 }
 
@@ -207,7 +211,7 @@ function applyRun(sessions: SessionState[], step: ReplayStep, answer: Record_) {
 
 function applyKill(sessions: SessionState[], answer: Record_, args: Record_): SessionState[] {
   // What was killed may be said as an id or as a name, by the answer or by the request.
-  const said = [str(answer.killed), str(answer.id), str(args.session_id), str(args.session), str(args.session_name), str(args.name)].filter((item): item is string => item !== undefined)
+  const said = [str(answer.killed), str(answer.id), str(answer.sessionId), str(args.session_id), str(args.session), str(args.session_name), str(args.name)].filter((item): item is string => item !== undefined)
   const first = said[0]
   if (first === undefined) return sessions
   return sessions.filter((session) => session.id !== first && session.name !== first)
@@ -222,7 +226,7 @@ export function replayFrames(steps: readonly ReplayStep[]): Frame[] {
   steps.forEach((step, index) => {
     const answer = answerOf(step)
     const reading = READS[step.tool]
-    if (step.tool === 'create_session' || step.tool === 'new_session') applyCreate(sessions, answer)
+    if (step.tool === 'create_session' || step.tool === 'new_session') applyCreate(sessions, answer, step.arguments)
     else if (step.tool === 'list_windows') applyWindows(sessions, answer)
     else if (step.tool === 'list_panes') applyPanes(sessions, answer)
     else if (step.tool === 'split_window') applySplit(sessions, step, answer)
