@@ -78,3 +78,15 @@ describe('Core Library home page', () => {
     expect(doc.querySelectorAll('[data-install]')).toHaveLength(1)
   })
 })
+
+describe('capability evidence', () => {
+  it('rejects a real symbol that does not back the capability', () => {
+    const rs = CORE_HOME.rs!
+    const wrong = (key: string, id: string) => resolveCoreHome('rs', 'latest', { ...rs, capabilities: { ...rs.capabilities, [key]: id } as never })
+    expect(() => wrong('ids', 'server.Server.panes')).toThrow(/not an ID type or accessor/)
+    expect(() => wrong('version-gate', 'server.Server.panes')).toThrow(/not a version or unsupported-feature error/)
+    expect(() => wrong('current-pane', 'server.Server.panes')).toThrow(/not an environment constructor/)
+    expect(() => wrong('async', 'target.PaneId')).toThrow(/not an async, suspend, Promise or Task signature/)
+    expect(() => wrong('errors', 'pane.Pane')).toThrow(/not an error, exception or failure type/)
+  })
+})

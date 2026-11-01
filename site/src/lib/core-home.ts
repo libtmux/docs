@@ -9,7 +9,7 @@
  * `test/core-home.test.ts`) instead of rendering a dead link or a claim
  * nothing backs. A capability a port lacks has no entry and is not listed.
  */
-import { qualifiedNameOf } from '@libtmux/api-model'
+import { qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model'
 import DATA from '../data/core-home.json'
 import { API_MODELS, referenceHref } from './api-models.ts'
 import { PORT_BY_SLUG } from './ports.ts'
@@ -19,7 +19,7 @@ export type CoreRole = (typeof CORE_ROLES)[number]
 
 /** The tmux object a port's type wraps, in hierarchy order. */
 export const TMUX_OBJECTS: Readonly<Record<CoreRole, { wraps: string; id: string }>> = {
-  server: { wraps: 'A tmux server, reached through one socket', id: '' },
+  server: { wraps: 'A tmux server', id: '' },
   session: { wraps: 'A session', id: '$' },
   window: { wraps: 'A window in a session', id: '@' },
   pane: { wraps: 'A pane in a window', id: '%' },
@@ -27,15 +27,15 @@ export const TMUX_OBJECTS: Readonly<Record<CoreRole, { wraps: string; id: string
 
 export const CAPABILITIES = {
   objects: { group: 'typed', label: 'Typed objects instead of parsed format strings' },
-  ids: { group: 'typed', label: 'Stable tmux IDs that survive renames' },
+  ids: { group: 'typed', label: 'Addressing by tmux ID' },
   queries: { group: 'typed', label: 'Filtering and queries over tmux objects' },
   errors: { group: 'typed', label: 'Typed errors instead of exit codes and stderr' },
   traversal: { group: 'cli', label: 'Traversal from a server down to its panes' },
   argv: { group: 'cli', label: 'Arguments passed as a list, with no shell quoting' },
-  'version-gate': { group: 'cli', label: 'Refuses a feature the running tmux lacks, before running it' },
+  'version-gate': { group: 'cli', label: 'A typed error when the running tmux lacks a feature' },
   'current-pane': { group: 'cli', label: 'Finds the current pane from TMUX and TMUX_PANE' },
   'test-fixtures': { group: 'cli', label: 'Isolated tmux servers for tests' },
-  async: { group: 'cli', label: 'Asynchronous API' },
+  async: { group: 'cli', label: 'Async operations' },
 } as const
 export type CapabilityKey = keyof typeof CAPABILITIES
 
@@ -43,6 +43,25 @@ export const CAPABILITY_GROUPS = {
   typed: 'Typed API',
   cli: 'What you get over the tmux CLI',
 } as const
+
+/**
+ * What a symbol must show to back a capability. Each test reads the model's
+ * own name, qualified name or signature, so mapping a capability to an
+ * unrelated symbol fails `resolveCoreHome` rather than rendering a claim the
+ * symbol does not support.
+ */
+const CAPABILITY_EVIDENCE: Record<CapabilityKey, { needs: string; test: (symbol: ApiSymbol) => boolean }> = {
+  objects: { needs: 'a type, function or property', test: (symbol) => symbol.kind !== 'constant' },
+  ids: { needs: 'an ID type or accessor', test: (symbol) => /\b(id|ID)\b|Id\b|ID\b|Ref\b/.test(symbol.name) },
+  queries: { needs: 'a filter, query or selection', test: (symbol) => /filter|query|select|where|expr/i.test(symbol.name) },
+  errors: { needs: 'an error, exception or failure type', test: (symbol) => /error|exception|failure/i.test(symbol.name) },
+  traversal: { needs: 'a panes, windows, sessions or snapshot accessor', test: (symbol) => /panes|windows|sessions|snapshot/i.test(symbol.name) },
+  argv: { needs: 'a command or run symbol', test: (symbol) => /cmd|command|run|exec|invoke/i.test(symbol.name) },
+  'version-gate': { needs: 'a version or unsupported-feature error', test: (symbol) => /version|unsupported|capabilit/i.test(symbol.name) },
+  'current-pane': { needs: 'an environment constructor', test: (symbol) => /env/i.test(symbol.name) },
+  'test-fixtures': { needs: 'a test or fixture symbol', test: (symbol) => /test|fixture|junit|pytest/i.test(`${qualifiedNameOf(symbol)} ${symbol.source?.file ?? ''}`) },
+  async: { needs: 'an async, suspend, Promise or Task signature', test: (symbol) => /async|suspend|promise|task|await/i.test(`${symbol.name} ${JSON.stringify(symbol.signatures)}`) },
+}
 
 export interface CoreHomeEntry {
   objects: Record<CoreRole, string>
@@ -65,12 +84,14 @@ export interface CoreHome {
 
 export const CORE_HOME: Readonly<Record<string, CoreHomeEntry>> = DATA as Record<string, CoreHomeEntry>
 
-function link(port: string, id: string, version: string, what: string): CoreSymbolLink {
+function link(port: string, id: string, version: string, what: string, evidence?: CapabilityKey): CoreSymbolLink {
   const symbol = API_MODELS[port]?.symbols.find((entry) => (entry.publicId ?? entry.id) === id)
   if (!symbol) throw new Error(`core-home: ${port} ${what} names ${id}, which is not in its API model`)
   if (symbol.apiScope === 'internal' || (symbol.product ?? 'core') !== 'core') {
     throw new Error(`core-home: ${port} ${what} names ${id}, which has no core reference page`)
   }
+  const needed = evidence && CAPABILITY_EVIDENCE[evidence]
+  if (needed && !needed.test(symbol)) throw new Error(`core-home: ${port} ${what} names ${id}, which is not ${needed.needs}`)
   const href = referenceHref(port, id, version)
   if (!href) throw new Error(`core-home: ${port} ${what} has no reference page for ${id}`)
   return { id, name: qualifiedNameOf(symbol), href }
@@ -89,7 +110,7 @@ export function resolveCoreHome(port: string, version: string, entry: CoreHomeEn
   for (const [key, id] of Object.entries(entry.capabilities)) {
     const capability = CAPABILITIES[key as CapabilityKey]
     if (!capability) throw new Error(`core-home: ${port} lists unknown capability ${key}`)
-    capabilities[capability.group].push({ key: key as CapabilityKey, label: capability.label, ...link(port, id, version, key) })
+    capabilities[capability.group].push({ key: key as CapabilityKey, label: capability.label, ...link(port, id, version, key, key as CapabilityKey) })
   }
   for (const group of Object.values(capabilities)) group.sort((a, b) =>
     Object.keys(CAPABILITIES).indexOf(a.key) - Object.keys(CAPABILITIES).indexOf(b.key))

@@ -114,7 +114,7 @@ const productIsAvailable = port && entry.data.product
   : true
 const isMcpOverview = entry.data.product === 'mcp' && pagePath === 'mcp' && productIsAvailable
 const isProductOverview = productIsAvailable && pagePath === entry.data.product
-const isCoreHome = Boolean(port && !entry.data.product && pagePath === 'core')
+const isCoreHome = Boolean(port && !entry.data.product && pagePath === 'core' && entry.data.route === 'core')
 const isWorkspaceOverview = entry.data.product === 'workspace'
   && pagePath === 'workspace'
   && productIsAvailable

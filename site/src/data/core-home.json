@@ -28,7 +28,6 @@
       "queries": "LibTmux::FilterExpr",
       "errors": "LibTmux::Error",
       "traversal": "LibTmux::Server#list_panes",
-      "async": "LibTmux::Async::Server",
       "argv": "LibTmux::Server#run"
     }
   },
@@ -44,8 +43,7 @@
       "queries": "libtmux.Selection",
       "errors": "libtmux.Error",
       "traversal": "libtmux.Server:snapshot",
-      "argv": "libtmux.Server:command",
-      "async": "libtmux.Request"
+      "argv": "libtmux.Server:command"
     }
   },
   "powershell": {
@@ -59,7 +57,6 @@
       "objects": "LibTmux\\Get-TmuxPane",
       "queries": "LibTmux\\New-TmuxQuery",
       "traversal": "LibTmux\\Get-TmuxSnapshot",
-      "version-gate": "LibTmux\\Invoke-TmuxCommand",
       "argv": "LibTmux\\Invoke-TmuxCommand"
     }
   },
@@ -110,7 +107,6 @@
       "errors": "errors.LibTmuxError",
       "traversal": "server.Server.panes",
       "version-gate": "errors.VersionTooLowError",
-      "current-pane": "session.Session.fromEnv",
       "async": "server.Server.newSession",
       "argv": "server.Server.cmd"
     }
@@ -168,7 +164,6 @@
       "errors": "io.github.libtmux.exception.LibTmuxException.LibTmuxException",
       "traversal": "io.github.libtmux.Server.Server.panes",
       "version-gate": "io.github.libtmux.exception.UnsupportedFeatureException.UnsupportedFeatureException",
-      "current-pane": "io.github.libtmux.TmuxEnvironment.TmuxEnvironment.current",
       "test-fixtures": "io.github.libtmux.junit5.TmuxExtension.TmuxExtension",
       "argv": "io.github.libtmux.Server.Server.cmd"
     }
@@ -185,7 +180,7 @@
       "ids": "io.github.libtmux.kotlin.Pane.id",
       "queries": "io.github.libtmux.kotlin.Iterable.filter",
       "traversal": "io.github.libtmux.kotlin.Server.panes",
-      "async": "io.github.libtmux.kotlin.Server",
+      "async": "io.github.libtmux.kotlin.Server.panes",
       "argv": "io.github.libtmux.kotlin.Server.cmd"
     }
   },
@@ -198,7 +193,6 @@
     },
     "capabilities": {
       "objects": "io.github.libtmux.scaladsl.Pane",
-      "ids": "io.github.libtmux.scaladsl.Pane.id",
       "queries": "io.github.libtmux.scaladsl.query.Expr",
       "traversal": "io.github.libtmux.scaladsl.Server.panes",
       "argv": "io.github.libtmux.scaladsl.Server.cmd"

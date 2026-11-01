@@ -4,6 +4,7 @@ import PackageInstall from './widgets/PackageInstall.astro'
 import { PORT_BY_SLUG } from '../lib/ports'
 import { CAPABILITY_GROUPS, resolveCoreHome } from '../lib/core-home'
 import { QUICKSTARTS } from '../lib/quickstarts'
+import { documentationCards } from '../lib/port-documentation'
 
 /**
  * The body of a port's Core Library home: what the library lets you do, the
@@ -22,11 +23,12 @@ const { port, version } = Astro.props as Props
 const info = PORT_BY_SLUG[port]
 const home = resolveCoreHome(port, version)
 const example = QUICKSTARTS[port]?.complete
+const products = documentationCards(port, version).filter((card) => card.kind === 'product').map((card) => card.label)
 ---
 <p>{home.summary}</p>
 <p class="text-sm text-muted">
-  You are reading the <strong>{version}</strong> documentation. Use the version control in the header to move
-  between releases, or <a href={`../`}>go to the {info.name} page</a> for the Workspace Manager and MCP server.
+  Documentation version <strong>{version}</strong>.
+  {products.length > 0 && <>The <a href="../">{info.name} page</a> also covers {products.join(' and ')}.</>}
 </p>
 
 <h2 id="install">Install</h2>
