@@ -49,6 +49,8 @@ import { DOC_PRODUCTS, PORT_BY_SLUG, portPageUrl, referenceUrl, productAvailable
  */
 interface Props {
   title: string
+  /** The title the tab and the social tags carry, when the heading is longer than they should be. */
+  documentTitle?: string
   inventoryId?: string
   inventoryAliases?: string[]
   inventoryExclude?: boolean
@@ -104,6 +106,7 @@ interface Props {
 
 const {
   title,
+  documentTitle,
   inventoryId,
   inventoryAliases,
   inventoryExclude,
@@ -176,7 +179,7 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
 ---
 
 <BaseLayout
-  title={title}
+  title={documentTitle ?? title}
   inventoryId={inventoryId}
   inventoryAliases={inventoryAliases}
   inventoryExclude={inventoryExclude}

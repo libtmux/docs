@@ -1,5 +1,5 @@
 ---
-title: tmux MCP for Elixir is not published
+title: tmux MCP, built in Elixir, is not published
 description: The Elixir repository contains an MCP package scaffold, not a usable or published server.
 port: elixir
 product: mcp

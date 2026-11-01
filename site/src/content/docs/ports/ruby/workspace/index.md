@@ -1,5 +1,6 @@
 ---
-title: tmux workspace manager for Ruby
+title: tmux workspace manager, forged in Ruby
+shortTitle: Ruby-based tmux workspace manager
 description: Validate, plan, and load bounded YAML or JSON workspaces with libtmux-workspace.
 port: ruby
 product: workspace

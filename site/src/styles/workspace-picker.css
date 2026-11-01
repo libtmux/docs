@@ -1,0 +1,419 @@
+/*
+ * The workspace preset picker (components/workspace/WorkspacePicker.astro).
+ *
+ * The menu is the site's shared `details` picker (documentation-picker.css);
+ * this adds the tile that leads each row and the one-line summary under a name.
+ *
+ * Every preset sits in one grid cell, so the stage is as tall as the tallest
+ * and choosing a preset moves nothing below it. Each panel fills the stage, so
+ * the configuration and the drawing are as tall as the tallest preset needs
+ * across both columns. Which panel shows is the picker's `data-selected`
+ * attribute, matched by the rules the component writes next to it. Without
+ * script the first preset shows alone and the menu is absent; the examples
+ * further down the page carry every preset in full.
+ */
+
+libtmux-workspace-picker {
+  display: block;
+}
+
+.ws-picker {
+  margin-block: 1.5rem 2.5rem;
+  container-type: inline-size;
+}
+
+/*
+ * A browser may paint before the whole picker is parsed. The stage is as tall
+ * as its tallest preset only once every preset is in it, so an early paint
+ * would move the drawing under the configuration as each preset arrives, and
+ * the menu's parts as theirs do. Nothing of the picker is visible until its
+ * last element is parsed; the examples further down do not wait for it.
+ */
+.ws-picker:not(:has(.ws-picker__end)),
+.ws-picker:not(:has(.ws-picker__end)) * {
+  visibility: hidden !important;
+}
+
+.ws-picker__bar {
+  display: none;
+}
+
+html[data-js] .ws-picker__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-block: 0.75rem 1rem;
+}
+
+.ws-picker__label {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+.ws-picker__menu {
+  flex: 0 1 16rem;
+  min-width: 0;
+}
+
+.ws-picker__menu > summary {
+  min-height: 2.25rem;
+  padding: 0.25rem 0.55rem;
+}
+
+/* The menu's label is every preset's name in one cell, so its width is the longest and none shifts. */
+.ws-picker__current {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.ws-picker__current > span {
+  grid-area: 1 / 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  visibility: hidden;
+}
+
+@container (max-width: 36rem) {
+  .ws-picker__menu {
+    flex: 1;
+  }
+}
+
+.doc-picker-panel.ws-picker__menu-panel {
+  --picker-width: 26rem;
+}
+
+.ws-picker__option {
+  gap: 0.65rem;
+}
+
+/* The tile leads the row as a package's mark leads a row of the header menus. */
+.ws-picker__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 2rem;
+  color: var(--color-muted);
+}
+
+.ws-picker__option:is(:hover, :focus-visible) .ws-picker__icon,
+.ws-picker__option[aria-current] .ws-picker__icon {
+  color: var(--color-link);
+}
+
+.ws-picker__text {
+  display: grid;
+  min-width: 0;
+}
+
+.ws-picker__name {
+  font-weight: 500;
+}
+
+/* A summary is one line; the full sentence is on the page below. */
+.ws-picker__text > small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ws-tile {
+  display: block;
+  inline-size: 2rem;
+  block-size: 1.5rem;
+}
+
+.ws-tile__window {
+  fill: color-mix(in srgb, currentColor 8%, transparent);
+  stroke: currentColor;
+  stroke-width: 1.25;
+}
+
+.ws-tile__divider {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+}
+
+.ws-tile__back {
+  fill: none;
+  stroke: currentColor;
+  stroke-opacity: 0.5;
+  stroke-width: 1;
+}
+
+.ws-picker__stage {
+  display: block;
+}
+
+.ws-picker__panel:not([data-first]) {
+  display: none;
+}
+
+html[data-js] .ws-picker__stage {
+  display: grid;
+  /* The one column is never wider than the section, whatever a panel holds. */
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* With script every panel takes part in layout, and only the selected one is seen. */
+html[data-js] .ws-picker__panel {
+  display: block;
+  grid-area: 1 / 1;
+  align-self: stretch;
+  min-inline-size: 0;
+  visibility: hidden;
+}
+
+.ws-picker__panel > .ws-body {
+  block-size: 100%;
+}
+
+/* A long file scrolls inside the panel; the example below the picker shows all of it. */
+.ws-picker__panel {
+  --ws-config-max: 24rem;
+}
+
+/* The configuration card and the drawing card fill their row, so both are as tall as the stage. */
+.ws-picker__panel .ws-config {
+  block-size: 100%;
+}
+
+.ws-picker__panel .ws-config__panel,
+.ws-picker__panel .ws-config__panel :is(.expressive-code, .frame) {
+  block-size: 100%;
+}
+
+.ws-picker__panel .ws-config__panel .expressive-code pre {
+  block-size: 100%;
+}
+
+/*
+ * The drawing card: window tabs over the drawing, as tmux's status line sits by
+ * its panes. It shares the configuration's radius, strip height and ground
+ * (workspace-showcase.css) so the two read as a pair.
+ *
+ * The tabs stay on one line and scroll inside their strip, so a window with
+ * many tabs never grows the strip or reaches the drawing under it. A scrolling
+ * box clips what reaches over its border, so the strip draws its divider as its
+ * last row, where the shown tab's ground covers it, rather than as a border.
+ */
+.ws-layout {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* The strip and the buttons that scroll it share a box the buttons are placed against. */
+.ws-layout__bar {
+  position: relative;
+}
+
+.ws-layout__tabs {
+  display: flex;
+  align-items: stretch;
+  min-block-size: var(--ws-strip);
+  border: 1px solid var(--color-edge);
+  border-block-end: 0;
+  border-radius: var(--ws-radius) var(--ws-radius) 0 0;
+  background: var(--color-surface);
+  box-shadow: inset 0 -1px 0 var(--color-edge);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  /* A tab brought into view stops clear of the button over the edge. */
+  scroll-padding-inline: 2.75rem;
+}
+
+.ws-layout__tabs::-webkit-scrollbar {
+  display: none;
+}
+
+/*
+ * Chevrons over the strip's ends, each fading the tabs out under it. They are
+ * placed over the strip, not beside it, so showing or hiding one moves nothing;
+ * the script shows the start button once the strip has scrolled and the end
+ * button while more remains.
+ */
+.ws-layout__scroll {
+  position: absolute;
+  inset-block: 1px;
+  display: grid;
+  place-items: center;
+  inline-size: 2.5rem;
+  padding: 0;
+  border: 0;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.ws-layout__scroll[hidden] {
+  display: none;
+}
+
+.ws-layout__scroll--start {
+  inset-inline-start: 1px;
+  justify-items: start;
+  padding-inline-start: 0.5rem;
+  border-top-left-radius: calc(var(--ws-radius) - 1px);
+  background: linear-gradient(to right, var(--color-surface) 45%, transparent);
+}
+
+.ws-layout__scroll--end {
+  inset-inline-end: 1px;
+  justify-items: end;
+  padding-inline-end: 0.5rem;
+  border-top-right-radius: calc(var(--ws-radius) - 1px);
+  background: linear-gradient(to left, var(--color-surface) 45%, transparent);
+}
+
+.ws-layout__scroll:hover {
+  color: var(--text-color);
+}
+
+.ws-layout__scroll:focus-visible {
+  outline: 2px solid var(--focus-ring-color, currentColor);
+  outline-offset: -2px;
+}
+
+.ws-layout__tabs button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  max-inline-size: 10rem;
+  padding: 0 0.85rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-muted);
+  font: inherit;
+  font-family: var(--font-ibm-plex-mono, ui-monospace, 'SFMono-Regular', Menlo, monospace);
+  font-size: 0.75rem;
+  /* One weight for every state, so choosing a tab never changes a width. */
+  font-weight: 500;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ws-layout__tabs button:first-child {
+  border-top-left-radius: calc(var(--ws-radius) - 1px);
+}
+
+.ws-layout__tabs button:hover {
+  color: inherit;
+}
+
+.ws-layout__tabs button[aria-selected='true'] {
+  background: var(--ws-ground);
+  color: var(--theme-primary, inherit);
+}
+
+.ws-layout__tabs button:focus-visible {
+  outline: 2px solid var(--focus-ring-color, currentColor);
+  outline-offset: -2px;
+}
+
+.ws-layout__stack {
+  position: relative;
+  display: grid;
+  flex: 1 1 auto;
+  align-content: start;
+  min-block-size: 0;
+  padding: 1rem;
+  border: 1px solid var(--color-edge);
+  border-block-start: 0;
+  border-radius: 0 0 var(--ws-radius) var(--ws-radius);
+  background: var(--ws-ground);
+}
+
+/*
+ * The slider is a scrollbar drawn in the card's top padding: a track, and a
+ * thumb as wide as the part of the strip that shows. It is placed over the
+ * padding, so showing it moves nothing, and its hit area is taller than its
+ * line so a finger or a pointer can take it.
+ */
+.ws-layout__slider {
+  position: absolute;
+  inset-block-start: 0.2rem;
+  inset-inline: 1rem;
+  block-size: 0.65rem;
+  touch-action: none;
+}
+
+.ws-layout__slider[hidden] {
+  display: none;
+}
+
+.ws-layout__slider::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline: 0;
+  block-size: 3px;
+  border-radius: 2px;
+  background: var(--color-edge);
+  transform: translateY(-50%);
+}
+
+.ws-layout__thumb {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 0;
+  block-size: 3px;
+  min-inline-size: 24px;
+  margin-block-start: -1.5px;
+  border-radius: 2px;
+  background: var(--color-muted);
+  cursor: grab;
+}
+
+.ws-layout__thumb::after {
+  content: '';
+  position: absolute;
+  inset: -6px 0;
+}
+
+.ws-layout__thumb:active {
+  background: var(--theme-primary, currentColor);
+  cursor: grabbing;
+}
+
+/* The drawing fills the card's width and keeps its proportions, so it never overflows or sits off centre. */
+.ws-layout__stack .gp-tmux-layout {
+  width: 100%;
+}
+
+/* Without script a card shows its first window, and the tabs only name it. */
+.ws-layout__stack > .ws-win:not(:first-child) {
+  display: none;
+}
+
+html:not([data-js]) .ws-layout__tabs button {
+  pointer-events: none;
+}
+
+html:not([data-js]) .ws-layout__tabs button:not([aria-selected='true']) {
+  display: none;
+}
+
+html[data-js] .ws-layout__stack > .ws-win:not(:first-child) {
+  display: block;
+}
+
+html[data-js] .ws-layout__stack > .ws-win {
+  grid-area: 1 / 1;
+}
+
+/*
+ * A window that is not shown is hidden, and one that is shown only inherits.
+ * Setting `visible` on the shown window would let it paint through a preset
+ * that is itself hidden.
+ */
+html[data-js] .ws-layout__stack > .ws-win:not([data-active]) {
+  visibility: hidden;
+}

@@ -9,7 +9,7 @@ import { PORT_ROOT } from '../lib/site-root.ts'
 import { docsRoutePath } from '../lib/docs-paths.ts'
 import { docsEntriesAvailable } from '../lib/page-port-links.ts'
 import { isIndexSource, markdownPath } from '../lib/markdown-twins.ts'
-import { localeProse } from '../lib/llms.ts'
+import { agentTitle, localeProse } from '../lib/llms.ts'
 import { documentationAreas } from '../lib/port-documentation.ts'
 import { buildTarget } from '../lib/versions.ts'
 import { tmuxReferenceContext, tmuxReferenceUrl } from '../lib/tmux-reference'
@@ -72,7 +72,7 @@ export const GET: APIRoute = async ({ site }) => {
     const { headings } = await render(served)
     const twinBase = locale === DEFAULT_LOCALE || translations.has(path) ? base : localeRoot(DEFAULT_LOCALE)
     pages.push({
-      title: served.data.title,
+      title: agentTitle(served.data),
       description: served.data.description ?? '',
       section: served.data.sidebar?.group ?? 'Documentation',
       url: `${origin}${entry.data.product && !port ? refBase : base}${route}`,
