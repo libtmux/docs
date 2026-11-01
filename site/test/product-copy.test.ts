@@ -104,9 +104,8 @@ describe('a heading as plain text', () => {
     const mentions = readFileSync(new URL('../src/data/mentions.json', import.meta.url), 'utf8')
     expect(mentions).toContain('"title": "tmux workspace manager, forged in Julia."')
     expect(mentions).not.toMatch(/"title": "tmux workspace manager,(?! forged in \w+\.|[^"]*not published)/)
-    for (const file of ['../src/components/docs/DocPage.astro', '../src/lib/page-port-links.ts']) {
-      expect(readFileSync(new URL(file, import.meta.url), 'utf8'), file).toContain('headingTitle(entry.data)')
-    }
+    expect(readFileSync(new URL('../src/components/docs/DocPage.astro', import.meta.url), 'utf8')).toContain('headingTitle(entry.data)')
+    expect(readFileSync(new URL('../src/lib/page-port-links.ts', import.meta.url), 'utf8')).toContain('headingTitle({ title, subtitle })')
   })
 })
 

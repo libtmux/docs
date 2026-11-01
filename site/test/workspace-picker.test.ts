@@ -481,7 +481,7 @@ describe('the picker in a browser page', () => {
   it('chooses a window with a click or an arrow key, in its own preset only', async () => {
     const { document, click, press, choose } = await page('rs', { storage: memory() })
     choose('start-directory')
-    const panel = document.querySelector('[data-preset="start-directory"]')!
+    const panel = document.querySelector<HTMLElement>('[data-preset="start-directory"]')!
     panel.inert = false
     const tabs = [...panel.querySelectorAll<HTMLElement>('[role="tab"]')]
     const figures = [...panel.querySelectorAll<HTMLElement>('[data-window]')]

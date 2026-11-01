@@ -149,10 +149,13 @@ export function pagePortLinks({
         const selected = port.slug === portSlug ? [own] : targets
         links = [...new Map(selected.map((entry) => [docsPath(entry), entry])).values()]
           .sort((a, b) => docsPath(a).localeCompare(docsPath(b)))
-          .map((entry) => ({
-            href: portPageUrl(port, targetVersion, docsPath(entry)),
-            ...(selected.length > 1 ? { label: entry.data.title ? headingTitle(entry.data) : docsPath(entry) } : {}),
-          }))
+          .map((entry) => {
+            const { title, subtitle } = entry.data
+            return {
+              href: portPageUrl(port, targetVersion, docsPath(entry)),
+              ...(selected.length > 1 ? { label: title ? headingTitle({ title, subtitle }) : docsPath(entry) } : {}),
+            }
+          })
       } else if (targets[0]) links = [{ href: portPageUrl(port, targetVersion, docsPath(targets[0])) }]
       else {
         // A language-specific article may have no counterpart. Keep its

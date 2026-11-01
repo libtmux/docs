@@ -30,6 +30,7 @@ export interface DocsPage {
   id: string
   data: {
     title?: string
+    subtitle?: string
     port?: string
     supportedPorts?: readonly string[]
     product?: string
