@@ -167,9 +167,9 @@ const draw = (frame: Frame) => {
   </div>
   {recording && (
     <div class="mcp-replay__controls" data-controls hidden>
-      <button type="button" class="mcp-replay__button" data-action="play" aria-label="Play"><span aria-hidden="true">▶</span></button>
-      <button type="button" class="mcp-replay__button" data-action="back" aria-label="Previous call"><span aria-hidden="true">⏮</span></button>
-      <button type="button" class="mcp-replay__button" data-action="forward" aria-label="Next call"><span aria-hidden="true">⏭</span></button>
+      <button type="button" class="mcp-replay__button" data-action="play" data-state="play" aria-label="Play"><svg class="mcp-icon mcp-icon--play" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3.5v9l7-4.5z" /></svg><svg class="mcp-icon mcp-icon--pause" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 3.5v9M10.5 3.5v9" /></svg><svg class="mcp-icon mcp-icon--replay" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7M3 2.5v2.8h2.8" /></svg></button>
+      <button type="button" class="mcp-replay__button" data-action="back" aria-label="Previous call"><svg class="mcp-icon " viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 3.5v9M12 3.5 6 8l6 4.5z" /></svg></button>
+      <button type="button" class="mcp-replay__button" data-action="forward" aria-label="Next call"><svg class="mcp-icon " viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v9M4 3.5 10 8l-6 4.5z" /></svg></button>
       <div class="mcp-replay__track" role="group" aria-label="Calls">
         <div class="mcp-replay__fill" data-fill></div>
         {example.steps.map((step, index) => (
@@ -177,7 +177,7 @@ const draw = (frame: Frame) => {
         ))}
       </div>
       <span class="mcp-replay__count" data-count aria-live="polite">{total}/{total}</span>
-      <button type="button" class="mcp-replay__button" data-action="fullscreen" aria-label="Full screen"><span aria-hidden="true">⛶</span></button>
+      <button type="button" class="mcp-replay__button" data-action="fullscreen" aria-label="Full screen"><svg class="mcp-icon " viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2.5H2.5V6M10 2.5h3.5V6M6 13.5H2.5V10M10 13.5h3.5V10" /></svg></button>
     </div>
   )}
 </section>
@@ -248,7 +248,8 @@ const draw = (frame: Frame) => {
       count.textContent = `${step}/${total}`
       const label = step >= total && !playing ? 'Replay' : playing ? 'Pause' : 'Play'
       play.setAttribute('aria-label', label)
-      play.firstElementChild!.textContent = playing ? '⏸' : step >= total ? '↺' : '▶'
+      // The button draws its icon from this state (see mcp-replay.css).
+      play.dataset.state = playing ? 'pause' : step >= total ? 'replay' : 'play'
       if (hint) hint.textContent = pinned !== null ? 'Pinned. Click the call again, or press Escape, to follow the replay.' : IDLE_HINT
       if (scroll) chat.scrollTo({ top: chat.scrollHeight, behavior: reduced ? 'auto' : 'smooth' })
     }

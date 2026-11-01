@@ -263,6 +263,41 @@ describe('the replay component', () => {
   const key = (win: Window, element: Element, name: string) => element.dispatchEvent(new win.KeyboardEvent('keydown', { key: name, bubbles: true }) as unknown as Event)
   const action = (document: Document, name: string) => document.querySelector<HTMLButtonElement>(`[data-action="${name}"]`)!
 
+  it('draws its buttons as SVG icons and leaves no character a platform can turn into an emoji', async () => {
+    // Pictographs, the variation selector that asks for emoji, and the keycap mark.
+    const emoji = /[\p{Extended_Pictographic}\u23E9-\u23FA\u25B6\u25C0\u26F6\uFE0F\u20E3]/u
+    const sources = [component, readFileSync(new URL('../src/styles/mcp-replay.css', import.meta.url), 'utf8')]
+    for (const source of sources) expect(source.match(emoji), 'a character in the source that can render as emoji').toBeNull()
+    const { document } = await mount('ts')
+    const controls = document.querySelector('[data-controls]')!
+    expect(controls.textContent!.match(emoji)).toBeNull()
+    for (const name of ['play', 'back', 'forward', 'fullscreen']) {
+      const button = controls.querySelector(`[data-action="${name}"]`)!
+      expect(button.getAttribute('aria-label'), name).toBeTruthy()
+      expect(button.querySelector('svg[aria-hidden="true"][stroke="currentColor"][viewBox="0 0 16 16"]'), `${name} has an SVG icon`).not.toBeNull()
+      expect(button.textContent!.trim(), `${name} has no text glyph`).toBe('')
+    }
+    expect(controls.querySelectorAll('[data-action="play"] svg')).toHaveLength(3)
+  })
+
+  it('shows the play button\'s icon for its state, and keeps its label in step', async () => {
+    const { win, document } = await mount('ts', { run: true, reduced: true })
+    const play = action(document, 'play')
+    expect(play.dataset.state, 'finished').toBe('replay')
+    click(win, play)
+    expect(play.dataset.state).toBe('pause')
+    expect(play.getAttribute('aria-label')).toBe('Pause')
+    click(win, play)
+    expect(play.dataset.state).toBe('play')
+    expect(play.getAttribute('aria-label')).toBe('Play')
+  })
+
+  it('has a control: the emoji check does catch the glyphs it is for', () => {
+    const emoji = /[\p{Extended_Pictographic}\u23E9-\u23FA\u25B6\u25C0\u26F6\uFE0F\u20E3]/u
+    for (const glyph of ['\u25B6', '\u23F8', '\u23ED', '\u23EE', '\u26F6', '\u25B6\uFE0F', '\uD83C\uDFB2']) expect(emoji.test(glyph), glyph.codePointAt(0)!.toString(16)).toBe(true)
+    expect(emoji.test('\u21BA')).toBe(false)
+  })
+
   it('highlights each recorded result as JSON with the site\'s code block, inside a scrolling body', async () => {
     const { document } = await mount('ts')
     const blocks = [...document.querySelectorAll('details.mcp-result .mcp-result__body pre')]

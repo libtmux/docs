@@ -356,6 +356,23 @@
   cursor: pointer;
 }
 
+/* The icons are the site's own: 16px, a 1.5 stroke in the current colour. The play button shows the one its state names. */
+.mcp-icon {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+}
+
+[data-action='play'] .mcp-icon {
+  display: none;
+}
+
+[data-action='play'][data-state='play'] .mcp-icon--play,
+[data-action='play'][data-state='pause'] .mcp-icon--pause,
+[data-action='play'][data-state='replay'] .mcp-icon--replay {
+  display: block;
+}
+
 .mcp-replay__button[hidden] {
   display: none;
 }
