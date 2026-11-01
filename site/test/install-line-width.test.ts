@@ -1,6 +1,9 @@
+import { mkdtempSync, rmSync, writeFileSync, chmodSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { describe, expect, it } from 'vitest'
-import { buildPanels, COOLDOWN_DATE_SENTINEL, COOLDOWN_DURATION_SENTINEL, SERVERS, SHELL_MAX_WIDTH, wrapShell } from '../src/lib/install-matrix'
+import { buildPanels, SERVERS, SHELL_MAX_WIDTH, withDefaultCooldown, wrapShell } from '../src/lib/install-matrix'
 import { PORTS, type InstallBlock } from '../src/lib/ports'
 import { installsFor, installSelection } from '../src/lib/registry'
 
@@ -30,7 +33,7 @@ interface Command { where: string; text: string }
 function commands(): Command[] {
   const found: Command[] = []
   const add = (where: string, block: Pick<InstallBlock, 'lang' | 'code'>) => {
-    if (SHELL.has(block.lang)) found.push({ where, text: block.code })
+    if (SHELL.has(block.lang)) found.push({ where, text: withDefaultCooldown(block.code) })
   }
   for (const port of PORTS) {
     const selection = installSelection(port, [], {})
@@ -48,7 +51,7 @@ function commands(): Command[] {
   for (const spec of Object.values(SERVERS)) {
     for (const panel of buildPanels(spec, 'a'.repeat(40))) {
       const where = `${spec.port} mcp ${panel.client.id}/${panel.method.id}/${panel.scope.id}`
-      const fill = (text: string) => text.replaceAll(COOLDOWN_DURATION_SENTINEL, '7').replaceAll(COOLDOWN_DATE_SENTINEL, '2026-01-01')
+      const fill = withDefaultCooldown
       if (panel.language === 'console') found.push({ where, text: copied(fill(panel.body)) })
       if (panel.pipPrereq) found.push({ where: `${where} prerequisite`, text: fill(panel.pipPrereq) })
     }
@@ -56,8 +59,9 @@ function commands(): Command[] {
   return found
 }
 
+const all = commands()
+
 describe('shell install commands', () => {
-  const all = commands()
 
   it('finds the commands it checks', () => {
     expect(all.length).toBeGreaterThan(100)
@@ -107,5 +111,35 @@ describe('wrapping a one-line command', () => {
     for (const line of wrapped.split('\n')) expect(line).not.toMatch(/ --(?:socket-name|endpoint|timeout)(?: \\)?$/)
     expect(wrapped).toContain('"a socket name"')
     expect(parses(wrapped)).toBe(true)
+  })
+})
+
+describe('a continued command runs as the one line did', () => {
+  /** Runs `text` in bash with a `pnpm` that prints the cooldown variables it receives, and returns what it printed. */
+  function environmentSeenByPnpm(text: string): string {
+    const dir = mkdtempSync(join(tmpdir(), 'pnpm-stub-'))
+    try {
+      writeFileSync(join(dir, 'pnpm'), '#!/bin/sh\nprintf "%s|%s|%s\\n" "$pnpm_config_minimum_release_age" "$pnpm_config_minimum_release_age_exclude" "$*"\n')
+      chmodSync(join(dir, 'pnpm'), 0o755)
+      const run = spawnSync('bash', ['-c', text], { encoding: 'utf8', env: { PATH: `${dir}:/usr/bin:/bin` } })
+      return run.stdout.trim() + (run.stderr ? ` [stderr: ${run.stderr.trim()}]` : '')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  }
+
+  it('hands pnpm the minimum release age, the exclusion list and the arguments', () => {
+    const cooldown = all.filter((command) => command.where.endsWith('cooldown') && command.text.includes('pnpm_config_minimum_release_age_exclude') && command.text.includes('workspace-cli'))
+    expect(cooldown.length).toBeGreaterThan(1)
+    for (const command of cooldown) {
+      const seen = environmentSeenByPnpm(command.text)
+      expect(seen, command.where).toMatch(/^10080\|\["@libtmux\/workspace-cli","libtmux"\]\|(dlx|add -g) @libtmux\/workspace-cli/)
+    }
+  })
+
+  it('has a control: an assignment cut after its equals sign loses its value', () => {
+    const broken = 'pnpm_config_minimum_release_age_exclude=\\\n    \'["a"]\' \\\n    pnpm dlx a'
+    expect(parses(broken)).toBe(true)
+    expect(environmentSeenByPnpm(broken)).not.toContain('["a"]|')
   })
 })

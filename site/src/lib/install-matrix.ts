@@ -31,7 +31,7 @@
  *     to uvx. `toolCommand` below matches the code, not the prose.
  */
 
-import { COOLDOWN_SLOTS } from './cooldown.ts'
+import { COOLDOWN_SLOTS, formatCooldown, type CooldownUnit } from './cooldown.ts'
 
 // ---- types --------------------------------------------------------------
 
@@ -530,6 +530,13 @@ export function serverSpec(port = 'py'): ServerSpec {
  */
 export const SHELL_MAX_WIDTH = 78
 
+/** `text` as the page shows it by default: each cooldown slot holds the default day count in its tool's unit. */
+export function withDefaultCooldown(text: string): string {
+  return (Object.keys(COOLDOWN_SLOTS) as CooldownUnit[])
+    .reduce((filled, unit) => filled.replaceAll(COOLDOWN_SLOTS[unit], formatCooldown(unit, DEFAULT_COOLDOWN_DAYS)), text)
+    .replaceAll(COOLDOWN_DATE_SENTINEL, defaultCooldownDate(DEFAULT_COOLDOWN_DAYS))
+}
+
 const SHELL_TOKEN = /(?:[^\s"']+|"[^"]*"|'[^']*')+/g
 
 /**
@@ -538,11 +545,11 @@ const SHELL_TOKEN = /(?:[^\s"']+|"[^"]*"|'[^']*')+/g
  *
  * A line that fits, or one that already ends in a backslash, is left alone, so
  * a command written over several lines keeps its own breaks. A flag stays on the line of its value, and quoted words are never split.
- * The width a cooldown slot's sentinel will take is counted as two characters.
+ * A cooldown slot is measured at the default day count's width.
  */
 export function wrapShell(command: string, width = SHELL_MAX_WIDTH): string {
   if (command.includes('\n')) return command.split('\n').map((line) => (line.endsWith('\\') ? line : wrapShell(line, width))).join('\n')
-  const measure = (text: string) => text.replaceAll(COOLDOWN_DURATION_SENTINEL, '77').replaceAll(COOLDOWN_DATE_SENTINEL, '2026-01-01').length
+  const measure = (text: string) => withDefaultCooldown(text).length
   if (measure(command) <= width) return command
   const lines: string[][] = [[]]
   for (const token of command.match(SHELL_TOKEN) ?? []) {
