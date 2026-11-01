@@ -148,6 +148,8 @@ describe('the showcase component', () => {
     expect([...doc.querySelectorAll('[data-capability-panel]')].map((a) => a.getAttribute('data-capability-panel'))).toEqual(expected.map((item) => item.id))
     expect(doc.querySelectorAll('[data-capability-panel][data-default]')).toHaveLength(1)
     expect(doc.querySelector('[data-capability-option]')!.getAttribute('href')).toBe('?capability=typed-graph')
+    expect(doc.querySelector('input, label, [data-capability-search]'), 'no search box for a list this short').toBeNull()
+    expect(doc.querySelectorAll('[data-capability-option]').length).toBeLessThanOrEqual(8)
     expect(doc.body.textContent).toContain('bun run typecheck && bun run test')
     expect(doc.body.textContent).toContain('examples/')
     expect((await render('lua')).querySelector('[data-core-showcase]')).toBeNull()

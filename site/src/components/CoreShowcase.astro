@@ -10,7 +10,7 @@ import { homeCodeColumns } from '../lib/quickstarts'
  * What the library does, one tested example per capability.
  *
  * A vertical list of capabilities on the left and the selected example on the
- * right. Narrow containers fold the list into the site's searchable picker.
+ * right. Narrow pages fold the list into a dropdown. The list is plain links, so Tab and Enter reach every capability.
  * The selection is the `capability` query parameter and leaves `product` and
  * the example toggles alone. Every example is an excerpt of a program or test
  * the port's CI runs; see `lib/core-capabilities.ts`.
@@ -30,19 +30,12 @@ const shown = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record
       <svg class="doc-picker-caret" width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
     </summary>
     <div class="core-showcase__panel-list">
-      <label class="core-showcase__search">
-        <span class="sr-only">Find a capability</span>
-        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg>
-        <input type="search" placeholder="Find a capability…" autocomplete="off" data-capability-search />
-      </label>
       <nav aria-label="Capabilities">
         {shown.map((item, index) => <a class="core-showcase__option" href={`?capability=${item.id}`} data-capability-option={item.id}
-          data-match={item.label} aria-current={index === 0 ? 'true' : undefined}>
+          aria-current={index === 0 ? 'true' : undefined}>
           <span>{item.label}{item.tmux && <small class="core-showcase__tmux">tmux {item.tmux}</small>}</span>
-          
         </a>)}
       </nav>
-      <p class="core-showcase__empty" data-capability-empty hidden>No matching capabilities.</p>
     </div>
   </details>
   <div class="core-showcase__panels">
@@ -69,8 +62,6 @@ const shown = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record
     const options = [...root.querySelectorAll<HTMLAnchorElement>('[data-capability-option]')]
     const ids = options.map((option) => option.dataset.capabilityOption!)
     const picker = root.querySelector<HTMLDetailsElement>('details')!
-    const search = root.querySelector<HTMLInputElement>('[data-capability-search]')!
-    const empty = root.querySelector<HTMLElement>('[data-capability-empty]')!
     const wide = matchMedia('(min-width: 56rem)')
     // Every option keeps the page's other parameters, so a new tab opened from a link lands on the same product once the script has run.
     const hrefFor = (id: string) => {
@@ -94,16 +85,6 @@ const shown = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record
     }
     // The list is always open beside the example on a wide page, and a dropdown on a narrow one.
     const layout = () => { picker.open = wide.matches }
-    search.addEventListener('input', () => {
-      const words = search.value.toLowerCase().split(/\s+/).filter(Boolean)
-      let shown = 0
-      for (const option of options) {
-        const match = words.every((word) => option.dataset.match!.toLowerCase().includes(word))
-        option.hidden = !match
-        if (match) shown++
-      }
-      empty.hidden = shown > 0
-    }, { signal })
     root.addEventListener('click', (event) => {
       const link = (event.target as Element).closest<HTMLAnchorElement>('[data-capability-option]')
       if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
@@ -132,13 +113,9 @@ const shown = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record
   .core-showcase :global(.expressive-code) { max-width: 100%; }
   .core-showcase__picker > summary { display: flex; justify-content: space-between; align-items: center; min-height: 2.5rem; padding: .25rem .75rem; cursor: pointer; border: 1px solid var(--color-edge); border-radius: .4rem; list-style: none; }
   .core-showcase__picker > summary::-webkit-details-marker { display: none; }
-  .core-showcase__search { display: block; margin: .5rem 0; }
-  .core-showcase__search input { width: 100%; min-width: 0; border: 1px solid var(--color-edge); border-radius: .35rem; padding: .5rem .65rem; background: var(--background-color); color: inherit; font-size: .8125rem; }
   .core-showcase__option { display: block; padding: .45rem .75rem; border-radius: .35rem; font-size: .875rem; color: inherit; text-decoration: none; }
   .core-showcase__option:hover { background: var(--color-surface-hover); }
   .core-showcase__option[aria-current='true'] { font-weight: 600; background: var(--color-surface-hover); }
-  .core-showcase__option[hidden], .core-showcase__empty[hidden] { display: none; }
-  .core-showcase__empty { padding: .5rem .75rem; font-size: .8125rem; color: var(--color-muted); }
   .core-showcase__panel { display: none; }
   .core-showcase:not([data-selected]) .core-showcase__panel[data-default], .core-showcase :global(.core-showcase__panel.is-selected) { display: block; }
   .core-showcase__panel h3 { margin: 0 0 .6rem; font-size: 1rem; }
