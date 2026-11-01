@@ -12,7 +12,6 @@ export interface SidebarNode {
   label: string
   kind?: string
   section?: string
-  quiet?: boolean
   /** A group heading, such as a Sphinx toctree caption: text only, no row. */
   heading?: boolean
   /** The label with inline `<code>`; already escaped. */
@@ -31,14 +30,6 @@ export interface SidebarNode {
   expanded?: boolean
   lazy?: string
   children?: SidebarNode[]
-}
-
-/** Homogeneous protocol groups already name the kind; retain it for ARIA. */
-export function quietSidebarKinds(nodes: SidebarNode[]) {
-  if (new Set(nodes.map((node) => node.kind).filter(Boolean)).size <= 1) {
-    for (const node of nodes) if (node.kind) node.quiet = true
-  }
-  for (const node of nodes) if (node.children) quietSidebarKinds(node.children)
 }
 
 /** What the C extractor calls a declaration that C never names: `anonymous enum`. */

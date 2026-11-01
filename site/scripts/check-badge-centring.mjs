@@ -413,7 +413,7 @@ export function protocolSidebarProblems(page) {
  */
 export function apiTreeGutterProblems(page) {
   return page.evaluate(() => {
-    const nav = document.querySelector('.api-nav:not([data-marks])')
+    const nav = document.querySelector('.api-nav')
     if (!nav) return { marks: 0, problems: [] }
     const probe = document.createElement('i')
     probe.style.cssText = 'position: absolute; width: var(--api-nav-indent);'

@@ -11,7 +11,7 @@ afterEach(async () => {
   vi.restoreAllMocks()
 })
 
-async function navigation(options: { json?: ApiTreeJson; base?: string; search?: boolean; marks?: 'mixed' } = {}) {
+async function navigation(options: { json?: ApiTreeJson; base?: string; search?: boolean } = {}) {
   const base = options.base ?? '/en/tmux/3.7c/reference/'
   win = new Window({ url: `https://libtmux.org${base}entry/` })
   vi.stubGlobal('window', win)
@@ -40,7 +40,7 @@ async function navigation(options: { json?: ApiTreeJson; base?: string; search?:
   }
   const fetch = vi.fn(async () => ({ ok: true, json: async () => json }))
   vi.stubGlobal('fetch', fetch)
-  win.document.body.innerHTML = `<div class="api-nav" data-src="${base}tree.json" data-base="${base}"${options.marks ? ` data-marks="${options.marks}"` : ''}>
+  win.document.body.innerHTML = `<div class="api-nav" data-src="${base}tree.json" data-base="${base}">
     ${options.search ? `<input id="api-symbol-search" type="search"><button data-api-search-kind="all">All</button><button data-api-search-kind="types">Types</button><button data-api-search-kind="members">Members</button><p data-api-search-status></p><ul data-api-search-results hidden></ul><button data-api-search-retry hidden>Retry</button>` : ''}
     <ul role="tree"><li role="treeitem" tabindex="0" aria-expanded="false" aria-level="1" data-lazy="bucket:args">
       <div class="api-nav__row"><span class="api-nav__label">Arguments</span></div>
@@ -289,29 +289,8 @@ it('keeps terminal, empty-owner and legacy members as ordered leaves', async () 
 })
 
 
-it('keeps empty protocol filters disabled when search initializes and after a page swap', async () => {
-  const n = await navigation({ search: true })
-  const empty = win.document.createElement('button')
-  empty.dataset.apiSearchKind = 'prompts'
-  empty.setAttribute('data-api-search-empty', '')
-  empty.disabled = true
-  win.document.querySelector('.api-nav')!.prepend(empty)
-  const markup = win.document.body.innerHTML
-  for (const swap of [false, true]) {
-    if (swap) win.document.body.innerHTML = markup
-    n.initApiTree()
-    const unavailable = win.document.querySelector<HTMLButtonElement>('[data-api-search-kind="prompts"]')!
-    const all = win.document.querySelector<HTMLButtonElement>('[data-api-search-kind="all"]')!
-    expect(unavailable.disabled).toBe(true)
-    expect(all.disabled).toBe(false)
-    unavailable.click()
-    expect(n.fetch).not.toHaveBeenCalled()
-    expect(win.document.querySelector('[data-api-search-results]')!.hasAttribute('hidden')).toBe(true)
-  }
-})
-
-/** A protocol tree: each group is named for what it holds, so a mark says nothing unless the group mixes kinds. */
-const protocolTree = (types: ApiTreeJson['buckets'][number]['types']): ApiTreeJson => ({
+/** A tree of one group, so every row of it has the same kind. */
+const toolTree = (types: ApiTreeJson['buckets'][number]['types']): ApiTreeJson => ({
   port: 'rs',
   buckets: [{ id: 'args', label: 'Tools', count: types.length, slug: 'tools', children: [], types }],
   members: {},
@@ -319,37 +298,23 @@ const protocolTree = (types: ApiTreeJson['buckets'][number]['types']): ApiTreeJs
 const tool = (name: string, kind = 'tool') => ({ id: `mcp.${kind}.${name}`, name, slug: `${kind}s/${name}`, kind, m: 0 as const })
 const marks = (tree: HTMLElement) => [...tree.querySelectorAll('.api-nav__kind')]
 
-it('draws no mark under a group of one kind, and keeps the kind for assistive technology', async () => {
-  const n = await navigation({ base: '/en/rs/latest/mcp/', marks: 'mixed', json: protocolTree([tool('create_session'), tool('list_sessions')]) })
-  await n.key(n.bucket, 'ArrowRight')
-  const rows = n.children(n.bucket)
-  expect(rows).toHaveLength(2)
-  expect(marks(n.tree)).toHaveLength(0)
-  expect(rows.map((row) => row.getAttribute('aria-description'))).toEqual(['tool', 'tool'])
-})
-
-it('draws an inline mark on every row of a group that mixes kinds', async () => {
-  const n = await navigation({ base: '/en/rs/latest/mcp/', marks: 'mixed', json: protocolTree([tool('create_session'), tool('server_help', 'prompt')]) })
-  await n.key(n.bucket, 'ArrowRight')
-  expect(marks(n.tree)).toHaveLength(2)
-  expect(marks(n.tree).map((mark) => mark.textContent?.trim())).toEqual(['t', 'P'])
-})
-
 it('keeps the API tree\'s marks under a group of one kind', async () => {
-  const n = await navigation({ base: '/en/rs/latest/reference/', json: protocolTree([tool('create_session'), tool('list_sessions')]) })
+  const n = await navigation({ base: '/en/rs/latest/reference/', json: toolTree([tool('create_session'), tool('list_sessions')]) })
   await n.key(n.bucket, 'ArrowRight')
   expect(marks(n.tree)).toHaveLength(2)
+  expect(n.children(n.bucket).map((row) => row.getAttribute('aria-description'))).toEqual(['tool', 'tool'])
 })
 
-it('leaves a search result of one kind plain in a protocol tree, and marks a mixed result set', async () => {
-  const json = protocolTree([tool('create_session'), tool('list_sessions'), tool('session_prompt', 'prompt')])
-  const n = await navigation({ base: '/en/rs/latest/mcp/', marks: 'mixed', json, search: true })
+it('marks every search result with its kind, whether or not the results share one', async () => {
+  const json = toolTree([tool('create_session'), tool('list_sessions'), tool('session_prompt', 'prompt')])
+  const n = await navigation({ base: '/en/rs/latest/reference/', json, search: true })
   const input = win.document.querySelector<HTMLInputElement>('input')!
   const results = win.document.querySelector<HTMLElement>('[data-api-search-results]')!
   input.value = 'list'
   input.dispatchEvent(new win.Event('input', { bubbles: true }))
   await vi.waitFor(() => expect(results.querySelectorAll('a')).toHaveLength(1))
-  expect(results.querySelector('.api-nav__kind, .api-kind-word')).toBeNull()
+  expect(results.querySelectorAll('.api-nav__kind')).toHaveLength(1)
+  expect(results.querySelectorAll('.api-kind-word')).toHaveLength(1)
   expect(results.querySelector('a')?.getAttribute('aria-description')).toBe('tool')
   input.value = 'session'
   input.dispatchEvent(new win.Event('input', { bubbles: true }))
