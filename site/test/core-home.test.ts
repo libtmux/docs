@@ -6,6 +6,7 @@ import { CAPABILITIES, CORE_HOME, CORE_ROLES, coreDescription, coreLead, coreHom
 import { API_MODELS } from '../src/lib/api-models'
 import { PORTS } from '../src/lib/ports'
 import { cardRoute, routesOf } from './core-routes'
+import { stagedSectionsFor } from '../src/lib/port-documentation'
 
 const page = (port: string) => new URL(`../src/content/docs/ports/${port}/core/index.md`, import.meta.url)
 
@@ -153,11 +154,26 @@ describe('the cards of the Core Library page', () => {
     }
   })
 
+  it('counts the section overviews that staging writes for source-guide ports, and only those', () => {
+    // Staged from the port repository at build time: guides, examples, topics and concepts, or guides alone for a wrapper.
+    expect(stagedSectionsFor('ruby')).toEqual(['guides', 'examples', 'topics', 'concepts'])
+    expect(stagedSectionsFor('kotlin')).toEqual(['guides'])
+    expect(stagedSectionsFor('rs')).toEqual([])
+    for (const slug of ['ruby', 'lua', 'elixir', 'powershell', 'julia']) {
+      for (const section of stagedSectionsFor(slug)) expect(routesOf(slug).has(section), `${slug} ${section}`).toBe(true)
+    }
+    // A wrapper stages guides only; its other sections exist only if the port authors them.
+    expect(routesOf('scala').has('guides')).toBe(true)
+  })
+
   it('finds a card whose page does not exist', () => {
-    const routes = routesOf('elixir')
-    expect(routes.has('examples'), 'elixir has no examples page').toBe(false)
-    expect(routes.has('reference')).toBe(true)
-    expect(routes.has(cardRoute('../examples/'))).toBe(false)
-    expect(routes.has(cardRoute('../no-such-page/'))).toBe(false)
+    for (const slug of ['elixir', 'ruby', 'cxx', 'kotlin']) {
+      const routes = routesOf(slug)
+      expect(routes.has('reference'), slug).toBe(true)
+      expect(routes.has(cardRoute('../no-such-page/')), slug).toBe(false)
+      expect(routes.has(cardRoute('../guides/no-such-guide/')), slug).toBe(false)
+    }
+    // Not a staged port, and no authored workspace section: nothing writes this route.
+    expect(routesOf('swift').has('topics-and-notes')).toBe(false)
   })
 })

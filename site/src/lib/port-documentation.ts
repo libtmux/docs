@@ -377,6 +377,18 @@ export function sourceGuidesFor(portSlug: string): readonly PortSourceGuide[] {
   return config.sourceGuides
 }
 
+/**
+ * The section overviews staging writes for a port's source guides, unless the
+ * port authors one itself: guides for every staged port, and examples, topics
+ * and concepts too unless the port wraps another library's source.
+ * `scripts/stage-port-docs.mjs` writes them; the Core page cards are tested
+ * against this list.
+ */
+export function stagedSectionsFor(portSlug: string): readonly string[] {
+  if (!documentationFor(portSlug)) return []
+  return PORT_BY_SLUG[portSlug]!.parentLibrary ? ['guides'] : ['guides', 'examples', 'topics', 'concepts']
+}
+
 /** Retired source pages point to the reference that now owns their content. */
 export function sourceGuideRedirectsFor(portSlug: string) {
   return documentationFor(portSlug)?.redirects ?? []

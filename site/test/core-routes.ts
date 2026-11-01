@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { parseFrontmatter } from '@astrojs/markdown-remark'
 import { docsPath, type DocsPage } from '../src/lib/docs-paths'
 import { docsEntryAvailable } from '../src/lib/page-port-links'
-import { SOURCE_GUIDE_PORTS, sourceGuidesFor } from '../src/lib/port-documentation'
+import { SOURCE_GUIDE_PORTS, sourceGuidesFor, stagedSectionsFor } from '../src/lib/port-documentation'
 
 /** Every public route of a port's docs: its content pages, the shared pages it shows, staged guides and the reference. */
 export function routesOf(port: string): Set<string> {
@@ -22,7 +22,12 @@ export function routesOf(port: string): Set<string> {
     routes.add(docsPath(entry))
     for (const alias of entry.data.aliases ?? []) routes.add(alias)
   }
-  if (SOURCE_GUIDE_PORTS.includes(port)) for (const guide of sourceGuidesFor(port)) for (const route of [guide.route, ...guide.aliases]) routes.add(route)
+  // Staging writes these at build time from the port's repository: each guide, and an overview per section
+  // the port does not author itself (scripts/stage-port-docs.mjs, stagedSectionsFor).
+  if (SOURCE_GUIDE_PORTS.includes(port)) {
+    for (const guide of sourceGuidesFor(port)) for (const route of [guide.route, ...guide.aliases]) routes.add(route)
+    for (const section of stagedSectionsFor(port)) routes.add(section)
+  }
   return routes
 }
 
