@@ -17,9 +17,13 @@ const { name, tagline, logo } = Astro.props
   .port-hero__links { grid-area: links; justify-self: end; max-width: 100%; padding-top: .5rem; }
   .port-hero__mark { grid-area: mark; }
   .port-hero > div:not(.port-hero__links) { grid-area: text; }
+  /* One pill per row, as wide as the widest, in the top right cell. */
+  .port-hero__links :global(.port-links) { display: grid; grid-template-columns: max-content; gap: .5rem; justify-items: stretch; }
+  .port-hero__links :global(.port-link) { justify-content: flex-start; }
   @media (max-width: 47.99rem) {
     .port-hero { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "mark text" ". links"; }
     .port-hero__links { justify-self: start; padding-top: 0; }
+    .port-hero__links :global(.port-links) { display: flex; flex-wrap: wrap; }
   }
   .port-hero__mark { width: 88px; height: 88px; flex: none; object-fit: contain; }
   .port-hero__tagline { color: var(--color-foreground-muted); }
