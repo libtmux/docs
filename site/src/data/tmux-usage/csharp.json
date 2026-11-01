@@ -94,7 +94,7 @@
   ],
   "port": "csharp",
   "repo": "libtmux/libtmux-dotnet",
-  "revision": "472c2bcfbda6735139849324cc109ad70300001e",
+  "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
   "schemaVersion": 1,
   "symbols": {
     "LibTmux.Client.GetAsync": [

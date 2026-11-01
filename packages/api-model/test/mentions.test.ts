@@ -198,16 +198,31 @@ describe('a bare member after the qualified type its paragraph names', () => {
     body, portAt: () => 'powershell', portByLabel: LABELS, page: '/guide/', nativeTmux: false, resolver, models, authoredTarget: () => undefined,
   }).dangling.map((row) => row.text)
 
-  it('resolves a name only one named type has, and names a workspace type by its qualified name', () => {
+  it('resolves a name only one named type has, and names a workspace type by either of its names', () => {
     expect(page('Raises `LibTmux.TmuxUnsupportedOnReleaseException`. It carries `Command`.')).toEqual([])
     expect(page('See `LibTmux.Workspace.WorkspaceFormatException`.')).toEqual([])
+    expect(page('See `WorkspaceFormatException`.')).toEqual([])
   })
 
   it('leaves the name unresolved when no named type, or two, has it', () => {
-    // Controls: nothing named before it, a type without the member, two types with it, and a short workspace name.
+    // Controls: nothing named before it, a type without the member, and two types with it.
     expect(page('It carries `Command`.')).toEqual(['Command'])
     expect(page('Raises `LibTmux.Workspace.Missing`. It carries `Command`.')).toEqual(['LibTmux.Workspace.Missing', 'Command'])
     expect(page('Raises `LibTmux.TmuxUnsupportedOnReleaseException` or `LibTmux.SelectLayoutRequest`. It carries `Command`.')).toEqual(['Command'])
-    expect(page('See `WorkspaceFormatException`.')).toEqual(['WorkspaceFormatException'])
+  })
+
+  it('names a workspace type by its short name only when nothing else in the parent carries it', () => {
+    const uris = (symbols: ReturnType<typeof sym>[], name: string) =>
+      parentInventory({ port: 'csharp', version: '0', symbols } as unknown as ApiModel, (s) => `/reference/csharp/${s.slug}/`)
+        .filter((entry) => entry.name === name).map((entry) => entry.uri)
+    const alone = [sym('LibTmux.Workspace.Plan', 'class', 'workspace'), sym('LibTmux.Workspace.Plan.Steps', 'property', 'workspace')]
+    expect(uris(alone, 'Plan')).toEqual(['reference/csharp/libtmux-workspace-plan/'])
+    // Controls: its member keeps the qualified name only, and a core type or a second workspace or MCP type with the
+    // short name leaves it to the core's type or to nothing, while each qualified name still resolves.
+    expect(uris(alone, 'Steps')).toEqual([])
+    expect(uris(alone, 'LibTmux.Workspace.Plan.Steps')).toHaveLength(1)
+    expect(uris([...alone, sym('LibTmux.Plan', 'class')], 'Plan')).toEqual(['reference/csharp/libtmux-plan/'])
+    expect(uris([...alone, sym('LibTmux.Mcp.Plan', 'class', 'mcp')], 'Plan')).toEqual([])
+    expect(uris([...alone, sym('LibTmux.Mcp.Plan', 'class', 'mcp')], 'LibTmux.Workspace.Plan')).toHaveLength(1)
   })
 })
