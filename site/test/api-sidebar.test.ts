@@ -1,7 +1,7 @@
 import { experimental_AstroContainer } from 'astro/container'
 import { Window } from 'happy-dom'
 import { describe, expect, it, vi } from 'vitest'
-import { sidebarCatalog, sidebarInventory, sidebarNodes, sidebarSelection, quietSidebarKinds, SIDEBAR_MIN_GAP, SIDEBAR_PRESENTATIONS, SIDEBAR_WINDOW, type SidebarNode } from '../src/lib/api-sidebar'
+import { sidebarCatalog, sidebarInventory, sidebarNodes, sidebarSelection, SIDEBAR_MIN_GAP, SIDEBAR_PRESENTATIONS, SIDEBAR_WINDOW, type SidebarNode } from '../src/lib/api-sidebar'
 import { apiTreeHref, searchApi, type ApiSearchResult, type ApiTreeJson } from '../src/lib/api-search'
 import { API_MODELS, pageSlug } from '../src/lib/api-models'
 import { API_MODEL_PORTS } from '../src/lib/ports'
@@ -106,12 +106,9 @@ describe('API sidebar presentations', () => {
     expect(sidebarCatalog(commands)).toMatchObject({ ownerLabel: 'section', ownerPlural: 'sections' })
   })
 
-  it('resolves section anchors beneath a preview prefix and keeps homogeneous protocol rows quiet', () => {
+  it('resolves section anchors beneath a preview prefix', () => {
     expect(apiTreeHref('/pr-42/en/rs/latest/mcp/', { id: 'group', slug: '' }, { group: 'tools/#windows' }))
       .toBe('/pr-42/en/rs/latest/mcp/tools/#windows')
-    const nodes = sidebarNodes(json, '/reference/', 'grouped', 'a-name')
-    quietSidebarKinds(nodes)
-    expect(nodes[0]?.children?.[0]?.children?.find((node) => node.label === 'Methods')?.children?.every((node) => node.quiet)).toBe(true)
   })
 
   it.each(['outline', 'grouped'] as const)('keeps curated nested buckets collapsed outside the current path in %s', (mode) => {

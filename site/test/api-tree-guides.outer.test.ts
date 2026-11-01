@@ -3,74 +3,20 @@ import { chromium, type Browser } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 /**
- * Sidebar rows and guide lines in a real browser, with the site's own stylesheets and no server. With mixed marks a guide
- * line marks a row's parent, so it sits under the parent's label and never crosses the row's own. With the default marks
- * every ancestor level draws a guide, hung from the centre of that ancestor's mark.
+ * Sidebar rows and guide lines in a real browser, with the site's own stylesheets and no server. Every ancestor level draws a
+ * guide, hung from the centre of that ancestor's mark.
  */
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8')
 const styles = ['../src/styles/kind-marks.css', '../src/styles/api-tree.css'].map(read).join('\n')
-// Mixed marks have no kind-mark gutter, so their guide starts under the parent's label, not after the mark's column.
-const mixedInset = 'inset-inline-start: calc(0.5rem + (var(--level) - 2) * var(--api-nav-indent));'
-const gutterInset = 'inset-inline-start: calc(0.5rem + var(--api-nav-mark) + 0.5rem + (var(--level) - 2) * var(--api-nav-indent));'
-
-// The MCP sidebar as the page writes it: Outline, mixed marks, a section, a subsection and a resource.
-const tree = `<div id="api-nav" class="api-nav" data-marks="mixed" data-presentation="outline"><nav class="api-nav__nav"><ul role="tree" class="api-nav__tree">
-<li role="treeitem" class="api-nav__item" aria-level="1" aria-expanded="true" aria-description="section" data-lazy="type:section:resources">
-  <div class="api-nav__row" style="--level:1"><span class="api-nav__chevron" aria-hidden="true"></span><a class="api-nav__label" href="#">Resources</a><span class="api-nav__count">1</span></div>
-  <ul role="group" class="api-nav__group">
-    <li role="treeitem" class="api-nav__item" aria-level="2" aria-expanded="true" aria-description="section" data-lazy="type:section:resources-fixed-resources">
-      <div class="api-nav__row" style="--level:2"><span class="api-nav__chevron" aria-hidden="true"></span><a class="api-nav__label" href="#">Fixed resources</a><span class="api-nav__count">1</span></div>
-      <ul role="group" class="api-nav__group"><li role="none">
-        <a role="treeitem" class="api-nav__row api-nav__leaf" aria-level="3" href="#" aria-current="page" aria-description="resource" style="--level:3"><span class="api-nav__label">capabilities</span></a>
-      </li></ul>
-    </li>
-  </ul>
-</li></ul></nav></div>`
 
 const page = (css: string) => `<!doctype html><html><head><style>:root { --text-color: #1a1c1e; --background-color: #ffffff; }
-body { margin: 0; font: 14px/1.5 sans-serif; width: 18rem; }\n${css}</style></head><body>${tree}</body></html>`
+body { margin: 0; font: 14px/1.5 sans-serif; width: 18rem; }\n${css}</style></head><body></body></html>`
 
 let browser: Browser
 beforeAll(async () => { browser = await chromium.launch({ headless: true }) }, 60_000)
 afterAll(async () => { await browser?.close() })
 
-/** Each nested row's guide line, its own label's text and its parent label's text, as page x positions. */
-async function guides(css: string) {
-  const target = await browser.newPage({ viewport: { width: 400, height: 300 } })
-  await target.setContent(page(css))
-  const rows = await target.evaluate(() => {
-    const textLeft = (label: Element) => { const range = document.createRange(); range.selectNodeContents(label); return range.getBoundingClientRect().left }
-    return [...document.querySelectorAll('[aria-level]:not([aria-level="1"])')].map((row) => {
-      const label = row.matches('a') ? row.querySelector('.api-nav__label')! : row.querySelector(':scope > .api-nav__row > .api-nav__label')!
-      const guide = getComputedStyle(label, '::before')
-      const parent = row.parentElement!.closest('[aria-level]')!.querySelector(':scope > .api-nav__row > .api-nav__label')!
-      return { text: label.textContent!.trim(), line: guide.borderInlineStartWidth,
-        guide: label.parentElement!.getBoundingClientRect().left + parseFloat(guide.left), own: textLeft(label), parent: textLeft(parent) }
-    })
-  })
-  await target.close()
-  return rows
-}
-
-describe('sidebar guide lines with mixed marks', () => {
-  it('sit under the parent label and clear the row label', async () => {
-    const rows = await guides(styles)
-    expect(rows.map((row) => row.text)).toEqual(['Fixed resources', 'capabilities'])
-    for (const row of rows) {
-      expect(row.line, row.text).toBe('1px')
-      expect(Math.abs(row.guide - row.parent), `${row.text}: guide under its parent label`).toBeLessThan(1)
-      expect(row.guide, `${row.text}: guide clears its own label`).toBeLessThan(row.own - 4)
-    }
-  })
-
-  it('cross the row label with the gutter\'s position, so the check above can fail', async () => {
-    expect(styles).toContain(mixedInset)
-    const rows = await guides(styles.replace(mixedInset, gutterInset))
-    for (const row of rows) expect(row.guide, `${row.text}: the gutter puts the guide in the text`).toBeGreaterThan(row.own)
-  })
-})
-
-// The default marks as the API reference writes them: a bucket, a type, a member with members of its own, and a leaf.
+// The API reference's tree as it writes it: a bucket, a type, a member with members of its own, and a leaf.
 const mark = (label: string) => `<span class="api-nav__kind api-badge--kind-class" aria-hidden="true"><span class="api-badge__label">${label}</span></span>`
 const branch = (level: number, label: string, children: string) => `<li role="treeitem" class="api-nav__item" aria-level="${level}" aria-expanded="true"${level > 1 ? ' aria-description="class"' : ''}>
   <div class="api-nav__row" style="--level:${level}"><span class="api-nav__chevron" aria-hidden="true"></span>${level > 1 ? mark('C') : ''}<span class="api-nav__label">${label}</span><span class="api-nav__count">1</span></div>
@@ -121,7 +67,7 @@ async function outlineRows(css: string, options: { hasTouch?: boolean; forcedCol
   return rows
 }
 
-describe('sidebar rows and guide lines with the default marks', () => {
+describe('sidebar rows and guide lines', () => {
   it('indent the whole row, mark and label, one level at a time from the third', async () => {
     const rows = await outlineRows(styles)
     expect(rows.map((row) => row.level)).toEqual([1, 2, 3, 4, 3])

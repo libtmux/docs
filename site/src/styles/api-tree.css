@@ -20,7 +20,7 @@
 }
 
 html[data-theme-mode='dark'] .api-nav { --api-nav-guide: color-mix(in srgb, var(--text-color) 45%, var(--background-color)); }
-.api-nav[data-presentation]:not([data-marks='mixed']) { --api-nav-indent: 1rem; }
+.api-nav[data-presentation] { --api-nav-indent: 1rem; }
 
 .api-nav__presentation { padding: 0 0.5rem 0.75rem; border-bottom: 1px solid var(--color-edge); }
 .api-nav__picker-row { --api-nav-control-size: 2.25rem; display: flex; position: relative; align-items: center; gap: 0.35rem; }
@@ -78,14 +78,10 @@ html[data-theme-mode='dark'] .api-nav { --api-nav-guide: color-mix(in srgb, var(
 .api-nav[data-presentation] .api-nav__item[data-lazy^='more:'] > .api-nav__row > .api-nav__label,
 .api-nav[data-presentation] .api-nav__item[data-lazy^='more:'] > .api-nav__row > noscript > .api-nav__label { margin-inline-start: calc(var(--api-nav-mark) + 0.5rem); font-weight: 400; color: var(--color-muted); }
 .api-nav[data-presentation] .api-nav__item[data-lazy^='group:'] > .api-nav__row > .api-nav__label { margin-inline-start: calc(var(--api-nav-mark) + 0.5rem); }
-.api-nav[data-marks='mixed'][data-presentation] .api-nav__item[data-lazy^='group:'] > .api-nav__row > .api-nav__label { margin-inline-start: calc(var(--api-nav-mark) + 0.25rem); }
-.api-nav[data-marks='mixed'][data-presentation] .api-nav__item[data-lazy^='more:'] > .api-nav__row > .api-nav__label,
-.api-nav[data-marks='mixed'][data-presentation] .api-nav__item[data-lazy^='more:'] > .api-nav__row > noscript > .api-nav__label { margin-inline-start: 0; }
 .api-nav[data-presentation] .api-nav__leaf[aria-current='page'] > .api-nav__label { font-weight: 600; }
-.api-nav[data-marks='mixed'][data-presentation] .api-nav__row { padding-inline-start: calc(0.5rem + (var(--level, 1) - 1) * var(--api-nav-indent)); gap: 0.25rem; }
 /* Every ancestor level draws its guide, hung from the centre of that ancestor's mark, as Primer's TreeView does. One gradient
    on the row sets the lines an indent apart across the width that the levels past the second add. */
-.api-nav[data-presentation]:not([data-marks='mixed']) .api-nav__row::after {
+.api-nav[data-presentation] .api-nav__row::after {
   content: ''; position: absolute; top: calc(-1 * var(--api-nav-row-gap)); bottom: 0;
   inset-inline-start: calc(0.5rem + var(--api-nav-mark) / 2 - 0.5px);
   width: calc(max(0, var(--level, 1) - 2) * var(--api-nav-indent));
@@ -94,14 +90,7 @@ html[data-theme-mode='dark'] .api-nav { --api-nav-guide: color-mix(in srgb, var(
 }
 /* Forced colours drop a background gradient, so the guides keep theirs and take a system colour. */
 @media (forced-colors: active) {
-  .api-nav[data-presentation]:not([data-marks='mixed']) .api-nav__row::after { --api-nav-guide: GrayText; forced-color-adjust: none; }
-}
-/* Mixed marks have no kind-mark gutter, so a row draws one guide, under its parent's label. */
-.api-nav[data-marks='mixed'][data-presentation] :is(.api-nav__item:is([aria-description], [data-lazy^='group:']):not([aria-level='1']) > .api-nav__row, .api-nav__item[data-lazy^='more:'] > .api-nav__row, .api-nav__leaf[aria-description]:not([aria-level='1'])) > .api-nav__label::before,
-.api-nav[data-marks='mixed'][data-presentation] .api-nav__item[data-lazy^='more:'] > .api-nav__row > noscript > .api-nav__label::before {
-  content: ''; position: absolute; top: calc(-1 * var(--api-nav-row-gap)); bottom: 0;
-  inset-inline-start: calc(0.5rem + (var(--level) - 2) * var(--api-nav-indent));
-  border-inline-start: 1px solid var(--api-nav-guide); pointer-events: none;
+  .api-nav[data-presentation] .api-nav__row::after { --api-nav-guide: GrayText; forced-color-adjust: none; }
 }
 .api-nav[data-presentation] :is(.api-nav__leaf[aria-current='page'], .api-nav__row:has(> [aria-current='page'])) {
   background: color-mix(in srgb, var(--theme-accent) 18%, transparent);

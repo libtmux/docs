@@ -8,6 +8,7 @@ import { REGISTRY } from '../src/lib/registry'
 import { LANG_TO_PORT } from '../src/plugins/remark-port-code.mjs'
 import { SITE_BUILT, SITE_PREFIX, PREVIEW_PREFIX, productionPath, publishedPath, sitePath } from './site-root'
 import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects } from '../src/lib/mcp-catalog'
+import { mcpObjectGroup } from '../src/lib/mcp-reference'
 import { mentionBadge, mentionBadgeHtml } from '../src/lib/mention-badge'
 import type { ApiTreeJson } from '../src/lib/api-search'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
@@ -724,15 +725,20 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
 
   // A port reads every page of its MCP reference in one test, so the work grows with the reference and the largest port
   // leaves little of the default deadline on a slower runner. The deadline is not what the test is about; the assertions are.
-  it.each(Object.keys(MCP_REFERENCE))('%s uses the shared reference browser for all advertised protocol objects', async (port) => {
+  it.each(Object.keys(MCP_REFERENCE))('%s lists all advertised protocol objects in the section menu', async (port) => {
     const version = manifest().defaultVersion[port]
     expect(version, `${port} default version`).toBeDefined()
     for (const [section, label] of Object.entries(MCP_SECTIONS)) {
       const index = `${port}/${version}/mcp/${section}/`
       const objects = mcpObjects(port).filter((object) => object.section === section)
       await inspect(index, (document) => {
-        expect(document.querySelector('main.api-reference-layout'), `${index} shared layout`).not.toBeNull()
-        expect(document.querySelector('#api-nav #api-symbol-search'), `${index} searchable tree`).not.toBeNull()
+        expect(document.querySelector('main .api-reference-layout'), `${index} shared layout`).not.toBeNull()
+        // The menu the Guides pages use, not the API browser: the protocol section is its context.
+        expect(document.querySelector('.api-nav, [data-api-nav-toggle]'), `${index} has no API browser`).toBeNull()
+        expect(document.querySelector('[data-section-navigation] input[data-section-search]'), `${index} searchable menu`).not.toBeNull()
+        expect(document.querySelector('[data-section-navigation] nav')?.getAttribute('aria-label'), `${index} menu context`).toBe(`MCP: ${label}`)
+        expect(document.querySelector('[data-section-navigation] [aria-current="page"]')?.textContent?.trim(), `${index} current row`).toBe('Overview')
+        expect(document.querySelector('#mobile-sidebar [data-section-navigation]'), `${index} drawer menu`).not.toBeNull()
         expect(document.querySelector('.api-reference-content h1')?.textContent).toBe(label)
         const links = [...document.querySelectorAll('.api-index-card[id] > .api-index-card__link[href]')]
         expect(links.map((link) => new URL(link.getAttribute('href')!, urlFor(index)).pathname).sort())
@@ -740,7 +746,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         if (!objects.length) expect(document.querySelector('.api-reference-content')?.textContent).toContain(`does not advertise ${section}`)
       })
       for (const object of objects) await inspect(`${port}/${version}/${object.path}/`, (document) => {
-        expect(document.querySelector('main.api-reference-layout--symbol'), object.id).not.toBeNull()
+        expect(document.querySelector('main .api-reference-layout--symbol'), object.id).not.toBeNull()
+        const row = document.querySelector('[data-section-navigation] nav [aria-current="page"]')
+        expect(row?.textContent?.trim(), `${object.id} current row`).toBe(object.name)
+        expect(row?.closest('details.sidebar-section')?.querySelector(':scope > summary')?.textContent?.trim(), `${object.id} group`).toBe(mcpObjectGroup(object))
         expect(document.querySelector('.api-reference-content h1 code')?.textContent).toBe(object.name)
         const declaration = document.getElementById(object.id)
         expect(declaration?.getAttribute('data-domain')).toBe('mcp')

@@ -14,7 +14,7 @@ import { wordBreak } from '../../lib/word-break'
 import { kindMark, markClass } from '../../lib/api-labels'
 import { apiTreeHref, searchApi, type ApiTreeBucket as JsonBucket, type ApiTreeJson as TreeJson } from '../../lib/api-search'
 import { apiTreePath, captureApiTree, initializeApiTree, type ApiTreeSelection, type ApiTreeState } from './api-tree-state'
-import { SIDEBAR_PRESENTATIONS, SIDEBAR_PREFERENCE_KEY, sidebarCatalog, sidebarInventory, sidebarName, sidebarNodes, quietSidebarKinds, type SidebarNode, type SidebarPresentation } from '../../lib/api-sidebar'
+import { SIDEBAR_PRESENTATIONS, SIDEBAR_PREFERENCE_KEY, sidebarCatalog, sidebarInventory, sidebarName, sidebarNodes, type SidebarNode, type SidebarPresentation } from '../../lib/api-sidebar'
 import { initApiOwnerPicker } from './api-owner-picker'
 
 const ITEM = '[role="treeitem"]'
@@ -117,7 +117,7 @@ function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
   let kind = 'all'
   let generation = 0
   input.disabled = false
-  for (const button of filters) button.disabled = button.hasAttribute('data-api-search-empty')
+  for (const button of filters) button.disabled = false
   document.addEventListener('keydown', (event) => {
     if (event.key !== '/' || event.defaultPrevented || event.isComposing || event.metaKey || event.ctrlKey || event.altKey) return
     const target = event.target as Element
@@ -143,23 +143,19 @@ function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
       const found = searchApi(json, query, kind)
       status.textContent = found.length > 100 ? `Showing 100 of ${found.length} results. Refine your search.`
         : `${found.length} ${found.length === 1 ? 'result' : 'results'}`
-      // A result set of one kind needs no mark in a tree whose groups name their kind: the filter or the query already did.
-      const quiet = nav.dataset.marks === 'mixed' && new Set(found.map((record) => record.kind)).size <= 1
       for (const record of found.slice(0, 100)) {
         const li = document.createElement('li')
         const link = document.createElement('a')
         link.href = apiTreeHref(nav.dataset.base ?? '/', record, json.hrefs)
         const name = document.createElement('strong')
         name.textContent = nav.dataset.presentation ? sidebarName(record.name, json.port) : record.name
-        const mark = quiet ? undefined : kindBadge(record.kind)
+        const mark = kindBadge(record.kind)
         if (mark) name.prepend(mark, ' ')
         // The word trails the name: a result is a menu row, and a menu cannot be hovered for it.
-        if (!quiet) {
-          const word = document.createElement('span')
-          word.className = 'api-kind-word'
-          word.textContent = record.kind.replace(/-/g, ' ')
-          name.append(word)
-        }
+        const word = document.createElement('span')
+        word.className = 'api-kind-word'
+        word.textContent = record.kind.replace(/-/g, ' ')
+        name.append(word)
         link.setAttribute('aria-description', record.kind)
         const path = document.createElement('small')
         path.textContent = nav.dataset.presentation ? sidebarName(record.qualifiedName, json.port) : record.qualifiedName
@@ -291,7 +287,7 @@ function kindBadge(kind?: string): HTMLSpanElement | undefined {
   return badge
 }
 
-function leaf(name: string, href: string, level: number, kind?: string, shortcut = false, quiet = false): HTMLLIElement {
+function leaf(name: string, href: string, level: number, kind?: string, shortcut = false): HTMLLIElement {
   const li = document.createElement('li')
   li.setAttribute('role', 'none')
   const a = document.createElement('a')
@@ -304,14 +300,14 @@ function leaf(name: string, href: string, level: number, kind?: string, shortcut
   if (kind) a.setAttribute('aria-description', kind)
   if (shortcut) a.setAttribute('data-api-shortcut', '')
   if (!shortcut && new URL(href, location.href).pathname === location.pathname) a.setAttribute('aria-current', 'page')
-  const mark = quiet ? undefined : kindBadge(kind)
+  const mark = kindBadge(kind)
   if (mark) a.append(mark)
   a.append(label(name))
   li.append(a)
   return li
 }
 
-function branch(name: string, href: string | undefined, level: number, lazy: string, count?: number, kind?: string, shortcut = false, quiet = false): HTMLLIElement {
+function branch(name: string, href: string | undefined, level: number, lazy: string, count?: number, kind?: string, shortcut = false): HTMLLIElement {
   const id = `api-nav-c${++seq}`
   const li = document.createElement('li')
   li.setAttribute('role', 'treeitem')
@@ -329,7 +325,7 @@ function branch(name: string, href: string | undefined, level: number, lazy: str
   chevron.className = 'api-nav__chevron'
   chevron.setAttribute('aria-hidden', 'true')
   row.append(chevron)
-  const mark = quiet ? undefined : kindBadge(kind)
+  const mark = kindBadge(kind)
   if (mark) row.append(mark)
   if (href) {
     const a = document.createElement('a')
@@ -360,14 +356,6 @@ function branch(name: string, href: string | undefined, level: number, lazy: str
   return li
 }
 
-/**
- * A tree whose groups name their kind (MCP) shows a mark only where a group mixes kinds.
- * The API tree keeps its gutter of marks, so it never quietens a group.
- */
-function kindsAgree(nav: HTMLElement, kinds: (string | undefined)[]): boolean {
-  return nav.dataset.marks === 'mixed' && new Set(kinds.filter(Boolean)).size <= 1
-}
-
 function findBucket(buckets: JsonBucket[], id: string): JsonBucket | undefined {
   for (const b of buckets) {
     if (b.id === id) return b
@@ -390,28 +378,25 @@ async function build(nav: HTMLElement, item: HTMLElement): Promise<HTMLElement |
   if (nav.dataset.presentation) {
     const nodes = sidebarNodes(json, base, nav.dataset.presentation as SidebarPresentation, nav.dataset.symbol ?? '', false,
       { lazy: item.dataset.lazy ?? '', level })
-    if (nav.dataset.marks === 'mixed') quietSidebarKinds(nodes)
     children.push(...presentationRows(nodes))
   } else if (kind === 'bucket') {
     const bucket = findBucket(json.buckets, id)
     if (!bucket) return undefined
-    const quiet = kindsAgree(nav, bucket.types.map((t) => t.kind))
     for (const t of bucket.types) {
       const href = apiTreeHref(base, t, json.hrefs)
-      children.push(t.m ? branch(t.name, href, level, `type:${t.id}`, undefined, t.kind, t.shortcut, quiet) : leaf(t.name, href, level, t.kind, t.shortcut, quiet))
+      children.push(t.m ? branch(t.name, href, level, `type:${t.id}`, undefined, t.kind, t.shortcut) : leaf(t.name, href, level, t.kind, t.shortcut))
     }
     for (const c of bucket.children) {
       children.push(branch(c.label, c.slug ? `${base}${c.slug}/` : undefined, level, `bucket:${c.id}`, c.types.length))
     }
   } else {
     const members = json.members[id] ?? []
-    const quiet = kindsAgree(nav, members.map((member) => member[3]))
     for (const [name, slug, memberId, kind] of members) {
       const href = apiTreeHref(base, { id: memberId, slug }, json.hrefs)
       const display = nav.dataset.presentation ? sidebarName(name, json.port) : name
       children.push(memberId && json.members[memberId]?.length
-        ? branch(display, href, level, `type:${memberId}`, nav.dataset.presentation ? json.members[memberId].length : undefined, kind, false, quiet)
-        : leaf(display, href, level, kind, false, quiet))
+        ? branch(display, href, level, `type:${memberId}`, nav.dataset.presentation ? json.members[memberId].length : undefined, kind)
+        : leaf(display, href, level, kind))
     }
   }
   const group = document.createElement('ul')
@@ -453,8 +438,8 @@ function presentationRows(nodes: SidebarNode[]): HTMLLIElement[] {
       return heading
     }
     const li = node.expanded !== undefined
-      ? branch(node.label, node.href, node.level, node.lazy ?? '', node.count, node.kind, node.shortcut, node.quiet)
-      : leaf(node.label, node.href ?? '', node.level, node.kind, node.shortcut, node.quiet)
+      ? branch(node.label, node.href, node.level, node.lazy ?? '', node.count, node.kind, node.shortcut)
+      : leaf(node.label, node.href ?? '', node.level, node.kind, node.shortcut)
     const row = li.matches(ITEM) ? li : li.querySelector<HTMLElement>(ITEM)!
     row.setAttribute('aria-setsize', String(items.length))
     row.setAttribute('aria-posinset', String(items.indexOf(node) + 1))
@@ -500,7 +485,6 @@ export async function setApiSidebar(nav: HTMLElement, mode: SidebarPresentation,
   nav.dataset.currentHref = record ? apiTreeHref(nav.dataset.base ?? '/', record, json.hrefs) : location.pathname
   delete nav.dataset.apiTreeInteracted
   const nodes = sidebarNodes(json, nav.dataset.base ?? '/', mode, selected, options.allTypes)
-  if (nav.dataset.marks === 'mixed') quietSidebarKinds(nodes)
   if (nav.dataset.glossaryHref) nodes.push({ id: 'api-nav-glossary', label: nav.dataset.glossaryLabel ?? '', href: nav.dataset.glossaryHref, level: 1 })
   tree.replaceChildren(...presentationRows(nodes))
   selectPresentation(nav)

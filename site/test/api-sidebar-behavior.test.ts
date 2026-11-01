@@ -58,10 +58,7 @@ it('keeps selection across modes, reveals collapsed ancestry, and switches to an
   await setApiSidebar(nav, 'outline', 'empty')
   expect(nav.dataset.stateScope).toBe('outline')
   expect(nav.querySelector('[data-lazy="type:session"]')?.getAttribute('aria-expanded')).toBe('true')
-  nav.dataset.marks = 'mixed'
   await setApiSidebar(nav, 'grouped', 'create')
-  expect(nav.querySelector('[data-lazy="group:companion:method"] .api-nav__kind')).toBeNull()
-  expect(nav.querySelector('[data-lazy="group:companion:method"] [role="treeitem"]')?.getAttribute('aria-description')).toBe('method')
   win.localStorage.setItem('libtmux:sidebar-presentation', 'focus')
   const restored = new Promise((resolve) => nav.addEventListener('api-sidebar:change', resolve, { once: true }))
   initApiTree()

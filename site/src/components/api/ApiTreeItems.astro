@@ -51,7 +51,7 @@ const items = nodes.filter((node) => !node.section && !node.heading)
       >
         <div class="api-nav__row" style={`--level:${node.level}`}>
           <span class="api-nav__chevron" aria-hidden="true" />
-          {node.kind && !node.quiet && <ApiBadge label={node.kind} variant="kind" value={node.kind} compact />}
+          {node.kind && <ApiBadge label={node.kind} variant="kind" value={node.kind} compact />}
           {node.href ? (
             <a class="api-nav__label" id={node.id} href={node.href} data-api-shortcut={node.shortcut || undefined} tabindex="-1" aria-current={node.current ? 'page' : undefined}>
               {node.labelHtml ? <Fragment set:html={node.labelHtml} /> : <SymbolName name={node.label} />}
@@ -93,7 +93,7 @@ const items = nodes.filter((node) => !node.section && !node.heading)
           rel={node.external ? 'noopener noreferrer' : undefined}
           style={`--level:${node.level}`}
         >
-          {node.kind && !node.quiet && <ApiBadge label={node.kind} variant="kind" value={node.kind} compact />}
+          {node.kind && <ApiBadge label={node.kind} variant="kind" value={node.kind} compact />}
           <span class="api-nav__label">
             {node.labelHtml ? <Fragment set:html={node.labelHtml} /> : <SymbolName name={node.label} />}
           </span>

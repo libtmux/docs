@@ -180,7 +180,7 @@ modifier chip is one line of text. The badge gate reads the pixels of real pages
 at 1x and at a real 2x device scale factor (Chromium launched with the factor,
 because the emulated factor snaps text to CSS pixels), in light and dark. It
 measures the mark that leads a name in cards and lists, the related-APIs
-chips, the group headings, the MCP sidebar's rule (a mark only in a group that
+chips, the group headings, the MCP section menu's rule (a mark only in a group that
 mixes kinds, and no gutter) and that the API tree indents each row whole, one
 level at a time, and it checks that only the first mention of a name in a
 section carries a mark. A chip grows with a name that wraps, so a related chip's

@@ -10,7 +10,7 @@ import { withPortRoot } from './site-root'
 import { tmuxReferenceUrl } from './tmux-reference'
 import { tmuxManualUrl } from './tmux-manual-data'
 import { CATALOG_TITLE, tmuxCatalogUrl } from './tmux-catalog'
-import { mcpObjects, MCP_SECTIONS, type McpSection } from './mcp-reference'
+import { mcpSectionGroups, MCP_SECTIONS, type McpSection } from './mcp-reference'
 
 export interface DocumentationSection {
   id: string
@@ -107,14 +107,15 @@ export function buildDocumentationSurfaces(
       const section = sections.get(key)
       if (!section) continue
       section.label = label
-      const objects = mcpObjects(port).filter((object) => object.section === key as McpSection)
-      section.disabled = objects.length === 0
-      // A section named for its kind needs no mark on each row; one that mixes kinds keeps them.
-      const quiet = sharesOneKind(objects.map((object) => object.kind))
-      section.items.push(...objects.map((object) => ({
-        type: 'link' as const, label: object.name, kind: object.kind, href: portPageUrl(info, version, object.path),
-        ...(quiet ? { quiet } : {}),
-      })))
+      const groups = mcpSectionGroups(port, key as McpSection)
+      section.disabled = groups.length === 0
+      // A group names its kind, so its rows need no mark; one that mixes kinds keeps them.
+      section.items.push(...groups.map((group): SidebarItem => {
+        const quiet = sharesOneKind(group.objects.map((object) => object.kind))
+        return { type: 'group', label: group.label, href: `${portPageUrl(info, version, `${prefix}${key}`)}#${group.id}`, items: group.objects.map((object) => ({
+          type: 'link' as const, label: object.name, kind: object.kind, href: portPageUrl(info, version, object.path), ...(quiet ? { quiet } : {}),
+        })) }
+      }))
     }
     // Some named areas have no overview. Their first real page is a useful
     // destination without inventing an overview route.

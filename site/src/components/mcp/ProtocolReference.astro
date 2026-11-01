@@ -1,25 +1,20 @@
 ---
 import { Code } from 'astro-expressive-code/components'
 import { parsePythonDoc } from '@libtmux/api-model'
-import BaseLayout from '../../layouts/BaseLayout.astro'
-import ApiTree from '../api/ApiTree.astro'
+import DocsLayout from '../../layouts/DocsLayout.astro'
 import ApiBadge from '../api/ApiBadge.astro'
-import { apiGlossaryHref, MCP_GLOSSARY_TITLE } from '../../lib/api-glossary'
+import { apiGlossaryHref } from '../../lib/api-glossary'
 import ProductNotice from '../ProductNotice.astro'
 import ApiPageContents from '../api/ApiPageContents.astro'
 import SymbolName from '../api/SymbolName.astro'
-import PageToolbar from '../PageToolbar.astro'
-import PagePortSwitcher from '../PagePortSwitcher.astro'
-import DocumentationContext from '../docs/DocumentationContext.astro'
 import McpSchemaFields from './McpSchema.astro'
 import McpSchemaType from './McpSchemaType.astro'
 import { PORT_BY_SLUG, portPageUrl } from '../../lib/ports'
-import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects, mcpObjectAt, mcpObjectGroup, mcpNavigation, plainSummary, renderToolDescription, toolSummary, type McpSection } from '../../lib/mcp-reference'
+import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects, mcpObjectAt, mcpObjectGroup, mcpSectionGroups, plainSummary, renderToolDescription, toolSummary, type McpSection } from '../../lib/mcp-reference'
 import { schemaDefinitions, type McpSchema } from '../../lib/mcp-schema'
 import { pagePortsFor } from '../../lib/page-ports-for'
 import { getDocumentationSurfaces } from '../../lib/documentation-navigation'
 import { buildLocale } from '../../i18n/resolve'
-import { localeSourcePath } from '../../i18n/locales'
 import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO } from '../../i18n/contribute'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
@@ -34,9 +29,8 @@ const path = object?.path ?? `mcp/${section}`
 const title = object?.name ?? MCP_SECTIONS[section]
 const base = portPageUrl(info, version, 'mcp')
 const pageUrl = portPageUrl(info, version, path)
-const navigation = mcpNavigation(port)
-const sectionTree = navigation.tree.find((entry) => entry.id === section)!
-const currentBucket = sectionTree.children.find((group) => group.entries.some((entry) => entry.id === object?.id))?.id
+const groups = mcpSectionGroups(port, section)
+const currentBucket = groups.find((group) => group.objects.some((entry) => entry.id === object?.id))?.id
 const entries = mcpObjects(port).filter((entry) => entry.section === section)
 const catalogs = [
   { id: 'resources', label: 'Resources', kind: 'resource', section: 'resources', group: 'resources-fixed-resources' },
@@ -103,28 +97,12 @@ const introductions: Record<McpSection, string> = {
 }
 const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.id, await renderToolDescription(toolSummary(entry.description), { port, version, objectId: entry.id })] as const)))
 ---
-<BaseLayout title={object ? title : `${info.name} MCP ${title}`} description={object ? plainSummary(object.description, port) : introductions[section]}
+<DocsLayout title={object ? title : `${info.name} MCP ${title}`} description={object ? plainSummary(object.description, port) : introductions[section]}
   inventoryId={`protocol:${object?.id ?? section}`}
-  portSlug={port} version={version} pagePath={path} pageSource={pageSource}
-  documentationLayout="reference" breadcrumbs={breadcrumbs} markdown="rendered" flush>
-  <div slot="header-navigation" class="site-header-language"><PagePortSwitcher entries={pagePorts} portSlug={port} reserveLabelWidth /></div>
-  <DocumentationContext slot="context" port={port} version={version} locale={buildLocale()}
-    sourcePath={localeSourcePath(Astro.url.pathname, buildLocale())} reference>
-    <button type="button" class="api-nav-toggle" slot="navigation" data-api-nav-toggle data-pagefind-ignore="all" aria-controls="api-nav" aria-expanded="false">
-      <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" d="M2 4h12M2 8h12M2 12h8" /></svg>
-      <span class="sr-only">MCP reference contents</span>
-    </button>
-  </DocumentationContext>
-  <main class:list={['api-reference-layout grid', object && 'api-reference-layout--symbol']}>
-    <ApiTree presentation="outline" inventory={navigation.json} selectedSymbol={object?.id ?? `section:${section}`}
-      referenceBase={base} glossaryHref={`${base}reference/glossary/`} glossaryLabel={MCP_GLOSSARY_TITLE} portName={info.name} tree={navigation.tree} currentRoot={section}
-      currentBucket={currentBucket} currentIndex={object ? undefined : section} ownerId={object?.id}
-      members={[]} withMembers={new Set()} currentPath={Astro.url.pathname} version={navigation.version}
-      indexLabel="" marks="mixed" treeLabel={`${info.name} MCP reference`} searchLabel="Find an MCP object" searchPlaceholder="Find tool, prompt, resource"
-      filters={[{ id: 'all', label: 'All' }, ...Object.entries(MCP_SECTIONS).map(([id, label]) => ({ id, label,
-        disabled: !mcpObjects(port).some((entry) => entry.section === id) }))]} />
-    <div class="api-reference-content min-w-0 px-4 py-6 lg:px-6">
-      <PageToolbar breadcrumbs={breadcrumbs} />
+  port={port} version={version} pagePath={path} pageSource={pageSource} pagePorts={pagePorts}
+  breadcrumbs={breadcrumbs} markdown="rendered" tableOfContents={false} indexNavigation={false} bare>
+  <div class:list={['api-reference-layout grid', object && 'api-reference-layout--symbol']}>
+    <div class="api-reference-content min-w-0">
       <header id={object ? 'api-overview' : section} class:list={[object && 'api-reference-heading']}>
         {object && <div class="api-reference-eyebrow"><ApiBadge label={object.kind.replace('-', ' ')} variant="kind" value={object.kind} /><span>MCP</span><span class="api-badge api-badge--mod api-reference-version"><span class="api-badge__label">{version}</span></span></div>}
         <h1 class="scroll-mt-24 text-2xl font-semibold tracking-tight">{object ? <code><SymbolName name={title} /></code> : title}</h1>
@@ -197,9 +175,9 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
       </> : <>
         <p class="mt-3">The reference configuration advertises {entries.length} {section === 'resources' ? 'resources and resource templates' : section}. Your server’s available objects depend on its configuration.{setup?.href && <> <a href={setup.href}>Setup documentation</a> explains how to connect a client.</>}</p>
         {port === 'cxx' && <p class="mt-3">This catalog uses POSIX. See <a href={`${base}topics/`}>platform limits</a> for the Windows preview.</p>}
-        {sectionTree.children.map((group) => <section class="mt-8" id={group.id}>
-          <h2 class="api-index-summary border-b border-edge pb-1 font-mono">{group.label}<span class="ml-2 text-xs font-sans opacity-60">{group.entries.length} {group.entries.length === 1 ? (section === 'resources' ? 'object' : section.slice(0, -1)) : section === 'resources' ? 'objects' : section}</span><a class="headerlink" href={`#${group.id}`} aria-label={`Permalink to ${group.label}`}>#</a></h2>
-          <div class="mt-3 grid gap-3 sm:grid-cols-2">{entries.filter((entry) => mcpObjectGroup(entry) === group.label).map((entry) => <div class="api-index-card scroll-mt-24 rounded border border-edge p-3 hover:bg-surface-hover" id={entry.id}>
+        {groups.map((group) => <section class="mt-8" id={group.id}>
+          <h2 class="api-index-summary border-b border-edge pb-1 font-mono">{group.label}<span class="ml-2 text-xs font-sans opacity-60">{group.objects.length} {group.objects.length === 1 ? (section === 'resources' ? 'object' : section.slice(0, -1)) : section === 'resources' ? 'objects' : section}</span><a class="headerlink" href={`#${group.id}`} aria-label={`Permalink to ${group.label}`}>#</a></h2>
+          <div class="mt-3 grid gap-3 sm:grid-cols-2">{group.objects.map((entry) => <div class="api-index-card scroll-mt-24 rounded border border-edge p-3 hover:bg-surface-hover" id={entry.id}>
             <a class="api-index-card__link font-mono font-semibold" href={portPageUrl(info, version, entry.path)}><ApiBadge label={entry.kind} variant="kind" value={entry.kind} compact /><SymbolName name={entry.name} /></a>
             <div class="mt-1 text-sm opacity-75" set:html={summaries.get(entry.id)} />
           </div>)}</div>
@@ -220,9 +198,14 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
       </>}
     </div>
     {object && <ApiPageContents sections={sections} related={[]} />}
-  </main>
-</BaseLayout>
+  </div>
+</DocsLayout>
 <style>
+  /* The menu sidebar is the layout's, so the page's grid is the content and its contents rail. */
+  @media (min-width: 85rem) {
+    .api-reference-layout--symbol { grid-template-columns: minmax(0, 1fr) 14rem; }
+    .api-reference-layout--symbol > .api-reference-content { padding-inline: 0 2.25rem; }
+  }
   .mcp-signature { white-space: pre-wrap; overflow-wrap: anywhere; }
   .api-overview section { margin-block-start: 1.5rem; }
   .api-overview h2 { font-size: 1.125rem; font-weight: 600; margin-bottom: .75rem; padding-bottom: .4rem; border-bottom: 1px solid var(--api-border); }

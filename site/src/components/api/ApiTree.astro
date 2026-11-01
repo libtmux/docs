@@ -21,7 +21,7 @@ import ApiTreeItems, { type TreeNode } from './ApiTreeItems.astro'
 import ApiBadge from './ApiBadge.astro'
 import { bucketTotal, firstEntry, type TreeBucket } from '../../lib/api-tree'
 import { apiTreeHref, type ApiTreeJson } from '../../lib/api-search'
-import { SIDEBAR_PRESENTATIONS, sidebarCatalog, sidebarNodes, quietSidebarKinds, type SidebarPresentation } from '../../lib/api-sidebar'
+import { SIDEBAR_PRESENTATIONS, sidebarCatalog, sidebarNodes, type SidebarPresentation } from '../../lib/api-sidebar'
 import { initializeApiTree } from './api-tree-state'
 import '../../styles/api-tree.css'
 
@@ -56,23 +56,15 @@ interface Props {
   withMembers: Set<string>
   currentPath: string
   version: string
-  /** Protocol references reuse this browser with their own object vocabulary. */
+  /** Names for a reference whose objects are not types and members, such as tmux commands. */
   indexLabel?: string
   treeLabel?: string
   searchLabel?: string
   searchPlaceholder?: string
-  filters?: { id: string; label: string; disabled?: boolean }[]
+  filters?: { id: string; label: string }[]
   currentIndex?: string
   glossaryHref?: string
   glossaryLabel?: string
-  /**
-   * Where a row shows its kind mark. The API tree keeps a fixed gutter of marks
-   * so a reader can scan down it. A tree whose groups already name their kind
-   * (MCP tools, prompts, resources) shows an inline mark only in a group that
-   * mixes kinds, where it tells siblings apart; the kind stays on the row for
-   * assistive technology either way.
-   */
-  marks?: 'gutter' | 'mixed'
 }
 
 const {
@@ -83,7 +75,7 @@ const {
   searchLabel = 'Find a type or member', searchPlaceholder = 'Find symbol',
   filters = [{ id: 'all', label: 'All' }, { id: 'types', label: 'Types' }, { id: 'members', label: 'Members' }],
   currentIndex,
-  glossaryHref, glossaryLabel = 'API glossary', marks = 'gutter',
+  glossaryHref, glossaryLabel = 'API glossary',
 } = Astro.props as Props
 // The port's own reference root. `withRoot` would give the locale root:
 // Astro's `base` prefixes routes, not strings a component builds.
@@ -149,9 +141,7 @@ const ownerPlural = catalog?.ownerPlural ?? 'types'
 // The glossary is the tree's last row, so it is reached after every declaration.
 const nodes = navigation ? navigation
   : presentation && inventory ? [...sidebarNodes(inventory, base, presentation, selectedSymbol), ...glossaryNode]
-  : [...(indexLabel ? [indexNode] : []), ...tree.map((b) => bucketNode(b, 1, false)), ...glossaryNode]
-
-if (marks === 'mixed') quietSidebarKinds(nodes)
+  : [indexNode, ...tree.map((b) => bucketNode(b, 1, false)), ...glossaryNode]
 
 /** The one Tab stop: the page's own row, or the first row on a page with none. */
 const mark = (list: TreeNode[]): boolean =>
@@ -171,7 +161,7 @@ if (!mark(nodes)) {
     document.documentElement.setAttribute('data-api-nav', '')
   </script>
   <div class="api-nav-overlay" data-api-nav-overlay></div>
-  <div id="api-nav" class="api-nav" data-src={inventorySrc ?? `${base}tree.json`} data-base={base} data-version={presentation ? `3:${version}` : version} data-marks={marks === 'mixed' ? 'mixed' : undefined}
+  <div id="api-nav" class="api-nav" data-src={inventorySrc ?? `${base}tree.json`} data-base={base} data-version={presentation ? `3:${version}` : version}
     data-presentation={presentation} data-glossary-href={presentation ? glossaryHref : undefined} data-glossary-label={presentation && glossaryHref ? glossaryLabel : undefined} data-symbol={presentation ? selectedSymbol : undefined}
     data-controlled={controlled || undefined}
     data-state-scope={presentation === 'outline' ? presentation : presentation ? `${presentation}:${selectedOwner?.id ?? ''}` : undefined} aria-labelledby="api-nav-title">
@@ -191,7 +181,7 @@ if (!mark(nodes)) {
         <kbd aria-hidden="true">/</kbd>
       </div>
       <div class="api-nav__filters" role="group" aria-label={`${treeLabel} search category`}>
-        {filters.map((filter) => <button type="button" data-api-search-kind={filter.id} data-api-search-empty={filter.disabled || undefined} aria-pressed={filter.id === 'all' ? 'true' : 'false'} disabled>{filter.label}</button>)}
+        {filters.map((filter) => <button type="button" data-api-search-kind={filter.id} aria-pressed={filter.id === 'all' ? 'true' : 'false'} disabled>{filter.label}</button>)}
       </div>
     </div>
     {presentation && catalog && <div class="api-nav__presentation">
