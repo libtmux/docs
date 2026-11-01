@@ -24,9 +24,9 @@
 
 /*
  * One rhythm for the worked example: a gap of --mcp-gap between the prompt and
- * the first step and between steps, and half of it from a caption to its call.
- * The numbered list draws its numbers in the caption instead of an indent, and
- * the call draws no box of its own, so `{` starts under the caption's first letter.
+ * the first step and between steps, and half of it from a caption to its call
+ * and from a call to its result. The numbered list draws its numbers in the
+ * caption instead of an indent, so each block starts under the caption's first letter.
  */
 .mcp-prompt,
 .mcp-steps {
@@ -63,18 +63,20 @@
   content: counter(mcp-step) '. ';
   color: var(--color-muted);
 }
-.mcp-steps .expressive-code {
-  --ec-codePadInl: 0px;
-  --ec-codePadBlk: 0.125rem;
-  --ec-brdWd: 0px;
-  --ec-codeBg: transparent;
+/* The call and its result are the site's ordinary code blocks, stacked half a gap apart. */
+.mcp-steps .expressive-code,
+.mcp-steps .expressive-code + .expressive-code,
+.mcp-after + .expressive-code {
   margin: 0;
 }
-.mcp-steps .expressive-code .frame,
-.mcp-steps .expressive-code pre {
-  margin: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+.mcp-steps .expressive-code + .expressive-code {
+  margin-block-start: calc(var(--mcp-gap, 1rem) / 2);
+}
+.mcp-after {
+  margin: var(--mcp-gap, 1rem) 0 calc(var(--mcp-gap, 1rem) / 2);
+}
+.mcp-provenance {
+  margin: var(--mcp-gap, 1rem) 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
 }

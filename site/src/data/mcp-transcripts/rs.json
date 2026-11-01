@@ -1,0 +1,132 @@
+{
+  "generated": "scripts/gen-mcp-transcript.mjs",
+  "repo": "libtmux/libtmux-rs",
+  "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+  "sandbox": {
+    "tmux": "tmux 3.8a",
+    "pytest": "pytest 9.2.0",
+    "project": [
+      "test_example.py"
+    ],
+    "expected": "2 passed",
+    "rewritten": {
+      "projectDirectory": "/home/user/project"
+    }
+  },
+  "serverInfo": {
+    "name": "rmcp",
+    "version": "3.1.2"
+  },
+  "prompt": "Create a tmux session called checks, run pytest -q in it, show me the result, then remove the session.",
+  "steps": [
+    {
+      "tool": "create_session",
+      "arguments": {
+        "name": "checks"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"attached\":false,\"id\":\"$0\",\"name\":\"checks\",\"windows\":1}"
+        }
+      ],
+      "structuredContent": {
+        "attached": false,
+        "id": "$0",
+        "name": "checks",
+        "windows": 1
+      },
+      "caption": "Create the session."
+    },
+    {
+      "tool": "list_windows",
+      "arguments": {},
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"windows\":[{\"active\":true,\"id\":\"@0\",\"index\":0,\"linked\":false,\"name\":\"sh\",\"panes\":1,\"session_id\":\"$0\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "windows": [
+          {
+            "active": true,
+            "id": "@0",
+            "index": 0,
+            "linked": false,
+            "name": "sh",
+            "panes": 1,
+            "session_id": "$0"
+          }
+        ]
+      },
+      "caption": "List the windows, each with its session id."
+    },
+    {
+      "tool": "list_panes",
+      "arguments": {},
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"panes\":[{\"active\":true,\"caller\":\"unknown\",\"command\":\"sh\",\"id\":\"%0\",\"path\":\"/home/user/project\",\"window_id\":\"@0\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "panes": [
+          {
+            "active": true,
+            "caller": "unknown",
+            "command": "sh",
+            "id": "%0",
+            "path": "/home/user/project",
+            "window_id": "@0"
+          }
+        ]
+      },
+      "caption": "List the panes, each with its window id."
+    },
+    {
+      "tool": "run_shell_command",
+      "arguments": {
+        "pane": "%0",
+        "command": "pytest -q"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"bytes\":360,\"exit_status\":0,\"outcome\":\"completed\",\"output\":\"..                                                                       [100%]\\n2 passed in 0.00s\\n\",\"pane\":\"%0\",\"truncated\":false}"
+        }
+      ],
+      "structuredContent": {
+        "bytes": 360,
+        "exit_status": 0,
+        "outcome": "completed",
+        "output": "..                                                                       [100%]\n2 passed in 0.00s\n",
+        "pane": "%0",
+        "truncated": false
+      },
+      "caption": "Run the command in the pane the list returned (%0)."
+    },
+    {
+      "tool": "kill_session",
+      "arguments": {
+        "session": "checks"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"id\":\"$0\"}"
+        }
+      ],
+      "structuredContent": {
+        "id": "$0"
+      },
+      "caption": "Remove the session once the result is read."
+    }
+  ]
+}

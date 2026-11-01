@@ -1,0 +1,97 @@
+{
+  "generated": "scripts/gen-mcp-transcript.mjs",
+  "repo": "libtmux/libtmux-ts",
+  "revision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+  "sandbox": {
+    "tmux": "tmux 3.8a",
+    "pytest": "pytest 9.2.0",
+    "project": [
+      "test_example.py"
+    ],
+    "expected": "2 passed",
+    "rewritten": {
+      "projectDirectory": "/home/user/project"
+    }
+  },
+  "serverInfo": {
+    "name": "libtmux",
+    "title": "tmux",
+    "version": "0.1.0-alpha.10"
+  },
+  "prompt": "Create a tmux session called checks, run pytest -q in it, show me the result, then remove the session.",
+  "steps": [
+    {
+      "tool": "create_session",
+      "arguments": {
+        "name": "checks"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "Created checks ($0); its pane is %0."
+        }
+      ],
+      "structuredContent": {
+        "paneId": "%0",
+        "session": {
+          "attachedClients": 0,
+          "humanAttachedClients": 0,
+          "id": "$0",
+          "metadataComplete": true,
+          "name": "checks",
+          "omittedMetadataBytes": 0,
+          "windows": 1
+        },
+        "windowId": "@0"
+      },
+      "caption": "Create the session."
+    },
+    {
+      "tool": "run_shell_command",
+      "arguments": {
+        "paneId": "%0",
+        "command": "pytest -q"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "..                                                                       [100%]\n2 passed in 0.00s\n\n[exit 0]"
+        }
+      ],
+      "structuredContent": {
+        "effectiveTimeoutMs": 30000,
+        "exitStatus": 0,
+        "foreignOutputSuspected": false,
+        "droppedLines": 0,
+        "missedBytes": 0,
+        "omittedBytes": 0,
+        "outcome": "completed",
+        "output": "..                                                                       [100%]\n2 passed in 0.00s",
+        "outputComplete": true,
+        "paneId": "%0",
+        "returnedBytes": 97,
+        "stillRunning": false
+      },
+      "caption": "Run the command in the pane the create result returned (%0)."
+    },
+    {
+      "tool": "kill_session",
+      "arguments": {
+        "session": "checks"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "Killed session $0. Windows and panes shared with other sessions remain there."
+        }
+      ],
+      "structuredContent": {
+        "killed": "$0"
+      },
+      "caption": "Remove the session once the result is read."
+    }
+  ]
+}

@@ -199,7 +199,7 @@ const panelId = (product: string) => `landing-panel-${product}`
   .landing-lead { margin: 0 0 1rem; }
   .landing-example { margin: 0; }
   .landing-example :global(h3) { margin: 0 0 .5rem; font-weight: 600; line-height: 1.4; }
-  .landing-example > :global(p) { margin: 0 0 1rem; }
+  .landing-example > :global(p:not(.mcp-after, .mcp-provenance)) { margin: 0 0 1rem; }
   .landing-note { margin: 0 0 1rem; }
   .landing-command-lead { margin-block: .9rem .25rem; font-size: .875rem; }
   .landing-links { margin: 1.25rem 0 0; padding: 0; list-style: none; display: grid; gap: .35rem; font-size: .875rem; }

@@ -103,9 +103,14 @@ describe('the landing page markup', () => {
     }
     const showcase = (await mcpShowcase('rs', 'latest'))!
     expect(panel.querySelector('.mcp-prompt')!.textContent).toBe(EXAMPLES.rs!.prompt)
-    const calls = [...panel.querySelectorAll('.mcp-steps pre')].map((pre) => JSON.parse(pre.textContent!))
+    const calls = [...panel.querySelectorAll('.mcp-steps pre[data-title="Call"]')].map((pre) => {
+      const text = pre.textContent!
+      return { tool: text.slice(0, text.indexOf(' ')), arguments: JSON.parse(text.slice(text.indexOf(' ') + 1)) }
+    })
     expect(calls).toEqual(EXAMPLES.rs!.steps.map((step) => ({ tool: step.tool, arguments: step.arguments })))
     expect(panel.querySelector('.mcp-steps .mcp-tier')).not.toBeNull()
+    expect([...panel.querySelectorAll('.mcp-steps > li')].every((item) => item.querySelector('pre[data-title="Result"]'))).toBe(true)
+    expect(panel.querySelector('pre[data-title="Output in the pane"]')!.textContent).toMatch(/2 passed/)
     const hrefs = [...panel.querySelectorAll('.landing-links a')].map((link) => link.getAttribute('href'))
     expect(hrefs).toContain('/rs/latest/mcp/#tools-by-tier')
     expect(hrefs).toContain(showcase.toolsHref)
