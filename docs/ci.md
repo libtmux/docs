@@ -490,6 +490,11 @@ not a dependency of `test.yml` or `deploy-shell.yml`: a registry outage or an
 old record must not block a docs change, and a change that touches none of this
 does not fail because time passed.
 
+The job installs the workspace with `pnpm install --frozen-lockfile` first,
+because the standard-library and SDK check below
+(`scripts/verify-api-destinations.mjs`) reads the doc comments through the
+`api-model` parser, and a bare checkout stops at its first import.
+
 The job has `contents: read`, no secrets and no way to push, so the live run
 writes to a temporary file and the workflow uploads it as the
 `destination-evidence` artifact. The second step runs even when the first
