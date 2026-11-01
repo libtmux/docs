@@ -48,7 +48,7 @@
       "isError": false,
       "content": [
         {
-          "text": "{\"panes\":[{\"active\":true,\"command\":\"sh\",\"dead\":false,\"height\":24,\"id\":\"%0\",\"index\":0,\"path\":\"/home/user/project\",\"pid\":45087,\"session_id\":\"$0\",\"title\":\"d\",\"width\":80,\"window_id\":\"@0\"}]}",
+          "text": "{\"panes\":[{\"active\":true,\"command\":\"sh\",\"dead\":false,\"height\":24,\"id\":\"%0\",\"index\":0,\"path\":\"/home/user/project\",\"pid\":45087,\"session_id\":\"$0\",\"title\":\"host\",\"width\":80,\"window_id\":\"@0\"}]}",
           "type": "text"
         }
       ],
@@ -64,7 +64,7 @@
             "path": "/home/user/project",
             "pid": 45087,
             "session_id": "$0",
-            "title": "d",
+            "title": "host",
             "width": 80,
             "window_id": "@0"
           }

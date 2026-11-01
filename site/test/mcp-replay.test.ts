@@ -173,6 +173,19 @@ describe('the tmux state each recorded call leaves', () => {
     expect(frames[2]).toMatchObject({ reading: 'panes' })
   })
 
+  it.each(['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift'] as const)('leaves %s with each pane\'s own output and no session after the kill', async (port) => {
+    const frames = replayFrames(await steps(port))
+    const last = frames.at(-1)!
+    expect(last.sessions, 'the kill removes the session').toEqual([])
+    const before = frames.at(-2)!.sessions[0]!.windows[0]!.panes
+    expect(before).toHaveLength(2)
+    expect(before[0]!.output, 'the first pane ran the tests').toMatch(/2 passed/)
+    expect(before[0]!.output).not.toMatch(/checks finished/)
+    expect(before[1]!.output, 'the second pane showed the log').toMatch(/checks finished/)
+    expect(before[1]!.output).not.toMatch(/2 passed/)
+    expect(before.map((pane) => pane.typed)).toEqual(['pytest -q', 'cat checks.log'])
+  })
+
   it('has a control: a value the recording lacks, or states under another field, or only later, is reported', async () => {
     const steps_ = await steps('ts')
     const frames = replayFrames(steps_)

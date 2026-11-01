@@ -184,7 +184,7 @@ const draw = (frame: Frame) => {
 {recording ? (
   <p class="mcp-provenance">
     Calls and results are recorded against <a href={`https://github.com/${recording.repo}/tree/${recording.revision}`}><code>{recording.repo}</code></a>
-    at <code>{recording.revision.slice(0, 9)}</code>, on a private {recording.tmux} server, running {recording.runner}. The preview draws only what those results state.
+    at <code>{recording.revision.slice(0, 9)}</code>, on a private {recording.tmux} server{recording.answers.length > 0 && <>, running {recording.runner}</>}. The preview draws only what those results state.
     The agent's narration is illustrative.
     {recording.shortened && <> Long values in a result are shortened here; the recording keeps them.</>}
     {recording.projectDirectory && <> The sandbox's project directory is shown as <code>{recording.projectDirectory}</code>.</>}

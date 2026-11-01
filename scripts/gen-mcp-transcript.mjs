@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process'
-import { existsSync, realpathSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, realpathSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { homedir, hostname, tmpdir, userInfo } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -45,7 +45,7 @@ const SERVERS = {
   },
   // On a host without libxml2.so.2 (Debian's current libxml2 is .16), swift-build does not start; a directory holding a libxml2.so.2 link to it, on LD_LIBRARY_PATH, lets the toolchain run. The server it builds does not use it.
   swift: { prepare: [['swift', 'build', '--force-resolved-versions', '--product', 'libtmux-mcp', '--jobs', '2']], command: () => ['.build/debug/libtmux-mcp'] },
-  // These two servers borrow a tmux that is already running, so the recorder starts one on the sandbox's own tmpdir first.
+  // This server borrows a tmux that is already running, so the recorder starts one on the sandbox's own tmpdir first.
   ruby: {
     borrowed: 'transcript',
     // `bundle exec` needs the Gemfile; the session it borrows was started in the project directory.
@@ -93,7 +93,7 @@ try {
   if (server.borrowed) {
     execFileSync('tmux', ['-L', server.borrowed, '-f', '/dev/null', 'new-session', '-d', '-s', 'docs', '/bin/cat'], { cwd: project, env: { ...process.env, TMUX: '', TMUX_TMPDIR: sandbox }, stdio: 'inherit' })
   }
-    const environment = {
+  const environment = {
     TMUX: undefined, TMUX_PANE: undefined, TMUX_TMPDIR: sandbox, HOME: join(sandbox, 'home'), SHELL: '/bin/sh',
     // No user tmux configuration, whichever way tmux looks for it.
     XDG_CONFIG_HOME: join(sandbox, 'config'), XDG_CONFIG_DIRS: join(sandbox, 'config'),
@@ -106,7 +106,8 @@ try {
     cwd: server.inCheckout ? workdir : project, env: environment, calls: example.steps.map(({ tool, arguments: callArguments }) => ({ tool, arguments: callArguments })),
   })
 
-  const runTool = [...new Set(example.steps.map((step) => step.tool).filter((tool) => tool.startsWith('run_')))]
+  // The tool that runs commands is the one whose requests carry a `command`; a name is not trusted to say so.
+  const runTool = [...new Set(example.steps.filter((step) => typeof step.arguments.command === 'string').map((step) => step.tool))]
   if (runTool.length > 1) throw new Error(`${only}: the example must run commands through one run_ tool, found ${runTool.join(', ')}`)
   try {
     verifyRecording(run.steps, { port: only, runTool: runTool[0] ?? '', expected: runTool.length ? EXPECTED_OUTPUT : [], present: PRESENT[only] ?? [] })
@@ -118,7 +119,8 @@ try {
 
   // The project directory is a fresh temporary one each run; a fixed name keeps the file stable.
   const FIXED = '/home/user/project'
-  const rewrite = (value) => typeof value === 'string' ? value.replaceAll(join(sandboxReal, 'project'), FIXED).replaceAll(project, FIXED)
+  // tmux titles a new pane with the host name, and a server may report the user's; as whole values they become "host".
+  const rewrite = (value) => typeof value === 'string' && (value === hostname() || value === userInfo().username) ? 'host' : typeof value === 'string' ? value.replaceAll(join(sandboxReal, 'project'), FIXED).replaceAll(project, FIXED)
     : Array.isArray(value) ? value.map(rewrite)
       : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).map(([key, item]) => [key, rewrite(item)])) : value
   run.steps = run.steps.map(rewrite)
@@ -133,7 +135,7 @@ try {
 } finally {
   try {
     const socket = join(sandbox, `tmux-${process.getuid?.() ?? ''}`)
-    if (existsSync(socket)) for (const name of ['default', 'transcript']) if (existsSync(join(socket, name))) try { execFileSync('tmux', ['-S', join(socket, name), 'kill-server'], { stdio: 'ignore' }) } catch { /* no server left on that socket */ }
+    if (existsSync(socket)) for (const name of readdirSync(socket)) try { execFileSync('tmux', ['-S', join(socket, name), 'kill-server'], { stdio: 'ignore' }) } catch { /* no server left on that socket */ }
   } finally {
     rmSync(sandbox, { recursive: true, force: true })
   }

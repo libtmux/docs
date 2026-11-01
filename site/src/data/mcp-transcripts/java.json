@@ -80,7 +80,7 @@
       "content": [
         {
           "type": "text",
-          "text": "{\"id\":\"%1\",\"index\":1,\"window_id\":\"@0\",\"session_id\":\"$0\",\"active\":true,\"command\":\"sh\",\"path\":\"/home/user/project\",\"title\":\"d\",\"size\":\"40x24\"}"
+          "text": "{\"id\":\"%1\",\"index\":1,\"window_id\":\"@0\",\"session_id\":\"$0\",\"active\":true,\"command\":\"sh\",\"path\":\"/home/user/project\",\"title\":\"host\",\"size\":\"40x24\"}"
         }
       ],
       "structuredContent": {
@@ -91,7 +91,7 @@
         "active": true,
         "command": "sh",
         "path": "/home/user/project",
-        "title": "d",
+        "title": "host",
         "size": "40x24"
       },
       "caption": "Split the pane the list returned (%0) in two."

@@ -211,11 +211,14 @@
   border-radius: 0.375rem;
 }
 
-.mcp-result__body .expressive-code,
-.mcp-result__body .expressive-code .frame,
-.mcp-result__body .expressive-code pre {
+/* Three classes, so they outrank Expressive Code's own frame and block rules; the body draws the one border. */
+.mcp-result .mcp-result__body .expressive-code,
+.mcp-result .mcp-result__body .expressive-code .frame,
+.mcp-result .mcp-result__body .expressive-code pre {
   margin: 0;
+  border: 0;
   border-radius: 0;
+  box-shadow: none;
   font-size: inherit;
 }
 

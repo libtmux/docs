@@ -55,7 +55,7 @@
       "isError": false,
       "content": [
         {
-          "text": "{\"pane_id\":\"%1\",\"pane_index\":\"1\",\"pane_width\":\"39\",\"pane_height\":\"24\",\"pane_left\":41,\"pane_top\":0,\"pane_right\":79,\"pane_bottom\":23,\"pane_at_left\":false,\"pane_at_right\":true,\"pane_at_top\":true,\"pane_at_bottom\":true,\"pane_tty\":\"/dev/pts/13\",\"pane_current_command\":\"sh\",\"pane_current_path\":\"/home/user/project\",\"pane_pid\":\"19406\",\"pane_title\":\"d\",\"pane_active\":\"0\",\"window_id\":\"@0\",\"session_id\":\"$0\",\"is_caller\":null}",
+          "text": "{\"pane_id\":\"%1\",\"pane_index\":\"1\",\"pane_width\":\"39\",\"pane_height\":\"24\",\"pane_left\":41,\"pane_top\":0,\"pane_right\":79,\"pane_bottom\":23,\"pane_at_left\":false,\"pane_at_right\":true,\"pane_at_top\":true,\"pane_at_bottom\":true,\"pane_tty\":\"/dev/pts/13\",\"pane_current_command\":\"sh\",\"pane_current_path\":\"/home/user/project\",\"pane_pid\":\"19406\",\"pane_title\":\"host\",\"pane_active\":\"0\",\"window_id\":\"@0\",\"session_id\":\"$0\",\"is_caller\":null}",
           "type": "text"
         }
       ],
@@ -76,7 +76,7 @@
         "pane_current_command": "sh",
         "pane_current_path": "/home/user/project",
         "pane_pid": "19406",
-        "pane_title": "d",
+        "pane_title": "host",
         "pane_active": "0",
         "window_id": "@0",
         "session_id": "$0",

@@ -53,6 +53,28 @@ describe('the checks a recording must pass', () => {
     expect(() => verifyRecording(steps, OPTIONS)).toThrow(/expected 1 run_shell_command steps, found 2/)
   })
 
+  it('reads a command\'s text from output, from text, and from lines in an object, and its status from exit_code', () => {
+    const shapes: Record<string, unknown>[] = [
+      { output: ['..', '2 passed in 0.01s'], exitStatus: 0 },
+      { output: { lines: ['..', '2 passed in 0.01s'] }, exitStatus: 0 },
+      { text: '..\n2 passed in 0.01s\n', exit_code: 0 },
+    ]
+    for (const result of shapes) {
+      const steps = good()
+      steps[1]!.structuredContent = result
+      expect(() => verifyRecording(steps, OPTIONS), JSON.stringify(result)).not.toThrow()
+      steps[1]!.structuredContent = { ...result, ...('exit_code' in result ? { exit_code: 2 } : { exitStatus: 2 }) }
+      expect(() => verifyRecording(steps, OPTIONS), `${JSON.stringify(result)} with a failing status`).toThrow(/exited 2/)
+    }
+  })
+
+  it('requires the last answer to state what the example asks about, when no command runs', () => {
+    const read: Step[] = [{ tool: 'tmux_snapshot', arguments: {}, isError: false, content: [], structuredContent: { items: [{ id: '%0' }] } }]
+    const options = { port: 'x', runTool: '', expected: [] as string[] }
+    expect(() => verifyRecording(read, { ...options, present: ['%0'] })).not.toThrow()
+    expect(() => verifyRecording(read, { ...options, present: ['%7'] })).toThrow(/last answer lacks "%7"/)
+  })
+
   it('finds ids and host names in text', () => {
     expect([...idsIn({ a: '%0', b: ['$1', '@22'] })].sort()).toEqual(['$1', '%0', '@22'])
     expect(leaks('ran in /home/someone/work', ['/home/someone', 'x', ''])).toEqual(['/home/someone'])

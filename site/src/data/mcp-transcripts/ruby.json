@@ -2449,7 +2449,7 @@
                 "pid": 55749,
                 "currentCommand": "cat",
                 "currentPath": "/home/user/project",
-                "title": "d",
+                "title": "host",
                 "active": true,
                 "dead": false,
                 "deadStatus": null,
