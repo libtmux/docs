@@ -204,6 +204,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
       await checkNoticeAlignment(page)
       assert.equal(await page.locator('[data-page-toolbar]').count(), 0, `${slug}: home has no redundant breadcrumb/action row`)
       assert.equal(await page.locator('.port-hero h1').count(), 1, `${slug}: one port heading`)
+      assert.equal((await page.locator('.port-hero h1').innerText()).trim(), `libtmux for ${port.language}`, `${slug}: the heading names the library and the language`)
       const picker = desktopPicker(page)
       await picker.locator(':scope > summary').waitFor({ state: 'visible' })
       assert.equal((await picker.locator('.surface-current .surface-label, .surface-current small').allInnerTexts()).join(' '), `${port.name} Home`)

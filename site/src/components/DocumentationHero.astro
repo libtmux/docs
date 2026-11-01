@@ -9,13 +9,23 @@ const { name, tagline, logo } = Astro.props
     <p class="port-hero__tagline mt-2 text-xl">{tagline}</p>
     <slot />
   </div>
+  {Astro.slots.has('links') && <div class="port-hero__links"><slot name="links" /></div>}
 </section>
 <style>
-  .port-hero { display: flex; align-items: flex-start; gap: 1.5rem; }
+  /* Logo, text and links in one row; the links take the top right and never share the text's column. */
+  .port-hero { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "mark text links"; align-items: start; gap: 1.5rem; }
+  .port-hero__links { grid-area: links; justify-self: end; max-width: 100%; padding-top: .5rem; }
+  .port-hero__mark { grid-area: mark; }
+  .port-hero > div:not(.port-hero__links) { grid-area: text; }
+  @media (max-width: 47.99rem) {
+    .port-hero { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "mark text" ". links"; }
+    .port-hero__links { justify-self: start; padding-top: 0; }
+  }
   .port-hero__mark { width: 88px; height: 88px; flex: none; object-fit: contain; }
   .port-hero__tagline { color: var(--color-foreground-muted); }
   @media (max-width: 479px) {
     .port-hero { display: block; }
+    .port-hero__links { margin-top: .75rem; }
     .port-hero__mark { margin-bottom: 1rem; }
   }
 </style>
