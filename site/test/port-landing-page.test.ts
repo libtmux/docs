@@ -18,7 +18,7 @@ const cache = SOURCES as Record<string, CachedSource>
 const Code = createComponent((_result: unknown, props: { code: string; lang: string; title?: string }) =>
   renderTemplate`<pre data-lang="${props.lang}" data-title="${props.title ?? ''}">${props.code}</pre>`)
 const REAL = [
-  'components/landing/LandingInstall.astro', 'components/mcp/McpWorkedExample.astro',
+  'components/landing/LandingInstall.astro', 'components/mcp/McpReplay.astro',
   'components/workspace/WorkspaceConfig.astro', 'components/workspace/WorkspaceWindows.astro',
 ]
 const stubs = {
@@ -102,15 +102,12 @@ describe('the landing page markup', () => {
       expect(found[index - 1]!.compareDocumentPosition(found[index]!) & 4, `${order[index - 1]} precedes ${order[index]}`).toBeTruthy()
     }
     const showcase = (await mcpShowcase('rs', 'latest'))!
-    expect(panel.querySelector('.mcp-prompt')!.textContent).toBe(EXAMPLES.rs!.prompt)
-    const calls = [...panel.querySelectorAll('.mcp-steps pre[data-title="Call"]')].map((pre) => {
-      const text = pre.textContent!
-      return { tool: text.slice(0, text.indexOf(' ')), arguments: JSON.parse(text.slice(text.indexOf(' ') + 1)) }
-    })
+    expect(panel.querySelector('.mcp-turn--user p')!.textContent).toBe(EXAMPLES.rs!.prompt)
+    const calls = [...panel.querySelectorAll('.mcp-call')].map((row) => ({ tool: row.querySelector('.mcp-call__tool code')!.textContent, arguments: JSON.parse(row.querySelector('.mcp-call__args')!.textContent!) }))
     expect(calls).toEqual(EXAMPLES.rs!.steps.map((step) => ({ tool: step.tool, arguments: step.arguments })))
-    expect(panel.querySelector('.mcp-steps .mcp-tier')).not.toBeNull()
-    expect([...panel.querySelectorAll('.mcp-steps > li')].every((item) => item.querySelector('pre[data-title="Result"]'))).toBe(true)
-    expect(panel.querySelector('pre[data-title="Output in the pane"]')!.textContent).toMatch(/2 passed/)
+    expect(panel.querySelector('.mcp-call .mcp-tier')).not.toBeNull()
+    expect([...panel.querySelectorAll('article.mcp-turn')].every((item) => item.querySelector('details.mcp-result pre'))).toBe(true)
+    expect(panel.querySelector('.mcp-turn--answer q')!.textContent).toMatch(/2 passed/)
     const hrefs = [...panel.querySelectorAll('.landing-links a')].map((link) => link.getAttribute('href'))
     expect(hrefs).toContain('/rs/latest/mcp/#tools-by-tier')
     expect(hrefs).toContain(showcase.toolsHref)
@@ -129,12 +126,12 @@ describe('the landing page markup', () => {
   it('shows a worked example for every port that has one, and none for a port served by another port\'s package', async () => {
     for (const slug of ['py', 'ts', 'go', 'java', 'csharp', 'cxx', 'swift', 'ruby', 'julia']) {
       const document = await render(slug)
-      expect(document.querySelectorAll(`[data-landing-panel="mcp"] [data-landing-example="mcp"] .mcp-steps > li`), slug).toHaveLength(EXAMPLES[slug]!.steps.length)
+      expect(document.querySelectorAll(`[data-landing-panel="mcp"] [data-landing-example="mcp"] article.mcp-turn`), slug).toHaveLength(EXAMPLES[slug]!.steps.length)
     }
     const document = await render('powershell')
     const panel = document.querySelector('[data-landing-panel="mcp"]')!
     expect(panel.querySelector('[data-landing-example]'), 'no invented calls').toBeNull()
-    expect(panel.querySelector('.mcp-steps')).toBeNull()
+    expect(panel.querySelector('.mcp-turn')).toBeNull()
     expect(panel.querySelector('[data-mcp-install]')!.getAttribute('data-mcp-install')).toBe('csharp')
     expect(panel.querySelector('a[href="/powershell/latest/guides/mcp/"]')).not.toBeNull()
   })

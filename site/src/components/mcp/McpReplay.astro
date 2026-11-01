@@ -1,0 +1,294 @@
+---
+/**
+ * A prompt and the tool calls an agent makes for it, as a replay.
+ *
+ * Shared by the MCP overview and the port landing page. The calls come from
+ * `EXAMPLES` in `lib/mcp-examples.ts`, which a test checks against each tool's
+ * input schema in the port's `tools/list` snapshot. With a recorded session
+ * (`gen-mcp-transcript.mjs`) the chat on the left shows each call and the
+ * result the server answered, and the tmux preview on the right shows the
+ * state those results describe (`lib/mcp-replay.ts`); the script below plays
+ * the session, or lets a reader step through it. Without script the whole
+ * chat and the final state show. Without a recording the page shows the
+ * requests only, says so, and draws no preview.
+ */
+import { arrange, renderLayout } from '../../lib/tmux-layout'
+import { lastOutputLine, windowLabel, type Frame } from '../../lib/mcp-replay'
+import { tierFor, type WorkedExample } from '../../lib/mcp-showcase'
+import '../../styles/tmux-layout.css'
+import '../../styles/mcp-showcase.css'
+import '../../styles/mcp-replay.css'
+
+interface Props {
+  example: WorkedExample
+  portName: string
+  /** The heading's level: 2 on the overview, where it is a section, 3 inside a landing panel. */
+  level?: 2 | 3
+}
+const { example, portName, level = 2 } = Astro.props as Props
+const Heading = `h${level}` as 'h2' | 'h3'
+const { recording } = example
+const total = example.steps.length
+const args = (value: Record<string, unknown>) => JSON.stringify(value)
+const shown = (value: unknown) => (typeof value === 'string' ? value : JSON.stringify(value, null, 2))
+const WIDTH = 44
+const HEIGHT = 12
+const answer = lastOutputLine(recording?.output)
+
+/** What each frame's note says happened, from the call alone. */
+const note = (frame: Frame) => {
+  if (!frame.tool) return 'Before the first call.'
+  return frame.reading ? `${frame.tool} read the ${frame.reading}; nothing changed.` : `After ${frame.tool}.`
+}
+
+function windowOf(frame: Frame) {
+  const session = frame.sessions[0]
+  return session ? session.windows.find((window) => window.active) ?? session.windows[0] : undefined
+}
+const draw = (frame: Frame) => {
+  const window = windowOf(frame)
+  if (!window) return undefined
+  const rects = arrange('even-vertical', window.panes.length, WIDTH, HEIGHT)
+  const svg = renderLayout(window.panes.map(() => []), 'even-vertical', [WIDTH, HEIGHT], { id: `rp-${frame.done}`, label: `tmux window with ${window.panes.length} pane${window.panes.length === 1 ? '' : 's'}` })
+  return { window, rects, svg }
+}
+---
+<Heading id="worked-example">Worked example</Heading>
+<p>Given this prompt, an agent connected to the {portName} server makes these calls{recording ? ' and gets these results' : ''}.</p>
+<section class={`mcp-replay${recording ? '' : ' mcp-replay--requests'}`} data-mcp-replay data-steps={total} aria-label="Worked example replay">
+  {recording && (
+    <header class="mcp-replay__head">
+      <span class="mcp-replay__title">Replay</span>
+      <span class="mcp-replay__hint" data-hint>Hover a call to preview the tmux state after it. Click to pin it.</span>
+    </header>
+  )}
+  <div class="mcp-replay__body" tabindex={recording ? 0 : undefined} data-body>
+    {recording && (
+      <div class="mcp-replay__tmux" data-tmux aria-label="tmux state after the call shown">
+        {recording.frames.map((frame) => {
+          const drawn = draw(frame)
+          const session = frame.sessions[0]
+          return (
+            <div class="mcp-frame" data-frame={frame.done} hidden={frame.done !== total}>
+              <div class="mcp-tmux">
+                {drawn ? (
+                  <div class={`mcp-tmux__screen${frame.reading === 'panes' ? ' is-reading' : ''}`}>
+                    <Fragment set:html={drawn.svg} />
+                    {drawn.window.panes.map((pane, index) => {
+                      const rect = drawn.rects[index]!
+                      const lines = [...(pane.typed !== undefined ? [`$ ${pane.typed}`] : []), ...(pane.output?.trimEnd().split('\n') ?? [])]
+                      return (
+                        <div class="mcp-pane" style={`left:${(rect.x / WIDTH) * 100}%;top:${(rect.y / HEIGHT) * 100}%;width:${(rect.w / WIDTH) * 100}%;height:${(rect.h / HEIGHT) * 100}%`}>
+                          {pane.id && <span class="mcp-pane__id">{pane.id}{pane.command ? ` ${pane.command}` : ''}</span>}
+                          {lines.length > 0 && <pre class="mcp-pane__text">{lines.join('\n')}</pre>}
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div class="mcp-tmux__screen mcp-tmux__screen--empty"><span>No sessions</span></div>
+                )}
+                <div class={`mcp-tmux__status${frame.reading === 'sessions' ? ' is-reading' : ''}`} aria-label="tmux status line">
+                  {session && <span class="mcp-tmux__session">[{session.name ?? session.id}]</span>}
+                  {session && (
+                    <span class={`mcp-tmux__windows${frame.reading === 'windows' ? ' is-reading' : ''}`}>
+                      {session.windows.map((window) => windowLabel(window) && (
+                        <span class={`mcp-tmux__window${window === windowOf(frame) ? ' is-current' : ''}`}>{windowLabel(window)}{window.active ? '*' : ''}</span>
+                      ))}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <p class="mcp-frame__note">{note(frame)}</p>
+            </div>
+          )
+        })}
+      </div>
+    )}
+    <div class="mcp-replay__chat" data-chat>
+      <div class="mcp-turn mcp-turn--user" data-turn="prompt"><span class="mcp-turn__who">you</span><p>{example.prompt}</p></div>
+      {example.steps.map((step, index) => {
+        const tier = tierFor(step.tool)
+        return (
+          <article class="mcp-turn" data-turn={index} tabindex={recording ? 0 : undefined}>
+            <p class="mcp-turn__say"><span class="mcp-turn__who">agent</span>{step.caption}</p>
+            <div class="mcp-call">
+              <span class="mcp-call__dot" aria-hidden="true"></span>
+              <a class="mcp-call__tool" href={step.tool.href}><code>{step.tool.name}</code></a>
+              {tier && <span class={`mcp-tier mcp-tier--${step.tool.tier}`} title={tier.tooltip}>{tier.label}</span>}
+              <code class="mcp-call__args">{args(step.arguments)}</code>
+            </div>
+            {recording && step.result !== undefined && (
+              <details class="mcp-result" open>
+                <summary>Result</summary>
+                <pre>{shown(step.result)}</pre>
+              </details>
+            )}
+          </article>
+        )
+      })}
+      {recording && answer && (
+        <div class="mcp-turn mcp-turn--answer" data-turn={total} tabindex="0">
+          <p class="mcp-turn__say"><span class="mcp-turn__who">agent</span>The command ran in the pane and printed <q>{answer}</q></p>
+        </div>
+      )}
+    </div>
+  </div>
+  {recording && (
+    <div class="mcp-replay__controls" data-controls hidden>
+      <button type="button" class="mcp-replay__button" data-action="play" aria-label="Play"><span aria-hidden="true">▶</span></button>
+      <button type="button" class="mcp-replay__button" data-action="back" aria-label="Previous call"><span aria-hidden="true">⏮</span></button>
+      <button type="button" class="mcp-replay__button" data-action="forward" aria-label="Next call"><span aria-hidden="true">⏭</span></button>
+      <div class="mcp-replay__track" role="group" aria-label="Calls">
+        <div class="mcp-replay__fill" data-fill></div>
+        {example.steps.map((step, index) => (
+          <button type="button" class="mcp-replay__mark" data-mark={index + 1} aria-label={`Show the state after ${step.tool.name}`} style={`left:${((index + 1) / total) * 100}%`}></button>
+        ))}
+      </div>
+      <span class="mcp-replay__count" data-count aria-live="polite">{total}/{total}</span>
+      <button type="button" class="mcp-replay__button" data-action="fullscreen" aria-label="Full screen"><span aria-hidden="true">⛶</span></button>
+    </div>
+  )}
+</section>
+{recording ? (
+  <p class="mcp-provenance">
+    Calls and results are recorded against <a href={`https://github.com/${recording.repo}/tree/${recording.revision}`}><code>{recording.repo}</code></a>
+    at <code>{recording.revision.slice(0, 9)}</code>, on a private {recording.tmux} server, running {recording.runner}. The preview draws only what those results state.
+    The agent's narration is illustrative.
+    {recording.shortened && <> Long values in a result are shortened here; the recording keeps them.</>}
+    {recording.projectDirectory && <> The sandbox's project directory is shown as <code>{recording.projectDirectory}</code>.</>}
+  </p>
+) : (
+  <p class="mcp-provenance">Requests only: no recorded results for {portName} yet.</p>
+)}
+
+<script>
+  const REDUCED = '(prefers-reduced-motion: reduce)'
+
+  function bindReplay(root: HTMLElement) {
+    const total = Number(root.dataset.steps)
+    const body = root.querySelector<HTMLElement>('[data-body]')!
+    const chat = root.querySelector<HTMLElement>('[data-chat]')!
+    const controls = root.querySelector<HTMLElement>('[data-controls]')
+    if (!controls) return
+    const turns = [...root.querySelectorAll<HTMLElement>('[data-turn]')].filter((turn) => turn.dataset.turn !== 'prompt')
+    const frames = [...root.querySelectorAll<HTMLElement>('[data-frame]')]
+    const play = root.querySelector<HTMLButtonElement>('[data-action="play"]')!
+    const marks = [...root.querySelectorAll<HTMLElement>('[data-mark]')]
+    const fill = root.querySelector<HTMLElement>('[data-fill]')!
+    const count = root.querySelector<HTMLElement>('[data-count]')!
+    const hint = root.querySelector<HTMLElement>('[data-hint]')
+    const interval = Number(root.dataset.interval) || 1600
+    const reduced = window.matchMedia?.(REDUCED).matches ?? false
+    // Calls made so far, the call pinned by a click, and the call under the pointer or focus.
+    let step = total
+    let pinned: number | null = null
+    let hover: number | null = null
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let playing = false
+
+    const stop = () => { playing = false; if (timer) clearTimeout(timer); timer = undefined }
+    const view = () => hover ?? pinned ?? step
+
+    function render(scroll = false) {
+      const shownFrame = view()
+      turns.forEach((turn) => {
+        const index = Number(turn.dataset.turn)
+        // The answer comes after the last call, so it shows once every call has played.
+        turn.hidden = index === total ? step < total : index >= step
+        if (index < total && index + 1 === shownFrame) turn.setAttribute('aria-current', 'step')
+        else turn.removeAttribute('aria-current')
+        turn.classList.toggle('is-pinned', pinned !== null && Math.min(index + 1, total) === pinned)
+      })
+      frames.forEach((frame) => { frame.hidden = Number(frame.dataset.frame) !== shownFrame })
+      marks.forEach((mark) => mark.classList.toggle('is-done', Number(mark.dataset.mark) <= step))
+      fill.style.width = `${(step / total) * 100}%`
+      count.textContent = `${step}/${total}`
+      const label = step >= total && !playing ? 'Replay' : playing ? 'Pause' : 'Play'
+      play.setAttribute('aria-label', label)
+      play.firstElementChild!.textContent = playing ? '⏸' : step >= total ? '↺' : '▶'
+      if (hint) hint.textContent = pinned !== null ? 'Pinned. Click the call again, or press Escape, to follow the replay.' : 'Hover a call to preview the tmux state after it. Click to pin it.'
+      if (scroll) chat.scrollTo({ top: chat.scrollHeight, behavior: reduced ? 'auto' : 'smooth' })
+    }
+
+    function tick() {
+      timer = undefined
+      if (!playing) return
+      if (step >= total) { stop(); render(); return }
+      step += 1
+      render(true)
+      if (step >= total) { stop(); render() } else timer = setTimeout(tick, interval)
+    }
+    function start() {
+      if (step >= total) step = 0
+      pinned = null
+      playing = true
+      render(true)
+      timer = setTimeout(tick, interval)
+    }
+    function go(next: number) {
+      stop()
+      pinned = null
+      step = Math.max(0, Math.min(total, next))
+      render(true)
+    }
+
+    root.setAttribute('data-live', '')
+    controls.hidden = false
+    root.querySelectorAll<HTMLDetailsElement>('details.mcp-result').forEach((details) => { details.open = false })
+    const fullscreen = root.querySelector<HTMLElement>('[data-action="fullscreen"]')!
+    if (!root.requestFullscreen) fullscreen.hidden = true
+
+    play.addEventListener('click', () => { if (playing) { stop(); render() } else start() })
+    root.querySelector('[data-action="back"]')!.addEventListener('click', () => go(step - 1))
+    root.querySelector('[data-action="forward"]')!.addEventListener('click', () => go(step + 1))
+    marks.forEach((mark) => mark.addEventListener('click', () => go(Number(mark.dataset.mark))))
+    fullscreen.addEventListener('click', () => {
+      if (document.fullscreenElement) void document.exitFullscreen()
+      else void root.requestFullscreen?.()
+    })
+    turns.forEach((turn) => {
+      const frame = Math.min(Number(turn.dataset.turn) + 1, total)
+      turn.addEventListener('mouseenter', () => { hover = frame; render() })
+      turn.addEventListener('mouseleave', () => { hover = null; render() })
+      turn.addEventListener('focus', () => { hover = frame; render() })
+      turn.addEventListener('blur', () => { hover = null; render() })
+      turn.addEventListener('click', (event) => {
+        if ((event.target as HTMLElement).closest('a, summary')) return
+        stop()
+        pinned = pinned === frame ? null : frame
+        render()
+      })
+      turn.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return
+        if ((event.target as HTMLElement) !== turn) return
+        event.preventDefault()
+        turn.click()
+      })
+    })
+    body.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight') { go(step + 1); event.preventDefault() }
+      else if (event.key === 'ArrowLeft') { go(step - 1); event.preventDefault() }
+      else if (event.key === 'Home') { go(0); event.preventDefault() }
+      else if (event.key === 'End') { go(total); event.preventDefault() }
+      else if (event.key === 'Escape' && pinned !== null) { pinned = null; render(); event.preventDefault() }
+    })
+
+    // A reader who asks for less motion gets the finished replay and presses play; others see it play once it is on screen.
+    if (reduced) { render(); return }
+    step = 0
+    render()
+    const begin = () => { if (!playing && step === 0 && pinned === null) start() }
+    if (typeof IntersectionObserver === 'undefined') begin()
+    else {
+      const watcher = new IntersectionObserver((entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) { watcher.disconnect(); begin() }
+      }, { threshold: 0.4 })
+      watcher.observe(root)
+    }
+  }
+
+  const bindAll = () => document.querySelectorAll<HTMLElement>('[data-mcp-replay]:not([data-live])').forEach(bindReplay)
+  bindAll()
+  document.addEventListener('astro:after-swap', bindAll)
+</script>

@@ -1,6 +1,7 @@
 import { mcpObjects } from './mcp-catalog'
 import { PORT_BY_SLUG, portPageUrl } from './ports'
 import { EXAMPLES } from './mcp-examples.ts'
+import { replayFrames, type Frame } from './mcp-replay'
 
 export { EXAMPLES }
 
@@ -131,6 +132,8 @@ export interface Recording {
   tmux: string
   /** The test runner the sandbox ran, which produced the output below. */
   runner: string
+  /** The tmux state after each call (frame 0 is before the first), read from the recorded results only. */
+  frames: Frame[]
   /** Whether any result is shown shortened. */
   shortened: boolean
   /** The directory the sandbox ran in was replaced by this fixed path. */
@@ -240,7 +243,7 @@ export function buildShowcase(port: string, version: string, snapshot: ProtocolS
         tool: tools.get(step.tool)!, arguments: step.arguments, caption: step.caption,
         ...(recorded ? { result: shown[index] } : {}),
       })),
-      ...(recorded ? { recording: { repo: recorded.repo, revision: recorded.revision, tmux: recorded.sandbox.tmux, runner: recorded.sandbox.pytest, shortened: shown.some((value, index) => JSON.stringify(value) !== JSON.stringify(full[index])), ...(recorded.sandbox.rewritten?.projectDirectory ? { projectDirectory: recorded.sandbox.rewritten.projectDirectory } : {}), ...(output ? { output: output.trimEnd() } : {}) } } : {}),
+      ...(recorded ? { recording: { repo: recorded.repo, revision: recorded.revision, tmux: recorded.sandbox.tmux, runner: recorded.sandbox.pytest, frames: replayFrames(recorded.steps), shortened: shown.some((value, index) => JSON.stringify(value) !== JSON.stringify(full[index])), ...(recorded.sandbox.rewritten?.projectDirectory ? { projectDirectory: recorded.sandbox.rewritten.projectDirectory } : {}), ...(output ? { output: output.trimEnd() } : {}) } } : {}),
     }
     : undefined
   return {

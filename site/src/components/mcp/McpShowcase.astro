@@ -10,7 +10,7 @@
 import { PORT_BY_SLUG } from '../../lib/ports'
 import type { McpShowcase, ShowcaseTool } from '../../lib/mcp-showcase'
 import { tierFor } from '../../lib/mcp-showcase'
-import McpWorkedExample from './McpWorkedExample.astro'
+import McpReplay from './McpReplay.astro'
 import '../../styles/mcp-showcase.css'
 
 interface Props {
@@ -55,7 +55,7 @@ const name = PORT_BY_SLUG[showcase.port].name
     ))}
   </div>
   <p><a href={showcase.toolsHref}>Browse every tool</a>, with its arguments, result and protocol data.</p>
-  {showcase.example && <McpWorkedExample example={showcase.example} portName={name} />}
+  {showcase.example && <McpReplay example={showcase.example} portName={name} />}
 </section>
 <style>
   .mcp-group {

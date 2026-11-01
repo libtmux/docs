@@ -5,7 +5,7 @@ import HomeExample from './HomeExample.astro'
 import { portCapabilities, type CapabilityTable } from '../lib/core-capabilities'
 import CAPABILITIES from '../data/core-capabilities.json'
 import LandingInstall from './landing/LandingInstall.astro'
-import McpWorkedExample from './mcp/McpWorkedExample.astro'
+import McpReplay from './mcp/McpReplay.astro'
 import WorkspaceConfig from './workspace/WorkspaceConfig.astro'
 import WorkspaceWindows from './workspace/WorkspaceWindows.astro'
 import { PORT_BY_SLUG, portPageUrl, type Port } from '../lib/ports'
@@ -95,7 +95,7 @@ const panelId = (product: string) => `landing-panel-${product}`
       </p>}
       {showcase && <p class="landing-lead" data-landing-lead>{showcaseSentence(showcase)}</p>}
       {showcase?.example && !panel.servedBy && <div class="landing-example" data-landing-example="mcp">
-        <McpWorkedExample example={showcase.example} portName={port.name} level={3} />
+        <McpReplay example={showcase.example} portName={port.name} level={3} />
       </div>}
       <LandingInstall panel={panel} port={port.slug} />
       <ul class="landing-links">
@@ -210,7 +210,7 @@ const panelId = (product: string) => `landing-panel-${product}`
   .landing-lead { margin: 0 0 1rem; }
   .landing-example { margin: 0; }
   .landing-example :global(h3) { margin: 0 0 .5rem; font-weight: 600; line-height: 1.4; }
-  .landing-example > :global(p:not(.mcp-after, .mcp-provenance)) { margin: 0 0 1rem; }
+  .landing-example > :global(p:not(.mcp-provenance)) { margin: 0 0 1rem; }
   .landing-note { margin: 0 0 1rem; }
   .landing-command-lead { margin-block: .9rem .25rem; font-size: .875rem; }
   .landing-links { margin: 1.25rem 0 0; padding: 0; list-style: none; display: grid; gap: .35rem; font-size: .875rem; }

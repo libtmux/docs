@@ -320,15 +320,15 @@ describe('the showcase section', () => {
   afterEach(async () => { for (const win of windows.splice(0)) await win.happyDOM.abort() })
 
   const component = loadAstroTemplate('components/mcp/McpShowcase.astro', {
-    real: ['components/mcp/McpWorkedExample.astro'],
+    real: ['components/mcp/McpReplay.astro'],
     modules: {
       'astro-expressive-code/components': {
         Code: createComponent((_result: unknown, props: { code: string; lang: string; title?: string }) => renderTemplate`<pre data-lang="${props.lang}" data-title="${props.title ?? ''}">${props.code}</pre>`),
       },
     },
   })
-  /** A call block's text: the tool, then its arguments as one line of JSON. */
-  const parseCall = (text: string) => ({ tool: text.slice(0, text.indexOf(' ')), arguments: JSON.parse(text.slice(text.indexOf(' ') + 1)) })
+  /** A call row's tool and arguments. */
+  const parseCall = (row: Element) => ({ tool: row.querySelector('.mcp-call__tool code')!.textContent!, arguments: JSON.parse(row.querySelector('.mcp-call__args')!.textContent!) })
   async function section(port: string) {
     const win = new Window({ url: 'https://libtmux.org/en/' })
     windows.push(win)
@@ -361,43 +361,42 @@ describe('the showcase section', () => {
 
   it('shows the prompt and each call as its tool name and the JSON arguments a client sends', async () => {
     const document = await section('rs')
-    expect(document.querySelector('.mcp-prompt')?.textContent).toBe(EXAMPLES.rs!.prompt)
-    const calls = [...document.querySelectorAll('.mcp-steps pre[data-title="Call"]')].map((pre) => parseCall(pre.textContent!))
+    expect(document.querySelector('.mcp-turn--user p')?.textContent).toBe(EXAMPLES.rs!.prompt)
+    const calls = [...document.querySelectorAll('.mcp-call')].map(parseCall)
     expect(calls).toEqual(EXAMPLES.rs!.steps.map((step) => ({ tool: step.tool, arguments: step.arguments })))
-    expect(document.querySelector('.mcp-steps li a')?.getAttribute('href')).toBe('/rs/latest/mcp/tools/create_session/')
+    expect(document.querySelector('.mcp-call a')?.getAttribute('href')).toBe('/rs/latest/mcp/tools/create_session/')
   })
 
   it('shows each call under its caption, and the id in a caption is the one in the call', async () => {
     for (const port of PORTS) {
       const document = await section(port)
-      const steps = [...document.querySelectorAll('.mcp-steps > li')]
+      const steps = [...document.querySelectorAll('article.mcp-turn')]
       const { example } = await showcase(port)
       expect(steps, port).toHaveLength(example!.steps.length)
       steps.forEach((item, index) => {
         const { caption, arguments: args, tool } = example!.steps[index]!
-        const lead = item.querySelector('p')!.textContent!.replace(/\s+/g, ' ').trim()
-        expect(lead.startsWith(`${caption} ${tool.name}`), `${port} ${tool.name}: ${lead}`).toBe(true)
-        const call = parseCall(item.querySelector('pre')!.textContent!)
+        const lead = item.querySelector('.mcp-turn__say')!.textContent!.replace(/\s+/g, ' ').replace(/^agent/, '').trim()
+        expect(lead, `${port} ${tool.name}`).toBe(caption)
+        const call = parseCall(item.querySelector('.mcp-call')!)
         expect(call.arguments, `${port} ${tool.name}`).toEqual(args)
-        for (const id of idsIn(args)) expect(lead, `${port} ${tool.name}`).toContain(id)
+        for (const id of idsIn(args)) expect(caption, `${port} ${tool.name}`).toContain(id)
       })
     }
   })
 
-  it('shows a result under each call and the pane output last, for a recorded port', async () => {
+  it('shows a recorded result under each call, and the agent\'s answer quoting the pane output last', async () => {
     const document = await section('ts')
-    const items = [...document.querySelectorAll('.mcp-steps > li')]
-    for (const item of items) expect([...item.querySelectorAll('pre')].map((pre) => pre.getAttribute('data-title'))).toEqual(['Call', 'Result'])
-    expect(JSON.parse(items[0]!.querySelectorAll('pre')[1]!.textContent!).paneId, 'the id later calls use comes from this result').toBe('%0')
-    const last = [...document.querySelectorAll('pre')].at(-1)!
-    expect(last.getAttribute('data-title')).toBe('Output in the pane')
-    expect(last.textContent).toMatch(/2 passed/)
-    expect(document.querySelector('.mcp-provenance')?.textContent).toMatch(/Recorded against.*libtmux\/libtmux-ts.*private tmux/s)
+    const items = [...document.querySelectorAll('article.mcp-turn')]
+    for (const item of items) expect(item.querySelectorAll('details.mcp-result pre')).toHaveLength(1)
+    expect(JSON.parse(items[0]!.querySelector('details.mcp-result pre')!.textContent!).paneId, 'the id later calls use comes from this result').toBe('%0')
+    expect(document.querySelector('.mcp-turn--answer q')?.textContent).toMatch(/^2 passed/)
+    expect(document.querySelector('.mcp-provenance')?.textContent).toMatch(/recorded against.*libtmux\/libtmux-ts.*private tmux/si)
   })
 
-  it('says requests only, and shows no result, for a port with no recording', async () => {
+  it('says requests only, and shows no result, preview or control, for a port with no recording', async () => {
     const document = await section('go')
-    expect([...document.querySelectorAll('.mcp-steps pre')].map((pre) => pre.getAttribute('data-title'))).toEqual(EXAMPLES.go!.steps.map(() => 'Call'))
+    expect(document.querySelectorAll('article.mcp-turn')).toHaveLength(EXAMPLES.go!.steps.length)
+    for (const selector of ['details.mcp-result', '[data-frame]', '[data-controls]', '[data-tmux]', '.mcp-turn--answer']) expect(document.querySelector(selector), selector).toBeNull()
     expect(document.querySelector('.mcp-provenance')?.textContent).toContain('Requests only: no recorded results for Go yet.')
   })
 
