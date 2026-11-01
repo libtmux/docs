@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedFrom": "sources/palettes.json and sources/geometry.json",
+  "generatedFrom": "sources/palettes.json, sources/geometry.json and sources/library-cards.json",
   "iconSizes": [
     16,
     24,
