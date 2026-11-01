@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { parseFrontmatter } from '@astrojs/markdown-remark'
 import { describe, expect, it, vi } from 'vitest'
 import data from '../src/data/product-copy.json'
-import { documentationTitle } from '../src/lib/branding'
+import { documentationTitle, headingTitle } from '../src/lib/branding'
 import { PORT_BY_SLUG } from '../src/lib/ports'
 import { mcpIntro, mcpTitle, workspaceIntro, workspaceShortTitle, workspaceSubtitle, workspaceTitle, introText } from '../src/lib/product-copy'
 import { mcpShowcase } from '../src/lib/mcp-showcase'
@@ -91,6 +91,22 @@ describe('the product page titles', () => {
     // The manifest titles a page as its Markdown twin does (test/agent-titles.test.ts).
     expect(readFileSync(new URL('../src/pages/docs.json.ts', import.meta.url), 'utf8')).toContain('title: agentTitle(served.data),')
     expect(documentationTitle(workspaceShortTitle('rs'), 'libtmux')).toContain('Rust-based tmux workspace manager')
+  })
+})
+
+describe('a heading as plain text', () => {
+  it('joins the title and the subtitle, and leaves a page without one alone', () => {
+    expect(headingTitle({ title: workspaceTitle('rs'), subtitle: workspaceSubtitle('rs') })).toBe('tmux workspace manager, forged in Rust.')
+    expect(headingTitle({ title: 'Quickstart' })).toBe('Quickstart')
+  })
+
+  it('is what the backlinks, the contribute link and the port labels carry', () => {
+    const mentions = readFileSync(new URL('../src/data/mentions.json', import.meta.url), 'utf8')
+    expect(mentions).toContain('"title": "tmux workspace manager, forged in Julia."')
+    expect(mentions).not.toMatch(/"title": "tmux workspace manager,(?! forged in \w+\.|[^"]*not published)/)
+    for (const file of ['../src/components/docs/DocPage.astro', '../src/lib/page-port-links.ts']) {
+      expect(readFileSync(new URL(file, import.meta.url), 'utf8'), file).toContain('headingTitle(entry.data)')
+    }
   })
 })
 

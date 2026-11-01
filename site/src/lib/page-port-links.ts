@@ -1,4 +1,5 @@
 import { symbolsForProduct, type ApiSymbol } from '@libtmux/api-model'
+import { headingTitle } from './branding'
 import { API_MODELS, pageSlug, referenceAlternatives, referenceHref } from './api-models'
 import { DOC_PRODUCTS, PORT_BY_SLUG, PORTS, portHomeUrl, portPageUrl, productAvailable, referenceUrl } from './ports'
 import { docsPath, docsRoutePath, type DocsPage } from './docs-paths'
@@ -150,7 +151,7 @@ export function pagePortLinks({
           .sort((a, b) => docsPath(a).localeCompare(docsPath(b)))
           .map((entry) => ({
             href: portPageUrl(port, targetVersion, docsPath(entry)),
-            ...(selected.length > 1 ? { label: entry.data.title ?? docsPath(entry) } : {}),
+            ...(selected.length > 1 ? { label: entry.data.title ? headingTitle(entry.data) : docsPath(entry) } : {}),
           }))
       } else if (targets[0]) links = [{ href: portPageUrl(port, targetVersion, docsPath(targets[0])) }]
       else {

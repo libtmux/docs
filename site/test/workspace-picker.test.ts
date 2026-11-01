@@ -325,6 +325,8 @@ describe('the picker as rendered', () => {
   it('lays out the example gallery lazily but keeps it in the page', () => {
     const css = readFileSync(new URL('../src/styles/workspace-showcase.css', import.meta.url), 'utf8')
     expect(css).toMatch(/\.ws-example\s*\{[^}]*content-visibility: auto;[^}]*contain-intrinsic-block-size: auto /)
+    // Room inside the contained box for focus rings, paid back by a negative margin so the text does not move.
+    expect(css).toMatch(/\.ws-example\s*\{[^}]*margin: calc\(2\.5rem - 0\.25rem\) -0\.5rem;[^}]*padding: 0\.25rem 0\.5rem;/)
     expect(css).toMatch(/\.ws-example:has\(:target\)\s*\{\s*content-visibility: initial/)
     const source = readFileSync(new URL('../src/components/workspace/WorkspaceShowcase.astro', import.meta.url), 'utf8')
     expect(source).not.toMatch(/hidden|loading=|client:/)

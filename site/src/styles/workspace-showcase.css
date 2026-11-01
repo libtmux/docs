@@ -197,7 +197,9 @@
 }
 
 .ws-example {
-  margin-block: 2.5rem;
+  /* Paint containment clips at the padding box, so a focus ring or shadow at the edge needs room inside it. */
+  margin: calc(2.5rem - 0.25rem) -0.5rem;
+  padding: 0.25rem 0.5rem;
   /*
    * Every example is in the HTML for search and for a reader without script,
    * but the browser lays out only those near the viewport, so a page with

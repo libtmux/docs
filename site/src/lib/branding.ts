@@ -38,6 +38,11 @@ export function branding(portSlug?: string, pagePath = '', root = '') {
 }
 
 /** Keep one project suffix, including when normalizing an older native page. */
+/** A page's heading as plain text: its title and, when it has one, its subtitle ("tmux workspace manager, forged in Rust."). */
+export function headingTitle(data: { title: string; subtitle?: string }): string {
+  return data.subtitle ? `${data.title} ${data.subtitle}` : data.title
+}
+
 export function documentationTitle(title: string, projectName: string): string {
   const suffix = ` | ${projectName}`
   let page = title

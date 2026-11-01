@@ -7,6 +7,7 @@ import DocCard from '../DocCard.astro'
 import CoreHome from '../CoreHome.astro'
 import { coreHomeHeadings } from '../../lib/core-home'
 import PortLinks from '../PortLinks.astro'
+import { headingTitle } from '../../lib/branding'
 import McpInstall from '../widgets/McpInstall.astro'
 import ProductIntro from './ProductIntro.astro'
 import McpShowcase from '../mcp/McpShowcase.astro'
@@ -84,7 +85,7 @@ const showToc = placeholderLocale ? false : entry.data.tableOfContents
  */
 const contribute = entry.filePath && !entry.data.source
   ? contributeLink(entry.filePath, locale, !placeholderLocale, {
-      title: entry.data.title,
+      title: headingTitle(entry.data),
       description: entry.data.description,
     })
   : undefined
