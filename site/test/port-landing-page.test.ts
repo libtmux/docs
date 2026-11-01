@@ -135,8 +135,8 @@ describe('the landing page markup', () => {
       expect(body.querySelector('.ws-config__panel--yaml pre')!.textContent, slug).toBe(example.yaml)
       expect(body.querySelectorAll('.ws-windows .ws-win svg').length, `${slug} drawn windows`).toBeGreaterThan(0)
       expect(body.querySelector('[data-landing-evidence] a[href^="https://github.com/"]'), slug).not.toBeNull()
-      // PowerShell loads through cmdlets, not a program the CLI manual lists, so it names no command.
-      if (slug === 'powershell') {
+      // PowerShell loads through cmdlets, not a program the CLI manual lists. Python's file is only parsed by tests, so the command is not claimed for it.
+      if (slug === 'powershell' || slug === 'py') {
         expect(body.textContent, slug).not.toContain('load workspace.yaml')
         continue
       }

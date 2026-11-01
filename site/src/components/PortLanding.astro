@@ -45,8 +45,10 @@ const workspaceExample = workspace && landingExample(workspace)
 const workspaceTopic = workspaceExample && TOPICS.find((topic) => topic.id === workspaceExample.topic)!
 const workspaceWindows = workspace && workspaceExample
   ? previewWindows(JSON.parse(workspaceExample.json), `landing-${port.slug}`, workspace.support.defaultLayout?.layout) : []
-const workspaceLoad = loadCommand(port.slug)
 const workspaceTest = workspaceExample && (workspaceExample.tests.find((test) => test.via === 'cli') ?? workspaceExample.tests[0]!)
+// Name the command only for a file a test runs it on; the evidence line says how any other file is reached.
+const workspaceProgram = loadCommand(port.slug)
+const workspaceLoad = workspaceTest?.via === 'cli' ? workspaceProgram : undefined
 const complete = QUICKSTARTS[port.slug]?.complete
 if (!complete) throw new Error(`PortLanding: ${port.slug} has no complete homepage example; add it to home-examples.json`)
 const panelId = (product: string) => `landing-panel-${product}`
@@ -114,7 +116,7 @@ const panelId = (product: string) => `landing-panel-${product}`
       <LandingInstall panel={panel} port={port.slug} />
       <ul class="landing-links">
         {workspace && <li><a href={`${panel.href}#${offersPicker(workspace) ? 'try-a-preset' : 'example-workspaces'}`}>{offersPicker(workspace) ? 'Try other presets' : 'Example workspaces'} →</a></li>}
-        {workspaceLoad && <li><a href={portPageUrl(port, version, workspaceLoad.path)}>The <code>{workspaceLoad.program} load</code> command →</a></li>}
+        {workspaceProgram && <li><a href={portPageUrl(port, version, workspaceProgram.path)}>The <code>{workspaceProgram.program} load</code> command →</a></li>}
         <li><a href={panel.href}>{panel.label} documentation →</a></li>
       </ul>
       {excerpt}
