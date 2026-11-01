@@ -86,7 +86,6 @@
     },
     "capabilities": {
       "objects": "LibTmux.Pane",
-      "ids": "LibTmux.Ref",
       "queries": "LibTmux.Filter",
       "errors": "LibTmux.Error",
       "traversal": "LibTmux.Snapshot.panes/1",
@@ -119,7 +118,7 @@
       "pane": "pane.Pane"
     },
     "capabilities": {
-      "objects": "pane.Pane.get",
+      "objects": "pane.Pane",
       "ids": "target.PaneId",
       "queries": "query.FilterExpr",
       "errors": "error.Error",
@@ -127,8 +126,7 @@
       "version-gate": "error.Error.UnsupportedCapability",
       "current-pane": "pane.Pane.from_env",
       "test-fixtures": "test.TestServer",
-      "async": "server.Server.new_session",
-      "argv": "command.Command"
+      "async": "server.Server.new_session"
     }
   },
   "go": {

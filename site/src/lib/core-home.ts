@@ -51,8 +51,8 @@ export const CAPABILITY_GROUPS = {
  * symbol does not support.
  */
 const CAPABILITY_EVIDENCE: Record<CapabilityKey, { needs: string; test: (symbol: ApiSymbol) => boolean }> = {
-  objects: { needs: 'a type, function or property', test: (symbol) => symbol.kind !== 'constant' },
-  ids: { needs: 'an ID type or accessor', test: (symbol) => /\b(id|ID)\b|Id\b|ID\b|Ref\b/.test(symbol.name) },
+  objects: { needs: 'a type or cmdlet', test: (symbol) => ['class', 'struct', 'interface', 'enum', 'trait', 'module', 'typealias', 'function'].includes(symbol.kind) },
+  ids: { needs: 'an ID type or accessor', test: (symbol) => /\b(id|ID)\b|Id\b|ID\b/.test(symbol.name) },
   queries: { needs: 'a filter, query or selection', test: (symbol) => /filter|query|select|where|expr/i.test(symbol.name) },
   errors: { needs: 'an error, exception or failure type', test: (symbol) => /error|exception|failure/i.test(symbol.name) },
   traversal: { needs: 'a panes, windows, sessions or snapshot accessor', test: (symbol) => /panes|windows|sessions|snapshot/i.test(symbol.name) },
@@ -60,7 +60,7 @@ const CAPABILITY_EVIDENCE: Record<CapabilityKey, { needs: string; test: (symbol:
   'version-gate': { needs: 'a version or unsupported-feature error', test: (symbol) => /version|unsupported|capabilit/i.test(symbol.name) },
   'current-pane': { needs: 'an environment constructor', test: (symbol) => /env/i.test(symbol.name) },
   'test-fixtures': { needs: 'a test or fixture symbol', test: (symbol) => /test|fixture|junit|pytest/i.test(`${qualifiedNameOf(symbol)} ${symbol.source?.file ?? ''}`) },
-  async: { needs: 'an async, suspend, Promise or Task signature', test: (symbol) => /async|suspend|promise|task|await/i.test(`${symbol.name} ${JSON.stringify(symbol.signatures)}`) },
+  async: { needs: 'an async, suspend, Promise or Task signature', test: (symbol) => /async|suspend|promise|\btask\b/i.test([symbol.name, ...symbol.signatures.map((signature) => `${signature.raw ?? ''} ${signature.returns ?? ''}`)].join(' ')) },
 }
 
 export interface CoreHomeEntry {
