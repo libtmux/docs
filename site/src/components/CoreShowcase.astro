@@ -72,7 +72,7 @@ const shown = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record
     const search = root.querySelector<HTMLInputElement>('[data-capability-search]')!
     const empty = root.querySelector<HTMLElement>('[data-capability-empty]')!
     const wide = matchMedia('(min-width: 56rem)')
-    // Every option keeps the page's other parameters, so a new tab or a reload without script lands on the same product.
+    // Every option keeps the page's other parameters, so a new tab opened from a link lands on the same product once the script has run.
     const hrefFor = (id: string) => {
       const url = new URL(location.href)
       if (id === ids[0]) url.searchParams.delete('capability'); else url.searchParams.set('capability', id)

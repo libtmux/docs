@@ -170,7 +170,7 @@ function runsCommand(step: string[], command: string): boolean {
     // A block scalar's lines are separate commands; a folded one is a single line.
     return [flat(kept), ...kept.replace(/\\\n/g, ' ').split('\n').map((part) => flat(part))]
   })
-  return runs.some((run) => new RegExp(`(?:^|&& |; |\\|\\| )${escaped}(?: &&|;| \\||$| -)`).test(run) || run === wanted)
+  return runs.some((run) => new RegExp(`(?:^|&& |; )${escaped}(?: &&|;|$| -)`).test(run) || run === wanted)
 }
 
 export { workflowRuns }

@@ -112,6 +112,8 @@ jobs:
     ['a step guarded by if', workflow.replace('        run: bun run typecheck && bun run test\n  other', "        if: github.ref == 'x'\n        run: bun run typecheck && bun run test\n  other")],
     ['a step that may fail', workflow.replace('        run: bun run typecheck && bun run test\n  other', '        continue-on-error: true\n        run: bun run typecheck && bun run test\n  other')],
     ['a command that only prefixes another', workflow.replace('        run: bun run typecheck && bun run test\n  other', '        run: bun run typecheck && bun run test:package\n  other')],
+    ['a command whose failure is swallowed', workflow.replace('        run: bun run typecheck && bun run test\n  other', '        run: bun run typecheck && bun run test || true\n  other')],
+    ['a command that runs only after another fails', workflow.replace('        run: bun run typecheck && bun run test\n  other', '        run: false || bun run typecheck && bun run test\n  other')],
     ['a command inside a string', workflow.replace('        run: bun run typecheck && bun run test\n  other', '        run: echo "bun run typecheck && bun run test"\n  other')],
   ])('refuses %s', (_name, changed) => {
     expect(workflowStep(changed, ci)).toBe(false)
