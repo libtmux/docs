@@ -209,9 +209,11 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
       assert.equal((await picker.locator('.surface-current .surface-label, .surface-current small').allInnerTexts()).join(' '), `${port.name} Home`)
       assert.equal(await picker.locator('.surface-current .status-badge').count(), 0, `${slug}: the language Home states no product status`)
       await openPicker(picker)
-      const languageHome = await group(picker, port.name).locator('.surface-options a').evaluateAll((links) =>
-        links.map((link) => ({ label: link.textContent.trim().replace(/\s*✓$/, ''), href: link.getAttribute('href') })))
-      assert.deepEqual(languageHome, [{ label: 'Home', href: `${new URL(base).pathname}/${slug}/latest/` }], `${slug}: the language Home is one destination`)
+      const languageHome = picker.locator('[data-surface-home]')
+      assert.equal(await languageHome.locator('details, small, .surface-chevron').count(), 0, `${slug}: the language Home is one row, not a group`)
+      assert.equal((await languageHome.innerText()).replace(/\s*✓$/, '').trim(), 'Home', `${slug}: the row is labelled Home`)
+      assert.equal(await languageHome.locator('a').getAttribute('href'), `${new URL(base).pathname}/${slug}/latest/`, `${slug}: the language Home links the language page`)
+      assert.equal(await languageHome.locator('svg').count() > 0, true, `${slug}: the Home row has its icon`)
       const sidebar = page.locator('.sidebar-nav:visible')
       assert.equal(await sidebar.locator(`a[href="${new URL(base).pathname}/${slug}/latest/core/"]`).count(), 1, `${slug}: the language sidebar links the Core Library home`)
       assert.equal(await sidebar.locator(`a[href="${new URL(base).pathname}/${slug}/latest/guides/"]`).count(), 1, `${slug}: the language sidebar links the guides`)
@@ -226,14 +228,14 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
         `${slug}: sections retain the selected port and version`)
       const groups = picker.locator('[data-surface-group]')
       const names = await groups.locator(':scope > summary .surface-label').allTextContents()
-      assert.equal(names[0], port.name, `${slug}: the language Home leads the menu`)
-      assert.equal(names[1], 'Core Library', `${slug}: the library follows the Home`)
+      assert.equal(await picker.locator('[data-surface-entry]').first().getAttribute('data-surface-home'), '', `${slug}: the Home row leads the menu`)
+      assert.equal(names[0], 'Core Library', `${slug}: the library follows the Home`)
       assert.equal(await core.locator('.surface-options a', { hasText: /^\s*Home\s*$/ }).getAttribute('href'), `${new URL(base).pathname}/${slug}/latest/core/`, `${slug}: Core Library Home is core/`)
       const appNames = parentLibrary ? [] : [
         ...(productAvailable(port, 'mcp') ? ['MCP'] : []),
         ...(productAvailable(port, 'workspace') ? ['Workspace Manager'] : []),
       ]
-      assert.deepEqual(names.slice(2).sort(), appNames, `${slug}: only available applications appear`)
+      assert.deepEqual(names.slice(1).sort(), appNames, `${slug}: only available applications appear`)
       // A badge is the group's sibling, never inside its summary.
       const badgeOf = (entry) => entry.locator('xpath=..').locator(':scope > .status-toggletip > .status-badge')
       assert.equal(await core.locator('.status-badge').count(), 0, `${slug}: no badge inside the core summary`)

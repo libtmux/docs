@@ -40,7 +40,12 @@ const artwork = (id: string) => {
     </label>
     <nav aria-label={solutionsOnly ? 'Documentation solutions' : 'Documentation apps and sections'}>
       {surfaces.map((entry) => <div class="surface-entry" data-surface-entry data-surface-home={entry.id === 'home' ? '' : undefined} style={`--surface-anchor: ${anchorName(entry.id)}`}>
-      {solutionsOnly ? <a class="surface-destination doc-picker-option" href={entry.href}
+      {entry.id === 'home' && !solutionsOnly ? <a class="surface-option surface-home doc-picker-option" href={entry.href}
+        data-surface-option data-picker-option data-match={`Home ${entry.label}`}
+        aria-current={!alternative && surface.id === 'home' ? 'location' : undefined}>
+        <DocumentationIcon name="home" /><span>Home</span>
+        {!alternative && surface.id === 'home' && <span class="doc-picker-check" aria-hidden="true">✓</span>}
+      </a> : solutionsOnly ? <a class="surface-destination doc-picker-option" href={entry.href}
         data-picker-option data-match={`${entry.label} ${descriptions[entry.id]}`}>
         <img class="surface-artwork" src={artwork(entry.id)} width="30" height="30" alt="" />
         <span class="surface-group-name"><strong><span class="surface-label" style={anchorOf(entry.id)}>{entry.label}</span></strong>{' '}<small>{descriptions[entry.id]}</small></span>
@@ -108,6 +113,7 @@ const artwork = (id: string) => {
   .surface-group[open] > summary .surface-chevron { transform: rotate(90deg); }
   /* The badge is a sibling of the row's control, never inside it. It follows the label where CSS anchoring exists and sits at the row's end elsewhere. */
   .surface-entry { position: relative; }
+  .surface-home { margin-bottom: .25rem; }
   .surface-entry:has(> :is(details, a)[hidden]) { display: none; }
   .surface-entry > :global(.surface-entry__badge) { position: absolute; top: 1.15rem; right: 2.1rem; z-index: 1; }
   @supports (anchor-name: --surface) {

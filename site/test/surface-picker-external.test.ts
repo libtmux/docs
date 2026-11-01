@@ -72,10 +72,15 @@ describe('the documentation picker offers the language Home first', () => {
     const text = (node: { textContent: string | null } | null) => node?.textContent?.replace(/\s+/g, ' ').trim()
     const language = await render('/rs/latest/')
     expect(text(language.querySelector('.surface-current'))).toBe('RustHome')
-    expect([...language.querySelectorAll('[data-surface-entry] .surface-group-name strong')].map(text)[0]).toBe('Rust')
-    expect(language.querySelector('[data-surface-entry]:first-child a[href="/rs/latest/"]')?.getAttribute('aria-current')).toBe('location')
+    // One row labelled Home: no group, description or chevron.
+    const home = language.querySelector('[data-surface-home]')!
+    expect(text(home)).toBe('Home ✓')
+    expect(home.querySelector('details, small, .surface-chevron')).toBeNull()
+    expect(home.querySelector('a[href="/rs/latest/"]')?.getAttribute('aria-current')).toBe('location')
+    expect(language.querySelector('[data-surface-entry]')).toBe(home)
     const core = await render('/rs/latest/core/')
     expect(text(core.querySelector('.surface-current'))).toBe('Core LibraryHome')
+    expect(core.querySelector('[data-surface-home] a')?.getAttribute('aria-current')).toBeNull()
     expect(core.querySelector('a[href="/rs/latest/core/"][aria-current="location"]')).not.toBeNull()
   })
 })
