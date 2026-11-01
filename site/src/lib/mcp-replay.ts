@@ -1,3 +1,5 @@
+import { parseLayout } from './tmux-layout-string'
+
 /**
  * The tmux state a recorded MCP session leaves after each call.
  *
@@ -134,7 +136,7 @@ function applyPanes(sessions: SessionState[], answer: Record_) {
 
 function windowOfPane(sessions: SessionState[], id: string | undefined): WindowState | undefined {
   const windows = sessions.flatMap((session) => session.windows)
-  return windows.find((window) => id !== undefined && window.panes.some((pane) => pane.id === id)) ?? windows[0]
+  return windows.find((window) => id !== undefined && window.panes.some((pane) => pane.id === id))
 }
 
 function applySplit(sessions: SessionState[], step: ReplayStep, answer: Record_) {
@@ -149,13 +151,16 @@ function applySplit(sessions: SessionState[], step: ReplayStep, answer: Record_)
   const path = str(pane.path) ?? str(pane.cwd)
   if (path) added.path = path
   window.panes.push(added)
+  // A layout read before the split no longer describes the window.
+  delete window.layout
 }
 
 function applyLayoutRead(sessions: SessionState[], step: ReplayStep, answer: Record_) {
   const values = isRecord(answer.values) ? answer.values : {}
   const reported = isRecord(answer.window) ? answer.window : answer
   const layout = str(values.window_layout) ?? str(reported.layout)
-  if (!layout) return
+  // select_layout can answer with a layout's name, which has no geometry to draw.
+  if (!layout || !parseLayout(layout)) return
   const windowId = str(reported.id) ?? str(reported.windowId) ?? (typeof answer.window === 'string' ? answer.window : undefined)
   const windows = sessions.flatMap((session) => session.windows)
   const window = windows.find((candidate) => windowId !== undefined && candidate.id === windowId) ?? windowOfPane(sessions, paneOf(step.arguments))
@@ -179,7 +184,7 @@ function applyKill(sessions: SessionState[], answer: Record_, args: Record_): Se
   return sessions.filter((session) => name === undefined || session.name !== name)
 }
 
-const READS: Record<string, Reading> = { list_sessions: 'sessions', list_windows: 'windows', list_panes: 'panes', get_tmux_variables: 'windows' }
+const READS: Record<string, Reading> = { list_sessions: 'sessions', list_windows: 'windows', list_panes: 'panes' }
 
 /** The frames of a recording: the state before the first call, then the state after each. */
 export function replayFrames(steps: readonly ReplayStep[]): Frame[] {

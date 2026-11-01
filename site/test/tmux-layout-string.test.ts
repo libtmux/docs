@@ -38,7 +38,8 @@ describe('drawing at given rectangles', () => {
     expect(renderRects(panes, arrange('tiled', 3, 44, 12), [44, 12], { id: 'x' })).toBe(named)
   })
 
-  it('refuses fewer rectangles than panes', () => {
+  it('refuses rectangles that are not one per pane', () => {
     expect(() => renderRects([[], []], [{ x: 0, y: 0, w: 1, h: 1 }], [10, 10])).toThrow(/2 panes need 2 rectangles/)
+    expect(() => renderRects([[]], [{ x: 0, y: 0, w: 1, h: 1 }, { x: 1, y: 0, w: 1, h: 1 }], [10, 10])).toThrow(/1 panes need 1 rectangles, got 2/)
   })
 })

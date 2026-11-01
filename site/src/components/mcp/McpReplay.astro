@@ -39,7 +39,7 @@ const answers = recording?.answers ?? []
 /** What each frame's note says happened, from the call alone. */
 const note = (frame: Frame) => {
   if (!frame.tool) return 'Before the first call.'
-  return frame.reading ? `${frame.tool} read the ${frame.reading}; nothing changed.` : `After ${frame.tool}.`
+  return frame.reading ? `${frame.tool} read the ${frame.reading}; tmux itself is unchanged.` : `After ${frame.tool}.`
 }
 
 function windowOf(frame: Frame) {
@@ -151,8 +151,8 @@ const draw = (frame: Frame) => {
       })}
       {recording && answers.length > 0 && (
         <div class="mcp-turn mcp-turn--answer" data-turn={total} tabindex="0">
-          <p class="mcp-turn__say"><span class="mcp-turn__who">agent</span>The commands ran in their panes.
-            {answers.map((answer, index) => <>{index > 0 && '; '}{answer.pane ? ` ${answer.pane}` : ''} printed <q>{answer.line}</q></>)}</p>
+          <p class="mcp-turn__say"><span class="mcp-turn__who">agent</span>
+            {answers.map((answer, index) => <>{index > 0 && '; '}{answer.pane ? `in ${answer.pane} it` : 'It'} printed <q>{answer.line}</q></>)}.</p>
         </div>
       )}
     </div>

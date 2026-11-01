@@ -66,7 +66,7 @@ export const EXAMPLES: Record<string, ExampleDefinition> = {
   cxx: { prompt: SPLIT, steps: [
     { tool: 'create_session', arguments: { name: 'checks' }, caption: CREATE },
     { tool: 'list_panes', arguments: {}, caption: 'List the panes, each with its session id.' },
-    { tool: 'split_window', arguments: { paneId: '%0', direction: 'right' }, caption: 'Split the pane the list returned (%0) in two.' },
+    { tool: 'split_window', arguments: { paneId: '%0', direction: 'horizontal' }, caption: 'Split the pane the list returned (%0) in two.' },
     { tool: 'list_windows', arguments: { session: 'checks' }, caption: LAYOUT },
     { tool: 'run_shell_command', arguments: { paneId: '%0', ...RUN_COMMAND }, caption: 'Run the tests in the pane the list returned (%0).' },
     { tool: 'run_shell_command', arguments: { paneId: '%1', ...SHOW_LOG_COMMAND }, caption: SHOW_LOG },
@@ -85,7 +85,7 @@ export const EXAMPLES: Record<string, ExampleDefinition> = {
     { tool: 'create_session', arguments: { session_name: 'checks' }, caption: CREATE },
     { tool: 'list_panes', arguments: {}, caption: 'List the panes, each with the session it belongs to.' },
     { tool: 'split_window', arguments: { pane_id: '%0', direction: 'right' }, caption: 'Split the pane the list returned (%0) in two.' },
-    { tool: 'get_tmux_variables', arguments: { names: ['window_layout'] }, caption: LAYOUT },
+    { tool: 'list_panes', arguments: {}, caption: 'List the panes again; each now carries its position and size.' },
     { tool: 'run_shell_command', arguments: { pane_id: '%0', ...RUN_COMMAND }, caption: 'Run the tests in the pane the list returned (%0).' },
     { tool: 'run_shell_command', arguments: { pane_id: '%1', ...SHOW_LOG_COMMAND }, caption: SHOW_LOG },
     { tool: 'kill_session', arguments: { session_id: '$0' }, caption: REMOVE_BY_ID },

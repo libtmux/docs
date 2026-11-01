@@ -390,7 +390,7 @@ export function renderLayout(
  * holding the rectangles a server reported, such as the MCP replay, calls it
  * directly. The markup is the same either way.
  *
- * @throws {TmuxLayoutError} When there are no panes or fewer rectangles than panes.
+ * @throws {TmuxLayoutError} When there are no panes or the rectangles are not one per pane.
  */
 export function renderRects(
   panes: readonly (readonly string[])[],
@@ -399,7 +399,7 @@ export function renderRects(
   options: RenderOptions = {},
 ): string {
   const [width, height] = size
-  if (panes.length === 0 || rects.length < panes.length) throw new TmuxLayoutError(`${panes.length} panes need ${panes.length} rectangles, got ${rects.length}`)
+  if (panes.length === 0 || rects.length !== panes.length) throw new TmuxLayoutError(`${panes.length} panes need ${panes.length} rectangles, got ${rects.length}`)
   const viewWidth = width * CELL_WIDTH
   const viewHeight = height * CELL_HEIGHT
   const id = options.id ?? diagramId(panes, 'rects', size)

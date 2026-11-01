@@ -97,6 +97,7 @@ describe('the tmux state each recorded call leaves', () => {
     expect(frames[2]!.sessions[0]!.windows[0]!.panes[0]).toMatchObject({ id: '%0', command: 'sh', path: '/home/user/project' })
     expect(frames[3]!.sessions[0]!.windows[0]!.panes.map((pane) => pane.id)).toEqual(['%0', '%1'])
     expect(frames[3]!.sessions[0]!.windows[0]!.layout).toBeUndefined()
+    expect(frames[4], 'a layout read is not a list').not.toHaveProperty('reading')
     const read = frames[4]!.sessions[0]!.windows[0]!
     expect(parseLayout(read.layout!)!.panes.map((pane) => pane.id)).toEqual(['%0', '%1'])
     expect(frames[5]!.sessions[0]!.windows[0]!.panes[0]).toMatchObject({ typed: 'pytest -q' })
@@ -132,6 +133,26 @@ describe('the tmux state each recorded call leaves', () => {
     frames[1]!.sessions[0]!.windows[0]!.panes[0]!.output = later
     frames[2]!.sessions[0]!.windows[0]!.layout = '{"V":2,"L":{"t":"p","w":80,"h":24,"x":0,"y":0,"I":"%0"}}' // geometry nothing reported
     expect(untraced(frames, steps_).sort()).toEqual(['1: active=true', '1: index=0', '1: name=invented', `1: output=${later}`, '2: layout={"V":2,"L":{"t":"p","w":80,"h":24,"x":0,"y":0,"I":"%0"}}'].sort())
+  })
+
+  it('forgets a layout once its window is split again, and ignores a split or layout for a pane no window holds', () => {
+    const answered = (tool: string, args: Record<string, unknown>, structuredContent: unknown): ReplayStep => ({ tool, arguments: args, structuredContent, content: [] })
+    const layout = '{"V":2,"L":{"t":"p","w":80,"h":24,"x":0,"y":0,"I":"%0"}}'
+    const frames = replayFrames([
+      answered('create_session', { name: 'a' }, { paneId: '%0', windowId: '@0', session: { id: '$0', name: 'a', windows: 1 } }),
+      answered('get_tmux_variables', { names: ['window_layout'], pane: '%0' }, { values: { window_layout: layout } }),
+      answered('split_window', { paneId: '%0' }, { pane: { id: '%1', windowId: '@0' } }),
+      answered('split_window', { paneId: '%9' }, { pane: { id: '%2', windowId: '@7' } }),
+      answered('get_tmux_variables', { names: ['window_layout'], pane: '%9' }, { values: { window_layout: layout } }),
+      answered('select_layout', { windowId: '@0', layout: 'tiled' }, { window: { id: '@0', layout: 'tiled' } }),
+    ])
+    const window = (index: number) => frames[index]!.sessions[0]!.windows[0]!
+    expect(window(2).layout).toBe(layout)
+    expect(window(3).layout, 'the split makes the layout stale').toBeUndefined()
+    expect(window(3).panes.map((pane) => pane.id)).toEqual(['%0', '%1'])
+    expect(window(4).panes, 'a split of a pane no window holds is ignored').toHaveLength(2)
+    expect(window(5).layout, 'a layout read through an unknown pane is ignored').toBeUndefined()
+    expect(window(6).layout, 'a layout name has no geometry').toBeUndefined()
   })
 
   it('quotes the last line of output that has text, for the agent\'s answer', () => {
@@ -195,7 +216,8 @@ describe('the replay component', () => {
     expect(frame(3).querySelector('.mcp-tmux__screen--unsized .mcp-tmux__unsized')!.textContent).toBe('Panes, sizes not read yet')
     expect([...frame(3).querySelectorAll('.mcp-tmux__screen--unsized li')].map((item) => item.textContent)).toEqual(['%0 sh', '%1 sh'])
     expect(frame(3).querySelector('svg'), 'no boxes before a layout is read').toBeNull()
-    expect(frame(4).querySelector('.mcp-tmux__windows')!.className).toContain('is-reading')
+    expect(frame(4).querySelector('.is-reading'), 'a layout read is not drawn as a list read').toBeNull()
+    expect(frame(4).querySelectorAll('.mcp-pane'), 'the layout read puts the panes in boxes').toHaveLength(2)
     expect(frame(5).querySelector('.mcp-pane__text')!.textContent).toMatch(/^\$ pytest -q\n.*\n2 passed/s)
     expect(frame(6).querySelectorAll('.mcp-pane__text')[1]!.textContent).toMatch(/^\$ cat checks\.log\n.*checks finished/s)
     expect(frame(7).querySelector('.mcp-tmux__screen--empty')!.textContent).toBe('No sessions')
