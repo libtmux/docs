@@ -412,7 +412,7 @@ describe('the showcase section', () => {
 })
 
 describe('recorded results', () => {
-  const RECORDED = ['ts', 'rs', 'go']
+  const RECORDED = ['ts', 'rs', 'go', 'py']
 
   it('has a recording for the ports whose servers the recorder has run', async () => {
     for (const port of RECORDED) expect((await showcase(port)).example?.recording, port).toBeDefined()

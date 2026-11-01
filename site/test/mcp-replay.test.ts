@@ -16,7 +16,11 @@ const steps = async (port: string) => (await transcriptFor(port))!.steps as Repl
 function recorded(steps: ReplayStep[], count: number): Set<string> {
   const found = new Set<string>()
   const walk = (key: string, value: unknown) => {
-    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') found.add(`${key}=${typeof value}:${String(value)}`)
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      found.add(`${key}=${typeof value}:${String(value)}`)
+      // A count or index sent as digits in a string is read as the number.
+      if (typeof value === 'string' && /^\d+$/.test(value)) found.add(`${key}=number:${value}`)
+    }
     else if (Array.isArray(value)) {
       // A server may send a command's output as its lines; the preview shows them joined.
       if (value.length && value.every((item) => typeof item === 'string')) found.add(`${key}=string:${value.join('\n')}`)
@@ -35,8 +39,8 @@ function recorded(steps: ReplayStep[], count: number): Set<string> {
 
 /** The recording's field names that supply each field a frame holds. */
 const SUPPLIED_BY: Record<string, string[]> = {
-  id: ['id', 'paneId', 'windowId', 'killed', 'sessionId'], name: ['name', 'session_name', 'session', 'sessionName'], index: ['index'], active: ['active'],
-  command: ['command', 'currentCommand'], left: ['left'], top: ['top'], width: ['width'], height: ['height'], path: ['path', 'cwd'], typed: ['command'], output: ['output'], layout: ['layout', 'window_layout'],
+  id: ['id', 'paneId', 'windowId', 'killed', 'sessionId', 'session_id', 'pane_id', 'window_id', 'active_pane_id'], name: ['name', 'session_name', 'session', 'sessionName', 'window_name'], index: ['index', 'window_index'], active: ['active'],
+  command: ['command', 'currentCommand', 'pane_current_command'], left: ['left'], top: ['top'], width: ['width'], height: ['height'], path: ['path', 'cwd', 'pane_current_path'], typed: ['command'], output: ['output'], layout: ['layout', 'window_layout'],
 }
 
 /**
@@ -66,7 +70,7 @@ function untraced(frames: Frame[], steps: ReplayStep[]): string[] {
 }
 
 /** Calls in each port's worked example, which the frames and the replay follow. */
-const CALLS = { ts: 6, rs: 7, go: 7 }
+const CALLS = { ts: 6, rs: 7, go: 7, py: 6 }
 
 describe('the tmux state each recorded call leaves', () => {
   it('follows TypeScript: a session, a split, the layout it reports, then what each pane ran', async () => {
@@ -109,12 +113,12 @@ describe('the tmux state each recorded call leaves', () => {
     expect(frames[7]!.sessions).toEqual([])
   })
 
-  it.each(['ts', 'rs', 'go'] as const)('draws nothing for %s that the recording does not contain', async (port) => {
+  it.each(['ts', 'rs', 'go', 'py'] as const)('draws nothing for %s that the recording does not contain', async (port) => {
     const steps_ = await steps(port)
     expect(untraced(replayFrames(steps_), steps_)).toEqual([])
   })
 
-  it.each(['ts', 'rs'] as const)('gives %s panes geometry only from a recorded layout that names every pane', async (port) => {
+  it.each(['ts', 'rs', 'py'] as const)('gives %s panes geometry only from a recorded layout that names every pane', async (port) => {
     const frames = replayFrames(await steps(port))
     for (const frame of frames) {
       for (const session of frame.sessions) for (const window of session.windows) {
@@ -141,6 +145,21 @@ describe('the tmux state each recorded call leaves', () => {
     expect(frames[5]!.sessions[0]!.windows[0]!.panes[0]!.output).toMatch(/2 passed/)
     expect(frames[6]!.sessions[0]!.windows[0]!.panes[1]!.output).toMatch(/checks finished/)
     expect(frames[7]!.sessions).toEqual([])
+  })
+
+  it('follows Python: ids from create_session, the split pane, the layout from list_windows, output with the prompt dropped from the answer', async () => {
+    const frames = replayFrames(await steps('py'))
+    expect(frames.map((frame) => frame.sessions.length)).toEqual([0, 1, 1, 1, 1, 1, 0])
+    expect(frames[1]!.sessions[0]).toMatchObject({ id: '$0', name: 'checks', windows: [{ panes: [{ id: '%0' }] }] })
+    const split = frames[2]!.sessions[0]!.windows[0]!
+    expect(split).toMatchObject({ id: '@0', panes: [{ id: '%0' }, { id: '%1', command: 'sh' }] })
+    expect(split.layout).toBeUndefined()
+    const read = frames[3]!.sessions[0]!.windows[0]!
+    expect(read).toMatchObject({ name: 'sh', index: 0 })
+    expect(parseLayout(read.layout!)!.panes.map((pane) => pane.id)).toEqual(['%0', '%1'])
+    expect(frames[5]!.sessions[0]!.windows[0]!.panes[1]!.output).toMatch(/checks finished/)
+    expect(frames[6]!.sessions).toEqual([])
+    expect(lastOutputLine('..\n2 passed in 0.00s\n$ ')).toBe('2 passed in 0.00s')
   })
 
   it('has a control: a value the recording lacks, or states under another field, or only later, is reported', async () => {
@@ -252,7 +271,7 @@ describe('the replay component', () => {
     expect(document.querySelector('[data-frame="4"] svg.gp-tmux-layout')!.getAttribute('viewBox')).toBe(`0 0 ${80 * 8} ${24 * 17}`)
   })
 
-  it.each(['ts', 'rs'] as const)('places the %s panes at the rectangles the recorded layout gives', async (port) => {
+  it.each(['ts', 'rs', 'py'] as const)('places the %s panes at the rectangles the recorded layout gives', async (port) => {
     const { document } = await mount(port)
     const layoutFrame = replayFrames(await steps(port)).find((frame) => frame.sessions[0]?.windows[0]?.layout)!
     const parsed = parseLayout(layoutFrame.sessions[0]!.windows[0]!.layout!)!

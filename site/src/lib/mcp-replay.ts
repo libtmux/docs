@@ -66,6 +66,8 @@ type Record_ = Record<string, unknown>
 const isRecord = (value: unknown): value is Record_ => value !== null && typeof value === 'object' && !Array.isArray(value)
 const str = (value: unknown) => (typeof value === 'string' ? value : undefined)
 const num = (value: unknown) => (typeof value === 'number' ? value : undefined)
+/** A count or index a server sent as digits in a string. */
+const numeric = (value: unknown) => (typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : num(value))
 
 /** A server's structured answer, else its text parsed as JSON, else nothing. */
 function answerOf(step: ReplayStep): Record_ {
@@ -103,32 +105,36 @@ const entries = (value: unknown): Record_[] => (Array.isArray(value) ? value.fil
 
 function applyCreate(sessions: SessionState[], answer: Record_) {
   const session = isRecord(answer.session) ? answer.session : answer
-  const windowCount = num(session.windows) ?? 1
+  const windowCount = num(session.windows) ?? numeric(session.window_count) ?? 1
   const windows: WindowState[] = Array.from({ length: Math.max(windowCount, 1) }, () => ({ panes: blank(1) }))
   // The first window's id and first pane, when the answer names them.
   const windowId = str(answer.windowId)
   if (windowId) windows[0]!.id = windowId
-  const paneId = str(answer.paneId)
+  const paneId = str(answer.paneId) ?? str(answer.active_pane_id)
   if (paneId) windows[0]!.panes[0]!.id = paneId
-  const sessionId = str(session.id) ?? str(session.sessionId)
-  const sessionName = str(session.name) ?? str(session.sessionName)
+  const sessionId = str(session.id) ?? str(session.sessionId) ?? str(session.session_id)
+  const sessionName = str(session.name) ?? str(session.sessionName) ?? str(session.session_name)
   sessions.push({ ...(sessionId ? { id: sessionId } : {}), ...(sessionName ? { name: sessionName } : {}), windows })
 }
 
 function applyWindows(sessions: SessionState[], answer: Record_) {
-  for (const item of entries(answer.windows)) {
+  for (const item of [...entries(answer.windows), ...entries(answer.result)]) {
     const owner = sessions.find((session) => session.id === str(item.session_id)) ?? sessions[0]
     if (!owner) continue
-    const known = owner.windows.find((window) => window.id === str(item.id))
+    const itemId = str(item.id) ?? str(item.window_id)
+    const known = owner.windows.find((window) => window.id === itemId)
       ?? owner.windows.find((window) => window.id === undefined && window.index === undefined)
     const target: WindowState = known ?? { panes: [] }
     if (!known) owner.windows.push(target)
-    if (str(item.id)) target.id = str(item.id)!
-    if (num(item.index) !== undefined) target.index = num(item.index)!
-    if (str(item.name)) target.name = str(item.name)!
+    if (itemId) target.id = itemId
+    const index = numeric(item.index) ?? numeric(item.window_index)
+    if (index !== undefined) target.index = index
+    const name = str(item.name) ?? str(item.window_name)
+    if (name) target.name = name
     if (typeof item.active === 'boolean') target.active = item.active
-    if (str(item.layout)) target.layout = str(item.layout)!
-    if (target.panes.length === 0) target.panes = blank(num(item.panes) ?? 1)
+    const layout = str(item.layout) ?? str(item.window_layout)
+    if (layout) target.layout = layout
+    if (target.panes.length === 0) target.panes = blank(num(item.panes) ?? numeric(item.pane_count) ?? 1)
   }
 }
 
@@ -158,14 +164,17 @@ function windowOfPane(sessions: SessionState[], id: string | undefined): WindowS
 
 function applySplit(sessions: SessionState[], step: ReplayStep, answer: Record_) {
   const pane = isRecord(answer.pane) ? answer.pane : answer
-  const id = str(pane.id) ?? str(pane.paneId)
+  const id = str(pane.id) ?? str(pane.paneId) ?? str(pane.pane_id)
   const windowId = str(pane.window_id) ?? str(pane.windowId)
   const windows = sessions.flatMap((session) => session.windows)
   const window = windows.find((candidate) => windowId !== undefined && candidate.id === windowId) ?? windowOfPane(sessions, paneOf(step.arguments))
   if (!window || !id) return
+  // The split result names the window the new pane is in, which is the window of the pane that was split.
+  if (windowId && window.id === undefined) window.id = windowId
   const added: PaneState = { id }
-  if (str(pane.command)) added.command = str(pane.command)!
-  const path = str(pane.path) ?? str(pane.cwd)
+  const command = str(pane.command) ?? str(pane.pane_current_command)
+  if (command) added.command = command
+  const path = str(pane.path) ?? str(pane.cwd) ?? str(pane.pane_current_path)
   if (path) added.path = path
   window.panes.push(added)
   // A layout read before the split no longer describes the window.
@@ -232,7 +241,8 @@ export function windowLabel(window: WindowState): string {
 
 /** The last line of a pane's output that has text on it, for the agent's answer. */
 export function lastOutputLine(output: string | undefined): string | undefined {
-  return output?.split('\n').map((line) => line.trimEnd()).filter(Boolean).at(-1)
+  // A bare shell prompt left after the command is not what it printed.
+  return output?.split('\n').map((line) => line.trimEnd()).filter((line) => line && !/^[$#>%]$/.test(line)).at(-1)
 }
 
 /** What each command run left in its pane, as the last line with text, for the agent's answer. */

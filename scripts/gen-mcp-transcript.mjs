@@ -32,6 +32,7 @@ const expand = (path) => path.startsWith('~/') ? join(homedir(), path.slice(2)) 
 const SERVERS = {
   ts: { prepare: [['bun', 'install', '--frozen-lockfile']], command: () => ['bun', 'packages/mcp/src/server.ts'] },
   rs: { prepare: [['cargo', 'build', '--locked', '-p', 'tmux-mcp', '--bin', 'tmux-mcp', '--jobs', '2']], command: () => ['target/debug/tmux-mcp'] },
+  py: { prepare: [['uv', 'sync', '--frozen', '--python', '3.14']], command: () => ['.venv/bin/python', '-m', 'libtmux_mcp'] },
   go: { cwd: 'mcp', prepare: [], build: (sandbox) => [['go', 'build', '-mod=readonly', '-o', join(sandbox, 'libtmux-mcp'), './cmd/libtmux-mcp']], command: (_checkout, sandbox) => [join(sandbox, 'libtmux-mcp')] },
 }
 const TOOLSETS = { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' }
@@ -43,7 +44,7 @@ const TEST_FILE = 'def test_adds():\n    assert 1 + 1 == 2\n\n\ndef test_upper()
 if (!only || !SERVERS[only]) throw new Error(`--port must be one of ${Object.keys(SERVERS).join(', ')}`)
 const port = PORTS.find((entry) => entry.slug === only)
 const example = EXAMPLES[only]
-const checkout = expand(process.env[`LIBTMUX_DOCS_CHECKOUT_${only.toUpperCase()}`] || port.worktree)
+const checkout = expand(process.env[`LIBTMUX_DOCS_CHECKOUT_${only.toUpperCase()}`] || (only === 'py' ? '~/work/python/libtmux-mcp' : port.worktree))
 if (!existsSync(checkout)) throw new Error(`${only}: no checkout at ${checkout}`)
 const git = (...args) => execFileSync('git', ['-C', checkout, ...args], { encoding: 'utf8' }).trim()
 if (git('status', '--porcelain', '--untracked-files=no')) throw new Error(`${only}: the checkout must be clean`)
