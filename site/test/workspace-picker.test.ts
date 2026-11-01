@@ -906,6 +906,16 @@ describe('window tab names', () => {
     expect(p.tip.hidden).toBe(true)
   })
 
+  it('stays open when its own strip scrolls a tab into view, and closes when the page scrolls', async () => {
+    const p = await setup(390)
+    p.focus()
+    expect(p.tip.hidden).toBe(false)
+    p.tab.parentElement!.dispatchEvent(new p.win.Event('scroll') as unknown as Event)
+    expect(p.tip.hidden).toBe(false)
+    p.document.dispatchEvent(new p.win.Event('scroll') as unknown as Event)
+    expect(p.tip.hidden).toBe(true)
+  })
+
   it('gives a name that fits no tooltip', async () => {
     const p = await setup(1280)
     p.hover()

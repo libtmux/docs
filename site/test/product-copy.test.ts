@@ -77,9 +77,10 @@ describe('the product page titles', () => {
     expect(config).toMatch(/shortTitle: z\.string\(\)\.optional\(\)/)
     const layout = readFileSync(new URL('../src/layouts/DocsLayout.astro', import.meta.url), 'utf8')
     expect(layout).toContain('title={documentTitle ?? title}')
-    expect(layout).toMatch(/<h1[^>]*>\{title\}<\/h1>/)
-    // The subtitle is its own paragraph beside the heading, as a language page's tagline is, so the heading reads as the title alone.
-    expect(layout).toContain('<p class="page-subtitle not-prose">{subtitle}</p>')
+    expect(layout).toMatch(/<h1[^>]*>\{title\}\{subtitle && /)
+    // The subtitle is the heading's second line, so the heading, a heading list and search still read the whole sentence.
+    expect(layout.match(/<span class="page-subtitle">\{' '\}\{subtitle\}<\/span>\}/g)).toHaveLength(2)
+    expect(layout).not.toContain('<p class="page-subtitle')
     expect(config).toMatch(/subtitle: z\.string\(\)\.optional\(\)/)
     const page = readFileSync(new URL('../src/components/docs/DocPage.astro', import.meta.url), 'utf8')
     expect(page).toContain('documentTitle={entry.data.shortTitle}')

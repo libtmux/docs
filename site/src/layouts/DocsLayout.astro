@@ -285,15 +285,13 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
           <div class="product-hero">
             <img src={withRoot(productBrand.asset('logo.svg'))} width="88" height="88" alt="" class="not-prose" />
             <div class="min-w-0">
-              <h1 id={PAGE_TITLE_ID} class="wrap-anywhere">{title}</h1>
-              {subtitle && <p class="page-subtitle not-prose">{subtitle}</p>}
+              <h1 id={PAGE_TITLE_ID} class="wrap-anywhere">{title}{subtitle && <span class="page-subtitle">{' '}{subtitle}</span>}</h1>
               <slot name="hero-links" />
             </div>
           </div>
         ) : <h1 id={PAGE_TITLE_ID} class="wrap-anywhere">{symbolTitle
           ? <code class="not-prose symbol-title"><SymbolName name={title} /></code>
-          : title}</h1>}
-        {subtitle && !productBrand && <p class="page-subtitle not-prose">{subtitle}</p>}
+          : title}{subtitle && <span class="page-subtitle">{' '}{subtitle}</span>}</h1>}
         {product && port && <ProductNotice port={port} product={product} overview={pagePath === product} />}
         <slot />
       </article>
@@ -409,15 +407,19 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
 </BaseLayout>
 
 <style>
-  /* The tagline under a language page's name: the same size step down, muted, one line of the heading block. */
+  /*
+   * The second half of the heading, on its own line: the heading reads "tmux
+   * workspace manager, forged in Rust." to a screen reader and to search, and
+   * sits under the title as a language page's tagline sits under its name.
+   */
   .page-subtitle {
-    margin: -0.75rem 0 1.5rem;
-    font-size: 1.25rem;
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.5em;
+    font-weight: 400;
     line-height: 1.4;
+    letter-spacing: normal;
     color: var(--color-foreground-muted);
-  }
-  .product-hero .page-subtitle {
-    margin: 0.25rem 0 0.5rem;
   }
   h1 > .symbol-title {
     font: inherit;

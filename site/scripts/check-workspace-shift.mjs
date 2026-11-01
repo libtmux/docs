@@ -9,8 +9,21 @@ export async function checkWorkspaceShift(browser, base) {
   await page.addInitScript(() => {
     window.__shift = 0
     window.__scrolls = []
+    window.__sources = []
+    const name = (node) => {
+      if (!node || node.nodeType !== 1) return String(node?.nodeName)
+      const classes = [...node.classList].slice(0, 2).map((c) => `.${c}`).join('')
+      return `${node.localName}${node.id ? `#${node.id}` : ''}${classes}`
+    }
     new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) if (!entry.hadRecentInput) window.__shift += entry.value
+      for (const entry of list.getEntries()) {
+        if (entry.hadRecentInput) continue
+        window.__shift += entry.value
+        // Name what moved, so a failure points at the element that grew.
+        for (const source of entry.sources ?? []) {
+          window.__sources.push(`${Math.round(entry.startTime)}ms ${name(source.node)} ${Math.round(source.previousRect.y)}->${Math.round(source.currentRect.y)} h ${Math.round(source.previousRect.height)}->${Math.round(source.currentRect.height)}`)
+        }
+      }
     }).observe({ type: 'layout-shift', buffered: true })
     addEventListener('scroll', () => window.__scrolls.push(Math.round(scrollY)), { passive: true })
   })
@@ -21,11 +34,12 @@ export async function checkWorkspaceShift(browser, base) {
       await page.waitForTimeout(3000)
       const state = await page.evaluate(() => ({
         shift: window.__shift,
+        sources: window.__sources,
         scrolls: window.__scrolls,
         selected: document.querySelector('libtmux-workspace-picker')?.getAttribute('data-selected'),
         top: document.getElementById('try-a-preset')?.getBoundingClientRect().top,
       }))
-      assert(state.shift < 0.01, `${query || 'default'}: cumulative layout shift ${state.shift} stays under 0.01`)
+      assert(state.shift < 0.01, `${query || 'default'}: cumulative layout shift ${state.shift} stays under 0.01 (${state.sources.join('; ')})`)
       const settled = state.scrolls.at(-1)
       assert.deepEqual(state.scrolls.filter((y) => y !== settled).length <= 1, true,
         `${query || 'default'}: one scroll to the fragment, no correction after it (${state.scrolls.join(', ')})`)

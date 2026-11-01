@@ -68,7 +68,8 @@ export function installAnchorNavigation(win = window) {
     if (startup) cancelStartup()
     // A fragment the browser already scrolled to, with nothing moved since, needs no second scroll.
     const placed = () => {
-      const margin = Number.parseFloat(win.getComputedStyle(display).scrollMarginTop) || 0
+      const margin = (Number.parseFloat(win.getComputedStyle(display).scrollMarginTop) || 0)
+        + (Number.parseFloat(win.getComputedStyle(doc.documentElement).scrollPaddingTop) || 0)
       return Math.abs(display.getBoundingClientRect().top - margin) <= 1
     }
     if ((!preparing && opened) || scroll || (startup && !placed())) display.scrollIntoView({ block: 'start', behavior: 'instant' })

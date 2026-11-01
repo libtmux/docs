@@ -224,6 +224,9 @@ function tabTips(tip: HTMLElement, tabs: HTMLElement[], signal: AbortSignal): vo
     tip.hidden = false
     tip.style.left = '0px'
     tab.setAttribute('aria-describedby', tip.id)
+    place(tab)
+  }
+  const place = (tab: HTMLElement) => {
     const at = tab.getBoundingClientRect()
     const width = document.documentElement.clientWidth
     tip.style.left = `${Math.max(8, Math.min(at.left, width - tip.offsetWidth - 8))}px`
@@ -267,7 +270,14 @@ function tabTips(tip: HTMLElement, tabs: HTMLElement[], signal: AbortSignal): vo
     dismissed = owner
     hide()
   }, { signal, capture: true })
-  document.addEventListener('scroll', hide, { signal, capture: true })
+  document.addEventListener('scroll', (event) => {
+    // The strip scrolls its tab into view when a key moves focus; the tooltip follows it.
+    if (event.target instanceof Element && event.target.closest('[role="tablist"]')) {
+      if (owner) place(owner)
+      return
+    }
+    hide()
+  }, { signal, capture: true })
   window.addEventListener('resize', hide, { signal })
   signal.addEventListener('abort', hide, { once: true })
 }
