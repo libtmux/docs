@@ -462,6 +462,7 @@ describe('the picker in a browser page', () => {
     const { document, click, press, choose } = await page('rs', { storage: memory() })
     choose('start-directory')
     const panel = document.querySelector('[data-preset="start-directory"]')!
+    panel.inert = false
     const tabs = [...panel.querySelectorAll<HTMLElement>('[role="tab"]')]
     const figures = [...panel.querySelectorAll<HTMLElement>('[data-window]')]
     const shown = () => figures.map((figure) => figure.hasAttribute('data-active'))
@@ -772,10 +773,12 @@ describe('previewing a preset on hover', () => {
     const p = await setup()
     p.enter(p.other)
     vi.advanceTimersByTime(HOME_PREVIEW_DELAY)
+    expect(p.active()).toEqual([p.other])
     p.document.dispatchEvent(new p.win.KeyboardEvent('keydown', { key: 'Escape' }) as unknown as Event)
     expect(p.active()).toEqual([p.ids[0]])
     p.enter(p.other)
     vi.advanceTimersByTime(HOME_PREVIEW_DELAY)
+    expect(p.active()).toEqual([p.other])
     p.menu.open = false
     p.menu.dispatchEvent(new p.win.Event('toggle') as unknown as Event)
     expect(p.active()).toEqual([p.ids[0]])
@@ -790,7 +793,7 @@ describe('window tab names', () => {
     const p = await page('rs')
     p.win.setTimeout = ((fn: () => void, ms: number) => setTimeout(fn, ms)) as unknown as typeof p.win.setTimeout
     p.win.clearTimeout = ((id: number) => clearTimeout(id)) as unknown as typeof p.win.clearTimeout
-    const panel = p.document.querySelector<HTMLElement>('[data-preset]:not([inert])')!
+    const panel = p.document.querySelector<HTMLElement>('[data-preset="start-directory"]')!
     const tab = panel.querySelector<HTMLElement>('[role="tab"]')!
     const label = tab.querySelector<HTMLElement>('.ws-layout__tab-label')!
     label.textContent = `0:${NAME}`
@@ -858,6 +861,25 @@ describe('window tab names', () => {
     expect(p.tip.hidden).toBe(false)
     p.tip.dispatchEvent(new p.win.PointerEvent('pointerleave') as unknown as Event)
     vi.advanceTimersByTime(1000)
+    expect(p.tip.hidden).toBe(true)
+  })
+
+  it('closes a clipped tab\'s tooltip when the pointer or focus moves to a tab that fits', async () => {
+    const p = await setup(390)
+    const next = p.tab.parentElement!.querySelectorAll<HTMLElement>('[role="tab"]')[1]!
+    const text = next.querySelector<HTMLElement>('.ws-layout__tab-label')!
+    Object.defineProperty(text, 'scrollWidth', { configurable: true, value: 50 })
+    Object.defineProperty(text, 'clientWidth', { configurable: true, value: 120 })
+    p.hover()
+    p.tab.dispatchEvent(new p.win.PointerEvent('pointerleave') as unknown as Event)
+    next.dispatchEvent(new p.win.PointerEvent('pointerenter', { pointerType: 'mouse' }) as unknown as Event)
+    next.dispatchEvent(new p.win.PointerEvent('pointerleave') as unknown as Event)
+    vi.advanceTimersByTime(2000)
+    expect(p.tip.hidden).toBe(true)
+    expect(p.tab.hasAttribute('aria-describedby')).toBe(false)
+    p.focus()
+    expect(p.tip.hidden).toBe(false)
+    next.dispatchEvent(new p.win.FocusEvent('focus') as unknown as Event)
     expect(p.tip.hidden).toBe(true)
   })
 

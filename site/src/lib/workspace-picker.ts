@@ -217,11 +217,12 @@ function tabTips(tip: HTMLElement, tabs: HTMLElement[], signal: AbortSignal): vo
   const open = (tab: HTMLElement) => {
     clearTimeout(timer)
     timer = undefined
+    if (owner !== tab) hide()
     if (dismissed === tab || !clipped(tab)) return
-    hide()
     owner = tab
     tip.textContent = label(tab)?.textContent ?? ''
     tip.hidden = false
+    tip.style.left = '0px'
     tab.setAttribute('aria-describedby', tip.id)
     const at = tab.getBoundingClientRect()
     const width = document.documentElement.clientWidth
@@ -240,6 +241,8 @@ function tabTips(tip: HTMLElement, tabs: HTMLElement[], signal: AbortSignal): vo
       if (event.pointerType !== 'mouse') return
       hovered = tab
       clearTimeout(timer)
+      // Another tab's tooltip does not outlive the pointer's move to this one.
+      if (owner && owner !== tab) hide()
       if (owner === tab) return
       timer = setTimeout(() => open(tab), HOVER_OPEN)
     }, { signal })
