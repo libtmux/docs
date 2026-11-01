@@ -1,0 +1,200 @@
+{
+  "generated": "scripts/gen-mcp-transcript.mjs",
+  "repo": "libtmux/libtmux-java",
+  "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+  "sandbox": {
+    "tmux": "tmux 3.8a",
+    "pytest": "pytest 9.2.0",
+    "project": [
+      "test_example.py",
+      "checks.log"
+    ],
+    "expected": [
+      "2 passed",
+      "checks finished"
+    ],
+    "rewritten": {
+      "projectDirectory": "/home/user/project"
+    }
+  },
+  "serverInfo": {
+    "name": "libtmux",
+    "version": "0.0.1-alpha.17-SNAPSHOT"
+  },
+  "prompt": "Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.",
+  "steps": [
+    {
+      "tool": "create_session",
+      "arguments": {
+        "session_name": "checks"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"id\":\"$0\",\"name\":\"checks\",\"attached\":false,\"windows\":1}"
+        }
+      ],
+      "structuredContent": {
+        "id": "$0",
+        "name": "checks",
+        "attached": false,
+        "windows": 1
+      },
+      "caption": "Create the session."
+    },
+    {
+      "tool": "list_panes",
+      "arguments": {},
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"count\":1,\"panes\":[{\"id\":\"%0\",\"session\":\"checks\",\"window\":\"sh\",\"window_id\":\"@0\",\"command\":\"sh\",\"path\":\"/home/user/project\",\"size\":\"80x24\",\"active\":true}]}"
+        }
+      ],
+      "structuredContent": {
+        "count": 1,
+        "panes": [
+          {
+            "id": "%0",
+            "session": "checks",
+            "window": "sh",
+            "window_id": "@0",
+            "command": "sh",
+            "path": "/home/user/project",
+            "size": "80x24",
+            "active": true
+          }
+        ]
+      },
+      "caption": "List the panes, each with the session it belongs to."
+    },
+    {
+      "tool": "split_window",
+      "arguments": {
+        "pane_id": "%0",
+        "direction": "right"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"id\":\"%1\",\"index\":1,\"window_id\":\"@0\",\"session_id\":\"$0\",\"active\":true,\"command\":\"sh\",\"path\":\"/home/user/project\",\"title\":\"d\",\"size\":\"40x24\"}"
+        }
+      ],
+      "structuredContent": {
+        "id": "%1",
+        "index": 1,
+        "window_id": "@0",
+        "session_id": "$0",
+        "active": true,
+        "command": "sh",
+        "path": "/home/user/project",
+        "title": "d",
+        "size": "40x24"
+      },
+      "caption": "Split the pane the list returned (%0) in two."
+    },
+    {
+      "tool": "get_tmux_variables",
+      "arguments": {
+        "names": [
+          "window_layout"
+        ],
+        "pane": "%0"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"values\":{\"window_layout\":\"{\\\"V\\\":2,\\\"L\\\":{\\\"t\\\":\\\"h\\\",\\\"w\\\":80,\\\"h\\\":24,\\\"x\\\":0,\\\"y\\\":0,\\\"c\\\":[{\\\"t\\\":\\\"p\\\",\\\"w\\\":39,\\\"h\\\":24,\\\"x\\\":0,\\\"y\\\":0,\\\"l\\\":0,\\\"i\\\":0,\\\"I\\\":\\\"%0\\\"},{\\\"t\\\":\\\"p\\\",\\\"w\\\":40,\\\"h\\\":24,\\\"x\\\":40,\\\"y\\\":0,\\\"a\\\":true,\\\"i\\\":1,\\\"I\\\":\\\"%1\\\"}]}}\"}}"
+        }
+      ],
+      "structuredContent": {
+        "values": {
+          "window_layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":40,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}"
+        }
+      },
+      "caption": "Read the window's layout through the pane the list returned (%0)."
+    },
+    {
+      "tool": "run_shell_command",
+      "arguments": {
+        "pane_id": "%0",
+        "command": "pytest -q"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"pane_id\":\"%0\",\"outcome\":\"SIGNALLED\",\"exit_status\":0,\"output\":[\"..\",\"                                  [100%\",\"]\",\"2 passed in 0.00s\"],\"truncated\":false,\"lines_dropped\":0,\"framed\":true,\"seconds\":0.35,\"effective_timeout\":30.0}"
+        }
+      ],
+      "structuredContent": {
+        "pane_id": "%0",
+        "outcome": "SIGNALLED",
+        "exit_status": 0,
+        "output": [
+          "..",
+          "                                  [100%",
+          "]",
+          "2 passed in 0.00s"
+        ],
+        "truncated": false,
+        "lines_dropped": 0,
+        "framed": true,
+        "seconds": 0.35,
+        "effective_timeout": 30
+      },
+      "caption": "Run the tests in the pane the list returned (%0)."
+    },
+    {
+      "tool": "run_shell_command",
+      "arguments": {
+        "pane_id": "%1",
+        "command": "cat checks.log"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"pane_id\":\"%1\",\"outcome\":\"SIGNALLED\",\"exit_status\":0,\"output\":[\"2026-01-01 checks started\",\"2026-01-01 checks finished\"],\"truncated\":false,\"lines_dropped\":0,\"framed\":true,\"seconds\":0.01,\"effective_timeout\":30.0}"
+        }
+      ],
+      "structuredContent": {
+        "pane_id": "%1",
+        "outcome": "SIGNALLED",
+        "exit_status": 0,
+        "output": [
+          "2026-01-01 checks started",
+          "2026-01-01 checks finished"
+        ],
+        "truncated": false,
+        "lines_dropped": 0,
+        "framed": true,
+        "seconds": 0.01,
+        "effective_timeout": 30
+      },
+      "caption": "Show the log in the new pane the split returned (%1)."
+    },
+    {
+      "tool": "kill_session",
+      "arguments": {
+        "session_id": "$0"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"kind\":\"session\",\"id\":\"$0\"}"
+        }
+      ],
+      "structuredContent": {
+        "kind": "session",
+        "id": "$0"
+      },
+      "caption": "Remove the session by the id the create result returned ($0)."
+    }
+  ]
+}

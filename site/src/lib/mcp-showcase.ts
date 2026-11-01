@@ -149,7 +149,7 @@ export interface WorkedExample {
   recording?: Recording
 }
 
-/** `data/mcp-transcripts/<port>.json`, written by `scripts/gen-mcp-transcript.mjs` for each port it has recorded; the glob below picks up a new one. */
+/** `data/mcp-transcripts/<port>.json`, written by `scripts/gen-mcp-transcript.mjs` for each port it has recorded; the glob below picks up a new one (vitest caches the transform, so touching this comment refreshes it). */
 export interface Transcript {
   repo: string
   revision: string

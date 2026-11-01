@@ -33,6 +33,7 @@ const SERVERS = {
   ts: { prepare: [['bun', 'install', '--frozen-lockfile']], command: () => ['bun', 'packages/mcp/src/server.ts'] },
   rs: { prepare: [['cargo', 'build', '--locked', '-p', 'tmux-mcp', '--bin', 'tmux-mcp', '--jobs', '2']], command: () => ['target/debug/tmux-mcp'] },
   py: { prepare: [['uv', 'sync', '--frozen', '--python', '3.14']], command: () => ['.venv/bin/python', '-m', 'libtmux_mcp'] },
+  java: { prepare: [['./gradlew', ':libtmux-mcp:installDist', '--max-workers=2']], command: () => ['libtmux-mcp/build/install/libtmux-mcp/bin/libtmux-mcp'] },
   go: { cwd: 'mcp', prepare: [], build: (sandbox) => [['go', 'build', '-mod=readonly', '-o', join(sandbox, 'libtmux-mcp'), './cmd/libtmux-mcp']], command: (_checkout, sandbox) => [join(sandbox, 'libtmux-mcp')] },
 }
 const TOOLSETS = { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' }

@@ -152,8 +152,10 @@ function applyPanes(sessions: SessionState[], answer: Record_) {
     const box = isRecord(item.geometry) ? item.geometry : item
     for (const key of ['left', 'top', 'width', 'height'] as const) if (num(box[key]) !== undefined) pane[key] = num(box[key])!
     // A listing that names the window says which window these panes are in.
-    const windowId = str(item.windowId)
+    const windowId = str(item.windowId) ?? str(item.window_id)
     if (windowId && window.id === undefined) window.id = windowId
+    const windowName = str(item.window)
+    if (windowName && window.name === undefined) window.name = windowName
   }
 }
 
