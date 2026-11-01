@@ -495,7 +495,7 @@ const contentsCases = (widths: number[]) => [undefined, 'mcp' as const].flatMap(
 async function checkContentsHandoff({ product, javascript, width }: ReturnType<typeof contentsCases>[number]) {
   const win = await contentsPage(product, width, javascript)
   const doc = win.document
-  const desktop = doc.querySelector('main + aside nav.toc-nav')
+  const desktop = doc.querySelector('aside[data-toc-rail] nav.toc-nav')
   const fallback = [...doc.querySelectorAll('.mobile-fallback details')]
   const browse = fallback.find((details) => details.querySelector('summary')?.textContent === 'Browse documentation')
   const contents = fallback.find((details) => details.querySelector('summary')?.textContent === 'On this page')

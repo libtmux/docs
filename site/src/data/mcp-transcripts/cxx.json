@@ -1,0 +1,181 @@
+{
+  "generated": "scripts/gen-mcp-transcript.mjs",
+  "repo": "libtmux/libtmux-cxx",
+  "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+  "sandbox": {
+    "tmux": "tmux 3.8a",
+    "pytest": "pytest 9.2.0",
+    "project": [
+      "test_example.py",
+      "checks.log"
+    ],
+    "expected": [
+      "2 passed",
+      "checks finished"
+    ],
+    "rewritten": {
+      "projectDirectory": "/home/user/project"
+    }
+  },
+  "serverInfo": {
+    "name": "libtmux-cxx",
+    "title": "libtmux C++ tmux server",
+    "version": "0.1.0-alpha.11"
+  },
+  "prompt": "Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.",
+  "steps": [
+    {
+      "tool": "create_session",
+      "arguments": {
+        "name": "checks"
+      },
+      "isError": false,
+      "content": [
+        {
+          "text": "{\"name\":\"checks\",\"session_id\":\"$0\"}",
+          "type": "text"
+        }
+      ],
+      "structuredContent": {
+        "name": "checks",
+        "session_id": "$0"
+      },
+      "caption": "Create the session."
+    },
+    {
+      "tool": "list_panes",
+      "arguments": {},
+      "isError": false,
+      "content": [
+        {
+          "text": "{\"panes\":[{\"active\":true,\"command\":\"sh\",\"dead\":false,\"height\":24,\"id\":\"%0\",\"index\":0,\"path\":\"/home/user/project\",\"pid\":45087,\"session_id\":\"$0\",\"title\":\"host\",\"width\":80,\"window_id\":\"@0\"}]}",
+          "type": "text"
+        }
+      ],
+      "structuredContent": {
+        "panes": [
+          {
+            "active": true,
+            "command": "sh",
+            "dead": false,
+            "height": 24,
+            "id": "%0",
+            "index": 0,
+            "path": "/home/user/project",
+            "pid": 45087,
+            "session_id": "$0",
+            "title": "host",
+            "width": 80,
+            "window_id": "@0"
+          }
+        ]
+      },
+      "caption": "List the panes, each with its session id."
+    },
+    {
+      "tool": "split_window",
+      "arguments": {
+        "paneId": "%0",
+        "direction": "horizontal"
+      },
+      "isError": false,
+      "content": [
+        {
+          "text": "{\"pane_id\":\"%1\"}",
+          "type": "text"
+        }
+      ],
+      "structuredContent": {
+        "pane_id": "%1"
+      },
+      "caption": "Split the pane the list returned (%0) in two."
+    },
+    {
+      "tool": "list_windows",
+      "arguments": {
+        "session": "checks"
+      },
+      "isError": false,
+      "content": [
+        {
+          "text": "{\"windows\":[{\"active\":true,\"height\":24,\"id\":\"@0\",\"index\":0,\"layout\":\"{\\\"V\\\":2,\\\"L\\\":{\\\"t\\\":\\\"h\\\",\\\"w\\\":80,\\\"h\\\":24,\\\"x\\\":0,\\\"y\\\":0,\\\"c\\\":[{\\\"t\\\":\\\"p\\\",\\\"w\\\":40,\\\"h\\\":24,\\\"x\\\":0,\\\"y\\\":0,\\\"a\\\":true,\\\"i\\\":0,\\\"I\\\":\\\"%0\\\"},{\\\"t\\\":\\\"p\\\",\\\"w\\\":39,\\\"h\\\":24,\\\"x\\\":41,\\\"y\\\":0,\\\"i\\\":1,\\\"I\\\":\\\"%1\\\"}]}}\",\"name\":\"sh\",\"pane_count\":2,\"session_id\":\"$0\",\"width\":80}]}",
+          "type": "text"
+        }
+      ],
+      "structuredContent": {
+        "windows": [
+          {
+            "active": true,
+            "height": 24,
+            "id": "@0",
+            "index": 0,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}",
+            "name": "sh",
+            "pane_count": 2,
+            "session_id": "$0",
+            "width": 80
+          }
+        ]
+      },
+      "caption": "Read the window's layout."
+    },
+    {
+      "tool": "run_shell_command",
+      "arguments": {
+        "paneId": "%0",
+        "command": "pytest -q"
+      },
+      "isError": false,
+      "content": [
+        {
+          "text": "{\"exit_code\":0,\"pane_id\":\"%0\",\"text\":\"..                               [100%]\\n2 passed in 0.00s\\n\"}",
+          "type": "text"
+        }
+      ],
+      "structuredContent": {
+        "exit_code": 0,
+        "pane_id": "%0",
+        "text": "..                               [100%]\n2 passed in 0.00s\n"
+      },
+      "caption": "Run the tests in the pane the list returned (%0)."
+    },
+    {
+      "tool": "run_shell_command",
+      "arguments": {
+        "paneId": "%1",
+        "command": "cat checks.log"
+      },
+      "isError": false,
+      "content": [
+        {
+          "text": "{\"exit_code\":0,\"pane_id\":\"%1\",\"text\":\"2026-01-01 checks started\\n2026-01-01 checks finished\\n\"}",
+          "type": "text"
+        }
+      ],
+      "structuredContent": {
+        "exit_code": 0,
+        "pane_id": "%1",
+        "text": "2026-01-01 checks started\n2026-01-01 checks finished\n"
+      },
+      "caption": "Show the log in the new pane the split returned (%1)."
+    },
+    {
+      "tool": "kill_session",
+      "arguments": {
+        "session": "checks"
+      },
+      "isError": false,
+      "content": [
+        {
+          "text": "{\"deleted\":true,\"session_id\":\"$0\"}",
+          "type": "text"
+        }
+      ],
+      "structuredContent": {
+        "deleted": true,
+        "session_id": "$0"
+      },
+      "caption": "Remove the session once the result is read."
+    }
+  ]
+}

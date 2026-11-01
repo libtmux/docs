@@ -12,13 +12,13 @@ interface Props { surfaces: DocumentationSurface[]; currentPath: string; port?: 
 const { surfaces, currentPath, port, version, locale, solutionsOnly = false } = Astro.props
 const { surface, section, alternative } = currentDocumentation(surfaces, currentPath)
 const currentLabel = alternative?.label ?? section.label
-const descriptions: Record<string, string> = { ...PICKER_GROUP_SUMMARY, tmux: 'Commands, configuration and terminal workflows' }
+const descriptions: Record<string, string> = { ...PICKER_GROUP_SUMMARY, tmux: 'Commands, configuration and terminal workflows', home: 'Core, MCP and Workspace Manager' }
 // A badge sits beside its label without being inside the row's control, so CSS
 // anchors it to the label; the name is unique per port and product on a page.
 const anchorName = (id: string) => `--surface-label-${port ?? 'tmux'}-${id}`
 const anchorOf = (id: string) => `anchor-name: ${anchorName(id)}`
 const artwork = (id: string) => {
-  const path = branding(port, id === 'core' ? '' : id).asset('logo.svg')
+  const path = branding(port, id === 'core' || id === 'home' ? '' : id).asset('logo.svg')
   return withRoot(path)
 }
 ---
@@ -32,15 +32,20 @@ const artwork = (id: string) => {
     <svg class="doc-picker-caret" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
   </summary>
   <div class="surface-panel doc-picker-panel" data-surface-panel data-picker-panel>
-    <p class="doc-picker-title">{solutionsOnly ? 'Choose a solution' : 'Choose documentation'} <span class="doc-picker-count">{surfaces.length}</span></p>
+    <p class="doc-picker-title">{solutionsOnly ? 'Choose a solution' : 'Choose documentation'} <span class="doc-picker-count">{surfaces.filter((entry) => entry.id !== 'home').length}</span></p>
     <label class="doc-picker-search" hidden data-surface-search-label data-picker-search-label>
       <span class="sr-only">{solutionsOnly ? 'Find a solution' : 'Find an app or section'}</span>
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg>
       <input type="search" placeholder="Find documentation…" autocomplete="off" data-surface-search data-picker-search />
     </label>
     <nav aria-label={solutionsOnly ? 'Documentation solutions' : 'Documentation apps and sections'}>
-      {surfaces.map((entry) => <div class="surface-entry" data-surface-entry style={`--surface-anchor: ${anchorName(entry.id)}`}>
-      {solutionsOnly ? <a class="surface-destination doc-picker-option" href={entry.href}
+      {surfaces.map((entry) => <div class="surface-entry" data-surface-entry data-surface-home={entry.id === 'home' ? '' : undefined} style={`--surface-anchor: ${anchorName(entry.id)}`}>
+      {entry.id === 'home' && !solutionsOnly ? <a class="surface-option surface-home doc-picker-option" href={entry.href}
+        data-surface-option data-picker-option data-match={`Home ${entry.label}`}
+        aria-current={!alternative && surface.id === 'home' ? 'location' : undefined}>
+        <DocumentationIcon name="home" /><span>Home</span>
+        {!alternative && surface.id === 'home' && <span class="doc-picker-check" aria-hidden="true">✓</span>}
+      </a> : solutionsOnly ? <a class="surface-destination doc-picker-option" href={entry.href}
         data-picker-option data-match={`${entry.label} ${descriptions[entry.id]}`}>
         <img class="surface-artwork" src={artwork(entry.id)} width="30" height="30" alt="" />
         <span class="surface-group-name"><strong><span class="surface-label" style={anchorOf(entry.id)}>{entry.label}</span></strong>{' '}<small>{descriptions[entry.id]}</small></span>
@@ -108,6 +113,7 @@ const artwork = (id: string) => {
   .surface-group[open] > summary .surface-chevron { transform: rotate(90deg); }
   /* The badge is a sibling of the row's control, never inside it. It follows the label where CSS anchoring exists and sits at the row's end elsewhere. */
   .surface-entry { position: relative; }
+  .surface-home { margin-bottom: .25rem; }
   .surface-entry:has(> :is(details, a)[hidden]) { display: none; }
   .surface-entry > :global(.surface-entry__badge) { position: absolute; top: 1.15rem; right: 2.1rem; z-index: 1; }
   @supports (anchor-name: --surface) {

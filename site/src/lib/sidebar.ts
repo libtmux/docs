@@ -109,7 +109,8 @@ export async function pageBreadcrumbs(title: string, path: string, version: stri
     if (entry) items.push({ name: entry.data.title, url: url(route) })
     else if (route === 'reference') items.push({ name: 'API reference', url: url(route) })
   }
-  if (path && path !== 'tmux') items.push({ name: title, url: url(path) })
+  // The Core Library home keeps its navigation label; its H1 is the longer "tmux client library for <Language>".
+  if (path && path !== 'tmux') items.push({ name: port && path === 'core' ? 'Core Library' : title, url: url(path) })
   return items
 }
 
@@ -270,6 +271,8 @@ export async function getSidebar(
     (entry) =>
       (entry.data.port === undefined || entry.data.port === port) &&
       entry.data.product === product &&
+      // The Core Library home is reached from the surface picker, not as a row beside its own sections.
+      !(port !== undefined && product === undefined && entryPath(entry) === 'core') &&
       (port !== undefined || /^meta(?:\/|$)/.test(entryPath(entry)) === (section === 'meta')) &&
       localeOf(entry.id) === DEFAULT_LOCALE,
   ), port)

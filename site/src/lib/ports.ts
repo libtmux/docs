@@ -753,7 +753,7 @@ const CORE_PORTS: readonly Port[] = [
             lang: 'console',
             code: 'pnpm dlx @libtmux/workspace-cli --help',
             cooldown: {
-              code: `pnpm_config_minimum_release_age=${MINUTES} \\\n    pnpm_config_minimum_release_age_exclude='["@libtmux/workspace-cli","libtmux"]' \\\n    pnpm dlx @libtmux/workspace-cli --help`,
+              code: `EXCLUDE='["@libtmux/workspace-cli","libtmux"]' && \\\npnpm_config_minimum_release_age=${MINUTES} \\\n    pnpm_config_minimum_release_age_exclude="$EXCLUDE" \\\n    pnpm dlx @libtmux/workspace-cli --help`,
               bypass: 'pnpm_config_minimum_release_age=0 pnpm dlx @libtmux/workspace-cli --help',
             },
           },
@@ -782,7 +782,7 @@ const CORE_PORTS: readonly Port[] = [
             lang: 'console',
             code: 'pnpm add -g @libtmux/workspace-cli',
             cooldown: {
-              code: `pnpm_config_minimum_release_age=${MINUTES} \\\n    pnpm_config_minimum_release_age_exclude='["@libtmux/workspace-cli","libtmux"]' \\\n    pnpm add -g @libtmux/workspace-cli`,
+              code: `EXCLUDE='["@libtmux/workspace-cli","libtmux"]' && \\\npnpm_config_minimum_release_age=${MINUTES} \\\n    pnpm_config_minimum_release_age_exclude="$EXCLUDE" \\\n    pnpm add -g @libtmux/workspace-cli`,
               bypass: 'pnpm_config_minimum_release_age=0 pnpm add -g @libtmux/workspace-cli',
             },
           },
@@ -1336,6 +1336,22 @@ export const API_MODEL_PORTS = PORTS.filter((port) => port.referenceKind !== 'gu
 export const PORT_BY_SLUG: Readonly<Record<string, Port>> = Object.fromEntries(
   PORTS.map((p) => [p.slug, p]),
 )
+
+/** What a port is, in one phrase: "Rust-based tmux client". */
+export function portTagline(port: Port): string {
+  return `${port.language}-based tmux client`
+}
+
+/**
+ * The port home page's document title, "libtmux-rs: Rust-based tmux client".
+ *
+ * A core port is named by its repository. A facade shares its parent's
+ * repository, so it keeps its own project name (`libtmux-kotlin`).
+ */
+export function portHomeTitle(port: Port): string {
+  const name = port.parentLibrary ? port.projectName : port.repo.split('/')[1]
+  return `${name}: ${portTagline(port)}`
+}
 
 /** The tag a numeric docs version names, with the library's tag prefix. */
 function releaseTag(port: Port, version: string): string | undefined {

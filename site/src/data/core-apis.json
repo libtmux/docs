@@ -1,0 +1,132 @@
+{
+  "rs": {
+    "typed-graph": [
+      "server.Server",
+      "server.Server.new_session",
+      "session.Session.new_window",
+      "window.Window.active_pane",
+      "pane.Pane.send_line",
+      "pane.Pane.wait_until",
+      "pane.PaneWait",
+      "pane.Pane.capture",
+      "server.Server.builder",
+      "server.builder.ServerBuilder.build",
+      "server.Server.kill",
+      "server.Server.shutdown"
+    ],
+    "create-windows": [
+      "server.Server",
+      "server.Server.builder",
+      "server.builder.ServerBuilder.build",
+      "server.NewSessionOptions",
+      "server.Server.new_session",
+      "session.Session.new_window",
+      "session.NewWindowOptions",
+      "window.Window.split",
+      "window.SplitOptions",
+      "window.SplitDirection",
+      "pane.Pane.split",
+      "session.Session.windows",
+      "window.Window.panes",
+      "server.Server.panes",
+      "server.Server.kill",
+      "server.Server.shutdown"
+    ],
+    "send-keys": [
+      "server.Server",
+      "server.Server.builder",
+      "server.builder.ServerBuilder.build",
+      "server.NewSessionOptions",
+      "server.Server.new_session",
+      "session.Session.panes",
+      "pane.Pane.wait_for_text",
+      "pane.PaneWait",
+      "pane.Pane.send_keys",
+      "pane.Pane.send_key_names",
+      "pane.Pane.capture",
+      "server.Server.kill",
+      "server.Server.shutdown"
+    ]
+  },
+  "ruby": {
+    "typed-graph": [
+      "LibTmux::Server",
+      "LibTmux::Server.start",
+      "LibTmux::Server#new_session",
+      "LibTmux::Session#new_window",
+      "LibTmux::Window#split",
+      "LibTmux::Server#snapshot",
+      "LibTmux::Snapshot#windows",
+      "LibTmux::WindowSnapshot#panes",
+      "LibTmux::PaneSnapshot#id",
+      "LibTmux::WindowSnapshot#name",
+      "LibTmux::Server#close"
+    ],
+    "create-windows": [
+      "LibTmux::Server",
+      "LibTmux::Server.start",
+      "LibTmux::Server#new_session",
+      "LibTmux::Session#new_window",
+      "LibTmux::Window#snapshot",
+      "LibTmux::WindowSnapshot#name",
+      "LibTmux::Session#list_windows"
+    ],
+    "send-keys": [
+      "LibTmux::Server",
+      "LibTmux::Server.start",
+      "LibTmux::Server#new_session",
+      "LibTmux::CreationReceipt#pane",
+      "LibTmux::Server#open_control",
+      "LibTmux::ControlConnection#exchange",
+      "LibTmux::ControlConnection#subscribe",
+      "LibTmux::Pane#send_text",
+      "LibTmux::Pane#send_keys",
+      "LibTmux::ControlSubscription#next",
+      "LibTmux::ControlEvent#data",
+      "LibTmux::Pane#capture",
+      "LibTmux::CommandResult#stdout"
+    ]
+  },
+  "go": {
+    "typed-graph": [
+      "tmux.NewServer",
+      "tmux.ServerOptions",
+      "tmux.Server.NewSession",
+      "tmux.NewSessionRequest",
+      "tmux.Server.Kill",
+      "tmux.Session.Run",
+      "tmux.RunOptions"
+    ],
+    "watch": [
+      "tmux.NewServer",
+      "tmux.ServerOptions",
+      "tmux.Server.NewSession",
+      "tmux.NewSessionRequest",
+      "tmux.Session.Kill",
+      "tmux.Session.OpenNotifications",
+      "tmux.NotificationOptions",
+      "tmux.NotificationStream.Close",
+      "tmux.Session.Rename",
+      "tmux.NotificationStream.Next",
+      "tmux.ControlNotification.Kind",
+      "tmux.ControlNotificationSessionRenamed",
+      "tmux.NotificationStream.Subscribe",
+      "tmux.SubscriptionRequest",
+      "tmux.Session.NewWindow",
+      "tmux.NewWindowRequest",
+      "tmux.ControlNotification.Subscription"
+    ],
+    "run-applications": [
+      "tmux.NewServer",
+      "tmux.ServerOptions",
+      "tmux.Server.NewSession",
+      "tmux.NewSessionRequest",
+      "tmux.Session.Kill",
+      "tmux.Session.Run",
+      "tmux.RunOptions",
+      "tmux.Session.Start",
+      "tmux.Running.StreamTo",
+      "tmux.Running.Kill"
+    ]
+  }
+}

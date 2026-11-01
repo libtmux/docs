@@ -2,21 +2,26 @@ import { readFileSync } from 'node:fs'
 import { Window } from 'happy-dom'
 import { createComponent, renderTemplate } from 'astro/runtime/server/index.js'
 import ts from 'typescript'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { paintScript, readStoredPreset, resolvePreset, rollPreset, scrollForThumb, selectionRules, stepIndex, storePreset, STORAGE_PREFIX, thumbMetrics, withPreset } from '../src/lib/workspace-picker'
+import { HOME_PREVIEW_DELAY } from '../src/lib/home-hover-preview'
+import { HOVER_OPEN } from '../src/lib/status-toggletip'
 import { renderLayout } from '../src/lib/tmux-layout'
 import { configKeys, offersPicker, presetOptions, previewSize, previewWindows, TOPICS, workspaceShowcase } from '../src/lib/workspace-showcase'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
 const SOURCE = readFileSync(new URL('../src/lib/workspace-picker.ts', import.meta.url), 'utf8')
 /** The module as the browser runs it: types erased and its exports made local. */
-const CLIENT = ts.transpileModule(SOURCE, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } })
-  .outputText.replace(/^export /gm, '')
+const HOVER = readFileSync(new URL('../src/lib/home-hover-preview.ts', import.meta.url), 'utf8')
+const TOGGLETIP = readFileSync(new URL('../src/lib/status-toggletip.ts', import.meta.url), 'utf8')
+const CLIENT = [HOVER, TOGGLETIP, SOURCE.replace(/^import .*$/gm, '')]
+  .map((code) => ts.transpileModule(code, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText)
+  .join('\n').replace(/^export /gm, '')
 
 const stub = {
   Code: createComponent((_result: unknown, props: { code: string; lang: string }) => renderTemplate`<pre data-lang="${props.lang}">${props.code}</pre>`),
 }
-const REAL = ['components/RerollButton.astro', 'components/workspace/WorkspaceConfig.astro', 'components/docs/PickerSearch.astro']
+const REAL = ['components/RerollButton.astro', 'components/workspace/WorkspaceConfig.astro', 'components/workspace/WorkspaceWindows.astro', 'components/docs/PickerSearch.astro']
 const picker = loadAstroTemplate('components/workspace/WorkspacePicker.astro', { real: REAL, modules: { 'astro-expressive-code/components': stub } })
 const examples = loadAstroTemplate('components/workspace/WorkspaceShowcase.astro', { real: REAL, modules: { 'astro-expressive-code/components': stub } })
 
@@ -307,6 +312,23 @@ describe('the picker as rendered', () => {
     expect(css).toMatch(/html\[data-js\] \.ws-layout__stack > \.ws-win:not\(\[data-active\]\)\s*\{\s*visibility: hidden;/)
   })
 
+  it('gives every preset the same grid cell, so no height depends on which one shows', () => {
+    const css = readFileSync(new URL('../src/styles/workspace-picker.css', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+    expect(css).toMatch(/html\[data-js\] \.ws-picker__stage\s*\{[^}]*display: grid;[^}]*grid-template-columns: minmax\(0, 1fr\)/)
+    expect(css).toMatch(/html\[data-js\] \.ws-picker__panel\s*\{[^}]*display: block;[^}]*grid-area: 1 \/ 1;[^}]*visibility: hidden/)
+    // Hiding is by visibility alone; a rule that removes or resizes a panel by its id or selection would change the stage.
+    expect(css).not.toMatch(/data-selected[^{]*\{[^}]*(display|height|block-size)\s*:/)
+    expect(css).not.toMatch(/\.ws-picker__panel\[data-preset[^{]*\{[^}]*(display|height|block-size)\s*:/)
+    expect(selectionRules(['a', 'b'])).not.toMatch(/display|height|block-size/)
+  })
+
+  it('lays out every example, so a heading always has a box for the page\'s scroll spy', () => {
+    const css = readFileSync(new URL('../src/styles/workspace-showcase.css', import.meta.url), 'utf8')
+    expect(css).not.toMatch(/content-visibility|contain-intrinsic/)
+    const source = readFileSync(new URL('../src/components/workspace/WorkspaceShowcase.astro', import.meta.url), 'utf8')
+    expect(source).not.toMatch(/hidden|loading=|client:/)
+  })
+
   it('keeps the window tabs on one line in a strip that scrolls', () => {
     const css = readFileSync(new URL('../src/styles/workspace-picker.css', import.meta.url), 'utf8')
     expect(css).toMatch(/\.ws-layout__tabs\s*\{[^}]*overflow-x: auto;/)
@@ -456,7 +478,8 @@ describe('the picker in a browser page', () => {
   it('chooses a window with a click or an arrow key, in its own preset only', async () => {
     const { document, click, press, choose } = await page('rs', { storage: memory() })
     choose('start-directory')
-    const panel = document.querySelector('[data-preset="start-directory"]')!
+    const panel = document.querySelector<HTMLElement>('[data-preset="start-directory"]')!
+    panel.inert = false
     const tabs = [...panel.querySelectorAll<HTMLElement>('[role="tab"]')]
     const figures = [...panel.querySelectorAll<HTMLElement>('[data-window]')]
     const shown = () => figures.map((figure) => figure.hasAttribute('data-active'))
@@ -690,5 +713,214 @@ describe('every window of a preset', () => {
   it('leaves out a window whose layout is a saved layout string', () => {
     const config = { windows: [{ window_name: 'saved', layout: '5e2d,80x24,0,0{40x24,0,0,0,39x24,41,0,1}', panes: ['a', 'b'] }, { window_name: 'plain', panes: ['c'] }] }
     expect(previewWindows(config, 'probe').map((win) => win.name)).toEqual(['plain'])
+  })
+})
+
+describe('previewing a preset on hover', () => {
+  const setup = async (hover = true) => {
+    vi.useFakeTimers()
+    const p = await page('rs')
+    // The picker's clock and media query are the window's own; point them at the fakes.
+    p.win.setTimeout = ((fn: () => void, ms: number) => setTimeout(fn, ms)) as unknown as typeof p.win.setTimeout
+    p.win.clearTimeout = ((id: number) => clearTimeout(id)) as unknown as typeof p.win.clearTimeout
+    p.win.matchMedia = (() => ({ matches: hover })) as unknown as typeof p.win.matchMedia
+    const ids = [...p.document.querySelectorAll<HTMLElement>('[data-preset]')].map((panel) => panel.dataset.preset!)
+    const menu = p.document.querySelector<HTMLDetailsElement>('[data-preset-menu]')!
+    menu.open = true
+    const other = ids[1]!
+    const enter = (id: string, pointerType = 'mouse') => p.chip(id).dispatchEvent(new p.win.PointerEvent('pointerenter', { pointerType }) as unknown as Event)
+    const leave = (id: string) => p.chip(id).dispatchEvent(new p.win.PointerEvent('pointerleave') as unknown as Event)
+    return { ...p, ids, other, enter, leave, menu }
+  }
+  afterEach(() => void vi.useRealTimers())
+
+  it('shows the hovered preset after the home page delay and restores on leave, keeping the choice', async () => {
+    const p = await setup()
+    const first = p.ids[0]!
+    const url = p.win.location.href
+    expect(HOME_PREVIEW_DELAY).toBe(1200)
+    p.enter(p.other)
+    vi.advanceTimersByTime(1199)
+    expect(p.active()).toEqual([first])
+    vi.advanceTimersByTime(HOME_PREVIEW_DELAY - 1199 - 1)
+    expect(p.active()).toEqual([first])
+    vi.advanceTimersByTime(1)
+    expect(p.active()).toEqual([p.other])
+    expect(p.reachable()).toEqual([p.other])
+    expect(p.checked()).toEqual([first])
+    expect(p.win.location.href).toBe(url)
+    p.leave(p.other)
+    expect(p.active()).toEqual([first])
+    expect(p.reachable()).toEqual([first])
+  })
+
+  it('commits on click without reverting', async () => {
+    const p = await setup()
+    p.enter(p.other)
+    vi.advanceTimersByTime(HOME_PREVIEW_DELAY)
+    p.choose(p.other)
+    p.leave(p.other)
+    expect(p.active()).toEqual([p.other])
+    expect(p.checked()).toEqual([p.other])
+    expect(new URL(p.win.location.href).searchParams.get('preset')).toBe(p.other)
+  })
+
+  it('does not preview a click made before the delay ends', async () => {
+    const p = await setup()
+    p.enter(p.other)
+    vi.advanceTimersByTime(HOME_PREVIEW_DELAY - 1)
+    p.choose(p.other)
+    vi.advanceTimersByTime(HOME_PREVIEW_DELAY)
+    p.leave(p.other)
+    expect(p.active()).toEqual([p.other])
+  })
+
+  it('never previews without any-hover, or for touch', async () => {
+    const p = await setup(false)
+    p.enter(p.other)
+    vi.advanceTimersByTime(HOME_PREVIEW_DELAY * 2)
+    expect(p.active()).toEqual([p.ids[0]])
+    const q = await setup()
+    q.enter(q.other, 'touch')
+    vi.advanceTimersByTime(HOME_PREVIEW_DELAY * 2)
+    expect(q.active()).toEqual([q.ids[0]])
+  })
+
+  it('restores on Escape and when the menu closes', async () => {
+    const p = await setup()
+    p.enter(p.other)
+    vi.advanceTimersByTime(HOME_PREVIEW_DELAY)
+    expect(p.active()).toEqual([p.other])
+    p.document.dispatchEvent(new p.win.KeyboardEvent('keydown', { key: 'Escape' }) as unknown as Event)
+    expect(p.active()).toEqual([p.ids[0]])
+    p.enter(p.other)
+    vi.advanceTimersByTime(HOME_PREVIEW_DELAY)
+    expect(p.active()).toEqual([p.other])
+    p.menu.open = false
+    p.menu.dispatchEvent(new p.win.Event('toggle') as unknown as Event)
+    expect(p.active()).toEqual([p.ids[0]])
+  })
+})
+
+describe('window tab names', () => {
+  const NAME = 'Another Django project'
+  /** A viewport narrower than the label clips it; layout is stubbed because the DOM has none. */
+  const setup = async (viewport: number) => {
+    vi.useFakeTimers()
+    const p = await page('rs')
+    p.win.setTimeout = ((fn: () => void, ms: number) => setTimeout(fn, ms)) as unknown as typeof p.win.setTimeout
+    p.win.clearTimeout = ((id: number) => clearTimeout(id)) as unknown as typeof p.win.clearTimeout
+    const panel = p.document.querySelector<HTMLElement>('[data-preset="start-directory"]')!
+    const tab = panel.querySelector<HTMLElement>('[role="tab"]')!
+    const label = tab.querySelector<HTMLElement>('.ws-layout__tab-label')!
+    label.textContent = `0:${NAME}`
+    Object.defineProperty(label, 'scrollWidth', { configurable: true, value: 200 })
+    Object.defineProperty(label, 'clientWidth', { configurable: true, value: viewport >= 1280 ? 240 : 120 })
+    const tip = p.document.querySelector<HTMLElement>('[role="tooltip"]')!
+    const hover = () => { tab.dispatchEvent(new p.win.PointerEvent('pointerenter', { pointerType: 'mouse' }) as unknown as Event); vi.advanceTimersByTime(HOVER_OPEN) }
+    const focus = () => tab.dispatchEvent(new p.win.FocusEvent('focus') as unknown as Event)
+    return { ...p, tab, label, tip, hover, focus }
+  }
+  afterEach(() => void vi.useRealTimers())
+
+  it('ellipsizes in the label, not the flex button, and names the tab by its full text', async () => {
+    const css = readFileSync(new URL('../src/styles/workspace-picker.css', import.meta.url), 'utf8')
+    expect(css).toMatch(/\.ws-layout__tab-label\s*\{[^}]*overflow: hidden;[^}]*text-overflow: ellipsis;[^}]*white-space: nowrap/)
+    const p = await setup(390)
+    expect(p.tab.textContent).toBe(`0:${NAME}`)
+    expect(p.tab.hasAttribute('title')).toBe(false)
+    expect(p.tab.hasAttribute('aria-label')).toBe(false)
+  })
+
+  it('wires a role=tooltip to a clipped tab on hover and focus at 390', async () => {
+    const p = await setup(390)
+    expect(p.tip.getAttribute('role')).toBe('tooltip')
+    expect(p.tip.hidden).toBe(true)
+    p.hover()
+    expect(p.tip.hidden).toBe(false)
+    expect(p.tip.textContent).toBe(`0:${NAME}`)
+    expect(p.tab.getAttribute('aria-describedby')).toBe(p.tip.id)
+    expect(p.document.getElementById(p.tip.id)).toBe(p.tip)
+    const q = await setup(390)
+    q.focus()
+    expect(q.tip.hidden).toBe(false)
+    expect(q.tab.getAttribute('aria-describedby')).toBe(q.tip.id)
+  })
+
+  it('waits the status badge delay before a hover opens it', async () => {
+    const p = await setup(390)
+    p.tab.dispatchEvent(new p.win.PointerEvent('pointerenter', { pointerType: 'mouse' }) as unknown as Event)
+    vi.advanceTimersByTime(HOVER_OPEN - 1)
+    expect(p.tip.hidden).toBe(true)
+    vi.advanceTimersByTime(1)
+    expect(p.tip.hidden).toBe(false)
+  })
+
+  it('dismisses with Escape, leaving focus where it is', async () => {
+    const p = await setup(390)
+    p.tab.focus()
+    const focused = p.document.activeElement
+    const moved = vi.fn()
+    p.tab.addEventListener('blur', moved)
+    p.document.body.addEventListener('focusin', moved)
+    p.focus()
+    expect(p.tip.hidden).toBe(false)
+    p.document.dispatchEvent(new p.win.KeyboardEvent('keydown', { key: 'Escape', cancelable: true }) as unknown as Event)
+    expect(p.tip.hidden).toBe(true)
+    expect(p.tab.hasAttribute('aria-describedby')).toBe(false)
+    expect(p.document.activeElement).toBe(focused)
+    expect(moved).not.toHaveBeenCalled()
+    p.focus()
+    expect(p.tip.hidden).toBe(true)
+  })
+
+  it('stays while the pointer moves onto the tooltip, and closes once it leaves', async () => {
+    const p = await setup(390)
+    p.hover()
+    p.tab.dispatchEvent(new p.win.PointerEvent('pointerleave') as unknown as Event)
+    p.tip.dispatchEvent(new p.win.PointerEvent('pointerenter') as unknown as Event)
+    vi.advanceTimersByTime(1000)
+    expect(p.tip.hidden).toBe(false)
+    p.tip.dispatchEvent(new p.win.PointerEvent('pointerleave') as unknown as Event)
+    vi.advanceTimersByTime(1000)
+    expect(p.tip.hidden).toBe(true)
+  })
+
+  it('closes a clipped tab\'s tooltip when the pointer or focus moves to a tab that fits', async () => {
+    const p = await setup(390)
+    const next = p.tab.parentElement!.querySelectorAll<HTMLElement>('[role="tab"]')[1]!
+    const text = next.querySelector<HTMLElement>('.ws-layout__tab-label')!
+    Object.defineProperty(text, 'scrollWidth', { configurable: true, value: 50 })
+    Object.defineProperty(text, 'clientWidth', { configurable: true, value: 120 })
+    p.hover()
+    p.tab.dispatchEvent(new p.win.PointerEvent('pointerleave') as unknown as Event)
+    next.dispatchEvent(new p.win.PointerEvent('pointerenter', { pointerType: 'mouse' }) as unknown as Event)
+    next.dispatchEvent(new p.win.PointerEvent('pointerleave') as unknown as Event)
+    vi.advanceTimersByTime(2000)
+    expect(p.tip.hidden).toBe(true)
+    expect(p.tab.hasAttribute('aria-describedby')).toBe(false)
+    p.focus()
+    expect(p.tip.hidden).toBe(false)
+    next.dispatchEvent(new p.win.FocusEvent('focus') as unknown as Event)
+    expect(p.tip.hidden).toBe(true)
+  })
+
+  it('stays open when its own strip scrolls a tab into view, and closes when the page scrolls', async () => {
+    const p = await setup(390)
+    p.focus()
+    expect(p.tip.hidden).toBe(false)
+    p.tab.parentElement!.dispatchEvent(new p.win.Event('scroll') as unknown as Event)
+    expect(p.tip.hidden).toBe(false)
+    p.document.dispatchEvent(new p.win.Event('scroll') as unknown as Event)
+    expect(p.tip.hidden).toBe(true)
+  })
+
+  it('gives a name that fits no tooltip', async () => {
+    const p = await setup(1280)
+    p.hover()
+    p.focus()
+    expect(p.tip.hidden).toBe(true)
+    expect(p.tab.hasAttribute('aria-describedby')).toBe(false)
+    expect(p.label.scrollWidth).toBeLessThanOrEqual(p.label.clientWidth)
   })
 })

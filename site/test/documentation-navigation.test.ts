@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
-import { buildDocumentationSurfaces, currentDocumentation, getDocumentationSurfaces } from '../src/lib/documentation-navigation'
+import { buildDocumentationSurfaces, currentDocumentation, getDocumentationSurfaces, withLanguageHome } from '../src/lib/documentation-navigation'
 import { PORTS, portPageUrl, productStatus, releaseMaturity, type DocProduct, type ProductStatus } from '../src/lib/ports'
 import { REGISTRY } from '../src/lib/registry'
 import { sharesOneKind, type SidebarItem, type SidebarLinkItem } from '../src/lib/sidebar'
@@ -175,12 +175,47 @@ describe('documentation surface navigation', () => {
     ] })
     const core = surfaces.find((surface) => surface.id === 'core')!
     expect(core.sections.map((section) => [section.id, section.href])).toEqual([
-      ['home', '/csharp/latest/'],
+      ['home', '/csharp/latest/core/'],
       ['guides', '/csharp/latest/guides/installation/'],
       ['tutorials', '/csharp/latest/tutorials/first-session/'],
       ['reference', '/csharp/latest/reference/'],
     ])
     expect(core.sections[0].items.map((item) => item.label)).toEqual(['Overview', 'Guides', 'Tutorials', 'API Reference'])
+  })
+
+  it.each(PORTS)('sends the $slug Core Library home to core/ and keeps its sibling pages in the surface', (port) => {
+    const surfaces = buildDocumentationSurfaces(port.slug, 'latest', menus(port, 'latest'))
+    const core = surfaces.find((surface) => surface.id === 'core')!
+    const home = portPageUrl(port, 'latest', 'core')
+    expect(core.href).toBe(home)
+    expect(core.sections.find((section) => section.id === 'home')).toMatchObject({ href: home })
+    expect(core.sections[0].items[0]).toEqual({ type: 'link', label: 'Overview', href: home })
+    for (const path of ['', 'core/', 'guides/', 'reference/']) {
+      expect(currentDocumentation(surfaces, `${portPageUrl(port, 'latest')}${path}`).surface.id, path).toBe('core')
+    }
+    expect(currentDocumentation(surfaces, home).section.id).toBe('home')
+    expect(currentDocumentation(surfaces, `${portPageUrl(port, 'latest')}guides/`).section.id).toBe('guides')
+  })
+
+  it.each(PORTS)('puts the $slug language Home above Core Library and selects it only on the language page', (port) => {
+    const products = buildDocumentationSurfaces(port.slug, 'latest', menus(port, 'latest'))
+    const surfaces = withLanguageHome(port.slug, 'latest', products)
+    const root = portPageUrl(port, 'latest')
+    expect(surfaces.map((surface) => surface.id)).toEqual(['home', ...products.map((surface) => surface.id)])
+    expect(surfaces[0]).toMatchObject({ label: port.name, href: root })
+    expect(surfaces[1].id).toBe('core')
+    const here = currentDocumentation(surfaces, root)
+    expect(here.surface.id).toBe('home')
+    expect(here.section.label).toBe('Home')
+    // The language sidebar links every product home, then the shared areas.
+    const labels = here.section.items.map((item) => item.label)
+    expect(labels.slice(0, products.length)).toEqual(products.map((surface) => surface.label))
+    expect(labels.at(-1)).toBe('Documentation')
+    for (const path of ['core/', 'guides/', 'reference/', 'mcp/', 'workspace/']) {
+      expect(currentDocumentation(surfaces, `${root}${path}`).surface.id, path).not.toBe('home')
+    }
+    expect(currentDocumentation(surfaces, `${root}core/`).section.id).toBe('home')
+    expect(currentDocumentation(surfaces, `${root}core/`).surface.id).toBe('core')
   })
 
   it.each(['cxx', 'julia', 'powershell', 'ruby'])('keeps %s product glossaries inside their API navigation', (slug) => {

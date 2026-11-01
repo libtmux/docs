@@ -44,7 +44,7 @@ const readText = (panel) => {
   }
   const long = [...panel.querySelectorAll('p, small')].filter((element) => !element.hasAttribute('data-picker-status'))
     .map((element) => ({ tag: element.tagName.toLowerCase(), cls: element.className, text: element.textContent.replace(/\s+/g, ' ').trim() }))
-  const rows = [...panel.querySelectorAll('[data-surface-entry]')].map((entry) => ({
+  const rows = [...panel.querySelectorAll('[data-surface-entry]:not([data-surface-home])')].map((entry) => ({
     label: entry.querySelector('.surface-label')?.textContent.trim(),
     paragraphs: entry.querySelectorAll('p').length,
     summaries: [...entry.querySelectorAll(':scope > details > summary small, :scope > a small')]
@@ -71,7 +71,8 @@ const originMainMarkup = (concept) => {
 
 async function checkRows(page, picker, slug, where, kind) {
   const rows = expectedRows(slug)
-  const entries = picker.locator('[data-surface-entry]')
+  // The language Home leads the menu and is not a product.
+  const entries = picker.locator('[data-surface-entry]:not([data-surface-home])')
   assert.deepEqual(await entries.locator('.surface-label').allTextContents(), rows.map(({ label }) => label), `${where}: one entry per product, in order`)
   const anchored = await page.evaluate(() => CSS.supports('anchor-name', '--a'))
   for (const [index, { label, status }] of rows.entries()) {
@@ -199,6 +200,19 @@ async function applySabotage(page, sabotage) {
   if (sabotage?.window) await page.evaluate(sabotage.window)
 }
 
+/** The version this server serves a port's pages at: the documentation defaults name Python's. */
+const servedVersion = (slug) => JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')[slug] ?? 'latest'
+
+/** The language page is above every product: its trigger names the language and Home, and states no product's stage. */
+async function checkLanguageHome(page, base, slug) {
+  await page.goto(`${base}/${slug}/latest/`, { waitUntil: 'load' })
+  await page.waitForSelector('[data-documentation-context] [data-surface-picker][data-enhanced]', { state: 'attached' })
+  const trigger = page.locator('[data-documentation-context] [data-surface-picker] > summary')
+  assert.equal(await trigger.locator('.status-badge').count(), 0, `${slug} language page: the trigger shows Home, so it shows no product badge`)
+  assert.equal(await trigger.getAttribute('aria-description'), null, `${slug} language page: nothing describes a product stage`)
+  assert.match((await trigger.innerText()).replace(/\s+/g, ' ').trim(), new RegExp(`${PORT_BY_SLUG[slug].name} Home$`), `${slug} language page: the trigger reads the language and Home`)
+}
+
 /**
  * Check the status badges of the documentation picker and the homepage solution
  * menu on Rust, Go, Python, Julia and Java, and a touch tap on a phone.
@@ -223,7 +237,8 @@ export async function checkStatusBadges(browser, base, options = {}) {
             // The development server can replace a page while it optimizes dependencies; load it again once.
             for (const attempt of [1, 2]) {
               try {
-                await page.goto(solutions ? `${base}/?port=${slug}` : `${base}/${slug}/latest/`, { waitUntil: 'load' })
+                // The product picker's trigger names the library on a Core Library page; the language page above it names Home.
+                await page.goto(solutions ? `${base}/?port=${slug}` : `${base}/${slug}/${servedVersion(slug)}/core/`, { waitUntil: 'load' })
                 await page.waitForFunction(() => document.fonts.status === 'loaded')
                 await page.waitForSelector(`${root} [data-surface-picker][data-enhanced]`, { state: 'attached' })
                 break
@@ -246,6 +261,7 @@ export async function checkStatusBadges(browser, base, options = {}) {
             }
             await page.keyboard.press('Escape')
           }
+          if (menus.includes('picker') && width === 1440 && scheme === 'light') await checkLanguageHome(page, base, slug)
         }
       }
     } finally {
@@ -258,7 +274,7 @@ export async function checkStatusBadges(browser, base, options = {}) {
     page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     page.setDefaultNavigationTimeout(60000)
     try {
-      await page.goto(`${base}/go/latest/`, { waitUntil: 'load' })
+      await page.goto(`${base}/go/${servedVersion('go')}/core/`, { waitUntil: 'load' })
       await page.waitForSelector('[data-documentation-context] [data-surface-picker][data-enhanced]', { state: 'attached' })
       const picker = page.locator('[data-documentation-context] [data-surface-picker]')
       await picker.locator(':scope > summary').tap()
@@ -292,7 +308,7 @@ export async function checkStatusBadgesFail(browser, base) {
     ['the pre-badge picker markup', picker, { script: originMainMarkup, arg: CONCEPT_DESCRIPTION }, /Core Library has exactly one status badge/],
     ['the pre-badge solution menu markup', solutions, { script: originMainMarkup, arg: CONCEPT_DESCRIPTION }, /Core Library has exactly one status badge/],
     ['a second badge on a row', picker, {
-      script: () => document.querySelectorAll('.surface-entry').forEach((entry) => entry.querySelector('.surface-label').after(Object.assign(document.createElement('span'), { className: 'status-badge', textContent: 'alpha' }))),
+      script: () => document.querySelectorAll('.surface-entry:not([data-surface-home])').forEach((entry) => entry.querySelector('.surface-label').after(Object.assign(document.createElement('span'), { className: 'status-badge', textContent: 'alpha' }))),
     }, /has exactly one status badge/],
     ['a wrong stage', picker, {
       script: () => document.querySelector('.status-toggletip > .status-badge').setAttribute('data-status', 'concept'),

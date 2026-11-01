@@ -48,6 +48,16 @@ function portEntities(port: string): PortEntities | undefined {
 }
 
 /**
+ * The program that loads a workspace file and the CLI Manual page that documents
+ * `load`, for a port whose manual lists the command; nothing for a port without one.
+ */
+export function loadCommand(port: string): { program: string; path: string } | undefined {
+  const entity = portEntities(port)
+  const load = entity?.commands.get('load')
+  return entity && load ? { program: entity.program, path: load.path } : undefined
+}
+
+/**
  * The one place a workspace name becomes a destination: its page in the port's
  * CLI Manual or Configuration reference, at the table row that defines it.
  */

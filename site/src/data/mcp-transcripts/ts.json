@@ -1,0 +1,212 @@
+{
+  "generated": "scripts/gen-mcp-transcript.mjs",
+  "repo": "libtmux/libtmux-ts",
+  "revision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+  "sandbox": {
+    "tmux": "tmux 3.8a",
+    "pytest": "pytest 9.2.0",
+    "project": [
+      "test_example.py",
+      "checks.log"
+    ],
+    "expected": [
+      "2 passed",
+      "checks finished"
+    ],
+    "rewritten": {
+      "projectDirectory": "/home/user/project"
+    }
+  },
+  "serverInfo": {
+    "name": "libtmux",
+    "title": "tmux",
+    "version": "0.1.0-alpha.10"
+  },
+  "prompt": "Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.",
+  "steps": [
+    {
+      "tool": "create_session",
+      "arguments": {
+        "name": "checks"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "Created checks ($0); its pane is %0."
+        }
+      ],
+      "structuredContent": {
+        "paneId": "%0",
+        "session": {
+          "attachedClients": 0,
+          "humanAttachedClients": 0,
+          "id": "$0",
+          "metadataComplete": true,
+          "name": "checks",
+          "omittedMetadataBytes": 0,
+          "windows": 1
+        },
+        "windowId": "@0"
+      },
+      "caption": "Create the session."
+    },
+    {
+      "tool": "split_window",
+      "arguments": {
+        "paneId": "%0",
+        "direction": "right"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "%1  checks:0 sh.1  sh  /home/user/project"
+        }
+      ],
+      "structuredContent": {
+        "pane": {
+          "active": false,
+          "command": "sh",
+          "cwd": "/home/user/project",
+          "dead": false,
+          "height": 24,
+          "id": "%1",
+          "index": 1,
+          "isAttended": false,
+          "isCallerPane": false,
+          "metadataComplete": true,
+          "omittedMetadataBytes": 0,
+          "title": "host",
+          "width": 39,
+          "windowId": "@0",
+          "windowName": "sh",
+          "omittedPlacements": 0,
+          "placements": [
+            {
+              "index": 0,
+              "sessionId": "$0",
+              "sessionName": "checks"
+            }
+          ],
+          "placementsComplete": true
+        }
+      },
+      "caption": "Split the pane the create result returned (%0) in two."
+    },
+    {
+      "tool": "list_windows",
+      "arguments": {
+        "session": "checks"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "@0  checks:0* sh  2 panes"
+        }
+      ],
+      "structuredContent": {
+        "complete": true,
+        "omittedEntries": 0,
+        "windows": [
+          {
+            "id": "@0",
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}",
+            "metadataComplete": true,
+            "name": "sh",
+            "omittedMetadataBytes": 0,
+            "panes": 2,
+            "zoomed": false,
+            "omittedPlacements": 0,
+            "placements": [
+              {
+                "active": true,
+                "index": 0,
+                "sessionId": "$0",
+                "sessionName": "checks"
+              }
+            ],
+            "placementsComplete": true
+          }
+        ]
+      },
+      "caption": "Read the window's layout."
+    },
+    {
+      "tool": "run_shell_command",
+      "arguments": {
+        "paneId": "%0",
+        "command": "pytest -q"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "..                               [100%]\n2 passed in 0.00s\n\n[exit 0]"
+        }
+      ],
+      "structuredContent": {
+        "effectiveTimeoutMs": 30000,
+        "exitStatus": 0,
+        "foreignOutputSuspected": false,
+        "droppedLines": 0,
+        "missedBytes": 0,
+        "omittedBytes": 0,
+        "outcome": "completed",
+        "output": "..                               [100%]\n2 passed in 0.00s",
+        "outputComplete": true,
+        "paneId": "%0",
+        "returnedBytes": 57,
+        "stillRunning": false
+      },
+      "caption": "Run the tests in the pane the create result returned (%0)."
+    },
+    {
+      "tool": "run_shell_command",
+      "arguments": {
+        "paneId": "%1",
+        "command": "cat checks.log"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "2026-01-01 checks started\n2026-01-01 checks finished\n\n[exit 0]"
+        }
+      ],
+      "structuredContent": {
+        "effectiveTimeoutMs": 30000,
+        "exitStatus": 0,
+        "foreignOutputSuspected": false,
+        "droppedLines": 0,
+        "missedBytes": 0,
+        "omittedBytes": 0,
+        "outcome": "completed",
+        "output": "2026-01-01 checks started\n2026-01-01 checks finished",
+        "outputComplete": true,
+        "paneId": "%1",
+        "returnedBytes": 52,
+        "stillRunning": false
+      },
+      "caption": "Show the log in the new pane the split returned (%1)."
+    },
+    {
+      "tool": "kill_session",
+      "arguments": {
+        "session": "checks"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "Killed session $0. Windows and panes shared with other sessions remain there."
+        }
+      ],
+      "structuredContent": {
+        "killed": "$0"
+      },
+      "caption": "Remove the session once the result is read."
+    }
+  ]
+}

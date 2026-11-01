@@ -66,7 +66,13 @@ export function installAnchorNavigation(win = window) {
     }
     const startup = doc.documentElement.getAttribute('data-anchor-startup') === win.location.href
     if (startup) cancelStartup()
-    if ((!preparing && opened) || scroll || startup) display.scrollIntoView({ block: 'start', behavior: 'instant' })
+    // A fragment the browser already scrolled to, with nothing moved since, needs no second scroll.
+    const placed = () => {
+      const margin = (Number.parseFloat(win.getComputedStyle(display).scrollMarginTop) || 0)
+        + (Number.parseFloat(win.getComputedStyle(doc.documentElement).scrollPaddingTop) || 0)
+      return Math.abs(display.getBoundingClientRect().top - margin) <= 1
+    }
+    if ((!preparing && opened) || scroll || (startup && !placed())) display.scrollIntoView({ block: 'start', behavior: 'instant' })
 
     const highlight = () => {
       if (signal.aborted || !display.isConnected) return

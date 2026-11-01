@@ -78,7 +78,7 @@ const first = presets[0]
                         <button type="button" role="tab" id={`ws-pick-${showcase.port}-${preset.id}-tab-${position}`}
                           aria-controls={`ws-pick-${showcase.port}-${preset.id}-win-${position}`}
                           aria-selected={position === 0 ? 'true' : 'false'} tabindex={position === 0 ? 0 : -1}
-                          title={`${win.index}:${win.name ?? 'window'}`}>{win.index}:{win.name ?? 'window'}</button>
+                          ><span class="ws-layout__tab-label">{win.index}:{win.name ?? 'window'}</span></button>
                       ))}
                     </div>
                     {preset.windows.length > 1 && (
@@ -109,6 +109,7 @@ const first = presets[0]
           </section>
         ))}
       </div>
+      <div class="ws-tab-tip" id={`ws-tab-tip-${showcase.port}`} role="tooltip" data-tab-tip hidden></div>
     </libtmux-workspace-picker>
     <span class="ws-picker__end" hidden></span>
   </section>

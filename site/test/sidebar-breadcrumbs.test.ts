@@ -27,6 +27,12 @@ describe('sidebar-derived breadcrumbs', () => {
     expect(crumbs.map((entry) => entry.name)).toEqual(['PowerShell', 'API reference', 'Pane', 'Get-TmuxPane'])
   })
 
+  it.each(['rs', 'cxx', 'kotlin'])('names the %s Core Library home by its short label, not its heading', async (slug) => {
+    const crumbs = await pageBreadcrumbs(`tmux client library for ${PORT_BY_SLUG[slug]!.language}`, 'core', 'latest', slug)
+    expect(crumbs.map((entry) => entry.name)).toEqual([PORT_BY_SLUG[slug]!.name, 'Core Library'])
+    expect(crumbs.at(-1)?.url).toBe(`/${slug}/latest/core/`)
+  })
+
   it('uses a canonical Julia function placement instead of a contextual shortcut', async () => {
     const symbol = API_MODELS.julia.symbols.find((entry) => entry.id === 'LibTmux.snapshot')!
     const crumbs = await pageBreadcrumbs(symbol.name, `reference/${symbol.slug}`, 'latest', 'julia')

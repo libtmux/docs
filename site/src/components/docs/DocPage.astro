@@ -4,7 +4,10 @@ import DocsLayout from '../../layouts/DocsLayout.astro'
 import { docsPath, proseHref, tmuxProsePath } from '../../lib/docs-paths'
 import { PORT_BY_SLUG, hasPackageInstalls, productApiPath, productAvailable, referenceUrl } from '../../lib/ports'
 import DocCard from '../DocCard.astro'
+import CoreHome from '../CoreHome.astro'
+import { coreHomeHeadings } from '../../lib/core-home'
 import PortLinks from '../PortLinks.astro'
+import { headingTitle } from '../../lib/branding'
 import McpInstall from '../widgets/McpInstall.astro'
 import ProductIntro from './ProductIntro.astro'
 import McpShowcase from '../mcp/McpShowcase.astro'
@@ -82,7 +85,7 @@ const showToc = placeholderLocale ? false : entry.data.tableOfContents
  */
 const contribute = entry.filePath && !entry.data.source
   ? contributeLink(entry.filePath, locale, !placeholderLocale, {
-      title: entry.data.title,
+      title: headingTitle(entry.data),
       description: entry.data.description,
     })
   : undefined
@@ -111,6 +114,7 @@ const productIsAvailable = port && entry.data.product
   : true
 const isMcpOverview = entry.data.product === 'mcp' && pagePath === 'mcp' && productIsAvailable
 const isProductOverview = productIsAvailable && pagePath === entry.data.product
+const isCoreHome = Boolean(port && !entry.data.product && pagePath === 'core' && entry.data.route === 'core')
 const isWorkspaceOverview = entry.data.product === 'workspace'
   && pagePath === 'workspace'
   && productIsAvailable
@@ -140,6 +144,7 @@ const productIntro = isProductOverview && port && coreHome
 <DocsLayout
   title={entry.data.title}
   documentTitle={entry.data.shortTitle}
+  subtitle={entry.data.subtitle}
   inventoryId={entry.data.inventoryId ?? sourceId}
   inventoryAliases={entry.data.inventoryAliases}
   inventoryExclude={Boolean(placeholderLocale)}
@@ -150,6 +155,7 @@ const productIntro = isProductOverview && port && coreHome
   headings={placeholderLocale ? [] : [
     ...(workspaceExamples && offersPicker(workspaceExamples) ? [{ depth: 2, slug: 'try-a-preset', text: 'Try a preset' }] : []),
     ...(isMcpOverview || isWorkspaceOverview ? [{ depth: 2, slug: 'install', text: 'Install' }] : []),
+    ...(isCoreHome ? coreHomeHeadings(port!, version ?? buildTarget(process.env).version) : []),
     ...headings,
     ...(workspaceExamples ? workspaceHeadings(workspaceExamples) : []),
     ...(mcpTools ? mcpHeadings(mcpTools) : []),
@@ -277,7 +283,8 @@ const productIntro = isProductOverview && port && coreHome
       </div>
     </>
   )}
-  {!placeholderLocale && cards.length > 0 && (
+  {!placeholderLocale && isCoreHome && <CoreHome port={port!} version={version ?? buildTarget(process.env).version} cards={cards} />}
+  {!placeholderLocale && !isCoreHome && cards.length > 0 && (
     <div class="not-prose mt-8 mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {cards.map((card) => <DocCard href={proseHref(card.href, SITE_ROOT, port, version)} label={card.label} body={card.body} />)}
     </div>

@@ -23,8 +23,11 @@ const MCP = (data as unknown as { mcp: Record<string, McpClaims> }).mcp
 /** The language's proper name, as the port page spells it. */
 const languageOf = (port: string) => PORT_BY_SLUG[port]!.name
 
-/** The page's title: `tmux workspace manager, forged in Rust`. */
-export const workspaceTitle = (port: string) => `tmux workspace manager, forged in ${languageOf(port)}`
+/** The page's heading: `tmux workspace manager,`. The subtitle finishes the sentence. */
+export const workspaceTitle = (_port: string) => 'tmux workspace manager,'
+
+/** The line under the heading: `forged in Rust.` */
+export const workspaceSubtitle = (port: string) => `forged in ${languageOf(port)}.`
 
 /** The form for a tab, a meta tag and a list: `Rust-based tmux workspace manager`. */
 export const workspaceShortTitle = (port: string) => `${languageOf(port)}-based tmux workspace manager`

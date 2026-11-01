@@ -1,5 +1,6 @@
 ---
-title: tmux workspace manager, forged in PowerShell
+title: tmux workspace manager,
+subtitle: forged in PowerShell.
 shortTitle: PowerShell-based tmux workspace manager
 description: Validate, plan and load workspace files with the LibTmux.Workspace module.
 port: powershell
