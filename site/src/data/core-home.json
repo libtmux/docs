@@ -33,7 +33,6 @@
       "errors": "LibTmux::Error",
       "traversal": "LibTmux::Server#list_panes",
       "argv": "LibTmux::Server#run",
-      "servers": "LibTmux::Server",
       "send-keys": "LibTmux::Pane#send_keys",
       "control-mode": "LibTmux::ControlConnection",
       "capture": "LibTmux::Pane#capture"
@@ -110,7 +109,6 @@
       "errors": "LibTmux.Error",
       "traversal": "LibTmux.Snapshot.panes/1",
       "argv": "LibTmux.Command",
-      "servers": "LibTmux.Server",
       "control-mode": "LibTmux.Control"
     }
   },
@@ -176,7 +174,7 @@
       "current-pane": "tmux.PaneFromEnv",
       "test-fixtures": "tmuxtest.NewServer",
       "argv": "tmux.Server.Cmd",
-      "servers": "tmux.NewServer",
+      "servers": "tmux.Server.Start",
       "send-keys": "tmux.Pane.SendKeys",
       "control-mode": "tmux.ControlClient",
       "capture": "tmux.Pane.Capture"

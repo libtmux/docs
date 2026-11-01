@@ -39,7 +39,10 @@ export interface CapabilityEntry extends LandingRange {
   file: string
   lang: string
   more?: readonly LandingRange[]
-  ci: LandingCi
+  ci: LandingCi & {
+    /** The workflow step's working directory, when it is not the repository root. */
+    directory?: string
+  }
   /** Why a wrong exit status or missing expected output fails the CI run. At least one. */
   checkedBy: readonly ExitEvidence[]
   /** The oldest tmux the capability needs, shown as a badge, such as `3.8+`. */
@@ -73,7 +76,7 @@ export interface ShownCapability {
   lang: string
   file: string
   sourceUrl: string
-  ci: LandingCi
+  ci: CapabilityEntry['ci']
   tmux?: string
 }
 

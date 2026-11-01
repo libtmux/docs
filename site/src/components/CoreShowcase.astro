@@ -5,7 +5,6 @@ import TABLE from '../data/core-capabilities.json'
 import SOURCES from '../data/example-sources.json'
 import type { CachedSource } from '../lib/port-landing'
 import { homeCodeColumns } from '../lib/quickstarts'
-import '../styles/documentation-picker.css'
 
 /**
  * What the library does, one tested example per capability.
@@ -26,25 +25,24 @@ const { port } = Astro.props as Props
 const shown = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>)
 ---
 {shown.length > 0 && <div class="core-showcase" data-core-showcase={port}>
-  <details class="doc-picker core-showcase__picker" data-doc-picker open>
-    <summary aria-label="Choose a capability"><span data-capability-current>{shown[0]!.label}</span>
+  <details class="core-showcase__picker" open>
+    <summary><span class="sr-only">Capability: </span><span data-capability-current>{shown[0]!.label}</span>
       <svg class="doc-picker-caret" width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
     </summary>
-    <div class="doc-picker-panel" data-picker-panel>
-      <label class="doc-picker-search" data-picker-search-label hidden>
+    <div class="core-showcase__panel-list">
+      <label class="core-showcase__search">
         <span class="sr-only">Find a capability</span>
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg>
-        <input type="search" placeholder="Find a capability…" autocomplete="off" data-picker-search />
+        <input type="search" placeholder="Find a capability…" autocomplete="off" data-capability-search />
       </label>
       <nav aria-label="Capabilities">
-        {shown.map((item, index) => <a class="doc-picker-option" href={`?capability=${item.id}`} data-capability-option={item.id}
-          data-picker-option data-match={item.label} aria-current={index === 0 ? 'true' : undefined}>
+        {shown.map((item, index) => <a class="core-showcase__option" href={`?capability=${item.id}`} data-capability-option={item.id}
+          data-match={item.label} aria-current={index === 0 ? 'true' : undefined}>
           <span>{item.label}{item.tmux && <small class="core-showcase__tmux">tmux {item.tmux}</small>}</span>
-          <span class="doc-picker-check" aria-hidden="true" hidden={index !== 0}>✓</span>
+          
         </a>)}
       </nav>
-      <p class="doc-picker-empty" data-picker-empty hidden>No matching capabilities.</p>
-      <p class="sr-only" role="status" data-picker-status></p>
+      <p class="core-showcase__empty" data-capability-empty hidden>No matching capabilities.</p>
     </div>
   </details>
   <div class="core-showcase__panels">
@@ -53,7 +51,7 @@ const shown = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record
       <h3>{item.label}{item.tmux && <small class="core-showcase__tmux">tmux {item.tmux}</small>}</h3>
       <Code code={item.code} lang={item.lang} title={item.file} frame="code" />
       <p class="core-showcase__source">
-        Excerpt of <a href={item.sourceUrl}><code>{item.file}</code></a>, run by <code>{item.ci.command}</code> in <code>{item.ci.workflow}</code>.
+        Excerpt of <a href={item.sourceUrl}><code>{item.file}</code></a>. The port's CI runs it in <code>{item.ci.workflow}</code>{item.ci.directory && <> from <code>{item.ci.directory}/</code></>}: <code>{item.ci.command}</code>.
       </p>
     </section>)}
   </div>
@@ -70,7 +68,9 @@ const shown = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record
     const { signal } = controller
     const options = [...root.querySelectorAll<HTMLAnchorElement>('[data-capability-option]')]
     const ids = options.map((option) => option.dataset.capabilityOption!)
-    const picker = root.querySelector<HTMLDetailsElement>('[data-doc-picker]')!
+    const picker = root.querySelector<HTMLDetailsElement>('details')!
+    const search = root.querySelector<HTMLInputElement>('[data-capability-search]')!
+    const empty = root.querySelector<HTMLElement>('[data-capability-empty]')!
     const wide = matchMedia('(min-width: 56rem)')
     const select = (id: string) => {
       root.dataset.selected = id
@@ -78,7 +78,6 @@ const shown = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record
       for (const option of options) {
         const on = option.dataset.capabilityOption === id
         if (on) option.setAttribute('aria-current', 'true'); else option.removeAttribute('aria-current')
-        option.querySelector<HTMLElement>('.doc-picker-check')!.hidden = !on
       }
       root.querySelector('[data-capability-current]')!.textContent = options.find((option) => option.dataset.capabilityOption === id)!.querySelector('span')!.firstChild!.textContent
     }
@@ -87,7 +86,17 @@ const shown = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record
       select(id && ids.includes(id) ? id : ids[0]!)
     }
     // The list is always open beside the example on a wide page, and a dropdown on a narrow one.
-    const layout = () => { picker.open = wide.matches || picker.open }
+    const layout = () => { picker.open = wide.matches }
+    search.addEventListener('input', () => {
+      const words = search.value.toLowerCase().split(/\s+/).filter(Boolean)
+      let shown = 0
+      for (const option of options) {
+        const match = words.every((word) => option.dataset.match!.toLowerCase().includes(word))
+        option.hidden = !match
+        if (match) shown++
+      }
+      empty.hidden = shown > 0
+    }, { signal })
     root.addEventListener('click', (event) => {
       const link = (event.target as Element).closest<HTMLAnchorElement>('[data-capability-option]')
       if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
@@ -113,9 +122,17 @@ const shown = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record
 <style>
   .core-showcase { display: grid; gap: 1rem; container-type: inline-size; }
   .core-showcase__panels { min-width: 0; }
+  .core-showcase__picker > summary { display: flex; justify-content: space-between; align-items: center; min-height: 2.5rem; padding: .25rem .75rem; cursor: pointer; border: 1px solid var(--color-edge); border-radius: .4rem; list-style: none; }
+  .core-showcase__picker > summary::-webkit-details-marker { display: none; }
+  .core-showcase__search { display: block; margin: .5rem 0; }
+  .core-showcase__search input { width: 100%; min-width: 0; border: 1px solid var(--color-edge); border-radius: .35rem; padding: .5rem .65rem; background: var(--background-color); color: inherit; font-size: .8125rem; }
+  .core-showcase__option { display: block; padding: .45rem .75rem; border-radius: .35rem; font-size: .875rem; color: inherit; text-decoration: none; }
+  .core-showcase__option:hover { background: var(--color-surface-hover); }
+  .core-showcase__option[aria-current='true'] { font-weight: 600; background: var(--color-surface-hover); }
+  .core-showcase__option[hidden], .core-showcase__empty[hidden] { display: none; }
+  .core-showcase__empty { padding: .5rem .75rem; font-size: .8125rem; color: var(--color-muted); }
   .core-showcase__panel { display: none; }
   .core-showcase:not([data-selected]) .core-showcase__panel[data-default], .core-showcase :global(.core-showcase__panel.is-selected) { display: block; }
-  .core-showcase__panel.is-selected { display: block; }
   .core-showcase__panel h3 { margin: 0 0 .6rem; font-size: 1rem; }
   .core-showcase__tmux {
     margin-inline-start: .5rem; padding: .05rem .4rem; border: 1px solid var(--color-edge); border-radius: .75rem;
@@ -127,6 +144,6 @@ const shown = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record
   @media (min-width: 56rem) {
     .core-showcase { grid-template-columns: 17rem minmax(0, 1fr); align-items: start; }
     .core-showcase__picker > :global(summary) { display: none; }
-    .core-showcase__picker > :global(.doc-picker-panel) { position: static; width: auto; max-height: none; box-shadow: none; }
+
   }
 </style>

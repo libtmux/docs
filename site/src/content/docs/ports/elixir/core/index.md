@@ -2,7 +2,7 @@
 port: elixir
 route: core
 title: "tmux client library for Elixir"
-description: "tmux client library for Elixir. Control tmux, connect to and create servers, navigate sessions, windows, and panes, watch for changes via control mode"
+description: "tmux client library for Elixir. Control tmux, navigate sessions, windows, and panes, watch for changes via control mode"
 cards:
   - label: Guides
     href: ../guides/

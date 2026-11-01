@@ -80,3 +80,27 @@ describe('the capability showcase data', () => {
     })
   }
 })
+
+describe('the showcase component', () => {
+  it('renders each capability once, in order, with its source and CI line, and nothing for a port without examples', async () => {
+    const { Window } = await import('happy-dom')
+    const { createComponent, renderTemplate } = await import('astro/runtime/server/index.js')
+    const { loadAstroTemplate, renderAstroTemplate } = await import('./astro-templates')
+    const Code = createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre data-code>${props.code}</pre>`)
+    const template = await loadAstroTemplate('components/CoreShowcase.astro', { modules: { 'astro-expressive-code/components': { Code } } })
+    const render = async (port: string) => {
+      const window = new Window()
+      window.document.body.innerHTML = await renderAstroTemplate(template, { url: `https://libtmux.org/${port}/latest/core/`, props: { port } })
+      return window.document as unknown as Document
+    }
+    const doc = await render('ts')
+    const expected = portCapabilities('ts', table, cache)
+    expect([...doc.querySelectorAll('[data-capability-option]')].map((a) => a.getAttribute('data-capability-option'))).toEqual(expected.map((item) => item.id))
+    expect([...doc.querySelectorAll('[data-capability-panel]')].map((a) => a.getAttribute('data-capability-panel'))).toEqual(expected.map((item) => item.id))
+    expect(doc.querySelectorAll('[data-capability-panel][data-default]')).toHaveLength(1)
+    expect(doc.querySelector('[data-capability-option]')!.getAttribute('href')).toBe('?capability=typed-graph')
+    expect(doc.body.textContent).toContain('bun run typecheck && bun run test')
+    expect(doc.body.textContent).toContain('examples/')
+    expect((await render('lua')).querySelector('[data-core-showcase]')).toBeNull()
+  })
+})
