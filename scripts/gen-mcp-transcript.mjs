@@ -43,6 +43,8 @@ const SERVERS = {
     ],
     command: () => ['build/cxx-gcc/apps/mcp/libtmux-mcp-server', '--socket-name', 'transcript'],
   },
+  // On a host without libxml2.so.2 (Debian's current libxml2 is .16), swift-build does not start; a directory holding a libxml2.so.2 link to it, on LD_LIBRARY_PATH, lets the toolchain run. The server it builds does not use it.
+  swift: { prepare: [['swift', 'build', '--force-resolved-versions', '--product', 'libtmux-mcp', '--jobs', '2']], command: () => ['.build/debug/libtmux-mcp'] },
   go: { cwd: 'mcp', prepare: [], build: (sandbox) => [['go', 'build', '-mod=readonly', '-o', join(sandbox, 'libtmux-mcp'), './cmd/libtmux-mcp']], command: (_checkout, sandbox) => [join(sandbox, 'libtmux-mcp')] },
 }
 const TOOLSETS = { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' }

@@ -40,8 +40,8 @@ function recorded(steps: ReplayStep[], count: number): Set<string> {
 
 /** The recording's field names that supply each field a frame holds. */
 const SUPPLIED_BY: Record<string, string[]> = {
-  id: ['id', 'paneId', 'windowId', 'killed', 'sessionId', 'session_id', 'pane_id', 'window_id', 'active_pane_id'], name: ['name', 'session_name', 'session', 'sessionName', 'window_name', 'window'], index: ['index', 'window_index'], active: ['active'],
-  command: ['command', 'currentCommand', 'pane_current_command'], left: ['left'], top: ['top'], width: ['width'], height: ['height'], path: ['path', 'cwd', 'pane_current_path'], typed: ['command'], output: ['output', 'lines', 'text'], layout: ['layout', 'window_layout'],
+  id: ['id', 'paneId', 'windowId', 'killed', 'sessionId', 'session_id', 'pane_id', 'window_id', 'active_pane_id', 'windowID'], name: ['name', 'session_name', 'session', 'sessionName', 'window_name', 'window'], index: ['index', 'window_index'], active: ['active'],
+  command: ['command', 'currentCommand', 'pane_current_command'], left: ['left'], top: ['top'], width: ['width'], height: ['height'], path: ['path', 'cwd', 'pane_current_path', 'currentPath'], typed: ['command'], output: ['output', 'lines', 'text'], layout: ['layout', 'window_layout'],
 }
 
 /**
@@ -71,7 +71,7 @@ function untraced(frames: Frame[], steps: ReplayStep[]): string[] {
 }
 
 /** Calls in each port's worked example, which the frames and the replay follow. */
-const CALLS = { ts: 6, rs: 7, go: 7, py: 6, java: 7, csharp: 6, cxx: 7 }
+const CALLS = { ts: 6, rs: 7, go: 7, py: 6, java: 7, csharp: 6, cxx: 7, swift: 7 }
 
 describe('the tmux state each recorded call leaves', () => {
   it('follows TypeScript: a session, a split, the layout it reports, then what each pane ran', async () => {
@@ -114,12 +114,12 @@ describe('the tmux state each recorded call leaves', () => {
     expect(frames[7]!.sessions).toEqual([])
   })
 
-  it.each(['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx'] as const)('draws nothing for %s that the recording does not contain', async (port) => {
+  it.each(['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift'] as const)('draws nothing for %s that the recording does not contain', async (port) => {
     const steps_ = await steps(port)
     expect(untraced(replayFrames(steps_), steps_)).toEqual([])
   })
 
-  it.each(['ts', 'rs', 'py', 'java', 'csharp', 'cxx'] as const)('gives %s panes geometry only from a recorded layout that names every pane', async (port) => {
+  it.each(['ts', 'rs', 'py', 'java', 'csharp', 'cxx', 'swift'] as const)('gives %s panes geometry only from a recorded layout that names every pane', async (port) => {
     const frames = replayFrames(await steps(port))
     for (const frame of frames) {
       for (const session of frame.sessions) for (const window of session.windows) {
@@ -284,7 +284,7 @@ describe('the replay component', () => {
     expect(document.querySelector('[data-frame="4"] svg.gp-tmux-layout')!.getAttribute('viewBox')).toBe(`0 0 ${80 * 8} ${24 * 17}`)
   })
 
-  it.each(['ts', 'rs', 'py', 'java', 'csharp', 'cxx'] as const)('places the %s panes at the rectangles the recorded layout gives', async (port) => {
+  it.each(['ts', 'rs', 'py', 'java', 'csharp', 'cxx', 'swift'] as const)('places the %s panes at the rectangles the recorded layout gives', async (port) => {
     const { document } = await mount(port)
     const layoutFrame = replayFrames(await steps(port)).find((frame) => frame.sessions[0]?.windows[0]?.layout)!
     const parsed = parseLayout(layoutFrame.sessions[0]!.windows[0]!.layout!)!
@@ -304,7 +304,7 @@ describe('the replay component', () => {
     expect(layoutSvg.querySelectorAll('.divider').length, 'the split is drawn as one divider').toBe(1)
   })
 
-  it.each(['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx'])('draws only recorded words, besides tmux\'s own punctuation, in the %s preview', async (port) => {
+  it.each(['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift'])('draws only recorded words, besides tmux\'s own punctuation, in the %s preview', async (port) => {
     const { document } = await mount(port)
     const recordedWords = new Set((await steps(port)).flatMap((step) => JSON.stringify([step.arguments, step.structuredContent, step.content]).replace(/\\n/g, ' ').split(/[\s"{}\[\],:]+/)))
     for (const frame of document.querySelectorAll('[data-frame]')) {

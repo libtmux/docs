@@ -1,0 +1,217 @@
+{
+  "generated": "scripts/gen-mcp-transcript.mjs",
+  "repo": "libtmux/libtmux-swift",
+  "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+  "sandbox": {
+    "tmux": "tmux 3.8a",
+    "pytest": "pytest 9.2.0",
+    "project": [
+      "test_example.py",
+      "checks.log"
+    ],
+    "expected": [
+      "2 passed",
+      "checks finished"
+    ],
+    "rewritten": {
+      "projectDirectory": "/home/user/project"
+    }
+  },
+  "serverInfo": {
+    "name": "libtmux",
+    "version": "0.1.0-alpha.6",
+    "title": "tmux"
+  },
+  "prompt": "Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.",
+  "steps": [
+    {
+      "tool": "create_session",
+      "arguments": {
+        "name": "checks"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"createdAt\":1793562471,\"id\":\"$0\",\"isAttached\":false,\"name\":\"checks\",\"ref\":\"tmux1_AYhNqdHMhQmmLBDDYJQllA9YboJcBoLlKmwhLaLadkeJ\",\"windowCount\":1}"
+        }
+      ],
+      "structuredContent": {
+        "createdAt": 1793562471,
+        "isAttached": false,
+        "id": "$0",
+        "name": "checks",
+        "ref": "tmux1_AYhNqdHMhQmmLBDDYJQllA9YboJcBoLlKmwhLaLadkeJ",
+        "windowCount": 1
+      },
+      "caption": "Create the session."
+    },
+    {
+      "tool": "list_panes",
+      "arguments": {
+        "session": "checks"
+      },
+      "isError": false,
+      "content": [
+        {
+          "text": "{\"panes\":[{\"currentCommand\":\"sh\",\"currentPath\":\"\\/tmp\\/t239-swift-exZ1SX\\/project\",\"height\":24,\"id\":\"%0\",\"index\":0,\"isActive\":true,\"isAtBottom\":true,\"isAtLeft\":true,\"isAtRight\":true,\"isAtTop\":true,\"isDead\":false,\"isSynchronized\":false,\"modeCount\":0,\"ref\":\"tmux1_BIhNqdHMhQmmLBDDYJQllA8KU47hPZeYzn9C19zIUxa-\",\"width\":80,\"windowID\":\"@0\"}]}",
+          "type": "text"
+        }
+      ],
+      "structuredContent": {
+        "panes": [
+          {
+            "ref": "tmux1_BIhNqdHMhQmmLBDDYJQllA8KU47hPZeYzn9C19zIUxa-",
+            "height": 24,
+            "windowID": "@0",
+            "isAtBottom": true,
+            "isAtTop": true,
+            "isAtLeft": true,
+            "isDead": false,
+            "isAtRight": true,
+            "isSynchronized": false,
+            "modeCount": 0,
+            "currentPath": "/home/user/project",
+            "width": 80,
+            "isActive": true,
+            "currentCommand": "sh",
+            "id": "%0",
+            "index": 0
+          }
+        ]
+      },
+      "caption": "List the panes in the new session."
+    },
+    {
+      "tool": "split_window",
+      "arguments": {
+        "paneId": "%0",
+        "direction": "right"
+      },
+      "isError": false,
+      "content": [
+        {
+          "text": "{\"currentCommand\":\"sh\",\"currentPath\":\"\\/tmp\\/t239-swift-exZ1SX\\/project\",\"height\":24,\"id\":\"%1\",\"index\":1,\"isActive\":false,\"isAtBottom\":true,\"isAtLeft\":false,\"isAtRight\":true,\"isAtTop\":true,\"isDead\":false,\"isSynchronized\":false,\"modeCount\":0,\"ref\":\"tmux1_BIhNqdHMhQmmLBDDYJQllA_jO9WTXpq9PZ6qR2sTvGG3\",\"width\":39,\"windowID\":\"@0\"}",
+          "type": "text"
+        }
+      ],
+      "structuredContent": {
+        "ref": "tmux1_BIhNqdHMhQmmLBDDYJQllA_jO9WTXpq9PZ6qR2sTvGG3",
+        "windowID": "@0",
+        "isSynchronized": false,
+        "isActive": false,
+        "isAtBottom": true,
+        "currentCommand": "sh",
+        "height": 24,
+        "isAtLeft": false,
+        "currentPath": "/home/user/project",
+        "isDead": false,
+        "index": 1,
+        "id": "%1",
+        "modeCount": 0,
+        "isAtRight": true,
+        "width": 39,
+        "isAtTop": true
+      },
+      "caption": "Split the pane the list returned (%0) in two."
+    },
+    {
+      "tool": "get_tmux_variables",
+      "arguments": {
+        "names": [
+          "window_layout"
+        ],
+        "paneId": "%0"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"values\":{\"window_layout\":\"{\\\"V\\\":2,\\\"L\\\":{\\\"t\\\":\\\"h\\\",\\\"w\\\":80,\\\"h\\\":24,\\\"x\\\":0,\\\"y\\\":0,\\\"c\\\":[{\\\"t\\\":\\\"p\\\",\\\"w\\\":40,\\\"h\\\":24,\\\"x\\\":0,\\\"y\\\":0,\\\"a\\\":true,\\\"i\\\":0,\\\"I\\\":\\\"%0\\\"},{\\\"t\\\":\\\"p\\\",\\\"w\\\":39,\\\"h\\\":24,\\\"x\\\":41,\\\"y\\\":0,\\\"i\\\":1,\\\"I\\\":\\\"%1\\\"}]}}\"}}"
+        }
+      ],
+      "structuredContent": {
+        "values": {
+          "window_layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+        }
+      },
+      "caption": "Read the window's layout through the pane the list returned (%0)."
+    },
+    {
+      "tool": "run_shell_command",
+      "arguments": {
+        "paneId": "%0",
+        "command": "pytest -q"
+      },
+      "isError": false,
+      "content": [
+        {
+          "text": "{\"droppedLines\":0,\"effectiveTimeout\":30,\"exitStatus\":0,\"linesMissed\":false,\"output\":[\"..                               [100%]\",\"2 passed in 0.01s\"],\"pane\":\"%0\",\"paneRef\":\"tmux1_BIhNqdHMhQmmLBDDYJQllA8KU47hPZeYzn9C19zIUxa-\",\"seconds\":0.454349473,\"timedOut\":false}",
+          "type": "text"
+        }
+      ],
+      "structuredContent": {
+        "paneRef": "tmux1_BIhNqdHMhQmmLBDDYJQllA8KU47hPZeYzn9C19zIUxa-",
+        "effectiveTimeout": 30,
+        "exitStatus": 0,
+        "linesMissed": false,
+        "droppedLines": 0,
+        "timedOut": false,
+        "seconds": 0.454349473,
+        "output": [
+          "..                               [100%]",
+          "2 passed in 0.01s"
+        ],
+        "pane": "%0"
+      },
+      "caption": "Run the tests in the pane the list returned (%0)."
+    },
+    {
+      "tool": "run_shell_command",
+      "arguments": {
+        "paneId": "%1",
+        "command": "cat checks.log"
+      },
+      "isError": false,
+      "content": [
+        {
+          "text": "{\"droppedLines\":0,\"effectiveTimeout\":30,\"exitStatus\":0,\"linesMissed\":false,\"output\":[\"2026-01-01 checks started\",\"2026-01-01 checks finished\"],\"pane\":\"%1\",\"paneRef\":\"tmux1_BIhNqdHMhQmmLBDDYJQllA_jO9WTXpq9PZ6qR2sTvGG3\",\"seconds\":0.09802671,\"timedOut\":false}",
+          "type": "text"
+        }
+      ],
+      "structuredContent": {
+        "effectiveTimeout": 30,
+        "droppedLines": 0,
+        "output": [
+          "2026-01-01 checks started",
+          "2026-01-01 checks finished"
+        ],
+        "pane": "%1",
+        "seconds": 0.09802671,
+        "paneRef": "tmux1_BIhNqdHMhQmmLBDDYJQllA_jO9WTXpq9PZ6qR2sTvGG3",
+        "exitStatus": 0,
+        "timedOut": false,
+        "linesMissed": false
+      },
+      "caption": "Show the log in the new pane the split returned (%1)."
+    },
+    {
+      "tool": "kill_session",
+      "arguments": {
+        "session": "checks"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"deleted\":true,\"sessionId\":\"$0\"}"
+        }
+      ],
+      "structuredContent": {
+        "deleted": true,
+        "sessionId": "$0"
+      },
+      "caption": "Remove the session once the result is read."
+    }
+  ]
+}
