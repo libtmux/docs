@@ -1,8 +1,8 @@
 ---
 port: ruby
 route: core
-title: Core Library
-description: "The Ruby library for tmux: its types, what they wrap and what they add over the tmux command line."
+title: "tmux client library for Ruby"
+description: "tmux client library for Ruby. Control tmux, connect to and create servers, navigate sessions, windows, and panes, send keys, watch for changes via control mode, capture pane contents"
 cards:
   - label: Guides
     href: ../guides/

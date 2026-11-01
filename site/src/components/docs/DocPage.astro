@@ -6,7 +6,6 @@ import { PORT_BY_SLUG, hasPackageInstalls, productApiPath, productAvailable, ref
 import DocCard from '../DocCard.astro'
 import CoreHome from '../CoreHome.astro'
 import { coreHomeHeadings } from '../../lib/core-home'
-import { QUICKSTARTS } from '../../lib/quickstarts'
 import PortLinks from '../PortLinks.astro'
 import McpInstall from '../widgets/McpInstall.astro'
 import ProductIntro from './ProductIntro.astro'
@@ -155,7 +154,7 @@ const productIntro = isProductOverview && port && coreHome
   headings={placeholderLocale ? [] : [
     ...(workspaceExamples && offersPicker(workspaceExamples) ? [{ depth: 2, slug: 'try-a-preset', text: 'Try a preset' }] : []),
     ...(isMcpOverview || isWorkspaceOverview ? [{ depth: 2, slug: 'install', text: 'Install' }] : []),
-    ...(isCoreHome ? coreHomeHeadings(port!, version ?? buildTarget(process.env).version, Boolean(QUICKSTARTS[port!]?.complete)) : []),
+    ...(isCoreHome ? coreHomeHeadings(port!, version ?? buildTarget(process.env).version) : []),
     ...headings,
     ...(workspaceExamples ? workspaceHeadings(workspaceExamples) : []),
     ...(mcpTools ? mcpHeadings(mcpTools) : []),
@@ -283,8 +282,8 @@ const productIntro = isProductOverview && port && coreHome
       </div>
     </>
   )}
-  {!placeholderLocale && isCoreHome && <CoreHome port={port!} version={version ?? buildTarget(process.env).version} />}
-  {!placeholderLocale && cards.length > 0 && (
+  {!placeholderLocale && isCoreHome && <CoreHome port={port!} version={version ?? buildTarget(process.env).version} cards={cards} />}
+  {!placeholderLocale && !isCoreHome && cards.length > 0 && (
     <div class="not-prose mt-8 mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {cards.map((card) => <DocCard href={proseHref(card.href, SITE_ROOT, port, version)} label={card.label} body={card.body} />)}
     </div>

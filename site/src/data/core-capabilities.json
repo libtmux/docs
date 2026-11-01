@@ -1,0 +1,88 @@
+{
+  "ts": {
+    "typed-graph": {
+      "file": "examples/quickstart/quickstart.ts",
+      "lang": "typescript",
+      "from": "const session = await server.newSession({ name: \"quickstart\" })",
+      "to": "if (paneCount !== 2)",
+      "ci": {
+        "workflow": ".github/workflows/typescript.yml",
+        "command": "bun run typecheck && bun run test"
+      },
+      "checkedBy": [
+        {
+          "file": "examples/quickstart/quickstart.test.ts",
+          "contains": "expect(snapshot.panes.count({ window: { is: { name: \"editor\" } } })).toBe(2)"
+        },
+        {
+          "file": "examples/scripts/run-tests.ts",
+          "contains": "process.exitCode = await runSupervisor("
+        },
+        {
+          "file": "packages/libtmux/src/_internal/test/supervisor.ts",
+          "contains": "const childStatus = closed.code"
+        }
+      ]
+    },
+    "watch": {
+      "file": "examples/watch/watch.ts",
+      "lang": "typescript",
+      "from": "const session = await server.newSession({ name: \"watched\" })",
+      "to": "return event;",
+      "ci": {
+        "workflow": ".github/workflows/typescript.yml",
+        "command": "bun run typecheck && bun run test"
+      },
+      "checkedBy": [
+        {
+          "file": "examples/watch/watch.test.ts",
+          "contains": "expect(event.kind).toBe(\"window-add\")"
+        },
+        {
+          "file": "examples/scripts/run-tests.ts",
+          "contains": "process.exitCode = await runSupervisor("
+        }
+      ]
+    },
+    "send-keys": {
+      "file": "examples/agent/agent.ts",
+      "lang": "typescript",
+      "from": "const session = await server.newSession({ name: \"agent\" })",
+      "to": "return event.kind",
+      "ci": {
+        "workflow": ".github/workflows/typescript.yml",
+        "command": "bun run typecheck && bun run test"
+      },
+      "checkedBy": [
+        {
+          "file": "examples/agent/agent.test.ts",
+          "contains": "expect(seen).toContain(\"agent-done\")"
+        },
+        {
+          "file": "examples/scripts/run-tests.ts",
+          "contains": "process.exitCode = await runSupervisor("
+        }
+      ]
+    },
+    "create-windows": {
+      "file": "examples/workspace/workspace.ts",
+      "lang": "typescript",
+      "from": "const built = await server.newSession({",
+      "to": "=  ]);",
+      "ci": {
+        "workflow": ".github/workflows/typescript.yml",
+        "command": "bun run typecheck && bun run test"
+      },
+      "checkedBy": [
+        {
+          "file": "examples/workspace/workspace.test.ts",
+          "contains": "toEqual([\"editor\", \"logs\", \"shell\"])"
+        },
+        {
+          "file": "examples/scripts/run-tests.ts",
+          "contains": "process.exitCode = await runSupervisor("
+        }
+      ]
+    }
+  }
+}

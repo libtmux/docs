@@ -30,7 +30,12 @@ export const CAPABILITIES = {
   ids: { group: 'typed', label: 'Addressing by tmux ID' },
   queries: { group: 'typed', label: 'Filtering and queries over tmux objects' },
   errors: { group: 'typed', label: 'Typed errors instead of exit codes and stderr' },
+  servers: { group: 'cli', label: 'Connect to or start a tmux server' },
   traversal: { group: 'cli', label: 'Traversal from a server down to its panes' },
+  'send-keys': { group: 'cli', label: 'Send keys to a pane' },
+  'control-mode': { group: 'cli', label: 'Watch for changes through tmux control mode' },
+  'watch-other': { group: 'cli', label: 'Wait for changes without control mode' },
+  capture: { group: 'cli', label: 'Capture pane contents' },
   argv: { group: 'cli', label: 'Arguments passed as a list, with no shell quoting' },
   'version-gate': { group: 'cli', label: 'A typed error when the running tmux lacks a feature' },
   'current-pane': { group: 'cli', label: 'Finds the current pane from TMUX and TMUX_PANE' },
@@ -58,6 +63,11 @@ const CAPABILITY_EVIDENCE: Record<CapabilityKey, { needs: string; test: (symbol:
   traversal: { needs: 'a panes, windows, sessions or snapshot accessor', test: (symbol) => /panes|windows|sessions|snapshot/i.test(symbol.name) },
   argv: { needs: 'a command or run symbol', test: (symbol) => /cmd|command|run|exec|invoke/i.test(symbol.name) },
   'version-gate': { needs: 'a version or unsupported-feature error', test: (symbol) => /version|unsupported|capabilit/i.test(symbol.name) },
+  servers: { needs: 'a server, connect, open, start or create symbol', test: (symbol) => /server|connect|open|start|new|create|attach/i.test(symbol.name) },
+  'send-keys': { needs: 'a send-keys symbol', test: (symbol) => /send|key|type|input/i.test(symbol.name) },
+  'control-mode': { needs: 'a watch, notification, control or stream symbol', test: (symbol) => /watch|notification|control|event|subscribe|observ|stream/i.test(symbol.name) },
+  'watch-other': { needs: 'a wait, poll, hook or watch symbol', test: (symbol) => /wait|poll|watch|hook|observ/i.test(symbol.name) },
+  capture: { needs: 'a capture symbol', test: (symbol) => /capture|content|text|screen|scrollback/i.test(symbol.name) },
   'current-pane': { needs: 'an environment constructor', test: (symbol) => /env/i.test(symbol.name) },
   'test-fixtures': { needs: 'a test or fixture symbol', test: (symbol) => /test|fixture|junit|pytest/i.test(`${qualifiedNameOf(symbol)} ${symbol.source?.file ?? ''}`) },
   async: { needs: 'an async, suspend, Promise or Task signature', test: (symbol) => /async|suspend|promise|\btask\b/i.test([symbol.name, ...symbol.signatures.map((signature) => `${signature.raw ?? ''} ${signature.returns ?? ''}`)].join(' ')) },
@@ -114,7 +124,7 @@ export function resolveCoreHome(port: string, version: string, entry: CoreHomeEn
   }
   for (const group of Object.values(capabilities)) group.sort((a, b) =>
     Object.keys(CAPABILITIES).indexOf(a.key) - Object.keys(CAPABILITIES).indexOf(b.key))
-  return { summary: `Control tmux servers, sessions, windows and panes from ${info.language}.`, objects, capabilities }
+  return { summary: coreDescription(port, entry), objects, capabilities }
 }
 
 /** The page's facts as Markdown, for the `.md` twin and llms-full.txt. */
@@ -123,7 +133,7 @@ export function coreHomeMarkdown(port: string, version: string, origin: string):
   const at = (href: string) => new URL(href, origin).href
   return [
     home.summary,
-    '## Structure',
+    '## At a glance',
     '| Type | Wraps |\n| ---- | ----- |\n' + home.objects.map((object) =>
       `| [\`${object.name}\`](${at(object.href)}) | ${object.wraps}${object.tmuxId ? `, ID \`${object.tmuxId}n\`` : ''} |`).join('\n'),
     ...Object.entries(CAPABILITY_GROUPS).flatMap(([group, title]) => {
@@ -134,13 +144,40 @@ export function coreHomeMarkdown(port: string, version: string, origin: string):
 }
 
 /** The headings `CoreHome.astro` renders, for the page's contents list. */
-export function coreHomeHeadings(port: string, version: string, example = true): { depth: 2; slug: string; text: string }[] {
+export function coreHomeHeadings(port: string, version: string): { depth: 2; slug: string; text: string }[] {
   const home = resolveCoreHome(port, version)
+  const keys = new Set(Object.values(home.capabilities).flat().map((row) => row.key))
+  const rest = (group: keyof typeof CAPABILITY_GROUPS) => home.capabilities[group].filter((row) => row.key !== 'current-pane' && row.key !== 'test-fixtures').length > 0
   return [
     { depth: 2, slug: 'install', text: 'Install' },
-    ...(example ? [{ depth: 2 as const, slug: 'example', text: 'Example' }] : []),
-    { depth: 2, slug: 'structure', text: 'Structure' },
-    ...Object.entries(CAPABILITY_GROUPS).filter(([group]) => home.capabilities[group as keyof typeof CAPABILITY_GROUPS].length)
+    { depth: 2, slug: 'at-a-glance', text: 'At a glance' },
+    { depth: 2, slug: 'what-it-does', text: 'What it does' },
+    ...Object.entries(CAPABILITY_GROUPS).filter(([group]) => rest(group as keyof typeof CAPABILITY_GROUPS))
       .map(([group, text]) => ({ depth: 2 as const, slug: group === 'typed' ? 'typed-api' : 'over-the-tmux-cli', text })),
+    ...(keys.has('current-pane') ? [{ depth: 2 as const, slug: 'know-where-youre-running', text: "Know where you're running" }] : []),
+    ...(keys.has('test-fixtures') ? [{ depth: 2 as const, slug: 'testing', text: 'Testing' }] : []),
   ]
+}
+
+/** The Core Library page's H1 and title. */
+export const coreTitle = (port: string): string => `tmux client library for ${PORT_BY_SLUG[port]!.language}`
+
+/**
+ * The one sentence that says what the library is, in this port's terms: the
+ * Core Library page's description and the line under the language page's hero.
+ * A clause appears only where the port's evidence entry backs it, so the
+ * sentence cannot promise a capability the reference does not show.
+ */
+export function coreDescription(port: string, entry: CoreHomeEntry | undefined = CORE_HOME[port]): string {
+  if (!PORT_BY_SLUG[port] || !entry) throw new Error(`core-home: ${port} has no entry`)
+  const has = (key: CapabilityKey) => key in entry.capabilities
+  const clauses = [
+    'Control tmux',
+    ...(has('servers') ? ['connect to and create servers'] : []),
+    'navigate sessions, windows, and panes',
+    ...(has('send-keys') ? ['send keys'] : []),
+    ...(has('control-mode') ? ['watch for changes via control mode'] : has('watch-other') ? ['wait for changes'] : []),
+    ...(has('capture') ? ['capture pane contents'] : []),
+  ]
+  return `${coreTitle(port)}. ${clauses.join(', ')}`
 }

@@ -13,7 +13,11 @@
       "errors": "libtmux.exc.LibTmuxException",
       "traversal": "libtmux.Server.panes",
       "current-pane": "libtmux.Pane.from_env",
-      "test-fixtures": "libtmux.pytest_plugin.server"
+      "test-fixtures": "libtmux.pytest_plugin.server",
+      "servers": "libtmux.Server",
+      "send-keys": "libtmux.Pane.send_keys",
+      "control-mode": "libtmux._internal.control_mode.ControlMode",
+      "capture": "libtmux.Pane.capture_pane"
     }
   },
   "ruby": {
@@ -28,7 +32,11 @@
       "queries": "LibTmux::FilterExpr",
       "errors": "LibTmux::Error",
       "traversal": "LibTmux::Server#list_panes",
-      "argv": "LibTmux::Server#run"
+      "argv": "LibTmux::Server#run",
+      "servers": "LibTmux::Server",
+      "send-keys": "LibTmux::Pane#send_keys",
+      "control-mode": "LibTmux::ControlConnection",
+      "capture": "LibTmux::Pane#capture"
     }
   },
   "lua": {
@@ -43,7 +51,11 @@
       "queries": "libtmux.Selection",
       "errors": "libtmux.Error",
       "traversal": "libtmux.Server:snapshot",
-      "argv": "libtmux.Server:command"
+      "argv": "libtmux.Server:command",
+      "servers": "libtmux.Runtime:connect",
+      "send-keys": "libtmux.Pane:send_keys",
+      "control-mode": "libtmux.Observation:watch_notifications",
+      "capture": "libtmux.Pane:capture"
     }
   },
   "powershell": {
@@ -57,7 +69,11 @@
       "objects": "LibTmux\\Get-TmuxPane",
       "queries": "LibTmux\\New-TmuxQuery",
       "traversal": "LibTmux\\Get-TmuxSnapshot",
-      "argv": "LibTmux\\Invoke-TmuxCommand"
+      "argv": "LibTmux\\Invoke-TmuxCommand",
+      "servers": "LibTmux\\Connect-TmuxServer",
+      "send-keys": "LibTmux\\Send-TmuxKey",
+      "control-mode": "LibTmux\\Watch-TmuxEvent",
+      "capture": "LibTmux\\Get-TmuxPaneContent"
     }
   },
   "julia": {
@@ -74,7 +90,11 @@
       "errors": "LibTmux.LibTmuxError",
       "traversal": "LibTmux.panes",
       "version-gate": "LibTmux.UnsupportedCapability",
-      "argv": "LibTmux.TmuxCommand"
+      "argv": "LibTmux.TmuxCommand",
+      "servers": "LibTmux.open_server",
+      "send-keys": "LibTmux.send_keys",
+      "control-mode": "LibTmux.open_control",
+      "capture": "LibTmux.capture_pane"
     }
   },
   "elixir": {
@@ -89,7 +109,9 @@
       "queries": "LibTmux.Filter",
       "errors": "LibTmux.Error",
       "traversal": "LibTmux.Snapshot.panes/1",
-      "argv": "LibTmux.Command"
+      "argv": "LibTmux.Command",
+      "servers": "LibTmux.Server",
+      "control-mode": "LibTmux.Control"
     }
   },
   "ts": {
@@ -107,7 +129,11 @@
       "traversal": "server.Server.panes",
       "version-gate": "errors.VersionTooLowError",
       "async": "server.Server.newSession",
-      "argv": "server.Server.cmd"
+      "argv": "server.Server.cmd",
+      "servers": "server.Server",
+      "send-keys": "pane.Pane.sendKeys",
+      "control-mode": "server.Server.watch",
+      "capture": "pane.Pane.capture"
     }
   },
   "rs": {
@@ -126,7 +152,11 @@
       "version-gate": "error.Error.UnsupportedCapability",
       "current-pane": "pane.Pane.from_env",
       "test-fixtures": "test.TestServer",
-      "async": "server.Server.new_session"
+      "async": "server.Server.new_session",
+      "servers": "server.Server",
+      "send-keys": "pane.Pane.send_keys",
+      "control-mode": "control.ControlMode",
+      "capture": "pane.Pane.capture"
     }
   },
   "go": {
@@ -145,7 +175,11 @@
       "version-gate": "tmux.VersionTooLowError",
       "current-pane": "tmux.PaneFromEnv",
       "test-fixtures": "tmuxtest.NewServer",
-      "argv": "tmux.Server.Cmd"
+      "argv": "tmux.Server.Cmd",
+      "servers": "tmux.NewServer",
+      "send-keys": "tmux.Pane.SendKeys",
+      "control-mode": "tmux.ControlClient",
+      "capture": "tmux.Pane.Capture"
     }
   },
   "java": {
@@ -163,7 +197,11 @@
       "traversal": "io.github.libtmux.Server.Server.panes",
       "version-gate": "io.github.libtmux.exception.UnsupportedFeatureException.UnsupportedFeatureException",
       "test-fixtures": "io.github.libtmux.junit5.TmuxExtension.TmuxExtension",
-      "argv": "io.github.libtmux.Server.Server.cmd"
+      "argv": "io.github.libtmux.Server.Server.cmd",
+      "servers": "io.github.libtmux.Server.Server.open",
+      "send-keys": "io.github.libtmux.Pane.Pane.sendKeys",
+      "control-mode": "io.github.libtmux.control.ControlClient.ControlClient",
+      "capture": "io.github.libtmux.Pane.Pane.capture"
     }
   },
   "kotlin": {
@@ -179,7 +217,11 @@
       "queries": "io.github.libtmux.kotlin.Iterable.filter",
       "traversal": "io.github.libtmux.kotlin.Server.panes",
       "async": "io.github.libtmux.kotlin.Server.panes",
-      "argv": "io.github.libtmux.kotlin.Server.cmd"
+      "argv": "io.github.libtmux.kotlin.Server.cmd",
+      "servers": "io.github.libtmux.kotlin.Server.Companion.open",
+      "send-keys": "io.github.libtmux.kotlin.Pane.sendKeys",
+      "control-mode": "io.github.libtmux.kotlin.ControlClient",
+      "capture": "io.github.libtmux.kotlin.Pane.capture"
     }
   },
   "scala": {
@@ -193,7 +235,11 @@
       "objects": "io.github.libtmux.scaladsl.Pane",
       "queries": "io.github.libtmux.scaladsl.query.Expr",
       "traversal": "io.github.libtmux.scaladsl.Server.panes",
-      "argv": "io.github.libtmux.scaladsl.Server.cmd"
+      "argv": "io.github.libtmux.scaladsl.Server.cmd",
+      "servers": "io.github.libtmux.scaladsl.Server.open",
+      "send-keys": "io.github.libtmux.scaladsl.Pane.sendKeys",
+      "control-mode": "io.github.libtmux.scaladsl.Server.control",
+      "capture": "io.github.libtmux.scaladsl.Pane.capture"
     }
   },
   "csharp": {
@@ -213,7 +259,11 @@
       "current-pane": "LibTmux.Pane.FromEnvironmentAsync",
       "test-fixtures": "LibTmux.Testing.TemporaryServerScope",
       "async": "LibTmux.Pane.RunAsync",
-      "argv": "LibTmux.TmuxCommand"
+      "argv": "LibTmux.TmuxCommand",
+      "servers": "LibTmux.Server.ConnectAsync",
+      "send-keys": "LibTmux.Pane.SendKeysAsync",
+      "control-mode": "LibTmux.IControlModeSession",
+      "capture": "LibTmux.Pane.CaptureAsync"
     }
   },
   "fsharp": {
@@ -227,7 +277,10 @@
       "queries": "LibTmux.FSharp.Query",
       "errors": "LibTmux.FSharp.TmuxFailure",
       "traversal": "LibTmux.FSharp.Server.panes",
-      "async": "LibTmux.FSharp.Pane.run"
+      "async": "LibTmux.FSharp.Pane.run",
+      "send-keys": "LibTmux.FSharp.Pane.sendKeys",
+      "control-mode": "LibTmux.FSharp.Control",
+      "capture": "LibTmux.FSharp.Pane.capture"
     }
   },
   "cxx": {
@@ -244,7 +297,11 @@
       "errors": "libtmux::CommandFailure",
       "traversal": "libtmux::Server::panes",
       "test-fixtures": "libtmux::test::ScopedTmuxServer",
-      "argv": "libtmux::CommandRequest"
+      "argv": "libtmux::CommandRequest",
+      "servers": "libtmux::Server",
+      "send-keys": "libtmux::Pane::send_key",
+      "control-mode": "libtmux::Server::control",
+      "capture": "libtmux::Pane::capture"
     }
   },
   "swift": {
@@ -261,7 +318,11 @@
       "errors": "TmuxError",
       "traversal": "Server.panes()",
       "test-fixtures": "withTmuxServer(socketFileName:_:)",
-      "argv": "TmuxCommand"
+      "argv": "TmuxCommand",
+      "servers": "Server",
+      "send-keys": "Server.sendKeys(_:to:literally:)",
+      "control-mode": "ControlSession",
+      "capture": "Server.capture(_:includingHistory:)"
     }
   }
 }

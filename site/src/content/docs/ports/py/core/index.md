@@ -1,8 +1,8 @@
 ---
 port: py
 route: core
-title: Core Library
-description: "The Python library for tmux: its types, what they wrap and what they add over the tmux command line."
+title: "tmux client library for Python"
+description: "tmux client library for Python. Control tmux, connect to and create servers, navigate sessions, windows, and panes, send keys, watch for changes via control mode, capture pane contents"
 cards:
   - label: Quickstart
     href: ../guides/getting-started/

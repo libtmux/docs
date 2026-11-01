@@ -1,6 +1,9 @@
 ---
 import { Code } from 'astro-expressive-code/components'
+import CoreShowcase from './CoreShowcase.astro'
 import HomeExample from './HomeExample.astro'
+import { portCapabilities, type CapabilityTable } from '../lib/core-capabilities'
+import CAPABILITIES from '../data/core-capabilities.json'
 import LandingInstall from './landing/LandingInstall.astro'
 import McpWorkedExample from './mcp/McpWorkedExample.astro'
 import WorkspaceConfig from './workspace/WorkspaceConfig.astro'
@@ -49,6 +52,7 @@ const workspaceTest = workspaceExample && (workspaceExample.tests.find((test) =>
 // Name the command only for a file a test runs it on; the evidence line says how any other file is reached.
 const workspaceProgram = loadCommand(port.slug)
 const workspaceLoad = workspaceTest?.via === 'cli' ? workspaceProgram : undefined
+const hasShowcase = portCapabilities(port.slug, CAPABILITIES as CapabilityTable, SOURCES as Record<string, CachedSource>).length > 0
 const complete = QUICKSTARTS[port.slug]?.complete
 if (!complete) throw new Error(`PortLanding: ${port.slug} has no complete homepage example; add it to home-examples.json`)
 const panelId = (product: string) => `landing-panel-${product}`
@@ -75,7 +79,7 @@ const panelId = (product: string) => `landing-panel-${product}`
     </details>
     return <div class="landing-panel" id={panelId(panel.product)} data-landing-panel={panel.product}>
     {panel.product === 'core' ? <>
-      <HomeExample port={port.slug} language={port.name} example={complete} />
+      {hasShowcase ? <CoreShowcase port={port.slug} /> : <HomeExample port={port.slug} language={port.name} example={complete} />}
       <p class="landing-more"><a href={portPageUrl(port, version, 'core')}>Core Library documentation →</a> · <a href={portPageUrl(port, version, 'examples')}>More {port.name} examples →</a></p>
       <LandingInstall panel={panel} port={port.slug} />
     </> : panel.product === 'mcp' ? <>

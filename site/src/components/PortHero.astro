@@ -4,6 +4,7 @@ import { withRoot } from '../lib/site-root'
 import { buildTarget, defaultVersionFor } from '../lib/versions'
 import PortLinks from './PortLinks.astro'
 import DocumentationHero from './DocumentationHero.astro'
+import { coreDescription } from '../lib/core-home'
 import { hasReference, PORT_BY_SLUG, portPageUrl, portTagline, type Port } from '../lib/ports'
 
 /**
@@ -35,6 +36,7 @@ const revision = process.env.LIBTMUX_DOCS_PORT === port.slug ? process.env.LIBTM
 ---
 
 <DocumentationHero name={port.name} tagline={portTagline(port)} logo={withRoot(brand.asset('logo.svg'))}>
+  <p class="mt-3" data-port-definition>{coreDescription(port.slug)}</p>
   {port.parentLibrary && <p class="mt-3 text-sm">
     Built on the <a class="underline" href={portPageUrl(PORT_BY_SLUG[port.parentLibrary.slug], defaultVersionFor(port.parentLibrary.slug))}>{PORT_BY_SLUG[port.parentLibrary.slug].name} library</a>
     {' '}for {port.parentLibrary.runtime}. The packages share their source repository and releases.
