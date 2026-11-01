@@ -205,13 +205,13 @@ function applyRun(sessions: SessionState[], step: ReplayStep, answer: Record_) {
   if (!pane) return
   const typed = str(step.arguments.command)
   if (typed !== undefined) pane.typed = typed
-  const output = textOf(answer.output)
+  const output = textOf(answer.output) ?? textOf(answer.text)
   if (output !== undefined) pane.output = output
 }
 
 function applyKill(sessions: SessionState[], answer: Record_, args: Record_): SessionState[] {
   // What was killed may be said as an id or as a name, by the answer or by the request.
-  const said = [str(answer.killed), str(answer.id), str(answer.sessionId), str(args.session_id), str(args.session), str(args.session_name), str(args.name)].filter((item): item is string => item !== undefined)
+  const said = [str(answer.killed), str(answer.id), str(answer.sessionId), str(answer.session_id), str(args.session_id), str(args.session), str(args.session_name), str(args.name)].filter((item): item is string => item !== undefined)
   const first = said[0]
   if (first === undefined) return sessions
   return sessions.filter((session) => session.id !== first && session.name !== first)
@@ -255,7 +255,7 @@ export function lastOutputLine(output: string | undefined): string | undefined {
 export function runAnswers(steps: readonly ReplayStep[]): { pane?: string; line: string }[] {
   return steps.flatMap((step) => {
     if (step.tool !== 'run_shell_command' && step.tool !== 'run_command') return []
-    const line = lastOutputLine(textOf(answerOf(step).output))
+    const line = lastOutputLine(textOf(answerOf(step).output) ?? textOf(answerOf(step).text))
     const pane = paneOf(step.arguments) ?? str(answerOf(step).paneId) ?? str(answerOf(step).pane)
     return line ? [{ ...(pane ? { pane } : {}), line }] : []
   })

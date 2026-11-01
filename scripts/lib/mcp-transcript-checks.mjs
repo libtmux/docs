@@ -29,12 +29,14 @@ export function verifyRecording(steps, { port, runTool, expected }) {
   if (runs.length !== expected.length) throw new Error(`${port}: expected ${expected.length} ${runTool} steps, found ${runs.length}`)
   runs.forEach((run, index) => {
     const result = run.structuredContent ?? {}
-    const lines = Array.isArray(result.output) ? result.output : Array.isArray(result.output?.lines) ? result.output.lines : undefined
-    const output = typeof result.output === 'string' ? result.output : lines ? lines.join('\n') : ''
+    // Servers name the pane's text `output` or `text`, and send a string, its lines, or an object with `lines`.
+    const said = result.output ?? result.text
+    const lines = Array.isArray(said) ? said : Array.isArray(said?.lines) ? said.lines : undefined
+    const output = typeof said === 'string' ? said : lines ? lines.join('\n') : ''
     if (!new RegExp(`\\b${expected[index].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(output)) {
       throw new Error(`${port}: ${runTool} step ${index + 1} output lacks "${expected[index]}": ${output.slice(0, 300)}`)
     }
-    const status = result.exitStatus ?? result.exit_status
+    const status = result.exitStatus ?? result.exit_status ?? result.exit_code
     if (status !== 0) throw new Error(`${port}: ${runTool} step ${index + 1} command exited ${status}`)
   })
 }

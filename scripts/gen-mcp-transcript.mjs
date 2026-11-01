@@ -35,6 +35,14 @@ const SERVERS = {
   py: { prepare: [['uv', 'sync', '--frozen', '--python', '3.14']], command: () => ['.venv/bin/python', '-m', 'libtmux_mcp'] },
   java: { prepare: [['./gradlew', ':libtmux-mcp:installDist', '--max-workers=2']], command: () => ['libtmux-mcp/build/install/libtmux-mcp/bin/libtmux-mcp'] },
   csharp: { prepare: [['dotnet', 'build', 'src/LibTmux.Mcp/LibTmux.Mcp.csproj', '--configuration', 'Release', '-m:2']], command: () => ['dotnet', 'src/LibTmux.Mcp/bin/Release/net10.0/LibTmux.Mcp.dll'] },
+  cxx: {
+    prepare: [
+      // The repository's gcc preset: this host's clang cannot link the libc++ the default one asks for (no libunwind).
+      ['cmake', '--preset', 'cxx-gcc', '-DLIBTMUX_BUILD_TESTS=OFF', '-DLIBTMUX_BUILD_EXAMPLES=OFF', '-DLIBTMUX_BUILD_WORKSPACE_CLI=OFF'],
+      ['cmake', '--build', '--preset', 'cxx-gcc', '--target', 'libtmux-mcp-server', '--parallel', '2'],
+    ],
+    command: () => ['build/cxx-gcc/apps/mcp/libtmux-mcp-server', '--socket-name', 'transcript'],
+  },
   go: { cwd: 'mcp', prepare: [], build: (sandbox) => [['go', 'build', '-mod=readonly', '-o', join(sandbox, 'libtmux-mcp'), './cmd/libtmux-mcp']], command: (_checkout, sandbox) => [join(sandbox, 'libtmux-mcp')] },
 }
 const TOOLSETS = { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' }
