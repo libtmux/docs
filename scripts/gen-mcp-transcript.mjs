@@ -33,8 +33,9 @@ const SERVERS = {
   rs: { command: ['target/debug/tmux-mcp'], prepare: [['cargo', 'build', '--locked', '-p', 'tmux-mcp', '--bin', 'tmux-mcp', '--jobs', '2']] },
 }
 const TOOLSETS = { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' }
-// What the last run step must have printed: the project below has two passing tests.
-const EXPECTED_OUTPUT = '2 passed'
+// What each run step must have printed, in order: the project below has two passing tests and a log of two lines.
+const EXPECTED_OUTPUT = ['2 passed', 'checks finished']
+const LOG_FILE = '2026-01-01 checks started\n2026-01-01 checks finished\n'
 const TEST_FILE = 'def test_adds():\n    assert 1 + 1 == 2\n\n\ndef test_upper():\n    assert "tmux".upper() == "TMUX"\n'
 
 if (!only || !SERVERS[only]) throw new Error(`--port must be one of ${Object.keys(SERVERS).join(', ')}`)
@@ -56,6 +57,7 @@ let transcript
 try {
   mkdirSync(project, { recursive: true })
   writeFileSync(join(project, 'test_example.py'), TEST_FILE)
+  writeFileSync(join(project, 'checks.log'), LOG_FILE)
   execFileSync('uv', ['venv', '-q', join(sandbox, 'venv')], { stdio: 'inherit' })
   execFileSync('uv', ['pip', 'install', '-q', '--python', join(sandbox, 'venv/bin/python'), 'pytest'], { stdio: 'inherit' })
   const pytest = execFileSync(join(sandbox, 'venv/bin/pytest'), ['--version'], { encoding: 'utf8' }).trim()
@@ -85,7 +87,7 @@ try {
   transcript = {
     generated: 'scripts/gen-mcp-transcript.mjs',
     repo: snapshot.repo, revision,
-    sandbox: { tmux: execFileSync('tmux', ['-V'], { encoding: 'utf8' }).trim(), pytest, project: ['test_example.py'], expected: EXPECTED_OUTPUT, rewritten: { projectDirectory: FIXED } },
+    sandbox: { tmux: execFileSync('tmux', ['-V'], { encoding: 'utf8' }).trim(), pytest, project: ['test_example.py', 'checks.log'], expected: EXPECTED_OUTPUT, rewritten: { projectDirectory: FIXED } },
     serverInfo: run.serverInfo,
     prompt: example.prompt,
     steps: run.steps.map((step, index) => ({ ...step, caption: example.steps[index].caption })),

@@ -12,8 +12,9 @@
  * chat and the final state show. Without a recording the page shows the
  * requests only, says so, and draws no preview.
  */
-import { arrange, renderLayout } from '../../lib/tmux-layout'
-import { lastOutputLine, windowLabel, type Frame } from '../../lib/mcp-replay'
+import { renderRects, type Rect } from '../../lib/tmux-layout'
+import { parseLayout } from '../../lib/tmux-layout-string'
+import { windowLabel, type Frame, type PaneState } from '../../lib/mcp-replay'
 import { tierFor, type WorkedExample } from '../../lib/mcp-showcase'
 import '../../styles/tmux-layout.css'
 import '../../styles/mcp-showcase.css'
@@ -33,7 +34,7 @@ const args = (value: Record<string, unknown>) => JSON.stringify(value)
 const shown = (value: unknown) => (typeof value === 'string' ? value : JSON.stringify(value, null, 2))
 const WIDTH = 44
 const HEIGHT = 12
-const answer = lastOutputLine(recording?.output)
+const answers = recording?.answers ?? []
 
 /** What each frame's note says happened, from the call alone. */
 const note = (frame: Frame) => {
@@ -45,12 +46,28 @@ function windowOf(frame: Frame) {
   const session = frame.sessions[0]
   return session ? session.windows.find((window) => window.active) ?? session.windows[0] : undefined
 }
+/**
+ * How a frame's window is drawn. A layout a result reported gives each pane
+ * its rectangle, in cells. Without one, a window of several panes is a list
+ * with no sizes, labelled, rather than boxes whose sizes nothing stated; a
+ * window of one pane fills the screen, which is what one pane is.
+ */
 const draw = (frame: Frame) => {
   const window = windowOf(frame)
   if (!window) return undefined
-  const rects = arrange('even-vertical', window.panes.length, WIDTH, HEIGHT)
-  const svg = renderLayout(window.panes.map(() => []), 'even-vertical', [WIDTH, HEIGHT], { id: `rp-${frame.done}`, label: `tmux window with ${window.panes.length} pane${window.panes.length === 1 ? '' : 's'}` })
-  return { window, rects, svg }
+  const parsed = window.layout ? parseLayout(window.layout) : undefined
+  if (parsed) {
+    const panes: PaneState[] = parsed.panes.map((placed) => window.panes.find((pane) => pane.id === placed.id) ?? { id: placed.id })
+    const rects: Rect[] = parsed.panes
+    const size: [number, number] = [parsed.width, parsed.height]
+    return { window, panes, rects, size, svg: renderRects(panes.map(() => []), rects, size, { id: `rp-${frame.done}`, label: `tmux window of ${panes.length} pane${panes.length === 1 ? '' : 's'}` }) }
+  }
+  if (window.panes.length === 1) {
+    const size: [number, number] = [WIDTH, HEIGHT]
+    const rects: Rect[] = [{ x: 0, y: 0, w: WIDTH, h: HEIGHT }]
+    return { window, panes: window.panes, rects, size, svg: renderRects([[]], rects, size, { id: `rp-${frame.done}`, label: 'tmux window of 1 pane' }) }
+  }
+  return { window, panes: window.panes, rects: undefined, size: [WIDTH, HEIGHT] as [number, number], svg: '' }
 }
 ---
 <Heading id="worked-example">Worked example</Heading>
@@ -71,19 +88,24 @@ const draw = (frame: Frame) => {
           return (
             <div class="mcp-frame" data-frame={frame.done} hidden={frame.done !== total}>
               <div class="mcp-tmux">
-                {drawn ? (
-                  <div class={`mcp-tmux__screen${frame.reading === 'panes' ? ' is-reading' : ''}`}>
+                {drawn && drawn.rects ? (
+                  <div class={`mcp-tmux__screen${frame.reading === 'panes' ? ' is-reading' : ''}`} style={`aspect-ratio:${drawn.size[0] * 8} / ${drawn.size[1] * 17}`}>
                     <Fragment set:html={drawn.svg} />
-                    {drawn.window.panes.map((pane, index) => {
-                      const rect = drawn.rects[index]!
+                    {drawn.panes.map((pane, index) => {
+                      const rect = drawn.rects![index]!
                       const lines = [...(pane.typed !== undefined ? [`$ ${pane.typed}`] : []), ...(pane.output?.trimEnd().split('\n') ?? [])]
                       return (
-                        <div class="mcp-pane" style={`left:${(rect.x / WIDTH) * 100}%;top:${(rect.y / HEIGHT) * 100}%;width:${(rect.w / WIDTH) * 100}%;height:${(rect.h / HEIGHT) * 100}%`}>
+                        <div class="mcp-pane" style={`left:${(rect.x / drawn.size[0]) * 100}%;top:${(rect.y / drawn.size[1]) * 100}%;width:${(rect.w / drawn.size[0]) * 100}%;height:${(rect.h / drawn.size[1]) * 100}%`}>
                           {pane.id && <span class="mcp-pane__id">{pane.id}{pane.command ? ` ${pane.command}` : ''}</span>}
                           {lines.length > 0 && <pre class="mcp-pane__text">{lines.join('\n')}</pre>}
                         </div>
                       )
                     })}
+                  </div>
+                ) : drawn ? (
+                  <div class="mcp-tmux__screen mcp-tmux__screen--unsized">
+                    <p class="mcp-tmux__unsized">Panes, sizes not read yet</p>
+                    <ul>{drawn.panes.map((pane) => <li class="mcp-pane__id">{pane.id ?? ''}{pane.command ? ` ${pane.command}` : ''}</li>)}</ul>
                   </div>
                 ) : (
                   <div class="mcp-tmux__screen mcp-tmux__screen--empty">{frame.done > 0 && <span>No sessions</span>}</div>
@@ -127,9 +149,10 @@ const draw = (frame: Frame) => {
           </article>
         )
       })}
-      {recording && answer && (
+      {recording && answers.length > 0 && (
         <div class="mcp-turn mcp-turn--answer" data-turn={total} tabindex="0">
-          <p class="mcp-turn__say"><span class="mcp-turn__who">agent</span>The command ran in the pane and printed <q>{answer}</q></p>
+          <p class="mcp-turn__say"><span class="mcp-turn__who">agent</span>The commands ran in their panes.
+            {answers.map((answer, index) => <>{index > 0 && '; '}{answer.pane ? ` ${answer.pane}` : ''} printed <q>{answer.line}</q></>)}</p>
         </div>
       )}
     </div>

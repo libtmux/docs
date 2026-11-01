@@ -1,7 +1,7 @@
 import { mcpObjects } from './mcp-catalog'
 import { PORT_BY_SLUG, portPageUrl } from './ports'
 import { EXAMPLES } from './mcp-examples.ts'
-import { replayFrames, type Frame } from './mcp-replay'
+import { replayFrames, runAnswers, type Frame } from './mcp-replay'
 
 export { EXAMPLES }
 
@@ -138,8 +138,8 @@ export interface Recording {
   shortened: boolean
   /** The directory the sandbox ran in was replaced by this fixed path. */
   projectDirectory?: string
-  /** What the last step that ran a command left in its pane (its `output` field). */
-  output?: string
+  /** What each command run left in its pane, as the last line with text, with the pane it ran in. */
+  answers: { pane?: string; line: string }[]
 }
 
 export interface WorkedExample {
@@ -233,7 +233,6 @@ export function buildShowcase(port: string, version: string, snapshot: ProtocolS
     && transcript.steps.every((step, index) => !step.isError && step.tool === definition.steps[index]!.tool
       && JSON.stringify(step.arguments) === JSON.stringify(definition.steps[index]!.arguments))
     ? transcript : undefined
-  const output = recorded?.steps.map((step) => (step.structuredContent as { output?: unknown } | undefined)?.output).filter((text): text is string => typeof text === 'string').at(-1)
   const full = recorded?.steps.map(stepResult) ?? []
   const shown = full.map(abbreviate)
   const example: WorkedExample | undefined = definition && definition.steps.every((step) => tools.has(step.tool))
@@ -243,7 +242,7 @@ export function buildShowcase(port: string, version: string, snapshot: ProtocolS
         tool: tools.get(step.tool)!, arguments: step.arguments, caption: step.caption,
         ...(recorded ? { result: shown[index] } : {}),
       })),
-      ...(recorded ? { recording: { repo: recorded.repo, revision: recorded.revision, tmux: recorded.sandbox.tmux, runner: recorded.sandbox.pytest, frames: replayFrames(recorded.steps), shortened: shown.some((value, index) => JSON.stringify(value) !== JSON.stringify(full[index])), ...(recorded.sandbox.rewritten?.projectDirectory ? { projectDirectory: recorded.sandbox.rewritten.projectDirectory } : {}), ...(output ? { output: output.trimEnd() } : {}) } } : {}),
+      ...(recorded ? { recording: { repo: recorded.repo, revision: recorded.revision, tmux: recorded.sandbox.tmux, runner: recorded.sandbox.pytest, frames: replayFrames(recorded.steps), shortened: shown.some((value, index) => JSON.stringify(value) !== JSON.stringify(full[index])), ...(recorded.sandbox.rewritten?.projectDirectory ? { projectDirectory: recorded.sandbox.rewritten.projectDirectory } : {}), answers: runAnswers(recorded.steps) } } : {}),
     }
     : undefined
   return {

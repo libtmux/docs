@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { idsIn, leaks, verifyRecording } from '../../scripts/lib/mcp-transcript-checks.mjs'
 
 type Step = { tool: string; arguments: unknown; isError: boolean; content: unknown[]; structuredContent?: unknown }
-const OPTIONS = { port: 'x', runTool: 'run_shell_command', expected: '2 passed' }
+const OPTIONS = { port: 'x', runTool: 'run_shell_command', expected: ['2 passed'] }
 const good = (): Step[] => [
   { tool: 'create_session', arguments: { name: 'checks' }, isError: false, content: [], structuredContent: { paneId: '%0', session: { id: '$0' } } },
   { tool: 'run_shell_command', arguments: { paneId: '%0', command: 'pytest -q' }, isError: false, content: [], structuredContent: { output: '..\n2 passed in 0.00s', exitStatus: 0 } },
@@ -42,7 +42,15 @@ describe('the checks a recording must pass', () => {
     const failed = good()
     failed[1]!.structuredContent = { output: '2 passed', exitStatus: 1 }
     expect(() => verifyRecording(failed, OPTIONS)).toThrow(/exited 1/)
-    expect(() => verifyRecording(good().filter((step) => step.tool !== 'run_shell_command'), OPTIONS)).toThrow(/expected one run_shell_command/)
+    expect(() => verifyRecording(good().filter((step) => step.tool !== 'run_shell_command'), OPTIONS)).toThrow(/expected 1 run_shell_command steps, found 0/)
+  })
+
+  it('checks each run step against its own expected text, in order', () => {
+    const steps = good()
+    steps.splice(2, 0, { tool: 'run_shell_command', arguments: { paneId: '%0', command: 'cat log' }, isError: false, content: [], structuredContent: { output: 'all done', exitStatus: 0 } })
+    expect(() => verifyRecording(steps, { ...OPTIONS, expected: ['2 passed', 'all done'] })).not.toThrow()
+    expect(() => verifyRecording(steps, { ...OPTIONS, expected: ['all done', '2 passed'] })).toThrow(/step 1 output lacks "all done"/)
+    expect(() => verifyRecording(steps, OPTIONS)).toThrow(/expected 1 run_shell_command steps, found 2/)
   })
 
   it('finds ids and host names in text', () => {

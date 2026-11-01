@@ -244,6 +244,23 @@
   height: 100%;
 }
 
+.mcp-tmux__screen--unsized {
+  aspect-ratio: auto;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.mcp-tmux__screen--unsized ul {
+  margin: 0.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mcp-tmux__unsized {
+  margin: 0;
+  color: var(--color-muted);
+}
+
 .mcp-tmux__screen--empty {
   display: grid;
   place-items: center;

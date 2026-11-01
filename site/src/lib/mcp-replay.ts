@@ -32,6 +32,8 @@ export interface WindowState {
   index?: number
   name?: string
   active?: boolean
+  /** The layout a result reported, in the spelling it used; `parseLayout` reads it. */
+  layout?: string
   panes: PaneState[]
 }
 
@@ -113,6 +115,7 @@ function applyWindows(sessions: SessionState[], answer: Record_) {
     if (num(item.index) !== undefined) target.index = num(item.index)!
     if (str(item.name)) target.name = str(item.name)!
     if (typeof item.active === 'boolean') target.active = item.active
+    if (str(item.layout)) target.layout = str(item.layout)!
     if (target.panes.length === 0) target.panes = blank(num(item.panes) ?? 1)
   }
 }
@@ -127,6 +130,36 @@ function applyPanes(sessions: SessionState[], answer: Record_) {
     if (str(item.command)) pane.command = str(item.command)!
     if (str(item.path)) pane.path = str(item.path)!
   }
+}
+
+function windowOfPane(sessions: SessionState[], id: string | undefined): WindowState | undefined {
+  const windows = sessions.flatMap((session) => session.windows)
+  return windows.find((window) => id !== undefined && window.panes.some((pane) => pane.id === id)) ?? windows[0]
+}
+
+function applySplit(sessions: SessionState[], step: ReplayStep, answer: Record_) {
+  const pane = isRecord(answer.pane) ? answer.pane : answer
+  const id = str(pane.id)
+  const windowId = str(pane.window_id) ?? str(pane.windowId)
+  const windows = sessions.flatMap((session) => session.windows)
+  const window = windows.find((candidate) => windowId !== undefined && candidate.id === windowId) ?? windowOfPane(sessions, paneOf(step.arguments))
+  if (!window || !id) return
+  const added: PaneState = { id }
+  if (str(pane.command)) added.command = str(pane.command)!
+  const path = str(pane.path) ?? str(pane.cwd)
+  if (path) added.path = path
+  window.panes.push(added)
+}
+
+function applyLayoutRead(sessions: SessionState[], step: ReplayStep, answer: Record_) {
+  const values = isRecord(answer.values) ? answer.values : {}
+  const reported = isRecord(answer.window) ? answer.window : answer
+  const layout = str(values.window_layout) ?? str(reported.layout)
+  if (!layout) return
+  const windowId = str(reported.id) ?? str(reported.windowId) ?? (typeof answer.window === 'string' ? answer.window : undefined)
+  const windows = sessions.flatMap((session) => session.windows)
+  const window = windows.find((candidate) => windowId !== undefined && candidate.id === windowId) ?? windowOfPane(sessions, paneOf(step.arguments))
+  if (window) window.layout = layout
 }
 
 function applyRun(sessions: SessionState[], step: ReplayStep, answer: Record_) {
@@ -146,7 +179,7 @@ function applyKill(sessions: SessionState[], answer: Record_, args: Record_): Se
   return sessions.filter((session) => name === undefined || session.name !== name)
 }
 
-const READS: Record<string, Reading> = { list_sessions: 'sessions', list_windows: 'windows', list_panes: 'panes' }
+const READS: Record<string, Reading> = { list_sessions: 'sessions', list_windows: 'windows', list_panes: 'panes', get_tmux_variables: 'windows' }
 
 /** The frames of a recording: the state before the first call, then the state after each. */
 export function replayFrames(steps: readonly ReplayStep[]): Frame[] {
@@ -158,6 +191,8 @@ export function replayFrames(steps: readonly ReplayStep[]): Frame[] {
     if (step.tool === 'create_session' || step.tool === 'new_session') applyCreate(sessions, answer)
     else if (step.tool === 'list_windows') applyWindows(sessions, answer)
     else if (step.tool === 'list_panes') applyPanes(sessions, answer)
+    else if (step.tool === 'split_window') applySplit(sessions, step, answer)
+    else if (step.tool === 'get_tmux_variables' || step.tool === 'select_layout') applyLayoutRead(sessions, step, answer)
     else if (step.tool === 'run_shell_command' || step.tool === 'run_command') applyRun(sessions, step, answer)
     else if (step.tool === 'kill_session') sessions = applyKill(sessions, answer, step.arguments)
     frames.push({ done: index + 1, tool: step.tool, sessions: clone(sessions), ...(reading ? { reading } : {}) })
@@ -175,4 +210,14 @@ export function windowLabel(window: WindowState): string {
 /** The last line of a pane's output that has text on it, for the agent's answer. */
 export function lastOutputLine(output: string | undefined): string | undefined {
   return output?.split('\n').map((line) => line.trimEnd()).filter(Boolean).at(-1)
+}
+
+/** What each command run left in its pane, as the last line with text, for the agent's answer. */
+export function runAnswers(steps: readonly ReplayStep[]): { pane?: string; line: string }[] {
+  return steps.flatMap((step) => {
+    if (step.tool !== 'run_shell_command' && step.tool !== 'run_command') return []
+    const line = lastOutputLine(str(answerOf(step).output))
+    const pane = paneOf(step.arguments) ?? str(answerOf(step).paneId) ?? str(answerOf(step).pane)
+    return line ? [{ ...(pane ? { pane } : {}), line }] : []
+  })
 }

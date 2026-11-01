@@ -379,10 +379,30 @@ export function renderLayout(
   options: RenderOptions = {},
 ): string {
   const [width, height] = size
-  const rects = arrange(layout, panes.length, width, height)
+  const id = options.id ?? diagramId(panes, layout, size)
+  return renderRects(panes, arrange(layout, panes.length, width, height), size, { ...options, id })
+}
+
+/**
+ * Render panes at given rectangles, in character cells, to an inline `<svg>`.
+ *
+ * `renderLayout` calls this with the rectangles a named layout gives; a caller
+ * holding the rectangles a server reported, such as the MCP replay, calls it
+ * directly. The markup is the same either way.
+ *
+ * @throws {TmuxLayoutError} When there are no panes or fewer rectangles than panes.
+ */
+export function renderRects(
+  panes: readonly (readonly string[])[],
+  rects: readonly Rect[],
+  size: readonly [number, number],
+  options: RenderOptions = {},
+): string {
+  const [width, height] = size
+  if (panes.length === 0 || rects.length < panes.length) throw new TmuxLayoutError(`${panes.length} panes need ${panes.length} rectangles, got ${rects.length}`)
   const viewWidth = width * CELL_WIDTH
   const viewHeight = height * CELL_HEIGHT
-  const id = options.id ?? diagramId(panes, layout, size)
+  const id = options.id ?? diagramId(panes, 'rects', size)
   const clipId = (index: number) => `${id}-clip-${index}`
   const parts = [
     `<svg class="gp-tmux-layout" viewBox="0 0 ${g(viewWidth)} ${g(viewHeight)}" width="${g(viewWidth)}" height="${g(viewHeight)}" role="img"${options.label ? ` aria-label="${escapeHtml(options.label)}"` : ''} xmlns="http://www.w3.org/2000/svg">`,

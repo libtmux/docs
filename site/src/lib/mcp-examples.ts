@@ -10,6 +10,12 @@ const RUN_IN_LISTED = 'Run the command in the pane the list returned (%0).'
 const REMOVE = 'Remove the session once the result is read.'
 const REMOVE_BY_ID = 'Remove the session by the id the create result returned ($0).'
 const CHECKS = 'Create a tmux session called checks, run pytest -q in it, show me the result, then remove the session.'
+const SPLIT = 'Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.'
+const SPLIT_PANE = 'Split the pane the create result returned (%0) in two.'
+const SHOW_LOG = 'Show the log in the new pane the split returned (%1).'
+const RUN_TESTS = 'Run the tests in the pane the create result returned (%0).'
+const LAYOUT = "Read the window's layout."
+const SHOW_LOG_COMMAND = { command: 'cat checks.log' }
 const RUN_COMMAND = { command: 'pytest -q' }
 
 /**
@@ -24,50 +30,73 @@ const RUN_COMMAND = { command: 'pytest -q' }
  * output schemas.
  */
 export const EXAMPLES: Record<string, ExampleDefinition> = {
-  py: { prompt: CHECKS, steps: [
+  py: { prompt: SPLIT, steps: [
     { tool: 'create_session', arguments: { session_name: 'checks' }, caption: CREATE },
-    { tool: 'run_command', arguments: { session_name: 'checks', ...RUN_COMMAND }, caption: RUN },
+    { tool: 'split_window', arguments: { pane_id: '%0', direction: 'right' }, caption: SPLIT_PANE },
+    { tool: 'list_windows', arguments: { session_name: 'checks' }, caption: LAYOUT },
+    { tool: 'run_command', arguments: { pane_id: '%0', ...RUN_COMMAND }, caption: RUN_TESTS },
+    { tool: 'run_command', arguments: { pane_id: '%1', ...SHOW_LOG_COMMAND }, caption: SHOW_LOG },
     { tool: 'kill_session', arguments: { session_name: 'checks' }, caption: REMOVE },
   ] },
-  ts: { prompt: CHECKS, steps: [
+  ts: { prompt: SPLIT, steps: [
     { tool: 'create_session', arguments: { name: 'checks' }, caption: CREATE },
-    { tool: 'run_shell_command', arguments: { paneId: '%0', ...RUN_COMMAND }, caption: RUN_IN_CREATED },
+    { tool: 'split_window', arguments: { paneId: '%0', direction: 'right' }, caption: SPLIT_PANE },
+    { tool: 'list_windows', arguments: { session: 'checks' }, caption: LAYOUT },
+    { tool: 'run_shell_command', arguments: { paneId: '%0', ...RUN_COMMAND }, caption: RUN_TESTS },
+    { tool: 'run_shell_command', arguments: { paneId: '%1', ...SHOW_LOG_COMMAND }, caption: SHOW_LOG },
     { tool: 'kill_session', arguments: { session: 'checks' }, caption: REMOVE },
   ] },
-  swift: { prompt: CHECKS, steps: [
+  swift: { prompt: SPLIT, steps: [
     { tool: 'create_session', arguments: { name: 'checks' }, caption: CREATE },
     { tool: 'list_panes', arguments: { session: 'checks' }, caption: 'List the panes in the new session.' },
-    { tool: 'run_shell_command', arguments: { paneId: '%0', ...RUN_COMMAND }, caption: RUN_IN_LISTED },
+    { tool: 'split_window', arguments: { paneId: '%0', direction: 'right' }, caption: 'Split the pane the list returned (%0) in two.' },
+    { tool: 'get_tmux_variables', arguments: { names: ['window_layout'], paneId: '%0' }, caption: 'Read the window\'s layout through the pane the list returned (%0).' },
+    { tool: 'run_shell_command', arguments: { paneId: '%0', ...RUN_COMMAND }, caption: 'Run the tests in the pane the list returned (%0).' },
+    { tool: 'run_shell_command', arguments: { paneId: '%1', ...SHOW_LOG_COMMAND }, caption: SHOW_LOG },
     { tool: 'kill_session', arguments: { session: 'checks' }, caption: REMOVE },
   ] },
-  csharp: { prompt: CHECKS, steps: [
+  csharp: { prompt: SPLIT, steps: [
     { tool: 'create_session', arguments: { name: 'checks' }, caption: CREATE },
-    { tool: 'run_shell_command', arguments: { paneId: '%0', ...RUN_COMMAND }, caption: RUN_IN_CREATED },
+    { tool: 'split_window', arguments: { paneId: '%0', direction: 'Right' }, caption: SPLIT_PANE },
+    { tool: 'list_windows', arguments: { session: 'checks' }, caption: LAYOUT },
+    { tool: 'run_shell_command', arguments: { paneId: '%0', ...RUN_COMMAND }, caption: RUN_TESTS },
+    { tool: 'run_shell_command', arguments: { paneId: '%1', ...SHOW_LOG_COMMAND }, caption: SHOW_LOG },
     { tool: 'kill_session', arguments: { session: 'checks' }, caption: REMOVE },
   ] },
-  cxx: { prompt: CHECKS, steps: [
+  cxx: { prompt: SPLIT, steps: [
     { tool: 'create_session', arguments: { name: 'checks' }, caption: CREATE },
     { tool: 'list_panes', arguments: {}, caption: 'List the panes, each with its session id.' },
-    { tool: 'run_shell_command', arguments: { paneId: '%0', ...RUN_COMMAND }, caption: RUN_IN_LISTED },
+    { tool: 'split_window', arguments: { paneId: '%0', direction: 'right' }, caption: 'Split the pane the list returned (%0) in two.' },
+    { tool: 'list_windows', arguments: { session: 'checks' }, caption: LAYOUT },
+    { tool: 'run_shell_command', arguments: { paneId: '%0', ...RUN_COMMAND }, caption: 'Run the tests in the pane the list returned (%0).' },
+    { tool: 'run_shell_command', arguments: { paneId: '%1', ...SHOW_LOG_COMMAND }, caption: SHOW_LOG },
     { tool: 'kill_session', arguments: { session: 'checks' }, caption: REMOVE },
   ] },
-  rs: { prompt: CHECKS, steps: [
+  rs: { prompt: SPLIT, steps: [
     { tool: 'create_session', arguments: { name: 'checks' }, caption: CREATE },
-    { tool: 'list_windows', arguments: {}, caption: 'List the windows, each with its session id.' },
     { tool: 'list_panes', arguments: {}, caption: 'List the panes, each with its window id.' },
-    { tool: 'run_shell_command', arguments: { pane: '%0', ...RUN_COMMAND }, caption: RUN_IN_LISTED },
+    { tool: 'split_window', arguments: { pane: '%0', direction: 'right' }, caption: 'Split the pane the list returned (%0) in two.' },
+    { tool: 'get_tmux_variables', arguments: { names: ['window_layout'], pane: '%0' }, caption: 'Read the window\'s layout, which tmux calls window_layout, through the pane the list returned (%0).' },
+    { tool: 'run_shell_command', arguments: { pane: '%0', ...RUN_COMMAND }, caption: 'Run the tests in the pane the list returned (%0).' },
+    { tool: 'run_shell_command', arguments: { pane: '%1', ...SHOW_LOG_COMMAND }, caption: SHOW_LOG },
     { tool: 'kill_session', arguments: { session: 'checks' }, caption: REMOVE },
   ] },
-  go: { prompt: CHECKS, steps: [
+  go: { prompt: SPLIT, steps: [
     { tool: 'create_session', arguments: { session_name: 'checks' }, caption: CREATE },
     { tool: 'list_panes', arguments: {}, caption: 'List the panes, each with the session it belongs to.' },
-    { tool: 'run_shell_command', arguments: { pane_id: '%0', ...RUN_COMMAND }, caption: RUN_IN_LISTED },
+    { tool: 'split_window', arguments: { pane_id: '%0', direction: 'right' }, caption: 'Split the pane the list returned (%0) in two.' },
+    { tool: 'get_tmux_variables', arguments: { names: ['window_layout'] }, caption: LAYOUT },
+    { tool: 'run_shell_command', arguments: { pane_id: '%0', ...RUN_COMMAND }, caption: 'Run the tests in the pane the list returned (%0).' },
+    { tool: 'run_shell_command', arguments: { pane_id: '%1', ...SHOW_LOG_COMMAND }, caption: SHOW_LOG },
     { tool: 'kill_session', arguments: { session_id: '$0' }, caption: REMOVE_BY_ID },
   ] },
-  java: { prompt: CHECKS, steps: [
+  java: { prompt: SPLIT, steps: [
     { tool: 'create_session', arguments: { session_name: 'checks' }, caption: CREATE },
     { tool: 'list_panes', arguments: {}, caption: 'List the panes, each with the session it belongs to.' },
-    { tool: 'run_shell_command', arguments: { pane_id: '%0', ...RUN_COMMAND }, caption: RUN_IN_LISTED },
+    { tool: 'split_window', arguments: { pane_id: '%0', direction: 'right' }, caption: 'Split the pane the list returned (%0) in two.' },
+    { tool: 'get_tmux_variables', arguments: { names: ['window_layout'], pane: '%0' }, caption: 'Read the window\'s layout through the pane the list returned (%0).' },
+    { tool: 'run_shell_command', arguments: { pane_id: '%0', ...RUN_COMMAND }, caption: 'Run the tests in the pane the list returned (%0).' },
+    { tool: 'run_shell_command', arguments: { pane_id: '%1', ...SHOW_LOG_COMMAND }, caption: SHOW_LOG },
     { tool: 'kill_session', arguments: { session_id: '$0' }, caption: REMOVE_BY_ID },
   ] },
   ruby: { prompt: 'List the panes on my tmux server.', steps: [

@@ -269,10 +269,10 @@ describe('the worked example', () => {
   })
 
   it('finds the ids a call uses, in a nested argument too', () => {
-    expect(EXAMPLES.ts!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%0'])
-    expect(EXAMPLES.go!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%0', '$0'])
+    expect(EXAMPLES.ts!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%0', '%0', '%1'])
+    expect(EXAMPLES.go!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%0', '%0', '%1', '$0'])
     expect(EXAMPLES.julia!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%0'])
-    expect(EXAMPLES.py!.steps.flatMap((step) => idsIn(step.arguments))).toEqual([])
+    expect(EXAMPLES.py!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%0', '%0', '%1'])
   })
 
   it('reports an id that has no earlier result, or a caption that does not say where it came from', () => {
@@ -300,7 +300,7 @@ describe('the worked example', () => {
 
   it('names the tier of each call from the tool it calls', async () => {
     const steps = (await showcase('ts')).example!.steps.map((step) => [step.tool.name, step.tool.tier])
-    expect(steps).toEqual([['create_session', 'execute'], ['run_shell_command', 'execute'], ['kill_session', 'teardown']])
+    expect(steps).toEqual([['create_session', 'execute'], ['split_window', 'execute'], ['list_windows', 'inspect'], ['run_shell_command', 'execute'], ['run_shell_command', 'execute'], ['kill_session', 'teardown']])
   })
 })
 
@@ -389,7 +389,7 @@ describe('the showcase section', () => {
     const items = [...document.querySelectorAll('article.mcp-turn')]
     for (const item of items) expect(item.querySelectorAll('details.mcp-result pre')).toHaveLength(1)
     expect(JSON.parse(items[0]!.querySelector('details.mcp-result pre')!.textContent!).paneId, 'the id later calls use comes from this result').toBe('%0')
-    expect(document.querySelector('.mcp-turn--answer q')?.textContent).toMatch(/^2 passed/)
+    expect([...document.querySelectorAll('.mcp-turn--answer q')].map((q) => q.textContent)).toEqual([expect.stringMatching(/^2 passed/), expect.stringMatching(/checks finished$/)])
     expect(document.querySelector('.mcp-provenance')?.textContent).toMatch(/recorded against.*libtmux\/libtmux-ts.*private tmux/si)
   })
 
@@ -434,9 +434,11 @@ describe('recorded results', () => {
     })
   })
 
-  it.each(RECORDED)('records %s printing the test runner\'s result in the pane', async (port) => {
+  it.each(RECORDED)('records %s printing the test runner\'s result and the log in their panes', async (port) => {
     const { example } = await showcase(port)
-    expect(example!.recording!.output).toMatch(/2 passed/)
+    const lines = example!.recording!.answers.map((answer) => answer.line)
+    expect(lines[0]).toMatch(/2 passed/)
+    expect(lines.at(-1)).toMatch(/checks finished/)
     expect(example!.steps.every((step) => step.result !== undefined)).toBe(true)
   })
 

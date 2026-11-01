@@ -14,7 +14,7 @@ const answer = (step) => [step.content, step.structuredContent ?? null]
  * the expected text on its own word boundary and exited 0.
  *
  * @param {{ tool: string, arguments: unknown, isError: boolean, content: unknown[], structuredContent?: unknown }[]} steps
- * @param {{ port: string, runTool: string, expected: string }} options
+ * @param {{ port: string, runTool: string, expected: string[] }} options
  */
 export function verifyRecording(steps, { port, runTool, expected }) {
   const returned = new Set()
@@ -25,15 +25,17 @@ export function verifyRecording(steps, { port, runTool, expected }) {
     }
     for (const id of idsIn(answer(step))) returned.add(id)
   }
-  const run = steps.filter((step) => step.tool === runTool)
-  if (run.length !== 1) throw new Error(`${port}: expected one ${runTool} step, found ${run.length}`)
-  const result = run[0].structuredContent ?? {}
-  const output = typeof result.output === 'string' ? result.output : ''
-  if (!new RegExp(`\\b${expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(output)) {
-    throw new Error(`${port}: the ${runTool} output lacks "${expected}": ${output.slice(0, 300)}`)
-  }
-  const status = result.exitStatus ?? result.exit_status
-  if (status !== 0) throw new Error(`${port}: the ${runTool} command exited ${status}`)
+  const runs = steps.filter((step) => step.tool === runTool)
+  if (runs.length !== expected.length) throw new Error(`${port}: expected ${expected.length} ${runTool} steps, found ${runs.length}`)
+  runs.forEach((run, index) => {
+    const result = run.structuredContent ?? {}
+    const output = typeof result.output === 'string' ? result.output : ''
+    if (!new RegExp(`\\b${expected[index].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(output)) {
+      throw new Error(`${port}: ${runTool} step ${index + 1} output lacks "${expected[index]}": ${output.slice(0, 300)}`)
+    }
+    const status = result.exitStatus ?? result.exit_status
+    if (status !== 0) throw new Error(`${port}: ${runTool} step ${index + 1} command exited ${status}`)
+  })
 }
 
 /** Text that must not appear in a recording: where it ran, or who ran it. */

@@ -3,7 +3,8 @@ import { Window } from 'happy-dom'
 import { ModuleKind, ScriptTarget, transpileModule } from 'typescript'
 import { afterEach, describe, expect, it } from 'vitest'
 import { lastOutputLine, replayFrames, windowLabel, type Frame, type ReplayStep } from '../src/lib/mcp-replay'
-import { mcpShowcase, transcriptFor } from '../src/lib/mcp-showcase'
+import { EXAMPLES, mcpShowcase, transcriptFor } from '../src/lib/mcp-showcase'
+import { parseLayout } from '../src/lib/tmux-layout-string'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
 const steps = async (port: string) => (await transcriptFor(port))!.steps as ReplayStep[]
@@ -20,13 +21,18 @@ function recorded(steps: ReplayStep[], count: number): Set<string> {
     else if (value && typeof value === 'object') Object.entries(value).forEach(([name, item]) => walk(name, item))
   }
   steps.slice(0, count).forEach((step) => { walk('arguments', step.arguments); walk('result', step.structuredContent); walk('text', step.content) })
+  // A layout names its panes, so the ids it carries are stated by it.
+  for (const entry of [...found]) {
+    const layout = /^(?:layout|window_layout)=string:(.*)$/s.exec(entry)?.[1]
+    for (const pane of (layout ? parseLayout(layout)?.panes : undefined) ?? []) found.add(`id=string:${pane.id}`)
+  }
   return found
 }
 
 /** The recording's field names that supply each field a frame holds. */
 const SUPPLIED_BY: Record<string, string[]> = {
   id: ['id', 'paneId', 'windowId', 'killed'], name: ['name', 'session_name', 'session'], index: ['index'], active: ['active'],
-  command: ['command'], path: ['path'], typed: ['command'], output: ['output'],
+  command: ['command'], path: ['path', 'cwd'], typed: ['command'], output: ['output'], layout: ['layout', 'window_layout'],
 }
 
 /**
@@ -55,51 +61,65 @@ function untraced(frames: Frame[], steps: ReplayStep[]): string[] {
   return missing
 }
 
+/** Calls in each port's worked example, which the frames and the replay follow. */
+const CALLS = { ts: 6, rs: 7 }
+
 describe('the tmux state each recorded call leaves', () => {
-  it('follows TypeScript: a session with its window and pane, the typed command and output, then nothing', async () => {
+  it('follows TypeScript: a session, a split, the layout it reports, then what each pane ran', async () => {
     const frames = replayFrames(await steps('ts'))
-    expect(frames.map((frame) => frame.sessions.length)).toEqual([0, 1, 1, 0])
+    expect(frames.map((frame) => frame.sessions.length)).toEqual([0, 1, 1, 1, 1, 1, 0])
     const created = frames[1]!.sessions[0]!
     expect(created).toMatchObject({ id: '$0', name: 'checks', windows: [{ id: '@0', panes: [{ id: '%0' }] }] })
     expect(created.windows[0]!.index, 'the result never states an index').toBeUndefined()
-    expect(created.windows[0]!.panes[0]!.typed).toBeUndefined()
-    const ran = frames[2]!.sessions[0]!.windows[0]!.panes[0]!
-    expect(ran.typed).toBe('pytest -q')
-    expect(ran.output).toMatch(/2 passed/)
-    expect(frames[3]!.sessions).toEqual([])
-  })
-
-  it('follows Rust: facts arrive from the list calls, which change nothing', async () => {
-    const frames = replayFrames(await steps('rs'))
-    expect(frames.map((frame) => frame.sessions.length)).toEqual([0, 1, 1, 1, 1, 0])
-    const created = frames[1]!.sessions[0]!
-    expect(created).toMatchObject({ id: '$0', name: 'checks' })
-    expect(created.windows).toHaveLength(1)
-    expect(created.windows[0]!.name, 'only a listing names the window').toBeUndefined()
-    expect(frames[2]).toMatchObject({ reading: 'windows' })
-    const window = frames[2]!.sessions[0]!.windows[0]!
-    expect(window).toMatchObject({ id: '@0', index: 0, name: 'sh', active: true })
-    expect(windowLabel(window)).toBe('0:sh')
-    expect(frames[3]).toMatchObject({ reading: 'panes' })
-    expect(frames[3]!.sessions[0]!.windows[0]!.panes[0]).toMatchObject({ id: '%0', command: 'sh', path: '/home/user/project' })
-    for (const index of [2, 3]) {
-      const before = frames[index - 1]!.sessions[0]!
-      const after = frames[index]!.sessions[0]!
-      expect(after.windows.map((w) => w.panes.length), `list call ${index} adds no window or pane`).toEqual(before.windows.map((w) => w.panes.length))
-    }
+    const split = frames[2]!.sessions[0]!.windows[0]!
+    expect(split.panes.map((pane) => pane.id)).toEqual(['%0', '%1'])
+    expect(split.panes[1]).toMatchObject({ command: 'sh', path: '/home/user/project' })
+    expect(split.layout, 'the split result states no geometry').toBeUndefined()
+    expect(frames[3]).toMatchObject({ reading: 'windows' })
+    const read = frames[3]!.sessions[0]!.windows[0]!
+    expect(parseLayout(read.layout!)).toMatchObject({ width: 80, height: 24, panes: [{ id: '%0', x: 0, w: 40 }, { id: '%1', x: 41, w: 39 }] })
     expect(frames[4]!.sessions[0]!.windows[0]!.panes[0]).toMatchObject({ typed: 'pytest -q' })
-    expect(frames[5]!.sessions).toEqual([])
+    expect(frames[4]!.sessions[0]!.windows[0]!.panes[0]!.output).toMatch(/2 passed/)
+    expect(frames[4]!.sessions[0]!.windows[0]!.panes[1]!.typed, 'the other pane has run nothing yet').toBeUndefined()
+    const last = frames[5]!.sessions[0]!.windows[0]!.panes
+    expect(last[1]).toMatchObject({ typed: 'cat checks.log' })
+    expect(last[1]!.output).toMatch(/checks finished/)
+    expect(last[0]!.output, 'the first pane keeps its own output').toMatch(/2 passed/)
+    expect(frames[6]!.sessions).toEqual([])
   })
 
-  it.each(['ts', 'rs'])('draws nothing for %s that the recording does not contain', async (port) => {
+  it('follows Rust: the pane list names the first pane, the split adds one, tmux\'s window_layout gives the geometry', async () => {
+    const frames = replayFrames(await steps('rs'))
+    expect(frames.map((frame) => frame.sessions.length)).toEqual([0, 1, 1, 1, 1, 1, 1, 0])
+    expect(frames[1]!.sessions[0]).toMatchObject({ id: '$0', name: 'checks' })
+    expect(frames[1]!.sessions[0]!.windows[0]!.panes[0]!.id, 'create_session names no pane').toBeUndefined()
+    expect(frames[2]).toMatchObject({ reading: 'panes' })
+    expect(frames[2]!.sessions[0]!.windows[0]!.panes[0]).toMatchObject({ id: '%0', command: 'sh', path: '/home/user/project' })
+    expect(frames[3]!.sessions[0]!.windows[0]!.panes.map((pane) => pane.id)).toEqual(['%0', '%1'])
+    expect(frames[3]!.sessions[0]!.windows[0]!.layout).toBeUndefined()
+    const read = frames[4]!.sessions[0]!.windows[0]!
+    expect(parseLayout(read.layout!)!.panes.map((pane) => pane.id)).toEqual(['%0', '%1'])
+    expect(frames[5]!.sessions[0]!.windows[0]!.panes[0]).toMatchObject({ typed: 'pytest -q' })
+    expect(frames[6]!.sessions[0]!.windows[0]!.panes[1]).toMatchObject({ typed: 'cat checks.log' })
+    expect(frames[7]!.sessions).toEqual([])
+  })
+
+  it.each(['ts', 'rs'] as const)('draws nothing for %s that the recording does not contain', async (port) => {
     const steps_ = await steps(port)
     expect(untraced(replayFrames(steps_), steps_)).toEqual([])
   })
 
-  it.each(['ts', 'rs'])('needs no window layout for %s: every recorded window holds one pane', async (port) => {
-    for (const frame of replayFrames(await steps(port))) {
-      for (const session of frame.sessions) for (const window of session.windows) expect(window.panes).toHaveLength(1)
+  it.each(['ts', 'rs'] as const)('gives %s panes geometry only from a recorded layout that names every pane', async (port) => {
+    const frames = replayFrames(await steps(port))
+    for (const frame of frames) {
+      for (const session of frame.sessions) for (const window of session.windows) {
+        if (!window.layout) continue
+        const parsed = parseLayout(window.layout)!
+        expect(parsed.panes.map((pane) => pane.id).sort(), `frame ${frame.done}: the layout names the window's panes`).toEqual(window.panes.map((pane) => pane.id).sort())
+      }
     }
+    expect(frames.filter((frame) => frame.sessions[0]?.windows[0]?.layout).length, 'some frame has geometry').toBeGreaterThan(0)
+    expect(frames.find((frame) => (frame.sessions[0]?.windows[0]?.panes.length ?? 0) > 1 && !frame.sessions[0]!.windows[0]!.layout), 'a split with no layout read yet exists').toBeDefined()
   })
 
   it('has a control: a value the recording lacks, or states under another field, or only later, is reported', async () => {
@@ -108,9 +128,10 @@ describe('the tmux state each recorded call leaves', () => {
     frames[1]!.sessions[0]!.windows[0]!.index = 0 // "0" is in the recording, but as an exit status, never an index
     frames[1]!.sessions[0]!.name = 'invented'
     frames[1]!.sessions[0]!.windows[0]!.active = true
-    const later = frames[2]!.sessions[0]!.windows[0]!.panes[0]!.output! // said only by call 2
+    const later = frames[4]!.sessions[0]!.windows[0]!.panes[0]!.output! // said only by call 4
     frames[1]!.sessions[0]!.windows[0]!.panes[0]!.output = later
-    expect(untraced(frames, steps_).sort()).toEqual(['1: active=true', '1: index=0', '1: name=invented', `1: output=${later}`].sort())
+    frames[2]!.sessions[0]!.windows[0]!.layout = '{"V":2,"L":{"t":"p","w":80,"h":24,"x":0,"y":0,"I":"%0"}}' // geometry nothing reported
+    expect(untraced(frames, steps_).sort()).toEqual(['1: active=true', '1: index=0', '1: name=invented', `1: output=${later}`, '2: layout={"V":2,"L":{"t":"p","w":80,"h":24,"x":0,"y":0,"I":"%0"}}'].sort())
   })
 
   it('quotes the last line of output that has text, for the agent\'s answer', () => {
@@ -157,23 +178,48 @@ describe('the replay component', () => {
 
   it('without script shows the whole chat, every result and the final state, and no controls', async () => {
     const { document } = await mount('rs')
-    expect(turnsShown(document)).toBe(6)
-    expect(document.querySelectorAll('details.mcp-result[open]')).toHaveLength(5)
-    expect(frameShown(document)).toEqual([5])
-    expect(document.querySelectorAll('[data-frame]')).toHaveLength(6)
+    expect(turnsShown(document)).toBe(CALLS.rs + 1)
+    expect(document.querySelectorAll('details.mcp-result[open]')).toHaveLength(CALLS.rs)
+    expect(frameShown(document)).toEqual([CALLS.rs])
+    expect(document.querySelectorAll('[data-frame]')).toHaveLength(CALLS.rs + 1)
     expect((document.querySelector('[data-controls]') as HTMLElement).hidden).toBe(true)
     expect(document.querySelector('[data-live]')).toBeNull()
   })
 
-  it('draws the status line and panes of each state from the recording', async () => {
+  it('draws the status line, the unsized list and the panes of each state from the recording', async () => {
     const { document } = await mount('rs')
     const frame = (done: number) => document.querySelector(`[data-frame="${done}"]`)!
-    expect(frame(2).querySelector('.mcp-tmux__status')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('[checks] 0:sh*')
-    expect(frame(4).querySelector('.mcp-pane__text')!.textContent).toMatch(/^\$ pytest -q\n.*\n2 passed/s)
-    expect(frame(2).querySelector('.mcp-tmux__windows')!.className).toContain('is-reading')
-    expect(frame(3).querySelector('.mcp-tmux__screen')!.className).toContain('is-reading')
-    expect(frame(5).querySelector('.mcp-tmux__screen--empty')!.textContent).toBe('No sessions')
+    expect(frame(1).querySelector('.mcp-tmux__status')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('[checks]')
     expect(frame(1).querySelector('svg.gp-tmux-layout')).not.toBeNull()
+    expect(frame(2).querySelector('.mcp-tmux__screen')!.className).toContain('is-reading')
+    expect(frame(3).querySelector('.mcp-tmux__screen--unsized .mcp-tmux__unsized')!.textContent).toBe('Panes, sizes not read yet')
+    expect([...frame(3).querySelectorAll('.mcp-tmux__screen--unsized li')].map((item) => item.textContent)).toEqual(['%0 sh', '%1 sh'])
+    expect(frame(3).querySelector('svg'), 'no boxes before a layout is read').toBeNull()
+    expect(frame(4).querySelector('.mcp-tmux__windows')!.className).toContain('is-reading')
+    expect(frame(5).querySelector('.mcp-pane__text')!.textContent).toMatch(/^\$ pytest -q\n.*\n2 passed/s)
+    expect(frame(6).querySelectorAll('.mcp-pane__text')[1]!.textContent).toMatch(/^\$ cat checks\.log\n.*checks finished/s)
+    expect(frame(7).querySelector('.mcp-tmux__screen--empty')!.textContent).toBe('No sessions')
+    expect(frame(0).querySelector('.mcp-tmux__screen--empty')!.textContent, 'nothing is said before the first call').toBe('')
+  })
+
+  it.each(['ts', 'rs'] as const)('places the %s panes at the rectangles the recorded layout gives', async (port) => {
+    const { document } = await mount(port)
+    const layoutFrame = replayFrames(await steps(port)).find((frame) => frame.sessions[0]?.windows[0]?.layout)!
+    const parsed = parseLayout(layoutFrame.sessions[0]!.windows[0]!.layout!)!
+    const panes = [...document.querySelector(`[data-frame="${layoutFrame.done}"]`)!.querySelectorAll<HTMLElement>('.mcp-pane')]
+    expect(panes).toHaveLength(parsed.panes.length)
+    panes.forEach((pane, index) => {
+      const rect = parsed.panes[index]!
+      const percent = (value: number, whole: number) => `${(value / whole) * 100}%`
+      expect(pane.style.left).toBe(percent(rect.x, parsed.width))
+      expect(pane.style.top).toBe(percent(rect.y, parsed.height))
+      expect(pane.style.width).toBe(percent(rect.w, parsed.width))
+      expect(pane.style.height).toBe(percent(rect.h, parsed.height))
+      expect(pane.querySelector('.mcp-pane__id')!.textContent).toContain(rect.id)
+    })
+    const layoutSvg = document.querySelector(`[data-frame="${layoutFrame.done}"] svg.gp-tmux-layout`)!
+    expect(layoutSvg.getAttribute('viewBox')).toBe(`0 0 ${parsed.width * 8} ${parsed.height * 17}`)
+    expect(layoutSvg.querySelectorAll('.divider').length, 'the split is drawn as one divider').toBe(1)
   })
 
   it.each(['ts', 'rs'])('draws only recorded words, besides tmux\'s own punctuation, in the %s preview', async (port) => {
@@ -191,8 +237,8 @@ describe('the replay component', () => {
   it('with a reduced-motion preference starts at the end and does not play', async () => {
     const { document } = await mount('ts', { run: true, reduced: true, interval: 5 })
     await new Promise((resolve) => setTimeout(resolve, 80))
-    expect(turnsShown(document)).toBe(4)
-    expect(frameShown(document)).toEqual([3])
+    expect(turnsShown(document)).toBe(CALLS.ts + 1)
+    expect(frameShown(document)).toEqual([CALLS.ts])
     expect(action(document, 'play').getAttribute('aria-label')).toBe('Replay')
     expect(document.querySelectorAll('details.mcp-result[open]')).toHaveLength(0)
     expect((document.querySelector('[data-controls]') as HTMLElement).hidden).toBe(false)
@@ -200,25 +246,25 @@ describe('the replay component', () => {
 
   it('without that preference plays from the first call to the last by itself', async () => {
     const { document } = await mount('ts', { run: true, interval: 15 })
-    expect(turnsShown(document), 'starts from the prompt').toBeLessThan(4)
-    await new Promise((resolve) => setTimeout(resolve, 400))
-    expect(turnsShown(document)).toBe(4)
-    expect(frameShown(document)).toEqual([3])
-    expect(document.querySelector('[data-count]')!.textContent).toBe('3/3')
+    expect(turnsShown(document), 'starts from the prompt').toBeLessThan(CALLS.ts + 1)
+    await new Promise((resolve) => setTimeout(resolve, 900))
+    expect(turnsShown(document)).toBe(CALLS.ts + 1)
+    expect(frameShown(document)).toEqual([CALLS.ts])
+    expect(document.querySelector('[data-count]')!.textContent).toBe(`${CALLS.ts}/${CALLS.ts}`)
   })
 
   it('steps back and forward, jumps to a marker, and restarts from the end', async () => {
     const { win, document } = await mount('ts', { run: true, reduced: true, interval: 15 })
     click(win, action(document, 'back'))
-    expect(frameShown(document)).toEqual([2])
-    expect(turnsShown(document)).toBe(2)
-    expect(document.querySelector('[data-count]')!.textContent).toBe('2/3')
+    expect(frameShown(document)).toEqual([CALLS.ts - 1])
+    expect(turnsShown(document)).toBe(CALLS.ts - 1)
+    expect(document.querySelector('[data-count]')!.textContent).toBe(`${CALLS.ts - 1}/${CALLS.ts}`)
     click(win, action(document, 'forward'))
-    expect(frameShown(document)).toEqual([3])
+    expect(frameShown(document)).toEqual([CALLS.ts])
     click(win, document.querySelector('[data-mark="1"]')!)
     expect(frameShown(document)).toEqual([1])
     expect(document.querySelectorAll('[data-mark].is-done')).toHaveLength(1)
-    click(win, document.querySelector('[data-mark="3"]')!)
+    click(win, document.querySelector(`[data-mark="${CALLS.ts}"]`)!)
     click(win, action(document, 'play'))
     expect(turnsShown(document), 'play at the end starts again from the prompt').toBe(0)
     expect(action(document, 'play').getAttribute('aria-label')).toBe('Pause')
@@ -233,28 +279,28 @@ describe('the replay component', () => {
     const turn = (index: number) => document.querySelector(`[data-turn="${index}"]`)!
     turn(1).dispatchEvent(new win.MouseEvent('mouseenter') as unknown as Event)
     expect(frameShown(document)).toEqual([2])
-    expect(turnsShown(document), 'everything stays visible').toBe(6)
+    expect(turnsShown(document), 'everything stays visible').toBe(CALLS.rs + 1)
     turn(1).dispatchEvent(new win.MouseEvent('mouseleave') as unknown as Event)
-    expect(frameShown(document)).toEqual([5])
+    expect(frameShown(document)).toEqual([CALLS.rs])
     click(win, turn(2))
     expect(frameShown(document)).toEqual([3])
     expect(turn(2).classList.contains('is-pinned')).toBe(true)
     expect(document.querySelector('[data-hint]')!.textContent).toMatch(/^Pinned/)
     click(win, turn(2))
-    expect(frameShown(document), 'a second click unpins').toEqual([5])
+    expect(frameShown(document), 'a second click unpins').toEqual([CALLS.rs])
     click(win, turn(0))
     key(win, document.querySelector('[data-body]')!, 'Escape')
-    expect(frameShown(document), 'Escape unpins').toEqual([5])
+    expect(frameShown(document), 'Escape unpins').toEqual([CALLS.rs])
   })
 
   it('does not let focus or touch hover hold the preview, and ignores keys with a modifier', async () => {
     const { win, document } = await mount('ts', { run: true, reduced: true })
     const turn = document.querySelector('[data-turn="0"]')!
     turn.dispatchEvent(new win.FocusEvent('focus') as unknown as Event)
-    expect(frameShown(document), 'focus does not preview').toEqual([3])
+    expect(frameShown(document), 'focus does not preview').toEqual([CALLS.ts])
     const body = document.querySelector('[data-body]')!
     body.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }) as unknown as Event)
-    expect(frameShown(document), 'Alt+Left is the browser\'s').toEqual([3])
+    expect(frameShown(document), 'Alt+Left is the browser\'s').toEqual([CALLS.ts])
   })
 
   it('does not start by itself once the reader has used a control before it was on screen', async () => {
@@ -295,13 +341,13 @@ describe('the replay component', () => {
     const body = document.querySelector('[data-body]')!
     expect(body.getAttribute('tabindex')).toBe('0')
     key(win, body, 'ArrowLeft')
-    expect(frameShown(document)).toEqual([2])
+    expect(frameShown(document)).toEqual([CALLS.ts - 1])
     key(win, body, 'Home')
     expect(frameShown(document)).toEqual([0])
     key(win, body, 'ArrowRight')
     expect(frameShown(document)).toEqual([1])
     key(win, body, 'End')
-    expect(frameShown(document)).toEqual([3])
+    expect(frameShown(document)).toEqual([CALLS.ts])
     const turn = document.querySelector('[data-turn="0"]')!
     expect(turn.getAttribute('tabindex')).toBe('0')
     key(win, turn, 'Enter')
@@ -314,7 +360,7 @@ describe('the replay component', () => {
     expect(document.querySelector('[data-tmux]')).toBeNull()
     expect(document.querySelector('[data-controls]')).toBeNull()
     expect(root.hasAttribute('data-live')).toBe(false)
-    expect(document.querySelectorAll('article.mcp-turn')).toHaveLength(4)
-    expect(visible(document, 'article.mcp-turn')).toHaveLength(4)
+    expect(document.querySelectorAll('article.mcp-turn')).toHaveLength(EXAMPLES.go!.steps.length)
+    expect(visible(document, 'article.mcp-turn')).toHaveLength(EXAMPLES.go!.steps.length)
   })
 })
