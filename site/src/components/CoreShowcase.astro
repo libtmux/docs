@@ -2,7 +2,7 @@
 import { Code } from 'astro-expressive-code/components'
 import HomeExample from './HomeExample.astro'
 import { CAPABILITIES, portCapabilities, type CapabilityTable } from '../lib/core-capabilities'
-import { QUICKSTARTS } from '../lib/quickstarts'
+import { QUICKSTARTS, homeProgram } from '../lib/quickstarts'
 import { PORT_BY_SLUG } from '../lib/ports'
 import TABLE from '../data/core-capabilities.json'
 import SOURCES from '../data/example-sources.json'
@@ -29,6 +29,7 @@ interface Props {
 const { port, links = [] } = Astro.props as Props
 const programs = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>)
 const quickstart = QUICKSTARTS[port]?.complete
+const quickstartCode = quickstart ? homeProgram(quickstart, 'full') : ''
 // The first capability is the port's homepage quickstart, which already walks server, session, window and pane.
 const shown = [
   ...(quickstart ? [{ id: 'typed-graph', label: CAPABILITIES[0].label, quickstart: true as const, tmux: undefined as string | undefined }] : []),
@@ -50,7 +51,8 @@ const shown = [
     </div>
   </details>
   <div class="core-showcase__panels">
-    {shown.map((item, index) => item.quickstart ? <section class="core-showcase__panel" data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}>
+    {shown.map((item, index) => item.quickstart ? <section class="core-showcase__panel" data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}
+      style={`--home-code-columns: ${homeCodeColumns(quickstartCode)}`}>
       <HomeExample port={port} language={PORT_BY_SLUG[port]!.name} example={quickstart!} heading={false} />
     </section> : <section class="core-showcase__panel" data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}
       style={`--home-code-columns: ${homeCodeColumns(item.code)}`}>
@@ -132,8 +134,15 @@ const shown = [
   .core-showcase__option { display: block; padding: .45rem .75rem; border-radius: .35rem; font-size: .875rem; color: inherit; text-decoration: none; }
   .core-showcase__option:hover { background: var(--color-surface-hover); }
   .core-showcase__option[aria-current='true'] { font-weight: 600; background: var(--color-surface-hover); }
-  .core-showcase__panel { display: none; }
-  .core-showcase:not([data-selected]) .core-showcase__panel[data-default], .core-showcase :global(.core-showcase__panel.is-selected) { display: block; }
+  /* The panels share one grid cell, so the column is as tall as the tallest and switching moves nothing below. */
+  .core-showcase__panels { display: grid; container-type: inline-size; }
+  .core-showcase__panel { grid-area: 1 / 1; visibility: hidden; }
+  .core-showcase:not([data-selected]) .core-showcase__panel[data-default], .core-showcase :global(.core-showcase__panel.is-selected) { visibility: visible; }
+  /* The treatment of the front page examples: column-fit type size, a fixed height, scrolling inside the block. */
+  .core-showcase__panel :global(.expressive-code) {
+    --ec-codeFontSize: clamp(.8125rem, calc((100cqi - 2rem) / (var(--home-code-columns, 80) * .625)), .9375rem);
+  }
+  .core-showcase__panel :global(.expressive-code pre) { height: 34rem; max-height: none; overflow: auto; tab-size: 8; scrollbar-gutter: stable; }
   .core-showcase__panel h3 { margin: 0 0 .6rem; font-size: 1rem; }
   .core-showcase__tmux {
     margin-inline-start: .5rem; padding: .05rem .4rem; border: 1px solid var(--color-edge); border-radius: .75rem;
