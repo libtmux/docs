@@ -12,7 +12,7 @@ revision `555f60aff5341d8ba59c7466eb9abb537084c98d`. Their source includes 15
 language palettes and three products. Adding artwork does not claim a new
 port has published documentation.
 The library sharing cards use asset kit revision
-`c9688d9db25e4c522ff1255d0f3badaf27d780dd`. Each card includes a native
+`4b86a9d9158d7c6d52cd635d59c92a04b48b960f`. Each card includes a native
 query excerpt. The GitHub preview uses the light Python library card.
 
 F#, Kotlin, and Scala declarations use their own palettes when the route
