@@ -80,21 +80,21 @@
     },
     "powershell": {
       "repo": "libtmux/libtmux-powershell",
-      "revision": "2c30121b7733bf772d17140231a49332e5a470ab",
+      "revision": "fa5e60c48b312eb0d957d02aad9edcfc50cff359",
       "distributions": [
         {
           "name": "LibTmux",
           "version": "0.1.0",
           "manifest": "module/LibTmux/LibTmux.psd1",
           "repo": "libtmux/libtmux-powershell",
-          "revision": "2c30121b7733bf772d17140231a49332e5a470ab"
+          "revision": "fa5e60c48b312eb0d957d02aad9edcfc50cff359"
         },
         {
           "name": "LibTmux.Workspace",
           "version": "0.1.0",
           "manifest": "module/LibTmux.Workspace/LibTmux.Workspace.psd1",
           "repo": "libtmux/libtmux-powershell",
-          "revision": "2c30121b7733bf772d17140231a49332e5a470ab"
+          "revision": "fa5e60c48b312eb0d957d02aad9edcfc50cff359"
         }
       ],
       "units": []
@@ -534,63 +534,63 @@
     },
     "csharp": {
       "repo": "libtmux/libtmux-dotnet",
-      "revision": "472c2bcfbda6735139849324cc109ad70300001e",
+      "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
       "distributions": [
         {
           "name": "LibTmux",
-          "version": "0.1.0",
+          "version": "0.1.1",
           "manifest": "src/LibTmux/LibTmux.csproj",
           "repo": "libtmux/libtmux-dotnet",
-          "revision": "472c2bcfbda6735139849324cc109ad70300001e"
+          "revision": "8d47af7d89638ad267528ac56897cec67df597f7"
         },
         {
           "name": "LibTmux.Extensions.DependencyInjection",
-          "version": "0.1.0",
+          "version": "0.1.1",
           "manifest": "src/LibTmux.Extensions.DependencyInjection/LibTmux.Extensions.DependencyInjection.csproj",
           "repo": "libtmux/libtmux-dotnet",
-          "revision": "472c2bcfbda6735139849324cc109ad70300001e"
+          "revision": "8d47af7d89638ad267528ac56897cec67df597f7"
         },
         {
           "name": "LibTmux.FSharp",
-          "version": "0.1.0",
+          "version": "0.1.1",
           "manifest": "src/LibTmux.FSharp/LibTmux.FSharp.fsproj",
           "repo": "libtmux/libtmux-dotnet",
-          "revision": "472c2bcfbda6735139849324cc109ad70300001e"
+          "revision": "8d47af7d89638ad267528ac56897cec67df597f7"
         },
         {
           "name": "LibTmux.Mcp",
-          "version": "0.1.0",
+          "version": "0.1.1",
           "manifest": "src/LibTmux.Mcp/LibTmux.Mcp.csproj",
           "repo": "libtmux/libtmux-dotnet",
-          "revision": "472c2bcfbda6735139849324cc109ad70300001e"
+          "revision": "8d47af7d89638ad267528ac56897cec67df597f7"
         },
         {
           "name": "LibTmux.Query.Json",
-          "version": "0.1.0",
+          "version": "0.1.1",
           "manifest": "src/LibTmux.Query.Json/LibTmux.Query.Json.csproj",
           "repo": "libtmux/libtmux-dotnet",
-          "revision": "472c2bcfbda6735139849324cc109ad70300001e"
+          "revision": "8d47af7d89638ad267528ac56897cec67df597f7"
         },
         {
           "name": "LibTmux.Testing",
-          "version": "0.1.0",
+          "version": "0.1.1",
           "manifest": "src/LibTmux.Testing/LibTmux.Testing.csproj",
           "repo": "libtmux/libtmux-dotnet",
-          "revision": "472c2bcfbda6735139849324cc109ad70300001e"
+          "revision": "8d47af7d89638ad267528ac56897cec67df597f7"
         },
         {
           "name": "LibTmux.Workspace",
-          "version": "0.1.0",
+          "version": "0.1.1",
           "manifest": "src/LibTmux.Workspace/LibTmux.Workspace.csproj",
           "repo": "libtmux/libtmux-dotnet",
-          "revision": "472c2bcfbda6735139849324cc109ad70300001e"
+          "revision": "8d47af7d89638ad267528ac56897cec67df597f7"
         },
         {
           "name": "LibTmux.Workspace.Cli",
-          "version": "0.1.0",
+          "version": "0.1.1",
           "manifest": "src/LibTmux.Workspace.Cli/LibTmux.Workspace.Cli.csproj",
           "repo": "libtmux/libtmux-dotnet",
-          "revision": "472c2bcfbda6735139849324cc109ad70300001e"
+          "revision": "8d47af7d89638ad267528ac56897cec67df597f7"
         }
       ],
       "units": []
