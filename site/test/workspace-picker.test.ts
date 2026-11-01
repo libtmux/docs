@@ -322,12 +322,9 @@ describe('the picker as rendered', () => {
     expect(selectionRules(['a', 'b'])).not.toMatch(/display|height|block-size/)
   })
 
-  it('lays out the example gallery lazily but keeps it in the page', () => {
+  it('lays out every example, so a heading always has a box for the page\'s scroll spy', () => {
     const css = readFileSync(new URL('../src/styles/workspace-showcase.css', import.meta.url), 'utf8')
-    expect(css).toMatch(/\.ws-example\s*\{[^}]*content-visibility: auto;[^}]*contain-intrinsic-block-size: auto /)
-    // Room at the sides of the contained box for focus rings, paid back by a negative margin; block padding would add to the gap between examples.
-    expect(css).toMatch(/\.ws-example\s*\{[^}]*margin: 2\.5rem -0\.5rem;[^}]*padding-inline: 0\.5rem;/)
-    expect(css).toMatch(/\.ws-example:has\(:target\)\s*\{\s*content-visibility: initial/)
+    expect(css).not.toMatch(/content-visibility|contain-intrinsic/)
     const source = readFileSync(new URL('../src/components/workspace/WorkspaceShowcase.astro', import.meta.url), 'utf8')
     expect(source).not.toMatch(/hidden|loading=|client:/)
   })

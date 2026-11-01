@@ -197,22 +197,7 @@
 }
 
 .ws-example {
-  /* Paint containment clips at the padding box, so a focus ring at a side edge needs room inside it. */
-  margin: 2.5rem -0.5rem;
-  padding-inline: 0.5rem;
-  /*
-   * Every example is in the HTML for search and for a reader without script,
-   * but the browser lays out only those near the viewport, so a page with
-   * every preset below the picker does not lay out tens of thousands of pixels
-   * up front. `auto` in the size remembers a measured example's height.
-   */
-  content-visibility: auto;
-  contain-intrinsic-block-size: auto 48rem;
-}
-
-/* The example a link names is laid out, so landing on it needs no estimate. */
-.ws-example:has(:target) {
-  content-visibility: initial;
+  margin-block: 2.5rem;
 }
 
 .ws-also,
