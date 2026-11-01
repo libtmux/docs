@@ -140,7 +140,7 @@ const draw = (frame: Frame) => {
       {example.steps.map((step, index) => {
         const tier = tierFor(step.tool)
         return (
-          <article class="mcp-turn" data-turn={index} tabindex={recording ? 0 : undefined}>
+          <article class="mcp-turn" data-turn={index}>
             <p class="mcp-turn__say"><span class="mcp-turn__who">agent</span>{step.caption}</p>
             <div class="mcp-call">
               <span class="mcp-call__dot" aria-hidden="true"></span>
@@ -148,6 +148,7 @@ const draw = (frame: Frame) => {
               {tier && <span class={`mcp-tier mcp-tier--${step.tool.tier}`} title={tier.tooltip}>{tier.label}</span>}
               <code class="mcp-call__args">{args(step.arguments)}</code>
             </div>
+            {recording && <button type="button" class="mcp-turn__pin" data-pin aria-pressed="false" tabindex="-1" hidden aria-label={`Pin the tmux state after ${step.tool.name}`}><svg class="mcp-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2.5h6v11L8 11l-3 2.5z" /></svg></button>}
             {recording && step.result !== undefined && (
               <details class="mcp-result" open>
                 <summary>Result</summary>
@@ -158,7 +159,8 @@ const draw = (frame: Frame) => {
         )
       })}
       {recording && answers.length > 0 && (
-        <div class="mcp-turn mcp-turn--answer" data-turn={total} tabindex="0">
+        <div class="mcp-turn mcp-turn--answer" data-turn={total}>
+          <button type="button" class="mcp-turn__pin" data-pin aria-pressed="false" tabindex="-1" hidden aria-label="Pin the final tmux state"><svg class="mcp-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2.5h6v11L8 11l-3 2.5z" /></svg></button>
           <p class="mcp-turn__say"><span class="mcp-turn__who">agent</span>
             {answers.map((answer, index) => <>{index > 0 && '; '}{answer.pane ? `in ${answer.pane} it` : 'It'} printed <q>{answer.line}</q></>)}.</p>
         </div>
@@ -203,6 +205,7 @@ const draw = (frame: Frame) => {
     const controls = root.querySelector<HTMLElement>('[data-controls]')
     if (!controls) return
     const turns = [...root.querySelectorAll<HTMLElement>('[data-turn]')].filter((turn) => turn.dataset.turn !== 'prompt')
+    const pins = turns.map((turn) => turn.querySelector<HTMLButtonElement>('[data-pin]')!)
     const frames = [...root.querySelectorAll<HTMLElement>('[data-frame]')]
     const play = root.querySelector<HTMLButtonElement>('[data-action="play"]')!
     const marks = [...root.querySelectorAll<HTMLElement>('[data-mark]')]
@@ -223,6 +226,8 @@ const draw = (frame: Frame) => {
     let playing = false
     // Once the reader has used a control, the replay does not start by itself.
     let touched = false
+    // The one call whose pin button is a tab stop; arrow keys move it, so the list is a single stop.
+    let rover = -1
 
     const use = () => { touched = true; hover = null }
     const stop = () => { playing = false; if (timer) clearTimeout(timer); timer = undefined }
@@ -237,6 +242,12 @@ const draw = (frame: Frame) => {
         if (index < total && index + 1 === shownFrame) turn.setAttribute('aria-current', 'step')
         else turn.removeAttribute('aria-current')
         turn.classList.toggle('is-pinned', pinned !== null && Math.min(index + 1, total) === pinned)
+      })
+      const visible = turns.map((turn, position) => (turn.hidden ? -1 : position)).filter((position) => position >= 0)
+      const active = visible.includes(rover) ? rover : visible.at(-1) ?? -1
+      pins.forEach((pin, position) => {
+        pin.setAttribute('aria-pressed', String(pinned !== null && Math.min(Number(turns[position]!.dataset.turn) + 1, total) === pinned))
+        pin.tabIndex = position === active ? 0 : -1
       })
       frames.forEach((frame) => { frame.hidden = Number(frame.dataset.frame) !== shownFrame })
       marks.forEach((mark) => {
@@ -293,30 +304,43 @@ const draw = (frame: Frame) => {
       if (document.fullscreenElement) void document.exitFullscreen()
       else void root.requestFullscreen?.()
     })
-    turns.forEach((turn) => {
+    function togglePin(frame: number) {
+      use()
+      stop()
+      pinned = pinned === frame ? null : frame
+      render()
+    }
+    pins.forEach((pin) => { pin.hidden = false })
+    turns.forEach((turn, position) => {
       const frame = Math.min(Number(turn.dataset.turn) + 1, total)
+      const pin = pins[position]!
       if (canHover) {
         turn.addEventListener('mouseenter', () => { hover = frame; render() })
         turn.addEventListener('mouseleave', () => { hover = null; render() })
       }
+      // A click anywhere on the call pins it, for a pointer; the button is the way in for a keyboard and for assistive technology.
       turn.addEventListener('click', (event) => {
-        if ((event.target as HTMLElement).closest('a, summary')) return
-        use()
-        stop()
-        pinned = pinned === frame ? null : frame
-        render()
+        if ((event.target as HTMLElement).closest('a, summary, button')) return
+        togglePin(frame)
       })
-      turn.addEventListener('keydown', (event) => {
-        if (event.key !== 'Enter' && event.key !== ' ') return
-        if ((event.target as HTMLElement) !== turn) return
+      pin.addEventListener('click', () => { rover = position; togglePin(frame) })
+      pin.addEventListener('focus', () => { rover = position })
+      pin.addEventListener('keydown', (event) => {
+        if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
+        if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return
+        const visible = turns.map((candidate, index) => (candidate.hidden ? -1 : index)).filter((index) => index >= 0)
+        const next = visible[visible.indexOf(position) + (event.key === 'ArrowDown' ? 1 : -1)]
+        if (next === undefined) return
         event.preventDefault()
-        turn.click()
+        rover = next
+        render()
+        pins[next]!.focus()
       })
     })
     body.addEventListener('keydown', (event) => {
       // Leave the browser's own shortcuts, such as Alt+Left for back, alone, and keys meant for a result being scrolled.
       const target = event.target as HTMLElement
-      if (target !== body && !target.hasAttribute('data-turn')) return
+      if (target !== body && !target.hasAttribute('data-pin')) return
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
       if (event.key === 'ArrowRight') { go(step + 1); event.preventDefault() }
       else if (event.key === 'ArrowLeft') { go(step - 1); event.preventDefault() }

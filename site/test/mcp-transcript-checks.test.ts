@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { idsIn, leaks, verifyRecording } from '../../scripts/lib/mcp-transcript-checks.mjs'
+import { readdirSync, readFileSync } from 'node:fs'
+import { hostname, userInfo } from 'node:os'
+import { idsIn, leaks, sanitize, verifyRecording } from '../../scripts/lib/mcp-transcript-checks.mjs'
 
 type Step = { tool: string; arguments: unknown; isError: boolean; content: unknown[]; structuredContent?: unknown }
 const OPTIONS = { port: 'x', runTool: 'run_shell_command', expected: ['2 passed'] }
@@ -75,8 +77,43 @@ describe('the checks a recording must pass', () => {
     expect(() => verifyRecording(read, { ...options, present: ['%7'] })).toThrow(/last answer lacks "%7"/)
   })
 
-  it('finds ids and host names in text', () => {
+  it('finds ids in text', () => {
     expect([...idsIn({ a: '%0', b: ['$1', '@22'] })].sort()).toEqual(['$1', '%0', '@22'])
-    expect(leaks('ran in /home/someone/work', ['/home/someone', 'x', ''])).toEqual(['/home/someone'])
+  })
+})
+
+describe('keeping the host out of a recording', () => {
+  const marks = { paths: [['/tmp/t239-x/project', '/home/user/project']] as [string, string][], names: ['d'] }
+
+  it('refuses a name of any length as a token or a quoted value, in a string or in JSON inside one', () => {
+    expect(leaks('{"pane_title":"d"}', [], ['d'])).toEqual(['d'])
+    expect(leaks('{\\"pane_title\\":\\"d\\"}', [], ['d'])).toEqual(['d'])
+    expect(leaks('logged in as d on host d', [], ['d'])).toEqual(['d'])
+    expect(leaks('ran in /tmp/t239-x/project', ['/tmp/t239-x'], [])).toEqual(['/tmp/t239-x'])
+  })
+
+  it('does not take a name for part of a longer word, path, option or file name', () => {
+    for (const text of ['id and sidebar and d2 and a-d and -d flag', '/home/d/x', 'pytest.d', '"idle"']) expect(leaks(text, [], ['d']), text).toEqual([])
+  })
+
+  it('rewrites a name and a path wherever they are, inside embedded JSON too, and leaves other text alone', () => {
+    const recorded = { title: 'd', text: '{"pane_title":"d","path":"/tmp/t239-x/project","id":"%0"}', lines: ['d@d:/tmp/t239-x/project$ ls', 'id -d'] }
+    const clean = sanitize(recorded, marks)
+    expect(clean).toEqual({ title: 'host', text: '{"pane_title":"host","path":"/home/user/project","id":"%0"}', lines: ['host@host:/home/user/project$ ls', 'id -d'] })
+    expect(leaks(JSON.stringify(clean), ['/tmp/t239-x'], ['d'])).toEqual([])
+    expect(sanitize(clean, marks), 'rewriting twice changes nothing').toEqual(clean)
+  })
+
+  it('has committed recordings that name neither this machine nor the sandbox, and that the rewrite leaves as they are', () => {
+    const dir = new URL('../src/data/mcp-transcripts/', import.meta.url)
+    const files = readdirSync(dir).filter((name) => name.endsWith('.json'))
+    expect(files.length).toBeGreaterThan(8)
+    // d is the name of the machine the recordings were made on; the others are whoever runs this.
+    const names = ['d', hostname(), userInfo().username].filter((name) => !['host', 'user'].includes(name))
+    for (const name of files) {
+      const text = readFileSync(new URL(name, dir), 'utf8')
+      expect(leaks(text, ['/home/d', '/tmp/t239', '/var/folders'], names), name).toEqual([])
+      expect(sanitize(JSON.parse(text), { names }), `${name} is a fixed point of the rewrite`).toEqual(JSON.parse(text))
+    }
   })
 })

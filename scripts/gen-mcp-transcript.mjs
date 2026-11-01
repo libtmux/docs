@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { PORTS } from '../site/src/lib/ports.ts'
 import { EXAMPLES } from '../site/src/lib/mcp-examples.ts'
 import { recordCalls } from './lib/mcp-session.mjs'
-import { leaks, verifyRecording } from './lib/mcp-transcript-checks.mjs'
+import { leaks, sanitize, verifyRecording } from './lib/mcp-transcript-checks.mjs'
 
 /**
  * Record what each port's MCP server answers to the worked example on the MCP
@@ -119,11 +119,9 @@ try {
 
   // The project directory is a fresh temporary one each run; a fixed name keeps the file stable.
   const FIXED = '/home/user/project'
-  // tmux titles a new pane with the host name, and a server may report the user's; as whole values they become "host".
-  const rewrite = (value) => typeof value === 'string' && (value === hostname() || value === userInfo().username) ? 'host' : typeof value === 'string' ? value.replaceAll(join(sandboxReal, 'project'), FIXED).replaceAll(project, FIXED)
-    : Array.isArray(value) ? value.map(rewrite)
-      : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).map(([key, item]) => [key, rewrite(item)])) : value
-  run.steps = run.steps.map(rewrite)
+  // tmux titles a new pane with the host name, and a server may report the user's: as a token, anywhere in a string or in JSON inside one, each becomes "host".
+  const marks = { paths: [[join(sandboxReal, 'project'), FIXED], [project, FIXED]], names: [hostname(), userInfo().username] }
+  run.steps = run.steps.map((step) => sanitize(step, marks))
   transcript = {
     generated: 'scripts/gen-mcp-transcript.mjs',
     repo: snapshot.repo, revision,
@@ -142,7 +140,7 @@ try {
 }
 const out = join(root, 'site/src/data/mcp-transcripts', `${only}.json`)
 const text = `${JSON.stringify(transcript, null, 2)}\n`
-const found = leaks(text, [sandbox, sandboxReal, homedir(), userInfo().username, hostname(), checkout])
+const found = leaks(text, [sandbox, sandboxReal, homedir(), checkout], [userInfo().username, hostname()])
 if (found.length) throw new Error(`${only}: the recording names the host: ${found.join(', ')}`)
 if (checking) {
   const stored = JSON.parse(readFileSync(out, 'utf8'))

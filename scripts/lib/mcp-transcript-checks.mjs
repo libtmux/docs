@@ -43,8 +43,31 @@ export function verifyRecording(steps, { port, runTool, expected, present = [] }
   })
 }
 
-/** Text that must not appear in a recording: where it ran, or who ran it. */
-export function leaks(text, forbidden) {
-  // A name of under four characters would match ordinary text, so only the longer ones are searched for.
-  return forbidden.filter((item) => item && item.length >= 4 && text.includes(item))
+const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+/** A name as a token: not part of a longer word, path, option or file name. Short names such as `d` are matched too. */
+const token = (name) => new RegExp(`(?<![\\w./-])${escapeRegExp(name)}(?![\\w./-])`, 'g')
+
+/**
+ * What a recording names that it must not: `places` (where it ran, found as
+ * text anywhere) and `names` (who ran it, found as a token or a quoted value,
+ * whatever their length, inside a string or inside JSON embedded in one).
+ */
+export function leaks(text, places, names = []) {
+  return [...places.filter((item) => item && text.includes(item)), ...names.filter((item) => item && token(item).test(text))]
+}
+
+/**
+ * A recorded value with the host's marks replaced: each `[from, to]` of
+ * `paths` wherever it occurs in a string, and each of `names` as a token,
+ * inside embedded JSON too, becomes `alias`.
+ */
+export function sanitize(value, { paths = [], names = [], alias = 'host' }) {
+  if (typeof value === 'string') {
+    const moved = paths.reduce((text, [from, to]) => text.replaceAll(from, to), value)
+    return names.filter(Boolean).reduce((text, name) => text.replace(token(name), alias), moved)
+  }
+  if (Array.isArray(value)) return value.map((item) => sanitize(item, { paths, names, alias }))
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, sanitize(item, { paths, names, alias })]))
+  return value
 }

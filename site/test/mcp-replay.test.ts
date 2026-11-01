@@ -491,7 +491,7 @@ describe('the replay component', () => {
     expect(document.querySelector('.is-pinned')).toBeNull()
   })
 
-  it('works from the keyboard: arrows, Home and End on the replay, Enter on a call', async () => {
+  it('works from the keyboard: arrows, Home and End step the replay from its body and from a call\'s pin button', async () => {
     const { win, document } = await mount('ts', { run: true, reduced: true })
     const body = document.querySelector('[data-body]')!
     expect(body.getAttribute('tabindex')).toBe('0')
@@ -503,11 +503,68 @@ describe('the replay component', () => {
     expect(frameShown(document)).toEqual([1])
     key(win, body, 'End')
     expect(frameShown(document)).toEqual([CALLS.ts])
-    const turn = document.querySelector('[data-turn="0"]')!
-    expect(turn.getAttribute('tabindex')).toBe('0')
-    key(win, turn, 'Enter')
-    expect(frameShown(document)).toEqual([1])
-    expect(turn.classList.contains('is-pinned')).toBe(true)
+    const pin = document.querySelector('[data-turn="0"] [data-pin]')!
+    key(win, pin, 'ArrowLeft')
+    expect(frameShown(document), 'a key on the pin button steps the replay too').toEqual([CALLS.ts - 1])
+  })
+
+  it('pins a call with a real button that says whether it is pressed, and leaves the calls out of the tab order', async () => {
+    const { win, document } = await mount('ts', { run: true, reduced: true })
+    const turns = [...document.querySelectorAll('[data-turn]')].filter((turn) => turn.getAttribute('data-turn') !== 'prompt')
+    expect(turns).toHaveLength(CALLS.ts + 1)
+    for (const turn of turns) expect(turn.hasAttribute('tabindex'), 'a call is not a tab stop of its own').toBe(false)
+    const pins = turns.map((turn) => turn.querySelector<HTMLButtonElement>('button[data-pin]')!)
+    for (const pin of pins) {
+      expect(pin.tagName).toBe('BUTTON')
+      expect(pin.type).toBe('button')
+      expect(pin.hidden).toBe(false)
+      expect(pin.getAttribute('aria-label')).toMatch(/^Pin the (tmux state after \w+|final tmux state)$/)
+      expect(pin.getAttribute('aria-pressed')).toBe('false')
+    }
+    // Enter and Space on a button click it; a click pins the call's state and presses the button.
+    click(win, pins[1]!)
+    expect(frameShown(document)).toEqual([2])
+    expect(pins[1]!.getAttribute('aria-pressed')).toBe('true')
+    expect(pins.filter((pin) => pin.getAttribute('aria-pressed') === 'true')).toHaveLength(1)
+    expect(turns[1]!.classList.contains('is-pinned')).toBe(true)
+    click(win, pins[1]!)
+    expect(frameShown(document)).toEqual([CALLS.ts])
+    expect(pins[1]!.getAttribute('aria-pressed')).toBe('false')
+    click(win, turns[2]!)
+    expect(pins[2]!.getAttribute('aria-pressed'), 'a click on the call pins it for a pointer').toBe('true')
+    key(win, document.querySelector('[data-body]')!, 'Escape')
+    expect(pins[2]!.getAttribute('aria-pressed')).toBe('false')
+  })
+
+  it('makes the list of calls one tab stop that arrow keys move along', async () => {
+    const { win, document } = await mount('ts', { run: true, reduced: true })
+    const pins = [...document.querySelectorAll<HTMLButtonElement>('[data-pin]')]
+    const stops = () => pins.filter((pin) => pin.tabIndex === 0)
+    expect(stops(), 'one stop, on the last call played').toEqual([pins.at(-1)])
+    pins[2]!.focus()
+    key(win, pins[2]!, 'ArrowDown')
+    expect(document.activeElement).toBe(pins[3])
+    expect(stops()).toEqual([pins[3]])
+    key(win, pins[3]!, 'ArrowUp')
+    key(win, pins[2]!, 'ArrowUp')
+    expect(document.activeElement).toBe(pins[1])
+    expect(stops()).toEqual([pins[1]])
+    // At the ends the key does nothing.
+    pins[0]!.focus()
+    key(win, pins[0]!, 'ArrowUp')
+    expect(document.activeElement).toBe(pins[0])
+    // Calls not yet played have no stop; stepping back moves the stop onto a played one.
+    click(win, action(document, 'back'))
+    expect(stops()).toHaveLength(1)
+    expect(stops()[0]!.closest('[data-turn]')!.hasAttribute('hidden')).toBe(false)
+  })
+
+  it('has no pin button before script runs, and none in the requests-only form', async () => {
+    const before = await mount('ts')
+    for (const pin of before.document.querySelectorAll<HTMLButtonElement>('[data-pin]')) expect(pin.hidden).toBe(true)
+    const requests = await mount('go', { recorded: false })
+    expect(requests.document.querySelector('[data-pin]')).toBeNull()
+    expect(requests.document.querySelector('[tabindex]')).toBeNull()
   })
 
   it('shows requests only, with no preview or control, for a port with no recording, and the script leaves it alone', async () => {
