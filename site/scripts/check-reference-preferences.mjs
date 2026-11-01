@@ -250,6 +250,153 @@ export async function checkHeaderLinksFail(browser, base) {
   console.log('Header links: the check fails on a hidden or missing chip or disclosure, a hint glyph, overlapping or tiny chips, a disclosure outside the viewport, and an Escape that is swallowed or loses focus')
 }
 
+/** What the open panel draws; each is measured, and a selector that finds nothing is a failure. */
+const HEADER_PANEL_TEXT = ['.header-picker__name', '.header-picker__option small', '.header-picker__heading', '.doc-picker-title']
+/** What sits beside the chips, wherever the bar or the Menu panel has room to draw it. */
+const HEADER_CHIP_TEXT = ['.header-link__label', '.header-picker__label']
+
+/**
+ * What a reader sees of the port links in each colour scheme, and that the
+ * script changes none of it. The script arrives after first paint: it unhides
+ * the panel's search box and wires the disclosures, and none of that may move a
+ * link, so the layout shifts the browser attributes to the header between load
+ * and the open of the panel add up to nothing. (The height of the bar is held
+ * by the check of the links themselves.) The panel's text and the chips' labels
+ * meet 4.5:1 text contrast at full opacity, with the script and without it, and
+ * the page must really be in the scheme asked for, or a dark pass could be a
+ * light page. Contrast is composited on a canvas, which reads whatever colour
+ * syntax the browser computes; `check-header-menu-sections.mjs` parses only
+ * `rgb()`, `rgba()` and `color(srgb)`.
+ *
+ * `script` runs before the page's own scripts and `css` after the page has
+ * enhanced itself, so a control can break one thing. Only a scripted page takes
+ * either: adding a style tag to a page with scripting off never returns, so a
+ * call that asks for both throws.
+ */
+export async function checkHeaderLinksRender(browser, base, { path = '/rs/latest/', schemes = ['light', 'dark'], widths = [320, 1440], javaScript = [true, false], script, css } = {}) {
+  if ((script || css) && javaScript.includes(false)) throw new Error('checkHeaderLinksRender: script and css apply only where JavaScript is on')
+  for (const colorScheme of schemes) for (const width of widths) for (const javaScriptEnabled of javaScript) {
+    const where = `${path} at ${width}px, ${colorScheme}, ${javaScriptEnabled ? 'with' : 'without'} JavaScript`
+    const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme, javaScriptEnabled, reducedMotion: 'reduce' })
+    if (javaScriptEnabled) {
+      await context.addInitScript(() => {
+        window.__headerShift = 0
+        const record = (entries) => {
+          for (const entry of entries) {
+            const inHeader = entry.sources.some(({ node }) => (node instanceof Element ? node : node?.parentElement)?.closest('.site-header'))
+            if (inHeader) window.__headerShift += entry.value
+          }
+        }
+        const observer = new PerformanceObserver((list) => record(list.getEntries()))
+        observer.observe({ type: 'layout-shift', buffered: true })
+        // Entries not yet delivered are flushed at the read, so no wait has to outlast them.
+        window.__headerShiftRead = () => { record(observer.takeRecords()); return window.__headerShift }
+      })
+      if (script) await context.addInitScript(script)
+    }
+    const page = await context.newPage()
+    page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
+    try {
+      await page.goto(`${base}${path}`)
+      await page.waitForFunction(() => document.fonts.status === 'loaded')
+      if (javaScriptEnabled) {
+        await page.waitForSelector('details[data-header-picker][data-enhanced]', { state: 'attached' })
+        if (css) await page.addStyleTag({ content: css })
+        // A page with no script has no frames to wait on; a scripted one has settled after a few. The wait polls once a frame and is bounded by the page timeout.
+        await page.waitForFunction(() => { window.__headerFrames = (window.__headerFrames ?? 0) + 1; return window.__headerFrames >= 5 })
+        const shift = await page.evaluate(() => window.__headerShiftRead())
+        assert.equal(shift, 0, `${where}: the header shifts by ${shift} while the script enhances it`)
+      }
+      const compact = width < 768
+      if (compact) await page.locator('.site-header__menu > summary').click()
+      const picker = page.locator(`details[data-header-picker="destinations"][data-placement="${compact ? 'menu' : 'bar'}"]`)
+      await picker.locator(':scope > summary').click()
+      await picker.locator('[data-picker-panel]').waitFor({ state: 'visible' })
+      const { samples, surface } = await page.evaluate(({ panel, chips }) => {
+        const canvas = document.createElement('canvas').getContext('2d')
+        const luminance = () => {
+          const [r, g, b] = [...canvas.getImageData(0, 0, 1, 1).data].slice(0, 3)
+            .map((v) => v / 255).map((v) => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
+          return r * 0.2126 + g * 0.7152 + b * 0.0722
+        }
+        const paint = (color) => { canvas.fillStyle = color; canvas.fillRect(0, 0, 1, 1) }
+        // A translucent surface composites over the ones beneath it, from the page down.
+        const surfaceOf = (element) => {
+          paint('#fff')
+          const surfaces = []
+          for (let parent = element; parent; parent = parent.parentElement) surfaces.unshift(getComputedStyle(parent).backgroundColor)
+          for (const surface of surfaces) paint(surface)
+          return luminance()
+        }
+        const measure = (selector, element) => {
+          const background = surfaceOf(element)
+          paint(getComputedStyle(element).color)
+          const [light, dark] = [luminance(), background].sort((a, b) => b - a)
+          let opacity = 1
+          for (let parent = element; parent; parent = parent.parentElement) opacity *= Number(getComputedStyle(parent).opacity)
+          return { selector, contrast: (light + 0.05) / (dark + 0.05), opacity, text: element.textContent.trim() }
+        }
+        const open = document.querySelector('details[data-header-picker][open]')
+        return {
+          surface: surfaceOf(document.body),
+          samples: [
+            ...panel.flatMap((selector) => [...(open?.querySelectorAll(selector) ?? [])].filter((element) => element.checkVisibility()).slice(0, 1).map((element) => measure(selector, element))),
+            // A label the width hides has nothing to read.
+            ...chips.flatMap((selector) => [...document.querySelectorAll(selector)].filter((element) => element.checkVisibility()).map((element) => measure(selector, element))),
+          ],
+        }
+      }, { panel: HEADER_PANEL_TEXT, chips: HEADER_CHIP_TEXT })
+      // A page that stayed light would pass every contrast below it as the dark one.
+      assert.equal(surface < 0.2, colorScheme === 'dark', `${where}: the page is in the ${colorScheme} scheme (its surface has luminance ${surface.toFixed(3)})`)
+      for (const selector of [...HEADER_PANEL_TEXT, ...HEADER_CHIP_TEXT]) {
+        assert(samples.some((sample) => sample.selector === selector), `${where}: ${selector} draws nothing to measure`)
+      }
+      for (const { selector, contrast, opacity, text } of samples) {
+        assert(opacity > 0.99, `${where}: ${selector} "${text}" is drawn at opacity ${opacity.toFixed(2)}`)
+        assert(contrast >= 4.5, `${where}: ${selector} "${text}" has contrast ${contrast.toFixed(2)}, under 4.5`)
+      }
+    } finally {
+      await context.close()
+    }
+  }
+}
+
+/**
+ * The check must fail when the bar moves as the script arrives, when text
+ * fades below readable, when a colour reads in one scheme and not the other,
+ * and when the text it measures is no longer there. Each control breaks one
+ * thing on a page a pass reads, and the run before them is that page unbroken.
+ */
+export async function checkHeaderLinksRenderFail(browser, base) {
+  const only = (schemes) => ({ widths: [1440], javaScript: [true], schemes })
+  const detail = (declaration) => `.header-picker__option small { ${declaration} !important }`
+  await checkHeaderLinksRender(browser, base, only(['light', 'dark']))
+  // Dark grey reads on the light panel and not on the dark one, and a light grey the other way round.
+  const darkGrey = detail('color: #555')
+  const lightGrey = detail('color: #ddd')
+  await checkHeaderLinksRender(browser, base, { ...only(['light']), css: darkGrey })
+  await checkHeaderLinksRender(browser, base, { ...only(['dark']), css: lightGrey })
+  const controls = [
+    ['a bar that shifts when the script enhances it', {
+      // The destinations move once the enhanced page has painted, as a late style or script would move them.
+      script: () => new MutationObserver(() => requestAnimationFrame(() => requestAnimationFrame(() => {
+        const destinations = document.querySelector('.site-header__destinations')
+        if (destinations) destinations.style.marginInlineEnd = '12px'
+      }))).observe(document, { attributes: true, attributeFilter: ['data-enhanced'], subtree: true }),
+      ...only(['light']),
+    }, /the header shifts by/],
+    ['a light grey detail line on the light panel', { css: lightGrey, ...only(['light']) }, /header-picker__option small.*under 4\.5/],
+    ['a dark grey detail line on the dark panel', { css: darkGrey, ...only(['dark']) }, /header-picker__option small.*under 4\.5/],
+    ['a faint chip label', { css: '.header-link__label { color: rgb(128 128 128 / .6) !important }', ...only(['light']) }, /header-link__label.*under 4\.5/],
+    ['a detail line drawn at half opacity', { css: detail('opacity: .5'), ...only(['light']) }, /header-picker__option small.*opacity 0\.50/],
+    ['a heading that nothing draws', { css: '.header-picker__heading { display: none !important }', ...only(['light']) }, /header-picker__heading draws nothing/],
+  ]
+  for (const [name, options, failure] of controls) {
+    await assert.rejects(() => checkHeaderLinksRender(browser, base, options), failure, `the check fails with ${name}`)
+  }
+  console.log('Header links render: the check fails on a bar that shifts when the script enhances it, on text that is faint, translucent or readable in one scheme only, and on text that is missing')
+}
+
 /** The global header has no repeated destination strip, including without JS. */
 export async function checkGlobalHeader(browser, base) {
   for (const javaScriptEnabled of [false, true]) {

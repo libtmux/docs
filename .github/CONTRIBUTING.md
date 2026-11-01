@@ -197,6 +197,23 @@ requires the gate to notice, by the problem it names:
 $ node site/scripts/check-dev.mjs --badge-centring
 ```
 
+A port's header links its repository, package host and API reference, and
+lists every other package in a searchable Packages disclosure. The header gate
+shows one copy of them at each width, from the narrowest phone to a wide
+desktop, with and without JavaScript, and requires each to be a usable size,
+the open panel to stay inside the viewport and Escape to return focus. In light
+and dark, at a phone and a desktop width, it then requires that the page really
+is in that scheme, that the header shifts by nothing while the script enhances
+it, and that the panel's names, detail lines and headings and the chips' labels
+meet 4.5:1 text contrast at full opacity. Each check ends with controls that
+break one thing it holds, such as a hidden or overlapping chip, a bar that moves
+late, faint or translucent text, a colour that reads in one scheme only or text
+that is missing, and requires the gate to notice by the problem it names:
+
+```console
+$ node site/scripts/check-dev.mjs --global-header
+```
+
 A link the page marks for a preview card must have a card to show. The preview
 check hovers the C function link of a method page, then asks for the payload of
 every marked link on four pages. It asks only for destinations the dev build
