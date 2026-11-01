@@ -80,7 +80,7 @@ const draw = (frame: Frame) => {
 ---
 <Heading id="worked-example">Worked example</Heading>
 <p>Given this prompt, an agent connected to the {portName} server makes these calls{recording ? ' and gets these results' : ''}.</p>
-<section class={`mcp-replay${recording ? '' : ' mcp-replay--requests'}`} data-mcp-replay data-steps={total} aria-label="Worked example replay">
+<section class={`not-prose mcp-replay${recording ? '' : ' mcp-replay--requests'}`} data-mcp-replay data-steps={total} aria-label="Worked example replay">
   {recording && (
     <header class="mcp-replay__head" data-head hidden>
       <span class="mcp-replay__title">Replay</span>
@@ -182,7 +182,7 @@ const draw = (frame: Frame) => {
   )}
 </section>
 {recording ? (
-  <p class="mcp-provenance">
+  <p class="not-prose mcp-provenance">
     Calls and results are recorded against <a href={`https://github.com/${recording.repo}/tree/${recording.revision}`}><code>{recording.repo}</code></a>
     at <code>{recording.revision.slice(0, 9)}</code>, on a private {recording.tmux} server{recording.answers.length > 0 && <>, running {recording.runner}</>}. The preview draws only what those results state.
     The agent's narration is illustrative.
@@ -190,7 +190,7 @@ const draw = (frame: Frame) => {
     {recording.projectDirectory && <> The sandbox's project directory is shown as <code>{recording.projectDirectory}</code>.</>}
   </p>
 ) : (
-  <p class="mcp-provenance">Requests only: no recorded results for {portName} yet.</p>
+  <p class="not-prose mcp-provenance">Requests only: no recorded results for {portName} yet.</p>
 )}
 
 <script>

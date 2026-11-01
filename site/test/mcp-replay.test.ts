@@ -298,6 +298,21 @@ describe('the replay component', () => {
     expect(emoji.test('\u21BA')).toBe(false)
   })
 
+  it('opts out of the article\'s prose styles, so it renders the same on the overview as on the language page', async () => {
+    for (const recorded of [true, false]) {
+      const { document } = await mount('ts', { recorded })
+      expect(document.querySelector('[data-mcp-replay]')!.classList.contains('not-prose'), `recorded ${recorded}`).toBe(true)
+      expect(document.querySelector('.mcp-provenance')!.classList.contains('not-prose')).toBe(true)
+    }
+    // The inline-code chip rule ignores not-prose, so the sheet must undo it for both the replay and its provenance line.
+    const css = readFileSync(new URL('../src/styles/mcp-replay.css', import.meta.url), 'utf8')
+    const reset = /\.mcp-replay code,\s*\.mcp-provenance code \{([^}]*)\}/.exec(css)![1]!
+    for (const declaration of ['background: none', 'padding: 0', 'color: inherit', 'font-weight: inherit']) expect(reset).toContain(declaration)
+    expect(css).toMatch(/\.mcp-provenance code::after \{\s*content: none/)
+    const global = readFileSync(new URL('../src/styles/global.css', import.meta.url), 'utf8')
+    expect(global, 'the rule being undone still exists; if it learns not-prose, drop the reset').toContain('.prose code:not(pre code)')
+  })
+
   it('highlights each recorded result as JSON with the site\'s code block, inside a scrolling body', async () => {
     const { document } = await mount('ts')
     const blocks = [...document.querySelectorAll('details.mcp-result .mcp-result__body pre')]

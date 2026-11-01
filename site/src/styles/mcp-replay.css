@@ -454,6 +454,47 @@
   }
 }
 
+/*
+ * The replay renders the same inside an article and on the language page. The
+ * article's inline-code chips and its link weight and underline come from rules
+ * that ignore `not-prose` (global.css `.prose code`), so they are undone here.
+ * This sheet is unlayered, so it outranks those layered rules.
+ */
+.mcp-replay code,
+.mcp-provenance code {
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  overflow-wrap: normal;
+}
+
+.mcp-replay code::before,
+.mcp-replay code::after,
+.mcp-provenance code::before,
+.mcp-provenance code::after {
+  content: none;
+}
+
+.mcp-replay a {
+  color: inherit;
+  font-weight: inherit;
+  text-decoration: underline dotted;
+  text-underline-offset: 0.2em;
+}
+
+.mcp-replay a:hover {
+  text-decoration-style: solid;
+}
+
+.mcp-provenance a {
+  color: var(--color-link, inherit);
+  font-weight: inherit;
+  text-decoration: underline;
+}
+
 .mcp-provenance {
   margin: 0 0 var(--mcp-gap, 1rem);
   font-size: 0.8125rem;
