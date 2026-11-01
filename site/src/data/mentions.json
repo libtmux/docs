@@ -8452,6 +8452,13 @@
   {
    "port": "powershell",
    "symbol": "LibTmux.Workspace\\Get-TmuxWorkspacePlan",
+   "page": "/powershell/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux.Workspace\\Get-TmuxWorkspacePlan",
    "page": "/powershell/latest/guides/getting-started/",
    "title": "Getting started",
    "section": "guides"
@@ -8819,6 +8826,13 @@
    "page": "/powershell/latest/topics/execution/",
    "title": "Dispatch, completion, and failure",
    "section": "topics"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxHook",
+   "page": "/powershell/latest/guides/hooks/",
+   "title": "Configure and run hooks",
+   "section": "guides"
   },
   {
    "port": "powershell",
@@ -14238,13 +14252,6 @@
    "text": "LibTmux.Workspace",
    "page": "/fsharp/latest/guides/getting-started/",
    "line": 268,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "WorkspaceBuilder",
-   "page": "/fsharp/latest/guides/getting-started/",
-   "line": 305,
    "why": "not defined in the stated port"
   },
   {
