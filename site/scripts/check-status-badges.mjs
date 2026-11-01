@@ -44,7 +44,7 @@ const readText = (panel) => {
   }
   const long = [...panel.querySelectorAll('p, small')].filter((element) => !element.hasAttribute('data-picker-status'))
     .map((element) => ({ tag: element.tagName.toLowerCase(), cls: element.className, text: element.textContent.replace(/\s+/g, ' ').trim() }))
-  const rows = [...panel.querySelectorAll('[data-surface-entry]')].map((entry) => ({
+  const rows = [...panel.querySelectorAll('[data-surface-entry]:not([data-surface-home])')].map((entry) => ({
     label: entry.querySelector('.surface-label')?.textContent.trim(),
     paragraphs: entry.querySelectorAll('p').length,
     summaries: [...entry.querySelectorAll(':scope > details > summary small, :scope > a small')]
@@ -71,7 +71,8 @@ const originMainMarkup = (concept) => {
 
 async function checkRows(page, picker, slug, where, kind) {
   const rows = expectedRows(slug)
-  const entries = picker.locator('[data-surface-entry]')
+  // The language Home leads the menu and is not a product.
+  const entries = picker.locator('[data-surface-entry]:not([data-surface-home])')
   assert.deepEqual(await entries.locator('.surface-label').allTextContents(), rows.map(({ label }) => label), `${where}: one entry per product, in order`)
   const anchored = await page.evaluate(() => CSS.supports('anchor-name', '--a'))
   for (const [index, { label, status }] of rows.entries()) {

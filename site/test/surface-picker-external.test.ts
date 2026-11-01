@@ -2,7 +2,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
 import { Window, type HTMLAnchorElement } from 'happy-dom'
 import { installExternalLinks } from '../public/_shell/external-links.js'
-import { buildDocumentationSurfaces } from '../src/lib/documentation-navigation'
+import { buildDocumentationSurfaces, withLanguageHome } from '../src/lib/documentation-navigation'
 import type { SidebarItem } from '../src/lib/sidebar'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
@@ -52,5 +52,30 @@ describe('the documentation picker marks an external reference once', () => {
     const internal = win.document.querySelector<HTMLAnchorElement>('.surface-alternatives a[href="/py/latest/api/"]')!
     expect(internal.hasAttribute('data-external-link')).toBe(false)
     expect(internal.textContent).not.toMatch(/[↗⇗]|new tab/)
+  })
+})
+
+describe('the documentation picker offers the language Home first', () => {
+  it('shows Home on the language page and Core Library Home inside the library', async () => {
+    vi.stubEnv('LIBTMUX_DOCS_BASE', '/')
+    vi.stubEnv('LIBTMUX_DOCS_PORT', '')
+    const surfaces = withLanguageHome('rs', 'latest', buildDocumentationSurfaces('rs', 'latest', { core: [link('Guides', '/rs/latest/guides/')] }))
+    const render = async (currentPath: string) => {
+      const html = await renderAstroTemplate(template, {
+        url: `https://libtmux.org${currentPath}`, props: { surfaces, currentPath, port: 'rs', version: 'latest', locale: 'en' },
+      })
+      const win = new Window()
+      windows.push(win)
+      win.document.write(html)
+      return win.document
+    }
+    const text = (node: { textContent: string | null } | null) => node?.textContent?.replace(/\s+/g, ' ').trim()
+    const language = await render('/rs/latest/')
+    expect(text(language.querySelector('.surface-current'))).toBe('RustHome')
+    expect([...language.querySelectorAll('[data-surface-entry] .surface-group-name strong')].map(text)[0]).toBe('Rust')
+    expect(language.querySelector('[data-surface-entry]:first-child a[href="/rs/latest/"]')?.getAttribute('aria-current')).toBe('location')
+    const core = await render('/rs/latest/core/')
+    expect(text(core.querySelector('.surface-current'))).toBe('Core LibraryHome')
+    expect(core.querySelector('a[href="/rs/latest/core/"][aria-current="location"]')).not.toBeNull()
   })
 })

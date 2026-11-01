@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
-import { buildDocumentationSurfaces, currentDocumentation, getDocumentationSurfaces } from '../src/lib/documentation-navigation'
+import { buildDocumentationSurfaces, currentDocumentation, getDocumentationSurfaces, withLanguageHome } from '../src/lib/documentation-navigation'
 import { PORTS, portPageUrl, productStatus, releaseMaturity, type DocProduct, type ProductStatus } from '../src/lib/ports'
 import { REGISTRY } from '../src/lib/registry'
 import { sharesOneKind, type SidebarItem, type SidebarLinkItem } from '../src/lib/sidebar'
@@ -195,6 +195,27 @@ describe('documentation surface navigation', () => {
     }
     expect(currentDocumentation(surfaces, home).section.id).toBe('home')
     expect(currentDocumentation(surfaces, `${portPageUrl(port, 'latest')}guides/`).section.id).toBe('guides')
+  })
+
+  it.each(PORTS)('puts the $slug language Home above Core Library and selects it only on the language page', (port) => {
+    const products = buildDocumentationSurfaces(port.slug, 'latest', menus(port, 'latest'))
+    const surfaces = withLanguageHome(port.slug, 'latest', products)
+    const root = portPageUrl(port, 'latest')
+    expect(surfaces.map((surface) => surface.id)).toEqual(['home', ...products.map((surface) => surface.id)])
+    expect(surfaces[0]).toMatchObject({ label: port.name, href: root })
+    expect(surfaces[1].id).toBe('core')
+    const here = currentDocumentation(surfaces, root)
+    expect(here.surface.id).toBe('home')
+    expect(here.section.label).toBe('Home')
+    // The language sidebar links every product home, then the shared areas.
+    const labels = here.section.items.map((item) => item.label)
+    expect(labels.slice(0, products.length)).toEqual(products.map((surface) => surface.label))
+    expect(labels.at(-1)).toBe('Documentation')
+    for (const path of ['core/', 'guides/', 'reference/', 'mcp/', 'workspace/']) {
+      expect(currentDocumentation(surfaces, `${root}${path}`).surface.id, path).not.toBe('home')
+    }
+    expect(currentDocumentation(surfaces, `${root}core/`).section.id).toBe('home')
+    expect(currentDocumentation(surfaces, `${root}core/`).surface.id).toBe('core')
   })
 
   it.each(['cxx', 'julia', 'powershell', 'ruby'])('keeps %s product glossaries inside their API navigation', (slug) => {

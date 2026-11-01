@@ -206,9 +206,15 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
       assert.equal(await page.locator('.port-hero h1').count(), 1, `${slug}: one port heading`)
       const picker = desktopPicker(page)
       await picker.locator(':scope > summary').waitFor({ state: 'visible' })
-      assert.equal((await picker.locator('.surface-current .surface-label, .surface-current small').allInnerTexts()).join(' '), 'Core Library Home')
-      assert.equal(await picker.locator('.surface-current .status-badge').getAttribute('data-status'), productStatus(port, 'core', registry), `${slug}: the trigger states the library's status`)
+      assert.equal((await picker.locator('.surface-current .surface-label, .surface-current small').allInnerTexts()).join(' '), `${port.name} Home`)
+      assert.equal(await picker.locator('.surface-current .status-badge').count(), 0, `${slug}: the language Home states no product status`)
       await openPicker(picker)
+      const languageHome = await group(picker, port.name).locator('.surface-options a').evaluateAll((links) =>
+        links.map((link) => ({ label: link.textContent.trim().replace(/\s*✓$/, ''), href: link.getAttribute('href') })))
+      assert.deepEqual(languageHome, [{ label: 'Home', href: `${new URL(base).pathname}/${slug}/latest/` }], `${slug}: the language Home is one destination`)
+      const sidebar = page.locator('.sidebar-nav:visible')
+      assert.equal(await sidebar.locator(`a[href="${new URL(base).pathname}/${slug}/latest/core/"]`).count(), 1, `${slug}: the language sidebar links the Core Library home`)
+      assert.equal(await sidebar.locator(`a[href="${new URL(base).pathname}/${slug}/latest/guides/"]`).count(), 1, `${slug}: the language sidebar links the guides`)
       const core = group(picker, 'Core Library')
       const sections = await core.locator('.surface-options a').evaluateAll((links) =>
         links.map((link) => ({ label: link.textContent.trim().replace(/\s*✓$/, ''), href: link.getAttribute('href') })))
@@ -220,12 +226,14 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
         `${slug}: sections retain the selected port and version`)
       const groups = picker.locator('[data-surface-group]')
       const names = await groups.locator(':scope > summary .surface-label').allTextContents()
-      assert.equal(names[0], 'Core Library', `${slug}: the library is the default surface`)
+      assert.equal(names[0], port.name, `${slug}: the language Home leads the menu`)
+      assert.equal(names[1], 'Core Library', `${slug}: the library follows the Home`)
+      assert.equal(await core.locator('.surface-options a', { hasText: /^\s*Home\s*$/ }).getAttribute('href'), `${new URL(base).pathname}/${slug}/latest/core/`, `${slug}: Core Library Home is core/`)
       const appNames = parentLibrary ? [] : [
         ...(productAvailable(port, 'mcp') ? ['MCP'] : []),
         ...(productAvailable(port, 'workspace') ? ['Workspace Manager'] : []),
       ]
-      assert.deepEqual(names.slice(1).sort(), appNames, `${slug}: only available applications appear`)
+      assert.deepEqual(names.slice(2).sort(), appNames, `${slug}: only available applications appear`)
       // A badge is the group's sibling, never inside its summary.
       const badgeOf = (entry) => entry.locator('xpath=..').locator(':scope > .status-toggletip > .status-badge')
       assert.equal(await core.locator('.status-badge').count(), 0, `${slug}: no badge inside the core summary`)

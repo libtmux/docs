@@ -12,13 +12,13 @@ interface Props { surfaces: DocumentationSurface[]; currentPath: string; port?: 
 const { surfaces, currentPath, port, version, locale, solutionsOnly = false } = Astro.props
 const { surface, section, alternative } = currentDocumentation(surfaces, currentPath)
 const currentLabel = alternative?.label ?? section.label
-const descriptions: Record<string, string> = { ...PICKER_GROUP_SUMMARY, tmux: 'Commands, configuration and terminal workflows' }
+const descriptions: Record<string, string> = { ...PICKER_GROUP_SUMMARY, tmux: 'Commands, configuration and terminal workflows', home: 'Core, MCP and Workspace Manager' }
 // A badge sits beside its label without being inside the row's control, so CSS
 // anchors it to the label; the name is unique per port and product on a page.
 const anchorName = (id: string) => `--surface-label-${port ?? 'tmux'}-${id}`
 const anchorOf = (id: string) => `anchor-name: ${anchorName(id)}`
 const artwork = (id: string) => {
-  const path = branding(port, id === 'core' ? '' : id).asset('logo.svg')
+  const path = branding(port, id === 'core' || id === 'home' ? '' : id).asset('logo.svg')
   return withRoot(path)
 }
 ---
@@ -39,7 +39,7 @@ const artwork = (id: string) => {
       <input type="search" placeholder="Find documentation…" autocomplete="off" data-surface-search data-picker-search />
     </label>
     <nav aria-label={solutionsOnly ? 'Documentation solutions' : 'Documentation apps and sections'}>
-      {surfaces.map((entry) => <div class="surface-entry" data-surface-entry style={`--surface-anchor: ${anchorName(entry.id)}`}>
+      {surfaces.map((entry) => <div class="surface-entry" data-surface-entry data-surface-home={entry.id === 'home' ? '' : undefined} style={`--surface-anchor: ${anchorName(entry.id)}`}>
       {solutionsOnly ? <a class="surface-destination doc-picker-option" href={entry.href}
         data-picker-option data-match={`${entry.label} ${descriptions[entry.id]}`}>
         <img class="surface-artwork" src={artwork(entry.id)} width="30" height="30" alt="" />

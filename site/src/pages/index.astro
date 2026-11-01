@@ -92,7 +92,7 @@ const noindexLanding = Astro.props.preview || (locale !== DEFAULT_LOCALE && !Lan
 const homeSolutions = !versionRootPort && !LandingContent
   ? await Promise.all(PORTS.map(async (port) => {
       const version = defaultVersionFor(port.slug)
-      return { port: port.slug, version, surfaces: await getDocumentationSurfaces(port.slug, version, locale) }
+      return { port: port.slug, version, surfaces: (await getDocumentationSurfaces(port.slug, version, locale)).filter((surface) => surface.id !== 'home') }
     }))
   : []
 const homeEntries = PORTS.map((port) => ({
