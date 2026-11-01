@@ -41,6 +41,8 @@ describe('the port hero', () => {
   it('places the links in a grid cell of their own, below the text on narrow widths', () => {
     const css = readFileSync(new URL('../src/components/DocumentationHero.astro', import.meta.url), 'utf8')
     expect(css).toContain('grid-template-areas: "mark text links"')
+    expect(css).toMatch(/min-width: 48rem\) \{\s*\.port-hero > div:not\(\.port-hero__links\) \{ max-width: 36rem; \}/)
+    expect(css).not.toMatch(/max-width: 47\.99rem[\s\S]*max-width: 36rem/)
     // Wide: one pill per row at equal width. Narrow: a wrapping row again.
     expect(css).toMatch(/\.port-hero__links :global\(\.port-links\) \{ display: grid; grid-template-columns: max-content;/)
     expect(css).toMatch(/max-width: 47\.99rem[\s\S]*\.port-links\) \{ display: flex; flex-wrap: wrap; \}/)
