@@ -329,10 +329,10 @@ describe('the showcase section', () => {
   })
   /** A call row's tool and arguments. */
   const parseCall = (row: Element) => ({ tool: row.querySelector('.mcp-call__tool code')!.textContent!, arguments: JSON.parse(row.querySelector('.mcp-call__args')!.textContent!) })
-  async function section(port: string) {
+  async function section(port: string, shown?: McpShowcase) {
     const win = new Window({ url: 'https://libtmux.org/en/' })
     windows.push(win)
-    win.document.body.innerHTML = await renderAstroTemplate(await component, { props: { showcase: await showcase(port) } })
+    win.document.body.innerHTML = await renderAstroTemplate(await component, { props: { showcase: shown ?? await showcase(port) } })
     return win.document as unknown as Document
   }
 
@@ -394,7 +394,8 @@ describe('the showcase section', () => {
   })
 
   it('says requests only, and shows no result, preview or control, for a port with no recording', async () => {
-    const document = await section('go')
+    // No port lacks a recording once all are recorded, so build the page the way a port without one would get it.
+    const document = await section('go', buildShowcase('go', 'latest', onDisk('go')))
     expect(document.querySelectorAll('article.mcp-turn')).toHaveLength(EXAMPLES.go!.steps.length)
     for (const selector of ['details.mcp-result', '[data-frame]', '[data-controls]', '[data-tmux]', '.mcp-turn--answer']) expect(document.querySelector(selector), selector).toBeNull()
     expect(document.querySelector('.mcp-provenance')?.textContent).toContain('Requests only: no recorded results for Go yet.')
@@ -411,7 +412,7 @@ describe('the showcase section', () => {
 })
 
 describe('recorded results', () => {
-  const RECORDED = ['ts', 'rs']
+  const RECORDED = ['ts', 'rs', 'go']
 
   it('has a recording for the ports whose servers the recorder has run', async () => {
     for (const port of RECORDED) expect((await showcase(port)).example?.recording, port).toBeDefined()

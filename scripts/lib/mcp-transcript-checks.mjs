@@ -29,7 +29,7 @@ export function verifyRecording(steps, { port, runTool, expected }) {
   if (runs.length !== expected.length) throw new Error(`${port}: expected ${expected.length} ${runTool} steps, found ${runs.length}`)
   runs.forEach((run, index) => {
     const result = run.structuredContent ?? {}
-    const output = typeof result.output === 'string' ? result.output : ''
+    const output = typeof result.output === 'string' ? result.output : Array.isArray(result.output) ? result.output.join('\n') : ''
     if (!new RegExp(`\\b${expected[index].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(output)) {
       throw new Error(`${port}: ${runTool} step ${index + 1} output lacks "${expected[index]}": ${output.slice(0, 300)}`)
     }

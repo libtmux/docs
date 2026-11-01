@@ -47,8 +47,8 @@ function windowOf(frame: Frame) {
   return session ? session.windows.find((window) => window.active) ?? session.windows[0] : undefined
 }
 /**
- * How a frame's window is drawn. A layout a result reported gives each pane
- * its rectangle, in cells. Without one, a window of several panes is a list
+ * How a frame's window is drawn. A layout a result reported, or a pane listing
+ * that gives every pane its position and size, gives each pane its rectangle, in cells. Without one, a window of several panes is a list
  * with no sizes, labelled, rather than boxes whose sizes nothing stated; a
  * window of one pane fills the screen, which is what one pane is.
  */
@@ -61,6 +61,13 @@ const draw = (frame: Frame) => {
     const rects: Rect[] = parsed.panes
     const size: [number, number] = [parsed.width, parsed.height]
     return { window, panes, rects, size, svg: renderRects(panes.map(() => []), rects, size, { id: `rp-${frame.done}`, label: `tmux window of ${panes.length} pane${panes.length === 1 ? '' : 's'}` }) }
+  }
+  // Without a layout, a pane listing that gives every pane its position and size is geometry too; the window is as large as they reach.
+  const boxed = window.panes.every((pane) => pane.left !== undefined && pane.top !== undefined && pane.width !== undefined && pane.height !== undefined)
+  if (boxed) {
+    const rects: Rect[] = window.panes.map((pane) => ({ x: pane.left!, y: pane.top!, w: pane.width!, h: pane.height! }))
+    const size: [number, number] = [Math.max(...rects.map((rect) => rect.x + rect.w)), Math.max(...rects.map((rect) => rect.y + rect.h))]
+    return { window, panes: window.panes, rects, size, svg: renderRects(window.panes.map(() => []), rects, size, { id: `rp-${frame.done}`, label: `tmux window of ${window.panes.length} pane${window.panes.length === 1 ? '' : 's'}` }) }
   }
   if (window.panes.length === 1) {
     const size: [number, number] = [WIDTH, HEIGHT]

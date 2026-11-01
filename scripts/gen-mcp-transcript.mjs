@@ -19,7 +19,7 @@ import { leaks, verifyRecording } from './lib/mcp-transcript-checks.mjs'
  * It fails on a tool error, a server that does not exit 0, a request whose id
  * no earlier result returned, or an expected value that is missing.
  *
- * Usage: node scripts/gen-mcp-transcript.mjs --port ts|rs [--check]
+ * Usage: node scripts/gen-mcp-transcript.mjs --port <port> [--check]
  * The checkout comes from LIBTMUX_DOCS_CHECKOUT_<PORT> or the port's worktree.
  */
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -27,10 +27,12 @@ const only = process.argv.includes('--port') ? process.argv[process.argv.indexOf
 const checking = process.argv.includes('--check')
 const expand = (path) => path.startsWith('~/') ? join(homedir(), path.slice(2)) : path
 
-// The servers this has been run for. A port joins by adding its command (and build) as gen-mcp-protocol.mjs has them.
+// How to build and start each port's server from its checkout, as gen-mcp-protocol.mjs does. `cwd` is below the checkout, `build` runs there,
+// and `command` gets the checkout and the sandbox (a binary may be built into the latter).
 const SERVERS = {
-  ts: { command: ['bun', 'packages/mcp/src/server.ts'], prepare: [['bun', 'install', '--frozen-lockfile']] },
-  rs: { command: ['target/debug/tmux-mcp'], prepare: [['cargo', 'build', '--locked', '-p', 'tmux-mcp', '--bin', 'tmux-mcp', '--jobs', '2']] },
+  ts: { prepare: [['bun', 'install', '--frozen-lockfile']], command: () => ['bun', 'packages/mcp/src/server.ts'] },
+  rs: { prepare: [['cargo', 'build', '--locked', '-p', 'tmux-mcp', '--bin', 'tmux-mcp', '--jobs', '2']], command: () => ['target/debug/tmux-mcp'] },
+  go: { cwd: 'mcp', prepare: [], build: (sandbox) => [['go', 'build', '-mod=readonly', '-o', join(sandbox, 'libtmux-mcp'), './cmd/libtmux-mcp']], command: (_checkout, sandbox) => [join(sandbox, 'libtmux-mcp')] },
 }
 const TOOLSETS = { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' }
 // What each run step must have printed, in order: the project below has two passing tests and a log of two lines.
@@ -61,9 +63,11 @@ try {
   execFileSync('uv', ['venv', '-q', join(sandbox, 'venv')], { stdio: 'inherit' })
   execFileSync('uv', ['pip', 'install', '-q', '--python', join(sandbox, 'venv/bin/python'), 'pytest'], { stdio: 'inherit' })
   const pytest = execFileSync(join(sandbox, 'venv/bin/pytest'), ['--version'], { encoding: 'utf8' }).trim()
-  for (const [command, ...args] of SERVERS[only].prepare) execFileSync(command, args, { cwd: checkout, stdio: 'inherit' })
-  const [command, ...args] = SERVERS[only].command
-  const environment = {
+  const server = SERVERS[only]
+  const workdir = server.cwd ? join(checkout, server.cwd) : checkout
+  for (const [command, ...args] of [...server.prepare, ...(server.build?.(sandbox) ?? [])]) execFileSync(command, args, { cwd: workdir, stdio: 'inherit' })
+  const [command, ...args] = server.command(checkout, sandbox)
+    const environment = {
     TMUX: undefined, TMUX_PANE: undefined, TMUX_TMPDIR: sandbox, HOME: join(sandbox, 'home'), SHELL: '/bin/sh',
     // No user tmux configuration, whichever way tmux looks for it.
     XDG_CONFIG_HOME: join(sandbox, 'config'), XDG_CONFIG_DIRS: join(sandbox, 'config'),
@@ -72,11 +76,19 @@ try {
   }
   mkdirSync(environment.HOME)
   const run = await recordCalls({
-    command: command.includes('/') ? join(checkout, command) : command, args: args.map((arg) => (arg.includes('/') && !arg.startsWith('-') ? join(checkout, arg) : arg)),
+    command: command.startsWith('/') || !command.includes('/') ? command : join(checkout, command), args: args.map((arg) => (arg.includes('/') && !arg.startsWith('-') ? join(checkout, arg) : arg)),
     cwd: project, env: environment, calls: example.steps.map(({ tool, arguments: callArguments }) => ({ tool, arguments: callArguments })),
   })
 
-  verifyRecording(run.steps, { port: only, runTool: 'run_shell_command', expected: EXPECTED_OUTPUT })
+  const runTool = [...new Set(example.steps.map((step) => step.tool).filter((tool) => tool.startsWith('run_')))]
+  if (runTool.length !== 1) throw new Error(`${only}: the example must run commands through one run_ tool, found ${runTool.join(', ') || 'none'}`)
+  try {
+    verifyRecording(run.steps, { port: only, runTool: runTool[0], expected: EXPECTED_OUTPUT })
+  } catch (error) {
+    // The raw answers, for whoever is adding a port: nothing is written.
+    if (process.argv.includes('--debug')) console.error(JSON.stringify(run.steps, null, 1))
+    throw error
+  }
 
   // The project directory is a fresh temporary one each run; a fixed name keeps the file stable.
   const FIXED = '/home/user/project'

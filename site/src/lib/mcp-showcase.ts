@@ -149,7 +149,7 @@ export interface WorkedExample {
   recording?: Recording
 }
 
-/** `data/mcp-transcripts/<port>.json`, written by `scripts/gen-mcp-transcript.mjs`. */
+/** `data/mcp-transcripts/<port>.json`, written by `scripts/gen-mcp-transcript.mjs` for each port it has recorded. */
 export interface Transcript {
   repo: string
   revision: string

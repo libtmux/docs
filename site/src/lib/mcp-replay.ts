@@ -27,6 +27,11 @@ export interface PaneState {
   typed?: string
   /** What the run call read back from the pane. */
   output?: string
+  /** The pane's rectangle in cells, when a pane listing states one. */
+  left?: number
+  top?: number
+  width?: number
+  height?: number
 }
 
 export interface WindowState {
@@ -91,6 +96,9 @@ function findPane(sessions: SessionState[], id: string | undefined): PaneState |
   return sessions.flatMap((session) => session.windows.flatMap((window) => window.panes)).find((pane) => pane.id === id)
 }
 
+/** A command's output as text: a server may send one string or its lines. */
+const textOf = (value: unknown): string | undefined => (Array.isArray(value) && value.every((line) => typeof line === 'string') ? value.join('\n') : str(value))
+
 const entries = (value: unknown): Record_[] => (Array.isArray(value) ? value.filter(isRecord) : [])
 
 function applyCreate(sessions: SessionState[], answer: Record_) {
@@ -102,7 +110,9 @@ function applyCreate(sessions: SessionState[], answer: Record_) {
   if (windowId) windows[0]!.id = windowId
   const paneId = str(answer.paneId)
   if (paneId) windows[0]!.panes[0]!.id = paneId
-  sessions.push({ ...(str(session.id) ? { id: str(session.id)! } : {}), ...(str(session.name) ? { name: str(session.name)! } : {}), windows })
+  const sessionId = str(session.id) ?? str(session.sessionId)
+  const sessionName = str(session.name) ?? str(session.sessionName)
+  sessions.push({ ...(sessionId ? { id: sessionId } : {}), ...(sessionName ? { name: sessionName } : {}), windows })
 }
 
 function applyWindows(sessions: SessionState[], answer: Record_) {
@@ -131,6 +141,13 @@ function applyPanes(sessions: SessionState[], answer: Record_) {
     if (str(item.id)) pane.id = str(item.id)!
     if (str(item.command)) pane.command = str(item.command)!
     if (str(item.path)) pane.path = str(item.path)!
+    const command = str(item.currentCommand)
+    if (command && !pane.command) pane.command = command
+    const box = isRecord(item.geometry) ? item.geometry : item
+    for (const key of ['left', 'top', 'width', 'height'] as const) if (num(box[key]) !== undefined) pane[key] = num(box[key])!
+    // A listing that names the window says which window these panes are in.
+    const windowId = str(item.windowId)
+    if (windowId && window.id === undefined) window.id = windowId
   }
 }
 
@@ -141,7 +158,7 @@ function windowOfPane(sessions: SessionState[], id: string | undefined): WindowS
 
 function applySplit(sessions: SessionState[], step: ReplayStep, answer: Record_) {
   const pane = isRecord(answer.pane) ? answer.pane : answer
-  const id = str(pane.id)
+  const id = str(pane.id) ?? str(pane.paneId)
   const windowId = str(pane.window_id) ?? str(pane.windowId)
   const windows = sessions.flatMap((session) => session.windows)
   const window = windows.find((candidate) => windowId !== undefined && candidate.id === windowId) ?? windowOfPane(sessions, paneOf(step.arguments))
@@ -173,15 +190,16 @@ function applyRun(sessions: SessionState[], step: ReplayStep, answer: Record_) {
   if (!pane) return
   const typed = str(step.arguments.command)
   if (typed !== undefined) pane.typed = typed
-  const output = str(answer.output)
+  const output = textOf(answer.output)
   if (output !== undefined) pane.output = output
 }
 
 function applyKill(sessions: SessionState[], answer: Record_, args: Record_): SessionState[] {
-  const id = str(answer.killed) ?? str(answer.id) ?? str(args.session_id)
-  const name = str(args.session) ?? str(args.session_name) ?? str(args.name)
-  if (id !== undefined) return sessions.filter((session) => session.id !== id)
-  return sessions.filter((session) => name === undefined || session.name !== name)
+  // What was killed may be said as an id or as a name, by the answer or by the request.
+  const said = [str(answer.killed), str(answer.id), str(args.session_id), str(args.session), str(args.session_name), str(args.name)].filter((item): item is string => item !== undefined)
+  const first = said[0]
+  if (first === undefined) return sessions
+  return sessions.filter((session) => session.id !== first && session.name !== first)
 }
 
 const READS: Record<string, Reading> = { list_sessions: 'sessions', list_windows: 'windows', list_panes: 'panes' }
@@ -221,7 +239,7 @@ export function lastOutputLine(output: string | undefined): string | undefined {
 export function runAnswers(steps: readonly ReplayStep[]): { pane?: string; line: string }[] {
   return steps.flatMap((step) => {
     if (step.tool !== 'run_shell_command' && step.tool !== 'run_command') return []
-    const line = lastOutputLine(str(answerOf(step).output))
+    const line = lastOutputLine(textOf(answerOf(step).output))
     const pane = paneOf(step.arguments) ?? str(answerOf(step).paneId) ?? str(answerOf(step).pane)
     return line ? [{ ...(pane ? { pane } : {}), line }] : []
   })

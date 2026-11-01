@@ -3,7 +3,7 @@ import { Window } from 'happy-dom'
 import { ModuleKind, ScriptTarget, transpileModule } from 'typescript'
 import { afterEach, describe, expect, it } from 'vitest'
 import { lastOutputLine, replayFrames, windowLabel, type Frame, type ReplayStep } from '../src/lib/mcp-replay'
-import { EXAMPLES, mcpShowcase, transcriptFor } from '../src/lib/mcp-showcase'
+import { buildShowcase, EXAMPLES, mcpShowcase, transcriptFor } from '../src/lib/mcp-showcase'
 import { parseLayout } from '../src/lib/tmux-layout-string'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
@@ -17,7 +17,11 @@ function recorded(steps: ReplayStep[], count: number): Set<string> {
   const found = new Set<string>()
   const walk = (key: string, value: unknown) => {
     if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') found.add(`${key}=${typeof value}:${String(value)}`)
-    else if (Array.isArray(value)) value.forEach((item) => walk(key, item))
+    else if (Array.isArray(value)) {
+      // A server may send a command's output as its lines; the preview shows them joined.
+      if (value.length && value.every((item) => typeof item === 'string')) found.add(`${key}=string:${value.join('\n')}`)
+      value.forEach((item) => walk(key, item))
+    }
     else if (value && typeof value === 'object') Object.entries(value).forEach(([name, item]) => walk(name, item))
   }
   steps.slice(0, count).forEach((step) => { walk('arguments', step.arguments); walk('result', step.structuredContent); walk('text', step.content) })
@@ -31,8 +35,8 @@ function recorded(steps: ReplayStep[], count: number): Set<string> {
 
 /** The recording's field names that supply each field a frame holds. */
 const SUPPLIED_BY: Record<string, string[]> = {
-  id: ['id', 'paneId', 'windowId', 'killed'], name: ['name', 'session_name', 'session'], index: ['index'], active: ['active'],
-  command: ['command'], path: ['path', 'cwd'], typed: ['command'], output: ['output'], layout: ['layout', 'window_layout'],
+  id: ['id', 'paneId', 'windowId', 'killed', 'sessionId'], name: ['name', 'session_name', 'session', 'sessionName'], index: ['index'], active: ['active'],
+  command: ['command', 'currentCommand'], left: ['left'], top: ['top'], width: ['width'], height: ['height'], path: ['path', 'cwd'], typed: ['command'], output: ['output'], layout: ['layout', 'window_layout'],
 }
 
 /**
@@ -62,7 +66,7 @@ function untraced(frames: Frame[], steps: ReplayStep[]): string[] {
 }
 
 /** Calls in each port's worked example, which the frames and the replay follow. */
-const CALLS = { ts: 6, rs: 7 }
+const CALLS = { ts: 6, rs: 7, go: 7 }
 
 describe('the tmux state each recorded call leaves', () => {
   it('follows TypeScript: a session, a split, the layout it reports, then what each pane ran', async () => {
@@ -105,7 +109,7 @@ describe('the tmux state each recorded call leaves', () => {
     expect(frames[7]!.sessions).toEqual([])
   })
 
-  it.each(['ts', 'rs'] as const)('draws nothing for %s that the recording does not contain', async (port) => {
+  it.each(['ts', 'rs', 'go'] as const)('draws nothing for %s that the recording does not contain', async (port) => {
     const steps_ = await steps(port)
     expect(untraced(replayFrames(steps_), steps_)).toEqual([])
   })
@@ -121,6 +125,22 @@ describe('the tmux state each recorded call leaves', () => {
     }
     expect(frames.filter((frame) => frame.sessions[0]?.windows[0]?.layout).length, 'some frame has geometry').toBeGreaterThan(0)
     expect(frames.find((frame) => (frame.sessions[0]?.windows[0]?.panes.length ?? 0) > 1 && !frame.sessions[0]!.windows[0]!.layout), 'a split with no layout read yet exists').toBeDefined()
+  })
+
+  it('follows Go: the geometry comes from the pane listings, the session is killed by name', async () => {
+    const frames = replayFrames(await steps('go'))
+    expect(frames.map((frame) => frame.sessions.length)).toEqual([0, 1, 1, 1, 1, 1, 1, 0])
+    expect(frames[1]!.sessions[0]).toMatchObject({ id: '$0', name: 'checks' })
+    expect(frames[2]!.sessions[0]!.windows[0]!.panes[0]).toMatchObject({ id: '%0', command: 'sh', left: 0, top: 0, width: 80, height: 24 })
+    const split = frames[3]!.sessions[0]!.windows[0]!.panes
+    expect(split.map((pane) => pane.id)).toEqual(['%0', '%1'])
+    expect(split[1]!.width, 'the split result states no size').toBeUndefined()
+    expect(split[0]!.width, 'the first pane still has the size of the earlier listing').toBe(80)
+    const listed = frames[4]!.sessions[0]!.windows[0]!.panes
+    expect(listed.map((pane) => [pane.left, pane.width])).toEqual([[0, 40], [41, 39]])
+    expect(frames[5]!.sessions[0]!.windows[0]!.panes[0]!.output).toMatch(/2 passed/)
+    expect(frames[6]!.sessions[0]!.windows[0]!.panes[1]!.output).toMatch(/checks finished/)
+    expect(frames[7]!.sessions).toEqual([])
   })
 
   it('has a control: a value the recording lacks, or states under another field, or only later, is reported', async () => {
@@ -169,16 +189,16 @@ describe('the replay component', () => {
   const component = readFileSync(new URL('../src/components/mcp/McpReplay.astro', import.meta.url), 'utf8')
   const script = transpileModule(/<script>([\s\S]*?)<\/script>/.exec(component)![1]!, { compilerOptions: { module: ModuleKind.CommonJS, target: ScriptTarget.ES2022 } }).outputText
 
-  async function markup(port: string) {
-    const showcase = (await mcpShowcase(port, 'latest'))!
+  async function markup(port: string, recorded = true) {
+    const showcase = recorded ? (await mcpShowcase(port, 'latest'))! : buildShowcase(port, 'latest', JSON.parse(readFileSync(new URL(`../src/data/mcp-protocol/${port}.json`, import.meta.url), 'utf8')))
     return renderAstroTemplate(await template, { props: { example: showcase.example, portName: port } })
   }
 
   /** The page's markup in a DOM; with `run`, the page's own script on it. */
-  async function mount(port: string, options: { run?: boolean; reduced?: boolean; interval?: number } = {}) {
+  async function mount(port: string, options: { run?: boolean; reduced?: boolean; interval?: number; recorded?: boolean } = {}) {
     const win = new Window({ url: 'https://libtmux.org/en/rs/latest/' })
     windows.push(win)
-    win.document.body.innerHTML = await markup(port)
+    win.document.body.innerHTML = await markup(port, options.recorded)
     const root = win.document.querySelector('[data-mcp-replay]') as unknown as HTMLElement
     if (options.interval) root.setAttribute('data-interval', String(options.interval))
     if (options.run) {
@@ -222,6 +242,14 @@ describe('the replay component', () => {
     expect(frame(6).querySelectorAll('.mcp-pane__text')[1]!.textContent).toMatch(/^\$ cat checks\.log\n.*checks finished/s)
     expect(frame(7).querySelector('.mcp-tmux__screen--empty')!.textContent).toBe('No sessions')
     expect(frame(0).querySelector('.mcp-tmux__screen--empty')!.textContent, 'nothing is said before the first call').toBe('')
+  })
+
+  it('places the Go panes at the position and size its second pane listing gives', async () => {
+    const { document } = await mount('go')
+    const panes = [...document.querySelector('[data-frame="4"]')!.querySelectorAll<HTMLElement>('.mcp-pane')]
+    expect(panes.map((pane) => [pane.style.left, pane.style.width])).toEqual([['0%', '50%'], [`${(41 / 80) * 100}%`, `${(39 / 80) * 100}%`]])
+    expect(document.querySelector('[data-frame="3"] svg'), 'no boxes between the split and the listing').toBeNull()
+    expect(document.querySelector('[data-frame="4"] svg.gp-tmux-layout')!.getAttribute('viewBox')).toBe(`0 0 ${80 * 8} ${24 * 17}`)
   })
 
   it.each(['ts', 'rs'] as const)('places the %s panes at the rectangles the recorded layout gives', async (port) => {
@@ -378,7 +406,7 @@ describe('the replay component', () => {
   })
 
   it('shows requests only, with no preview or control, for a port with no recording, and the script leaves it alone', async () => {
-    const { document, root } = await mount('go', { run: true })
+    const { document, root } = await mount('go', { run: true, recorded: false })
     expect(document.querySelector('[data-tmux]')).toBeNull()
     expect(document.querySelector('[data-controls]')).toBeNull()
     expect(root.hasAttribute('data-live')).toBe(false)
