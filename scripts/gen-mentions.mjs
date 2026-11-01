@@ -147,9 +147,9 @@ function sharedWorkspaceEntries(realFiles) {
         // A port's own `ports.<slug>.title:` override, indented under the
         // shared frontmatter's `ports:` map exactly as authored (2, then 4,
         // spaces — see site/src/lib/workspace-shared-slots.ts's merge).
-        const override = fm && new RegExp(`^  ${port}:\\n(?:.*\\n)*?    title:\\s*(.+)$`, 'm').exec(fm[1])?.[1]
+        const override = fm && new RegExp(`^  ${port}:\\n(?:    .*\\n)*?    title:\\s*(.+)$`, 'm').exec(fm[1])?.[1]
         const title = override ?? sharedTitle
-        const subtitle = fm && new RegExp(`^  ${port}:\\n(?:.*\\n)*?    subtitle:\\s*(.+)$`, 'm').exec(fm[1])?.[1]
+        const subtitle = fm && new RegExp(`^  ${port}:\\n(?:    .*\\n)*?    subtitle:\\s*(.+)$`, 'm').exec(fm[1])?.[1]
         entries.push({
           file: `ports/${port}/${relPath}`,
           source: `---\ntitle: ${title}\n${subtitle ? `subtitle: ${subtitle}\n` : ''}---\n\n${resolvePortBody(body, port)}`,
