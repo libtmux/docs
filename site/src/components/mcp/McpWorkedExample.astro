@@ -3,7 +3,7 @@
  * A prompt and the tool calls an agent makes for it, each with its tier badge.
  *
  * Shared by the MCP overview and the port landing page. The calls come from
- * `EXAMPLES` in `lib/mcp-showcase.ts`, which a test checks against each tool's
+ * `EXAMPLES` in `lib/mcp-examples.ts`, which a test checks against each tool's
  * input schema in the port's `tools/list` snapshot.
  */
 import { Code } from 'astro-expressive-code/components'
@@ -45,14 +45,15 @@ const { recording } = example
   <>
     {recording.output && (
       <>
-        <p class="mcp-after">What the command printed, as the agent reads it back from the last result:</p>
+        <p class="mcp-after">What the command printed, from the last result's output field:</p>
         <Code code={recording.output} lang="text" title="Output in the pane" frame="code" />
       </>
     )}
     <p class="mcp-provenance">
       Recorded against <a href={`https://github.com/${recording.repo}/tree/${recording.revision}`}><code>{recording.repo}</code></a>
       at <code>{recording.revision.slice(0, 9)}</code>, on a private {recording.tmux} server, running {recording.runner}.
-      Long values in a result are shortened here; the recording keeps them.
+      {recording.shortened && <>Long values in a result are shortened here; the recording keeps them. </>}
+      {recording.projectDirectory && <>The sandbox's project directory is shown as <code>{recording.projectDirectory}</code>.</>}
     </p>
   </>
 ) : (

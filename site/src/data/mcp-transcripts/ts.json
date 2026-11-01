@@ -57,7 +57,7 @@
       "content": [
         {
           "type": "text",
-          "text": "..                                                                       [100%]\n2 passed in 0.00s\n\n[exit 0]"
+          "text": "..                                                                       [100%]\n2 passed in 0.01s\n\n[exit 0]"
         }
       ],
       "structuredContent": {
@@ -68,7 +68,7 @@
         "missedBytes": 0,
         "omittedBytes": 0,
         "outcome": "completed",
-        "output": "..                                                                       [100%]\n2 passed in 0.00s",
+        "output": "..                                                                       [100%]\n2 passed in 0.01s",
         "outputComplete": true,
         "paneId": "%0",
         "returnedBytes": 97,

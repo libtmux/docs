@@ -131,7 +131,11 @@ export interface Recording {
   tmux: string
   /** The test runner the sandbox ran, which produced the output below. */
   runner: string
-  /** What the last step that ran a command left in its pane, as the agent read it. */
+  /** Whether any result is shown shortened. */
+  shortened: boolean
+  /** The directory the sandbox ran in was replaced by this fixed path. */
+  projectDirectory?: string
+  /** What the last step that ran a command left in its pane (its `output` field). */
   output?: string
 }
 
@@ -146,7 +150,7 @@ export interface WorkedExample {
 export interface Transcript {
   repo: string
   revision: string
-  sandbox: { tmux: string; pytest: string }
+  sandbox: { tmux: string; pytest: string; rewritten?: { projectDirectory?: string } }
   steps: { tool: string; arguments: Record<string, unknown>; isError: boolean; content: { type: string; text?: string }[]; structuredContent?: unknown }[]
 }
 
@@ -227,14 +231,16 @@ export function buildShowcase(port: string, version: string, snapshot: ProtocolS
       && JSON.stringify(step.arguments) === JSON.stringify(definition.steps[index]!.arguments))
     ? transcript : undefined
   const output = recorded?.steps.map((step) => (step.structuredContent as { output?: unknown } | undefined)?.output).filter((text): text is string => typeof text === 'string').at(-1)
+  const full = recorded?.steps.map(stepResult) ?? []
+  const shown = full.map(abbreviate)
   const example: WorkedExample | undefined = definition && definition.steps.every((step) => tools.has(step.tool))
     ? {
       prompt: definition.prompt,
       steps: definition.steps.map((step, index) => ({
         tool: tools.get(step.tool)!, arguments: step.arguments, caption: step.caption,
-        ...(recorded ? { result: abbreviate(stepResult(recorded.steps[index]!)) } : {}),
+        ...(recorded ? { result: shown[index] } : {}),
       })),
-      ...(recorded ? { recording: { repo: recorded.repo, revision: recorded.revision, tmux: recorded.sandbox.tmux, runner: recorded.sandbox.pytest, ...(output ? { output: output.trimEnd() } : {}) } } : {}),
+      ...(recorded ? { recording: { repo: recorded.repo, revision: recorded.revision, tmux: recorded.sandbox.tmux, runner: recorded.sandbox.pytest, shortened: shown.some((value, index) => JSON.stringify(value) !== JSON.stringify(full[index])), ...(recorded.sandbox.rewritten?.projectDirectory ? { projectDirectory: recorded.sandbox.rewritten.projectDirectory } : {}), ...(output ? { output: output.trimEnd() } : {}) } } : {}),
     }
     : undefined
   return {

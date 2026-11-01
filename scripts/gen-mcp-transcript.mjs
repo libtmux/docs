@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process'
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { homedir, tmpdir } from 'node:os'
+import { existsSync, realpathSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { homedir, hostname, tmpdir, userInfo } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PORTS } from '../site/src/lib/ports.ts'
 import { EXAMPLES } from '../site/src/lib/mcp-examples.ts'
 import { recordCalls } from './lib/mcp-session.mjs'
+import { leaks, verifyRecording } from './lib/mcp-transcript-checks.mjs'
 
 /**
  * Record what each port's MCP server answers to the worked example on the MCP
@@ -49,6 +50,7 @@ if (snapshot.revision !== revision) throw new Error(`${only}: checkout is at ${r
 
 // A tmux and a home of its own: nothing here may reach the reader's server, socket or shell setup.
 const sandbox = mkdtempSync(join(tmpdir(), `t239-${only}-`))
+const sandboxReal = realpathSync(sandbox)
 const project = join(sandbox, 'project')
 let transcript
 try {
@@ -61,6 +63,8 @@ try {
   const [command, ...args] = SERVERS[only].command
   const environment = {
     TMUX: undefined, TMUX_PANE: undefined, TMUX_TMPDIR: sandbox, HOME: join(sandbox, 'home'), SHELL: '/bin/sh',
+    // No user tmux configuration, whichever way tmux looks for it.
+    XDG_CONFIG_HOME: join(sandbox, 'config'), XDG_CONFIG_DIRS: join(sandbox, 'config'),
     PATH: `${join(sandbox, 'venv/bin')}:${process.env.PATH}`, PS1: '$ ', ENV: '', LIBTMUX_SOCKET: 'transcript',
     ...TOOLSETS,
   }
@@ -70,22 +74,11 @@ try {
     cwd: project, env: environment, calls: example.steps.map(({ tool, arguments: callArguments }) => ({ tool, arguments: callArguments })),
   })
 
-  // Every step must have worked, and every id a request names must have come back in an earlier result.
-  const results = []
-  run.steps.forEach((step, index) => {
-    const text = JSON.stringify([step.content, step.structuredContent ?? null])
-    if (step.isError) throw new Error(`${only}: ${step.tool} returned an error: ${text.slice(0, 400)}`)
-    for (const id of JSON.stringify(step.arguments).match(/[$%@]\d+/g) ?? []) {
-      if (!results.slice(0, index).some((earlier) => earlier.includes(id))) throw new Error(`${only}: ${step.tool} names ${id}, which no earlier result returned`)
-    }
-    results.push(text)
-  })
-  const run$ = run.steps.findIndex((step) => /run|command/.test(step.tool))
-  if (run$ === -1 || !results[run$].includes(EXPECTED_OUTPUT)) throw new Error(`${only}: the run step's result lacks "${EXPECTED_OUTPUT}": ${results[run$]?.slice(0, 400)}`)
+  verifyRecording(run.steps, { port: only, runTool: 'run_shell_command', expected: EXPECTED_OUTPUT })
 
   // The project directory is a fresh temporary one each run; a fixed name keeps the file stable.
   const FIXED = '/home/user/project'
-  const rewrite = (value) => typeof value === 'string' ? value.replaceAll(project, FIXED)
+  const rewrite = (value) => typeof value === 'string' ? value.replaceAll(join(sandboxReal, 'project'), FIXED).replaceAll(project, FIXED)
     : Array.isArray(value) ? value.map(rewrite)
       : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).map(([key, item]) => [key, rewrite(item)])) : value
   run.steps = run.steps.map(rewrite)
@@ -107,6 +100,8 @@ try {
 }
 const out = join(root, 'site/src/data/mcp-transcripts', `${only}.json`)
 const text = `${JSON.stringify(transcript, null, 2)}\n`
+const found = leaks(text, [sandbox, sandboxReal, homedir(), userInfo().username, hostname(), checkout])
+if (found.length) throw new Error(`${only}: the recording names the host: ${found.join(', ')}`)
 if (checking) {
   const stored = JSON.parse(readFileSync(out, 'utf8'))
   if (stored.revision !== transcript.revision || JSON.stringify(stored.steps.map((s) => [s.tool, s.arguments])) !== JSON.stringify(transcript.steps.map((s) => [s.tool, s.arguments]))) throw new Error(`${only}: transcript is stale`)

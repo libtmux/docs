@@ -64,12 +64,13 @@
   color: var(--color-muted);
 }
 /* The call and its result are the site's ordinary code blocks, stacked half a gap apart. */
-.mcp-steps .expressive-code,
-.mcp-steps .expressive-code + .expressive-code,
+/* The li and element in the selectors outrank the article's own `.prose .expressive-code + .expressive-code`. */
+.mcp-steps > li .expressive-code,
+.mcp-steps > li .expressive-code + .expressive-code,
 .mcp-after + .expressive-code {
   margin: 0;
 }
-.mcp-steps .expressive-code + .expressive-code {
+.mcp-steps > li .expressive-code + .expressive-code {
   margin-block-start: calc(var(--mcp-gap, 1rem) / 2);
 }
 .mcp-after {

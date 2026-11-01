@@ -43,7 +43,8 @@ export async function recordCalls({ command, args = [], cwd, env = {}, calls, ca
   const stop = (signal) => {
     try { process.kill(-child.pid, signal) } catch (error) { if (error.code !== 'ESRCH') throw error }
   }
-  let finished = false
+  let alive = true
+  child.once('exit', () => { alive = false })
   try {
     const initialized = await request('initialize', {
       protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'libtmux-docs-transcript', version: '1' },
@@ -59,7 +60,6 @@ export async function recordCalls({ command, args = [], cwd, env = {}, calls, ca
         content: result?.content ?? [], ...(result?.structuredContent !== undefined ? { structuredContent: result.structuredContent } : {}),
       })
     }
-    finished = true
     child.stdin.end()
     const outcome = await Promise.race([exited, new Promise((resolve) => setTimeout(() => resolve('timeout'), exitTimeoutMs))])
     if (outcome === 'timeout') throw new Error(`server did not exit within ${exitTimeoutMs}ms of its input closing: ${stderr}`)
@@ -67,7 +67,7 @@ export async function recordCalls({ command, args = [], cwd, env = {}, calls, ca
     return { serverInfo: initialized?.serverInfo, steps }
   } finally {
     lines.close()
-    if (!finished) { child.stdin.end(); stop('SIGTERM') }
-    setTimeout(() => stop('SIGKILL'), 1000).unref()
+    // Whatever the server left running goes with it, including when it would not exit by itself.
+    if (alive) { child.stdin.end(); stop('SIGTERM'); await Promise.race([exited, new Promise((resolve) => setTimeout(resolve, 1000))]); if (alive) stop('SIGKILL') }
   }
 }
