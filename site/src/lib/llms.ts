@@ -20,6 +20,7 @@ import { productApiHref, productApiRoots } from './product-api.ts'
 import { tmuxReferenceUrl } from './tmux-reference'
 import { buildsTmuxDocumentation, tmuxManualUrl } from './tmux-manual-data.ts'
 import { CATALOG_TITLE, tmuxCatalogUrl } from './tmux-catalog.ts'
+import { coreHomeMarkdown } from './core-home.ts'
 import { selectPortCards } from './workspace-shared-slots.ts'
 import { linkProseMarkdown } from './prose-markdown'
 import { apiGlossaryBody } from './api-glossary.ts'
@@ -108,6 +109,7 @@ export function llmsPage(entry: CollectionEntry<'docs'>, origin: string, base: s
     authored: (href, owner) => new URL(proseHref(href, SITE_ROOT, owner,
       owner === port ? version : defaults[owner ?? ''] ?? 'latest', PORT_ROOT), url).href,
   }), port, entryPort)
+  if (entryPort && !entry.data.product && docsPath(entry) === 'core') body += coreHomeMarkdown(entryPort, version, origin)
   const cards = selectPortCards(entry.data.cards, entryPort ?? port)
   if (cards.length) {
     body += `\n\n${cards.map((card) => `- [${card.label}](${new URL(proseHref(card.href, SITE_ROOT, entryPort ?? port, version), url).href}): ${card.body}`).join('\n')}\n`

@@ -175,12 +175,26 @@ describe('documentation surface navigation', () => {
     ] })
     const core = surfaces.find((surface) => surface.id === 'core')!
     expect(core.sections.map((section) => [section.id, section.href])).toEqual([
-      ['home', '/csharp/latest/'],
+      ['home', '/csharp/latest/core/'],
       ['guides', '/csharp/latest/guides/installation/'],
       ['tutorials', '/csharp/latest/tutorials/first-session/'],
       ['reference', '/csharp/latest/reference/'],
     ])
     expect(core.sections[0].items.map((item) => item.label)).toEqual(['Overview', 'Guides', 'Tutorials', 'API Reference'])
+  })
+
+  it.each(PORTS)('sends the $slug Core Library home to core/ and keeps its sibling pages in the surface', (port) => {
+    const surfaces = buildDocumentationSurfaces(port.slug, 'latest', menus(port, 'latest'))
+    const core = surfaces.find((surface) => surface.id === 'core')!
+    const home = portPageUrl(port, 'latest', 'core')
+    expect(core.href).toBe(home)
+    expect(core.sections.find((section) => section.id === 'home')).toMatchObject({ href: home })
+    expect(core.sections[0].items[0]).toEqual({ type: 'link', label: 'Overview', href: home })
+    for (const path of ['', 'core/', 'guides/', 'reference/']) {
+      expect(currentDocumentation(surfaces, `${portPageUrl(port, 'latest')}${path}`).surface.id, path).toBe('core')
+    }
+    expect(currentDocumentation(surfaces, home).section.id).toBe('home')
+    expect(currentDocumentation(surfaces, `${portPageUrl(port, 'latest')}guides/`).section.id).toBe('guides')
   })
 
   it.each(['cxx', 'julia', 'powershell', 'ruby'])('keeps %s product glossaries inside their API navigation', (slug) => {

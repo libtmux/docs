@@ -74,7 +74,7 @@ const panelId = (product: string) => `landing-panel-${product}`
     return <div class="landing-panel" id={panelId(panel.product)} data-landing-panel={panel.product}>
     {panel.product === 'core' ? <>
       <HomeExample port={port.slug} language={port.name} example={complete} />
-      <p class="landing-more"><a href={portPageUrl(port, version, 'examples')}>More {port.name} examples →</a></p>
+      <p class="landing-more"><a href={portPageUrl(port, version, 'core')}>Core Library documentation →</a> · <a href={portPageUrl(port, version, 'examples')}>More {port.name} examples →</a></p>
       <LandingInstall panel={panel} port={port.slug} />
     </> : panel.product === 'mcp' ? <>
       <h2 class="landing-heading">Start with {panel.label}</h2>

@@ -1,0 +1,68 @@
+---
+import HomeExample from './HomeExample.astro'
+import PackageInstall from './widgets/PackageInstall.astro'
+import { PORT_BY_SLUG } from '../lib/ports'
+import { CAPABILITY_GROUPS, resolveCoreHome } from '../lib/core-home'
+import { QUICKSTARTS } from '../lib/quickstarts'
+
+/**
+ * The body of a port's Core Library home: what the library lets you do, the
+ * port's own Server, Session, Window and Pane types, and what it adds over the
+ * tmux command line.
+ *
+ * Every type and capability is read from the port's API model by
+ * `resolveCoreHome`, which throws on a symbol the model lacks. The cards and
+ * the page's title come from the `core/index.md` entry that renders this.
+ */
+interface Props {
+  port: string
+  version: string
+}
+const { port, version } = Astro.props as Props
+const info = PORT_BY_SLUG[port]
+const home = resolveCoreHome(port, version)
+const example = QUICKSTARTS[port]?.complete
+---
+<p>{home.summary}</p>
+<p class="text-sm text-muted">
+  You are reading the <strong>{version}</strong> documentation. Use the version control in the header to move
+  between releases, or <a href={`../`}>go to the {info.name} page</a> for the Workspace Manager and MCP server.
+</p>
+
+<h2 id="install">Install</h2>
+<div class="not-prose"><PackageInstall ports={[port]} /></div>
+
+{example && <>
+  <h2 id="example">Example</h2>
+  <div class="not-prose"><HomeExample port={port} language={info.name} example={example} /></div>
+</>}
+
+<h2 id="structure">Structure</h2>
+<p>Each type wraps one tmux object. A server holds sessions, a session holds windows, a window holds panes.</p>
+<div class="core-home__table" role="region" aria-label="Server, session, window, pane" tabindex="0">
+  <table class="table not-prose" data-core-home-objects>
+    <thead><tr><th>Type</th><th>Wraps</th></tr></thead>
+    <tbody>{home.objects.map((object) => <tr data-role={object.role}>
+      <td><a href={object.href}><code>{object.name}</code></a></td>
+      <td>{object.wraps}{object.tmuxId && <>, ID <code>{object.tmuxId}n</code></>}</td>
+    </tr>)}</tbody>
+  </table>
+</div>
+
+{Object.entries(CAPABILITY_GROUPS).map(([group, title]) => {
+  const rows = home.capabilities[group as keyof typeof CAPABILITY_GROUPS]
+  return rows.length > 0 && <>
+    <h2 id={group === 'typed' ? 'typed-api' : 'over-the-tmux-cli'}>{title}</h2>
+    <ul data-core-home-capabilities={group}>{rows.map((row) => <li data-capability={row.key}>
+      {row.label}: <a href={row.href}><code>{row.name}</code></a>
+    </li>)}</ul>
+  </>
+})}
+
+<style>
+  .core-home__table { overflow-x: auto; }
+  .core-home__table table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+  .core-home__table :global(th), .core-home__table :global(td) {
+    padding: .5rem .75rem; text-align: start; vertical-align: top; border-bottom: 1px solid var(--color-edge);
+  }
+</style>

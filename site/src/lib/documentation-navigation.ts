@@ -26,6 +26,12 @@ export interface DocumentationSurface {
   id: string
   label: string
   href: string
+  /**
+   * The path prefix whose pages belong to this surface. Only the Core Library
+   * differs from `href`: its home is `core/`, while its guides, topics and
+   * reference sit beside it under the version root.
+   */
+  scope?: string
   sections: DocumentationSection[]
   /** Example support scope; release maturity is documented separately. */
   concept?: boolean
@@ -55,6 +61,7 @@ export function buildDocumentationSurfaces(
     const id = domain.product ?? 'core'
     const prefix = domain.product ? `${domain.product}/` : ''
     const href = portPageUrl(info, version, domain.route)
+    const scope = domain.product ? href : base
     const home: DocumentationSection = { id: 'home', label: 'Home', href, items: [] }
     const sections = new Map<string, DocumentationSection>([['home', home]])
     const seen = new Set<string>()
@@ -131,7 +138,7 @@ export function buildDocumentationSurfaces(
           ...(section.disabled ? { disabled: true } : {}) })),
     ]
     const status = productStatus(info, id, REGISTRY)
-    return { id, label: domain.id === 'core' ? 'Core Library' : domain.label, href, sections: ordered,
+    return { id, label: domain.id === 'core' ? 'Core Library' : domain.label, href, scope, sections: ordered,
       ...(domain.product && productIsConcept(info, domain.product) ? { concept: true } : {}),
       ...(status ? { status } : {}) }
   })
@@ -171,9 +178,10 @@ export function getDocumentationSurfaces(port: string | undefined, version: stri
 
 /** URL-derived selection also works on direct loads, reloads and browser history. */
 export function currentDocumentation(surfaces: DocumentationSurface[], currentPath: string) {
-  const surface = surfaces.filter((entry) => currentPath.startsWith(entry.href))
-    .sort((a, b) => b.href.length - a.href.length)[0] ?? surfaces[0]
-  const path = currentPath.slice(surface.href.length).split('/')[0] || 'home'
+  const scopeOf = (entry: DocumentationSurface) => entry.scope ?? entry.href
+  const surface = surfaces.filter((entry) => currentPath.startsWith(scopeOf(entry)))
+    .sort((a, b) => scopeOf(b).length - scopeOf(a).length)[0] ?? surfaces[0]
+  const path = currentPath.slice(scopeOf(surface).length).split('/')[0] || 'home'
   const key = path === 'source-guide' ? 'guides'
     : path === 'cli' && surface.id === 'workspace' ? 'manual'
     : path === 'cli' || path === 'api' ? 'reference' : path
