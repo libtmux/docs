@@ -13,6 +13,11 @@
  * the line a page's `to` anchor names gone, and then no program at all. The page
  * must pass at the first commit and fail for the named reason at each later
  * one, which is how a port's trunk moves past the revision its model cites.
+ *
+ * The landing pages' excerpts (`site/src/data/landing-examples.json`) get the
+ * same treatment: a copy of the table with one anchor broken must fail for the
+ * named reason, and the same table must resolve at the revision it was
+ * written against and fail at the later ones.
  */
 import assert from 'node:assert/strict'
 import { cpSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -27,6 +32,19 @@ const content = join(root, 'site/src/content/docs')
 const attach = 'examples/attach-and-send-keys.md'
 const capture = 'ports/go/examples/capture-pane-output.md'
 const goAttach = 'ports/go/examples/attach-and-send-keys.md'
+const landing = JSON.parse(readFileSync(join(root, 'site/src/data/landing-examples.json'), 'utf8'))
+
+/** A landing table with one entry changed, for the planted-defect cases below. */
+const landingWith = (owner, product, change) => ({ ...landing, [owner]: { ...landing[owner], [product]: { ...landing[owner][product], ...change } } })
+
+const landingCases = [
+  { name: 'a landing anchor that matches no line', table: landingWith('ts', 'mcp', { from: 'export async function connectAgents' }), trips: /landing page of ts, mcp: .*from anchor "export async function connectAgents" matches no line/ },
+  { name: 'a landing anchor that matches several lines', table: landingWith('ts', 'workspace', { from: 'sleep 30' }), trips: /landing page of ts, workspace: .*from anchor "sleep 30" is ambiguous/ },
+  { name: 'a landing range that ends inside a block', table: landingWith('go', 'mcp', { to: '=\t}' }), trips: /landing page of go, mcp: .*opens \{ it never closes/ },
+  { name: 'a later landing range that matches no line', table: landingWith('java', 'workspace', { more: [{ from: 'void theDescribedSessionIsWhatGetsBuilds', to: '=    }' }] }), trips: /landing page of java, workspace: .*from anchor "void theDescribedSessionIsWhatGetsBuilds" matches no line/ },
+  { name: 'a later landing range that ends inside a block', table: landingWith('java', 'workspace', { more: [{ from: 'void theDescribedSessionIsWhatGetsBuilt', to: 'assertEquals("built"' }] }), trips: /landing page of java, workspace: .*opens \{ it never closes/ },
+  { name: 'a landing file missing from the example cache', table: landingWith('rs', 'mcp', { file: 'crates/tmux-mcp/examples/gone.rs' }), trips: /landing page of rs, mcp: crates\/tmux-mcp\/examples\/gone\.rs is not in the example cache/ },
+]
 
 const cases = [
   { name: 'a hand-typed shell block', page: attach, find: '## The complete script', replace: '```sh\ntmux kill-server\n```\n\n## The complete script', trips: /hand-typed block/ },
@@ -73,6 +91,23 @@ try {
     console.log(`ok   fails on ${name}`)
   }
 
+  // The landing page's excerpts, in a copy of the table with one defect each.
+  const tables = join(scratch, 'landing')
+  mkdirSync(tables, { recursive: true })
+  for (const { name, table, trips } of landingCases) {
+    const file = join(tables, `${name.replaceAll(/\W+/g, '-')}.json`)
+    writeFileSync(file, JSON.stringify(table))
+    const result = spawnSync(process.execPath, [script, '--landing', file], { encoding: 'utf8' })
+    assert.equal(result.status, 1, `${name}: expected a failure, got ${result.status}\n${result.stdout}`)
+    assert.match(result.stderr, trips, `${name}: wrong reason\n${result.stderr}`)
+    console.log(`ok   fails on ${name}`)
+  }
+  const missing = join(tables, 'missing.json')
+  writeFileSync(missing, JSON.stringify(landingWith('julia', 'mcp', { missing: 'No program yet.' })))
+  const gap = spawnSync(process.execPath, [script, '--landing', missing], { encoding: 'utf8' })
+  assert.equal(gap.status, 0, `a product with no program yet has nothing to resolve:\n${gap.stderr}`)
+  console.log('ok   a product with no program yet is not asked for an excerpt')
+
   // The revision gate.
   const program = (ending) => ['package main', '', 'func start() error {', '\tserver, err := tmux.NewServer(options)', '\tif err != nil {', '\t\treturn err', '\t}', ending, '}', ''].join('\n')
   const repository = join(scratch, 'port')
@@ -89,6 +124,11 @@ try {
   git('rm', '--quiet', 'examples/prog/main.go')
   const deleted = commit('Delete the program')
 
+  const landingFile = join(scratch, 'revision-landing.json')
+  writeFileSync(landingFile, JSON.stringify({
+    go: { mcp: { file: 'examples/prog/main.go', lang: 'go', from: 'server, err := tmux.NewServer', to: 'return run(ctx, server)', ci: { workflow: '.github/workflows/tests.yml', command: 'go test' } } },
+  }))
+
   const pages = join(scratch, 'revision-pages')
   mkdirSync(join(pages, 'ports/go/examples'), { recursive: true })
   writeFileSync(join(pages, 'ports/go/examples/page.md'), [
@@ -97,16 +137,19 @@ try {
     '```go file="examples/prog/main.go"', '```', '',
     '```rust file="examples/prog/main.rs" from="fn main"', '```', '',
   ].join('\n'))
-  const gate = (port, revision) => spawnSync(process.execPath, [script, '--content', pages, '--port', port, '--checkout', repository, '--revision', revision], { encoding: 'utf8' })
+  const gate = (port, revision) => spawnSync(process.execPath, [script, '--content', pages, '--landing', landingFile, '--port', port, '--checkout', repository, '--revision', revision], { encoding: 'utf8' })
 
   const control = gate('go', written)
   assert.equal(control.status, 0, `the page must resolve at the revision it was written against:\n${control.stderr}`)
   assert.match(control.stdout, /2 file= fences of go resolve at /)
+  assert.match(control.stdout, /1 landing page excerpts of go resolve at /)
   console.log('ok   the revision gate passes a page at the revision it quotes')
 
   for (const { name, revision, trips } of [
     { name: 'a to anchor the revision no longer holds', revision: rewritten, trips: /examples\/prog\/main\.go: to anchor "return run\(ctx, server\)" matches no line/ },
     { name: 'a file the revision deleted', revision: deleted, trips: /examples\/prog\/main\.go is not in go at / },
+    { name: 'a landing excerpt the revision no longer holds', revision: rewritten, trips: /landing page of go, mcp: examples\/prog\/main\.go: to anchor "return run\(ctx, server\)" matches no line/ },
+    { name: 'a landing file the revision deleted', revision: deleted, trips: /landing page of go, mcp: examples\/prog\/main\.go is not in go at / },
   ]) {
     const result = gate('go', revision)
     assert.equal(result.status, 1, `${name}: expected a failure, got ${result.status}\n${result.stdout}`)
@@ -119,6 +162,7 @@ try {
   const other = gate('rs', rewritten)
   assert.equal(other.status, 0, `a Rust run must leave Go fences alone:\n${other.stderr}`)
   assert.match(other.stderr + other.stdout, /1 file= fences of rs/)
+  assert.match(other.stdout, /0 landing page excerpts of rs resolve at /)
   console.log('ok   the revision gate reads only the named port')
 
   const unknown = gate('go', 'not-a-revision')

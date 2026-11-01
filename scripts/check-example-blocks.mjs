@@ -15,7 +15,12 @@
  * against the committed bytes of the checkout at the revision. The example
  * cache binds a page to the revision recorded in the port's model, but the
  * port's own docs build reads its trunk, so a page can pass here and fail
- * there. Run it against a port's trunk before pinning that port.
+ * there. Run it against a port's trunk before pinning that port. The same run
+ * resolves the excerpts of that port's landing page that its repository holds.
+ *
+ * `--landing <file>` points at another table of landing-page excerpts
+ * (`site/src/data/landing-examples.json`). Each excerpt must resolve to whole
+ * code in the revision-bound cache.
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
@@ -23,7 +28,8 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { LANG_TO_PORT } from '../site/src/plugins/remark-port-code.mjs'
 import { PORTS } from '../site/src/lib/ports.ts'
-import { checkExampleBlocks, checkQuotedSources, fencesOf } from '../site/src/lib/example-blocks.ts'
+import { checkExampleBlocks, checkLandingExcerpts, checkQuotedSources, fencesOf } from '../site/src/lib/example-blocks.ts'
+import { landingCacheKey } from '../site/src/lib/port-landing.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const option = (name, fallback) => {
@@ -36,6 +42,17 @@ const CACHE = JSON.parse(readFileSync(option('--sources', join(root, 'site/src/d
 const value = (name) => {
   const at = process.argv.indexOf(name)
   return at === -1 ? undefined : process.argv[at + 1]
+}
+const LANDING = JSON.parse(readFileSync(option('--landing', join(root, 'site/src/data/landing-examples.json')), 'utf8'))
+
+/** The landing page excerpts whose product `selected` accepts; a product with no program yet has none. */
+const countExcerpts = (selected = () => true) => Object.entries(LANDING)
+  .flatMap(([owner, products]) => Object.entries(products).filter(([product, entry]) => !('missing' in entry) && selected(owner, product))).length
+
+/** The repository the API model records for a port's product. */
+function productRepository(owner, product) {
+  const model = JSON.parse(readFileSync(join(root, `site/src/data/api/${owner}.json`), 'utf8'))
+  return model.sources?.find((source) => source.product === product)?.repo
 }
 
 /** Every Markdown page under a directory. */
@@ -89,11 +106,19 @@ if (['--port', '--checkout', '--revision'].some((name) => process.argv.includes(
       failures.push(`${page}: ${problem}`)
     }
   }
+  // The landing page quotes the products a repository holds; Python's live in others.
+  const held = (owner, product) => owner === port && productRepository(owner, product) === productRepository(owner, 'core')
+  const landing = checkLandingExcerpts({ table: LANDING, where, only: held, readSource: (_owner, _product, file) => readSource(file) })
+  const landingHeld = countExcerpts(held)
   if (failures.length) {
     console.error(`check-example-blocks: ${failures.length} of ${fences} file= fences of ${port} do not resolve at ${commit}\n${failures.map((line) => `  ${line}`).join('\n')}`)
-    process.exit(1)
   }
+  if (landing.length) {
+    console.error(`check-example-blocks: ${landing.length} landing page excerpt(s) of ${port} do not resolve at ${commit}\n${landing.map((line) => `  ${line}`).join('\n')}`)
+  }
+  if (failures.length || landing.length) process.exit(1)
   console.log(`check-example-blocks: ${fences} file= fences of ${port} resolve at ${commit}`)
+  console.log(`check-example-blocks: ${landingHeld} landing page excerpts of ${port} resolve at ${commit}`)
   process.exit(0)
 }
 
@@ -161,8 +186,14 @@ for (const file of pages) {
   }
 }
 
+for (const problem of checkLandingExcerpts({
+  table: LANDING,
+  readSource: (owner, product, file) => CACHE[landingCacheKey(owner, product, file)]?.content,
+})) failures.push(problem)
+
 if (failures.length) {
-  console.error(`check-example-blocks: ${failures.length} problem(s) on example pages\n${failures.map((line) => `  ${line}`).join('\n')}`)
+  console.error(`check-example-blocks: ${failures.length} problem(s) on example pages and landing pages\n${failures.map((line) => `  ${line}`).join('\n')}`)
   process.exit(1)
 }
 console.log(`check-example-blocks: ${blocks} code blocks on ${pages.length} example pages are excerpts or recorded runs`)
+console.log(`check-example-blocks: ${countExcerpts()} landing page excerpts resolve to whole code in the example cache`)
