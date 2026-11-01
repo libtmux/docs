@@ -1764,12 +1764,15 @@ export const CONCEPTS: Record<string, Concept> = {
       go: 'tmux.Server.Snapshot',
       java: 'io.github.libtmux.Server.Server.snapshot',
       csharp: 'LibTmux.Server.CaptureSnapshotAsync',
+      rs: 'server.Server.hierarchy',
       swift: 'Server.snapshot()',
+    },
+    notes: {
+      rs: 'Fetches the whole hierarchy with `list-sessions`, `list-windows -a` and `list-panes -a`, and stitches the rows by winlink. The three listings are separate commands, so the capture is not an atomic transaction.',
     },
     absent: {
       py: 'no equivalent on `Server`',
-      rs: 'no equivalent on `Server`',
-      cxx: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`: `sessions`, `windows`, `panes` and `clients` each take a snapshot of one listing, and `Snapshot::take` needs the internal `detail::Backend`, so no public call reads the whole hierarchy at once',
     },
   },
   'server-cmd': {
