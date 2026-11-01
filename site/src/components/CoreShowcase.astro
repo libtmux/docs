@@ -1,6 +1,9 @@
 ---
 import { Code } from 'astro-expressive-code/components'
-import { portCapabilities, type CapabilityTable } from '../lib/core-capabilities'
+import HomeExample from './HomeExample.astro'
+import { CAPABILITIES, portCapabilities, type CapabilityTable } from '../lib/core-capabilities'
+import { QUICKSTARTS } from '../lib/quickstarts'
+import { PORT_BY_SLUG } from '../lib/ports'
 import TABLE from '../data/core-capabilities.json'
 import SOURCES from '../data/example-sources.json'
 import type { CachedSource } from '../lib/port-landing'
@@ -22,9 +25,15 @@ interface Props {
   port: string
 }
 const { port } = Astro.props as Props
-const shown = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>)
+const programs = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>)
+const quickstart = QUICKSTARTS[port]?.complete
+// The first capability is the port's homepage quickstart, which already walks server, session, window and pane.
+const shown = [
+  ...(quickstart ? [{ id: 'typed-graph', label: CAPABILITIES[0].label, quickstart: true as const }] : []),
+  ...programs.map((item) => ({ ...item, quickstart: false as const })),
+]
 ---
-{shown.length > 0 && <div class="core-showcase" data-core-showcase={port}>
+{programs.length > 0 && <div class="core-showcase" data-core-showcase={port}>
   <details class="core-showcase__picker" open>
     <summary><span class="sr-only">Capability: </span><span data-capability-current>{shown[0]!.label}</span>
       <svg class="doc-picker-caret" width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
@@ -39,12 +48,14 @@ const shown = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record
     </div>
   </details>
   <div class="core-showcase__panels">
-    {shown.map((item, index) => <section class="core-showcase__panel" data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}
+    {shown.map((item, index) => item.quickstart ? <section class="core-showcase__panel" data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}>
+      <HomeExample port={port} language={PORT_BY_SLUG[port]!.name} example={quickstart!} heading={false} />
+    </section> : <section class="core-showcase__panel" data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}
       style={`--home-code-columns: ${homeCodeColumns(item.code)}`}>
       <Code code={item.code} lang={item.lang} title={item.file} frame="code" />
       <p class="core-showcase__source">
         {item.tmux && <small class="core-showcase__tmux">tmux {item.tmux}</small>}
-        Excerpt of <a href={item.sourceUrl}><code>{item.file}</code></a>. The port's CI runs it in <code>{item.ci.workflow}</code>{(item.ci.where ?? item.ci.directory) && <> from <code>{item.ci.where ?? item.ci.directory}/</code></>}: <code>{item.ci.command}</code>.
+        The whole program, <a href={item.sourceUrl}><code>{item.file}</code></a>. The port's CI runs it in <code>{item.ci.workflow}</code>{(item.ci.where ?? item.ci.directory) && <> from <code>{item.ci.where ?? item.ci.directory}/</code></>}: <code>{item.ci.command}</code>.
       </p>
     </section>)}
   </div>
@@ -127,7 +138,7 @@ const shown = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record
   .core-showcase__source code { white-space: normal; overflow-wrap: anywhere; }
   .core-showcase :global(.expressive-code pre) { overflow: auto; tab-size: 8; }
   @media (min-width: 56rem) {
-    .core-showcase { grid-template-columns: 14rem minmax(0, 1fr); align-items: start; }
+    .core-showcase { grid-template-columns: 14rem minmax(0, 1fr); align-items: start; column-gap: 1rem; }
     .core-showcase__picker > summary { display: none !important; }
 
   }

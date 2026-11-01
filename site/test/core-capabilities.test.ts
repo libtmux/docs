@@ -1,10 +1,8 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { unbalanced } from '../src/lib/example-blocks'
-import { sliceExcerpt } from '../src/lib/example-excerpt'
 import {
-  CAPABILITIES, capabilityCacheKey, capabilityFiles, portCapabilities, validateCapability, workflowStep,
+  CAPABILITIES, capabilityCacheKey, capabilityFiles, MAX_PROGRAM_LINES, portCapabilities, programProblems, validateCapability, workflowStep,
   type CapabilityEntry, type CapabilityId, type CapabilityTable,
 } from '../src/lib/core-capabilities'
 import { checkoutFor } from '../src/plugins/remark-port-code.mjs'
@@ -34,42 +32,60 @@ describe('the capability showcase data', () => {
   })
 
   it('refuses an entry without that evidence', () => {
-    const ok = table.ts!['typed-graph']!
+    const ok = table.rs!['send-keys']!
     expect(validateCapability(ok)).toEqual([])
     expect(validateCapability({ ...ok, checkedBy: [] })).toContain('records no evidence that the exit status or output is checked')
     expect(validateCapability({ ...ok, checkedBy: undefined })).toHaveLength(1)
     expect(validateCapability({ ...ok, checkedBy: [{ file: ok.file, contains: ' ' }] })).toContain('records evidence with no file or text')
     expect(validateCapability({ ...ok, ci: { workflow: 'ci.yml', command: '', job: '' } })).toEqual(['names no workflow', 'names no CI command', 'names no CI job'])
     expect(validateCapability({ ...ok, tmux: '3.8' })).toContain('writes the tmux version unlike 3.8+')
-    expect(() => portCapabilities('ts', { ts: { 'typed-graph': { ...ok, checkedBy: [] } } }, cache)).toThrow(/records no evidence/)
+    expect(() => portCapabilities('rs', { rs: { 'send-keys': { ...ok, checkedBy: [] } } }, cache)).toThrow(/records no evidence/)
   })
 
-  it.each(entries.map((item) => [`${item.owner}/${item.id}`, item] as const))('%s quotes the cached file at the revision its API model records', (_name, { owner, entry }) => {
+  it.each(entries.map((item) => [`${item.owner}/${item.id}`, item] as const))('%s shows a whole program at the revision its API model records', (_name, { owner, entry }) => {
     const pinned = model(owner)
     for (const file of capabilityFiles(entry)) {
       const cached = cache[capabilityCacheKey(owner, file)]
       expect(cached, `${file} is in the example cache`).toBeDefined()
       expect(cached).toMatchObject({ repository: pinned.repo, revision: pinned.revision })
     }
-    const source = cache[capabilityCacheKey(owner, entry.file)]!
     for (const item of entry.checkedBy) {
       expect(cache[capabilityCacheKey(owner, item.file)]!.content, `${item.file} holds the check`).toContain(item.contains)
     }
-    const shown = [{ from: entry.from, to: entry.to }, ...(entry.more ?? [])].map((range) => {
-      const text = sliceExcerpt(source.content, range, entry.file)
-      expect(unbalanced(text, entry.lang), range.from).toBeUndefined()
-      return text
-    })
-    const length = shown.join('\n').split('\n').length
-    expect(length, 'a step, not a line').toBeGreaterThanOrEqual(4)
-    expect(length).toBeLessThanOrEqual(45)
+    // The page shows the file in full: imports, entry point and server setup, nothing defined elsewhere.
+    expect(entry.from ?? entry.to ?? entry.more).toBeUndefined()
+    expect(programProblems(entry.lang, cache[capabilityCacheKey(owner, entry.file)]!.content)).toEqual([])
   })
 
-  it('shows the capabilities in the maintainer order and nothing else', () => {
-    const shown = portCapabilities('ts', table, cache)
-    expect(shown.map((item) => item.id)).toEqual(ids.filter((id) => table.ts![id as CapabilityId]))
+  it('shows each program in full, in the maintainer order', () => {
+    const shown = portCapabilities('rs', table, cache)
+    expect(shown.map((item) => item.id)).toEqual(ids.filter((id) => table.rs![id as CapabilityId]))
+    for (const item of shown) {
+      expect(item.code).toBe(cache[capabilityCacheKey('rs', item.file)]!.content.replace(/\n$/, ''))
+      expect(item.sourceUrl).toContain(`/blob/${model('rs').revision}/${item.file}`)
+      expect(item.code.split('\n').length).toBeLessThanOrEqual(MAX_PROGRAM_LINES)
+    }
+    // A port whose examples are library functions, not programs, offers none.
+    expect(portCapabilities('ts', table, cache)).toEqual([])
     expect(portCapabilities('lua', table, cache)).toEqual([])
-    for (const item of shown) expect(item.sourceUrl).toContain(`/blob/${model('ts').revision}/${item.file}`)
+  })
+
+  it('refuses an excerpt, and a file that is not a program', () => {
+    const ok = table.rs!['send-keys']!
+    expect(validateCapability({ ...ok, from: 'let panes' })).toContain('quotes an excerpt; a showcase entry is a whole program')
+    expect(validateCapability({ ...ok, more: [] })).toContain('quotes an excerpt; a showcase entry is a whole program')
+    const listings = cache[capabilityCacheKey('rs', 'crates/libtmux/examples/api_input.rs')]!.content
+    // The body of the example without its imports and main: what a pasted excerpt would be.
+    const body = listings.split('\n').slice(9, 36).join('\n')
+    expect(programProblems('rust', body)).toEqual(['has no import lines', 'has no entry point'])
+    expect(programProblems('rust', listings)).toEqual([])
+    const quickstart = cache[capabilityCacheKey('ruby', 'examples/api/capture.rb')]!.content
+    expect(programProblems('ruby', quickstart)).toEqual([])
+    expect(programProblems('ruby', 'require_relative "support"\nExample.run("x") { }\n')).toEqual(['has no import lines', 'uses a helper of the repository'])
+    expect(programProblems('go', 'package main\n\nfunc run() {}\n')).toEqual(['has no import lines', 'has no entry point'])
+    expect(programProblems('typescript', 'export async function quickstart() {}\n')).toEqual(['has no import lines', 'has no entry point'])
+    expect(programProblems('cobol', 'x')).toEqual(['has no completeness rule for cobol'])
+    expect(programProblems('rust', `use a;\nfn main() {}\n${'x\n'.repeat(MAX_PROGRAM_LINES)}`)).toEqual([`runs past ${MAX_PROGRAM_LINES} lines`])
   })
 
   // A checkout that is not present cannot be asked; the run says it skipped.
@@ -131,27 +147,35 @@ jobs:
 })
 
 describe('the showcase component', () => {
-  it('renders each capability once, in order, with its source and CI line, and nothing for a port without examples', async () => {
+  it('leads with the quickstart, then each program once, and renders nothing for a port with only the quickstart', async () => {
     const { Window } = await import('happy-dom')
     const { createComponent, renderTemplate } = await import('astro/runtime/server/index.js')
     const { loadAstroTemplate, renderAstroTemplate } = await import('./astro-templates')
     const Code = createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre data-code>${props.code}</pre>`)
-    const template = await loadAstroTemplate('components/CoreShowcase.astro', { modules: { 'astro-expressive-code/components': { Code } } })
+    const template = await loadAstroTemplate('components/CoreShowcase.astro', {
+      stubs: { 'components/HomeExample.astro': '---\nconst { port, heading } = Astro.props\n---\n<div data-home-example={port} data-heading={String(heading)} />' },
+      modules: { 'astro-expressive-code/components': { Code } },
+    })
     const render = async (port: string) => {
       const window = new Window()
-      window.document.body.innerHTML = await renderAstroTemplate(template, { url: `https://libtmux.org/${port}/latest/core/`, props: { port } })
+      window.document.body.innerHTML = await renderAstroTemplate(template, {
+        url: `https://libtmux.org/${port}/latest/`,
+        props: { port },
+      })
       return window.document as unknown as Document
     }
-    const doc = await render('ts')
-    const expected = portCapabilities('ts', table, cache)
-    expect([...doc.querySelectorAll('[data-capability-option]')].map((a) => a.getAttribute('data-capability-option'))).toEqual(expected.map((item) => item.id))
-    expect([...doc.querySelectorAll('[data-capability-panel]')].map((a) => a.getAttribute('data-capability-panel'))).toEqual(expected.map((item) => item.id))
+    const doc = await render('rs')
+    const programs = portCapabilities('rs', table, cache).map((item) => item.id)
+    const options = [...doc.querySelectorAll('[data-capability-option]')].map((a) => a.getAttribute('data-capability-option'))
+    expect(options).toEqual(['typed-graph', ...programs])
+    expect([...doc.querySelectorAll('[data-capability-panel]')].map((a) => a.getAttribute('data-capability-panel'))).toEqual(options)
+    expect(doc.querySelector('[data-capability-panel="typed-graph"] [data-home-example]')!.getAttribute('data-heading')).toBe('false')
     expect(doc.querySelectorAll('[data-capability-panel][data-default]')).toHaveLength(1)
     expect(doc.querySelector('[data-capability-option]')!.getAttribute('href')).toBe('?capability=typed-graph')
     expect(doc.querySelector('input, label, [data-capability-search]'), 'no search box for a list this short').toBeNull()
     expect(doc.querySelectorAll('[data-capability-option]').length).toBeLessThanOrEqual(8)
-    expect(doc.body.textContent).toContain('bun run typecheck && bun run test')
-    expect(doc.body.textContent).toContain('examples/')
-    expect((await render('lua')).querySelector('[data-core-showcase]')).toBeNull()
+    expect(doc.body.textContent).toContain('just check')
+    expect(doc.body.textContent).toContain('The whole program')
+    expect((await render('ts')).querySelector('[data-core-showcase]')).toBeNull()
   })
 })

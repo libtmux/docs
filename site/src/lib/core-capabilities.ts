@@ -11,8 +11,7 @@
  */
 
 // gen-example-sources.mjs imports this module with bare Node; local imports need `.ts`.
-import { sliceExcerpt } from './example-excerpt.ts'
-import { landingCacheKey, workflowRuns, type CachedSource, type LandingCi, type LandingRange } from './port-landing.ts'
+import { landingCacheKey, workflowRuns, type CachedSource, type LandingCi } from './port-landing.ts'
 
 /** The showcase's capabilities, in the order a reader sees them. */
 export const CAPABILITIES = [
@@ -35,10 +34,13 @@ export interface ExitEvidence {
   contains: string
 }
 
-export interface CapabilityEntry extends LandingRange {
+export interface CapabilityEntry {
   file: string
   lang: string
-  more?: readonly LandingRange[]
+  /** Excerpt anchors. A showcase entry is a whole program, so a recorded anchor is refused. */
+  from?: string
+  to?: string
+  more?: readonly unknown[]
   ci: LandingCi & {
     /** The workflow job's key. */
     job: string
@@ -66,13 +68,39 @@ export const capabilityFiles = (entry: CapabilityEntry): string[] => [entry.file
 export function validateCapability(entry: Partial<CapabilityEntry>): string[] {
   const problems: string[] = []
   if (!entry.file) problems.push('names no file')
-  if (!entry.from) problems.push('names no first line')
+  if (entry.from !== undefined || entry.to !== undefined || entry.more !== undefined) problems.push('quotes an excerpt; a showcase entry is a whole program')
   if (!/^\.github\/workflows\/[\w.-]+\.ya?ml$/.test(entry.ci?.workflow ?? '')) problems.push('names no workflow')
   if (!entry.ci?.command?.trim()) problems.push('names no CI command')
   if (!entry.ci?.job?.trim()) problems.push('names no CI job')
   if (!entry.checkedBy?.length) problems.push('records no evidence that the exit status or output is checked')
   for (const item of entry.checkedBy ?? []) if (!item.file || !item.contains?.trim()) problems.push('records evidence with no file or text')
   if (entry.tmux !== undefined && !/^\d+\.\d+[a-z]?\+$/.test(entry.tmux)) problems.push('writes the tmux version unlike 3.8+')
+  return problems
+}
+
+/** The most lines a whole program may run; the page shows the file in full. */
+export const MAX_PROGRAM_LINES = 150
+
+/**
+ * What a reader needs to paste a program and build it: its imports and its
+ * entry point, with no helper module of the repository. Empty when the file
+ * qualifies. The check is per language; a language with no rule here has no
+ * entry, so a new port must say what makes its program complete.
+ */
+export function programProblems(lang: string, content: string): string[] {
+  const rules: Record<string, { imports: RegExp; entry: RegExp; local?: RegExp }> = {
+    rust: { imports: /^use /m, entry: /^(?:async )?fn main\(|^(?:#\[[^\]]+\]\s*)+(?:async )?fn main\(/m },
+    go: { imports: /^import[ (]/m, entry: /^func main\(\)/m },
+    ruby: { imports: /^require ["']/m, entry: /^(?:begin\b|[A-Za-z_][\w:]*[.(]|[A-Za-z_]\w* = )/m, local: /require_relative|Example\./ },
+    typescript: { imports: /^import /m, entry: /^(?:await |void |main\()|^(?:async )?function main\(/m },
+  }
+  const rule = rules[lang]
+  if (!rule) return [`has no completeness rule for ${lang}`]
+  const problems: string[] = []
+  if (!rule.imports.test(content)) problems.push('has no import lines')
+  if (!rule.entry.test(content)) problems.push('has no entry point')
+  if (rule.local?.test(content)) problems.push('uses a helper of the repository')
+  if (content.trimEnd().split('\n').length > MAX_PROGRAM_LINES) problems.push(`runs past ${MAX_PROGRAM_LINES} lines`)
   return problems
 }
 
@@ -99,10 +127,11 @@ export function portCapabilities(owner: string, table: CapabilityTable, cache: C
     const key = capabilityCacheKey(owner, entry.file)
     const cached = cache[key]
     if (!cached) throw new Error(`core-capabilities: ${key} is not in the example cache; run node scripts/gen-example-sources.mjs`)
-    const ranges = [{ from: entry.from, to: entry.to }, ...(entry.more ?? [])]
+    const incomplete = programProblems(entry.lang, cached.content)
+    if (incomplete.length) throw new Error(`core-capabilities: ${owner}/${id} ${incomplete.join('; ')}`)
     return [{
       id, label, lang: entry.lang, file: entry.file, ci: entry.ci,
-      code: ranges.map((range) => sliceExcerpt(cached.content, range, key)).join('\n\n'),
+      code: cached.content.replace(/\n$/, ''),
       sourceUrl: `https://github.com/${cached.repository}/blob/${cached.revision}/${entry.file}`,
       ...(entry.tmux ? { tmux: entry.tmux } : {}),
     }]

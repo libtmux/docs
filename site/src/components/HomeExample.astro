@@ -7,12 +7,14 @@ interface Props {
   port: string
   language: string
   example: HomeExample
+  /** Show the "Start with" heading; a host that names the example itself turns it off. */
+  heading?: boolean
 }
-const { port, language, example } = Astro.props
+const { port, language, example, heading = true } = Astro.props
 ---
 <div class="home-example" data-home-example={port}>
   <div class="home-example-heading">
-    <h2>Start with {language}</h2>
+    {heading && <h2>Start with {language}</h2>}
     <fieldset class="home-example-options">
       <legend class="sr-only">Example details</legend>
       <label><input type="checkbox" data-example-errors /> + Error handling</label>
