@@ -77,7 +77,11 @@ describe('the product page titles', () => {
     expect(layout).toMatch(/<h1[^>]*>\{title\}<\/h1>/)
     const page = readFileSync(new URL('../src/components/docs/DocPage.astro', import.meta.url), 'utf8')
     expect(page).toContain('documentTitle={entry.data.shortTitle}')
-    expect(readFileSync(new URL('../src/lib/llms.ts', import.meta.url), 'utf8')).toContain('title: entry.data.shortTitle ?? entry.data.title,')
+    const llms = readFileSync(new URL('../src/lib/llms.ts', import.meta.url), 'utf8')
+    expect(llms).toContain('data.shortTitle ?? data.title')
+    expect(llms).toContain('title: agentTitle(entry.data),')
+    // The manifest titles a page as its Markdown twin does (test/agent-titles.test.ts).
+    expect(readFileSync(new URL('../src/pages/docs.json.ts', import.meta.url), 'utf8')).toContain('title: agentTitle(served.data),')
     expect(documentationTitle(workspaceShortTitle('rs'), 'libtmux')).toContain('Rust-based tmux workspace manager')
   })
 })

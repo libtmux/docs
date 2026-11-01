@@ -34,6 +34,13 @@ export interface LlmsPage {
   body: string
 }
 
+/**
+ * The title an agent export gives a page: llms.txt, the Markdown twin's heading
+ * and the docs.json entry, which must agree. A page with a `shortTitle` keeps
+ * its longer `title` as its own heading.
+ */
+export const agentTitle = (data: { title: string; shortTitle?: string }): string => data.shortTitle ?? data.title
+
 /** Section label for grouping, falling back to the top path segment. */
 function sectionOf(entry: CollectionEntry<'docs'>): string {
   const group = entry.data.sidebar?.group
@@ -120,7 +127,7 @@ export function llmsPage(entry: CollectionEntry<'docs'>, origin: string, base: s
   }
   // A locale's landing entry routes to '', which is the root itself.
   return {
-    title: entry.data.shortTitle ?? entry.data.title,
+    title: agentTitle(entry.data),
     description: entry.data.description ?? '',
     url,
     section: sectionOf(entry),
