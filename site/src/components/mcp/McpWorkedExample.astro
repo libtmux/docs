@@ -1,0 +1,39 @@
+---
+/**
+ * A prompt and the tool calls an agent makes for it, each with its tier badge.
+ *
+ * Shared by the MCP overview and the port landing page. The calls come from
+ * `EXAMPLES` in `lib/mcp-showcase.ts`, which a test checks against each tool's
+ * input schema in the port's `tools/list` snapshot.
+ */
+import { Code } from 'astro-expressive-code/components'
+import { tierFor, type WorkedExample } from '../../lib/mcp-showcase'
+import '../../styles/mcp-showcase.css'
+
+interface Props {
+  example: WorkedExample
+  portName: string
+  /** The heading's level: 2 on the overview, where it is a section, 3 inside a landing panel. */
+  level?: 2 | 3
+}
+const { example, portName, level = 2 } = Astro.props as Props
+const Heading = `h${level}` as 'h2' | 'h3'
+const call = (name: string, args: Record<string, unknown>) => JSON.stringify({ tool: name, arguments: args }, null, 2)
+---
+<Heading id="worked-example">Worked example</Heading>
+<p>Given this prompt, an agent connected to the {portName} server makes these calls.</p>
+<blockquote class="mcp-prompt"><p>{example.prompt}</p></blockquote>
+<ol class="mcp-steps">
+  {example.steps.map((step) => {
+    const tier = tierFor(step.tool)
+    return (
+      <li>
+        <p>
+          {step.caption} <a href={step.tool.href}><code>{step.tool.name}</code></a>
+          {tier && <> <span class={`mcp-tier mcp-tier--${step.tool.tier}`} title={tier.tooltip}>{tier.label}</span></>}
+        </p>
+        <Code code={call(step.tool.name, step.arguments)} lang="json" frame="none" />
+      </li>
+    )
+  })}
+</ol>

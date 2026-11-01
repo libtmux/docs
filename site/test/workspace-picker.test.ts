@@ -16,7 +16,7 @@ const CLIENT = ts.transpileModule(SOURCE, { compilerOptions: { target: ts.Script
 const stub = {
   Code: createComponent((_result: unknown, props: { code: string; lang: string }) => renderTemplate`<pre data-lang="${props.lang}">${props.code}</pre>`),
 }
-const REAL = ['components/RerollButton.astro', 'components/workspace/WorkspaceConfig.astro', 'components/docs/PickerSearch.astro']
+const REAL = ['components/RerollButton.astro', 'components/workspace/WorkspaceConfig.astro', 'components/workspace/WorkspaceWindows.astro', 'components/docs/PickerSearch.astro']
 const picker = loadAstroTemplate('components/workspace/WorkspacePicker.astro', { real: REAL, modules: { 'astro-expressive-code/components': stub } })
 const examples = loadAstroTemplate('components/workspace/WorkspaceShowcase.astro', { real: REAL, modules: { 'astro-expressive-code/components': stub } })
 

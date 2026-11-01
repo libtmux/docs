@@ -1,0 +1,37 @@
+/*
+ * The MCP showcase's tier badge and worked example, shared by the MCP overview and
+ * the port landing page. Imported by the components that render them.
+ */
+
+/* A tier is one of the site's symbol families, so the badge follows the colour scheme. */
+.mcp-tier {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.05rem 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--tier-hue) var(--mark-border-alpha), transparent);
+  border-radius: 999px;
+  background: var(--tier-bg);
+  color: var(--tier-fg);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.mcp-tier--inspect { --tier-bg: var(--mark-members-bg); --tier-fg: var(--mark-members-fg); --tier-hue: var(--mark-members-hue); }
+.mcp-tier--manage { --tier-bg: var(--mark-types-bg); --tier-fg: var(--mark-types-fg); --tier-hue: var(--mark-types-hue); }
+.mcp-tier--execute { --tier-bg: var(--mark-callables-bg); --tier-fg: var(--mark-callables-fg); --tier-hue: var(--mark-callables-hue); }
+.mcp-tier--teardown { --tier-bg: var(--mark-meta-bg); --tier-fg: var(--mark-meta-fg); --tier-hue: var(--mark-meta-hue); }
+
+.mcp-prompt {
+  margin-inline: 0;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-edge);
+  border-radius: var(--card-radius, 0.5rem);
+  background: var(--color-surface);
+}
+.mcp-prompt p {
+  margin: 0;
+}
+.mcp-steps .expressive-code {
+  margin-block: 0.5rem 1rem;
+}

@@ -31,6 +31,9 @@ export const TIERS: readonly Tier[] = [
   { id: 'teardown', label: 'Teardown', summary: 'Delete tmux objects or retained scrollback. Not reversible.', tooltip: 'Teardown: deletes tmux objects or scrollback' },
 ]
 
+/** The tier a tool belongs to, or nothing for a server that declares no toolsets. */
+export const tierFor = (tool: { tier?: TierId }): Tier | undefined => TIERS.find((entry) => entry.id === tool.tier)
+
 /** One tool as `tools/list` advertises it. */
 export interface ProtocolTool {
   name: string
@@ -265,4 +268,16 @@ export function showcaseHeadings(showcase: McpShowcase): { depth: number; slug: 
     ...tiers.map((tier) => ({ depth: 3, slug: `tier-${tier.id}`, text: tier.label })),
     ...(showcase.example ? [{ depth: 2, slug: 'worked-example', text: 'Worked example' }] : []),
   ]
+}
+
+/**
+ * One sentence on what a port's server offers an agent, from its snapshot: how
+ * many tools it advertises and the tiers they fall in.
+ */
+export function showcaseSentence(showcase: McpShowcase): string {
+  const name = PORT_BY_SLUG[showcase.port]!.name
+  const count = showcase.groups.reduce((total, group) => total + group.tools.length, 0)
+  const tiers = showcase.groups.flatMap((group) => (group.tier ? [group.tier.label] : []))
+  const grouped = tiers.length ? `, grouped as ${tiers.slice(0, -1).join(', ')}${tiers.length > 1 ? ' and ' : ''}${tiers.at(-1)}` : ''
+  return `The ${name} server lets an agent work with tmux through ${count} tools${grouped}.`
 }

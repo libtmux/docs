@@ -1,0 +1,34 @@
+---
+/**
+ * The install widget of one landing panel: the package for Core API and
+ * Workspace Manager, the client and scope picker for MCP.
+ */
+import McpInstall from '../widgets/McpInstall.astro'
+import PackageInstall from '../widgets/PackageInstall.astro'
+import type { LandingPanel } from '../../lib/port-landing'
+
+interface Props {
+  panel: LandingPanel
+  /** The port whose landing page this is. */
+  port: string
+}
+const { panel, port } = Astro.props as Props
+---
+{panel.install && <div class="landing-install">
+  <h3>Install{panel.packageName && <>{' '}<code>{panel.packageName}</code></>}</h3>
+  {panel.product === 'core' && <PackageInstall ports={[port]} />}
+  {panel.product === 'workspace' && panel.install.widget === 'package' && <>
+    <p>The workspace package is separate from the core library.</p>
+    <PackageInstall ports={[panel.install.port]} packageId="workspace" />
+  </>}
+  {panel.install.widget === 'mcp' && <>
+    <p>Choose your client and configuration scope, then run the command or paste the configuration.</p>
+    <McpInstall port={panel.install.port} />
+  </>}
+</div>}
+<style>
+  .landing-install { margin-top: 1.5rem; }
+  .landing-install h3 { margin-bottom: .5rem; font-weight: 600; }
+  .landing-install h3 code { font-size: .875rem; font-weight: 400; }
+  .landing-install > p { margin-bottom: .75rem; font-size: .875rem; color: var(--color-muted); }
+</style>

@@ -320,6 +320,7 @@ describe('the showcase section', () => {
   afterEach(async () => { for (const win of windows.splice(0)) await win.happyDOM.abort() })
 
   const component = loadAstroTemplate('components/mcp/McpShowcase.astro', {
+    real: ['components/mcp/McpWorkedExample.astro'],
     modules: {
       'astro-expressive-code/components': {
         Code: createComponent((_result: unknown, props: { code: string; lang: string }) => renderTemplate`<pre data-lang="${props.lang}">${props.code}</pre>`),

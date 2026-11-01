@@ -386,3 +386,25 @@ export function presetOptions(showcase: WorkspaceShowcase): PresetOption[] {
     }
   })
 }
+
+/**
+ * How each way of reaching a file reads in the page, so a reader sees whether
+ * a test runs the command on it or only the code the command is built on.
+ */
+export const VIA: Readonly<Record<TestVia, string>> = {
+  cli: 'a test runs the command',
+  loader: 'loaded by the library in a test; the command is not run',
+  builder: 'built by the library in a test; the command is not run',
+  library: 'parsed by the library in a test; the command is not run',
+  scheduled: 'a scheduled parity run loads it, and no pull request runs it',
+}
+
+/**
+ * The example a port's landing page shows: the first, in preset order, that a
+ * test runs the load command on, else the first in preset order.
+ */
+export function landingExample(showcase: Pick<WorkspaceShowcase, 'examples'>): ShowcaseExample {
+  const order = TOPICS.map((topic) => topic.id)
+  const sorted = [...showcase.examples].sort((a, b) => order.indexOf(a.topic) - order.indexOf(b.topic))
+  return sorted.find((example) => example.tests.some((test) => test.via === 'cli')) ?? sorted[0]!
+}

@@ -45,7 +45,7 @@ const STYLES = `${TOKENS}\n${FRAME}\n${REROLL}\n${SHEETS}`
 
 const Code = createComponent((_result: unknown, props: { code: string }) => renderTemplate`<div class="expressive-code"><figure class="frame"><figcaption class="header"></figcaption><pre><code>${props.code}</code></pre></figure></div>`)
 const modules = { 'astro-expressive-code/components': { Code } }
-const REAL = ['components/RerollButton.astro', 'components/workspace/WorkspaceConfig.astro', 'components/docs/PickerSearch.astro']
+const REAL = ['components/RerollButton.astro', 'components/workspace/WorkspaceConfig.astro', 'components/workspace/WorkspaceWindows.astro', 'components/docs/PickerSearch.astro']
 const showcase = workspaceShowcase('rs')!
 const PRESETS = presetOptions(showcase)
 const IDS = PRESETS.map((preset) => preset.id)
