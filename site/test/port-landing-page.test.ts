@@ -92,10 +92,10 @@ describe('the landing page markup', () => {
     expect(caption.textContent).toContain(entry.ci.command)
   })
 
-  it('opens the MCP tab with a sentence, the install picker, the worked example, then the links and the excerpt', async () => {
+  it('opens the MCP tab with a sentence, the worked example, the install picker, then the links and the excerpt', async () => {
     const document = await render('rs')
     const panel = document.querySelector('[data-landing-panel="mcp"]')!
-    const order = ['[data-landing-lead]', '[data-mcp-install]', '[data-landing-example="mcp"]', '.landing-links', '[data-landing-excerpt]']
+    const order = ['[data-landing-lead]', '[data-landing-example="mcp"]', '[data-mcp-install]', '.landing-links', '[data-landing-excerpt]']
     const found = order.map((selector) => panel.querySelector(selector))
     found.forEach((element, index) => expect(element, order[index]).not.toBeNull())
     for (let index = 1; index < found.length; index += 1) {
@@ -109,6 +109,16 @@ describe('the landing page markup', () => {
     const hrefs = [...panel.querySelectorAll('.landing-links a')].map((link) => link.getAttribute('href'))
     expect(hrefs).toContain('/rs/latest/mcp/#tools-by-tier')
     expect(hrefs).toContain(showcase.toolsHref)
+  })
+
+  it('names the MCP and Workspace panels with a screen-reader label, not a visible heading under the tab', async () => {
+    const document = await render('go')
+    for (const [product, label] of [['mcp', 'MCP'], ['workspace', 'Workspace Manager']] as const) {
+      const heading = document.querySelector(`[data-landing-panel="${product}"] > h2`)!
+      expect(heading.textContent).toBe(label)
+      expect(heading.className).toBe('sr-only')
+      expect(document.querySelector(`[data-landing-panel="${product}"]`)!.textContent).not.toContain('Start with')
+    }
   })
 
   it('shows a worked example for every port that has one, and none for a port served by another port\'s package', async () => {

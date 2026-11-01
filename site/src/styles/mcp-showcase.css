@@ -22,8 +22,18 @@
 .mcp-tier--execute { --tier-bg: var(--mark-callables-bg); --tier-fg: var(--mark-callables-fg); --tier-hue: var(--mark-callables-hue); }
 .mcp-tier--teardown { --tier-bg: var(--mark-meta-bg); --tier-fg: var(--mark-meta-fg); --tier-hue: var(--mark-meta-hue); }
 
+/*
+ * One rhythm for the worked example: a gap of --mcp-gap between the prompt and
+ * the first step and between steps, and half of it from a caption to its call.
+ * The numbered list draws its numbers in the caption instead of an indent, and
+ * the call draws no box of its own, so `{` starts under the caption's first letter.
+ */
+.mcp-prompt,
+.mcp-steps {
+  --mcp-gap: 1rem;
+}
 .mcp-prompt {
-  margin-inline: 0;
+  margin: 0 0 var(--mcp-gap);
   padding: 0.5rem 1rem;
   border: 1px solid var(--color-edge);
   border-radius: var(--card-radius, 0.5rem);
@@ -32,6 +42,39 @@
 .mcp-prompt p {
   margin: 0;
 }
+.mcp-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: mcp-step;
+}
+.mcp-steps > li {
+  margin: 0 0 var(--mcp-gap);
+  padding: 0;
+  counter-increment: mcp-step;
+}
+.mcp-steps > li:last-child {
+  margin-block-end: 0;
+}
+.mcp-steps > li > p {
+  margin: 0 0 calc(var(--mcp-gap) / 2);
+}
+.mcp-steps > li > p::before {
+  content: counter(mcp-step) '. ';
+  color: var(--color-muted);
+}
 .mcp-steps .expressive-code {
-  margin-block: 0.5rem 1rem;
+  --ec-codePadInl: 0px;
+  --ec-codePadBlk: 0.125rem;
+  --ec-brdWd: 0px;
+  --ec-codeBg: transparent;
+  margin: 0;
+}
+.mcp-steps .expressive-code .frame,
+.mcp-steps .expressive-code pre {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }

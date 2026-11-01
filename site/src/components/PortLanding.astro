@@ -79,15 +79,15 @@ const panelId = (product: string) => `landing-panel-${product}`
       <p class="landing-more"><a href={portPageUrl(port, version, 'core')}>Core Library documentation →</a> · <a href={portPageUrl(port, version, 'examples')}>More {port.name} examples →</a></p>
       <LandingInstall panel={panel} port={port.slug} />
     </> : panel.product === 'mcp' ? <>
-      <h2 class="landing-heading">Start with {panel.label}</h2>
+      <h2 class="sr-only">{panel.label}</h2>
       {panel.servedBy && <p class="landing-note">
         {port.name} has no {panel.label} package of its own. It uses the {panel.servedBy} port's <code>{panel.packageName}</code>.
       </p>}
       {showcase && <p class="landing-lead" data-landing-lead>{showcaseSentence(showcase)}</p>}
-      <LandingInstall panel={panel} port={port.slug} />
       {showcase?.example && !panel.servedBy && <div class="landing-example" data-landing-example="mcp">
         <McpWorkedExample example={showcase.example} portName={port.name} level={3} />
       </div>}
+      <LandingInstall panel={panel} port={port.slug} />
       <ul class="landing-links">
         {showcase && !panel.servedBy && <li><a href={`${panel.href}#${showcaseHeadings(showcase)[0]!.slug}`}>All tools{showcase.groups.some((group) => group.tier) ? ' by tier' : ''} →</a></li>}
         {showcase && <li><a href={showcase.toolsHref}>Every tool, with its arguments and result →</a></li>}
@@ -95,7 +95,7 @@ const panelId = (product: string) => `landing-panel-${product}`
       </ul>
       {excerpt}
     </> : <>
-      <h2 class="landing-heading">Start with {panel.label}</h2>
+      <h2 class="sr-only">{panel.label}</h2>
       {workspace && workspaceExample && workspaceTopic && workspaceTest && <div class="landing-example" data-landing-example="workspace">
         <h3>{workspaceTopic.title}</h3>
         <p>{workspaceTopic.summary}</p>
@@ -184,22 +184,23 @@ const panelId = (product: string) => `landing-panel-${product}`
   .port-landing:has([data-landing-product][value="mcp"]:checked) .landing-panel[data-landing-panel="mcp"],
   .port-landing:has([data-landing-product][value="workspace"]:checked) .landing-panel[data-landing-panel="workspace"] { display: block; }
 
-  .landing-heading { margin-bottom: .85rem; font-size: 1rem; font-weight: 600; }
   .landing-excerpt :global(.expressive-code) {
     --ec-codeFontSize: clamp(.8125rem, calc((100cqi - 2rem) / (var(--home-code-columns) * .625)), .9375rem);
   }
   /* An excerpt is short by construction, so it shows whole; a complete program scrolls past the homepage's height. */
-  .landing-note { margin-bottom: .85rem; font-size: .875rem; color: var(--color-muted); }
+  .landing-note { font-size: .875rem; color: var(--color-muted); }
   .landing-excerpt :global(.expressive-code pre) { overflow: auto; tab-size: 8; }
   .landing-panel :global(.home-example .expressive-code pre) { max-height: 34rem; overflow: auto; tab-size: 8; scrollbar-gutter: stable; }
   .landing-source, .landing-more { margin-top: .8rem; font-size: .8125rem; color: var(--color-muted); }
   .landing-source a, .landing-more a { color: var(--color-link); }
   /* A long command or path wraps instead of widening the page. */
   .landing-source code { white-space: normal; overflow-wrap: anywhere; }
-  .landing-lead { margin-bottom: 1rem; }
-  .landing-example { margin-top: 1.5rem; }
-  .landing-example :global(h3) { font-weight: 600; }
-  .landing-example :global(.mcp-steps) { padding-inline-start: 1.25rem; }
+  /* One gap, 1rem, between a panel's blocks; half of it from a title to what it introduces. The tab row's own margin is the only space above the first block. */
+  .landing-lead { margin: 0 0 1rem; }
+  .landing-example { margin: 0; }
+  .landing-example :global(h3) { margin: 0 0 .5rem; font-weight: 600; line-height: 1.4; }
+  .landing-example > :global(p) { margin: 0 0 1rem; }
+  .landing-note { margin: 0 0 1rem; }
   .landing-command-lead { margin-block: .9rem .25rem; font-size: .875rem; }
   .landing-links { margin: 1.25rem 0 0; padding: 0; list-style: none; display: grid; gap: .35rem; font-size: .875rem; }
   .landing-links a { color: var(--color-link); }
