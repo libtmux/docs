@@ -32,7 +32,7 @@ const artwork = (id: string) => {
     <svg class="doc-picker-caret" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
   </summary>
   <div class="surface-panel doc-picker-panel" data-surface-panel data-picker-panel>
-    <p class="doc-picker-title">{solutionsOnly ? 'Choose a solution' : 'Choose documentation'} <span class="doc-picker-count">{surfaces.length}</span></p>
+    <p class="doc-picker-title">{solutionsOnly ? 'Choose a solution' : 'Choose documentation'} <span class="doc-picker-count">{surfaces.filter((entry) => entry.id !== 'home').length}</span></p>
     <label class="doc-picker-search" hidden data-surface-search-label data-picker-search-label>
       <span class="sr-only">{solutionsOnly ? 'Find a solution' : 'Find an app or section'}</span>
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg>

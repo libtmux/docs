@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { apisUsed, CORE_APIS, MAX_APIS } from '../src/lib/core-apis'
+import { apisUsed, CORE_APIS, MAX_APIS, withoutLiterals } from '../src/lib/core-apis'
 import { portCapabilities, type CapabilityTable } from '../src/lib/core-capabilities'
 import { QUICKSTARTS, homeProgram } from '../src/lib/quickstarts'
 import TABLE from '../src/data/core-capabilities.json'
@@ -34,6 +34,28 @@ describe('the APIs a showcase example uses', () => {
       'PaneWait', 'Server', 'Server::new_session', 'Session::new_window', 'Window::active_pane', 'Pane::send_line', 'Pane::wait_until', 'Pane::capture', 'Server::builder', 'ServerBuilder::build',
     ])
     expect(used.more).toBe(2)
+  })
+
+  it('counts a use, not a mention in a comment or a string, and a call by its qualified form', () => {
+    const real = programs('rs')['typed-graph']!
+    // The name only in a comment, or only in a string.
+    expect(() => apisUsed('rs', ['pane.Pane.wait_until'], '// wait_until is not called here\nfn main() {}\n', 'latest')).toThrow(/never uses wait_until/)
+    expect(() => apisUsed('rs', ['pane.Pane.wait_until'], 'fn main() { println!("wait_until"); }', 'latest')).toThrow(/never uses wait_until/)
+    expect(() => apisUsed('rs', ['pane.Pane.wait_until'], '/* pane.wait_until(x) */ fn main() {}', 'latest')).toThrow(/never uses wait_until/)
+    // A method needs its call form: a bare word of the same name is another thing.
+    expect(() => apisUsed('rs', ['pane.Pane.capture'], 'fn main() { let capture = 1; }', 'latest')).toThrow(/never uses capture/)
+    expect(apisUsed('rs', ['pane.Pane.capture'], 'fn main() { pane.capture().await; }', 'latest').shown).toHaveLength(1)
+    expect(apisUsed('rs', ['server.Server.builder'], 'fn main() { Server::builder(); }', 'latest').shown).toHaveLength(1)
+    expect(() => apisUsed('go', ['tmux.Session.Rename'], '// session.Rename(ctx, "x")\nfunc main() {}\n', 'latest')).toThrow(/never uses Rename/)
+    expect(() => apisUsed('ruby', ['LibTmux::Pane#send_text'], '# pane.send_text("x")\nputs 1\n', 'latest')).toThrow(/never uses send_text/)
+    expect(() => apisUsed('ruby', ['LibTmux::Pane#send_text'], 'puts "pane.send_text"\n', 'latest')).toThrow(/never uses send_text/)
+    expect(withoutLiterals('a "b // c" // d\ne', 'rust')).toBe(`a${' '.repeat(14)}\ne`)
+    expect(withoutLiterals('x `raw "y"` z', 'go')).toBe(`x${' '.repeat(11)}z`)
+    // Ruby runs the code inside #{...}.
+    expect(withoutLiterals('puts "a #{window.snapshot.name} b"', 'ruby')).toContain('window.snapshot.name')
+    expect(withoutLiterals('puts "plain window.snapshot"', 'ruby')).not.toContain('snapshot')
+    // The real programs still use every symbol they name.
+    expect(apisUsed('rs', CORE_APIS.rs!['typed-graph']!, real, 'latest').shown.length).toBeGreaterThan(0)
   })
 
   it('fails on a symbol the model lacks, one the program never uses, a duplicate and an internal one', () => {

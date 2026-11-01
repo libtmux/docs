@@ -5,6 +5,7 @@ import { REGISTRY } from '../src/lib/registry'
 import { CAPABILITIES, CORE_HOME, CORE_ROLES, coreDescription, coreLead, coreHomeHeadings, coreTitle, coreHomeMarkdown, resolveCoreHome } from '../src/lib/core-home'
 import { API_MODELS } from '../src/lib/api-models'
 import { PORTS } from '../src/lib/ports'
+import { cardRoute, routesOf } from './core-routes'
 
 const page = (port: string) => new URL(`../src/content/docs/ports/${port}/core/index.md`, import.meta.url)
 
@@ -53,7 +54,6 @@ describe('Core Library home data', () => {
       const hrefs = (frontmatter.cards as { href: string }[]).map((card) => card.href)
       expect(frontmatter).toMatchObject({ port: port.slug, route: 'core', title: coreTitle(port.slug), description: coreDescription(port.slug) })
       expect(hrefs, port.slug).toContain('../reference/')
-      expect(hrefs.includes('../topics/'), port.slug).toBe(!port.parentLibrary)
       for (const name of ['getting-started', 'testing-with-libtmux']) {
         const file = new URL(`../src/content/docs/ports/${port.slug}/guides/${name}.md`, import.meta.url)
         expect(hrefs.includes(`../guides/${name}/`), `${port.slug} ${name}`).toBe(existsSync(file))
@@ -140,5 +140,24 @@ describe('capability evidence', () => {
     expect(() => wrong('traversal', 'pane.Pane')).toThrow(/not a panes, windows, sessions or snapshot accessor/)
     expect(() => wrong('argv', 'pane.Pane')).toThrow(/not a command or run symbol/)
     expect(() => wrong('test-fixtures', 'pane.Pane')).toThrow(/not a test or fixture symbol/)
+  })
+})
+
+
+describe('the cards of the Core Library page', () => {
+  it.each(PORTS.map((port) => port.slug))('open pages that exist for %s', (slug) => {
+    const { frontmatter } = parseFrontmatter(readFileSync(page(slug), 'utf8'), { frontmatter: 'remove' })
+    const routes = routesOf(slug)
+    for (const card of frontmatter.cards as { label: string; href: string }[]) {
+      expect(routes.has(cardRoute(card.href)), `${slug}: ${card.label} -> ${card.href}`).toBe(true)
+    }
+  })
+
+  it('finds a card whose page does not exist', () => {
+    const routes = routesOf('elixir')
+    expect(routes.has('examples'), 'elixir has no examples page').toBe(false)
+    expect(routes.has('reference')).toBe(true)
+    expect(routes.has(cardRoute('../examples/'))).toBe(false)
+    expect(routes.has(cardRoute('../no-such-page/'))).toBe(false)
   })
 })

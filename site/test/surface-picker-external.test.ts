@@ -78,6 +78,8 @@ describe('the documentation picker offers the language Home first', () => {
     expect(home.querySelector('details, small, .surface-chevron')).toBeNull()
     expect(home.querySelector('a[href="/rs/latest/"]')?.getAttribute('aria-current')).toBe('location')
     expect(language.querySelector('[data-surface-entry]')).toBe(home)
+    // The count is the number of products, not counting the Home row.
+    expect(text(language.querySelector('.doc-picker-count'))).toBe(String(surfaces.filter((entry) => entry.id !== 'home').length))
     const core = await render('/rs/latest/core/')
     expect(text(core.querySelector('.surface-current'))).toBe('Core LibraryHome')
     expect(core.querySelector('[data-surface-home] a')?.getAttribute('aria-current')).toBeNull()
