@@ -388,6 +388,53 @@ describe('a capability directory in a doc comment', () => {
   })
 })
 
+describe('a capability directory in each port\'s syntax', () => {
+  const declare = (id: string, kind: ApiSymbol['kind'], name: string, parent?: string): ApiSymbol => ({
+    id, publicId: id, name, kind, parent, slug: id.replace(/\W+/g, '-').toLowerCase(), modifiers: [], signatures: [], source: { file: 'server' },
+  })
+  const rows = (...refs: string[]) => refs.map((ref, n) => `**Group ${n}.** What these are for.\n\n${ref}`).join('\n\n')
+  const chips = (root: Pick<DomElement, 'querySelectorAll'>) => [...root.querySelectorAll<DomAnchor>('dl.api-directory a.api-mention--chip')].map((link) => link.textContent)
+
+  /** The Server page of each port: its symbols named as the model names them, a reference in the port's spelling for each, and the chip the page draws. */
+  const ports: [string, ApiSymbol[], string[], string[]][] = [
+    ['py', [declare('libtmux.server.Server', 'class', 'Server'), declare('libtmux.server.Server.kill', 'method', 'kill', 'libtmux.server.Server'), declare('libtmux.server.Server.sessions', 'attribute', 'sessions', 'libtmux.server.Server')],
+      [':meth:`~libtmux.server.Server.kill`', ':attr:`.sessions`', ':class:`Server`'], ['kill()', 'sessions', 'Server']],
+    ['swift', [declare('Server', 'struct', 'Server'), declare('Server.kill(_:)', 'method', 'kill(_:)', 'Server'), declare('TmuxError.serverRestarted', 'property', 'serverRestarted', 'TmuxError')],
+      ['``Server/kill(_:)``', '``TmuxError/serverRestarted``', '``Server``'], ['kill(_:)', 'TmuxError.serverRestarted', 'Server']],
+    ['elixir', [declare('LibTmux.Server', 'struct', 'Server'), declare('LibTmux.Server.new/1', 'function', 'new/1', 'LibTmux.Server'), declare('LibTmux.Snapshot', 'struct', 'Snapshot')],
+      ['`new/1`', '`LibTmux.Snapshot`', '[the server](`LibTmux.Server`)'], ['new/1', 'LibTmux.Snapshot', 'the server']],
+    ['kotlin', [declare('io.github.libtmux.kotlin.Server', 'class', 'Server'), declare('io.github.libtmux.kotlin.Server.open', 'method', 'open', 'io.github.libtmux.kotlin.Server'), declare('io.github.libtmux.kotlin.Server.expand', 'method', 'expand', 'io.github.libtmux.kotlin.Server')],
+      ['[open]', '[expand][Server.expand]', '[Server]'], ['open', 'expand', 'Server']],
+    ['scala', [declare('io.github.libtmux.scaladsl.Server', 'class', 'Server'), declare('io.github.libtmux.scaladsl.Server.open', 'method', 'open', 'io.github.libtmux.scaladsl.Server'), declare('io.github.libtmux.scaladsl.Session', 'class', 'Session')],
+      ['[[Server.open]]', '[[Session]]', '[[io.github.libtmux.scaladsl.Session Sessions]]'], ['open', 'Session', 'Sessions']],
+    ['cxx', [declare('libtmux::Server', 'class', 'Server'), declare('libtmux::Server::kill', 'method', 'kill', 'libtmux::Server'), declare('libtmux::Server::sessions', 'method', 'sessions', 'libtmux::Server')],
+      ['`kill()`', '`sessions()`', '`libtmux::Server`'], ['kill()', 'sessions()', 'libtmux::Server']],
+    ['lua', [declare('libtmux.Server', 'class', 'Server'), declare('libtmux.Server:close', 'method', 'close', 'libtmux.Server'), declare('libtmux.Server:snapshot', 'method', 'snapshot', 'libtmux.Server')],
+      ['`Server:close`', '`Server:snapshot`', '`libtmux.Server`'], ['close()', 'snapshot()', 'libtmux.Server']],
+    ['ruby', [declare('LibTmux::Server', 'class', 'Server'), declare('LibTmux::Server#kill', 'method', 'kill', 'LibTmux::Server'), declare('LibTmux::Server#sessions', 'method', 'sessions', 'LibTmux::Server')],
+      ['{#kill}', '{Server#sessions}', '{Server}'], ['kill', 'sessions', 'Server']],
+    ['julia', [declare('LibTmux.Server', 'struct', 'Server'), declare('LibTmux.new_session', 'function', 'new_session'), declare('LibTmux.snapshot', 'function', 'snapshot')],
+      ['[`new_session`](@ref LibTmux.new_session)', '[`snapshot`](@ref)', '[Server](@ref)'], ['new_session', 'snapshot', 'Server']],
+    ['powershell', [declare('LibTmux.Server', 'class', 'Server'), declare('LibTmux\\Get-TmuxPane', 'function', 'Get-TmuxPane'), declare('LibTmux\\Get-TmuxSession', 'function', 'Get-TmuxSession')],
+      ['Get-TmuxPane', '`Get-TmuxSession`', 'LibTmux.Server'], ['Get-TmuxPane', 'Get-TmuxSession', 'LibTmux.Server']],
+  ]
+
+  it.each(ports)('%s draws its directory with a linked chip for every reference', async (port, symbols, refs, expected) => {
+    const from = new SymbolIndex(symbols, (symbol) => `/en/${port}/latest/reference/${symbol.slug}/`, port)
+    const root = await renderProse(rows(...refs), symbols[0], from)
+    expect(root.querySelectorAll('dl.api-directory > .api-directory__row')).toHaveLength(3)
+    expect(chips(root)).toEqual(expected)
+    expect(root.querySelectorAll('dl.api-directory .api-directory__chips li')).toHaveLength(3)
+  })
+
+  it.each(ports)('%s writes the same text as paragraphs on a page of a port that spells references otherwise', async (port, symbols, refs) => {
+    const from = new SymbolIndex(symbols, (symbol) => `/en/${port}/latest/reference/${symbol.slug}/`, 'ts')
+    const root = await renderProse(rows(...refs), symbols[0], from)
+    expect(root.querySelector('.api-directory')).toBeNull()
+    expect(root.querySelectorAll('p')).toHaveLength(6)
+  })
+})
+
 describe('a pipe table in a doc comment', () => {
   const text = 'Every handle:\n\n| To | Call |\n| --- | :-: |\n| read one | `Pane` |\n| write | `Window` and `a\\|b` |\n\nAfter.'
 
