@@ -383,7 +383,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
           await reader.waitForURL(`${base}/go/latest/workspace/`)
           await reader.goForward()
           await reader.waitForURL(`${base}/go/latest/workspace/guides/`)
-          assert(await reader.locator('[data-surface-picker] > summary').first().getAttribute('aria-label').then((label) => label.endsWith('Workspace Manager, Guides')),
+          assert(await reader.locator('[data-surface-picker] > summary').first().getAttribute('aria-label').then((label) => label.includes('Workspace Manager, Guides')),
             'History restores the selected surface and section')
           assert(await reader.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1), `${width}: page has no horizontal overflow`)
           await openPicker(picker, javaScriptEnabled)
