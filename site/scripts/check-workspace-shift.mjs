@@ -17,9 +17,12 @@ export async function checkWorkspaceShift(browser, base) {
       if (!link) return
       const code = link.querySelector('code') ?? link
       const style = getComputedStyle(code)
-      window.__notice.push(`${label}@${Math.round(performance.now())}ms sheets=${document.styleSheets.length} h=${Math.round(link.getBoundingClientRect().height)} ws=${style.whiteSpace} wrap=${style.overflowWrap} fs=${style.fontSize} ff=${style.fontFamily.slice(0, 24)}`)
+      const width = (selector) => Math.round(document.querySelector(selector)?.getBoundingClientRect().width ?? -1)
+      const fonts = [...document.fonts].filter((face) => face.status !== 'unloaded').length
+      window.__notice.push(`${label}@${Math.round(performance.now())}ms sheets=${document.styleSheets.length} fonts=${fonts} main=${width('main')} aside=${width('aside.lm-aside')} p=${width('aside.lm-aside p.mb-0')} rects=${link.getClientRects().length} h=${Math.round(link.getBoundingClientRect().height)} ws=${style.whiteSpace} wrap=${style.overflowWrap} fs=${style.fontSize} ff=${style.fontFamily.slice(0, 24)} after=${getComputedStyle(link, '::after').content}`)
     }
     for (const type of ['DOMContentLoaded', 'load', 'libtmux:page-ready']) (type === 'DOMContentLoaded' || type === 'load' ? window : document).addEventListener(type, () => snapshot(type))
+    setTimeout(() => snapshot('1.3s'), 1300)
     const name = (node) => {
       if (!node || node.nodeType !== 1) return String(node?.nodeName)
       const classes = [...node.classList].slice(0, 2).map((c) => `.${c}`).join('')

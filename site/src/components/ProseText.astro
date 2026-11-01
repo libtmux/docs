@@ -7,7 +7,6 @@ import { getResolver } from '../lib/prose-resolver'
 import { API_MODELS } from '../lib/api-models'
 import { withPortRoot } from '../lib/site-root'
 import { labelParts, memberReference } from '../lib/api-labels'
-import '../styles/api.css'
 
 /**
  * A sentence written in an `.astro` template, with its code spans linked.
@@ -24,10 +23,6 @@ import '../styles/api.css'
  * five languages that publish no inventory. So `java.nio.file.Path` reaches
  * Oracle, `Path` in a Python sentence reaches docs.python.org, and
  * `TmuxEnvironment.current()` reaches our own reference.
- *
- * The `api-literal` and `api-mention` markup it writes is styled by `api.css`, so the
- * component imports it: a page that renders a sentence gets the styles in its head, and the
- * sentence wraps the same at first paint as after the page settles.
  *
  * Backticks mark what to resolve. Everything else is text: guessing at bare
  * prose is how a linker starts turning the word "session" into a link.
