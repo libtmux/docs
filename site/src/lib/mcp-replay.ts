@@ -71,6 +71,12 @@ function answerOf(step: ReplayStep): Record_ {
 }
 
 const clone = <T,>(value: T): T => structuredClone(value)
+/**
+ * Placeholders for panes no result describes. Every tmux window has at least one
+ * pane, so a window the recording names is drawn with that many empty boxes;
+ * the test checks that each recorded window holds one, so the layout drawn
+ * (which no result states) never decides anything.
+ */
 const blank = (count: number): PaneState[] => Array.from({ length: Math.max(count, 1) }, () => ({}))
 
 /** The pane a request names, by the argument spelling the port uses. */

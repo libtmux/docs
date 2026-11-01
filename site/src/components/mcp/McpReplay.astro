@@ -57,14 +57,14 @@ const draw = (frame: Frame) => {
 <p>Given this prompt, an agent connected to the {portName} server makes these calls{recording ? ' and gets these results' : ''}.</p>
 <section class={`mcp-replay${recording ? '' : ' mcp-replay--requests'}`} data-mcp-replay data-steps={total} aria-label="Worked example replay">
   {recording && (
-    <header class="mcp-replay__head">
+    <header class="mcp-replay__head" data-head hidden>
       <span class="mcp-replay__title">Replay</span>
       <span class="mcp-replay__hint" data-hint>Hover a call to preview the tmux state after it. Click to pin it.</span>
     </header>
   )}
   <div class="mcp-replay__body" tabindex={recording ? 0 : undefined} data-body>
     {recording && (
-      <div class="mcp-replay__tmux" data-tmux aria-label="tmux state after the call shown">
+      <div class="mcp-replay__tmux" data-tmux role="group" aria-label="tmux state after the call shown">
         {recording.frames.map((frame) => {
           const drawn = draw(frame)
           const session = frame.sessions[0]
@@ -86,9 +86,9 @@ const draw = (frame: Frame) => {
                     })}
                   </div>
                 ) : (
-                  <div class="mcp-tmux__screen mcp-tmux__screen--empty"><span>No sessions</span></div>
+                  <div class="mcp-tmux__screen mcp-tmux__screen--empty">{frame.done > 0 && <span>No sessions</span>}</div>
                 )}
-                <div class={`mcp-tmux__status${frame.reading === 'sessions' ? ' is-reading' : ''}`} aria-label="tmux status line">
+                <div class={`mcp-tmux__status${frame.reading === 'sessions' ? ' is-reading' : ''}`}>
                   {session && <span class="mcp-tmux__session">[{session.name ?? session.id}]</span>}
                   {session && (
                     <span class={`mcp-tmux__windows${frame.reading === 'windows' ? ' is-reading' : ''}`}>
@@ -180,13 +180,19 @@ const draw = (frame: Frame) => {
     const hint = root.querySelector<HTMLElement>('[data-hint]')
     const interval = Number(root.dataset.interval) || 1600
     const reduced = window.matchMedia?.(REDUCED).matches ?? false
+    // A touch screen fires mouseenter on a tap and never mouseleave, so only a pointer that can hover previews.
+    const canHover = window.matchMedia?.('(hover: hover)').matches ?? true
+    const head = root.querySelector<HTMLElement>('[data-head]')
     // Calls made so far, the call pinned by a click, and the call under the pointer or focus.
     let step = total
     let pinned: number | null = null
     let hover: number | null = null
     let timer: ReturnType<typeof setTimeout> | undefined
     let playing = false
+    // Once the reader has used a control, the replay does not start by itself.
+    let touched = false
 
+    const use = () => { touched = true; hover = null }
     const stop = () => { playing = false; if (timer) clearTimeout(timer); timer = undefined }
     const view = () => hover ?? pinned ?? step
 
@@ -201,7 +207,11 @@ const draw = (frame: Frame) => {
         turn.classList.toggle('is-pinned', pinned !== null && Math.min(index + 1, total) === pinned)
       })
       frames.forEach((frame) => { frame.hidden = Number(frame.dataset.frame) !== shownFrame })
-      marks.forEach((mark) => mark.classList.toggle('is-done', Number(mark.dataset.mark) <= step))
+      marks.forEach((mark) => {
+        mark.classList.toggle('is-done', Number(mark.dataset.mark) <= step)
+        if (Number(mark.dataset.mark) === step) mark.setAttribute('aria-current', 'step')
+        else mark.removeAttribute('aria-current')
+      })
       fill.style.width = `${(step / total) * 100}%`
       count.textContent = `${step}/${total}`
       const label = step >= total && !playing ? 'Replay' : playing ? 'Pause' : 'Play'
@@ -220,6 +230,7 @@ const draw = (frame: Frame) => {
       if (step >= total) { stop(); render() } else timer = setTimeout(tick, interval)
     }
     function start() {
+      use()
       if (step >= total) step = 0
       pinned = null
       playing = true
@@ -227,6 +238,7 @@ const draw = (frame: Frame) => {
       timer = setTimeout(tick, interval)
     }
     function go(next: number) {
+      use()
       stop()
       pinned = null
       step = Math.max(0, Math.min(total, next))
@@ -235,6 +247,7 @@ const draw = (frame: Frame) => {
 
     root.setAttribute('data-live', '')
     controls.hidden = false
+    if (head) head.hidden = false
     root.querySelectorAll<HTMLDetailsElement>('details.mcp-result').forEach((details) => { details.open = false })
     const fullscreen = root.querySelector<HTMLElement>('[data-action="fullscreen"]')!
     if (!root.requestFullscreen) fullscreen.hidden = true
@@ -249,12 +262,13 @@ const draw = (frame: Frame) => {
     })
     turns.forEach((turn) => {
       const frame = Math.min(Number(turn.dataset.turn) + 1, total)
-      turn.addEventListener('mouseenter', () => { hover = frame; render() })
-      turn.addEventListener('mouseleave', () => { hover = null; render() })
-      turn.addEventListener('focus', () => { hover = frame; render() })
-      turn.addEventListener('blur', () => { hover = null; render() })
+      if (canHover) {
+        turn.addEventListener('mouseenter', () => { hover = frame; render() })
+        turn.addEventListener('mouseleave', () => { hover = null; render() })
+      }
       turn.addEventListener('click', (event) => {
         if ((event.target as HTMLElement).closest('a, summary')) return
+        use()
         stop()
         pinned = pinned === frame ? null : frame
         render()
@@ -267,18 +281,20 @@ const draw = (frame: Frame) => {
       })
     })
     body.addEventListener('keydown', (event) => {
+      // Leave the browser's own shortcuts, such as Alt+Left for back, alone.
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
       if (event.key === 'ArrowRight') { go(step + 1); event.preventDefault() }
       else if (event.key === 'ArrowLeft') { go(step - 1); event.preventDefault() }
       else if (event.key === 'Home') { go(0); event.preventDefault() }
       else if (event.key === 'End') { go(total); event.preventDefault() }
-      else if (event.key === 'Escape' && pinned !== null) { pinned = null; render(); event.preventDefault() }
+      else if (event.key === 'Escape' && pinned !== null) { pinned = null; hover = null; render(); event.preventDefault() }
     })
 
     // A reader who asks for less motion gets the finished replay and presses play; others see it play once it is on screen.
     if (reduced) { render(); return }
     step = 0
     render()
-    const begin = () => { if (!playing && step === 0 && pinned === null) start() }
+    const begin = () => { if (!touched && !playing && step === 0 && pinned === null) start() }
     if (typeof IntersectionObserver === 'undefined') begin()
     else {
       const watcher = new IntersectionObserver((entries) => {

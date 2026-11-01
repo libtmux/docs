@@ -8,19 +8,51 @@ import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
 const steps = async (port: string) => (await transcriptFor(port))!.steps as ReplayStep[]
 
-/** Every string and number in a value, as the strings they were written as. */
-function leaves(value: unknown, found = new Set<string>()): Set<string> {
-  if (typeof value === 'string' || typeof value === 'number') found.add(String(value))
-  else if (Array.isArray(value)) value.forEach((item) => leaves(item, found))
-  else if (value && typeof value === 'object') Object.values(value).forEach((item) => leaves(item, found))
+/**
+ * The recording's fields as `key=value` pairs, with the type kept (so `0` and
+ * `"0"` and `true` differ), from the requests and results of the first `count` calls.
+ */
+function recorded(steps: ReplayStep[], count: number): Set<string> {
+  const found = new Set<string>()
+  const walk = (key: string, value: unknown) => {
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') found.add(`${key}=${typeof value}:${String(value)}`)
+    else if (Array.isArray(value)) value.forEach((item) => walk(key, item))
+    else if (value && typeof value === 'object') Object.entries(value).forEach(([name, item]) => walk(name, item))
+  }
+  steps.slice(0, count).forEach((step) => { walk('arguments', step.arguments); walk('result', step.structuredContent); walk('text', step.content) })
   return found
 }
 
-/** What a frame shows that no request or result of the recording contains. */
-function untraced(frames: Frame[], recorded: ReplayStep[]): string[] {
-  const known = leaves(recorded.map((step) => [step.arguments, step.structuredContent, step.content]))
-  // The call names and the step counts are the page's own, not preview data.
-  return [...leaves(frames.map(({ sessions }) => sessions))].filter((value) => !known.has(value))
+/** The recording's field names that supply each field a frame holds. */
+const SUPPLIED_BY: Record<string, string[]> = {
+  id: ['id', 'paneId', 'windowId', 'killed'], name: ['name', 'session_name', 'session'], index: ['index'], active: ['active'],
+  command: ['command'], path: ['path'], typed: ['command'], output: ['output'],
+}
+
+/**
+ * Each field of each frame that the calls made by then do not state: a frame
+ * after `k` calls may use only what the first `k` requests and results hold,
+ * under the field name that supplies it. A count of windows or panes is not a
+ * field; the preview draws a placeholder for it (see lib/mcp-replay.ts).
+ */
+function untraced(frames: Frame[], steps: ReplayStep[]): string[] {
+  const missing: string[] = []
+  for (const frame of frames) {
+    const known = recorded(steps, frame.done)
+    const check = (object: object) => {
+      for (const [key, value] of Object.entries(object)) {
+        if (typeof value === 'object' && value !== null) continue
+        const names = SUPPLIED_BY[key]
+        if (!names) { missing.push(`${frame.done}: unknown field ${key}`); continue }
+        if (!names.some((name) => known.has(`${name}=${typeof value}:${String(value)}`))) missing.push(`${frame.done}: ${key}=${String(value)}`)
+      }
+    }
+    for (const session of frame.sessions) {
+      check(session)
+      for (const window of session.windows) { check(window); window.panes.forEach(check) }
+    }
+  }
+  return missing
 }
 
 describe('the tmux state each recorded call leaves', () => {
@@ -60,16 +92,25 @@ describe('the tmux state each recorded call leaves', () => {
   })
 
   it.each(['ts', 'rs'])('draws nothing for %s that the recording does not contain', async (port) => {
-    const recorded = await steps(port)
-    expect(untraced(replayFrames(recorded), recorded)).toEqual([])
+    const steps_ = await steps(port)
+    expect(untraced(replayFrames(steps_), steps_)).toEqual([])
   })
 
-  it('has a control: a value the recording lacks is reported', async () => {
-    const recorded = await steps('ts')
-    const frames = replayFrames(recorded)
-    frames[1]!.sessions[0]!.windows[0]!.index = 7
+  it.each(['ts', 'rs'])('needs no window layout for %s: every recorded window holds one pane', async (port) => {
+    for (const frame of replayFrames(await steps(port))) {
+      for (const session of frame.sessions) for (const window of session.windows) expect(window.panes).toHaveLength(1)
+    }
+  })
+
+  it('has a control: a value the recording lacks, or states under another field, or only later, is reported', async () => {
+    const steps_ = await steps('ts')
+    const frames = replayFrames(steps_)
+    frames[1]!.sessions[0]!.windows[0]!.index = 0 // "0" is in the recording, but as an exit status, never an index
     frames[1]!.sessions[0]!.name = 'invented'
-    expect(untraced(frames, recorded).sort()).toEqual(['7', 'invented'])
+    frames[1]!.sessions[0]!.windows[0]!.active = true
+    const later = frames[2]!.sessions[0]!.windows[0]!.panes[0]!.output! // said only by call 2
+    frames[1]!.sessions[0]!.windows[0]!.panes[0]!.output = later
+    expect(untraced(frames, steps_).sort()).toEqual(['1: active=true', '1: index=0', '1: name=invented', `1: output=${later}`].sort())
   })
 
   it('quotes the last line of output that has text, for the agent\'s answer', () => {
@@ -100,7 +141,7 @@ describe('the replay component', () => {
     if (options.interval) root.setAttribute('data-interval', String(options.interval))
     if (options.run) {
       const target = win as unknown as { matchMedia: (query: string) => { matches: boolean }; IntersectionObserver?: unknown }
-      target.matchMedia = () => ({ matches: options.reduced ?? false })
+      target.matchMedia = (query: string) => ({ matches: /reduced-motion/.test(query) ? options.reduced ?? false : true })
       target.IntersectionObserver = undefined
       win.eval(`(function() {\n${script}\n})()`)
     }
@@ -133,6 +174,18 @@ describe('the replay component', () => {
     expect(frame(3).querySelector('.mcp-tmux__screen')!.className).toContain('is-reading')
     expect(frame(5).querySelector('.mcp-tmux__screen--empty')!.textContent).toBe('No sessions')
     expect(frame(1).querySelector('svg.gp-tmux-layout')).not.toBeNull()
+  })
+
+  it.each(['ts', 'rs'])('draws only recorded words, besides tmux\'s own punctuation, in the %s preview', async (port) => {
+    const { document } = await mount(port)
+    const recordedWords = new Set((await steps(port)).flatMap((step) => JSON.stringify([step.arguments, step.structuredContent, step.content]).replace(/\\n/g, ' ').split(/[\s"{}\[\],:]+/)))
+    for (const frame of document.querySelectorAll('[data-frame]')) {
+      const done = frame.getAttribute('data-frame')
+      const drawn = [...frame.querySelectorAll('.mcp-pane__id, .mcp-pane__text, .mcp-tmux__session, .mcp-tmux__window')].map((element) => element.textContent!)
+      for (const word of drawn.join(' ').replace(/\$ /g, ' ').replace(/[\[\]*:]/g, ' ').split(/\s+/).filter(Boolean)) {
+        expect(recordedWords.has(word), `${port} frame ${done}: "${word}"`).toBe(true)
+      }
+    }
   })
 
   it('with a reduced-motion preference starts at the end and does not play', async () => {
@@ -192,6 +245,43 @@ describe('the replay component', () => {
     click(win, turn(0))
     key(win, document.querySelector('[data-body]')!, 'Escape')
     expect(frameShown(document), 'Escape unpins').toEqual([5])
+  })
+
+  it('does not let focus or touch hover hold the preview, and ignores keys with a modifier', async () => {
+    const { win, document } = await mount('ts', { run: true, reduced: true })
+    const turn = document.querySelector('[data-turn="0"]')!
+    turn.dispatchEvent(new win.FocusEvent('focus') as unknown as Event)
+    expect(frameShown(document), 'focus does not preview').toEqual([3])
+    const body = document.querySelector('[data-body]')!
+    body.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }) as unknown as Event)
+    expect(frameShown(document), 'Alt+Left is the browser\'s').toEqual([3])
+  })
+
+  it('does not start by itself once the reader has used a control before it was on screen', async () => {
+    const win = new Window({ url: 'https://libtmux.org/en/rs/latest/' })
+    windows.push(win)
+    win.document.body.innerHTML = await markup('ts')
+    const root = win.document.querySelector('[data-mcp-replay]') as unknown as HTMLElement
+    root.setAttribute('data-interval', '10')
+    let reveal: (() => void) | undefined
+    const target = win as unknown as Record<string, unknown>
+    target.matchMedia = (query: string) => ({ matches: !/reduced-motion/.test(query) })
+    target.IntersectionObserver = class { constructor(callback: (entries: { isIntersecting: boolean }[]) => void) { reveal = () => callback([{ isIntersecting: true }]) } observe() {} disconnect() {} }
+    win.eval(`(function() {\n${script}\n})()`)
+    const document = win.document as unknown as Document
+    expect(turnsShown(document)).toBe(0)
+    click(win, document.querySelector('[data-mark="0"], [data-action="back"]')!)
+    reveal!()
+    await new Promise((resolve) => setTimeout(resolve, 80))
+    expect(turnsShown(document), 'still at the start').toBe(0)
+    expect(action(document, 'play').getAttribute('aria-label')).toBe('Play')
+  })
+
+  it('shows the header and the controls only once script has run', async () => {
+    const before = await mount('ts')
+    expect((before.document.querySelector('[data-head]') as HTMLElement).hidden).toBe(true)
+    const after = await mount('ts', { run: true, reduced: true })
+    expect((after.document.querySelector('[data-head]') as HTMLElement).hidden).toBe(false)
   })
 
   it('does not pin when the click is on a link', async () => {

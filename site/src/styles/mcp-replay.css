@@ -9,6 +9,7 @@
  */
 
 .mcp-replay {
+  container-type: inline-size;
   --mcp-gap: 1rem;
   --mcp-mono: var(--font-ibm-plex-mono, ui-monospace, 'SFMono-Regular', Menlo, monospace);
   display: flex;
@@ -23,6 +24,10 @@
 .mcp-replay:fullscreen {
   border-radius: 0;
   background: var(--color-background-primary, var(--color-surface));
+}
+
+.mcp-replay__head[hidden] {
+  display: none;
 }
 
 .mcp-replay__head {
@@ -43,7 +48,7 @@
   color: var(--color-muted);
 }
 
-/* Two columns from 1024px; below that the preview stacks first at a smaller height. */
+/* Two columns once the replay itself is wide enough (about 1024px of viewport with the site's sidebars); narrower, the preview stacks first and shorter. */
 .mcp-replay__body {
   display: flex;
   flex-direction: column;
@@ -68,7 +73,7 @@
 .mcp-replay__tmux {
   order: -1;
   flex: none;
-  height: 13rem;
+  height: 14rem;
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--color-edge);
   overflow: hidden;
@@ -89,7 +94,7 @@
   overflow: visible;
 }
 
-@media (min-width: 1024px) {
+@container (min-width: 44rem) {
   .mcp-replay__body {
     flex-direction: row;
   }
@@ -101,6 +106,10 @@
     border-bottom: 0;
     border-inline-start: 1px solid var(--color-edge);
     overflow-y: auto;
+  }
+
+  .mcp-tmux {
+    width: min(100%, 28rem);
   }
 
   .mcp-replay__chat {
@@ -214,7 +223,7 @@
 .mcp-tmux {
   display: flex;
   flex-direction: column;
-  max-width: 28rem;
+  width: min(100%, 15rem);
   margin: 0 auto;
   border: 1px solid var(--color-edge);
   border-radius: 0.375rem;
@@ -261,7 +270,8 @@
   border: 0;
   background: none;
   font: inherit;
-  white-space: pre;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   overflow: hidden;
 }
 
@@ -320,6 +330,10 @@
   color: inherit;
   font-size: 0.875rem;
   cursor: pointer;
+}
+
+.mcp-replay__button[hidden] {
+  display: none;
 }
 
 .mcp-replay__button:focus-visible,
