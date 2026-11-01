@@ -2,7 +2,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { pageBrand, PORTS } from '../src/lib/ports'
+import { pageBrand, PORTS, portHomeTitle, portTagline } from '../src/lib/ports'
 import { branding, documentationTitle, jsonLd, palettes, tmuxDocumentationTitle } from '../src/lib/branding'
 import { nativeBrandHead } from '../../scripts/brand-native-pages.mjs'
 
@@ -18,6 +18,21 @@ const contrast = (a: string, b: string) => {
 }
 
 describe('route branding', () => {
+  it('titles each port home page by repository and language', () => {
+    expect(Object.fromEntries(PORTS.map((port) => [port.slug, portHomeTitle(port)]))).toEqual({
+      py: 'libtmux: Python-based tmux client', ruby: 'libtmux-ruby: Ruby-based tmux client',
+      lua: 'libtmux-lua: Lua-based tmux client', ts: 'libtmux-ts: TypeScript-based tmux client',
+      powershell: 'libtmux-powershell: PowerShell-based tmux client', julia: 'libtmux-julia: Julia-based tmux client',
+      elixir: 'libtmux-elixir: Elixir-based tmux client', rs: 'libtmux-rs: Rust-based tmux client',
+      go: 'libtmux-go: Go-based tmux client', java: 'libtmux-java: Java-based tmux client',
+      kotlin: 'libtmux-kotlin: Kotlin-based tmux client', scala: 'libtmux-scala: Scala-based tmux client',
+      csharp: 'libtmux-dotnet: C#-based tmux client', fsharp: 'libtmux-fsharp: F#-based tmux client',
+      cxx: 'libtmux-cxx: C++-based tmux client', swift: 'libtmux-swift: Swift-based tmux client',
+    })
+    expect(portTagline(PORTS.find((port) => port.slug === 'rs')!)).toBe('Rust-based tmux client')
+    // The home title carries no ` | project` suffix, for Julia's differing project name too.
+    for (const port of PORTS) expect(documentationTitle(portHomeTitle(port), port.projectName)).toBe(portHomeTitle(port))
+  })
   it('identifies tmux pages by their section and hosting site', () => {
     expect(tmuxDocumentationTitle('Getting started', 'tmux/guides/getting-started')).toBe('Getting started | Guides | tmux | libtmux.org')
     expect(tmuxDocumentationTitle('Guides', 'tmux/guides')).toBe('Guides | tmux | libtmux.org')

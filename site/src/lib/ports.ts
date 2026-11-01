@@ -1337,6 +1337,22 @@ export const PORT_BY_SLUG: Readonly<Record<string, Port>> = Object.fromEntries(
   PORTS.map((p) => [p.slug, p]),
 )
 
+/** What a port is, in one phrase: "Rust-based tmux client". */
+export function portTagline(port: Port): string {
+  return `${port.language}-based tmux client`
+}
+
+/**
+ * The port home page's document title, "libtmux-rs: Rust-based tmux client".
+ *
+ * A core port is named by its repository. A facade shares its parent's
+ * repository, so it keeps its own project name (`libtmux-kotlin`).
+ */
+export function portHomeTitle(port: Port): string {
+  const name = port.parentLibrary ? port.projectName : port.repo.split('/')[1]
+  return `${name}: ${portTagline(port)}`
+}
+
 /** The tag a numeric docs version names, with the library's tag prefix. */
 function releaseTag(port: Port, version: string): string | undefined {
   return /^v?\d/.test(version) ? `${port.tagPrefix ?? ''}${version}` : undefined
