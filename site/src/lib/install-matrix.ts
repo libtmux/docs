@@ -293,7 +293,19 @@ export const SERVERS: Readonly<Record<string, ServerSpec>> = {
       return {
         command: '/absolute/path/to/project/bin/libtmux-mcp',
         args: ['--socket', '/absolute/path/to/tmux.sock'],
-        prereq: `julia --startup-file=no -e 'using Pkg; Pkg.activate("."); repo="https://github.com/libtmux/libtmux-julia.git"; ref=${JSON.stringify(sourceRevision)}; Pkg.add([Pkg.PackageSpec(url=repo, rev=ref), Pkg.PackageSpec(url=repo, rev=ref, subdir="packages/LibTmuxMCP")]); using LibTmuxMCP; println(LibTmuxMCP.install_cli("bin"))'`,
+        // The script runs over several lines inside its quotes; Julia reads a newline as it reads `;`.
+        prereq: [
+          "julia --startup-file=no -e '",
+          'using Pkg',
+          'Pkg.activate(".")',
+          'repo = "https://github.com/libtmux/libtmux-julia.git"',
+          `ref = ${JSON.stringify(sourceRevision)}`,
+          'Pkg.add([',
+          '    Pkg.PackageSpec(url=repo, rev=ref),',
+          '    Pkg.PackageSpec(url=repo, rev=ref, subdir="packages/LibTmuxMCP")])',
+          'using LibTmuxMCP',
+          `println(LibTmuxMCP.install_cli("bin"))'`,
+        ].join('\n'),
         note: 'Run the setup in a consumer project directory. Replace the launcher and socket paths with absolute paths on your machine. The server borrows an existing tmux daemon. Configure tool permissions as described in the MCP server guide.',
       }
     },
@@ -475,7 +487,10 @@ export const SERVERS: Readonly<Record<string, ServerSpec>> = {
     cooldowns: NO_COOLDOWN,
     resolve() {
       return builtFromSource(
-        'cmake -S . -B build/mcp -DLIBTMUX_BUILD_MCP_SERVER=ON -DLIBTMUX_FETCH_DEPS=ON && cmake --build build/mcp && cmake --install build/mcp --prefix ~/.local',
+        // One flag or step per line, as the C++ MCP guide shows them.
+        'cmake \\\n    -S . \\\n    -B build/mcp \\\n    -DLIBTMUX_BUILD_MCP_SERVER=ON \\\n    -DLIBTMUX_FETCH_DEPS=ON && \\\n' +
+          'cmake --build build/mcp && \\\n' +
+          'cmake --install build/mcp --prefix ~/.local',
         // Not `~/.local/bin/…`: a shell expands the tilde and a JSON config
         // does not, so the same string would work in one panel and fail in
         // the other.
@@ -507,6 +522,42 @@ export function serverSpec(port = 'py'): ServerSpec {
 }
 
 // ---- panel body builders ---------------------------------------------
+
+/**
+ * The widest line of a shell command meant for pasting, without its `$ `
+ * prompt. The install blocks show about 80 columns before they scroll, so a
+ * wider line hides the end of a step the reader has to read before running it.
+ */
+export const SHELL_MAX_WIDTH = 78
+
+const SHELL_TOKEN = /(?:[^\s"']+|"[^"]*"|'[^']*')+/g
+
+/**
+ * One shell command broken across lines with a trailing backslash, which a
+ * shell reads as the same command, so the copied text runs as the one line did.
+ *
+ * A line that fits, or one that already ends in a backslash, is left alone, so
+ * a command written over several lines keeps its own breaks. A flag stays on the line of its value, and quoted words are never split.
+ * The width a cooldown slot's sentinel will take is counted as two characters.
+ */
+export function wrapShell(command: string, width = SHELL_MAX_WIDTH): string {
+  if (command.includes('\n')) return command.split('\n').map((line) => (line.endsWith('\\') ? line : wrapShell(line, width))).join('\n')
+  const measure = (text: string) => text.replaceAll(COOLDOWN_DURATION_SENTINEL, '77').replaceAll(COOLDOWN_DATE_SENTINEL, '2026-01-01').length
+  if (measure(command) <= width) return command
+  const lines: string[][] = [[]]
+  for (const token of command.match(SHELL_TOKEN) ?? []) {
+    const line = lines.at(-1)!
+    const indent = lines.length > 1 ? 4 : 0
+    const next = measure([...line, token].join(' ')) + indent + 2
+    if (line.length && next > width) {
+      const last = line.at(-1)!
+      // Keep a flag with its value rather than ending a line on it.
+      if (line.length > 1 && /^-/.test(last) && last !== '--' && !token.startsWith('-')) lines.push([line.pop()!, token])
+      else lines.push([token])
+    } else line.push(token)
+  }
+  return lines.map((line) => line.join(' ')).join(' \\\n    ')
+}
 
 /** `command` and its arguments as one shell line. */
 function shellCommand(server: ServerCommand): string {
@@ -612,7 +663,7 @@ function bodyFor(client: Client, scope: Scope, server: ServerCommand): RawBody {
   if (client.kind === 'json') {
     return { body: jsonBody(server), language: 'json', note }
   }
-  return { body: cliBody(client, scope, server), language: 'console', note }
+  return { body: wrapShell(cliBody(client, scope, server)), language: 'console', note }
 }
 
 /** Pre-compute every legal (client, method, scope, cooldown) panel for one port. */

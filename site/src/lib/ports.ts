@@ -753,7 +753,7 @@ const CORE_PORTS: readonly Port[] = [
             lang: 'console',
             code: 'pnpm dlx @libtmux/workspace-cli --help',
             cooldown: {
-              code: `pnpm_config_minimum_release_age=${MINUTES} \\\n    pnpm_config_minimum_release_age_exclude='["@libtmux/workspace-cli","libtmux"]' \\\n    pnpm dlx @libtmux/workspace-cli --help`,
+              code: `pnpm_config_minimum_release_age=${MINUTES} \\\n    pnpm_config_minimum_release_age_exclude=\\\n    '["@libtmux/workspace-cli","libtmux"]' \\\n    pnpm dlx @libtmux/workspace-cli --help`,
               bypass: 'pnpm_config_minimum_release_age=0 pnpm dlx @libtmux/workspace-cli --help',
             },
           },
@@ -782,7 +782,7 @@ const CORE_PORTS: readonly Port[] = [
             lang: 'console',
             code: 'pnpm add -g @libtmux/workspace-cli',
             cooldown: {
-              code: `pnpm_config_minimum_release_age=${MINUTES} \\\n    pnpm_config_minimum_release_age_exclude='["@libtmux/workspace-cli","libtmux"]' \\\n    pnpm add -g @libtmux/workspace-cli`,
+              code: `pnpm_config_minimum_release_age=${MINUTES} \\\n    pnpm_config_minimum_release_age_exclude=\\\n    '["@libtmux/workspace-cli","libtmux"]' \\\n    pnpm add -g @libtmux/workspace-cli`,
               bypass: 'pnpm_config_minimum_release_age=0 pnpm add -g @libtmux/workspace-cli',
             },
           },
