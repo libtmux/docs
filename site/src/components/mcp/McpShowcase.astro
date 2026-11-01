@@ -44,7 +44,7 @@ const name = PORT_BY_SLUG[showcase.port].name
           {group.tools.map((tool) => (
             <li class="mcp-tool">
               <span class="mcp-tool__head">
-                <a class="mcp-tool__name" href={tool.href}><code>{tool.name}</code></a>
+                <span class="mcp-tool__title"><a class="mcp-tool__name" href={tool.href}><code>{tool.name}</code></a></span>
                 {tier(tool) && <span class={`mcp-tier mcp-tier--${tool.tier}`} title={tier(tool)!.tooltip}>{tier(tool)!.label}</span>}
               </span>
               {tool.purpose && <span class="mcp-tool__purpose" title={tool.purpose}>{tool.purpose}</span>}
@@ -105,12 +105,17 @@ const name = PORT_BY_SLUG[showcase.port].name
     border-radius: var(--card-radius, 0.5rem);
     background: var(--color-surface);
   }
+  /* A flex row makes each child a block, and a block link takes no preview line. The name sits in a span of its own to stay inline. */
   .mcp-tool__head {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 0.25rem 0.5rem;
+  }
+  /* The span's own text size keeps its line as tall as the name's. */
+  .mcp-tool__title {
+    font-size: 0.875rem;
   }
   .mcp-tool__name {
     font-size: 0.875rem;
