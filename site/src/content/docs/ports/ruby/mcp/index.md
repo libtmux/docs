@@ -1,5 +1,5 @@
 ---
-title: tmux MCP for Ruby
+title: tmux MCP, built in Ruby
 description: Run the libtmux-mcp server with an explicit tmux endpoint and tool policy.
 port: ruby
 product: mcp

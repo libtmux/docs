@@ -1,0 +1,87 @@
+/*
+ * tmux window layouts (src/lib/tmux-layout.ts).
+ *
+ * The SVG is inline markup with no script, so it paints with the page and
+ * follows the colour scheme through the site's own tokens: the surfaces come
+ * from `gp-sphinx-tokens.css` and the command inks from `api-kinds.css`, both
+ * of which the scheme switch redefines. This sheet therefore has no dark
+ * twin to keep in step.
+ *
+ * Command text carries Pygments' Bash classes, as in tmuxp's docs. The classes
+ * the lexer emits for the commands a workspace holds are inked below; the
+ * remaining ones (`o`, `p`, `w`, `nb`) keep the default text colour.
+ */
+
+.gp-tmux-layout-wrapper {
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+.gp-tmux-layout {
+  --gp-tmux-layout-edge: color-mix(in srgb, var(--color-foreground-muted) 55%, transparent);
+  max-width: min(100%, 480px);
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.gp-tmux-layout .pane {
+  fill: var(--color-background-secondary);
+}
+
+/* One stroke for the window border and each pane divider. */
+.gp-tmux-layout .window {
+  fill: none;
+  stroke: var(--gp-tmux-layout-edge);
+  stroke-width: 1;
+}
+
+.gp-tmux-layout .divider {
+  stroke: var(--gp-tmux-layout-edge);
+  stroke-width: 1;
+}
+
+.gp-tmux-layout text {
+  fill: var(--text-color);
+  font-family: var(--font-ibm-plex-mono, ui-monospace, 'SFMono-Regular', Menlo, monospace);
+  font-size: 12px;
+  /* Even monospace advance, as in the site's code blocks. */
+  font-kerning: none;
+  text-rendering: optimizeSpeed;
+  letter-spacing: normal;
+}
+
+.gp-tmux-layout .gp {
+  fill: var(--lm-shell-prompt);
+  font-weight: 700;
+}
+
+.gp-tmux-layout :is(.s, .s1, .s2, .sb, .si) {
+  fill: var(--api-ink-string);
+}
+
+.gp-tmux-layout :is(.c1, .ch) {
+  fill: var(--color-foreground-muted);
+}
+
+.gp-tmux-layout .k {
+  fill: var(--api-ink-keyword);
+}
+
+.gp-tmux-layout .nv {
+  fill: var(--api-ink-name);
+}
+
+.gp-tmux-layout .m {
+  fill: var(--api-ink-type);
+}
+
+.gp-tmux-layout .se {
+  fill: var(--api-ink-attribute);
+}
+
+.gp-tmux-layout-wrapper > figcaption {
+  text-align: center;
+  font-size: 0.9em;
+  margin-top: 0.5rem;
+}

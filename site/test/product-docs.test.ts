@@ -10,6 +10,7 @@ import { SITE_BUILT, SITE_PREFIX, PREVIEW_PREFIX, productionPath, publishedPath,
 import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects } from '../src/lib/mcp-catalog'
 import { mcpObjectGroup } from '../src/lib/mcp-reference'
 import { mentionBadge, mentionBadgeHtml } from '../src/lib/mention-badge'
+import { mcpTitle, workspaceTitle } from '../src/lib/product-copy'
 import type { ApiTreeJson } from '../src/lib/api-search'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
@@ -452,8 +453,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         && ['guides', 'examples'].includes(page.section)
       if (nativeProductDocs(page.port)) {
         const nativeTitles = page.product === 'workspace'
-          ? { '': 'Workspace Manager', 'source-guide': 'Workspace guide', reference: `${page.port === 'julia' ? 'LibTmuxWorkspace' : 'LibTmux.Workspace'} API reference` }
-          : { '': 'MCP server', 'source-guide': 'MCP server guide', reference: 'LibTmuxMCP API reference' }
+          ? { '': workspaceTitle(page.port), 'source-guide': 'Workspace guide', reference: `${page.port === 'julia' ? 'LibTmuxWorkspace' : 'LibTmux.Workspace'} API reference` }
+          : { '': mcpTitle(page.port), 'source-guide': 'MCP server guide', reference: 'LibTmuxMCP API reference' }
         expect(text(headings1[0]!), page.path).toBe(nativeTitles[page.section as keyof typeof nativeTitles])
       } else if (sharedBrowse) {
         expect(text(headings1[0]!), page.path).toBe(page.section === 'guides' ? 'Guides' : 'Examples')
@@ -553,7 +554,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       const install = document.querySelector('article h2#install')
       if (!install) return
       checked++
-      expect(document.querySelector('article h2')?.id, `${page.path} install is the first section`).toBe('install')
+      // A workspace overview with several presets leads with the preset picker, which stands above the install.
+      const presets = document.querySelector('article section.ws-picker h2#try-a-preset')
+      expect(document.querySelector('article h2')?.id, `${page.path} ${presets ? 'the preset picker' : 'install'} is the first section`).toBe(presets ? 'try-a-preset' : 'install')
+      if (presets) expect(presets.compareDocumentPosition(install) & 4, `${page.path} install follows the preset picker`).toBeTruthy()
       for (const card of document.querySelectorAll('article .doc-card')) {
         expect(install.compareDocumentPosition(card) & 4, `${page.path} cards follow install`).toBeTruthy()
       }

@@ -35,6 +35,12 @@ function problems(text: string): string[] {
   if (/^\s*run:\s*node scripts\/verify-api-destinations\.mjs( --no-cache)?\s*$/m.test(body)) found.push('rewrites the committed API evidence')
   const freshApi = /if:\s*\$\{\{ !cancelled\(\) \}\}\n\s*run:\s*node scripts\/verify-api-destinations\.mjs --check --fresh\s*$/m.test(body)
   if (!freshApi) found.push('does not hold the committed API evidence to the age bound after a failed live run')
+  // The API verifier imports the workspace's parser, so a bare checkout stops at its first import.
+  const at = (needle: string) => body.indexOf(needle)
+  const [pnpm, node, install, apiRun] = [at('uses: pnpm/action-setup@'), at('uses: actions/setup-node@'), at('run: pnpm install --frozen-lockfile'), at('node scripts/verify-api-destinations.mjs')]
+  if (pnpm < 0 || node < 0 || pnpm > node) found.push('does not set up pnpm before Node, which caches it')
+  if (install < 0 || install < node) found.push('does not install the workspace after setting up Node')
+  if (apiRun >= 0 && install > apiRun) found.push('does not install the workspace before the API verifier')
   for (const action of actionsIn(text)) if (!pinned.has(action)) found.push(`uses ${action}, which no other workflow uses`)
   if (!/actions\/checkout@\S+\n\s+with:\n\s+persist-credentials: false/.test(body)) found.push('keeps credentials after checkout')
   return found
@@ -88,6 +94,11 @@ describe('the destination verification workflow', () => {
       ['no live API run', without('run: node scripts/verify-api-destinations.mjs --no-cache --out "$RUNNER_TEMP/api-destination-evidence.json"', 'run: echo skipped'), 'does not run the live API verifier into a temporary file'],
       ['an API age gate that skips after a failure', without('if: ${{ !cancelled() }}\n        run: node scripts/verify-api-destinations.mjs --check --fresh', 'run: node scripts/verify-api-destinations.mjs --check --fresh'), 'does not hold the committed API evidence to the age bound after a failed live run'],
       ['an API age gate that is only the plain check', without('verify-api-destinations.mjs --check --fresh', 'verify-api-destinations.mjs --check'), 'does not hold the committed API evidence to the age bound after a failed live run'],
+      ['no workspace install', without('      - run: pnpm install --frozen-lockfile\n', ''), 'does not install the workspace after setting up Node'],
+      ['an install after the API verifier', without('      - run: pnpm install --frozen-lockfile\n', '').replace(/(\n {6}- name: Keep the fresh evidence)/, '\n      - run: pnpm install --frozen-lockfile$1'), 'does not install the workspace before the API verifier'],
+      ['an install before Node is set up', without('      - run: pnpm install --frozen-lockfile\n', '').replace('      - uses: pnpm/action-setup@v6\n', '      - run: pnpm install --frozen-lockfile\n      - uses: pnpm/action-setup@v6\n'), 'does not install the workspace after setting up Node'],
+      ['no pnpm', without('      - uses: pnpm/action-setup@v6\n', ''), 'does not set up pnpm before Node, which caches it'],
+      ['pnpm set up after Node', without('      - uses: pnpm/action-setup@v6\n', '').replace("          cache: pnpm\n", "          cache: pnpm\n      - uses: pnpm/action-setup@v6\n"), 'does not set up pnpm before Node, which caches it'],
       ['an unpinned action', without('actions/setup-node@v7', 'actions/setup-node@v2'), 'uses actions/setup-node@v2, which no other workflow uses'],
       ['kept credentials', without('        with:\n          persist-credentials: false\n'), 'keeps credentials after checkout'],
     ]

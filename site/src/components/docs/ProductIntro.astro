@@ -1,0 +1,14 @@
+---
+import type { IntroPart } from '../../lib/product-copy'
+
+/**
+ * The sentence that opens a product overview, before the demo or the install
+ * steps. `lib/product-copy.ts` builds it from the port's data, so what it says
+ * about verbs, formats and SDKs is only what the port's files show.
+ */
+interface Props {
+  parts: readonly IntroPart[]
+}
+const { parts } = Astro.props as Props
+---
+<p class="product-intro" data-product-intro>{parts.map((part) => (typeof part === 'string' ? part : <a href={part.href}>{part.text}</a>))}</p>

@@ -1,0 +1,695 @@
+{
+  "schema": 1,
+  "workspace": {
+    "py": {
+      "repo": "tmux-python/tmuxp",
+      "revision": "153acdf6ff1268b14d3d03ed488f545a7123c8f1",
+      "verbs": [
+        "load",
+        "freeze",
+        "convert"
+      ],
+      "formats": [
+        "YAML",
+        "JSON"
+      ],
+      "checks": [
+        {
+          "path": "src/tmuxp/cli/__init__.py",
+          "find": [
+            {
+              "text": "load_parser = subparsers.add_parser(",
+              "line": 195
+            },
+            {
+              "text": "freeze_parser = subparsers.add_parser(",
+              "line": 257
+            },
+            {
+              "text": "convert_parser = subparsers.add_parser(",
+              "line": 217
+            }
+          ],
+          "absent": []
+        },
+        {
+          "path": "src/tmuxp/workspace/constants.py",
+          "find": [
+            {
+              "text": "VALID_WORKSPACE_DIR_FILE_EXTENSIONS = [\".yaml\", \".yml\", \".json\"]",
+              "line": 9
+            }
+          ],
+          "absent": []
+        }
+      ]
+    },
+    "ts": {
+      "repo": "libtmux/libtmux-ts",
+      "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
+      "verbs": [
+        "load",
+        "freeze",
+        "convert"
+      ],
+      "formats": [
+        "YAML",
+        "JSON"
+      ],
+      "checks": [
+        {
+          "path": "packages/workspace-cli/src/grammar.json",
+          "find": [
+            {
+              "text": "\"command\": \"tmuxp load\"",
+              "line": 3
+            },
+            {
+              "text": "\"command\": \"tmuxp freeze\"",
+              "line": 673
+            },
+            {
+              "text": "\"command\": \"tmuxp convert\"",
+              "line": 408
+            }
+          ],
+          "absent": []
+        },
+        {
+          "path": "packages/workspace-cli/src/documents.ts",
+          "find": [
+            {
+              "text": "const extensions = [\".yaml\", \".yml\", \".json\"];",
+              "line": 28
+            }
+          ],
+          "absent": []
+        }
+      ]
+    },
+    "rs": {
+      "repo": "libtmux/libtmux-rs",
+      "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "verbs": [
+        "load",
+        "freeze",
+        "convert"
+      ],
+      "formats": [
+        "YAML",
+        "JSON"
+      ],
+      "checks": [
+        {
+          "path": "crates/tmux-workspace/src/cli/args.rs",
+          "find": [
+            {
+              "text": "Command::new(\"load\")",
+              "line": 598
+            },
+            {
+              "text": "Command::new(\"freeze\")",
+              "line": 523
+            },
+            {
+              "text": "Command::new(\"convert\")",
+              "line": 485
+            }
+          ],
+          "absent": []
+        },
+        {
+          "path": "crates/tmux-workspace/src/cli/discovery.rs",
+          "find": [
+            {
+              "text": "const EXTENSIONS: [&str; 3] = [\"yaml\", \"yml\", \"json\"];",
+              "line": 8
+            }
+          ],
+          "absent": []
+        }
+      ]
+    },
+    "go": {
+      "repo": "libtmux/libtmux-go",
+      "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+      "verbs": [
+        "load",
+        "freeze",
+        "convert"
+      ],
+      "formats": [
+        "YAML",
+        "JSON"
+      ],
+      "checks": [
+        {
+          "path": "workspace/internal/cli/cli.go",
+          "find": [
+            {
+              "text": "add(\"load\"",
+              "line": 389
+            },
+            {
+              "text": "add(\"freeze\"",
+              "line": 417
+            },
+            {
+              "text": "add(\"convert\"",
+              "line": 422
+            }
+          ],
+          "absent": []
+        },
+        {
+          "path": "workspace/internal/cli/files.go",
+          "find": [
+            {
+              "text": "var extensions = []string{\".yaml\", \".yml\", \".json\"}",
+              "line": 21
+            }
+          ],
+          "absent": []
+        }
+      ]
+    },
+    "java": {
+      "repo": "libtmux/libtmux-java",
+      "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "verbs": [
+        "load",
+        "freeze",
+        "convert"
+      ],
+      "formats": [
+        "YAML",
+        "JSON"
+      ],
+      "checks": [
+        {
+          "path": "libtmux-workspace-cli/src/main/java/io/github/libtmux/workspace/cli/Arguments.java",
+          "find": [
+            {
+              "text": "command(\"load\"",
+              "line": 44
+            },
+            {
+              "text": "command(\"freeze\"",
+              "line": 74
+            },
+            {
+              "text": "command(\"convert\"",
+              "line": 81
+            }
+          ],
+          "absent": []
+        },
+        {
+          "path": "libtmux-workspace-cli/src/main/java/io/github/libtmux/workspace/cli/Catalog.java",
+          "find": [
+            {
+              "text": "List.of(\"yaml\", \"yml\", \"json\")",
+              "line": 16
+            }
+          ],
+          "absent": []
+        }
+      ]
+    },
+    "csharp": {
+      "repo": "libtmux/libtmux-dotnet",
+      "revision": "472c2bcfbda6735139849324cc109ad70300001e",
+      "verbs": [
+        "load",
+        "freeze",
+        "convert"
+      ],
+      "formats": [
+        "YAML",
+        "JSON"
+      ],
+      "checks": [
+        {
+          "path": "src/LibTmux.Workspace.Cli/CommandLine.cs",
+          "find": [
+            {
+              "text": "Add(Root, \"load\"",
+              "line": 30
+            },
+            {
+              "text": "Add(Root, \"freeze\"",
+              "line": 49
+            },
+            {
+              "text": "Add(Root, \"convert\"",
+              "line": 56
+            }
+          ],
+          "absent": []
+        },
+        {
+          "path": "src/LibTmux.Workspace.Cli/DocumentStore.cs",
+          "find": [
+            {
+              "text": "Extensions = [\".yaml\", \".yml\", \".json\"]",
+              "line": 14
+            }
+          ],
+          "absent": []
+        }
+      ]
+    },
+    "cxx": {
+      "repo": "libtmux/libtmux-cxx",
+      "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "verbs": [
+        "load",
+        "freeze",
+        "convert"
+      ],
+      "formats": [
+        "YAML",
+        "JSON"
+      ],
+      "checks": [
+        {
+          "path": "apps/workspace/src/cli.cpp",
+          "find": [
+            {
+              "text": "add_subcommand(\"load\"",
+              "line": 192
+            },
+            {
+              "text": "add_subcommand(\"freeze\"",
+              "line": 222
+            },
+            {
+              "text": "add_subcommand(\"convert\"",
+              "line": 231
+            }
+          ],
+          "absent": []
+        },
+        {
+          "path": "apps/workspace/src/services.cpp",
+          "find": [
+            {
+              "text": "for (const auto* extension : {\".yaml\", \".yml\", \".json\"})",
+              "line": 303
+            }
+          ],
+          "absent": []
+        }
+      ]
+    },
+    "swift": {
+      "repo": "libtmux/libtmux-swift",
+      "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "verbs": [
+        "load",
+        "freeze",
+        "convert"
+      ],
+      "formats": [
+        "YAML",
+        "JSON"
+      ],
+      "formatNote": "YAML needs a build with the YAMLWorkspaces trait.",
+      "checks": [
+        {
+          "path": "Sources/TmuxWorkspaceCLI/Commands.swift",
+          "find": [
+            {
+              "text": "struct Load: WorkspaceAction",
+              "line": 67
+            },
+            {
+              "text": "struct Freeze: WorkspaceAction",
+              "line": 103
+            },
+            {
+              "text": "struct Convert: WorkspaceAction",
+              "line": 151
+            }
+          ],
+          "absent": []
+        },
+        {
+          "path": "Sources/TmuxWorkspaceCLI/DocumentStore.swift",
+          "find": [
+            {
+              "text": "static let extensions = [\"yaml\", \"yml\", \"json\"]",
+              "line": 63
+            },
+            {
+              "text": "Build with the YAMLWorkspaces trait to read YAML.",
+              "line": 139
+            }
+          ],
+          "absent": []
+        }
+      ]
+    },
+    "ruby": {
+      "repo": "libtmux/libtmux-ruby",
+      "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "verbs": [
+        "load"
+      ],
+      "formats": [
+        "YAML",
+        "JSON"
+      ],
+      "checks": [
+        {
+          "path": "gems/libtmux-workspace/lib/libtmux/workspace/cli.rb",
+          "find": [
+            {
+              "text": "%w[validate plan load]",
+              "line": 25
+            }
+          ],
+          "absent": [
+            "freeze",
+            "convert"
+          ]
+        },
+        {
+          "path": "gems/libtmux-workspace/lib/libtmux/workspace.rb",
+          "find": [
+            {
+              "text": "when \".json\" then :json",
+              "line": 29
+            },
+            {
+              "text": "when \".yaml\", \".yml\" then :yaml",
+              "line": 30
+            }
+          ],
+          "absent": []
+        }
+      ]
+    },
+    "julia": {
+      "repo": "libtmux/libtmux-julia",
+      "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
+      "verbs": [
+        "load",
+        "freeze"
+      ],
+      "formats": [
+        "YAML",
+        "JSON"
+      ],
+      "checks": [
+        {
+          "path": "packages/LibTmuxWorkspace/src/cli.jl",
+          "find": [
+            {
+              "text": "Usage: libtmux-workspace <validate|plan|load|freeze>",
+              "line": 4
+            }
+          ],
+          "absent": [
+            "convert"
+          ]
+        },
+        {
+          "path": "packages/LibTmuxWorkspace/src/parser.jl",
+          "find": [
+            {
+              "text": "extension in (\".yaml\", \".yml\") ? :yaml :",
+              "line": 158
+            },
+            {
+              "text": "extension == \".json\" ? :json :",
+              "line": 159
+            }
+          ],
+          "absent": []
+        }
+      ]
+    },
+    "powershell": {
+      "repo": "libtmux/libtmux-powershell",
+      "revision": "fddd118000e12dbdbe46c52276dfc08a73a7de37",
+      "verbs": [
+        "load",
+        "convert"
+      ],
+      "formats": [
+        "YAML",
+        "JSON"
+      ],
+      "checks": [
+        {
+          "path": "module/LibTmux.Workspace/LibTmux.Workspace.psd1",
+          "find": [
+            {
+              "text": "Invoke-TmuxWorkspace",
+              "line": 14
+            },
+            {
+              "text": "ConvertTo-TmuxWorkspaceYaml",
+              "line": 15
+            },
+            {
+              "text": "ConvertTo-TmuxWorkspaceJson",
+              "line": 15
+            }
+          ],
+          "absent": [
+            "freeze",
+            "Freeze"
+          ]
+        },
+        {
+          "path": "docs/reference/LibTmux.Workspace/Import-TmuxWorkspace.md",
+          "find": [
+            {
+              "text": "supplied YAML/JSON text",
+              "line": 44
+            }
+          ],
+          "absent": []
+        }
+      ]
+    }
+  },
+  "mcp": {
+    "py": {
+      "repo": "tmux-python/libtmux-mcp",
+      "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+      "sdk": {
+        "name": "FastMCP",
+        "href": "https://gofastmcp.com/"
+      },
+      "checks": [
+        {
+          "path": "pyproject.toml",
+          "find": [
+            {
+              "text": "\"fastmcp>=4.0.2,<5.0.0\"",
+              "line": 44
+            }
+          ],
+          "absent": []
+        }
+      ]
+    },
+    "ts": {
+      "repo": "libtmux/libtmux-ts",
+      "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
+      "sdk": {
+        "name": "MCP TypeScript SDK",
+        "href": "https://github.com/modelcontextprotocol/typescript-sdk"
+      },
+      "checks": [
+        {
+          "path": "packages/mcp/package.json",
+          "find": [
+            {
+              "text": "\"@modelcontextprotocol/sdk\"",
+              "line": 52
+            }
+          ],
+          "absent": []
+        }
+      ]
+    },
+    "rs": {
+      "repo": "libtmux/libtmux-rs",
+      "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sdk": {
+        "name": "rmcp",
+        "href": "https://github.com/modelcontextprotocol/rust-sdk"
+      },
+      "checks": [
+        {
+          "path": "crates/tmux-mcp/Cargo.toml",
+          "find": [
+            {
+              "text": "rmcp = {",
+              "line": 38
+            }
+          ],
+          "absent": []
+        }
+      ]
+    },
+    "go": {
+      "repo": "libtmux/libtmux-go",
+      "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+      "sdk": {
+        "name": "MCP Go SDK",
+        "href": "https://github.com/modelcontextprotocol/go-sdk"
+      },
+      "checks": [
+        {
+          "path": "mcp/go.mod",
+          "find": [
+            {
+              "text": "github.com/modelcontextprotocol/go-sdk",
+              "line": 20
+            }
+          ],
+          "absent": []
+        }
+      ]
+    },
+    "java": {
+      "repo": "libtmux/libtmux-java",
+      "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sdk": {
+        "name": "MCP Java SDK",
+        "href": "https://github.com/modelcontextprotocol/java-sdk"
+      },
+      "checks": [
+        {
+          "path": "gradle/libs.versions.toml",
+          "find": [
+            {
+              "text": "mcp-core",
+              "line": 44
+            }
+          ],
+          "absent": []
+        }
+      ]
+    },
+    "csharp": {
+      "repo": "libtmux/libtmux-dotnet",
+      "revision": "472c2bcfbda6735139849324cc109ad70300001e",
+      "sdk": {
+        "name": "MCP C# SDK",
+        "href": "https://github.com/modelcontextprotocol/csharp-sdk"
+      },
+      "checks": [
+        {
+          "path": "Directory.Packages.props",
+          "find": [
+            {
+              "text": "<PackageVersion Include=\"ModelContextProtocol\" ",
+              "line": 37
+            }
+          ],
+          "absent": []
+        }
+      ]
+    },
+    "ruby": {
+      "repo": "libtmux/libtmux-ruby",
+      "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sdk": {
+        "name": "MCP Ruby SDK",
+        "href": "https://github.com/modelcontextprotocol/ruby-sdk"
+      },
+      "checks": [
+        {
+          "path": "gems/libtmux-mcp/libtmux-mcp.gemspec",
+          "find": [
+            {
+              "text": "spec.add_dependency \"mcp\"",
+              "line": 44
+            }
+          ],
+          "absent": []
+        }
+      ]
+    },
+    "julia": {
+      "repo": "libtmux/libtmux-julia",
+      "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
+      "sdk": {
+        "name": "ModelContextProtocol.jl",
+        "href": "https://github.com/JuliaSMLM/ModelContextProtocol.jl"
+      },
+      "checks": [
+        {
+          "path": "packages/LibTmuxMCP/Project.toml",
+          "find": [
+            {
+              "text": "ModelContextProtocol =",
+              "line": 10
+            }
+          ],
+          "absent": []
+        }
+      ]
+    },
+    "cxx": {
+      "repo": "libtmux/libtmux-cxx",
+      "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "protocol": {
+        "name": "Model Context Protocol",
+        "href": "https://modelcontextprotocol.io/"
+      },
+      "checks": [
+        {
+          "path": "apps/mcp/README.md",
+          "find": [
+            {
+              "text": "speaks newline-delimited JSON-RPC over stdio",
+              "line": 16
+            }
+          ],
+          "absent": []
+        },
+        {
+          "path": "apps/mcp/CMakeLists.txt",
+          "find": [],
+          "absent": [
+            "modelcontextprotocol"
+          ]
+        }
+      ]
+    },
+    "swift": {
+      "repo": "libtmux/libtmux-swift",
+      "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "protocol": {
+        "name": "Model Context Protocol",
+        "href": "https://modelcontextprotocol.io/"
+      },
+      "checks": [
+        {
+          "path": "Sources/LibTmuxMCP/MCPProtocol.swift",
+          "find": [
+            {
+              "text": "JSON-RPC handling lives in the library target",
+              "line": 4
+            }
+          ],
+          "absent": []
+        },
+        {
+          "path": "Package.swift",
+          "find": [],
+          "absent": [
+            "modelcontextprotocol"
+          ]
+        }
+      ]
+    }
+  }
+}

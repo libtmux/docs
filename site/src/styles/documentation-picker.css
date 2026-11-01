@@ -43,7 +43,7 @@
 /* The header's menus of a port's external destinations. */
 .header-picker { --picker-width: 22rem; }
 .header-picker__panel { max-height: min(32rem, calc(100dvh - 5rem)); overflow-y: auto; overscroll-behavior: contain; }
-/* A product's heading is a label, not a row: small, muted capitals with no pointer, hover or focus state. Its rows sit inset under it. */
+/* A kind's heading is a label, not a row: small, muted capitals with no pointer, hover or focus state. Its rows sit inset under it. */
 .header-picker__group + .header-picker__group { margin-top: .5rem; }
 .header-picker__heading { margin: .5rem .6rem .15rem; color: var(--color-muted); cursor: default; font-size: .6875rem; font-weight: 600; letter-spacing: .04em; line-height: 1.35; text-transform: uppercase; }
 .header-picker__group > .header-picker__option { margin-inline-start: .5rem; }

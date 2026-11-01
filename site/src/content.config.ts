@@ -23,6 +23,8 @@ const docs = defineCollection({
   loader: workspaceDocsLoader(),
   schema: z.looseObject({
     title: z.string(),
+    /** A shorter title for the tab, the social tags and lists; the page keeps `title` as its heading. */
+    shortTitle: z.string().optional(),
     inventoryId: z.string().min(1).optional(),
     inventoryAliases: z.array(z.string().min(1)).optional(),
     inventoryTables: z.record(z.string(), z.object({

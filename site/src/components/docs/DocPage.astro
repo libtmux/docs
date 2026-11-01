@@ -2,13 +2,20 @@
 import { getCollection, render, type CollectionEntry } from 'astro:content'
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import { docsPath, proseHref, tmuxProsePath } from '../../lib/docs-paths'
-import { PORT_BY_SLUG, hasPackageInstalls, productApiPath, productAvailable } from '../../lib/ports'
+import { PORT_BY_SLUG, hasPackageInstalls, productApiPath, productAvailable, referenceUrl } from '../../lib/ports'
 import DocCard from '../DocCard.astro'
 import PortLinks from '../PortLinks.astro'
 import McpInstall from '../widgets/McpInstall.astro'
+import ProductIntro from './ProductIntro.astro'
+import McpShowcase from '../mcp/McpShowcase.astro'
+import WorkspacePicker from '../workspace/WorkspacePicker.astro'
+import WorkspaceShowcase from '../workspace/WorkspaceShowcase.astro'
 import PackageInstall from '../widgets/PackageInstall.astro'
 import ProductApiIndex from '../api/ProductApiIndex.astro'
 import { buildTarget } from '../../lib/versions'
+import { mcpShowcase, showcaseHeadings as mcpHeadings } from '../../lib/mcp-showcase'
+import { mcpIntro, workspaceIntro } from '../../lib/product-copy'
+import { offersPicker, showcaseHeadings as workspaceHeadings, workspaceShowcase } from '../../lib/workspace-showcase'
 import { API_MODELS } from '../../lib/api-models'
 import { DEFAULT_LOCALE, LOCALE_LABEL, localeRoot, type Locale } from '../../i18n/locales'
 import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, contributeLink, repoPath } from '../../i18n/contribute'
@@ -109,6 +116,18 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
   && productIsAvailable
   && Boolean(port && hasPackageInstalls(PORT_BY_SLUG[port], 'workspace'))
 
+// Each overview closes with what its port's own sources can show: workspace
+// files its tests load, or the tools its server advertises.
+const workspaceExamples = isWorkspaceOverview && port ? workspaceShowcase(port) : undefined
+const mcpTools = isMcpOverview && port ? await mcpShowcase(port, version ?? buildTarget(process.env).version) : undefined
+
+// A product overview opens with what the product is, in the words of its port's
+// own data: the verbs, formats and SDK a port does not have are not named.
+const coreHome = port && PORT_BY_SLUG[port] ? referenceUrl(PORT_BY_SLUG[port], version ?? buildTarget(process.env).version) : undefined
+const productIntro = isProductOverview && port && coreHome
+  ? (entry.data.product === 'workspace' ? workspaceIntro(port, coreHome) : mcpIntro(port, coreHome, { grouped: mcpTools?.selectsToolsets ?? false }))
+  : undefined
+
 // `entry.data.port` is undefined for the shared pages (concepts, guides,
 // examples); DocsLayout and lib/sidebar.ts's `getSidebar` treat that as "the
 // shell's shared section", not an error.
@@ -120,6 +139,7 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
 
 <DocsLayout
   title={entry.data.title}
+  documentTitle={entry.data.shortTitle}
   inventoryId={entry.data.inventoryId ?? sourceId}
   inventoryAliases={entry.data.inventoryAliases}
   inventoryExclude={Boolean(placeholderLocale)}
@@ -128,8 +148,11 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
   product={entry.data.product}
   version={version}
   headings={placeholderLocale ? [] : [
+    ...(workspaceExamples && offersPicker(workspaceExamples) ? [{ depth: 2, slug: 'try-a-preset', text: 'Try a preset' }] : []),
     ...(isMcpOverview || isWorkspaceOverview ? [{ depth: 2, slug: 'install', text: 'Install' }] : []),
     ...headings,
+    ...(workspaceExamples ? workspaceHeadings(workspaceExamples) : []),
+    ...(mcpTools ? mcpHeadings(mcpTools) : []),
     ...(isProductApi ? [{ depth: 2, slug: 'generated-api', text: 'API declarations' }] : []),
   ]}
   pagePath={publicPagePath}
@@ -226,10 +249,13 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
     <code>{packageSource.package}</code>{packageSource.version ? ` ${packageSource.version}` : ''} · <a href={`https://github.com/${packageSource.repo}/tree/${packageSource.revision}`}>Source</a>
   </p>}
   {/*
-    Install first, then the way in, then the prose: a reader who landed on a
+    What the product is, then the preset picker where a workspace has several,
+    then install, then the way in, then the prose: a reader who landed on a
     product overview came to get the thing, and the boxes are where they go
     next. Both used to follow the whole page, below the fold.
   */}
+  {!placeholderLocale && productIntro && <ProductIntro parts={productIntro} />}
+  {!placeholderLocale && workspaceExamples && <WorkspacePicker showcase={workspaceExamples} />}
   {!placeholderLocale && isMcpOverview && port && (
     <>
       <h2 id="install">Install</h2>
@@ -257,6 +283,11 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
     </div>
   )}
   {!placeholderLocale && <Content />}
+  {!placeholderLocale && workspaceExamples && <WorkspaceShowcase showcase={workspaceExamples} />}
+  {!placeholderLocale && isWorkspaceOverview && !workspaceExamples && (
+    <p class="mt-6 text-sm opacity-75" data-workspace-coming>Tested example workspace files for this port are coming.</p>
+  )}
+  {!placeholderLocale && mcpTools && <McpShowcase showcase={mcpTools} />}
   {!placeholderLocale && entry.data.product && productIsAvailable && isProductApi &&
     <ProductApiIndex port={port!} product={entry.data.product} version={version ?? buildTarget(process.env).version} />}
 </DocsLayout>

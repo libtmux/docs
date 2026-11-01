@@ -1,5 +1,5 @@
 ---
-title: tmux MCP for Java
+title: tmux MCP, built in Java
 description: Run or embed the Java MCP server with typed tmux tools and a static capability resource.
 port: java
 product: mcp

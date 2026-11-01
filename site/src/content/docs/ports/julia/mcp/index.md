@@ -1,5 +1,5 @@
 ---
-title: MCP server
+title: tmux MCP, built in Julia
 description: Connect an MCP client to an existing tmux endpoint through LibTmuxMCP.
 port: julia
 product: mcp

@@ -197,6 +197,23 @@ requires the gate to notice, by the problem it names:
 $ node site/scripts/check-dev.mjs --badge-centring
 ```
 
+A port's header links its repository, package host and API reference, and
+lists every other package in a searchable Packages disclosure. The header gate
+shows one copy of them at each width, from the narrowest phone to a wide
+desktop, with and without JavaScript, and requires each to be a usable size,
+the open panel to stay inside the viewport and Escape to return focus. In light
+and dark, at a phone and a desktop width, it then requires that the page really
+is in that scheme, that the header shifts by nothing while the script enhances
+it, and that the panel's names, detail lines and headings and the chips' labels
+meet 4.5:1 text contrast at full opacity. Each check ends with controls that
+break one thing it holds, such as a hidden or overlapping chip, a bar that moves
+late, faint or translucent text, a colour that reads in one scheme only or text
+that is missing, and requires the gate to notice by the problem it names:
+
+```console
+$ node site/scripts/check-dev.mjs --global-header
+```
+
 A link the page marks for a preview card must have a card to show. The preview
 check hovers the C function link of a method page, then asks for the payload of
 every marked link on four pages. It asks only for destinations the dev build
@@ -322,6 +339,37 @@ A bare name links only on a user-facing workspace page, where it outranks a
 library symbol or tmux name of the same spelling. `<program> <command>` links
 on any page of a port that ships the program. Internals pages and the language
 API index keep their library symbols.
+
+A port's workspace overview opens with a preset picker and closes with
+example workspaces and a drawing of the panes each builds. The presets are
+tmuxp's examples. An example appears only when a test in the port's own
+repository loads it, so `scripts/lib/workspace-showcase-sources.mjs` names
+each file with its tests, and the generator reads it at the revision the
+port's API model records for the workspace package. A port whose tests gained
+the fixtures after that revision may name a newer one as `revision` in its
+sources; the generator refuses the pin once the API model's revision equals it
+or has passed it. It marks a file that is
+byte-identical to a tmuxp example, and it records, for every port, whether the
+port's loader supports each tmuxp example, with the line of source that shows
+a refusal. A preset the loader does not support cannot be shown. A port with
+no quotable document has no examples. After changing that list, or moving a
+port's pin, regenerate the data with the port checkouts present:
+
+```console
+$ node scripts/gen-workspace-showcase.mjs
+```
+
+A Workspace or MCP overview opens with a sentence that names the verbs the
+port's workspace tool has, the formats it reads and the SDK its MCP server is
+built on. `scripts/lib/product-copy-sources.mjs` lists each claim with the
+strings of the port's own files that show it, a missing command being shown by
+the string's absence, and the generator reads them at the revision the port's
+API model records. After changing that list, or moving a port's pin, regenerate
+the data with the port checkouts present:
+
+```console
+$ node scripts/gen-product-copy.mjs
+```
 
 The publication audit checks index freshness, rendered links, navigation targets,
 and table layout at desktop, tablet, and phone widths.

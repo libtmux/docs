@@ -1,0 +1,390 @@
+{
+  "source": "tmuxp docs/_ext/tmux_layout.py at 80d55ea2dde5edbc4fdbcaf150822a57bb551a28, run under Pygments 2.21.0; every svg is rendered with its first diagram id",
+  "highlight": {
+    "echo 'did you know'": "echo<tspan class=\"w\"> </tspan><tspan class=\"s1\">&#x27;did you know&#x27;</tspan>",
+    "echo 'you can inline'": "echo<tspan class=\"w\"> </tspan><tspan class=\"s1\">&#x27;you can inline&#x27;</tspan>",
+    "cd /var/log": "cd<tspan class=\"w\"> </tspan>/var/log",
+    "ls -al | grep \\.log": "ls<tspan class=\"w\"> </tspan>-al<tspan class=\"w\"> </tspan><tspan class=\"p\">|</tspan><tspan class=\"w\"> </tspan>grep<tspan class=\"w\"> </tspan><tspan class=\"se\">\\.</tspan>log",
+    "echo hello": "echo<tspan class=\"w\"> </tspan>hello",
+    "cd ~/": "cd<tspan class=\"w\"> </tspan>~/",
+    "pwd": "pwd",
+    "echo \"$ENV\"": "echo<tspan class=\"w\"> </tspan><tspan class=\"s2\">&quot;</tspan><tspan class=\"nv\">$ENV</tspan><tspan class=\"s2\">&quot;</tspan>",
+    "# a note": "<tspan class=\"c1\"># a note</tspan>",
+    "echo <a>": "echo<tspan class=\"w\"> </tspan>&lt;a&gt;",
+    "export FOO=bar": "export<tspan class=\"w\"> </tspan><tspan class=\"nv\">FOO</tspan><tspan class=\"o\">=</tspan>bar",
+    "cd $HOME/src && ls": "cd<tspan class=\"w\"> </tspan><tspan class=\"nv\">$HOME</tspan>/src<tspan class=\"w\"> </tspan><tspan class=\"o\">&amp;&amp;</tspan><tspan class=\"w\"> </tspan>ls",
+    "tail -F /var/log/syslog": "tail<tspan class=\"w\"> </tspan>-F<tspan class=\"w\"> </tspan>/var/log/syslog",
+    "echo \"___$((1 + 3))___\"": "echo<tspan class=\"w\"> </tspan><tspan class=\"s2\">&quot;</tspan><tspan class=\"s2\">___</tspan><tspan class=\"k\">$((</tspan><tspan class=\"m\">1</tspan><tspan class=\"w\"> </tspan><tspan class=\"o\">+</tspan><tspan class=\"w\"> </tspan><tspan class=\"m\">3</tspan><tspan class=\"k\">))</tspan><tspan class=\"s2\">___</tspan><tspan class=\"s2\">&quot;</tspan>",
+    "./manage.py runserver 0.0.0.0:${SERVER_PORT}": "./manage.py<tspan class=\"w\"> </tspan>runserver<tspan class=\"w\"> </tspan><tspan class=\"m\">0</tspan>.0.0.0:<tspan class=\"si\">${</tspan><tspan class=\"nv\">SERVER_PORT</tspan><tspan class=\"si\">}</tspan>",
+    "FOO=1 make -j4": "<tspan class=\"nv\">FOO</tspan><tspan class=\"o\">=</tspan><tspan class=\"m\">1</tspan><tspan class=\"w\"> </tspan>make<tspan class=\"w\"> </tspan>-j4",
+    "top": "top",
+    "man echo": "man<tspan class=\"w\"> </tspan>echo",
+    "git status --short": "git<tspan class=\"w\"> </tspan>status<tspan class=\"w\"> </tspan>--short",
+    "echo $(date)": "echo<tspan class=\"w\"> </tspan><tspan class=\"k\">$(</tspan>date<tspan class=\"k\">)</tspan>",
+    "echo `date`": "echo<tspan class=\"w\"> </tspan><tspan class=\"sb\">`</tspan>date<tspan class=\"sb\">`</tspan>",
+    "for i in 1 2; do echo $i; done": "<tspan class=\"k\">for</tspan><tspan class=\"w\"> </tspan>i<tspan class=\"w\"> </tspan><tspan class=\"k\">in</tspan><tspan class=\"w\"> </tspan><tspan class=\"m\">1</tspan><tspan class=\"w\"> </tspan><tspan class=\"m\">2</tspan><tspan class=\"p\">;</tspan><tspan class=\"w\"> </tspan><tspan class=\"k\">do</tspan><tspan class=\"w\"> </tspan>echo<tspan class=\"w\"> </tspan><tspan class=\"nv\">$i</tspan><tspan class=\"p\">;</tspan><tspan class=\"w\"> </tspan><tspan class=\"k\">done</tspan>",
+    "if true; then echo x; fi": "<tspan class=\"k\">if</tspan><tspan class=\"w\"> </tspan>true<tspan class=\"p\">;</tspan><tspan class=\"w\"> </tspan><tspan class=\"k\">then</tspan><tspan class=\"w\"> </tspan>echo<tspan class=\"w\"> </tspan>x<tspan class=\"p\">;</tspan><tspan class=\"w\"> </tspan><tspan class=\"k\">fi</tspan>",
+    "echo foo > out.txt": "echo<tspan class=\"w\"> </tspan>foo<tspan class=\"w\"> </tspan>&gt;<tspan class=\"w\"> </tspan>out.txt",
+    "cat <<EOF": "cat<tspan class=\"w\"> </tspan>&lt;&lt;EOF",
+    "python3 -c 'print(1)'": "python3<tspan class=\"w\"> </tspan>-c<tspan class=\"w\"> </tspan><tspan class=\"s1\">&#x27;print(1)&#x27;</tspan>",
+    "ls -al *.log": "ls<tspan class=\"w\"> </tspan>-al<tspan class=\"w\"> </tspan>*.log",
+    "echo a;echo b": "echo<tspan class=\"w\"> </tspan>a<tspan class=\"p\">;</tspan>echo<tspan class=\"w\"> </tspan>b",
+    "sleep 2": "sleep<tspan class=\"w\"> </tspan><tspan class=\"m\">2</tspan>",
+    "cd ~/work && pytest -q": "cd<tspan class=\"w\"> </tspan>~/work<tspan class=\"w\"> </tspan><tspan class=\"o\">&amp;&amp;</tspan><tspan class=\"w\"> </tspan>pytest<tspan class=\"w\"> </tspan>-q",
+    "watch -n 1 date": "watch<tspan class=\"w\"> </tspan>-n<tspan class=\"w\"> </tspan><tspan class=\"m\">1</tspan><tspan class=\"w\"> </tspan>date",
+    "tmux -L x ls": "tmux<tspan class=\"w\"> </tspan>-L<tspan class=\"w\"> </tspan>x<tspan class=\"w\"> </tspan>ls",
+    "echo \"it's\" 'q\"q'": "echo<tspan class=\"w\"> </tspan><tspan class=\"s2\">&quot;it&#x27;s&quot;</tspan><tspan class=\"w\"> </tspan><tspan class=\"s1\">&#x27;q&quot;q&#x27;</tspan>",
+    "echo $'a\\n'": "echo<tspan class=\"w\"> </tspan><tspan class=\"s1\">$&#x27;a\\n&#x27;</tspan>",
+    "echo \\.log": "echo<tspan class=\"w\"> </tspan><tspan class=\"se\">\\.</tspan>log",
+    "echo a\\ b": "echo<tspan class=\"w\"> </tspan>a<tspan class=\"se\">\\ </tspan>b",
+    "export PS1='> '": "export<tspan class=\"w\"> </tspan><tspan class=\"nv\">PS1</tspan><tspan class=\"o\">=</tspan><tspan class=\"s1\">&#x27;&gt; &#x27;</tspan>",
+    "echo ${HOME:-/tmp}/x": "echo<tspan class=\"w\"> </tspan><tspan class=\"si\">${</tspan><tspan class=\"nv\">HOME</tspan><tspan class=\"k\">:-</tspan><tspan class=\"p\">/tmp</tspan><tspan class=\"si\">}</tspan>/x",
+    "echo $((0x1f + 2#101))": "echo<tspan class=\"w\"> </tspan><tspan class=\"k\">$((</tspan><tspan class=\"m\">0x1f</tspan><tspan class=\"w\"> </tspan><tspan class=\"o\">+</tspan><tspan class=\"w\"> </tspan><tspan class=\"m\">2#101</tspan><tspan class=\"k\">))</tspan>",
+    "echo \"unterminated": "echo<tspan class=\"w\"> </tspan><tspan class=\"s2\">&quot;</tspan><tspan class=\"s2\">unterminated</tspan>",
+    "echo 'unterminated": "echo<tspan class=\"w\"> </tspan><tspan class=\"err\">&#x27;</tspan>unterminated",
+    "echo $": "echo<tspan class=\"w\"> </tspan>$",
+    "echo $1 $? $$": "echo<tspan class=\"w\"> </tspan><tspan class=\"nv\">$1</tspan><tspan class=\"w\"> </tspan><tspan class=\"nv\">$?</tspan><tspan class=\"w\"> </tspan><tspan class=\"nv\">$$</tspan>",
+    "a=1 b=2 cmd": "<tspan class=\"nv\">a</tspan><tspan class=\"o\">=</tspan><tspan class=\"m\">1</tspan><tspan class=\"w\"> </tspan><tspan class=\"nv\">b</tspan><tspan class=\"o\">=</tspan><tspan class=\"m\">2</tspan><tspan class=\"w\"> </tspan>cmd",
+    "x+=y": "<tspan class=\"nv\">x</tspan><tspan class=\"o\">+=</tspan>y",
+    "echo \"a $(date) b\"": "echo<tspan class=\"w\"> </tspan><tspan class=\"s2\">&quot;</tspan><tspan class=\"s2\">a </tspan><tspan class=\"k\">$(</tspan>date<tspan class=\"k\">)</tspan><tspan class=\"s2\"> b</tspan><tspan class=\"s2\">&quot;</tspan>",
+    "echo \"${A}\"": "echo<tspan class=\"w\"> </tspan><tspan class=\"s2\">&quot;</tspan><tspan class=\"si\">${</tspan><tspan class=\"nv\">A</tspan><tspan class=\"si\">}</tspan><tspan class=\"s2\">&quot;</tspan>",
+    "echo ü": "echo<tspan class=\"w\"> </tspan>ü",
+    "echo a #c": "echo<tspan class=\"w\"> </tspan>a<tspan class=\"w\"> </tspan><tspan class=\"c1\">#c</tspan>",
+    "echo a\\": "echo<tspan class=\"w\"> </tspan>a<tspan class=\"se\">\\</tspan>",
+    "!!": "!!",
+    "[ -f x ] && echo y": "<tspan class=\"o\">[</tspan><tspan class=\"w\"> </tspan>-f<tspan class=\"w\"> </tspan>x<tspan class=\"w\"> </tspan><tspan class=\"o\">]</tspan><tspan class=\"w\"> </tspan><tspan class=\"o\">&amp;&amp;</tspan><tspan class=\"w\"> </tspan>echo<tspan class=\"w\"> </tspan>y",
+    "echo {a,b}": "echo<tspan class=\"w\"> </tspan><tspan class=\"o\">{</tspan>a,b<tspan class=\"o\">}</tspan>",
+    "cat <<<'hi'": "cat<tspan class=\"w\"> </tspan><tspan class=\"o\">&lt;&lt;&lt;</tspan><tspan class=\"s1\">&#x27;hi&#x27;</tspan>",
+    "echo \"<a href='x'>&amp;</a>\"": "echo<tspan class=\"w\"> </tspan><tspan class=\"s2\">&quot;&lt;a href=&#x27;x&#x27;&gt;&amp;amp;&lt;/a&gt;&quot;</tspan>",
+    "exec zsh -l": "exec<tspan class=\"w\"> </tspan>zsh<tspan class=\"w\"> </tspan>-l",
+    "tail -f log | grep -E 'err|warn' > /dev/null 2>&1 &": "tail<tspan class=\"w\"> </tspan>-f<tspan class=\"w\"> </tspan>log<tspan class=\"w\"> </tspan><tspan class=\"p\">|</tspan><tspan class=\"w\"> </tspan>grep<tspan class=\"w\"> </tspan>-E<tspan class=\"w\"> </tspan><tspan class=\"s1\">&#x27;err|warn&#x27;</tspan><tspan class=\"w\"> </tspan>&gt;<tspan class=\"w\"> </tspan>/dev/null<tspan class=\"w\"> </tspan><tspan class=\"m\">2</tspan>&gt;<tspan class=\"p\">&amp;</tspan><tspan class=\"m\">1</tspan><tspan class=\"w\"> </tspan><tspan class=\"p\">&amp;</tspan>",
+    "": "",
+    "#!/bin/sh": "<tspan class=\"ch\">#!/bin/sh</tspan>",
+    "#!/usr/bin/env bash -eu": "<tspan class=\"ch\">#!/usr/bin/env bash -eu</tspan>",
+    "cat <<EOF\nhi\nEOF": "cat<tspan class=\"w\"> </tspan><tspan class=\"s\">&lt;&lt;EOF\nhi\nEOF</tspan>",
+    "cat <<-'END'\n\tbody\nEND": "cat<tspan class=\"w\"> </tspan><tspan class=\"s\">&lt;&lt;-&#x27;END&#x27;\n\tbody\nEND</tspan>",
+    "cat <<\\STOP\n$x\nSTOP": "cat<tspan class=\"w\"> </tspan><tspan class=\"s\">&lt;&lt;\\STOP\n$x\nSTOP</tspan>",
+    "echo ${x:}": "echo<tspan class=\"w\"> </tspan><tspan class=\"si\">${</tspan><tspan class=\"nv\">x</tspan><tspan class=\"p\">:</tspan><tspan class=\"si\">}</tspan>",
+    "echo ${x:1:2}": "echo<tspan class=\"w\"> </tspan><tspan class=\"si\">${</tspan><tspan class=\"nv\">x</tspan><tspan class=\"p\">:</tspan><tspan class=\"nv\">1</tspan><tspan class=\"p\">:</tspan><tspan class=\"nv\">2</tspan><tspan class=\"si\">}</tspan>",
+    "echo ${x:+set} ${#y} ${z:-$(date)}": "echo<tspan class=\"w\"> </tspan><tspan class=\"si\">${</tspan><tspan class=\"nv\">x</tspan><tspan class=\"p\">:</tspan><tspan class=\"p\">+set</tspan><tspan class=\"si\">}</tspan><tspan class=\"w\"> </tspan><tspan class=\"si\">${#</tspan><tspan class=\"nv\">y</tspan><tspan class=\"si\">}</tspan><tspan class=\"w\"> </tspan><tspan class=\"si\">${</tspan><tspan class=\"nv\">z</tspan><tspan class=\"k\">:-</tspan><tspan class=\"k\">$(</tspan>date<tspan class=\"k\">)</tspan><tspan class=\"si\">}</tspan>",
+    "echo $((2#))": "echo<tspan class=\"w\"> </tspan><tspan class=\"k\">$((</tspan><tspan class=\"m\">2#</tspan><tspan class=\"k\">))</tspan>",
+    "echo $((x + y * 3))": "echo<tspan class=\"w\"> </tspan><tspan class=\"k\">$((</tspan><tspan class=\"nv\">x</tspan><tspan class=\"w\"> </tspan><tspan class=\"o\">+</tspan><tspan class=\"w\"> </tspan><tspan class=\"nv\">y</tspan><tspan class=\"w\"> </tspan><tspan class=\"o\">*</tspan><tspan class=\"w\"> </tspan><tspan class=\"m\">3</tspan><tspan class=\"k\">))</tspan>",
+    "echo $(( n ** 2 ))": "echo<tspan class=\"w\"> </tspan><tspan class=\"k\">$((</tspan><tspan class=\"w\"> </tspan><tspan class=\"nv\">n</tspan><tspan class=\"w\"> </tspan><tspan class=\"o\">**</tspan><tspan class=\"w\"> </tspan><tspan class=\"m\">2</tspan><tspan class=\"w\"> </tspan><tspan class=\"k\">))</tspan>",
+    "echo $((16#ff + 8#7))": "echo<tspan class=\"w\"> </tspan><tspan class=\"k\">$((</tspan><tspan class=\"m\">16#ff</tspan><tspan class=\"w\"> </tspan><tspan class=\"o\">+</tspan><tspan class=\"w\"> </tspan><tspan class=\"m\">8#7</tspan><tspan class=\"k\">))</tspan>",
+    "echo $(echo `date`)": "echo<tspan class=\"w\"> </tspan><tspan class=\"k\">$(</tspan>echo<tspan class=\"w\"> </tspan><tspan class=\"sb\">`</tspan>date<tspan class=\"sb\">`</tspan><tspan class=\"k\">)</tspan>",
+    "echo `echo $(date)`": "echo<tspan class=\"w\"> </tspan><tspan class=\"sb\">`</tspan>echo<tspan class=\"w\"> </tspan><tspan class=\"k\">$(</tspan>date<tspan class=\"k\">)</tspan><tspan class=\"sb\">`</tspan>",
+    "echo `unterminated": "echo<tspan class=\"w\"> </tspan><tspan class=\"sb\">`</tspan>unterminated",
+    "echo ü=1": "echo<tspan class=\"w\"> </tspan><tspan class=\"nv\">ü</tspan><tspan class=\"o\">=</tspan><tspan class=\"m\">1</tspan>",
+    "ü=1 cmd": "<tspan class=\"nv\">ü</tspan><tspan class=\"o\">=</tspan><tspan class=\"m\">1</tspan><tspan class=\"w\"> </tspan>cmd",
+    "export ñame=bar": "export<tspan class=\"w\"> </tspan><tspan class=\"nv\">ñame</tspan><tspan class=\"o\">=</tspan>bar",
+    "ifü": "ifü",
+    "doné": "doné",
+    "if٣": "if٣",
+    "for²": "for²",
+    "echo $ü": "echo<tspan class=\"w\"> </tspan>$ü",
+    "echo ${ü}": "echo<tspan class=\"w\"> </tspan><tspan class=\"si\">${</tspan><tspan class=\"nv\">ü</tspan><tspan class=\"si\">}</tspan>",
+    "echo $x²y": "echo<tspan class=\"w\"> </tspan><tspan class=\"nv\">$x²y</tspan>",
+    "echo $x́": "echo<tspan class=\"w\"> </tspan><tspan class=\"nv\">$x</tspan>́",
+    "echo ${x²}": "echo<tspan class=\"w\"> </tspan><tspan class=\"si\">${</tspan><tspan class=\"nv\">x²</tspan><tspan class=\"si\">}</tspan>",
+    "echo é": "echo<tspan class=\"w\"> </tspan>é",
+    "echo ²": "echo<tspan class=\"w\"> </tspan>²",
+    "echo ½": "echo<tspan class=\"w\"> </tspan>½",
+    "echo Ⅷ": "echo<tspan class=\"w\"> </tspan>Ⅷ",
+    "Ⅷ=1 cmd": "<tspan class=\"nv\">Ⅷ</tspan><tspan class=\"o\">=</tspan><tspan class=\"m\">1</tspan><tspan class=\"w\"> </tspan>cmd",
+    "echo 𝒜=1": "echo<tspan class=\"w\"> </tspan><tspan class=\"nv\">𝒜</tspan><tspan class=\"o\">=</tspan><tspan class=\"m\">1</tspan>",
+    "𝒜=1 cmd": "<tspan class=\"nv\">𝒜</tspan><tspan class=\"o\">=</tspan><tspan class=\"m\">1</tspan><tspan class=\"w\"> </tspan>cmd",
+    "echo ${𝒜}": "echo<tspan class=\"w\"> </tspan><tspan class=\"si\">${</tspan><tspan class=\"nv\">𝒜</tspan><tspan class=\"si\">}</tspan>",
+    "cat <<ü\nx\nü": "cat<tspan class=\"w\"> </tspan><tspan class=\"s\">&lt;&lt;ü\nx\nü</tspan>",
+    "echo １２": "echo<tspan class=\"w\"> </tspan><tspan class=\"m\">１２</tspan>",
+    "echo 12٣": "echo<tspan class=\"w\"> </tspan><tspan class=\"m\">12٣</tspan>",
+    "echo 𝟙𝟚": "echo<tspan class=\"w\"> </tspan><tspan class=\"m\">𝟙𝟚</tspan>",
+    "echo 𝟙x": "echo<tspan class=\"w\"> </tspan>𝟙x",
+    "echo 1²": "echo<tspan class=\"w\"> </tspan>1²",
+    "echo 12é": "echo<tspan class=\"w\"> </tspan>12é",
+    "echo 12́": "echo<tspan class=\"w\"> </tspan><tspan class=\"m\">12</tspan>́",
+    "echo $٣": "echo<tspan class=\"w\"> </tspan><tspan class=\"nv\">$٣</tspan>",
+    "echo $((٣ + ٤))": "echo<tspan class=\"w\"> </tspan><tspan class=\"k\">$((</tspan><tspan class=\"m\">٣</tspan><tspan class=\"w\"> </tspan><tspan class=\"o\">+</tspan><tspan class=\"w\"> </tspan><tspan class=\"m\">٤</tspan><tspan class=\"k\">))</tspan>",
+    "echo $((１ + ２))": "echo<tspan class=\"w\"> </tspan><tspan class=\"k\">$((</tspan><tspan class=\"m\">１</tspan><tspan class=\"w\"> </tspan><tspan class=\"o\">+</tspan><tspan class=\"w\"> </tspan><tspan class=\"m\">２</tspan><tspan class=\"k\">))</tspan>",
+    "echo $((2#é))": "echo<tspan class=\"w\"> </tspan><tspan class=\"k\">$((</tspan><tspan class=\"m\">2#</tspan>é<tspan class=\"k\">))</tspan>",
+    "echo a　b": "echo<tspan class=\"w\"> </tspan>a<tspan class=\"w\">　</tspan>b",
+    "echo two": "echo<tspan class=\"w\"> </tspan>two",
+    "echo naïve café": "echo<tspan class=\"w\"> </tspan>naïve<tspan class=\"w\"> </tspan>café",
+    "echo\u001cx": "echo<tspan class=\"w\">\u001c</tspan>x",
+    "echox": "echo<tspan class=\"w\"></tspan>x",
+    "iftrue": "<tspan class=\"k\">if</tspan><tspan class=\"w\"></tspan>true",
+    "echo\u000bx\fy": "echo<tspan class=\"w\">\u000b</tspan>x<tspan class=\"w\">\f</tspan>y",
+    "echo x": "echo<tspan class=\"w\"> </tspan>x",
+    "echo﻿x": "echo﻿x",
+    "x﻿=1": "x﻿<tspan class=\"o\">=</tspan><tspan class=\"m\">1</tspan>",
+    "echo ​x": "echo<tspan class=\"w\"> </tspan>​x",
+    "cat << EOF\nx\nEOF": "cat<tspan class=\"w\"> </tspan><tspan class=\"s\">&lt;&lt; EOF\nx\nEOF</tspan>",
+    "cat << EOF\nx\nEOF": "cat<tspan class=\"w\"> </tspan><tspan class=\"s\">&lt;&lt; EOF\nx\nEOF</tspan>",
+    "# a b": "<tspan class=\"c1\"># a b</tspan>",
+    "# a b": "<tspan class=\"c1\"># a b</tspan>",
+    "#!/bin/sh x": "<tspan class=\"ch\">#!/bin/sh x</tspan>",
+    "# 🎉 note": "<tspan class=\"c1\"># 🎉 note</tspan>",
+    "echo \"日本語 $x\"": "echo<tspan class=\"w\"> </tspan><tspan class=\"s2\">&quot;</tspan><tspan class=\"s2\">日本語 </tspan><tspan class=\"nv\">$x</tspan><tspan class=\"s2\">&quot;</tspan>",
+    "echo 'emoji 🎉' 🎉": "echo<tspan class=\"w\"> </tspan><tspan class=\"s1\">&#x27;emoji 🎉&#x27;</tspan><tspan class=\"w\"> </tspan>🎉",
+    "echo x y": "echo<tspan class=\"w\"> </tspan>x<tspan class=\"w\"> </tspan>y",
+    "echo a\rb": "echo<tspan class=\"w\"> </tspan>ab",
+    "echo a\r\nb": "echo<tspan class=\"w\"> </tspan>ab",
+    "echo a\r\r\nb": "echo<tspan class=\"w\"> </tspan>ab",
+    "\r\n#!/bin/sh\r\necho x": "<tspan class=\"ch\">#!/bin/sh</tspan>echo<tspan class=\"w\"> </tspan>x",
+    "﻿echo hi": "echo<tspan class=\"w\"> </tspan>hi",
+    "﻿#!/bin/sh": "<tspan class=\"ch\">#!/bin/sh</tspan>",
+    "﻿﻿echo hi": "﻿echo<tspan class=\"w\"> </tspan>hi",
+    "\n﻿echo hi": "﻿echo<tspan class=\"w\"> </tspan>hi",
+    "\n\necho padded\n\n": "echo<tspan class=\"w\"> </tspan>padded"
+  },
+  "render": [
+    {
+      "layout": "even-vertical",
+      "panes": [
+        [
+          "echo 'did you know'",
+          "echo 'you can inline'"
+        ],
+        [
+          "echo 'single commands'"
+        ],
+        [
+          "echo 'for panes'"
+        ]
+      ],
+      "size": [
+        36,
+        12
+      ],
+      "svg": "<svg class=\"gp-tmux-layout\" viewBox=\"0 0 288 204\" width=\"288\" height=\"204\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\"><defs><clipPath id=\"tmux-layout-1-clip-0\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"1\" width=\"286\" height=\"66\"/></clipPath><clipPath id=\"tmux-layout-1-clip-1\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"69\" width=\"286\" height=\"66\"/></clipPath><clipPath id=\"tmux-layout-1-clip-2\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"137\" width=\"286\" height=\"66\"/></clipPath></defs><rect class=\"pane\" x=\"0\" y=\"0\" width=\"288\" height=\"68\"/><rect class=\"pane\" x=\"0\" y=\"68\" width=\"288\" height=\"68\"/><rect class=\"pane\" x=\"0\" y=\"136\" width=\"288\" height=\"68\"/><line class=\"divider\" x1=\"0\" y1=\"68\" x2=\"288\" y2=\"68\"/><line class=\"divider\" x1=\"0\" y1=\"136\" x2=\"288\" y2=\"136\"/><rect class=\"window\" x=\"0\" y=\"0\" width=\"288\" height=\"204\"/><g class=\"highlight\"><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-0)\" x=\"6\" y=\"18\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>echo<tspan class=\"w\"> </tspan><tspan class=\"s1\">&#x27;did you know&#x27;</tspan></text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-0)\" x=\"6\" y=\"35\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>echo<tspan class=\"w\"> </tspan><tspan class=\"s1\">&#x27;you can inline&#x27;</tspan></text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-1)\" x=\"6\" y=\"86\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>echo<tspan class=\"w\"> </tspan><tspan class=\"s1\">&#x27;single commands&#x27;</tspan></text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-2)\" x=\"6\" y=\"154\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>echo<tspan class=\"w\"> </tspan><tspan class=\"s1\">&#x27;for panes&#x27;</tspan></text></g></svg>"
+    },
+    {
+      "layout": "even-vertical",
+      "panes": [
+        [
+          "echo hello"
+        ],
+        [
+          "echo hello"
+        ]
+      ],
+      "size": [
+        30,
+        10
+      ],
+      "svg": "<svg class=\"gp-tmux-layout\" viewBox=\"0 0 240 170\" width=\"240\" height=\"170\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\"><defs><clipPath id=\"tmux-layout-1-clip-0\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"1\" width=\"238\" height=\"83\"/></clipPath><clipPath id=\"tmux-layout-1-clip-1\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"86\" width=\"238\" height=\"83\"/></clipPath></defs><rect class=\"pane\" x=\"0\" y=\"0\" width=\"240\" height=\"85\"/><rect class=\"pane\" x=\"0\" y=\"85\" width=\"240\" height=\"85\"/><line class=\"divider\" x1=\"0\" y1=\"85\" x2=\"240\" y2=\"85\"/><rect class=\"window\" x=\"0\" y=\"0\" width=\"240\" height=\"170\"/><g class=\"highlight\"><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-0)\" x=\"6\" y=\"18\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>echo<tspan class=\"w\"> </tspan>hello</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-1)\" x=\"6\" y=\"103\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>echo<tspan class=\"w\"> </tspan>hello</text></g></svg>"
+    },
+    {
+      "layout": "main-horizontal",
+      "panes": [
+        [
+          "cd /var/log",
+          "ls -al | grep \\.log"
+        ],
+        [
+          "echo hello"
+        ],
+        [
+          "echo hello"
+        ]
+      ],
+      "size": [
+        44,
+        12
+      ],
+      "svg": "<svg class=\"gp-tmux-layout\" viewBox=\"0 0 352 204\" width=\"352\" height=\"204\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\"><defs><clipPath id=\"tmux-layout-1-clip-0\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"1\" width=\"350\" height=\"100\"/></clipPath><clipPath id=\"tmux-layout-1-clip-1\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"103\" width=\"174\" height=\"100\"/></clipPath><clipPath id=\"tmux-layout-1-clip-2\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"177\" y=\"103\" width=\"174\" height=\"100\"/></clipPath></defs><rect class=\"pane\" x=\"0\" y=\"0\" width=\"352\" height=\"102\"/><rect class=\"pane\" x=\"0\" y=\"102\" width=\"176\" height=\"102\"/><rect class=\"pane\" x=\"176\" y=\"102\" width=\"176\" height=\"102\"/><line class=\"divider\" x1=\"0\" y1=\"102\" x2=\"352\" y2=\"102\"/><line class=\"divider\" x1=\"176\" y1=\"102\" x2=\"176\" y2=\"204\"/><rect class=\"window\" x=\"0\" y=\"0\" width=\"352\" height=\"204\"/><g class=\"highlight\"><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-0)\" x=\"6\" y=\"18\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>cd<tspan class=\"w\"> </tspan>/var/log</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-0)\" x=\"6\" y=\"35\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>ls<tspan class=\"w\"> </tspan>-al<tspan class=\"w\"> </tspan><tspan class=\"p\">|</tspan><tspan class=\"w\"> </tspan>grep<tspan class=\"w\"> </tspan><tspan class=\"se\">\\.</tspan>log</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-1)\" x=\"6\" y=\"120\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>echo<tspan class=\"w\"> </tspan>hello</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-2)\" x=\"182\" y=\"120\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>echo<tspan class=\"w\"> </tspan>hello</text></g></svg>"
+    },
+    {
+      "layout": "main-vertical",
+      "panes": [
+        [
+          "cd /var/log",
+          "ls -al | grep \\.log"
+        ],
+        [
+          "echo hello"
+        ],
+        [
+          "echo hello"
+        ]
+      ],
+      "size": [
+        44,
+        12
+      ],
+      "svg": "<svg class=\"gp-tmux-layout\" viewBox=\"0 0 352 204\" width=\"352\" height=\"204\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\"><defs><clipPath id=\"tmux-layout-1-clip-0\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"1\" width=\"174\" height=\"202\"/></clipPath><clipPath id=\"tmux-layout-1-clip-1\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"177\" y=\"1\" width=\"174\" height=\"100\"/></clipPath><clipPath id=\"tmux-layout-1-clip-2\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"177\" y=\"103\" width=\"174\" height=\"100\"/></clipPath></defs><rect class=\"pane\" x=\"0\" y=\"0\" width=\"176\" height=\"204\"/><rect class=\"pane\" x=\"176\" y=\"0\" width=\"176\" height=\"102\"/><rect class=\"pane\" x=\"176\" y=\"102\" width=\"176\" height=\"102\"/><line class=\"divider\" x1=\"176\" y1=\"0\" x2=\"176\" y2=\"204\"/><line class=\"divider\" x1=\"176\" y1=\"102\" x2=\"352\" y2=\"102\"/><rect class=\"window\" x=\"0\" y=\"0\" width=\"352\" height=\"204\"/><g class=\"highlight\"><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-0)\" x=\"6\" y=\"18\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>cd<tspan class=\"w\"> </tspan>/var/log</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-0)\" x=\"6\" y=\"35\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>ls<tspan class=\"w\"> </tspan>-al<tspan class=\"w\"> </tspan><tspan class=\"p\">|</tspan><tspan class=\"w\"> </tspan>grep<tspan class=\"w\"> </tspan><tspan class=\"se\">\\.</tspan>log</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-1)\" x=\"182\" y=\"18\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>echo<tspan class=\"w\"> </tspan>hello</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-2)\" x=\"182\" y=\"120\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>echo<tspan class=\"w\"> </tspan>hello</text></g></svg>"
+    },
+    {
+      "layout": "tiled",
+      "panes": [
+        [
+          "cd /var/log",
+          "ls -al | grep \\.log"
+        ],
+        [
+          "echo hello"
+        ],
+        [
+          "echo hello"
+        ],
+        [
+          "echo hello"
+        ]
+      ],
+      "size": [
+        44,
+        12
+      ],
+      "svg": "<svg class=\"gp-tmux-layout\" viewBox=\"0 0 352 204\" width=\"352\" height=\"204\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\"><defs><clipPath id=\"tmux-layout-1-clip-0\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"1\" width=\"174\" height=\"100\"/></clipPath><clipPath id=\"tmux-layout-1-clip-1\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"177\" y=\"1\" width=\"174\" height=\"100\"/></clipPath><clipPath id=\"tmux-layout-1-clip-2\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"103\" width=\"174\" height=\"100\"/></clipPath><clipPath id=\"tmux-layout-1-clip-3\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"177\" y=\"103\" width=\"174\" height=\"100\"/></clipPath></defs><rect class=\"pane\" x=\"0\" y=\"0\" width=\"176\" height=\"102\"/><rect class=\"pane\" x=\"176\" y=\"0\" width=\"176\" height=\"102\"/><rect class=\"pane\" x=\"0\" y=\"102\" width=\"176\" height=\"102\"/><rect class=\"pane\" x=\"176\" y=\"102\" width=\"176\" height=\"102\"/><line class=\"divider\" x1=\"176\" y1=\"0\" x2=\"176\" y2=\"102\"/><line class=\"divider\" x1=\"0\" y1=\"102\" x2=\"176\" y2=\"102\"/><line class=\"divider\" x1=\"176\" y1=\"102\" x2=\"352\" y2=\"102\"/><line class=\"divider\" x1=\"176\" y1=\"102\" x2=\"176\" y2=\"204\"/><rect class=\"window\" x=\"0\" y=\"0\" width=\"352\" height=\"204\"/><g class=\"highlight\"><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-0)\" x=\"6\" y=\"18\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>cd<tspan class=\"w\"> </tspan>/var/log</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-0)\" x=\"6\" y=\"35\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>ls<tspan class=\"w\"> </tspan>-al<tspan class=\"w\"> </tspan><tspan class=\"p\">|</tspan><tspan class=\"w\"> </tspan>grep<tspan class=\"w\"> </tspan><tspan class=\"se\">\\.</tspan>log</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-1)\" x=\"182\" y=\"18\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>echo<tspan class=\"w\"> </tspan>hello</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-2)\" x=\"6\" y=\"120\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>echo<tspan class=\"w\"> </tspan>hello</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-3)\" x=\"182\" y=\"120\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>echo<tspan class=\"w\"> </tspan>hello</text></g></svg>"
+    },
+    {
+      "layout": "tiled",
+      "panes": [
+        [
+          "a"
+        ],
+        [
+          "b"
+        ],
+        [
+          "c"
+        ]
+      ],
+      "size": [
+        30,
+        12
+      ],
+      "svg": "<svg class=\"gp-tmux-layout\" viewBox=\"0 0 240 204\" width=\"240\" height=\"204\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\"><defs><clipPath id=\"tmux-layout-1-clip-0\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"1\" width=\"118\" height=\"100\"/></clipPath><clipPath id=\"tmux-layout-1-clip-1\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"121\" y=\"1\" width=\"118\" height=\"100\"/></clipPath><clipPath id=\"tmux-layout-1-clip-2\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"103\" width=\"238\" height=\"100\"/></clipPath></defs><rect class=\"pane\" x=\"0\" y=\"0\" width=\"120\" height=\"102\"/><rect class=\"pane\" x=\"120\" y=\"0\" width=\"120\" height=\"102\"/><rect class=\"pane\" x=\"0\" y=\"102\" width=\"240\" height=\"102\"/><line class=\"divider\" x1=\"120\" y1=\"0\" x2=\"120\" y2=\"102\"/><line class=\"divider\" x1=\"0\" y1=\"102\" x2=\"120\" y2=\"102\"/><line class=\"divider\" x1=\"120\" y1=\"102\" x2=\"240\" y2=\"102\"/><rect class=\"window\" x=\"0\" y=\"0\" width=\"240\" height=\"204\"/><g class=\"highlight\"><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-0)\" x=\"6\" y=\"18\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>a</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-1)\" x=\"126\" y=\"18\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>b</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-2)\" x=\"6\" y=\"120\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>c</text></g></svg>"
+    },
+    {
+      "layout": "tiled",
+      "panes": [
+        [
+          "a"
+        ],
+        [
+          "b"
+        ],
+        [
+          "c"
+        ],
+        [
+          "d"
+        ],
+        [
+          "e"
+        ]
+      ],
+      "size": [
+        50,
+        15
+      ],
+      "svg": "<svg class=\"gp-tmux-layout\" viewBox=\"0 0 400 255\" width=\"400\" height=\"255\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\"><defs><clipPath id=\"tmux-layout-1-clip-0\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"1\" width=\"198\" height=\"83\"/></clipPath><clipPath id=\"tmux-layout-1-clip-1\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"201\" y=\"1\" width=\"198\" height=\"83\"/></clipPath><clipPath id=\"tmux-layout-1-clip-2\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"86\" width=\"198\" height=\"83\"/></clipPath><clipPath id=\"tmux-layout-1-clip-3\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"201\" y=\"86\" width=\"198\" height=\"83\"/></clipPath><clipPath id=\"tmux-layout-1-clip-4\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"171\" width=\"398\" height=\"83\"/></clipPath></defs><rect class=\"pane\" x=\"0\" y=\"0\" width=\"200\" height=\"85\"/><rect class=\"pane\" x=\"200\" y=\"0\" width=\"200\" height=\"85\"/><rect class=\"pane\" x=\"0\" y=\"85\" width=\"200\" height=\"85\"/><rect class=\"pane\" x=\"200\" y=\"85\" width=\"200\" height=\"85\"/><rect class=\"pane\" x=\"0\" y=\"170\" width=\"400\" height=\"85\"/><line class=\"divider\" x1=\"200\" y1=\"0\" x2=\"200\" y2=\"85\"/><line class=\"divider\" x1=\"0\" y1=\"85\" x2=\"200\" y2=\"85\"/><line class=\"divider\" x1=\"200\" y1=\"85\" x2=\"400\" y2=\"85\"/><line class=\"divider\" x1=\"200\" y1=\"85\" x2=\"200\" y2=\"170\"/><line class=\"divider\" x1=\"0\" y1=\"170\" x2=\"200\" y2=\"170\"/><line class=\"divider\" x1=\"200\" y1=\"170\" x2=\"400\" y2=\"170\"/><rect class=\"window\" x=\"0\" y=\"0\" width=\"400\" height=\"255\"/><g class=\"highlight\"><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-0)\" x=\"6\" y=\"18\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>a</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-1)\" x=\"206\" y=\"18\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>b</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-2)\" x=\"6\" y=\"103\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>c</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-3)\" x=\"206\" y=\"103\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>d</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-4)\" x=\"6\" y=\"188\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>e</text></g></svg>"
+    },
+    {
+      "layout": "even-horizontal",
+      "panes": [
+        [
+          "x"
+        ],
+        [
+          "y"
+        ],
+        [
+          "z"
+        ]
+      ],
+      "size": [
+        50,
+        13
+      ],
+      "svg": "<svg class=\"gp-tmux-layout\" viewBox=\"0 0 400 221\" width=\"400\" height=\"221\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\"><defs><clipPath id=\"tmux-layout-1-clip-0\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"1\" width=\"131.333\" height=\"219\"/></clipPath><clipPath id=\"tmux-layout-1-clip-1\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"134.333\" y=\"1\" width=\"131.333\" height=\"219\"/></clipPath><clipPath id=\"tmux-layout-1-clip-2\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"267.667\" y=\"1\" width=\"131.333\" height=\"219\"/></clipPath></defs><rect class=\"pane\" x=\"0\" y=\"0\" width=\"133.333\" height=\"221\"/><rect class=\"pane\" x=\"133.333\" y=\"0\" width=\"133.333\" height=\"221\"/><rect class=\"pane\" x=\"266.667\" y=\"0\" width=\"133.333\" height=\"221\"/><line class=\"divider\" x1=\"133.333\" y1=\"0\" x2=\"133.333\" y2=\"221\"/><line class=\"divider\" x1=\"266.667\" y1=\"0\" x2=\"266.667\" y2=\"221\"/><rect class=\"window\" x=\"0\" y=\"0\" width=\"400\" height=\"221\"/><g class=\"highlight\"><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-0)\" x=\"6\" y=\"18\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>x</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-1)\" x=\"139.333\" y=\"18\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>y</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-2)\" x=\"272.667\" y=\"18\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>z</text></g></svg>"
+    },
+    {
+      "layout": "main-vertical",
+      "panes": [
+        [
+          "x"
+        ],
+        [
+          "y"
+        ],
+        [
+          "z"
+        ],
+        [
+          "w"
+        ]
+      ],
+      "size": [
+        47,
+        13
+      ],
+      "svg": "<svg class=\"gp-tmux-layout\" viewBox=\"0 0 376 221\" width=\"376\" height=\"221\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\"><defs><clipPath id=\"tmux-layout-1-clip-0\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"1\" width=\"186\" height=\"219\"/></clipPath><clipPath id=\"tmux-layout-1-clip-1\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"189\" y=\"1\" width=\"186\" height=\"71.6667\"/></clipPath><clipPath id=\"tmux-layout-1-clip-2\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"189\" y=\"74.6667\" width=\"186\" height=\"71.6667\"/></clipPath><clipPath id=\"tmux-layout-1-clip-3\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"189\" y=\"148.333\" width=\"186\" height=\"71.6667\"/></clipPath></defs><rect class=\"pane\" x=\"0\" y=\"0\" width=\"188\" height=\"221\"/><rect class=\"pane\" x=\"188\" y=\"0\" width=\"188\" height=\"73.6667\"/><rect class=\"pane\" x=\"188\" y=\"73.6667\" width=\"188\" height=\"73.6667\"/><rect class=\"pane\" x=\"188\" y=\"147.333\" width=\"188\" height=\"73.6667\"/><line class=\"divider\" x1=\"188\" y1=\"0\" x2=\"188\" y2=\"221\"/><line class=\"divider\" x1=\"188\" y1=\"73.6667\" x2=\"376\" y2=\"73.6667\"/><line class=\"divider\" x1=\"188\" y1=\"147.333\" x2=\"376\" y2=\"147.333\"/><rect class=\"window\" x=\"0\" y=\"0\" width=\"376\" height=\"221\"/><g class=\"highlight\"><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-0)\" x=\"6\" y=\"18\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>x</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-1)\" x=\"194\" y=\"18\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>y</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-2)\" x=\"194\" y=\"91.6667\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>z</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-3)\" x=\"194\" y=\"165.333\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>w</text></g></svg>"
+    },
+    {
+      "layout": "main-horizontal",
+      "panes": [
+        [
+          "x"
+        ],
+        [
+          "y"
+        ],
+        [
+          "z"
+        ],
+        [
+          "w"
+        ],
+        [
+          "v"
+        ]
+      ],
+      "size": [
+        47,
+        13
+      ],
+      "svg": "<svg class=\"gp-tmux-layout\" viewBox=\"0 0 376 221\" width=\"376\" height=\"221\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\"><defs><clipPath id=\"tmux-layout-1-clip-0\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"1\" width=\"374\" height=\"108.5\"/></clipPath><clipPath id=\"tmux-layout-1-clip-1\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"111.5\" width=\"92\" height=\"108.5\"/></clipPath><clipPath id=\"tmux-layout-1-clip-2\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"95\" y=\"111.5\" width=\"92\" height=\"108.5\"/></clipPath><clipPath id=\"tmux-layout-1-clip-3\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"189\" y=\"111.5\" width=\"92\" height=\"108.5\"/></clipPath><clipPath id=\"tmux-layout-1-clip-4\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"283\" y=\"111.5\" width=\"92\" height=\"108.5\"/></clipPath></defs><rect class=\"pane\" x=\"0\" y=\"0\" width=\"376\" height=\"110.5\"/><rect class=\"pane\" x=\"0\" y=\"110.5\" width=\"94\" height=\"110.5\"/><rect class=\"pane\" x=\"94\" y=\"110.5\" width=\"94\" height=\"110.5\"/><rect class=\"pane\" x=\"188\" y=\"110.5\" width=\"94\" height=\"110.5\"/><rect class=\"pane\" x=\"282\" y=\"110.5\" width=\"94\" height=\"110.5\"/><line class=\"divider\" x1=\"0\" y1=\"110.5\" x2=\"376\" y2=\"110.5\"/><line class=\"divider\" x1=\"94\" y1=\"110.5\" x2=\"94\" y2=\"221\"/><line class=\"divider\" x1=\"188\" y1=\"110.5\" x2=\"188\" y2=\"221\"/><line class=\"divider\" x1=\"282\" y1=\"110.5\" x2=\"282\" y2=\"221\"/><rect class=\"window\" x=\"0\" y=\"0\" width=\"376\" height=\"221\"/><g class=\"highlight\"><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-0)\" x=\"6\" y=\"18\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>x</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-1)\" x=\"6\" y=\"128.5\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>y</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-2)\" x=\"100\" y=\"128.5\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>z</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-3)\" x=\"194\" y=\"128.5\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>w</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-4)\" x=\"288\" y=\"128.5\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>v</text></g></svg>"
+    },
+    {
+      "layout": "tiled",
+      "panes": [
+        [
+          "cd /var/log",
+          "ls -al | grep \\.log"
+        ],
+        [
+          "echo hello"
+        ],
+        [
+          "echo hello"
+        ],
+        [
+          "echo hello"
+        ]
+      ],
+      "size": [
+        30,
+        12
+      ],
+      "svg": "<svg class=\"gp-tmux-layout\" viewBox=\"0 0 240 204\" width=\"240\" height=\"204\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\"><defs><clipPath id=\"tmux-layout-1-clip-0\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"1\" width=\"118\" height=\"100\"/></clipPath><clipPath id=\"tmux-layout-1-clip-1\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"121\" y=\"1\" width=\"118\" height=\"100\"/></clipPath><clipPath id=\"tmux-layout-1-clip-2\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"103\" width=\"118\" height=\"100\"/></clipPath><clipPath id=\"tmux-layout-1-clip-3\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"121\" y=\"103\" width=\"118\" height=\"100\"/></clipPath></defs><rect class=\"pane\" x=\"0\" y=\"0\" width=\"120\" height=\"102\"/><rect class=\"pane\" x=\"120\" y=\"0\" width=\"120\" height=\"102\"/><rect class=\"pane\" x=\"0\" y=\"102\" width=\"120\" height=\"102\"/><rect class=\"pane\" x=\"120\" y=\"102\" width=\"120\" height=\"102\"/><line class=\"divider\" x1=\"120\" y1=\"0\" x2=\"120\" y2=\"102\"/><line class=\"divider\" x1=\"0\" y1=\"102\" x2=\"120\" y2=\"102\"/><line class=\"divider\" x1=\"120\" y1=\"102\" x2=\"240\" y2=\"102\"/><line class=\"divider\" x1=\"120\" y1=\"102\" x2=\"120\" y2=\"204\"/><rect class=\"window\" x=\"0\" y=\"0\" width=\"240\" height=\"204\"/><g class=\"highlight\"><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-0)\" x=\"6\" y=\"18\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>cd<tspan class=\"w\"> </tspan>/var/log</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-0)\" x=\"6\" y=\"35\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>ls<tspan class=\"w\"> </tspan>-al<tspan class=\"w\"> </tspan><tspan class=\"p\">|</tspan><tspan class=\"w\"> </tspan>grep<tspan class=\"w\"> </tspan><tspan class=\"se\">\\.</tspan>log</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-1)\" x=\"126\" y=\"18\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>echo<tspan class=\"w\"> </tspan>hello</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-2)\" x=\"6\" y=\"120\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>echo<tspan class=\"w\"> </tspan>hello</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-3)\" x=\"126\" y=\"120\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>echo<tspan class=\"w\"> </tspan>hello</text></g></svg>"
+    },
+    {
+      "layout": "even-vertical",
+      "panes": [
+        [
+          "echo ü $x",
+          "echo 'a < b' && ls"
+        ],
+        [
+          "cat <<EOF"
+        ]
+      ],
+      "size": [
+        36,
+        10
+      ],
+      "svg": "<svg class=\"gp-tmux-layout\" viewBox=\"0 0 288 170\" width=\"288\" height=\"170\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\"><defs><clipPath id=\"tmux-layout-1-clip-0\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"1\" width=\"286\" height=\"83\"/></clipPath><clipPath id=\"tmux-layout-1-clip-1\" clipPathUnits=\"userSpaceOnUse\"><rect x=\"1\" y=\"86\" width=\"286\" height=\"83\"/></clipPath></defs><rect class=\"pane\" x=\"0\" y=\"0\" width=\"288\" height=\"85\"/><rect class=\"pane\" x=\"0\" y=\"85\" width=\"288\" height=\"85\"/><line class=\"divider\" x1=\"0\" y1=\"85\" x2=\"288\" y2=\"85\"/><rect class=\"window\" x=\"0\" y=\"0\" width=\"288\" height=\"170\"/><g class=\"highlight\"><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-0)\" x=\"6\" y=\"18\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>echo<tspan class=\"w\"> </tspan>ü<tspan class=\"w\"> </tspan><tspan class=\"nv\">$x</tspan></text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-0)\" x=\"6\" y=\"35\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>echo<tspan class=\"w\"> </tspan><tspan class=\"s1\">&#x27;a &lt; b&#x27;</tspan><tspan class=\"w\"> </tspan><tspan class=\"o\">&amp;&amp;</tspan><tspan class=\"w\"> </tspan>ls</text><text class=\"cmd\" clip-path=\"url(#tmux-layout-1-clip-1)\" x=\"6\" y=\"103\" xml:space=\"preserve\"><tspan class=\"gp\">❯ </tspan>cat<tspan class=\"w\"> </tspan>&lt;&lt;EOF</text></g></svg>"
+    }
+  ]
+}

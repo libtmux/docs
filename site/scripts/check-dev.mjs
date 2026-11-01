@@ -9,7 +9,7 @@ import { API_MODEL_PORTS, PORTS, productAvailable, referenceSegment } from '../s
 import { buildTarget, defaultVersionFor } from '../src/lib/versions.ts'
 import { checkClipboard, checkCompleteApiExamples } from './check-clipboard.mjs'
 import { checkApiAnchorArrival, checkApiExampleOwnership, checkApiNavigation, checkApiNavigationFail, checkApiStickyHeadings, checkApiStickyHeadingsFail, checkReferenceSidebarBounds, checkReferenceSidebarBoundsFail, checkDocumentationNavigation, checkNavigation, checkPermalinkReveal, checkPermalinkRevealFail } from './check-navigation.mjs'
-import { checkReferencePreferences, checkGlobalHeader, checkHeaderLinksFail } from './check-reference-preferences.mjs'
+import { checkReferencePreferences, checkGlobalHeader, checkHeaderLinksFail, checkHeaderLinksRender, checkHeaderLinksRenderFail } from './check-reference-preferences.mjs'
 import { checkHeaderMenuSections, checkHeaderMenuSectionsFail } from './check-header-menu-sections.mjs'
 import { checkStatusBadges, checkStatusBadgesFail } from './check-status-badges.mjs'
 import { checkHomeLauncher } from './check-home-launcher.mjs'
@@ -831,6 +831,8 @@ try {
   } else if (globalHeaderOnly) {
     await retryReload(() => checkGlobalHeader(browser, base))
     await checkHeaderLinksFail(browser, base)
+    await checkHeaderLinksRender(browser, base)
+    await checkHeaderLinksRenderFail(browser, base)
   } else if (headerMenuSectionsOnly) {
     await retryReload(() => checkHeaderMenuSections(browser, base))
     await checkHeaderMenuSectionsFail(browser, base)
@@ -912,7 +914,8 @@ try {
       .then(() => retryReload(() => checkKeywordHelp(browser, base)))
     )
     const preferences = schedule(() => checkReferencePreferences(browser, base))
-    const globalHeader = schedule(() => checkGlobalHeader(browser, base).then(() => checkHeaderLinksFail(browser, base)))
+    const globalHeader = schedule(() => checkGlobalHeader(browser, base).then(() => checkHeaderLinksFail(browser, base))
+      .then(() => checkHeaderLinksRender(browser, base)).then(() => checkHeaderLinksRenderFail(browser, base)))
     const headerMenuSections = schedule(() => checkHeaderMenuSections(browser, base)
       .then(() => checkHeaderMenuSectionsFail(browser, base)))
     const statusBadges = schedule(() => checkStatusBadges(browser, base)

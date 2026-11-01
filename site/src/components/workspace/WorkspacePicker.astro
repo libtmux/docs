@@ -1,0 +1,119 @@
+---
+/**
+ * A preset picker for the workspace overview.
+ *
+ * The control is the site's own task menu: a `details` picker with a search
+ * field, rows of a name over one line, a check on the current row and, beside
+ * it, the dice that roll another. Each row leads with the preset's first
+ * window as a small tile. Every preset is rendered into one stack (see
+ * `styles/workspace-picker.css`), and the preset a reader last chose or named
+ * in `?preset=` shows before first paint. A preset's configuration sits beside
+ * its drawing, with one tab for each of its windows. The page's own examples,
+ * further down, carry each preset in full for a reader without script.
+ *
+ * A port with one preset has nothing to choose, so it renders no picker; the
+ * example below is the only copy of its file.
+ */
+import RerollButton from '../RerollButton.astro'
+import PickerSearch from '../docs/PickerSearch.astro'
+import { offersPicker, presetOptions, type WorkspaceShowcase } from '../../lib/workspace-showcase'
+import { paintScript, selectionRules } from '../../lib/workspace-picker'
+import WorkspaceConfig from './WorkspaceConfig.astro'
+import '../../styles/documentation-picker.css'
+import '../../styles/tmux-layout.css'
+import '../../styles/workspace-showcase.css'
+import '../../styles/workspace-picker.css'
+
+interface Props {
+  showcase: WorkspaceShowcase
+}
+const { showcase } = Astro.props as Props
+const presets = offersPicker(showcase) ? presetOptions(showcase) : []
+const ids = presets.map((preset) => preset.id)
+const first = presets[0]
+---
+{first && (
+  <section class="ws-picker" data-workspace-picker data-pagefind-ignore="all">
+    <h2 id="try-a-preset">Try a preset</h2>
+    <style is:inline set:html={selectionRules(ids)}></style>
+    <libtmux-workspace-picker data-port={showcase.port}>
+      <script is:inline set:html={paintScript(showcase.port, ids)}></script>
+      <div class="ws-picker__bar">
+        <span class="ws-picker__label">Preset</span>
+        <details class="doc-picker ws-picker__menu" data-doc-picker data-preset-menu>
+          <summary aria-label={`Preset: ${first.title}`}>
+            <span class="ws-picker__current">
+              {presets.map((preset) => <span data-for={preset.id}>{preset.title}</span>)}
+            </span>
+            <svg class="doc-picker-caret" width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
+          </summary>
+          <div class="doc-picker-panel ws-picker__menu-panel" data-picker-panel>
+            <p class="doc-picker-title">Choose a preset <span class="doc-picker-count">{presets.length}</span></p>
+            <PickerSearch label="Find a preset" placeholder="Find a preset…" emptyMessage="No matching presets." />
+            <nav aria-label="Workspace presets">
+              {presets.map((preset, index) => (
+                <a class="doc-picker-option ws-picker__option" href={`?preset=${preset.id}`} data-preset-option={preset.id}
+                  data-picker-option data-match={preset.match} aria-current={index === 0 ? 'true' : undefined}>
+                  <span class="ws-picker__icon" data-tile><Fragment set:html={preset.icon} /></span>
+                  <span class="ws-picker__text"><span class="ws-picker__name">{preset.title}</span><small>{preset.summary}</small></span>
+                  <span class="doc-picker-check" aria-hidden="true" hidden={index !== 0}>✓</span>
+                </a>
+              ))}
+            </nav>
+          </div>
+        </details>
+        <RerollButton size="lg" title="Pick another preset" data-action="roll" />
+      </div>
+      <p class="sr-only" role="status" data-picker-announce></p>
+      <div class="ws-picker__stage">
+        {presets.map((preset) => (
+          <section class="ws-picker__panel" data-preset={preset.id} data-first={preset === first ? '' : undefined} inert={preset !== first} aria-label={preset.title}>
+            <div class="ws-body">
+              <WorkspaceConfig id={`pick-${showcase.port}-${preset.id}`} yaml={preset.yaml} json={preset.json} />
+              {preset.windows.length > 0 && (
+                <div class="ws-layout">
+                  <div class="ws-layout__bar">
+                    <div class="ws-layout__tabs" role="tablist" aria-label="Windows">
+                      {preset.windows.map((win, position) => (
+                        <button type="button" role="tab" id={`ws-pick-${showcase.port}-${preset.id}-tab-${position}`}
+                          aria-controls={`ws-pick-${showcase.port}-${preset.id}-win-${position}`}
+                          aria-selected={position === 0 ? 'true' : 'false'} tabindex={position === 0 ? 0 : -1}
+                          title={`${win.index}:${win.name ?? 'window'}`}>{win.index}:{win.name ?? 'window'}</button>
+                      ))}
+                    </div>
+                    {preset.windows.length > 1 && (
+                      <>
+                        <button type="button" class="ws-layout__scroll ws-layout__scroll--start" data-scroll="-1" aria-label="Scroll windows left" hidden>
+                          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m10 3-5 5 5 5" /></svg>
+                        </button>
+                        <button type="button" class="ws-layout__scroll ws-layout__scroll--end" data-scroll="1" aria-label="Scroll windows right" hidden>
+                          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 3 5 5-5 5" /></svg>
+                        </button>
+                      </>
+                    )}
+                  </div>
+                  <div class="ws-layout__stack">
+                    {preset.windows.map((win, position) => (
+                      <figure class="ws-win" role="tabpanel" data-window={position} data-active={position === 0 ? '' : undefined}
+                        id={`ws-pick-${showcase.port}-${preset.id}-win-${position}`}
+                        aria-labelledby={`ws-pick-${showcase.port}-${preset.id}-tab-${position}`}>
+                        <Fragment set:html={win.svg} />
+                        <figcaption>{win.caption}</figcaption>
+                      </figure>
+                    ))}
+                    {preset.windows.length > 1 && <div class="ws-layout__slider" data-slider aria-hidden="true" hidden><span class="ws-layout__thumb" data-thumb></span></div>}
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        ))}
+      </div>
+    </libtmux-workspace-picker>
+    <span class="ws-picker__end" hidden></span>
+  </section>
+)}
+<script>
+  import { defineWorkspacePicker } from '../../lib/workspace-picker'
+  defineWorkspacePicker()
+</script>
