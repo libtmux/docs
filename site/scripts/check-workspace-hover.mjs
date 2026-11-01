@@ -1,0 +1,52 @@
+import assert from 'node:assert/strict'
+
+/** Real pointer events on the preset picker, with the clock advanced instead of sleeping. */
+export async function checkWorkspaceHover(browser, base) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, colorScheme: 'light' })
+  const page = await context.newPage()
+  const errors = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  const picker = page.locator('libtmux-workspace-picker')
+  const shown = () => picker.getAttribute('data-selected')
+  const checked = () => page.locator('[data-preset-option][aria-current="true"]').getAttribute('data-preset-option')
+  try {
+    await page.goto(`${base}/rs/latest/workspace/`)
+    await picker.waitFor()
+    const now = new Date()
+    await page.clock.install({ time: now })
+    await page.clock.pauseAt(new Date(now.getTime() + 1000))
+    const url = page.url()
+    const committed = await shown()
+    await page.locator('[data-preset-menu] > summary').click()
+    const other = page.locator(`[data-preset-option]:not([data-preset-option="${committed}"])`).first()
+    const id = await other.getAttribute('data-preset-option')
+    await other.hover()
+    await page.clock.fastForward(1100)
+    assert.equal(await shown(), committed, 'A brief hover does not preview')
+    await page.clock.fastForward(100)
+    assert.equal(await shown(), id, 'A dwell previews the preset')
+    assert.equal(await checked(), committed, 'The checkmark stays on the choice')
+    assert.equal(page.url(), url, 'Hover does not change the address')
+    await page.mouse.move(5, 5)
+    assert.equal(await shown(), committed, 'Leaving restores the choice')
+    await other.hover()
+    await page.clock.fastForward(1200)
+    await page.keyboard.press('Escape')
+    assert.equal(await shown(), committed, 'Escape dismisses the preview')
+    await page.locator('[data-preset-menu] > summary').click()
+    await other.hover()
+    await page.clock.fastForward(1200)
+    await other.click()
+    await page.clock.fastForward(2000)
+    assert.equal(await shown(), id, 'Click commits')
+    assert.equal(await checked(), id)
+    await page.locator('[data-preset-menu] > summary').click()
+    await other.dispatchEvent('pointerenter', { pointerType: 'touch' })
+    await page.clock.fastForward(1200)
+    assert.equal(await shown(), id, 'A touch event cannot start a preview')
+    assert.deepEqual(errors, [])
+  } finally {
+    await context.close()
+  }
+  console.log('Workspace preset hover: dwell, restore, Escape, commit and touch PASS')
+}

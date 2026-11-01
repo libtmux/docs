@@ -12,6 +12,8 @@
  * and the address in step.
  */
 
+import { bindHomeHoverPreview } from './home-hover-preview'
+
 export const STORAGE_PREFIX = 'libtmux-workspace-preset:'
 
 /** The first candidate that names a preset on the page, or the first preset. */
@@ -212,11 +214,15 @@ export function defineWorkspacePicker(): void {
       const titles = new Map(panels.map((panel) => [panel.dataset.preset ?? '', panel.getAttribute('aria-label') ?? '']))
       let current = ids[0]!
 
-      const show = (id: string, say = false) => {
-        current = id
+      // The stack and the menu label follow one attribute. A preview moves only this.
+      const paint = (id: string) => {
         this.setAttribute('data-selected', id)
         // Hidden presets take no focus and no pointer, whatever their descendants' own styles say.
         for (const panel of panels) panel.inert = panel.dataset.preset !== id
+      }
+      const show = (id: string, say = false) => {
+        current = id
+        paint(id)
         for (const option of options) {
           const on = option.dataset.presetOption === id
           if (on) option.setAttribute('aria-current', 'true')
@@ -239,16 +245,29 @@ export function defineWorkspacePicker(): void {
       }
       show(resolvePreset(ids, new URLSearchParams(location.search).get('preset'), readStoredPreset(port)) ?? ids[0]!)
 
+      // Hovering a row shows its preset after the home page's dwell. The choice, the check and the address stay.
+      const preview = bindHomeHoverPreview({
+        options,
+        show: (option) => { if (menu?.open) paint(option.dataset.presetOption ?? current) },
+        restore: () => paint(current),
+        signal,
+      })
+      menu?.addEventListener('toggle', () => { if (!menu.open) preview.cancel() }, { signal })
+
       // Before the site's own navigation listener sees the link, as the task menu does.
       this.addEventListener('click', (event) => {
         const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('[data-preset-option]') : null
         if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
         event.preventDefault()
+        preview.commit()
         choose(link.dataset.presetOption!)
         if (menu) menu.open = false
         summary?.focus({ preventScroll: true })
       }, { capture: true, signal })
-      this.querySelector('[data-action="roll"]')?.addEventListener('click', () => choose(rollPreset(ids, current)), { signal })
+      this.querySelector('[data-action="roll"]')?.addEventListener('click', () => {
+        preview.commit()
+        choose(rollPreset(ids, current))
+      }, { signal })
 
       // Window tabs: each panel picks its own window, and an arrow key moves between them.
       const syncs: (() => void)[] = []

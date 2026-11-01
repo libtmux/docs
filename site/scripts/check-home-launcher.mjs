@@ -3,6 +3,7 @@ import { PORTS } from '../src/lib/ports.ts'
 import HOME_PROOF from '../test/fixtures/home-examples.json' with { type: 'json' }
 import { createHash } from 'node:crypto'
 import { checkHomeHover } from './check-home-hover.mjs'
+import { checkWorkspaceHover } from './check-workspace-hover.mjs'
 import { checkHomeTaskReset, chooseHomeTask } from './check-home-task-reset.mjs'
 import { checkColorScheme } from './check-color-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
@@ -385,6 +386,7 @@ export async function checkHomeLauncher(browser, base) {
     await noScript.close()
   }
   await checkHomeHover(browser, base)
+  await checkWorkspaceHover(browser, base)
   await checkHomeTaskReset(browser, base)
   await checkColorScheme(browser, base)
   await checkHomeExampleOptions(browser, base)

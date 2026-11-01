@@ -2,16 +2,19 @@ import { readFileSync } from 'node:fs'
 import { Window } from 'happy-dom'
 import { createComponent, renderTemplate } from 'astro/runtime/server/index.js'
 import ts from 'typescript'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { paintScript, readStoredPreset, resolvePreset, rollPreset, scrollForThumb, selectionRules, stepIndex, storePreset, STORAGE_PREFIX, thumbMetrics, withPreset } from '../src/lib/workspace-picker'
+import { HOME_PREVIEW_DELAY } from '../src/lib/home-hover-preview'
 import { renderLayout } from '../src/lib/tmux-layout'
 import { configKeys, offersPicker, presetOptions, previewSize, previewWindows, TOPICS, workspaceShowcase } from '../src/lib/workspace-showcase'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
 const SOURCE = readFileSync(new URL('../src/lib/workspace-picker.ts', import.meta.url), 'utf8')
 /** The module as the browser runs it: types erased and its exports made local. */
-const CLIENT = ts.transpileModule(SOURCE, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } })
-  .outputText.replace(/^export /gm, '')
+const HOVER = readFileSync(new URL('../src/lib/home-hover-preview.ts', import.meta.url), 'utf8')
+const CLIENT = [HOVER, SOURCE.replace(/^import .*$/m, '')]
+  .map((code) => ts.transpileModule(code, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText)
+  .join('\n').replace(/^export /gm, '')
 
 const stub = {
   Code: createComponent((_result: unknown, props: { code: string; lang: string }) => renderTemplate`<pre data-lang="${props.lang}">${props.code}</pre>`),
@@ -690,5 +693,89 @@ describe('every window of a preset', () => {
   it('leaves out a window whose layout is a saved layout string', () => {
     const config = { windows: [{ window_name: 'saved', layout: '5e2d,80x24,0,0{40x24,0,0,0,39x24,41,0,1}', panes: ['a', 'b'] }, { window_name: 'plain', panes: ['c'] }] }
     expect(previewWindows(config, 'probe').map((win) => win.name)).toEqual(['plain'])
+  })
+})
+
+describe('previewing a preset on hover', () => {
+  const setup = async (hover = true) => {
+    vi.useFakeTimers()
+    const p = await page('rs')
+    // The picker's clock and media query are the window's own; point them at the fakes.
+    p.win.setTimeout = ((fn: () => void, ms: number) => setTimeout(fn, ms)) as unknown as typeof p.win.setTimeout
+    p.win.clearTimeout = ((id: number) => clearTimeout(id)) as unknown as typeof p.win.clearTimeout
+    p.win.matchMedia = (() => ({ matches: hover })) as unknown as typeof p.win.matchMedia
+    const ids = [...p.document.querySelectorAll<HTMLElement>('[data-preset]')].map((panel) => panel.dataset.preset!)
+    const menu = p.document.querySelector<HTMLDetailsElement>('[data-preset-menu]')!
+    menu.open = true
+    const other = ids[1]!
+    const enter = (id: string, pointerType = 'mouse') => p.chip(id).dispatchEvent(new p.win.PointerEvent('pointerenter', { pointerType }) as unknown as Event)
+    const leave = (id: string) => p.chip(id).dispatchEvent(new p.win.PointerEvent('pointerleave') as unknown as Event)
+    return { ...p, ids, other, enter, leave, menu }
+  }
+  afterEach(() => void vi.useRealTimers())
+
+  it('shows the hovered preset after the home page delay and restores on leave, keeping the choice', async () => {
+    const p = await setup()
+    const first = p.ids[0]!
+    const url = p.win.location.href
+    expect(HOME_PREVIEW_DELAY).toBe(1200)
+    p.enter(p.other)
+    vi.advanceTimersByTime(1199)
+    expect(p.active()).toEqual([first])
+    vi.advanceTimersByTime(HOME_PREVIEW_DELAY - 1199 - 1)
+    expect(p.active()).toEqual([first])
+    vi.advanceTimersByTime(1)
+    expect(p.active()).toEqual([p.other])
+    expect(p.reachable()).toEqual([p.other])
+    expect(p.checked()).toEqual([first])
+    expect(p.win.location.href).toBe(url)
+    p.leave(p.other)
+    expect(p.active()).toEqual([first])
+    expect(p.reachable()).toEqual([first])
+  })
+
+  it('commits on click without reverting', async () => {
+    const p = await setup()
+    p.enter(p.other)
+    vi.advanceTimersByTime(HOME_PREVIEW_DELAY)
+    p.choose(p.other)
+    p.leave(p.other)
+    expect(p.active()).toEqual([p.other])
+    expect(p.checked()).toEqual([p.other])
+    expect(new URL(p.win.location.href).searchParams.get('preset')).toBe(p.other)
+  })
+
+  it('does not preview a click made before the delay ends', async () => {
+    const p = await setup()
+    p.enter(p.other)
+    vi.advanceTimersByTime(HOME_PREVIEW_DELAY - 1)
+    p.choose(p.other)
+    vi.advanceTimersByTime(HOME_PREVIEW_DELAY)
+    p.leave(p.other)
+    expect(p.active()).toEqual([p.other])
+  })
+
+  it('never previews without any-hover, or for touch', async () => {
+    const p = await setup(false)
+    p.enter(p.other)
+    vi.advanceTimersByTime(HOME_PREVIEW_DELAY * 2)
+    expect(p.active()).toEqual([p.ids[0]])
+    const q = await setup()
+    q.enter(q.other, 'touch')
+    vi.advanceTimersByTime(HOME_PREVIEW_DELAY * 2)
+    expect(q.active()).toEqual([q.ids[0]])
+  })
+
+  it('restores on Escape and when the menu closes', async () => {
+    const p = await setup()
+    p.enter(p.other)
+    vi.advanceTimersByTime(HOME_PREVIEW_DELAY)
+    p.document.dispatchEvent(new p.win.KeyboardEvent('keydown', { key: 'Escape' }) as unknown as Event)
+    expect(p.active()).toEqual([p.ids[0]])
+    p.enter(p.other)
+    vi.advanceTimersByTime(HOME_PREVIEW_DELAY)
+    p.menu.open = false
+    p.menu.dispatchEvent(new p.win.Event('toggle') as unknown as Event)
+    expect(p.active()).toEqual([p.ids[0]])
   })
 })
