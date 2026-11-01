@@ -842,12 +842,17 @@ describe('window tab names', () => {
   it('dismisses with Escape, leaving focus where it is', async () => {
     const p = await setup(390)
     p.tab.focus()
+    const focused = p.document.activeElement
+    const moved = vi.fn()
+    p.tab.addEventListener('blur', moved)
+    p.document.body.addEventListener('focusin', moved)
     p.focus()
     expect(p.tip.hidden).toBe(false)
     p.document.dispatchEvent(new p.win.KeyboardEvent('keydown', { key: 'Escape', cancelable: true }) as unknown as Event)
     expect(p.tip.hidden).toBe(true)
     expect(p.tab.hasAttribute('aria-describedby')).toBe(false)
-    expect(p.document.activeElement).toBe(p.tab)
+    expect(p.document.activeElement).toBe(focused)
+    expect(moved).not.toHaveBeenCalled()
     p.focus()
     expect(p.tip.hidden).toBe(true)
   })
