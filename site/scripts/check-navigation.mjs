@@ -484,6 +484,11 @@ export async function checkApiNavigation(page, base, { sabotage } = {}) {
     await page.waitForFunction(() => window.__docsPageLoaded)
     const picker = page.locator('[data-documentation-context] [data-surface-picker]')
     await picker.locator(':scope > summary').click()
+    // The language Home is no product's page, so every product group starts closed;
+    // a Core Library page opens its own group.
+    const core = picker.locator('details[data-surface-group]', { has: page.locator('a[href$="/lua/latest/reference/"]') })
+    assert.equal(await core.evaluate((el) => el.open), path !== '', `Lua ${path || 'home'}: Core Library group starts ${path ? 'open' : 'closed'}`)
+    if (!path) await core.locator(':scope > summary').click()
     await picker.locator('a[href$="/lua/latest/reference/"]').click()
     await page.waitForURL(`${base}/lua/latest/reference/`, { waitUntil: 'commit' })
     await page.locator('.api-index-card__link[href$="/reference/libtmux-server/"]').click()
