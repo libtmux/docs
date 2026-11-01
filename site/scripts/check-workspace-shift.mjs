@@ -10,19 +10,32 @@ export async function checkWorkspaceShift(browser, base) {
     window.__shift = 0
     window.__scrolls = []
     window.__sources = []
-    window.__notice = []
-    // The notice's link wraps with the styles it has; a change between snapshots names the late rule.
-    const snapshot = (label) => {
-      const link = document.querySelector('aside.lm-aside a')
-      if (!link) return
-      const code = link.querySelector('code') ?? link
-      const style = getComputedStyle(code)
-      const width = (selector) => Math.round(document.querySelector(selector)?.getBoundingClientRect().width ?? -1)
-      const fonts = [...document.fonts].filter((face) => face.status !== 'unloaded').length
-      window.__notice.push(`${label}@${Math.round(performance.now())}ms sheets=${document.styleSheets.length} fonts=${fonts} main=${width('main')} aside=${width('aside.lm-aside')} p=${width('aside.lm-aside p.mb-0')} rects=${link.getClientRects().length} h=${Math.round(link.getBoundingClientRect().height)} ws=${style.whiteSpace} wrap=${style.overflowWrap} fs=${style.fontSize} ff=${style.fontFamily.slice(0, 24)} after=${getComputedStyle(link, '::after').content}`)
+    window.__starts = []
+    window.__samples = []
+    // From navigation start, once a frame: widths, the article's children and the notice link. A line is kept only
+    // when something in it changed, so the samples on both sides of a shift show what moved first.
+    const round = (value) => Math.round(value ?? -1)
+    const box = (selector) => {
+      const rect = document.querySelector(selector)?.getBoundingClientRect()
+      return rect ? `${round(rect.width)}x${round(rect.height)}@${round(rect.top + scrollY)}` : 'none'
     }
-    for (const type of ['DOMContentLoaded', 'load', 'libtmux:page-ready']) (type === 'DOMContentLoaded' || type === 'load' ? window : document).addEventListener(type, () => snapshot(type))
-    setTimeout(() => snapshot('1.3s'), 1300)
+    let last = ''
+    const sample = () => {
+      if (document.documentElement) {
+        const link = document.querySelector('aside.lm-aside a')
+        const children = [...(document.querySelector('article.prose')?.children ?? [])]
+          .map((node) => `${node.localName}${node.id ? `#${node.id}` : ''}${[...node.classList].slice(0, 1).map((c) => `.${c}`).join('')}:${round(node.getBoundingClientRect().height)}`)
+          .join(' ')
+        const fonts = [...(document.fonts ?? [])].filter((face) => face.status === 'loaded').length
+        const line = `main=${box('main')} notice=${box('aside.lm-aside')} p=${box('aside.lm-aside p.mb-0')} panel=${box('.ws-picker__panel')} `
+          + `link=${link ? `${link.getClientRects().length}r h${round(link.getBoundingClientRect().height)}` : 'none'} `
+          + `sheets=${document.styleSheets.length} fonts=${fonts} cls=[${[...document.documentElement.classList].join(' ')}] ready=${document.documentElement.dataset.pageReadiness} children[${children}]`
+        if (line !== last) window.__samples.push({ t: Math.round(performance.now()), line })
+        last = line
+      }
+      requestAnimationFrame(sample)
+    }
+    requestAnimationFrame(sample)
     const name = (node) => {
       if (!node || node.nodeType !== 1) return String(node?.nodeName)
       const classes = [...node.classList].slice(0, 2).map((c) => `.${c}`).join('')
@@ -32,6 +45,7 @@ export async function checkWorkspaceShift(browser, base) {
       for (const entry of list.getEntries()) {
         if (entry.hadRecentInput) continue
         window.__shift += entry.value
+        window.__starts.push(Math.round(entry.startTime))
         // Name what moved, so a failure points at the element that grew.
         for (const source of entry.sources ?? []) {
           window.__sources.push(`${Math.round(entry.startTime)}ms ${name(source.node)} ${Math.round(source.previousRect.y)}->${Math.round(source.currentRect.y)} h ${Math.round(source.previousRect.height)}->${Math.round(source.currentRect.height)}`)
@@ -48,12 +62,19 @@ export async function checkWorkspaceShift(browser, base) {
       const state = await page.evaluate(() => ({
         shift: window.__shift,
         sources: window.__sources,
-        notice: window.__notice,
+        samples: window.__samples,
+        starts: window.__starts,
         scrolls: window.__scrolls,
         selected: document.querySelector('libtmux-workspace-picker')?.getAttribute('data-selected'),
         top: document.getElementById('try-a-preset')?.getBoundingClientRect().top,
       }))
-      assert(state.shift < 0.01, `${query || 'default'}: cumulative layout shift ${state.shift} stays under 0.01 (${state.sources.join('; ')}; notice ${state.notice.join(' | ')})`)
+      if (state.shift >= 0.01) {
+        // The changed samples within 400 ms either side of each shift, the first being what the page looked like just before.
+        const near = state.samples.filter((sample, index) => state.starts.some((at) => sample.t >= at - 400 && sample.t <= at + 400)
+          || (state.samples[index + 1] && state.starts.some((at) => state.samples[index + 1].t >= at - 400 && state.samples[index + 1].t <= at + 400)))
+        console.error(`${query || 'default'}: shifts at ${state.starts.join(', ')} ms\n${state.sources.join('\n')}\n--- samples (ms, changed fields only)\n${near.map((sample) => `${sample.t} ${sample.line}`).join('\n')}`)
+      }
+      assert(state.shift < 0.01, `${query || 'default'}: cumulative layout shift ${state.shift} stays under 0.01 (${state.sources.join('; ')})`)
       const settled = state.scrolls.at(-1)
       assert.deepEqual(state.scrolls.filter((y) => y !== settled).length <= 1, true,
         `${query || 'default'}: one scroll to the fragment, no correction after it (${state.scrolls.join(', ')})`)
@@ -65,4 +86,15 @@ export async function checkWorkspaceShift(browser, base) {
     await context.close()
   }
   console.log('Workspace deep link: layout shift under 0.01 and a single fragment scroll PASS')
+}
+
+// node scripts/check-workspace-shift.mjs [http://127.0.0.1:53971/en]
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const { chromium } = await import('playwright')
+  const browser = await chromium.launch()
+  try {
+    await checkWorkspaceShift(browser, (process.argv[2] ?? 'http://127.0.0.1:53971/en').replace(/\/$/, ''))
+  } finally {
+    await browser.close()
+  }
 }
