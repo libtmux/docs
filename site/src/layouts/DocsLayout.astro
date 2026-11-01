@@ -51,6 +51,8 @@ interface Props {
   title: string
   /** The title the tab and the social tags carry, when the heading is longer than they should be. */
   documentTitle?: string
+  /** A line under the heading, in the style of a language page's tagline. It is not part of the heading. */
+  subtitle?: string
   inventoryId?: string
   inventoryAliases?: string[]
   inventoryExclude?: boolean
@@ -107,6 +109,7 @@ interface Props {
 const {
   title,
   documentTitle,
+  subtitle,
   inventoryId,
   inventoryAliases,
   inventoryExclude,
@@ -283,12 +286,14 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
             <img src={withRoot(productBrand.asset('logo.svg'))} width="88" height="88" alt="" class="not-prose" />
             <div class="min-w-0">
               <h1 id={PAGE_TITLE_ID} class="wrap-anywhere">{title}</h1>
+              {subtitle && <p class="page-subtitle not-prose">{subtitle}</p>}
               <slot name="hero-links" />
             </div>
           </div>
         ) : <h1 id={PAGE_TITLE_ID} class="wrap-anywhere">{symbolTitle
           ? <code class="not-prose symbol-title"><SymbolName name={title} /></code>
           : title}</h1>}
+        {subtitle && !productBrand && <p class="page-subtitle not-prose">{subtitle}</p>}
         {product && port && <ProductNotice port={port} product={product} overview={pagePath === product} />}
         <slot />
       </article>
@@ -404,6 +409,16 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
 </BaseLayout>
 
 <style>
+  /* The tagline under a language page's name: the same size step down, muted, one line of the heading block. */
+  .page-subtitle {
+    margin: -0.75rem 0 1.5rem;
+    font-size: 1.25rem;
+    line-height: 1.4;
+    color: var(--color-foreground-muted);
+  }
+  .product-hero .page-subtitle {
+    margin: 0.25rem 0 0.5rem;
+  }
   h1 > .symbol-title {
     font: inherit;
     font-family: var(--font-mono, ui-monospace, monospace);
