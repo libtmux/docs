@@ -52,6 +52,11 @@ const token = (name) => new RegExp(`(?<![\\w./-])${escapeRegExp(name)}(?![\\w./-
  * What a recording names that it must not: `places` (where it ran, found as
  * text anywhere) and `names` (who ran it, found as a token or a quoted value,
  * whatever their length, inside a string or inside JSON embedded in one).
+ *
+ * @param {string} text
+ * @param {string[]} places
+ * @param {string[]} [names]
+ * @returns {string[]}
  */
 export function leaks(text, places, names = []) {
   return [...places.filter((item) => item && text.includes(item)), ...names.filter((item) => item && token(item).test(text))]
@@ -61,6 +66,10 @@ export function leaks(text, places, names = []) {
  * A recorded value with the host's marks replaced: each `[from, to]` of
  * `paths` wherever it occurs in a string, and each of `names` as a token,
  * inside embedded JSON too, becomes `alias`.
+ *
+ * @param {unknown} value
+ * @param {{ paths?: [string, string][], names?: string[], alias?: string }} options
+ * @returns {any}
  */
 export function sanitize(value, { paths = [], names = [], alias = 'host' }) {
   if (typeof value === 'string') {
