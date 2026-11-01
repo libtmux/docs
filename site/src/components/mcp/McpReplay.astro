@@ -12,6 +12,7 @@
  * chat and the final state show. Without a recording the page shows the
  * requests only, says so, and draws no preview.
  */
+import { Code } from 'astro-expressive-code/components'
 import { renderRects, type Rect } from '../../lib/tmux-layout'
 import { parseLayout } from '../../lib/tmux-layout-string'
 import { windowLabel, type Frame, type PaneState } from '../../lib/mcp-replay'
@@ -150,7 +151,7 @@ const draw = (frame: Frame) => {
             {recording && step.result !== undefined && (
               <details class="mcp-result" open>
                 <summary>Result</summary>
-                <pre>{shown(step.result)}</pre>
+                <div class="mcp-result__body"><Code code={shown(step.result)} lang={typeof step.result === 'string' ? 'text' : 'json'} frame="none" /></div>
               </details>
             )}
           </article>

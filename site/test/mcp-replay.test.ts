@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs'
+import { createComponent, renderTemplate } from 'astro/runtime/server/index.js'
 import { Window } from 'happy-dom'
 import { ModuleKind, ScriptTarget, transpileModule } from 'typescript'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -204,7 +205,10 @@ describe('the replay component', () => {
   const windows: Window[] = []
   afterEach(async () => { for (const win of windows.splice(0)) await win.happyDOM.abort() })
 
-  const template = loadAstroTemplate('components/mcp/McpReplay.astro')
+  // The page's code block, as a marked element holding the code.
+  const template = loadAstroTemplate('components/mcp/McpReplay.astro', {
+    modules: { 'astro-expressive-code/components': { Code: createComponent((_result: unknown, props: { code: string; lang: string; frame?: string }) => renderTemplate`<pre data-lang="${props.lang}" data-code-frame="${props.frame ?? ''}">${props.code}</pre>`) } },
+  })
   const component = readFileSync(new URL('../src/components/mcp/McpReplay.astro', import.meta.url), 'utf8')
   const script = transpileModule(/<script>([\s\S]*?)<\/script>/.exec(component)![1]!, { compilerOptions: { module: ModuleKind.CommonJS, target: ScriptTarget.ES2022 } }).outputText
 
@@ -235,6 +239,15 @@ describe('the replay component', () => {
   const click = (win: Window, element: Element) => element.dispatchEvent(new win.MouseEvent('click', { bubbles: true }) as unknown as Event)
   const key = (win: Window, element: Element, name: string) => element.dispatchEvent(new win.KeyboardEvent('keydown', { key: name, bubbles: true }) as unknown as Event)
   const action = (document: Document, name: string) => document.querySelector<HTMLButtonElement>(`[data-action="${name}"]`)!
+
+  it('highlights each recorded result as JSON with the site\'s code block, inside a scrolling body', async () => {
+    const { document } = await mount('ts')
+    const blocks = [...document.querySelectorAll('details.mcp-result .mcp-result__body pre')]
+    expect(blocks).toHaveLength(CALLS.ts)
+    expect(blocks.map((block) => block.getAttribute('data-lang'))).toEqual(Array(CALLS.ts).fill('json'))
+    expect(blocks.map((block) => block.getAttribute('data-code-frame'))).toEqual(Array(CALLS.ts).fill('none'))
+    expect(JSON.parse(blocks[0]!.textContent!).paneId).toBe('%0')
+  })
 
   it('without script shows the whole chat, every result and the final state, and no controls', async () => {
     const { document } = await mount('rs')
