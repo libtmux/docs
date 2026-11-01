@@ -513,15 +513,15 @@
   content: none;
 }
 
+/*
+ * A tool name is an inline link inside a span of its own, because a link that is
+ * itself a flex item is a block link, and the site gives a block link no dotted
+ * line (check-page-readiness.mjs, "Block links"). As an inline link it takes the
+ * site's own preview treatment, a dotted line once a hover preview marks it.
+ */
 .mcp-replay a {
   color: inherit;
   font-weight: inherit;
-  text-decoration: underline dotted;
-  text-underline-offset: 0.2em;
-}
-
-.mcp-replay a:hover {
-  text-decoration-style: solid;
 }
 
 .mcp-provenance a {

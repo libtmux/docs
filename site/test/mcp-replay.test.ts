@@ -298,6 +298,19 @@ describe('the replay component', () => {
     expect(emoji.test('\u21BA')).toBe(false)
   })
 
+  it('puts each tool name\'s link inline in a span of its own, so it is not a block link (the site draws no preview line on one)', async () => {
+    const { document } = await mount('rs')
+    const names = [...document.querySelectorAll('.mcp-call__tool')]
+    expect(names).toHaveLength(CALLS.rs)
+    for (const name of names) {
+      expect(name.tagName, 'a flex item would make its link a block').toBe('SPAN')
+      expect(name.querySelectorAll(':scope > a')).toHaveLength(1)
+    }
+    expect(document.querySelector('a.mcp-call__tool')).toBeNull()
+    const css = readFileSync(new URL('../src/styles/mcp-replay.css', import.meta.url), 'utf8')
+    expect(css, 'the replay draws no dotted line of its own').not.toMatch(/\.mcp-replay a[^{]*\{[^}]*dotted/)
+  })
+
   it('opts out of the article\'s prose styles, so it renders the same on the overview as on the language page', async () => {
     for (const recorded of [true, false]) {
       const { document } = await mount('ts', { recorded })

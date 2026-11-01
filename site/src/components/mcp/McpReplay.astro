@@ -144,7 +144,7 @@ const draw = (frame: Frame) => {
             <p class="mcp-turn__say"><span class="mcp-turn__who">agent</span>{step.caption}</p>
             <div class="mcp-call">
               <span class="mcp-call__dot" aria-hidden="true"></span>
-              <a class="mcp-call__tool" href={step.tool.href}><code>{step.tool.name}</code></a>
+              <span class="mcp-call__tool"><a href={step.tool.href}><code>{step.tool.name}</code></a></span>
               {tier && <span class={`mcp-tier mcp-tier--${step.tool.tier}`} title={tier.tooltip}>{tier.label}</span>}
               <code class="mcp-call__args">{args(step.arguments)}</code>
             </div>
