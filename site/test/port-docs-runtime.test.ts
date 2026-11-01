@@ -79,8 +79,9 @@ describe('native documentation producers', () => {
     const stage = join(directory, 'libtmux-julia-docs')
     try {
       mkdirSync(join(tooling, 'dev'), { recursive: true })
+      mkdirSync(join(directory, 'docs/scripts'), { recursive: true })
       writeFileSync(output, '')
-      writeFileSync(join(directory, 'sudo'), `#!${process.execPath}
+      writeFileSync(join(directory, 'docs/scripts/apt-get.sh'), `#!${process.execPath}
 require('node:fs').appendFileSync(process.env.TMUX_INVOCATIONS, JSON.stringify(process.argv.slice(2)) + '\\n')
 `, { mode: 0o700 })
       writeFileSync(join(directory, 'tmux'), '#!/bin/sh\nprintf "tmux 3.4\\n"\n', { mode: 0o700 })
@@ -99,7 +100,8 @@ binary.chmod(0o700)
       })
       expect(result.status, result.stderr).toBe(exitCode)
       const commands = readFileSync(invocations, 'utf8').trim().split('\n').map((line) => JSON.parse(line))
-      expect(commands[1]).toEqual(expect.arrayContaining(['libevent-dev', 'libncurses-dev', 'bison', 'build-essential', 'pkg-config']))
+      expect(commands[0]).toEqual(['update', '-qq'])
+      expect(commands[1]).toEqual(expect.arrayContaining(['install', 'libevent-dev', 'libncurses-dev', 'bison', 'build-essential', 'pkg-config']))
       expect(commands[2]).toEqual(['build-tmux', stage, '3.7c'])
       expect(readFileSync(output, 'utf8')).toBe(exitCode ? '' : `${stage}/tmux/3.7c/bin\n`)
       if (!exitCode) expect(result.stdout).toContain('tmux 3.7c')

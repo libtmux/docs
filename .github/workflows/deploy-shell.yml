@@ -166,8 +166,8 @@ jobs:
       - name: Install assembly tools
         if: matrix.locale == 'en'
         run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y ripgrep
+          ./scripts/apt-get.sh update
+          ./scripts/apt-get.sh install --no-install-recommends -y ripgrep
 
       - name: Build production documentation
         working-directory: site
