@@ -132,7 +132,7 @@ export function coreHomeMarkdown(port: string, version: string, origin: string):
   const home = resolveCoreHome(port, version)
   const at = (href: string) => new URL(href, origin).href
   return [
-    home.summary,
+    coreLead(port),
     '## At a glance',
     '| Type | Wraps |\n| ---- | ----- |\n' + home.objects.map((object) =>
       `| [\`${object.name}\`](${at(object.href)}) | ${object.wraps}${object.tmuxId ? `, ID \`${object.tmuxId}n\`` : ''} |`).join('\n'),
@@ -181,3 +181,7 @@ export function coreDescription(port: string, entry: CoreHomeEntry | undefined =
   ]
   return `${coreTitle(port)}. ${clauses.join(', ')}`
 }
+
+/** The page's lead: the description without the title it repeats, as a sentence. */
+export const coreLead = (port: string, entry?: CoreHomeEntry): string =>
+  `${coreDescription(port, entry).slice(`${coreTitle(port)}. `.length)}.`

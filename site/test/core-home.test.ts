@@ -1,7 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { parseFrontmatter } from '@astrojs/markdown-remark'
-import { CAPABILITIES, CORE_HOME, CORE_ROLES, coreDescription, coreHomeHeadings, coreTitle, coreHomeMarkdown, resolveCoreHome } from '../src/lib/core-home'
+import { REGISTRY } from '../src/lib/registry'
+import { CAPABILITIES, CORE_HOME, CORE_ROLES, coreDescription, coreLead, coreHomeHeadings, coreTitle, coreHomeMarkdown, resolveCoreHome } from '../src/lib/core-home'
 import { API_MODELS } from '../src/lib/api-models'
 import { PORTS } from '../src/lib/ports'
 
@@ -82,7 +83,16 @@ describe('Core Library home page', () => {
     })
     const doc = window.document as unknown as Document
     const home = resolveCoreHome(slug, 'latest')
-    expect(doc.querySelector('p')!.textContent).toBe(coreDescription(slug))
+    expect(doc.querySelector('p')!.textContent).toBe(coreLead(slug))
+    expect(doc.querySelector('p')!.textContent!.startsWith('Control tmux, ')).toBe(true)
+    expect(doc.querySelector('p')!.textContent!.endsWith('.')).toBe(true)
+    expect(doc.querySelector('p')!.textContent).not.toContain(coreTitle(slug))
+    if (slug === 'rs') {
+      const registryVersion = REGISTRY.ports.rs!.version
+      expect(doc.body.textContent).toContain(`libtmux ${registryVersion} is pre-1.0`)
+      expect([...doc.querySelectorAll('[data-code]')].map((node) => node.textContent)).toContain('libtmux = "0.1"')
+    }
+    if (slug === 'py') expect(doc.body.textContent).not.toContain('is pre-1.0')
     expect(doc.querySelector('[data-card]')).not.toBeNull()
     expect(doc.body.textContent).not.toMatch(/Documentation version/)
     const order = [...doc.querySelectorAll('h2')].map((heading) => heading.id)

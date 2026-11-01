@@ -40,7 +40,11 @@ export interface CapabilityEntry extends LandingRange {
   lang: string
   more?: readonly LandingRange[]
   ci: LandingCi & {
-    /** The workflow step's working directory, when it is not the repository root. */
+    /** The workflow job's key. */
+    job: string
+    /** The step's name, absent when the step has none. */
+    step?: string
+    /** The step's working directory, absent for the repository root. */
     directory?: string
   }
   /** Why a wrong exit status or missing expected output fails the CI run. At least one. */
@@ -63,6 +67,7 @@ export function validateCapability(entry: Partial<CapabilityEntry>): string[] {
   if (!entry.from) problems.push('names no first line')
   if (!/^\.github\/workflows\/[\w.-]+\.ya?ml$/.test(entry.ci?.workflow ?? '')) problems.push('names no workflow')
   if (!entry.ci?.command?.trim()) problems.push('names no CI command')
+  if (!entry.ci?.job?.trim()) problems.push('names no CI job')
   if (!entry.checkedBy?.length) problems.push('records no evidence that the exit status or output is checked')
   for (const item of entry.checkedBy ?? []) if (!item.file || !item.contains?.trim()) problems.push('records evidence with no file or text')
   if (entry.tmux !== undefined && !/^\d+\.\d+[a-z]?\+$/.test(entry.tmux)) problems.push('writes the tmux version unlike 3.8+')
@@ -99,6 +104,38 @@ export function portCapabilities(owner: string, table: CapabilityTable, cache: C
       sourceUrl: `https://github.com/${cached.repository}/blob/${cached.revision}/${entry.file}`,
       ...(entry.tmux ? { tmux: entry.tmux } : {}),
     }]
+  })
+}
+
+/**
+ * Whether the workflow's job holds a step that matches: the step's name when it
+ * has one, its working directory, and a `run` that holds the command. A command
+ * that only appears in another step or job does not count.
+ */
+export function workflowStep(workflow: string, ci: CapabilityEntry['ci']): boolean {
+  const lines = workflow.split('\n')
+  const start = lines.findIndex((line) => line === `  ${ci.job}:`)
+  if (start < 0) return false
+  let end = lines.findIndex((line, index) => index > start && /^ {0,2}\S/.test(line))
+  if (end < 0) end = lines.length
+  const job = lines.slice(start + 1, end)
+  const first = job.findIndex((line) => /^\s*steps:\s*$/.test(line))
+  if (first < 0) return false
+  const body = job.slice(first + 1)
+  const indent = /^(\s*)-\s/.exec(body.find((line) => /^\s*-\s/.test(line)) ?? '')?.[1]
+  if (indent === undefined) return false
+  const steps: string[][] = []
+  for (const line of body) {
+    if (line.startsWith(`${indent}- `)) steps.push([line])
+    else if (steps.length) steps.at(-1)!.push(line)
+  }
+  const unquote = (value: string) => value.trim().replace(/^(['"])(.*)\1$/, '$2')
+  return steps.some((step) => {
+    const name = step.map((line) => /^\s*(?:-\s+)?name:\s*(.+)$/.exec(line)?.[1]).find((value) => value !== undefined)
+    const directory = step.map((line) => /^\s*(?:-\s+)?working-directory:\s*(.+)$/.exec(line)?.[1]).find((value) => value !== undefined)
+    return (ci.step === undefined || (name !== undefined && unquote(name) === ci.step))
+      && (directory === undefined ? ci.directory === undefined : unquote(directory) === ci.directory)
+      && workflowRuns(step.join('\n'), ci.command)
   })
 }
 

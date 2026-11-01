@@ -7,8 +7,10 @@
       "to": "if (paneCount !== 2)",
       "ci": {
         "workflow": ".github/workflows/typescript.yml",
-        "command": "bun run typecheck && bun run test",
-        "directory": "examples"
+        "job": "gates",
+        "step": "Gate the examples",
+        "directory": "examples",
+        "command": "bun run typecheck && bun run test"
       },
       "checkedBy": [
         {
@@ -32,8 +34,10 @@
       "to": "return event;",
       "ci": {
         "workflow": ".github/workflows/typescript.yml",
-        "command": "bun run typecheck && bun run test",
-        "directory": "examples"
+        "job": "gates",
+        "step": "Gate the examples",
+        "directory": "examples",
+        "command": "bun run typecheck && bun run test"
       },
       "checkedBy": [
         {
@@ -53,8 +57,10 @@
       "to": "=  ]);",
       "ci": {
         "workflow": ".github/workflows/typescript.yml",
-        "command": "bun run typecheck && bun run test",
-        "directory": "examples"
+        "job": "gates",
+        "step": "Gate the examples",
+        "directory": "examples",
+        "command": "bun run typecheck && bun run test"
       },
       "checkedBy": [
         {
@@ -64,6 +70,420 @@
         {
           "file": "examples/scripts/run-tests.ts",
           "contains": "process.exitCode = await runSupervisor("
+        }
+      ]
+    }
+  },
+  "rs": {
+    "typed-graph": {
+      "file": "crates/libtmux/examples/api_listings.rs",
+      "lang": "rust",
+      "from": "let session = server",
+      "to": "=    )?;",
+      "ci": {
+        "workflow": ".github/workflows/ci.yml",
+        "job": "check",
+        "command": "just check"
+      },
+      "checkedBy": [
+        {
+          "file": "crates/libtmux/examples/api_listings.rs",
+          "contains": "check(panes.len() == 2, \"expected two panes\")?;"
+        },
+        {
+          "file": "scripts/run-examples.sh",
+          "contains": "libtmux  | api_listings | query | | | listings: 1 session, 2 windows, 2 panes"
+        },
+        {
+          "file": "justfile",
+          "contains": "examples:\n    bash scripts/run-examples.sh"
+        },
+        {
+          "file": "justfile",
+          "contains": "doctest api-examples examples example-tables"
+        },
+        {
+          "file": "scripts/run-examples.sh",
+          "contains": "! grep -qF \"$expect\" \"$out\""
+        },
+        {
+          "file": "scripts/run-examples.sh",
+          "contains": "set -euo pipefail"
+        }
+      ]
+    },
+    "create-windows": {
+      "file": "crates/libtmux/examples/api_creation.rs",
+      "lang": "rust",
+      "from": "let session = server",
+      "to": "=    )?;",
+      "ci": {
+        "workflow": ".github/workflows/ci.yml",
+        "job": "check",
+        "command": "just check"
+      },
+      "checkedBy": [
+        {
+          "file": "crates/libtmux/examples/api_creation.rs",
+          "contains": "\"expected four panes on server\""
+        },
+        {
+          "file": "scripts/run-examples.sh",
+          "contains": "libtmux  | api_creation | query | | | creation: 2 windows, 4 panes"
+        },
+        {
+          "file": "justfile",
+          "contains": "examples:\n    bash scripts/run-examples.sh"
+        },
+        {
+          "file": "justfile",
+          "contains": "doctest api-examples examples example-tables"
+        },
+        {
+          "file": "scripts/run-examples.sh",
+          "contains": "! grep -qF \"$expect\" \"$out\""
+        },
+        {
+          "file": "scripts/run-examples.sh",
+          "contains": "set -euo pipefail"
+        }
+      ]
+    },
+    "send-keys": {
+      "file": "crates/libtmux/examples/api_input.rs",
+      "lang": "rust",
+      "from": "let panes = session.panes().await?;",
+      "to": "println!(\"input: C-c is text\");",
+      "ci": {
+        "workflow": ".github/workflows/ci.yml",
+        "job": "check",
+        "command": "just check"
+      },
+      "checkedBy": [
+        {
+          "file": "crates/libtmux/examples/api_input.rs",
+          "contains": "lines.iter().any(|line| line.as_bytes() == b\"C-c is text\")"
+        },
+        {
+          "file": "scripts/run-examples.sh",
+          "contains": "libtmux  | api_input | query | | | input: C-c is text"
+        },
+        {
+          "file": "justfile",
+          "contains": "examples:\n    bash scripts/run-examples.sh"
+        },
+        {
+          "file": "justfile",
+          "contains": "doctest api-examples examples example-tables"
+        },
+        {
+          "file": "scripts/run-examples.sh",
+          "contains": "! grep -qF \"$expect\" \"$out\""
+        },
+        {
+          "file": "scripts/run-examples.sh",
+          "contains": "set -euo pipefail"
+        }
+      ]
+    }
+  },
+  "ruby": {
+    "typed-graph": {
+      "file": "examples/quickstart.rb",
+      "lang": "ruby",
+      "from": "snapshot = LibTmux::Server.start do |server|",
+      "to": "=  end",
+      "ci": {
+        "workflow": ".github/workflows/compatibility.yml",
+        "job": "cell",
+        "step": "Run the complete cell",
+        "command": "bundle exec scripts/matrix"
+      },
+      "checkedBy": [
+        {
+          "file": "examples/quickstart.rb",
+          "contains": "Example.check(output.string == \"main: %0\\nlogs: %1, %2\\n\", \"unexpected window listing\")"
+        },
+        {
+          "file": "scripts/matrix",
+          "contains": "\"scripts/check\", \"outer\""
+        },
+        {
+          "file": "scripts/check",
+          "contains": "system(*command) || exit($?.exitstatus || 1)"
+        },
+        {
+          "file": "test/support/installed_gems.rb",
+          "contains": "assert status.success?, \"installed example"
+        },
+        {
+          "file": "test/support/installed_gems.rb",
+          "contains": "assert_equal entry.dig(\"api\", \"output\")"
+        }
+      ]
+    },
+    "create-windows": {
+      "file": "examples/api/new_window.rb",
+      "lang": "ruby",
+      "from": "LibTmux::Server.start do |server|",
+      "to": "=  end",
+      "ci": {
+        "workflow": ".github/workflows/compatibility.yml",
+        "job": "cell",
+        "step": "Run the complete cell",
+        "command": "bundle exec scripts/matrix"
+      },
+      "checkedBy": [
+        {
+          "file": "examples/manifest.json",
+          "contains": "\"output\": \"window: logs\\nsession windows: 2\\n\""
+        },
+        {
+          "file": "scripts/matrix",
+          "contains": "\"scripts/check\", \"outer\""
+        },
+        {
+          "file": "scripts/check",
+          "contains": "system(*command) || exit($?.exitstatus || 1)"
+        },
+        {
+          "file": "test/support/installed_gems.rb",
+          "contains": "assert status.success?, \"installed example"
+        },
+        {
+          "file": "test/support/installed_gems.rb",
+          "contains": "assert_equal entry.dig(\"api\", \"output\")"
+        }
+      ]
+    },
+    "send-keys": {
+      "file": "examples/api/capture.rb",
+      "lang": "ruby",
+      "from": "server.open_control(session: created.entity.ref) do |control|",
+      "to": "=    end",
+      "ci": {
+        "workflow": ".github/workflows/compatibility.yml",
+        "job": "cell",
+        "step": "Run the complete cell",
+        "command": "bundle exec scripts/matrix"
+      },
+      "checkedBy": [
+        {
+          "file": "examples/api/capture.rb",
+          "contains": "raise \"Expected output is absent from the pane\" unless captured.include?(\"libtmux capture ready\")"
+        },
+        {
+          "file": "examples/manifest.json",
+          "contains": "\"output\": \"libtmux capture ready\\n\""
+        },
+        {
+          "file": "scripts/matrix",
+          "contains": "\"scripts/check\", \"outer\""
+        },
+        {
+          "file": "scripts/check",
+          "contains": "system(*command) || exit($?.exitstatus || 1)"
+        },
+        {
+          "file": "test/support/installed_gems.rb",
+          "contains": "assert status.success?, \"installed example"
+        },
+        {
+          "file": "test/support/installed_gems.rb",
+          "contains": "assert_equal entry.dig(\"api\", \"output\")"
+        }
+      ]
+    }
+  },
+  "go": {
+    "typed-graph": {
+      "file": "examples/snapshot-browser/main.go",
+      "lang": "go",
+      "from": "snapshot, err := server.Snapshot(ctx)",
+      "to": "=\t}",
+      "more": [
+        {
+          "from": "for _, session := range snapshot.Sessions() {",
+          "to": "=\t}"
+        }
+      ],
+      "ci": {
+        "workflow": ".github/workflows/tests.yml",
+        "job": "test",
+        "step": "Test ${{ matrix.module }}",
+        "directory": "${{ matrix.module }}",
+        "command": "go test -race -count=1"
+      },
+      "checkedBy": [
+        {
+          "file": "examples/snapshot-browser/output.txt",
+          "contains": "pane %0 index 0"
+        },
+        {
+          "file": "examples/snapshot-browser/example_test.go",
+          "contains": "exampletest.Server(t, run)"
+        },
+        {
+          "file": ".github/workflows/tests.yml",
+          "contains": "module: [\".\", \"examples\", \"workspace\""
+        },
+        {
+          "file": "examples/internal/exampletest/exampletest.go",
+          "contains": "t.Fatalf(\"run() error = %v; printed so far:\\n%s\", err, printed)"
+        },
+        {
+          "file": "examples/internal/exampletest/exampletest.go",
+          "contains": "MatchesFile(t, printed, \"output.txt\")"
+        }
+      ]
+    },
+    "watch": {
+      "file": "examples/control-mode-subscribe/main.go",
+      "lang": "go",
+      "from": "stream, err := session.OpenNotifications(ctx, tmux.NotificationOptions{})",
+      "to": "=\t}",
+      "more": [
+        {
+          "from": "// Rename after subscribing; notifications do not include earlier changes.",
+          "to": "=\t}"
+        }
+      ],
+      "ci": {
+        "workflow": ".github/workflows/tests.yml",
+        "job": "test",
+        "step": "Test ${{ matrix.module }}",
+        "directory": "${{ matrix.module }}",
+        "command": "go test -race -count=1"
+      },
+      "checkedBy": [
+        {
+          "file": "examples/control-mode-subscribe/output.txt",
+          "contains": "heard the rename"
+        },
+        {
+          "file": "examples/control-mode-subscribe/example_test.go",
+          "contains": "exampletest.Server(t, run)"
+        },
+        {
+          "file": ".github/workflows/tests.yml",
+          "contains": "module: [\".\", \"examples\", \"workspace\""
+        },
+        {
+          "file": "examples/internal/exampletest/exampletest.go",
+          "contains": "t.Fatalf(\"run() error = %v; printed so far:\\n%s\", err, printed)"
+        },
+        {
+          "file": "examples/internal/exampletest/exampletest.go",
+          "contains": "MatchesFile(t, printed, \"output.txt\")"
+        }
+      ]
+    },
+    "run-applications": {
+      "file": "examples/run-to-completion/main.go",
+      "lang": "go",
+      "from": "command := \"test -t 1 && echo stdout is a terminal; exit 3\"",
+      "to": "fmt.Println(\"exited\", result.Status)",
+      "ci": {
+        "workflow": ".github/workflows/tests.yml",
+        "job": "test",
+        "step": "Test ${{ matrix.module }}",
+        "directory": "${{ matrix.module }}",
+        "command": "go test -race -count=1"
+      },
+      "checkedBy": [
+        {
+          "file": "examples/run-to-completion/output.txt",
+          "contains": "exited 3"
+        },
+        {
+          "file": "examples/run-to-completion/example_test.go",
+          "contains": "printed != want"
+        },
+        {
+          "file": ".github/workflows/tests.yml",
+          "contains": "module: [\".\", \"examples\", \"workspace\""
+        },
+        {
+          "file": "examples/internal/exampletest/exampletest.go",
+          "contains": "t.Fatalf(\"run() error = %v; printed so far:\\n%s\", err, printed)"
+        },
+        {
+          "file": "examples/internal/exampletest/exampletest.go",
+          "contains": "MatchesFile(t, printed, \"output.txt\")"
+        }
+      ]
+    },
+    "create-windows": {
+      "file": "examples/planned-build/main.go",
+      "lang": "go",
+      "from": "window, err := session.NewWindow(ctx, tmux.NewWindowRequest{Name: new(\"planned\")})",
+      "to": "=\t}",
+      "ci": {
+        "workflow": ".github/workflows/tests.yml",
+        "job": "test",
+        "step": "Test ${{ matrix.module }}",
+        "directory": "${{ matrix.module }}",
+        "command": "go test -race -count=1"
+      },
+      "checkedBy": [
+        {
+          "file": "examples/planned-build/main.go",
+          "contains": "return fmt.Errorf(\"create window: %w\", err)"
+        },
+        {
+          "file": "examples/planned-build/example_test.go",
+          "contains": "exampletest.Server(t, run)"
+        },
+        {
+          "file": ".github/workflows/tests.yml",
+          "contains": "module: [\".\", \"examples\", \"workspace\""
+        },
+        {
+          "file": "examples/internal/exampletest/exampletest.go",
+          "contains": "t.Fatalf(\"run() error = %v; printed so far:\\n%s\", err, printed)"
+        },
+        {
+          "file": "examples/internal/exampletest/exampletest.go",
+          "contains": "MatchesFile(t, printed, \"output.txt\")"
+        }
+      ]
+    },
+    "set-layouts": {
+      "file": "examples/planned-build/main.go",
+      "lang": "go",
+      "from": "plan := tmux.NewPlan()",
+      "to": "plan.DisplayMessage(editor, \"#{pane_title}\")",
+      "ci": {
+        "workflow": ".github/workflows/tests.yml",
+        "job": "test",
+        "step": "Test ${{ matrix.module }}",
+        "directory": "${{ matrix.module }}",
+        "command": "go test -race -count=1"
+      },
+      "checkedBy": [
+        {
+          "file": "examples/planned-build/output.txt",
+          "contains": "step 0: tmux select-layout -t @1 tiled"
+        },
+        {
+          "file": "examples/planned-build/output.txt",
+          "contains": "step 0 select-layout    complete"
+        },
+        {
+          "file": "examples/planned-build/example_test.go",
+          "contains": "exampletest.Server(t, run)"
+        },
+        {
+          "file": ".github/workflows/tests.yml",
+          "contains": "module: [\".\", \"examples\", \"workspace\""
+        },
+        {
+          "file": "examples/internal/exampletest/exampletest.go",
+          "contains": "t.Fatalf(\"run() error = %v; printed so far:\\n%s\", err, printed)"
+        },
+        {
+          "file": "examples/internal/exampletest/exampletest.go",
+          "contains": "MatchesFile(t, printed, \"output.txt\")"
         }
       ]
     }

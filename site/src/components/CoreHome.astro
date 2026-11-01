@@ -4,7 +4,7 @@ import CoreShowcase from './CoreShowcase.astro'
 import DocCard from './DocCard.astro'
 import HomeExample from './HomeExample.astro'
 import { PORT_BY_SLUG } from '../lib/ports'
-import { CAPABILITY_GROUPS, coreDescription, resolveCoreHome } from '../lib/core-home'
+import { CAPABILITY_GROUPS, coreLead, resolveCoreHome } from '../lib/core-home'
 import { portCapabilities, type CapabilityTable } from '../lib/core-capabilities'
 import { QUICKSTARTS } from '../lib/quickstarts'
 import { installFor, registryFor } from '../lib/registry'
@@ -36,14 +36,15 @@ const example = QUICKSTARTS[port]?.complete
 const showcase = portCapabilities(port, CAPABILITY_TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>)
 
 const install = installFor(info)
-const series = /^0\.(\d+)/.exec(registryFor(info).version ?? '')?.[0]
+const released = registryFor(info).version ?? ''
+const series = /^0\.(\d+)/.exec(released)?.[0]
 // The pin advice is the registry's own range syntax, for the registries whose syntax is settled.
-const PINS: Record<string, { lang: string; code: (name: string, series: string) => string }> = {
+const PINS: Record<string, { lang: string; code: (name: string, series: string, version: string) => string }> = {
   crates: { lang: 'toml', code: (name, s) => `${name} = "${s}"` },
-  npm: { lang: 'json', code: (name, s) => `"${name}": "~${s}.0"` },
-  rubygems: { lang: 'ruby', code: (name, s) => `gem "${name}", "~> ${s}.0"` },
-  hex: { lang: 'elixir', code: (name, s) => `{:${name}, "~> ${s}.0"}` },
-  nuget: { lang: 'xml', code: (name, s) => `<PackageReference Include="${name}" Version="[${s},${s.replace(/\d+$/, (n) => String(Number(n) + 1))})" />` },
+  npm: { lang: 'json', code: (name, _s, v) => `"${name}": "~${v}"` },
+  rubygems: { lang: 'ruby', code: (name, _s, v) => `gem "${name}", "~> ${v}"` },
+  hex: { lang: 'elixir', code: (name, _s, v) => `{:${name}, "~> ${v}"}` },
+  nuget: { lang: 'xml', code: (name, s, v) => `<PackageReference Include="${name}" Version="[${v},${s.replace(/\d+$/, (n) => String(Number(n) + 1))})" />` },
 }
 const pin = series && info.slug !== 'py' && info.registry ? PINS[info.registry.icon] : undefined
 const capabilityOf = (key: string) => [...home.capabilities.typed, ...home.capabilities.cli].find((row) => row.key === key)
@@ -51,7 +52,7 @@ const location = capabilityOf('current-pane')
 const testing = capabilityOf('test-fixtures')
 const rest = (group: keyof typeof CAPABILITY_GROUPS) => home.capabilities[group].filter((row) => row.key !== 'current-pane' && row.key !== 'test-fixtures')
 ---
-<p>{coreDescription(port)}</p>
+<p>{coreLead(port)}</p>
 
 {cards.length > 0 && <div class="not-prose mt-6 mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
   {cards.map((card) => <DocCard href={proseHref(card.href, SITE_ROOT, port, version)} label={card.label} body={card.body} />)}
@@ -60,8 +61,8 @@ const rest = (group: keyof typeof CAPABILITY_GROUPS) => home.capabilities[group]
 <h2 id="install">Install</h2>
 <div class="not-prose"><Code code={install.code} lang={install.lang} frame="none" /></div>
 {pin && series && <>
-  <p>{info.name} {registryFor(info).version} is pre-1.0 and can change between minor versions. Pin to a range:</p>
-  <div class="not-prose"><Code code={pin.code(info.registry!.url.split('/').at(-1) ?? info.packageName, series)} lang={pin.lang} frame="none" /></div>
+  <p><code>{info.packageName} {released}</code> is pre-1.0 and can change between minor versions. Pin to a range:</p>
+  <div class="not-prose"><Code code={pin.code(info.packageName, series, released)} lang={pin.lang} frame="none" /></div>
 </>}
 
 <h2 id="at-a-glance">At a glance</h2>

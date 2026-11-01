@@ -48,9 +48,9 @@ const shown = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record
   <div class="core-showcase__panels">
     {shown.map((item, index) => <section class="core-showcase__panel" data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}
       style={`--home-code-columns: ${homeCodeColumns(item.code)}`}>
-      <h3>{item.label}{item.tmux && <small class="core-showcase__tmux">tmux {item.tmux}</small>}</h3>
       <Code code={item.code} lang={item.lang} title={item.file} frame="code" />
       <p class="core-showcase__source">
+        {item.tmux && <small class="core-showcase__tmux">tmux {item.tmux}</small>}
         Excerpt of <a href={item.sourceUrl}><code>{item.file}</code></a>. The port's CI runs it in <code>{item.ci.workflow}</code>{item.ci.directory && <> from <code>{item.ci.directory}/</code></>}: <code>{item.ci.command}</code>.
       </p>
     </section>)}
@@ -121,7 +121,8 @@ const shown = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record
 
 <style>
   .core-showcase { display: grid; gap: 1rem; container-type: inline-size; }
-  .core-showcase__panels { min-width: 0; }
+  .core-showcase__panels, .core-showcase__panel, .core-showcase__picker { min-width: 0; max-width: 100%; }
+  .core-showcase :global(.expressive-code) { max-width: 100%; }
   .core-showcase__picker > summary { display: flex; justify-content: space-between; align-items: center; min-height: 2.5rem; padding: .25rem .75rem; cursor: pointer; border: 1px solid var(--color-edge); border-radius: .4rem; list-style: none; }
   .core-showcase__picker > summary::-webkit-details-marker { display: none; }
   .core-showcase__search { display: block; margin: .5rem 0; }
@@ -142,8 +143,8 @@ const shown = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record
   .core-showcase__source code { white-space: normal; overflow-wrap: anywhere; }
   .core-showcase :global(.expressive-code pre) { overflow: auto; tab-size: 8; }
   @media (min-width: 56rem) {
-    .core-showcase { grid-template-columns: 17rem minmax(0, 1fr); align-items: start; }
-    .core-showcase__picker > :global(summary) { display: none; }
+    .core-showcase { grid-template-columns: 14rem minmax(0, 1fr); align-items: start; }
+    .core-showcase__picker > summary { display: none !important; }
 
   }
 </style>
