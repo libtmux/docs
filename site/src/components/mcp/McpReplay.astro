@@ -183,6 +183,7 @@ const draw = (frame: Frame) => {
     // A touch screen fires mouseenter on a tap and never mouseleave, so only a pointer that can hover previews.
     const canHover = window.matchMedia?.('(hover: hover)').matches ?? true
     const head = root.querySelector<HTMLElement>('[data-head]')
+    const IDLE_HINT = canHover ? 'Hover a call to preview the tmux state after it. Click to pin it.' : 'Tap a call to pin the tmux state after it.'
     // Calls made so far, the call pinned by a click, and the call under the pointer or focus.
     let step = total
     let pinned: number | null = null
@@ -217,7 +218,7 @@ const draw = (frame: Frame) => {
       const label = step >= total && !playing ? 'Replay' : playing ? 'Pause' : 'Play'
       play.setAttribute('aria-label', label)
       play.firstElementChild!.textContent = playing ? '⏸' : step >= total ? '↺' : '▶'
-      if (hint) hint.textContent = pinned !== null ? 'Pinned. Click the call again, or press Escape, to follow the replay.' : 'Hover a call to preview the tmux state after it. Click to pin it.'
+      if (hint) hint.textContent = pinned !== null ? 'Pinned. Click the call again, or press Escape, to follow the replay.' : IDLE_HINT
       if (scroll) chat.scrollTo({ top: chat.scrollHeight, behavior: reduced ? 'auto' : 'smooth' })
     }
 
@@ -281,7 +282,9 @@ const draw = (frame: Frame) => {
       })
     })
     body.addEventListener('keydown', (event) => {
-      // Leave the browser's own shortcuts, such as Alt+Left for back, alone.
+      // Leave the browser's own shortcuts, such as Alt+Left for back, alone, and keys meant for a result being scrolled.
+      const target = event.target as HTMLElement
+      if (target !== body && !target.hasAttribute('data-turn')) return
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
       if (event.key === 'ArrowRight') { go(step + 1); event.preventDefault() }
       else if (event.key === 'ArrowLeft') { go(step - 1); event.preventDefault() }

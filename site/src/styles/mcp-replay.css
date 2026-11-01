@@ -32,7 +32,6 @@
 
 .mcp-replay__head {
   display: flex;
-  flex-wrap: wrap;
   align-items: baseline;
   gap: 0.25rem 1rem;
   padding: 0.5rem 1rem;
@@ -45,7 +44,11 @@
 }
 
 .mcp-replay__hint {
+  min-width: 0;
   color: var(--color-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Two columns once the replay itself is wide enough (about 1024px of viewport with the site's sidebars); narrower, the preview stacks first and shorter. */
@@ -108,9 +111,6 @@
     overflow-y: auto;
   }
 
-  .mcp-tmux {
-    width: min(100%, 28rem);
-  }
 
   .mcp-replay__chat {
     order: -1;
@@ -382,6 +382,12 @@
   font-size: 0.75rem;
   color: var(--color-muted);
   text-align: end;
+}
+
+@container (min-width: 44rem) {
+  .mcp-tmux {
+    width: min(100%, 28rem);
+  }
 }
 
 .mcp-provenance {
