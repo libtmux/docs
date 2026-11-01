@@ -160,7 +160,7 @@ describe('the showcase component', () => {
       const window = new Window()
       window.document.body.innerHTML = await renderAstroTemplate(template, {
         url: `https://libtmux.org/${port}/latest/`,
-        props: { port },
+        props: { port, links: [{ href: '/x/core/', label: 'Core Library documentation →' }, { href: '/x/examples/', label: 'More examples →' }] },
       })
       return window.document as unknown as Document
     }
@@ -176,6 +176,7 @@ describe('the showcase component', () => {
     expect(doc.querySelectorAll('[data-capability-option]').length).toBeLessThanOrEqual(8)
     expect(doc.body.textContent).toContain('just check')
     expect(doc.body.textContent).toContain('The whole program')
+    expect([...doc.querySelectorAll('.core-showcase__links a')].map((a) => a.textContent)).toEqual(['Core Library documentation →', 'More examples →'])
     expect((await render('ts')).querySelector('[data-core-showcase]')).toBeNull()
   })
 })

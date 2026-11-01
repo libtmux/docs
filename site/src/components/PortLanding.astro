@@ -55,6 +55,10 @@ const workspaceLoad = workspaceTest?.via === 'cli' ? workspaceProgram : undefine
 const hasShowcase = portCapabilities(port.slug, CAPABILITIES as CapabilityTable, SOURCES as Record<string, CachedSource>).length > 0
 const complete = QUICKSTARTS[port.slug]?.complete
 if (!complete) throw new Error(`PortLanding: ${port.slug} has no complete homepage example; add it to home-examples.json`)
+const coreLinks = [
+  { href: portPageUrl(port, version, 'core'), label: 'Core Library documentation →' },
+  { href: portPageUrl(port, version, 'examples'), label: `More ${port.name} examples →` },
+]
 const panelId = (product: string) => `landing-panel-${product}`
 ---
 <section class="port-landing mt-10" aria-label={`Start with ${port.name}`} data-port-landing={port.slug}>
@@ -79,8 +83,10 @@ const panelId = (product: string) => `landing-panel-${product}`
     </details>
     return <div class="landing-panel" id={panelId(panel.product)} data-landing-panel={panel.product}>
     {panel.product === 'core' ? <>
-      {hasShowcase ? <CoreShowcase port={port.slug} /> : <HomeExample port={port.slug} language={port.name} example={complete} />}
-      <p class="landing-more"><a href={portPageUrl(port, version, 'core')}>Core Library documentation →</a> · <a href={portPageUrl(port, version, 'examples')}>More {port.name} examples →</a></p>
+      {hasShowcase ? <CoreShowcase port={port.slug} links={coreLinks} /> : <>
+        <HomeExample port={port.slug} language={port.name} example={complete} />
+        <p class="landing-more landing-more--lines">{coreLinks.map((link) => <a href={link.href}>{link.label}</a>)}</p>
+      </>}
       <LandingInstall panel={panel} port={port.slug} />
     </> : panel.product === 'mcp' ? <>
       <h2 class="sr-only">{panel.label}</h2>
@@ -195,6 +201,7 @@ const panelId = (product: string) => `landing-panel-${product}`
   .landing-note { font-size: .875rem; color: var(--color-muted); }
   .landing-excerpt :global(.expressive-code pre) { overflow: auto; tab-size: 8; }
   .landing-panel :global(.home-example .expressive-code pre) { max-height: 34rem; overflow: auto; tab-size: 8; scrollbar-gutter: stable; }
+  .landing-more--lines { display: grid; gap: .35rem; }
   .landing-source, .landing-more { margin-top: .8rem; font-size: .8125rem; color: var(--color-muted); }
   .landing-source a, .landing-more a { color: var(--color-link); }
   /* A long command or path wraps instead of widening the page. */
