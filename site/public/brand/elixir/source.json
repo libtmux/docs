@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "repository": "https://github.com/libtmux/assets",
-  "revision": "c9688d9db25e4c522ff1255d0f3badaf27d780dd",
+  "revision": "4b86a9d9158d7c6d52cd635d59c92a04b48b960f",
   "language": "elixir",
   "primary": "#8847B9",
   "githubLanguageColors": "https://github.com/github-linguist/linguist/blob/538da05f034fa5c83bd81df128d144e208898da3/lib/linguist/languages.yml",
@@ -174,23 +174,23 @@
     },
     {
       "file": "library/opengraph-dark.jpg",
-      "bytes": 108171,
-      "sha256": "ddf79aacdabd3f9c83780e0075ec448a84a0c9e90fbad1b2043447a56310b6e3"
+      "bytes": 109737,
+      "sha256": "8f2ec7506a5be015f46f845696bf7c8f14a04b0ff086b3526a9962b7f92c48f2"
     },
     {
       "file": "library/opengraph-dark.png",
-      "bytes": 73122,
-      "sha256": "d397ab6d3400fac2adc43e751a4927e09cc481dd2d3f25e4d48bef5ae8bcba02"
+      "bytes": 70465,
+      "sha256": "7e7acf309e24dc9495511a981c6182d4840fdddc27de64c8d97a3159eedc4f7c"
     },
     {
       "file": "library/opengraph-light.jpg",
-      "bytes": 118450,
-      "sha256": "6fb5d2826f78b2e7876e42b99fbb0d453f828deed67da6083e864e54d5bdfba8"
+      "bytes": 119735,
+      "sha256": "57b2708365a31c884b15825f430a043fd505b7c5b82d8cde5dc7f87215ecbb10"
     },
     {
       "file": "library/opengraph-light.png",
-      "bytes": 72837,
-      "sha256": "df0a0a07530c8089b04b06f9e92cdae11d28402971ba660bcc5b81c4298623c2"
+      "bytes": 70206,
+      "sha256": "2210139cd4dc8a65be836135db11e9ce5895b192d58054928b2b6ddd4528ab8d"
     },
     {
       "file": "library/safari-pinned-tab.svg",
@@ -209,23 +209,23 @@
     },
     {
       "file": "library/social-square-dark.png",
-      "bytes": 82051,
-      "sha256": "7366266aa378f07c7babc5930259c320d7657299e3576835ebc784469833b9d2"
+      "bytes": 79526,
+      "sha256": "a24c861cd17fcab1602591398e7a89b8c2361c11b1fec2fdb18e58c19d9401aa"
     },
     {
       "file": "library/social-square-light.png",
-      "bytes": 81418,
-      "sha256": "58444f68fc5f79682c2c46c3a80be45c2e292e943defe03ddd40a634e590e1af"
+      "bytes": 79443,
+      "sha256": "68412d4325f1f6766a97fc2bbc45a876c73585b058e53d1e82f24b5eefb73ad9"
     },
     {
       "file": "library/twitter-dark.png",
-      "bytes": 72844,
-      "sha256": "4a62a9046716cd7d0c1144e9fdf9f8bd79230260d7ecba31d6f6e1b95ee2a30e"
+      "bytes": 70227,
+      "sha256": "0a19fd76a6a518566d74f1d99d58b1c5bbc020cc9b2d30a3980f26675fcfc0d5"
     },
     {
       "file": "library/twitter-light.png",
-      "bytes": 72541,
-      "sha256": "74fe08a1451e1c364913a46eafac563fa938338a58f503174c18c2fce06dcb5f"
+      "bytes": 69961,
+      "sha256": "7fc7259ff0dd22c08b434cc13df3c176ff0ba0d29f9df9969a6edea5e3189260"
     },
     {
       "file": "workspace/app-icon-1024-dark.png",
