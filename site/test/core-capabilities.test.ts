@@ -55,12 +55,14 @@ describe('the capability showcase data', () => {
     for (const item of entry.checkedBy) {
       expect(cache[capabilityCacheKey(owner, item.file)]!.content, `${item.file} holds the check`).toContain(item.contains)
     }
-    for (const range of [{ from: entry.from, to: entry.to }, ...(entry.more ?? [])]) {
+    const shown = [{ from: entry.from, to: entry.to }, ...(entry.more ?? [])].map((range) => {
       const text = sliceExcerpt(source.content, range, entry.file)
       expect(unbalanced(text, entry.lang), range.from).toBeUndefined()
-      expect(text.split('\n').length, 'a step, not a line').toBeGreaterThanOrEqual(4)
-      expect(text.split('\n').length).toBeLessThanOrEqual(45)
-    }
+      return text
+    })
+    const length = shown.join('\n').split('\n').length
+    expect(length, 'a step, not a line').toBeGreaterThanOrEqual(4)
+    expect(length).toBeLessThanOrEqual(45)
   })
 
   it('shows the capabilities in the maintainer order and nothing else', () => {
@@ -105,6 +107,14 @@ jobs:
   })
   it('fails when the step is removed, though another step runs the same command prefix', () => {
     expect(workflowStep(workflow.replace(/ {6}- name: Gate the examples\n {8}working-directory: examples\n {8}run: bun run typecheck && bun run test\n/, ''), ci)).toBe(false)
+  })
+  it.each([
+    ['a step guarded by if', workflow.replace('        run: bun run typecheck && bun run test\n  other', "        if: github.ref == 'x'\n        run: bun run typecheck && bun run test\n  other")],
+    ['a step that may fail', workflow.replace('        run: bun run typecheck && bun run test\n  other', '        continue-on-error: true\n        run: bun run typecheck && bun run test\n  other')],
+    ['a command that only prefixes another', workflow.replace('        run: bun run typecheck && bun run test\n  other', '        run: bun run typecheck && bun run test:package\n  other')],
+    ['a command inside a string', workflow.replace('        run: bun run typecheck && bun run test\n  other', '        run: echo "bun run typecheck && bun run test"\n  other')],
+  ])('refuses %s', (_name, changed) => {
+    expect(workflowStep(changed, ci)).toBe(false)
   })
   it.each([
     ['another name', { ...ci, step: 'Gate the workspace' }],

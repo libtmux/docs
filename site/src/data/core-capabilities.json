@@ -220,6 +220,12 @@
           "file": "test/support/installed_gems.rb",
           "contains": "assert_equal entry.dig(\"api\", \"output\")"
         }
+      ],
+      "more": [
+        {
+          "from": "snapshot.windows.each do |window|",
+          "to": "=  end"
+        }
       ]
     },
     "create-windows": {
@@ -312,7 +318,8 @@
         "job": "test",
         "step": "Test ${{ matrix.module }}",
         "directory": "${{ matrix.module }}",
-        "command": "go test -race -count=1"
+        "command": "go test -race -count=1",
+        "where": "examples"
       },
       "checkedBy": [
         {
@@ -346,6 +353,10 @@
         {
           "from": "// Rename after subscribing; notifications do not include earlier changes.",
           "to": "=\t}"
+        },
+        {
+          "from": "if notification.Kind() == tmux.ControlNotificationSessionRenamed {",
+          "to": "=\t\t}"
         }
       ],
       "ci": {
@@ -353,7 +364,8 @@
         "job": "test",
         "step": "Test ${{ matrix.module }}",
         "directory": "${{ matrix.module }}",
-        "command": "go test -race -count=1"
+        "command": "go test -race -count=1",
+        "where": "examples"
       },
       "checkedBy": [
         {
@@ -388,7 +400,8 @@
         "job": "test",
         "step": "Test ${{ matrix.module }}",
         "directory": "${{ matrix.module }}",
-        "command": "go test -race -count=1"
+        "command": "go test -race -count=1",
+        "where": "examples"
       },
       "checkedBy": [
         {
@@ -398,41 +411,6 @@
         {
           "file": "examples/run-to-completion/example_test.go",
           "contains": "printed != want"
-        },
-        {
-          "file": ".github/workflows/tests.yml",
-          "contains": "module: [\".\", \"examples\", \"workspace\""
-        },
-        {
-          "file": "examples/internal/exampletest/exampletest.go",
-          "contains": "t.Fatalf(\"run() error = %v; printed so far:\\n%s\", err, printed)"
-        },
-        {
-          "file": "examples/internal/exampletest/exampletest.go",
-          "contains": "MatchesFile(t, printed, \"output.txt\")"
-        }
-      ]
-    },
-    "create-windows": {
-      "file": "examples/planned-build/main.go",
-      "lang": "go",
-      "from": "window, err := session.NewWindow(ctx, tmux.NewWindowRequest{Name: new(\"planned\")})",
-      "to": "=\t}",
-      "ci": {
-        "workflow": ".github/workflows/tests.yml",
-        "job": "test",
-        "step": "Test ${{ matrix.module }}",
-        "directory": "${{ matrix.module }}",
-        "command": "go test -race -count=1"
-      },
-      "checkedBy": [
-        {
-          "file": "examples/planned-build/main.go",
-          "contains": "return fmt.Errorf(\"create window: %w\", err)"
-        },
-        {
-          "file": "examples/planned-build/example_test.go",
-          "contains": "exampletest.Server(t, run)"
         },
         {
           "file": ".github/workflows/tests.yml",
@@ -458,7 +436,8 @@
         "job": "test",
         "step": "Test ${{ matrix.module }}",
         "directory": "${{ matrix.module }}",
-        "command": "go test -race -count=1"
+        "command": "go test -race -count=1",
+        "where": "examples"
       },
       "checkedBy": [
         {

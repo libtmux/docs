@@ -46,6 +46,8 @@ export interface CapabilityEntry extends LandingRange {
     step?: string
     /** The step's working directory, absent for the repository root. */
     directory?: string
+    /** What the caption names instead, when the directory is a template. */
+    where?: string
   }
   /** Why a wrong exit status or missing expected output fails the CI run. At least one. */
   checkedBy: readonly ExitEvidence[]
@@ -113,12 +115,14 @@ export function portCapabilities(owner: string, table: CapabilityTable, cache: C
  * that only appears in another step or job does not count.
  */
 export function workflowStep(workflow: string, ci: CapabilityEntry['ci']): boolean {
-  const lines = workflow.split('\n')
-  const start = lines.findIndex((line) => line === `  ${ci.job}:`)
+  const lines = workflow.replaceAll('\r', '').split('\n')
+  const start = lines.findIndex((line) => stripComment(line).trimEnd() === `  ${ci.job}:`)
   if (start < 0) return false
-  let end = lines.findIndex((line, index) => index > start && /^ {0,2}\S/.test(line))
+  let end = lines.findIndex((line, index) => index > start && /^ {0,2}[^\s#]/.test(line))
   if (end < 0) end = lines.length
   const job = lines.slice(start + 1, end)
+  // A job that may not run, or may fail without failing the workflow, proves nothing.
+  if (job.some((line) => /^ {4}(?:if|continue-on-error):/.test(line) && !/continue-on-error:\s*false/.test(line))) return false
   const first = job.findIndex((line) => /^\s*steps:\s*$/.test(line))
   if (first < 0) return false
   const body = job.slice(first + 1)
@@ -129,14 +133,44 @@ export function workflowStep(workflow: string, ci: CapabilityEntry['ci']): boole
     if (line.startsWith(`${indent}- `)) steps.push([line])
     else if (steps.length) steps.at(-1)!.push(line)
   }
-  const unquote = (value: string) => value.trim().replace(/^(['"])(.*)\1$/, '$2')
+  const unquote = (value: string) => stripComment(value).trim().replace(/^(['"])(.*)\1$/, '$2')
+  // A key of the step itself, not one nested under `with:` or `env:`.
+  const key = (step: string[], name: string) => step.map((line) =>
+    new RegExp(`^${indent}(?:- | {2})${name}:\\s*(.+)$`).exec(line)?.[1]).find((value) => value !== undefined)
   return steps.some((step) => {
-    const name = step.map((line) => /^\s*(?:-\s+)?name:\s*(.+)$/.exec(line)?.[1]).find((value) => value !== undefined)
-    const directory = step.map((line) => /^\s*(?:-\s+)?working-directory:\s*(.+)$/.exec(line)?.[1]).find((value) => value !== undefined)
-    return (ci.step === undefined || (name !== undefined && unquote(name) === ci.step))
+    const stepName = key(step, 'name')
+    const directory = key(step, 'working-directory')
+    const guard = key(step, 'if')
+    const tolerated = key(step, 'continue-on-error')
+    return guard === undefined && (tolerated === undefined || unquote(tolerated) === 'false')
+      && (ci.step === undefined || (stepName !== undefined && unquote(stepName) === ci.step))
       && (directory === undefined ? ci.directory === undefined : unquote(directory) === ci.directory)
-      && workflowRuns(step.join('\n'), ci.command)
+      && runsCommand(step, ci.command)
   })
+}
+
+const stripComment = (value: string) => value.replace(/\s+#.*$/, '')
+
+/** Whether a step's `run` holds the command as whole commands, not as a prefix of another or inside a string. */
+function runsCommand(step: string[], command: string): boolean {
+  if (!workflowRuns(step.join('\n'), command)) return false
+  const flat = (text: string) => text.replace(/\\\n/g, ' ').replace(/\s+/g, ' ').trim()
+  const wanted = flat(command)
+  const escaped = wanted.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const runs = step.join('\n').split('\n').flatMap((line, index, all) => {
+    const m = /^\s*(?:-\s+)?run:[ \t]*(.*)$/.exec(line)
+    if (!m) return []
+    const text = /^[|>][+-]?\d*$/.test(m[1]!.trim()) ? [] : [m[1]!]
+    const column = /^\s*/.exec(line)![0].length
+    for (const next of all.slice(index + 1)) {
+      if (next.trim() && /^\s*/.exec(next)![0].length <= column) break
+      text.push(next)
+    }
+    const kept = text.filter((part) => !part.trim().startsWith('#')).join('\n')
+    // A block scalar's lines are separate commands; a folded one is a single line.
+    return [flat(kept), ...kept.replace(/\\\n/g, ' ').split('\n').map((part) => flat(part))]
+  })
+  return runs.some((run) => new RegExp(`(?:^|&& |; |\\|\\| )${escaped}(?: &&|;| \\||$| -)`).test(run) || run === wanted)
 }
 
 export { workflowRuns }

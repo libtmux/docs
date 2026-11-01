@@ -51,7 +51,7 @@ const shown = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record
       <Code code={item.code} lang={item.lang} title={item.file} frame="code" />
       <p class="core-showcase__source">
         {item.tmux && <small class="core-showcase__tmux">tmux {item.tmux}</small>}
-        Excerpt of <a href={item.sourceUrl}><code>{item.file}</code></a>. The port's CI runs it in <code>{item.ci.workflow}</code>{item.ci.directory && <> from <code>{item.ci.directory}/</code></>}: <code>{item.ci.command}</code>.
+        Excerpt of <a href={item.sourceUrl}><code>{item.file}</code></a>. The port's CI runs it in <code>{item.ci.workflow}</code>{(item.ci.where ?? item.ci.directory) && <> from <code>{item.ci.where ?? item.ci.directory}/</code></>}: <code>{item.ci.command}</code>.
       </p>
     </section>)}
   </div>
@@ -72,7 +72,14 @@ const shown = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record
     const search = root.querySelector<HTMLInputElement>('[data-capability-search]')!
     const empty = root.querySelector<HTMLElement>('[data-capability-empty]')!
     const wide = matchMedia('(min-width: 56rem)')
+    // Every option keeps the page's other parameters, so a new tab or a reload without script lands on the same product.
+    const hrefFor = (id: string) => {
+      const url = new URL(location.href)
+      if (id === ids[0]) url.searchParams.delete('capability'); else url.searchParams.set('capability', id)
+      return `${url.search}${url.hash}` || location.pathname
+    }
     const select = (id: string) => {
+      for (const option of options) option.setAttribute('href', hrefFor(option.dataset.capabilityOption!))
       root.dataset.selected = id
       for (const panel of root.querySelectorAll<HTMLElement>('[data-capability-panel]')) panel.classList.toggle('is-selected', panel.dataset.capabilityPanel === id)
       for (const option of options) {
