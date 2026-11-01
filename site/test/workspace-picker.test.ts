@@ -312,6 +312,24 @@ describe('the picker as rendered', () => {
     expect(css).toMatch(/html\[data-js\] \.ws-layout__stack > \.ws-win:not\(\[data-active\]\)\s*\{\s*visibility: hidden;/)
   })
 
+  it('gives every preset the same grid cell, so no height depends on which one shows', () => {
+    const css = readFileSync(new URL('../src/styles/workspace-picker.css', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+    expect(css).toMatch(/html\[data-js\] \.ws-picker__stage\s*\{[^}]*display: grid;[^}]*grid-template-columns: minmax\(0, 1fr\)/)
+    expect(css).toMatch(/html\[data-js\] \.ws-picker__panel\s*\{[^}]*display: block;[^}]*grid-area: 1 \/ 1;[^}]*visibility: hidden/)
+    // Hiding is by visibility alone; a rule that removes or resizes a panel by its id or selection would change the stage.
+    expect(css).not.toMatch(/data-selected[^{]*\{[^}]*(display|height|block-size)\s*:/)
+    expect(css).not.toMatch(/\.ws-picker__panel\[data-preset[^{]*\{[^}]*(display|height|block-size)\s*:/)
+    expect(selectionRules(['a', 'b'])).not.toMatch(/display|height|block-size/)
+  })
+
+  it('lays out the example gallery lazily but keeps it in the page', () => {
+    const css = readFileSync(new URL('../src/styles/workspace-showcase.css', import.meta.url), 'utf8')
+    expect(css).toMatch(/\.ws-example\s*\{[^}]*content-visibility: auto;[^}]*contain-intrinsic-block-size: auto /)
+    expect(css).toMatch(/\.ws-example:has\(:target\)\s*\{\s*content-visibility: initial/)
+    const source = readFileSync(new URL('../src/components/workspace/WorkspaceShowcase.astro', import.meta.url), 'utf8')
+    expect(source).not.toMatch(/hidden|loading=|client:/)
+  })
+
   it('keeps the window tabs on one line in a strip that scrolls', () => {
     const css = readFileSync(new URL('../src/styles/workspace-picker.css', import.meta.url), 'utf8')
     expect(css).toMatch(/\.ws-layout__tabs\s*\{[^}]*overflow-x: auto;/)
