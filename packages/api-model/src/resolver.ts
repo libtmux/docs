@@ -101,6 +101,8 @@ export function notASymbol(text: string): string | undefined {
   if (/^[a-z][a-z0-9+.-]*:\/\//i.test(text)) return 'a protocol URI'
   if (/^(?:net|v)?\d+\.\d+(?:\.\d+)?(?:[a-z]|[-+][\w.-]+)?$/.test(text)) return 'a version'
   if (/^(?:net|v)?\d+(?:\.\d+)*\.[xXnN]$/.test(text)) return 'a version line'
+  // `X.Y` stands for a release number and `X.Y-rcN` for one of its candidates.
+  if (/^v?[XYZ](?:\.[XYZ])+(?:-[a-z]+N)?$/.test(text)) return 'a version placeholder'
   if (/^\w+(?:\.\w+)+:[\w.-]+(?::[\w.<>{}-]+)?$/.test(text)) return 'a dependency coordinate'
   // `objects.inv` is the published Sphinx inventory, named by the setup guides next to a Python fence.
   if (/\.(?:tsv|html|inv)$/.test(text)) return 'a filename'

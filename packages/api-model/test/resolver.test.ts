@@ -50,6 +50,12 @@ d('resolver', () => {
     for (const text of ['Server.new_session', 'LibTmux.Window', 'Version.N', 'N']) expect(notASymbol(text), text).toBeUndefined()
   })
 
+  it('rejects a version placeholder, and keeps a real symbol', () => {
+    for (const text of ['X.Y', 'X.Y.Z', 'vX.Y', 'X.Y-rcN', 'X.Y.Z-alphaN']) expect(notASymbol(text), text).toBe('a version placeholder')
+    // Controls: a member of a type named X, a word in place of a number, and a candidate label without its number.
+    for (const text of ['X.Name', 'Server.Y', 'X.Y-rc', 'X.Y-RcN', 'XY.Z']) expect(notASymbol(text), text).toBeUndefined()
+  })
+
   it('rejects things that are not references', () => {
     expect(notASymbol('sync_snippets.py --check')).toBeTruthy()
     expect(notASymbol('pane.pane_id == other.pane_id')).toBeTruthy()
