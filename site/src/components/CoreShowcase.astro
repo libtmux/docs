@@ -31,7 +31,7 @@ const programs = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Rec
 const quickstart = QUICKSTARTS[port]?.complete
 // The first capability is the port's homepage quickstart, which already walks server, session, window and pane.
 const shown = [
-  ...(quickstart ? [{ id: 'typed-graph', label: CAPABILITIES[0].label, quickstart: true as const }] : []),
+  ...(quickstart ? [{ id: 'typed-graph', label: CAPABILITIES[0].label, quickstart: true as const, tmux: undefined as string | undefined }] : []),
   ...programs.map((item) => ({ ...item, quickstart: false as const })),
 ]
 ---
