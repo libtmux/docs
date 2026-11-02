@@ -1349,8 +1349,21 @@ export function portTagline(port: Port): string {
  * repository, so it keeps its own project name (`libtmux-kotlin`).
  */
 export function portHomeTitle(port: Port): string {
-  const name = port.parentLibrary ? port.projectName : port.repo.split('/')[1]
-  return `${name}: ${portTagline(port)}`
+  return `${portRepositoryName(port)}: ${portTagline(port)}`
+}
+
+/** A core port is named by its repository; a facade keeps its own project name. */
+function portRepositoryName(port: Port): string {
+  return port.parentLibrary ? port.projectName : port.repo.split('/')[1]
+}
+
+/**
+ * What a port's home page says in a search result: the task, the language, and
+ * the sections a reader finds there. Stable across versions, so a release does
+ * not rewrite it.
+ */
+export function portHomeDescription(port: Port): string {
+  return `Control tmux servers, sessions, windows and panes from ${port.language} with ${portRepositoryName(port)}: install, guides, examples and API reference.`
 }
 
 /** The tag a numeric docs version names, with the library's tag prefix. */
@@ -1594,6 +1607,14 @@ export function hasReference(_port: Port): boolean {
 /** Landing page for a port and version. */
 export function portHomeUrl(port: Port, version: string): string {
   return withPortRoot(port.versionedDocs ? `/${port.slug}/${version}/` : `/${port.slug}/`)
+}
+
+/**
+ * Where a port tree's sitemap index is served: beside the pages it lists, so
+ * the publisher that owns the tree writes it (scripts/gen-port-sitemap.mjs).
+ */
+export function portSitemapUrl(port: Port, version: string): string {
+  return `${portHomeUrl(port, version)}sitemap-index.xml`
 }
 
 /**
