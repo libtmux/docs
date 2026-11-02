@@ -37,7 +37,9 @@ export const SCHEME: [string, TitleSubject, string][] = [
   ['tmux guide', { title: 'Sending keys', pagePath: 'tmux/guides/sending-keys' }, 'Sending keys | tmux guide | libtmux.org'],
   ['tmux manual command', { title: 'tmux capture-pane', pagePath: 'tmux/latest/manual/capture-pane' }, 'tmux capture-pane | tmux manual | libtmux.org'],
   ['tmux catalog format', { title: 'cursor_y', pagePath: 'tmux/latest/catalog/formats/cursor_y' }, 'cursor_y | tmux format | libtmux.org'],
-  ['tmux C source', { title: 'input_ctx.request_timer', pagePath: 'tmux/latest/reference/c-struct-input_ctx-request_timer' }, 'input_ctx.request_timer | tmux C source | libtmux.org'],
+  ['tmux C struct', { title: 'input_ctx.request_timer', pagePath: 'tmux/latest/reference/c-struct-input_ctx-request_timer' }, 'input_ctx.request_timer | tmux C struct | libtmux.org'],
+  ['tmux C function', { title: 'args_parse', pagePath: 'tmux/latest/reference/c-function-args_parse' }, 'args_parse | tmux C function | libtmux.org'],
+  ['tmux C source index', { title: 'C source reference', pagePath: 'tmux/latest/reference' }, 'C source reference | tmux C source | libtmux.org'],
   ['shared site page', { title: 'Support and release stages', pagePath: 'meta/support' }, 'Support and release stages | libtmux.org'],
 ]
 
