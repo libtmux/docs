@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { pageBrand, PORTS, portHomeTitle, portTagline } from '../src/lib/ports'
-import { branding, documentationTitle, jsonLd, palettes, tmuxDocumentationTitle } from '../src/lib/branding'
+import { branding, documentationTitle, jsonLd, palettes, SITE_NAME } from '../src/lib/branding'
 import { nativeBrandHead } from '../../scripts/brand-native-pages.mjs'
 
 const publicFile = (path: string) => fileURLToPath(new URL(`../public${path}`, import.meta.url))
@@ -30,14 +30,11 @@ describe('route branding', () => {
       cxx: 'libtmux-cxx: C++-based tmux client', swift: 'libtmux-swift: Swift-based tmux client',
     })
     expect(portTagline(PORTS.find((port) => port.slug === 'rs')!)).toBe('Rust-based tmux client')
-    // The home title carries no ` | project` suffix, for Julia's differing project name too.
-    for (const port of PORTS) expect(documentationTitle(portHomeTitle(port), port.projectName)).toBe(portHomeTitle(port))
-  })
-  it('identifies tmux pages by their section and hosting site', () => {
-    expect(tmuxDocumentationTitle('Getting started', 'tmux/guides/getting-started')).toBe('Getting started | Guides | tmux | libtmux.org')
-    expect(tmuxDocumentationTitle('Guides', 'tmux/guides')).toBe('Guides | tmux | libtmux.org')
-    expect(tmuxDocumentationTitle('capture-pane', 'tmux/3.7c/manual/capture-pane')).toBe('capture-pane | Manual | tmux | libtmux.org')
-    expect(tmuxDocumentationTitle('tmux', 'tmux')).toBe('tmux | libtmux.org')
+    // The home title is its own scope: no context or site name follows it, for Julia's differing project name too.
+    for (const port of PORTS) {
+      expect(documentationTitle({ title: portHomeTitle(port), pagePath: '', portSlug: port.slug }))
+        .toEqual({ title: portHomeTitle(port), social: portHomeTitle(port), context: '' })
+    }
   })
   it('uses project titles independently of package names and shared source repositories', () => {
     const names = {
@@ -51,17 +48,6 @@ describe('route branding', () => {
     expect(branding('java', 'reference/libtmux-scala-cats').projectName).toBe('libtmux-scala')
     expect(branding('csharp', 'reference/LibTmux.FSharp').projectName).toBe('libtmux-fsharp')
     expect(branding().projectName).toBe('libtmux')
-    expect(documentationTitle('Server', 'libtmux-scala')).toBe('Server | libtmux-scala')
-    expect(documentationTitle('Server | libtmux', 'libtmux-dotnet')).toBe('Server | libtmux-dotnet')
-    expect(documentationTitle('Server | libtmux-dotnet', 'libtmux-dotnet')).toBe('Server | libtmux-dotnet')
-    expect(documentationTitle('libtmux', 'libtmux')).toBe('libtmux')
-    expect(documentationTitle('libtmux-scala', 'libtmux-scala')).toBe('libtmux-scala')
-    expect(documentationTitle('Server | LibTmux.jl | LibTmux.jl', 'LibTmux.jl')).toBe('Server | LibTmux.jl')
-    expect(documentationTitle('LibTmux.jl', 'LibTmux.jl')).toBe('LibTmux.jl')
-    // The home page's title leads with the project name and keeps no suffix; other colons still get one.
-    expect(documentationTitle('libtmux: pilot tmux in your language', 'libtmux')).toBe('libtmux: pilot tmux in your language')
-    expect(documentationTitle('Targets: pane and window', 'libtmux')).toBe('Targets: pane and window | libtmux')
-    expect(documentationTitle('libtmux-ts: queries', 'libtmux')).toBe('libtmux-ts: queries | libtmux')
   })
   it('publishes the size and digest of every catalogued asset', () => {
     const catalog = JSON.parse(readFileSync(publicFile('/brand/catalog.json'), 'utf8')) as {
@@ -151,9 +137,9 @@ describe('native metadata', () => {
     const source = '<html><head><title>Servers - libtmux 0.62.0 documentation</title></head><body>Servers</body></html>'
     const options = { port: 'py', pagePath: 'api/libtmux.server/', root: '/en' }
     const html = nativeBrandHead(source, options)
-    expect(html).toContain('<title>Servers | libtmux</title>')
-    expect(html).toContain('<meta property="og:title" content="Servers | libtmux">')
-    expect(html).toContain('<meta name="twitter:title" content="Servers | libtmux">')
+    expect(html).toContain('<title>Servers | Python API reference | libtmux.org</title>')
+    expect(html).toContain('<meta property="og:title" content="Servers | Python API reference">')
+    expect(html).toContain('<meta name="twitter:title" content="Servers | Python API reference">')
     expect(nativeBrandHead(html, options)).toBe(html)
   })
 
@@ -161,11 +147,12 @@ describe('native metadata', () => {
     const source = '<html><head><title>Server &amp; &quot;Clients&quot; | libtmux</title><meta property="og:title" content="Old"><meta property="og:site_name" content="libtmux"><meta name="twitter:title" content="Old"><link rel="canonical" href="https://libtmux.org/unchanged/"><meta name="robots" content="noindex, follow"></head><body>Server</body></html>'
     const options = { port: port.slug, pagePath: 'reference/server/', root: '/en' }
     const html = nativeBrandHead(source, options)
-    const title = `Server &amp; &quot;Clients&quot; | ${port.projectName}`
-    expect(html).toContain(`<title>${title}</title>`)
-    expect(html).toContain(`<meta property="og:title" content="${title}">`)
-    expect(html).toContain(`<meta name="twitter:title" content="${title}">`)
-    expect(html).toContain(`<meta property="og:site_name" content="${port.projectName}">`)
+    // The scheme measures the decoded title; the head keeps the generator's escaping.
+    const social = `Server &amp; &quot;Clients&quot; | ${port.language} API reference`
+    expect(html).toContain(`<title>${social} | ${SITE_NAME}</title>`)
+    expect(html).toContain(`<meta property="og:title" content="${social}">`)
+    expect(html).toContain(`<meta name="twitter:title" content="${social}">`)
+    expect(html).toContain(`<meta property="og:site_name" content="${SITE_NAME}">`)
     expect(html.match(/<title>/g)).toHaveLength(1)
     expect(html.match(/property="og:title"/g)).toHaveLength(1)
     expect(html).toContain('href="https://libtmux.org/unchanged/"')

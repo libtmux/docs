@@ -13,8 +13,8 @@ export type Renderer = 'sphinx' | 'astro' | 'native-skinned' | 'none'
 
 /** Documentation products layered on each language library. */
 export const DOC_PRODUCTS = {
-  workspace: { label: 'Workspace Manager', description: 'Define and build tmux sessions from workspace configuration.' },
-  mcp: { label: 'MCP', description: 'Connect an MCP client to tmux tools and inspect the server API.' },
+  workspace: { label: 'Workspace Manager', tabLabel: 'Workspace', description: 'Define and build tmux sessions from workspace configuration.' },
+  mcp: { label: 'MCP', tabLabel: 'MCP', description: 'Connect an MCP client to tmux tools and inspect the server API.' },
 } as const
 
 export type DocProduct = keyof typeof DOC_PRODUCTS
