@@ -6,12 +6,13 @@ import { createReadStream, existsSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, fontProviders } from 'astro/config'
-import { DEFAULT_LOCALE, LOCALES } from './src/i18n/locales.ts'
+import { buildLocale, DEFAULT_LOCALE, LOCALES, localeRoot } from './src/i18n/locales.ts'
 import expressiveCode from 'astro-expressive-code'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import { apiDb } from './src/integrations/api-db'
 import { pagefind } from './src/integrations/pagefind'
 import { markdownTwins } from './src/integrations/markdown-twins'
+import { pageHeads } from './src/integrations/sitemap-heads'
 import { remarkPortCode } from './src/plugins/remark-port-code.mjs'
 import { rehypeSiteRoot } from './src/plugins/rehype-site-root.mjs'
 import { rehypeCodeTabs } from './src/plugins/rehype-code-tabs.mjs'
@@ -132,6 +133,20 @@ const isPortRoot = (page: string): boolean => {
 const isRootBuild = !env.LIBTMUX_DOCS_PORT
 const wantSitemap = isDefaultBuild && isRootBuild && versionKind !== 'pr'
 
+/*
+ * The shell renders only some of a port's pages, and a port's publisher owns
+ * the rest of its tree, so each default port tree carries a sitemap of its own
+ * (scripts/gen-port-sitemap.mjs) and the English index names it. Port trees are
+ * English only, so no other locale's index does.
+ */
+let portDefaults: Record<string, string> = {}
+try { portDefaults = JSON.parse(env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Unconfigured builds use each port's latest tree. */ }
+const portSitemaps = buildLocale() === DEFAULT_LOCALE
+  ? PORTS.map((port) => new URL(`${localeRoot(DEFAULT_LOCALE)}${port.slug}/${portDefaults[port.slug] ?? 'latest'}/sitemap-0.xml`, site).href)
+  : []
+// A page's own head says whether it belongs in a sitemap; see src/lib/sitemap-heads.ts.
+const heads = pageHeads(site, base)
+
 export default defineConfig({
   site,
   base,
@@ -151,9 +166,11 @@ export default defineConfig({
     mdx(),
     ...(wantSitemap
       ? [
+          heads.integration,
           sitemap({
+            customSitemaps: portSitemaps,
             filter: (page) =>
-              !page.includes('/pr-') && !page.includes('/demo') && !isPlaceholder(page) &&
+              heads.listed(page) && !page.includes('/pr-') && !page.includes('/demo') && !isPlaceholder(page) &&
               !isWorkspaceRedirect(page) && !isSourceGuideRedirect(page) && !isMovedPage(page) && !isPortRoot(page) &&
               !isLegacyTmuxManualPath(new URL(page).pathname) &&
               !/\/tmux\/(?!latest\/)[^/]+\/(?:manual|reference|catalog)\//.test(new URL(page).pathname),

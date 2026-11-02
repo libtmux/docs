@@ -1112,6 +1112,24 @@ done < <(list_ports)
 # Compiled native exports and their assets must be complete before indexing.
 node "$script_dir/inject-shell.mjs" --site "$assembly_out"
 
+# The shell's sitemap lists what the shell renders. Each port tree that crawlers
+# may index, its default version, carries a sitemap of its own, written from the
+# finished files so the language home, the reference and a native tree are all
+# in it; the shell's index names it. A preview and every other version are
+# noindex and list nothing.
+if [ "$preview_build" -eq 0 ]; then
+  while IFS='|' read -r slug _name versioned _rest; do
+    contains "$ports_filter" "$slug" || continue
+    [ "$versioned" = "versioned" ] || continue
+    default_version="$(default_version_for "$slug")"
+    for version in "${versions[@]}"; do
+      [ "$version" = "$default_version" ] && [ -f "$site_out/$slug/$version/index.html" ] || continue
+      node "$script_dir/gen-port-sitemap.mjs" "$site_out/$slug/$version" \
+        "$site_origin$LIBTMUX_DOCS_PORT_ROOT/$slug/$version/"
+    done
+  done < <(list_ports)
+fi
+
 # Production owns the origin's robots.txt; a preview keeps its copy inside
 # its publish prefix.
 if [ -f "$site_out/robots.txt" ]; then
