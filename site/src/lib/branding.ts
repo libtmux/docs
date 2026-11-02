@@ -35,16 +35,23 @@ export const SITE_NAME = 'libtmux.org'
 /**
  * Characters a `<title>` should stay within.
  *
- * A search result shows about 600 pixels of title, 50 to 60 characters of
- * typical text, and then truncates; the tab strip shows far less, so the page
- * name leads and everything after it is expendable. Google states the limit as
- * width, not characters:
- * https://developers.google.com/search/docs/appearance/title-link#page-titles
- * (the guide to title links, read 2026-11-01).
+ * Google states no limit: a title link is "truncated in Google Search results
+ * as needed, typically to fit the device width"
+ * (https://developers.google.com/search/docs/appearance/title-link, read
+ * 2026-11-01). A tab strip shows far less than a result does. 60 characters is
+ * the working budget that keeps the page's name, language and kind in view
+ * where it truncates, and the page's name leads so truncation costs the least.
  */
 export const TITLE_BUDGET = 60
 
-/** Characters a meta description should stay within before a snippet truncates it. */
+/**
+ * Characters a meta description should stay within.
+ *
+ * Google states no limit and truncates a snippet "as needed, typically to fit
+ * the device width" (https://developers.google.com/search/docs/appearance/snippet,
+ * read 2026-11-01). 160 characters is the working budget, enough for the task
+ * and the section a page belongs to.
+ */
 export const DESCRIPTION_BUDGET = 160
 
 /** The kind of page a documentation section holds, as it reads after a language: "Rust guide". */
