@@ -264,6 +264,19 @@ describe('head audit across pages', () => {
   })
 })
 
+describe('the head Seo writes for a page about the site itself inside a port tree', () => {
+  it('names the root page and stays out of an index', async () => {
+    const template = await loadAstroTemplate('components/Seo.astro')
+    const html = await renderAstroTemplate(template, { props: {
+      title: 'Linking and consuming our docs', pagePath: 'meta/linking', portSlug: 'ts', version: 'latest', defaultVersion: 'latest',
+      versionEntry: { slug: 'latest', label: 'latest', kind: 'trunk', supported: true },
+    } })
+    const parsed = parseHead(`<html lang="en"><head>${html}</head></html>`)
+    expect(parsed.robots).toBe('noindex, follow')
+    expect(parsed.canonical).toBe('https://libtmux.org/meta/linking/')
+  })
+})
+
 describe('the head Seo writes', () => {
   async function head(props: Record<string, unknown>) {
     const template = await loadAstroTemplate('components/Seo.astro')
