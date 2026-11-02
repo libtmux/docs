@@ -110,13 +110,25 @@ duplicates against each other unless told which one wins.
   at `/py/v0.46.2/guides/panes/`. A page that exists only in that one version
   (`existsInDefault: false`) canonicalises to itself instead, so a real page
   is never told its canonical URL is a 404.
-- **Sitemap only from the default build.** `astro.config.ts` computes
-  `wantSitemap = isDefaultBuild && versionKind !== 'pr'` and only registers
-  `@astrojs/sitemap` when that's true, with a filter that also drops any
-  `/pr-*/` or `/demo` path that slipped through. Every other build — every
-  tag, every non-default branch, every PR preview — emits no sitemap at all,
-  so crawlers are never handed a list of the duplicates `robotsFor` is
-  telling them to skip.
+- **Sitemaps follow the page's own head.** Only the default version's
+  build lists pages, and each page's head decides whether it is listed:
+  `noindex`, a meta refresh and a canonical elsewhere keep a page out
+  (`site/src/lib/sitemap-heads.ts`). The shell's `@astrojs/sitemap`
+  filters by URL and asks that verdict through a build hook that runs
+  before it. The shell renders only some of a port's pages and the port's
+  publisher owns the rest of its tree, so `scripts/gen-port-sitemap.mjs`
+  writes `sitemap-0.xml` into each default port tree from the finished
+  files, native pages included, and the English index names it
+  (`customSitemaps`). Every other build, every PR preview and every
+  non-default version lists nothing.
+- **Titles.** `documentationTitle` in `site/src/lib/branding.ts` is the one
+  scheme, for Astro pages and the native branding pass alike: the page's
+  own name, then language, product and kind (`capabilities | TypeScript
+  MCP resource | libtmux.org`), then the site name. The site name is the
+  first part dropped when a title passes `TITLE_BUDGET`. A language home
+  keeps the title `portHomeTitle` sets. `og:title` and `twitter:title` are
+  the same without the site name, and `og:site_name` is `libtmux.org` on
+  every page.
 - **`Seo.astro`** is where all of this actually lands in `<head>`: canonical
   link, `robots` meta, `hreflang` alternates (`x-default` pointing at the
   unprefixed English page), Open Graph tags, and a typed `schema-dts`
