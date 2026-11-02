@@ -9,6 +9,7 @@ import { apiTmuxSections } from '../../lib/api-tmux-sections'
 import { productApiAlternatives, productApiHref, productApiIndex } from '../../lib/product-api'
 import { DOC_PRODUCTS, PORT_BY_SLUG, portPageUrl, productApiPath, type DocProduct } from '../../lib/ports'
 import { symbolSource } from '../../lib/markdown-twins'
+import { symbolDescription } from '../../lib/branding'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
 interface Props { model: ApiModel; symbol: ApiSymbol; version: string }
@@ -37,7 +38,7 @@ const alternativesFor = (entry: ApiSymbol) => productApiAlternatives(model, entr
 const tmuxSections = apiTmuxSections(model.port, symbol, alternativesFor(symbol))
 ---
 
-<DocsLayout title={qualifiedNameOf(symbol)} symbolTitle breadcrumbs={breadcrumbs} description={symbol.doc?.summary ? docSummaryText(symbol.doc.summary, model.port) : `${symbol.name} API documentation.`}
+<DocsLayout title={qualifiedNameOf(symbol)} symbolTitle breadcrumbs={breadcrumbs} description={symbolDescription(qualifiedNameOf(symbol), symbol.doc?.summary ? docSummaryText(symbol.doc.summary, model.port) : undefined, `${symbol.kind} in the ${PORT_BY_SLUG[model.port]?.language ?? 'libtmux'} ${DOC_PRODUCTS[product].tabLabel} API reference`)}
   inventoryId={`api:${symbol.publicId ?? symbol.id}`}
   port={model.port} product={product} version={version} pagePath={pagePath} tableOfContents={false}
   pageSource={symbolSource(model, symbol)} markdown="source">

@@ -10,6 +10,7 @@ import SymbolName from '../api/SymbolName.astro'
 import McpSchemaFields from './McpSchema.astro'
 import McpSchemaType from './McpSchemaType.astro'
 import { PORT_BY_SLUG, portPageUrl } from '../../lib/ports'
+import { symbolDescription } from '../../lib/branding'
 import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects, mcpObjectAt, mcpObjectGroup, mcpSectionGroups, plainSummary, renderToolDescription, toolSummary, type McpSection } from '../../lib/mcp-reference'
 import { schemaDefinitions, type McpSchema } from '../../lib/mcp-schema'
 import { pagePortsFor } from '../../lib/page-ports-for'
@@ -97,7 +98,7 @@ const introductions: Record<McpSection, string> = {
 }
 const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.id, await renderToolDescription(toolSummary(entry.description), { port, version, objectId: entry.id })] as const)))
 ---
-<DocsLayout title={object ? title : `${info.name} MCP ${title}`} description={object ? plainSummary(object.description, port) : introductions[section]}
+<DocsLayout title={object ? title : `${info.name} MCP ${title}`} description={object ? symbolDescription(object.name, plainSummary(object.description, port) || undefined, `MCP ${object.kind.replace('-', ' ')} in the ${info.language} API reference`) : introductions[section]}
   inventoryId={`protocol:${object?.id ?? section}`}
   port={port} version={version} pagePath={path} pageSource={pageSource} pagePorts={pagePorts}
   breadcrumbs={breadcrumbs} markdown="rendered" tableOfContents={false} indexNavigation={false} bare>

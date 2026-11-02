@@ -173,3 +173,17 @@ export function documentationTitle(subject: TitleSubject): DocumentTitle {
 export function jsonLd(value: unknown): string {
   return JSON.stringify(value).replace(/</g, '\\u003c')
 }
+
+/**
+ * A symbol page's description: its qualified name, then what its own
+ * documentation says, within `DESCRIPTION_BUDGET`.
+ *
+ * Many members share one summary ("The pane that was read."), and a page
+ * without one would otherwise read "<name> API documentation." The name is what
+ * tells their results apart.
+ */
+export function symbolDescription(name: string, summary: string | undefined, fallback: string): string {
+  const text = summary?.replace(/\s+/g, ' ').trim()
+  const lead = text ? (text.toLowerCase().startsWith(name.toLowerCase()) ? text : `${name}: ${text}`) : `${name}: ${fallback}.`
+  return lead.length <= DESCRIPTION_BUDGET ? lead : `${lead.slice(0, DESCRIPTION_BUDGET - 1).replace(/\s+\S*$/, '')}…`
+}
