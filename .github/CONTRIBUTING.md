@@ -622,6 +622,35 @@ and reference builds too. Cleanup shares the assembly lock and refuses to
 run during an assembly. It preserves source, dependencies and `output/`
 review evidence. Custom output and cache locations need their own cleanup.
 
+## Auditing page heads
+
+`site/scripts/audit-head.mjs` reads the head of every page and reports what
+each tells a browser tab, a crawler and a link card: title, description,
+canonical, robots, Open Graph, Twitter, icons, manifest, alternates and
+whether a sitemap lists the page. It is an on-demand audit; no test loop or
+CI job runs it.
+
+Audit the live site from the sitemaps its `robots.txt` advertises:
+
+```console
+$ node site/scripts/audit-head.mjs --out /tmp/head-audit
+```
+
+Audit an assembled tree, which also finds pages that exist and no sitemap
+lists:
+
+```console
+$ node site/scripts/audit-head.mjs --dist _site --out /tmp/head-audit
+```
+
+The report is `head-audit.json` plus `head-audit.md`; add
+`--format json,md,html` for a single static table of every page. Narrow a
+run with `--include`, `--exclude` or `--sample`. Requests use a named
+User-Agent, at most `--concurrency` at a time (4 by default) and a gap of
+`--delay-ms` between starts, so a run against production is safe. The script
+header lists every option, and `site/test/head-audit.test.ts` plants one bad
+head for each snag rule.
+
 ## Pull requests
 
 Keep commits focused on one topic. Explain the problem, resulting behavior,
