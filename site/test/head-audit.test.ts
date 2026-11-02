@@ -32,9 +32,14 @@ interface Spec {
   ogDescription: string | null
   icons: string[]
   manifest: string | null
+  sitemap: string | null
   hreflang: [string, string][]
   refresh: boolean
 }
+
+/** The sitemap a page names: its port tree's, or the locale's index. */
+const sitemapFor = (where: ReturnType<typeof locate>) =>
+  `${ORIGIN}${where.port ? `/en/${where.port}/latest` : `/${where.locale ?? 'en'}`}/sitemap-index.xml`
 
 /** A head the audit accepts for `url`, built from the same scheme the site uses. */
 function cleanSpec(url: string): Spec {
@@ -53,7 +58,7 @@ function cleanSpec(url: string): Spec {
       `<link rel="apple-touch-icon" href="${asset('apple-touch-icon-light.png')}" sizes="180x180">`,
       `<link rel="mask-icon" href="${asset('safari-pinned-tab.svg')}" color="#3178C6">`,
     ],
-    manifest: asset('site.webmanifest'), hreflang: [], refresh: false,
+    manifest: asset('site.webmanifest'), sitemap: sitemapFor(where), hreflang: [], refresh: false,
   }
 }
 
@@ -71,6 +76,7 @@ ${meta('og:image', 'property', spec.ogImage)}${meta('og:image:type', 'property',
 ${meta('twitter:title', 'name', spec.twitterTitle)}${meta('twitter:image', 'name', spec.twitterImage)}
 ${spec.icons.join('\n')}
 ${spec.manifest === null ? '' : `<link rel="manifest" href="${spec.manifest}">`}
+${spec.sitemap === null ? '' : `<link rel="sitemap" type="application/xml" href="${spec.sitemap}">`}
 </head><body><svg><title>an inline icon title</title></svg></body></html>`
 }
 
@@ -108,6 +114,7 @@ const PLANTED: Record<string, Case> = {
   'social-description-mismatch': { change: (s) => { s.ogDescription = 'Another description entirely.' } },
   'icon-missing': { change: (s) => { s.icons = [] } },
   'manifest-missing': { change: (s) => { s.manifest = null } },
+  'sitemap-link-missing': { change: (s) => { s.sitemap = null } },
   'asset-unreachable': { page: (s) => ({ assets: { [s.manifest!]: 404 } }) },
   'brand-mismatch': { change: (s) => { s.icons = s.icons.map((icon) => icon.replace('typescript/mcp', 'python/library')) } },
   'lang-mismatch': { change: (s) => { s.lang = 'ja' } },
@@ -147,6 +154,11 @@ describe('head audit rules', () => {
     expect(found, rule).toContain(rule)
     // The same head without the snag stays clean for this rule.
     expect(rulesFor(url, cleanSpec(url), {}, { sitemap: new Set([url]) })).not.toContain(rule)
+  })
+
+  it('checks the sitemap link like any other asset', () => {
+    const spec = cleanSpec(PORT_PAGE)
+    expect(rulesFor(PORT_PAGE, spec, { assets: { [spec.sitemap!]: 404 } })).toContain('asset-unreachable')
   })
 
   it('reads the document head, not an inline SVG title in the body', () => {

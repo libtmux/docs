@@ -1099,7 +1099,8 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
       rm -rf "$port_out/api"
       mkdir -p "$port_out/api"
       cp -a "$ref_outdir/." "$port_out/api/"
-      node "$script_dir/brand-native-pages.mjs" "$port_out/api" "$slug" "$LIBTMUX_DOCS_PORT_ROOT"
+      node "$script_dir/brand-native-pages.mjs" "$port_out/api" "$slug" "$LIBTMUX_DOCS_PORT_ROOT" \
+        $([ "$preview_build" -eq 0 ] && printf '%s' "$default_version")
     elif [ "$ref_status" = "skipped" ]; then
       mkdir -p "$port_out/api"
       write_reference_redirect "$slug" "$version" "$port_out/api/index.html"

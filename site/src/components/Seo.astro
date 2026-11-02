@@ -1,9 +1,9 @@
 ---
 import type { Graph } from 'schema-dts'
 import { branding, documentationTitle, jsonLd, PYTHON_DESCRIPTION, PYTHON_SAME_AS, SITE_NAME, TMUX_DESCRIPTION, TMUX_WEBSITE } from '../lib/branding'
-import { DOC_PRODUCTS, PORT_BY_SLUG, type DocProduct } from '../lib/ports'
+import { DOC_PRODUCTS, PORT_BY_SLUG, portSitemapUrl, type DocProduct } from '../lib/ports'
 import { canonicalUrl, robotsFor, type VersionEntry } from '../lib/versions'
-import { IS_ROOT_BUILD, SITE_ROOT } from '../lib/site-root'
+import { IS_ROOT_BUILD, SITE_ROOT, withRoot } from '../lib/site-root'
 import { localeRoot } from '../i18n/locales'
 
 /**
@@ -139,6 +139,12 @@ const indexable = portSlug ? isDefault : isRootShellBuild
 
 const robots = noindex ? 'noindex, nofollow' : robotsFor(versionEntry, indexable)
 
+// The sitemap that lists this page: its port tree's own, or the locale's index
+// for the shared pages. A preview builds none.
+const sitemapHref = versionEntry.kind === 'pr' ? undefined : new URL(
+  portSlug && PORT_BY_SLUG[portSlug] ? portSitemapUrl(PORT_BY_SLUG[portSlug], defaultVersion) : withRoot('/sitemap-index.xml'), origin,
+).href
+
 // The tab, the headline and the social cards each read one scheme; see documentationTitle.
 const { title: fullTitle, social: socialTitle } = documentationTitle({
   title, pagePath, portSlug: brandPort ?? portSlug, version, defaultVersion,
@@ -215,6 +221,7 @@ const graph: Graph = {
 <meta name="description" content={desc} />
 <link rel="canonical" href={canonical} />
 <meta name="robots" content={robots} />
+{sitemapHref && <link rel="sitemap" type="application/xml" href={sitemapHref} />}
 
 {/* Locale alternates. x-default names the English page itself, at /en/, not
     the site root: the root is an unconditional 302 into /en/ (it does not

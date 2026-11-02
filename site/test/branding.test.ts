@@ -184,6 +184,14 @@ describe('native metadata', () => {
     expect(html.match(/property="og:image"/g)).toHaveLength(1)
     expect(nativeBrandHead(html, options)).toBe(html)
   })
+  it('names the default tree\'s sitemap, and none in a preview', () => {
+    const source = '<html><head><link rel="sitemap" href="/old.xml"></head><body>Server</body></html>'
+    const html = nativeBrandHead(source, { port: 'py', pagePath: 'api/server/', root: '/en', version: 'v0.62.0' })
+    expect(html).toContain('<link rel="sitemap" type="application/xml" href="https://libtmux.org/py/v0.62.0/sitemap-index.xml">')
+    expect(html).not.toContain('old.xml')
+    expect(html.match(/rel="sitemap"/g)).toHaveLength(1)
+    expect(nativeBrandHead(source, { port: 'py', pagePath: 'api/server/', root: '/pr-42/en' })).not.toContain('rel="sitemap"')
+  })
   it('leaves redirect stubs alone', () => {
     const html = '<html><head><meta http-equiv="refresh" content="0;url=/reference/"></head></html>'
     expect(nativeBrandHead(html, { port: 'py', pagePath: '', root: '/en' })).toBe(html)

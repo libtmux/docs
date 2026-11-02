@@ -53,6 +53,7 @@ export const RULES = {
   'social-description-mismatch': ['warn', 'og:description or twitter:description disagrees with the description.'],
   'icon-missing': ['warn', 'No icon link in the head.'],
   'manifest-missing': ['warn', 'No web app manifest link.'],
+  'sitemap-link-missing': ['info', 'No <link rel="sitemap"> pointing at the sitemap that lists the page.'],
   'asset-unreachable': ['error', 'An icon, manifest or social image does not answer 200.'],
   'brand-mismatch': ['warn', "The page advertises another port's or product's brand assets."],
   'lang-mismatch': ['warn', "<html lang> is not the page's locale."],
@@ -93,6 +94,7 @@ export function parseHead(html) {
   let title = null
   let canonical = null
   let manifest = null
+  let sitemap = null
   let refresh = false
   for (const node of children) {
     const a = attributes(node)
@@ -105,6 +107,7 @@ export function parseHead(html) {
       const rels = (a.rel ?? '').toLowerCase().split(/\s+/).filter(Boolean)
       if (rels.includes('canonical') && canonical === null) canonical = a.href ?? ''
       else if (rels.includes('manifest') && manifest === null) manifest = a.href ?? ''
+      else if (rels.includes('sitemap') && sitemap === null) sitemap = a.href ?? ''
       else if (rels.some((rel) => ['icon', 'shortcut', 'apple-touch-icon', 'mask-icon'].includes(rel))) {
         icons.push({ rel: rels.filter((rel) => rel !== 'shortcut').join(' '), href: a.href ?? '', sizes: a.sizes ?? null, type: a.type ?? null })
       } else if (rels.includes('alternate')) {
@@ -128,6 +131,7 @@ export function parseHead(html) {
     msapplicationConfig: meta.get('msapplication-config') ?? null,
     icons,
     manifest,
+    sitemap,
     alternates,
     refresh,
   }
@@ -198,6 +202,7 @@ export function assetsOf(head, base) {
   }
   for (const icon of head.icons) add(icon.rel, icon.href)
   add('manifest', head.manifest)
+  add('sitemap', head.sitemap)
   add('msapplication-config', head.msapplicationConfig)
   for (const key of ['image', 'image:secure_url']) add(`og:${key}`, head.og[key])
   add('twitter:image', head.twitter.image)
@@ -321,6 +326,7 @@ export function pageFindings(page, context = {}) {
     }
     if (!head.icons.some((icon) => icon.rel.split(' ').includes('icon'))) out.push(finding('icon-missing', ''))
     if (!head.manifest) out.push(finding('manifest-missing', ''))
+    if (!head.sitemap) out.push(finding('sitemap-link-missing', ''))
   }
 
   const assets = assetsOf(head, url)
@@ -429,6 +435,7 @@ export function audit(pages, context = {}) {
       twitter: page.head?.twitter ?? null,
       icons: page.head?.icons ?? null,
       manifest: page.head?.manifest ?? null,
+      sitemapLink: page.head?.sitemap ?? null,
       brands: page.head ? brandsOf(page.head, page.url) : null,
       assets: page.head ? assetsOf(page.head, page.url).map((asset) => ({ ...asset, status: page.assets?.[asset.url] ?? null })) : null,
       alternates: page.head?.alternates ?? null,
