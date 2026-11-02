@@ -9,7 +9,11 @@ import { PORT_BY_SLUG, portSitemapUrl } from '../site/src/lib/ports.ts'
 const escape = (text) => String(text).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
 
 /** Add crawler-visible artwork while preserving native canonical/robots policy. */
-/** `version` names the port tree whose sitemap lists these pages; a preview builds none and passes no version. */
+/**
+ * `version` names the port tree whose sitemap lists these pages; a preview builds none and passes no version.
+ * @param {string} html
+ * @param {{ port: string, pagePath: string, root?: string, version?: string }} options
+ */
 export function nativeBrandHead(html, { port, pagePath, root = '/en', version }) {
   if (!/<head[\s>]/i.test(html) || /http-equiv=["']refresh["']/i.test(html)) return html
   const brand = branding(port, pagePath, root)

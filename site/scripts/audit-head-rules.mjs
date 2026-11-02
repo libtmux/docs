@@ -253,11 +253,20 @@ function contextWords(where) {
 }
 
 /**
+ * @typedef {{ rule: string, severity: string, detail: string }} Finding
+ * @typedef {{ severity: string, count: number, examples: string[] }} RuleCount
+ */
+
+/**
  * Findings for one page that depend on nothing else.
  *
  * `page` is `{ url, status, location, head, assets }` with `assets` mapping an
  * asset URL to its status (`0` when the request failed). `context.sitemap` is a
  * Set of listed URLs, or null when no sitemap was read.
+ *
+ * @param {Record<string, any>} page
+ * @param {Record<string, any>} [context]
+ * @returns {Finding[]}
  */
 export function pageFindings(page, context = {}) {
   const out = []
@@ -369,6 +378,9 @@ export function pageFindings(page, context = {}) {
 /**
  * Findings that compare pages: duplicate titles and descriptions among
  * indexable pages, and translations a head does not point at.
+ *
+ * @param {Record<string, any>[]} pages
+ * @returns {Map<string, Finding[]>}
  */
 export function setFindings(pages) {
   const out = new Map()
@@ -415,12 +427,23 @@ export function setFindings(pages) {
   return out
 }
 
-/** Findings about the sitemap files themselves: one per advertised sitemap that does not answer 200. */
+/**
+ * Findings about the sitemap files themselves: one per advertised sitemap that does not answer 200.
+ *
+ * @param {{ url: string, status: number }[]} sitemaps
+ * @returns {(Finding & { url: string })[]}
+ */
 export function sitemapFindings(sitemaps) {
   return sitemaps.filter((sitemap) => sitemap.status !== 200).map((sitemap) => ({ url: sitemap.url, ...finding('sitemap-unreachable', String(sitemap.status || 'no response')) }))
 }
 
-/** Attach findings to pages and count them by rule. */
+/**
+ * Attach findings to pages and count them by rule.
+ *
+ * @param {Record<string, any>[]} pages
+ * @param {Record<string, any>} [context]
+ * @returns {{ results: (Record<string, any> & { findings: Finding[] })[], byRule: Record<string, RuleCount> }}
+ */
 export function audit(pages, context = {}) {
   const extra = setFindings(pages)
   const results = pages.map((page) => {
