@@ -39,7 +39,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSy
 import { join, relative, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 import { LOCALES } from '../src/i18n/locales.ts'
-import { assetsOf, audit, parseHead, renderHtml, renderMarkdown, RULES } from './audit-head-rules.mjs'
+import { assetsOf, audit, parseHead, renderHtml, renderMarkdown, RULES, sitemapFindings } from './audit-head-rules.mjs'
 
 const USER_AGENT = 'libtmux-docs-head-audit/1 (+https://github.com/libtmux/docs; on-demand, bounded)'
 const HEAD_LIMIT = 1 << 20
@@ -298,10 +298,10 @@ if (assetMode !== 'off') {
 }
 
 const { results, byRule } = audit(pages, { sitemap: sitemaps.length ? listed : null })
-for (const sitemap of sitemaps.filter((entry) => entry.status !== 200)) {
-  const entry = (byRule['sitemap-unreachable'] ??= { severity: RULES['sitemap-unreachable'][0], count: 0, examples: [] })
+for (const { url, rule, severity } of sitemapFindings(sitemaps)) {
+  const entry = (byRule[rule] ??= { severity, count: 0, examples: [] })
   entry.count += 1
-  entry.examples.push(sitemap.url)
+  entry.examples.push(url)
 }
 
 const report = {
