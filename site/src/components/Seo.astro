@@ -4,7 +4,7 @@ import { branding, documentationTitle, jsonLd, PYTHON_DESCRIPTION, PYTHON_SAME_A
 import { DOC_PRODUCTS, PORT_BY_SLUG, portSitemapUrl, type DocProduct } from '../lib/ports'
 import { canonicalUrl, robotsFor, type VersionEntry } from '../lib/versions'
 import { IS_ROOT_BUILD, SITE_ROOT, withRoot } from '../lib/site-root'
-import { DEFAULT_LOCALE, localeRoot } from '../i18n/locales'
+import { buildLocale, DEFAULT_LOCALE, localeRoot } from '../i18n/locales'
 
 /**
  * Every head tag that search engines care about, in one place.
@@ -117,8 +117,11 @@ const siteLevel = Boolean(portSlug) && /^meta(?:\/|$)/.test(pagePath)
 
 // A page in another locale's tree that no translation backs is the English page
 // under a different prefix. It names the English page and stays out of an index,
-// as a placeholder does; a translated page says so with `locales`.
-const untranslated = locale !== DEFAULT_LOCALE && !locales.includes(locale) && !canonicalOverride
+// as a placeholder does; a translated page says so with `locales`. The tree is
+// the build's, not the `locale` prop's: a static page that never passes one
+// still renders in the tree it is built into.
+const treeLocale = buildLocale()
+const untranslated = treeLocale !== DEFAULT_LOCALE && !locales.includes(treeLocale) && !canonicalOverride
 
 // Shared shell pages are canonical to themselves. Port pages canonicalise to
 // the same path under the port's default version.
