@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  DESCRIPTION_BUDGET, documentationTitle, SITE_NAME, stripSiteSuffix, TITLE_BUDGET, type TitleSubject,
+  DESCRIPTION_BUDGET, documentationTitle, SITE_NAME, stripSiteSuffix, symbolDescription, TITLE_BUDGET, type TitleSubject,
 } from '../src/lib/branding'
 import { PORTS, portHomeTitle } from '../src/lib/ports'
 
@@ -107,5 +107,27 @@ describe('the document title scheme', () => {
   it('states its budgets', () => {
     expect(TITLE_BUDGET).toBe(60)
     expect(DESCRIPTION_BUDGET).toBe(160)
+  })
+})
+
+describe('a symbol page description', () => {
+  it('leads with the name, so members that share a summary stay apart', () => {
+    expect(symbolDescription('CaptureResult.PaneId', 'The pane that was read.', 'property')).toBe('CaptureResult.PaneId: The pane that was read.')
+    expect(symbolDescription('Pane.id', 'The pane that was read.', 'property')).not.toBe(symbolDescription('Capture.id', 'The pane that was read.', 'property'))
+  })
+
+  it('does not repeat a name the summary already leads with', () => {
+    expect(symbolDescription('Server', 'Server is one tmux server.', 'class')).toBe('Server is one tmux server.')
+  })
+
+  it('names the kind and the reference when a symbol has no summary', () => {
+    expect(symbolDescription('shell_command', undefined, 'variable in the tmux API reference')).toBe('shell_command: variable in the tmux API reference.')
+  })
+
+  it('stays within the budget, ending on a word', () => {
+    const long = symbolDescription('Name', `${'word '.repeat(60)}`, 'x')
+    expect(long.length).toBeLessThanOrEqual(DESCRIPTION_BUDGET)
+    expect(long.endsWith('…')).toBe(true)
+    expect(long.slice(0, -1).endsWith('word')).toBe(true)
   })
 })

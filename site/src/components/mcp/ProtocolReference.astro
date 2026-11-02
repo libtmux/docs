@@ -10,6 +10,7 @@ import SymbolName from '../api/SymbolName.astro'
 import McpSchemaFields from './McpSchema.astro'
 import McpSchemaType from './McpSchemaType.astro'
 import { PORT_BY_SLUG, portPageUrl } from '../../lib/ports'
+import { symbolDescription } from '../../lib/branding'
 import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects, mcpObjectAt, mcpSectionGroups, mcpWraps, plainSummary, renderToolDescription, toolSummary, type McpSection } from '../../lib/mcp-reference'
 import { schemaDefinitions, type McpSchema } from '../../lib/mcp-schema'
 import { TIERS, mcpToolFacts, type TierId } from '../../lib/mcp-showcase'
@@ -121,7 +122,7 @@ const wrapsHref = wraps ? referenceHref(port, wraps.call, version) : undefined
 const wrapped = wraps ? API_MODELS[port]?.symbols.find((symbol) => (symbol.publicId ?? symbol.id) === wraps.call) : undefined
 const wrapsBadge = wrapped ? mentionBadge(nativeKind(wrapped, port), wrapped.command?.kind ?? wrapped.kind) : undefined
 ---
-<DocsLayout title={object ? title : `${info.name} MCP ${title}`} description={object ? plainSummary(object.description, port) : introductions[section]}
+<DocsLayout title={object ? title : `${info.name} MCP ${title}`} description={object ? symbolDescription(object.name, plainSummary(object.description, port) || undefined, `MCP ${object.kind.replace('-', ' ')} in the ${info.language} API reference`) : introductions[section]}
   inventoryId={`protocol:${object?.id ?? section}`}
   port={port} statusProduct="mcp" version={version} pagePath={path} pageSource={pageSource} pagePorts={pagePorts}
   breadcrumbs={breadcrumbs} markdown="rendered" tableOfContents={false} bare>
