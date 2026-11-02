@@ -229,6 +229,13 @@ describe('head audit across pages', () => {
     expect(found.get(b)?.map((item) => item.rule).sort()).toEqual(['description-duplicate', 'title-duplicate'])
   })
 
+  it('does not ask a page to point at a translation that says noindex', () => {
+    const en = `${ORIGIN}/en/meta/parity/`
+    const ja = `${ORIGIN}/ja/meta/parity/`
+    const pages = [page(en), page(ja, (s) => { s.robots = 'noindex, follow'; s.title = 'Parity (ja)' })]
+    expect(setFindings(pages).get(en)).toBeUndefined()
+  })
+
   it('lets one page share its description across languages, and not across two pages of one port', () => {
     const same = (s: Spec) => { s.description = 'The same description of two pages in the site.' }
     const ts = `${ORIGIN}/en/ts/latest/guides/sending-keys/`
@@ -266,6 +273,32 @@ describe('head audit across pages', () => {
     expect(results.map((result) => result.findings.map((item) => item.rule))).toEqual([['description-missing'], []])
     expect(byRule['description-missing']).toEqual({ severity: 'warn', count: 1, examples: [a] })
     expect(results[0]).toMatchObject({ section: 'port/core/guides', expectedBrand: 'typescript/library', inSitemap: true, brands: ['typescript/library'] })
+  })
+})
+
+describe('the head Seo writes for a page in a locale tree', () => {
+  const base = { pagePath: 'meta/parity', title: 'Parity', version: 'latest', defaultVersion: 'latest', versionEntry: { slug: 'latest', label: 'latest', kind: 'trunk', supported: true } }
+  async function head(props: Record<string, unknown>) {
+    const template = await loadAstroTemplate('components/Seo.astro')
+    return parseHead(`<html lang="ja"><head>${await renderAstroTemplate(template, { props: { ...base, ...props } })}</head></html>`)
+  }
+
+  it('names the English page and stays out of an index when no translation backs it', async () => {
+    const parsed = await head({ locale: 'ja' })
+    expect(parsed.robots).toBe('noindex, follow')
+    expect(parsed.canonical).toBe('https://libtmux.org/en/meta/parity/')
+  })
+
+  it('is indexable at its own URL once a translation says it exists', async () => {
+    const parsed = await head({ locale: 'ja', locales: ['en', 'ja'] })
+    expect(parsed.robots).toBe('index, follow')
+    // The build's own prefix (empty under test) composes the self canonical, not the English page.
+    expect(parsed.canonical).not.toBe('https://libtmux.org/en/meta/parity/')
+    expect(parsed.alternates.map((item: { hreflang: string }) => item.hreflang)).toEqual(['en', 'ja', 'x-default'])
+  })
+
+  it('leaves the English page alone', async () => {
+    expect((await head({ locale: 'en' })).robots).toBe('index, follow')
   })
 })
 

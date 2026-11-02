@@ -4,7 +4,7 @@ import { branding, documentationTitle, jsonLd, PYTHON_DESCRIPTION, PYTHON_SAME_A
 import { DOC_PRODUCTS, PORT_BY_SLUG, portSitemapUrl, type DocProduct } from '../lib/ports'
 import { canonicalUrl, robotsFor, type VersionEntry } from '../lib/versions'
 import { IS_ROOT_BUILD, SITE_ROOT, withRoot } from '../lib/site-root'
-import { localeRoot } from '../i18n/locales'
+import { DEFAULT_LOCALE, localeRoot } from '../i18n/locales'
 
 /**
  * Every head tag that search engines care about, in one place.
@@ -100,19 +100,6 @@ const twitterImage = tmux ? tmuxLogo : new URL(brand.asset('twitter-light.png'),
  */
 const rootedOrigin = `${origin}${SITE_ROOT}`
 
-// A page about the site itself (`meta/…`) belongs to the site root. A port tree
-// carries a copy, so the copy names the root page and stays out of an index, as
-// the support, parity and translations pages already do.
-const siteLevel = Boolean(portSlug) && /^meta(?:\/|$)/.test(pagePath)
-
-// Shared shell pages are canonical to themselves. Port pages canonicalise to
-// the same path under the port's default version.
-const canonical = canonicalOverride
-  ? new URL(canonicalOverride, origin).href
-  : portSlug && !siteLevel
-  ? canonicalUrl(rootedOrigin, portSlug, version, defaultVersion, pagePath, existsInDefault)
-  : `${rootedOrigin}/${pagePath.replace(/^\/+/, '').replace(/\/+$/, '')}${pagePath.replace(/^\/+/, '') ? '/' : ''}`
-
 /**
  * The URL of this page in one locale, built from the unprefixed source path
  * rather than from `canonical` — which already carries the current locale's
@@ -122,6 +109,26 @@ const localeBase = (sourcePath ?? pagePath).replace(/^\/+|\/+$/g, '')
 // Each locale's own root, not this build's: an alternate is a sibling tree,
 // so it does not inherit whatever prefix this build carries.
 const localeHref = (l: string) => `${origin}${localeRoot(l)}${localeBase}${localeBase ? '/' : ''}`
+
+// A page about the site itself (`meta/…`) belongs to the site root. A port tree
+// carries a copy, so the copy names the root page and stays out of an index, as
+// the support, parity and translations pages already do.
+const siteLevel = Boolean(portSlug) && /^meta(?:\/|$)/.test(pagePath)
+
+// A page in another locale's tree that no translation backs is the English page
+// under a different prefix. It names the English page and stays out of an index,
+// as a placeholder does; a translated page says so with `locales`.
+const untranslated = locale !== DEFAULT_LOCALE && !locales.includes(locale) && !canonicalOverride
+
+// Shared shell pages are canonical to themselves. Port pages canonicalise to
+// the same path under the port's default version.
+const canonical = canonicalOverride
+  ? new URL(canonicalOverride, origin).href
+  : untranslated
+  ? localeHref(DEFAULT_LOCALE)
+  : portSlug && !siteLevel
+  ? canonicalUrl(rootedOrigin, portSlug, version, defaultVersion, pagePath, existsInDefault)
+  : `${rootedOrigin}/${pagePath.replace(/^\/+/, '').replace(/\/+$/, '')}${pagePath.replace(/^\/+/, '') ? '/' : ''}`
 
 const isDefault = version === defaultVersion
 
@@ -140,7 +147,7 @@ const isDefault = version === defaultVersion
 // still mounts the whole site, and reading the base marked every shared page
 // noindex the moment one was added.
 const isRootShellBuild = IS_ROOT_BUILD && versionEntry.kind !== 'pr'
-const indexable = siteLevel ? false : portSlug ? isDefault : isRootShellBuild
+const indexable = siteLevel || untranslated ? false : portSlug ? isDefault : isRootShellBuild
 
 const robots = noindex ? 'noindex, nofollow' : robotsFor(versionEntry, indexable)
 
