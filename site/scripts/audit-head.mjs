@@ -186,7 +186,8 @@ async function advertisedSitemaps() {
 /** Every `index.html` under a built tree, as the URL it is served at. */
 function distPages() {
   const found = []
-  const skip = /^(?:_astro|_static|_sources|_images|_shell|pagefind|brand|\.build-logs|node_modules)$/
+  // `demo` is Disallowed in robots.txt and kept out of every sitemap; the audit reads what a crawler may.
+  const skip = /^(?:_astro|_static|_sources|_images|_shell|pagefind|brand|demo|\.build-logs|node_modules)$/
   const walk = (dir) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const path = join(dir, entry.name)

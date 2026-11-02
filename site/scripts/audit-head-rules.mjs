@@ -347,12 +347,12 @@ export function pageFindings(page, context = {}) {
     const brands = brandsOf(head, url)
     const wrong = brands.filter((brand) => brand !== where.brand)
     if (wrong.length || (assets.length && !brands.length)) {
-      out.push(finding('brand-mismatch', `advertises ${brands.join(', ') || 'none'}; expected ${where.brand}`))
+      out.push({ ...finding('brand-mismatch', `advertises ${brands.join(', ') || 'none'}; expected ${where.brand}`), severity: noindex ? 'info' : 'warn' })
     }
   }
 
   if (where.locale && head.lang && head.lang.toLowerCase() !== where.locale) {
-    out.push(finding('lang-mismatch', `lang="${head.lang}" in the ${where.locale} tree`))
+    out.push({ ...finding('lang-mismatch', `lang="${head.lang}" in the ${where.locale} tree`), severity: noindex ? 'info' : 'warn' })
   }
 
   const hreflang = head.alternates.filter((alternate) => alternate.hreflang)
@@ -408,7 +408,8 @@ export function setFindings(pages) {
     }
   }
   const byPath = new Map()
-  for (const page of live) {
+  // A sibling that says noindex is not a translation to point at.
+  for (const page of indexable) {
     const where = locate(page.url)
     if (!where.locale) continue
     const key = new URL(page.url).pathname.split('/').filter(Boolean).slice(1).join('/')
