@@ -53,7 +53,7 @@ describe('section and item permalinks', () => {
     ])
   })
 
-  it('names option rows consistently across tmux versions', () => {
+  it('names option rows the same on a pinned tmux version as on latest', () => {
     const rows = (version: string) => tmuxCommandNotes(version, 'capture-pane')!.groups
       .flatMap((group) => group.options)
     const current = rows('latest')
@@ -61,7 +61,7 @@ describe('section and item permalinks', () => {
     expect(current.find((row) => row.flag === 'S')!.id).toBe('capture-pane-options-output-and-line-range-s')
     expect(current.find((row) => row.flag === 'e')!.id).toBe('capture-pane-options-text-formatting-e')
     expect(new Set(current.map((row) => row.id)).size).toBe(current.length)
-    for (const older of rows('3.2a')) expect(older.id).toBe(current.find((row) => row.flag === older.flag)!.id)
+    for (const pinned of rows('3.7c')) expect(pinned.id).toBe(current.find((row) => row.flag === pinned.flag)!.id)
   })
 
   it('slugifies punctuation and keeps non-Latin labels descriptive', () => {

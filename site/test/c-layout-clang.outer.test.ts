@@ -1,4 +1,4 @@
-// Outer: compares both source inventories with an installed native compiler.
+// Outer: compares the source inventory with an installed native compiler.
 import { execFileSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -8,7 +8,7 @@ import { supportsCSignatures } from '../src/lib/code-layout'
 import { formatCDeclaration, formatCEnumDeclaration } from '../src/lib/cxx-code-layout'
 import { tmuxSourceModel } from '../src/lib/tmux-reference'
 
-const VERSIONS = ['3.2a', '3.7c'] as const
+const VERSIONS = ['3.7c'] as const
 
 /** The formatter the fixtures pin, when this machine has it. */
 function clangFormat(): ((texts: string[], limit: number) => string[]) | undefined {
@@ -33,7 +33,7 @@ function clangFormat(): ((texts: string[], limit: number) => string[]) | undefin
 const clang = clangFormat()
 
 describe.skipIf(!clang)('C layouts agree with the clang-format on this machine', () => {
-  it('formats a sample of the declarations in both tmux versions as clang-format does', () => {
+  it('formats a sample of the tmux declarations as clang-format does', () => {
     const raws = new Map<string, string>()
     for (const version of VERSIONS) {
       for (const symbol of tmuxSourceModel(version).symbols) {

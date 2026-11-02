@@ -60,7 +60,7 @@ function githubSourceMatches(href: string | undefined, page: string): boolean {
 describe('GitHub footer targets', () => {
   it('identifies tmux command sources independently of the library ports', () => {
     for (const prefix of ['', 'pr-67/']) {
-      const page = `${prefix}en/tmux/3.2a/manual/capture-pane/index.html`
+      const page = `${prefix}en/tmux/3.7c/manual/capture-pane/index.html`
       expect(githubSourceMatches('https://github.com/tmux/tmux/', page)).toBe(true)
       expect(githubSourceMatches('https://github.com/libtmux/docs/', page)).toBe(false)
       expect(githubSourceMatches('https://github.com/unrelated/tmux/', page)).toBe(false)

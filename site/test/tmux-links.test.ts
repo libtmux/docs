@@ -100,14 +100,13 @@ describe('contextual tmux command mentions', () => {
       command: 'run-shell', href: '/tmux/latest/manual/run-shell/',
     }])
     expect(tmuxCommandMentions('tmux -CLexample -- has -t work', { code: true })[0]?.command).toBe('has-session')
-    for (const version of ['3.2a', '3.7c']) {
+    for (const version of ['3.7c']) {
       for (const command of tmuxManual(version).commands) {
         expect(tmuxCommandMentions(command.name, { code: true, version })[0]?.href)
           .toBe(`/tmux/${version}/manual/${command.name}/`)
         if (command.alias) expect(tmuxCommandMentions(`tmux ${command.alias}`, { code: true, version })[0]?.command).toBe(command.name)
       }
     }
-    expect(tmuxCommandMentions('new-pane', { code: true, version: '3.2a' })).toEqual([])
     expect(tmuxCommandMentions('new-pane', { code: true, version: '3.7c' })[0]?.command).toBe('new-pane')
   })
 
@@ -155,7 +154,7 @@ describe('contextual tmux command mentions', () => {
   it('keeps native command destinations under the real preview root rather than a library version', async () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '/pr-123/en')
     const links = await import('../src/lib/tmux-links')
-    expect(links.tmuxCommandMentions('run-shell', { code: true, version: '3.2a' })[0]?.href)
-      .toBe('/pr-123/en/tmux/3.2a/manual/run-shell/')
+    expect(links.tmuxCommandMentions('run-shell', { code: true, version: '3.7c' })[0]?.href)
+      .toBe('/pr-123/en/tmux/3.7c/manual/run-shell/')
   })
 })

@@ -136,7 +136,7 @@ describe('inventory footer links', () => {
     for (const path of ['tmux', 'tmux/guides/capturing-output']) {
       expect(inventoryLinks(undefined, 'latest', path).scoped).toBe(withPortRoot('/tmux/objects.inv'))
     }
-    for (const version of ['latest', '3.2a', '3.7c']) for (const section of ['manual', 'catalog', 'reference']) {
+    for (const version of ['latest', '3.7c']) for (const section of ['manual', 'catalog', 'reference']) {
       const path = `tmux/${version}/${section}/entry`
       expect(tmuxInventoryVersion(path)).toBe(version)
       expect(inventoryLinks(undefined, 'latest', path).scoped).toBe(withPortRoot(`/tmux/${version}/objects.inv`))

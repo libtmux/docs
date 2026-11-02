@@ -3,7 +3,6 @@ import { CONCEPTS, conceptsFor } from '@libtmux/api-model'
 import { fromHtml } from 'hast-util-from-html'
 import { select, selectAll, type Element, type Nodes } from 'astro-expressive-code/hast'
 import pins from '../data/tmux/versions.json'
-import v32 from '../data/tmux/3.2a.json'
 import v37 from '../data/tmux/3.7c.json'
 import { API_MODELS, referenceHref } from './api-models'
 import { PORT_BY_SLUG } from './ports'
@@ -15,7 +14,7 @@ import { tmuxUsage, tmuxUsageCommands } from './tmux-library-usage'
 export type TmuxManual = typeof v37
 export type TmuxCommand = TmuxManual['commands'][number]
 export const TMUX_REPOSITORY = 'tmux/tmux'
-export const TMUX_MANUALS: Record<string, TmuxManual> = { '3.2a': v32, '3.7c': v37 }
+export const TMUX_MANUALS: Record<string, TmuxManual> = { '3.7c': v37 }
 export const TMUX_VERSIONS = ['latest', ...pins.versions.map((pin) => pin.version)]
 
 export function tmuxManual(version: string): TmuxManual {

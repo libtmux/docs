@@ -14,10 +14,10 @@
  },
  "context": "Each declaration is formatted with `clang-format --assume-filename=declaration.c` as a top-level statement, with no struct indent. A typedef or member already ends in `;`, which the page prints, so its clangColumnLimit is columns. A prototype or enum the extractor writes without `;` is run with one, and the `;` is removed from the output, because the page never prints it. That `;` takes no printed column, so clangColumnLimit is columns + 1: the `;` then sits in the column the printed text leaves free, and a case is kept only when every printed line stays within columns, which makes the run exact. The hand-written cases whose run at columns + 1 would overrun a line use clangColumnLimit = columns, which is a stand-in: the last line leaves the `;` column free, and the layout is checked against it.",
  "groups": {
-  "corpus": "functions, function-pointer typedefs and members from site/src/data/tmux/api/3.2a.json and 3.7c.json: the shortest, median and longest declaration of each distinct layout shape, where the run is exact",
+  "corpus": "functions, function-pointer typedefs and members from the tmux C reference inventories: the shortest, median and longest declaration of each distinct layout shape, where the run is exact",
   "budget": "a third of the corpus declarations again at 40 and 80 columns",
   "hand-written": "every other group: the cmd_list_panes_window example, controls that fit, a function-pointer parameter, varargs, a return type on its own line, arrays, qualifiers, very long single parameters, typedefs and members",
-  "enum": "enums of plain enumerators from the same two files, one enumerator per line when the enum does not fit"
+  "enum": "enums of plain enumerators from the same inventories, one enumerator per line when the enum does not fit"
  },
  "cases": [
   {

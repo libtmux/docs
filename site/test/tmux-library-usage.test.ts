@@ -573,7 +573,7 @@ describe('from a method to the command and its C function', () => {
   })
 })
 
-describe.each(['3.7c', '3.2a'])('the C pages of tmux %s', (version) => {
+describe.each(['3.7c'])('the C pages of tmux %s', (version) => {
   const model = tmuxSourceModel(version)
   const symbolNamed = (name: string) => model.symbols.find((symbol) => symbol.name === name)!
   const pagesOf = (name: string) => tmuxReferenceContext(version, symbolNamed(name))

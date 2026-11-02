@@ -472,8 +472,8 @@ refresh itself). Every send through a helper is on the method's page.
 
 Every command of the pinned manuals is recorded (`COMMANDS` in the script is
 `all`). `site/src/data/tmux-usage/scopes.json` gives the commands that tmux
-dispatches by scope their scopes and C functions, checked against both pinned C
-models; a command without scope helpers has one column.
+dispatches by scope their scopes and C functions, checked against each pinned C
+model; a command without scope helpers has one column.
 
 ```console
 $ node scripts/gen-tmux-usage.mjs

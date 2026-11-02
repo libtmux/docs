@@ -105,15 +105,15 @@ describe('which names link', () => {
   })
 
   it('resolves only names the selected release has', () => {
-    expect(tmuxCatalogHref('option', 'prefix-timeout', '3.2a')).toBeUndefined()
-    expect(link('prefix-timeout', { code: true, version: '3.2a' })).toEqual([])
+    expect(tmuxCatalogHref('option', 'not-a-tmux-option', '3.7c')).toBeUndefined()
+    expect(link('not-a-tmux-option', { code: true, version: '3.7c' })).toEqual([])
     expect(link('prefix-timeout', { code: true, version: '3.7c' })).toEqual(['option:prefix-timeout'])
     expect(tmuxCatalogHref('option', 'prefix-timeout', '3.7c')).toBe(tmuxCatalogUrl('3.7c', 'option', 'prefix-timeout'))
   })
 
   it('answers through one function for every kind of tmux name', () => {
     expect(tmuxEntityHref('command', 'set-hook')).toBe(tmuxManualUrl('latest', 'set-hook'))
-    expect(tmuxEntityHref('option', 'status-left', '3.2a')).toBe('/tmux/3.2a/catalog/options/status-left/')
+    expect(tmuxEntityHref('option', 'status-left', '3.7c')).toBe('/tmux/3.7c/catalog/options/status-left/')
     expect(tmuxEntityHref('command', 'status-left')).toBeUndefined()
     expect(tmuxEntityHref('hook', 'session-created')).toBe('/tmux/latest/catalog/hooks/session-created/')
     expect(tmuxEntityHref('format', 'session_name')).toBe('/tmux/latest/catalog/formats/session_name/')
@@ -231,7 +231,7 @@ describe('the CLI Manual', () => {
     expect(linked).not.toContain('options/default-size')
     expect(linked).toContain('/tmux/3.7c/catalog/hooks/session-created/')
     expect(linked).not.toContain('not-a-tmux-option</a>')
-    expect(linkTmuxManualCatalog(html, '3.2a', { kind: 'option', name: 'default-size' })).toContain('/tmux/3.2a/catalog/hooks/session-created/')
+    expect(linkTmuxManualCatalog(html, 'latest', { kind: 'option', name: 'default-size' })).toContain('/tmux/latest/catalog/hooks/session-created/')
   })
 })
 

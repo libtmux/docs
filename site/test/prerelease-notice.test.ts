@@ -85,7 +85,7 @@ describe('bare pages', () => {
 
 describe('prerelease notice ownership', () => {
   it('assigns versioned tmux manuals, catalogs and C pages to their release inventory', async () => {
-    for (const version of ['latest', '3.7c', '3.2a']) for (const section of ['manual', 'catalog', 'reference']) {
+    for (const version of ['latest', '3.7c']) for (const section of ['manual', 'catalog', 'reference']) {
       const page = `tmux/${version}/${section}/entry`
       for (const pagePath of [page, undefined]) {
         const href = `/pr-42/en/${page}/`
@@ -113,7 +113,7 @@ describe('prerelease notice ownership', () => {
     for (const prefix of ['/en/', '/ja/', '/pr-42/en/', '/pr-42/ja/']) {
       for (const page of ['tmux', 'tmux/', 'tmux/guides', 'tmux/topics/environment',
         'tmux/concepts/servers', 'tmux/examples/capture', 'tmux/latest/manual',
-        'tmux/3.2a/manual/full/', 'tmux/latest/reference/server', 'tmux/3.7c/reference/']) {
+        'tmux/3.7c/manual/full/', 'tmux/latest/reference/server', 'tmux/3.7c/reference/']) {
         for (const pagePath of [page, undefined]) {
           const html = await render(`${prefix}${page}?q=server#members`, pagePath)
           expect(html, `${prefix}${page} (${pagePath ?? 'route fallback'})`).not.toContain('data-prerelease-notice')

@@ -3,7 +3,6 @@ import { createHash } from 'node:crypto'
 import { CONCEPTS, conceptsFor, type ApiSymbol } from '@libtmux/api-model'
 import { API_MODELS } from './api-models'
 import pins from '../data/tmux/versions.json'
-import v32 from '../data/tmux/catalog/3.2a.json'
 import v37 from '../data/tmux/catalog/3.7c.json'
 import type { ApiTreeJson } from './api-search'
 import { referenceSectionTree } from './api-tree'
@@ -57,7 +56,6 @@ export interface CatalogModel {
 }
 
 const models: Record<string, CatalogModel> = {
-  '3.2a': v32 as unknown as CatalogModel,
   '3.7c': v37 as unknown as CatalogModel,
 }
 
@@ -148,6 +146,12 @@ export interface CatalogRelease {
   changes: { field: string; from: CatalogValue; to: CatalogValue }[]
 }
 
+/** The compared fields whose value differs between two releases of one entry. */
+export function tmuxCatalogChanges(previous: CatalogEntry, entry: CatalogEntry): CatalogRelease['changes'] {
+  return COMPARED.flatMap((field) => JSON.stringify(previous[field]) === JSON.stringify(entry[field]) ? []
+    : [{ field, from: previous[field], to: entry[field] }])
+}
+
 /** Presence and changes across the pinned releases, oldest first. */
 export function tmuxCatalogHistory(kind: CatalogKind, name: string): CatalogRelease[] {
   const releases = [...pins.versions].reverse().map((pin) => pin.version)
@@ -155,10 +159,7 @@ export function tmuxCatalogHistory(kind: CatalogKind, name: string): CatalogRele
   let previous: CatalogEntry | undefined
   for (const version of releases) {
     const entry = tmuxCatalogEntry(version, kind, name)
-    const changes = entry && previous
-      ? COMPARED.flatMap((field) => JSON.stringify(previous![field]) === JSON.stringify(entry[field]) ? []
-        : [{ field, from: previous![field], to: entry[field] }])
-      : []
+    const changes = entry && previous ? tmuxCatalogChanges(previous, entry) : []
     out.push({ version, present: Boolean(entry), changes })
     previous = entry ?? previous
   }

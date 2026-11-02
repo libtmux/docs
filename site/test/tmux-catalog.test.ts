@@ -11,7 +11,7 @@ import { highlightedPreview } from '../src/lib/link-preview'
 import { createLinkPreviewPolicy } from '../src/lib/link-preview-paint'
 import { searchApi } from '../src/lib/api-search'
 import {
-  catalogKindForSegment, tmuxCatalog, tmuxCatalogChangeText, tmuxCatalogEntries, tmuxCatalogEntry, tmuxCatalogHistory,
+  catalogKindForSegment, tmuxCatalog, tmuxCatalogChangeText, tmuxCatalogChanges, tmuxCatalogEntries, tmuxCatalogEntry, tmuxCatalogHistory,
   tmuxCatalogNavigation, tmuxCatalogRoutes, tmuxCatalogUrl, tmuxCatalogVersionUrl,
 } from '../src/lib/tmux-catalog'
 import { tmuxCatalogPreview } from '../src/lib/tmux-catalog-preview'
@@ -186,20 +186,26 @@ describe('catalog data across releases', () => {
     expect(tmuxCatalogEntry('3.7c', 'format', 'buffer_created')!.type).toBe('time')
   })
 
-  it('reports where an entry exists and what changed between the pinned releases', () => {
-    const history = tmuxCatalogHistory('option', 'destroy-unattached')
-    expect(history.map((release) => release.version)).toEqual(['3.2a', '3.7c'])
-    expect(history[1].changes.map(tmuxCatalogChangeText)).toEqual(['type flag to choice', 'values now off, on, keep-last, keep-group'])
-    expect(tmuxCatalogHistory('option', 'escape-time')[1].changes.map(tmuxCatalogChangeText)).toEqual(['default 500 to 10', 'unit now milliseconds'])
-    expect(tmuxCatalogHistory('option', 'repeat-time')[1].changes.map(tmuxCatalogChangeText)).toEqual(['maximum 32767 to 2000000'])
-    expect(tmuxCatalogHistory('hook', 'client-active').map((release) => release.present)).toEqual([false, true])
-    expect(tmuxCatalogEntry('3.2a', 'hook', 'client-active')).toBeUndefined()
-    expect(tmuxCatalogVersionUrl('3.2a', 'hook', 'client-active')).toMatch(/\/tmux\/3\.2a\/catalog\/hooks\/$/)
+  it('reports whether an entry exists in each pinned release', () => {
+    expect(tmuxCatalogHistory('option', 'destroy-unattached')).toEqual([{ version: '3.7c', present: true, changes: [] }])
+    expect(tmuxCatalogHistory('hook', 'not-a-hook')).toEqual([{ version: '3.7c', present: false, changes: [] }])
+    expect(tmuxCatalogEntry('3.7c', 'hook', 'not-a-hook')).toBeUndefined()
+    expect(tmuxCatalogVersionUrl('3.7c', 'hook', 'not-a-hook')).toMatch(/\/tmux\/3\.7c\/catalog\/hooks\/$/)
+  })
+
+  // One pinned release leaves nothing to compare, so each case edits a copy of the entry to stand in for an earlier release.
+  it('names what changed between two releases of an entry', () => {
+    const entry = (name: string) => tmuxCatalogEntry('3.7c', 'option', name)!
+    const changes = (name: string, earlier: object) => tmuxCatalogChanges({ ...entry(name), ...earlier }, entry(name)).map(tmuxCatalogChangeText)
+    expect(changes('destroy-unattached', { type: 'flag', choices: undefined })).toEqual(['type flag to choice', 'values now off, on, keep-last, keep-group'])
+    expect(changes('escape-time', { default: 500, unit: undefined })).toEqual(['default 500 to 10', 'unit now milliseconds'])
+    expect(changes('repeat-time', { maximum: 32767 })).toEqual(['maximum 32767 to 2000000'])
+    expect(changes('repeat-time', {})).toEqual([])
   })
 
   it('builds one route per entry and an index and section page for each release', () => {
     const routes = tmuxCatalogRoutes()
-    for (const version of ['latest', '3.7c', '3.2a']) {
+    for (const version of ['latest', '3.7c']) {
       const own = routes.filter((route) => route.version === version)
       const model = tmuxCatalog(version)
       expect(own.filter((route) => route.slug?.includes('/'))).toHaveLength(model.entries.length)
@@ -211,7 +217,7 @@ describe('catalog data across releases', () => {
   })
 
   it('places every entry in the tree once and finds it by name, short form or description', () => {
-    for (const version of ['3.2a', '3.7c']) {
+    for (const version of ['3.7c']) {
       const { tree, json } = tmuxCatalogNavigation(version)
       const placed = tree.flatMap((bucket) => bucket.children.flatMap((child) => child.entries.map((entry) => entry.id)))
       expect(placed.toSorted()).toEqual(tmuxCatalogEntries(version).map((entry) => `${entry.kind}.${entry.name}`).toSorted())
@@ -248,7 +254,7 @@ describe('catalog data across releases', () => {
   })
 
   it('anchors every entry in the manual page it names', () => {
-    for (const version of ['3.2a', '3.7c']) {
+    for (const version of ['3.7c']) {
       const tree = fromHtml(linkTmuxManualEntries(tmuxManual(version).manual), { fragment: true })
       const ids = new Set(selectAll('[id]', tree).map((node) => String(node.properties.id)))
       const missing = tmuxCatalogEntries(version).flatMap((entry) => entry.manual && !ids.has(entry.manual.anchor) ? [`${entry.kind}/${entry.name}:${entry.manual.anchor}`] : [])

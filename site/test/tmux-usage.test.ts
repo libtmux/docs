@@ -4,7 +4,6 @@ import bash from 'shiki/langs/bash.mjs'
 import { createRenderer } from 'astro-expressive-code'
 import { select, toHtml } from 'astro-expressive-code/hast'
 import config from '../ec.config.mjs'
-import catalog32 from '../src/data/tmux/3.2a.json'
 import catalog37 from '../src/data/tmux/3.7c.json'
 import { codeLang, highlightInline } from '../src/lib/highlight'
 import { tmuxUsage } from '../src/lib/tmux-usage.mjs'
@@ -43,7 +42,7 @@ describe('tmux usage highlighting', () => {
     lang: 'tmux-usage', theme, includeExplanation: true,
   })
 
-  it.each([catalog32, catalog37])('distinguishes capture syntax from Bash in tmux $version', (catalog) => {
+  it.each([catalog37])('distinguishes capture syntax from Bash in tmux $version', (catalog) => {
     const command = catalog.commands.find((entry) => entry.name === 'capture-pane')!
     const highlighted = tokens(`tmux ${command.name} ${command.usage}`).tokens.flat()
     for (const [text, scope] of [
@@ -72,11 +71,9 @@ describe('tmux usage highlighting', () => {
   })
 
   it('preserves every recorded command synopsis byte for byte', () => {
-    for (const catalog of [catalog32, catalog37]) {
-      for (const command of catalog.commands) {
-        const text = `tmux ${command.name} ${command.usage}`
-        expect(tokens(text).tokens.map((line) => line.map((token) => token.content).join('')).join('\n')).toBe(text)
-      }
+    for (const command of catalog37.commands) {
+      const text = `tmux ${command.name} ${command.usage}`
+      expect(tokens(text).tokens.map((line) => line.map((token) => token.content).join('')).join('\n')).toBe(text)
     }
   })
 

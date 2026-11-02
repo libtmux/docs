@@ -62,11 +62,11 @@ describe('tmux manual sitemap routes', () => {
     const keep = ['', 'capture-pane/', 'full/']
     for (const path of keep) {
       expect(sitemapOptions.filter!(`https://libtmux.org/en/tmux/latest/manual/${path}`)).toBe(true)
-      expect(sitemapOptions.filter!(`https://libtmux.org/en/tmux/3.2a/manual/${path}`)).toBe(false)
+      expect(sitemapOptions.filter!(`https://libtmux.org/en/tmux/3.7c/manual/${path}`)).toBe(false)
     }
     for (const path of ['', 'c-struct-session/']) {
       expect(sitemapOptions.filter!(`https://libtmux.org/en/tmux/latest/reference/${path}`)).toBe(true)
-      expect(sitemapOptions.filter!(`https://libtmux.org/en/tmux/3.2a/reference/${path}`)).toBe(false)
+      expect(sitemapOptions.filter!(`https://libtmux.org/en/tmux/3.7c/reference/${path}`)).toBe(false)
     }
     for (const path of ['capture-pane/', 'manual/']) {
       expect(sitemapOptions.filter!(`https://libtmux.org/en/tmux/latest/reference/${path}`)).toBe(false)

@@ -1,7 +1,6 @@
-import older from '../data/tmux/3.2a.json' with { type: 'json' }
 import current from '../data/tmux/3.7c.json' with { type: 'json' }
 
-const commands = [...new Set([...older.commands, ...current.commands]
+const commands = [...new Set(current.commands
   .flatMap(({ name, alias }) => [name, alias]).filter(Boolean))].join('|')
 
 /** tmux configuration has directives and recursive formats that Bash does not. */

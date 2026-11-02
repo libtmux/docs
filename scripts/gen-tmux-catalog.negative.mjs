@@ -58,14 +58,14 @@ const droppedRun = run(dropped)
 check('a dropped entry fails', droppedRun.code !== 0 && /count is/.test(droppedRun.out), droppedRun.out)
 
 const manual = fixture()
-edit(manual, '3.2a', (model) => { model.manualSha256 = '0'.repeat(64) })
+edit(manual, '3.7c', (model) => { model.manualSha256 = '0'.repeat(64) })
 const manualRun = run(manual)
 check('a manual snapshot from another tmux.1 fails', manualRun.code !== 0 && /manualSha256/.test(manualRun.out), manualRun.out)
 
 const missing = fixture()
-rmSync(join(missing, '3.2a.json'))
+rmSync(join(missing, '3.7c.json'))
 const missingRun = run(missing)
-check('a missing release fails', missingRun.code !== 0 && /Missing tmux catalog: 3\.2a/.test(missingRun.out), missingRun.out)
+check('a missing release fails', missingRun.code !== 0 && /Missing tmux catalog: 3\.7c/.test(missingRun.out), missingRun.out)
 
 if (existsSync(join(source, '.git'))) {
   const fresh = run(committed, '--source', source)

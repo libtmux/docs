@@ -40,10 +40,10 @@ describe('sidebar-derived breadcrumbs', () => {
   })
 
   it('includes the native C reference category and owning declaration', () => {
-    const model = tmuxSourceModel('3.2a')
+    const model = tmuxSourceModel('3.7c')
     const symbol = model.symbols.find((entry) => entry.parent === 'c:struct:window_pane')!
-    const crumbs = tmuxReferenceContext('3.2a', symbol).breadcrumbs
-    expect(crumbs.map((entry) => entry.name)).toEqual(['tmux', 'Reference (3.2a)', 'Pane', 'window_pane', symbol.name])
+    const crumbs = tmuxReferenceContext('3.7c', symbol).breadcrumbs
+    expect(crumbs.map((entry) => entry.name)).toEqual(['tmux', 'Reference (3.7c)', 'Pane', 'window_pane', symbol.name])
   })
 
   it('retains deeper grouping-only ancestors without linking them to an unrelated declaration', () => {
