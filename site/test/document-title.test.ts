@@ -63,6 +63,15 @@ describe('the document title scheme', () => {
     expect(long.title).toBe(`${'x'.repeat(TITLE_BUDGET)} | Rust guide`)
   })
 
+  it('shortens "API reference" to "API" when only that makes the title fit', () => {
+    const name = 'LibTmux.Mcp.BoundedText.ToDisplayString'
+    expect(documentationTitle({ title: name, pagePath: 'mcp/reference/x', portSlug: 'csharp' }).title).toBe(`${name} | C# MCP API`)
+    expect(documentationTitle({ title: name, pagePath: 'mcp/reference/x', portSlug: 'csharp' }).social).toBe(`${name} | C# MCP API`)
+    // A name no context can rescue keeps the whole of it.
+    const long = 'LibTmux.Workspace.WorkspacePlanOptions.WorkspacePlanOptions'
+    expect(documentationTitle({ title: long, pagePath: 'workspace/reference/x', portSlug: 'csharp' }).title).toBe(`${long} | C# Workspace API reference`)
+  })
+
   it('gives the card the title without the site name that og:site_name already shows', () => {
     for (const [, subject] of SCHEME) {
       const { title, social } = documentationTitle(subject)
