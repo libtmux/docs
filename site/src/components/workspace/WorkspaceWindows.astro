@@ -1,0 +1,27 @@
+---
+/**
+ * The drawn windows of one workspace file, each in its own card.
+ *
+ * Shared by the workspace overview's examples and the port landing page, so
+ * both draw a file's panes the same way. Draws nothing when no window can be drawn.
+ */
+import type { WindowPreview } from '../../lib/workspace-showcase'
+import '../../styles/tmux-layout.css'
+import '../../styles/workspace-showcase.css'
+
+interface Props {
+  windows: WindowPreview[]
+}
+const { windows } = Astro.props as Props
+---
+{windows.length > 0 && (
+  <div class="ws-windows">
+    {windows.map((win) => (
+      <figure class="ws-win">
+        <figcaption class="ws-win__name">{win.index}:{win.name ?? 'window'}</figcaption>
+        <Fragment set:html={win.svg} />
+        <figcaption>{win.caption}</figcaption>
+      </figure>
+    ))}
+  </div>
+)}

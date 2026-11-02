@@ -25,6 +25,8 @@ const docs = defineCollection({
     title: z.string(),
     /** A shorter title for the tab, the social tags and lists; the page keeps `title` as its heading. */
     shortTitle: z.string().optional(),
+    /** A line under the heading, as a language page's tagline sits under its name. */
+    subtitle: z.string().optional(),
     inventoryId: z.string().min(1).optional(),
     inventoryAliases: z.array(z.string().min(1)).optional(),
     inventoryTables: z.record(z.string(), z.object({

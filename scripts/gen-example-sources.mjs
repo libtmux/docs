@@ -64,6 +64,17 @@ for (const [owner, products] of Object.entries(LANDING)) {
   }
 }
 
+/*
+ * The Core Library capability showcase quotes programs and tests of each port
+ * and the files that check their results; all are cached at the library's revision.
+ */
+const CAPABILITIES = JSON.parse(readFileSync(join(root, 'site/src/data/core-capabilities.json'), 'utf8'))
+for (const [owner, capabilities] of Object.entries(CAPABILITIES)) {
+  for (const entry of Object.values(capabilities)) {
+    for (const file of [entry.file, ...entry.checkedBy.map((item) => item.file)]) wanted.set(`${owner}:${file}`, { owner, file })
+  }
+}
+
 const digest = (content) => createHash('sha256').update(content).digest('hex')
 
 /** Where a product's file is read: the model records one repository and revision per product. */

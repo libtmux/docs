@@ -19,7 +19,7 @@ describe('port documentation domains', () => {
 
   it('derives reader navigation and landing cards without language-specific rendering branches', () => {
     expect(documentationNavigation('ruby', 'latest')).toEqual([
-      { label: 'Library', items: [{ type: 'link', label: 'Core library', href: '/ruby/latest/' }] },
+      { label: 'Library', items: [{ type: 'link', label: 'Core library', href: '/ruby/latest/core/' }] },
       { label: 'Companion packages', items: [{ type: 'link', label: 'Async', href: '/ruby/latest/guides/async/' }] },
       {
         label: 'Apps',
@@ -30,7 +30,7 @@ describe('port documentation domains', () => {
       },
     ])
     expect(documentationNavigation('lua', 'latest')).toEqual([
-      { label: 'Library', items: [{ type: 'link', label: 'Core library', href: '/lua/latest/' }] },
+      { label: 'Library', items: [{ type: 'link', label: 'Core library', href: '/lua/latest/core/' }] },
       { label: 'Runtime adapters', items: [{ type: 'link', label: 'luv and Neovim', href: '/lua/latest/guides/runtime/' }] },
     ])
     expect(documentationCards('ruby', 'latest').map((card) => card.label)).toEqual(['Async', 'MCP', 'Workspace Manager'])

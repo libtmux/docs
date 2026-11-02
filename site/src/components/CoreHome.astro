@@ -1,0 +1,111 @@
+---
+import { Code } from 'astro-expressive-code/components'
+import CoreShowcase from './CoreShowcase.astro'
+import DocCard from './DocCard.astro'
+import HomeExample from './HomeExample.astro'
+import { PORT_BY_SLUG } from '../lib/ports'
+import { CAPABILITY_GROUPS, coreLead, resolveCoreHome } from '../lib/core-home'
+import { portCapabilities, type CapabilityTable } from '../lib/core-capabilities'
+import { QUICKSTARTS } from '../lib/quickstarts'
+import { installFor, registryFor } from '../lib/registry'
+import { proseHref } from '../lib/docs-paths'
+import { SITE_ROOT } from '../lib/site-root'
+import CAPABILITY_TABLE from '../data/core-capabilities.json'
+import SOURCES from '../data/example-sources.json'
+import type { CachedSource } from '../lib/port-landing'
+
+/**
+ * The body of a port's Core Library home, in the order of the Python front
+ * page: what the library is, where to go next, install, the hierarchy at a
+ * glance, what it does, what it adds over the tmux command line, and where
+ * the port tells you where it is running and how to test with it.
+ *
+ * Every type and capability is read from the port's API model by
+ * `resolveCoreHome`, which throws on a symbol the model lacks. The examples
+ * are the tested excerpts of `lib/core-capabilities.ts`.
+ */
+interface Props {
+  port: string
+  version: string
+  cards: { label: string; href: string; body: string }[]
+}
+const { port, version, cards } = Astro.props as Props
+const info = PORT_BY_SLUG[port]
+const home = resolveCoreHome(port, version)
+const example = QUICKSTARTS[port]?.complete
+const showcase = portCapabilities(port, CAPABILITY_TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>)
+
+const install = installFor(info)
+const released = registryFor(info).version ?? ''
+const series = /^0\.(\d+)/.exec(released)?.[0]
+// The pin advice is the registry's own range syntax, for the registries whose syntax is settled.
+const PINS: Record<string, { lang: string; code: (name: string, series: string, version: string) => string }> = {
+  crates: { lang: 'toml', code: (name, s) => `${name} = "${s}"` },
+  npm: { lang: 'json', code: (name, _s, v) => `"${name}": "~${v}"` },
+  rubygems: { lang: 'ruby', code: (name, _s, v) => `gem "${name}", "~> ${v}"` },
+  hex: { lang: 'elixir', code: (name, _s, v) => `{:${name}, "~> ${v}"}` },
+  nuget: { lang: 'xml', code: (name, s, v) => `<PackageReference Include="${name}" Version="[${v},${s.replace(/\d+$/, (n) => String(Number(n) + 1))})" />` },
+}
+const pin = series && info.slug !== 'py' && info.registry ? PINS[info.registry.icon] : undefined
+const capabilityOf = (key: string) => [...home.capabilities.typed, ...home.capabilities.cli].find((row) => row.key === key)
+const location = capabilityOf('current-pane')
+const testing = capabilityOf('test-fixtures')
+const rest = (group: keyof typeof CAPABILITY_GROUPS) => home.capabilities[group].filter((row) => row.key !== 'current-pane' && row.key !== 'test-fixtures')
+---
+<p>{coreLead(port)}</p>
+
+{cards.length > 0 && <div class="not-prose mt-6 mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  {cards.map((card) => <DocCard href={proseHref(card.href, SITE_ROOT, port, version)} label={card.label} body={card.body} />)}
+</div>}
+
+<h2 id="install">Install</h2>
+<div class="not-prose"><Code code={install.code} lang={install.lang} frame="none" /></div>
+{pin && series && <>
+  <p><code>{info.packageName} {released}</code> is pre-1.0 and can change between minor versions. Pin to a range:</p>
+  <div class="not-prose"><Code code={pin.code(info.packageName, series, released)} lang={pin.lang} frame="none" /></div>
+</>}
+
+<h2 id="at-a-glance">At a glance</h2>
+<p><strong>Server → Session → Window → Pane.</strong> Each level of the tmux hierarchy has its own entry in the {info.name} API, with the tmux object it wraps.</p>
+<div class="core-home__table" role="region" aria-label="Server, session, window, pane" tabindex="0">
+  <table class="table not-prose" data-core-home-objects>
+    <thead><tr><th>Type</th><th>Wraps</th></tr></thead>
+    <tbody>{home.objects.map((object) => <tr data-role={object.role}>
+      <td><a href={object.href}><code>{object.name}</code></a></td>
+      <td>{object.wraps}{object.tmuxId && <>, ID <code>{object.tmuxId}n</code></>}</td>
+    </tr>)}</tbody>
+  </table>
+</div>
+
+<h2 id="what-it-does">What it does</h2>
+{showcase.length > 0
+  ? <div class="not-prose"><CoreShowcase port={port} /></div>
+  : example && <div class="not-prose"><HomeExample port={port} language={info.name} example={example} fixed /></div>}
+
+{Object.entries(CAPABILITY_GROUPS).map(([group, title]) => {
+  const rows = rest(group as keyof typeof CAPABILITY_GROUPS)
+  return rows.length > 0 && <>
+    <h2 id={group === 'typed' ? 'typed-api' : 'over-the-tmux-cli'}>{title}</h2>
+    <ul data-core-home-capabilities={group}>{rows.map((row) => <li data-capability={row.key}>
+      {row.label}: <a href={row.href}><code>{row.name}</code></a>
+    </li>)}</ul>
+  </>
+})}
+
+{location && <>
+  <h2 id="know-where-youre-running">Know where you're running</h2>
+  <p>Inside tmux, find the pane your program runs in from <code>TMUX</code> and <code>TMUX_PANE</code>: <a href={location.href}><code>{location.name}</code></a>.</p>
+</>}
+
+{testing && <>
+  <h2 id="testing">Testing</h2>
+  <p>Run tests against an isolated tmux server: <a href={testing.href}><code>{testing.name}</code></a>.</p>
+</>}
+
+<style>
+  .core-home__table { overflow-x: auto; }
+  .core-home__table table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+  .core-home__table :global(th), .core-home__table :global(td) {
+    padding: .5rem .75rem; text-align: start; vertical-align: top; border-bottom: 1px solid var(--color-edge);
+  }
+</style>

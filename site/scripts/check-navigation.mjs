@@ -204,11 +204,20 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
       await checkNoticeAlignment(page)
       assert.equal(await page.locator('[data-page-toolbar]').count(), 0, `${slug}: home has no redundant breadcrumb/action row`)
       assert.equal(await page.locator('.port-hero h1').count(), 1, `${slug}: one port heading`)
+      assert.equal((await page.locator('.port-hero h1').innerText()).trim(), `libtmux for ${port.language}`, `${slug}: the heading names the library and the language`)
       const picker = desktopPicker(page)
       await picker.locator(':scope > summary').waitFor({ state: 'visible' })
-      assert.equal((await picker.locator('.surface-current .surface-label, .surface-current small').allInnerTexts()).join(' '), 'Core Library Home')
-      assert.equal(await picker.locator('.surface-current .status-badge').getAttribute('data-status'), productStatus(port, 'core', registry), `${slug}: the trigger states the library's status`)
+      assert.equal((await picker.locator('.surface-current .surface-label, .surface-current small').allInnerTexts()).join(' '), `${port.name} Home`)
+      assert.equal(await picker.locator('.surface-current .status-badge').count(), 0, `${slug}: the language Home states no product status`)
       await openPicker(picker)
+      const languageHome = picker.locator('[data-surface-home]')
+      assert.equal(await languageHome.locator('details, small, .surface-chevron').count(), 0, `${slug}: the language Home is one row, not a group`)
+      assert.equal((await languageHome.innerText()).replace(/\s*✓$/, '').trim(), 'Home', `${slug}: the row is labelled Home`)
+      assert.equal(await languageHome.locator('a').getAttribute('href'), `${new URL(base).pathname}/${slug}/latest/`, `${slug}: the language Home links the language page`)
+      assert.equal(await languageHome.locator('svg').count() > 0, true, `${slug}: the Home row has its icon`)
+      const sidebar = page.locator('.sidebar-nav:visible')
+      assert.equal(await sidebar.locator(`a[href="${new URL(base).pathname}/${slug}/latest/core/"]`).count(), 1, `${slug}: the language sidebar links the Core Library home`)
+      assert.equal(await sidebar.locator(`a[href="${new URL(base).pathname}/${slug}/latest/guides/"]`).count(), 1, `${slug}: the language sidebar links the guides`)
       const core = group(picker, 'Core Library')
       const sections = await core.locator('.surface-options a').evaluateAll((links) =>
         links.map((link) => ({ label: link.textContent.trim().replace(/\s*✓$/, ''), href: link.getAttribute('href') })))
@@ -220,7 +229,9 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
         `${slug}: sections retain the selected port and version`)
       const groups = picker.locator('[data-surface-group]')
       const names = await groups.locator(':scope > summary .surface-label').allTextContents()
-      assert.equal(names[0], 'Core Library', `${slug}: the library is the default surface`)
+      assert.equal(await picker.locator('[data-surface-entry]').first().getAttribute('data-surface-home'), '', `${slug}: the Home row leads the menu`)
+      assert.equal(names[0], 'Core Library', `${slug}: the library follows the Home`)
+      assert.equal(await core.locator('.surface-options a', { hasText: /^\s*Home\s*$/ }).getAttribute('href'), `${new URL(base).pathname}/${slug}/latest/core/`, `${slug}: Core Library Home is core/`)
       const appNames = parentLibrary ? [] : [
         ...(productAvailable(port, 'mcp') ? ['MCP'] : []),
         ...(productAvailable(port, 'workspace') ? ['Workspace Manager'] : []),
@@ -372,7 +383,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
           await reader.waitForURL(`${base}/go/latest/workspace/`)
           await reader.goForward()
           await reader.waitForURL(`${base}/go/latest/workspace/guides/`)
-          assert(await reader.locator('[data-surface-picker] > summary').first().getAttribute('aria-label').then((label) => label.endsWith('Workspace Manager, Guides')),
+          assert(await reader.locator('[data-surface-picker] > summary').first().getAttribute('aria-label').then((label) => label.includes('Workspace Manager, Guides')),
             'History restores the selected surface and section')
           assert(await reader.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1), `${width}: page has no horizontal overflow`)
           await openPicker(picker, javaScriptEnabled)
@@ -473,6 +484,11 @@ export async function checkApiNavigation(page, base, { sabotage } = {}) {
     await page.waitForFunction(() => window.__docsPageLoaded)
     const picker = page.locator('[data-documentation-context] [data-surface-picker]')
     await picker.locator(':scope > summary').click()
+    // The language Home is no product's page, so every product group starts closed;
+    // a Core Library page opens its own group.
+    const core = picker.locator('details[data-surface-group]', { has: page.locator('a[href$="/lua/latest/reference/"]') })
+    assert.equal(await core.evaluate((el) => el.open), path !== '', `Lua ${path || 'home'}: Core Library group starts ${path ? 'open' : 'closed'}`)
+    if (!path) await core.locator(':scope > summary').click()
     await picker.locator('a[href$="/lua/latest/reference/"]').click()
     await page.waitForURL(`${base}/lua/latest/reference/`, { waitUntil: 'commit' })
     await page.locator('.api-index-card__link[href$="/reference/libtmux-server/"]').click()

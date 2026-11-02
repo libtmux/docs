@@ -51,6 +51,8 @@ interface Props {
   title: string
   /** The title the tab and the social tags carry, when the heading is longer than they should be. */
   documentTitle?: string
+  /** A line under the heading, in the style of a language page's tagline. It is not part of the heading. */
+  subtitle?: string
   inventoryId?: string
   inventoryAliases?: string[]
   inventoryExclude?: boolean
@@ -107,6 +109,7 @@ interface Props {
 const {
   title,
   documentTitle,
+  subtitle,
   inventoryId,
   inventoryAliases,
   inventoryExclude,
@@ -260,7 +263,7 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
     contents floating a long way short of the right edge with nothing beside
     it; the sidebars now sit near the edges and the middle grows.
   */}
-  <div class:list={['mx-auto flex max-w-[100rem] gap-5 px-4 py-6 lg:px-5', apiNavigation && 'docs-reference-navigation']}>
+  <div class:list={['mx-auto flex max-w-[100rem] gap-5 px-4 py-6 lg:px-5', apiNavigation && 'docs-reference-navigation', tocItems.length > 0 && 'docs-has-toc']}>
     {apiNavigation ? <ApiTree presentation="outline" inventory={apiNavigation.inventory} selectedSymbol={apiNavigation.selected}
       referenceBase={apiNavigation.base} portName={port ? PORT_BY_SLUG[port].name : 'tmux CLI'} tree={[]} members={[]} withMembers={new Set()}
       currentPath={currentPath} version={apiNavigation.version} indexLabel={port ? 'Reference overview' : 'All commands'}
@@ -282,22 +285,28 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
           <div class="product-hero">
             <img src={withRoot(productBrand.asset('logo.svg'))} width="88" height="88" alt="" class="not-prose" />
             <div class="min-w-0">
-              <h1 id={PAGE_TITLE_ID} class="wrap-anywhere">{title}</h1>
+              <h1 id={PAGE_TITLE_ID} class="wrap-anywhere">{title}{subtitle && <span class="page-subtitle">{' '}{subtitle}</span>}</h1>
               <slot name="hero-links" />
             </div>
           </div>
         ) : <h1 id={PAGE_TITLE_ID} class="wrap-anywhere">{symbolTitle
           ? <code class="not-prose symbol-title"><SymbolName name={title} /></code>
-          : title}</h1>}
+          : title}{subtitle && <span class="page-subtitle">{' '}{subtitle}</span>}</h1>}
         {product && port && <ProductNotice port={port} product={product} overview={pagePath === product} />}
         <slot />
       </article>
       )}
     </main>
 
+    {/*
+      The contents rail follows the article in source, so keyboard and screen-reader users reach the
+      article first. Its column is reserved by `.docs-has-toc` on the wrapper above, which precedes
+      <main>: the article is its final width when its first byte is laid out, instead of narrowing
+      when the parser reaches a rail at the end of a page tens of thousands of pixels tall.
+    */}
     {
       tocItems.length > 0 && (
-        <aside class="hidden w-56 shrink-0 xl:block">
+        <aside class="hidden w-56 shrink-0 xl:block" data-toc-rail>
           <TableOfContents items={tocItems} />
         </aside>
       )
@@ -404,6 +413,20 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
 </BaseLayout>
 
 <style>
+  /*
+   * The second half of the heading, on its own line: the heading reads "tmux
+   * workspace manager, forged in Rust." to a screen reader and to search, and
+   * sits under the title as a language page's tagline sits under its name.
+   */
+  .page-subtitle {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.5em;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: normal;
+    color: var(--color-foreground-muted);
+  }
   h1 > .symbol-title {
     font: inherit;
     font-family: var(--font-mono, ui-monospace, monospace);
@@ -463,6 +486,22 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
     .docs-reference-navigation { grid-template-columns: 16rem minmax(0, 1fr); }
   }
   @media (min-width: 80rem) {
-    .docs-reference-navigation:has(> aside) { grid-template-columns: 16rem minmax(0, 1fr) 14rem; }
+    /* A page with a rail has three columns from the first byte; the class is written by the server. */
+    .docs-reference-navigation.docs-has-toc { grid-template-columns: 16rem minmax(0, 1fr) 14rem; }
+    /*
+     * Elsewhere the rail is out of flow in space the wrapper reserves: its 14rem, the 1.25rem gap and the
+     * wrapper's own 1.25rem edge. Hidden below this width, nothing is reserved.
+     */
+    .docs-has-toc:not(.docs-reference-navigation) {
+      position: relative;
+      padding-inline-end: 16.5rem;
+      /* The out-of-flow rail no longer stretches the wrapper: room for its tallest sticky nav (100vh - 6rem) and the wrapper's padding. */
+      min-height: calc(100vh - 3rem);
+    }
+    .docs-has-toc:not(.docs-reference-navigation) > [data-toc-rail] {
+      position: absolute;
+      inset-block: 1.5rem;
+      inset-inline-end: 1.25rem;
+    }
   }
 </style>

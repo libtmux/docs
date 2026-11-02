@@ -1,0 +1,214 @@
+{
+  "rs": {
+    "create-windows": {
+      "file": "crates/libtmux/examples/api_creation.rs",
+      "lang": "rust",
+      "ci": {
+        "workflow": ".github/workflows/ci.yml",
+        "job": "check",
+        "command": "just check"
+      },
+      "checkedBy": [
+        {
+          "file": "crates/libtmux/examples/api_creation.rs",
+          "contains": "\"expected four panes on server\""
+        },
+        {
+          "file": "scripts/run-examples.sh",
+          "contains": "libtmux  | api_creation | query | | | creation: 2 windows, 4 panes"
+        },
+        {
+          "file": "justfile",
+          "contains": "examples:\n    bash scripts/run-examples.sh"
+        },
+        {
+          "file": "justfile",
+          "contains": "doctest api-examples examples example-tables"
+        },
+        {
+          "file": "scripts/run-examples.sh",
+          "contains": "! grep -qF \"$expect\" \"$out\""
+        },
+        {
+          "file": "scripts/run-examples.sh",
+          "contains": "set -euo pipefail"
+        }
+      ]
+    },
+    "send-keys": {
+      "file": "crates/libtmux/examples/api_input.rs",
+      "lang": "rust",
+      "ci": {
+        "workflow": ".github/workflows/ci.yml",
+        "job": "check",
+        "command": "just check"
+      },
+      "checkedBy": [
+        {
+          "file": "crates/libtmux/examples/api_input.rs",
+          "contains": "lines.iter().any(|line| line.as_bytes() == b\"C-c is text\")"
+        },
+        {
+          "file": "scripts/run-examples.sh",
+          "contains": "libtmux  | api_input | query | | | input: C-c is text"
+        },
+        {
+          "file": "justfile",
+          "contains": "examples:\n    bash scripts/run-examples.sh"
+        },
+        {
+          "file": "justfile",
+          "contains": "doctest api-examples examples example-tables"
+        },
+        {
+          "file": "scripts/run-examples.sh",
+          "contains": "! grep -qF \"$expect\" \"$out\""
+        },
+        {
+          "file": "scripts/run-examples.sh",
+          "contains": "set -euo pipefail"
+        }
+      ]
+    }
+  },
+  "ruby": {
+    "create-windows": {
+      "file": "examples/api/new_window.rb",
+      "lang": "ruby",
+      "ci": {
+        "workflow": ".github/workflows/compatibility.yml",
+        "job": "cell",
+        "step": "Run the complete cell",
+        "command": "bundle exec scripts/matrix"
+      },
+      "checkedBy": [
+        {
+          "file": "examples/manifest.json",
+          "contains": "\"output\": \"window: logs\\nsession windows: 2\\n\""
+        },
+        {
+          "file": "scripts/matrix",
+          "contains": "\"scripts/check\", \"outer\""
+        },
+        {
+          "file": "scripts/check",
+          "contains": "system(*command) || exit($?.exitstatus || 1)"
+        },
+        {
+          "file": "test/support/installed_gems.rb",
+          "contains": "assert status.success?, \"installed example"
+        },
+        {
+          "file": "test/support/installed_gems.rb",
+          "contains": "assert_equal entry.dig(\"api\", \"output\")"
+        }
+      ]
+    },
+    "send-keys": {
+      "file": "examples/api/capture.rb",
+      "lang": "ruby",
+      "ci": {
+        "workflow": ".github/workflows/compatibility.yml",
+        "job": "cell",
+        "step": "Run the complete cell",
+        "command": "bundle exec scripts/matrix"
+      },
+      "checkedBy": [
+        {
+          "file": "examples/api/capture.rb",
+          "contains": "raise \"Expected output is absent from the pane\" unless captured.include?(\"libtmux capture ready\")"
+        },
+        {
+          "file": "examples/manifest.json",
+          "contains": "\"output\": \"libtmux capture ready\\n\""
+        },
+        {
+          "file": "scripts/matrix",
+          "contains": "\"scripts/check\", \"outer\""
+        },
+        {
+          "file": "scripts/check",
+          "contains": "system(*command) || exit($?.exitstatus || 1)"
+        },
+        {
+          "file": "test/support/installed_gems.rb",
+          "contains": "assert status.success?, \"installed example"
+        },
+        {
+          "file": "test/support/installed_gems.rb",
+          "contains": "assert_equal entry.dig(\"api\", \"output\")"
+        }
+      ]
+    }
+  },
+  "go": {
+    "watch": {
+      "file": "examples/control-mode-subscribe/main.go",
+      "lang": "go",
+      "ci": {
+        "workflow": ".github/workflows/tests.yml",
+        "job": "test",
+        "step": "Test ${{ matrix.module }}",
+        "directory": "${{ matrix.module }}",
+        "command": "go test -race -count=1",
+        "where": "examples"
+      },
+      "checkedBy": [
+        {
+          "file": "examples/control-mode-subscribe/output.txt",
+          "contains": "heard the rename"
+        },
+        {
+          "file": "examples/control-mode-subscribe/example_test.go",
+          "contains": "exampletest.Server(t, run)"
+        },
+        {
+          "file": ".github/workflows/tests.yml",
+          "contains": "module: [\".\", \"examples\", \"workspace\""
+        },
+        {
+          "file": "examples/internal/exampletest/exampletest.go",
+          "contains": "t.Fatalf(\"run() error = %v; printed so far:\\n%s\", err, printed)"
+        },
+        {
+          "file": "examples/internal/exampletest/exampletest.go",
+          "contains": "MatchesFile(t, printed, \"output.txt\")"
+        }
+      ]
+    },
+    "run-applications": {
+      "file": "examples/run-to-completion/main.go",
+      "lang": "go",
+      "ci": {
+        "workflow": ".github/workflows/tests.yml",
+        "job": "test",
+        "step": "Test ${{ matrix.module }}",
+        "directory": "${{ matrix.module }}",
+        "command": "go test -race -count=1",
+        "where": "examples"
+      },
+      "checkedBy": [
+        {
+          "file": "examples/run-to-completion/output.txt",
+          "contains": "exited 3"
+        },
+        {
+          "file": "examples/run-to-completion/example_test.go",
+          "contains": "printed != want"
+        },
+        {
+          "file": ".github/workflows/tests.yml",
+          "contains": "module: [\".\", \"examples\", \"workspace\""
+        },
+        {
+          "file": "examples/internal/exampletest/exampletest.go",
+          "contains": "t.Fatalf(\"run() error = %v; printed so far:\\n%s\", err, printed)"
+        },
+        {
+          "file": "examples/internal/exampletest/exampletest.go",
+          "contains": "MatchesFile(t, printed, \"output.txt\")"
+        }
+      ]
+    }
+  }
+}

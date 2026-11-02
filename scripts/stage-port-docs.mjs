@@ -9,7 +9,7 @@ import { fromMarkdown } from 'mdast-util-from-markdown'
 import { toMarkdown } from 'mdast-util-to-markdown'
 import { PORTS } from '../site/src/lib/ports.ts'
 import { defaultVersionFor, linkedVersionFor } from '../site/src/lib/versions.ts'
-import { sourceGuidesFor, sourceGuideRedirectsFor, SOURCE_GUIDE_PORTS } from '../site/src/lib/port-documentation.ts'
+import { sourceGuidesFor, sourceGuideRedirectsFor, stagedSectionsFor, SOURCE_GUIDE_PORTS } from '../site/src/lib/port-documentation.ts'
 import { SymbolIndex, parameterId } from '../packages/api-model/src/link.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -198,7 +198,7 @@ export function stagedPortGuides(port, artifact) {
       const frontmatter = Object.entries(data).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')
       files.set(`${port}/${route}/index.md`, `---\n${frontmatter}\n---\n\n${body}\n`)
     }
-    for (const section of identity.parentLibrary ? ['guides'] : ['guides', 'examples', 'topics', 'concepts']) {
+    for (const section of stagedSectionsFor(port)) {
       // Authored overviews own their cards and must keep one public route.
       if (existsSync(join(root, `site/src/content/docs/ports/${port}/${section}/index.md`))) continue
       const selected = Object.entries(routes).filter(([, entry]) => entry.domain === 'core' && entry.route.startsWith(`${section}/`))

@@ -4,8 +4,8 @@ import { createComponent, renderTemplate } from 'astro/runtime/server/index.js'
 import { afterEach, describe, expect, it } from 'vitest'
 import { MCP_REFERENCE, mcpReferenceRoutes } from '../src/lib/mcp-reference'
 import {
-  buildShowcase, CAPABILITY_KEY, EXAMPLES, mcpShowcase, protocolSnapshot, showcaseHeadings, TIERS, toolPurposes, toolTier,
-  type McpShowcase, type ProtocolSnapshot, type ProtocolTool,
+  abbreviate, buildShowcase, CAPABILITY_KEY, transcriptFor, EXAMPLES, mcpShowcase, protocolSnapshot, showcaseHeadings, TIERS, toolPurposes, toolTier,
+  type McpShowcase, type ProtocolSnapshot, type ProtocolTool, type Transcript,
 } from '../src/lib/mcp-showcase'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
@@ -269,10 +269,10 @@ describe('the worked example', () => {
   })
 
   it('finds the ids a call uses, in a nested argument too', () => {
-    expect(EXAMPLES.ts!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%0'])
-    expect(EXAMPLES.go!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%0', '$0'])
+    expect(EXAMPLES.ts!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%0', '%0', '%1'])
+    expect(EXAMPLES.go!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%0', '%0', '%1', '$0'])
     expect(EXAMPLES.julia!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%0'])
-    expect(EXAMPLES.py!.steps.flatMap((step) => idsIn(step.arguments))).toEqual([])
+    expect(EXAMPLES.py!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%0', '%0', '%1'])
   })
 
   it('reports an id that has no earlier result, or a caption that does not say where it came from', () => {
@@ -300,7 +300,7 @@ describe('the worked example', () => {
 
   it('names the tier of each call from the tool it calls', async () => {
     const steps = (await showcase('ts')).example!.steps.map((step) => [step.tool.name, step.tool.tier])
-    expect(steps).toEqual([['create_session', 'execute'], ['run_shell_command', 'execute'], ['kill_session', 'teardown']])
+    expect(steps).toEqual([['create_session', 'execute'], ['split_window', 'execute'], ['list_windows', 'inspect'], ['run_shell_command', 'execute'], ['run_shell_command', 'execute'], ['kill_session', 'teardown']])
   })
 })
 
@@ -320,16 +320,19 @@ describe('the showcase section', () => {
   afterEach(async () => { for (const win of windows.splice(0)) await win.happyDOM.abort() })
 
   const component = loadAstroTemplate('components/mcp/McpShowcase.astro', {
+    real: ['components/mcp/McpReplay.astro'],
     modules: {
       'astro-expressive-code/components': {
-        Code: createComponent((_result: unknown, props: { code: string; lang: string }) => renderTemplate`<pre data-lang="${props.lang}">${props.code}</pre>`),
+        Code: createComponent((_result: unknown, props: { code: string; lang: string; title?: string }) => renderTemplate`<pre data-lang="${props.lang}" data-title="${props.title ?? ''}">${props.code}</pre>`),
       },
     },
   })
-  async function section(port: string) {
+  /** A call row's tool and arguments. */
+  const parseCall = (row: Element) => ({ tool: row.querySelector('.mcp-call__tool code')!.textContent!, arguments: JSON.parse(row.querySelector('.mcp-call__args')!.textContent!) })
+  async function section(port: string, shown?: McpShowcase) {
     const win = new Window({ url: 'https://libtmux.org/en/' })
     windows.push(win)
-    win.document.body.innerHTML = await renderAstroTemplate(await component, { props: { showcase: await showcase(port) } })
+    win.document.body.innerHTML = await renderAstroTemplate(await component, { props: { showcase: shown ?? await showcase(port) } })
     return win.document as unknown as Document
   }
 
@@ -356,29 +359,46 @@ describe('the showcase section', () => {
     expect(document.body.textContent).not.toContain('LIBTMUX_TOOLSETS')
   })
 
-  it('shows the prompt and each call as the JSON a client sends', async () => {
+  it('shows the prompt and each call as its tool name and the JSON arguments a client sends', async () => {
     const document = await section('rs')
-    expect(document.querySelector('.mcp-prompt')?.textContent).toBe(EXAMPLES.rs!.prompt)
-    const calls = [...document.querySelectorAll('.mcp-steps pre')].map((pre) => JSON.parse(pre.textContent!))
+    expect(document.querySelector('.mcp-turn--user p')?.textContent).toBe(EXAMPLES.rs!.prompt)
+    const calls = [...document.querySelectorAll('.mcp-call')].map(parseCall)
     expect(calls).toEqual(EXAMPLES.rs!.steps.map((step) => ({ tool: step.tool, arguments: step.arguments })))
-    expect(document.querySelector('.mcp-steps li a')?.getAttribute('href')).toBe('/rs/latest/mcp/tools/create_session/')
+    expect(document.querySelector('.mcp-call a')?.getAttribute('href')).toBe('/rs/latest/mcp/tools/create_session/')
   })
 
   it('shows each call under its caption, and the id in a caption is the one in the call', async () => {
     for (const port of PORTS) {
       const document = await section(port)
-      const steps = [...document.querySelectorAll('.mcp-steps > li')]
+      const steps = [...document.querySelectorAll('article.mcp-turn')]
       const { example } = await showcase(port)
       expect(steps, port).toHaveLength(example!.steps.length)
       steps.forEach((item, index) => {
         const { caption, arguments: args, tool } = example!.steps[index]!
-        const lead = item.querySelector('p')!.textContent!.replace(/\s+/g, ' ').trim()
-        expect(lead.startsWith(`${caption} ${tool.name}`), `${port} ${tool.name}: ${lead}`).toBe(true)
-        const call = JSON.parse(item.querySelector('pre')!.textContent!)
+        const lead = item.querySelector('.mcp-turn__say')!.textContent!.replace(/\s+/g, ' ').replace(/^agent/, '').trim()
+        expect(lead, `${port} ${tool.name}`).toBe(caption)
+        const call = parseCall(item.querySelector('.mcp-call')!)
         expect(call.arguments, `${port} ${tool.name}`).toEqual(args)
-        for (const id of idsIn(args)) expect(lead, `${port} ${tool.name}`).toContain(id)
+        for (const id of idsIn(args)) expect(caption, `${port} ${tool.name}`).toContain(id)
       })
     }
+  })
+
+  it('shows a recorded result under each call, and the agent\'s answer quoting the pane output last', async () => {
+    const document = await section('ts')
+    const items = [...document.querySelectorAll('article.mcp-turn')]
+    for (const item of items) expect(item.querySelectorAll('details.mcp-result pre')).toHaveLength(1)
+    expect(JSON.parse(items[0]!.querySelector('details.mcp-result pre')!.textContent!).paneId, 'the id later calls use comes from this result').toBe('%0')
+    expect([...document.querySelectorAll('.mcp-turn--answer q')].map((q) => q.textContent)).toEqual([expect.stringMatching(/^2 passed/), expect.stringMatching(/checks finished$/)])
+    expect(document.querySelector('.mcp-provenance')?.textContent).toMatch(/recorded against.*libtmux\/libtmux-ts.*private tmux/si)
+  })
+
+  it('says requests only, and shows no result, preview or control, for a port with no recording', async () => {
+    // No port lacks a recording once all are recorded, so build the page the way a port without one would get it.
+    const document = await section('go', buildShowcase('go', 'latest', onDisk('go')))
+    expect(document.querySelectorAll('article.mcp-turn')).toHaveLength(EXAMPLES.go!.steps.length)
+    for (const selector of ['details.mcp-result', '[data-frame]', '[data-controls]', '[data-tmux]', '.mcp-turn--answer']) expect(document.querySelector(selector), selector).toBeNull()
+    expect(document.querySelector('.mcp-provenance')?.textContent).toContain('Requests only: no recorded results for Go yet.')
   })
 
   it('gives every heading the table of contents lists an id on the page', async () => {
@@ -388,5 +408,64 @@ describe('the showcase section', () => {
         expect(document.getElementById(heading.slug)?.tagName, `${port} ${heading.slug}`).toBe(`H${heading.depth}`)
       }
     }
+  })
+})
+
+describe('recorded results', () => {
+  /** Ports whose example runs commands in panes. */
+  const RECORDED = ['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift']
+  /** Every port with a recording; Ruby and Julia's examples only read. */
+  const ALL = [...RECORDED, 'ruby']
+
+  it('has a recording for the ports whose servers the recorder has run', async () => {
+    for (const port of ALL) expect((await showcase(port)).example?.recording, port).toBeDefined()
+  })
+
+  it.each(ALL)('records %s at the revision of its snapshot, with the calls the page shows and no error', async (port) => {
+    const transcript = (await transcriptFor(port))!
+    expect(transcript.revision).toBe(onDisk(port).revision)
+    expect(transcript.steps.map((step) => [step.tool, step.arguments])).toEqual(EXAMPLES[port]!.steps.map((step) => [step.tool, step.arguments]))
+    expect(transcript.steps.filter((step) => step.isError)).toEqual([])
+  })
+
+  it.each(ALL)('records %s so that every id a request names was returned by an earlier result', async (port) => {
+    const transcript = (await transcriptFor(port))!
+    transcript.steps.forEach((step, index) => {
+      for (const id of idsIn(step.arguments)) {
+        const earlier = JSON.stringify(transcript.steps.slice(0, index).map((previous) => [previous.content, previous.structuredContent]))
+        expect(earlier, `${port} ${step.tool} names ${id}`).toContain(id)
+      }
+    })
+  })
+
+  it.each(RECORDED)('records %s printing the test runner\'s result and the log in their panes', async (port) => {
+    const { example } = await showcase(port)
+    const lines = example!.recording!.answers.map((answer) => answer.line)
+    expect(lines[0]).toMatch(/2 passed/)
+    expect(lines.at(-1)).toMatch(/checks finished/)
+    expect(example!.steps.every((step) => step.result !== undefined)).toBe(true)
+  })
+
+  it('ignores a recording of another revision or other calls rather than showing it', async () => {
+    const snapshot = onDisk('ts')
+    const transcript = (await transcriptFor('ts'))!
+    const withRecording = (changed: Transcript) => buildShowcase('ts', 'latest', snapshot, changed).example!.recording
+    expect(withRecording(transcript)).toBeDefined()
+    expect(withRecording({ ...transcript, revision: '0'.repeat(40) }), 'another revision').toBeUndefined()
+    expect(withRecording({ ...transcript, steps: transcript.steps.slice(0, -1) }), 'fewer calls').toBeUndefined()
+    expect(withRecording({ ...transcript, steps: transcript.steps.map((step, index) => (index ? step : { ...step, arguments: { name: 'other' } })) }), 'other arguments').toBeUndefined()
+    expect(withRecording({ ...transcript, steps: transcript.steps.map((step, index) => (index === 1 ? { ...step, isError: true } : step)) }), 'a failed step').toBeUndefined()
+  })
+
+  it('abbreviates long text and long lists, and leaves short values alone', () => {
+    expect(abbreviate('short')).toBe('short')
+    expect(abbreviate('x'.repeat(300))).toBe(`${'x'.repeat(240)}…`)
+    expect(abbreviate([1, 2, 3, 4])).toEqual([1, 2, 3, 4])
+    expect(abbreviate([1, 2, 3, 4, 5, 6])).toEqual([1, 2, 3, 4, '… 2 more'])
+    expect(abbreviate({ a: ['y'.repeat(241)], b: 1 })).toEqual({ a: [`${'y'.repeat(240)}…`], b: 1 })
+    const wide = Object.fromEntries(Array.from({ length: 14 }, (_, index) => [`k${index}`, index]))
+    expect(Object.keys(abbreviate(wide) as object)).toEqual([...Object.keys(wide).slice(0, 12), '…'])
+    expect(abbreviate({ a: { b: { c: { d: { e: { f: 1 } } } } } })).toEqual({ a: { b: { c: { d: { e: '…' } } } } })
+    expect(abbreviate({ a: { b: { c: { d: { e: [] } } } } }), 'an empty value is not elided').toEqual({ a: { b: { c: { d: { e: [] } } } } })
   })
 })

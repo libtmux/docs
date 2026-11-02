@@ -1,4 +1,4 @@
-import { getSidebar, sharesOneKind, type SidebarItem, type SidebarLinkItem } from './sidebar'
+import { getSidebar, portAreas, sharesOneKind, type SidebarItem, type SidebarLinkItem } from './sidebar'
 import { documentationAreas } from './port-documentation'
 import { PORT_BY_SLUG, portPageUrl, productIsConcept, productStatus, referenceUrl, type DocProduct, type ProductStatus } from './ports'
 import { REGISTRY } from './registry'
@@ -26,6 +26,12 @@ export interface DocumentationSurface {
   id: string
   label: string
   href: string
+  /**
+   * The path prefix whose pages belong to this surface. Only the Core Library
+   * differs from `href`: its home is `core/`, while its guides, topics and
+   * reference sit beside it under the version root.
+   */
+  scope?: string
   sections: DocumentationSection[]
   /** Example support scope; release maturity is documented separately. */
   concept?: boolean
@@ -55,6 +61,7 @@ export function buildDocumentationSurfaces(
     const id = domain.product ?? 'core'
     const prefix = domain.product ? `${domain.product}/` : ''
     const href = portPageUrl(info, version, domain.route)
+    const scope = domain.product ? href : base
     const home: DocumentationSection = { id: 'home', label: 'Home', href, items: [] }
     const sections = new Map<string, DocumentationSection>([['home', home]])
     const seen = new Set<string>()
@@ -131,10 +138,30 @@ export function buildDocumentationSurfaces(
           ...(section.disabled ? { disabled: true } : {}) })),
     ]
     const status = productStatus(info, id, REGISTRY)
-    return { id, label: domain.id === 'core' ? 'Core Library' : domain.label, href, sections: ordered,
+    return { id, label: domain.id === 'core' ? 'Core Library' : domain.label, href, scope, sections: ordered,
       ...(domain.product && productIsConcept(info, domain.product) ? { concept: true } : {}),
       ...(status ? { status } : {}) }
   })
+}
+
+/**
+ * The language page above the products: its hero and the Core, MCP and
+ * Workspace selector. Only the page itself selects this surface; everything
+ * below it belongs to a product.
+ */
+export function withLanguageHome(port: string, version: string, products: DocumentationSurface[]): DocumentationSurface[] {
+  const info = PORT_BY_SLUG[port]
+  const base = portPageUrl(info, version)
+  return [{
+    id: 'home', label: info.name, href: base,
+    sections: [{
+      id: 'home', label: 'Home', href: base,
+      items: [
+        ...products.map((surface): SidebarLinkItem => ({ type: 'link', label: surface.label, href: surface.href })),
+        portAreas(port, version),
+      ],
+    }],
+  }, ...products]
 }
 
 const cache = new Map<string, Promise<DocumentationSurface[]>>()
@@ -162,7 +189,7 @@ export function getDocumentationSurfaces(port: string | undefined, version: stri
     const products = documentationAreas(port).flatMap((domain) => domain.kind !== 'unavailable' && domain.product ? [domain.product] : [])
     const menus = await Promise.all(['core' as const, ...products].map(async (product) =>
       [product, await getSidebar(port, version, locale, product === 'core' ? undefined : product)] as const))
-    return buildDocumentationSurfaces(port, version, Object.fromEntries(menus))
+    return withLanguageHome(port, version, buildDocumentationSurfaces(port, version, Object.fromEntries(menus)))
   }
   if (import.meta.env.DEV) return build()
   if (!cache.has(key)) cache.set(key, build())
@@ -170,10 +197,18 @@ export function getDocumentationSurfaces(port: string | undefined, version: stri
 }
 
 /** URL-derived selection also works on direct loads, reloads and browser history. */
-export function currentDocumentation(surfaces: DocumentationSurface[], currentPath: string) {
-  const surface = surfaces.filter((entry) => currentPath.startsWith(entry.href))
-    .sort((a, b) => b.href.length - a.href.length)[0] ?? surfaces[0]
-  const path = currentPath.slice(surface.href.length).split('/')[0] || 'home'
+export function currentDocumentation(allSurfaces: DocumentationSurface[], currentPath: string) {
+  let surfaces = allSurfaces
+  const scopeOf = (entry: DocumentationSurface) => entry.scope ?? entry.href
+  // The language page itself, and nothing below it, belongs to the Home surface.
+  const home = surfaces.find((entry) => entry.id === 'home')
+  if (home && currentPath.replace(/\/$/, '') === home.href.replace(/\/$/, '')) {
+    return { surface: home, section: home.sections[0], alternative: undefined }
+  }
+  surfaces = surfaces.filter((entry) => entry.id !== 'home')
+  const surface = surfaces.filter((entry) => currentPath.startsWith(scopeOf(entry)))
+    .sort((a, b) => scopeOf(b).length - scopeOf(a).length)[0] ?? surfaces[0]
+  const path = currentPath.slice(scopeOf(surface).length).split('/')[0] || 'home'
   const key = path === 'source-guide' ? 'guides'
     : path === 'cli' && surface.id === 'workspace' ? 'manual'
     : path === 'cli' || path === 'api' ? 'reference' : path

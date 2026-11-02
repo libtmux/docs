@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { API_MODELS } from '../src/lib/api-models'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
+import { tokenizeDoc } from '@libtmux/api-model'
 import { parseApiProse } from '../src/lib/api-prose'
 import { groupDirectory } from '../src/lib/api-directory'
 import { parseXmlDoc } from '../../packages/api-model/src/doc/csharp'
@@ -166,6 +167,15 @@ describe('a capability directory in each port\'s syntax', () => {
     expect(directory.rows[0].groups[0].refs).toEqual([ref, ref])
   })
 
+  it.each([
+    ['ts', '{@link Server.kill}'], ['java', '{@link #open}'], ['csharp', '<see cref="Server.Open" />'], ['rs', '[`new`]'], ['go', '[Server.Kill]'],
+    ['kotlin', '[open]'], ['kotlin', '{@link #open}'], ['scala', '{@link #open}'], [undefined, '[Server.Kill]'],
+  ])('reads the shared spellings for %s as before', (lang, ref) => {
+    const directory = groupDirectory(parseApiProse(rows([ref, ref, ref])), lang).find((block) => block.kind === 'directory')
+    if (directory?.kind !== 'directory') throw new Error('no directory')
+    expect(directory.rows.map((row) => row.groups[0].refs)).toEqual(Array(3).fill([ref, ref]))
+  })
+
   it('reads Go\'s heading-led rows: a heading, its guidance, then the names', () => {
     const row = (title: string) => `# ${title}\n\nWhat these are for.\n\n[Server.Kill], [NewServer]`
     const blocks = groupDirectory(parseApiProse(['# What is on here', 'Intro.', row('Connecting'), row('Finding'), row('Listing')].join('\n\n')))
@@ -175,6 +185,114 @@ describe('a capability directory in each port\'s syntax', () => {
   it('leaves a Go heading whose next paragraph is already the names as a heading', () => {
     const row = (title: string) => `# ${title}\n\n[Server.Kill], [NewServer]`
     expect(groupDirectory(parseApiProse([row('A'), row('B'), row('C')].join('\n\n'))).some((block) => block.kind === 'directory')).toBe(false)
+  })
+})
+
+/**
+ * Each port's reference as its extractor hands it to the shell, which is not always how the source file writes it.
+ * Doxygen drops the tag of `\ref` and `@ref` and keeps a bare word, so C++ names a member in a code span; the
+ * LuaLS export is Markdown, so Lua does too; PowerShell's help names a cmdlet as a bare word.
+ */
+const SYNTAXES: { port: string; syntax: string; refs: [string, string, string]; label: string }[] = [
+  { port: 'py', syntax: 'Sphinx roles', label: 'Buffers', refs: [':py:meth:`~libtmux.Server.kill`', ':class:`Session`', ':attr:`.sessions`'] },
+  { port: 'swift', syntax: 'DocC symbol links', label: 'Buffers', refs: ['``Server/kill(_:)-(Session)``', '``Server/isRunning()``', '``TmuxError/serverRestarted``'] },
+  { port: 'elixir', syntax: 'ExDoc function references', label: 'Buffers', refs: ['`new/1`', '`LibTmux.Control.with_connection/2`', '`t:t/0`'] },
+  { port: 'elixir', syntax: 'ExDoc callbacks, predicates and bang functions', label: 'Buffers', refs: ['`c:init/1`', '`alive?/1`', '`snapshot!/2`'] },
+  { port: 'elixir', syntax: 'ExDoc module references', label: 'Buffers', refs: ['`LibTmux.Snapshot`', '`Enum`', '`LibTmux.Control.Request`'] },
+  { port: 'elixir', syntax: 'ExDoc links with a code destination', label: 'Buffers', refs: ['[the server](`LibTmux.Server`)', '[a snapshot](`snapshot/2`)', '[one](`LibTmux.Selection.one/2`)'] },
+  { port: 'kotlin', syntax: 'KDoc label and target', label: 'Buffers', refs: ['[expand][Server.expand]', '[run][Server.run]', '[batch][Server.batch]'] },
+  { port: 'scala', syntax: 'Scaladoc links', label: 'Buffers', refs: ['[[Server.open]]', '[[Session#windows]]', '[[io.github.libtmux.ServerConfig ServerConfig]]'] },
+  { port: 'cxx', syntax: 'code spans', label: 'Buffers', refs: ['`at_socket_path()`', '`Session::windows()`', '`FailureKind::unsupported`'] },
+  { port: 'cxx', syntax: 'code spans for destructors', label: 'Buffers', refs: ['`Server::~Server`', '`Session::~Session()`', '`Pane::~Pane`'] },
+  { port: 'lua', syntax: 'code spans', label: 'Buffers', refs: ['`Server:close`', '`libtmux.Runtime:connect`', '`libtmux.Snapshot.races`'] },
+  { port: 'ruby', syntax: 'YARD links', label: 'Buffers', refs: ['{#list_sessions}', '{Selection#where}', '{#initialize Server.new}'] },
+  { port: 'ruby', syntax: 'YARD predicate, bang and absolute links', label: 'Buffers', refs: ['{Selection#exists?}', '{::LibTmux::Server}', '{#close!}'] },
+  { port: 'julia', syntax: 'Documenter @ref targets', label: 'Buffers', refs: ['[`new_session`](@ref LibTmux.new_session)', '[`snapshot`](@ref "Snapshots")', '[Server](@ref)'] },
+  { port: 'powershell', syntax: 'cmdlet names', label: 'Buffers', refs: ['Get-TmuxSession', 'LibTmux\\Get-TmuxWindow', 'Wait-TmuxPaneText'] },
+  { port: 'powershell', syntax: 'code spans', label: 'Buffers', refs: ['`ConvertTo-TmuxQueryJson`', '`Get-TmuxPane`', '`LibTmux.Server`'] },
+]
+
+describe.each(SYNTAXES)('a capability directory in $port\'s $syntax', ({ port, refs, label }) => {
+  const paragraph = `${refs[0]}, ${refs[1]} and ${refs[2]}`
+  const run = (follower: string, count = 3) => Array.from({ length: count }, (_, n) => `**Group ${n}.** What these are for.\n\n${follower}`).join('\n\n')
+  const directoryOf = (text: string, lang: string | undefined) => groupDirectory(parseApiProse(text), lang).find((block) => block.kind === 'directory')
+
+  it('folds guidance and a paragraph of references into rows', () => {
+    const blocks = groupDirectory(parseApiProse(['# What is on here', 'A server does many things.', run(paragraph), 'After.'].join('\n\n')), port)
+    expect(blocks.map((block) => block.kind)).toEqual(['rubric', 'p', 'directory', 'p'])
+    const directory = blocks[2]
+    if (directory.kind !== 'directory') throw new Error('no directory')
+    expect(directory.rows.map((row) => [row.title, row.guidance, row.groups])).toEqual(
+      [0, 1, 2].map((n) => [`Group ${n}`, 'What these are for.', [{ refs }]]),
+    )
+  })
+
+  it('reads a labelled list as named groups', () => {
+    const directory = directoryOf(run(`- ${label}: ${paragraph}\n- Keys: ${refs[0]}`), port)
+    if (directory?.kind !== 'directory') throw new Error('no directory')
+    expect(directory.rows[0].groups).toEqual([{ label, refs }, { label: 'Keys', refs: [refs[0]] }])
+  })
+
+  it('leaves guidance that holds references among its words as prose', () => {
+    expect(directoryOf(run(`Use ${paragraph} to connect.`), port)).toBeUndefined()
+    expect(directoryOf(run(`- ${label}: ${refs[0]} binds a key`), port)).toBeUndefined()
+  })
+
+  it('leaves fewer than three rows as prose', () => {
+    const blocks = groupDirectory(parseApiProse(run(paragraph, 2)), port)
+    expect(blocks.map((block) => block.kind)).toEqual(Array(4).fill('p'))
+  })
+
+  it('is one reference to the tokenizer, so a chip links like prose does', () => {
+    for (const ref of refs) expect(tokenizeDoc(ref, port).map((span) => span.kind), ref).toEqual(['ref'])
+  })
+
+  it('is not read for a port that writes it as something else', () => {
+    for (const lang of ['ts', 'rs', 'go', 'java', undefined]) expect(directoryOf(run(paragraph), lang), `${lang}`).toBeUndefined()
+  })
+})
+
+describe('a capability directory keeps each port\'s spelling to itself', () => {
+  const run = (follower: string) => Array.from({ length: 3 }, (_, n) => `**Group ${n}.** What these are for.\n\n${follower}`).join('\n\n')
+  it.each([
+    ['rs', 'a code span', '`new()`, `builder()`'],
+    ['swift', 'a code span', '`Server/kill(_:)`'],
+    ['swift', 'a Javadoc link', '{@link Server.kill}'],
+    ['py', 'DocC', '``Server/kill(_:)``'],
+    ['py', 'an XML doc reference', '<see cref="Server.Open" />'],
+    ['py', 'a role that Sphinx prefixes but the tokenizer leaves as text', ':py:obj:`x`'],
+    ['py', 'a glossary role', ':term:`x`'],
+    ['kotlin', 'a Sphinx role', ':meth:`Server.kill`'],
+    ['kotlin', 'a rustdoc link', '[`open`]'],
+    ['cxx', 'a Markdown link', '[text](https://example.test)'],
+    ['cxx', 'a Go doc link', '[Server.Kill]'],
+    ['cxx', 'options and ids', '`-S`, `%0` and `"x y"`'],
+    ['elixir', 'a reference-style link', '[text][ref]'],
+    ['julia', 'a code span', '`new_session`'],
+    ['julia', 'a rustdoc link', '[`new_session`]'],
+    ['scala', 'a Go doc link', '[Server.Kill]'],
+    ['ruby', 'a hash literal', '{:a => 1}, {Foo => 1}'],
+    ['ruby', 'string interpolation', '#{Foo} and #{Bar}'],
+    ['ruby', 'a Javadoc link', '{@link #open}'],
+    ['ruby', 'a label that holds a code span', '{Server see `x`}'],
+    ['powershell', 'a variable', '$Server, $Session and $Pane'],
+    ['powershell', 'a Go doc link', '[Server]'],
+    ['lua', 'options and ids', '`-S`, `%0` and `"x y"`'],
+    ['lua', 'a rustdoc link', '[`Server`]'],
+  ])('%s does not read %s', (lang, _, ref) => {
+    expect(groupDirectory(parseApiProse(run(ref)), lang).some((block) => block.kind === 'directory')).toBe(false)
+  })
+})
+
+describe('a capability directory in python reads the roles the tokenizer resolves and no others', () => {
+  const run = (follower: string) => Array.from({ length: 3 }, (_, n) => `**Group ${n}.** What these are for.\n\n${follower}`).join('\n\n')
+  it.each([
+    'class', 'meth', 'attr', 'func', 'exc', 'obj', 'mod', 'data', 'const', 'py:class', 'py:meth', 'py:attr', 'py:func',
+    'py:exc', 'py:obj', 'py:mod', 'py:data', 'py:const', 'term', 'ref', 'doc', 'py:term',
+  ])(':%s: is a directory reference exactly when the tokenizer reads it as one', (role) => {
+    const ref = `:${role}:\`libtmux.Server.kill\``
+    const read = groupDirectory(parseApiProse(run(ref)), 'py').some((block) => block.kind === 'directory')
+    expect(read, ref).toBe(tokenizeDoc(ref, 'py').every((span) => span.kind === 'ref'))
   })
 })
 

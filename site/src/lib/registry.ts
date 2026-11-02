@@ -14,6 +14,7 @@
  */
 import data from '../data/registry.json'
 import { installCommand, isReleaseSeries, releaseMaturity, releaseWording, type InstallCommand, type InstallForm, type Port, type RegistryData, type RegistryEntry } from './ports'
+import { wrapShell } from './install-matrix'
 import { releaseTag } from './versions'
 import { portParts, type PortParts, type PromptContext } from './prompts'
 
@@ -66,7 +67,10 @@ export function installsFor(port: Port, selection: { version?: string; pin?: boo
   const entry = registryFor(port)
   const version = selection.version ?? entry.version
   const fill = (code: string) => code.replaceAll('{version}', version!)
-  if (!version) return [{ label: 'Source', ...installCommand(port, entry) }]
+  if (!version) {
+    const source = installCommand(port, entry)
+    return [{ label: 'Source', ...source, code: source.lang === 'console' ? wrapShell(source.code) : source.code }]
+  }
   return port.installs.map((command) => ({
     ...command,
     code: fill(selection.pin && command.versionedCode ? command.versionedCode : command.code),

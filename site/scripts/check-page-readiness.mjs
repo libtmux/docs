@@ -502,8 +502,8 @@ export async function checkKindBadgeLinksFail(browser, base) {
 /** Overview pages with cards, then a prose page whose inline preview links must keep their line. */
 const BLOCK_LINK_PAGES = [
   { path: '/ts/latest/workspace/', sample: true },
-  { path: '/rs/latest/' },
-  { path: '/go/latest/mcp/' },
+  { path: '/rs/latest/', sample: true },
+  { path: '/go/latest/mcp/', sample: true },
   { path: '/rs/latest/concepts/server-session-window-pane/', inline: true, sample: true },
 ]
 

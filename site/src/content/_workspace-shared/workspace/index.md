@@ -4,28 +4,36 @@ description: Describe a tmux session in a file, then load, inspect and capture i
 product: workspace
 ports:
   py:
-    title: tmux workspace manager, forged in Python
+    title: tmux workspace manager,
+    subtitle: forged in Python.
     shortTitle: Python-based tmux workspace manager
   ts:
-    title: tmux workspace manager, forged in TypeScript
+    title: tmux workspace manager,
+    subtitle: forged in TypeScript.
     shortTitle: TypeScript-based tmux workspace manager
   rs:
-    title: tmux workspace manager, forged in Rust
+    title: tmux workspace manager,
+    subtitle: forged in Rust.
     shortTitle: Rust-based tmux workspace manager
   go:
-    title: tmux workspace manager, forged in Go
+    title: tmux workspace manager,
+    subtitle: forged in Go.
     shortTitle: Go-based tmux workspace manager
   java:
-    title: tmux workspace manager, forged in Java
+    title: tmux workspace manager,
+    subtitle: forged in Java.
     shortTitle: Java-based tmux workspace manager
   csharp:
-    title: tmux workspace manager, forged in C#
+    title: tmux workspace manager,
+    subtitle: forged in C#.
     shortTitle: C#-based tmux workspace manager
   cxx:
-    title: tmux workspace manager, forged in C++
+    title: tmux workspace manager,
+    subtitle: forged in C++.
     shortTitle: C++-based tmux workspace manager
   swift:
-    title: tmux workspace manager, forged in Swift
+    title: tmux workspace manager,
+    subtitle: forged in Swift.
     shortTitle: Swift-based tmux workspace manager
 sidebar:
   label: Workspace manager

@@ -2,7 +2,7 @@
 import { ALL_TRANSLATED, buildLocale } from '../i18n/resolve'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import DocsLayout from '../layouts/DocsLayout.astro'
-import { PORTS, PORT_BY_SLUG, portHomeUrl, portPageUrl } from '../lib/ports'
+import { PORTS, PORT_BY_SLUG, portHomeTitle, portHomeUrl, portPageUrl } from '../lib/ports'
 import PortHero from '../components/PortHero.astro'
 import DocCard from '../components/DocCard.astro'
 import ApiReferences from '../components/ApiReferences.astro'
@@ -92,7 +92,7 @@ const noindexLanding = Astro.props.preview || (locale !== DEFAULT_LOCALE && !Lan
 const homeSolutions = !versionRootPort && !LandingContent
   ? await Promise.all(PORTS.map(async (port) => {
       const version = defaultVersionFor(port.slug)
-      return { port: port.slug, version, surfaces: await getDocumentationSurfaces(port.slug, version, locale) }
+      return { port: port.slug, version, surfaces: (await getDocumentationSurfaces(port.slug, version, locale)).filter((surface) => surface.id !== 'home') }
     }))
   : []
 const homeEntries = PORTS.map((port) => ({
@@ -125,7 +125,7 @@ const homeEntries = PORTS.map((port) => ({
      * heading would be a second one under `PortHero`'s.
      */
     <DocsLayout
-      title={`${versionRootPort.name} ${buildVersion}`}
+      title={portHomeTitle(versionRootPort)}
       description={`libtmux for ${versionRootPort.language}, version ${buildVersion}.`}
       port={versionRootPort.slug}
       version={buildVersion}
@@ -134,11 +134,6 @@ const homeEntries = PORTS.map((port) => ({
       bare
     >
       <PortHero port={versionRootPort} />
-      <p class="mt-4 text-sm text-muted">
-        You are reading the <strong>{buildVersion}</strong> documentation. Use
-        the version control in the header to move between releases, or the
-        port dropdown to find a corresponding page in another language.
-      </p>
       {/*
         The example and install command for each product, on the page a reader
         actually lands on. This is where the port switcher, the version

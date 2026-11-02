@@ -17,7 +17,7 @@ export interface DocumentationDomain {
   description: string
   kind: DocumentationDomainKind
   navGroup: string
-  /** Canonical path below a port/version root; empty is the library landing. */
+  /** Canonical path below a port/version root; `core` is the Core Library home. */
   route: string
   /** A published package only when installation metadata is meaningful. */
   package?: PortPackageId
@@ -61,7 +61,7 @@ const guide = (
 })
 
 const libraryDomain = (description: string): DocumentationDomain => ({
-  id: 'core', label: 'Library', kind: 'core', navGroup: 'Library', route: '', package: 'core', description,
+  id: 'core', label: 'Library', kind: 'core', navGroup: 'Library', route: 'core', package: 'core', description,
 })
 
 const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
@@ -153,7 +153,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
   ruby: {
     domains: [
       {
-        id: 'core', label: 'Core library', kind: 'core', navGroup: 'Library', route: '', package: 'core',
+        id: 'core', label: 'Core library', kind: 'core', navGroup: 'Library', route: 'core', package: 'core',
         description: 'Install libtmux and work with tmux servers, sessions, windows, and panes.',
       },
       {
@@ -209,7 +209,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
   elixir: {
     domains: [
       {
-        id: 'core', label: 'Core library', kind: 'core', navGroup: 'Library', route: '', package: 'core',
+        id: 'core', label: 'Core library', kind: 'core', navGroup: 'Library', route: 'core', package: 'core',
         description: 'Install libtmux from Hex and observe tmux as immutable snapshots.',
       },
       {
@@ -259,7 +259,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
   lua: {
     domains: [
       {
-        id: 'core', label: 'Core library', kind: 'core', navGroup: 'Library', route: '', package: 'core',
+        id: 'core', label: 'Core library', kind: 'core', navGroup: 'Library', route: 'core', package: 'core',
         description: 'Install libtmux and control tmux through the Lua core API.',
       },
       {
@@ -345,7 +345,7 @@ function fallbackAreas(portSlug: string): readonly DocumentationDomain[] {
   const port = PORT_BY_SLUG[portSlug]
   return [
     {
-      id: 'core', label: 'Core library', kind: 'core', navGroup: 'Library', route: '', package: 'core',
+      id: 'core', label: 'Core library', kind: 'core', navGroup: 'Library', route: 'core', package: 'core',
       description: `Install ${port.packageName} and use the ${port.name} tmux API.`,
     },
     ...Object.entries(port.parentLibrary ? {} : DOC_PRODUCTS).map(([id, product]) => {
@@ -375,6 +375,18 @@ export function sourceGuidesFor(portSlug: string): readonly PortSourceGuide[] {
   if (!config) throw new Error(`port-documentation: no source guide configuration for ${portSlug}`)
   validate(portSlug, config)
   return config.sourceGuides
+}
+
+/**
+ * The section overviews staging writes for a port's source guides, unless the
+ * port authors one itself: guides for every staged port, and examples, topics
+ * and concepts too unless the port wraps another library's source.
+ * `scripts/stage-port-docs.mjs` writes them; the Core page cards are tested
+ * against this list.
+ */
+export function stagedSectionsFor(portSlug: string): readonly string[] {
+  if (!documentationFor(portSlug)) return []
+  return PORT_BY_SLUG[portSlug]!.parentLibrary ? ['guides'] : ['guides', 'examples', 'topics', 'concepts']
 }
 
 /** Retired source pages point to the reference that now owns their content. */

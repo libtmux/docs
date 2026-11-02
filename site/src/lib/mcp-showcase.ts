@@ -1,5 +1,9 @@
 import { mcpObjects } from './mcp-catalog'
 import { PORT_BY_SLUG, portPageUrl } from './ports'
+import { EXAMPLES } from './mcp-examples.ts'
+import { replayFrames, runAnswers, type Frame } from './mcp-replay'
+
+export { EXAMPLES }
 
 /**
  * The tools a port's MCP server advertises, grouped the way libtmux-mcp groups
@@ -30,6 +34,9 @@ export const TIERS: readonly Tier[] = [
   { id: 'execute', label: 'Execute', summary: 'Start or drive pane processes, or store state that can control later execution.', tooltip: 'Execute: starts or drives a pane process' },
   { id: 'teardown', label: 'Teardown', summary: 'Delete tmux objects or retained scrollback. Not reversible.', tooltip: 'Teardown: deletes tmux objects or scrollback' },
 ]
+
+/** The tier a tool belongs to, or nothing for a server that declares no toolsets. */
+export const tierFor = (tool: { tier?: TierId }): Tier | undefined => TIERS.find((entry) => entry.id === tool.tier)
 
 /** One tool as `tools/list` advertises it. */
 export interface ProtocolTool {
@@ -114,11 +121,81 @@ export interface ShowcaseStep {
   tool: ShowcaseTool
   arguments: Record<string, unknown>
   caption: string
+  /** What the server answered in the recorded session, abbreviated for the page. Absent without a recording. */
+  result?: unknown
+}
+
+/** The recorded session behind a worked example's results. */
+export interface Recording {
+  repo: string
+  revision: string
+  tmux: string
+  /** The test runner the sandbox ran, which produced the output below. */
+  runner: string
+  /** The tmux state after each call (frame 0 is before the first), read from the recorded results only. */
+  frames: Frame[]
+  /** Whether any result is shown shortened. */
+  shortened: boolean
+  /** The directory the sandbox ran in was replaced by this fixed path. */
+  projectDirectory?: string
+  /** What each command run left in its pane, as the last line with text, with the pane it ran in. */
+  answers: { pane?: string; line: string }[]
 }
 
 export interface WorkedExample {
   prompt: string
   steps: ShowcaseStep[]
+  /** Present only when every step has a recorded result from a session checked against the snapshot's revision. */
+  recording?: Recording
+}
+
+/** `data/mcp-transcripts/<port>.json`, written by `scripts/gen-mcp-transcript.mjs` for each port it has recorded; the glob below picks up a new one (vitest caches the transform by its text, so a new recording needs an edit to this line to be seen). */
+export interface Transcript {
+  repo: string
+  revision: string
+  sandbox: { tmux: string; pytest: string; rewritten?: { projectDirectory?: string } }
+  steps: { tool: string; arguments: Record<string, unknown>; isError: boolean; content: { type: string; text?: string }[]; structuredContent?: unknown }[]
+}
+
+const TRANSCRIPTS = import.meta.glob<Transcript>('../data/mcp-transcripts/*.json', { import: 'default' })
+
+/** The transcript recorded for a port, if any. */
+export async function transcriptFor(port: string): Promise<Transcript | undefined> {
+  return TRANSCRIPTS[`../data/mcp-transcripts/${port}.json`]?.()
+}
+
+const LONG_TEXT = 240
+const LONG_LIST = 4
+const LONG_OBJECT = 12
+const DEEP = 5
+
+/**
+ * A recorded value shortened for the page: a string past 240 characters is cut
+ * with an ellipsis, a list past four entries keeps its first four and says how
+ * many it left out, an object past twelve keys keeps its first twelve, and
+ * anything nested more than five levels deep is replaced by an ellipsis. The
+ * recording keeps everything.
+ */
+export function abbreviate(value: unknown, depth = 0): unknown {
+  if (typeof value === 'string') return value.length > LONG_TEXT ? `${value.slice(0, LONG_TEXT)}…` : value
+  const nested = value !== null && typeof value === 'object' && Object.keys(value as object).length > 0
+  if (nested && depth >= DEEP) return '…'
+  if (Array.isArray(value)) {
+    const shown = value.slice(0, LONG_LIST).map((item) => abbreviate(item, depth + 1))
+    return value.length > LONG_LIST ? [...shown, `… ${value.length - LONG_LIST} more`] : shown
+  }
+  if (value && typeof value === 'object') {
+    const keys = Object.entries(value)
+    const shown = Object.fromEntries(keys.slice(0, LONG_OBJECT).map(([key, item]) => [key, abbreviate(item, depth + 1)]))
+    return keys.length > LONG_OBJECT ? { ...shown, '…': `${keys.length - LONG_OBJECT} more` } : shown
+  }
+  return value
+}
+
+/** What a step answered: the structured result when the server sent one, else its text. */
+function stepResult(step: Transcript['steps'][number]): unknown {
+  if (step.structuredContent !== undefined) return step.structuredContent
+  return step.content.map((part) => part.text ?? '').join('\n')
 }
 
 export interface McpShowcase {
@@ -133,86 +210,6 @@ export interface McpShowcase {
   revision: string
 }
 
-interface ExampleStep { tool: string; arguments: Record<string, unknown>; caption: string }
-interface ExampleDefinition { prompt: string; steps: ExampleStep[] }
-
-const CREATE = 'Create the session.'
-const RUN = 'Run the command and wait for its output.'
-const RUN_IN_CREATED = 'Run the command in the pane the create result returned (%0).'
-const RUN_IN_LISTED = 'Run the command in the pane the list returned (%0).'
-const REMOVE = 'Remove the session once the result is read.'
-const REMOVE_BY_ID = 'Remove the session by the id the create result returned ($0).'
-const CHECKS = 'Create a tmux session called checks, run pytest -q in it, show me the result, then remove the session.'
-const RUN_COMMAND = { command: 'pytest -q' }
-
-/**
- * A prompt, and the calls an agent makes for it, in each server's own tools and
- * argument names. `site/test/mcp-showcase.test.ts` checks every call against
- * the tool's input schema in the port's snapshot.
- *
- * A session (`$0`) or pane (`%0`) id in a call is not something the prompt
- * supplies: an earlier result returned it, and the call's caption says so. A
- * server whose `create_session` result carries no pane id is followed by a
- * listing that does. The test checks each id against the earlier tools'
- * output schemas.
- */
-export const EXAMPLES: Record<string, ExampleDefinition> = {
-  py: { prompt: CHECKS, steps: [
-    { tool: 'create_session', arguments: { session_name: 'checks' }, caption: CREATE },
-    { tool: 'run_command', arguments: { session_name: 'checks', ...RUN_COMMAND }, caption: RUN },
-    { tool: 'kill_session', arguments: { session_name: 'checks' }, caption: REMOVE },
-  ] },
-  ts: { prompt: CHECKS, steps: [
-    { tool: 'create_session', arguments: { name: 'checks' }, caption: CREATE },
-    { tool: 'run_shell_command', arguments: { paneId: '%0', ...RUN_COMMAND }, caption: RUN_IN_CREATED },
-    { tool: 'kill_session', arguments: { session: 'checks' }, caption: REMOVE },
-  ] },
-  swift: { prompt: CHECKS, steps: [
-    { tool: 'create_session', arguments: { name: 'checks' }, caption: CREATE },
-    { tool: 'list_panes', arguments: { session: 'checks' }, caption: 'List the panes in the new session.' },
-    { tool: 'run_shell_command', arguments: { paneId: '%0', ...RUN_COMMAND }, caption: RUN_IN_LISTED },
-    { tool: 'kill_session', arguments: { session: 'checks' }, caption: REMOVE },
-  ] },
-  csharp: { prompt: CHECKS, steps: [
-    { tool: 'create_session', arguments: { name: 'checks' }, caption: CREATE },
-    { tool: 'run_shell_command', arguments: { paneId: '%0', ...RUN_COMMAND }, caption: RUN_IN_CREATED },
-    { tool: 'kill_session', arguments: { session: 'checks' }, caption: REMOVE },
-  ] },
-  cxx: { prompt: CHECKS, steps: [
-    { tool: 'create_session', arguments: { name: 'checks' }, caption: CREATE },
-    { tool: 'list_panes', arguments: {}, caption: 'List the panes, each with its session id.' },
-    { tool: 'run_shell_command', arguments: { paneId: '%0', ...RUN_COMMAND }, caption: RUN_IN_LISTED },
-    { tool: 'kill_session', arguments: { session: 'checks' }, caption: REMOVE },
-  ] },
-  rs: { prompt: CHECKS, steps: [
-    { tool: 'create_session', arguments: { name: 'checks' }, caption: CREATE },
-    { tool: 'list_windows', arguments: {}, caption: 'List the windows, each with its session id.' },
-    { tool: 'list_panes', arguments: {}, caption: 'List the panes, each with its window id.' },
-    { tool: 'run_shell_command', arguments: { pane: '%0', ...RUN_COMMAND }, caption: RUN_IN_LISTED },
-    { tool: 'kill_session', arguments: { session: 'checks' }, caption: REMOVE },
-  ] },
-  go: { prompt: CHECKS, steps: [
-    { tool: 'create_session', arguments: { session_name: 'checks' }, caption: CREATE },
-    { tool: 'list_panes', arguments: {}, caption: 'List the panes, each with the session it belongs to.' },
-    { tool: 'run_shell_command', arguments: { pane_id: '%0', ...RUN_COMMAND }, caption: RUN_IN_LISTED },
-    { tool: 'kill_session', arguments: { session_id: '$0' }, caption: REMOVE_BY_ID },
-  ] },
-  java: { prompt: CHECKS, steps: [
-    { tool: 'create_session', arguments: { session_name: 'checks' }, caption: CREATE },
-    { tool: 'list_panes', arguments: {}, caption: 'List the panes, each with the session it belongs to.' },
-    { tool: 'run_shell_command', arguments: { pane_id: '%0', ...RUN_COMMAND }, caption: RUN_IN_LISTED },
-    { tool: 'kill_session', arguments: { session_id: '$0' }, caption: REMOVE_BY_ID },
-  ] },
-  ruby: { prompt: 'List the panes on my tmux server.', steps: [
-    { tool: 'tmux_capabilities', arguments: {}, caption: 'Ask the server which tools and limits are enabled.' },
-    { tool: 'tmux_snapshot', arguments: { entity: 'pane', limit: 20 }, caption: 'List the panes.' },
-  ] },
-  julia: { prompt: 'Show me what the first pane is displaying.', steps: [
-    { tool: 'list_panes', arguments: { limit: 10 }, caption: 'List the panes. Each result carries a target.' },
-    { tool: 'capture_pane', arguments: { target: { paneId: '%0', generation: '3f9a1c' } }, caption: 'Read the pane through the target the list returned (%0).' },
-  ] },
-}
-
 const SNAPSHOTS = import.meta.glob<ProtocolSnapshot>('../data/mcp-protocol/*.json', { import: 'default' })
 
 /** The `tools/list` snapshot committed for a port. */
@@ -225,7 +222,7 @@ export async function protocolSnapshot(port: string): Promise<ProtocolSnapshot |
  *
  * @throws {Error} When a tool the server advertises has no reference page.
  */
-export function buildShowcase(port: string, version: string, snapshot: ProtocolSnapshot): McpShowcase {
+export function buildShowcase(port: string, version: string, snapshot: ProtocolSnapshot, transcript?: Transcript): McpShowcase {
   const info = PORT_BY_SLUG[port]!
   const pages = new Map(mcpObjects(port).filter((object) => object.kind === 'tool').map((object) => [object.name, object.path]))
   const purposes = toolPurposes(snapshot.protocol.tools)
@@ -240,8 +237,23 @@ export function buildShowcase(port: string, version: string, snapshot: ProtocolS
     ? TIERS.map((tier) => ({ tier, tools: sorted.filter((tool) => tool.tier === tier.id) })).filter((group) => group.tools.length)
     : [{ tools: sorted }]
   const definition = EXAMPLES[port]
-  const example = definition && definition.steps.every((step) => tools.has(step.tool))
-    ? { prompt: definition.prompt, steps: definition.steps.map((step) => ({ tool: tools.get(step.tool)!, arguments: step.arguments, caption: step.caption })) }
+  // A recording counts only for the same calls, on the revision the snapshot describes, with no step that failed.
+  const recorded = definition && transcript && transcript.revision === snapshot.revision
+    && transcript.steps.length === definition.steps.length
+    && transcript.steps.every((step, index) => !step.isError && step.tool === definition.steps[index]!.tool
+      && JSON.stringify(step.arguments) === JSON.stringify(definition.steps[index]!.arguments))
+    ? transcript : undefined
+  const full = recorded?.steps.map(stepResult) ?? []
+  const shown = full.map((value) => abbreviate(value))
+  const example: WorkedExample | undefined = definition && definition.steps.every((step) => tools.has(step.tool))
+    ? {
+      prompt: definition.prompt,
+      steps: definition.steps.map((step, index) => ({
+        tool: tools.get(step.tool)!, arguments: step.arguments, caption: step.caption,
+        ...(recorded ? { result: shown[index] } : {}),
+      })),
+      ...(recorded ? { recording: { repo: recorded.repo, revision: recorded.revision, tmux: recorded.sandbox.tmux, runner: recorded.sandbox.pytest, frames: replayFrames(recorded.steps), shortened: shown.some((value, index) => JSON.stringify(value) !== JSON.stringify(full[index])), ...(recorded.sandbox.rewritten?.projectDirectory ? { projectDirectory: recorded.sandbox.rewritten.projectDirectory } : {}), answers: runAnswers(recorded.steps) } } : {}),
+    }
     : undefined
   return {
     port, groups, ...(example ? { example } : {}),
@@ -254,7 +266,7 @@ export function buildShowcase(port: string, version: string, snapshot: ProtocolS
 /** A port's showcase, or nothing for a port with no committed `tools/list` snapshot. */
 export async function mcpShowcase(port: string, version: string): Promise<McpShowcase | undefined> {
   const snapshot = await protocolSnapshot(port)
-  return snapshot && PORT_BY_SLUG[port] ? buildShowcase(port, version, snapshot) : undefined
+  return snapshot && PORT_BY_SLUG[port] ? buildShowcase(port, version, snapshot, await transcriptFor(port)) : undefined
 }
 
 /** The headings the showcase adds to a page's table of contents. */
@@ -265,4 +277,16 @@ export function showcaseHeadings(showcase: McpShowcase): { depth: number; slug: 
     ...tiers.map((tier) => ({ depth: 3, slug: `tier-${tier.id}`, text: tier.label })),
     ...(showcase.example ? [{ depth: 2, slug: 'worked-example', text: 'Worked example' }] : []),
   ]
+}
+
+/**
+ * One sentence on what a port's server offers an agent, from its snapshot: how
+ * many tools it advertises and the tiers they fall in.
+ */
+export function showcaseSentence(showcase: McpShowcase): string {
+  const name = PORT_BY_SLUG[showcase.port]!.name
+  const count = showcase.groups.reduce((total, group) => total + group.tools.length, 0)
+  const tiers = showcase.groups.flatMap((group) => (group.tier ? [group.tier.label] : []))
+  const grouped = tiers.length ? `, grouped as ${tiers.slice(0, -1).join(', ')}${tiers.length > 1 ? ' and ' : ''}${tiers.at(-1)}` : ''
+  return `The ${name} server lets an agent work with tmux through ${count} tools${grouped}.`
 }

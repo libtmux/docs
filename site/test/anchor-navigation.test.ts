@@ -6,7 +6,7 @@ import { installAnchorNavigation } from '../public/_shell/anchors.js'
 const disposals: (() => void)[] = []
 afterEach(() => { disposals.splice(0).forEach((dispose) => dispose()); vi.restoreAllMocks() })
 
-function page(html: string, hash = '', fontsPending = false, hintsPending = false, startup?: { state?: unknown; navigation?: string }, coordinated = false) {
+function page(html: string, hash = '', fontsPending = false, hintsPending = false, startup?: { state?: unknown; navigation?: string }, coordinated = false, top = 200) {
   const win = new Window({ url: `https://libtmux.org/en/ts/latest/reference/${hash}` })
   win.document.body.innerHTML = html
   if (startup) {
@@ -31,7 +31,7 @@ function page(html: string, hash = '', fontsPending = false, hintsPending = fals
     return sequence as unknown as ReturnType<typeof win.setTimeout>
   })
   vi.spyOn(win, 'clearTimeout').mockImplementation((id) => { timers.delete(Number(id)) })
-  vi.spyOn(win.HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue(new win.DOMRect(0, 200, 100, 30))
+  vi.spyOn(win.HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue(new win.DOMRect(0, top, 100, 30))
   const scrolled: { id: string; collapsed: number }[] = []
   win.HTMLElement.prototype.scrollIntoView = function () {
     scrolled.push({ id: this.id, collapsed: win.document.querySelectorAll('details:not([open])').length })
@@ -148,6 +148,14 @@ describe('shared anchor arrival', () => {
     disposals.push(installAnchorNavigation(p.win as unknown as typeof window))
     p.flush()
     expect(p.scrolled).toHaveLength(1)
+  })
+
+  it('does not scroll again to a fragment the browser already placed, but does when it moved', () => {
+    const placed = page('<h2 id="server">Server</h2>', '#server', false, false, {}, false, 0)
+    expect(placed.scrolled).toEqual([])
+    expect(placed.doc.documentElement.hasAttribute('data-anchor-startup')).toBe(false)
+    const moved = page('<h2 id="server">Server</h2>', '#server', false, false, {}, false, 16)
+    expect(moved.scrolled).toEqual([{ id: 'server', collapsed: 0 }])
   })
 
   it('keeps the initial unowned arrival through bootstrap replacement and both visibility gates', async () => {

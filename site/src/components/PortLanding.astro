@@ -1,22 +1,38 @@
 ---
 import { Code } from 'astro-expressive-code/components'
+import CoreShowcase from './CoreShowcase.astro'
 import HomeExample from './HomeExample.astro'
-import McpInstall from './widgets/McpInstall.astro'
-import PackageInstall from './widgets/PackageInstall.astro'
+import { portCapabilities, type CapabilityTable } from '../lib/core-capabilities'
+import CAPABILITIES from '../data/core-capabilities.json'
+import LandingInstall from './landing/LandingInstall.astro'
+import McpReplay from './mcp/McpReplay.astro'
+import WorkspaceConfig from './workspace/WorkspaceConfig.astro'
+import WorkspaceWindows from './workspace/WorkspaceWindows.astro'
 import { PORT_BY_SLUG, portPageUrl, type Port } from '../lib/ports'
 import { landingPanels, type CachedSource, type LandingTable } from '../lib/port-landing'
+import { mcpShowcase, showcaseHeadings, showcaseSentence } from '../lib/mcp-showcase'
+import { loadCommand } from '../lib/workspace-links'
+import {
+  landingExample, offersPicker, previewWindows, revisionUrl, TOPICS, VIA, workspaceShowcase,
+} from '../lib/workspace-showcase'
 import { QUICKSTARTS, homeCodeColumns } from '../lib/quickstarts'
 import LANDING from '../data/landing-examples.json'
 import SOURCES from '../data/example-sources.json'
 
 /**
- * The tested example and the install widget for each product a port ships.
+ * What each product a port ships looks like in use, with its install widget.
  *
- * Core API is the homepage's example block, fixed to the port's language. MCP
- * and Workspace Manager show an excerpt of a program the port's CI runs, read
- * from the revision-bound example cache by the `from` and `to` anchors in
- * `landing-examples.json`. A port that ships only the library shows its
- * panel without a selector, since there is nothing to choose.
+ * Core API is the homepage's example block, fixed to the port's language.
+ * MCP opens with one sentence, the install picker, then the MCP overview's
+ * worked example: a prompt and the schema-checked calls an agent makes. A
+ * port with no worked example, or one served by another port's package,
+ * shows the picker and the links, never invented calls. Workspace Manager
+ * shows a workspace file one of the port's tests loads, the command that
+ * loads it and the panes it builds, from the showcase the workspace overview
+ * uses. Both panels keep the excerpt of a program the port's CI runs behind a
+ * disclosure, read from the revision-bound example cache by the `from` and
+ * `to` anchors in `landing-examples.json`. A port that ships only the
+ * library shows its panel without a selector, since there is nothing to choose.
  */
 interface Props {
   port: Port
@@ -24,8 +40,25 @@ interface Props {
 }
 const { port, version } = Astro.props as Props
 const panels = landingPanels(port, version, PORT_BY_SLUG, LANDING as LandingTable, SOURCES as Record<string, CachedSource>)
+// The MCP overview's showcase, for the port whose server the panel installs. A port served by another port's package gets no worked example.
+const showcases = new Map(await Promise.all(panels.filter((panel) => panel.product === 'mcp' && panel.install)
+  .map(async (panel) => [panel.product, await mcpShowcase(panel.install!.port, version)] as const)))
+const workspace = workspaceShowcase(port.slug)
+const workspaceExample = workspace && landingExample(workspace)
+const workspaceTopic = workspaceExample && TOPICS.find((topic) => topic.id === workspaceExample.topic)!
+const workspaceWindows = workspace && workspaceExample
+  ? previewWindows(JSON.parse(workspaceExample.json), `landing-${port.slug}`, workspace.support.defaultLayout?.layout) : []
+const workspaceTest = workspaceExample && (workspaceExample.tests.find((test) => test.via === 'cli') ?? workspaceExample.tests[0]!)
+// Name the command only for a file a test runs it on; the evidence line says how any other file is reached.
+const workspaceProgram = loadCommand(port.slug)
+const workspaceLoad = workspaceTest?.via === 'cli' ? workspaceProgram : undefined
+const hasShowcase = portCapabilities(port.slug, CAPABILITIES as CapabilityTable, SOURCES as Record<string, CachedSource>).length > 0
 const complete = QUICKSTARTS[port.slug]?.complete
 if (!complete) throw new Error(`PortLanding: ${port.slug} has no complete homepage example; add it to home-examples.json`)
+const coreLinks = [
+  { href: portPageUrl(port, version, 'core'), label: 'Core Library documentation →' },
+  { href: portPageUrl(port, version, 'examples'), label: `More ${port.name} examples →` },
+]
 const panelId = (product: string) => `landing-panel-${product}`
 ---
 <section class="port-landing mt-10" aria-label={`Start with ${port.name}`} data-port-landing={port.slug}>
@@ -36,39 +69,69 @@ const panelId = (product: string) => `landing-panel-${product}`
       <span>{panel.label}</span>
     </label>)}
   </fieldset>}
-  {panels.map((panel) => <div class="landing-panel" id={panelId(panel.product)} data-landing-panel={panel.product}>
+  {panels.map((panel) => {
+    const showcase = showcases.get(panel.product)
+    const excerpt = panel.excerpt && <details class="landing-excerpt" data-landing-excerpt={panel.product}
+      style={`--home-code-columns: ${homeCodeColumns(panel.excerpt.code)}`}>
+      <summary>{panel.product === 'mcp' ? 'Embed the server in a program' : 'Build the workspace from a program'}</summary>
+      <Code code={panel.excerpt.code} lang={panel.excerpt.lang} title={panel.excerpt.file} frame="code" />
+      <p class="landing-source">
+        Excerpt of <a href={panel.excerpt.sourceUrl}><code>{panel.excerpt.file}</code></a>,
+        which <code>{panel.excerpt.ci.command}</code> runs in the repository's CI
+        (<code>{panel.excerpt.ci.workflow}</code>).
+      </p>
+    </details>
+    return <div class="landing-panel" id={panelId(panel.product)} data-landing-panel={panel.product}>
     {panel.product === 'core' ? <>
-      <HomeExample port={port.slug} language={port.name} example={complete} />
-      <p class="landing-more"><a href={portPageUrl(port, version, 'examples')}>More {port.name} examples →</a></p>
-    </> : <>
-      <h2 class="landing-heading">Start with {panel.label}</h2>
+      {hasShowcase ? <CoreShowcase port={port.slug} links={coreLinks} /> : <>
+        <HomeExample port={port.slug} language={port.name} example={complete} fixed />
+        <p class="landing-more landing-more--lines">{coreLinks.map((link) => <a href={link.href}>{link.label}</a>)}</p>
+      </>}
+      <LandingInstall panel={panel} port={port.slug} />
+    </> : panel.product === 'mcp' ? <>
+      <h2 class="sr-only">{panel.label}</h2>
       {panel.servedBy && <p class="landing-note">
         {port.name} has no {panel.label} package of its own. It uses the {panel.servedBy} port's <code>{panel.packageName}</code>.
       </p>}
-      {panel.excerpt && <div class="landing-excerpt" data-landing-excerpt={panel.product}
-        style={`--home-code-columns: ${homeCodeColumns(panel.excerpt.code)}`}>
-        <Code code={panel.excerpt.code} lang={panel.excerpt.lang} title={panel.excerpt.file} frame="code" />
-        <p class="landing-source">
-          Excerpt of <a href={panel.excerpt.sourceUrl}><code>{panel.excerpt.file}</code></a>,
-          which <code>{panel.excerpt.ci.command}</code> runs in the repository's CI
-          (<code>{panel.excerpt.ci.workflow}</code>).
+      {showcase && <p class="landing-lead" data-landing-lead>{showcaseSentence(showcase)}</p>}
+      {showcase?.example && !panel.servedBy && <div class="landing-example" data-landing-example="mcp">
+        <McpReplay example={showcase.example} portName={port.name} level={3} />
+      </div>}
+      <LandingInstall panel={panel} port={port.slug} />
+      <ul class="landing-links">
+        {showcase && !panel.servedBy && <li><a href={`${panel.href}#${showcaseHeadings(showcase)[0]!.slug}`}>All tools{showcase.groups.some((group) => group.tier) ? ' by tier' : ''} →</a></li>}
+        {showcase && <li><a href={showcase.toolsHref}>Every tool, with its arguments and result →</a></li>}
+        <li><a href={panel.href}>{panel.label} documentation →</a></li>
+      </ul>
+      {excerpt}
+    </> : <>
+      <h2 class="sr-only">{panel.label}</h2>
+      {workspace && workspaceExample && workspaceTopic && workspaceTest && <div class="landing-example" data-landing-example="workspace">
+        <h3>{workspaceTopic.title}</h3>
+        <p>{workspaceTopic.summary}</p>
+        <div class="ws-body">
+          <WorkspaceConfig id={`landing-${port.slug}-${workspaceExample.topic}`} yaml={workspaceExample.yaml} json={workspaceExample.json} note />
+          <WorkspaceWindows windows={workspaceWindows} />
+        </div>
+        {workspaceLoad && <>
+          <p class="landing-command-lead">Save the file as <code>workspace.yaml</code> and load it with:</p>
+          <Code code={`${workspaceLoad.program} load workspace.yaml`} lang="sh" frame="none" />
+        </>}
+        <p class="landing-source" data-landing-evidence>
+          Workspace file: <a href={revisionUrl(workspace, workspaceExample.source.path, workspaceExample.source.lines)}><code>{workspaceExample.source.path}</code></a>.
+          Tested by <a href={revisionUrl(workspace, workspaceTest.path, workspaceTest.line)}><code>{workspaceTest.name}</code></a>
+          ({workspaceTest.path}; {VIA[workspaceTest.via]}).
         </p>
       </div>}
-      <p class="landing-more"><a href={panel.href}>{panel.label} documentation →</a></p>
+      <LandingInstall panel={panel} port={port.slug} />
+      <ul class="landing-links">
+        {workspace && <li><a href={`${panel.href}#${offersPicker(workspace) ? 'try-a-preset' : 'example-workspaces'}`}>{offersPicker(workspace) ? 'Try other presets' : 'Example workspaces'} →</a></li>}
+        {workspaceProgram && <li><a href={portPageUrl(port, version, workspaceProgram.path)}>The <code>{workspaceProgram.program} load</code> command →</a></li>}
+        <li><a href={panel.href}>{panel.label} documentation →</a></li>
+      </ul>
+      {excerpt}
     </>}
-    {panel.install && <div class="landing-install">
-      <h3>Install{panel.packageName && <>{' '}<code>{panel.packageName}</code></>}</h3>
-      {panel.product === 'core' && <PackageInstall ports={[port.slug]} />}
-      {panel.product === 'workspace' && panel.install.widget === 'package' && <>
-        <p>The workspace package is separate from the core library.</p>
-        <PackageInstall ports={[panel.install.port]} packageId="workspace" />
-      </>}
-      {panel.install.widget === 'mcp' && <>
-        <p>Choose your client and configuration scope, then run the command or paste the configuration.</p>
-        <McpInstall port={panel.install.port} />
-      </>}
-    </div>}
-  </div>)}
+  </div>})}
 </section>
 
 <script>
@@ -131,20 +194,28 @@ const panelId = (product: string) => `landing-panel-${product}`
   .port-landing:has([data-landing-product][value="mcp"]:checked) .landing-panel[data-landing-panel="mcp"],
   .port-landing:has([data-landing-product][value="workspace"]:checked) .landing-panel[data-landing-panel="workspace"] { display: block; }
 
-  .landing-heading { margin-bottom: .85rem; font-size: 1rem; font-weight: 600; }
   .landing-excerpt :global(.expressive-code) {
     --ec-codeFontSize: clamp(.8125rem, calc((100cqi - 2rem) / (var(--home-code-columns) * .625)), .9375rem);
   }
   /* An excerpt is short by construction, so it shows whole; a complete program scrolls past the homepage's height. */
-  .landing-note { margin-bottom: .85rem; font-size: .875rem; color: var(--color-muted); }
+  .landing-note { font-size: .875rem; color: var(--color-muted); }
   .landing-excerpt :global(.expressive-code pre) { overflow: auto; tab-size: 8; }
   .landing-panel :global(.home-example .expressive-code pre) { max-height: 34rem; overflow: auto; tab-size: 8; scrollbar-gutter: stable; }
+  .landing-more--lines { display: grid; gap: .35rem; }
   .landing-source, .landing-more { margin-top: .8rem; font-size: .8125rem; color: var(--color-muted); }
   .landing-source a, .landing-more a { color: var(--color-link); }
   /* A long command or path wraps instead of widening the page. */
   .landing-source code { white-space: normal; overflow-wrap: anywhere; }
-  .landing-install { margin-top: 1.5rem; }
-  .landing-install h3 { margin-bottom: .5rem; font-weight: 600; }
-  .landing-install h3 code { font-size: .875rem; font-weight: 400; }
-  .landing-install > p { margin-bottom: .75rem; font-size: .875rem; color: var(--color-muted); }
+  /* One gap, 1rem, between a panel's blocks; half of it from a title to what it introduces. The tab row's own margin is the only space above the first block. */
+  .landing-lead { margin: 0 0 1rem; }
+  .landing-example { margin: 0; }
+  .landing-example :global(h3) { margin: 0 0 .5rem; font-weight: 600; line-height: 1.4; }
+  .landing-example > :global(p:not(.mcp-provenance)) { margin: 0 0 1rem; }
+  .landing-note { margin: 0 0 1rem; }
+  .landing-command-lead { margin-block: .9rem .25rem; font-size: .875rem; }
+  .landing-links { margin: 1.25rem 0 0; padding: 0; list-style: none; display: grid; gap: .35rem; font-size: .875rem; }
+  .landing-links a { color: var(--color-link); }
+  .landing-excerpt { margin-top: 1.25rem; }
+  .landing-excerpt > summary { cursor: pointer; font-size: .875rem; color: var(--color-link); }
+  .landing-excerpt[open] > summary { margin-bottom: .75rem; }
 </style>

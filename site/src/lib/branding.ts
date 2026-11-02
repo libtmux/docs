@@ -1,6 +1,6 @@
 /** Shared artwork and metadata for Astro and native documentation. */
 import palettes from './brand-palettes.json' with { type: 'json' }
-import { pageBrand, PORTS } from './ports.ts'
+import { pageBrand, PORTS, portHomeTitle } from './ports.ts'
 
 export { palettes }
 export const PYTHON_DESCRIPTION = 'Typed scripting library / ORM / API wrapper for tmux'
@@ -37,6 +37,11 @@ export function branding(portSlug?: string, pagePath = '', root = '') {
   return { language, variant, palette, port, projectName, label, asset: (filename: string) => `${base}/${filename}` }
 }
 
+/** A page's heading as plain text: its title and, when it has one, its subtitle ("tmux workspace manager, forged in Rust."). */
+export function headingTitle(data: { title: string; subtitle?: string }): string {
+  return data.subtitle ? `${data.title} ${data.subtitle}` : data.title
+}
+
 /** Keep one project suffix, including when normalizing an older native page. */
 export function documentationTitle(title: string, projectName: string): string {
   const suffix = ` | ${projectName}`
@@ -45,7 +50,8 @@ export function documentationTitle(title: string, projectName: string): string {
   page = page.replace(/ \| libtmux(?:-[a-z]+)?$/, '')
     .replace(/ [-–—] libtmux(?:-[a-z]+)?(?: v?\d[\w.+-]*)? documentation$/, '')
   // A title that already leads with the project name, as the home page's does, needs no suffix.
-  return page === projectName || page.startsWith(`${projectName}: `) ? page : `${page} | ${projectName}`
+  // A port home title leads with the repository name, which Julia's project name is not.
+  return page === projectName || page.startsWith(`${projectName}: `) || PORTS.some((port) => portHomeTitle(port) === page) ? page : `${page} | ${projectName}`
 }
 
 /** JSON-LD is data inside an HTML script element; never allow a closing tag. */

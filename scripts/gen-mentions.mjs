@@ -100,7 +100,10 @@ function pageOf(file, source) {
 function titleOf(source, file) {
   const front = /^---\n([\s\S]*?)\n---/.exec(source)
   const title = front && /^title:\s*(.+)$/m.exec(front[1])
-  if (title) return title[1].trim().replace(/^["']|["']$/g, '')
+  // A page's heading is its title and subtitle together: "tmux workspace manager, forged in Rust."
+  const subtitle = front && /^subtitle:\s*(.+)$/m.exec(front[1])
+  const plain = (text) => text.trim().replace(/^["']|["']$/g, '')
+  if (title) return subtitle ? `${plain(title[1])} ${plain(subtitle[1])}` : plain(title[1])
   const heading = /^#\s+(.+)$/m.exec(source)
   return heading ? heading[1].trim() : basename(file, '.md')
 }
@@ -144,11 +147,12 @@ function sharedWorkspaceEntries(realFiles) {
         // A port's own `ports.<slug>.title:` override, indented under the
         // shared frontmatter's `ports:` map exactly as authored (2, then 4,
         // spaces — see site/src/lib/workspace-shared-slots.ts's merge).
-        const override = fm && new RegExp(`^  ${port}:\\n(?:.*\\n)*?    title:\\s*(.+)$`, 'm').exec(fm[1])?.[1]
+        const override = fm && new RegExp(`^  ${port}:\\n(?:    .*\\n)*?    title:\\s*(.+)$`, 'm').exec(fm[1])?.[1]
         const title = override ?? sharedTitle
+        const subtitle = fm && new RegExp(`^  ${port}:\\n(?:    .*\\n)*?    subtitle:\\s*(.+)$`, 'm').exec(fm[1])?.[1]
         entries.push({
           file: `ports/${port}/${relPath}`,
-          source: `---\ntitle: ${title}\n---\n\n${resolvePortBody(body, port)}`,
+          source: `---\ntitle: ${title}\n${subtitle ? `subtitle: ${subtitle}\n` : ''}---\n\n${resolvePortBody(body, port)}`,
         })
       }
     }

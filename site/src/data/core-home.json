@@ -1,0 +1,326 @@
+{
+  "py": {
+    "objects": {
+      "server": "libtmux.Server",
+      "session": "libtmux.Session",
+      "window": "libtmux.Window",
+      "pane": "libtmux.Pane"
+    },
+    "capabilities": {
+      "objects": "libtmux.neo.Obj",
+      "ids": "libtmux.Pane.id",
+      "queries": "libtmux._internal.query_list.QueryList",
+      "errors": "libtmux.exc.LibTmuxException",
+      "traversal": "libtmux.Server.panes",
+      "current-pane": "libtmux.Pane.from_env",
+      "test-fixtures": "libtmux.pytest_plugin.server",
+      "servers": "libtmux.Server",
+      "send-keys": "libtmux.Pane.send_keys",
+      "control-mode": "libtmux._internal.control_mode.ControlMode",
+      "capture": "libtmux.Pane.capture_pane"
+    }
+  },
+  "ruby": {
+    "objects": {
+      "server": "LibTmux::Server",
+      "session": "LibTmux::Session",
+      "window": "LibTmux::Window",
+      "pane": "LibTmux::Pane"
+    },
+    "capabilities": {
+      "objects": "LibTmux::PaneSnapshot",
+      "queries": "LibTmux::FilterExpr",
+      "errors": "LibTmux::Error",
+      "traversal": "LibTmux::Server#list_panes",
+      "argv": "LibTmux::Server#run",
+      "send-keys": "LibTmux::Pane#send_keys",
+      "control-mode": "LibTmux::ControlConnection",
+      "capture": "LibTmux::Pane#capture"
+    }
+  },
+  "lua": {
+    "objects": {
+      "server": "libtmux.Server",
+      "session": "libtmux.Session",
+      "window": "libtmux.Window",
+      "pane": "libtmux.Pane"
+    },
+    "capabilities": {
+      "objects": "libtmux.SnapshotPane",
+      "queries": "libtmux.Selection",
+      "errors": "libtmux.Error",
+      "traversal": "libtmux.Server:snapshot",
+      "argv": "libtmux.Server:command",
+      "servers": "libtmux.Runtime:connect",
+      "send-keys": "libtmux.Pane:send_keys",
+      "control-mode": "libtmux.Observation:watch_notifications",
+      "capture": "libtmux.Pane:capture"
+    }
+  },
+  "powershell": {
+    "objects": {
+      "server": "LibTmux\\Get-TmuxServer",
+      "session": "LibTmux\\Get-TmuxSession",
+      "window": "LibTmux\\Get-TmuxWindow",
+      "pane": "LibTmux\\Get-TmuxPane"
+    },
+    "capabilities": {
+      "objects": "LibTmux\\Get-TmuxPane",
+      "queries": "LibTmux\\New-TmuxQuery",
+      "traversal": "LibTmux\\Get-TmuxSnapshot",
+      "argv": "LibTmux\\Invoke-TmuxCommand",
+      "servers": "LibTmux\\Connect-TmuxServer",
+      "send-keys": "LibTmux\\Send-TmuxKey",
+      "control-mode": "LibTmux\\Watch-TmuxEvent",
+      "capture": "LibTmux\\Get-TmuxPaneContent"
+    }
+  },
+  "julia": {
+    "objects": {
+      "server": "LibTmux.Server",
+      "session": "LibTmux.SessionSnapshot",
+      "window": "LibTmux.WindowSnapshot",
+      "pane": "LibTmux.PaneSnapshot"
+    },
+    "capabilities": {
+      "objects": "LibTmux.PaneSnapshot",
+      "ids": "LibTmux.TmuxID",
+      "queries": "LibTmux.PaneWhere",
+      "errors": "LibTmux.LibTmuxError",
+      "traversal": "LibTmux.panes",
+      "version-gate": "LibTmux.UnsupportedCapability",
+      "argv": "LibTmux.TmuxCommand",
+      "servers": "LibTmux.open_server",
+      "send-keys": "LibTmux.send_keys",
+      "control-mode": "LibTmux.open_control",
+      "capture": "LibTmux.capture_pane"
+    }
+  },
+  "elixir": {
+    "objects": {
+      "server": "LibTmux.Server",
+      "session": "LibTmux.Session",
+      "window": "LibTmux.Window",
+      "pane": "LibTmux.Pane"
+    },
+    "capabilities": {
+      "objects": "LibTmux.Pane",
+      "queries": "LibTmux.Filter",
+      "errors": "LibTmux.Error",
+      "traversal": "LibTmux.Snapshot.panes/1",
+      "argv": "LibTmux.Command",
+      "control-mode": "LibTmux.Control"
+    }
+  },
+  "ts": {
+    "objects": {
+      "server": "server.Server",
+      "session": "session.Session",
+      "window": "window.Window",
+      "pane": "pane.Pane"
+    },
+    "capabilities": {
+      "objects": "pane.Pane",
+      "ids": "common.PaneId",
+      "queries": "selection.Selection.where",
+      "errors": "errors.LibTmuxError",
+      "traversal": "server.Server.panes",
+      "version-gate": "errors.VersionTooLowError",
+      "async": "server.Server.newSession",
+      "argv": "server.Server.cmd",
+      "servers": "server.Server",
+      "send-keys": "pane.Pane.sendKeys",
+      "control-mode": "server.Server.watch",
+      "capture": "pane.Pane.capture"
+    }
+  },
+  "rs": {
+    "objects": {
+      "server": "server.Server",
+      "session": "session.Session",
+      "window": "window.Window",
+      "pane": "pane.Pane"
+    },
+    "capabilities": {
+      "objects": "pane.Pane",
+      "ids": "target.PaneId",
+      "queries": "query.FilterExpr",
+      "errors": "error.Error",
+      "traversal": "server.Server.panes",
+      "version-gate": "error.Error.UnsupportedCapability",
+      "current-pane": "pane.Pane.from_env",
+      "test-fixtures": "test.TestServer",
+      "async": "server.Server.new_session",
+      "servers": "server.Server",
+      "send-keys": "pane.Pane.send_keys",
+      "control-mode": "control.ControlMode",
+      "capture": "pane.Pane.capture"
+    }
+  },
+  "go": {
+    "objects": {
+      "server": "tmux.Server",
+      "session": "tmux.Session",
+      "window": "tmux.Window",
+      "pane": "tmux.Pane"
+    },
+    "capabilities": {
+      "objects": "tmux.Pane",
+      "ids": "tmux.PaneID",
+      "queries": "tmux.PaneFilter",
+      "errors": "tmux.CommandError",
+      "traversal": "tmux.Server.Panes",
+      "version-gate": "tmux.VersionTooLowError",
+      "current-pane": "tmux.PaneFromEnv",
+      "test-fixtures": "tmuxtest.NewServer",
+      "argv": "tmux.Server.Cmd",
+      "servers": "tmux.Server.Start",
+      "send-keys": "tmux.Pane.SendKeys",
+      "control-mode": "tmux.ControlClient",
+      "capture": "tmux.Pane.Capture"
+    }
+  },
+  "java": {
+    "objects": {
+      "server": "io.github.libtmux.Server.Server",
+      "session": "io.github.libtmux.Session.Session",
+      "window": "io.github.libtmux.Window.Window",
+      "pane": "io.github.libtmux.Pane.Pane"
+    },
+    "capabilities": {
+      "objects": "io.github.libtmux.snapshot.PaneState.PaneState",
+      "ids": "io.github.libtmux.PaneId.PaneId",
+      "queries": "io.github.libtmux.query.FilterExpr.FilterExpr",
+      "errors": "io.github.libtmux.exception.LibTmuxException.LibTmuxException",
+      "traversal": "io.github.libtmux.Server.Server.panes",
+      "version-gate": "io.github.libtmux.exception.UnsupportedFeatureException.UnsupportedFeatureException",
+      "test-fixtures": "io.github.libtmux.junit5.TmuxExtension.TmuxExtension",
+      "argv": "io.github.libtmux.Server.Server.cmd",
+      "servers": "io.github.libtmux.Server.Server.open",
+      "send-keys": "io.github.libtmux.Pane.Pane.sendKeys",
+      "control-mode": "io.github.libtmux.control.ControlClient.ControlClient",
+      "capture": "io.github.libtmux.Pane.Pane.capture"
+    }
+  },
+  "kotlin": {
+    "objects": {
+      "server": "io.github.libtmux.kotlin.Server",
+      "session": "io.github.libtmux.kotlin.Session",
+      "window": "io.github.libtmux.kotlin.Window",
+      "pane": "io.github.libtmux.kotlin.Pane"
+    },
+    "capabilities": {
+      "objects": "io.github.libtmux.kotlin.Pane",
+      "ids": "io.github.libtmux.kotlin.Pane.id",
+      "queries": "io.github.libtmux.kotlin.Iterable.filter",
+      "traversal": "io.github.libtmux.kotlin.Server.panes",
+      "async": "io.github.libtmux.kotlin.Server.panes",
+      "argv": "io.github.libtmux.kotlin.Server.cmd",
+      "servers": "io.github.libtmux.kotlin.Server.Companion.open",
+      "send-keys": "io.github.libtmux.kotlin.Pane.sendKeys",
+      "control-mode": "io.github.libtmux.kotlin.ControlClient",
+      "capture": "io.github.libtmux.kotlin.Pane.capture"
+    }
+  },
+  "scala": {
+    "objects": {
+      "server": "io.github.libtmux.scaladsl.Server",
+      "session": "io.github.libtmux.scaladsl.Session",
+      "window": "io.github.libtmux.scaladsl.Window",
+      "pane": "io.github.libtmux.scaladsl.Pane"
+    },
+    "capabilities": {
+      "objects": "io.github.libtmux.scaladsl.Pane",
+      "queries": "io.github.libtmux.scaladsl.query.Expr",
+      "traversal": "io.github.libtmux.scaladsl.Server.panes",
+      "argv": "io.github.libtmux.scaladsl.Server.cmd",
+      "servers": "io.github.libtmux.scaladsl.Server.open",
+      "send-keys": "io.github.libtmux.scaladsl.Pane.sendKeys",
+      "control-mode": "io.github.libtmux.scaladsl.Server.control",
+      "capture": "io.github.libtmux.scaladsl.Pane.capture"
+    }
+  },
+  "csharp": {
+    "objects": {
+      "server": "LibTmux.Server",
+      "session": "LibTmux.Session",
+      "window": "LibTmux.Window",
+      "pane": "LibTmux.Pane"
+    },
+    "capabilities": {
+      "objects": "LibTmux.Pane",
+      "ids": "LibTmux.PaneId",
+      "queries": "LibTmux.Query.QueryExtensions",
+      "errors": "LibTmux.LibTmuxException",
+      "traversal": "LibTmux.Server.GetPanesAsync",
+      "version-gate": "LibTmux.TmuxUnsupportedOnReleaseException",
+      "current-pane": "LibTmux.Pane.FromEnvironmentAsync",
+      "test-fixtures": "LibTmux.Testing.TemporaryServerScope",
+      "async": "LibTmux.Pane.RunAsync",
+      "argv": "LibTmux.TmuxCommand",
+      "servers": "LibTmux.Server.ConnectAsync",
+      "send-keys": "LibTmux.Pane.SendKeysAsync",
+      "control-mode": "LibTmux.IControlModeSession",
+      "capture": "LibTmux.Pane.CaptureAsync"
+    }
+  },
+  "fsharp": {
+    "objects": {
+      "server": "LibTmux.FSharp.Server",
+      "session": "LibTmux.FSharp.Session",
+      "window": "LibTmux.FSharp.Window",
+      "pane": "LibTmux.FSharp.Pane"
+    },
+    "capabilities": {
+      "queries": "LibTmux.FSharp.Query",
+      "errors": "LibTmux.FSharp.TmuxFailure",
+      "traversal": "LibTmux.FSharp.Server.panes",
+      "async": "LibTmux.FSharp.Pane.run",
+      "send-keys": "LibTmux.FSharp.Pane.sendKeys",
+      "control-mode": "LibTmux.FSharp.Control",
+      "capture": "LibTmux.FSharp.Pane.capture"
+    }
+  },
+  "cxx": {
+    "objects": {
+      "server": "libtmux::Server",
+      "session": "libtmux::Session",
+      "window": "libtmux::Window",
+      "pane": "libtmux::Pane"
+    },
+    "capabilities": {
+      "objects": "libtmux::Pane",
+      "ids": "libtmux::EntityId",
+      "queries": "libtmux::FilterExpr",
+      "errors": "libtmux::CommandFailure",
+      "traversal": "libtmux::Server::panes",
+      "test-fixtures": "libtmux::test::ScopedTmuxServer",
+      "argv": "libtmux::CommandRequest",
+      "servers": "libtmux::Server",
+      "send-keys": "libtmux::Pane::send_key",
+      "control-mode": "libtmux::Server::control",
+      "capture": "libtmux::Pane::capture"
+    }
+  },
+  "swift": {
+    "objects": {
+      "server": "Server",
+      "session": "Session",
+      "window": "Window",
+      "pane": "Pane"
+    },
+    "capabilities": {
+      "objects": "Pane",
+      "ids": "PaneID",
+      "queries": "FilterExpr",
+      "errors": "TmuxError",
+      "traversal": "Server.panes()",
+      "test-fixtures": "withTmuxServer(socketFileName:_:)",
+      "argv": "TmuxCommand",
+      "servers": "Server",
+      "send-keys": "Server.sendKeys(_:to:literally:)",
+      "control-mode": "ControlSession",
+      "capture": "Server.capture(_:includingHistory:)"
+    }
+  }
+}

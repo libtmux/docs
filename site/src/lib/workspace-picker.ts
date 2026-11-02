@@ -12,6 +12,9 @@
  * and the address in step.
  */
 
+import { bindHomeHoverPreview } from './home-hover-preview'
+import { HOVER_OPEN } from './status-toggletip'
+
 export const STORAGE_PREFIX = 'libtmux-workspace-preset:'
 
 /** The first candidate that names a preset on the page, or the first preset. */
@@ -182,6 +185,103 @@ function scrollControls(panel: HTMLElement, strip: HTMLElement, tabs: HTMLElemen
   return sync
 }
 
+const TIP_CLOSE = 250
+
+/**
+ * Full window names for the tabs whose text the strip clips with an ellipsis.
+ *
+ * One `role="tooltip"` serves every tab. It opens on hover after the status
+ * badges' delay and at once on keyboard focus, and only for a label that
+ * overflows, so a name that fits gets nothing. While it is open the tab names
+ * it in `aria-describedby`. It stays while the pointer is on the tab or the
+ * tooltip or focus is on the tab (WCAG 1.4.13), and Escape closes it without
+ * moving focus. The tab's own name is its full text; the ellipsis is only paint.
+ */
+function tabTips(tip: HTMLElement, tabs: HTMLElement[], signal: AbortSignal): void {
+  let owner: HTMLElement | undefined
+  let timer: ReturnType<typeof setTimeout> | undefined
+  let hovered: HTMLElement | undefined
+  let dismissed: HTMLElement | undefined
+  const label = (tab: HTMLElement) => tab.querySelector<HTMLElement>('.ws-layout__tab-label')
+  const clipped = (tab: HTMLElement) => {
+    const text = label(tab)
+    return !!text && text.scrollWidth > text.clientWidth
+  }
+  const hide = () => {
+    clearTimeout(timer)
+    timer = undefined
+    owner?.removeAttribute('aria-describedby')
+    owner = undefined
+    tip.hidden = true
+  }
+  const open = (tab: HTMLElement) => {
+    clearTimeout(timer)
+    timer = undefined
+    if (owner !== tab) hide()
+    if (dismissed === tab || !clipped(tab)) return
+    owner = tab
+    tip.textContent = label(tab)?.textContent ?? ''
+    tip.hidden = false
+    tip.style.left = '0px'
+    tab.setAttribute('aria-describedby', tip.id)
+    place(tab)
+  }
+  const place = (tab: HTMLElement) => {
+    const at = tab.getBoundingClientRect()
+    const width = document.documentElement.clientWidth
+    tip.style.left = `${Math.max(8, Math.min(at.left, width - tip.offsetWidth - 8))}px`
+    tip.style.top = `${at.bottom + 4}px`
+  }
+  const settle = (tab: HTMLElement) => {
+    clearTimeout(timer)
+    timer = setTimeout(() => {
+      timer = undefined
+      if (owner === tab && hovered !== tab && !tab.matches(':focus') && !tip.matches(':hover')) hide()
+    }, TIP_CLOSE)
+  }
+  for (const tab of tabs) {
+    tab.addEventListener('pointerenter', (event) => {
+      if (event.pointerType !== 'mouse') return
+      hovered = tab
+      clearTimeout(timer)
+      // Another tab's tooltip does not outlive the pointer's move to this one.
+      if (owner && owner !== tab) hide()
+      if (owner === tab) return
+      timer = setTimeout(() => open(tab), HOVER_OPEN)
+    }, { signal })
+    tab.addEventListener('pointerleave', () => {
+      if (hovered === tab) hovered = undefined
+      if (dismissed === tab && !tab.matches(':focus')) dismissed = undefined
+      if (owner === tab) settle(tab)
+      else clearTimeout(timer)
+    }, { signal })
+    tab.addEventListener('focus', () => open(tab), { signal })
+    tab.addEventListener('blur', () => {
+      if (dismissed === tab) dismissed = undefined
+      if (owner === tab && hovered !== tab) settle(tab)
+    }, { signal })
+  }
+  tip.addEventListener('pointerenter', () => clearTimeout(timer), { signal })
+  tip.addEventListener('pointerleave', () => { if (owner && hovered !== owner) settle(owner) }, { signal })
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || !owner) return
+    event.preventDefault()
+    event.stopPropagation()
+    dismissed = owner
+    hide()
+  }, { signal, capture: true })
+  document.addEventListener('scroll', (event) => {
+    // The strip scrolls its tab into view when a key moves focus; the tooltip follows it.
+    if (event.target instanceof Element && event.target.closest('[role="tablist"]')) {
+      if (owner) place(owner)
+      return
+    }
+    hide()
+  }, { signal, capture: true })
+  window.addEventListener('resize', hide, { signal })
+  signal.addEventListener('abort', hide, { once: true })
+}
+
 /**
  * Register `<libtmux-workspace-picker>`.
  *
@@ -212,11 +312,15 @@ export function defineWorkspacePicker(): void {
       const titles = new Map(panels.map((panel) => [panel.dataset.preset ?? '', panel.getAttribute('aria-label') ?? '']))
       let current = ids[0]!
 
-      const show = (id: string, say = false) => {
-        current = id
+      // The stack and the menu label follow one attribute. A preview moves only this.
+      const paint = (id: string) => {
         this.setAttribute('data-selected', id)
         // Hidden presets take no focus and no pointer, whatever their descendants' own styles say.
         for (const panel of panels) panel.inert = panel.dataset.preset !== id
+      }
+      const show = (id: string, say = false) => {
+        current = id
+        paint(id)
         for (const option of options) {
           const on = option.dataset.presetOption === id
           if (on) option.setAttribute('aria-current', 'true')
@@ -239,16 +343,29 @@ export function defineWorkspacePicker(): void {
       }
       show(resolvePreset(ids, new URLSearchParams(location.search).get('preset'), readStoredPreset(port)) ?? ids[0]!)
 
+      // Hovering a row shows its preset after the home page's dwell. The choice, the check and the address stay.
+      const preview = bindHomeHoverPreview({
+        options,
+        show: (option) => { if (menu?.open) paint(option.dataset.presetOption ?? current) },
+        restore: () => paint(current),
+        signal,
+      })
+      menu?.addEventListener('toggle', () => { if (!menu.open) preview.cancel() }, { signal })
+
       // Before the site's own navigation listener sees the link, as the task menu does.
       this.addEventListener('click', (event) => {
         const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('[data-preset-option]') : null
         if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
         event.preventDefault()
+        preview.commit()
         choose(link.dataset.presetOption!)
         if (menu) menu.open = false
         summary?.focus({ preventScroll: true })
       }, { capture: true, signal })
-      this.querySelector('[data-action="roll"]')?.addEventListener('click', () => choose(rollPreset(ids, current)), { signal })
+      this.querySelector('[data-action="roll"]')?.addEventListener('click', () => {
+        preview.commit()
+        choose(rollPreset(ids, current))
+      }, { signal })
 
       // Window tabs: each panel picks its own window, and an arrow key moves between them.
       const syncs: (() => void)[] = []
@@ -279,6 +396,8 @@ export function defineWorkspacePicker(): void {
         }, { signal })
         if (strip) syncs.push(scrollControls(panel, strip, tabs, signal))
       }
+      const tip = this.querySelector<HTMLElement>('[data-tab-tip]')
+      if (tip) tabTips(tip, panels.flatMap((panel) => [...panel.querySelectorAll<HTMLElement>('[role="tab"]')]), signal)
       // A font or a resize changes what overflows, so every strip is read again.
       const syncAll = () => syncs.forEach((sync) => sync())
       if (typeof ResizeObserver !== 'undefined') {

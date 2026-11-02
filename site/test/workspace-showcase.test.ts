@@ -361,7 +361,7 @@ describe('the showcase section', () => {
   afterEach(async () => { for (const win of windows.splice(0)) await win.happyDOM.abort() })
 
   const component = loadAstroTemplate('components/workspace/WorkspaceShowcase.astro', {
-    real: ['components/workspace/WorkspaceConfig.astro'],
+    real: ['components/workspace/WorkspaceConfig.astro', 'components/workspace/WorkspaceWindows.astro'],
     modules: {
       'astro-expressive-code/components': {
         Code: createComponent((_result: unknown, props: { code: string; lang: string }) => renderTemplate`<pre data-lang="${props.lang}">${props.code}</pre>`),

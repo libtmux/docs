@@ -1,0 +1,187 @@
+{
+  "generated": "scripts/gen-mcp-transcript.mjs",
+  "repo": "libtmux/libtmux-dotnet",
+  "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+  "sandbox": {
+    "tmux": "tmux 3.8a",
+    "pytest": "pytest 9.2.0",
+    "project": [
+      "test_example.py",
+      "checks.log"
+    ],
+    "expected": [
+      "2 passed",
+      "checks finished"
+    ],
+    "rewritten": {
+      "projectDirectory": "/home/user/project"
+    }
+  },
+  "serverInfo": {
+    "name": "tmux",
+    "version": "0.0.0-alpha.20"
+  },
+  "prompt": "Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.",
+  "steps": [
+    {
+      "tool": "create_session",
+      "arguments": {
+        "name": "checks"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"changed\":\"Created session $0.\",\"paneId\":\"%0\",\"windowId\":\"@0\",\"sessionId\":\"$0\"}"
+        }
+      ],
+      "structuredContent": {
+        "changed": "Created session $0.",
+        "paneId": "%0",
+        "windowId": "@0",
+        "sessionId": "$0"
+      },
+      "caption": "Create the session."
+    },
+    {
+      "tool": "split_window",
+      "arguments": {
+        "paneId": "%0",
+        "direction": "Right"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"changed\":\"Split %0; the new pane is %1.\",\"paneId\":\"%1\",\"windowId\":\"@0\",\"sessionId\":\"$0\"}"
+        }
+      ],
+      "structuredContent": {
+        "changed": "Split %0; the new pane is %1.",
+        "paneId": "%1",
+        "windowId": "@0",
+        "sessionId": "$0"
+      },
+      "caption": "Split the pane the create result returned (%0) in two."
+    },
+    {
+      "tool": "list_windows",
+      "arguments": {
+        "session": "checks"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "[{\"windowId\":\"@0\",\"sessionId\":\"$0\",\"index\":0,\"name\":\"sh\",\"width\":80,\"height\":24,\"active\":true,\"paneCount\":2,\"layout\":\"{\\u0022V\\u0022:2,\\u0022L\\u0022:{\\u0022t\\u0022:\\u0022h\\u0022,\\u0022w\\u0022:80,\\u0022h\\u0022:24,\\u0022x\\u0022:0,\\u0022y\\u0022:0,\\u0022c\\u0022:[{\\u0022t\\u0022:\\u0022p\\u0022,\\u0022w\\u0022:40,\\u0022h\\u0022:24,\\u0022x\\u0022:0,\\u0022y\\u0022:0,\\u0022a\\u0022:true,\\u0022i\\u0022:0,\\u0022I\\u0022:\\u0022%0\\u0022},{\\u0022t\\u0022:\\u0022p\\u0022,\\u0022w\\u0022:39,\\u0022h\\u0022:24,\\u0022x\\u0022:41,\\u0022y\\u0022:0,\\u0022i\\u0022:1,\\u0022I\\u0022:\\u0022%1\\u0022}]}}\"}]"
+        }
+      ],
+      "structuredContent": {
+        "result": [
+          {
+            "windowId": "@0",
+            "sessionId": "$0",
+            "index": 0,
+            "name": "sh",
+            "width": 80,
+            "height": 24,
+            "active": true,
+            "paneCount": 2,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+          }
+        ]
+      },
+      "caption": "Read the window's layout."
+    },
+    {
+      "tool": "run_shell_command",
+      "arguments": {
+        "paneId": "%0",
+        "command": "pytest -q"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"paneId\":\"%0\",\"exitStatus\":0,\"timedOut\":false,\"output\":{\"lines\":[\"..                               [100%]\",\"2 passed in 0.01s\"],\"truncated\":false,\"droppedLines\":0,\"droppedBytes\":0},\"elapsedSeconds\":0.437,\"effectiveTimeoutSeconds\":30,\"linesMissed\":false,\"anchorLost\":false,\"started\":true,\"paneExited\":false}"
+        }
+      ],
+      "structuredContent": {
+        "paneId": "%0",
+        "exitStatus": 0,
+        "timedOut": false,
+        "output": {
+          "lines": [
+            "..                               [100%]",
+            "2 passed in 0.01s"
+          ],
+          "truncated": false,
+          "droppedLines": 0,
+          "droppedBytes": 0
+        },
+        "elapsedSeconds": 0.437,
+        "effectiveTimeoutSeconds": 30,
+        "linesMissed": false,
+        "anchorLost": false,
+        "started": true,
+        "paneExited": false
+      },
+      "caption": "Run the tests in the pane the create result returned (%0)."
+    },
+    {
+      "tool": "run_shell_command",
+      "arguments": {
+        "paneId": "%1",
+        "command": "cat checks.log"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"paneId\":\"%1\",\"exitStatus\":0,\"timedOut\":false,\"output\":{\"lines\":[\"2026-01-01 checks started\",\"2026-01-01 checks finished\"],\"truncated\":false,\"droppedLines\":0,\"droppedBytes\":0},\"elapsedSeconds\":0.029,\"effectiveTimeoutSeconds\":30,\"linesMissed\":false,\"anchorLost\":false,\"started\":true,\"paneExited\":false}"
+        }
+      ],
+      "structuredContent": {
+        "paneId": "%1",
+        "exitStatus": 0,
+        "timedOut": false,
+        "output": {
+          "lines": [
+            "2026-01-01 checks started",
+            "2026-01-01 checks finished"
+          ],
+          "truncated": false,
+          "droppedLines": 0,
+          "droppedBytes": 0
+        },
+        "elapsedSeconds": 0.029,
+        "effectiveTimeoutSeconds": 30,
+        "linesMissed": false,
+        "anchorLost": false,
+        "started": true,
+        "paneExited": false
+      },
+      "caption": "Show the log in the new pane the split returned (%1)."
+    },
+    {
+      "tool": "kill_session",
+      "arguments": {
+        "session": "checks"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"changed\":\"Killed session $0.\",\"paneId\":null,\"windowId\":null,\"sessionId\":\"$0\"}"
+        }
+      ],
+      "structuredContent": {
+        "changed": "Killed session $0.",
+        "paneId": null,
+        "windowId": null,
+        "sessionId": "$0"
+      },
+      "caption": "Remove the session once the result is read."
+    }
+  ]
+}
