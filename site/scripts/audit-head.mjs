@@ -218,7 +218,8 @@ if (sample > 0 && pageUrls.length > sample) {
 }
 console.error(`${pageUrls.length} pages, ${listed.size} sitemap URLs from ${sitemaps.length} sitemaps, concurrency ${concurrency}`)
 if (options.list) {
-  console.log(pageUrls.join('\n'))
+  // Exit after the write drains: a pipe takes a long list in pieces.
+  await new Promise((done) => process.stdout.write(`${pageUrls.join('\n')}\n`, done))
   process.exit(0)
 }
 if (!pageUrls.length) {

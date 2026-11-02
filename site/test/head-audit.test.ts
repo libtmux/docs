@@ -1,3 +1,8 @@
+import { execFileSync } from 'node:child_process'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import {
   audit, brandOfAsset, locate, pageFindings, parseHead, RULES, setFindings, SITE_NAME, sitemapFindings, slugTitle, TITLE_BUDGET,
@@ -295,5 +300,24 @@ describe('the head Seo writes', () => {
     const path = subject.portSlug ? `${subject.portSlug}/latest/${subject.pagePath}` : subject.pagePath
     const found = pageFindings({ url: `${ORIGIN}/en/${path}/`, status: 200, head: parsed }).map((item) => item.rule)
     expect(found.filter((rule) => rule.startsWith('title') || rule.startsWith('og-title') || rule.startsWith('twitter-title') || rule === 'og-site-name' || rule === 'brand-mismatch')).toEqual([])
+  })
+})
+
+describe('the command line', () => {
+  it('lists every page of a built tree, however long the list is', () => {
+    const dist = mkdtempSync(join(tmpdir(), 'head-audit-'))
+    try {
+      for (let i = 0; i < 2500; i++) {
+        mkdirSync(join(dist, 'en', 'guides', `a-fairly-long-page-name-${i}`), { recursive: true })
+        writeFileSync(join(dist, 'en', 'guides', `a-fairly-long-page-name-${i}`, 'index.html'), '<html><head><title>x</title></head></html>')
+      }
+      const script = fileURLToPath(new URL('../scripts/audit-head.mjs', import.meta.url))
+      const out = execFileSync('node', [script, '--dist', dist, '--list'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 1 << 24 })
+      const urls = out.trim().split('\n')
+      expect(urls).toHaveLength(2500)
+      expect(urls[0]).toBe('https://libtmux.org/en/guides/a-fairly-long-page-name-0/')
+    } finally {
+      rmSync(dist, { recursive: true, force: true })
+    }
   })
 })
