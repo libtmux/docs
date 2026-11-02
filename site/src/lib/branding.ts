@@ -108,7 +108,7 @@ export function stripSiteSuffix(title: string): string {
  * core library, and the kind of page ("TypeScript MCP resource", "Rust guide",
  * "tmux manual"). Empty when the name already says all of it.
  */
-function titleContext({ title, pagePath, portSlug, version, defaultVersion }: TitleSubject): string {
+function titleContext({ title, pagePath, portSlug, version, defaultVersion }: TitleSubject, compact = false): string {
   const parts = pagePath.split('/').filter(Boolean)
   let scope: string
   let kind = ''
@@ -136,6 +136,7 @@ function titleContext({ title, pagePath, portSlug, version, defaultVersion }: Ti
     const own = titleWords(kind)
     if ([...titleWords(title)].every((word) => own.has(word))) kind = 'docs'
   }
+  if (compact && kind === 'API reference') kind = 'API'
   const full = [scope, kind].filter(Boolean).join(' ')
   const have = titleWords(title)
   const said = [...titleWords(full)].every((word) => have.has(word))
@@ -145,21 +146,27 @@ function titleContext({ title, pagePath, portSlug, version, defaultVersion }: Ti
 /**
  * The document title for a page: most specific first, then what it is, then the site.
  *
- * `Capabilities | TypeScript MCP resource | libtmux.org`. The page's name leads
+ * `capabilities | TypeScript MCP resource | libtmux.org`. The page's name leads
  * so a narrow tab still tells pages apart; the context follows so a wide tab,
  * a bookmark or a search result says which language, product and kind of page
- * it is. The site name goes last and is the first thing dropped when the title
- * would pass `TITLE_BUDGET`. A language home (`libtmux-rs: Rust-based tmux
- * client`) is its own scope and carries no context or site name.
+ * it is. A title that would pass `TITLE_BUDGET` gives up, in order, the site
+ * name and then the word "reference" in "API reference"; a name too long for
+ * any of those keeps its full context. A language home (`libtmux-rs: Rust-based
+ * tmux client`) is its own scope and carries no context or site name.
  */
 export function documentationTitle(subject: TitleSubject): DocumentTitle {
   const page = stripSiteSuffix(subject.title) || SITE_NAME
   const home = (!subject.pagePath && !subject.portSlug) || PORTS.some((port) => portHomeTitle(port) === page)
   if (home) return { title: page, social: page, context: '' }
-  const context = titleContext({ ...subject, title: page })
-  const social = [page, context].filter(Boolean).join(' | ')
-  const full = `${social} | ${SITE_NAME}`
-  return { title: full.length > TITLE_BUDGET ? social : full, social, context }
+  const named = { ...subject, title: page }
+  const context = titleContext(named)
+  const join = (text: string) => [page, text].filter(Boolean).join(' | ')
+  const fits = (candidate: string) => candidate.length <= TITLE_BUDGET
+  const social = join(context)
+  if (fits(`${social} | ${SITE_NAME}`)) return { title: `${social} | ${SITE_NAME}`, social, context }
+  const compact = titleContext(named, true)
+  const shortened = [social, join(compact)].find(fits) ?? social
+  return { title: shortened, social: shortened, context: shortened === social ? context : compact }
 }
 
 /** JSON-LD is data inside an HTML script element; never allow a closing tag. */
