@@ -2,7 +2,8 @@
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { branding, documentationTitle, jsonLd } from '../site/src/lib/branding.ts'
+import { decodeHTML } from 'entities'
+import { branding, documentationTitle, jsonLd, SITE_NAME } from '../site/src/lib/branding.ts'
 import { PORT_BY_SLUG } from '../site/src/lib/ports.ts'
 
 const escape = (text) => String(text).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
@@ -14,15 +15,20 @@ export function nativeBrandHead(html, { port, pagePath, root = '/en' }) {
   const origin = 'https://libtmux.org'
   const image = new URL(brand.asset('opengraph-light.png'), origin).href
   const twitter = new URL(brand.asset('twitter-light.png'), origin).href
-  // Native generators already escape title text. Retain those entities when
-  // adding the project suffix, including in the social-title attributes.
-  const title = documentationTitle(/<title\b[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1].trim() || brand.projectName, brand.projectName)
-  const titleAttribute = title.replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+  // Native generators escape title text. The scheme measures and compares the
+  // text a reader sees, so it reads the decoded title and escapes its result.
+  const scheme = documentationTitle({
+    title: decodeHTML(/<title\b[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1].trim() || brand.projectName),
+    pagePath: pagePath.replace(/(^|\/)index\.html$/, ''),
+    portSlug: port,
+  })
+  const title = escape(scheme.title)
+  const titleAttribute = escape(scheme.social)
   const attr = (text) => escape(text)
   const tags = [
     `<title>${title}</title>`,
     `<meta property="og:title" content="${titleAttribute}">`,
-    `<meta property="og:site_name" content="${attr(brand.projectName)}">`,
+    `<meta property="og:site_name" content="${attr(SITE_NAME)}">`,
     `<meta name="twitter:title" content="${titleAttribute}">`,
     `<link rel="icon" href="${attr(brand.asset('favicon.ico'))}" sizes="16x16 32x32 48x48 256x256">`,
     `<link rel="icon" href="${attr(brand.asset('logo-32.png'))}" type="image/png" sizes="32x32">`,
