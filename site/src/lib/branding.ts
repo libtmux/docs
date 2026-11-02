@@ -121,6 +121,10 @@ function titleContext({ title, pagePath, portSlug, version, defaultVersion }: Ti
     const tmuxVersion = /^(?:latest|\d+\.\d+[a-z]*)$/.test(parts[1] ?? '') ? parts[1] : undefined
     ;[section, ...rest] = parts.slice(tmuxVersion ? 2 : 1)
     kind = section === 'catalog' && rest[0] ? TMUX_CATALOG_KIND[rest[0]] ?? 'catalog' : TMUX_KIND[section ?? ''] ?? SECTION_KIND[section ?? ''] ?? ''
+    // A C declaration's page names its kind in its slug (`c-function-args_parse`), and a function
+    // and a struct of one name are different pages.
+    const declaration = section === 'reference' ? /^c-(function|struct|enum|define|variable|typedef|union)-/.exec(rest[0] ?? '')?.[1] : undefined
+    if (declaration) kind = `C ${declaration}`
     if (tmuxVersion && tmuxVersion !== 'latest') named = tmuxVersion
   } else {
     const { variant, port } = branding(portSlug, pagePath)
