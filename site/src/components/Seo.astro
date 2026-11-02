@@ -100,11 +100,16 @@ const twitterImage = tmux ? tmuxLogo : new URL(brand.asset('twitter-light.png'),
  */
 const rootedOrigin = `${origin}${SITE_ROOT}`
 
+// A page about the site itself (`meta/…`) belongs to the site root. A port tree
+// carries a copy, so the copy names the root page and stays out of an index, as
+// the support, parity and translations pages already do.
+const siteLevel = Boolean(portSlug) && /^meta(?:\/|$)/.test(pagePath)
+
 // Shared shell pages are canonical to themselves. Port pages canonicalise to
 // the same path under the port's default version.
 const canonical = canonicalOverride
   ? new URL(canonicalOverride, origin).href
-  : portSlug
+  : portSlug && !siteLevel
   ? canonicalUrl(rootedOrigin, portSlug, version, defaultVersion, pagePath, existsInDefault)
   : `${rootedOrigin}/${pagePath.replace(/^\/+/, '').replace(/\/+$/, '')}${pagePath.replace(/^\/+/, '') ? '/' : ''}`
 
@@ -135,7 +140,7 @@ const isDefault = version === defaultVersion
 // still mounts the whole site, and reading the base marked every shared page
 // noindex the moment one was added.
 const isRootShellBuild = IS_ROOT_BUILD && versionEntry.kind !== 'pr'
-const indexable = portSlug ? isDefault : isRootShellBuild
+const indexable = siteLevel ? false : portSlug ? isDefault : isRootShellBuild
 
 const robots = noindex ? 'noindex, nofollow' : robotsFor(versionEntry, indexable)
 
