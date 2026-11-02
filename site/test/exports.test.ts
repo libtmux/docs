@@ -44,21 +44,32 @@ describeIfAssembled('published exports', () => {
   })
 
   describe('sitemap', () => {
-    it('indexes at least one sitemap, and each one exists', () => {
+    /** The files the English index names, split into the shell's and each port tree's own. */
+    const named = () => {
       const index = readProduction('en/sitemap-index.xml')
-      const locs = [...index.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1])
-      expect(locs.length).toBeGreaterThan(0)
-      for (const loc of locs) {
-        const file = new URL(loc).pathname.replace(/^\//, '')
-        expect(existsSync(productionPath(file)), `${file} referenced by the index`).toBe(true)
-      }
+      const files = [...index.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]).pathname.replace(/^\//, ''))
+      const port = files.filter((file) => PORTS.some((p) => file.startsWith(`en/${p.slug}/`)))
+      return { files, port, shell: files.filter((file) => !port.includes(file)) }
+    }
+
+    it('indexes the shell sitemap, and each one exists', () => {
+      const { shell } = named()
+      expect(shell.length).toBeGreaterThan(0)
+      for (const file of shell) expect(existsSync(productionPath(file)), `${file} referenced by the index`).toBe(true)
+    })
+
+    it('names every port tree\'s own sitemap, and the assembly wrote each default tree\'s', () => {
+      const { port } = named()
+      expect(port.sort()).toEqual(PORTS.map((p) => `en/${p.slug}/latest/sitemap-0.xml`).sort())
+      // A preview builds no port sitemaps: its trees are noindex.
+      if (PREVIEW_PREFIX) return
+      for (const file of port) expect(existsSync(publishedPath(file)), `${file} referenced by the index`).toBe(true)
     })
 
     it('excludes preview and demo routes', () => {
-      const index = readProduction('en/sitemap-index.xml')
-      const files = [...index.matchAll(/<loc>([^<]+)<\/loc>/g)]
-        .map((m) => new URL(m[1]).pathname.replace(/^\//, ''))
-      const urls = files.flatMap((f) => [...readProduction(f).matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]))
+      const { shell, port } = named()
+      const urls = [...shell, ...port.filter((file) => existsSync(productionPath(file)))]
+        .flatMap((f) => [...readProduction(f).matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]))
       expect(urls.length, 'sitemap has entries').toBeGreaterThan(0)
       expect(urls.filter((u) => /\/pr-|\/demo/.test(u))).toEqual([])
     })
