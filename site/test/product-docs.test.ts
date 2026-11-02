@@ -10,7 +10,7 @@ import { SITE_BUILT, SITE_PREFIX, PREVIEW_PREFIX, productionPath, publishedPath,
 import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects } from '../src/lib/mcp-catalog'
 import { mcpObjectGroup } from '../src/lib/mcp-reference'
 import { mentionBadge, mentionBadgeHtml } from '../src/lib/mention-badge'
-import { mcpTitle, workspaceTitle } from '../src/lib/product-copy'
+import { mcpTitle, workspaceSubtitle, workspaceTitle } from '../src/lib/product-copy'
 import type { ApiTreeJson } from '../src/lib/api-search'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
@@ -382,16 +382,18 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         for (const container of navigation) {
           for (const product of products) {
             const expected = urlFor(`${port}/latest/${product}/`).pathname
-            const link = [...container.querySelectorAll('a[href]')]
-              .find((entry) => new URL(entry.getAttribute('href')!, urlFor(path)).pathname === expected)
+            const links = [...container.querySelectorAll('a[href]')]
+              .filter((entry) => new URL(entry.getAttribute('href')!, urlFor(path)).pathname === expected)
             if (!productAvailable(PORTS.find((entry) => entry.slug === port)!, product)) {
-              expect(link, `${path} omits unavailable ${product}`).toBeUndefined()
+              expect(links, `${path} omits unavailable ${product}`).toEqual([])
               continue
             }
-            expect(link, `${path} links to ${expected}`).toBeDefined()
-            const label = section ? link!.closest('[data-surface-group]')!.textContent : link!.textContent
-            expect(label, `${path} product label`).toContain(product === 'workspace' ? 'Workspace Manager' : 'MCP')
-            expect(resolves(link!.getAttribute('href')!, urlFor(path).href), `${path} resolves ${expected}`).toBe(true)
+            expect(links.length, `${path} links to ${expected}`).toBeGreaterThan(0)
+            // The home links a product from its tab panel too ("All tools by tier →"); one link must name it.
+            const name = product === 'workspace' ? 'Workspace Manager' : 'MCP'
+            const labels = links.map((link) => (section ? link.closest('[data-surface-group]')!.textContent : link.textContent) ?? '')
+            expect(labels.some((label) => label.includes(name)), `${path} product label among ${JSON.stringify(labels)}`).toBe(true)
+            for (const link of links) expect(resolves(link.getAttribute('href')!, urlFor(path).href), `${path} resolves ${expected}`).toBe(true)
           }
         }
         if (section) {
@@ -453,7 +455,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         && ['guides', 'examples'].includes(page.section)
       if (nativeProductDocs(page.port)) {
         const nativeTitles = page.product === 'workspace'
-          ? { '': workspaceTitle(page.port), 'source-guide': 'Workspace guide', reference: `${page.port === 'julia' ? 'LibTmuxWorkspace' : 'LibTmux.Workspace'} API reference` }
+          ? { '': `${workspaceTitle(page.port)} ${workspaceSubtitle(page.port)}`, 'source-guide': 'Workspace guide', reference: `${page.port === 'julia' ? 'LibTmuxWorkspace' : 'LibTmux.Workspace'} API reference` }
           : { '': mcpTitle(page.port), 'source-guide': 'MCP server guide', reference: 'LibTmuxMCP API reference' }
         expect(text(headings1[0]!), page.path).toBe(nativeTitles[page.section as keyof typeof nativeTitles])
       } else if (sharedBrowse) {
@@ -576,7 +578,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(picker?.querySelector('.surface-current small')?.textContent, `${page.path} available section`).toBe('Home')
         const current = picker?.querySelectorAll('[aria-current="location"]')
         expect(current, `${page.path} one available destination`).toHaveLength(1)
-        expect(current![0].getAttribute('href'), `${page.path} core overview`).toBe(urlFor(`${page.port}/${page.version}/`).pathname)
+        expect(current![0].getAttribute('href'), `${page.path} core overview`).toBe(urlFor(`${page.port}/${page.version}/core/`).pathname)
         expect(resolves(current![0].getAttribute('href')!), `${page.path} core overview exists`).toBe(true)
         const unavailable = urlFor(`${page.port}/${page.version}/${page.product}/`).pathname
         const navigation = document.querySelectorAll('[data-surface-picker] a[href], [data-section-navigation] a[href], .doc-card[href]')
