@@ -1141,7 +1141,14 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
       rm -rf "$port_out/api"
       mkdir -p "$port_out/api"
       cp -a "$ref_outdir/." "$port_out/api/"
-      node "$script_dir/brand-native-pages.mjs" "$port_out/api" "$slug" "$LIBTMUX_DOCS_PORT_ROOT"
+      # A preview builds no sitemap, so its pages name none; every other build
+      # names the one in the port's default version.
+      sitemap_version_args=()
+      if [ "$preview_build" -eq 0 ]; then
+        sitemap_version_args+=("$default_version")
+      fi
+      node "$script_dir/brand-native-pages.mjs" "$port_out/api" "$slug" "$LIBTMUX_DOCS_PORT_ROOT" \
+        "${sitemap_version_args[@]}"
       # Astro marks its own pages as it builds them; native pages need the same marker in their HTML.
       node "$script_dir/mark-external-links.mjs" "$port_out/api" "$site_origin"
     elif [ "$ref_status" = "skipped" ]; then

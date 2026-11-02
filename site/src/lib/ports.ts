@@ -1956,6 +1956,14 @@ export function portHomeUrl(port: Port, version: string): string {
 }
 
 /**
+ * Where a port tree's sitemap index is served: beside the pages it lists, so
+ * the publisher that owns the tree writes it (scripts/gen-port-sitemap.mjs).
+ */
+export function portSitemapUrl(port: Port, version: string): string {
+  return `${portHomeUrl(port, version)}sitemap-index.xml`
+}
+
+/**
  * What a port's registry carries, as `scripts/gen-registry.mjs` recorded it.
  *
  * `site/src/data/registry.json` is the instance. The type lives here because

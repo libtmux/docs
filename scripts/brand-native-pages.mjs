@@ -4,12 +4,13 @@ import { join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { decodeHTML } from 'entities'
 import { branding, documentationTitle, jsonLd, SITE_NAME } from '../site/src/lib/branding.ts'
-import { PORT_BY_SLUG } from '../site/src/lib/ports.ts'
+import { PORT_BY_SLUG, portSitemapUrl } from '../site/src/lib/ports.ts'
 
 const escape = (text) => String(text).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
 
 /** Add crawler-visible artwork while preserving native canonical/robots policy. */
-export function nativeBrandHead(html, { port, pagePath, root = '/en' }) {
+/** `version` names the port tree whose sitemap lists these pages; a preview builds none and passes no version. */
+export function nativeBrandHead(html, { port, pagePath, root = '/en', version }) {
   if (!/<head[\s>]/i.test(html) || /http-equiv=["']refresh["']/i.test(html)) return html
   const brand = branding(port, pagePath, root)
   const origin = 'https://libtmux.org'
@@ -36,6 +37,7 @@ export function nativeBrandHead(html, { port, pagePath, root = '/en' }) {
     `<link rel="apple-touch-icon" href="${attr(brand.asset('apple-touch-icon-light.png'))}" sizes="180x180">`,
     `<link rel="mask-icon" href="${attr(brand.asset('safari-pinned-tab.svg'))}" color="${brand.palette.color}">`,
     `<link rel="manifest" href="${attr(brand.asset('site.webmanifest'))}">`,
+    ...(version ? [`<link rel="sitemap" type="application/xml" href="${attr(new URL(portSitemapUrl(PORT_BY_SLUG[port], version), origin).href)}">`] : []),
     `<meta name="theme-color" content="${brand.palette.light.background}" media="(prefers-color-scheme: light)">`,
     `<meta name="theme-color" content="${brand.palette.dark.background}" media="(prefers-color-scheme: dark)">`,
     `<meta name="msapplication-config" content="${attr(brand.asset('browserconfig.xml'))}">`,
@@ -67,14 +69,14 @@ export function nativeBrandHead(html, { port, pagePath, root = '/en' }) {
   return withLogo.replace(/(<head\b[^>]*>)([\s\S]*?)(<\/head>)/i, (_match, open, head, close) => {
     const clean = head
       .replace(/<title\b[^>]*>[\s\S]*?<\/title>/gi, '')
-      .replace(/<link\b[^>]*\brel=["'](?:shortcut icon|icon|apple-touch-icon|mask-icon|manifest)["'][^>]*>/gi, '')
+      .replace(/<link\b[^>]*\brel=["'](?:shortcut icon|icon|apple-touch-icon|mask-icon|manifest|sitemap)["'][^>]*>/gi, '')
       .replace(/<meta\b[^>]*\b(?:name|property)=["'](?:og:title|og:site_name|twitter:title|og:image(?::[a-z_]+)?|twitter:image(?::alt)?|twitter:card|theme-color|msapplication-config)["'][^>]*>/gi, '')
       .replace(/<script\b[^>]*\bdata-libtmux-brand[^>]*>[\s\S]*?<\/script>/gi, '')
     return `${open}${clean.trimEnd()}\n${tags}\n${close}`
   })
 }
 
-export function brandNativePages(directory, port, root) {
+export function brandNativePages(directory, port, root, version) {
   let count = 0
   function walk(dir) {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -82,7 +84,7 @@ export function brandNativePages(directory, port, root) {
       if (entry.isDirectory()) walk(path)
       else if (entry.name.endsWith('.html')) {
         const before = readFileSync(path, 'utf8')
-        const after = nativeBrandHead(before, { port, root, pagePath: relative(directory, path).replaceAll('\\', '/') })
+        const after = nativeBrandHead(before, { port, root, version, pagePath: relative(directory, path).replaceAll('\\', '/') })
         if (before !== after) { writeFileSync(path, after); count++ }
       }
     }
@@ -91,7 +93,7 @@ export function brandNativePages(directory, port, root) {
   return count
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const [directory, port, root = '/en'] = process.argv.slice(2)
-  if (!directory || !PORT_BY_SLUG[port]) throw new Error('Usage: brand-native-pages.mjs DIRECTORY PORT /LOCALE_PREFIX')
-  console.log(`Native branding: ${brandNativePages(directory, port, root)} pages`)
+  const [directory, port, root = '/en', version] = process.argv.slice(2)
+  if (!directory || !PORT_BY_SLUG[port]) throw new Error('Usage: brand-native-pages.mjs DIRECTORY PORT /LOCALE_PREFIX [VERSION]')
+  console.log(`Native branding: ${brandNativePages(directory, port, root, version)} pages`)
 }
