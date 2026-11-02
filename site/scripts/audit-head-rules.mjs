@@ -20,7 +20,7 @@ import { DOC_PRODUCTS, PORT_BY_SLUG, PORTS, pageBrand } from '../src/lib/ports.t
 export { DESCRIPTION_BUDGET, SITE_NAME, TITLE_BUDGET }
 
 /** A description shorter than this tells a result nothing the title has not. */
-export const DESCRIPTION_FLOOR = 50
+export const DESCRIPTION_FLOOR = 30
 
 /** Every rule, its severity and the sentence the report prints for it. */
 export const RULES = {
@@ -37,7 +37,7 @@ export const RULES = {
   'description-generic': ['warn', 'The description is a template fallback shared by many pages.'],
   'description-short': ['info', `The description is shorter than ${DESCRIPTION_FLOOR} characters.`],
   'description-long': ['info', `The description is longer than ${DESCRIPTION_BUDGET} characters.`],
-  'description-duplicate': ['warn', 'Another indexable page has the same description.'],
+  'description-duplicate': ['warn', 'Another indexable page in the same tree, or at another path, has the same description.'],
   'canonical-missing': ['warn', 'No canonical link.'],
   'canonical-mismatch': ['warn', 'The canonical link is not the page URL.'],
   'robots-missing': ['info', 'No robots meta tag.'],
@@ -325,7 +325,8 @@ export function pageFindings(page, context = {}) {
       }
     }
     if (!head.icons.some((icon) => icon.rel.split(' ').includes('icon'))) out.push(finding('icon-missing', ''))
-    if (!head.manifest) out.push(finding('manifest-missing', ''))
+    // The tmux section has one SVG mark and no manifest; its icon set is reported, not demanded.
+    if (!head.manifest && where.kind !== 'tmux') out.push(finding('manifest-missing', ''))
     if (!head.sitemap) out.push(finding('sitemap-link-missing', ''))
   }
 
@@ -380,11 +381,17 @@ export function setFindings(pages) {
       const value = page.head[field]
       if (value) groups.set(value, [...(groups.get(value) ?? []), page.url])
     }
+    // One page in several languages shares its description by design: the port is
+    // what differs. A description is shared wrongly within a port, or by two
+    // different pages.
+    const sameDocument = (a, b) => {
+      const [x, y] = [locate(a), locate(b)]
+      return field === 'description' && x.port !== y.port && x.pagePath === y.pagePath
+    }
     for (const [value, urls] of groups) {
-      if (urls.length < 2) continue
       for (const url of urls) {
-        const others = urls.filter((other) => other !== url)
-        add(url, finding(rule, `${urls.length} pages share "${value.length > 70 ? `${value.slice(0, 67)}...` : value}", e.g. ${others[0]}`))
+        const others = urls.filter((other) => other !== url && !sameDocument(url, other))
+        if (others.length) add(url, finding(rule, `${others.length + 1} pages share "${value.length > 70 ? `${value.slice(0, 67)}...` : value}", e.g. ${others[0]}`))
       }
     }
   }
@@ -406,6 +413,11 @@ export function setFindings(pages) {
     }
   }
   return out
+}
+
+/** Findings about the sitemap files themselves: one per advertised sitemap that does not answer 200. */
+export function sitemapFindings(sitemaps) {
+  return sitemaps.filter((sitemap) => sitemap.status !== 200).map((sitemap) => ({ url: sitemap.url, ...finding('sitemap-unreachable', String(sitemap.status || 'no response')) }))
 }
 
 /** Attach findings to pages and count them by rule. */

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  audit, brandOfAsset, locate, pageFindings, parseHead, RULES, setFindings, SITE_NAME, slugTitle, TITLE_BUDGET,
+  audit, brandOfAsset, locate, pageFindings, parseHead, RULES, setFindings, SITE_NAME, sitemapFindings, slugTitle, TITLE_BUDGET,
 } from '../scripts/audit-head-rules.mjs'
 import { branding, documentationTitle } from '../src/lib/branding'
 import { PORTS, portHomeTitle } from '../src/lib/ports'
@@ -224,6 +224,14 @@ describe('head audit across pages', () => {
     expect(found.get(b)?.map((item) => item.rule).sort()).toEqual(['description-duplicate', 'title-duplicate'])
   })
 
+  it('lets one page share its description across languages, and not across two pages of one port', () => {
+    const same = (s: Spec) => { s.description = 'The same description of two pages in the site.' }
+    const ts = `${ORIGIN}/en/ts/latest/guides/sending-keys/`
+    const rs = `${ORIGIN}/en/rs/latest/guides/sending-keys/`
+    expect(setFindings([page(ts, same), page(rs, same)]).size).toBe(0)
+    expect(setFindings([page(a, same), page(b, same)]).size).toBe(2)
+  })
+
   it('does not compare a noindex page with an indexable one', () => {
     const pages = [page(a, (s) => { s.title = 'Same' }), page(b, (s) => { s.title = 'Same'; s.robots = 'noindex, follow' })]
     expect(setFindings(pages).size).toBe(0)
@@ -238,6 +246,14 @@ describe('head audit across pages', () => {
     expect(found.get(en)?.map((item) => item.rule)).toEqual(['hreflang-missing'])
     const linked = [page(en, (s) => { s.hreflang = [['en', en], ['ja', ja], ['x-default', en]] }), page(ja, translated)]
     expect(setFindings(linked).get(en)).toBeUndefined()
+  })
+
+  it('flags a sitemap that does not answer, and a redirect stub it lists', () => {
+    const found = sitemapFindings([{ url: `${ORIGIN}/en/sitemap-index.xml`, status: 200 }, { url: `${ORIGIN}/en/ts/latest/sitemap-0.xml`, status: 403 }])
+    expect(found.map((item) => [item.rule, item.url, item.detail])).toEqual([['sitemap-unreachable', `${ORIGIN}/en/ts/latest/sitemap-0.xml`, '403']])
+    const spec = cleanSpec(a)
+    spec.refresh = true
+    expect(rulesFor(a, spec, {}, { sitemap: new Set([a]) })).toContain('redirect-listed')
   })
 
   it('counts findings by rule with example URLs', () => {
