@@ -124,9 +124,10 @@ duplicates against each other unless told which one wins.
 - **Titles.** `documentationTitle` in `site/src/lib/branding.ts` is the one
   scheme, for Astro pages and the native branding pass alike: the page's
   own name, then language, product and kind (`capabilities | TypeScript
-  MCP resource | libtmux.org`), then the site name. The site name is the
-  first part dropped when a title passes `TITLE_BUDGET`. A language home
-  keeps the title `portHomeTitle` sets. `og:title` and `twitter:title` are
+  MCP resource | libtmux.org`), then the site name. A title that passes
+  `TITLE_BUDGET` gives up the site name first and then the word
+  "reference" in "API reference"; the page's name and its language are
+  never cut. A language home keeps the title `portHomeTitle` sets. `og:title` and `twitter:title` are
   the same without the site name, and `og:site_name` is `libtmux.org` on
   every page.
 - **`Seo.astro`** is where all of this actually lands in `<head>`: canonical
