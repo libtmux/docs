@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   audit, brandOfAsset, locate, pageFindings, parseHead, RULES, setFindings, SITE_NAME, sitemapFindings, slugTitle, TITLE_BUDGET,
 } from '../scripts/audit-head-rules.mjs'
@@ -277,14 +277,17 @@ describe('head audit across pages', () => {
 })
 
 describe('the head Seo writes for a page in a locale tree', () => {
+  afterEach(() => vi.unstubAllEnvs())
   const base = { pagePath: 'meta/parity', title: 'Parity', version: 'latest', defaultVersion: 'latest', versionEntry: { slug: 'latest', label: 'latest', kind: 'trunk', supported: true } }
   async function head(props: Record<string, unknown>) {
+    // The build's locale, which a static page that passes no `locale` prop still renders in.
+    vi.stubEnv('LIBTMUX_DOCS_LOCALE', props.locale === 'en' ? 'en' : 'ja')
     const template = await loadAstroTemplate('components/Seo.astro')
     return parseHead(`<html lang="ja"><head>${await renderAstroTemplate(template, { props: { ...base, ...props } })}</head></html>`)
   }
 
-  it('names the English page and stays out of an index when no translation backs it', async () => {
-    const parsed = await head({ locale: 'ja' })
+  it('names the English page and stays out of an index when no translation backs it, whatever locale prop the page passes', async () => {
+    const parsed = await head({})
     expect(parsed.robots).toBe('noindex, follow')
     expect(parsed.canonical).toBe('https://libtmux.org/en/meta/parity/')
   })
