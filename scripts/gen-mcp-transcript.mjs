@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { PORTS } from '../site/src/lib/ports.ts'
 import { EXAMPLES } from '../site/src/lib/mcp-examples.ts'
 import { contractsOf, sameContracts } from '../site/src/lib/mcp-contract.ts'
-import { recordCalls } from './lib/mcp-session.mjs'
+import { listedValue, recordCalls, withListed } from './lib/mcp-session.mjs'
 import { leaks, sanitize, UnsettledPaneError, verifyRecording, withoutContracts } from './lib/mcp-transcript-checks.mjs'
 
 /**
@@ -68,22 +68,35 @@ const SERVERS = {
     command: () => ['bundle', 'exec', 'libtmux-mcp', '--socket-name', 'transcript', '--endpoint', 'docs', ...['tmux_capture', 'tmux_wait', 'tmux_create', 'tmux_send', 'tmux_close', 'tmux_run'].flatMap((tool) => ['--enable-tool', tool])],
   },
   go: { cwd: 'mcp', prepare: [], build: (sandbox) => [['go', 'build', '-mod=readonly', '-o', join(sandbox, 'libtmux-mcp'), './cmd/libtmux-mcp']], command: (_checkout, sandbox) => [join(sandbox, 'libtmux-mcp')] },
+  // The documented install: both packages from the checkout into an environment, and the launcher `install_cli` writes for it. This server borrows a tmux that is already running, and the pane it reads shows the log.
+  julia: {
+    borrowed: 'transcript',
+    pane: ['cat', 'checks.log', '-'],
+    prepare: [],
+    build: (sandbox, checkout) => [['julia', '--startup-file=no', '-e', 'using Pkg; Pkg.activate(ARGS[1]); Pkg.develop([Pkg.PackageSpec(path=ARGS[2]), Pkg.PackageSpec(path=joinpath(ARGS[2], "packages", "LibTmuxMCP"))]); Pkg.instantiate(); Pkg.precompile(); using LibTmuxMCP; install_cli(ARGS[3])', join(sandbox, 'julia-env'), checkout, join(sandbox, 'bin')]],
+    // The sandbox's HOME holds no packages: the server reads the depot the build filled.
+    env: () => ({ JULIA_DEPOT_PATH: process.env.JULIA_DEPOT_PATH || join(homedir(), '.julia') }),
+    command: (_checkout, sandbox) => [join(sandbox, 'bin/libtmux-mcp'), '--socket-name', 'transcript'],
+  },
 }
 const TOOLSETS = { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' }
 // What each run step must have printed, in order: the project below has two passing tests and a log of two lines.
 const EXPECTED_OUTPUT = ['2 passed', 'checks finished']
 // Without a command to run, the last answer must still state this (a value the example's prompt asks about).
-const PRESENT = { ruby: ['%0'] }
-// What a pane runs once its shell has started: the sandbox pins SHELL, and the borrowed Ruby session runs cat.
-const PANE_COMMANDS = { ruby: ['cat'] }
+const PRESENT = { ruby: ['%0'], julia: ['checks finished'] }
+// What a pane runs once its shell has started: the sandbox pins SHELL, and the borrowed Ruby and Julia sessions run cat.
+const PANE_COMMANDS = { ruby: ['cat'], julia: ['cat'] }
 // A server that describes a pane the moment it is split can catch it before its shell has started; the answer is recorded again.
 const ATTEMPTS = 6
+// A Julia target carries `generation`, the tmux server's process id and start time. list_panes returns it, capture_pane must send it back, and no two runs share one: the call goes out with the listed value and the recording keeps the example's stand-in.
+const GENERATION = { julia: '3f9a1c' }
 const LOG_FILE = '2026-01-01 checks started\n2026-01-01 checks finished\n'
 const TEST_FILE = 'def test_adds():\n    assert 1 + 1 == 2\n\n\ndef test_upper():\n    assert "tmux".upper() == "TMUX"\n'
 
 if (!only || !SERVERS[only]) throw new Error(`--port must be one of ${Object.keys(SERVERS).join(', ')}`)
 const port = PORTS.find((entry) => entry.slug === only)
 const example = EXAMPLES[only]
+const standIn = GENERATION[only]
 const checkout = expand(process.env[`LIBTMUX_DOCS_CHECKOUT_${only.toUpperCase()}`] || (only === 'py' ? '~/work/python/libtmux-mcp' : port.worktree))
 if (!existsSync(checkout)) throw new Error(`${only}: no checkout at ${checkout}`)
 const git = (...args) => execFileSync('git', ['-C', checkout, ...args], { encoding: 'utf8' }).trim()
@@ -98,6 +111,7 @@ const sandbox = mkdtempSync(join(tmpdir(), `t239-${only}-`))
 const sandboxReal = realpathSync(sandbox)
 const project = join(sandbox, 'project')
 let transcript
+let listed
 // Every tmux server the sandbox started; the sandbox is the only place they can be.
 const stopServers = () => {
   const socket = join(sandbox, `tmux-${process.getuid?.() ?? ''}`)
@@ -112,17 +126,17 @@ try {
   const pytest = execFileSync(join(sandbox, 'venv/bin/pytest'), ['--version'], { encoding: 'utf8' }).trim()
   const server = SERVERS[only]
   const workdir = server.cwd ? join(checkout, server.cwd) : checkout
-  for (const [command, ...args] of [...server.prepare, ...(server.build?.(sandbox) ?? [])]) execFileSync(command, args, { cwd: workdir, stdio: 'inherit' })
+  for (const [command, ...args] of [...server.prepare, ...(server.build?.(sandbox, checkout) ?? [])]) execFileSync(command, args, { cwd: workdir, stdio: 'inherit' })
   const [command, ...args] = server.command(checkout, sandbox)
   if (server.borrowed) {
-    execFileSync('tmux', ['-L', server.borrowed, '-f', '/dev/null', 'new-session', '-d', '-s', 'docs', '/bin/cat'], { cwd: project, env: { ...process.env, TMUX: '', TMUX_TMPDIR: sandbox }, stdio: 'inherit' })
+    execFileSync('tmux', ['-L', server.borrowed, '-f', '/dev/null', 'new-session', '-d', '-s', 'docs', ...(server.pane ?? ['/bin/cat'])], { cwd: project, env: { ...process.env, TMUX: '', TMUX_TMPDIR: sandbox }, stdio: 'inherit' })
   }
   const environment = {
     TMUX: undefined, TMUX_PANE: undefined, TMUX_TMPDIR: sandbox, HOME: join(sandbox, 'home'), SHELL: '/bin/sh',
     // No user tmux configuration, whichever way tmux looks for it.
     XDG_CONFIG_HOME: join(sandbox, 'config'), XDG_CONFIG_DIRS: join(sandbox, 'config'),
     PATH: `${join(sandbox, 'venv/bin')}:${process.env.PATH}`, PS1: '$ ', ENV: '', LIBTMUX_SOCKET: 'transcript',
-    ...TOOLSETS,
+    ...TOOLSETS, ...server.env?.(),
   }
   mkdirSync(environment.HOME)
   // The tool that runs commands is the one whose requests carry a `command`; a name is not trusted to say so.
@@ -132,7 +146,7 @@ try {
   for (let attempt = 1; !run; attempt++) {
     const recorded = await recordCalls({
       command: command.startsWith('/') || !command.includes('/') ? command : join(checkout, command), args: args.map((arg) => (arg.includes('/') && !arg.startsWith('-') ? join(checkout, arg) : arg)),
-      cwd: server.inCheckout ? workdir : project, env: environment, calls: example.steps.map(({ tool, arguments: callArguments }) => ({ tool, arguments: callArguments })),
+      cwd: server.inCheckout ? workdir : project, env: environment, calls: example.steps.map(({ tool, arguments: callArguments }) => ({ tool, arguments: standIn && JSON.stringify(callArguments).includes(JSON.stringify(standIn)) ? withListed(callArguments, standIn, 'generation') : callArguments })),
     })
     try {
       verifyRecording(recorded.steps, { port: only, runTool: runTool[0] ?? '', expected: runTool.length ? EXPECTED_OUTPUT : [], present: PRESENT[only] ?? [], commands: PANE_COMMANDS[only] ?? ['sh'] })
@@ -151,12 +165,13 @@ try {
   // The project directory is a fresh temporary one each run; a fixed name keeps the file stable.
   const FIXED = '/home/user/project'
   // tmux titles a new pane with the host name, and a server may report the user's: as a token, anywhere in a string or in JSON inside one, each becomes "host".
-  const marks = { paths: [[join(sandboxReal, 'project'), FIXED], [project, FIXED]], names: [hostname(), userInfo().username] }
+  listed = standIn && listedValue(run.steps, 'generation')
+  const marks = { paths: [[join(sandboxReal, 'project'), FIXED], [project, FIXED], ...(listed ? [[listed, standIn]] : [])], names: [hostname(), userInfo().username] }
   run.steps = run.steps.map((step) => sanitize(step, marks))
   transcript = {
     generated: 'scripts/gen-mcp-transcript.mjs',
     repo: snapshot.repo, revision,
-    sandbox: { tmux: execFileSync('tmux', ['-V'], { encoding: 'utf8' }).trim(), pytest, project: ['test_example.py', 'checks.log'], expected: EXPECTED_OUTPUT, rewritten: { projectDirectory: FIXED } },
+    sandbox: { tmux: execFileSync('tmux', ['-V'], { encoding: 'utf8' }).trim(), pytest, project: ['test_example.py', 'checks.log'], expected: EXPECTED_OUTPUT, rewritten: { projectDirectory: FIXED, ...(standIn ? { generation: standIn } : {}) } },
     serverInfo: run.serverInfo,
     contracts,
     prompt: example.prompt,
@@ -171,7 +186,7 @@ try {
 }
 const out = join(root, 'site/src/data/mcp-transcripts', `${only}.json`)
 const text = `${JSON.stringify(transcript, null, 2)}\n`
-const found = leaks(JSON.stringify(withoutContracts(transcript), null, 2), [sandbox, sandboxReal, homedir(), checkout], [userInfo().username, hostname()])
+const found = leaks(JSON.stringify(withoutContracts(transcript), null, 2), [sandbox, sandboxReal, homedir(), checkout, ...(listed ? [listed] : [])], [userInfo().username, hostname()])
 if (found.length) throw new Error(`${only}: the recording names the host: ${found.join(', ')}`)
 if (checking) {
   const stored = JSON.parse(readFileSync(out, 'utf8'))
