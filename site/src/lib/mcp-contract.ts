@@ -30,6 +30,12 @@ export function sameContract(a: ToolContract | undefined, b: ToolContract | unde
   return a !== undefined && b !== undefined && canonical(contractOf(a)) === canonical(contractOf(b))
 }
 
+/** Whether every contract states an output schema. A contract without one matches another without one, so a match then says nothing about what the tool returns. */
+export const statesOutputs = (contracts: Record<string, ToolContract> | undefined): boolean => {
+  const all = Object.values(contracts ?? {})
+  return all.length > 0 && all.every((contract) => contract.outputSchema !== undefined)
+}
+
 /** Whether two sets of contracts name the same tools with the same contract each. */
 export function sameContracts(a: Record<string, ToolContract> | undefined, b: Record<string, ToolContract> | undefined): boolean {
   if (!a || !b) return false

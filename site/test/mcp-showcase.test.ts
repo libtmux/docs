@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { Window } from 'happy-dom'
 import { createComponent, renderTemplate } from 'astro/runtime/server/index.js'
 import { afterEach, describe, expect, it } from 'vitest'
-import { contractOf, contractsOf, sameContract, sameContracts } from '../src/lib/mcp-contract'
+import { contractOf, contractsOf, sameContract, sameContracts, type ToolContract } from '../src/lib/mcp-contract'
 import { MCP_REFERENCE, mcpReferenceRoutes } from '../src/lib/mcp-reference'
 import {
   abbreviate, buildShowcase, CAPABILITY_KEY, transcriptFor, EXAMPLES, mcpShowcase, protocolSnapshot, recordingHolds, showcaseHeadings, TIERS, toolPurposes, toolTier,
@@ -608,25 +608,133 @@ describe('a recording made at an earlier revision', () => {
     expect(built('ts', shuffled, (await transcriptFor('ts'))!).example?.recording).toBeDefined()
   })
 
-  it('names both revisions on the page when they differ, and the recorded one alone when they match', async () => {
+  describe('what the page says about it', () => {
     const windows: Window[] = []
-    const component = await loadAstroTemplate('components/mcp/McpReplay.astro', { real: [], modules: {
-      'astro-expressive-code/components': { Code: createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre>${props.code}</pre>`) },
-    } })
+    afterEach(async () => {
+      for (const win of windows.splice(0)) await win.happyDOM.abort()
+    })
     const provenance = async (snapshot: ProtocolSnapshot, transcript: Transcript) => {
+      const component = await loadAstroTemplate('components/mcp/McpReplay.astro', { real: [], modules: {
+        'astro-expressive-code/components': { Code: createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre>${props.code}</pre>`) },
+      } })
       const win = new Window({ url: 'https://libtmux.org/en/' })
       windows.push(win)
       win.document.body.innerHTML = await renderAstroTemplate(component, { props: { example: built('ts', snapshot, transcript).example!, portName: 'TypeScript' } })
       return win.document.querySelector('.mcp-provenance')!.textContent!.replace(/\s+/g, ' ')
     }
-    const transcript = (await transcriptFor('ts'))!
-    const later = await provenance(atHead(onDisk('ts')), transcript)
-    expect(later).toContain(`at ${transcript.revision.slice(0, 9)}`)
-    expect(later).toContain('the same schemas at fffffffff')
-    expect(later).not.toContain('Requests only')
-    const same = await provenance(onDisk('ts'), transcript)
-    expect(same).toContain(`at ${transcript.revision.slice(0, 9)}`)
-    expect(same).not.toContain('the same schemas')
-    for (const win of windows) await win.happyDOM.abort()
+
+    it('names the revision recorded alone when the page documents that revision', async () => {
+      const transcript = (await transcriptFor('ts'))!
+      const same = await provenance(onDisk('ts'), transcript)
+      expect(same).toContain(`at ${transcript.revision.slice(0, 9)}`)
+      expect(same).not.toContain('This page documents')
+    })
+
+    it.each(['f', '0'])('says plainly that the results are from one revision, the page documents another, the schemas match and the values may differ (documented %s)', async (digit) => {
+      const transcript = (await transcriptFor('ts'))!
+      const text = await provenance({ ...onDisk('ts'), revision: digit.repeat(40) }, transcript)
+      expect(text).toContain(`at ${transcript.revision.slice(0, 9)}`)
+      expect(text).toContain(`This page documents ${digit.repeat(9)}, a different revision.`)
+      expect(text).toContain('The calls have the same input and output schemas there, but the results at that revision may differ from the recorded ones.')
+      expect(text).not.toContain('Requests only')
+      // A snapshot's revision says nothing about which of the two is newer, so neither is called so.
+      expect(text).not.toMatch(/\b(later|newer|earlier|older)\b/)
+    })
+
+    it('claims the input schemas alone when no output schema was recorded', async () => {
+      const transcript = (await transcriptFor('ts'))!
+      const bare = (contract: ToolContract): ToolContract => ({ inputSchema: contract.inputSchema })
+      const unrecorded: Transcript = { ...transcript, contracts: Object.fromEntries(Object.entries(transcript.contracts!).map(([name, contract]) => [name, bare(contract)])) }
+      const snapshot = atHead(onDisk('ts'))
+      const withoutOutputs = { ...snapshot, protocol: { tools: snapshot.protocol.tools.map(({ outputSchema: _output, ...tool }) => tool) } }
+      expect(built('ts', withoutOutputs, unrecorded).example?.recording, 'the recording still holds without them').toBeDefined()
+      const text = await provenance(withoutOutputs, unrecorded)
+      expect(text).toContain('The calls have the same input schemas there')
+      expect(text).not.toMatch(/output/i)
+      const full = await provenance(snapshot, transcript)
+      expect(full).toContain('same input and output schemas')
+    })
+
+    it('does not count an output schema that one recorded tool lacks as checked for the rest', async () => {
+      const transcript = (await transcriptFor('ts'))!
+      const [first] = Object.keys(transcript.contracts!)
+      const partial: Transcript = { ...transcript, contracts: { ...transcript.contracts!, [first!]: { inputSchema: transcript.contracts![first!]!.inputSchema } } }
+      const snapshot = changing(atHead(onDisk('ts')), first!, ({ outputSchema: _output, ...tool }) => tool)
+      expect(built('ts', snapshot, partial).example?.recording?.outputsChecked).toBe(false)
+      expect(built('ts', atHead(onDisk('ts')), transcript).example?.recording?.outputsChecked).toBe(true)
+    })
+  })
+
+  describe('when its results list the tools the server enabled', () => {
+    const tools = (snapshot: ProtocolSnapshot) => snapshot.protocol.tools.map((tool) => tool.name)
+    const withContracts = (transcript: Transcript, snapshot: ProtocolSnapshot) => ({ ...transcript, contracts: contractsOf(snapshot.protocol.tools, transcript.steps.map((step) => step.tool)) })
+
+    it('holds for Ruby while the snapshot advertises the tools the recorded capabilities result lists, in any order', async () => {
+      const transcript = (await transcriptFor('ruby'))!
+      const listed = (transcript.steps[0]!.structuredContent as { data: { enabled_tools: string[] } }).data.enabled_tools
+      expect(listed.length, 'the recording does list them').toBeGreaterThan(2)
+      expect([...listed].sort()).toEqual(tools(onDisk('ruby')).sort())
+      expect(built('ruby', atHead(onDisk('ruby')), transcript).example?.recording).toBeDefined()
+      const reordered: Transcript = { ...transcript, steps: transcript.steps.map((step, index) => (index ? step : {
+        ...step, structuredContent: { ...(step.structuredContent as object), data: { ...(step.structuredContent as { data: object }).data, enabled_tools: [...listed].reverse() } },
+      })) }
+      expect(built('ruby', atHead(onDisk('ruby')), reordered).example?.recording).toBeDefined()
+    })
+
+    it('shows Ruby requests only when the snapshot no longer advertises a tool the recording enabled', async () => {
+      const transcript = (await transcriptFor('ruby'))!
+      const snapshot = atHead(onDisk('ruby'))
+      const uncalled = tools(snapshot).find((name) => !recordedTools(transcript).includes(name))!
+      const without = { ...snapshot, protocol: { tools: snapshot.protocol.tools.filter((tool) => tool.name !== uncalled) } }
+      const { example } = built('ruby', without, transcript)
+      expect(example, 'the requests still show').toBeDefined()
+      expect(example!.recording, `${uncalled} was enabled when recorded`).toBeUndefined()
+    })
+
+    it('shows Ruby requests only when the snapshot advertises a tool the recording did not enable', async () => {
+      const transcript = (await transcriptFor('ruby'))!
+      const snapshot = atHead(onDisk('ruby'))
+      const map = new Map(snapshot.protocol.tools.map((tool) => [tool.name, tool]))
+      expect(recordingHolds(transcript, EXAMPLES.ruby!.steps, map), 'the control').toBe(true)
+      const extra = { ...snapshot.protocol.tools[0]!, name: 'tmux_added_at_head' }
+      expect(recordingHolds(transcript, EXAMPLES.ruby!.steps, new Map([...map, [extra.name, extra]]))).toBe(false)
+    })
+
+    it('applies to any port whose result lists the tools, wherever the list sits', async () => {
+      const snapshot = onDisk('ts')
+      const transcript = (await transcriptFor('ts'))!
+      const names = tools(snapshot)
+      const dropped = names.find((name) => !recordedTools(transcript).includes(name))!
+      const listing = (list: unknown): Transcript => withContracts({
+        ...transcript, steps: transcript.steps.map((step, index) => (index ? step : { ...step, structuredContent: { server: { available: { names: list } } } })),
+      }, snapshot)
+      const map = new Map(snapshot.protocol.tools.map((tool) => [tool.name, tool]))
+      expect(recordingHolds(listing(names), EXAMPLES.ts!.steps, map), 'the listed tools are the advertised ones').toBe(true)
+      expect(recordingHolds(listing(names.filter((name) => name !== dropped)), EXAMPLES.ts!.steps, map), 'one advertised tool is not listed').toBe(false)
+      expect(recordingHolds(listing([...names, 'tool_since_removed']), EXAMPLES.ts!.steps, map), 'a listed tool is not advertised').toBe(false)
+    })
+
+    it('ignores a list that does not name every tool the recording called, and one that is not made of names', async () => {
+      const snapshot = onDisk('ts')
+      const transcript = (await transcriptFor('ts'))!
+      const map = new Map(snapshot.protocol.tools.map((tool) => [tool.name, tool]))
+      const answering = (value: unknown): Transcript => withContracts({
+        ...transcript, steps: transcript.steps.map((step, index) => (index ? step : { ...step, structuredContent: value })),
+      }, snapshot)
+      const called = recordedTools(transcript)
+      expect(recordingHolds(answering({ next: [called[0], 'other'] }), EXAMPLES.ts!.steps, map), 'a hint naming one called tool').toBe(true)
+      expect(recordingHolds(answering({ ids: ['%0', '%1'], mixed: [...called, 7] }), EXAMPLES.ts!.steps, map), 'ids, and a list with a number among its names').toBe(true)
+      expect(recordingHolds(answering({ flags: ['alpha', 'beta'] }), EXAMPLES.ts!.steps, map)).toBe(true)
+    })
+
+    it('leaves the ports whose results do not list tools to the schemas alone', async () => {
+      for (const port of ['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift']) {
+        const transcript = (await transcriptFor(port))!
+        const names = new Set(tools(onDisk(port)))
+        const text = JSON.stringify(transcript.steps.map((step) => step.structuredContent ?? step.content))
+        const listsThem = [...names].filter((name) => text.includes(`"${name}"`))
+        expect(listsThem, `${port} results name no tool`).toEqual([])
+      }
+    })
   })
 })

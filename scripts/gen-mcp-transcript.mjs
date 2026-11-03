@@ -21,9 +21,10 @@ import { leaks, sanitize, verifyRecording, withoutContracts } from './lib/mcp-tr
  * no earlier result returned, or an expected value that is missing.
  *
  * The transcript also stores the input and output schemas of each tool it
- * calls, from that snapshot. A page documenting a later revision shows the
- * recording only while the tools still have those schemas, so the recording
- * does not have to be redone for every commit of the port.
+ * calls, from that snapshot. A page documenting another revision shows the
+ * recording only while the tools still have those schemas and the tools a
+ * result lists are the ones advertised, so the recording does not have to be
+ * redone for every commit of the port. The values may still differ.
  *
  * Usage: node scripts/gen-mcp-transcript.mjs --port <port> [--check]
  * The checkout comes from LIBTMUX_DOCS_CHECKOUT_<PORT> or the port's worktree.
