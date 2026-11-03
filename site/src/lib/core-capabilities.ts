@@ -50,6 +50,12 @@ export interface CapabilityEntry {
     directory?: string
     /** What the caption names instead, when the directory is a template. */
     where?: string
+    /**
+     * The output of a job this one needs that gates it, such as `run_cells`
+     * for `needs.plan.outputs.run_cells == 'true'`. It is the only job-level
+     * `if` the check accepts, and the plan job must publish it from a step.
+     */
+    planOutput?: string
   }
   /** Why a wrong exit status or missing expected output fails the CI run. At least one. */
   checkedBy: readonly ExitEvidence[]
@@ -75,6 +81,7 @@ export function validateCapability(entry: Partial<CapabilityEntry>): string[] {
   if (!entry.checkedBy?.length) problems.push('records no evidence that the exit status or output is checked')
   for (const item of entry.checkedBy ?? []) if (!item.file || !item.contains?.trim()) problems.push('records evidence with no file or text')
   if (entry.tmux !== undefined && !/^\d+\.\d+[a-z]?\+$/.test(entry.tmux)) problems.push('writes the tmux version unlike 3.8+')
+  if (entry.ci?.planOutput !== undefined && !/^[A-Za-z_][\w-]*$/.test(entry.ci.planOutput)) problems.push('names a plan output that is not a workflow output name')
   return problems
 }
 
@@ -149,27 +156,14 @@ export function workflowStep(workflow: string, ci: CapabilityEntry['ci']): boole
   const job = jobLines(lines, ci.job)
   if (!job) return false
   // A job that may not run, or may fail without failing the workflow, proves nothing.
-  if (job.some((line) => /^ {4}(?:if|continue-on-error):/.test(line) && !/continue-on-error:\s*false/.test(line) && !plannedRun(lines, job, line))) return false
-  const first = job.findIndex((line) => /^\s*steps:\s*$/.test(line))
-  if (first < 0) return false
-  const body = job.slice(first + 1)
-  const indent = /^(\s*)-\s/.exec(body.find((line) => /^\s*-\s/.test(line)) ?? '')?.[1]
-  if (indent === undefined) return false
-  const steps: string[][] = []
-  for (const line of body) {
-    if (line.startsWith(`${indent}- `)) steps.push([line])
-    else if (steps.length) steps.at(-1)!.push(line)
-  }
-  const unquote = (value: string) => stripComment(value).trim().replace(/^(['"])(.*)\1$/, '$2')
-  // A key of the step itself, not one nested under `with:` or `env:`.
-  const key = (step: string[], name: string) => step.map((line) =>
-    new RegExp(`^${indent}(?:- | {2})${name}:\\s*(.+)$`).exec(line)?.[1]).find((value) => value !== undefined)
+  if (job.some((line) => mayNotRun(line) && !plannedRun(lines, job, line, ci))) return false
+  const parsed = jobSteps(job)
+  if (!parsed) return false
+  const { indent, steps } = parsed
   return steps.some((step) => {
-    const stepName = key(step, 'name')
-    const directory = key(step, 'working-directory')
-    const guard = key(step, 'if')
-    const tolerated = key(step, 'continue-on-error')
-    return guard === undefined && (tolerated === undefined || unquote(tolerated) === 'false')
+    const stepName = stepKey(indent, step, 'name')
+    const directory = stepKey(indent, step, 'working-directory')
+    return !mayNotRunStep(indent, step)
       && (ci.step === undefined || (stepName !== undefined && unquote(stepName) === ci.step))
       && (directory === undefined ? ci.directory === undefined : unquote(directory) === ci.directory)
       && runsCommand(step, ci.command)
@@ -177,6 +171,11 @@ export function workflowStep(workflow: string, ci: CapabilityEntry['ci']): boole
 }
 
 const stripComment = (value: string) => value.replace(/\s+#.*$/, '')
+const unquote = (value: string) => stripComment(value).trim().replace(/^(['"])(.*)\1$/, '$2')
+
+/** A job-level line that lets the job skip or fail quietly: any `if`, and any `continue-on-error` but false. */
+const mayNotRun = (line: string) => /^ {4}(?:if|continue-on-error):/.test(line)
+  && !(/^ {4}continue-on-error:/.test(line) && unquote(line.replace(/^ {4}continue-on-error:/, '')) === 'false')
 
 /** The lines under a top-level job's key, or undefined when the workflow has no such job. */
 function jobLines(lines: string[], name: string): string[] | undefined {
@@ -187,30 +186,72 @@ function jobLines(lines: string[], name: string): string[] | undefined {
   return lines.slice(start + 1, end)
 }
 
+/** A job's steps, each as its lines, and the indent their `- ` starts at; undefined when the job has none. */
+function jobSteps(job: string[]): { indent: string, steps: string[][] } | undefined {
+  const first = job.findIndex((line) => /^\s*steps:\s*$/.test(line))
+  if (first < 0) return undefined
+  const body = job.slice(first + 1)
+  const indent = /^(\s*)-\s/.exec(body.find((line) => /^\s*-\s/.test(line)) ?? '')?.[1]
+  if (indent === undefined) return undefined
+  const steps: string[][] = []
+  for (const line of body) {
+    if (line.startsWith(`${indent}- `)) steps.push([line])
+    else if (steps.length) steps.at(-1)!.push(line)
+  }
+  return { indent, steps }
+}
+
+/** A key of the step itself, not one nested under `with:` or `env:`. */
+const stepKey = (indent: string, step: string[], name: string) => step.map((line) =>
+  new RegExp(`^${indent}(?:- | {2})${name}:\\s*(.+)$`).exec(line)?.[1]).find((value) => value !== undefined)
+
+/** Whether a step carries a condition, or may fail without failing the job. */
+function mayNotRunStep(indent: string, step: string[]): boolean {
+  const tolerated = stepKey(indent, step, 'continue-on-error')
+  return stepKey(indent, step, 'if') !== undefined || (tolerated !== undefined && unquote(tolerated) !== 'false')
+}
+
 /**
- * Whether a job-level `if` only asks a job this one needs whether it has
- * anything to run: `needs.plan.outputs.run_cells == 'true'`, where `plan` is a
- * job of the same workflow that declares that output and is not itself
- * conditional. Any other condition may skip the job and proves nothing.
+ * Whether a job-level `if` only asks the plan whether the workflow has cells
+ * to run. The entry names the flag (`ci.planOutput`). The condition must be
+ * `needs.<plan>.outputs.<flag> == 'true'`, where `<plan>` is a job this one
+ * lists in `needs`, and that job must have no `needs`, `if` or
+ * `continue-on-error` of its own and publish `<flag>` as
+ * `${{ steps.<id>.outputs.<flag> }}` of a step that has no condition. A plan
+ * that can be skipped, or whose flag is not read from a step, can leave the
+ * job unrun. Any other condition proves nothing either.
  */
-function plannedRun(lines: string[], job: string[], condition: string): boolean {
+function plannedRun(lines: string[], job: string[], condition: string, ci: CapabilityEntry['ci']): boolean {
+  const flag = ci.planOutput
+  if (!flag || !/^[A-Za-z_][\w-]*$/.test(flag)) return false
   const match = /^ {4}if:\s*['"]?\$?\{?\{?\s*needs\.([\w-]+)\.outputs\.([\w-]+)\s*==\s*'true'\s*\}?\}?['"]?$/.exec(stripComment(condition).trimEnd())
-  if (!match) return false
-  const [, plan, flag] = match as unknown as [string, string, string]
+  if (!match || match[2] !== flag) return false
+  const plan = match[1]!
+  if (plan === ci.job) return false
   const needs = job.findIndex((line) => /^ {4}needs:/.test(line))
   if (needs < 0) return false
-  // `needs: plan`, `needs: [plan, other]` or a block list of `- plan` lines.
+  // `needs: plan`, `needs: [plan, other]` or a block list of `- plan` lines; a comment names nothing.
   const after = job.slice(needs + 1)
-  const items = after.findIndex((line) => !/^ {6}- /.test(line))
+  const items = after.findIndex((line) => !/^ {6}- |^\s*(?:#|$)/.test(line))
   const listed = [job[needs]!.replace(/^ {4}needs:/, ''), ...after.slice(0, items < 0 ? undefined : items)]
-    .join(' ').split(/[\s,[\]]+/)
+    .map(stripComment).join(' ').split(/[\s,[\]]+/)
   if (!listed.includes(plan)) return false
   const planned = jobLines(lines, plan)
-  if (!planned || planned.some((line) => /^ {4}(?:if|continue-on-error):/.test(line) && !/continue-on-error:\s*false/.test(line))) return false
+  if (!planned || planned.some((line) => /^ {4}needs:/.test(line) || mayNotRun(line))) return false
   const outputs = planned.findIndex((line) => /^ {4}outputs:\s*$/.test(line))
   if (outputs < 0) return false
-  const declared = planned.slice(outputs + 1).findIndex((line) => !/^ {6}\S/.test(line))
-  return planned.slice(outputs + 1, declared < 0 ? undefined : outputs + 1 + declared).some((line) => new RegExp(`^ {6}${flag}:`).test(line))
+  const block = planned.slice(outputs + 1)
+  const blockEnd = block.findIndex((line) => !/^ {6}\S/.test(line))
+  const published = block.slice(0, blockEnd < 0 ? undefined : blockEnd)
+    .map((line) => new RegExp(`^ {6}${flag}:\\s*(.+)$`).exec(stripComment(line))?.[1])
+    .find((value) => value !== undefined)
+  const stepId = published === undefined ? undefined : new RegExp(`^\\$\\{\\{\\s*steps\\.([\\w-]+)\\.outputs\\.${flag}\\s*\\}\\}$`).exec(unquote(published))?.[1]
+  if (!stepId) return false
+  const parsed = jobSteps(planned)
+  return parsed !== undefined && parsed.steps.some((step) => {
+    const id = stepKey(parsed.indent, step, 'id')
+    return id !== undefined && unquote(id) === stepId && !mayNotRunStep(parsed.indent, step)
+  })
 }
 
 /** Whether a step's `run` holds the command as whole commands, not as a prefix of another or inside a string. */
