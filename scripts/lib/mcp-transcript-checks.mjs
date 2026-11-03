@@ -45,8 +45,8 @@ export function verifyRecording(steps, { port, runTool, expected, present = [] }
 
 const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-/** A name as a token: not part of a longer word, path, option, file name or escape such as the `\d` of a pattern. Short names such as `d` are matched too. */
-const token = (name) => new RegExp(`(?<![\\w./\\\\-])${escapeRegExp(name)}(?![\\w./-])`, 'g')
+/** A name as a token: not part of a longer word, path, option or file name. Short names such as `d` are matched too. */
+const token = (name) => new RegExp(`(?<![\\w./-])${escapeRegExp(name)}(?![\\w./-])`, 'g')
 
 /**
  * What a recording names that it must not: `places` (where it ran, found as
@@ -80,3 +80,6 @@ export function sanitize(value, { paths = [], names = [], alias = 'host' }) {
   if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, sanitize(item, { paths, names, alias })]))
   return value
 }
+
+/** A transcript without `contracts`, which the host check skips: those schemas come from the committed `tools/list` snapshot and never carry session data. */
+export const withoutContracts = (transcript) => Object.fromEntries(Object.entries(transcript).filter(([key]) => key !== 'contracts'))

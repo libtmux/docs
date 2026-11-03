@@ -8,7 +8,7 @@ import { PORTS } from '../site/src/lib/ports.ts'
 import { EXAMPLES } from '../site/src/lib/mcp-examples.ts'
 import { contractsOf, sameContracts } from '../site/src/lib/mcp-contract.ts'
 import { recordCalls } from './lib/mcp-session.mjs'
-import { leaks, sanitize, verifyRecording } from './lib/mcp-transcript-checks.mjs'
+import { leaks, sanitize, verifyRecording, withoutContracts } from './lib/mcp-transcript-checks.mjs'
 
 /**
  * Record what each port's MCP server answers to the worked example on the MCP
@@ -148,7 +148,7 @@ try {
 }
 const out = join(root, 'site/src/data/mcp-transcripts', `${only}.json`)
 const text = `${JSON.stringify(transcript, null, 2)}\n`
-const found = leaks(text, [sandbox, sandboxReal, homedir(), checkout], [userInfo().username, hostname()])
+const found = leaks(JSON.stringify(withoutContracts(transcript), null, 2), [sandbox, sandboxReal, homedir(), checkout], [userInfo().username, hostname()])
 if (found.length) throw new Error(`${only}: the recording names the host: ${found.join(', ')}`)
 if (checking) {
   const stored = JSON.parse(readFileSync(out, 'utf8'))
