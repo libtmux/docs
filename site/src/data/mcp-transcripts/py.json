@@ -22,6 +22,1000 @@
     "version": "0.1.0a22",
     "websiteUrl": "https://libtmux-mcp.git-pull.com/"
   },
+  "contracts": {
+    "create_session": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "environment": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Environment variables to store in the session environment. Accepts\neither a dict of env vars or a JSON-serialized string of the same —\nthe latter is the cursor-composer-1 workaround described in\n:func:`libtmux_mcp._utils._coerce_dict_arg`. Each item appears in the\ntmux client argv as one ``-eKEY=VALUE`` element and may be visible to\nhost process inspection during launch. tmux retains the values in\ntmux session state, where ``show-environment`` can reveal them. They reach\nthe initial and future child environments unless a later spawn\noverrides them. MCP audit redaction does not hide these surfaces. Pass\ncredential references, not literal credentials."
+          },
+          "session_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Name for the new session."
+          },
+          "socket_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "tmux socket name. Defaults to LIBTMUX_SOCKET env var."
+          },
+          "start_directory": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Existing directory to start in. ``~`` expands; a relative path\nresolves against the MCP server process's directory."
+          },
+          "suppress_persistent_history": {
+            "default": false,
+            "description": "Whether to suppress persistent history for the spawned shell. Defaults\nto False for MCP and direct Python calls. This per-call option does not\ninherit LIBTMUX_SUPPRESS_HISTORY. Startup files may override these\ncontrols.",
+            "type": "boolean"
+          },
+          "window_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Name for the initial window."
+          },
+          "x": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Width of the initial window."
+          },
+          "y": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Height of the initial window."
+          }
+        },
+        "type": "object"
+      },
+      "outputSchema": {
+        "description": "Serialized tmux session.",
+        "properties": {
+          "active_pane_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Pane id (``%N``) of the session's active pane. Guaranteed non-None on ``create_session`` return (libtmux creates the session with one initial pane). May be None from ``list_sessions`` rows for sessions in transient teardown states where ``active_pane`` is unavailable."
+          },
+          "session_attached": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Attached client count"
+          },
+          "session_created": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Creation timestamp"
+          },
+          "session_id": {
+            "description": "Session ID (e.g. '$1')",
+            "type": "string"
+          },
+          "session_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Session name"
+          },
+          "window_count": {
+            "description": "Number of windows",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "session_id",
+          "window_count"
+        ],
+        "type": "object"
+      }
+    },
+    "split_window": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "direction": {
+            "anyOf": [
+              {
+                "enum": [
+                  "above",
+                  "below",
+                  "left",
+                  "right"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Split direction."
+          },
+          "environment": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Per-process environment as a mapping or JSON object string. Values do\nnot modify the tmux session environment. Each item becomes a tmux\n``-e`` launch option. Values may be visible to host process inspection\nin the tmux client argv during launch and in the child environment\nafterward; MCP audit redaction does not hide either surface. Pass\ncredential references, not literal credentials."
+          },
+          "pane_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Pane ID to split from. If given, splits adjacent to this pane."
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Session ID (e.g. '$1')."
+          },
+          "session_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Session name."
+          },
+          "shell": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Shell command to run in the new pane."
+          },
+          "size": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Size of the new pane. Use a string with '%%' suffix for\npercentage (e.g. '50%%') or an integer for lines/columns."
+          },
+          "socket_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "tmux socket name."
+          },
+          "start_directory": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Existing directory to start in. ``~`` expands; a relative path\nresolves against the MCP server process's directory."
+          },
+          "suppress_persistent_history": {
+            "default": false,
+            "description": "Whether to suppress persistent history for the spawned shell. Defaults\nto False for MCP and direct Python calls. This per-call option does not\ninherit LIBTMUX_SUPPRESS_HISTORY. Startup files may override these\ncontrols.",
+            "type": "boolean"
+          },
+          "window_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Window ID (e.g. '@1')."
+          },
+          "window_index": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Window index within the session."
+          }
+        },
+        "type": "object"
+      },
+      "outputSchema": {
+        "description": "Serialized tmux pane.",
+        "properties": {
+          "is_caller": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "MCP caller identity for this pane. ``True`` when the pane matches the caller's ``TMUX_PANE`` *and* lives on the same tmux socket as the caller's ``TMUX`` (verified via socket realpath); ``False`` otherwise, including the case where the pane id matches but the socket does not or cannot be proven to; ``None`` when the MCP process is not running inside tmux at all."
+          },
+          "pane_active": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Active flag ('1' or '0')"
+          },
+          "pane_at_bottom": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "True when the pane touches the window's bottom edge."
+          },
+          "pane_at_left": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "True when the pane touches the window's left edge."
+          },
+          "pane_at_right": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "True when the pane touches the window's right edge."
+          },
+          "pane_at_top": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "True when the pane touches the window's top edge. tmux accounts for ``pane-border-status`` here, so the top row may be 1 instead of 0 when the status bar is at the top."
+          },
+          "pane_bottom": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Bottom edge row (inclusive), window-relative."
+          },
+          "pane_current_command": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Running command"
+          },
+          "pane_current_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Current working directory"
+          },
+          "pane_height": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Height in rows"
+          },
+          "pane_id": {
+            "description": "Pane ID (e.g. '%1')",
+            "type": "string"
+          },
+          "pane_index": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Pane index"
+          },
+          "pane_left": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Left edge column, 0-based and window-relative."
+          },
+          "pane_pid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Process ID"
+          },
+          "pane_right": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Right edge column (inclusive), window-relative."
+          },
+          "pane_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Pane title"
+          },
+          "pane_top": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Top edge row, 0-based and window-relative."
+          },
+          "pane_tty": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "TTY device path of the pane (e.g. '/dev/pts/5')."
+          },
+          "pane_width": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Width in columns"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Parent session ID"
+          },
+          "window_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Parent window ID"
+          }
+        },
+        "required": [
+          "pane_id"
+        ],
+        "type": "object"
+      }
+    },
+    "list_windows": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "filters": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Django-style filters as a dict (e.g. ``{\"window_name__contains\": \"dev\"}``)\nor as a JSON string. Some MCP clients require the string form."
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Session ID (e.g. '$1') to look up."
+          },
+          "session_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Session name to look up. If omitted along with session_id,\nreturns windows from all sessions."
+          },
+          "socket_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "tmux socket name. Defaults to LIBTMUX_SOCKET env var."
+          }
+        },
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "items": {
+              "description": "Serialized tmux window.",
+              "properties": {
+                "active_pane_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "description": "Pane id (``%N``) of the window's active pane."
+                },
+                "pane_count": {
+                  "description": "Number of panes",
+                  "type": "integer"
+                },
+                "session_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "description": "Parent session ID"
+                },
+                "session_name": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "description": "Parent session name"
+                },
+                "window_active": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "description": "Active flag ('1' or '0')"
+                },
+                "window_height": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "description": "Height in rows"
+                },
+                "window_id": {
+                  "description": "Window ID (e.g. '@1')",
+                  "type": "string"
+                },
+                "window_index": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "description": "Window index"
+                },
+                "window_layout": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "description": "Layout string"
+                },
+                "window_name": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "description": "Window name"
+                },
+                "window_width": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "description": "Width in columns"
+                }
+              },
+              "required": [
+                "window_id",
+                "pane_count"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "type": "object",
+        "x-fastmcp-wrap-result": true
+      }
+    },
+    "run_command": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "command": {
+            "description": "Shell command to run in the target pane.",
+            "type": "string"
+          },
+          "max_lines": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Maximum pane output lines to return. Defaults to all captured\nvisible output; pass a small value for a tail-only summary."
+          },
+          "pane_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Pane ID (e.g. '%1')."
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Session ID (e.g. '$1') for pane resolution."
+          },
+          "session_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Session name for pane resolution."
+          },
+          "socket_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "tmux socket name."
+          },
+          "suppress_history": {
+            "default": true,
+            "description": "For MCP calls, omission uses the server's LIBTMUX_SUPPRESS_HISTORY\ndefault; an explicit value overrides it. Direct Python calls default\nto False. Best effort: the shell must honor space-prefixed history\nsuppression. Suppression requires a single-line command; multiline\ncommands remain available when suppression is false.",
+            "type": "boolean"
+          },
+          "timeout": {
+            "default": 30,
+            "description": "Maximum seconds to wait for command completion. Capped by the\nsame server wait ceiling as ``wait_for_text``; an over-large\nvalue is not an error — the wait returns at the ceiling and\nthe timeout actually enforced is reported on\n``RunCommandResult.effective_timeout``.",
+            "type": "number"
+          },
+          "window_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Window ID for pane resolution."
+          }
+        },
+        "required": [
+          "command"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "description": "Result of running a shell command in a pane.",
+        "properties": {
+          "effective_timeout": {
+            "description": "Seconds actually enforced for command completion. Server policy caps the requested ``timeout``; compare against what you passed to see a clamp.",
+            "type": "number"
+          },
+          "elapsed_seconds": {
+            "description": "Time spent waiting in seconds",
+            "type": "number"
+          },
+          "exit_status": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Shell exit status, or None when the command timed out"
+          },
+          "output": {
+            "description": "Tail-preserved pane output after the wait completes",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "output_truncated": {
+            "default": false,
+            "description": "True when output was tail-preserved to stay within max_lines",
+            "type": "boolean"
+          },
+          "output_truncated_lines": {
+            "default": 0,
+            "description": "Number of pane lines dropped from the head when truncating",
+            "type": "integer"
+          },
+          "pane_id": {
+            "description": "Pane ID that received the command",
+            "type": "string"
+          },
+          "timed_out": {
+            "description": "True when the wait timed out",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "pane_id",
+          "timed_out",
+          "elapsed_seconds",
+          "effective_timeout"
+        ],
+        "type": "object"
+      }
+    },
+    "kill_session": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Session ID (e.g. '$1') to look up."
+          },
+          "session_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Session name to look up."
+          },
+          "socket_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "tmux socket name. Defaults to LIBTMUX_SOCKET env var."
+          }
+        },
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "type": "object",
+        "x-fastmcp-wrap-result": true
+      }
+    }
+  },
   "prompt": "Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.",
   "steps": [
     {

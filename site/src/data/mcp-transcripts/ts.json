@@ -22,6 +22,580 @@
     "title": "tmux",
     "version": "0.1.0-alpha.10"
   },
+  "contracts": {
+    "create_session": {
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "properties": {
+          "height": {
+            "description": "Rows. Default 24, because a detached session has no client to size it.",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "type": "integer"
+          },
+          "name": {
+            "description": "Session name; tmux picks a number when omitted.",
+            "type": "string",
+            "x-libtmux-tmux-format": "literalized-once"
+          },
+          "startDirectory": {
+            "description": "Working directory for the first pane. Defaults to the server's.",
+            "type": "string",
+            "x-libtmux-tmux-format": "literalized-once"
+          },
+          "width": {
+            "description": "Columns. Default 80, and a program that formats to its terminal width — ps, git log --graph, docker ps — truncates to that at the source, where no capture option can recover it.",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "type": "integer"
+          },
+          "windowName": {
+            "description": "Name for the first window, so the session does not open with a stray shell.",
+            "type": "string",
+            "x-libtmux-tmux-format": "literalized-once"
+          }
+        },
+        "type": "object"
+      },
+      "outputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "paneId": {
+            "description": "The new session's first pane. Target this.",
+            "pattern": "^%\\d+$",
+            "type": "string"
+          },
+          "session": {
+            "additionalProperties": false,
+            "properties": {
+              "attachedClients": {
+                "description": "Raw client count from tmux; 0 means detached. Includes control-mode clients - this server's own wait_for_text or other live read holds one open while it runs, and another program on this socket may hold others. See humanAttachedClients for a person-only count.",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              "humanAttachedClients": {
+                "description": "attachedClients minus every control-mode client, this server's own included.",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              "id": {
+                "description": "Stable session id, e.g. $1.",
+                "pattern": "^\\$\\d+$",
+                "type": "string"
+              },
+              "metadataComplete": {
+                "description": "Whether the session name is complete.",
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              },
+              "omittedMetadataBytes": {
+                "description": "UTF-8 bytes omitted from the session name.",
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "windows": {
+                "description": "How many windows it holds.",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "attachedClients",
+              "humanAttachedClients",
+              "id",
+              "metadataComplete",
+              "name",
+              "omittedMetadataBytes",
+              "windows"
+            ],
+            "type": "object"
+          },
+          "windowId": {
+            "description": "Stable window id, e.g. @1.",
+            "pattern": "^@\\d+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "paneId",
+          "session",
+          "windowId"
+        ],
+        "type": "object"
+      }
+    },
+    "split_window": {
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "properties": {
+          "direction": {
+            "description": "Default below.",
+            "enum": [
+              "above",
+              "below",
+              "left",
+              "right"
+            ],
+            "type": "string"
+          },
+          "paneId": {
+            "description": "Stable pane id, e.g. %1.",
+            "pattern": "^%\\d+$",
+            "type": "string"
+          },
+          "startDirectory": {
+            "description": "Defaults to the directory the pane being split is in.",
+            "type": "string",
+            "x-libtmux-tmux-format": "literalized-once"
+          }
+        },
+        "required": [
+          "paneId"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "pane": {
+            "additionalProperties": false,
+            "properties": {
+              "active": {
+                "description": "Whether this is its window's active pane.",
+                "type": "boolean"
+              },
+              "command": {
+                "description": "The command tmux reports running in it.",
+                "type": "string"
+              },
+              "cwd": {
+                "description": "Its current working directory.",
+                "type": "string"
+              },
+              "dead": {
+                "description": "Whether its process exited and remain-on-exit kept it.",
+                "type": "boolean"
+              },
+              "height": {
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              "id": {
+                "description": "Stable pane id. Prefer this for entity-scoped targeting.",
+                "pattern": "^%\\d+$",
+                "type": "string"
+              },
+              "index": {
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              "isAttended": {
+                "description": "A person is currently looking at this pane.",
+                "type": "boolean"
+              },
+              "isCallerPane": {
+                "description": "This is the pane this MCP server runs in.",
+                "type": "boolean"
+              },
+              "metadataComplete": {
+                "description": "Whether every projected metadata string is complete.",
+                "type": "boolean"
+              },
+              "omittedMetadataBytes": {
+                "description": "UTF-8 bytes omitted from projected metadata strings.",
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "omittedPlacements": {
+                "description": "Later placements omitted.",
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "placements": {
+                "description": "Retained session and window indexes through which this pane is reachable.",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "index": {
+                      "description": "The window index in this session.",
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "sessionId": {
+                      "description": "Stable session id, e.g. $1.",
+                      "pattern": "^\\$\\d+$",
+                      "type": "string"
+                    },
+                    "sessionName": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "index",
+                    "sessionId",
+                    "sessionName"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "placementsComplete": {
+                "description": "Whether placements contains every placement.",
+                "type": "boolean"
+              },
+              "title": {
+                "type": "string"
+              },
+              "width": {
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              "windowId": {
+                "description": "Stable window id, e.g. @1.",
+                "pattern": "^@\\d+$",
+                "type": "string"
+              },
+              "windowName": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "active",
+              "command",
+              "cwd",
+              "dead",
+              "height",
+              "id",
+              "index",
+              "isAttended",
+              "isCallerPane",
+              "metadataComplete",
+              "omittedMetadataBytes",
+              "omittedPlacements",
+              "placements",
+              "placementsComplete",
+              "title",
+              "width",
+              "windowId",
+              "windowName"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "pane"
+        ],
+        "type": "object"
+      }
+    },
+    "list_windows": {
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "properties": {
+          "session": {
+            "description": "Session id ($1) or name. Omit for all sessions.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "outputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "complete": {
+            "type": "boolean"
+          },
+          "omittedEntries": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "windows": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "description": "Stable window id, e.g. @1.",
+                  "pattern": "^@\\d+$",
+                  "type": "string"
+                },
+                "layout": {
+                  "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                  "type": "string"
+                },
+                "metadataComplete": {
+                  "description": "Whether every projected metadata string is complete.",
+                  "type": "boolean"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "omittedMetadataBytes": {
+                  "description": "UTF-8 bytes omitted from projected metadata strings.",
+                  "maximum": 9007199254740991,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "omittedPlacements": {
+                  "description": "Later placements omitted.",
+                  "maximum": 9007199254740991,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "panes": {
+                  "maximum": 9007199254740991,
+                  "minimum": -9007199254740991,
+                  "type": "integer"
+                },
+                "placements": {
+                  "description": "Retained sessions and indexes where this window is linked.",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "active": {
+                        "description": "Whether this placement is current in its session.",
+                        "type": "boolean"
+                      },
+                      "index": {
+                        "description": "The window index in this session.",
+                        "maximum": 9007199254740991,
+                        "minimum": -9007199254740991,
+                        "type": "integer"
+                      },
+                      "sessionId": {
+                        "description": "Stable session id, e.g. $1.",
+                        "pattern": "^\\$\\d+$",
+                        "type": "string"
+                      },
+                      "sessionName": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "index",
+                      "sessionId",
+                      "sessionName",
+                      "active"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "placementsComplete": {
+                  "description": "Whether placements contains every placement.",
+                  "type": "boolean"
+                },
+                "zoomed": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "layout",
+                "metadataComplete",
+                "name",
+                "omittedMetadataBytes",
+                "panes",
+                "omittedPlacements",
+                "placements",
+                "placementsComplete",
+                "zoomed"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "complete",
+          "omittedEntries",
+          "windows"
+        ],
+        "type": "object"
+      }
+    },
+    "run_shell_command": {
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "properties": {
+          "command": {
+            "description": "The shell command to run.",
+            "type": "string"
+          },
+          "force": {
+            "description": "Allow writing to the pane this server itself was called from, which is otherwise refused. It does not override the refusal to write to a pane a person is watching — a pane an attached client has on screen is still refused with force.",
+            "type": "boolean"
+          },
+          "maxLines": {
+            "description": "Keep at most this many lines, from the end. Defaults to the server limit.",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "type": "integer"
+          },
+          "paneId": {
+            "description": "Stable pane id, e.g. %1.",
+            "pattern": "^%\\d+$",
+            "type": "string"
+          },
+          "timeoutMs": {
+            "description": "How long to wait. Clamped by the server ceiling; the result says what was used.",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "command",
+          "paneId"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "droppedLines": {
+            "description": "Lines of output withheld by maxLines. The text half says so in a notice; a caller reading only the structured half would otherwise take the tail for the whole.",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "effectiveTimeoutMs": {
+            "description": "The timeout actually enforced.",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "exitStatus": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The command's exit status; null if it did not finish."
+          },
+          "foreignOutputSuspected": {
+            "description": "Another writer printed into this pane while the command ran. Output that could be attributed to them was removed; what is left may still include theirs. False means no foreign marker was seen, not that the output is certainly this command's.",
+            "type": "boolean"
+          },
+          "missedBytes": {
+            "description": "Output that fell out of the pane's buffer before this read reached it. Nonzero means the command printed more than was kept, so the output here starts partway through it.",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "omittedBytes": {
+            "description": "Output bytes omitted by the result ceiling.",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "outcome": {
+            "description": "Why this returned. Read it rather than inferring from the text.",
+            "enum": [
+              "completed",
+              "timed_out",
+              "pane_died",
+              "cancelled"
+            ],
+            "type": "string"
+          },
+          "output": {
+            "description": "The bounded tail of the command's output.",
+            "type": "string"
+          },
+          "outputComplete": {
+            "description": "False when capture or result limits omitted any command output.",
+            "type": "boolean"
+          },
+          "paneId": {
+            "description": "Stable pane id, e.g. %1.",
+            "pattern": "^%\\d+$",
+            "type": "string"
+          },
+          "returnedBytes": {
+            "description": "UTF-8 output bytes returned.",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "stillRunning": {
+            "description": "Whether the command may still be running after this call returned.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "effectiveTimeoutMs",
+          "droppedLines",
+          "missedBytes",
+          "omittedBytes",
+          "foreignOutputSuspected",
+          "exitStatus",
+          "outcome",
+          "output",
+          "outputComplete",
+          "paneId",
+          "returnedBytes",
+          "stillRunning"
+        ],
+        "type": "object"
+      }
+    },
+    "kill_session": {
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "properties": {
+          "force": {
+            "description": "Allow this to target the pane this server itself was called from, which is otherwise refused. It does not override the refusal to touch a pane a person is watching.",
+            "type": "boolean"
+          },
+          "session": {
+            "description": "Session id ($1) or name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "killed": {
+            "description": "Stable session id, e.g. $1.",
+            "pattern": "^\\$\\d+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "killed"
+        ],
+        "type": "object"
+      }
+    }
+  },
   "prompt": "Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.",
   "steps": [
     {
