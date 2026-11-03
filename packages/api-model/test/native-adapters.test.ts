@@ -75,6 +75,18 @@ describe('Ruby native documentation adapter', () => {
     expect(model.symbols[2]).toMatchObject({ package: 'libtmux', publicOwner: 'LibTmux::Pane#active?' })
   })
 
+  it('reads the name an RBS positional parameter writes after its type, and not the last member of a union', () => {
+    const [base] = artifact.symbols
+    const signature = '(::String value, ?::Array[::String] | nil items, ::Integer | nil, Hash[Symbol, untyped] options) -> void'
+    const model = extractRuby({ ...artifact, symbols: [{ ...base!, signatures: [signature] }] }, REVISION)
+    expect(model.symbols.at(-1)!.signatures[0]!.params).toEqual([
+      { name: 'value', type: '::String' },
+      { name: 'items', type: '::Array[::String] | nil', default: 'nil' },
+      { name: 'arg3', type: '::Integer | nil' },
+      { name: 'options', type: 'Hash[Symbol, untyped]' },
+    ])
+  })
+
   it('rejects an artifact from a different source revision', () => {
     expect(() => extractRuby(artifact, 'b'.repeat(40))).toThrow(/source revision/i)
   })

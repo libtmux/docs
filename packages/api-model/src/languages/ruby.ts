@@ -143,7 +143,15 @@ function rbsSignature(raw: string, tags: RubyTag[] = []): Signature {
     if (part.startsWith('**')) return { name: 'kwargs', type: part.slice(2), variadic: 'keyword' as const }
     if (part.startsWith('*')) return { name: 'args', type: part.slice(1), variadic: 'positional' as const }
     const optional = part.startsWith('?')
-    return { name: `arg${index + 1}`, type: optional ? part.slice(1) : part, ...(optional ? { default: 'nil' } : {}) }
+    const text = optional ? part.slice(1) : part
+    // RBS lets a positional parameter carry a name after its type: `::String value`. A union ends in its last member, not a name.
+    const named = /^(.+[\w\])}?])\s+([a-z_]\w*)$/.exec(text)
+    const name = named?.[2] ?? `arg${index + 1}`
+    return {
+      name, type: named?.[1] ?? text,
+      ...(optional ? { default: 'nil' } : {}),
+      ...(named && docs.get(name) ? { doc: docs.get(name) } : {}),
+    }
   })
   const typeParams = raw.startsWith('[') ? splitTopLevel(raw.slice(1, raw.indexOf(']'))) : undefined
   const raises = tags.filter((tag) => tag.tag === 'raise').map((tag) => ({
