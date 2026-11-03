@@ -601,6 +601,7 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
     unsettled: {
       'LibTmux::Entity': 'base of the tmux entity hierarchy; the concrete entity is the subclass',
       'LibTmux::EntityRef': 'target identity shared by every entity, owned by none',
+      'LibTmux::Support': 'namespace of the tmux release check; its module and functions have their own placements',
     },
   },
   py: {
