@@ -91,7 +91,8 @@ export function programProblems(lang: string, content: string): string[] {
   const rules: Record<string, { imports: RegExp; entry: RegExp; local?: RegExp }> = {
     rust: { imports: /^use /m, entry: /^(?:async )?fn main\(|^(?:#\[[^\]]+\]\s*)+(?:async )?fn main\(/m },
     go: { imports: /^import[ (]/m, entry: /^func main\(\)/m },
-    ruby: { imports: /^require ["']/m, entry: /^(?:begin\b|[A-Za-z_][\w:]*[.(]|[A-Za-z_]\w* = )/m, local: /require_relative|Example\./ },
+    // A port may indent its require inside the begin block so excerpts of that block carry it.
+    ruby: { imports: /^[ \t]*require ["']/m, entry: /^(?:begin\b|[A-Za-z_][\w:]*[.(]|[A-Za-z_]\w* = )/m, local: /require_relative|Example\./ },
     typescript: { imports: /^import /m, entry: /^(?:await |void |main\()|^(?:async )?function main\(/m },
   }
   const rule = rules[lang]

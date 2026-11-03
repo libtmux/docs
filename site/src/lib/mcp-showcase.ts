@@ -1,6 +1,7 @@
 import { mcpObjects } from './mcp-catalog'
 import { PORT_BY_SLUG, portPageUrl } from './ports'
-import { EXAMPLES } from './mcp-examples.ts'
+import { EXAMPLES, type ExampleStep } from './mcp-examples.ts'
+import { contractOf, sameContract, statesOutputs, type ToolContract } from './mcp-contract.ts'
 import { replayFrames, runAnswers, type Frame } from './mcp-replay'
 
 export { EXAMPLES }
@@ -44,6 +45,7 @@ export interface ProtocolTool {
   title?: string
   description: string
   inputSchema: Record<string, unknown>
+  outputSchema?: Record<string, unknown>
   _meta?: Record<string, unknown>
 }
 
@@ -136,6 +138,10 @@ export interface Recording {
   frames: Frame[]
   /** Whether any result is shown shortened. */
   shortened: boolean
+  /** The revision the page documents, when it is not the one recorded. The page does not say which of the two is newer. */
+  documentedRevision?: string
+  /** Whether every tool the recording calls states an output schema, so that matching schemas covers what the calls return as well as what they take. */
+  outputsChecked: boolean
   /** The directory the sandbox ran in was replaced by this fixed path. */
   projectDirectory?: string
   /** What each command run left in its pane, as the last line with text, with the pane it ran in. */
@@ -145,7 +151,7 @@ export interface Recording {
 export interface WorkedExample {
   prompt: string
   steps: ShowcaseStep[]
-  /** Present only when every step has a recorded result from a session checked against the snapshot's revision. */
+  /** Present only when every step has a recorded result from a session whose tools still take and return what they did when recorded. */
   recording?: Recording
 }
 
@@ -153,6 +159,8 @@ export interface WorkedExample {
 export interface Transcript {
   repo: string
   revision: string
+  /** The input and output schemas of each tool the session called, as the server advertised them when it was recorded. */
+  contracts?: Record<string, ToolContract>
   sandbox: { tmux: string; pytest: string; rewritten?: { projectDirectory?: string } }
   steps: { tool: string; arguments: Record<string, unknown>; isError: boolean; content: { type: string; text?: string }[]; structuredContent?: unknown }[]
 }
@@ -198,6 +206,44 @@ function stepResult(step: Transcript['steps'][number]): unknown {
   return step.content.map((part) => part.text ?? '').join('\n')
 }
 
+/**
+ * The lists of tool names a recorded result states, such as the enabled tools
+ * Ruby's `tmux_capabilities` returns: a list of strings, at any depth, that
+ * names every tool the session called. A tool the session called was enabled
+ * when it was recorded, so a list of the server's tools includes it.
+ */
+function listedTools(value: unknown, called: readonly string[]): string[][] {
+  if (Array.isArray(value)) {
+    const lists = value.length > 1 && value.every((item) => typeof item === 'string') && called.every((name) => value.includes(name)) ? [value as string[]] : []
+    return [...lists, ...value.flatMap((item) => listedTools(item, called))]
+  }
+  return value && typeof value === 'object' ? Object.values(value).flatMap((item) => listedTools(item, called)) : []
+}
+
+/**
+ * Whether a recording still describes the server a snapshot documents.
+ *
+ * The snapshot's revision need not be the recording's. A port's own build
+ * regenerates the snapshot at the port's head (`gen-mcp-protocol.mjs
+ * --source-bound`), which need not be the commit the session was recorded
+ * at. The recording stays shown while the calls are the example's, none
+ * failed, every tool it called is still advertised with the input and output
+ * schemas the transcript recorded, and any list of tools a result states is
+ * the set the snapshot advertises. Matching schemas do not make the values
+ * equal; the page says so.
+ */
+export function recordingHolds(transcript: Transcript, steps: readonly ExampleStep[], advertised: ReadonlyMap<string, ProtocolTool>): boolean {
+  const called = [...new Set(transcript.steps.map((step) => step.tool))]
+  return transcript.steps.length === steps.length
+    && transcript.steps.every((step, index) => {
+      const tool = advertised.get(step.tool)
+      return !step.isError && step.tool === steps[index]!.tool
+        && JSON.stringify(step.arguments) === JSON.stringify(steps[index]!.arguments)
+        && sameContract(transcript.contracts?.[step.tool], tool && contractOf(tool))
+        && listedTools(stepResult(step), called).every((list) => new Set(list).size === advertised.size && list.every((name) => advertised.has(name)))
+    })
+}
+
 export interface McpShowcase {
   port: string
   groups: ShowcaseGroup[]
@@ -237,12 +283,8 @@ export function buildShowcase(port: string, version: string, snapshot: ProtocolS
     ? TIERS.map((tier) => ({ tier, tools: sorted.filter((tool) => tool.tier === tier.id) })).filter((group) => group.tools.length)
     : [{ tools: sorted }]
   const definition = EXAMPLES[port]
-  // A recording counts only for the same calls, on the revision the snapshot describes, with no step that failed.
-  const recorded = definition && transcript && transcript.revision === snapshot.revision
-    && transcript.steps.length === definition.steps.length
-    && transcript.steps.every((step, index) => !step.isError && step.tool === definition.steps[index]!.tool
-      && JSON.stringify(step.arguments) === JSON.stringify(definition.steps[index]!.arguments))
-    ? transcript : undefined
+  const advertised = new Map(snapshot.protocol.tools.map((tool) => [tool.name, tool]))
+  const recorded = definition && transcript && recordingHolds(transcript, definition.steps, advertised) ? transcript : undefined
   const full = recorded?.steps.map(stepResult) ?? []
   const shown = full.map((value) => abbreviate(value))
   const example: WorkedExample | undefined = definition && definition.steps.every((step) => tools.has(step.tool))
@@ -252,7 +294,7 @@ export function buildShowcase(port: string, version: string, snapshot: ProtocolS
         tool: tools.get(step.tool)!, arguments: step.arguments, caption: step.caption,
         ...(recorded ? { result: shown[index] } : {}),
       })),
-      ...(recorded ? { recording: { repo: recorded.repo, revision: recorded.revision, tmux: recorded.sandbox.tmux, runner: recorded.sandbox.pytest, frames: replayFrames(recorded.steps), shortened: shown.some((value, index) => JSON.stringify(value) !== JSON.stringify(full[index])), ...(recorded.sandbox.rewritten?.projectDirectory ? { projectDirectory: recorded.sandbox.rewritten.projectDirectory } : {}), answers: runAnswers(recorded.steps) } } : {}),
+      ...(recorded ? { recording: { repo: recorded.repo, revision: recorded.revision, tmux: recorded.sandbox.tmux, runner: recorded.sandbox.pytest, frames: replayFrames(recorded.steps), shortened: shown.some((value, index) => JSON.stringify(value) !== JSON.stringify(full[index])), ...(recorded.revision === snapshot.revision ? {} : { documentedRevision: snapshot.revision }), outputsChecked: statesOutputs(recorded.contracts), ...(recorded.sandbox.rewritten?.projectDirectory ? { projectDirectory: recorded.sandbox.rewritten.projectDirectory } : {}), answers: runAnswers(recorded.steps) } } : {}),
     }
     : undefined
   return {

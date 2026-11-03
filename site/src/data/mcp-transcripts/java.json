@@ -21,6 +21,367 @@
     "name": "libtmux",
     "version": "0.0.1-alpha.17-SNAPSHOT"
   },
+  "contracts": {
+    "create_session": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "height": {
+            "default": -1,
+            "description": "Initial height; supply with width. Defaults to -1.",
+            "type": "integer"
+          },
+          "session_name": {
+            "description": "A literal session name.",
+            "type": "string"
+          },
+          "start_directory": {
+            "description": "An absolute literal start directory.",
+            "type": "string"
+          },
+          "width": {
+            "default": -1,
+            "description": "Initial width; supply with height. Defaults to -1.",
+            "type": "integer"
+          },
+          "window_name": {
+            "description": "A literal first-window name.",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "attached": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "windows": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "attached",
+          "windows"
+        ],
+        "type": "object"
+      }
+    },
+    "list_panes": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "type": "integer"
+          },
+          "note": {
+            "type": "string"
+          },
+          "panes": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "active": {
+                  "type": "boolean"
+                },
+                "caller": {
+                  "type": "boolean"
+                },
+                "command": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "session": {
+                  "type": "string"
+                },
+                "size": {
+                  "type": "string"
+                },
+                "window": {
+                  "type": "string"
+                },
+                "window_id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "session",
+                "window",
+                "window_id",
+                "command",
+                "path",
+                "size",
+                "active"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "panes"
+        ],
+        "type": "object"
+      }
+    },
+    "split_window": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "direction": {
+            "description": "below, above, left or right.",
+            "type": "string"
+          },
+          "pane_id": {
+            "description": "The pane to act on, such as %1. Every listing tool returns these.",
+            "type": "string"
+          },
+          "percent": {
+            "default": 50,
+            "description": "Share of the split occupied by the new pane. Defaults to 50.",
+            "type": "integer"
+          },
+          "start_directory": {
+            "description": "An absolute literal start directory.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pane_id"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "command": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "index": {
+            "type": "integer"
+          },
+          "path": {
+            "type": "string"
+          },
+          "session_id": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "window_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "index",
+          "window_id",
+          "session_id",
+          "active",
+          "command",
+          "path",
+          "title",
+          "size"
+        ],
+        "type": "object"
+      }
+    },
+    "get_tmux_variables": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "names": {
+            "description": "One to thirty-two variable names matching [A-Za-z][A-Za-z0-9_]*. One value may be sent on its own, without a list.",
+            "items": {
+              "maxLength": 128,
+              "type": "string"
+            },
+            "maxItems": 32,
+            "type": [
+              "array",
+              "string"
+            ]
+          },
+          "pane": {
+            "description": "An optional pane context.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "names"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "values": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "values"
+        ],
+        "type": "object"
+      }
+    },
+    "run_shell_command": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "command": {
+            "description": "The shell command, run in the pane's interactive shell.",
+            "type": "string"
+          },
+          "max_lines": {
+            "default": 200,
+            "description": "Maximum output lines, keeping the newest. Defaults to 200.",
+            "type": "integer"
+          },
+          "pane_id": {
+            "description": "The pane to act on, such as %1. Every listing tool returns these.",
+            "type": "string"
+          },
+          "suppress_history": {
+            "default": true,
+            "description": "Best-effort persistent history suppression. Defaults to true.",
+            "type": "boolean"
+          },
+          "timeout": {
+            "default": 30,
+            "description": "Seconds to wait before giving up. Defaults to 30.0.",
+            "type": "number"
+          }
+        },
+        "required": [
+          "pane_id",
+          "command"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "effective_timeout": {
+            "type": "number"
+          },
+          "exit_status": {
+            "type": "integer"
+          },
+          "framed": {
+            "type": "boolean"
+          },
+          "lines_dropped": {
+            "type": "integer"
+          },
+          "note": {
+            "type": "string"
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "output": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "pane_id": {
+            "type": "string"
+          },
+          "seconds": {
+            "type": "number"
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "pane_id",
+          "outcome",
+          "output",
+          "truncated",
+          "lines_dropped",
+          "framed",
+          "seconds",
+          "effective_timeout"
+        ],
+        "type": "object"
+      }
+    },
+    "kill_session": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "confirm_self": {
+            "default": false,
+            "description": "Permit ending the pane this MCP process runs in. Defaults to false.",
+            "type": "boolean"
+          },
+          "session_id": {
+            "description": "The session ID, such as $1.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "type": "object"
+      }
+    }
+  },
   "prompt": "Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.",
   "steps": [
     {

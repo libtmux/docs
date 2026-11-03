@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { readdirSync, readFileSync } from 'node:fs'
 import { hostname, userInfo } from 'node:os'
-import { idsIn, leaks, sanitize, verifyRecording } from '../../scripts/lib/mcp-transcript-checks.mjs'
+import { idsIn, leaks, sanitize, verifyRecording, withoutContracts } from '../../scripts/lib/mcp-transcript-checks.mjs'
 
 type Step = { tool: string; arguments: unknown; isError: boolean; content: unknown[]; structuredContent?: unknown }
 const OPTIONS = { port: 'x', runTool: 'run_shell_command', expected: ['2 passed'] }
@@ -96,6 +96,35 @@ describe('keeping the host out of a recording', () => {
     for (const text of ['id and sidebar and d2 and a-d and -d flag', '/home/d/x', 'pytest.d', '"idle"']) expect(leaks(text, [], ['d']), text).toEqual([])
   })
 
+  it('finds a name beside a backslash, as in a Windows path, a network share or an environment line, and rewrites it', () => {
+    const cases: [string, string][] = [
+      [String.raw`C:\Users\d\AppData`, 'd'],
+      [String.raw`\\wsl-box\share\file`, 'wsl-box'],
+      [String.raw`USERPROFILE=C:\Users\tony`, 'tony'],
+    ]
+    for (const [text, name] of cases) {
+      expect(leaks(text, [], [name]), text).toEqual([name])
+      expect(leaks(JSON.stringify({ text }), [], [name]), `${text} as JSON`).toEqual([name])
+      expect(sanitize(text, { names: [name] }), text).not.toContain(name)
+    }
+  })
+
+  it('leaves the contracts out of the check, whose patterns hold a backslash before a letter', () => {
+    const pattern = String.raw`^%\d+$`
+    const recorded = {
+      repo: 'o/r', revision: 'a'.repeat(40),
+      contracts: { kill_pane: { inputSchema: { type: 'object', properties: { pane: { type: 'string', pattern } } } } },
+      steps: [{ tool: 'kill_pane', arguments: { pane: '%0' }, isError: false, content: [] }],
+    }
+    expect(leaks(JSON.stringify(recorded), [], ['d']), 'the pattern reads as the name when it is scanned').toEqual(['d'])
+    expect(leaks(JSON.stringify(withoutContracts(recorded)), [], ['d'])).toEqual([])
+    expect(withoutContracts(recorded)).toEqual({ repo: 'o/r', revision: recorded.revision, steps: recorded.steps })
+    const ranBy = { ...recorded, steps: [{ ...recorded.steps[0]!, content: [{ type: 'text', text: 'run by d' }] }] }
+    expect(leaks(JSON.stringify(withoutContracts(ranBy)), [], ['d']), 'a name in what the session recorded is still found').toEqual(['d'])
+    const inSteps = { ...recorded, steps: [{ ...recorded.steps[0]!, content: [{ type: 'text', text: String.raw`C:\Users\d\x` }] }] }
+    expect(leaks(JSON.stringify(withoutContracts(inSteps)), [], ['d']), 'and so is one beside a backslash').toEqual(['d'])
+  })
+
   it('rewrites a name and a path wherever they are, inside embedded JSON too, and leaves other text alone', () => {
     const recorded = { title: 'd', text: '{"pane_title":"d","path":"/tmp/t239-x/project","id":"%0"}', lines: ['d@d:/tmp/t239-x/project$ ls', 'id -d'] }
     const clean = sanitize(recorded, marks)
@@ -111,9 +140,9 @@ describe('keeping the host out of a recording', () => {
     // d is the name of the machine the recordings were made on; the others are whoever runs this.
     const names = ['d', hostname(), userInfo().username].filter((name) => !['host', 'user'].includes(name))
     for (const name of files) {
-      const text = readFileSync(new URL(name, dir), 'utf8')
-      expect(leaks(text, ['/home/d', '/tmp/t239', '/var/folders'], names), name).toEqual([])
-      expect(sanitize(JSON.parse(text), { names }), `${name} is a fixed point of the rewrite`).toEqual(JSON.parse(text))
+      const recorded = withoutContracts(JSON.parse(readFileSync(new URL(name, dir), 'utf8')))
+      expect(leaks(JSON.stringify(recorded, null, 2), ['/home/d', '/tmp/t239', '/var/folders'], names), name).toEqual([])
+      expect(sanitize(recorded, { names }), `${name} is a fixed point of the rewrite`).toEqual(recorded)
     }
   })
 })

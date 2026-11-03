@@ -21,6 +21,445 @@
     "name": "rmcp",
     "version": "3.1.2"
   },
+  "contracts": {
+    "create_session": {
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "description": "The name for the new session. It must not already exist.",
+            "type": "string"
+          },
+          "start_directory": {
+            "description": "The first window's working directory. Omit for the directory this MCP\nserver started in.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "attached": {
+            "description": "Whether any client is attached.",
+            "type": "boolean"
+          },
+          "id": {
+            "description": "The `$`-prefixed tmux identity.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The session name, absent when tmux reported none.",
+            "type": "string"
+          },
+          "windows": {
+            "description": "How many windows the session holds.",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "windows",
+          "attached"
+        ],
+        "type": "object"
+      }
+    },
+    "list_panes": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "PaneView": {
+            "description": "One pane, as the protocol sees it.",
+            "properties": {
+              "active": {
+                "description": "Whether this is the window's active pane.",
+                "type": "boolean"
+              },
+              "caller": {
+                "$ref": "#/$defs/Relation",
+                "description": "Whether this is the pane the MCP server itself runs in.\n\n`self` only on a confirmed match of both socket and pane id; `other`\nfor every pane that is not, including one this crate cannot prove\neither way; `unknown` when the server is not running inside tmux, so\nthe question has no answer."
+              },
+              "command": {
+                "description": "The command currently running.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "id": {
+                "description": "The `%`-prefixed tmux identity.",
+                "type": "string"
+              },
+              "path": {
+                "description": "The pane's working directory.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "window_id": {
+                "description": "The window that contains the pane.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "window_id",
+              "active",
+              "caller"
+            ],
+            "type": "object"
+          },
+          "Relation": {
+            "description": "How a pane relates to the process answering the request.\n\nThree values rather than a boolean, because \"not the caller's pane\" and\n\"there is no caller\" are different answers and an agent acts differently on\neach.",
+            "oneOf": [
+              {
+                "const": "unknown",
+                "description": "This process is not running inside tmux, so no pane is its own.",
+                "type": "string"
+              },
+              {
+                "const": "self",
+                "description": "Confirmed: the same tmux server, and the same pane.",
+                "type": "string"
+              },
+              {
+                "const": "other",
+                "description": "Some other pane, or a pane this crate cannot prove is the caller's.",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "panes": {
+            "description": "The panes, in tmux's own order.",
+            "items": {
+              "$ref": "#/$defs/PaneView"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "panes"
+        ],
+        "type": "object"
+      }
+    },
+    "split_window": {
+      "inputSchema": {
+        "$defs": {
+          "SplitDirectionSchema": {
+            "enum": [
+              "above",
+              "below",
+              "left",
+              "right"
+            ],
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "direction": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/SplitDirectionSchema"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where the new pane goes relative to `pane`. Defaults to `below`."
+          },
+          "pane": {
+            "description": "The `%`-prefixed pane to split.",
+            "type": "string"
+          },
+          "percent": {
+            "description": "The new pane's share of the split, 1 to 100. Defaults to half.",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "start_directory": {
+            "description": "The new pane's working directory. Omit for the directory this MCP\nserver started in, not `pane`'s current directory.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "pane"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "Relation": {
+            "description": "How a pane relates to the process answering the request.\n\nThree values rather than a boolean, because \"not the caller's pane\" and\n\"there is no caller\" are different answers and an agent acts differently on\neach.",
+            "oneOf": [
+              {
+                "const": "unknown",
+                "description": "This process is not running inside tmux, so no pane is its own.",
+                "type": "string"
+              },
+              {
+                "const": "self",
+                "description": "Confirmed: the same tmux server, and the same pane.",
+                "type": "string"
+              },
+              {
+                "const": "other",
+                "description": "Some other pane, or a pane this crate cannot prove is the caller's.",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "active": {
+            "description": "Whether this is the window's active pane.",
+            "type": "boolean"
+          },
+          "caller": {
+            "$ref": "#/$defs/Relation",
+            "description": "Whether this is the pane the MCP server itself runs in.\n\n`self` only on a confirmed match of both socket and pane id; `other`\nfor every pane that is not, including one this crate cannot prove\neither way; `unknown` when the server is not running inside tmux, so\nthe question has no answer."
+          },
+          "command": {
+            "description": "The command currently running.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "description": "The `%`-prefixed tmux identity.",
+            "type": "string"
+          },
+          "path": {
+            "description": "The pane's working directory.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "window_id": {
+            "description": "The window that contains the pane.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "window_id",
+          "active",
+          "caller"
+        ],
+        "type": "object"
+      }
+    },
+    "get_tmux_variables": {
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "names": {
+            "description": "tmux format variable names, such as `pane_current_path`.",
+            "items": {
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+              "type": "string"
+            },
+            "maxItems": 32,
+            "minItems": 1,
+            "type": "array"
+          },
+          "pane": {
+            "description": "The `%`-prefixed pane to read them against. Omit to let tmux pick\nits current pane.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "names"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "values": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "values"
+        ],
+        "type": "object"
+      }
+    },
+    "run_shell_command": {
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "command": {
+            "description": "The command for the pane's trusted POSIX-compatible shell.\n\nShell reserved words and special builtins must retain their standard\nmeanings. The command runs inside a subshell, so several lines are fine\nand a bare `exit` does not end the pane's own shell. Invalid syntax is\ncontained and completes with the shell's nonzero status. Valid inherited\nBash and zsh `ERR` and `DEBUG` traps remain visible to the command while\nthe pane's parent-shell traps and options remain unchanged.",
+            "type": "string"
+          },
+          "pane": {
+            "description": "The `%`-prefixed pane to run in.",
+            "type": "string"
+          },
+          "seconds": {
+            "description": "How long to allow, in seconds. Defaults to 30, capped at 600.",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "suppress_history": {
+            "default": false,
+            "description": "Whether to keep the command out of the shell's history.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "pane",
+          "command"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "RunOutcome": {
+            "description": "How a run finished.\n\nSplit from the wait outcomes rather than shared with them: a run cannot\nmatch a pattern and a wait cannot report a missing shell, and a vocabulary\ncarrying both would have an agent checking for answers that never come.",
+            "oneOf": [
+              {
+                "const": "completed",
+                "description": "The command ran to completion and reported its status.",
+                "type": "string"
+              },
+              {
+                "const": "deadline",
+                "description": "The time the caller allowed ran out.\n\nThis ends the waiting, not the command. The pane stays reserved for it\nuntil it ends, so other pane input is refused; `send_keys` with keys\n`[\"C-c\"]` alone interrupts it.",
+                "type": "string"
+              },
+              {
+                "const": "pane_closed",
+                "description": "The pane stopped writing for good.",
+                "type": "string"
+              },
+              {
+                "const": "cancelled",
+                "description": "The client withdrew the request while the run was still going.",
+                "type": "string"
+              },
+              {
+                "const": "no_shell",
+                "description": "The pane never acknowledged the command.\n\nThe keys were sent but the opening sentinel never came back. That is\nwhat a pane looks like when it is not at a shell prompt: sitting in an\neditor or a REPL, or still running something an earlier call left\nbehind. The text was typed into whatever is there.\n\nThe evidence is absence, so a deadline too short for the pane's shell\nto have echoed anything yet looks the same. Read it as \"nothing came\nback in the time allowed\" and check the pane with `snapshot_pane`\nbefore concluding it is stuck.",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "bytes": {
+            "description": "How many bytes that was, before any truncation.",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "exit_status": {
+            "description": "The command's exit status, when it completed.\n\nAbsent when the run did not complete, and when the command was killed\nby a signal rather than exiting.",
+            "format": "int32",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "outcome": {
+            "$ref": "#/$defs/RunOutcome",
+            "description": "How the run finished."
+          },
+          "output": {
+            "description": "Everything the command wrote, stdout and stderr interleaved in the\norder the program wrote them.\n\nThis is the raw output stream with escape sequences removed, not the\nrendered screen: a line redrawn in place, such as a progress bar,\nrepeats. `capture_pane` shows the screen.",
+            "type": "string"
+          },
+          "pane": {
+            "description": "The pane the command ran in.",
+            "type": "string"
+          },
+          "truncated": {
+            "description": "Whether the output was truncated from the front.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "pane",
+          "outcome",
+          "output",
+          "bytes",
+          "truncated"
+        ],
+        "type": "object"
+      }
+    },
+    "kill_session": {
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "session": {
+            "description": "The session, by `$`-prefixed id as `list_sessions` reports it, or by\nname.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "id": {
+            "description": "The id of what was destroyed.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      }
+    }
+  },
   "prompt": "Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.",
   "steps": [
     {

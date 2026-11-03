@@ -88,6 +88,43 @@ describe('the capability showcase data', () => {
     expect(programProblems('rust', `use a;\nfn main() {}\n${'x\n'.repeat(MAX_PROGRAM_LINES)}`)).toEqual([`runs past ${MAX_PROGRAM_LINES} lines`])
   })
 
+  // The fixture is examples/api/capture.rb as libtmux/libtmux-ruby master held it
+  // on 2026-11-02 (commit 20744401ee9f78a131592481e251c6a09ac8f5fa, git blob
+  // f070fac137b166227b34a79e5b4b0de77cf5ee95, last changed by 2156612): the
+  // require sits inside the begin block, after the docs:begin marker, so README
+  // excerpts carry it. The revision-bound cache still holds the older shape with
+  // the require at column 0, so only this fixture reaches the indented form.
+  describe('a Ruby program that wraps its require in a begin block', () => {
+    const wrapped = readFileSync(new URL('./fixtures/ruby-capture-begin-wrapped.rb', import.meta.url), 'utf8')
+
+    it('keeps the shape the fixture exists to cover', () => {
+      expect(wrapped).toMatch(/^begin\n {2}# docs:begin main\n {2}require "libtmux"$/m)
+      expect(wrapped).not.toMatch(/^require /m)
+    })
+
+    it('counts the indented require as the program import', () => {
+      expect(programProblems('ruby', wrapped)).toEqual([])
+    })
+
+    it('still reports a program with no require', () => {
+      const without = wrapped.replace(/^ {2}require "libtmux"\n\n/m, '')
+      expect(without).not.toBe(wrapped)
+      expect(programProblems('ruby', without)).toEqual(['has no import lines'])
+      expect(programProblems('ruby', 'begin\n  # require "libtmux"\n  Foo.run\nend\n')).toEqual(['has no import lines'])
+    })
+
+    it('keeps refusing a helper of the repository, indented or not', () => {
+      const helper = wrapped.replace('require "libtmux"', 'require_relative "support"')
+      expect(programProblems('ruby', helper)).toEqual(['has no import lines', 'uses a helper of the repository'])
+      expect(programProblems('ruby', `${wrapped}\nExample.run("x") { }\n`)).toEqual(['uses a helper of the repository'])
+    })
+
+    it('still finds the entry point in the wrapped program', () => {
+      expect(programProblems('ruby', 'begin\n  require "libtmux"\nend\n')).toEqual([])
+      expect(programProblems('ruby', '  require "libtmux"\n')).toEqual(['has no entry point'])
+    })
+  })
+
   // A checkout that is not present cannot be asked; the run says it skipped.
   for (const { owner, id, entry } of entries) {
     const checkout = checkoutFor(owner, undefined) || ''

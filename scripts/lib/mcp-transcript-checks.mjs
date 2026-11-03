@@ -80,3 +80,6 @@ export function sanitize(value, { paths = [], names = [], alias = 'host' }) {
   if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, sanitize(item, { paths, names, alias })]))
   return value
 }
+
+/** A transcript without `contracts`, which the host check skips: those schemas come from the committed `tools/list` snapshot and never carry session data. */
+export const withoutContracts = (transcript) => Object.fromEntries(Object.entries(transcript).filter(([key]) => key !== 'contracts'))
