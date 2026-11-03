@@ -13464,7 +13464,7 @@
         "libtmux::Server"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_construction.rs",
       "files": [
         {
@@ -13481,7 +13481,7 @@
         3
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -13495,7 +13495,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -13507,7 +13507,7 @@
         "libtmux::Server::builder"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_construction.rs",
       "files": [
         {
@@ -13524,7 +13524,7 @@
         3
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -13538,7 +13538,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -13550,7 +13550,7 @@
         "libtmux::ServerBuilder::socket_path"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_construction.rs",
       "files": [
         {
@@ -13567,7 +13567,7 @@
         3
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -13581,7 +13581,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -13593,7 +13593,7 @@
         "libtmux::ServerBuilder::config_file"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_construction.rs",
       "files": [
         {
@@ -13610,7 +13610,7 @@
         3
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -13624,7 +13624,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -13636,7 +13636,7 @@
         "libtmux::ServerBuilder::default_timeout"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_construction.rs",
       "files": [
         {
@@ -13653,7 +13653,7 @@
         3
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -13667,7 +13667,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -13679,7 +13679,7 @@
         "libtmux::ServerBuilder::build"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_construction.rs",
       "files": [
         {
@@ -13696,7 +13696,7 @@
         3
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -13710,7 +13710,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -13722,7 +13722,7 @@
         "libtmux::Server::sessions"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -13739,7 +13739,7 @@
         3
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -13753,7 +13753,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -13765,7 +13765,7 @@
         "libtmux::Server::windows"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -13782,7 +13782,7 @@
         2
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -13796,7 +13796,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -13808,7 +13808,7 @@
         "libtmux::Server::panes"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -13825,7 +13825,7 @@
         2
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -13839,7 +13839,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -13851,7 +13851,7 @@
         "libtmux::Server::hierarchy"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -13868,7 +13868,7 @@
         2
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -13882,7 +13882,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -13894,7 +13894,7 @@
         "libtmux::Session::windows"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -13911,7 +13911,7 @@
         2
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -13925,7 +13925,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -13937,7 +13937,7 @@
         "libtmux::Session::panes"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -13954,7 +13954,7 @@
         2
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -13968,7 +13968,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -13980,7 +13980,7 @@
         "libtmux::Window::panes"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -13997,7 +13997,7 @@
         2
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14011,7 +14011,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -14023,7 +14023,7 @@
         "libtmux::Server::new_session"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -14040,7 +14040,7 @@
         2
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14054,7 +14054,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -14066,7 +14066,7 @@
         "libtmux::NewSessionOptions"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -14083,7 +14083,7 @@
         3
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14097,7 +14097,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -14109,7 +14109,7 @@
         "libtmux::Session::new_window"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -14126,7 +14126,7 @@
         2
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14140,7 +14140,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -14152,7 +14152,7 @@
         "libtmux::NewWindowOptions"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -14169,7 +14169,7 @@
         3
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14183,7 +14183,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -14195,7 +14195,7 @@
         "libtmux::Window::split"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -14212,7 +14212,7 @@
         2
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14226,7 +14226,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -14238,7 +14238,7 @@
         "libtmux::Pane::split"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -14255,7 +14255,7 @@
         3
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14269,7 +14269,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -14281,7 +14281,7 @@
         "libtmux::SplitOptions"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -14298,7 +14298,7 @@
         3
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14312,7 +14312,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -14324,7 +14324,7 @@
         "libtmux::query::Filterable"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_query.rs",
       "files": [
         {
@@ -14341,7 +14341,7 @@
         4
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14355,7 +14355,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -14367,7 +14367,7 @@
         "libtmux::query::QueryIteratorExt::matching"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_query.rs",
       "files": [
         {
@@ -14384,7 +14384,7 @@
         3
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14398,7 +14398,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -14410,7 +14410,7 @@
         "libtmux::query::QueryIteratorExt::exactly_one"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_cardinality.rs",
       "files": [
         {
@@ -14427,7 +14427,7 @@
         3
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14441,7 +14441,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -14453,7 +14453,7 @@
         "libtmux::query::QueryIteratorExt::one_or_none"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_cardinality.rs",
       "files": [
         {
@@ -14470,7 +14470,7 @@
         3
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14484,7 +14484,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -14496,7 +14496,7 @@
         "libtmux::query::ExactlyOneError"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_cardinality.rs",
       "files": [
         {
@@ -14513,7 +14513,7 @@
         3
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14527,7 +14527,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -14539,7 +14539,7 @@
         "libtmux::query::MultipleItemsError"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_cardinality.rs",
       "files": [
         {
@@ -14556,7 +14556,7 @@
         3
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14570,7 +14570,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -14582,7 +14582,7 @@
         "libtmux::Pane::send_keys"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_input.rs",
       "files": [
         {
@@ -14599,7 +14599,7 @@
         2
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14613,7 +14613,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -14625,7 +14625,7 @@
         "libtmux::Pane::send_key_names"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_input.rs",
       "files": [
         {
@@ -14642,7 +14642,7 @@
         2
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14656,7 +14656,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -14668,7 +14668,7 @@
         "libtmux::Pane::send_line"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_capture.rs",
       "files": [
         {
@@ -14685,7 +14685,7 @@
         2
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14699,7 +14699,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -14711,7 +14711,7 @@
         "libtmux::Pane::capture"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_capture.rs",
       "files": [
         {
@@ -14728,7 +14728,7 @@
         2
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14742,7 +14742,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     },
     {
       "port": "rs",
@@ -14754,7 +14754,7 @@
         "libtmux::Pane::wait_for_text"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "sourceFile": "crates/libtmux/examples/api_capture.rs",
       "files": [
         {
@@ -14771,7 +14771,7 @@
         3
       ],
       "shellRecipe": [
-        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.0-alpha.15 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
+        "cargo init --name libtmux-api-example &&\n  cargo add libtmux@0.1.2 tempfile@3.20 &&\n  cargo add tokio@1.40 --features macros,rt,time",
         "cargo run --quiet"
       ],
       "expectedOutputs": [
@@ -14785,7 +14785,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.0-alpha.15 resolved to 0.1.0-alpha.17 from crates.io on 2026-10-25. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
+      "verificationScope": "cargo init and cargo add in a new directory holding the displayed src/main.rs; libtmux@0.1.2 resolved to 0.1.2 from crates.io on 2026-11-03. All 7 programs exited 0 with their expected output on tmux 3.3a and 3.7c."
     }
   ]
 }
