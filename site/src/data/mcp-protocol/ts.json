@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-ts",
-  "revision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+  "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
   "selection": {
     "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
   },
@@ -29,7 +29,7 @@
     "serverInfo": {
       "name": "libtmux",
       "title": "tmux",
-      "version": "0.1.0-alpha.10"
+      "version": "0.1.2"
     },
     "tools": [
       {
@@ -2415,7 +2415,7 @@
                       "type": "string"
                     },
                     "layout": {
-                      "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                      "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                       "type": "string"
                     },
                     "metadataComplete": {
@@ -2565,7 +2565,7 @@
                   "type": "string"
                 },
                 "layout": {
-                  "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                  "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                   "type": "string"
                 },
                 "metadataComplete": {
@@ -3379,7 +3379,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Inspect tmux metadata; accepts no client-supplied executable input. The tmux server this process drives: its socket, version, daemon pid, and totals. Check the version before using a feature that needs a recent tmux.",
+            "description": "Inspect tmux metadata; accepts no client-supplied executable input. The tmux server this process drives: its socket, version, daemon pid, and totals, and the oldest tmux release this server drives. Check the version before using a feature that needs a recent tmux.",
             "inputLiteralization": {},
             "inputSchema": {
               "properties": {},
@@ -3395,6 +3395,9 @@
             "outputSchema": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
+                "minimumVersion": {
+                  "type": "string"
+                },
                 "panes": {
                   "maximum": 9007199254740991,
                   "minimum": -9007199254740991,
@@ -3427,6 +3430,7 @@
                 }
               },
               "required": [
+                "minimumVersion",
                 "panes",
                 "pid",
                 "sessions",
@@ -3450,7 +3454,7 @@
           "openWorldHint": true,
           "readOnlyHint": false
         },
-        "description": "Inspect tmux metadata; accepts no client-supplied executable input. The tmux server this process drives: its socket, version, daemon pid, and totals. Check the version before using a feature that needs a recent tmux.",
+        "description": "Inspect tmux metadata; accepts no client-supplied executable input. The tmux server this process drives: its socket, version, daemon pid, and totals, and the oldest tmux release this server drives. Check the version before using a feature that needs a recent tmux.",
         "execution": {
           "taskSupport": "forbidden"
         },
@@ -3464,6 +3468,9 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "additionalProperties": false,
           "properties": {
+            "minimumVersion": {
+              "type": "string"
+            },
             "panes": {
               "maximum": 9007199254740991,
               "minimum": -9007199254740991,
@@ -3496,6 +3503,7 @@
             }
           },
           "required": [
+            "minimumVersion",
             "panes",
             "pid",
             "sessions",
@@ -3867,7 +3875,7 @@
                       "type": "string"
                     },
                     "layout": {
-                      "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                      "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                       "type": "string"
                     },
                     "metadataComplete": {
@@ -4001,7 +4009,7 @@
                   "type": "string"
                 },
                 "layout": {
-                  "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                  "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                   "type": "string"
                 },
                 "metadataComplete": {
@@ -5025,7 +5033,7 @@
                         "type": "string"
                       },
                       "layout": {
-                        "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                        "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                         "type": "string"
                       },
                       "metadataComplete": {
@@ -5168,7 +5176,7 @@
                     "type": "string"
                   },
                   "layout": {
-                    "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                    "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                     "type": "string"
                   },
                   "metadataComplete": {
@@ -5327,7 +5335,7 @@
                       "type": "string"
                     },
                     "layout": {
-                      "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                      "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                       "type": "string"
                     },
                     "metadataComplete": {
@@ -5482,7 +5490,7 @@
                   "type": "string"
                 },
                 "layout": {
-                  "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                  "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                   "type": "string"
                 },
                 "metadataComplete": {
@@ -5708,6 +5716,278 @@
           "type": "object"
         },
         "title": "Paste text"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "annotations": {
+              "destructiveHint": true,
+              "idempotentHint": false,
+              "openWorldHint": true,
+              "readOnlyHint": false
+            },
+            "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Read what a started program printed after cursor, waiting up to timeoutMs for new output or its end, and report whether it has ended and how. Omit cursor on the first read and pass back the one returned; a read returns up to about 24,000 characters of text, ending on a line break, or maxLines lines when fewer, so call again with the cursor for the rest; a read that times out returns no text, and the next read with the same cursor carries on. The text is the byte stream with escape sequences removed, in write order, and a carriage return on its own starts a new line, so each state of a progress line is a line; capture_pane on its paneId shows the screen while it runs, and after the end for one beside fromPaneId, whose pane stays until stop_program or its lifetime. Output stays readable after the end until stop_program, or until enough programs have ended after it.",
+            "inputLiteralization": {},
+            "inputSchema": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "properties": {
+                "cursor": {
+                  "description": "The cursor the previous read_program returned. Omit to read from the start.",
+                  "maximum": 9007199254740991,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "maxLines": {
+                  "description": "Return at most this many lines from cursor. A page also stops at about 24,000 characters, so fewer lines come back when they are long.",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991,
+                  "type": "integer"
+                },
+                "programId": {
+                  "description": "The id start_program returned.",
+                  "maxLength": 64,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "timeoutMs": {
+                  "description": "How long to wait for something new: 0 returns at once, and omitted is 30 seconds. Clamped by the server ceiling.",
+                  "maximum": 9007199254740991,
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "programId"
+              ],
+              "type": "object"
+            },
+            "mayExposeSecrets": true,
+            "mayReturnUntrustedContent": true,
+            "name": "read_program",
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata",
+              "terminal-content"
+            ],
+            "outputSchema": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "properties": {
+                "cursor": {
+                  "description": "Pass to the next read_program.",
+                  "maximum": 9007199254740991,
+                  "minimum": -9007199254740991,
+                  "type": "integer"
+                },
+                "effectiveTimeoutMs": {
+                  "description": "The wait allowed.",
+                  "maximum": 9007199254740991,
+                  "minimum": -9007199254740991,
+                  "type": "integer"
+                },
+                "ended": {
+                  "description": "Whether it has ended and every byte it wrote has been returned. Until it is true, call again with cursor.",
+                  "type": "boolean"
+                },
+                "exitStatus": {
+                  "anyOf": [
+                    {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The exit status once it completed, or 127 or 126 when not_started; null for a program a signal ended (see signal) or one still running."
+                },
+                "lostEnd": {
+                  "description": "True when tmux closed the pane before reading the end of the output.",
+                  "type": "boolean"
+                },
+                "outcome": {
+                  "description": "How the program stands, set from the first read after it ends, while ended stays false until its output is all read. running: it still runs. completed: it ended on its own, as exitStatus or signal says. not_started: it never ran, because argv[0] was not found or is not executable, or startDirectory could not be entered; text says which. expired: its lifetime ended it; start it again with a longer lifetimeMs. stopped: stop_program ended it while this read waited. gone: its pane was removed from outside, with no status.",
+                  "enum": [
+                    "running",
+                    "completed",
+                    "not_started",
+                    "expired",
+                    "stopped",
+                    "gone"
+                  ],
+                  "type": "string"
+                },
+                "outputComplete": {
+                  "description": "True once ended is true and nothing is missing. False while it runs, when outputCut or lostEnd is true, or when a stop or the lifetime ended the program before its output was read to the end.",
+                  "type": "boolean"
+                },
+                "outputCut": {
+                  "description": "True once the copy stopped at its limit; later output is not kept.",
+                  "type": "boolean"
+                },
+                "signal": {
+                  "description": "The signal that ended the program, such as \"SIGTERM\"; otherwise null. A program that exits 130 on its own reads as SIGINT, as that status means.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "text": {
+                  "description": "What it printed after cursor.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cursor",
+                "effectiveTimeoutMs",
+                "ended",
+                "exitStatus",
+                "lostEnd",
+                "outcome",
+                "outputComplete",
+                "outputCut",
+                "signal",
+                "text"
+              ],
+              "type": "object"
+            },
+            "processReach": "none",
+            "title": "Read a started program",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false
+        },
+        "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Read what a started program printed after cursor, waiting up to timeoutMs for new output or its end, and report whether it has ended and how. Omit cursor on the first read and pass back the one returned; a read returns up to about 24,000 characters of text, ending on a line break, or maxLines lines when fewer, so call again with the cursor for the rest; a read that times out returns no text, and the next read with the same cursor carries on. The text is the byte stream with escape sequences removed, in write order, and a carriage return on its own starts a new line, so each state of a progress line is a line; capture_pane on its paneId shows the screen while it runs, and after the end for one beside fromPaneId, whose pane stays until stop_program or its lifetime. Output stays readable after the end until stop_program, or until enough programs have ended after it.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "cursor": {
+              "description": "The cursor the previous read_program returned. Omit to read from the start.",
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "maxLines": {
+              "description": "Return at most this many lines from cursor. A page also stops at about 24,000 characters, so fewer lines come back when they are long.",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            },
+            "programId": {
+              "description": "The id start_program returned.",
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            "timeoutMs": {
+              "description": "How long to wait for something new: 0 returns at once, and omitted is 30 seconds. Clamped by the server ceiling.",
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "programId"
+          ],
+          "type": "object"
+        },
+        "name": "read_program",
+        "outputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "cursor": {
+              "description": "Pass to the next read_program.",
+              "maximum": 9007199254740991,
+              "minimum": -9007199254740991,
+              "type": "integer"
+            },
+            "effectiveTimeoutMs": {
+              "description": "The wait allowed.",
+              "maximum": 9007199254740991,
+              "minimum": -9007199254740991,
+              "type": "integer"
+            },
+            "ended": {
+              "description": "Whether it has ended and every byte it wrote has been returned. Until it is true, call again with cursor.",
+              "type": "boolean"
+            },
+            "exitStatus": {
+              "anyOf": [
+                {
+                  "maximum": 9007199254740991,
+                  "minimum": -9007199254740991,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The exit status once it completed, or 127 or 126 when not_started; null for a program a signal ended (see signal) or one still running."
+            },
+            "lostEnd": {
+              "description": "True when tmux closed the pane before reading the end of the output.",
+              "type": "boolean"
+            },
+            "outcome": {
+              "description": "How the program stands, set from the first read after it ends, while ended stays false until its output is all read. running: it still runs. completed: it ended on its own, as exitStatus or signal says. not_started: it never ran, because argv[0] was not found or is not executable, or startDirectory could not be entered; text says which. expired: its lifetime ended it; start it again with a longer lifetimeMs. stopped: stop_program ended it while this read waited. gone: its pane was removed from outside, with no status.",
+              "enum": [
+                "running",
+                "completed",
+                "not_started",
+                "expired",
+                "stopped",
+                "gone"
+              ],
+              "type": "string"
+            },
+            "outputComplete": {
+              "description": "True once ended is true and nothing is missing. False while it runs, when outputCut or lostEnd is true, or when a stop or the lifetime ended the program before its output was read to the end.",
+              "type": "boolean"
+            },
+            "outputCut": {
+              "description": "True once the copy stopped at its limit; later output is not kept.",
+              "type": "boolean"
+            },
+            "signal": {
+              "description": "The signal that ended the program, such as \"SIGTERM\"; otherwise null. A program that exits 130 on its own reads as SIGINT, as that status means.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "text": {
+              "description": "What it printed after cursor.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "cursor",
+            "effectiveTimeoutMs",
+            "ended",
+            "exitStatus",
+            "lostEnd",
+            "outcome",
+            "outputComplete",
+            "outputCut",
+            "signal",
+            "text"
+          ],
+          "type": "object"
+        },
+        "title": "Read a started program"
       },
       {
         "_meta": {
@@ -5962,7 +6242,7 @@
                       "type": "string"
                     },
                     "layout": {
-                      "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                      "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                       "type": "string"
                     },
                     "metadataComplete": {
@@ -6103,7 +6383,7 @@
                   "type": "string"
                 },
                 "layout": {
-                  "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                  "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                   "type": "string"
                 },
                 "metadataComplete": {
@@ -6660,7 +6940,7 @@
                       "type": "string"
                     },
                     "layout": {
-                      "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                      "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                       "type": "string"
                     },
                     "metadataComplete": {
@@ -6807,7 +7087,7 @@
                   "type": "string"
                 },
                 "layout": {
-                  "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                  "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                   "type": "string"
                 },
                 "metadataComplete": {
@@ -7283,7 +7563,416 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Run a shell command in a pane with your user's permissions. Run a shell command in a pane, wait for it to finish, and report its exit status and output. Prefer this over send_keys plus capture_pane: it frames the command so a pane's echo of what you typed can never be mistaken for what the command printed, and it knows when the command actually ended rather than guessing from the screen. The command runs in a subshell, so cd and export do not persist to a later call. A pane is effectively single-writer: this server reserves it until the command settles, but another process with the same tmux socket can still write into it.",
+            "description": "Run a program in a new pane of its own with your user's permissions. Run a program in a pane of its own and wait for it; returns its output and exit status. No shell parses argv and nothing is typed into its pane, so the output holds no command line or echo. Check outcome and outputComplete before trusting output. The pane is removed before this returns unless keep is set. A program still running at the timeout, capped by the server's wait ceiling, is ended: run longer ones with start_program. Commands come from this MCP server's PATH, and one not found or not executable fails the call before anything runs. stdin is input when given, else the terminal. PAGER and GIT_PAGER are cat. Use startDirectory in place of cd, [\"sh\", \"-c\", ...] for pipes, and run_shell_command for a command that needs an existing shell's state. Requires tmux 3.8 or newer.",
+            "inputLiteralization": {},
+            "inputSchema": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "properties": {
+                "argv": {
+                  "description": "The program and its arguments, as given: [\"git\", \"status\", \"--short\"]. Put variables first with env: [\"env\", \"CI=1\", \"make\", \"test\"].",
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 256,
+                  "minItems": 1,
+                  "type": "array"
+                },
+                "fromPaneId": {
+                  "description": "Run beside this pane, in its directory and session, with that session's tmux environment. Variables the pane's shell exported come only with inheritShell.",
+                  "pattern": "^%\\d+$",
+                  "type": "string"
+                },
+                "height": {
+                  "description": "Rows of the program's terminal. Defaults to tmux's default-size.",
+                  "exclusiveMinimum": 0,
+                  "maximum": 10000,
+                  "type": "integer"
+                },
+                "inheritShell": {
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "items": {
+                        "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+                        "type": "string"
+                      },
+                      "maxItems": 256,
+                      "minItems": 1,
+                      "type": "array"
+                    }
+                  ],
+                  "description": "With fromPaneId, first read the variables that pane's idle shell exported, by typing one env command into it, and run the program with them: true for all, or a list of names, such as [\"PATH\", \"VIRTUAL_ENV\"], for only those. The shell must be a POSIX one at its prompt, as run_shell_command requires. argv[0] is then found on the shell's PATH, and one missing exits 127."
+                },
+                "input": {
+                  "description": "Text the program reads as its stdin, from a private file, so no shell quotes it and the pane never shows it. Needs the tmux server on this machine.",
+                  "type": "string"
+                },
+                "keep": {
+                  "description": "Leave the pane, dead and showing the output, for a person to read and close. Set it only when a person asked to see the run.",
+                  "type": "boolean"
+                },
+                "maxLines": {
+                  "description": "Keep at most this many lines, from the end. Defaults to the server limit.",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991,
+                  "type": "integer"
+                },
+                "placement": {
+                  "description": "With fromPaneId: \"window\", the default, is a background window of its session; \"split\" splits that pane, so a person watching it sees the run. Focus stays put.",
+                  "enum": [
+                    "window",
+                    "split"
+                  ],
+                  "type": "string"
+                },
+                "separateStderr": {
+                  "description": "Return what the program writes to stderr apart, as stderr, so output holds stdout alone. Its stderr is then no terminal. Needs the tmux server on this machine, as input does.",
+                  "type": "boolean"
+                },
+                "startDirectory": {
+                  "description": "Directory the program starts in, taken literally. Defaults to the directory this MCP server was started in, or the fromPaneId pane's. One that cannot be entered fails the call, with the reason, before the program starts.",
+                  "type": "string"
+                },
+                "timeoutMs": {
+                  "description": "How long to let it run; 30 s by default and clamped by the server ceiling. The result says what was used.",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991,
+                  "type": "integer"
+                },
+                "width": {
+                  "description": "Columns of the program's terminal. A program that formats to its width — ls, ps, git log --graph — lays out to this at the source.",
+                  "exclusiveMinimum": 0,
+                  "maximum": 10000,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "argv"
+              ],
+              "type": "object"
+            },
+            "mayExposeSecrets": true,
+            "mayReturnUntrustedContent": true,
+            "name": "run_program",
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata",
+              "terminal-content"
+            ],
+            "outputSchema": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "properties": {
+                "droppedLines": {
+                  "description": "Lines of output withheld by maxLines.",
+                  "maximum": 9007199254740991,
+                  "minimum": -9007199254740991,
+                  "type": "integer"
+                },
+                "effectiveTimeoutMs": {
+                  "description": "The timeout enforced.",
+                  "maximum": 9007199254740991,
+                  "minimum": -9007199254740991,
+                  "type": "integer"
+                },
+                "exitStatus": {
+                  "anyOf": [
+                    {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The exit status; null when a signal ended the program (see signal) or the timeout ended it (outcome timed_out)."
+                },
+                "lostEnd": {
+                  "description": "True when the end may be missing: tmux closed the pane before reading it. Running it again repeats what it did; for one with effects, have it write its output to a file with [\"sh\", \"-c\", \"... > file\"] and read the file.",
+                  "type": "boolean"
+                },
+                "lostStart": {
+                  "description": "True when the start scrolled past the scrollback limit; pipe a long output into a file, or read it with start_program.",
+                  "type": "boolean"
+                },
+                "omittedBytes": {
+                  "description": "Output bytes omitted by the result ceiling.",
+                  "maximum": 9007199254740991,
+                  "minimum": -9007199254740991,
+                  "type": "integer"
+                },
+                "outcome": {
+                  "description": "completed: it ended on its own, or by the signal reported, whatever exitStatus says. timed_out: it was ended at the timeout, possibly part way through its work; running it again repeats what it did, so use start_program for one that needs longer.",
+                  "enum": [
+                    "completed",
+                    "timed_out"
+                  ],
+                  "type": "string"
+                },
+                "output": {
+                  "description": "The bounded tail of what the program printed, as its terminal shows it; stderr and stdout share it.",
+                  "type": "string"
+                },
+                "outputComplete": {
+                  "description": "False when outcome is timed_out, lostStart or lostEnd is true, or maxLines or the result limit cut the output or stderr.",
+                  "type": "boolean"
+                },
+                "returnedBytes": {
+                  "description": "UTF-8 output bytes returned.",
+                  "maximum": 9007199254740991,
+                  "minimum": -9007199254740991,
+                  "type": "integer"
+                },
+                "signal": {
+                  "description": "The signal that ended the program, such as \"SIGTERM\"; otherwise null. A program that exits 130 on its own reads as SIGINT, as that status means.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "stderr": {
+                  "description": "The bounded tail of what the program wrote to stderr, with separateStderr; otherwise null, and stderr is in output.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "droppedLines",
+                "effectiveTimeoutMs",
+                "exitStatus",
+                "omittedBytes",
+                "outcome",
+                "output",
+                "lostEnd",
+                "lostStart",
+                "outputComplete",
+                "returnedBytes",
+                "signal",
+                "stderr"
+              ],
+              "type": "object"
+            },
+            "processReach": "pane-program",
+            "title": "Run a program and wait",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "execute"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false
+        },
+        "description": "Run a program in a new pane of its own with your user's permissions. Run a program in a pane of its own and wait for it; returns its output and exit status. No shell parses argv and nothing is typed into its pane, so the output holds no command line or echo. Check outcome and outputComplete before trusting output. The pane is removed before this returns unless keep is set. A program still running at the timeout, capped by the server's wait ceiling, is ended: run longer ones with start_program. Commands come from this MCP server's PATH, and one not found or not executable fails the call before anything runs. stdin is input when given, else the terminal. PAGER and GIT_PAGER are cat. Use startDirectory in place of cd, [\"sh\", \"-c\", ...] for pipes, and run_shell_command for a command that needs an existing shell's state. Requires tmux 3.8 or newer.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "argv": {
+              "description": "The program and its arguments, as given: [\"git\", \"status\", \"--short\"]. Put variables first with env: [\"env\", \"CI=1\", \"make\", \"test\"].",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 256,
+              "minItems": 1,
+              "type": "array"
+            },
+            "fromPaneId": {
+              "description": "Run beside this pane, in its directory and session, with that session's tmux environment. Variables the pane's shell exported come only with inheritShell.",
+              "pattern": "^%\\d+$",
+              "type": "string"
+            },
+            "height": {
+              "description": "Rows of the program's terminal. Defaults to tmux's default-size.",
+              "exclusiveMinimum": 0,
+              "maximum": 10000,
+              "type": "integer"
+            },
+            "inheritShell": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "items": {
+                    "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+                    "type": "string"
+                  },
+                  "maxItems": 256,
+                  "minItems": 1,
+                  "type": "array"
+                }
+              ],
+              "description": "With fromPaneId, first read the variables that pane's idle shell exported, by typing one env command into it, and run the program with them: true for all, or a list of names, such as [\"PATH\", \"VIRTUAL_ENV\"], for only those. The shell must be a POSIX one at its prompt, as run_shell_command requires. argv[0] is then found on the shell's PATH, and one missing exits 127."
+            },
+            "input": {
+              "description": "Text the program reads as its stdin, from a private file, so no shell quotes it and the pane never shows it. Needs the tmux server on this machine.",
+              "type": "string"
+            },
+            "keep": {
+              "description": "Leave the pane, dead and showing the output, for a person to read and close. Set it only when a person asked to see the run.",
+              "type": "boolean"
+            },
+            "maxLines": {
+              "description": "Keep at most this many lines, from the end. Defaults to the server limit.",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            },
+            "placement": {
+              "description": "With fromPaneId: \"window\", the default, is a background window of its session; \"split\" splits that pane, so a person watching it sees the run. Focus stays put.",
+              "enum": [
+                "window",
+                "split"
+              ],
+              "type": "string"
+            },
+            "separateStderr": {
+              "description": "Return what the program writes to stderr apart, as stderr, so output holds stdout alone. Its stderr is then no terminal. Needs the tmux server on this machine, as input does.",
+              "type": "boolean"
+            },
+            "startDirectory": {
+              "description": "Directory the program starts in, taken literally. Defaults to the directory this MCP server was started in, or the fromPaneId pane's. One that cannot be entered fails the call, with the reason, before the program starts.",
+              "type": "string"
+            },
+            "timeoutMs": {
+              "description": "How long to let it run; 30 s by default and clamped by the server ceiling. The result says what was used.",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            },
+            "width": {
+              "description": "Columns of the program's terminal. A program that formats to its width — ls, ps, git log --graph — lays out to this at the source.",
+              "exclusiveMinimum": 0,
+              "maximum": 10000,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "argv"
+          ],
+          "type": "object"
+        },
+        "name": "run_program",
+        "outputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "droppedLines": {
+              "description": "Lines of output withheld by maxLines.",
+              "maximum": 9007199254740991,
+              "minimum": -9007199254740991,
+              "type": "integer"
+            },
+            "effectiveTimeoutMs": {
+              "description": "The timeout enforced.",
+              "maximum": 9007199254740991,
+              "minimum": -9007199254740991,
+              "type": "integer"
+            },
+            "exitStatus": {
+              "anyOf": [
+                {
+                  "maximum": 9007199254740991,
+                  "minimum": -9007199254740991,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The exit status; null when a signal ended the program (see signal) or the timeout ended it (outcome timed_out)."
+            },
+            "lostEnd": {
+              "description": "True when the end may be missing: tmux closed the pane before reading it. Running it again repeats what it did; for one with effects, have it write its output to a file with [\"sh\", \"-c\", \"... > file\"] and read the file.",
+              "type": "boolean"
+            },
+            "lostStart": {
+              "description": "True when the start scrolled past the scrollback limit; pipe a long output into a file, or read it with start_program.",
+              "type": "boolean"
+            },
+            "omittedBytes": {
+              "description": "Output bytes omitted by the result ceiling.",
+              "maximum": 9007199254740991,
+              "minimum": -9007199254740991,
+              "type": "integer"
+            },
+            "outcome": {
+              "description": "completed: it ended on its own, or by the signal reported, whatever exitStatus says. timed_out: it was ended at the timeout, possibly part way through its work; running it again repeats what it did, so use start_program for one that needs longer.",
+              "enum": [
+                "completed",
+                "timed_out"
+              ],
+              "type": "string"
+            },
+            "output": {
+              "description": "The bounded tail of what the program printed, as its terminal shows it; stderr and stdout share it.",
+              "type": "string"
+            },
+            "outputComplete": {
+              "description": "False when outcome is timed_out, lostStart or lostEnd is true, or maxLines or the result limit cut the output or stderr.",
+              "type": "boolean"
+            },
+            "returnedBytes": {
+              "description": "UTF-8 output bytes returned.",
+              "maximum": 9007199254740991,
+              "minimum": -9007199254740991,
+              "type": "integer"
+            },
+            "signal": {
+              "description": "The signal that ended the program, such as \"SIGTERM\"; otherwise null. A program that exits 130 on its own reads as SIGINT, as that status means.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "stderr": {
+              "description": "The bounded tail of what the program wrote to stderr, with separateStderr; otherwise null, and stderr is in output.",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "droppedLines",
+            "effectiveTimeoutMs",
+            "exitStatus",
+            "omittedBytes",
+            "outcome",
+            "output",
+            "lostEnd",
+            "lostStart",
+            "outputComplete",
+            "returnedBytes",
+            "signal",
+            "stderr"
+          ],
+          "type": "object"
+        },
+        "title": "Run a program and wait"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "annotations": {
+              "destructiveHint": true,
+              "idempotentHint": false,
+              "openWorldHint": true,
+              "readOnlyHint": false
+            },
+            "description": "Run a shell command in a pane with your user's permissions. Run a shell command in a pane, wait for it to finish, and report its exit status and output. Prefer this over send_keys plus capture_pane: it frames the command so a pane's echo of what you typed can never be mistaken for what the command printed, and it knows when the command actually ended rather than guessing from the screen. The command runs in a subshell, so cd and export do not persist to a later call. A pane is effectively single-writer: this server reserves it until the command settles, but another process with the same tmux socket can still write into it. When the pane's shell does not matter, run_program returns only the program's output.",
             "inputLiteralization": {},
             "inputSchema": {
               "$schema": "http://json-schema.org/draft-07/schema#",
@@ -7338,7 +8027,7 @@
                   "type": "integer"
                 },
                 "effectiveTimeoutMs": {
-                  "description": "The timeout actually enforced.",
+                  "description": "The timeout enforced.",
                   "maximum": 9007199254740991,
                   "minimum": -9007199254740991,
                   "type": "integer"
@@ -7437,7 +8126,7 @@
           "openWorldHint": true,
           "readOnlyHint": false
         },
-        "description": "Run a shell command in a pane with your user's permissions. Run a shell command in a pane, wait for it to finish, and report its exit status and output. Prefer this over send_keys plus capture_pane: it frames the command so a pane's echo of what you typed can never be mistaken for what the command printed, and it knows when the command actually ended rather than guessing from the screen. The command runs in a subshell, so cd and export do not persist to a later call. A pane is effectively single-writer: this server reserves it until the command settles, but another process with the same tmux socket can still write into it.",
+        "description": "Run a shell command in a pane with your user's permissions. Run a shell command in a pane, wait for it to finish, and report its exit status and output. Prefer this over send_keys plus capture_pane: it frames the command so a pane's echo of what you typed can never be mistaken for what the command printed, and it knows when the command actually ended rather than guessing from the screen. The command runs in a subshell, so cd and export do not persist to a later call. A pane is effectively single-writer: this server reserves it until the command settles, but another process with the same tmux socket can still write into it. When the pane's shell does not matter, run_program returns only the program's output.",
         "execution": {
           "taskSupport": "forbidden"
         },
@@ -7488,7 +8177,7 @@
               "type": "integer"
             },
             "effectiveTimeoutMs": {
-              "description": "The timeout actually enforced.",
+              "description": "The timeout enforced.",
               "maximum": 9007199254740991,
               "minimum": -9007199254740991,
               "type": "integer"
@@ -7922,13 +8611,13 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Change tmux state; no client-supplied executable input. Rearrange a window's panes. Takes one of tmux's named layouts, or a layout string from an earlier window whose `metadataComplete` is true to reproduce it exactly.",
+            "description": "Change tmux state; no client-supplied executable input. Rearrange a window's panes using a named layout, a unique abbreviation for the running daemon, or a checksummed saved layout from a window whose metadataComplete is true. JSON layouts need tmux 3.8. tmux may adapt dimensions or prune extra cells; the returned window.layout reports the observed result.",
             "inputLiteralization": {},
             "inputSchema": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "layout": {
-                  "description": "One of even-horizontal, even-vertical, main-horizontal, main-vertical, tiled, or a tmux layout string.",
+                  "description": "A tmux named layout, unique abbreviation for the running version, or checksummed saved layout. Geometry and pruning follow tmux.",
                   "type": "string"
                 },
                 "windowId": {
@@ -7961,7 +8650,7 @@
                       "type": "string"
                     },
                     "layout": {
-                      "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                      "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                       "type": "string"
                     },
                     "metadataComplete": {
@@ -8064,7 +8753,7 @@
           "openWorldHint": true,
           "readOnlyHint": false
         },
-        "description": "Change tmux state; no client-supplied executable input. Rearrange a window's panes. Takes one of tmux's named layouts, or a layout string from an earlier window whose `metadataComplete` is true to reproduce it exactly.",
+        "description": "Change tmux state; no client-supplied executable input. Rearrange a window's panes using a named layout, a unique abbreviation for the running daemon, or a checksummed saved layout from a window whose metadataComplete is true. JSON layouts need tmux 3.8. tmux may adapt dimensions or prune extra cells; the returned window.layout reports the observed result.",
         "execution": {
           "taskSupport": "forbidden"
         },
@@ -8072,7 +8761,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "layout": {
-              "description": "One of even-horizontal, even-vertical, main-horizontal, main-vertical, tiled, or a tmux layout string.",
+              "description": "A tmux named layout, unique abbreviation for the running version, or checksummed saved layout. Geometry and pruning follow tmux.",
               "type": "string"
             },
             "windowId": {
@@ -8101,7 +8790,7 @@
                   "type": "string"
                 },
                 "layout": {
-                  "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                  "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                   "type": "string"
                 },
                 "metadataComplete": {
@@ -8592,7 +9281,7 @@
                       "type": "string"
                     },
                     "layout": {
-                      "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                      "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                       "type": "string"
                     },
                     "metadataComplete": {
@@ -8737,7 +9426,7 @@
                   "type": "string"
                 },
                 "layout": {
-                  "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                  "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                   "type": "string"
                 },
                 "metadataComplete": {
@@ -8838,7 +9527,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Send keystrokes to a pane. Use for TUIs, control keys (C-c), and partial lines. For a shell command whose result you want, use run_shell_command — it waits for completion and reports exit status, which this does not.",
+            "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Send keystrokes to a pane. Use for TUIs, control keys (C-c), and partial lines. For a shell command whose result you want, use run_shell_command — it waits for completion and reports exit status, which this does not. For only a program's own output, use run_program.",
             "inputLiteralization": {},
             "inputSchema": {
               "$schema": "http://json-schema.org/draft-07/schema#",
@@ -8926,7 +9615,7 @@
           "openWorldHint": true,
           "readOnlyHint": false
         },
-        "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Send keystrokes to a pane. Use for TUIs, control keys (C-c), and partial lines. For a shell command whose result you want, use run_shell_command — it waits for completion and reports exit status, which this does not.",
+        "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Send keystrokes to a pane. Use for TUIs, control keys (C-c), and partial lines. For a shell command whose result you want, use run_shell_command — it waits for completion and reports exit status, which this does not. For only a program's own output, use run_program.",
         "execution": {
           "taskSupport": "forbidden"
         },
@@ -11248,6 +11937,305 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
+            "description": "Run a program in a new pane of its own with your user's permissions. Start a program in a pane of its own and return at once with a programId. Use it for a program that runs longer than one wait, such as a build or a server, or one that needs keys between reads; run_program is the one-call form. read_program reads its output as it is written and reports its exit; send_keys reaches its paneId; stop_program ends it. This server ends it and removes its pane when lifetimeMs runs out, even if no later call arrives, and tmux does if this server dies. No shell parses argv, and PAGER and GIT_PAGER are cat. It takes no input, keep, inheritShell or separateStderr: for those, use run_program. Requires tmux 3.8 or newer.",
+            "inputLiteralization": {},
+            "inputSchema": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "properties": {
+                "argv": {
+                  "description": "The program and its arguments, as given: [\"git\", \"status\", \"--short\"]. Put variables first with env: [\"env\", \"CI=1\", \"make\", \"test\"].",
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 256,
+                  "minItems": 1,
+                  "type": "array"
+                },
+                "fromPaneId": {
+                  "description": "Run beside this pane, in its directory and session, as run_program does.",
+                  "pattern": "^%\\d+$",
+                  "type": "string"
+                },
+                "height": {
+                  "description": "Rows of the program's terminal. Defaults to tmux's default-size.",
+                  "exclusiveMinimum": 0,
+                  "maximum": 10000,
+                  "type": "integer"
+                },
+                "lifetimeMs": {
+                  "description": "How long the program may run: it is ended and its pane removed this long after the start. 10 minutes by default; longer than 60 is cut to that.",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991,
+                  "type": "integer"
+                },
+                "placement": {
+                  "description": "With fromPaneId: \"window\", the default, or \"split\" beside the pane, where a person watching it sees the program. Focus stays put.",
+                  "enum": [
+                    "window",
+                    "split"
+                  ],
+                  "type": "string"
+                },
+                "startDirectory": {
+                  "description": "Directory the program starts in, taken literally; one that cannot be entered means the program never runs, and read_program reports not_started.",
+                  "type": "string"
+                },
+                "width": {
+                  "description": "Columns of the program's terminal.",
+                  "exclusiveMinimum": 0,
+                  "maximum": 10000,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "argv"
+              ],
+              "type": "object"
+            },
+            "mayExposeSecrets": true,
+            "mayReturnUntrustedContent": true,
+            "name": "start_program",
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata",
+              "terminal-content"
+            ],
+            "outputSchema": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "properties": {
+                "effectiveLifetimeMs": {
+                  "description": "The lifetime enforced.",
+                  "maximum": 9007199254740991,
+                  "minimum": -9007199254740991,
+                  "type": "integer"
+                },
+                "paneId": {
+                  "description": "The program's pane, for send_keys or capture_pane.",
+                  "pattern": "^%\\d+$",
+                  "type": "string"
+                },
+                "programId": {
+                  "description": "Pass to read_program and stop_program.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "effectiveLifetimeMs",
+                "paneId",
+                "programId"
+              ],
+              "type": "object"
+            },
+            "processReach": "pane-program",
+            "title": "Start a program",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "execute"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false
+        },
+        "description": "Run a program in a new pane of its own with your user's permissions. Start a program in a pane of its own and return at once with a programId. Use it for a program that runs longer than one wait, such as a build or a server, or one that needs keys between reads; run_program is the one-call form. read_program reads its output as it is written and reports its exit; send_keys reaches its paneId; stop_program ends it. This server ends it and removes its pane when lifetimeMs runs out, even if no later call arrives, and tmux does if this server dies. No shell parses argv, and PAGER and GIT_PAGER are cat. It takes no input, keep, inheritShell or separateStderr: for those, use run_program. Requires tmux 3.8 or newer.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "argv": {
+              "description": "The program and its arguments, as given: [\"git\", \"status\", \"--short\"]. Put variables first with env: [\"env\", \"CI=1\", \"make\", \"test\"].",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 256,
+              "minItems": 1,
+              "type": "array"
+            },
+            "fromPaneId": {
+              "description": "Run beside this pane, in its directory and session, as run_program does.",
+              "pattern": "^%\\d+$",
+              "type": "string"
+            },
+            "height": {
+              "description": "Rows of the program's terminal. Defaults to tmux's default-size.",
+              "exclusiveMinimum": 0,
+              "maximum": 10000,
+              "type": "integer"
+            },
+            "lifetimeMs": {
+              "description": "How long the program may run: it is ended and its pane removed this long after the start. 10 minutes by default; longer than 60 is cut to that.",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            },
+            "placement": {
+              "description": "With fromPaneId: \"window\", the default, or \"split\" beside the pane, where a person watching it sees the program. Focus stays put.",
+              "enum": [
+                "window",
+                "split"
+              ],
+              "type": "string"
+            },
+            "startDirectory": {
+              "description": "Directory the program starts in, taken literally; one that cannot be entered means the program never runs, and read_program reports not_started.",
+              "type": "string"
+            },
+            "width": {
+              "description": "Columns of the program's terminal.",
+              "exclusiveMinimum": 0,
+              "maximum": 10000,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "argv"
+          ],
+          "type": "object"
+        },
+        "name": "start_program",
+        "outputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "effectiveLifetimeMs": {
+              "description": "The lifetime enforced.",
+              "maximum": 9007199254740991,
+              "minimum": -9007199254740991,
+              "type": "integer"
+            },
+            "paneId": {
+              "description": "The program's pane, for send_keys or capture_pane.",
+              "pattern": "^%\\d+$",
+              "type": "string"
+            },
+            "programId": {
+              "description": "Pass to read_program and stop_program.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "effectiveLifetimeMs",
+            "paneId",
+            "programId"
+          ],
+          "type": "object"
+        },
+        "title": "Start a program"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "annotations": {
+              "destructiveHint": true,
+              "idempotentHint": false,
+              "openWorldHint": true,
+              "readOnlyHint": false
+            },
+            "description": "Change tmux state; no client-supplied executable input. End a started program and remove its pane now: SIGTERM, then SIGKILL two seconds later. Its id is forgotten, so read what you need with read_program first.",
+            "inputLiteralization": {},
+            "inputSchema": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "properties": {
+                "programId": {
+                  "description": "The id start_program returned.",
+                  "maxLength": 64,
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "programId"
+              ],
+              "type": "object"
+            },
+            "mayExposeSecrets": true,
+            "mayReturnUntrustedContent": true,
+            "name": "stop_program",
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "outputSchema": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "properties": {
+                "programId": {
+                  "description": "The program that was ended. Output read_program had not returned is gone.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "programId"
+              ],
+              "type": "object"
+            },
+            "processReach": "none",
+            "title": "Stop a started program",
+            "tmuxEffects": [
+              "observe",
+              "delete"
+            ],
+            "toolset": "execute"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false
+        },
+        "description": "Change tmux state; no client-supplied executable input. End a started program and remove its pane now: SIGTERM, then SIGKILL two seconds later. Its id is forgotten, so read what you need with read_program first.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "programId": {
+              "description": "The id start_program returned.",
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "programId"
+          ],
+          "type": "object"
+        },
+        "name": "stop_program",
+        "outputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "programId": {
+              "description": "The program that was ended. Output read_program had not returned is gone.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "programId"
+          ],
+          "type": "object"
+        },
+        "title": "Stop a started program"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "annotations": {
+              "destructiveHint": true,
+              "idempotentHint": false,
+              "openWorldHint": true,
+              "readOnlyHint": false
+            },
             "description": "Change tmux state; no client-supplied executable input. Exchange two panes' positions. Their ids and contents travel with them.",
             "inputLiteralization": {},
             "inputSchema": {
@@ -11732,6 +12720,183 @@
           "type": "object"
         },
         "title": "Wait for channel"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "annotations": {
+              "destructiveHint": true,
+              "idempotentHint": false,
+              "openWorldHint": true,
+              "readOnlyHint": false
+            },
+            "description": "Inspect tmux metadata; accepts no client-supplied executable input. Wait until the program in a pane exits and return its exit status or signal. Use it for a pane you did not start, such as a person's build or a server someone launched; for run_program and start_program, their own results report the exit. A pane that closes on exit still reports its status; a pane killed from outside during the wait has none and answers gone within about two seconds, and a pane id that is already gone is not found. A pane at a shell prompt exits only when the shell does: for a command typed into it, use run_shell_command or wait_for_text. Requires tmux 3.8 or newer.",
+            "inputLiteralization": {},
+            "inputSchema": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "properties": {
+                "paneId": {
+                  "description": "Stable pane id, e.g. %1.",
+                  "pattern": "^%\\d+$",
+                  "type": "string"
+                },
+                "timeoutMs": {
+                  "description": "How long to wait for the exit: 30 seconds when omitted, clamped by the server ceiling; the result reports what was used, and timed_out leaves the program running.",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "paneId"
+              ],
+              "type": "object"
+            },
+            "mayExposeSecrets": true,
+            "mayReturnUntrustedContent": true,
+            "name": "wait_for_exit",
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "outputSchema": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "properties": {
+                "effectiveTimeoutMs": {
+                  "description": "The timeout enforced.",
+                  "maximum": 9007199254740991,
+                  "minimum": -9007199254740991,
+                  "type": "integer"
+                },
+                "exitStatus": {
+                  "anyOf": [
+                    {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The exit status, as tmux read it from the pane's process: null when a signal ended it, with signal set, or when it has not exited."
+                },
+                "outcome": {
+                  "description": "completed: the program ended; exitStatus holds its status, or is null with signal set. timed_out: it still runs; call again to keep waiting. gone: the pane was removed without an exit status. cancelled: the request was cancelled.",
+                  "enum": [
+                    "completed",
+                    "timed_out",
+                    "gone",
+                    "cancelled"
+                  ],
+                  "type": "string"
+                },
+                "signal": {
+                  "description": "The signal that ended the program, such as \"SIGTERM\"; otherwise null.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "effectiveTimeoutMs",
+                "exitStatus",
+                "outcome",
+                "signal"
+              ],
+              "type": "object"
+            },
+            "processReach": "none",
+            "title": "Wait for a pane's program to exit",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false
+        },
+        "description": "Inspect tmux metadata; accepts no client-supplied executable input. Wait until the program in a pane exits and return its exit status or signal. Use it for a pane you did not start, such as a person's build or a server someone launched; for run_program and start_program, their own results report the exit. A pane that closes on exit still reports its status; a pane killed from outside during the wait has none and answers gone within about two seconds, and a pane id that is already gone is not found. A pane at a shell prompt exits only when the shell does: for a command typed into it, use run_shell_command or wait_for_text. Requires tmux 3.8 or newer.",
+        "execution": {
+          "taskSupport": "forbidden"
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "paneId": {
+              "description": "Stable pane id, e.g. %1.",
+              "pattern": "^%\\d+$",
+              "type": "string"
+            },
+            "timeoutMs": {
+              "description": "How long to wait for the exit: 30 seconds when omitted, clamped by the server ceiling; the result reports what was used, and timed_out leaves the program running.",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "paneId"
+          ],
+          "type": "object"
+        },
+        "name": "wait_for_exit",
+        "outputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": false,
+          "properties": {
+            "effectiveTimeoutMs": {
+              "description": "The timeout enforced.",
+              "maximum": 9007199254740991,
+              "minimum": -9007199254740991,
+              "type": "integer"
+            },
+            "exitStatus": {
+              "anyOf": [
+                {
+                  "maximum": 9007199254740991,
+                  "minimum": -9007199254740991,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The exit status, as tmux read it from the pane's process: null when a signal ended it, with signal set, or when it has not exited."
+            },
+            "outcome": {
+              "description": "completed: the program ended; exitStatus holds its status, or is null with signal set. timed_out: it still runs; call again to keep waiting. gone: the pane was removed without an exit status. cancelled: the request was cancelled.",
+              "enum": [
+                "completed",
+                "timed_out",
+                "gone",
+                "cancelled"
+              ],
+              "type": "string"
+            },
+            "signal": {
+              "description": "The signal that ended the program, such as \"SIGTERM\"; otherwise null.",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "effectiveTimeoutMs",
+            "exitStatus",
+            "outcome",
+            "signal"
+          ],
+          "type": "object"
+        },
+        "title": "Wait for a pane's program to exit"
       },
       {
         "_meta": {
