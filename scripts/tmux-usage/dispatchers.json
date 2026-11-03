@@ -1627,20 +1627,20 @@
       "why": "Sends the tmux command in its argument list through the runtime's transport.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/command.ts:89",
+          "at": "packages/libtmux/src/_internal/operations/command.ts:112",
           "has": [
             "runCommand"
           ],
           "reaches": [
             {
-              "at": "packages/libtmux/src/_internal/operations/command.ts:94",
+              "at": "packages/libtmux/src/_internal/operations/command.ts:117",
               "has": [
                 "executeCommand"
               ],
               "calls": "executeCommand"
             },
             {
-              "at": "packages/libtmux/src/_internal/operations/command.ts:47",
+              "at": "packages/libtmux/src/_internal/operations/command.ts:70",
               "has": [
                 "execute"
               ],
@@ -1648,7 +1648,7 @@
               "on": "NodeSpawnTransport"
             },
             {
-              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:151",
               "has": [
                 "spawn("
               ]
@@ -1663,13 +1663,13 @@
       "why": "Sends the tmux command in its argument list through the runtime's transport.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/command.ts:113",
+          "at": "packages/libtmux/src/_internal/operations/command.ts:136",
           "has": [
             "runCommands"
           ],
           "reaches": [
             {
-              "at": "packages/libtmux/src/_internal/operations/command.ts:124",
+              "at": "packages/libtmux/src/_internal/operations/command.ts:147",
               "has": [
                 "execute"
               ],
@@ -1677,7 +1677,7 @@
               "on": "NodeSpawnTransport"
             },
             {
-              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:151",
               "has": [
                 "spawn("
               ]
@@ -1692,20 +1692,20 @@
       "why": "Sends the tmux command in its argument list through the runtime's transport.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/command.ts:98",
+          "at": "packages/libtmux/src/_internal/operations/command.ts:121",
           "has": [
             "runCommandBytes"
           ],
           "reaches": [
             {
-              "at": "packages/libtmux/src/_internal/operations/command.ts:103",
+              "at": "packages/libtmux/src/_internal/operations/command.ts:126",
               "has": [
                 "executeCommand"
               ],
               "calls": "executeCommand"
             },
             {
-              "at": "packages/libtmux/src/_internal/operations/command.ts:47",
+              "at": "packages/libtmux/src/_internal/operations/command.ts:70",
               "has": [
                 "execute"
               ],
@@ -1713,7 +1713,7 @@
               "on": "NodeSpawnTransport"
             },
             {
-              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:151",
               "has": [
                 "spawn("
               ]
@@ -1728,13 +1728,13 @@
       "why": "Sends the tmux command in its argument list through the runtime's transport.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/control/observer_transport.ts:344",
+          "at": "packages/libtmux/src/_internal/control/observer_transport.ts:272",
           "has": [
             "execute"
           ],
           "reaches": [
             {
-              "at": "packages/libtmux/src/_internal/control/observer_transport.ts:355",
+              "at": "packages/libtmux/src/_internal/control/observer_transport.ts:283",
               "has": [
                 "execute"
               ],
@@ -1742,7 +1742,7 @@
               "on": "NodeSpawnTransport"
             },
             {
-              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:151",
               "has": [
                 "spawn("
               ]
@@ -1750,20 +1750,20 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/_internal/transport/bounded_transport.ts:223",
+          "at": "packages/libtmux/src/_internal/transport/bounded_transport.ts:229",
           "has": [
             "execute"
           ],
           "reaches": [
             {
-              "at": "packages/libtmux/src/_internal/transport/bounded_transport.ts:224",
+              "at": "packages/libtmux/src/_internal/transport/bounded_transport.ts:230",
               "has": [
                 "run"
               ],
               "calls": "run"
             },
             {
-              "at": "packages/libtmux/src/_internal/transport/bounded_transport.ts:239",
+              "at": "packages/libtmux/src/_internal/transport/bounded_transport.ts:245",
               "has": [
                 "execute"
               ],
@@ -1771,7 +1771,7 @@
               "on": "NodeSpawnTransport"
             },
             {
-              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:151",
               "has": [
                 "spawn("
               ]
@@ -1779,13 +1779,13 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:110",
+          "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:122",
           "has": [
             "execute"
           ],
           "reaches": [
             {
-              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:151",
               "has": [
                 "spawn("
               ]
@@ -1813,14 +1813,14 @@
               "calls": "runCommand"
             },
             {
-              "at": "packages/libtmux/src/_internal/operations/command.ts:94",
+              "at": "packages/libtmux/src/_internal/operations/command.ts:117",
               "has": [
                 "executeCommand"
               ],
               "calls": "executeCommand"
             },
             {
-              "at": "packages/libtmux/src/_internal/operations/command.ts:47",
+              "at": "packages/libtmux/src/_internal/operations/command.ts:70",
               "has": [
                 "execute"
               ],
@@ -1828,7 +1828,7 @@
               "on": "NodeSpawnTransport"
             },
             {
-              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:151",
               "has": [
                 "spawn("
               ]
@@ -1843,27 +1843,27 @@
       "why": "Sends the tmux command in its argument list through the runtime's transport.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/topology.ts:389",
+          "at": "packages/libtmux/src/_internal/operations/topology.ts:390",
           "has": [
             "selectTarget"
           ],
           "reaches": [
             {
-              "at": "packages/libtmux/src/_internal/operations/topology.ts:394",
+              "at": "packages/libtmux/src/_internal/operations/topology.ts:395",
               "has": [
                 "runCommand"
               ],
               "calls": "runCommand"
             },
             {
-              "at": "packages/libtmux/src/_internal/operations/command.ts:94",
+              "at": "packages/libtmux/src/_internal/operations/command.ts:117",
               "has": [
                 "executeCommand"
               ],
               "calls": "executeCommand"
             },
             {
-              "at": "packages/libtmux/src/_internal/operations/command.ts:47",
+              "at": "packages/libtmux/src/_internal/operations/command.ts:70",
               "has": [
                 "execute"
               ],
@@ -1871,7 +1871,7 @@
               "on": "NodeSpawnTransport"
             },
             {
-              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:151",
               "has": [
                 "spawn("
               ]
@@ -1900,7 +1900,7 @@
               "on": "NodeSpawnTransport"
             },
             {
-              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:151",
               "has": [
                 "spawn("
               ]
@@ -1915,13 +1915,13 @@
       "why": "Sends the tmux command in its argument list through the runtime's transport.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/pane.ts:672",
+          "at": "packages/libtmux/src/pane.ts:762",
           "has": [
             "cmd"
           ],
           "reaches": [
             {
-              "at": "packages/libtmux/src/pane.ts:677",
+              "at": "packages/libtmux/src/pane.ts:767",
               "has": [
                 "runRawCommand"
               ],
@@ -1935,14 +1935,14 @@
               "calls": "runCommand"
             },
             {
-              "at": "packages/libtmux/src/_internal/operations/command.ts:94",
+              "at": "packages/libtmux/src/_internal/operations/command.ts:117",
               "has": [
                 "executeCommand"
               ],
               "calls": "executeCommand"
             },
             {
-              "at": "packages/libtmux/src/_internal/operations/command.ts:47",
+              "at": "packages/libtmux/src/_internal/operations/command.ts:70",
               "has": [
                 "execute"
               ],
@@ -1950,7 +1950,7 @@
               "on": "NodeSpawnTransport"
             },
             {
-              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:151",
               "has": [
                 "spawn("
               ]
@@ -1958,13 +1958,13 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/server.ts:1348",
+          "at": "packages/libtmux/src/server.ts:1658",
           "has": [
             "cmd"
           ],
           "reaches": [
             {
-              "at": "packages/libtmux/src/server.ts:1353",
+              "at": "packages/libtmux/src/server.ts:1663",
               "has": [
                 "runRawCommand"
               ],
@@ -1978,14 +1978,14 @@
               "calls": "runCommand"
             },
             {
-              "at": "packages/libtmux/src/_internal/operations/command.ts:94",
+              "at": "packages/libtmux/src/_internal/operations/command.ts:117",
               "has": [
                 "executeCommand"
               ],
               "calls": "executeCommand"
             },
             {
-              "at": "packages/libtmux/src/_internal/operations/command.ts:47",
+              "at": "packages/libtmux/src/_internal/operations/command.ts:70",
               "has": [
                 "execute"
               ],
@@ -1993,7 +1993,7 @@
               "on": "NodeSpawnTransport"
             },
             {
-              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:151",
               "has": [
                 "spawn("
               ]
@@ -2001,13 +2001,13 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/session.ts:434",
+          "at": "packages/libtmux/src/session.ts:494",
           "has": [
             "cmd"
           ],
           "reaches": [
             {
-              "at": "packages/libtmux/src/session.ts:439",
+              "at": "packages/libtmux/src/session.ts:499",
               "has": [
                 "runRawCommand"
               ],
@@ -2021,14 +2021,14 @@
               "calls": "runCommand"
             },
             {
-              "at": "packages/libtmux/src/_internal/operations/command.ts:94",
+              "at": "packages/libtmux/src/_internal/operations/command.ts:117",
               "has": [
                 "executeCommand"
               ],
               "calls": "executeCommand"
             },
             {
-              "at": "packages/libtmux/src/_internal/operations/command.ts:47",
+              "at": "packages/libtmux/src/_internal/operations/command.ts:70",
               "has": [
                 "execute"
               ],
@@ -2036,7 +2036,7 @@
               "on": "NodeSpawnTransport"
             },
             {
-              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:139",
+              "at": "packages/libtmux/src/_internal/transport/node_spawn_transport.ts:151",
               "has": [
                 "spawn("
               ]
@@ -2052,7 +2052,7 @@
       "why": "Builds the argument list of a command from the command it is given.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/request.ts:44",
+          "at": "packages/libtmux/src/_internal/operations/request.ts:46",
           "has": [
             "prepareInvocationRequest"
           ]
@@ -2066,7 +2066,7 @@
       "why": "Builds the argument list of a command from the command it is given.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/request.ts:30",
+          "at": "packages/libtmux/src/_internal/operations/request.ts:32",
           "has": [
             "prepareCommandRequest"
           ]
@@ -2106,15 +2106,30 @@
               "calls": "execute"
             },
             {
-              "at": "crates/libtmux/src/internal/core.rs:438",
+              "at": "crates/libtmux/src/internal/core.rs:535",
               "has": [
-                "self.executor.execute(request)"
+                "dispatch_checked"
+              ],
+              "calls": "dispatch_checked"
+            },
+            {
+              "at": "crates/libtmux/src/internal/core.rs:619",
+              "has": [
+                "versions::dispatch("
+              ],
+              "calls": "dispatch",
+              "on": "versions.rs"
+            },
+            {
+              "at": "crates/libtmux/src/internal/support/versions.rs:114",
+              "has": [
+                "executor.execute("
               ],
               "leads": "execute",
               "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:364",
+              "at": "crates/libtmux/src/internal/subprocess.rs:370",
               "has": [
                 "self.clone().run(request)"
               ],
@@ -2122,7 +2137,7 @@
               "on": "SubprocessExecutor"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "at": "crates/libtmux/src/internal/subprocess.rs:295",
               "has": [
                 "process.spawn()"
               ]
@@ -2143,28 +2158,43 @@
       "why": "Sends the Command it is given, or the command it is named for, to the server.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/internal/options.rs:363",
+          "at": "crates/libtmux/src/internal/options.rs:358",
           "has": [
             "run"
           ],
           "reaches": [
             {
-              "at": "crates/libtmux/src/internal/options.rs:369",
+              "at": "crates/libtmux/src/internal/options.rs:364",
               "has": [
                 "execute"
               ],
               "calls": "execute"
             },
             {
-              "at": "crates/libtmux/src/internal/core.rs:438",
+              "at": "crates/libtmux/src/internal/core.rs:535",
               "has": [
-                "self.executor.execute(request)"
+                "dispatch_checked"
+              ],
+              "calls": "dispatch_checked"
+            },
+            {
+              "at": "crates/libtmux/src/internal/core.rs:619",
+              "has": [
+                "versions::dispatch("
+              ],
+              "calls": "dispatch",
+              "on": "versions.rs"
+            },
+            {
+              "at": "crates/libtmux/src/internal/support/versions.rs:114",
+              "has": [
+                "executor.execute("
               ],
               "leads": "execute",
               "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:364",
+              "at": "crates/libtmux/src/internal/subprocess.rs:370",
               "has": [
                 "self.clone().run(request)"
               ],
@@ -2172,7 +2202,7 @@
               "on": "SubprocessExecutor"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "at": "crates/libtmux/src/internal/subprocess.rs:295",
               "has": [
                 "process.spawn()"
               ]
@@ -2206,15 +2236,30 @@
               "calls": "execute"
             },
             {
-              "at": "crates/libtmux/src/internal/core.rs:438",
+              "at": "crates/libtmux/src/internal/core.rs:535",
               "has": [
-                "self.executor.execute(request)"
+                "dispatch_checked"
+              ],
+              "calls": "dispatch_checked"
+            },
+            {
+              "at": "crates/libtmux/src/internal/core.rs:619",
+              "has": [
+                "versions::dispatch("
+              ],
+              "calls": "dispatch",
+              "on": "versions.rs"
+            },
+            {
+              "at": "crates/libtmux/src/internal/support/versions.rs:114",
+              "has": [
+                "executor.execute("
               ],
               "leads": "execute",
               "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:364",
+              "at": "crates/libtmux/src/internal/subprocess.rs:370",
               "has": [
                 "self.clone().run(request)"
               ],
@@ -2222,7 +2267,7 @@
               "on": "SubprocessExecutor"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "at": "crates/libtmux/src/internal/subprocess.rs:295",
               "has": [
                 "process.spawn()"
               ]
@@ -2230,28 +2275,43 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/server.rs:678",
+          "at": "crates/libtmux/src/server.rs:882",
           "has": [
             "cmd"
           ],
           "reaches": [
             {
-              "at": "crates/libtmux/src/server.rs:679",
+              "at": "crates/libtmux/src/server.rs:883",
               "has": [
                 "execute"
               ],
               "calls": "execute"
             },
             {
-              "at": "crates/libtmux/src/internal/core.rs:438",
+              "at": "crates/libtmux/src/internal/core.rs:535",
               "has": [
-                "self.executor.execute(request)"
+                "dispatch_checked"
+              ],
+              "calls": "dispatch_checked"
+            },
+            {
+              "at": "crates/libtmux/src/internal/core.rs:619",
+              "has": [
+                "versions::dispatch("
+              ],
+              "calls": "dispatch",
+              "on": "versions.rs"
+            },
+            {
+              "at": "crates/libtmux/src/internal/support/versions.rs:114",
+              "has": [
+                "executor.execute("
               ],
               "leads": "execute",
               "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:364",
+              "at": "crates/libtmux/src/internal/subprocess.rs:370",
               "has": [
                 "self.clone().run(request)"
               ],
@@ -2259,7 +2319,7 @@
               "on": "SubprocessExecutor"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "at": "crates/libtmux/src/internal/subprocess.rs:295",
               "has": [
                 "process.spawn()"
               ]
@@ -2267,28 +2327,43 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/session.rs:582",
+          "at": "crates/libtmux/src/session.rs:732",
           "has": [
             "cmd"
           ],
           "reaches": [
             {
-              "at": "crates/libtmux/src/session.rs:584",
+              "at": "crates/libtmux/src/session.rs:734",
               "has": [
                 "execute"
               ],
               "calls": "execute"
             },
             {
-              "at": "crates/libtmux/src/internal/core.rs:438",
+              "at": "crates/libtmux/src/internal/core.rs:535",
               "has": [
-                "self.executor.execute(request)"
+                "dispatch_checked"
+              ],
+              "calls": "dispatch_checked"
+            },
+            {
+              "at": "crates/libtmux/src/internal/core.rs:619",
+              "has": [
+                "versions::dispatch("
+              ],
+              "calls": "dispatch",
+              "on": "versions.rs"
+            },
+            {
+              "at": "crates/libtmux/src/internal/support/versions.rs:114",
+              "has": [
+                "executor.execute("
               ],
               "leads": "execute",
               "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:364",
+              "at": "crates/libtmux/src/internal/subprocess.rs:370",
               "has": [
                 "self.clone().run(request)"
               ],
@@ -2296,7 +2371,7 @@
               "on": "SubprocessExecutor"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "at": "crates/libtmux/src/internal/subprocess.rs:295",
               "has": [
                 "process.spawn()"
               ]
@@ -2325,14 +2400,14 @@
               "on": "ControlSender"
             },
             {
-              "at": "crates/libtmux/src/control.rs:771",
+              "at": "crates/libtmux/src/control.rs:786",
               "has": [
                 "self.dispatch_line("
               ],
               "calls": "dispatch_line"
             },
             {
-              "at": "crates/libtmux/src/control.rs:803",
+              "at": "crates/libtmux/src/control.rs:818",
               "has": [
                 "permit.send(Request"
               ],
@@ -2340,7 +2415,7 @@
               "why": "the request goes into a channel that Connection::serve reads, and serve writes the line to the control client"
             },
             {
-              "at": "crates/libtmux/src/control/actor.rs:541",
+              "at": "crates/libtmux/src/control/actor.rs:543",
               "has": [
                 "write_line("
               ],
@@ -2355,21 +2430,36 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/internal/core.rs:423",
+          "at": "crates/libtmux/src/internal/core.rs:511",
           "has": [
             "execute"
           ],
           "reaches": [
             {
-              "at": "crates/libtmux/src/internal/core.rs:438",
+              "at": "crates/libtmux/src/internal/core.rs:535",
               "has": [
-                "execute"
+                "dispatch_checked"
+              ],
+              "calls": "dispatch_checked"
+            },
+            {
+              "at": "crates/libtmux/src/internal/core.rs:619",
+              "has": [
+                "versions::dispatch("
+              ],
+              "calls": "dispatch",
+              "on": "versions.rs"
+            },
+            {
+              "at": "crates/libtmux/src/internal/support/versions.rs:114",
+              "has": [
+                "executor.execute("
               ],
               "leads": "execute",
               "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:364",
+              "at": "crates/libtmux/src/internal/subprocess.rs:370",
               "has": [
                 "self.clone().run(request)"
               ],
@@ -2377,7 +2467,7 @@
               "on": "SubprocessExecutor"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "at": "crates/libtmux/src/internal/subprocess.rs:295",
               "has": [
                 "process.spawn()"
               ]
@@ -2392,13 +2482,13 @@
       "why": "Sends the Command it is given, or the command it is named for, to the server.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/control.rs:585",
+          "at": "crates/libtmux/src/control.rs:583",
           "has": [
             "send"
           ],
           "reaches": [
             {
-              "at": "crates/libtmux/src/control.rs:586",
+              "at": "crates/libtmux/src/control.rs:584",
               "has": [
                 ".send("
               ],
@@ -2406,21 +2496,21 @@
               "on": "ControlSender"
             },
             {
-              "at": "crates/libtmux/src/control.rs:737",
+              "at": "crates/libtmux/src/control.rs:746",
               "has": [
                 "send_ordered("
               ],
               "calls": "send_ordered"
             },
             {
-              "at": "crates/libtmux/src/control.rs:755",
+              "at": "crates/libtmux/src/control.rs:770",
               "has": [
                 "dispatch_line("
               ],
               "calls": "dispatch_line"
             },
             {
-              "at": "crates/libtmux/src/control.rs:803",
+              "at": "crates/libtmux/src/control.rs:818",
               "has": [
                 "permit.send(Request"
               ],
@@ -2428,7 +2518,7 @@
               "why": "the request goes into a channel that Connection::serve reads, and serve writes the line to the control client"
             },
             {
-              "at": "crates/libtmux/src/control/actor.rs:541",
+              "at": "crates/libtmux/src/control/actor.rs:543",
               "has": [
                 "write_line("
               ],
@@ -2450,28 +2540,43 @@
       "why": "Sends the Command it is given, or the command it is named for, to the server.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/session.rs:388",
+          "at": "crates/libtmux/src/session.rs:534",
           "has": [
             "step"
           ],
           "reaches": [
             {
-              "at": "crates/libtmux/src/session.rs:392",
+              "at": "crates/libtmux/src/session.rs:538",
               "has": [
                 "execute"
               ],
               "calls": "execute"
             },
             {
-              "at": "crates/libtmux/src/internal/core.rs:438",
+              "at": "crates/libtmux/src/internal/core.rs:535",
               "has": [
-                "self.executor.execute(request)"
+                "dispatch_checked"
+              ],
+              "calls": "dispatch_checked"
+            },
+            {
+              "at": "crates/libtmux/src/internal/core.rs:619",
+              "has": [
+                "versions::dispatch("
+              ],
+              "calls": "dispatch",
+              "on": "versions.rs"
+            },
+            {
+              "at": "crates/libtmux/src/internal/support/versions.rs:114",
+              "has": [
+                "executor.execute("
               ],
               "leads": "execute",
               "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:364",
+              "at": "crates/libtmux/src/internal/subprocess.rs:370",
               "has": [
                 "self.clone().run(request)"
               ],
@@ -2479,7 +2584,7 @@
               "on": "SubprocessExecutor"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "at": "crates/libtmux/src/internal/subprocess.rs:295",
               "has": [
                 "process.spawn()"
               ]
@@ -2507,15 +2612,30 @@
               "calls": "execute"
             },
             {
-              "at": "crates/libtmux/src/internal/core.rs:438",
+              "at": "crates/libtmux/src/internal/core.rs:535",
               "has": [
-                "self.executor.execute(request)"
+                "dispatch_checked"
+              ],
+              "calls": "dispatch_checked"
+            },
+            {
+              "at": "crates/libtmux/src/internal/core.rs:619",
+              "has": [
+                "versions::dispatch("
+              ],
+              "calls": "dispatch",
+              "on": "versions.rs"
+            },
+            {
+              "at": "crates/libtmux/src/internal/support/versions.rs:114",
+              "has": [
+                "executor.execute("
               ],
               "leads": "execute",
               "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:364",
+              "at": "crates/libtmux/src/internal/subprocess.rs:370",
               "has": [
                 "self.clone().run(request)"
               ],
@@ -2523,7 +2643,7 @@
               "on": "SubprocessExecutor"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "at": "crates/libtmux/src/internal/subprocess.rs:295",
               "has": [
                 "process.spawn()"
               ]
@@ -2538,20 +2658,20 @@
       "why": "Sends the Command it is given, or the command it is named for, to the server.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/control.rs:746",
+          "at": "crates/libtmux/src/control.rs:760",
           "has": [
             "send_ordered"
           ],
           "reaches": [
             {
-              "at": "crates/libtmux/src/control.rs:755",
+              "at": "crates/libtmux/src/control.rs:770",
               "has": [
                 "dispatch_line"
               ],
               "calls": "dispatch_line"
             },
             {
-              "at": "crates/libtmux/src/control.rs:803",
+              "at": "crates/libtmux/src/control.rs:818",
               "has": [
                 "permit.send(Request"
               ],
@@ -2559,7 +2679,7 @@
               "why": "the request goes into a channel that Connection::serve reads, and serve writes the line to the control client"
             },
             {
-              "at": "crates/libtmux/src/control/actor.rs:541",
+              "at": "crates/libtmux/src/control/actor.rs:543",
               "has": [
                 "write_line("
               ],
@@ -2581,21 +2701,36 @@
       "why": "Sends the Command it is given, or the command it is named for, to the server.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/internal/core.rs:483",
+          "at": "crates/libtmux/src/internal/core.rs:580",
           "has": [
             "execute_chain"
           ],
           "reaches": [
             {
-              "at": "crates/libtmux/src/internal/core.rs:496",
+              "at": "crates/libtmux/src/internal/core.rs:593",
               "has": [
-                "execute"
+                "dispatch_checked"
+              ],
+              "calls": "dispatch_checked"
+            },
+            {
+              "at": "crates/libtmux/src/internal/core.rs:619",
+              "has": [
+                "versions::dispatch("
+              ],
+              "calls": "dispatch",
+              "on": "versions.rs"
+            },
+            {
+              "at": "crates/libtmux/src/internal/support/versions.rs:114",
+              "has": [
+                "executor.execute("
               ],
               "leads": "execute",
               "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:364",
+              "at": "crates/libtmux/src/internal/subprocess.rs:370",
               "has": [
                 "self.clone().run(request)"
               ],
@@ -2603,7 +2738,7 @@
               "on": "SubprocessExecutor"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "at": "crates/libtmux/src/internal/subprocess.rs:295",
               "has": [
                 "process.spawn()"
               ]
@@ -2618,28 +2753,43 @@
       "why": "Sends the CommandChain it is given, one tmux invocation, to the server.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/server.rs:753",
+          "at": "crates/libtmux/src/server.rs:957",
           "has": [
             "chain"
           ],
           "reaches": [
             {
-              "at": "crates/libtmux/src/server.rs:754",
+              "at": "crates/libtmux/src/server.rs:958",
               "has": [
                 "execute_chain"
               ],
               "calls": "execute_chain"
             },
             {
-              "at": "crates/libtmux/src/internal/core.rs:496",
+              "at": "crates/libtmux/src/internal/core.rs:593",
               "has": [
-                "execute"
+                "dispatch_checked"
+              ],
+              "calls": "dispatch_checked"
+            },
+            {
+              "at": "crates/libtmux/src/internal/core.rs:619",
+              "has": [
+                "versions::dispatch("
+              ],
+              "calls": "dispatch",
+              "on": "versions.rs"
+            },
+            {
+              "at": "crates/libtmux/src/internal/support/versions.rs:114",
+              "has": [
+                "executor.execute("
               ],
               "leads": "execute",
               "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:364",
+              "at": "crates/libtmux/src/internal/subprocess.rs:370",
               "has": [
                 "self.clone().run(request)"
               ],
@@ -2647,7 +2797,7 @@
               "on": "SubprocessExecutor"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "at": "crates/libtmux/src/internal/subprocess.rs:295",
               "has": [
                 "process.spawn()"
               ]
@@ -2662,35 +2812,50 @@
       "why": "Sends the rendered commands of one plan step to the server, as one chain when the step carries several.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:443",
+          "at": "crates/libtmux/src/plan/run.rs:446",
           "has": [
             "dispatch"
           ],
           "reaches": [
             {
-              "at": "crates/libtmux/src/plan/run.rs:461",
+              "at": "crates/libtmux/src/plan/run.rs:464",
               "has": [
                 "server.cmd("
               ],
               "calls": "cmd"
             },
             {
-              "at": "crates/libtmux/src/server.rs:679",
+              "at": "crates/libtmux/src/server.rs:883",
               "has": [
                 "execute("
               ],
               "calls": "execute"
             },
             {
-              "at": "crates/libtmux/src/internal/core.rs:438",
+              "at": "crates/libtmux/src/internal/core.rs:535",
               "has": [
-                "self.executor.execute(request)"
+                "dispatch_checked"
+              ],
+              "calls": "dispatch_checked"
+            },
+            {
+              "at": "crates/libtmux/src/internal/core.rs:619",
+              "has": [
+                "versions::dispatch("
+              ],
+              "calls": "dispatch",
+              "on": "versions.rs"
+            },
+            {
+              "at": "crates/libtmux/src/internal/support/versions.rs:114",
+              "has": [
+                "executor.execute("
               ],
               "leads": "execute",
               "why": "dynamic dispatch through the Executor trait; the process transport implements it as SubprocessExecutor::execute"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:364",
+              "at": "crates/libtmux/src/internal/subprocess.rs:370",
               "has": [
                 "self.clone().run(request)"
               ],
@@ -2698,7 +2863,7 @@
               "on": "SubprocessExecutor"
             },
             {
-              "at": "crates/libtmux/src/internal/subprocess.rs:290",
+              "at": "crates/libtmux/src/internal/subprocess.rs:295",
               "has": [
                 "process.spawn()"
               ]
@@ -2714,7 +2879,7 @@
       "why": "Adds one argument, kept out of logs, to the Command it is called on and returns the Command.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/command.rs:208",
+          "at": "crates/libtmux/src/command.rs:267",
           "has": [
             "sensitive_arg"
           ]

@@ -232,17 +232,17 @@ function editRules(dir, name, change) {
 const dispatcher = (document, port, name) => document.dispatchers.find((rule) => rule.port === port && rule.name === name)
 const BAD_RULES = [
   ['a dispatcher whose chain was removed', 'rs', 'dispatchers.json', (document) => { delete dispatcher(document, 'rs', 'chain').evidence[0].reaches },
-    /rs: dispatcher chain at crates\/libtmux\/src\/server.rs:753: reaches no transport, and cites no chain to one/],
+    /rs: dispatcher chain at crates\/libtmux\/src\/server.rs:957: reaches no transport, and cites no chain to one/],
   ['a dispatcher that shares its name with a function that sends nothing', 'rs', 'dispatchers.json', (document) => { dispatcher(document, 'rs', 'list').evidence.push({ at: 'crates/libtmux/src/plan/wire.rs:149', has: ['list'] }) },
     /rs: dispatcher list at crates\/libtmux\/src\/plan\/wire.rs:149: reaches no transport, and cites no chain to one/],
   ['a chain hop whose line does not hold its text', 'rs', 'dispatchers.json', (document) => { dispatcher(document, 'rs', 'send').evidence[0].reaches[0].has = ['.sendx('] },
-    /rs: dispatcher send at crates\/libtmux\/src\/control.rs:585: hop crates\/libtmux\/src\/control.rs:586 does not contain "\.sendx\("/],
+    /rs: dispatcher send at crates\/libtmux\/src\/control.rs:583: hop crates\/libtmux\/src\/control.rs:584 does not contain "\.sendx\("/],
   ['a chain that skips the function between two hops', 'rs', 'dispatchers.json', (document) => { dispatcher(document, 'rs', 'dispatch').evidence[0].reaches.splice(1, 1) },
-    /rs: dispatcher dispatch at crates\/libtmux\/src\/plan\/run.rs:443: hop crates\/libtmux\/src\/plan\/run.rs:461 leads to cmd, but crates\/libtmux\/src\/internal\/core.rs:438 is not a line of it/],
+    /rs: dispatcher dispatch at crates\/libtmux\/src\/plan\/run.rs:446: hop crates\/libtmux\/src\/plan\/run.rs:464 leads to cmd, but crates\/libtmux\/src\/internal\/core.rs:535 is not a line of it/],
   ['a chain hop on a field whose type it does not say', 'rs', 'dispatchers.json', (document) => { delete dispatcher(document, 'rs', 'send').evidence[0].reaches[0].on },
-    /rs: dispatcher send at crates\/libtmux\/src\/control.rs:585: hop crates\/libtmux\/src\/control.rs:586 is a call of sender\.send\(\), which resolves to no function the scan has read, and not to ControlSender\.send/],
+    /rs: dispatcher send at crates\/libtmux\/src\/control.rs:583: hop crates\/libtmux\/src\/control.rs:584 is a call of sender\.send\(\), which resolves to no function the scan has read, and not to ControlSender\.send/],
   ['a chain hop that leads somewhere and does not say why', 'rs', 'dispatchers.json', (document) => { delete dispatcher(document, 'rs', 'send').evidence[0].reaches.find((hop) => hop.leads).why },
-    /rs: dispatcher send at crates\/libtmux\/src\/control.rs:585: hop crates\/libtmux\/src\/control.rs:803 leads to serve and says nothing about why the scan cannot follow it/],
+    /rs: dispatcher send at crates\/libtmux\/src\/control.rs:583: hop crates\/libtmux\/src\/control.rs:818 leads to serve and says nothing about why the scan cannot follow it/],
   ['a chain that goes to the overload the arguments of the call do not fit', 'java', 'dispatchers.json', (document) => {
     const run = dispatcher(document, 'java', 'run').evidence.find((item) => item.at.endsWith('Server.java:1221'))
     run.reaches = [run.reaches[0], { ...run.reaches.find((hop) => hop.at.endsWith('Server.java:1251')), at: run.reaches[0].at.replace(':1222', ':1230'), has: ['fence.guarded(snapshot'] }]

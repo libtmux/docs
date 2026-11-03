@@ -94,14 +94,14 @@
   ],
   "port": "ts",
   "repo": "libtmux/libtmux-ts",
-  "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
+  "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
   "schemaVersion": 1,
   "symbols": {
     "client.Client.detach": [
       {
         "command": "detach-client",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/shell.ts:246",
+          "packages/libtmux/src/_internal/operations/shell.ts:263",
           "packages/libtmux/src/client.ts:95"
         ],
         "scope": null
@@ -111,7 +111,7 @@
       {
         "command": "switch-client",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/shell.ts:255",
+          "packages/libtmux/src/_internal/operations/shell.ts:272",
           "packages/libtmux/src/client.ts:107"
         ],
         "scope": null
@@ -121,55 +121,34 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/mcp/src/startup.ts:92",
-          "packages/mcp/src/startup.ts:107",
-          "packages/mcp/src/startup.ts:110",
-          "packages/mcp/src/startup.ts:124",
-          "packages/mcp/src/server.ts:244"
+          "packages/mcp/src/startup.ts:102",
+          "packages/mcp/src/startup.ts:99",
+          "packages/mcp/src/startup.ts:102",
+          "packages/mcp/src/startup.ts:121",
+          "packages/mcp/src/server.ts:227"
         ],
         "reviewed": true,
         "scope": null,
-        "when": "unless an explicit launch finds no server"
+        "when": "the server is already running"
       },
       {
         "command": "list-sessions",
         "evidence": [
           "packages/libtmux/src/_internal/operations/server_utils.ts:129",
-          "packages/libtmux/src/server.ts:1301",
-          "packages/mcp/src/startup.ts:107",
-          "packages/mcp/src/server.ts:244"
+          "packages/libtmux/src/server.ts:1611",
+          "packages/mcp/src/startup.ts:99",
+          "packages/mcp/src/server.ts:227"
         ],
         "reviewed": true,
-        "scope": null,
-        "when": "an explicit launch"
-      },
-      {
-        "command": "show-options",
-        "evidence": [
-          "packages/mcp/src/startup.ts:89",
-          "packages/mcp/src/server.ts:244"
-        ],
-        "reviewed": true,
-        "scope": null,
-        "when": "a minimal launch, no explicit selection"
-      },
-      {
-        "command": "start-server",
-        "evidence": [
-          "packages/mcp/src/startup.ts:88",
-          "packages/mcp/src/server.ts:244"
-        ],
-        "reviewed": true,
-        "scope": null,
-        "when": "a minimal launch, no explicit selection"
+        "scope": null
       }
     ],
     "pane.Pane.breakOut": [
       {
         "command": "break-pane",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/shell.ts:146",
-          "packages/libtmux/src/pane.ts:517"
+          "packages/libtmux/src/_internal/operations/shell.ts:163",
+          "packages/libtmux/src/pane.ts:607"
         ],
         "scope": null
       }
@@ -179,7 +158,7 @@
         "command": "capture-pane",
         "evidence": [
           "packages/libtmux/src/_internal/operations/pane_io.ts:44",
-          "packages/libtmux/src/pane.ts:345"
+          "packages/libtmux/src/pane.ts:353"
         ],
         "scope": null
       }
@@ -189,7 +168,7 @@
         "command": "choose-buffer",
         "evidence": [
           "packages/libtmux/src/_internal/operations/interactive.ts:83",
-          "packages/libtmux/src/pane.ts:609"
+          "packages/libtmux/src/pane.ts:699"
         ],
         "scope": null
       }
@@ -199,7 +178,7 @@
         "command": "choose-tree",
         "evidence": [
           "packages/libtmux/src/_internal/operations/interactive.ts:69",
-          "packages/libtmux/src/pane.ts:591"
+          "packages/libtmux/src/pane.ts:681"
         ],
         "scope": null
       }
@@ -209,7 +188,7 @@
         "command": "clear-history",
         "evidence": [
           "packages/libtmux/src/_internal/operations/pane_io.ts:65",
-          "packages/libtmux/src/pane.ts:356"
+          "packages/libtmux/src/pane.ts:443"
         ],
         "scope": null
       }
@@ -219,7 +198,7 @@
         "command": "customize-mode",
         "evidence": [
           "packages/libtmux/src/_internal/operations/interactive.ts:104",
-          "packages/libtmux/src/pane.ts:659"
+          "packages/libtmux/src/pane.ts:749"
         ],
         "scope": null
       }
@@ -229,7 +208,7 @@
         "command": "display-menu",
         "evidence": [
           "packages/libtmux/src/_internal/operations/interactive.ts:50",
-          "packages/libtmux/src/pane.ts:573"
+          "packages/libtmux/src/pane.ts:663"
         ],
         "scope": null
       }
@@ -238,8 +217,8 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/shell.ts:59",
-          "packages/libtmux/src/pane.ts:476"
+          "packages/libtmux/src/_internal/operations/shell.ts:71",
+          "packages/libtmux/src/pane.ts:563"
         ],
         "scope": null
       }
@@ -249,7 +228,7 @@
         "command": "display-popup",
         "evidence": [
           "packages/libtmux/src/_internal/operations/interactive.ts:19",
-          "packages/libtmux/src/pane.ts:562"
+          "packages/libtmux/src/pane.ts:652"
         ],
         "scope": null
       }
@@ -258,8 +237,8 @@
       {
         "command": "copy-mode",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/shell.ts:216",
-          "packages/libtmux/src/pane.ts:540"
+          "packages/libtmux/src/_internal/operations/shell.ts:233",
+          "packages/libtmux/src/pane.ts:630"
         ],
         "scope": null
       }
@@ -268,8 +247,8 @@
       {
         "command": "send-keys",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/shell.ts:220",
-          "packages/libtmux/src/pane.ts:551"
+          "packages/libtmux/src/_internal/operations/shell.ts:237",
+          "packages/libtmux/src/pane.ts:641"
         ],
         "scope": null
       }
@@ -279,7 +258,7 @@
         "command": "find-window",
         "evidence": [
           "packages/libtmux/src/_internal/operations/interactive.ts:94",
-          "packages/libtmux/src/pane.ts:627"
+          "packages/libtmux/src/pane.ts:717"
         ],
         "scope": null
       }
@@ -288,8 +267,8 @@
       {
         "command": "join-pane",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/shell.ts:189",
-          "packages/libtmux/src/pane.ts:529"
+          "packages/libtmux/src/_internal/operations/shell.ts:206",
+          "packages/libtmux/src/pane.ts:619"
         ],
         "scope": null
       }
@@ -298,7 +277,7 @@
       {
         "command": "kill-pane",
         "evidence": [
-          "packages/libtmux/src/pane.ts:244"
+          "packages/libtmux/src/pane.ts:252"
         ],
         "scope": null
       }
@@ -310,7 +289,7 @@
           "packages/libtmux/src/_internal/operations/plans.ts:179",
           "packages/libtmux/src/_internal/operations/plans.ts:192",
           "packages/libtmux/src/_internal/operations/mutations.ts:86",
-          "packages/libtmux/src/pane.ts:255"
+          "packages/libtmux/src/pane.ts:263"
         ],
         "reviewed": true,
         "scope": null
@@ -321,7 +300,7 @@
           "packages/libtmux/src/_internal/operations/mutations.ts:86",
           "packages/libtmux/src/_internal/operations/plans.ts:195",
           "packages/libtmux/src/_internal/operations/plans.ts:192",
-          "packages/libtmux/src/pane.ts:255"
+          "packages/libtmux/src/pane.ts:263"
         ],
         "reviewed": true,
         "scope": null,
@@ -332,8 +311,8 @@
       {
         "command": "paste-buffer",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:439",
-          "packages/libtmux/src/pane.ts:452"
+          "packages/libtmux/src/_internal/operations/topology.ts:440",
+          "packages/libtmux/src/pane.ts:539"
         ],
         "scope": null
       }
@@ -343,7 +322,7 @@
         "command": "pipe-pane",
         "evidence": [
           "packages/libtmux/src/_internal/operations/pane_io.ts:92",
-          "packages/libtmux/src/pane.ts:503"
+          "packages/libtmux/src/pane.ts:590"
         ],
         "scope": null
       }
@@ -352,8 +331,8 @@
       {
         "command": "resize-pane",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:314",
-          "packages/libtmux/src/pane.ts:370"
+          "packages/libtmux/src/_internal/operations/topology.ts:315",
+          "packages/libtmux/src/pane.ts:457"
         ],
         "scope": null
       }
@@ -362,8 +341,8 @@
       {
         "command": "respawn-pane",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/shell.ts:77",
-          "packages/libtmux/src/pane.ts:487"
+          "packages/libtmux/src/_internal/operations/shell.ts:89",
+          "packages/libtmux/src/pane.ts:574"
         ],
         "scope": null
       }
@@ -372,7 +351,7 @@
       {
         "command": "select-pane",
         "evidence": [
-          "packages/libtmux/src/pane.ts:423"
+          "packages/libtmux/src/pane.ts:510"
         ],
         "scope": null
       }
@@ -382,7 +361,7 @@
         "command": "send-keys",
         "evidence": [
           "packages/libtmux/src/_internal/operations/pane_io.ts:32",
-          "packages/libtmux/src/pane.ts:286"
+          "packages/libtmux/src/pane.ts:294"
         ],
         "scope": null
       }
@@ -392,7 +371,7 @@
         "command": "send-prefix",
         "evidence": [
           "packages/libtmux/src/_internal/operations/interactive.ts:99",
-          "packages/libtmux/src/pane.ts:641"
+          "packages/libtmux/src/pane.ts:731"
         ],
         "scope": null
       }
@@ -402,7 +381,7 @@
         "command": "set-hook",
         "evidence": [
           "packages/libtmux/src/_internal/operations/hooks.ts:70",
-          "packages/libtmux/src/pane.ts:154"
+          "packages/libtmux/src/pane.ts:162"
         ],
         "scope": null
       }
@@ -412,7 +391,7 @@
         "command": "set-option",
         "evidence": [
           "packages/libtmux/src/_internal/operations/options.ts:175",
-          "packages/libtmux/src/pane.ts:207"
+          "packages/libtmux/src/pane.ts:215"
         ],
         "reviewed": true,
         "scope": null
@@ -422,8 +401,8 @@
       {
         "command": "select-pane",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:403",
-          "packages/libtmux/src/pane.ts:438"
+          "packages/libtmux/src/_internal/operations/topology.ts:404",
+          "packages/libtmux/src/pane.ts:525"
         ],
         "scope": null
       }
@@ -433,7 +412,7 @@
         "command": "show-hooks",
         "evidence": [
           "packages/libtmux/src/_internal/operations/hooks.ts:31",
-          "packages/libtmux/src/pane.ts:143"
+          "packages/libtmux/src/pane.ts:151"
         ],
         "scope": null
       }
@@ -443,7 +422,7 @@
         "command": "show-options",
         "evidence": [
           "packages/libtmux/src/_internal/operations/options.ts:114",
-          "packages/libtmux/src/pane.ts:181"
+          "packages/libtmux/src/pane.ts:189"
         ],
         "reviewed": true,
         "scope": null
@@ -454,7 +433,7 @@
         "command": "show-options",
         "evidence": [
           "packages/libtmux/src/_internal/operations/options.ts:148",
-          "packages/libtmux/src/pane.ts:196"
+          "packages/libtmux/src/pane.ts:204"
         ],
         "scope": null
       }
@@ -467,7 +446,7 @@
           "packages/libtmux/src/_internal/operations/plans.ts:154",
           "packages/libtmux/src/_internal/operations/mutations.ts:43",
           "packages/libtmux/src/_internal/operations/mutations.ts:70",
-          "packages/libtmux/src/pane.ts:233"
+          "packages/libtmux/src/pane.ts:241"
         ],
         "reviewed": true,
         "scope": null
@@ -477,8 +456,8 @@
       {
         "command": "swap-pane",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:379",
-          "packages/libtmux/src/pane.ts:412"
+          "packages/libtmux/src/_internal/operations/topology.ts:380",
+          "packages/libtmux/src/pane.ts:499"
         ],
         "scope": null
       }
@@ -488,7 +467,7 @@
         "command": "set-hook",
         "evidence": [
           "packages/libtmux/src/_internal/operations/hooks.ts:94",
-          "packages/libtmux/src/pane.ts:165"
+          "packages/libtmux/src/pane.ts:173"
         ],
         "scope": null
       }
@@ -498,7 +477,7 @@
         "command": "set-option",
         "evidence": [
           "packages/libtmux/src/_internal/operations/options.ts:201",
-          "packages/libtmux/src/pane.ts:218"
+          "packages/libtmux/src/pane.ts:226"
         ],
         "reviewed": true,
         "scope": null
@@ -508,38 +487,92 @@
       {
         "command": "if-shell",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:295",
-          "packages/libtmux/src/pane.ts:400"
+          "packages/libtmux/src/_internal/operations/topology.ts:296",
+          "packages/libtmux/src/pane.ts:487"
         ],
         "scope": null
       },
       {
         "command": "resize-pane",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:295",
-          "packages/libtmux/src/_internal/operations/topology.ts:297",
-          "packages/libtmux/src/pane.ts:400"
+          "packages/libtmux/src/_internal/operations/topology.ts:296",
+          "packages/libtmux/src/_internal/operations/topology.ts:298",
+          "packages/libtmux/src/pane.ts:487"
         ],
         "reviewed": true,
         "scope": null,
         "when": "the window is zoomed"
       }
     ],
+    "pane.Pane.waitForCommand": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/pane_wait.ts:83",
+          "packages/libtmux/src/_internal/operations/pane_wait.ts:166",
+          "packages/libtmux/src/_internal/operations/pane_wait.ts:241",
+          "packages/libtmux/src/pane.ts:406"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "pane.Pane.waitForExit": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/pane_wait.ts:83",
+          "packages/libtmux/src/_internal/operations/pane_wait.ts:166",
+          "packages/libtmux/src/_internal/operations/pane_wait.ts:227",
+          "packages/libtmux/src/pane.ts:380"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "pane.Pane.waitForText": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/pane_wait.ts:309",
+          "packages/libtmux/src/pane.ts:432"
+        ],
+        "scope": null
+      },
+      {
+        "command": "display-message",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/pane_wait.ts:309",
+          "packages/libtmux/src/pane.ts:432"
+        ],
+        "scope": null
+      },
+      {
+        "command": "wait-for",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/pane_wait.ts:83",
+          "packages/libtmux/src/_internal/operations/pane_wait.ts:302",
+          "packages/libtmux/src/pane.ts:432"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
     "pane.Pane.zoom": [
       {
         "command": "if-shell",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:267",
-          "packages/libtmux/src/pane.ts:386"
+          "packages/libtmux/src/_internal/operations/topology.ts:268",
+          "packages/libtmux/src/pane.ts:473"
         ],
         "scope": null
       },
       {
         "command": "resize-pane",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:267",
-          "packages/libtmux/src/_internal/operations/topology.ts:276",
-          "packages/libtmux/src/pane.ts:386"
+          "packages/libtmux/src/_internal/operations/topology.ts:268",
+          "packages/libtmux/src/_internal/operations/topology.ts:277",
+          "packages/libtmux/src/pane.ts:473"
         ],
         "reviewed": true,
         "scope": null,
@@ -548,8 +581,26 @@
       {
         "command": "select-pane",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:267",
-          "packages/libtmux/src/pane.ts:386"
+          "packages/libtmux/src/_internal/operations/topology.ts:268",
+          "packages/libtmux/src/pane.ts:473"
+        ],
+        "scope": null
+      }
+    ],
+    "program.Program.output": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/program.ts:342",
+          "packages/libtmux/src/program.ts:87"
+        ],
+        "scope": null
+      },
+      {
+        "command": "display-message",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/program.ts:342",
+          "packages/libtmux/src/program.ts:87"
         ],
         "scope": null
       }
@@ -559,7 +610,7 @@
         "command": "list-sessions",
         "evidence": [
           "packages/libtmux/src/_internal/operations/server_utils.ts:160",
-          "packages/libtmux/src/server.ts:1317"
+          "packages/libtmux/src/server.ts:1627"
         ],
         "scope": null
       }
@@ -569,7 +620,7 @@
         "command": "delete-buffer",
         "evidence": [
           "packages/libtmux/src/_internal/operations/server_utils.ts:116",
-          "packages/libtmux/src/server.ts:1257"
+          "packages/libtmux/src/server.ts:1481"
         ],
         "scope": null
       }
@@ -579,7 +630,7 @@
         "command": "show-environment",
         "evidence": [
           "packages/libtmux/src/_internal/operations/environment.ts:70",
-          "packages/libtmux/src/server.ts:1016"
+          "packages/libtmux/src/server.ts:1236"
         ],
         "scope": null
       }
@@ -589,7 +640,7 @@
         "command": "list-sessions",
         "evidence": [
           "packages/libtmux/src/_internal/operations/server_utils.ts:25",
-          "packages/libtmux/src/server.ts:1148"
+          "packages/libtmux/src/server.ts:1368"
         ],
         "scope": null
       }
@@ -598,8 +649,8 @@
       {
         "command": "if-shell",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/shell.ts:36",
-          "packages/libtmux/src/server.ts:1284"
+          "packages/libtmux/src/_internal/operations/shell.ts:48",
+          "packages/libtmux/src/server.ts:1594"
         ],
         "scope": null
       }
@@ -609,7 +660,7 @@
         "command": "list-sessions",
         "evidence": [
           "packages/libtmux/src/_internal/operations/server_utils.ts:129",
-          "packages/libtmux/src/server.ts:1301"
+          "packages/libtmux/src/server.ts:1611"
         ],
         "scope": null
       }
@@ -619,7 +670,7 @@
         "command": "kill-server",
         "evidence": [
           "packages/libtmux/src/_internal/operations/mutations.ts:90",
-          "packages/libtmux/src/server.ts:1126"
+          "packages/libtmux/src/server.ts:1346"
         ],
         "scope": null
       }
@@ -629,7 +680,7 @@
         "command": "list-buffers",
         "evidence": [
           "packages/libtmux/src/_internal/operations/server_utils.ts:87",
-          "packages/libtmux/src/server.ts:1246"
+          "packages/libtmux/src/server.ts:1466"
         ],
         "scope": null
       }
@@ -639,7 +690,7 @@
         "command": "list-commands",
         "evidence": [
           "packages/libtmux/src/_internal/operations/server_utils.ts:42",
-          "packages/libtmux/src/server.ts:1177"
+          "packages/libtmux/src/server.ts:1397"
         ],
         "scope": null
       }
@@ -649,7 +700,7 @@
         "command": "load-buffer",
         "evidence": [
           "packages/libtmux/src/_internal/operations/server_utils.ts:69",
-          "packages/libtmux/src/server.ts:1191"
+          "packages/libtmux/src/server.ts:1411"
         ],
         "scope": null
       }
@@ -662,7 +713,7 @@
           "packages/libtmux/src/_internal/operations/plans.ts:120",
           "packages/libtmux/src/_internal/operations/mutations.ts:43",
           "packages/libtmux/src/_internal/operations/mutations.ts:52",
-          "packages/libtmux/src/server.ts:1115"
+          "packages/libtmux/src/server.ts:1335"
         ],
         "reviewed": true,
         "scope": null
@@ -673,7 +724,7 @@
         "command": "set-environment",
         "evidence": [
           "packages/libtmux/src/_internal/operations/environment.ts:146",
-          "packages/libtmux/src/server.ts:1050"
+          "packages/libtmux/src/server.ts:1270"
         ],
         "scope": null
       }
@@ -682,8 +733,8 @@
       {
         "command": "run-shell",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/shell.ts:15",
-          "packages/libtmux/src/server.ts:1273"
+          "packages/libtmux/src/_internal/operations/shell.ts:27",
+          "packages/libtmux/src/server.ts:1502"
         ],
         "scope": null
       }
@@ -693,7 +744,7 @@
         "command": "save-buffer",
         "evidence": [
           "packages/libtmux/src/_internal/operations/server_utils.ts:105",
-          "packages/libtmux/src/server.ts:835"
+          "packages/libtmux/src/server.ts:1055"
         ],
         "scope": null
       }
@@ -703,7 +754,7 @@
         "command": "set-buffer",
         "evidence": [
           "packages/libtmux/src/_internal/operations/server_utils.ts:54",
-          "packages/libtmux/src/server.ts:1207"
+          "packages/libtmux/src/server.ts:1427"
         ],
         "scope": null
       }
@@ -713,7 +764,7 @@
         "command": "set-environment",
         "evidence": [
           "packages/libtmux/src/_internal/operations/environment.ts:98",
-          "packages/libtmux/src/server.ts:1027"
+          "packages/libtmux/src/server.ts:1247"
         ],
         "scope": null
       }
@@ -723,7 +774,7 @@
         "command": "set-option",
         "evidence": [
           "packages/libtmux/src/_internal/operations/options.ts:175",
-          "packages/libtmux/src/server.ts:872"
+          "packages/libtmux/src/server.ts:1092"
         ],
         "reviewed": true,
         "scope": null
@@ -734,7 +785,7 @@
         "command": "set-hook",
         "evidence": [
           "packages/libtmux/src/_internal/operations/hooks.ts:70",
-          "packages/libtmux/src/server.ts:917"
+          "packages/libtmux/src/server.ts:1137"
         ],
         "scope": null
       }
@@ -744,7 +795,7 @@
         "command": "set-option",
         "evidence": [
           "packages/libtmux/src/_internal/operations/options.ts:175",
-          "packages/libtmux/src/server.ts:809"
+          "packages/libtmux/src/server.ts:1029"
         ],
         "reviewed": true,
         "scope": null
@@ -755,7 +806,7 @@
         "command": "show-buffer",
         "evidence": [
           "packages/libtmux/src/_internal/operations/server_utils.ts:77",
-          "packages/libtmux/src/server.ts:1219"
+          "packages/libtmux/src/server.ts:1439"
         ],
         "scope": null
       }
@@ -765,7 +816,7 @@
         "command": "show-buffer",
         "evidence": [
           "packages/libtmux/src/_internal/operations/server_utils.ts:82",
-          "packages/libtmux/src/server.ts:1234"
+          "packages/libtmux/src/server.ts:1454"
         ],
         "scope": null
       }
@@ -775,7 +826,7 @@
         "command": "show-environment",
         "evidence": [
           "packages/libtmux/src/_internal/operations/environment.ts:43",
-          "packages/libtmux/src/server.ts:1005"
+          "packages/libtmux/src/server.ts:1225"
         ],
         "scope": null
       }
@@ -785,7 +836,7 @@
         "command": "show-options",
         "evidence": [
           "packages/libtmux/src/_internal/operations/options.ts:114",
-          "packages/libtmux/src/server.ts:856"
+          "packages/libtmux/src/server.ts:1076"
         ],
         "reviewed": true,
         "scope": null
@@ -796,7 +847,7 @@
         "command": "show-hooks",
         "evidence": [
           "packages/libtmux/src/_internal/operations/hooks.ts:31",
-          "packages/libtmux/src/server.ts:902"
+          "packages/libtmux/src/server.ts:1122"
         ],
         "scope": null
       }
@@ -806,7 +857,7 @@
         "command": "show-options",
         "evidence": [
           "packages/libtmux/src/_internal/operations/options.ts:114",
-          "packages/libtmux/src/server.ts:783"
+          "packages/libtmux/src/server.ts:1003"
         ],
         "reviewed": true,
         "scope": null
@@ -817,7 +868,7 @@
         "command": "show-options",
         "evidence": [
           "packages/libtmux/src/_internal/operations/options.ts:148",
-          "packages/libtmux/src/server.ts:798"
+          "packages/libtmux/src/server.ts:1018"
         ],
         "scope": null
       }
@@ -830,7 +881,7 @@
           "packages/libtmux/src/_internal/operations/acquire.ts:90",
           "packages/libtmux/src/_internal/operations/acquire.ts:126",
           "packages/libtmux/src/_internal/operations/snapshot.ts:42",
-          "packages/libtmux/src/server.ts:533"
+          "packages/libtmux/src/server.ts:753"
         ],
         "reviewed": true,
         "scope": "server"
@@ -841,7 +892,39 @@
         "command": "source-file",
         "evidence": [
           "packages/libtmux/src/_internal/operations/server_utils.ts:37",
-          "packages/libtmux/src/server.ts:1165"
+          "packages/libtmux/src/server.ts:1385"
+        ],
+        "scope": null
+      }
+    ],
+    "server.Server.spawn": [
+      {
+        "command": "pipe-pane",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/program_start.ts:597",
+          "packages/libtmux/src/_internal/operations/program_start.ts:599",
+          "packages/libtmux/src/_internal/operations/program_start.ts:408",
+          "packages/libtmux/src/server.ts:1549"
+        ],
+        "scope": null
+      },
+      {
+        "command": "respawn-pane",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/program_start.ts:597",
+          "packages/libtmux/src/_internal/operations/program_start.ts:599",
+          "packages/libtmux/src/_internal/operations/program_start.ts:392",
+          "packages/libtmux/src/server.ts:1549"
+        ],
+        "scope": null
+      },
+      {
+        "command": "wait-for",
+        "evidence": [
+          "packages/libtmux/src/_internal/operations/program_start.ts:597",
+          "packages/libtmux/src/_internal/operations/program_start.ts:599",
+          "packages/libtmux/src/_internal/operations/program_start.ts:415",
+          "packages/libtmux/src/server.ts:1549"
         ],
         "scope": null
       }
@@ -851,7 +934,7 @@
         "command": "set-environment",
         "evidence": [
           "packages/libtmux/src/_internal/operations/environment.ts:123",
-          "packages/libtmux/src/server.ts:1038"
+          "packages/libtmux/src/server.ts:1258"
         ],
         "scope": null
       }
@@ -861,7 +944,7 @@
         "command": "set-option",
         "evidence": [
           "packages/libtmux/src/_internal/operations/options.ts:201",
-          "packages/libtmux/src/server.ts:886"
+          "packages/libtmux/src/server.ts:1106"
         ],
         "reviewed": true,
         "scope": null
@@ -872,7 +955,7 @@
         "command": "set-hook",
         "evidence": [
           "packages/libtmux/src/_internal/operations/hooks.ts:94",
-          "packages/libtmux/src/server.ts:928"
+          "packages/libtmux/src/server.ts:1148"
         ],
         "scope": null
       }
@@ -882,7 +965,7 @@
         "command": "set-option",
         "evidence": [
           "packages/libtmux/src/_internal/operations/options.ts:201",
-          "packages/libtmux/src/server.ts:820"
+          "packages/libtmux/src/server.ts:1040"
         ],
         "reviewed": true,
         "scope": null
@@ -890,11 +973,12 @@
     ],
     "server.Server.validateLayouts": [
       {
-        "command": "display-message",
+        "command": "run-shell",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/layout.ts:62",
-          "packages/libtmux/src/_internal/operations/layout.ts:51",
-          "packages/libtmux/src/server.ts:955"
+          "packages/libtmux/src/_internal/support/versions.ts:159",
+          "packages/libtmux/src/_internal/operations/layout.ts:74",
+          "packages/libtmux/src/_internal/operations/layout.ts:56",
+          "packages/libtmux/src/server.ts:1175"
         ],
         "reviewed": true,
         "scope": null,
@@ -905,8 +989,8 @@
       {
         "command": "detach-client",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/shell.ts:246",
-          "packages/libtmux/src/session.ts:418"
+          "packages/libtmux/src/_internal/operations/shell.ts:263",
+          "packages/libtmux/src/session.ts:478"
         ],
         "scope": null
       }
@@ -916,7 +1000,7 @@
         "command": "show-environment",
         "evidence": [
           "packages/libtmux/src/_internal/operations/environment.ts:70",
-          "packages/libtmux/src/session.ts:223"
+          "packages/libtmux/src/session.ts:283"
         ],
         "scope": null
       }
@@ -925,7 +1009,7 @@
       {
         "command": "kill-session",
         "evidence": [
-          "packages/libtmux/src/session.ts:339"
+          "packages/libtmux/src/session.ts:399"
         ],
         "scope": null
       }
@@ -938,7 +1022,7 @@
           "packages/libtmux/src/_internal/operations/plans.ts:133",
           "packages/libtmux/src/_internal/operations/mutations.ts:43",
           "packages/libtmux/src/_internal/operations/mutations.ts:61",
-          "packages/libtmux/src/session.ts:307"
+          "packages/libtmux/src/session.ts:367"
         ],
         "reviewed": true,
         "scope": null
@@ -949,7 +1033,7 @@
         "command": "set-environment",
         "evidence": [
           "packages/libtmux/src/_internal/operations/environment.ts:146",
-          "packages/libtmux/src/session.ts:257"
+          "packages/libtmux/src/session.ts:317"
         ],
         "scope": null
       }
@@ -959,7 +1043,7 @@
         "command": "rename-session",
         "evidence": [
           "packages/libtmux/src/_internal/operations/session_nav.ts:10",
-          "packages/libtmux/src/session.ts:367"
+          "packages/libtmux/src/session.ts:427"
         ],
         "scope": null
       }
@@ -969,7 +1053,7 @@
         "command": "last-window",
         "evidence": [
           "packages/libtmux/src/_internal/operations/session_nav.ts:34",
-          "packages/libtmux/src/session.ts:378"
+          "packages/libtmux/src/session.ts:438"
         ],
         "reviewed": true,
         "scope": null,
@@ -979,7 +1063,7 @@
         "command": "next-window",
         "evidence": [
           "packages/libtmux/src/_internal/operations/session_nav.ts:35",
-          "packages/libtmux/src/session.ts:378"
+          "packages/libtmux/src/session.ts:438"
         ],
         "reviewed": true,
         "scope": null,
@@ -990,7 +1074,7 @@
         "evidence": [
           "packages/libtmux/src/_internal/operations/session_nav.ts:37",
           "packages/libtmux/src/_internal/operations/session_nav.ts:36",
-          "packages/libtmux/src/session.ts:378"
+          "packages/libtmux/src/session.ts:438"
         ],
         "reviewed": true,
         "scope": null,
@@ -1000,7 +1084,7 @@
         "command": "select-window",
         "evidence": [
           "packages/libtmux/src/_internal/operations/session_nav.ts:40",
-          "packages/libtmux/src/session.ts:378"
+          "packages/libtmux/src/session.ts:438"
         ],
         "scope": null,
         "when": "the target is not last, next or previous"
@@ -1011,7 +1095,7 @@
         "command": "set-environment",
         "evidence": [
           "packages/libtmux/src/_internal/operations/environment.ts:98",
-          "packages/libtmux/src/session.ts:234"
+          "packages/libtmux/src/session.ts:294"
         ],
         "scope": null
       }
@@ -1021,7 +1105,7 @@
         "command": "set-hook",
         "evidence": [
           "packages/libtmux/src/_internal/operations/hooks.ts:70",
-          "packages/libtmux/src/session.ts:186"
+          "packages/libtmux/src/session.ts:246"
         ],
         "scope": null
       }
@@ -1031,7 +1115,7 @@
         "command": "set-option",
         "evidence": [
           "packages/libtmux/src/_internal/operations/options.ts:175",
-          "packages/libtmux/src/session.ts:144"
+          "packages/libtmux/src/session.ts:204"
         ],
         "reviewed": true,
         "scope": null
@@ -1042,7 +1126,7 @@
         "command": "show-environment",
         "evidence": [
           "packages/libtmux/src/_internal/operations/environment.ts:43",
-          "packages/libtmux/src/session.ts:212"
+          "packages/libtmux/src/session.ts:272"
         ],
         "scope": null
       }
@@ -1052,7 +1136,7 @@
         "command": "show-hooks",
         "evidence": [
           "packages/libtmux/src/_internal/operations/hooks.ts:31",
-          "packages/libtmux/src/session.ts:171"
+          "packages/libtmux/src/session.ts:231"
         ],
         "scope": null
       }
@@ -1062,7 +1146,7 @@
         "command": "show-options",
         "evidence": [
           "packages/libtmux/src/_internal/operations/options.ts:114",
-          "packages/libtmux/src/session.ts:118"
+          "packages/libtmux/src/session.ts:178"
         ],
         "reviewed": true,
         "scope": null
@@ -1073,7 +1157,7 @@
         "command": "show-options",
         "evidence": [
           "packages/libtmux/src/_internal/operations/options.ts:148",
-          "packages/libtmux/src/session.ts:133"
+          "packages/libtmux/src/session.ts:193"
         ],
         "scope": null
       }
@@ -1083,7 +1167,7 @@
         "command": "set-environment",
         "evidence": [
           "packages/libtmux/src/_internal/operations/environment.ts:123",
-          "packages/libtmux/src/session.ts:245"
+          "packages/libtmux/src/session.ts:305"
         ],
         "scope": null
       }
@@ -1093,7 +1177,7 @@
         "command": "set-hook",
         "evidence": [
           "packages/libtmux/src/_internal/operations/hooks.ts:94",
-          "packages/libtmux/src/session.ts:197"
+          "packages/libtmux/src/session.ts:257"
         ],
         "scope": null
       }
@@ -1103,7 +1187,7 @@
         "command": "set-option",
         "evidence": [
           "packages/libtmux/src/_internal/operations/options.ts:201",
-          "packages/libtmux/src/session.ts:155"
+          "packages/libtmux/src/session.ts:215"
         ],
         "reviewed": true,
         "scope": null
@@ -1122,7 +1206,7 @@
       {
         "command": "link-window",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:59",
+          "packages/libtmux/src/_internal/operations/topology.ts:60",
           "packages/libtmux/src/window.ts:439"
         ],
         "scope": null
@@ -1132,7 +1216,7 @@
       {
         "command": "move-window",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:46",
+          "packages/libtmux/src/_internal/operations/topology.ts:47",
           "packages/libtmux/src/window.ts:427"
         ],
         "scope": null
@@ -1142,7 +1226,7 @@
       {
         "command": "next-layout",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:412",
+          "packages/libtmux/src/_internal/operations/topology.ts:413",
           "packages/libtmux/src/window.ts:318"
         ],
         "reviewed": true,
@@ -1153,7 +1237,7 @@
       {
         "command": "previous-layout",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:412",
+          "packages/libtmux/src/_internal/operations/topology.ts:413",
           "packages/libtmux/src/window.ts:329"
         ],
         "reviewed": true,
@@ -1164,7 +1248,7 @@
       {
         "command": "rename-window",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:27",
+          "packages/libtmux/src/_internal/operations/topology.ts:28",
           "packages/libtmux/src/window.ts:411"
         ],
         "scope": null
@@ -1174,7 +1258,7 @@
       {
         "command": "resize-window",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:350",
+          "packages/libtmux/src/_internal/operations/topology.ts:351",
           "packages/libtmux/src/window.ts:358"
         ],
         "scope": null
@@ -1184,7 +1268,7 @@
       {
         "command": "respawn-window",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/shell.ts:109",
+          "packages/libtmux/src/_internal/operations/shell.ts:121",
           "packages/libtmux/src/window.ts:372"
         ],
         "scope": null
@@ -1194,7 +1278,7 @@
       {
         "command": "rotate-window",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:426",
+          "packages/libtmux/src/_internal/operations/topology.ts:427",
           "packages/libtmux/src/window.ts:343"
         ],
         "scope": null
@@ -1204,7 +1288,7 @@
       {
         "command": "select-window",
         "evidence": [
-          "packages/libtmux/src/window.ts:535"
+          "packages/libtmux/src/window.ts:534"
         ],
         "scope": null
       }
@@ -1213,8 +1297,8 @@
       {
         "command": "select-layout",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:242",
-          "packages/libtmux/src/window.ts:524"
+          "packages/libtmux/src/_internal/operations/topology.ts:243",
+          "packages/libtmux/src/window.ts:523"
         ],
         "scope": null
       }
@@ -1289,7 +1373,7 @@
       {
         "command": "swap-window",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:93",
+          "packages/libtmux/src/_internal/operations/topology.ts:94",
           "packages/libtmux/src/window.ts:484"
         ],
         "scope": null
@@ -1299,7 +1383,7 @@
       {
         "command": "unlink-window",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:71",
+          "packages/libtmux/src/_internal/operations/topology.ts:72",
           "packages/libtmux/src/window.ts:461"
         ],
         "scope": null
@@ -1330,7 +1414,7 @@
       {
         "command": "if-shell",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:295",
+          "packages/libtmux/src/_internal/operations/topology.ts:296",
           "packages/libtmux/src/window.ts:387"
         ],
         "scope": null
@@ -1338,8 +1422,8 @@
       {
         "command": "resize-pane",
         "evidence": [
-          "packages/libtmux/src/_internal/operations/topology.ts:295",
-          "packages/libtmux/src/_internal/operations/topology.ts:297",
+          "packages/libtmux/src/_internal/operations/topology.ts:296",
+          "packages/libtmux/src/_internal/operations/topology.ts:298",
           "packages/libtmux/src/window.ts:387"
         ],
         "reviewed": true,

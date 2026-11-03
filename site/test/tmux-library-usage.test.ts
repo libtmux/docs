@@ -380,10 +380,10 @@ describe('a release a library refuses to send on', () => {
   })
 
   it('says when a launch sends what it sends, from the line the default launch reaches', () => {
-    // ts: only a minimal launch starts the server and reads the owner option; the facts are disclosed whenever the server is there.
-    expect(use('ts', 'mcp.server.main', 'start-server')?.when).toBe('a minimal launch, no explicit selection')
-    expect(use('ts', 'mcp.server.main', 'show-options')?.when).toBe('a minimal launch, no explicit selection')
-    expect(use('ts', 'mcp.server.main', 'display-message')?.when).toBe('unless an explicit launch finds no server')
+    // ts: the launch never starts the server or reads its options; it reads the socket path only from a server that is there.
+    expect(use('ts', 'mcp.server.main', 'start-server')).toBeUndefined()
+    expect(use('ts', 'mcp.server.main', 'show-options')).toBeUndefined()
+    expect(use('ts', 'mcp.server.main', 'display-message')?.when).toBe('the server is already running')
     // java: the default launch is the dedicated server, which starts it and reads its metadata; an explicit one only reads it.
     const main = 'io.github.libtmux.mcp.Main.Main.main'
     expect(use('java', main, 'start-server')).toMatchObject({ when: 'the launch chooses no socket', reviewed: true })
@@ -392,9 +392,10 @@ describe('a release a library refuses to send on', () => {
     expect(use('java', main, 'display-message')?.evidence[0]).toBe('libtmux-mcp/src/main/java/io/github/libtmux/mcp/LaunchConfiguration.java:111')
     // go: the helper registers a kill for the end of the test, which is not a send of the call itself.
     expect(use('go', 'tmuxtest.NewSession', 'kill-session')?.when).toBe('the test ends, in t.Cleanup')
-    // ts: an explicit launch asks whether the server is there (list-sessions) and, if it is, for its socket path; the lines that say so are cited.
-    expect(use('ts', 'mcp.server.main', 'list-sessions')).toMatchObject({ when: 'an explicit launch', reviewed: true })
-    expect(use('ts', 'mcp.server.main', 'display-message')?.evidence).toEqual(expect.arrayContaining(['packages/mcp/src/startup.ts:107', 'packages/mcp/src/startup.ts:110', 'packages/mcp/src/startup.ts:124']))
+    // ts: every launch asks whether the server is there (list-sessions) and, if it is, for its socket path; the lines that say so are cited.
+    expect(use('ts', 'mcp.server.main', 'list-sessions')).toMatchObject({ reviewed: true })
+    expect(use('ts', 'mcp.server.main', 'list-sessions')?.when).toBeUndefined()
+    expect(use('ts', 'mcp.server.main', 'display-message')?.evidence).toEqual(expect.arrayContaining(['packages/mcp/src/startup.ts:102', 'packages/mcp/src/startup.ts:99', 'packages/mcp/src/startup.ts:121']))
   })
 
   it('credits a wrapper with every send of a method it calls, and reads a hook the way it reads an option', () => {

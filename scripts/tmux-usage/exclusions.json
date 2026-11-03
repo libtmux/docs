@@ -90,31 +90,6 @@
       ]
     },
     {
-      "port": "rs",
-      "owner": "Plan",
-      "names": [
-        "run_over_control_mode"
-      ],
-      "commands": [
-        "display-message"
-      ],
-      "why": "run_over_control_mode probes the tmux version with display-message only when the plan holds a layout step whose validity differs between releases.",
-      "evidence": [
-        {
-          "at": "crates/libtmux/src/plan/run.rs:785",
-          "has": [
-            "!pending.is_empty()"
-          ]
-        },
-        {
-          "at": "crates/libtmux/src/plan/run.rs:786",
-          "has": [
-            "sender.send("
-          ]
-        }
-      ]
-    },
-    {
       "port": "cxx",
       "owner": "Window",
       "names": [
@@ -305,19 +280,19 @@
       "why": "exitCopyMode calls setCopyMode with active false, which sends send-keys -X cancel; the copy-mode branch is for entering.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/shell.ts:215",
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:232",
           "has": [
             "if (active)"
           ]
         },
         {
-          "at": "packages/libtmux/src/_internal/operations/shell.ts:216",
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:233",
           "has": [
             "\"copy-mode\""
           ]
         },
         {
-          "at": "packages/libtmux/src/pane.ts:551",
+          "at": "packages/libtmux/src/pane.ts:641",
           "has": [
             "setCopyMode(runtimeForHandle(this), this.id, false)"
           ]
@@ -336,19 +311,19 @@
       "why": "enterCopyMode calls setCopyMode with active true, which returns after copy-mode; the send-keys -X cancel branch is for leaving.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/shell.ts:216",
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:233",
           "has": [
             "\"copy-mode\""
           ]
         },
         {
-          "at": "packages/libtmux/src/_internal/operations/shell.ts:217",
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:234",
           "has": [
             "return;"
           ]
         },
         {
-          "at": "packages/libtmux/src/pane.ts:540",
+          "at": "packages/libtmux/src/pane.ts:630",
           "has": [
             "setCopyMode(runtimeForHandle(this), this.id, true)"
           ]
@@ -367,19 +342,19 @@
       "why": "breakOut renames the window afterwards only when a name is given and the server is exactly tmux 3.7, the release that ignores the name.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/shell.ts:141",
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:156",
           "has": [
-            "quirks.breakPane37"
+            "\"break-pane-misnames-windows\""
           ]
         },
         {
-          "at": "packages/libtmux/src/_internal/operations/shell.ts:154",
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:171",
           "has": [
             "if (!renames || windowName === undefined) return;"
           ]
         },
         {
-          "at": "packages/libtmux/src/_internal/operations/shell.ts:160",
+          "at": "packages/libtmux/src/_internal/operations/shell.ts:177",
           "has": [
             "\"rename-window\""
           ]

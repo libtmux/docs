@@ -2808,13 +2808,13 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/session.rs:905",
+          "at": "crates/libtmux/src/session.rs:1055",
           "has": [
             "pub fn get<F: ReadField<Self>>"
           ]
         },
         {
-          "at": "crates/libtmux/src/window.rs:1192",
+          "at": "crates/libtmux/src/window.rs:1367",
           "has": [
             "pub fn get<F: ReadField<Self>>"
           ]
@@ -2834,7 +2834,7 @@
       "why": "CapturePane::new builds a planned step; a plan sends its steps when it is run, and this sends nothing.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/ops/panes.rs:516",
+          "at": "crates/libtmux/src/plan/ops/panes.rs:522",
           "has": [
             "pub fn new("
           ]
@@ -2874,7 +2874,7 @@
       "why": "KillPane::new builds a planned step; a plan sends its steps when it is run, and this sends nothing.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/ops/panes.rs:566",
+          "at": "crates/libtmux/src/plan/ops/panes.rs:572",
           "has": [
             "pub fn new("
           ]
@@ -2934,7 +2934,7 @@
       "why": "NewSessionOptions::new and NewWindowOptions::new build the options of a creation, and select sets one; they send nothing.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/server.rs:2223",
+          "at": "crates/libtmux/src/server.rs:2373",
           "has": [
             "pub fn new(name: impl Into<TmuxArg>)"
           ]
@@ -2976,13 +2976,13 @@
       "why": "NewSessionOptions::new and NewWindowOptions::new build the options of a creation, and select sets one; they send nothing.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/session.rs:1067",
+          "at": "crates/libtmux/src/session.rs:1217",
           "has": [
             "pub fn new(name: impl Into<TmuxArg>)"
           ]
         },
         {
-          "at": "crates/libtmux/src/session.rs:1126",
+          "at": "crates/libtmux/src/session.rs:1276",
           "has": [
             "pub const fn select(mut self) -> Self"
           ]
@@ -3083,7 +3083,7 @@
       "why": "SelectPane::new builds a planned step; a plan sends its steps when it is run, and this sends nothing.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/ops/panes.rs:473",
+          "at": "crates/libtmux/src/plan/ops/panes.rs:479",
           "has": [
             "pub fn new("
           ]
@@ -3123,7 +3123,7 @@
       "why": "clear_prompt_history sends clear-prompt-history, and not clear-history.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/server.rs:1364",
+          "at": "crates/libtmux/src/server.rs:1533",
           "has": [
             "clear-prompt-history"
           ]
@@ -3143,7 +3143,7 @@
       "why": "delete_buffer sends delete-buffer, and not kill-server.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/server.rs:1106",
+          "at": "crates/libtmux/src/server.rs:1314",
           "has": [
             "delete-buffer"
           ]
@@ -3184,13 +3184,13 @@
       "why": "lock_channel and with_channel_lock take a channel lock with wait-for -L, and unlock_channel releases it with -U; they send no lock-server.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/internal/wait_for.rs:262",
+          "at": "crates/libtmux/src/internal/wait_for.rs:259",
           "has": [
             "channel_command(Some(\"-L\"), channel)"
           ]
         },
         {
-          "at": "crates/libtmux/src/internal/wait_for.rs:341",
+          "at": "crates/libtmux/src/internal/wait_for.rs:338",
           "has": [
             "channel_command(Some(\"-U\"), channel)"
           ]
@@ -3230,7 +3230,7 @@
       "why": "SessionName::new checks and wraps a session name; it sends nothing.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/target.rs:695",
+          "at": "crates/libtmux/src/target.rs:708",
           "has": [
             "pub fn new(name: impl Into<String>)"
           ]
@@ -3250,7 +3250,7 @@
       "why": "SplitWindow::new builds a planned step; a plan sends its steps when it is run, and this sends nothing.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/ops/panes.rs:146",
+          "at": "crates/libtmux/src/plan/ops/panes.rs:152",
           "has": [
             "pub fn new("
           ]
@@ -3296,7 +3296,7 @@
       "why": "last_activity is the time tmux last saw activity in the window, read from the projection the handle holds.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/window.rs:294",
+          "at": "crates/libtmux/src/window.rs:468",
           "has": [
             "pub fn last_activity(&self) -> SystemTime"
           ]
@@ -3320,13 +3320,13 @@
       "why": "next_layout and previous_layout send select-layout with -n and -p, which has its own entry; they send neither next-layout, next-window nor previous-window.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/window.rs:597",
+          "at": "crates/libtmux/src/window.rs:772",
           "has": [
             "self.step_layout(\"-n\")"
           ]
         },
         {
-          "at": "crates/libtmux/src/window.rs:614",
+          "at": "crates/libtmux/src/window.rs:789",
           "has": [
             "Command::new(\"select-layout\")"
           ]
@@ -3956,19 +3956,19 @@
       "why": "ConnectedServer is the interface of a server with a live control connection; its close ends the connection and its waitFor waits on the observed state, and neither sends kill-server or wait-for.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/types.ts:1038",
+          "at": "packages/libtmux/src/types.ts:1224",
           "has": [
             "export interface ConnectedServer extends Server"
           ]
         },
         {
-          "at": "packages/libtmux/src/types.ts:1040",
+          "at": "packages/libtmux/src/types.ts:1226",
           "has": [
             "close(): Promise<void>"
           ]
         },
         {
-          "at": "packages/libtmux/src/types.ts:1089",
+          "at": "packages/libtmux/src/types.ts:1275",
           "has": [
             "waitFor("
           ]
@@ -4090,7 +4090,7 @@
       "why": "The plan getters return planned operations for Server.batch to run; they send nothing themselves.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/pane.ts:269",
+          "at": "packages/libtmux/src/pane.ts:277",
           "has": [
             "get plan(): PanePlans"
           ]
@@ -4133,13 +4133,13 @@
       "why": "append is a flag in an options object, not a command.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/types.ts:412",
+          "at": "packages/libtmux/src/types.ts:409",
           "has": [
             "export interface SaveBufferOptions"
           ]
         },
         {
-          "at": "packages/libtmux/src/types.ts:414",
+          "at": "packages/libtmux/src/types.ts:411",
           "has": [
             "readonly append?: boolean"
           ]
@@ -4221,7 +4221,7 @@
       "why": "The plan getters return planned operations for Server.batch to run; they send nothing themselves.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/session.ts:324",
+          "at": "packages/libtmux/src/session.ts:384",
           "has": [
             "get plan(): SessionPlans"
           ]
@@ -4264,13 +4264,13 @@
       "why": "append is a flag in an options object, not a command.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/types.ts:418",
+          "at": "packages/libtmux/src/types.ts:415",
           "has": [
             "export interface SetHookOptions"
           ]
         },
         {
-          "at": "packages/libtmux/src/types.ts:426",
+          "at": "packages/libtmux/src/types.ts:423",
           "has": [
             "readonly append?: boolean"
           ]
@@ -4287,13 +4287,13 @@
       "why": "append is a flag in an options object, not a command.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/types.ts:369",
+          "at": "packages/libtmux/src/types.ts:366",
           "has": [
             "export interface SetOptionOptions"
           ]
         },
         {
-          "at": "packages/libtmux/src/types.ts:371",
+          "at": "packages/libtmux/src/types.ts:368",
           "has": [
             "readonly append?: boolean"
           ]
@@ -4319,7 +4319,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/_internal/operations/topology.ts:79",
+          "at": "packages/libtmux/src/_internal/operations/topology.ts:80",
           "has": [
             "planRemoveWindowPlacement("
           ]

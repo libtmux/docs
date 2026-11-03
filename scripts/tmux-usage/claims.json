@@ -62,7 +62,7 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/session.rs:440",
+          "at": "crates/libtmux/src/session.rs:586",
           "has": [
             "listing::panes",
             "Scope::SessionTarget"
@@ -113,7 +113,7 @@
       "scope": null,
       "evidence": [
         {
-          "at": "crates/libtmux/src/pane/observe.rs:171",
+          "at": "crates/libtmux/src/pane/observe.rs:167",
           "has": [
             "self.core.execute(command)"
           ]
@@ -131,7 +131,7 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/pane/observe.rs:169",
+          "at": "crates/libtmux/src/pane/observe.rs:165",
           "has": [
             "options.lower("
           ]
@@ -250,19 +250,19 @@
       "scope": null,
       "evidence": [
         {
-          "at": "crates/libtmux/src/internal/wait_for.rs:248",
+          "at": "crates/libtmux/src/internal/wait_for.rs:245",
           "has": [
             "channel_command("
           ]
         },
         {
-          "at": "crates/libtmux/src/internal/wait_for.rs:363",
+          "at": "crates/libtmux/src/internal/wait_for.rs:360",
           "has": [
             "wait-for"
           ]
         },
         {
-          "at": "crates/libtmux/src/internal/wait_for.rs:221",
+          "at": "crates/libtmux/src/internal/wait_for.rs:218",
           "has": [
             "park("
           ]
@@ -911,7 +911,7 @@
       "scope": null,
       "evidence": [
         {
-          "at": "crates/libtmux/src/internal/options.rs:607",
+          "at": "crates/libtmux/src/internal/options.rs:602",
           "has": [
             "run(core, \"set-hook\""
           ]
@@ -978,7 +978,7 @@
       "scope": null,
       "evidence": [
         {
-          "at": "crates/libtmux/src/internal/options.rs:607",
+          "at": "crates/libtmux/src/internal/options.rs:602",
           "has": [
             "run(core, \"set-hook\""
           ]
@@ -1045,7 +1045,7 @@
       "scope": null,
       "evidence": [
         {
-          "at": "crates/libtmux/src/internal/options.rs:607",
+          "at": "crates/libtmux/src/internal/options.rs:602",
           "has": [
             "run(core, \"set-hook\""
           ]
@@ -1084,7 +1084,7 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/session.rs:280",
+          "at": "crates/libtmux/src/session.rs:426",
           "has": [
             "listing::windows(&self.core, listing::Scope::Target(&target)"
           ],
@@ -1117,13 +1117,13 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/session.rs:280",
+          "at": "crates/libtmux/src/session.rs:426",
           "has": [
             "listing::windows(&self.core, listing::Scope::Target(&target)"
           ]
         },
         {
-          "at": "crates/libtmux/src/session.rs:324",
+          "at": "crates/libtmux/src/session.rs:470",
           "has": [
             "self.windows().await?"
           ],
@@ -1177,7 +1177,7 @@
       "scope": null,
       "evidence": [
         {
-          "at": "crates/libtmux/src/pane/observe.rs:171",
+          "at": "crates/libtmux/src/pane/observe.rs:167",
           "has": [
             "self.core.execute(command)"
           ],
@@ -1196,7 +1196,7 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/pane/observe.rs:169",
+          "at": "crates/libtmux/src/pane/observe.rs:165",
           "has": [
             "options.lower("
           ]
@@ -1216,7 +1216,7 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/server.rs:2286",
+          "at": "crates/libtmux/src/server.rs:2430",
           "has": [
             "Command::new(\"new-session\")"
           ]
@@ -1228,7 +1228,7 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/server.rs:898",
+          "at": "crates/libtmux/src/server.rs:1106",
           "has": [
             "listing::create_session(",
             "options.into_command(format)"
@@ -1250,7 +1250,7 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/session.rs:1139",
+          "at": "crates/libtmux/src/session.rs:1289",
           "has": [
             "Command::new(\"new-window\")"
           ]
@@ -1262,7 +1262,7 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/session.rs:495",
+          "at": "crates/libtmux/src/session.rs:643",
           "has": [
             "listing::create_window(",
             "options.into_command(&session, format)"
@@ -1284,7 +1284,7 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/window.rs:1948",
+          "at": "crates/libtmux/src/window.rs:2135",
           "has": [
             "Command::new(\"split-window\")"
           ]
@@ -1296,7 +1296,7 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/window.rs:367",
+          "at": "crates/libtmux/src/window.rs:541",
           "has": [
             "listing::create_pane(",
             "options.into_command(&window, format)"
@@ -1318,7 +1318,7 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/window.rs:1948",
+          "at": "crates/libtmux/src/window.rs:2135",
           "has": [
             "Command::new(\"split-window\")"
           ]
@@ -1346,7 +1346,7 @@
       "scope": null,
       "evidence": [
         {
-          "at": "crates/libtmux/src/pane/observe.rs:171",
+          "at": "crates/libtmux/src/pane/observe.rs:167",
           "has": [
             "self.core.execute(command)"
           ]
@@ -1364,13 +1364,13 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/pane/observe.rs:169",
+          "at": "crates/libtmux/src/pane/observe.rs:165",
           "has": [
             "options.lower("
           ]
         },
         {
-          "at": "crates/libtmux/src/pane/observe.rs:237",
+          "at": "crates/libtmux/src/pane/observe.rs:233",
           "has": [
             ".capture_with("
           ],
@@ -1410,7 +1410,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/server.ts:533",
+          "at": "packages/libtmux/src/server.ts:753",
           "has": [
             "buildServerSnapshot"
           ],
@@ -1449,7 +1449,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/server.ts:1115",
+          "at": "packages/libtmux/src/server.ts:1335",
           "has": [
             "return newSession(this, runtimeForServer(this), options)"
           ],
@@ -1470,7 +1470,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/pane.ts:181",
+          "at": "packages/libtmux/src/pane.ts:189",
           "has": [
             "return showOptions(runtimeFor"
           ],
@@ -1491,7 +1491,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/pane.ts:207",
+          "at": "packages/libtmux/src/pane.ts:215",
           "has": [
             "return setOption(runtimeFor"
           ],
@@ -1512,7 +1512,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/pane.ts:218",
+          "at": "packages/libtmux/src/pane.ts:226",
           "has": [
             "return unsetOption(runtimeFor"
           ],
@@ -1533,7 +1533,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/server.ts:783",
+          "at": "packages/libtmux/src/server.ts:1003",
           "has": [
             "return showOptions(runtimeFor"
           ],
@@ -1554,7 +1554,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/server.ts:809",
+          "at": "packages/libtmux/src/server.ts:1029",
           "has": [
             "return setOption(runtimeFor"
           ],
@@ -1575,7 +1575,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/server.ts:820",
+          "at": "packages/libtmux/src/server.ts:1040",
           "has": [
             "return unsetOption(runtimeFor"
           ],
@@ -1596,7 +1596,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/session.ts:118",
+          "at": "packages/libtmux/src/session.ts:178",
           "has": [
             "return showOptions(runtimeFor"
           ],
@@ -1617,7 +1617,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/session.ts:144",
+          "at": "packages/libtmux/src/session.ts:204",
           "has": [
             "return setOption(runtimeFor"
           ],
@@ -1638,7 +1638,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/session.ts:155",
+          "at": "packages/libtmux/src/session.ts:215",
           "has": [
             "return unsetOption(runtimeFor"
           ],
@@ -1722,7 +1722,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/server.ts:856",
+          "at": "packages/libtmux/src/server.ts:1076",
           "has": [
             "return showOptions(runtimeForServer(this), scope"
           ],
@@ -1743,7 +1743,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/server.ts:872",
+          "at": "packages/libtmux/src/server.ts:1092",
           "has": [
             "return setOption(runtimeForServer(this), scope"
           ],
@@ -1764,7 +1764,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/server.ts:886",
+          "at": "packages/libtmux/src/server.ts:1106",
           "has": [
             "return unsetOption(runtimeForServer(this), scope"
           ],
@@ -1803,7 +1803,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/pane.ts:233",
+          "at": "packages/libtmux/src/pane.ts:241",
           "has": [
             "splitWindow(this.server"
           ],
@@ -1881,7 +1881,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/session.ts:307",
+          "at": "packages/libtmux/src/session.ts:367",
           "has": [
             "newWindow(this.server"
           ],
@@ -1896,7 +1896,7 @@
       "scope": null,
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/topology.ts:412",
+          "at": "packages/libtmux/src/_internal/operations/topology.ts:413",
           "has": [
             "`${step}-layout`"
           ]
@@ -1917,7 +1917,7 @@
       "scope": null,
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/topology.ts:412",
+          "at": "packages/libtmux/src/_internal/operations/topology.ts:413",
           "has": [
             "`${step}-layout`"
           ]
@@ -1956,7 +1956,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/pane.ts:255",
+          "at": "packages/libtmux/src/pane.ts:263",
           "has": [
             "killPaneIfWindowUnshared("
           ],
@@ -1967,80 +1967,36 @@
     {
       "port": "ts",
       "symbol": "mcp.server.main",
-      "command": "start-server",
-      "scope": null,
-      "when": "a minimal launch, no explicit selection",
-      "evidence": [
-        {
-          "at": "packages/mcp/src/startup.ts:88",
-          "has": [
-            "server.cmd(\"start-server\""
-          ]
-        },
-        {
-          "at": "packages/mcp/src/server.ts:244",
-          "has": [
-            "inspectServerStartup("
-          ],
-          "in": "mcp.server.main"
-        }
-      ]
-    },
-    {
-      "port": "ts",
-      "symbol": "mcp.server.main",
-      "command": "show-options",
-      "scope": null,
-      "when": "a minimal launch, no explicit selection",
-      "evidence": [
-        {
-          "at": "packages/mcp/src/startup.ts:89",
-          "has": [
-            "server.cmd(\"show-options\""
-          ]
-        },
-        {
-          "at": "packages/mcp/src/server.ts:244",
-          "has": [
-            "inspectServerStartup("
-          ],
-          "in": "mcp.server.main"
-        }
-      ]
-    },
-    {
-      "port": "ts",
-      "symbol": "mcp.server.main",
       "command": "display-message",
       "scope": null,
-      "when": "unless an explicit launch finds no server",
+      "when": "the server is already running",
       "evidence": [
         {
-          "at": "packages/mcp/src/startup.ts:92",
+          "at": "packages/mcp/src/startup.ts:102",
           "has": [
             "server.cmd(\"display-message\""
           ]
         },
         {
-          "at": "packages/mcp/src/startup.ts:107",
+          "at": "packages/mcp/src/startup.ts:99",
           "has": [
             "server.isAlive()"
           ]
         },
         {
-          "at": "packages/mcp/src/startup.ts:110",
+          "at": "packages/mcp/src/startup.ts:102",
           "has": [
             "server.cmd(\"display-message\""
           ]
         },
         {
-          "at": "packages/mcp/src/startup.ts:124",
+          "at": "packages/mcp/src/startup.ts:121",
           "has": [
             "return Object.freeze("
           ]
         },
         {
-          "at": "packages/mcp/src/server.ts:244",
+          "at": "packages/mcp/src/server.ts:227",
           "has": [
             "inspectServerStartup("
           ],
@@ -2053,7 +2009,6 @@
       "symbol": "mcp.server.main",
       "command": "list-sessions",
       "scope": null,
-      "when": "an explicit launch",
       "evidence": [
         {
           "at": "packages/libtmux/src/_internal/operations/server_utils.ts:129",
@@ -2064,19 +2019,19 @@
           "span": 6
         },
         {
-          "at": "packages/libtmux/src/server.ts:1301",
+          "at": "packages/libtmux/src/server.ts:1611",
           "has": [
             "isAlive(runtimeForServer(this))"
           ]
         },
         {
-          "at": "packages/mcp/src/startup.ts:107",
+          "at": "packages/mcp/src/startup.ts:99",
           "has": [
             "server.isAlive()"
           ]
         },
         {
-          "at": "packages/mcp/src/server.ts:244",
+          "at": "packages/mcp/src/server.ts:227",
           "has": [
             "inspectServerStartup("
           ],
@@ -10648,7 +10603,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/session.ts:378",
+          "at": "packages/libtmux/src/session.ts:438",
           "has": [
             "selectWindowIn("
           ],
@@ -10671,7 +10626,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/session.ts:378",
+          "at": "packages/libtmux/src/session.ts:438",
           "has": [
             "selectWindowIn("
           ],
@@ -10699,7 +10654,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/session.ts:378",
+          "at": "packages/libtmux/src/session.ts:438",
           "has": [
             "selectWindowIn("
           ],
@@ -10710,24 +10665,30 @@
     {
       "port": "ts",
       "symbol": "server.Server.validateLayouts",
-      "command": "display-message",
+      "command": "run-shell",
       "scope": null,
       "when": "layouts that depend on the tmux version",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/layout.ts:62",
+          "at": "packages/libtmux/src/_internal/support/versions.ts:159",
           "has": [
-            "[\"display-message\", \"-p\", \"#{version}\"]"
+            "[\"run-shell\", \"-C\""
           ]
         },
         {
-          "at": "packages/libtmux/src/_internal/operations/layout.ts:51",
+          "at": "packages/libtmux/src/_internal/operations/layout.ts:74",
+          "has": [
+            "checkDaemonVersion("
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/layout.ts:56",
           "has": [
             "needsVersion.length === 0"
           ]
         },
         {
-          "at": "packages/libtmux/src/server.ts:955",
+          "at": "packages/libtmux/src/server.ts:1175",
           "has": [
             "validateLayouts(runtimeForServer(this)"
           ],
@@ -11190,7 +11151,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/pane.ts:255",
+          "at": "packages/libtmux/src/pane.ts:263",
           "has": [
             "killPaneIfWindowUnshared("
           ],
@@ -11206,19 +11167,19 @@
       "when": "the window is not zoomed",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/topology.ts:267",
+          "at": "packages/libtmux/src/_internal/operations/topology.ts:268",
           "has": [
             "runCommands("
           ]
         },
         {
-          "at": "packages/libtmux/src/_internal/operations/topology.ts:276",
+          "at": "packages/libtmux/src/_internal/operations/topology.ts:277",
           "has": [
             "quoteCommand([\"resize-pane\", \"-Z\", ...at])"
           ]
         },
         {
-          "at": "packages/libtmux/src/pane.ts:386",
+          "at": "packages/libtmux/src/pane.ts:473",
           "has": [
             "zoomPane("
           ],
@@ -11234,19 +11195,19 @@
       "when": "the window is zoomed",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/topology.ts:295",
+          "at": "packages/libtmux/src/_internal/operations/topology.ts:296",
           "has": [
             "runCommand("
           ]
         },
         {
-          "at": "packages/libtmux/src/_internal/operations/topology.ts:297",
+          "at": "packages/libtmux/src/_internal/operations/topology.ts:298",
           "has": [
             "quoteCommand([\"resize-pane\", \"-Z\", ...at])"
           ]
         },
         {
-          "at": "packages/libtmux/src/pane.ts:400",
+          "at": "packages/libtmux/src/pane.ts:487",
           "has": [
             "unzoomTarget("
           ],
@@ -11262,13 +11223,13 @@
       "when": "the window is zoomed",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/topology.ts:295",
+          "at": "packages/libtmux/src/_internal/operations/topology.ts:296",
           "has": [
             "runCommand("
           ]
         },
         {
-          "at": "packages/libtmux/src/_internal/operations/topology.ts:297",
+          "at": "packages/libtmux/src/_internal/operations/topology.ts:298",
           "has": [
             "quoteCommand([\"resize-pane\", \"-Z\", ...at])"
           ]
@@ -11290,7 +11251,7 @@
       "when": "the plan has a set-option step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:461",
+          "at": "crates/libtmux/src/plan/run.rs:464",
           "has": [
             "server.cmd(first)"
           ]
@@ -11302,19 +11263,19 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:550",
+          "at": "crates/libtmux/src/plan/run.rs:553",
           "has": [
             ".render("
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:449",
+          "at": "crates/libtmux/src/plan/run.rs:452",
           "has": [
             "self.render_step(step, bound)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:377",
+          "at": "crates/libtmux/src/plan/run.rs:380",
           "has": [
             ".dispatch(server, &step, &bound)"
           ],
@@ -11330,7 +11291,7 @@
       "when": "the plan has a set-option step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:869",
+          "at": "crates/libtmux/src/plan/run.rs:861",
           "has": [
             ".send(command)"
           ]
@@ -11342,7 +11303,7 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:856",
+          "at": "crates/libtmux/src/plan/run.rs:848",
           "has": [
             ".render(&resolve, ())"
           ],
@@ -11358,7 +11319,7 @@
       "when": "the plan has a set-environment step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:461",
+          "at": "crates/libtmux/src/plan/run.rs:464",
           "has": [
             "server.cmd(first)"
           ]
@@ -11370,19 +11331,19 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:550",
+          "at": "crates/libtmux/src/plan/run.rs:553",
           "has": [
             ".render("
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:449",
+          "at": "crates/libtmux/src/plan/run.rs:452",
           "has": [
             "self.render_step(step, bound)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:377",
+          "at": "crates/libtmux/src/plan/run.rs:380",
           "has": [
             ".dispatch(server, &step, &bound)"
           ],
@@ -11398,7 +11359,7 @@
       "when": "the plan has a set-environment step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:869",
+          "at": "crates/libtmux/src/plan/run.rs:861",
           "has": [
             ".send(command)"
           ]
@@ -11410,7 +11371,7 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:856",
+          "at": "crates/libtmux/src/plan/run.rs:848",
           "has": [
             ".render(&resolve, ())"
           ],
@@ -11426,31 +11387,31 @@
       "when": "the plan has a split-window step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:461",
+          "at": "crates/libtmux/src/plan/run.rs:464",
           "has": [
             "server.cmd(first)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/ops/panes.rs:257",
+          "at": "crates/libtmux/src/plan/ops/panes.rs:263",
           "has": [
             "Command::new(\"split-window\")"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:550",
+          "at": "crates/libtmux/src/plan/run.rs:553",
           "has": [
             ".render("
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:449",
+          "at": "crates/libtmux/src/plan/run.rs:452",
           "has": [
             "self.render_step(step, bound)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:377",
+          "at": "crates/libtmux/src/plan/run.rs:380",
           "has": [
             ".dispatch(server, &step, &bound)"
           ],
@@ -11466,19 +11427,19 @@
       "when": "the plan has a split-window step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:869",
+          "at": "crates/libtmux/src/plan/run.rs:861",
           "has": [
             ".send(command)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/ops/panes.rs:257",
+          "at": "crates/libtmux/src/plan/ops/panes.rs:263",
           "has": [
             "Command::new(\"split-window\")"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:856",
+          "at": "crates/libtmux/src/plan/run.rs:848",
           "has": [
             ".render(&resolve, ())"
           ],
@@ -11494,31 +11455,31 @@
       "when": "the plan has a send-keys step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:461",
+          "at": "crates/libtmux/src/plan/run.rs:464",
           "has": [
             "server.cmd(first)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/ops/panes.rs:412",
+          "at": "crates/libtmux/src/plan/ops/panes.rs:418",
           "has": [
             "Command::new(\"send-keys\")"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:550",
+          "at": "crates/libtmux/src/plan/run.rs:553",
           "has": [
             ".render("
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:449",
+          "at": "crates/libtmux/src/plan/run.rs:452",
           "has": [
             "self.render_step(step, bound)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:377",
+          "at": "crates/libtmux/src/plan/run.rs:380",
           "has": [
             ".dispatch(server, &step, &bound)"
           ],
@@ -11534,19 +11495,19 @@
       "when": "the plan has a send-keys step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:869",
+          "at": "crates/libtmux/src/plan/run.rs:861",
           "has": [
             ".send(command)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/ops/panes.rs:412",
+          "at": "crates/libtmux/src/plan/ops/panes.rs:418",
           "has": [
             "Command::new(\"send-keys\")"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:856",
+          "at": "crates/libtmux/src/plan/run.rs:848",
           "has": [
             ".render(&resolve, ())"
           ],
@@ -11562,31 +11523,31 @@
       "when": "the plan has a select-pane step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:461",
+          "at": "crates/libtmux/src/plan/run.rs:464",
           "has": [
             "server.cmd(first)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/ops/panes.rs:481",
+          "at": "crates/libtmux/src/plan/ops/panes.rs:487",
           "has": [
             "Command::new(\"select-pane\")"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:550",
+          "at": "crates/libtmux/src/plan/run.rs:553",
           "has": [
             ".render("
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:449",
+          "at": "crates/libtmux/src/plan/run.rs:452",
           "has": [
             "self.render_step(step, bound)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:377",
+          "at": "crates/libtmux/src/plan/run.rs:380",
           "has": [
             ".dispatch(server, &step, &bound)"
           ],
@@ -11602,19 +11563,19 @@
       "when": "the plan has a select-pane step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:869",
+          "at": "crates/libtmux/src/plan/run.rs:861",
           "has": [
             ".send(command)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/ops/panes.rs:481",
+          "at": "crates/libtmux/src/plan/ops/panes.rs:487",
           "has": [
             "Command::new(\"select-pane\")"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:856",
+          "at": "crates/libtmux/src/plan/run.rs:848",
           "has": [
             ".render(&resolve, ())"
           ],
@@ -11630,31 +11591,31 @@
       "when": "the plan has a capture-pane step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:461",
+          "at": "crates/libtmux/src/plan/run.rs:464",
           "has": [
             "server.cmd(first)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/ops/panes.rs:531",
+          "at": "crates/libtmux/src/plan/ops/panes.rs:537",
           "has": [
             "Command::new(\"capture-pane\")"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:550",
+          "at": "crates/libtmux/src/plan/run.rs:553",
           "has": [
             ".render("
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:449",
+          "at": "crates/libtmux/src/plan/run.rs:452",
           "has": [
             "self.render_step(step, bound)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:377",
+          "at": "crates/libtmux/src/plan/run.rs:380",
           "has": [
             ".dispatch(server, &step, &bound)"
           ],
@@ -11670,19 +11631,19 @@
       "when": "the plan has a capture-pane step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:869",
+          "at": "crates/libtmux/src/plan/run.rs:861",
           "has": [
             ".send(command)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/ops/panes.rs:531",
+          "at": "crates/libtmux/src/plan/ops/panes.rs:537",
           "has": [
             "Command::new(\"capture-pane\")"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:856",
+          "at": "crates/libtmux/src/plan/run.rs:848",
           "has": [
             ".render(&resolve, ())"
           ],
@@ -11698,31 +11659,31 @@
       "when": "the plan has a kill-pane step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:461",
+          "at": "crates/libtmux/src/plan/run.rs:464",
           "has": [
             "server.cmd(first)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/ops/panes.rs:580",
+          "at": "crates/libtmux/src/plan/ops/panes.rs:586",
           "has": [
             "Command::new(\"kill-pane\")"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:550",
+          "at": "crates/libtmux/src/plan/run.rs:553",
           "has": [
             ".render("
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:449",
+          "at": "crates/libtmux/src/plan/run.rs:452",
           "has": [
             "self.render_step(step, bound)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:377",
+          "at": "crates/libtmux/src/plan/run.rs:380",
           "has": [
             ".dispatch(server, &step, &bound)"
           ],
@@ -11738,19 +11699,19 @@
       "when": "the plan has a kill-pane step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:869",
+          "at": "crates/libtmux/src/plan/run.rs:861",
           "has": [
             ".send(command)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/ops/panes.rs:580",
+          "at": "crates/libtmux/src/plan/ops/panes.rs:586",
           "has": [
             "Command::new(\"kill-pane\")"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:856",
+          "at": "crates/libtmux/src/plan/run.rs:848",
           "has": [
             ".render(&resolve, ())"
           ],
@@ -11766,7 +11727,7 @@
       "when": "the plan has a new-session step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:461",
+          "at": "crates/libtmux/src/plan/run.rs:464",
           "has": [
             "server.cmd(first)"
           ]
@@ -11778,19 +11739,19 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:550",
+          "at": "crates/libtmux/src/plan/run.rs:553",
           "has": [
             ".render("
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:449",
+          "at": "crates/libtmux/src/plan/run.rs:452",
           "has": [
             "self.render_step(step, bound)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:377",
+          "at": "crates/libtmux/src/plan/run.rs:380",
           "has": [
             ".dispatch(server, &step, &bound)"
           ],
@@ -11806,7 +11767,7 @@
       "when": "the plan has a new-session step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:869",
+          "at": "crates/libtmux/src/plan/run.rs:861",
           "has": [
             ".send(command)"
           ]
@@ -11818,7 +11779,7 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:856",
+          "at": "crates/libtmux/src/plan/run.rs:848",
           "has": [
             ".render(&resolve, ())"
           ],
@@ -11834,7 +11795,7 @@
       "when": "the plan has a run-shell step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:461",
+          "at": "crates/libtmux/src/plan/run.rs:464",
           "has": [
             "server.cmd(first)"
           ]
@@ -11846,19 +11807,19 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:550",
+          "at": "crates/libtmux/src/plan/run.rs:553",
           "has": [
             ".render("
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:449",
+          "at": "crates/libtmux/src/plan/run.rs:452",
           "has": [
             "self.render_step(step, bound)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:377",
+          "at": "crates/libtmux/src/plan/run.rs:380",
           "has": [
             ".dispatch(server, &step, &bound)"
           ],
@@ -11874,7 +11835,7 @@
       "when": "the plan has a new-window step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:461",
+          "at": "crates/libtmux/src/plan/run.rs:464",
           "has": [
             "server.cmd(first)"
           ]
@@ -11886,19 +11847,19 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:550",
+          "at": "crates/libtmux/src/plan/run.rs:553",
           "has": [
             ".render("
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:449",
+          "at": "crates/libtmux/src/plan/run.rs:452",
           "has": [
             "self.render_step(step, bound)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:377",
+          "at": "crates/libtmux/src/plan/run.rs:380",
           "has": [
             ".dispatch(server, &step, &bound)"
           ],
@@ -11914,7 +11875,7 @@
       "when": "the plan has a new-window step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:869",
+          "at": "crates/libtmux/src/plan/run.rs:861",
           "has": [
             ".send(command)"
           ]
@@ -11926,7 +11887,7 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:856",
+          "at": "crates/libtmux/src/plan/run.rs:848",
           "has": [
             ".render(&resolve, ())"
           ],
@@ -11942,7 +11903,7 @@
       "when": "the plan has a select-window step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:461",
+          "at": "crates/libtmux/src/plan/run.rs:464",
           "has": [
             "server.cmd(first)"
           ]
@@ -11954,19 +11915,19 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:550",
+          "at": "crates/libtmux/src/plan/run.rs:553",
           "has": [
             ".render("
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:449",
+          "at": "crates/libtmux/src/plan/run.rs:452",
           "has": [
             "self.render_step(step, bound)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:377",
+          "at": "crates/libtmux/src/plan/run.rs:380",
           "has": [
             ".dispatch(server, &step, &bound)"
           ],
@@ -11982,7 +11943,7 @@
       "when": "the plan has a select-window step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:869",
+          "at": "crates/libtmux/src/plan/run.rs:861",
           "has": [
             ".send(command)"
           ]
@@ -11994,7 +11955,7 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:856",
+          "at": "crates/libtmux/src/plan/run.rs:848",
           "has": [
             ".render(&resolve, ())"
           ],
@@ -12010,7 +11971,7 @@
       "when": "the plan has a rename-window step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:461",
+          "at": "crates/libtmux/src/plan/run.rs:464",
           "has": [
             "server.cmd(first)"
           ]
@@ -12022,19 +11983,19 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:550",
+          "at": "crates/libtmux/src/plan/run.rs:553",
           "has": [
             ".render("
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:449",
+          "at": "crates/libtmux/src/plan/run.rs:452",
           "has": [
             "self.render_step(step, bound)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:377",
+          "at": "crates/libtmux/src/plan/run.rs:380",
           "has": [
             ".dispatch(server, &step, &bound)"
           ],
@@ -12050,7 +12011,7 @@
       "when": "the plan has a rename-window step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:869",
+          "at": "crates/libtmux/src/plan/run.rs:861",
           "has": [
             ".send(command)"
           ]
@@ -12062,7 +12023,7 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:856",
+          "at": "crates/libtmux/src/plan/run.rs:848",
           "has": [
             ".render(&resolve, ())"
           ],
@@ -12078,7 +12039,7 @@
       "when": "the plan has a kill-window step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:461",
+          "at": "crates/libtmux/src/plan/run.rs:464",
           "has": [
             "server.cmd(first)"
           ]
@@ -12090,19 +12051,19 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:550",
+          "at": "crates/libtmux/src/plan/run.rs:553",
           "has": [
             ".render("
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:449",
+          "at": "crates/libtmux/src/plan/run.rs:452",
           "has": [
             "self.render_step(step, bound)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:377",
+          "at": "crates/libtmux/src/plan/run.rs:380",
           "has": [
             ".dispatch(server, &step, &bound)"
           ],
@@ -12118,7 +12079,7 @@
       "when": "the plan has a kill-window step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:869",
+          "at": "crates/libtmux/src/plan/run.rs:861",
           "has": [
             ".send(command)"
           ]
@@ -12130,7 +12091,7 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:856",
+          "at": "crates/libtmux/src/plan/run.rs:848",
           "has": [
             ".render(&resolve, ())"
           ],
@@ -12146,7 +12107,7 @@
       "when": "the plan has a select-layout step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:461",
+          "at": "crates/libtmux/src/plan/run.rs:464",
           "has": [
             "server.cmd(first)"
           ]
@@ -12158,19 +12119,19 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:550",
+          "at": "crates/libtmux/src/plan/run.rs:553",
           "has": [
             ".render("
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:449",
+          "at": "crates/libtmux/src/plan/run.rs:452",
           "has": [
             "self.render_step(step, bound)"
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:377",
+          "at": "crates/libtmux/src/plan/run.rs:380",
           "has": [
             ".dispatch(server, &step, &bound)"
           ],
@@ -12186,7 +12147,7 @@
       "when": "the plan has a select-layout step",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/run.rs:869",
+          "at": "crates/libtmux/src/plan/run.rs:861",
           "has": [
             ".send(command)"
           ]
@@ -12198,7 +12159,7 @@
           ]
         },
         {
-          "at": "crates/libtmux/src/plan/run.rs:856",
+          "at": "crates/libtmux/src/plan/run.rs:848",
           "has": [
             ".render(&resolve, ())"
           ],
@@ -15116,6 +15077,120 @@
             "unwrap(reconnect("
           ],
           "in": "LibTmux.Control.reconnect!/2"
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "symbol": "pane.Pane.waitForExit",
+      "command": "wait-for",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/pane_wait.ts:83",
+          "has": [
+            "[\"wait-for\", \"-S\", armed]"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/pane_wait.ts:166",
+          "has": [
+            "arm(runtime, paneId, event, stop.signal)"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/pane_wait.ts:227",
+          "has": [
+            "waitOnPane(runtime, paneId, options, {"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/pane.ts:380",
+          "has": [
+            "waitForPaneExit(runtimeForHandle(this)"
+          ],
+          "in": "pane.Pane.waitForExit"
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "symbol": "pane.Pane.waitForCommand",
+      "command": "wait-for",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/pane_wait.ts:83",
+          "has": [
+            "[\"wait-for\", \"-S\", armed]"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/pane_wait.ts:166",
+          "has": [
+            "arm(runtime, paneId, event, stop.signal)"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/pane_wait.ts:241",
+          "has": [
+            "waitOnPane(runtime, paneId, options, {"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/pane.ts:406",
+          "has": [
+            "waitForPaneCommand(runtimeForHandle(this)"
+          ],
+          "in": "pane.Pane.waitForCommand"
+        }
+      ]
+    },
+    {
+      "port": "ts",
+      "symbol": "pane.Pane.waitForText",
+      "command": "wait-for",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "packages/libtmux/src/_internal/operations/pane_wait.ts:83",
+          "has": [
+            "[\"wait-for\", \"-S\", armed]"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/_internal/operations/pane_wait.ts:302",
+          "has": [
+            "arm(runtime, paneId, \"pane-activity\", round.signal)"
+          ]
+        },
+        {
+          "at": "packages/libtmux/src/pane.ts:432",
+          "has": [
+            "waitForPaneText(runtimeForHandle(this)"
+          ],
+          "in": "pane.Pane.waitForText"
+        }
+      ]
+    },
+    {
+      "port": "rs",
+      "symbol": "server.Server.kill",
+      "command": "kill-server",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "crates/libtmux/src/internal/core.rs:663",
+          "has": [
+            "Command::new(\"kill-server\")"
+          ]
+        },
+        {
+          "at": "crates/libtmux/src/server.rs:1132",
+          "has": [
+            "self.core.kill_server()"
+          ],
+          "in": "server.Server.kill"
         }
       ]
     }
