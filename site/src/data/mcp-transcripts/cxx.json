@@ -22,6 +22,315 @@
     "title": "libtmux C++ tmux server",
     "version": "0.1.0-alpha.11"
   },
+  "contracts": {
+    "create_session": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "height": {
+            "description": "Optional detached height.",
+            "maximum": 100000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "name": {
+            "description": "Optional literal unique session name.",
+            "maxLength": 512,
+            "type": "string"
+          },
+          "startDirectory": {
+            "description": "Literal pane start directory.",
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "width": {
+            "description": "Optional detached width.",
+            "maximum": 100000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "windowName": {
+            "description": "Optional literal first window name.",
+            "maxLength": 512,
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "session_id": {
+            "pattern": "^\\$[0-9]+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "session_id"
+        ],
+        "type": "object"
+      }
+    },
+    "list_panes": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "panes": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "active": {
+                  "type": "boolean"
+                },
+                "command": {
+                  "type": "string"
+                },
+                "dead": {
+                  "type": "boolean"
+                },
+                "height": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "id": {
+                  "pattern": "^%[0-9]+$",
+                  "type": "string"
+                },
+                "index": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "pid": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "session_id": {
+                  "pattern": "^\\$[0-9]+$",
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "width": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "window_id": {
+                  "pattern": "^@[0-9]+$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "active",
+                "command",
+                "dead",
+                "height",
+                "id",
+                "index",
+                "path",
+                "pid",
+                "session_id",
+                "title",
+                "width",
+                "window_id"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "panes"
+        ],
+        "type": "object"
+      }
+    },
+    "split_window": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "direction": {
+            "description": "vertical or horizontal.",
+            "maxLength": 16,
+            "type": "string"
+          },
+          "paneId": {
+            "description": "Stable pane to split.",
+            "maxLength": 512,
+            "type": "string"
+          },
+          "startDirectory": {
+            "description": "Literal pane start directory.",
+            "maxLength": 4096,
+            "type": "string"
+          }
+        },
+        "required": [
+          "paneId"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "changed": {
+            "type": "boolean"
+          },
+          "pane_id": {
+            "pattern": "^%[0-9]+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pane_id"
+        ],
+        "type": "object"
+      }
+    },
+    "list_windows": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "session": {
+            "description": "Stable session ID or name.",
+            "maxLength": 512,
+            "type": "string"
+          }
+        },
+        "required": [
+          "session"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "windows": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "active": {
+                  "type": "boolean"
+                },
+                "height": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "id": {
+                  "pattern": "^@[0-9]+$",
+                  "type": "string"
+                },
+                "index": {
+                  "type": "integer"
+                },
+                "layout": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "pane_count": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "session_id": {
+                  "pattern": "^\\$[0-9]+$",
+                  "type": "string"
+                },
+                "width": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "active",
+                "height",
+                "id",
+                "index",
+                "layout",
+                "name",
+                "pane_count",
+                "session_id",
+                "width"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "windows"
+        ],
+        "type": "object"
+      }
+    },
+    "run_shell_command": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "command": {
+            "description": "Shell command sent to the pane.",
+            "maxLength": 1048576,
+            "type": "string"
+          },
+          "paneId": {
+            "description": "Stable pane ID.",
+            "maxLength": 512,
+            "type": "string"
+          },
+          "timeoutMs": {
+            "description": "Completion timeout in milliseconds.",
+            "maximum": 60000,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "paneId",
+          "command"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      }
+    },
+    "kill_session": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "session": {
+            "description": "Stable session ID or name.",
+            "maxLength": 512,
+            "type": "string"
+          }
+        },
+        "required": [
+          "session"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      }
+    }
+  },
   "prompt": "Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.",
   "steps": [
     {

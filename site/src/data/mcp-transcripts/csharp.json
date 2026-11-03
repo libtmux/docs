@@ -21,6 +21,403 @@
     "name": "tmux",
     "version": "0.0.0-alpha.20"
   },
+  "contracts": {
+    "create_session": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "height": {
+            "default": null,
+            "description": "Rows. Omit for tmux's default of 24.",
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "name": {
+            "default": null,
+            "description": "The session name. Omit and tmux names it with a number.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "startDirectory": {
+            "default": null,
+            "description": "The literal starting directory. Omit for the MCP server's own working directory.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "width": {
+            "default": null,
+            "description": "Columns. Omit for tmux's default of 80.",
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "changed": {
+            "type": "string"
+          },
+          "paneId": {
+            "default": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sessionId": {
+            "default": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "windowId": {
+            "default": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "changed"
+        ],
+        "type": "object"
+      }
+    },
+    "split_window": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "direction": {
+            "default": "Below",
+            "description": "Below, Above, Left, or Right.",
+            "enum": [
+              "Above",
+              "Below",
+              "Left",
+              "Right"
+            ],
+            "type": "string"
+          },
+          "paneId": {
+            "default": null,
+            "description": "The pane to split. Omit for this server's own pane, or else the one the first session shows.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "percentage": {
+            "default": null,
+            "description": "Percentage of the space for the new pane. Omit for half.",
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "startDirectory": {
+            "default": null,
+            "description": "The literal starting directory. Omit for the MCP server's own working directory.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "changed": {
+            "type": "string"
+          },
+          "paneId": {
+            "default": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sessionId": {
+            "default": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "windowId": {
+            "default": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "changed"
+        ],
+        "type": "object"
+      }
+    },
+    "list_windows": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "session": {
+            "default": null,
+            "description": "A session id or name. Omit for every session.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "items": {
+              "properties": {
+                "active": {
+                  "type": "boolean"
+                },
+                "height": {
+                  "type": "integer"
+                },
+                "index": {
+                  "type": "integer"
+                },
+                "layout": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "name": {
+                  "type": "string"
+                },
+                "paneCount": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "sessionId": {
+                  "type": "string"
+                },
+                "width": {
+                  "type": "integer"
+                },
+                "windowId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "windowId",
+                "sessionId",
+                "index",
+                "name",
+                "width",
+                "height",
+                "active",
+                "paneCount",
+                "layout"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "type": "object"
+      }
+    },
+    "run_shell_command": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "command": {
+            "description": "The shell command.",
+            "type": "string"
+          },
+          "maxLines": {
+            "default": null,
+            "description": "Maximum returned lines, newest kept. Omit for the server default, 500 unless LIBTMUX_MCP_MAX_LINES sets another.",
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "paneId": {
+            "default": null,
+            "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "suppressHistory": {
+            "default": false,
+            "description": "Keep the command out of shell history on a best-effort basis.",
+            "type": "boolean"
+          },
+          "timeoutSeconds": {
+            "default": null,
+            "description": "Seconds to wait, lowered to the server's ceiling. Omit to wait the whole ceiling, 30 unless LIBTMUX_MCP_WAIT_MAX_SECONDS sets another.",
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "command"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "anchorLost": {
+            "default": false,
+            "type": "boolean"
+          },
+          "effectiveTimeoutSeconds": {
+            "type": "number"
+          },
+          "elapsedSeconds": {
+            "type": "number"
+          },
+          "exitStatus": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "linesMissed": {
+            "default": false,
+            "type": "boolean"
+          },
+          "output": {
+            "properties": {
+              "droppedBytes": {
+                "type": "integer"
+              },
+              "droppedLines": {
+                "type": "integer"
+              },
+              "lines": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "truncated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "lines",
+              "truncated",
+              "droppedLines",
+              "droppedBytes"
+            ],
+            "type": "object"
+          },
+          "paneExited": {
+            "default": false,
+            "type": "boolean"
+          },
+          "paneId": {
+            "type": "string"
+          },
+          "started": {
+            "default": true,
+            "type": "boolean"
+          },
+          "timedOut": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "paneId",
+          "exitStatus",
+          "timedOut",
+          "output",
+          "elapsedSeconds",
+          "effectiveTimeoutSeconds"
+        ],
+        "type": "object"
+      }
+    },
+    "kill_session": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "session": {
+            "description": "The session id or name to kill.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "changed": {
+            "type": "string"
+          },
+          "paneId": {
+            "default": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sessionId": {
+            "default": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "windowId": {
+            "default": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "changed"
+        ],
+        "type": "object"
+      }
+    }
+  },
   "prompt": "Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.",
   "steps": [
     {
