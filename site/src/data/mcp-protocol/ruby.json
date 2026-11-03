@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-ruby",
-  "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+  "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
   "selection": {
     "mode": "explicit CLI options",
     "tools": "tmux_capabilities,tmux_snapshot,tmux_capture,tmux_wait,tmux_create,tmux_send,tmux_close,tmux_run"
@@ -41,7 +41,7 @@
     ],
     "serverInfo": {
       "name": "libtmux",
-      "version": "0.1.0.alpha.1"
+      "version": "0.1.1"
     },
     "tools": [
       {
@@ -396,7 +396,8 @@
               ],
               "type": "object"
             }
-          ]
+          ],
+          "type": "object"
         }
       },
       {
@@ -406,7 +407,7 @@
           "openWorldHint": false,
           "readOnlyHint": false
         },
-        "description": "Read exact-pane screen/history rows preserving LF. Defaults: 200 lines, 65536 bytes, zero history lines, track=false. Limits: 1000 lines/history, 262144 bytes. UTF-8 or base64; truncation is separate from unknown history continuity. Tracked process cursors require tmux>=3.3 and a native process identity backend: Linux peer pidfds with matching PID namespaces, or Darwin kqueue process observation. Continuation returns an exact state row splice, not a live-output journal. Refuses capture after-hooks.",
+        "description": "Read exact-pane screen/history rows preserving LF. Defaults: 200 lines, 65536 bytes, zero history lines, track=false. Limits: 1000 lines/history, 262144 bytes. UTF-8 or base64; truncation is separate from unknown history continuity. Tracked process cursors require tmux>=3.3a and a native process identity backend: Linux peer pidfds with matching PID namespaces, or Darwin kqueue process observation. Continuation returns an exact state row splice, not a live-output journal. Refuses capture after-hooks.",
         "inputSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
           "oneOf": [
@@ -1005,7 +1006,8 @@
               ],
               "type": "object"
             }
-          ]
+          ],
+          "type": "object"
         }
       },
       {
@@ -1421,7 +1423,8 @@
               ],
               "type": "object"
             }
-          ]
+          ],
+          "type": "object"
         }
       },
       {
@@ -2135,7 +2138,8 @@
               ],
               "type": "object"
             }
-          ]
+          ],
+          "type": "object"
         }
       },
       {
@@ -2584,7 +2588,8 @@
               ],
               "type": "object"
             }
-          ]
+          ],
+          "type": "object"
         }
       },
       {
@@ -3003,7 +3008,8 @@
               ],
               "type": "object"
             }
-          ]
+          ],
+          "type": "object"
         }
       },
       {
@@ -4040,18 +4046,32 @@
             "pane.pid": {
               "anyOf": [
                 {
-                  "maximum": 2147483647,
-                  "minimum": 0,
-                  "type": "integer"
+                  "anyOf": [
+                    {
+                      "maximum": 2147483647,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 },
                 {
                   "additionalProperties": false,
                   "minProperties": 1,
                   "properties": {
                     "equals": {
-                      "maximum": 2147483647,
-                      "minimum": 0,
-                      "type": "integer"
+                      "anyOf": [
+                        {
+                          "maximum": 2147483647,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     },
                     "gt": {
                       "maximum": 2147483647,
@@ -4065,9 +4085,16 @@
                     },
                     "in": {
                       "items": {
-                        "maximum": 2147483647,
-                        "minimum": 0,
-                        "type": "integer"
+                        "anyOf": [
+                          {
+                            "maximum": 2147483647,
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       },
                       "maxItems": 1024,
                       "type": "array"
@@ -5624,7 +5651,10 @@
                                   "pid": {
                                     "maximum": 2147483647,
                                     "minimum": 0,
-                                    "type": "integer"
+                                    "type": [
+                                      "integer",
+                                      "null"
+                                    ]
                                   },
                                   "title": {
                                     "type": "string"
@@ -6080,7 +6110,8 @@
               ],
               "type": "object"
             }
-          ]
+          ],
+          "type": "object"
         }
       },
       {
@@ -6090,7 +6121,7 @@
           "openWorldHint": false,
           "readOnlyHint": false
         },
-        "description": "Wait for observed literal screen text or the initial pane process exit. Deadline in seconds is capped by the application limit. Uses control events/process descriptors; no polling. Requires tmux>=3.3 and Linux peer pidfds with matching PID namespaces or Darwin kqueue process observation. Reports observed evidence, never remote termination caused by cancellation or an inferred process exit status.",
+        "description": "Wait for observed literal screen text or the initial pane process exit. Deadline in seconds is capped by the application limit. Pane exit is observed through process descriptors. The screen_contains condition joins wrapped rows, uses control events on tmux>=3.7 and polls the pane screen on older daemons, which take no control client. A pane or tmux server that ends first fails with pane_died and the last rows read in error.capture; a lost control stream fails with observation_lost. Requires tmux>=3.3a and Linux peer pidfds with matching PID namespaces or Darwin kqueue process observation. Reports observed evidence, never remote termination caused by cancellation or an inferred process exit status.",
         "inputSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
           "oneOf": [
@@ -6619,6 +6650,314 @@
                 "error": {
                   "additionalProperties": false,
                   "properties": {
+                    "capture": {
+                      "oneOf": [
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "bytes": {
+                              "maximum": 262144,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "capture_id": {
+                              "type": "string"
+                            },
+                            "encoding": {
+                              "enum": [
+                                "utf-8",
+                                "base64"
+                              ]
+                            },
+                            "history_continuity": {
+                              "const": "unknown"
+                            },
+                            "interval": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "clock": {
+                                  "const": "monotonic_seconds"
+                                },
+                                "finished": {
+                                  "type": "number"
+                                },
+                                "started": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "clock",
+                                "started",
+                                "finished"
+                              ],
+                              "type": "object"
+                            },
+                            "mode": {
+                              "const": "snapshot"
+                            },
+                            "next_cursor": {
+                              "type": "string"
+                            },
+                            "process_generation": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "row_count": {
+                              "maximum": 1000,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "rows": {
+                              "items": {
+                                "type": "string"
+                              },
+                              "maxItems": 1000,
+                              "type": "array"
+                            },
+                            "scope": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "history_lines": {
+                                  "maximum": 1000,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "max_bytes": {
+                                  "maximum": 262144,
+                                  "minimum": 1,
+                                  "type": "integer"
+                                },
+                                "max_lines": {
+                                  "maximum": 1000,
+                                  "minimum": 1,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "max_lines",
+                                "max_bytes",
+                                "history_lines"
+                              ],
+                              "type": "object"
+                            },
+                            "target": {
+                              "oneOf": [
+                                {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "generation": {
+                                      "maxLength": 128,
+                                      "minLength": 1,
+                                      "type": "string"
+                                    },
+                                    "id": {
+                                      "maxLength": 32,
+                                      "pattern": "^%[0-9]+$",
+                                      "type": "string"
+                                    },
+                                    "kind": {
+                                      "const": "pane"
+                                    }
+                                  },
+                                  "required": [
+                                    "generation",
+                                    "kind",
+                                    "id"
+                                  ],
+                                  "type": "object"
+                                }
+                              ]
+                            },
+                            "truncated": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "target",
+                            "capture_id",
+                            "process_generation",
+                            "encoding",
+                            "row_count",
+                            "bytes",
+                            "truncated",
+                            "history_continuity",
+                            "interval",
+                            "scope",
+                            "mode",
+                            "rows"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "base_capture_id": {
+                              "type": "string"
+                            },
+                            "bytes": {
+                              "maximum": 262144,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "capture_id": {
+                              "type": "string"
+                            },
+                            "encoding": {
+                              "enum": [
+                                "utf-8",
+                                "base64"
+                              ]
+                            },
+                            "history_continuity": {
+                              "const": "unknown"
+                            },
+                            "interval": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "clock": {
+                                  "const": "monotonic_seconds"
+                                },
+                                "finished": {
+                                  "type": "number"
+                                },
+                                "started": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "clock",
+                                "started",
+                                "finished"
+                              ],
+                              "type": "object"
+                            },
+                            "mode": {
+                              "const": "delta"
+                            },
+                            "next_cursor": {
+                              "type": "string"
+                            },
+                            "process_generation": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "reset": {
+                              "type": "boolean"
+                            },
+                            "row_count": {
+                              "maximum": 1000,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "scope": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "history_lines": {
+                                  "maximum": 1000,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "max_bytes": {
+                                  "maximum": 262144,
+                                  "minimum": 1,
+                                  "type": "integer"
+                                },
+                                "max_lines": {
+                                  "maximum": 1000,
+                                  "minimum": 1,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "max_lines",
+                                "max_bytes",
+                                "history_lines"
+                              ],
+                              "type": "object"
+                            },
+                            "splice": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "delete": {
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "rows": {
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "maxItems": 1000,
+                                  "type": "array"
+                                },
+                                "start": {
+                                  "minimum": 0,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "start",
+                                "delete",
+                                "rows"
+                              ],
+                              "type": "object"
+                            },
+                            "target": {
+                              "oneOf": [
+                                {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "generation": {
+                                      "maxLength": 128,
+                                      "minLength": 1,
+                                      "type": "string"
+                                    },
+                                    "id": {
+                                      "maxLength": 32,
+                                      "pattern": "^%[0-9]+$",
+                                      "type": "string"
+                                    },
+                                    "kind": {
+                                      "const": "pane"
+                                    }
+                                  },
+                                  "required": [
+                                    "generation",
+                                    "kind",
+                                    "id"
+                                  ],
+                                  "type": "object"
+                                }
+                              ]
+                            },
+                            "truncated": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "target",
+                            "capture_id",
+                            "process_generation",
+                            "encoding",
+                            "row_count",
+                            "bytes",
+                            "truncated",
+                            "history_continuity",
+                            "interval",
+                            "scope",
+                            "mode",
+                            "base_capture_id",
+                            "reset",
+                            "splice",
+                            "next_cursor"
+                          ],
+                          "type": "object"
+                        }
+                      ]
+                    },
                     "code": {
                       "type": "string"
                     },
@@ -6782,7 +7121,8 @@
               ],
               "type": "object"
             }
-          ]
+          ],
+          "type": "object"
         }
       }
     ]

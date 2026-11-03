@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-transcript.mjs",
   "repo": "libtmux/libtmux-ruby",
-  "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+  "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
   "sandbox": {
     "tmux": "tmux 3.8a",
     "pytest": "pytest 9.2.0",
@@ -19,7 +19,7 @@
   },
   "serverInfo": {
     "name": "libtmux",
-    "version": "0.1.0.alpha.1"
+    "version": "0.1.1"
   },
   "contracts": {
     "tmux_capabilities": {
@@ -366,7 +366,8 @@
             ],
             "type": "object"
           }
-        ]
+        ],
+        "type": "object"
       }
     },
     "tmux_snapshot": {
@@ -1396,18 +1397,32 @@
           "pane.pid": {
             "anyOf": [
               {
-                "maximum": 2147483647,
-                "minimum": 0,
-                "type": "integer"
+                "anyOf": [
+                  {
+                    "maximum": 2147483647,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               },
               {
                 "additionalProperties": false,
                 "minProperties": 1,
                 "properties": {
                   "equals": {
-                    "maximum": 2147483647,
-                    "minimum": 0,
-                    "type": "integer"
+                    "anyOf": [
+                      {
+                        "maximum": 2147483647,
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
                   "gt": {
                     "maximum": 2147483647,
@@ -1421,9 +1436,16 @@
                   },
                   "in": {
                     "items": {
-                      "maximum": 2147483647,
-                      "minimum": 0,
-                      "type": "integer"
+                      "anyOf": [
+                        {
+                          "maximum": 2147483647,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     },
                     "maxItems": 1024,
                     "type": "array"
@@ -2979,7 +3001,10 @@
                                 "pid": {
                                   "maximum": 2147483647,
                                   "minimum": 0,
-                                  "type": "integer"
+                                  "type": [
+                                    "integer",
+                                    "null"
+                                  ]
                                 },
                                 "title": {
                                   "type": "string"
@@ -3435,7 +3460,8 @@
             ],
             "type": "object"
           }
-        ]
+        ],
+        "type": "object"
       }
     }
   },
@@ -3456,9 +3482,9 @@
         "data": {
           "endpoint": "docs",
           "server_identity": {
-            "generation": "8a4843de24870b88a4abde4ad30c9b6c",
-            "pid": 55748,
-            "start_time": 1793562559,
+            "generation": "2b7aa398dd617620e4e735be8ff694bc",
+            "pid": 2482776,
+            "start_time": 1793692756,
             "tmux_version": "3.8a"
           },
           "enabled_tools": [
@@ -4467,9 +4493,16 @@
               "pane.pid": {
                 "anyOf": [
                   {
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 2147483647
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 2147483647
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
                   {
                     "type": "object",
@@ -4477,9 +4510,16 @@
                     "additionalProperties": false,
                     "properties": {
                       "equals": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 2147483647
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 2147483647
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       },
                       "not": {
                         "$ref": "#/$defs/pane.pid"
@@ -4488,9 +4528,16 @@
                         "type": "array",
                         "maxItems": 1024,
                         "items": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "maximum": 2147483647
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 2147483647
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         }
                       },
                       "lt": {
@@ -5785,12 +5832,13 @@
             "history_continuity": "unknown",
             "process_cursor": "conditional",
             "requirements": [
-              "tmux >= 3.3",
+              "tmux >= 3.3a",
               "64-bit Linux with peer pidfds (kernel >= 6.6)",
               "same PID namespace and matching procfs",
               "live pane process",
               "empty effective capture hook",
-              "stable capture-hook configuration on tmux < 3.5"
+              "stable capture-hook configuration on tmux < 3.5",
+              "screen_contains waits use control events from tmux 3.7 and poll the screen before it"
             ],
             "wait_conditions": [
               "screen_contains",
@@ -5806,12 +5854,13 @@
             "persistent_shell_changes": false,
             "descendant_termination": "unobserved",
             "requirements": [
-              "tmux >= 3.3",
+              "tmux >= 3.3a",
               "64-bit Linux with peer pidfds (kernel >= 6.6)",
               "same PID namespace and matching procfs",
               "live pane process",
               "empty effective capture hook",
               "stable capture-hook configuration on tmux < 3.5",
+              "screen_contains waits use control events from tmux 3.7 and poll the screen before it",
               "explicit idle/empty ZLE enrollment",
               "installed Ruby/core helper dependencies"
             ]
@@ -5836,11 +5885,11 @@
       "structuredContent": {
         "ok": true,
         "data": {
-          "capture_id": "a82d74d90e59b0e454537053edbda794",
+          "capture_id": "aec1a3d6e62a4ceb2c8326b8a54dcbc7",
           "server_identity": {
-            "generation": "8a4843de24870b88a4abde4ad30c9b6c",
-            "pid": 55748,
-            "start_time": 1793562559,
+            "generation": "2b7aa398dd617620e4e735be8ff694bc",
+            "pid": 2482776,
+            "start_time": 1793692756,
             "tmux_version": "3.8a"
           },
           "entity": "pane",
@@ -5853,8 +5902,8 @@
           },
           "interval": {
             "clock": "monotonic_seconds",
-            "started": 86212.832478325,
-            "finished": 86212.845223931,
+            "started": 216410.154280461,
+            "finished": 216410.167168026,
             "reads": 5
           },
           "items": [
@@ -5864,7 +5913,7 @@
                 "id": "%0",
                 "windowId": "@0",
                 "index": 0,
-                "pid": 55749,
+                "pid": 2482777,
                 "currentCommand": "cat",
                 "currentPath": "/home/user/project",
                 "title": "host",
@@ -5875,7 +5924,7 @@
                 "height": 24
               },
               "ref": {
-                "generation": "8a4843de24870b88a4abde4ad30c9b6c",
+                "generation": "2b7aa398dd617620e4e735be8ff694bc",
                 "kind": "pane",
                 "id": "%0"
               }

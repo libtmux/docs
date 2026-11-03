@@ -10209,10 +10209,10 @@
           "wireName": "tmux_capabilities",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-            "extractedRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 249
+            "line": 250
           },
           "description": "Discover the fixed endpoint, server binding, enabled tools, criteria schema and limits. Acquires metadata; starts no daemon.",
           "schemaStatus": "runtime",
@@ -10560,7 +10560,8 @@
                 ],
                 "type": "object"
               }
-            ]
+            ],
+            "type": "object"
           },
           "annotations": {
             "destructiveHint": false,
@@ -10574,12 +10575,12 @@
           "wireName": "tmux_capture",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-            "extractedRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 239
+            "line": 240
           },
-          "description": "Read exact-pane screen/history rows preserving LF. Defaults: 200 lines, 65536 bytes, zero history lines, track=false. Limits: 1000 lines/history, 262144 bytes. UTF-8 or base64; truncation is separate from unknown history continuity. Tracked process cursors require tmux>=3.3 and a native process identity backend: Linux peer pidfds with matching PID namespaces, or Darwin kqueue process observation. Continuation returns an exact state row splice, not a live-output journal. Refuses capture after-hooks.",
+          "description": "Read exact-pane screen/history rows preserving LF. Defaults: 200 lines, 65536 bytes, zero history lines, track=false. Limits: 1000 lines/history, 262144 bytes. UTF-8 or base64; truncation is separate from unknown history continuity. Tracked process cursors require tmux>=3.3a and a native process identity backend: Linux peer pidfds with matching PID namespaces, or Darwin kqueue process observation. Continuation returns an exact state row splice, not a live-output journal. Refuses capture after-hooks.",
           "schemaStatus": "runtime",
           "enabledByDefault": false,
           "inputSchema": {
@@ -11179,7 +11180,8 @@
                 ],
                 "type": "object"
               }
-            ]
+            ],
+            "type": "object"
           },
           "annotations": {
             "destructiveHint": false,
@@ -11193,10 +11195,10 @@
           "wireName": "tmux_close",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-            "extractedRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 247
+            "line": 248
           },
           "description": "Destroy one exact session, window or pane. Opt-in destructive operation; closing a session or window also removes its contained topology. Never selects by name or closes the daemon directly. Returns the final tmux client outcome.",
           "schemaStatus": "runtime",
@@ -11605,7 +11607,8 @@
                 ],
                 "type": "object"
               }
-            ]
+            ],
+            "type": "object"
           },
           "annotations": {
             "destructiveHint": true,
@@ -11619,10 +11622,10 @@
           "wireName": "tmux_create",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-            "extractedRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 245
+            "line": 246
           },
           "description": "Create a session, window in an exact session, or split an exact pane using argv. Opt-in mutation; 64 KiB total string bytes and at most 256 argv entries. Window/pane focus defaults false. Cwd/environment are optional; size is cells or percent. Assigned refs prove creation, not program readiness or completion.",
           "schemaStatus": "runtime",
@@ -12329,7 +12332,8 @@
                 ],
                 "type": "object"
               }
-            ]
+            ],
+            "type": "object"
           },
           "annotations": {
             "destructiveHint": true,
@@ -12343,10 +12347,10 @@
           "wireName": "tmux_run",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-            "extractedRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 237
+            "line": 238
           },
           "description": "Run an authored POSIX script in an explicitly enrolled idle, empty zsh 5.9 editor. Opt-in; no terminal injection. Exact queue authorization binds the existing shell generation; execution may follow a later pane replacement without retargeting it. Inherits cwd/exported environment, closed stdin, separate bounded UTF-8/base64 outputs. Defaults: 65536 bytes per output, 65536 script bytes; overflow refuses completion. Reports native exit/signal only from the helper; cancellation never proves descendants stopped.",
           "schemaStatus": "runtime",
@@ -12788,7 +12792,8 @@
                 ],
                 "type": "object"
               }
-            ]
+            ],
+            "type": "object"
           },
           "annotations": {
             "destructiveHint": true,
@@ -12802,10 +12807,10 @@
           "wireName": "tmux_send",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-            "extractedRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 243
+            "line": 244
           },
           "description": "Send literal UTF-8 text or named keys to one exact pane. Opt-in mutation; 64 KiB total text bytes, at most 256 keys. Reports tmux client completion and input dispatch only; never shell completion.",
           "schemaStatus": "runtime",
@@ -13217,7 +13222,8 @@
                 ],
                 "type": "object"
               }
-            ]
+            ],
+            "type": "object"
           },
           "annotations": {
             "destructiveHint": true,
@@ -13231,8 +13237,8 @@
           "wireName": "tmux_snapshot",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-            "extractedRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
             "line": 6
           },
@@ -14265,18 +14271,32 @@
               "pane.pid": {
                 "anyOf": [
                   {
-                    "maximum": 2147483647,
-                    "minimum": 0,
-                    "type": "integer"
+                    "anyOf": [
+                      {
+                        "maximum": 2147483647,
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
                   {
                     "additionalProperties": false,
                     "minProperties": 1,
                     "properties": {
                       "equals": {
-                        "maximum": 2147483647,
-                        "minimum": 0,
-                        "type": "integer"
+                        "anyOf": [
+                          {
+                            "maximum": 2147483647,
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       },
                       "gt": {
                         "maximum": 2147483647,
@@ -14290,9 +14310,16 @@
                       },
                       "in": {
                         "items": {
-                          "maximum": 2147483647,
-                          "minimum": 0,
-                          "type": "integer"
+                          "anyOf": [
+                            {
+                              "maximum": 2147483647,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         },
                         "maxItems": 1024,
                         "type": "array"
@@ -15848,7 +15875,10 @@
                                     "pid": {
                                       "maximum": 2147483647,
                                       "minimum": 0,
-                                      "type": "integer"
+                                      "type": [
+                                        "integer",
+                                        "null"
+                                      ]
                                     },
                                     "title": {
                                       "type": "string"
@@ -16304,7 +16334,8 @@
                 ],
                 "type": "object"
               }
-            ]
+            ],
+            "type": "object"
           },
           "annotations": {
             "destructiveHint": false,
@@ -16318,12 +16349,12 @@
           "wireName": "tmux_wait",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-            "extractedRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 241
+            "line": 242
           },
-          "description": "Wait for observed literal screen text or the initial pane process exit. Deadline in seconds is capped by the application limit. Uses control events/process descriptors; no polling. Requires tmux>=3.3 and Linux peer pidfds with matching PID namespaces or Darwin kqueue process observation. Reports observed evidence, never remote termination caused by cancellation or an inferred process exit status.",
+          "description": "Wait for observed literal screen text or the initial pane process exit. Deadline in seconds is capped by the application limit. Pane exit is observed through process descriptors. The screen_contains condition joins wrapped rows, uses control events on tmux>=3.7 and polls the pane screen on older daemons, which take no control client. A pane or tmux server that ends first fails with pane_died and the last rows read in error.capture; a lost control stream fails with observation_lost. Requires tmux>=3.3a and Linux peer pidfds with matching PID namespaces or Darwin kqueue process observation. Reports observed evidence, never remote termination caused by cancellation or an inferred process exit status.",
           "schemaStatus": "runtime",
           "enabledByDefault": false,
           "inputSchema": {
@@ -16853,6 +16884,314 @@
                   "error": {
                     "additionalProperties": false,
                     "properties": {
+                      "capture": {
+                        "oneOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "bytes": {
+                                "maximum": 262144,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "capture_id": {
+                                "type": "string"
+                              },
+                              "encoding": {
+                                "enum": [
+                                  "utf-8",
+                                  "base64"
+                                ]
+                              },
+                              "history_continuity": {
+                                "const": "unknown"
+                              },
+                              "interval": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "clock": {
+                                    "const": "monotonic_seconds"
+                                  },
+                                  "finished": {
+                                    "type": "number"
+                                  },
+                                  "started": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "clock",
+                                  "started",
+                                  "finished"
+                                ],
+                                "type": "object"
+                              },
+                              "mode": {
+                                "const": "snapshot"
+                              },
+                              "next_cursor": {
+                                "type": "string"
+                              },
+                              "process_generation": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "row_count": {
+                                "maximum": 1000,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "rows": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "maxItems": 1000,
+                                "type": "array"
+                              },
+                              "scope": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "history_lines": {
+                                    "maximum": 1000,
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "max_bytes": {
+                                    "maximum": 262144,
+                                    "minimum": 1,
+                                    "type": "integer"
+                                  },
+                                  "max_lines": {
+                                    "maximum": 1000,
+                                    "minimum": 1,
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "max_lines",
+                                  "max_bytes",
+                                  "history_lines"
+                                ],
+                                "type": "object"
+                              },
+                              "target": {
+                                "oneOf": [
+                                  {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "generation": {
+                                        "maxLength": 128,
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "id": {
+                                        "maxLength": 32,
+                                        "pattern": "^%[0-9]+$",
+                                        "type": "string"
+                                      },
+                                      "kind": {
+                                        "const": "pane"
+                                      }
+                                    },
+                                    "required": [
+                                      "generation",
+                                      "kind",
+                                      "id"
+                                    ],
+                                    "type": "object"
+                                  }
+                                ]
+                              },
+                              "truncated": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "target",
+                              "capture_id",
+                              "process_generation",
+                              "encoding",
+                              "row_count",
+                              "bytes",
+                              "truncated",
+                              "history_continuity",
+                              "interval",
+                              "scope",
+                              "mode",
+                              "rows"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "base_capture_id": {
+                                "type": "string"
+                              },
+                              "bytes": {
+                                "maximum": 262144,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "capture_id": {
+                                "type": "string"
+                              },
+                              "encoding": {
+                                "enum": [
+                                  "utf-8",
+                                  "base64"
+                                ]
+                              },
+                              "history_continuity": {
+                                "const": "unknown"
+                              },
+                              "interval": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "clock": {
+                                    "const": "monotonic_seconds"
+                                  },
+                                  "finished": {
+                                    "type": "number"
+                                  },
+                                  "started": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "clock",
+                                  "started",
+                                  "finished"
+                                ],
+                                "type": "object"
+                              },
+                              "mode": {
+                                "const": "delta"
+                              },
+                              "next_cursor": {
+                                "type": "string"
+                              },
+                              "process_generation": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "reset": {
+                                "type": "boolean"
+                              },
+                              "row_count": {
+                                "maximum": 1000,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "scope": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "history_lines": {
+                                    "maximum": 1000,
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "max_bytes": {
+                                    "maximum": 262144,
+                                    "minimum": 1,
+                                    "type": "integer"
+                                  },
+                                  "max_lines": {
+                                    "maximum": 1000,
+                                    "minimum": 1,
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "max_lines",
+                                  "max_bytes",
+                                  "history_lines"
+                                ],
+                                "type": "object"
+                              },
+                              "splice": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "delete": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "rows": {
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "maxItems": 1000,
+                                    "type": "array"
+                                  },
+                                  "start": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "start",
+                                  "delete",
+                                  "rows"
+                                ],
+                                "type": "object"
+                              },
+                              "target": {
+                                "oneOf": [
+                                  {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "generation": {
+                                        "maxLength": 128,
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "id": {
+                                        "maxLength": 32,
+                                        "pattern": "^%[0-9]+$",
+                                        "type": "string"
+                                      },
+                                      "kind": {
+                                        "const": "pane"
+                                      }
+                                    },
+                                    "required": [
+                                      "generation",
+                                      "kind",
+                                      "id"
+                                    ],
+                                    "type": "object"
+                                  }
+                                ]
+                              },
+                              "truncated": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "target",
+                              "capture_id",
+                              "process_generation",
+                              "encoding",
+                              "row_count",
+                              "bytes",
+                              "truncated",
+                              "history_continuity",
+                              "interval",
+                              "scope",
+                              "mode",
+                              "base_capture_id",
+                              "reset",
+                              "splice",
+                              "next_cursor"
+                            ],
+                            "type": "object"
+                          }
+                        ]
+                      },
                       "code": {
                         "type": "string"
                       },
@@ -17016,7 +17355,8 @@
                 ],
                 "type": "object"
               }
-            ]
+            ],
+            "type": "object"
           },
           "annotations": {
             "destructiveHint": false,
@@ -17030,8 +17370,8 @@
       "selectable": false,
       "source": "gems/libtmux-mcp/lib/libtmux/mcp",
       "repo": "libtmux/libtmux-ruby",
-      "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-      "extractedRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "selection": {
         "mode": "explicit CLI options",
         "tools": "tmux_capabilities,tmux_snapshot,tmux_capture,tmux_wait,tmux_create,tmux_send,tmux_close,tmux_run"
@@ -17071,7 +17411,7 @@
         ],
         "serverInfo": {
           "name": "libtmux",
-          "version": "0.1.0.alpha.1"
+          "version": "0.1.1"
         }
       }
     },
