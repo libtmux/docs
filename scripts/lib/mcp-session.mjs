@@ -9,7 +9,10 @@ import { createInterface } from 'node:readline'
  * server a private tmux (its own TMUX_TMPDIR and HOME), never the reader's.
  * The server must also exit 0 by itself once its input closes.
  *
- * @param {{ command: string, args?: string[], cwd?: string, env?: Record<string, string | undefined>, calls: { tool: string, arguments: Record<string, unknown> }[], callTimeoutMs?: number, exitTimeoutMs?: number, pauseMs?: number }} options
+ * A call's `arguments` may be a function of the steps recorded so far, for a
+ * value only an earlier result can supply. The step records what was sent.
+ *
+ * @param {{ command: string, args?: string[], cwd?: string, env?: Record<string, string | undefined>, calls: { tool: string, arguments: Record<string, unknown> | ((steps: { tool: string, arguments: Record<string, unknown>, isError: boolean, content: unknown[], structuredContent?: unknown }[]) => Record<string, unknown>) }[], callTimeoutMs?: number, exitTimeoutMs?: number, pauseMs?: number }} options
  * @returns {Promise<{ serverInfo: unknown, steps: { tool: string, arguments: Record<string, unknown>, isError: boolean, content: unknown[], structuredContent?: unknown }[] }>}
  */
 export async function recordCalls({ command, args = [], cwd, env = {}, calls, callTimeoutMs = 60000, exitTimeoutMs = 10000, pauseMs = 1500 }) {
@@ -54,9 +57,10 @@ export async function recordCalls({ command, args = [], cwd, env = {}, calls, ca
     for (const call of calls) {
       // An agent takes a moment to read each result; a pane's shell needs one to draw its prompt before it is typed into.
       if (steps.length) await new Promise((resolve) => setTimeout(resolve, pauseMs))
-      const result = await request('tools/call', { name: call.tool, arguments: call.arguments }, callTimeoutMs)
+      const sent = typeof call.arguments === 'function' ? call.arguments(steps) : call.arguments
+      const result = await request('tools/call', { name: call.tool, arguments: sent }, callTimeoutMs)
       steps.push({
-        tool: call.tool, arguments: call.arguments, isError: result?.isError === true,
+        tool: call.tool, arguments: sent, isError: result?.isError === true,
         content: result?.content ?? [], ...(result?.structuredContent !== undefined ? { structuredContent: result.structuredContent } : {}),
       })
     }
@@ -70,4 +74,33 @@ export async function recordCalls({ command, args = [], cwd, env = {}, calls, ca
     // Whatever the server left running goes with it, including when it would not exit by itself.
     if (alive) { child.stdin.end(); stop('SIGTERM'); await Promise.race([exited, new Promise((resolve) => setTimeout(resolve, 1000))]); if (alive) stop('SIGKILL') }
   }
+}
+
+/** The first string held under `key`, at any depth, in the structured results of recorded steps. */
+export function listedValue(steps, key) {
+  const find = (value) => {
+    if (value === null || typeof value !== 'object') return undefined
+    if (typeof value[key] === 'string') return value[key]
+    for (const item of Array.isArray(value) ? value : Object.values(value)) {
+      const found = find(item)
+      if (found !== undefined) return found
+    }
+    return undefined
+  }
+  return find(steps.map((step) => step.structuredContent))
+}
+
+/**
+ * A call's arguments for `recordCalls`, with `standIn` replaced by the `key`
+ * string an earlier result returned. It throws when no result returned one, so
+ * a call is never sent with the stand-in.
+ *
+ * @param {Record<string, unknown>} callArguments
+ * @param {string} standIn
+ * @param {string} key
+ */
+export const withListed = (callArguments, standIn, key) => (steps) => {
+  const real = listedValue(steps, key)
+  if (real === undefined) throw new Error(`no earlier result returned a "${key}" to send in place of ${standIn}`)
+  return JSON.parse(JSON.stringify(callArguments).replaceAll(JSON.stringify(standIn), JSON.stringify(real)))
 }

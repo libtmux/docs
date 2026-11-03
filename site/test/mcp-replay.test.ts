@@ -40,7 +40,7 @@ function recorded(steps: ReplayStep[], count: number): Set<string> {
 
 /** The recording's field names that supply each field a frame holds. */
 const SUPPLIED_BY: Record<string, string[]> = {
-  id: ['id', 'paneId', 'windowId', 'killed', 'sessionId', 'session_id', 'pane_id', 'window_id', 'active_pane_id', 'windowID'], name: ['name', 'session_name', 'session', 'sessionName', 'window_name', 'window'], index: ['index', 'window_index'], active: ['active'],
+  id: ['id', 'paneId', 'windowId', 'killed', 'sessionId', 'session_id', 'pane_id', 'window_id', 'active_pane_id', 'windowID'], name: ['name', 'session_name', 'session', 'sessionName', 'window_name', 'window', 'windowName'], index: ['index', 'window_index', 'windowIndex'], active: ['active'],
   command: ['command', 'currentCommand', 'pane_current_command'], left: ['left'], top: ['top'], width: ['width'], height: ['height'], path: ['path', 'cwd', 'pane_current_path', 'currentPath'], typed: ['command'], output: ['output', 'lines', 'text'], layout: ['layout', 'window_layout'],
 }
 
@@ -71,7 +71,7 @@ function untraced(frames: Frame[], steps: ReplayStep[]): string[] {
 }
 
 /** Calls in each port's worked example, which the frames and the replay follow. */
-const CALLS = { ts: 6, rs: 7, go: 7, py: 6, java: 7, csharp: 6, cxx: 7, swift: 7, ruby: 2 }
+const CALLS = { ts: 6, rs: 7, go: 7, py: 6, java: 7, csharp: 6, cxx: 7, swift: 7, ruby: 2, julia: 2 }
 
 describe('the tmux state each recorded call leaves', () => {
   it('follows TypeScript: a session, a split, the layout it reports, then what each pane ran', async () => {
@@ -114,7 +114,7 @@ describe('the tmux state each recorded call leaves', () => {
     expect(frames[7]!.sessions).toEqual([])
   })
 
-  it.each(['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift', 'ruby'] as const)('draws nothing for %s that the recording does not contain', async (port) => {
+  it.each(['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift', 'ruby', 'julia'] as const)('draws nothing for %s that the recording does not contain', async (port) => {
     const steps_ = await steps(port)
     expect(untraced(replayFrames(steps_), steps_)).toEqual([])
   })
@@ -171,6 +171,23 @@ describe('the tmux state each recorded call leaves', () => {
     expect(session.name, 'a pane snapshot names no session').toBeUndefined()
     expect(session.windows[0]).toMatchObject({ id: '@0', panes: [{ id: '%0', command: 'cat', path: '/home/user/project', width: 80, height: 24 }] })
     expect(frames[2]).toMatchObject({ reading: 'panes' })
+  })
+
+  it('follows Julia: the listing places the pane in the session and window it is linked into, and the capture shows what the pane displayed', async () => {
+    const frames = replayFrames(await steps('julia'))
+    expect(frames.map((frame) => frame.sessions.length)).toEqual([0, 1, 1])
+    expect(frames[1]).toMatchObject({ reading: 'panes', sessions: [{ id: '$0', name: 'docs', windows: [{ id: '@0', index: 0, name: 'cat', panes: [{ id: '%0', command: 'cat', width: 80, height: 24 }] }] }] })
+    expect(frames[1]!.sessions[0]!.windows[0]!.panes[0], 'a listing reads no screen').not.toHaveProperty('output')
+    expect(frames[2]!.sessions[0]!.windows[0]!.panes[0]!.output).toMatch(/^2026-01-01 checks started\n2026-01-01 checks finished\n/)
+  })
+
+  it('places a pane for each link it has, a capture of a pane no window holds changes nothing, and a listing with no contexts places nothing', () => {
+    const listing = (panes: unknown[]): ReplayStep => ({ tool: 'list_panes', arguments: {}, content: [], structuredContent: { panes } })
+    const pane = { target: { paneId: '%4', generation: 'g' }, command: 'sh', width: 10, height: 5, contexts: [{ sessionId: '$1', sessionName: 'one', windowId: '@2', windowName: 'w', windowIndex: 3 }] }
+    const capture = (paneId: string): ReplayStep => ({ tool: 'capture_pane', arguments: { target: { paneId, generation: 'g' } }, content: [], structuredContent: { text: 'hello' } })
+    expect(replayFrames([listing([pane]), capture('%4')]).at(-1)!.sessions).toEqual([{ id: '$1', name: 'one', windows: [{ id: '@2', index: 3, name: 'w', panes: [{ id: '%4', command: 'sh', width: 10, height: 5, output: 'hello' }] }] }])
+    expect(replayFrames([listing([pane]), capture('%9')]).at(-1)!.sessions[0]!.windows[0]!.panes[0], 'no pane %9').not.toHaveProperty('output')
+    expect(replayFrames([listing([{ ...pane, contexts: [] }])]).at(-1)!.sessions).toEqual([])
   })
 
   it.each(['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift'] as const)('leaves %s with each pane\'s own output and no session after the kill', async (port) => {
@@ -390,7 +407,7 @@ describe('the replay component', () => {
     expect(layoutSvg.querySelectorAll('.divider').length, 'the split is drawn as one divider').toBe(1)
   })
 
-  it.each(['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift', 'ruby'])('draws only recorded words, besides tmux\'s own punctuation, in the %s preview', async (port) => {
+  it.each(['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift', 'ruby', 'julia'])('draws only recorded words, besides tmux\'s own punctuation, in the %s preview', async (port) => {
     const { document } = await mount(port)
     const recordedWords = new Set((await steps(port)).flatMap((step) => JSON.stringify([step.arguments, step.structuredContent, step.content]).replace(/\\n/g, ' ').split(/[\s"{}\[\],:]+/)))
     for (const frame of document.querySelectorAll('[data-frame]')) {

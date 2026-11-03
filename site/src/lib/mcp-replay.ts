@@ -144,8 +144,34 @@ function applyWindows(sessions: SessionState[], answer: Record_) {
   }
 }
 
+/**
+ * A pane listing whose panes carry the sessions and windows they are linked
+ * into (`contexts`) and a `target` naming the pane, as Julia's does. The first
+ * link places the pane; a listing may be the first call to say what exists.
+ */
+function applyLinkedPane(sessions: SessionState[], item: Record_) {
+  const context = entries(item.contexts)[0]
+  const target = isRecord(item.target) ? item.target : {}
+  if (!context) return
+  const sessionId = str(context.sessionId)
+  const session = sessions.find((candidate) => sessionId !== undefined && candidate.id === sessionId) ?? (sessions.push({ windows: [] }), sessions.at(-1)!)
+  if (sessionId) session.id = sessionId
+  if (str(context.sessionName)) session.name = str(context.sessionName)!
+  const windowId = str(context.windowId)
+  const window = session.windows.find((candidate) => windowId !== undefined && candidate.id === windowId) ?? (session.windows.push({ panes: [] }), session.windows.at(-1)!)
+  if (windowId) window.id = windowId
+  if (num(context.windowIndex) !== undefined) window.index = num(context.windowIndex)!
+  if (str(context.windowName)) window.name = str(context.windowName)!
+  const paneId = str(target.paneId)
+  const pane = window.panes.find((candidate) => paneId !== undefined && candidate.id === paneId) ?? (window.panes.push({}), window.panes.at(-1)!)
+  if (paneId) pane.id = paneId
+  if (str(item.command)) pane.command = str(item.command)!
+  for (const key of ['width', 'height'] as const) if (num(item[key]) !== undefined) pane[key] = num(item[key])!
+}
+
 function applyPanes(sessions: SessionState[], answer: Record_) {
   for (const item of entries(answer.panes)) {
+    if (Array.isArray(item.contexts)) { applyLinkedPane(sessions, item); continue }
     const windows = sessions.flatMap((session) => session.windows)
     const window = windows.find((candidate) => candidate.id !== undefined && candidate.id === str(item.window_id)) ?? windows[0]
     if (!window) continue
@@ -234,6 +260,14 @@ function applyRun(sessions: SessionState[], step: ReplayStep, answer: Record_) {
   if (output !== undefined) pane.output = output
 }
 
+/** A capture reads a pane's screen; the target names the pane, as an object holding its id. */
+function applyCapture(sessions: SessionState[], step: ReplayStep, answer: Record_) {
+  const target = isRecord(step.arguments.target) ? step.arguments.target : {}
+  const pane = findPane(sessions, str(target.paneId))
+  const text = textOf(answer.text)
+  if (pane && text !== undefined) pane.output = text
+}
+
 function applyKill(sessions: SessionState[], answer: Record_, args: Record_): SessionState[] {
   // What was killed may be said as an id or as a name, by the answer or by the request.
   const said = [str(answer.killed), str(answer.id), str(answer.sessionId), str(answer.session_id), str(args.session_id), str(args.session), str(args.session_name), str(args.name)].filter((item): item is string => item !== undefined)
@@ -258,6 +292,7 @@ export function replayFrames(steps: readonly ReplayStep[]): Frame[] {
     else if (step.tool === 'split_window') applySplit(sessions, step, answer)
     else if (step.tool === 'get_tmux_variables' || step.tool === 'select_layout') applyLayoutRead(sessions, step, answer)
     else if (step.tool === 'run_shell_command' || step.tool === 'run_command') applyRun(sessions, step, answer)
+    else if (step.tool === 'capture_pane') applyCapture(sessions, step, answer)
     else if (step.tool === 'kill_session') sessions = applyKill(sessions, answer, step.arguments)
     frames.push({ done: index + 1, tool: step.tool, sessions: clone(sessions), ...(reading ? { reading } : {}) })
   })

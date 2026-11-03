@@ -191,6 +191,7 @@ const draw = (frame: Frame) => {
     {recording.documentedRevision && <> This page documents <a href={`https://github.com/${recording.repo}/tree/${recording.documentedRevision}`}><code>{recording.documentedRevision.slice(0, 9)}</code></a>, a different revision. The calls have the same input{recording.outputsChecked && ' and output'} schemas there, but the results at that revision may differ from the recorded ones.</>}
     {recording.shortened && <> Long values in a result are shortened here; the recording keeps them.</>}
     {recording.projectDirectory && <> The sandbox's project directory is shown as <code>{recording.projectDirectory}</code>.</>}
+    {recording.generation && <> The server's generation, which differs on every run, is shown as <code>{recording.generation}</code>.</>}
   </p>
 ) : (
   <p class="not-prose mcp-provenance">Requests only: no recorded results for {portName} yet.</p>
