@@ -284,20 +284,20 @@
       "page": "ports/ruby/reference/libtmux-server",
       "symbol": "LibTmux::Server",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "sourceFile": "examples/api/server.rb",
       "files": [
         {
           "name": "Gemfile",
           "block": 0,
-          "sha256": "449f3d495f03a7d084095f136a73c5d093ec7a15e271232a982061292be8e531",
-          "clipboardSha256": "151201a1f5031b1ff4f4962d0faf80db9d5f550c13585ace2228b90bb06ed6cb"
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
         },
         {
           "name": "server.rb",
           "block": 1,
-          "sha256": "61db6f40d8347cdbc96879007450dfc58ae6c375da8cb48d349d393c7ac96e64",
-          "clipboardSha256": "fffc1ba7c49c0467819803f35f85f3d5553b5556c46fdde2e7d884703f3b2c23",
+          "sha256": "66f2c4becffc9697667beb6e91a922dad9890d7e60828b210e1da8e06e43a0e8",
+          "clipboardSha256": "a2b72128ddea9ddcef18c5a15ed4cb83f7dc1636136429d4e13d083107f4fdcb",
           "sourceFile": "examples/api/server.rb"
         }
       ],
@@ -318,27 +318,27 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems (libtmux 0.1.0.alpha.1, the release this revision declares), then bundle exec. All 8 programs passed with their expected output and owned-server cleanup on tmux 3.3a and 3.7c."
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
     },
     {
       "port": "ruby",
       "page": "ports/ruby/reference/libtmux-server-new",
       "symbol": "LibTmux::Server.new",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "sourceFile": "examples/api/server.rb",
       "files": [
         {
           "name": "Gemfile",
           "block": 0,
-          "sha256": "449f3d495f03a7d084095f136a73c5d093ec7a15e271232a982061292be8e531",
-          "clipboardSha256": "151201a1f5031b1ff4f4962d0faf80db9d5f550c13585ace2228b90bb06ed6cb"
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
         },
         {
           "name": "server.rb",
           "block": 1,
-          "sha256": "61db6f40d8347cdbc96879007450dfc58ae6c375da8cb48d349d393c7ac96e64",
-          "clipboardSha256": "fffc1ba7c49c0467819803f35f85f3d5553b5556c46fdde2e7d884703f3b2c23",
+          "sha256": "66f2c4becffc9697667beb6e91a922dad9890d7e60828b210e1da8e06e43a0e8",
+          "clipboardSha256": "a2b72128ddea9ddcef18c5a15ed4cb83f7dc1636136429d4e13d083107f4fdcb",
           "sourceFile": "examples/api/server.rb"
         }
       ],
@@ -359,27 +359,27 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems (libtmux 0.1.0.alpha.1, the release this revision declares), then bundle exec. All 8 programs passed with their expected output and owned-server cleanup on tmux 3.3a and 3.7c."
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
     },
     {
       "port": "ruby",
       "page": "ports/ruby/reference/libtmux-server-list_sessions",
       "symbol": "LibTmux::Server#list_sessions",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "sourceFile": "examples/api/list_sessions.rb",
       "files": [
         {
           "name": "Gemfile",
           "block": 0,
-          "sha256": "449f3d495f03a7d084095f136a73c5d093ec7a15e271232a982061292be8e531",
-          "clipboardSha256": "151201a1f5031b1ff4f4962d0faf80db9d5f550c13585ace2228b90bb06ed6cb"
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
         },
         {
           "name": "list_sessions.rb",
           "block": 1,
-          "sha256": "68dce6379b9091de45b554798ebc9d631804de733a0a003e30850740b9157edb",
-          "clipboardSha256": "1e4e88a35d8b3e7170e985d061eb574b47bcdbf3399241b181d41c20f094fd9a",
+          "sha256": "22f1645b1fb7640449c8c513861941221b3a2909c2221021d77a4d8a42c34792",
+          "clipboardSha256": "ce559e346eed1275b10d9d250ad6b50b787a5a1bc6817b04d5e120d2f32a959a",
           "sourceFile": "examples/api/list_sessions.rb"
         }
       ],
@@ -399,21 +399,21 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems (libtmux 0.1.0.alpha.1, the release this revision declares), then bundle exec. All 8 programs passed with their expected output and owned-server cleanup on tmux 3.3a and 3.7c."
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
     },
     {
       "port": "ruby",
       "page": "ports/ruby/reference/libtmux-server-list_windows",
       "symbol": "LibTmux::Server#list_windows",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "sourceFile": "examples/api/list_windows.rb",
       "files": [
         {
           "name": "Gemfile",
           "block": 0,
-          "sha256": "449f3d495f03a7d084095f136a73c5d093ec7a15e271232a982061292be8e531",
-          "clipboardSha256": "151201a1f5031b1ff4f4962d0faf80db9d5f550c13585ace2228b90bb06ed6cb"
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
         },
         {
           "name": "list_windows.rb",
@@ -440,21 +440,21 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems (libtmux 0.1.0.alpha.1, the release this revision declares), then bundle exec. All 8 programs passed with their expected output and owned-server cleanup on tmux 3.3a and 3.7c."
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
     },
     {
       "port": "ruby",
       "page": "ports/ruby/reference/libtmux-session-list_windows",
       "symbol": "LibTmux::Session#list_windows",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "sourceFile": "examples/api/list_windows.rb",
       "files": [
         {
           "name": "Gemfile",
           "block": 0,
-          "sha256": "449f3d495f03a7d084095f136a73c5d093ec7a15e271232a982061292be8e531",
-          "clipboardSha256": "151201a1f5031b1ff4f4962d0faf80db9d5f550c13585ace2228b90bb06ed6cb"
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
         },
         {
           "name": "list_windows.rb",
@@ -481,21 +481,21 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems (libtmux 0.1.0.alpha.1, the release this revision declares), then bundle exec. All 8 programs passed with their expected output and owned-server cleanup on tmux 3.3a and 3.7c."
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
     },
     {
       "port": "ruby",
       "page": "ports/ruby/reference/libtmux-server-list_panes",
       "symbol": "LibTmux::Server#list_panes",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "sourceFile": "examples/api/list_panes.rb",
       "files": [
         {
           "name": "Gemfile",
           "block": 0,
-          "sha256": "449f3d495f03a7d084095f136a73c5d093ec7a15e271232a982061292be8e531",
-          "clipboardSha256": "151201a1f5031b1ff4f4962d0faf80db9d5f550c13585ace2228b90bb06ed6cb"
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
         },
         {
           "name": "list_panes.rb",
@@ -523,21 +523,21 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems (libtmux 0.1.0.alpha.1, the release this revision declares), then bundle exec. All 8 programs passed with their expected output and owned-server cleanup on tmux 3.3a and 3.7c."
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
     },
     {
       "port": "ruby",
       "page": "ports/ruby/reference/libtmux-session-list_panes",
       "symbol": "LibTmux::Session#list_panes",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "sourceFile": "examples/api/list_panes.rb",
       "files": [
         {
           "name": "Gemfile",
           "block": 0,
-          "sha256": "449f3d495f03a7d084095f136a73c5d093ec7a15e271232a982061292be8e531",
-          "clipboardSha256": "151201a1f5031b1ff4f4962d0faf80db9d5f550c13585ace2228b90bb06ed6cb"
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
         },
         {
           "name": "list_panes.rb",
@@ -565,21 +565,21 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems (libtmux 0.1.0.alpha.1, the release this revision declares), then bundle exec. All 8 programs passed with their expected output and owned-server cleanup on tmux 3.3a and 3.7c."
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
     },
     {
       "port": "ruby",
       "page": "ports/ruby/reference/libtmux-window-list_panes",
       "symbol": "LibTmux::Window#list_panes",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "sourceFile": "examples/api/list_panes.rb",
       "files": [
         {
           "name": "Gemfile",
           "block": 0,
-          "sha256": "449f3d495f03a7d084095f136a73c5d093ec7a15e271232a982061292be8e531",
-          "clipboardSha256": "151201a1f5031b1ff4f4962d0faf80db9d5f550c13585ace2228b90bb06ed6cb"
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
         },
         {
           "name": "list_panes.rb",
@@ -607,27 +607,27 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems (libtmux 0.1.0.alpha.1, the release this revision declares), then bundle exec. All 8 programs passed with their expected output and owned-server cleanup on tmux 3.3a and 3.7c."
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
     },
     {
       "port": "ruby",
       "page": "ports/ruby/reference/libtmux-server-start",
       "symbol": "LibTmux::Server.start",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "sourceFile": "examples/api/new_session.rb",
       "files": [
         {
           "name": "Gemfile",
           "block": 0,
-          "sha256": "449f3d495f03a7d084095f136a73c5d093ec7a15e271232a982061292be8e531",
-          "clipboardSha256": "151201a1f5031b1ff4f4962d0faf80db9d5f550c13585ace2228b90bb06ed6cb"
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
         },
         {
           "name": "new_session.rb",
           "block": 1,
-          "sha256": "8f4aafe3a3ea9622c7234b02812037069ef0cbec8e79a33cccdbddaa4bf1bdaf",
-          "clipboardSha256": "ab98f6a52f225ba782335564670129db434a1c82878232b488328646b6662a1f",
+          "sha256": "5fe5f3495ccf7af3ce829bf685b11af289bd1043ca8c9d877db8569e74498d04",
+          "clipboardSha256": "9b7f97ab37bf7164b28d0d9df18a94bfc7aa72d82d2cbba56168a6a2f7b89595",
           "sourceFile": "examples/api/new_session.rb"
         }
       ],
@@ -649,27 +649,27 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems (libtmux 0.1.0.alpha.1, the release this revision declares), then bundle exec. All 8 programs passed with their expected output and owned-server cleanup on tmux 3.3a and 3.7c."
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
     },
     {
       "port": "ruby",
       "page": "ports/ruby/reference/libtmux-server-new_session",
       "symbol": "LibTmux::Server#new_session",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "sourceFile": "examples/api/new_session.rb",
       "files": [
         {
           "name": "Gemfile",
           "block": 0,
-          "sha256": "449f3d495f03a7d084095f136a73c5d093ec7a15e271232a982061292be8e531",
-          "clipboardSha256": "151201a1f5031b1ff4f4962d0faf80db9d5f550c13585ace2228b90bb06ed6cb"
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
         },
         {
           "name": "new_session.rb",
           "block": 1,
-          "sha256": "8f4aafe3a3ea9622c7234b02812037069ef0cbec8e79a33cccdbddaa4bf1bdaf",
-          "clipboardSha256": "ab98f6a52f225ba782335564670129db434a1c82878232b488328646b6662a1f",
+          "sha256": "5fe5f3495ccf7af3ce829bf685b11af289bd1043ca8c9d877db8569e74498d04",
+          "clipboardSha256": "9b7f97ab37bf7164b28d0d9df18a94bfc7aa72d82d2cbba56168a6a2f7b89595",
           "sourceFile": "examples/api/new_session.rb"
         }
       ],
@@ -691,27 +691,27 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems (libtmux 0.1.0.alpha.1, the release this revision declares), then bundle exec. All 8 programs passed with their expected output and owned-server cleanup on tmux 3.3a and 3.7c."
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
     },
     {
       "port": "ruby",
       "page": "ports/ruby/reference/libtmux-session-new_window",
       "symbol": "LibTmux::Session#new_window",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "sourceFile": "examples/api/new_window.rb",
       "files": [
         {
           "name": "Gemfile",
           "block": 0,
-          "sha256": "449f3d495f03a7d084095f136a73c5d093ec7a15e271232a982061292be8e531",
-          "clipboardSha256": "151201a1f5031b1ff4f4962d0faf80db9d5f550c13585ace2228b90bb06ed6cb"
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
         },
         {
           "name": "new_window.rb",
           "block": 1,
-          "sha256": "f05abeff14b8aa63bf611ec23f065514c5965cc88a06552c817424ba45be2fde",
-          "clipboardSha256": "ae465259b4fe0cdb4844c4787cc0f84c78b687ca3db33c48cf49bfd6f2b1a339",
+          "sha256": "df143420df9a3042596ffb5e2ec20806fcddd3ad2461e5f1563518aeb8376390",
+          "clipboardSha256": "fe781647d629995d9468f00be1afe2628681b642f6a6e13c496a03e6b7507cf7",
           "sourceFile": "examples/api/new_window.rb"
         }
       ],
@@ -732,27 +732,27 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems (libtmux 0.1.0.alpha.1, the release this revision declares), then bundle exec. All 8 programs passed with their expected output and owned-server cleanup on tmux 3.3a and 3.7c."
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
     },
     {
       "port": "ruby",
       "page": "ports/ruby/reference/libtmux-server-snapshot",
       "symbol": "LibTmux::Server#snapshot",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "sourceFile": "examples/api/query.rb",
       "files": [
         {
           "name": "Gemfile",
           "block": 0,
-          "sha256": "449f3d495f03a7d084095f136a73c5d093ec7a15e271232a982061292be8e531",
-          "clipboardSha256": "151201a1f5031b1ff4f4962d0faf80db9d5f550c13585ace2228b90bb06ed6cb"
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
         },
         {
           "name": "query.rb",
           "block": 1,
-          "sha256": "fc018d1765e3e963db67c6539ec6f02c1d109a52e54323352fb973592840d316",
-          "clipboardSha256": "51045ba77079d7625f16abc2a5e2d40fd25b26d7aadd988515489cb4d754400c",
+          "sha256": "226480dec3a44bad19a786f8077efd182163cf554bdf822e8bd3e6b8dadc4013",
+          "clipboardSha256": "2b059c791352e8a8bd2ee1d7e69b9fc0b5c9165c6fb80f414a8fc530c626b9c8",
           "sourceFile": "examples/api/query.rb"
         }
       ],
@@ -774,27 +774,27 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems (libtmux 0.1.0.alpha.1, the release this revision declares), then bundle exec. All 8 programs passed with their expected output and owned-server cleanup on tmux 3.3a and 3.7c."
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
     },
     {
       "port": "ruby",
       "page": "ports/ruby/reference/libtmux-server-search_panes",
       "symbol": "LibTmux::Server#search_panes",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "sourceFile": "examples/api/query.rb",
       "files": [
         {
           "name": "Gemfile",
           "block": 0,
-          "sha256": "449f3d495f03a7d084095f136a73c5d093ec7a15e271232a982061292be8e531",
-          "clipboardSha256": "151201a1f5031b1ff4f4962d0faf80db9d5f550c13585ace2228b90bb06ed6cb"
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
         },
         {
           "name": "query.rb",
           "block": 1,
-          "sha256": "fc018d1765e3e963db67c6539ec6f02c1d109a52e54323352fb973592840d316",
-          "clipboardSha256": "51045ba77079d7625f16abc2a5e2d40fd25b26d7aadd988515489cb4d754400c",
+          "sha256": "226480dec3a44bad19a786f8077efd182163cf554bdf822e8bd3e6b8dadc4013",
+          "clipboardSha256": "2b059c791352e8a8bd2ee1d7e69b9fc0b5c9165c6fb80f414a8fc530c626b9c8",
           "sourceFile": "examples/api/query.rb"
         }
       ],
@@ -816,27 +816,27 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems (libtmux 0.1.0.alpha.1, the release this revision declares), then bundle exec. All 8 programs passed with their expected output and owned-server cleanup on tmux 3.3a and 3.7c."
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
     },
     {
       "port": "ruby",
       "page": "ports/ruby/reference/libtmux-selection-where",
       "symbol": "LibTmux::Selection#where",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "sourceFile": "examples/api/query.rb",
       "files": [
         {
           "name": "Gemfile",
           "block": 0,
-          "sha256": "449f3d495f03a7d084095f136a73c5d093ec7a15e271232a982061292be8e531",
-          "clipboardSha256": "151201a1f5031b1ff4f4962d0faf80db9d5f550c13585ace2228b90bb06ed6cb"
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
         },
         {
           "name": "query.rb",
           "block": 1,
-          "sha256": "fc018d1765e3e963db67c6539ec6f02c1d109a52e54323352fb973592840d316",
-          "clipboardSha256": "51045ba77079d7625f16abc2a5e2d40fd25b26d7aadd988515489cb4d754400c",
+          "sha256": "226480dec3a44bad19a786f8077efd182163cf554bdf822e8bd3e6b8dadc4013",
+          "clipboardSha256": "2b059c791352e8a8bd2ee1d7e69b9fc0b5c9165c6fb80f414a8fc530c626b9c8",
           "sourceFile": "examples/api/query.rb"
         }
       ],
@@ -858,27 +858,27 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems (libtmux 0.1.0.alpha.1, the release this revision declares), then bundle exec. All 8 programs passed with their expected output and owned-server cleanup on tmux 3.3a and 3.7c."
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
     },
     {
       "port": "ruby",
       "page": "ports/ruby/reference/libtmux-selection-one",
       "symbol": "LibTmux::Selection#one",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "sourceFile": "examples/api/query.rb",
       "files": [
         {
           "name": "Gemfile",
           "block": 0,
-          "sha256": "449f3d495f03a7d084095f136a73c5d093ec7a15e271232a982061292be8e531",
-          "clipboardSha256": "151201a1f5031b1ff4f4962d0faf80db9d5f550c13585ace2228b90bb06ed6cb"
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
         },
         {
           "name": "query.rb",
           "block": 1,
-          "sha256": "fc018d1765e3e963db67c6539ec6f02c1d109a52e54323352fb973592840d316",
-          "clipboardSha256": "51045ba77079d7625f16abc2a5e2d40fd25b26d7aadd988515489cb4d754400c",
+          "sha256": "226480dec3a44bad19a786f8077efd182163cf554bdf822e8bd3e6b8dadc4013",
+          "clipboardSha256": "2b059c791352e8a8bd2ee1d7e69b9fc0b5c9165c6fb80f414a8fc530c626b9c8",
           "sourceFile": "examples/api/query.rb"
         }
       ],
@@ -900,27 +900,27 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems (libtmux 0.1.0.alpha.1, the release this revision declares), then bundle exec. All 8 programs passed with their expected output and owned-server cleanup on tmux 3.3a and 3.7c."
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
     },
     {
       "port": "ruby",
       "page": "ports/ruby/reference/libtmux-selection-one_or_nil",
       "symbol": "LibTmux::Selection#one_or_nil",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "sourceFile": "examples/api/query.rb",
       "files": [
         {
           "name": "Gemfile",
           "block": 0,
-          "sha256": "449f3d495f03a7d084095f136a73c5d093ec7a15e271232a982061292be8e531",
-          "clipboardSha256": "151201a1f5031b1ff4f4962d0faf80db9d5f550c13585ace2228b90bb06ed6cb"
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
         },
         {
           "name": "query.rb",
           "block": 1,
-          "sha256": "fc018d1765e3e963db67c6539ec6f02c1d109a52e54323352fb973592840d316",
-          "clipboardSha256": "51045ba77079d7625f16abc2a5e2d40fd25b26d7aadd988515489cb4d754400c",
+          "sha256": "226480dec3a44bad19a786f8077efd182163cf554bdf822e8bd3e6b8dadc4013",
+          "clipboardSha256": "2b059c791352e8a8bd2ee1d7e69b9fc0b5c9165c6fb80f414a8fc530c626b9c8",
           "sourceFile": "examples/api/query.rb"
         }
       ],
@@ -942,27 +942,27 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems (libtmux 0.1.0.alpha.1, the release this revision declares), then bundle exec. All 8 programs passed with their expected output and owned-server cleanup on tmux 3.3a and 3.7c."
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
     },
     {
       "port": "ruby",
       "page": "ports/ruby/reference/libtmux-pane-send_text",
       "symbol": "LibTmux::Pane#send_text",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "sourceFile": "examples/api/capture.rb",
       "files": [
         {
           "name": "Gemfile",
           "block": 0,
-          "sha256": "449f3d495f03a7d084095f136a73c5d093ec7a15e271232a982061292be8e531",
-          "clipboardSha256": "151201a1f5031b1ff4f4962d0faf80db9d5f550c13585ace2228b90bb06ed6cb"
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
         },
         {
           "name": "capture.rb",
           "block": 1,
-          "sha256": "7163be5f09609005ea3a4c7a4ac472024603cd69c4118e1ac6cb83676983e525",
-          "clipboardSha256": "6647c256ac0351e8dfe3284e0a05ec05d8d710d96d55774578f1faaccd09487c",
+          "sha256": "2a01c09d0016c461fb6f4489cb726308ea0e698b929ea94dee51ed07f1b9d364",
+          "clipboardSha256": "521244808fe452271f7bbb4d1170f7cb988778050ee0987c367aafcb5ecdf258",
           "sourceFile": "examples/api/capture.rb"
         }
       ],
@@ -982,27 +982,27 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems (libtmux 0.1.0.alpha.1, the release this revision declares), then bundle exec. All 8 programs passed with their expected output and owned-server cleanup on tmux 3.3a and 3.7c."
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
     },
     {
       "port": "ruby",
       "page": "ports/ruby/reference/libtmux-pane-send_keys",
       "symbol": "LibTmux::Pane#send_keys",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "sourceFile": "examples/api/capture.rb",
       "files": [
         {
           "name": "Gemfile",
           "block": 0,
-          "sha256": "449f3d495f03a7d084095f136a73c5d093ec7a15e271232a982061292be8e531",
-          "clipboardSha256": "151201a1f5031b1ff4f4962d0faf80db9d5f550c13585ace2228b90bb06ed6cb"
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
         },
         {
           "name": "capture.rb",
           "block": 1,
-          "sha256": "7163be5f09609005ea3a4c7a4ac472024603cd69c4118e1ac6cb83676983e525",
-          "clipboardSha256": "6647c256ac0351e8dfe3284e0a05ec05d8d710d96d55774578f1faaccd09487c",
+          "sha256": "2a01c09d0016c461fb6f4489cb726308ea0e698b929ea94dee51ed07f1b9d364",
+          "clipboardSha256": "521244808fe452271f7bbb4d1170f7cb988778050ee0987c367aafcb5ecdf258",
           "sourceFile": "examples/api/capture.rb"
         }
       ],
@@ -1022,27 +1022,27 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems (libtmux 0.1.0.alpha.1, the release this revision declares), then bundle exec. All 8 programs passed with their expected output and owned-server cleanup on tmux 3.3a and 3.7c."
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
     },
     {
       "port": "ruby",
       "page": "ports/ruby/reference/libtmux-pane-capture",
       "symbol": "LibTmux::Pane#capture",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "sourceFile": "examples/api/capture.rb",
       "files": [
         {
           "name": "Gemfile",
           "block": 0,
-          "sha256": "449f3d495f03a7d084095f136a73c5d093ec7a15e271232a982061292be8e531",
-          "clipboardSha256": "151201a1f5031b1ff4f4962d0faf80db9d5f550c13585ace2228b90bb06ed6cb"
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
         },
         {
           "name": "capture.rb",
           "block": 1,
-          "sha256": "7163be5f09609005ea3a4c7a4ac472024603cd69c4118e1ac6cb83676983e525",
-          "clipboardSha256": "6647c256ac0351e8dfe3284e0a05ec05d8d710d96d55774578f1faaccd09487c",
+          "sha256": "2a01c09d0016c461fb6f4489cb726308ea0e698b929ea94dee51ed07f1b9d364",
+          "clipboardSha256": "521244808fe452271f7bbb4d1170f7cb988778050ee0987c367aafcb5ecdf258",
           "sourceFile": "examples/api/capture.rb"
         }
       ],
@@ -1062,7 +1062,1487 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems (libtmux 0.1.0.alpha.1, the release this revision declares), then bundle exec. All 8 programs passed with their expected output and owned-server cleanup on tmux 3.3a and 3.7c."
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-async-open",
+      "symbol": "LibTmux::Async.open",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/async_scope.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "bd3c8418a37a08955ea3e1e2f444d3f9d5b897cb73cdc4169b3750be4111e7b2",
+          "clipboardSha256": "750c95382ade69cb3b427b54d502304c7dc6e246acf56585d6fe850f51231e9c"
+        },
+        {
+          "name": "async_scope.rb",
+          "block": 1,
+          "sha256": "5b125b55850b3fa00dbe8059bc1b25e6228c2bcb1e3db49f87823980590de020",
+          "clipboardSha256": "acc0538c4c4f6e6c798ddf781adc3248abc03084341a8d5c64528443d5c46b77",
+          "sourceFile": "examples/api/async_scope.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby async_scope.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "captured panes: 2",
+          "all succeeded: true"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-async-controlconnection-events",
+      "symbol": "LibTmux::Async::ControlConnection#events",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/async_control.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "bd3c8418a37a08955ea3e1e2f444d3f9d5b897cb73cdc4169b3750be4111e7b2",
+          "clipboardSha256": "750c95382ade69cb3b427b54d502304c7dc6e246acf56585d6fe850f51231e9c"
+        },
+        {
+          "name": "async_control.rb",
+          "block": 1,
+          "sha256": "22b1ea693a889399483b67826c1a1e8b9a94e148118c5e5f3fa6caf2a4ebfe38",
+          "clipboardSha256": "c5790590823e27539df29ceaf74c08b4e04302737bcd2ba7157be29bed3bdefd",
+          "sourceFile": "examples/api/async_control.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby async_control.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "reply: ready",
+          "event: %window-renamed @0 renamed"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-async-controlsubscription-next",
+      "symbol": "LibTmux::Async::ControlSubscription#next",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/async_control.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "bd3c8418a37a08955ea3e1e2f444d3f9d5b897cb73cdc4169b3750be4111e7b2",
+          "clipboardSha256": "750c95382ade69cb3b427b54d502304c7dc6e246acf56585d6fe850f51231e9c"
+        },
+        {
+          "name": "async_control.rb",
+          "block": 1,
+          "sha256": "22b1ea693a889399483b67826c1a1e8b9a94e148118c5e5f3fa6caf2a4ebfe38",
+          "clipboardSha256": "c5790590823e27539df29ceaf74c08b4e04302737bcd2ba7157be29bed3bdefd",
+          "sourceFile": "examples/api/async_control.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby async_control.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "reply: ready",
+          "event: %window-renamed @0 renamed"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-async-scope-map",
+      "symbol": "LibTmux::Async::Scope#map",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/async_scope.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "bd3c8418a37a08955ea3e1e2f444d3f9d5b897cb73cdc4169b3750be4111e7b2",
+          "clipboardSha256": "750c95382ade69cb3b427b54d502304c7dc6e246acf56585d6fe850f51231e9c"
+        },
+        {
+          "name": "async_scope.rb",
+          "block": 1,
+          "sha256": "5b125b55850b3fa00dbe8059bc1b25e6228c2bcb1e3db49f87823980590de020",
+          "clipboardSha256": "acc0538c4c4f6e6c798ddf781adc3248abc03084341a8d5c64528443d5c46b77",
+          "sourceFile": "examples/api/async_scope.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby async_scope.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "captured panes: 2",
+          "all succeeded: true"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-async-server-open_control",
+      "symbol": "LibTmux::Async::Server#open_control",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/async_control.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "bd3c8418a37a08955ea3e1e2f444d3f9d5b897cb73cdc4169b3750be4111e7b2",
+          "clipboardSha256": "750c95382ade69cb3b427b54d502304c7dc6e246acf56585d6fe850f51231e9c"
+        },
+        {
+          "name": "async_control.rb",
+          "block": 1,
+          "sha256": "22b1ea693a889399483b67826c1a1e8b9a94e148118c5e5f3fa6caf2a4ebfe38",
+          "clipboardSha256": "c5790590823e27539df29ceaf74c08b4e04302737bcd2ba7157be29bed3bdefd",
+          "sourceFile": "examples/api/async_control.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby async_control.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "reply: ready",
+          "event: %window-renamed @0 renamed"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-async-server-run",
+      "symbol": "LibTmux::Async::Server#run",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/async_run.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "bd3c8418a37a08955ea3e1e2f444d3f9d5b897cb73cdc4169b3750be4111e7b2",
+          "clipboardSha256": "750c95382ade69cb3b427b54d502304c7dc6e246acf56585d6fe850f51231e9c"
+        },
+        {
+          "name": "async_run.rb",
+          "block": 1,
+          "sha256": "2fdb40533bd1b559b6cd3504ef2cc67d8cd5fa06ab9f37052eea9284064a929a",
+          "clipboardSha256": "69ec2a64ca33c8f2cad1e6afc1f014286c67f3e7827a7fab4acfbf421b16ee14",
+          "sourceFile": "examples/api/async_run.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby async_run.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "request: LibTmux::Cancelled",
+          "delivery: possibly_sent"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-async-server-wait_for",
+      "symbol": "LibTmux::Async::Server#wait_for",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/async_run.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "bd3c8418a37a08955ea3e1e2f444d3f9d5b897cb73cdc4169b3750be4111e7b2",
+          "clipboardSha256": "750c95382ade69cb3b427b54d502304c7dc6e246acf56585d6fe850f51231e9c"
+        },
+        {
+          "name": "async_run.rb",
+          "block": 1,
+          "sha256": "2fdb40533bd1b559b6cd3504ef2cc67d8cd5fa06ab9f37052eea9284064a929a",
+          "clipboardSha256": "69ec2a64ca33c8f2cad1e6afc1f014286c67f3e7827a7fab4acfbf421b16ee14",
+          "sourceFile": "examples/api/async_run.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby async_run.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "request: LibTmux::Cancelled",
+          "delivery: possibly_sent"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-cancellation-cancel",
+      "symbol": "LibTmux::Cancellation#cancel",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/cancellation.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
+        },
+        {
+          "name": "cancellation.rb",
+          "block": 1,
+          "sha256": "d634dc918c7127c18700ab5793d7af5a798941e06a4d8f6dace7b9e5da7af670",
+          "clipboardSha256": "d3320693b108ce8a7b4fa4651692a0802c7cb00ec0542809cb1433ce81e4fc99",
+          "sourceFile": "examples/api/cancellation.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby cancellation.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "request: LibTmux::Cancelled",
+          "delivery: possibly_sent"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-cancellation-close",
+      "symbol": "LibTmux::Cancellation#close",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/cancellation.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
+        },
+        {
+          "name": "cancellation.rb",
+          "block": 1,
+          "sha256": "d634dc918c7127c18700ab5793d7af5a798941e06a4d8f6dace7b9e5da7af670",
+          "clipboardSha256": "d3320693b108ce8a7b4fa4651692a0802c7cb00ec0542809cb1433ce81e4fc99",
+          "sourceFile": "examples/api/cancellation.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby cancellation.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "request: LibTmux::Cancelled",
+          "delivery: possibly_sent"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-cancellation-new",
+      "symbol": "LibTmux::Cancellation.new",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/cancellation.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
+        },
+        {
+          "name": "cancellation.rb",
+          "block": 1,
+          "sha256": "d634dc918c7127c18700ab5793d7af5a798941e06a4d8f6dace7b9e5da7af670",
+          "clipboardSha256": "d3320693b108ce8a7b4fa4651692a0802c7cb00ec0542809cb1433ce81e4fc99",
+          "sourceFile": "examples/api/cancellation.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby cancellation.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "request: LibTmux::Cancelled",
+          "delivery: possibly_sent"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-controlconnection-exchange",
+      "symbol": "LibTmux::ControlConnection#exchange",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/control.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
+        },
+        {
+          "name": "control.rb",
+          "block": 1,
+          "sha256": "00f3c107345cfb9313838ecd3c6f307995d10048886d4d8ac858b453ec00bcc0",
+          "clipboardSha256": "64cda3eed52709c2f9940cf19fc013cd76c9cadc5f9cf14b448687896b86b9f8",
+          "sourceFile": "examples/api/control.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby control.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "reply: ready",
+          "event: %window-renamed @0 renamed"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-controlconnection-subscribe",
+      "symbol": "LibTmux::ControlConnection#subscribe",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/control.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
+        },
+        {
+          "name": "control.rb",
+          "block": 1,
+          "sha256": "00f3c107345cfb9313838ecd3c6f307995d10048886d4d8ac858b453ec00bcc0",
+          "clipboardSha256": "64cda3eed52709c2f9940cf19fc013cd76c9cadc5f9cf14b448687896b86b9f8",
+          "sourceFile": "examples/api/control.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby control.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "reply: ready",
+          "event: %window-renamed @0 renamed"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-controlsubscription-next",
+      "symbol": "LibTmux::ControlSubscription#next",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/control.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
+        },
+        {
+          "name": "control.rb",
+          "block": 1,
+          "sha256": "00f3c107345cfb9313838ecd3c6f307995d10048886d4d8ac858b453ec00bcc0",
+          "clipboardSha256": "64cda3eed52709c2f9940cf19fc013cd76c9cadc5f9cf14b448687896b86b9f8",
+          "sourceFile": "examples/api/control.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby control.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "reply: ready",
+          "event: %window-renamed @0 renamed"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-hooks-get",
+      "symbol": "LibTmux::Hooks#get",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/options.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
+        },
+        {
+          "name": "options.rb",
+          "block": 1,
+          "sha256": "1e7b2374c271c8e98d92650c6fa67827dea0eacecbf3d4c4f9c3a3202c6f81e8",
+          "clipboardSha256": "eced675c9bb0753ee28a527c85d14e0cee4ae7f9b10add4f9a0ccd1b5c873542",
+          "sourceFile": "examples/api/options.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby options.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "history-limit: 5000",
+          "inherited: false",
+          "hook: display-message created"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-hooks-set",
+      "symbol": "LibTmux::Hooks#set",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/options.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
+        },
+        {
+          "name": "options.rb",
+          "block": 1,
+          "sha256": "1e7b2374c271c8e98d92650c6fa67827dea0eacecbf3d4c4f9c3a3202c6f81e8",
+          "clipboardSha256": "eced675c9bb0753ee28a527c85d14e0cee4ae7f9b10add4f9a0ccd1b5c873542",
+          "sourceFile": "examples/api/options.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby options.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "history-limit: 5000",
+          "inherited: false",
+          "hook: display-message created"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-optionvalue-as",
+      "symbol": "LibTmux::OptionValue#as",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/options.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
+        },
+        {
+          "name": "options.rb",
+          "block": 1,
+          "sha256": "1e7b2374c271c8e98d92650c6fa67827dea0eacecbf3d4c4f9c3a3202c6f81e8",
+          "clipboardSha256": "eced675c9bb0753ee28a527c85d14e0cee4ae7f9b10add4f9a0ccd1b5c873542",
+          "sourceFile": "examples/api/options.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby options.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "history-limit: 5000",
+          "inherited: false",
+          "hook: display-message created"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-optionvalue-inherited",
+      "symbol": "LibTmux::OptionValue#inherited?",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/options.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
+        },
+        {
+          "name": "options.rb",
+          "block": 1,
+          "sha256": "1e7b2374c271c8e98d92650c6fa67827dea0eacecbf3d4c4f9c3a3202c6f81e8",
+          "clipboardSha256": "eced675c9bb0753ee28a527c85d14e0cee4ae7f9b10add4f9a0ccd1b5c873542",
+          "sourceFile": "examples/api/options.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby options.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "history-limit: 5000",
+          "inherited: false",
+          "hook: display-message created"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-options-get",
+      "symbol": "LibTmux::Options#get",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/options.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
+        },
+        {
+          "name": "options.rb",
+          "block": 1,
+          "sha256": "1e7b2374c271c8e98d92650c6fa67827dea0eacecbf3d4c4f9c3a3202c6f81e8",
+          "clipboardSha256": "eced675c9bb0753ee28a527c85d14e0cee4ae7f9b10add4f9a0ccd1b5c873542",
+          "sourceFile": "examples/api/options.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby options.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "history-limit: 5000",
+          "inherited: false",
+          "hook: display-message created"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-options-set",
+      "symbol": "LibTmux::Options#set",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/options.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
+        },
+        {
+          "name": "options.rb",
+          "block": 1,
+          "sha256": "1e7b2374c271c8e98d92650c6fa67827dea0eacecbf3d4c4f9c3a3202c6f81e8",
+          "clipboardSha256": "eced675c9bb0753ee28a527c85d14e0cee4ae7f9b10add4f9a0ccd1b5c873542",
+          "sourceFile": "examples/api/options.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby options.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "history-limit: 5000",
+          "inherited: false",
+          "hook: display-message created"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-server-open_control",
+      "symbol": "LibTmux::Server#open_control",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/control.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
+        },
+        {
+          "name": "control.rb",
+          "block": 1,
+          "sha256": "00f3c107345cfb9313838ecd3c6f307995d10048886d4d8ac858b453ec00bcc0",
+          "clipboardSha256": "64cda3eed52709c2f9940cf19fc013cd76c9cadc5f9cf14b448687896b86b9f8",
+          "sourceFile": "examples/api/control.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby control.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "reply: ready",
+          "event: %window-renamed @0 renamed"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-server-run",
+      "symbol": "LibTmux::Server#run",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/cancellation.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
+        },
+        {
+          "name": "cancellation.rb",
+          "block": 1,
+          "sha256": "d634dc918c7127c18700ab5793d7af5a798941e06a4d8f6dace7b9e5da7af670",
+          "clipboardSha256": "d3320693b108ce8a7b4fa4651692a0802c7cb00ec0542809cb1433ce81e4fc99",
+          "sourceFile": "examples/api/cancellation.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby cancellation.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "request: LibTmux::Cancelled",
+          "delivery: possibly_sent"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-server-run_group",
+      "symbol": "LibTmux::Server#run_group",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/run_group.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
+        },
+        {
+          "name": "run_group.rb",
+          "block": 1,
+          "sha256": "399defdacaafdb9a2b0b8adb00c820de80fe67e2bbea60b8cdec650ba7ffc89c",
+          "clipboardSha256": "31b381d22b3294667857fc5435f5009c75aa328b1aeb71a5f6540846ccdb14fd",
+          "sourceFile": "examples/api/run_group.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby run_group.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "success: false",
+          "steps: unknown, unknown, unknown",
+          "@before: kept"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-server-wait_for",
+      "symbol": "LibTmux::Server#wait_for",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/cancellation.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
+        },
+        {
+          "name": "cancellation.rb",
+          "block": 1,
+          "sha256": "d634dc918c7127c18700ab5793d7af5a798941e06a4d8f6dace7b9e5da7af670",
+          "clipboardSha256": "d3320693b108ce8a7b4fa4651692a0802c7cb00ec0542809cb1433ce81e4fc99",
+          "sourceFile": "examples/api/cancellation.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby cancellation.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "request: LibTmux::Cancelled",
+          "delivery: possibly_sent"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-session-hooks",
+      "symbol": "LibTmux::Session#hooks",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/options.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
+        },
+        {
+          "name": "options.rb",
+          "block": 1,
+          "sha256": "1e7b2374c271c8e98d92650c6fa67827dea0eacecbf3d4c4f9c3a3202c6f81e8",
+          "clipboardSha256": "eced675c9bb0753ee28a527c85d14e0cee4ae7f9b10add4f9a0ccd1b5c873542",
+          "sourceFile": "examples/api/options.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby options.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "history-limit: 5000",
+          "inherited: false",
+          "hook: display-message created"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-session-link_window",
+      "symbol": "LibTmux::Session#link_window",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/link_window.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
+        },
+        {
+          "name": "link_window.rb",
+          "block": 1,
+          "sha256": "ed0309b66cc98f4d06abdd8ed79d3e093bfd161dbd2b15459d61a35720421d43",
+          "clipboardSha256": "4e8541a81f9f62a252a383d3ad5042f8815aafda4f17d28600f1f81c4729f51d",
+          "sourceFile": "examples/api/link_window.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby link_window.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "indexes: 0, 4, 9",
+          "windows: @0"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-session-list_window_links",
+      "symbol": "LibTmux::Session#list_window_links",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/link_window.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
+        },
+        {
+          "name": "link_window.rb",
+          "block": 1,
+          "sha256": "ed0309b66cc98f4d06abdd8ed79d3e093bfd161dbd2b15459d61a35720421d43",
+          "clipboardSha256": "4e8541a81f9f62a252a383d3ad5042f8815aafda4f17d28600f1f81c4729f51d",
+          "sourceFile": "examples/api/link_window.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby link_window.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "indexes: 0, 4, 9",
+          "windows: @0"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-session-options",
+      "symbol": "LibTmux::Session#options",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/options.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "faa88c2e1dd83966c41b6975b38b21e78ba8ef7eada5f4a6555e9201c0cd0a92",
+          "clipboardSha256": "df5227e5890976357b1d06777d311990b6854b9539680817c65ee39f1e9c6abc"
+        },
+        {
+          "name": "options.rb",
+          "block": 1,
+          "sha256": "1e7b2374c271c8e98d92650c6fa67827dea0eacecbf3d4c4f9c3a3202c6f81e8",
+          "clipboardSha256": "eced675c9bb0753ee28a527c85d14e0cee4ae7f9b10add4f9a0ccd1b5c873542",
+          "sourceFile": "examples/api/options.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby options.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "history-limit: 5000",
+          "inherited: false",
+          "hook: display-message created"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-workspace-plan-1c5c",
+      "symbol": "LibTmux::Workspace#plan",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/workspace_apply.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "93799051045a102e2110c474a4c4660cc2821bd66b43dec3ec5677085bd8408b",
+          "clipboardSha256": "f2b69849d9e162fb280ba99cf05c90050406443064d691517cbef3eeea565299"
+        },
+        {
+          "name": "workspace_apply.rb",
+          "block": 1,
+          "sha256": "f5139d9ab75939a08b59aeec486a156e404db89ea7da8da167aea329eff9a04f",
+          "clipboardSha256": "d71f55f408d490d61d28bf82cc57673c6937960ce07ccd5f2fa0f6714e2166fa",
+          "sourceFile": "examples/api/workspace_apply.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby workspace_apply.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "planned steps: 11",
+          "applied: true",
+          "sessions: work"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [],
+      "verificationScope": "Not verified. The displayed program loads ../workspace.yaml, which the page does not display, so in a new directory it stops with LibTmux::Workspace::ConfigError (workspace file could not be read) on tmux 3.3a and on 3.7c. The hashes bind the displayed bytes and recipe only."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-workspace-load",
+      "symbol": "LibTmux::Workspace.load",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/workspace_apply.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "93799051045a102e2110c474a4c4660cc2821bd66b43dec3ec5677085bd8408b",
+          "clipboardSha256": "f2b69849d9e162fb280ba99cf05c90050406443064d691517cbef3eeea565299"
+        },
+        {
+          "name": "workspace_apply.rb",
+          "block": 1,
+          "sha256": "f5139d9ab75939a08b59aeec486a156e404db89ea7da8da167aea329eff9a04f",
+          "clipboardSha256": "d71f55f408d490d61d28bf82cc57673c6937960ce07ccd5f2fa0f6714e2166fa",
+          "sourceFile": "examples/api/workspace_apply.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby workspace_apply.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "planned steps: 11",
+          "applied: true",
+          "sessions: work"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [],
+      "verificationScope": "Not verified. The displayed program loads ../workspace.yaml, which the page does not display, so in a new directory it stops with LibTmux::Workspace::ConfigError (workspace file could not be read) on tmux 3.3a and on 3.7c. The hashes bind the displayed bytes and recipe only."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-workspace-parse",
+      "symbol": "LibTmux::Workspace.parse",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/workspace_failure.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "93799051045a102e2110c474a4c4660cc2821bd66b43dec3ec5677085bd8408b",
+          "clipboardSha256": "f2b69849d9e162fb280ba99cf05c90050406443064d691517cbef3eeea565299"
+        },
+        {
+          "name": "workspace_failure.rb",
+          "block": 1,
+          "sha256": "1110fd49c20854ca85dbcd618a141b49ad2b25af085c7548fb739edd172083fc",
+          "clipboardSha256": "edc0236a083ce39f509bb6bb5263cd0f9defc6c0f4e9c8e1251e3f2cbf8de734",
+          "sourceFile": "examples/api/workspace_failure.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby workspace_failure.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "failed action: split_pane",
+          "created a session: true",
+          "compensation: completed",
+          "sessions: borrowed"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-workspace-applyerror-result",
+      "symbol": "LibTmux::Workspace::ApplyError#result",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/workspace_failure.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "93799051045a102e2110c474a4c4660cc2821bd66b43dec3ec5677085bd8408b",
+          "clipboardSha256": "f2b69849d9e162fb280ba99cf05c90050406443064d691517cbef3eeea565299"
+        },
+        {
+          "name": "workspace_failure.rb",
+          "block": 1,
+          "sha256": "1110fd49c20854ca85dbcd618a141b49ad2b25af085c7548fb739edd172083fc",
+          "clipboardSha256": "edc0236a083ce39f509bb6bb5263cd0f9defc6c0f4e9c8e1251e3f2cbf8de734",
+          "sourceFile": "examples/api/workspace_failure.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby workspace_failure.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "failed action: split_pane",
+          "created a session: true",
+          "compensation: completed",
+          "sessions: borrowed"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-workspace-applyresult-compensation",
+      "symbol": "LibTmux::Workspace::ApplyResult#compensation",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/workspace_failure.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "93799051045a102e2110c474a4c4660cc2821bd66b43dec3ec5677085bd8408b",
+          "clipboardSha256": "f2b69849d9e162fb280ba99cf05c90050406443064d691517cbef3eeea565299"
+        },
+        {
+          "name": "workspace_failure.rb",
+          "block": 1,
+          "sha256": "1110fd49c20854ca85dbcd618a141b49ad2b25af085c7548fb739edd172083fc",
+          "clipboardSha256": "edc0236a083ce39f509bb6bb5263cd0f9defc6c0f4e9c8e1251e3f2cbf8de734",
+          "sourceFile": "examples/api/workspace_failure.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby workspace_failure.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "failed action: split_pane",
+          "created a session: true",
+          "compensation: completed",
+          "sessions: borrowed"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-workspace-applyresult-created_refs",
+      "symbol": "LibTmux::Workspace::ApplyResult#created_refs",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/workspace_failure.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "93799051045a102e2110c474a4c4660cc2821bd66b43dec3ec5677085bd8408b",
+          "clipboardSha256": "f2b69849d9e162fb280ba99cf05c90050406443064d691517cbef3eeea565299"
+        },
+        {
+          "name": "workspace_failure.rb",
+          "block": 1,
+          "sha256": "1110fd49c20854ca85dbcd618a141b49ad2b25af085c7548fb739edd172083fc",
+          "clipboardSha256": "edc0236a083ce39f509bb6bb5263cd0f9defc6c0f4e9c8e1251e3f2cbf8de734",
+          "sourceFile": "examples/api/workspace_failure.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby workspace_failure.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "failed action: split_pane",
+          "created a session: true",
+          "compensation: completed",
+          "sessions: borrowed"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-workspace-applyresult-failed_action",
+      "symbol": "LibTmux::Workspace::ApplyResult#failed_action",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/workspace_failure.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "93799051045a102e2110c474a4c4660cc2821bd66b43dec3ec5677085bd8408b",
+          "clipboardSha256": "f2b69849d9e162fb280ba99cf05c90050406443064d691517cbef3eeea565299"
+        },
+        {
+          "name": "workspace_failure.rb",
+          "block": 1,
+          "sha256": "1110fd49c20854ca85dbcd618a141b49ad2b25af085c7548fb739edd172083fc",
+          "clipboardSha256": "edc0236a083ce39f509bb6bb5263cd0f9defc6c0f4e9c8e1251e3f2cbf8de734",
+          "sourceFile": "examples/api/workspace_failure.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby workspace_failure.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "failed action: split_pane",
+          "created a session: true",
+          "compensation: completed",
+          "sessions: borrowed"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "verificationScope": "The displayed Gemfile and complete program run in a new directory: bundle install from RubyGems at the release this revision declares (libtmux, libtmux-async and libtmux-workspace 0.1.1), then bundle exec. Every program passed with its expected output on the tmux releases listed. The two that attach a control client ran on tmux 3.7c only: the library refuses a control client below tmux 3.7, and both stop with UnsupportedFeatureError on 3.3a."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-workspace-plan-apply",
+      "symbol": "LibTmux::Workspace::Plan#apply",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/workspace_apply.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "93799051045a102e2110c474a4c4660cc2821bd66b43dec3ec5677085bd8408b",
+          "clipboardSha256": "f2b69849d9e162fb280ba99cf05c90050406443064d691517cbef3eeea565299"
+        },
+        {
+          "name": "workspace_apply.rb",
+          "block": 1,
+          "sha256": "f5139d9ab75939a08b59aeec486a156e404db89ea7da8da167aea329eff9a04f",
+          "clipboardSha256": "d71f55f408d490d61d28bf82cc57673c6937960ce07ccd5f2fa0f6714e2166fa",
+          "sourceFile": "examples/api/workspace_apply.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby workspace_apply.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "planned steps: 11",
+          "applied: true",
+          "sessions: work"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [],
+      "verificationScope": "Not verified. The displayed program loads ../workspace.yaml, which the page does not display, so in a new directory it stops with LibTmux::Workspace::ConfigError (workspace file could not be read) on tmux 3.3a and on 3.7c. The hashes bind the displayed bytes and recipe only."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-workspace-plan-steps",
+      "symbol": "LibTmux::Workspace::Plan#steps",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "sourceFile": "examples/api/workspace_apply.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 0,
+          "sha256": "93799051045a102e2110c474a4c4660cc2821bd66b43dec3ec5677085bd8408b",
+          "clipboardSha256": "f2b69849d9e162fb280ba99cf05c90050406443064d691517cbef3eeea565299"
+        },
+        {
+          "name": "workspace_apply.rb",
+          "block": 1,
+          "sha256": "f5139d9ab75939a08b59aeec486a156e404db89ea7da8da167aea329eff9a04f",
+          "clipboardSha256": "d71f55f408d490d61d28bf82cc57673c6937960ce07ccd5f2fa0f6714e2166fa",
+          "sourceFile": "examples/api/workspace_apply.rb"
+        }
+      ],
+      "consoleBlocks": [
+        2
+      ],
+      "shellRecipe": [
+        "bundle install && \\\n  bundle exec ruby workspace_apply.rb"
+      ],
+      "expectedOutputs": [
+        [
+          "planned steps: 11",
+          "applied: true",
+          "sessions: work"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7; Bundler 4.0.20",
+      "tmuxVersions": [],
+      "verificationScope": "Not verified. The displayed program loads ../workspace.yaml, which the page does not display, so in a new directory it stops with LibTmux::Workspace::ConfigError (workspace file could not be read) on tmux 3.3a and on 3.7c. The hashes bind the displayed bytes and recipe only."
     },
     {
       "port": "lua",

@@ -14,7 +14,7 @@ describe('verified complete Ruby API programs', () => {
   it('covers every declared example target without changing public identities', () => {
     const targets = model.symbols.filter((symbol) => symbol.doc?.examples?.length)
     expect(examples.map((example) => example.symbol).sort()).toEqual(targets.map((symbol) => symbol.id).sort())
-    expect(new Set(examples.map((example) => example.sourceFile)).size).toBe(8)
+    expect(new Set(examples.map((example) => example.sourceFile)).size).toBe(18)
   })
 
   it.each(examples)('preserves the executed $symbol files, setup, and expected output', (example) => {
