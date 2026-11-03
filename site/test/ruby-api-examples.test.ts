@@ -14,7 +14,10 @@ describe('verified complete Ruby API programs', () => {
   it('covers every declared example target without changing public identities', () => {
     const targets = model.symbols.filter((symbol) => symbol.doc?.examples?.length)
     expect(examples.map((example) => example.symbol).sort()).toEqual(targets.map((symbol) => symbol.id).sort())
-    expect(new Set(examples.map((example) => example.sourceFile)).size).toBe(18)
+    // Each target's second block links its source file; the receipt must name the same files.
+    const sourceFiles = (files: string[]) => [...new Set(files)].sort()
+    expect(sourceFiles(examples.map((example) => example.sourceFile)))
+      .toEqual(sourceFiles(targets.map((symbol) => symbol.doc!.examples![1]!.sourceUrl!.replace(/^.*\/blob\/[0-9a-f]{40}\//, ''))))
   })
 
   it.each(examples)('preserves the executed $symbol files, setup, and expected output', (example) => {
