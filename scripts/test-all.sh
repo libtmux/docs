@@ -191,6 +191,14 @@ node scripts/gen-shell-ports.negative.mjs
 step 'mcp tool matrix'
 node scripts/gen-mcp-tools.mjs --check
 
+# A tool page links the file and line where its tool is registered, at the
+# revision of the port's API model. The matrix can run ahead of that model, and
+# a tool the model's revision lacks then links a file that is not there. This
+# reads each registration at the revision it cites, and skips a port with no
+# checkout or without that revision, as the steps around it do.
+step 'mcp source links'
+node scripts/check-mcp-source-links.mjs
+
 # Each port's own MCP server, built and run to compare its live tool,
 # resource and prompt schemas against the committed snapshot in
 # site/src/data/mcp-protocol/. Skips when the sibling checkouts are absent,
