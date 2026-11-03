@@ -211,6 +211,23 @@ function mayNotRunStep(indent: string, step: string[]): boolean {
   return stepKey(indent, step, 'if') !== undefined || (tolerated !== undefined && unquote(tolerated) !== 'false')
 }
 
+/** The jobs a job lists in `needs`: `needs: a`, `needs: [a, b]` or a block list of `- a` lines. A comment names nothing. */
+function neededJobs(job: string[]): string[] {
+  const needs = job.findIndex((line) => /^ {4}needs:/.test(line))
+  if (needs < 0) return []
+  const after = job.slice(needs + 1)
+  const items = after.findIndex((line) => !/^ {6}- |^\s*(?:#|$)/.test(line))
+  return [job[needs]!.replace(/^ {4}needs:/, ''), ...after.slice(0, items < 0 ? undefined : items)]
+    .map((line) => stripComment(line).replace(/^\s*-\s+/, '')).join(' ').split(/[\s,[\]]+/).filter(Boolean)
+}
+
+/** Whether a job runs whenever the workflow does: no `if`, no tolerated failure, and every job it needs the same. */
+function alwaysRuns(lines: string[], name: string, path: ReadonlySet<string>): boolean {
+  const body = path.has(name) ? undefined : jobLines(lines, name)
+  return body !== undefined && !body.some(mayNotRun)
+    && neededJobs(body).every((next) => alwaysRuns(lines, next, new Set([...path, name])))
+}
+
 /**
  * Whether a job-level `if` only asks the plan whether the workflow has cells
  * to run. The entry names the flag (`ci.planOutput`). The condition must be
@@ -219,7 +236,8 @@ function mayNotRunStep(indent: string, step: string[]): boolean {
  * `continue-on-error` of its own and publish `<flag>` as
  * `${{ steps.<id>.outputs.<flag> }}` of a step that has no condition. A plan
  * that can be skipped, or whose flag is not read from a step, can leave the
- * job unrun. Any other condition proves nothing either.
+ * job unrun. So can any other job it needs that has an `if`, is tolerated or
+ * needs such a job. Any other condition proves nothing either.
  */
 function plannedRun(lines: string[], job: string[], condition: string, ci: CapabilityEntry['ci']): boolean {
   const flag = ci.planOutput
@@ -227,15 +245,9 @@ function plannedRun(lines: string[], job: string[], condition: string, ci: Capab
   const match = /^ {4}if:\s*['"]?\$?\{?\{?\s*needs\.([\w-]+)\.outputs\.([\w-]+)\s*==\s*'true'\s*\}?\}?['"]?$/.exec(stripComment(condition).trimEnd())
   if (!match || match[2] !== flag) return false
   const plan = match[1]!
-  if (plan === ci.job) return false
-  const needs = job.findIndex((line) => /^ {4}needs:/.test(line))
-  if (needs < 0) return false
-  // `needs: plan`, `needs: [plan, other]` or a block list of `- plan` lines; a comment names nothing.
-  const after = job.slice(needs + 1)
-  const items = after.findIndex((line) => !/^ {6}- |^\s*(?:#|$)/.test(line))
-  const listed = [job[needs]!.replace(/^ {4}needs:/, ''), ...after.slice(0, items < 0 ? undefined : items)]
-    .map(stripComment).join(' ').split(/[\s,[\]]+/)
-  if (!listed.includes(plan)) return false
+  const listed = neededJobs(job)
+  if (!listed.includes(plan) || plan === ci.job) return false
+  if (!listed.filter((name) => name !== plan).every((name) => alwaysRuns(lines, name, new Set([ci.job])))) return false
   const planned = jobLines(lines, plan)
   if (!planned || planned.some((line) => /^ {4}needs:/.test(line) || mayNotRun(line))) return false
   const outputs = planned.findIndex((line) => /^ {4}outputs:\s*$/.test(line))

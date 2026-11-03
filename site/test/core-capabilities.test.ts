@@ -196,6 +196,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - run: true
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: true
   cell:
     needs: plan
     if: needs.plan.outputs.run_cells == 'true'
@@ -210,9 +214,9 @@ jobs:
     const gated = "    if: needs.plan.outputs.run_cells == 'true'\n"
     it('accepts the flag its plan job publishes', () => {
       expect(workflowStep(planned, cell)).toBe(true)
-      expect(workflowStep(planned.replace('needs: plan', 'needs: [other, plan]'), cell)).toBe(true)
-      expect(workflowStep(planned.replace('    needs: plan\n', '    needs:\n      - other\n      - plan\n'), cell)).toBe(true)
-      expect(workflowStep(planned.replace('    needs: plan\n', '    needs:\n      - other\n      # the plan decides\n      - plan # first\n'), cell)).toBe(true)
+      expect(workflowStep(planned.replace('needs: plan', 'needs: [lint, plan]'), cell)).toBe(true)
+      expect(workflowStep(planned.replace('    needs: plan\n', '    needs:\n      - lint\n      - plan\n'), cell)).toBe(true)
+      expect(workflowStep(planned.replace('    needs: plan\n', '    needs:\n      - lint\n      # the plan decides\n      - plan # first\n'), cell)).toBe(true)
       expect(workflowStep(planned.replace("run_cells == 'true'", "run_cells == 'true' # the plan decides"), cell)).toBe(true)
       expect(workflowStep(planned.replace('id: plan', 'id: decide').replace('steps.plan.outputs.run_cells', 'steps.decide.outputs.run_cells'), cell)).toBe(true)
       expect(workflowStep(planned.replace('    runs-on: ubuntu-24.04\n    outputs:', '    runs-on: ubuntu-24.04\n    continue-on-error: false\n    outputs:'), cell)).toBe(true)
@@ -228,11 +232,17 @@ jobs:
       ['another job in needs', planned.replace('needs: plan', 'needs: other')],
       ['a plan named only in a comment', planned.replace('needs: plan', 'needs: [other] # plan')],
       ['a plan named only in a block-list comment', planned.replace('    needs: plan\n', '    needs:\n      - other # plan\n')],
+      ['a conditional job beside the plan', planned.replace('needs: plan', 'needs: [plan, gate]')],
+      ['a conditional job beside the plan in a block list', planned.replace('    needs: plan\n', '    needs:\n      - plan\n      - gate\n')],
+      ['a tolerated job beside the plan', planned.replace('needs: plan', 'needs: [plan, gate]').replace("    if: github.ref == 'x'\n", '    continue-on-error: true\n')],
+      ['a job beside the plan that needs a conditional job', planned.replace('needs: plan', 'needs: [plan, lint]').replace('  lint:\n', '  lint:\n    needs: gate\n')],
+      ['a job beside the plan that the workflow does not define', planned.replace('needs: plan', 'needs: [plan, absent]')],
+      ['a job beside the plan that needs the job', planned.replace('needs: plan', 'needs: [plan, lint]').replace('  lint:\n', '  lint:\n    needs: cell\n')],
       ['a plan job that is itself conditional', planned.replace('  plan:\n', "  plan:\n    if: github.ref == 'x'\n")],
       ['a plan job whose condition carries a comment that looks like a pass', planned.replace('  plan:\n', "  plan:\n    if: github.ref == 'x' # continue-on-error: false\n")],
       ['a plan job that may fail', planned.replace('  plan:\n', '  plan:\n    continue-on-error: true\n')],
       ['a plan job that needs a conditional job', planned.replace('  plan:\n', '  plan:\n    needs: gate\n')],
-      ['a plan job that needs an unconditional job', planned.replace('  plan:\n', '  plan:\n    needs: other\n')],
+      ['a plan job that needs an unconditional job', planned.replace('  plan:\n', '  plan:\n    needs: lint\n')],
       ['a plan job that is not in the workflow', planned.replace('  plan:\n', '  planner:\n')],
       ['a plan output that is hard-wired', planned.replace('run_cells: ${{ steps.plan.outputs.run_cells }}', "run_cells: 'false'")],
       ['a plan output that reads a missing step', planned.replace('run_cells: ${{ steps.plan.outputs.run_cells }}', 'run_cells: ${{ steps.absent.outputs.run_cells }}')],
