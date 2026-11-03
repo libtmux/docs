@@ -146,13 +146,10 @@ export function portCapabilities(owner: string, table: CapabilityTable, cache: C
  */
 export function workflowStep(workflow: string, ci: CapabilityEntry['ci']): boolean {
   const lines = workflow.replaceAll('\r', '').split('\n')
-  const start = lines.findIndex((line) => stripComment(line).trimEnd() === `  ${ci.job}:`)
-  if (start < 0) return false
-  let end = lines.findIndex((line, index) => index > start && /^ {0,2}[^\s#]/.test(line))
-  if (end < 0) end = lines.length
-  const job = lines.slice(start + 1, end)
+  const job = jobLines(lines, ci.job)
+  if (!job) return false
   // A job that may not run, or may fail without failing the workflow, proves nothing.
-  if (job.some((line) => /^ {4}(?:if|continue-on-error):/.test(line) && !/continue-on-error:\s*false/.test(line))) return false
+  if (job.some((line) => /^ {4}(?:if|continue-on-error):/.test(line) && !/continue-on-error:\s*false/.test(line) && !plannedRun(lines, job, line))) return false
   const first = job.findIndex((line) => /^\s*steps:\s*$/.test(line))
   if (first < 0) return false
   const body = job.slice(first + 1)
@@ -180,6 +177,41 @@ export function workflowStep(workflow: string, ci: CapabilityEntry['ci']): boole
 }
 
 const stripComment = (value: string) => value.replace(/\s+#.*$/, '')
+
+/** The lines under a top-level job's key, or undefined when the workflow has no such job. */
+function jobLines(lines: string[], name: string): string[] | undefined {
+  const start = lines.findIndex((line) => stripComment(line).trimEnd() === `  ${name}:`)
+  if (start < 0) return undefined
+  let end = lines.findIndex((line, index) => index > start && /^ {0,2}[^\s#]/.test(line))
+  if (end < 0) end = lines.length
+  return lines.slice(start + 1, end)
+}
+
+/**
+ * Whether a job-level `if` only asks a job this one needs whether it has
+ * anything to run: `needs.plan.outputs.run_cells == 'true'`, where `plan` is a
+ * job of the same workflow that declares that output and is not itself
+ * conditional. Any other condition may skip the job and proves nothing.
+ */
+function plannedRun(lines: string[], job: string[], condition: string): boolean {
+  const match = /^ {4}if:\s*['"]?\$?\{?\{?\s*needs\.([\w-]+)\.outputs\.([\w-]+)\s*==\s*'true'\s*\}?\}?['"]?$/.exec(stripComment(condition).trimEnd())
+  if (!match) return false
+  const [, plan, flag] = match as unknown as [string, string, string]
+  const needs = job.findIndex((line) => /^ {4}needs:/.test(line))
+  if (needs < 0) return false
+  // `needs: plan`, `needs: [plan, other]` or a block list of `- plan` lines.
+  const after = job.slice(needs + 1)
+  const items = after.findIndex((line) => !/^ {6}- /.test(line))
+  const listed = [job[needs]!.replace(/^ {4}needs:/, ''), ...after.slice(0, items < 0 ? undefined : items)]
+    .join(' ').split(/[\s,[\]]+/)
+  if (!listed.includes(plan)) return false
+  const planned = jobLines(lines, plan)
+  if (!planned || planned.some((line) => /^ {4}(?:if|continue-on-error):/.test(line) && !/continue-on-error:\s*false/.test(line))) return false
+  const outputs = planned.findIndex((line) => /^ {4}outputs:\s*$/.test(line))
+  if (outputs < 0) return false
+  const declared = planned.slice(outputs + 1).findIndex((line) => !/^ {6}\S/.test(line))
+  return planned.slice(outputs + 1, declared < 0 ? undefined : outputs + 1 + declared).some((line) => new RegExp(`^ {6}${flag}:`).test(line))
+}
 
 /** Whether a step's `run` holds the command as whole commands, not as a prefix of another or inside a string. */
 function runsCommand(step: string[], command: string): boolean {
