@@ -76,13 +76,8 @@
       "LibTmux::Server.start",
       "LibTmux::Server#new_session",
       "LibTmux::CreationReceipt#pane",
-      "LibTmux::Server#open_control",
-      "LibTmux::ControlConnection#exchange",
-      "LibTmux::ControlConnection#subscribe",
       "LibTmux::Pane#send_text",
       "LibTmux::Pane#send_keys",
-      "LibTmux::ControlSubscription#next",
-      "LibTmux::ControlEvent#data",
       "LibTmux::Pane#capture",
       "LibTmux::CommandResult#stdout"
     ]
