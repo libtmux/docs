@@ -2175,7 +2175,7 @@
     },
     {
       "port": "ruby",
-      "page": "ports/ruby/reference/libtmux-workspace-plan-1c5c",
+      "page": "ports/ruby/workspace/reference/libtmux-workspace-plan-1c5c",
       "symbol": "LibTmux::Workspace#plan",
       "sourceRepository": "libtmux/libtmux-ruby",
       "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
@@ -2214,7 +2214,7 @@
     },
     {
       "port": "ruby",
-      "page": "ports/ruby/reference/libtmux-workspace-load",
+      "page": "ports/ruby/workspace/reference/libtmux-workspace-load",
       "symbol": "LibTmux::Workspace.load",
       "sourceRepository": "libtmux/libtmux-ruby",
       "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
@@ -2253,7 +2253,7 @@
     },
     {
       "port": "ruby",
-      "page": "ports/ruby/reference/libtmux-workspace-parse",
+      "page": "ports/ruby/workspace/reference/libtmux-workspace-parse",
       "symbol": "LibTmux::Workspace.parse",
       "sourceRepository": "libtmux/libtmux-ruby",
       "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
@@ -2296,7 +2296,7 @@
     },
     {
       "port": "ruby",
-      "page": "ports/ruby/reference/libtmux-workspace-applyerror-result",
+      "page": "ports/ruby/workspace/reference/libtmux-workspace-applyerror-result",
       "symbol": "LibTmux::Workspace::ApplyError#result",
       "sourceRepository": "libtmux/libtmux-ruby",
       "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
@@ -2339,7 +2339,7 @@
     },
     {
       "port": "ruby",
-      "page": "ports/ruby/reference/libtmux-workspace-applyresult-compensation",
+      "page": "ports/ruby/workspace/reference/libtmux-workspace-applyresult-compensation",
       "symbol": "LibTmux::Workspace::ApplyResult#compensation",
       "sourceRepository": "libtmux/libtmux-ruby",
       "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
@@ -2382,7 +2382,7 @@
     },
     {
       "port": "ruby",
-      "page": "ports/ruby/reference/libtmux-workspace-applyresult-created_refs",
+      "page": "ports/ruby/workspace/reference/libtmux-workspace-applyresult-created_refs",
       "symbol": "LibTmux::Workspace::ApplyResult#created_refs",
       "sourceRepository": "libtmux/libtmux-ruby",
       "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
@@ -2425,7 +2425,7 @@
     },
     {
       "port": "ruby",
-      "page": "ports/ruby/reference/libtmux-workspace-applyresult-failed_action",
+      "page": "ports/ruby/workspace/reference/libtmux-workspace-applyresult-failed_action",
       "symbol": "LibTmux::Workspace::ApplyResult#failed_action",
       "sourceRepository": "libtmux/libtmux-ruby",
       "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
@@ -2468,7 +2468,7 @@
     },
     {
       "port": "ruby",
-      "page": "ports/ruby/reference/libtmux-workspace-plan-apply",
+      "page": "ports/ruby/workspace/reference/libtmux-workspace-plan-apply",
       "symbol": "LibTmux::Workspace::Plan#apply",
       "sourceRepository": "libtmux/libtmux-ruby",
       "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
@@ -2507,7 +2507,7 @@
     },
     {
       "port": "ruby",
-      "page": "ports/ruby/reference/libtmux-workspace-plan-steps",
+      "page": "ports/ruby/workspace/reference/libtmux-workspace-plan-steps",
       "symbol": "LibTmux::Workspace::Plan#steps",
       "sourceRepository": "libtmux/libtmux-ruby",
       "sourceRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",

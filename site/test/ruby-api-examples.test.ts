@@ -29,7 +29,6 @@ describe('verified complete Ruby API programs', () => {
     const exported = fromMarkdown(markdown).children.filter((node) => node.type === 'code')
     expect(symbol.source.revision).toBe(example.sourceRevision)
     expect(symbol.publicId).toBe(example.symbol)
-    expect(example.page).toBe(`ports/ruby/reference/${symbol.slug}`)
     expect(blocks).toHaveLength(4)
     for (const file of example.files) {
       if (!('clipboardSha256' in file)) {

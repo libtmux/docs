@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { assertCompleteApiExample } from '../scripts/check-clipboard.mjs'
+import { productApiHref } from '../src/lib/product-api'
 
 const root = fileURLToPath(new URL('../../', import.meta.url))
 const python = (code: string) => JSON.parse(execFileSync('python3', ['-B', '-c', `
@@ -207,6 +208,32 @@ describe('API example source and clipboard receipts', () => {
           ? block.code.replace(/^\$ /gm, '').trim() : block.code.replace(/\n$/, '')) }
       expect(() => assertCompleteApiExample(rendered, example), example.symbol).not.toThrow()
     }
+  })
+
+  /** The page the receipt names for a declaration: where the site serves it, under `ports/<port>/` in place of the version. */
+  const servedPage = (model: ApiModel, port: string, id: string) => {
+    const symbol = model.symbols.find((entry) => entry.id === id)!
+    const prefix = `/${port}/latest/`
+    const href = productApiHref(model, symbol, 'latest')
+    return `ports/${port}/${href.slice(href.indexOf(prefix) + prefix.length).replace(/\/$/, '')}`
+  }
+
+  it('names, for every program, the page the site serves its declaration on', () => {
+    const manifest = JSON.parse(readFileSync(new URL('./fixtures/api-examples.json', import.meta.url), 'utf8'))
+    const models = new Map<string, ApiModel>()
+    for (const example of manifest.examples) {
+      if (!models.has(example.port)) {
+        models.set(example.port, JSON.parse(readFileSync(new URL(`../src/data/api/${example.port}.json`, import.meta.url), 'utf8')) as ApiModel)
+      }
+      expect(example.page, example.symbol).toBe(servedPage(models.get(example.port)!, example.port, example.symbol))
+    }
+  })
+
+  it('serves a program on a workspace declaration under the workspace reference, not the core one', () => {
+    const ruby = JSON.parse(readFileSync(new URL('../src/data/api/ruby.json', import.meta.url), 'utf8')) as ApiModel
+    const slug = ruby.symbols.find((entry) => entry.id === 'LibTmux::Workspace.load')!.slug
+    expect(servedPage(ruby, 'ruby', 'LibTmux::Workspace.load')).toBe(`ports/ruby/workspace/reference/${slug}`)
+    expect(servedPage(ruby, 'ruby', 'LibTmux::Server')).toBe('ports/ruby/reference/libtmux-server')
   })
 
   it('accepts the same setup source on two independent programs', () => {
