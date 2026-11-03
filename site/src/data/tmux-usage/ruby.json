@@ -94,15 +94,15 @@
   ],
   "port": "ruby",
   "repo": "libtmux/libtmux-ruby",
-  "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+  "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
   "schemaVersion": 1,
   "symbols": {
     "LibTmux::Async::ControlConnection#pause_output": [
       {
         "command": "refresh-client",
         "evidence": [
-          "gems/libtmux/lib/libtmux/control.rb:620",
-          "gems/libtmux/lib/libtmux/control.rb:489"
+          "gems/libtmux/lib/libtmux/control.rb:631",
+          "gems/libtmux/lib/libtmux/control.rb:500"
         ],
         "scope": null
       }
@@ -111,8 +111,8 @@
       {
         "command": "refresh-client",
         "evidence": [
-          "gems/libtmux/lib/libtmux/control.rb:620",
-          "gems/libtmux/lib/libtmux/control.rb:493"
+          "gems/libtmux/lib/libtmux/control.rb:631",
+          "gems/libtmux/lib/libtmux/control.rb:504"
         ],
         "scope": null
       }
@@ -149,7 +149,7 @@
       {
         "command": "kill-server",
         "evidence": [
-          "gems/libtmux/lib/libtmux/server.rb:137"
+          "gems/libtmux/lib/libtmux/server.rb:290"
         ],
         "scope": null
       }
@@ -176,8 +176,8 @@
       {
         "command": "list-panes",
         "evidence": [
-          "gems/libtmux/lib/libtmux/server.rb:470",
-          "gems/libtmux/lib/libtmux/server.rb:163"
+          "gems/libtmux/lib/libtmux/server.rb:650",
+          "gems/libtmux/lib/libtmux/server.rb:316"
         ],
         "reviewed": true,
         "scope": "server"
@@ -187,8 +187,8 @@
       {
         "command": "list-sessions",
         "evidence": [
-          "gems/libtmux/lib/libtmux/server.rb:470",
-          "gems/libtmux/lib/libtmux/server.rb:155"
+          "gems/libtmux/lib/libtmux/server.rb:650",
+          "gems/libtmux/lib/libtmux/server.rb:308"
         ],
         "reviewed": true,
         "scope": null
@@ -209,8 +209,8 @@
       {
         "command": "list-windows",
         "evidence": [
-          "gems/libtmux/lib/libtmux/server.rb:470",
-          "gems/libtmux/lib/libtmux/server.rb:159"
+          "gems/libtmux/lib/libtmux/server.rb:650",
+          "gems/libtmux/lib/libtmux/server.rb:312"
         ],
         "reviewed": true,
         "scope": "server"
@@ -220,7 +220,7 @@
       {
         "command": "new-session",
         "evidence": [
-          "gems/libtmux/lib/libtmux/server.rb:151"
+          "gems/libtmux/lib/libtmux/server.rb:304"
         ],
         "scope": null
       }
@@ -238,10 +238,10 @@
       {
         "command": "list-panes",
         "evidence": [
-          "gems/libtmux/lib/libtmux/capture.rb:93",
-          "gems/libtmux/lib/libtmux/server.rb:228",
+          "gems/libtmux/lib/libtmux/capture.rb:101",
+          "gems/libtmux/lib/libtmux/server.rb:381",
           "gems/libtmux/lib/libtmux/source_query.rb:42",
-          "gems/libtmux/lib/libtmux/server.rb:232"
+          "gems/libtmux/lib/libtmux/server.rb:385"
         ],
         "reviewed": true,
         "scope": "server"
@@ -261,8 +261,8 @@
       {
         "command": "list-clients",
         "evidence": [
-          "gems/libtmux/lib/libtmux/capture.rb:94",
-          "gems/libtmux/lib/libtmux/server.rb:228"
+          "gems/libtmux/lib/libtmux/capture.rb:102",
+          "gems/libtmux/lib/libtmux/server.rb:381"
         ],
         "reviewed": true,
         "scope": null
@@ -270,8 +270,8 @@
       {
         "command": "list-panes",
         "evidence": [
-          "gems/libtmux/lib/libtmux/capture.rb:93",
-          "gems/libtmux/lib/libtmux/server.rb:228"
+          "gems/libtmux/lib/libtmux/capture.rb:101",
+          "gems/libtmux/lib/libtmux/server.rb:381"
         ],
         "reviewed": true,
         "scope": "server"
@@ -279,8 +279,8 @@
       {
         "command": "list-sessions",
         "evidence": [
-          "gems/libtmux/lib/libtmux/capture.rb:72",
-          "gems/libtmux/lib/libtmux/server.rb:228"
+          "gems/libtmux/lib/libtmux/capture.rb:80",
+          "gems/libtmux/lib/libtmux/server.rb:381"
         ],
         "reviewed": true,
         "scope": null
@@ -288,8 +288,8 @@
       {
         "command": "list-windows",
         "evidence": [
-          "gems/libtmux/lib/libtmux/capture.rb:84",
-          "gems/libtmux/lib/libtmux/server.rb:228"
+          "gems/libtmux/lib/libtmux/capture.rb:92",
+          "gems/libtmux/lib/libtmux/server.rb:381"
         ],
         "reviewed": true,
         "scope": "server"
@@ -368,8 +368,8 @@
       {
         "command": "refresh-client",
         "evidence": [
-          "gems/libtmux/lib/libtmux/control.rb:620",
-          "gems/libtmux/lib/libtmux/control.rb:489"
+          "gems/libtmux/lib/libtmux/control.rb:631",
+          "gems/libtmux/lib/libtmux/control.rb:500"
         ],
         "scope": null
       }
@@ -378,8 +378,8 @@
       {
         "command": "refresh-client",
         "evidence": [
-          "gems/libtmux/lib/libtmux/control.rb:620",
-          "gems/libtmux/lib/libtmux/control.rb:493"
+          "gems/libtmux/lib/libtmux/control.rb:631",
+          "gems/libtmux/lib/libtmux/control.rb:504"
         ],
         "scope": null
       }
@@ -483,7 +483,21 @@
       {
         "command": "break-pane",
         "evidence": [
-          "gems/libtmux/lib/libtmux/operations.rb:350"
+          "gems/libtmux/lib/libtmux/operations.rb:356"
+        ],
+        "scope": null
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:360"
+        ],
+        "scope": "window"
+      },
+      {
+        "command": "rename-window",
+        "evidence": [
+          "gems/libtmux/lib/libtmux/operations.rb:369"
         ],
         "scope": null
       }
@@ -492,7 +506,7 @@
       {
         "command": "capture-pane",
         "evidence": [
-          "gems/libtmux/lib/libtmux/entity.rb:190"
+          "gems/libtmux/lib/libtmux/entity.rb:199"
         ],
         "scope": null
       }
@@ -501,7 +515,7 @@
       {
         "command": "send-keys",
         "evidence": [
-          "gems/libtmux/lib/libtmux/operations.rb:400"
+          "gems/libtmux/lib/libtmux/operations.rb:420"
         ],
         "scope": null
       }
@@ -510,7 +524,7 @@
       {
         "command": "copy-mode",
         "evidence": [
-          "gems/libtmux/lib/libtmux/operations.rb:396"
+          "gems/libtmux/lib/libtmux/operations.rb:416"
         ],
         "scope": null
       }
@@ -529,7 +543,7 @@
         "command": "kill-pane",
         "evidence": [
           "gems/libtmux/lib/libtmux/entity.rb:88",
-          "gems/libtmux/lib/libtmux/server.rb:436",
+          "gems/libtmux/lib/libtmux/server.rb:616",
           "gems/libtmux/lib/libtmux/entity.rb:87"
         ],
         "reviewed": true,
@@ -549,7 +563,7 @@
       {
         "command": "paste-buffer",
         "evidence": [
-          "gems/libtmux/lib/libtmux/operations.rb:366"
+          "gems/libtmux/lib/libtmux/operations.rb:386"
         ],
         "scope": null
       }
@@ -558,7 +572,7 @@
       {
         "command": "pipe-pane",
         "evidence": [
-          "gems/libtmux/lib/libtmux/operations.rb:380"
+          "gems/libtmux/lib/libtmux/operations.rb:400"
         ],
         "scope": null
       }
@@ -576,7 +590,7 @@
       {
         "command": "respawn-pane",
         "evidence": [
-          "gems/libtmux/lib/libtmux/operations.rb:358"
+          "gems/libtmux/lib/libtmux/operations.rb:378"
         ],
         "scope": null
       }
@@ -594,7 +608,7 @@
       {
         "command": "send-keys",
         "evidence": [
-          "gems/libtmux/lib/libtmux/entity.rb:202"
+          "gems/libtmux/lib/libtmux/entity.rb:211"
         ],
         "scope": null
       }
@@ -603,7 +617,7 @@
       {
         "command": "send-keys",
         "evidence": [
-          "gems/libtmux/lib/libtmux/entity.rb:196"
+          "gems/libtmux/lib/libtmux/entity.rb:205"
         ],
         "scope": null
       }
@@ -612,8 +626,8 @@
       {
         "command": "split-window",
         "evidence": [
-          "gems/libtmux/lib/libtmux/server.rb:528",
-          "gems/libtmux/lib/libtmux/entity.rb:165"
+          "gems/libtmux/lib/libtmux/server.rb:708",
+          "gems/libtmux/lib/libtmux/entity.rb:174"
         ],
         "reviewed": true,
         "scope": null
@@ -672,7 +686,7 @@
       {
         "command": "kill-server",
         "evidence": [
-          "gems/libtmux/lib/libtmux/server.rb:137"
+          "gems/libtmux/lib/libtmux/server.rb:290"
         ],
         "scope": null
       }
@@ -699,8 +713,8 @@
       {
         "command": "list-panes",
         "evidence": [
-          "gems/libtmux/lib/libtmux/server.rb:470",
-          "gems/libtmux/lib/libtmux/server.rb:163"
+          "gems/libtmux/lib/libtmux/server.rb:650",
+          "gems/libtmux/lib/libtmux/server.rb:316"
         ],
         "reviewed": true,
         "scope": "server"
@@ -710,8 +724,8 @@
       {
         "command": "list-sessions",
         "evidence": [
-          "gems/libtmux/lib/libtmux/server.rb:470",
-          "gems/libtmux/lib/libtmux/server.rb:155"
+          "gems/libtmux/lib/libtmux/server.rb:650",
+          "gems/libtmux/lib/libtmux/server.rb:308"
         ],
         "reviewed": true,
         "scope": null
@@ -732,8 +746,8 @@
       {
         "command": "list-windows",
         "evidence": [
-          "gems/libtmux/lib/libtmux/server.rb:470",
-          "gems/libtmux/lib/libtmux/server.rb:159"
+          "gems/libtmux/lib/libtmux/server.rb:650",
+          "gems/libtmux/lib/libtmux/server.rb:312"
         ],
         "reviewed": true,
         "scope": "server"
@@ -743,7 +757,7 @@
       {
         "command": "new-session",
         "evidence": [
-          "gems/libtmux/lib/libtmux/server.rb:151"
+          "gems/libtmux/lib/libtmux/server.rb:304"
         ],
         "scope": null
       }
@@ -761,10 +775,10 @@
       {
         "command": "list-panes",
         "evidence": [
-          "gems/libtmux/lib/libtmux/capture.rb:93",
-          "gems/libtmux/lib/libtmux/server.rb:228",
+          "gems/libtmux/lib/libtmux/capture.rb:101",
+          "gems/libtmux/lib/libtmux/server.rb:381",
           "gems/libtmux/lib/libtmux/source_query.rb:42",
-          "gems/libtmux/lib/libtmux/server.rb:232"
+          "gems/libtmux/lib/libtmux/server.rb:385"
         ],
         "reviewed": true,
         "scope": "server"
@@ -784,8 +798,8 @@
       {
         "command": "list-clients",
         "evidence": [
-          "gems/libtmux/lib/libtmux/capture.rb:94",
-          "gems/libtmux/lib/libtmux/server.rb:228"
+          "gems/libtmux/lib/libtmux/capture.rb:102",
+          "gems/libtmux/lib/libtmux/server.rb:381"
         ],
         "reviewed": true,
         "scope": null
@@ -793,8 +807,8 @@
       {
         "command": "list-panes",
         "evidence": [
-          "gems/libtmux/lib/libtmux/capture.rb:93",
-          "gems/libtmux/lib/libtmux/server.rb:228"
+          "gems/libtmux/lib/libtmux/capture.rb:101",
+          "gems/libtmux/lib/libtmux/server.rb:381"
         ],
         "reviewed": true,
         "scope": "server"
@@ -802,8 +816,8 @@
       {
         "command": "list-sessions",
         "evidence": [
-          "gems/libtmux/lib/libtmux/capture.rb:72",
-          "gems/libtmux/lib/libtmux/server.rb:228"
+          "gems/libtmux/lib/libtmux/capture.rb:80",
+          "gems/libtmux/lib/libtmux/server.rb:381"
         ],
         "reviewed": true,
         "scope": null
@@ -811,8 +825,8 @@
       {
         "command": "list-windows",
         "evidence": [
-          "gems/libtmux/lib/libtmux/capture.rb:84",
-          "gems/libtmux/lib/libtmux/server.rb:228"
+          "gems/libtmux/lib/libtmux/capture.rb:92",
+          "gems/libtmux/lib/libtmux/server.rb:381"
         ],
         "reviewed": true,
         "scope": "server"
@@ -913,7 +927,7 @@
         "command": "kill-session",
         "evidence": [
           "gems/libtmux/lib/libtmux/entity.rb:88",
-          "gems/libtmux/lib/libtmux/server.rb:436",
+          "gems/libtmux/lib/libtmux/server.rb:616",
           "gems/libtmux/lib/libtmux/operations.rb:255"
         ],
         "reviewed": true,
@@ -959,7 +973,7 @@
       {
         "command": "list-panes",
         "evidence": [
-          "gems/libtmux/lib/libtmux/server.rb:470",
+          "gems/libtmux/lib/libtmux/server.rb:650",
           "gems/libtmux/lib/libtmux/entity.rb:113"
         ],
         "reviewed": true,
@@ -981,7 +995,7 @@
       {
         "command": "list-windows",
         "evidence": [
-          "gems/libtmux/lib/libtmux/server.rb:470",
+          "gems/libtmux/lib/libtmux/server.rb:650",
           "gems/libtmux/lib/libtmux/entity.rb:109"
         ],
         "reviewed": true,
@@ -992,7 +1006,7 @@
       {
         "command": "new-window",
         "evidence": [
-          "gems/libtmux/lib/libtmux/server.rb:509",
+          "gems/libtmux/lib/libtmux/server.rb:689",
           "gems/libtmux/lib/libtmux/entity.rb:104"
         ],
         "reviewed": true,
@@ -1033,7 +1047,7 @@
         "command": "kill-window",
         "evidence": [
           "gems/libtmux/lib/libtmux/entity.rb:88",
-          "gems/libtmux/lib/libtmux/server.rb:436",
+          "gems/libtmux/lib/libtmux/server.rb:616",
           "gems/libtmux/lib/libtmux/entity.rb:87"
         ],
         "reviewed": true,
@@ -1044,7 +1058,7 @@
       {
         "command": "list-panes",
         "evidence": [
-          "gems/libtmux/lib/libtmux/server.rb:470",
+          "gems/libtmux/lib/libtmux/server.rb:650",
           "gems/libtmux/lib/libtmux/entity.rb:123"
         ],
         "reviewed": true,
@@ -1082,7 +1096,7 @@
       {
         "command": "select-layout",
         "evidence": [
-          "gems/libtmux/lib/libtmux/entity.rb:159"
+          "gems/libtmux/lib/libtmux/entity.rb:168"
         ],
         "scope": null
       }
@@ -1091,7 +1105,7 @@
       {
         "command": "split-window",
         "evidence": [
-          "gems/libtmux/lib/libtmux/server.rb:528",
+          "gems/libtmux/lib/libtmux/server.rb:708",
           "gems/libtmux/lib/libtmux/entity.rb:127"
         ],
         "reviewed": true,
@@ -1102,7 +1116,7 @@
       {
         "command": "display-message",
         "evidence": [
-          "gems/libtmux/lib/libtmux/entity.rb:245"
+          "gems/libtmux/lib/libtmux/entity.rb:254"
         ],
         "scope": null
       },
@@ -1111,7 +1125,7 @@
         "evidence": [
           "gems/libtmux/lib/libtmux/operations.rb:137",
           "gems/libtmux/lib/libtmux/operations.rb:113",
-          "gems/libtmux/lib/libtmux/entity.rb:245"
+          "gems/libtmux/lib/libtmux/entity.rb:254"
         ],
         "incidental": true,
         "reviewed": true,
@@ -1124,7 +1138,7 @@
           "gems/libtmux/lib/libtmux/options.rb:61",
           "gems/libtmux/lib/libtmux/operations.rb:130",
           "gems/libtmux/lib/libtmux/operations.rb:113",
-          "gems/libtmux/lib/libtmux/entity.rb:245"
+          "gems/libtmux/lib/libtmux/entity.rb:254"
         ],
         "incidental": true,
         "reviewed": true,
@@ -1135,7 +1149,7 @@
       {
         "command": "kill-window",
         "evidence": [
-          "gems/libtmux/lib/libtmux/entity.rb:228"
+          "gems/libtmux/lib/libtmux/entity.rb:237"
         ],
         "scope": null
       },
@@ -1144,7 +1158,7 @@
         "evidence": [
           "gems/libtmux/lib/libtmux/operations.rb:137",
           "gems/libtmux/lib/libtmux/operations.rb:113",
-          "gems/libtmux/lib/libtmux/entity.rb:228"
+          "gems/libtmux/lib/libtmux/entity.rb:237"
         ],
         "incidental": true,
         "reviewed": true,
@@ -1157,7 +1171,7 @@
           "gems/libtmux/lib/libtmux/options.rb:61",
           "gems/libtmux/lib/libtmux/operations.rb:130",
           "gems/libtmux/lib/libtmux/operations.rb:113",
-          "gems/libtmux/lib/libtmux/entity.rb:228"
+          "gems/libtmux/lib/libtmux/entity.rb:237"
         ],
         "incidental": true,
         "reviewed": true,
@@ -1170,7 +1184,7 @@
         "evidence": [
           "gems/libtmux/lib/libtmux/operations.rb:137",
           "gems/libtmux/lib/libtmux/operations.rb:113",
-          "gems/libtmux/lib/libtmux/entity.rb:235"
+          "gems/libtmux/lib/libtmux/entity.rb:244"
         ],
         "incidental": true,
         "reviewed": true,
@@ -1179,7 +1193,7 @@
       {
         "command": "move-window",
         "evidence": [
-          "gems/libtmux/lib/libtmux/entity.rb:235"
+          "gems/libtmux/lib/libtmux/entity.rb:244"
         ],
         "scope": null
       },
@@ -1190,7 +1204,7 @@
           "gems/libtmux/lib/libtmux/options.rb:61",
           "gems/libtmux/lib/libtmux/operations.rb:130",
           "gems/libtmux/lib/libtmux/operations.rb:113",
-          "gems/libtmux/lib/libtmux/entity.rb:235"
+          "gems/libtmux/lib/libtmux/entity.rb:244"
         ],
         "incidental": true,
         "reviewed": true,
@@ -1203,7 +1217,7 @@
         "evidence": [
           "gems/libtmux/lib/libtmux/operations.rb:137",
           "gems/libtmux/lib/libtmux/operations.rb:113",
-          "gems/libtmux/lib/libtmux/entity.rb:220"
+          "gems/libtmux/lib/libtmux/entity.rb:229"
         ],
         "incidental": true,
         "reviewed": true,
@@ -1212,7 +1226,7 @@
       {
         "command": "select-window",
         "evidence": [
-          "gems/libtmux/lib/libtmux/entity.rb:220"
+          "gems/libtmux/lib/libtmux/entity.rb:229"
         ],
         "scope": null
       },
@@ -1223,7 +1237,7 @@
           "gems/libtmux/lib/libtmux/options.rb:61",
           "gems/libtmux/lib/libtmux/operations.rb:130",
           "gems/libtmux/lib/libtmux/operations.rb:113",
-          "gems/libtmux/lib/libtmux/entity.rb:220"
+          "gems/libtmux/lib/libtmux/entity.rb:229"
         ],
         "incidental": true,
         "reviewed": true,
@@ -1236,7 +1250,7 @@
         "evidence": [
           "gems/libtmux/lib/libtmux/operations.rb:137",
           "gems/libtmux/lib/libtmux/operations.rb:113",
-          "gems/libtmux/lib/libtmux/entity.rb:240"
+          "gems/libtmux/lib/libtmux/entity.rb:249"
         ],
         "incidental": true,
         "reviewed": true,
@@ -1249,7 +1263,7 @@
           "gems/libtmux/lib/libtmux/options.rb:61",
           "gems/libtmux/lib/libtmux/operations.rb:130",
           "gems/libtmux/lib/libtmux/operations.rb:113",
-          "gems/libtmux/lib/libtmux/entity.rb:240"
+          "gems/libtmux/lib/libtmux/entity.rb:249"
         ],
         "incidental": true,
         "reviewed": true,
@@ -1258,7 +1272,7 @@
       {
         "command": "swap-window",
         "evidence": [
-          "gems/libtmux/lib/libtmux/entity.rb:240"
+          "gems/libtmux/lib/libtmux/entity.rb:249"
         ],
         "scope": null
       }
@@ -1269,7 +1283,7 @@
         "evidence": [
           "gems/libtmux/lib/libtmux/operations.rb:137",
           "gems/libtmux/lib/libtmux/operations.rb:113",
-          "gems/libtmux/lib/libtmux/entity.rb:224"
+          "gems/libtmux/lib/libtmux/entity.rb:233"
         ],
         "incidental": true,
         "reviewed": true,
@@ -1282,7 +1296,7 @@
           "gems/libtmux/lib/libtmux/options.rb:61",
           "gems/libtmux/lib/libtmux/operations.rb:130",
           "gems/libtmux/lib/libtmux/operations.rb:113",
-          "gems/libtmux/lib/libtmux/entity.rb:224"
+          "gems/libtmux/lib/libtmux/entity.rb:233"
         ],
         "incidental": true,
         "reviewed": true,
@@ -1291,7 +1305,7 @@
       {
         "command": "unlink-window",
         "evidence": [
-          "gems/libtmux/lib/libtmux/entity.rb:224"
+          "gems/libtmux/lib/libtmux/entity.rb:233"
         ],
         "scope": null
       }

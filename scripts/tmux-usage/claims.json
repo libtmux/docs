@@ -2091,13 +2091,13 @@
       "scope": "server",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:470",
+          "at": "gems/libtmux/lib/libtmux/server.rb:650",
           "has": [
             "\"list-#{kind}s\""
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:163",
+          "at": "gems/libtmux/lib/libtmux/server.rb:316",
           "has": [
             "list_entities(:pane",
             "[\"-a\"]"
@@ -2113,7 +2113,7 @@
       "scope": "session",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:470",
+          "at": "gems/libtmux/lib/libtmux/server.rb:650",
           "has": [
             "\"list-#{kind}s\""
           ]
@@ -2135,7 +2135,7 @@
       "scope": "window",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:470",
+          "at": "gems/libtmux/lib/libtmux/server.rb:650",
           "has": [
             "\"list-#{kind}s\""
           ]
@@ -2157,13 +2157,13 @@
       "scope": null,
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:470",
+          "at": "gems/libtmux/lib/libtmux/server.rb:650",
           "has": [
             "\"list-#{kind}s\""
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:155",
+          "at": "gems/libtmux/lib/libtmux/server.rb:308",
           "has": [
             "list_entities(:session"
           ],
@@ -2178,13 +2178,13 @@
       "scope": "server",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:470",
+          "at": "gems/libtmux/lib/libtmux/server.rb:650",
           "has": [
             "\"list-#{kind}s\""
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:159",
+          "at": "gems/libtmux/lib/libtmux/server.rb:312",
           "has": [
             "list_entities(:window, [\"-a\"]"
           ],
@@ -2220,13 +2220,13 @@
       "scope": "server",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/capture.rb:93",
+          "at": "gems/libtmux/lib/libtmux/capture.rb:101",
           "has": [
             "\"list-panes\", \"-a\""
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:228",
+          "at": "gems/libtmux/lib/libtmux/server.rb:381",
           "has": [
             "Internal::Capture.new(self"
           ]
@@ -2238,7 +2238,7 @@
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:232",
+          "at": "gems/libtmux/lib/libtmux/server.rb:385",
           "has": [
             "SourceQuery.new(:pane"
           ],
@@ -2253,13 +2253,13 @@
       "scope": null,
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/capture.rb:72",
+          "at": "gems/libtmux/lib/libtmux/capture.rb:80",
           "has": [
             "[\"list-sessions\"]"
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:228",
+          "at": "gems/libtmux/lib/libtmux/server.rb:381",
           "has": [
             "Internal::Capture.new(self"
           ],
@@ -2274,13 +2274,13 @@
       "scope": "server",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/capture.rb:84",
+          "at": "gems/libtmux/lib/libtmux/capture.rb:92",
           "has": [
             "\"list-windows\", \"-a\""
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:228",
+          "at": "gems/libtmux/lib/libtmux/server.rb:381",
           "has": [
             "Internal::Capture.new(self"
           ],
@@ -2295,13 +2295,13 @@
       "scope": "server",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/capture.rb:93",
+          "at": "gems/libtmux/lib/libtmux/capture.rb:101",
           "has": [
             "\"list-panes\", \"-a\""
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:228",
+          "at": "gems/libtmux/lib/libtmux/server.rb:381",
           "has": [
             "Internal::Capture.new(self"
           ],
@@ -2316,13 +2316,13 @@
       "scope": null,
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/capture.rb:94",
+          "at": "gems/libtmux/lib/libtmux/capture.rb:102",
           "has": [
             "\"list-clients\""
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:228",
+          "at": "gems/libtmux/lib/libtmux/server.rb:381",
           "has": [
             "Internal::Capture.new(self"
           ],
@@ -2337,13 +2337,13 @@
       "scope": null,
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:470",
+          "at": "gems/libtmux/lib/libtmux/server.rb:650",
           "has": [
             "\"list-#{kind}s\""
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:155",
+          "at": "gems/libtmux/lib/libtmux/server.rb:308",
           "has": [
             "list_entities(:session"
           ],
@@ -2358,13 +2358,13 @@
       "scope": "server",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:470",
+          "at": "gems/libtmux/lib/libtmux/server.rb:650",
           "has": [
             "\"list-#{kind}s\""
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:159",
+          "at": "gems/libtmux/lib/libtmux/server.rb:312",
           "has": [
             "list_entities(:window, [\"-a\"]"
           ],
@@ -2400,13 +2400,13 @@
       "scope": "server",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/capture.rb:93",
+          "at": "gems/libtmux/lib/libtmux/capture.rb:101",
           "has": [
             "\"list-panes\", \"-a\""
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:228",
+          "at": "gems/libtmux/lib/libtmux/server.rb:381",
           "has": [
             "Internal::Capture.new(self"
           ]
@@ -2418,7 +2418,7 @@
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:232",
+          "at": "gems/libtmux/lib/libtmux/server.rb:385",
           "has": [
             "SourceQuery.new(:pane"
           ],
@@ -2433,13 +2433,13 @@
       "scope": null,
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/capture.rb:72",
+          "at": "gems/libtmux/lib/libtmux/capture.rb:80",
           "has": [
             "[\"list-sessions\"]"
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:228",
+          "at": "gems/libtmux/lib/libtmux/server.rb:381",
           "has": [
             "Internal::Capture.new(self"
           ],
@@ -2454,13 +2454,13 @@
       "scope": "server",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/capture.rb:84",
+          "at": "gems/libtmux/lib/libtmux/capture.rb:92",
           "has": [
             "\"list-windows\", \"-a\""
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:228",
+          "at": "gems/libtmux/lib/libtmux/server.rb:381",
           "has": [
             "Internal::Capture.new(self"
           ],
@@ -2475,13 +2475,13 @@
       "scope": "server",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/capture.rb:93",
+          "at": "gems/libtmux/lib/libtmux/capture.rb:101",
           "has": [
             "\"list-panes\", \"-a\""
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:228",
+          "at": "gems/libtmux/lib/libtmux/server.rb:381",
           "has": [
             "Internal::Capture.new(self"
           ],
@@ -2496,13 +2496,13 @@
       "scope": null,
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/capture.rb:94",
+          "at": "gems/libtmux/lib/libtmux/capture.rb:102",
           "has": [
             "\"list-clients\""
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:228",
+          "at": "gems/libtmux/lib/libtmux/server.rb:381",
           "has": [
             "Internal::Capture.new(self"
           ],
@@ -2517,13 +2517,13 @@
       "scope": "server",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:470",
+          "at": "gems/libtmux/lib/libtmux/server.rb:650",
           "has": [
             "\"list-#{kind}s\""
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:163",
+          "at": "gems/libtmux/lib/libtmux/server.rb:316",
           "has": [
             "list_entities(:pane, [\"-a\"]"
           ],
@@ -2538,7 +2538,7 @@
       "scope": "session",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:470",
+          "at": "gems/libtmux/lib/libtmux/server.rb:650",
           "has": [
             "\"list-#{kind}s\""
           ]
@@ -2580,7 +2580,7 @@
       "scope": null,
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:509",
+          "at": "gems/libtmux/lib/libtmux/server.rb:689",
           "has": [
             "\"new-window\""
           ]
@@ -2622,7 +2622,7 @@
       "scope": null,
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:528",
+          "at": "gems/libtmux/lib/libtmux/server.rb:708",
           "has": [
             "\"split-window\""
           ]
@@ -2643,13 +2643,13 @@
       "scope": null,
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:528",
+          "at": "gems/libtmux/lib/libtmux/server.rb:708",
           "has": [
             "\"split-window\""
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/entity.rb:165",
+          "at": "gems/libtmux/lib/libtmux/entity.rb:174",
           "has": [
             "server.__send__(:split_window"
           ],
@@ -2670,7 +2670,7 @@
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:436",
+          "at": "gems/libtmux/lib/libtmux/server.rb:616",
           "has": [
             "{session: Session, window: Window, pane: Pane"
           ]
@@ -2697,7 +2697,7 @@
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:436",
+          "at": "gems/libtmux/lib/libtmux/server.rb:616",
           "has": [
             "{session: Session, window: Window, pane: Pane"
           ]
@@ -2724,7 +2724,7 @@
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:436",
+          "at": "gems/libtmux/lib/libtmux/server.rb:616",
           "has": [
             "{session: Session, window: Window, pane: Pane"
           ]
@@ -13623,7 +13623,7 @@
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/entity.rb:245",
+          "at": "gems/libtmux/lib/libtmux/entity.rb:254",
           "has": [
             "__send__(:execute_link"
           ],
@@ -13652,7 +13652,7 @@
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/entity.rb:245",
+          "at": "gems/libtmux/lib/libtmux/entity.rb:254",
           "has": [
             "__send__(:execute_link"
           ],
@@ -13692,7 +13692,7 @@
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/entity.rb:228",
+          "at": "gems/libtmux/lib/libtmux/entity.rb:237",
           "has": [
             "__send__(:execute_link"
           ],
@@ -13721,7 +13721,7 @@
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/entity.rb:228",
+          "at": "gems/libtmux/lib/libtmux/entity.rb:237",
           "has": [
             "__send__(:execute_link"
           ],
@@ -13761,7 +13761,7 @@
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/entity.rb:235",
+          "at": "gems/libtmux/lib/libtmux/entity.rb:244",
           "has": [
             "__send__(:execute_link"
           ],
@@ -13790,7 +13790,7 @@
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/entity.rb:235",
+          "at": "gems/libtmux/lib/libtmux/entity.rb:244",
           "has": [
             "__send__(:execute_link"
           ],
@@ -13830,7 +13830,7 @@
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/entity.rb:220",
+          "at": "gems/libtmux/lib/libtmux/entity.rb:229",
           "has": [
             "__send__(:execute_link"
           ],
@@ -13859,7 +13859,7 @@
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/entity.rb:220",
+          "at": "gems/libtmux/lib/libtmux/entity.rb:229",
           "has": [
             "__send__(:execute_link"
           ],
@@ -13899,7 +13899,7 @@
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/entity.rb:240",
+          "at": "gems/libtmux/lib/libtmux/entity.rb:249",
           "has": [
             "__send__(:execute_link"
           ],
@@ -13928,7 +13928,7 @@
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/entity.rb:240",
+          "at": "gems/libtmux/lib/libtmux/entity.rb:249",
           "has": [
             "__send__(:execute_link"
           ],
@@ -13968,7 +13968,7 @@
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/entity.rb:224",
+          "at": "gems/libtmux/lib/libtmux/entity.rb:233",
           "has": [
             "__send__(:execute_link"
           ],
@@ -13997,7 +13997,7 @@
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/entity.rb:224",
+          "at": "gems/libtmux/lib/libtmux/entity.rb:233",
           "has": [
             "__send__(:execute_link"
           ],

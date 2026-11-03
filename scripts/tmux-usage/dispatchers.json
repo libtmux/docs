@@ -244,20 +244,27 @@
       "why": "Sends the argument list it is given to the server.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:393",
+          "at": "gems/libtmux/lib/libtmux/server.rb:566",
           "has": [
             "execute_typed"
           ],
           "reaches": [
             {
-              "at": "gems/libtmux/lib/libtmux/server.rb:394",
+              "at": "gems/libtmux/lib/libtmux/server.rb:568",
               "has": [
-                "run"
+                "run(arguments"
               ],
               "calls": "run"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/server.rb:82",
+              "at": "gems/libtmux/lib/libtmux/server.rb:237",
+              "has": [
+                "dispatch("
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:560",
               "has": [
                 "@executor.run("
               ],
@@ -265,7 +272,7 @@
               "on": "ProcessExecutor"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:108",
+              "at": "gems/libtmux/lib/libtmux/process.rb:111",
               "has": [
                 "Execution.new("
               ],
@@ -273,7 +280,7 @@
               "on": "Execution"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:147",
+              "at": "gems/libtmux/lib/libtmux/process.rb:151",
               "has": [
                 "spawn"
               ],
@@ -281,7 +288,7 @@
               "why": "spawn is called by its bare name, which the Ruby scan does not read as a call"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:189",
+              "at": "gems/libtmux/lib/libtmux/process.rb:198",
               "has": [
                 "Process.spawn(@env"
               ]
@@ -296,34 +303,41 @@
       "why": "Sends the argument list it is given to the server.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/capture.rb:98",
+          "at": "gems/libtmux/lib/libtmux/capture.rb:106",
           "has": [
             "catalog_read"
           ],
           "reaches": [
             {
-              "at": "gems/libtmux/lib/libtmux/capture.rb:100",
+              "at": "gems/libtmux/lib/libtmux/capture.rb:108",
               "has": [
                 "read"
               ],
               "calls": "read"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/capture.rb:111",
+              "at": "gems/libtmux/lib/libtmux/capture.rb:119",
               "has": [
                 "execute_typed"
               ],
               "calls": "execute_typed"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/server.rb:394",
+              "at": "gems/libtmux/lib/libtmux/server.rb:568",
               "has": [
-                "run"
+                "run(arguments"
               ],
               "calls": "run"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/server.rb:82",
+              "at": "gems/libtmux/lib/libtmux/server.rb:237",
+              "has": [
+                "dispatch("
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:560",
               "has": [
                 "@executor.run("
               ],
@@ -331,7 +345,7 @@
               "on": "ProcessExecutor"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:108",
+              "at": "gems/libtmux/lib/libtmux/process.rb:111",
               "has": [
                 "Execution.new("
               ],
@@ -339,7 +353,7 @@
               "on": "Execution"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:147",
+              "at": "gems/libtmux/lib/libtmux/process.rb:151",
               "has": [
                 "spawn"
               ],
@@ -347,7 +361,7 @@
               "why": "spawn is called by its bare name, which the Ruby scan does not read as a call"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:189",
+              "at": "gems/libtmux/lib/libtmux/process.rb:198",
               "has": [
                 "Process.spawn(@env"
               ]
@@ -362,27 +376,34 @@
       "why": "Sends the argument list it is given to the server.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/capture.rb:108",
+          "at": "gems/libtmux/lib/libtmux/capture.rb:116",
           "has": [
             "read"
           ],
           "reaches": [
             {
-              "at": "gems/libtmux/lib/libtmux/capture.rb:111",
+              "at": "gems/libtmux/lib/libtmux/capture.rb:119",
               "has": [
                 "execute_typed"
               ],
               "calls": "execute_typed"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/server.rb:394",
+              "at": "gems/libtmux/lib/libtmux/server.rb:568",
               "has": [
-                "run"
+                "run(arguments"
               ],
               "calls": "run"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/server.rb:82",
+              "at": "gems/libtmux/lib/libtmux/server.rb:237",
+              "has": [
+                "dispatch("
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:560",
               "has": [
                 "@executor.run("
               ],
@@ -390,7 +411,7 @@
               "on": "ProcessExecutor"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:108",
+              "at": "gems/libtmux/lib/libtmux/process.rb:111",
               "has": [
                 "Execution.new("
               ],
@@ -398,7 +419,7 @@
               "on": "Execution"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:147",
+              "at": "gems/libtmux/lib/libtmux/process.rb:151",
               "has": [
                 "spawn"
               ],
@@ -406,7 +427,7 @@
               "why": "spawn is called by its bare name, which the Ruby scan does not read as a call"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:189",
+              "at": "gems/libtmux/lib/libtmux/process.rb:198",
               "has": [
                 "Process.spawn(@env"
               ]
@@ -421,27 +442,34 @@
       "why": "Sends the argument list it is given to the server.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/operations.rb:405",
+          "at": "gems/libtmux/lib/libtmux/operations.rb:425",
           "has": [
             "reposition"
           ],
           "reaches": [
             {
-              "at": "gems/libtmux/lib/libtmux/operations.rb:409",
+              "at": "gems/libtmux/lib/libtmux/operations.rb:429",
               "has": [
                 "execute_typed"
               ],
               "calls": "execute_typed"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/server.rb:394",
+              "at": "gems/libtmux/lib/libtmux/server.rb:568",
               "has": [
-                "run"
+                "run(arguments"
               ],
               "calls": "run"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/server.rb:82",
+              "at": "gems/libtmux/lib/libtmux/server.rb:237",
+              "has": [
+                "dispatch("
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:560",
               "has": [
                 "@executor.run("
               ],
@@ -449,7 +477,7 @@
               "on": "ProcessExecutor"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:108",
+              "at": "gems/libtmux/lib/libtmux/process.rb:111",
               "has": [
                 "Execution.new("
               ],
@@ -457,7 +485,7 @@
               "on": "Execution"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:147",
+              "at": "gems/libtmux/lib/libtmux/process.rb:151",
               "has": [
                 "spawn"
               ],
@@ -465,7 +493,7 @@
               "why": "spawn is called by its bare name, which the Ruby scan does not read as a call"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:189",
+              "at": "gems/libtmux/lib/libtmux/process.rb:198",
               "has": [
                 "Process.spawn(@env"
               ]
@@ -493,14 +521,21 @@
               "calls": "execute_typed"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/server.rb:394",
+              "at": "gems/libtmux/lib/libtmux/server.rb:568",
               "has": [
-                "run"
+                "run(arguments"
               ],
               "calls": "run"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/server.rb:82",
+              "at": "gems/libtmux/lib/libtmux/server.rb:237",
+              "has": [
+                "dispatch("
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:560",
               "has": [
                 "@executor.run("
               ],
@@ -508,7 +543,7 @@
               "on": "ProcessExecutor"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:108",
+              "at": "gems/libtmux/lib/libtmux/process.rb:111",
               "has": [
                 "Execution.new("
               ],
@@ -516,7 +551,7 @@
               "on": "Execution"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:147",
+              "at": "gems/libtmux/lib/libtmux/process.rb:151",
               "has": [
                 "spawn"
               ],
@@ -524,7 +559,7 @@
               "why": "spawn is called by its bare name, which the Ruby scan does not read as a call"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:189",
+              "at": "gems/libtmux/lib/libtmux/process.rb:198",
               "has": [
                 "Process.spawn(@env"
               ]
@@ -539,20 +574,20 @@
       "why": "Sends the argument list it is given to the server.",
       "evidence": [
         {
-          "at": "gems/libtmux-async/lib/libtmux/async/control.rb:71",
+          "at": "gems/libtmux-async/lib/libtmux/async/control.rb:76",
           "has": [
             "exchange_request"
           ],
           "reaches": [
             {
-              "at": "gems/libtmux-async/lib/libtmux/async/control.rb:85",
+              "at": "gems/libtmux-async/lib/libtmux/async/control.rb:91",
               "has": [
                 "admit"
               ],
               "calls": "admit"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/control.rb:687",
+              "at": "gems/libtmux/lib/libtmux/control.rb:698",
               "has": [
                 "@queue << request"
               ],
@@ -560,7 +595,7 @@
               "why": "the request is pushed onto a queue that the connection thread takes it from and writes to the control client"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/control.rb:749",
+              "at": "gems/libtmux/lib/libtmux/control.rb:760",
               "has": [
                 "@input.write_nonblock(request.wire"
               ]
@@ -568,20 +603,20 @@
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/control.rb:428",
+          "at": "gems/libtmux/lib/libtmux/control.rb:436",
           "has": [
             "exchange_request"
           ],
           "reaches": [
             {
-              "at": "gems/libtmux/lib/libtmux/control.rb:442",
+              "at": "gems/libtmux/lib/libtmux/control.rb:453",
               "has": [
                 "admit"
               ],
               "calls": "admit"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/control.rb:687",
+              "at": "gems/libtmux/lib/libtmux/control.rb:698",
               "has": [
                 "@queue << request"
               ],
@@ -589,7 +624,7 @@
               "why": "the request is pushed onto a queue that the connection thread takes it from and writes to the control client"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/control.rb:749",
+              "at": "gems/libtmux/lib/libtmux/control.rb:760",
               "has": [
                 "@input.write_nonblock(request.wire"
               ]
@@ -604,27 +639,34 @@
       "why": "Sends the argument list it is given to the server.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:456",
+          "at": "gems/libtmux/lib/libtmux/server.rb:636",
           "has": [
             "create_entity"
           ],
           "reaches": [
             {
-              "at": "gems/libtmux/lib/libtmux/server.rb:457",
+              "at": "gems/libtmux/lib/libtmux/server.rb:637",
               "has": [
                 "execute_typed"
               ],
               "calls": "execute_typed"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/server.rb:394",
+              "at": "gems/libtmux/lib/libtmux/server.rb:568",
               "has": [
-                "run"
+                "run(arguments"
               ],
               "calls": "run"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/server.rb:82",
+              "at": "gems/libtmux/lib/libtmux/server.rb:237",
+              "has": [
+                "dispatch("
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:560",
               "has": [
                 "@executor.run("
               ],
@@ -632,7 +674,7 @@
               "on": "ProcessExecutor"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:108",
+              "at": "gems/libtmux/lib/libtmux/process.rb:111",
               "has": [
                 "Execution.new("
               ],
@@ -640,7 +682,7 @@
               "on": "Execution"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:147",
+              "at": "gems/libtmux/lib/libtmux/process.rb:151",
               "has": [
                 "spawn"
               ],
@@ -648,7 +690,7 @@
               "why": "spawn is called by its bare name, which the Ruby scan does not read as a call"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:189",
+              "at": "gems/libtmux/lib/libtmux/process.rb:198",
               "has": [
                 "Process.spawn(@env"
               ]
@@ -676,14 +718,21 @@
               "calls": "execute_typed"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/server.rb:394",
+              "at": "gems/libtmux/lib/libtmux/server.rb:568",
               "has": [
-                "run"
+                "run(arguments"
               ],
               "calls": "run"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/server.rb:82",
+              "at": "gems/libtmux/lib/libtmux/server.rb:237",
+              "has": [
+                "dispatch("
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "gems/libtmux/lib/libtmux/server.rb:560",
               "has": [
                 "@executor.run("
               ],
@@ -691,7 +740,7 @@
               "on": "ProcessExecutor"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:108",
+              "at": "gems/libtmux/lib/libtmux/process.rb:111",
               "has": [
                 "Execution.new("
               ],
@@ -699,7 +748,7 @@
               "on": "Execution"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:147",
+              "at": "gems/libtmux/lib/libtmux/process.rb:151",
               "has": [
                 "spawn"
               ],
@@ -707,7 +756,7 @@
               "why": "spawn is called by its bare name, which the Ruby scan does not read as a call"
             },
             {
-              "at": "gems/libtmux/lib/libtmux/process.rb:189",
+              "at": "gems/libtmux/lib/libtmux/process.rb:198",
               "has": [
                 "Process.spawn(@env"
               ]

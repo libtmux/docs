@@ -3346,7 +3346,7 @@
       "why": "copy_command sends send-keys -X to the pane's copy mode; it does not send copy-mode.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/operations.rb:400",
+          "at": "gems/libtmux/lib/libtmux/operations.rb:420",
           "has": [
             "\"send-keys\", \"-X\""
           ]
@@ -3418,13 +3418,13 @@
       "why": "close shuts the server handle's requests and controls, and in an Async scope closes the scope; it does not send kill-server.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:87",
+          "at": "gems/libtmux/lib/libtmux/server.rb:240",
           "has": [
             "def close"
           ]
         },
         {
-          "at": "gems/libtmux-async/lib/libtmux/async/server.rb:24",
+          "at": "gems/libtmux-async/lib/libtmux/async/server.rb:19",
           "has": [
             "@scope.close"
           ]
@@ -3504,13 +3504,13 @@
       "why": "Server.start spawns an owned tmux daemon as a process with -D; it sends no start-server command.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/owned.rb:58",
+          "at": "gems/libtmux/lib/libtmux/owned.rb:61",
           "has": [
             "Process.spawn("
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/owned.rb:59",
+          "at": "gems/libtmux/lib/libtmux/owned.rb:62",
           "has": [
             "\"-u\", \"-D\""
           ]

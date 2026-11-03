@@ -51,13 +51,13 @@
       "why": "capture asks list-commands whether tmux knows a flag only when trim_trailing or mode_screen is set; a default capture does not send it.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/entity.rb:183",
+          "at": "gems/libtmux/lib/libtmux/entity.rb:192",
           "has": [
             "next unless enabled"
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/entity.rb:185",
+          "at": "gems/libtmux/lib/libtmux/entity.rb:194",
           "has": [
             "require_command_flag"
           ]
@@ -76,13 +76,13 @@
       "why": "copy_mode asks list-commands whether tmux knows a flag only when one of those flags is set; a default copy_mode does not send it.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/operations.rb:387",
+          "at": "gems/libtmux/lib/libtmux/operations.rb:407",
           "has": [
             "next unless enabled"
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/operations.rb:389",
+          "at": "gems/libtmux/lib/libtmux/operations.rb:409",
           "has": [
             "require_command_flag"
           ]
