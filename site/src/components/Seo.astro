@@ -1,10 +1,10 @@
 ---
 import type { Graph } from 'schema-dts'
-import { branding, documentationTitle, jsonLd, PYTHON_DESCRIPTION, PYTHON_SAME_AS, TMUX_DESCRIPTION, TMUX_WEBSITE, tmuxDocumentationTitle } from '../lib/branding'
-import { DOC_PRODUCTS, PORT_BY_SLUG, type DocProduct } from '../lib/ports'
+import { branding, documentationTitle, jsonLd, PYTHON_DESCRIPTION, PYTHON_SAME_AS, SITE_NAME, TMUX_DESCRIPTION, TMUX_WEBSITE } from '../lib/branding'
+import { DOC_PRODUCTS, PORT_BY_SLUG, portSitemapUrl, type DocProduct } from '../lib/ports'
 import { canonicalUrl, robotsFor, type VersionEntry } from '../lib/versions'
-import { IS_ROOT_BUILD, SITE_ROOT } from '../lib/site-root'
-import { localeRoot } from '../i18n/locales'
+import { IS_ROOT_BUILD, SITE_ROOT, withRoot } from '../lib/site-root'
+import { buildLocale, DEFAULT_LOCALE, localeRoot } from '../i18n/locales'
 
 /**
  * Every head tag that search engines care about, in one place.
@@ -100,14 +100,6 @@ const twitterImage = tmux ? tmuxLogo : new URL(brand.asset('twitter-light.png'),
  */
 const rootedOrigin = `${origin}${SITE_ROOT}`
 
-// Shared shell pages are canonical to themselves. Port pages canonicalise to
-// the same path under the port's default version.
-const canonical = canonicalOverride
-  ? new URL(canonicalOverride, origin).href
-  : portSlug
-  ? canonicalUrl(rootedOrigin, portSlug, version, defaultVersion, pagePath, existsInDefault)
-  : `${rootedOrigin}/${pagePath.replace(/^\/+/, '').replace(/\/+$/, '')}${pagePath.replace(/^\/+/, '') ? '/' : ''}`
-
 /**
  * The URL of this page in one locale, built from the unprefixed source path
  * rather than from `canonical` — which already carries the current locale's
@@ -117,6 +109,29 @@ const localeBase = (sourcePath ?? pagePath).replace(/^\/+|\/+$/g, '')
 // Each locale's own root, not this build's: an alternate is a sibling tree,
 // so it does not inherit whatever prefix this build carries.
 const localeHref = (l: string) => `${origin}${localeRoot(l)}${localeBase}${localeBase ? '/' : ''}`
+
+// A page about the site itself (`meta/…`) belongs to the site root. A port tree
+// carries a copy, so the copy names the root page and stays out of an index, as
+// the support, parity and translations pages already do.
+const siteLevel = Boolean(portSlug) && /^meta(?:\/|$)/.test(pagePath)
+
+// A page in another locale's tree that no translation backs is the English page
+// under a different prefix. It names the English page and stays out of an index,
+// as a placeholder does; a translated page says so with `locales`. The tree is
+// the build's, not the `locale` prop's: a static page that never passes one
+// still renders in the tree it is built into.
+const treeLocale = buildLocale()
+const untranslated = treeLocale !== DEFAULT_LOCALE && !locales.includes(treeLocale) && !canonicalOverride
+
+// Shared shell pages are canonical to themselves. Port pages canonicalise to
+// the same path under the port's default version.
+const canonical = canonicalOverride
+  ? new URL(canonicalOverride, origin).href
+  : untranslated
+  ? localeHref(DEFAULT_LOCALE)
+  : portSlug && !siteLevel
+  ? canonicalUrl(rootedOrigin, portSlug, version, defaultVersion, pagePath, existsInDefault)
+  : `${rootedOrigin}/${pagePath.replace(/^\/+/, '').replace(/\/+$/, '')}${pagePath.replace(/^\/+/, '') ? '/' : ''}`
 
 const isDefault = version === defaultVersion
 
@@ -135,11 +150,20 @@ const isDefault = version === defaultVersion
 // still mounts the whole site, and reading the base marked every shared page
 // noindex the moment one was added.
 const isRootShellBuild = IS_ROOT_BUILD && versionEntry.kind !== 'pr'
-const indexable = portSlug ? isDefault : isRootShellBuild
+const indexable = siteLevel || untranslated ? false : portSlug ? isDefault : isRootShellBuild
 
 const robots = noindex ? 'noindex, nofollow' : robotsFor(versionEntry, indexable)
 
-const fullTitle = tmux ? tmuxDocumentationTitle(title, pagePath) : documentationTitle(title, brand.projectName)
+// The sitemap that lists this page: its port tree's own, or the locale's index
+// for the shared pages. A preview builds none.
+const sitemapHref = versionEntry.kind === 'pr' ? undefined : new URL(
+  portSlug && PORT_BY_SLUG[portSlug] ? portSitemapUrl(PORT_BY_SLUG[portSlug], defaultVersion) : withRoot('/sitemap-index.xml'), origin,
+).href
+
+// The tab, the headline and the social cards each read one scheme; see documentationTitle.
+const { title: fullTitle, social: socialTitle } = documentationTitle({
+  title, pagePath, portSlug: brandPort ?? portSlug, version, defaultVersion,
+})
 const desc =
   description ??
   (tmux ? TMUX_DESCRIPTION : port ? `${brand.projectName}: typed tmux control for ${port.language}.` : PYTHON_DESCRIPTION)
@@ -155,7 +179,8 @@ const graph: Graph = {
       '@type': 'WebSite',
       '@id': `${origin}/#website`,
       url: `${origin}/`,
-      name: tmux ? 'libtmux.org' : 'libtmux',
+      name: SITE_NAME,
+      alternateName: 'libtmux',
       description: tmux ? 'Documentation for tmux and libraries that control it.' : PYTHON_DESCRIPTION,
       image: tmux ? tmuxLogo : new URL(`${SITE_ROOT}/brand/python/library/opengraph-light.png`, origin).href,
       about: { '@id': `${origin}/#${tmux ? 'tmux' : 'libtmux'}` },
@@ -180,8 +205,8 @@ const graph: Graph = {
               : /^(?:(?:mcp|workspace)\/)?(?:internals\/)?(?:reference|api|tools)(\/|$)/.test(pagePath) ? 'APIReference' as const : 'TechArticle' as const,
             '@id': `${canonical}#article`,
             url: canonical,
-            headline: fullTitle,
-            name: fullTitle,
+            headline: socialTitle,
+            name: socialTitle,
             description: desc,
             image: imageUrl,
             isPartOf: { '@id': `${origin}/#website` },
@@ -211,6 +236,7 @@ const graph: Graph = {
 <meta name="description" content={desc} />
 <link rel="canonical" href={canonical} />
 <meta name="robots" content={robots} />
+{sitemapHref && <link rel="sitemap" type="application/xml" href={sitemapHref} />}
 
 {/* Locale alternates. x-default names the English page itself, at /en/, not
     the site root: the root is an unconditional 302 into /en/ (it does not
@@ -231,10 +257,10 @@ const graph: Graph = {
 }
 
 <meta property="og:type" content={pagePath ? 'article' : 'website'} />
-<meta property="og:title" content={fullTitle} />
+<meta property="og:title" content={socialTitle} />
 <meta property="og:description" content={desc} />
 <meta property="og:url" content={canonical} />
-<meta property="og:site_name" content={tmux ? 'libtmux.org' : brand.projectName} />
+<meta property="og:site_name" content={SITE_NAME} />
 <meta property="og:image" content={imageUrl} />
 <meta property="og:image:secure_url" content={imageUrl} />
 <meta property="og:image:type" content={tmux ? 'image/svg+xml' : 'image/png'} />
@@ -242,7 +268,7 @@ const graph: Graph = {
 <meta property="og:image:alt" content={tmux ? 'tmux' : brand.label} />
 <meta property="og:locale" content={locale === 'ja' ? 'ja_JP' : 'en_US'} />
 <meta name="twitter:card" content={tmux ? 'summary' : 'summary_large_image'} />
-<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:title" content={socialTitle} />
 <meta name="twitter:description" content={desc} />
 <meta name="twitter:image" content={twitterImage} />
 <meta name="twitter:image:alt" content={tmux ? 'tmux' : brand.label} />

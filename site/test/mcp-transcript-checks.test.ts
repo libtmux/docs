@@ -96,6 +96,14 @@ describe('keeping the host out of a recording', () => {
     for (const text of ['id and sidebar and d2 and a-d and -d flag', '/home/d/x', 'pytest.d', '"idle"']) expect(leaks(text, [], ['d']), text).toEqual([])
   })
 
+  it('does not take the escape in a pattern for a name, whether it is read as text or as JSON', () => {
+    const pattern = String.raw`^%\d+$`
+    expect(leaks(pattern, [], ['d'])).toEqual([])
+    expect(leaks(JSON.stringify({ pattern }), [], ['d'])).toEqual([])
+    expect(sanitize({ pattern }, { names: ['d'] })).toEqual({ pattern })
+    expect(leaks(`${pattern} run by d`, [], ['d']), 'a name beside it is still found').toEqual(['d'])
+  })
+
   it('rewrites a name and a path wherever they are, inside embedded JSON too, and leaves other text alone', () => {
     const recorded = { title: 'd', text: '{"pane_title":"d","path":"/tmp/t239-x/project","id":"%0"}', lines: ['d@d:/tmp/t239-x/project$ ls', 'id -d'] }
     const clean = sanitize(recorded, marks)

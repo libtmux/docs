@@ -32,7 +32,7 @@ describe('which destinations the build under test serves', () => {
     const env = environment({ py: 'v0.46.2' })
     const py = PORTS.find((port) => port.slug === 'py')!
     for (const href of [
-      '/tmux/latest/reference/c-function-cmd-list-panes-c-cmd_list_panes_server/', '/tmux/3.2a/manual/list-panes/', '/tmux/latest/catalog/options/status-left/',
+      '/tmux/latest/reference/c-function-cmd-list-panes-c-cmd_list_panes_server/', '/tmux/3.7c/manual/list-panes/', '/tmux/latest/catalog/options/status-left/',
       `${referenceUrl(py, 'v0.46.2', 'mcp')}tool/`, `${referenceUrl(py, 'v0.46.2', 'workspace')}builder/`, '/py/v0.46.2/guides/attaching-to-tmux/',
     ]) expect(servedByBuild(href, build(env)), href).toBe(true)
     // The same pages under a root, as the dev server mounts them.

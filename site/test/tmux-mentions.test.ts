@@ -153,14 +153,14 @@ describe('tmux entity destinations', () => {
     expect(tmuxEntityHref('format', 'session_unknown')).toBeUndefined()
     expect(tmuxEntityHref('option', 'session_attached')).toBeUndefined()
     expect(tmuxEntityHref('option', 'pane-scrollbars', '3.7c')).toBe('/tmux/3.7c/catalog/options/pane-scrollbars/')
-    expect(tmuxEntityHref('option', 'pane-scrollbars', '3.2a')).toBeUndefined()
+    expect(tmuxEntityHref('option', 'not-an-option', '3.7c')).toBeUndefined()
   })
 
   it('keeps the manual destination of each name one function away', () => {
     expect(tmuxManualEntityHref('format', 'session_attached')).toBe('/tmux/latest/manual/full/#session_attached')
     expect(tmuxManualEntityHref('option', 'destroy-unattached')).toBe('/tmux/latest/manual/full/#options-destroy-unattached')
     expect(tmuxManualEntityHref('hook', 'session-created')).toBe('/tmux/latest/manual/full/#hooks-session-created')
-    expect(tmuxManualEntityHref('option', 'pane-scrollbars', '3.2a')).toBeUndefined()
+    expect(tmuxManualEntityHref('option', 'not-an-option', '3.7c')).toBeUndefined()
   })
 
   it.each(TMUX_VERSIONS)('anchors every %s option, hook and format variable on the rendered manual', (version) => {
@@ -225,7 +225,7 @@ describe('tmux hover cards', () => {
     expect(payload.signatureHighlight.lines.map((line: { content: string }[]) => line.map((token) => token.content).join('')).join('\n'))
       .toBe(preview.signature)
     const slugs = (await getStaticPaths()).map((path) => path.params.slug)
-    expect(slugs).toEqual(expect.arrayContaining(['tmux/latest/manual/list-clients', 'tmux/latest/manual/full', 'tmux/3.2a/manual/list-clients']))
+    expect(slugs).toEqual(expect.arrayContaining(['tmux/latest/manual/list-clients', 'tmux/latest/manual/full', 'tmux/3.7c/manual/list-clients']))
   })
 
   describe('eligibility', () => {
@@ -240,7 +240,7 @@ describe('tmux hover cards', () => {
       win.document.body.innerHTML = `<p>
         <a id="command" href="/en/tmux/latest/manual/list-clients/">list-clients</a>
         <a id="entry" href="/en/tmux/latest/manual/full/#session_attached">session_attached</a>
-        <a id="older" href="/pr-7/en/tmux/3.2a/manual/capture-pane/">capture-pane</a>
+        <a id="older" href="/pr-7/en/tmux/3.7c/manual/capture-pane/">capture-pane</a>
         <a id="index" href="/en/tmux/latest/manual/">All commands</a>
         <a id="permalink" class="permalink" href="/en/tmux/latest/manual/full/#destroy">destroy</a>
         <a id="source" href="/en/tmux/latest/reference/">C source</a></p>

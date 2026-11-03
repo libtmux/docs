@@ -16,7 +16,7 @@ const fixture = JSON.parse(readFileSync(new URL('./fixtures/c-clang-format.json'
   formatter: string
   cases: Case[]
 }
-const VERSIONS = ['3.2a', '3.7c'] as const
+const VERSIONS = ['3.7c'] as const
 const model = tmuxSourceModel('latest')
 const index = tmuxReferenceIndex('latest')
 const find = (name: string, kind = 'function') => {

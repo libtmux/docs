@@ -915,7 +915,9 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     const index = JSON.parse(read('docs.json')) as DocsManifest
     const llms = read('llms.txt')
     const sitemapFiles = [...readFileSync(productionPath('en/sitemap-index.xml'), 'utf8').matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => new URL(match[1]).pathname)
-    const sitemap = sitemapFiles.map((path) => readFileSync(productionPath(path), 'utf8')).join('\n')
+    // The shell's own sitemaps list these pages. A port tree's sitemap is written by the assembly, and a
+    // preview's production render has no port trees, so only the files that exist are read.
+    const sitemap = sitemapFiles.filter((path) => existsSync(productionPath(path))).map((path) => readFileSync(productionPath(path), 'utf8')).join('\n')
     for (const page of pages().filter((entry) => entry.version === defaults[entry.port])) {
       const url = urlFor(page.path).href
       expect(index.pages.some((entry) => entry.url === url), `${url} in docs.json`).toBe(true)

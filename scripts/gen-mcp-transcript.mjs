@@ -6,6 +6,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PORTS } from '../site/src/lib/ports.ts'
 import { EXAMPLES } from '../site/src/lib/mcp-examples.ts'
+import { contractsOf, sameContracts } from '../site/src/lib/mcp-contract.ts'
 import { recordCalls } from './lib/mcp-session.mjs'
 import { leaks, sanitize, verifyRecording } from './lib/mcp-transcript-checks.mjs'
 
@@ -18,6 +19,11 @@ import { leaks, sanitize, verifyRecording } from './lib/mcp-transcript-checks.mj
  * the revision its protocol snapshot records, and refuses to write otherwise.
  * It fails on a tool error, a server that does not exit 0, a request whose id
  * no earlier result returned, or an expected value that is missing.
+ *
+ * The transcript also stores the input and output schemas of each tool it
+ * calls, from that snapshot. A page documenting a later revision shows the
+ * recording only while the tools still have those schemas, so the recording
+ * does not have to be redone for every commit of the port.
  *
  * Usage: node scripts/gen-mcp-transcript.mjs --port <port> [--check]
  * The checkout comes from LIBTMUX_DOCS_CHECKOUT_<PORT> or the port's worktree.
@@ -73,6 +79,7 @@ if (git('status', '--porcelain', '--untracked-files=no')) throw new Error(`${onl
 const revision = git('rev-parse', 'HEAD')
 const snapshot = JSON.parse(readFileSync(join(root, 'site/src/data/mcp-protocol', `${only}.json`), 'utf8'))
 if (snapshot.revision !== revision) throw new Error(`${only}: checkout is at ${revision}, the protocol snapshot at ${snapshot.revision}`)
+const contracts = contractsOf(snapshot.protocol.tools, example.steps.map((step) => step.tool))
 
 // A tmux and a home of its own: nothing here may reach the reader's server, socket or shell setup.
 const sandbox = mkdtempSync(join(tmpdir(), `t239-${only}-`))
@@ -127,6 +134,7 @@ try {
     repo: snapshot.repo, revision,
     sandbox: { tmux: execFileSync('tmux', ['-V'], { encoding: 'utf8' }).trim(), pytest, project: ['test_example.py', 'checks.log'], expected: EXPECTED_OUTPUT, rewritten: { projectDirectory: FIXED } },
     serverInfo: run.serverInfo,
+    contracts,
     prompt: example.prompt,
     steps: run.steps.map((step, index) => ({ ...step, caption: example.steps[index].caption })),
   }
@@ -144,7 +152,7 @@ const found = leaks(text, [sandbox, sandboxReal, homedir(), checkout], [userInfo
 if (found.length) throw new Error(`${only}: the recording names the host: ${found.join(', ')}`)
 if (checking) {
   const stored = JSON.parse(readFileSync(out, 'utf8'))
-  if (stored.revision !== transcript.revision || JSON.stringify(stored.steps.map((s) => [s.tool, s.arguments])) !== JSON.stringify(transcript.steps.map((s) => [s.tool, s.arguments]))) throw new Error(`${only}: transcript is stale`)
+  if (stored.revision !== transcript.revision || !sameContracts(stored.contracts, transcript.contracts) || JSON.stringify(stored.steps.map((s) => [s.tool, s.arguments])) !== JSON.stringify(transcript.steps.map((s) => [s.tool, s.arguments]))) throw new Error(`${only}: transcript is stale`)
 } else {
   mkdirSync(dirname(out), { recursive: true })
   writeFileSync(out, text)

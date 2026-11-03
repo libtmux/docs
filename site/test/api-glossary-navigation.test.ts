@@ -336,10 +336,10 @@ it.each(PORT_SLUGS)('bounds the initial %s sidebar to its current path and defer
     .toBe(search.apiTreeHref(`/en/${port}/latest/reference/`, selected, inventory.hrefs))
 }, 30_000)
 
-// Every reference whose pages carry this sidebar: the sixteen libraries, and the tmux C reference in its oldest and newest versions.
+// Every reference whose pages carry this sidebar: the libraries and the tmux C reference.
 const BUDGETED = [
   ...PORT_SLUGS.map((port) => ({ name: port, port, base: `/en/${port}/latest/reference/`, inventory: () => tree.referenceTree(port) })),
-  ...['3.7c', '3.2a'].map((version) => ({ name: `tmux ${version}`, port: 'tmux', base: reference.tmuxReferenceUrl(version), inventory: () => reference.tmuxReferenceTree(version) })),
+  ...['3.7c'].map((version) => ({ name: `tmux ${version}`, port: 'tmux', base: reference.tmuxReferenceUrl(version), inventory: () => reference.tmuxReferenceTree(version) })),
 ]
 /** Pages rendered per reference, from the top of the ranking. */
 const HEAVIEST_RENDERED = 100

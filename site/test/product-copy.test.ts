@@ -90,7 +90,7 @@ describe('the product page titles', () => {
     expect(llms).toContain('title: agentTitle(entry.data),')
     // The manifest titles a page as its Markdown twin does (test/agent-titles.test.ts).
     expect(readFileSync(new URL('../src/pages/docs.json.ts', import.meta.url), 'utf8')).toContain('title: agentTitle(served.data),')
-    expect(documentationTitle(workspaceShortTitle('rs'), 'libtmux')).toContain('Rust-based tmux workspace manager')
+    expect(documentationTitle({ title: workspaceShortTitle('rs'), pagePath: 'workspace', portSlug: 'rs' }).title).toBe('Rust-based tmux workspace manager | libtmux.org')
   })
 })
 

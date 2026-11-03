@@ -19,8 +19,6 @@ afterEach(() => { vi.unstubAllEnvs(); vi.resetModules() })
 describe('versioned tmux manual', () => {
   beforeAll(async () => { await highlightTmuxManual('<pre>set -g status off</pre>') })
   it.each([
-    { version: '3.2a', sourceCommit: '3b929f332aafa7f1080eacc31feb11ffbb1d1841',
-      sourceTree: '97d85a509a253bccf8d70766b63e13a4a562901d' },
     { version: '3.7c', sourceCommit: 'e476c1230b958df0cb12977517d24b3dc931375b',
       sourceTree: 'ad5fe15a4b84ae9489eb4bb643f932ffab949ed2' },
   ])('retains the original $version pin and its verified commit and tree separately', (source) => {
@@ -29,7 +27,7 @@ describe('versioned tmux manual', () => {
     expect(reference.revision).toBe(pins.versions.find((pin) => pin.version === source.version)!.revision)
     expect(reference.sourceCommit).not.toBe(reference.revision)
   })
-  it.each(['3.2a', '3.7c'])('links every %s definition without colliding keys or losing old targets', (version) => {
+  it.each(['3.7c'])('links every %s definition without colliding keys or losing old targets', (version) => {
     const original = fromHtml(tmuxManual(version).manual, { fragment: true })
     const linked = fromHtml(linkTmuxManualEntries(tmuxManual(version).manual), { fragment: true })
     const ids = selectAll('[id]', linked).map((node) => node.properties.id)
@@ -46,7 +44,7 @@ describe('versioned tmux manual', () => {
     expect(contents(select('#default-key-binding-right-bracket', linked)!)).toBe(']')
   })
 
-  it.each(['3.2a', '3.7c'])('highlights the %s manual without changing example text or destinations', async (version) => {
+  it.each(['3.7c'])('highlights the %s manual without changing example text or destinations', async (version) => {
     const html = tmuxManualHtml(tmuxManual(version).manual, version)
     const original = fromHtml(html, { fragment: true })
     const rendered = fromHtml(await highlightTmuxManual(html), { fragment: true })
@@ -58,14 +56,11 @@ describe('versioned tmux manual', () => {
     expect(selectAll('a', rendered).map((node) => node.properties.href))
       .toEqual(selectAll('a', original).map((node) => node.properties.href))
   })
-  it('organizes every capture flag for lookup without showing flags from newer tmux releases', () => {
+  it('organizes every capture flag for lookup', () => {
     const current = tmuxCommandNotes('latest', 'capture-pane')!
-    const old = tmuxCommandNotes('3.2a', 'capture-pane')!
     const flags = (notes: typeof current) => notes.groups.flatMap((group) => group.options.map((option) => option.flag)).sort()
     expect(flags(current)).toEqual(['C', 'E', 'F', 'H', 'J', 'L', 'M', 'N', 'P', 'S', 'T', 'a', 'b', 'e', 'p', 'q', 't'])
-    expect(flags(old)).toEqual(['C', 'E', 'J', 'N', 'P', 'S', 'a', 'b', 'e', 'p', 'q', 't'])
     expect(current.groups[1].options.find((option) => option.flag === 'J')!.text).toContain('Implies -T.')
-    expect(old.groups[1].options.find((option) => option.flag === 'J')!.text).not.toContain('-T')
     expect(current.examples.map((example) => example.code)).toEqual([
       'tmux capture-pane -p -t "$TMUX_PANE"',
       'tmux capture-pane -p -J -S -1000 -t "$TMUX_PANE"',
@@ -74,15 +69,12 @@ describe('versioned tmux manual', () => {
     expect(tmuxCommandNotes('latest', 'new-session')).toBeUndefined()
   })
 
-  it('keeps version-specific commands and flags separate', () => {
-    const old = tmuxManual('3.2a')
+  it('resolves latest to the pinned release and reads each command from it', () => {
     const current = tmuxManual('latest')
-    expect(old.commands).toHaveLength(87)
     expect(current.commands).toHaveLength(91)
     expect(current).toBe(tmuxManual('3.7c'))
-    expect(old.commands.some((command) => command.name === 'new-pane')).toBe(false)
     expect(current.commands.some((command) => command.name === 'new-pane')).toBe(true)
-    for (const version of ['3.2a', 'latest']) {
+    for (const version of ['3.7c', 'latest']) {
       const navigation = tmuxManualNavigation(version).json
       expect(Object.values(navigation.members).flat().map((entry) => entry[2]).sort())
         .toEqual(tmuxManual(version).commands.map((command) => command.name).sort())
@@ -90,7 +82,6 @@ describe('versioned tmux manual', () => {
         .toEqual(navigation.buckets[0]!.types.map((section) => `${tmuxManualUrl(version)}#${section.id.slice('section:'.length)}`))
     }
     const capture = (version: string) => tmuxManual(version).commands.find((command) => command.name === 'capture-pane')!
-    expect(capture('3.2a').usage.split(']')[0]).not.toContain('F')
     expect(capture('3.7c').usage.split(']')[0]).toContain('F')
     expect(() => tmuxManual('3.99')).toThrow('Unknown tmux manual version')
   })
@@ -104,11 +95,11 @@ describe('versioned tmux manual', () => {
     expect(html).not.toContain('/tmux/3.7c/')
   })
 
-  it('preserves real command counterparts and falls back for newer commands', () => {
-    expect(tmuxManualVersionUrl('3.2a', 'capture-pane')).toBe(tmuxManualUrl('3.2a', 'capture-pane'))
-    expect(tmuxManualVersionUrl('3.2a', 'new-pane')).toBe(tmuxManualUrl('3.2a'))
+  it('preserves real command counterparts and falls back for a command the release lacks', () => {
+    expect(tmuxManualVersionUrl('3.7c', 'capture-pane')).toBe(tmuxManualUrl('3.7c', 'capture-pane'))
+    expect(tmuxManualVersionUrl('3.7c', 'not-a-command')).toBe(tmuxManualUrl('3.7c'))
     expect(tmuxManualVersionUrl('3.7c', 'new-pane')).toBe(tmuxManualUrl('3.7c', 'new-pane'))
-    expect(tmuxManualVersionUrl('3.2a', 'full')).toBe(tmuxManualUrl('3.2a', 'full'))
+    expect(tmuxManualVersionUrl('3.7c', 'full')).toBe(tmuxManualUrl('3.7c', 'full'))
   })
 
   it('links commands and retains upstream descriptions and license', () => {
@@ -120,7 +111,7 @@ describe('versioned tmux manual', () => {
     expect(result.commands[0].html).toContain('/tmux/3.7c/manual/full/#FORMATS')
     expect(result.commands[0].html).toContain('/tmux/3.7c/manual/capture-pane/')
     const older = html.replace('(alias: capturep)</div>', '(alias: capturep</div>\n    ) ')
-    expect(parseManual(older, commands, '3.2a').commands[0].summary).toBe('Capture visible lines.')
+    expect(parseManual(older, commands, '3.7c').commands[0].summary).toBe('Capture visible lines.')
     expect(tmuxManual('latest').license).toContain('Permission to use, copy, modify, and distribute')
     expect(() => parseManual(html.replace('capture-pane</code>', 'unknown</code>'), commands, '3.7c')).toThrow('Command absent from the manual')
   })
@@ -138,7 +129,7 @@ describe('versioned tmux manual', () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '/pr-42/en')
     vi.resetModules()
     const { tmuxManualUrl: referenceUrl } = await import('../src/lib/tmux-manual-data')
-    expect(referenceUrl('3.2a', 'capture-pane')).toBe('/pr-42/en/tmux/3.2a/manual/capture-pane/')
+    expect(referenceUrl('3.7c', 'capture-pane')).toBe('/pr-42/en/tmux/3.7c/manual/capture-pane/')
   })
 
   it('leaves a recorded command to the code that sends it, and keeps the concepts for the language picker', () => {
@@ -161,7 +152,7 @@ describe('versioned tmux manual', () => {
     expect(tmuxManualHeadings('latest', 'set-window-option').map((heading) => heading.slug)).not.toContain('set-window-option-use-from-a-library')
     expect(tmuxGuidesFor('capture-pane').map((guide) => guide.href))
       .toEqual([tmuxManualUrl().replace('/tmux/latest/manual/', '/tmux/guides/capturing-output/')])
-    expect(tmuxManualHeadings('3.2a', 'full').some((heading) => heading.slug === 'COMMANDS')).toBe(true)
+    expect(tmuxManualHeadings('3.7c', 'full').some((heading) => heading.slug === 'COMMANDS')).toBe(true)
   })
 })
 
@@ -177,7 +168,7 @@ describe('tmux manual key notation', () => {
     return selectAll('kbd', section).map((node) => [node, title] as const)
   }))
 
-  it.each(['3.2a', '3.7c'])('renders the %s bind-key sequences as nested kbd and keeps new-window a link', (version) => {
+  it.each(['3.7c'])('renders the %s bind-key sequences as nested kbd and keeps new-window a link', (version) => {
     const html = commandHtml(version, 'bind-key')
     const original = fromHtml(html, { fragment: true })
     const tree = fromHtml(markTmuxManualKeys(html, 'bind-key'), { fragment: true })
@@ -191,7 +182,7 @@ describe('tmux manual key notation', () => {
     expect(squash(contents(tree))).toBe(squash(contents(original)))
   })
 
-  it.each(['3.2a', '3.7c'])('marks %s keys only where the manual uses them as keys', (version) => {
+  it.each(['3.7c'])('marks %s keys only where the manual uses them as keys', (version) => {
     const tree = rendered(version)
     const keys = selectAll('kbd', tree)
     expect(keys.length).toBeGreaterThan(200)
@@ -210,7 +201,7 @@ describe('tmux manual key notation', () => {
     expect(selectAll('table.Nm kbd', tree)).toHaveLength(0)
   })
 
-  it.each(['3.2a', '3.7c'])('describes the %s key tables, default bindings and examples with caps', (version) => {
+  it.each(['3.7c'])('describes the %s key tables, default bindings and examples with caps', (version) => {
     const tree = rendered(version)
     const terms = new Map(selectAll('dt', tree).map((node) => [squash(contents(node)), node]))
     expect(selectAll('kbd', terms.get('0 to 9')!).map(contents)).toEqual(['0', '9'])
@@ -233,7 +224,7 @@ describe('tmux manual key notation', () => {
     expect(selectAll('tr#Cancel code.Li', prompt).map((node) => squash(contents(node)))).toEqual(['Cancel command prompt'])
   })
 
-  it.each(['3.2a', '3.7c'])('gives a command page the same caps as that command in the full %s manual', (version) => {
+  it.each(['3.7c'])('gives a command page the same caps as that command in the full %s manual', (version) => {
     const full = rendered(version)
     const descriptions = new Map<string, Element>()
     for (const list of selectAll('dl', full)) {

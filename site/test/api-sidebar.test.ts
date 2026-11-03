@@ -269,7 +269,7 @@ describe('long lists in Outline', () => {
     expect(wrong.map((record) => record.id).slice(0, 5), `${slug}: declarations whose page row is missing or repeated`).toEqual([])
   }, 60_000)
 
-  it.each(['3.7c', '3.2a'])('shows exactly one current row in the first paint of tmux %s reference pages', (version) => {
+  it.each(['3.7c'])('shows exactly one current row in the first paint of tmux %s reference pages', (version) => {
     const json = tmuxReferenceTree(version)
     const prefix = tmuxReferenceUrl(version)
     const records = sidebarCatalog(json).records
@@ -383,7 +383,7 @@ describe('first paint of a reference page', () => {
     expect(sidebarSelection(json, variant)).not.toBe(sidebarSelection(json, field))
   })
 
-  it.each(['3.7c', '3.2a'])('marks its own row in the first paint of every tmux %s C reference page, and none for what the sidebar leaves out', (version) => {
+  it.each(['3.7c'])('marks its own row in the first paint of every tmux %s C reference page, and none for what the sidebar leaves out', (version) => {
     const json = tmuxReferenceTree(version)
     const base = tmuxReferenceUrl(version)
     const pages = tmuxSourceModel(version).symbols.map((symbol) => ({ symbol, href: tmuxReferenceUrl(version, symbol) }))
@@ -517,7 +517,7 @@ describe('anonymous declarations in the sidebar', () => {
   })
 })
 
-describe.each(['3.7c', '3.2a'])('tmux %s C reference sidebar', (version) => {
+describe.each(['3.7c'])('tmux %s C reference sidebar', (version) => {
   const json = tmuxReferenceTree(version)
   const base = tmuxReferenceUrl(version)
   const records = searchApi(json, '')
@@ -560,7 +560,7 @@ describe.each(['3.7c', '3.2a'])('tmux %s C reference sidebar', (version) => {
     expect(catalog.owners.filter((owner) => hidden.has(owner.id))).toEqual([])
   })
 
-  it.each(['window_copy_cmd_action', ...(version === '3.7c' ? ['key_code_type'] : [])])('keeps the named enum %s and its members, at their own URLs', (name) => {
+  it.each(['window_copy_cmd_action', 'key_code_type'])('keeps the named enum %s and its members, at their own URLs', (name) => {
     const named = records.find((record) => record.kind === 'enum' && record.name === name)!
     const members = (json.members[named.id] ?? []).map(([member, slug, id]) => ({ id: id ?? `${named.id}.${member}`, slug }))
     expect(members.length).toBeGreaterThan(0)

@@ -15,7 +15,7 @@ import { TMUX_VERSIONS } from '../src/lib/tmux-manual-data'
 import { GET, getStaticPaths } from '../src/pages/tmux/[version]/reference/[...slug].preview.json'
 import { getStaticPaths as genericPreviewPaths } from '../src/pages/[...slug].preview.json'
 
-describe.each(['3.7c', '3.2a'])('tmux %s through the shared API system', (version) => {
+describe.each(['3.7c'])('tmux %s through the shared API system', (version) => {
   const model = tmuxSourceModel(version)
   const byId = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
 
@@ -106,11 +106,9 @@ describe.each(['3.7c', '3.2a'])('tmux %s through the shared API system', (versio
 
 it('separates version indexes and preserves only existing symbol counterparts', () => {
   const current = tmuxSourceModel('latest')
-  const old = tmuxSourceModel('3.2a')
   const session = current.symbols.find((symbol) => symbol.id === 'c:struct:session')!
-  expect(tmuxReferenceVersionUrl('3.2a', 'latest', session.slug)).toBe(tmuxReferenceUrl('3.2a', old.symbols.find((symbol) => symbol.id === session.id)))
-  const absent = current.symbols.find((symbol) => !old.symbols.some((entry) => entry.id === symbol.id))!
-  expect(tmuxReferenceVersionUrl('3.2a', 'latest', absent.slug)).toBe(tmuxReferenceUrl('3.2a'))
+  expect(tmuxReferenceVersionUrl('3.7c', 'latest', session.slug)).toBe(tmuxReferenceUrl('3.7c', session))
+  expect(tmuxReferenceVersionUrl('3.7c', 'latest', 'c-struct-no-such-declaration')).toBe(tmuxReferenceUrl('3.7c'))
   expect(tmuxReferenceIndex('latest')).not.toBe(tmuxReferenceIndex('3.7c'))
   expect(tmuxReferenceIndex('latest').resolve('c:struct:session')?.href).toBe(tmuxReferenceUrl('latest', session))
   expect(tmuxReferenceIndex('3.7c').resolve('c:struct:session')?.href).toBe(tmuxReferenceUrl('3.7c', session))

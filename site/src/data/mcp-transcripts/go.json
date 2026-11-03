@@ -21,6 +21,360 @@
     "name": "libtmux",
     "version": "v0.0.1-alpha.14"
   },
+  "contracts": {
+    "create_session": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "height": {
+            "description": "initial height; supply with width",
+            "type": "integer"
+          },
+          "session_name": {
+            "description": "a literal session name",
+            "type": "string"
+          },
+          "start_directory": {
+            "description": "an absolute literal start directory",
+            "type": "string"
+          },
+          "width": {
+            "description": "initial width; supply with height",
+            "type": "integer"
+          },
+          "window_name": {
+            "description": "a literal first-window name",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "sessionId": {
+            "type": "string"
+          },
+          "sessionName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "sessionId",
+          "sessionName"
+        ],
+        "type": "object"
+      }
+    },
+    "list_panes": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "panes": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "active": {
+                  "type": "boolean"
+                },
+                "currentCommand": {
+                  "type": "string"
+                },
+                "geometry": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "height": {
+                      "type": "integer"
+                    },
+                    "left": {
+                      "type": "integer"
+                    },
+                    "top": {
+                      "type": "integer"
+                    },
+                    "width": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "left",
+                    "top",
+                    "width",
+                    "height"
+                  ],
+                  "type": "object"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "index": {
+                  "type": "integer"
+                },
+                "isCaller": {
+                  "type": [
+                    "null",
+                    "boolean"
+                  ]
+                },
+                "session": {
+                  "type": "string"
+                },
+                "status": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "dead": {
+                      "type": "boolean"
+                    },
+                    "exitStatus": {
+                      "type": [
+                        "null",
+                        "integer"
+                      ]
+                    },
+                    "historyLines": {
+                      "type": "integer"
+                    },
+                    "inMode": {
+                      "type": "boolean"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "dead",
+                    "historyLines",
+                    "inMode"
+                  ],
+                  "type": [
+                    "null",
+                    "object"
+                  ]
+                },
+                "window": {
+                  "type": "string"
+                },
+                "windowId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "session",
+                "window",
+                "windowId",
+                "index",
+                "currentCommand",
+                "active",
+                "geometry",
+                "isCaller"
+              ],
+              "type": "object"
+            },
+            "type": [
+              "array"
+            ]
+          },
+          "serverNote": {
+            "type": "string"
+          },
+          "skipped": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "panes",
+          "total"
+        ],
+        "type": "object"
+      }
+    },
+    "split_window": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "direction": {
+            "description": "below, above, left, or right",
+            "enum": [
+              "",
+              "below",
+              "above",
+              "right",
+              "left"
+            ],
+            "type": "string"
+          },
+          "pane_id": {
+            "description": "the pane id, such as %1",
+            "type": "string"
+          },
+          "percent": {
+            "description": "share of the split occupied by the new pane",
+            "type": "integer"
+          },
+          "start_directory": {
+            "description": "an absolute literal start directory",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pane_id"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "paneId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "paneId"
+        ],
+        "type": "object"
+      }
+    },
+    "run_shell_command": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "command": {
+            "description": "the shell command run in the pane's interactive shell",
+            "type": "string"
+          },
+          "max_lines": {
+            "description": "maximum output lines, keeping the newest",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "pane_id": {
+            "description": "the pane id, such as %1",
+            "type": "string"
+          },
+          "suppress_history": {
+            "description": "best-effort persistent history suppression",
+            "type": "boolean"
+          },
+          "timeout": {
+            "description": "seconds to wait before giving up",
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "required": [
+          "pane_id",
+          "command"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "effective_timeout_seconds": {
+            "type": "integer"
+          },
+          "exit_status": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "lines_missed": {
+            "type": "boolean"
+          },
+          "output": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array"
+            ]
+          },
+          "output_unavailable": {
+            "type": "string"
+          },
+          "pane_id": {
+            "type": "string"
+          },
+          "resolved_pane_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array"
+            ]
+          },
+          "running": {
+            "type": "string"
+          },
+          "timed_out": {
+            "type": "boolean"
+          },
+          "timeout_clamped": {
+            "type": "boolean"
+          },
+          "truncated": {
+            "type": "boolean"
+          },
+          "truncated_bytes": {
+            "type": "integer"
+          },
+          "truncated_lines": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "pane_id",
+          "resolved_pane_ids",
+          "timed_out",
+          "output"
+        ],
+        "type": "object"
+      }
+    },
+    "kill_session": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "confirm_self": {
+            "description": "permit ending the pane this MCP process runs in",
+            "type": "boolean"
+          },
+          "session_id": {
+            "description": "the session id, such as $1",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "killed": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "killed"
+        ],
+        "type": "object"
+      }
+    }
+  },
   "prompt": "Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.",
   "steps": [
     {

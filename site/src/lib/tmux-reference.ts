@@ -1,6 +1,5 @@
 /** tmux source data adapted to the shared API reference and navigation. */
 import { docSummaryText, navSidecarFor, pageSlug, sourceUrl, type ApiSymbol, type SourceApiModel, type SymbolIndex } from '@libtmux/api-model'
-import v32 from '../data/tmux/api/3.2a.json?raw'
 import v37 from '../data/tmux/api/3.7c.json?raw'
 import pins from '../data/tmux/versions.json'
 import { createApiIndex, type PortNavData } from './api-models'
@@ -26,7 +25,6 @@ export interface TmuxSourceModel extends SourceApiModel {
 }
 
 const models: Record<string, TmuxSourceModel> = {
-  '3.2a': JSON.parse(v32) as TmuxSourceModel,
   '3.7c': JSON.parse(v37) as TmuxSourceModel,
 }
 export function tmuxSourceModel(version = 'latest'): TmuxSourceModel {

@@ -17,7 +17,7 @@ import { linkTmuxDoc } from '../src/lib/tmux-links'
  * misses is counted as plain rather than disappearing. Run with
  * `--silent=false` to read the table and the most frequent plain names.
  */
-const catalogs = ['3.2a', '3.7c'].map((version) => tmuxCatalog(version))
+const catalogs = ['3.7c'].map((version) => tmuxCatalog(version))
 const kinds = new Map<string, string>()
 for (const model of catalogs) for (const entry of model.entries) {
   for (const name of [entry.name, ...(entry.aliases ?? [])]) if (/[-_]/.test(name)) kinds.set(name, entry.kind)

@@ -4,10 +4,12 @@ import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import type { AstroIntegration } from 'astro'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { PORTS } from '../src/lib/ports'
 
 const { sitemapOptions } = vi.hoisted(() => ({
   sitemapOptions: {
     filter: undefined as ((page: string) => boolean) | undefined,
+    customSitemaps: undefined as string[] | undefined,
     integration: undefined as AstroIntegration | undefined,
   },
 }))
@@ -15,8 +17,9 @@ const { sitemapOptions } = vi.hoisted(() => ({
 vi.mock('@astrojs/sitemap', async (importOriginal) => {
   const { default: sitemap } = await importOriginal<typeof import('@astrojs/sitemap')>()
   return {
-    default: (options: { filter: (page: string) => boolean }) => {
+    default: (options: { filter: (page: string) => boolean; customSitemaps?: string[] }) => {
       sitemapOptions.filter = options.filter
+      sitemapOptions.customSitemaps = options.customSitemaps
       sitemapOptions.integration = sitemap(options)
       return sitemapOptions.integration
     },
@@ -32,6 +35,12 @@ beforeAll(async () => {
 })
 
 afterAll(() => vi.unstubAllEnvs())
+
+describe('port tree sitemaps', () => {
+  it('names every port tree\'s own sitemap in the English index', () => {
+    expect(sitemapOptions.customSitemaps).toEqual(PORTS.map((port) => `https://libtmux.org/en/${port.slug}/latest/sitemap-0.xml`))
+  })
+})
 
 const includes = (port: string, path: string) =>
   sitemapOptions.filter!(`https://libtmux.org/en/${port}/latest/workspace/${path}/`)
@@ -53,11 +62,11 @@ describe('tmux manual sitemap routes', () => {
     const keep = ['', 'capture-pane/', 'full/']
     for (const path of keep) {
       expect(sitemapOptions.filter!(`https://libtmux.org/en/tmux/latest/manual/${path}`)).toBe(true)
-      expect(sitemapOptions.filter!(`https://libtmux.org/en/tmux/3.2a/manual/${path}`)).toBe(false)
+      expect(sitemapOptions.filter!(`https://libtmux.org/en/tmux/3.7c/manual/${path}`)).toBe(false)
     }
     for (const path of ['', 'c-struct-session/']) {
       expect(sitemapOptions.filter!(`https://libtmux.org/en/tmux/latest/reference/${path}`)).toBe(true)
-      expect(sitemapOptions.filter!(`https://libtmux.org/en/tmux/3.2a/reference/${path}`)).toBe(false)
+      expect(sitemapOptions.filter!(`https://libtmux.org/en/tmux/3.7c/reference/${path}`)).toBe(false)
     }
     for (const path of ['capture-pane/', 'manual/']) {
       expect(sitemapOptions.filter!(`https://libtmux.org/en/tmux/latest/reference/${path}`)).toBe(false)

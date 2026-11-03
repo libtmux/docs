@@ -796,7 +796,7 @@ describe('the scope table against tmux', () => {
     expect(scopeProblems(entry, model, 'list-panes', () => source.replace("if (args_has(args, 'a'))", 'if (flag)'))[0]).toMatch(/no readable guard/)
   })
 
-  it.each(['3.7c', '3.2a'])('matches the C dispatch of tmux %s', (version) => {
+  it.each(['3.7c'])('matches the C dispatch of tmux %s', (version) => {
     const real = JSON.parse(readFileSync(new URL(`../src/data/tmux/api/${version}.json`, import.meta.url), 'utf8'))
     expect(scopeProblems(entry, real, 'list-panes')).toEqual([])
     const gone = { scopes: entry.scopes.map((scope: { id: string }) => scope.id === 'server' ? { ...scope, function: 'cmd_list_panes_gone' } : scope) }

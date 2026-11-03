@@ -22,6 +22,7 @@ import type { PagePortLink } from '../../lib/page-port-links'
 import { pagePortsFor } from '../../lib/page-ports-for'
 import { pageBreadcrumbs } from '../../lib/sidebar'
 import BaseLayout from '../../layouts/BaseLayout.astro'
+import { symbolDescription } from '../../lib/branding'
 import { apiInventoryIdentity } from '../../lib/inventory-targets'
 import { withRoot } from '../../lib/site-root'
 import { API_MODELS, API_NAV, PORT_NAME, indexFor, isMemberOwner, ownersOf, pageSlug, referenceAlternatives, topLevelTypesOf } from '../../lib/api-models'
@@ -414,9 +415,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
       ? // The summary is written in this port's doc dialect, and a card, a
         // meta tag and a JSON-LD blob all take a string: `{@link Pane}` and
         // ``Server`` reached all three as markup.
-        owner.doc?.summary
-        ? docSummaryText(owner.doc.summary, port)
-        : `${qualifiedNameOf(owner)} API documentation.`
+        symbolDescription(qualifiedNameOf(owner), owner.doc?.summary ? docSummaryText(owner.doc.summary, port) : undefined, `${owner.kind} in the ${label || 'libtmux'} API reference`)
       : model
         ? description
         : 'Types, methods, and functions in the libtmux language libraries.'

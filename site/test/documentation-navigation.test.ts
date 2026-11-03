@@ -75,10 +75,10 @@ describe('documentation surface navigation', () => {
 
   it('links the CLI Manual, the catalog and the C source reference from the tmux sidebar', async () => {
     const { getSidebar } = await import('../src/lib/sidebar')
-    expect((await getSidebar(undefined, '3.2a')).map((item) => [item.label, 'href' in item ? item.href : undefined])).toEqual([
-      ['CLI Manual', expect.stringMatching(/\/tmux\/3\.2a\/manual\/$/)],
-      ['Options, hooks and formats', expect.stringMatching(/\/tmux\/3\.2a\/catalog\/$/)],
-      ['C source reference', expect.stringMatching(/\/tmux\/3\.2a\/reference\/$/)],
+    expect((await getSidebar(undefined, '3.7c')).map((item) => [item.label, 'href' in item ? item.href : undefined])).toEqual([
+      ['CLI Manual', expect.stringMatching(/\/tmux\/3\.7c\/manual\/$/)],
+      ['Options, hooks and formats', expect.stringMatching(/\/tmux\/3\.7c\/catalog\/$/)],
+      ['C source reference', expect.stringMatching(/\/tmux\/3\.7c\/reference\/$/)],
     ])
   })
 
@@ -90,15 +90,15 @@ describe('documentation surface navigation', () => {
     expect(currentDocumentation(surfaces, '/tmux/guides/getting-started/').section.id).toBe('guides')
   })
 
-  it('offers a current-docs exit instead of implying versioned prose on older manuals', async () => {
-    const surfaces = await getDocumentationSurfaces(undefined, '3.2a')
+  it('offers a current-docs exit instead of implying versioned prose on a pinned manual', async () => {
+    const surfaces = await getDocumentationSurfaces(undefined, '3.7c')
     expect(surfaces[0].sections.map(({ label, href }) => ({ label, href }))).toEqual([
       { label: 'Current docs →', href: '/tmux/' },
-      { label: 'CLI Manual', href: '/tmux/3.2a/manual/' },
-      { label: 'Options, hooks and formats', href: '/tmux/3.2a/catalog/' },
-      { label: 'C source reference', href: '/tmux/3.2a/reference/' },
+      { label: 'CLI Manual', href: '/tmux/3.7c/manual/' },
+      { label: 'Options, hooks and formats', href: '/tmux/3.7c/catalog/' },
+      { label: 'C source reference', href: '/tmux/3.7c/reference/' },
     ])
-    expect(currentDocumentation(surfaces, '/tmux/3.2a/manual/capture-pane/').section.id).toBe('manual')
+    expect(currentDocumentation(surfaces, '/tmux/3.7c/manual/capture-pane/').section.id).toBe('manual')
   })
 
   it.each(PORTS)('keeps $slug nested app selection and destinations inside the current version', (port) => {

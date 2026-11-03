@@ -21,6 +21,3424 @@
     "name": "libtmux",
     "version": "0.1.0.alpha.1"
   },
+  "contracts": {
+    "tmux_capabilities": {
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "data": {
+                "additionalProperties": false,
+                "properties": {
+                  "authored_run": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "authorization": {
+                        "const": "exact_generation_at_queue_grant"
+                      },
+                      "availability": {
+                        "enum": [
+                          "conditional",
+                          "unsupported"
+                        ]
+                      },
+                      "descendant_termination": {
+                        "const": "unobserved"
+                      },
+                      "enrollment": {
+                        "const": "explicit_source"
+                      },
+                      "persistent_shell_changes": {
+                        "const": false
+                      },
+                      "requirements": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "shell_profile": {
+                        "const": "zsh-5.9-zle"
+                      },
+                      "stdin": {
+                        "const": "closed"
+                      }
+                    },
+                    "required": [
+                      "availability",
+                      "shell_profile",
+                      "enrollment",
+                      "authorization",
+                      "stdin",
+                      "persistent_shell_changes",
+                      "descendant_termination",
+                      "requirements"
+                    ],
+                    "type": "object"
+                  },
+                  "criteria_schema": {
+                    "type": "object"
+                  },
+                  "enabled_tools": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "endpoint": {
+                    "type": "string"
+                  },
+                  "limits": {
+                    "additionalProperties": {
+                      "type": "number"
+                    },
+                    "type": "object"
+                  },
+                  "observation": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "history_continuity": {
+                        "const": "unknown"
+                      },
+                      "process_cursor": {
+                        "enum": [
+                          "conditional",
+                          "unsupported"
+                        ]
+                      },
+                      "requirements": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "screen": {
+                        "const": "bounded_rows"
+                      },
+                      "wait_conditions": {
+                        "items": {
+                          "enum": [
+                            "screen_contains",
+                            "process_exit"
+                          ]
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "required": [
+                      "screen",
+                      "history_continuity",
+                      "process_cursor",
+                      "requirements",
+                      "wait_conditions"
+                    ],
+                    "type": "object"
+                  },
+                  "owns_daemon": {
+                    "const": false
+                  },
+                  "resource_subscriptions": {
+                    "const": false
+                  },
+                  "server_identity": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "generation": {
+                        "type": "string"
+                      },
+                      "pid": {
+                        "type": "integer"
+                      },
+                      "start_time": {
+                        "type": "integer"
+                      },
+                      "tmux_version": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "generation",
+                      "pid",
+                      "start_time",
+                      "tmux_version"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "endpoint",
+                  "server_identity",
+                  "enabled_tools",
+                  "criteria_schema",
+                  "limits",
+                  "owns_daemon",
+                  "resource_subscriptions",
+                  "authored_run",
+                  "observation"
+                ],
+                "type": "object"
+              },
+              "ok": {
+                "const": true
+              }
+            },
+            "required": [
+              "ok",
+              "data"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "error": {
+                "additionalProperties": false,
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "delivery": {
+                    "enum": [
+                      "not_sent",
+                      "possibly_sent",
+                      "observed"
+                    ]
+                  },
+                  "effects": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "created": {
+                        "items": {
+                          "oneOf": [
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^\\$[0-9]+$",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "const": "session"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^@[0-9]+$",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "const": "window"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^%[0-9]+$",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "const": "pane"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^@[0-9]+$",
+                                  "type": "string"
+                                },
+                                "index": {
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "kind": {
+                                  "const": "window_link"
+                                },
+                                "session_id": {
+                                  "maxLength": 32,
+                                  "pattern": "^\\$[0-9]+$",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id",
+                                "session_id",
+                                "index"
+                              ],
+                              "type": "object"
+                            }
+                          ]
+                        },
+                        "maxItems": 3,
+                        "type": "array"
+                      },
+                      "state": {
+                        "enum": [
+                          "none",
+                          "known",
+                          "unknown"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "state",
+                      "created"
+                    ],
+                    "type": "object"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "delivery"
+                ],
+                "type": "object"
+              },
+              "ok": {
+                "const": false
+              }
+            },
+            "required": [
+              "ok",
+              "error"
+            ],
+            "type": "object"
+          }
+        ]
+      }
+    },
+    "tmux_snapshot": {
+      "inputSchema": {
+        "$defs": {
+          "client": {
+            "additionalProperties": false,
+            "properties": {
+              "and": {
+                "items": {
+                  "$ref": "#/$defs/client"
+                },
+                "maxItems": 2048,
+                "type": "array"
+              },
+              "controlMode": {
+                "$ref": "#/$defs/client.control_mode"
+              },
+              "created": {
+                "$ref": "#/$defs/client.created"
+              },
+              "height": {
+                "$ref": "#/$defs/client.height"
+              },
+              "name": {
+                "$ref": "#/$defs/client.name"
+              },
+              "not": {
+                "$ref": "#/$defs/client"
+              },
+              "or": {
+                "items": {
+                  "$ref": "#/$defs/client"
+                },
+                "maxItems": 2048,
+                "type": "array"
+              },
+              "pid": {
+                "$ref": "#/$defs/client.pid"
+              },
+              "readOnly": {
+                "$ref": "#/$defs/client.read_only"
+              },
+              "session": {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "is": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/session"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "isNot": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/session"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "type": "object"
+              },
+              "sessionId": {
+                "$ref": "#/$defs/client.session_id"
+              },
+              "tty": {
+                "$ref": "#/$defs/client.tty"
+              },
+              "utf8": {
+                "$ref": "#/$defs/client.utf8"
+              },
+              "width": {
+                "$ref": "#/$defs/client.width"
+              }
+            },
+            "type": "object"
+          },
+          "client.control_mode": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "type": "boolean"
+                  },
+                  "in": {
+                    "items": {
+                      "type": "boolean"
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/client.control_mode"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "client.created": {
+            "anyOf": [
+              {
+                "maximum": 9223372036854776000,
+                "minimum": -9223372036854776000,
+                "type": "integer"
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "maximum": 9223372036854776000,
+                    "minimum": -9223372036854776000,
+                    "type": "integer"
+                  },
+                  "gt": {
+                    "maximum": 9223372036854776000,
+                    "minimum": -9223372036854776000,
+                    "type": "integer"
+                  },
+                  "gte": {
+                    "maximum": 9223372036854776000,
+                    "minimum": -9223372036854776000,
+                    "type": "integer"
+                  },
+                  "in": {
+                    "items": {
+                      "maximum": 9223372036854776000,
+                      "minimum": -9223372036854776000,
+                      "type": "integer"
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "lt": {
+                    "maximum": 9223372036854776000,
+                    "minimum": -9223372036854776000,
+                    "type": "integer"
+                  },
+                  "lte": {
+                    "maximum": 9223372036854776000,
+                    "minimum": -9223372036854776000,
+                    "type": "integer"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/client.created"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "client.height": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "anyOf": [
+                      {
+                        "maximum": 4294967295,
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "gt": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gte": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "in": {
+                    "items": {
+                      "anyOf": [
+                        {
+                          "maximum": 4294967295,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "lt": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "lte": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/client.height"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "client.name": {
+            "anyOf": [
+              {
+                "maxLength": 65536,
+                "type": "string",
+                "x-maxUtf8Bytes": 65536
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "contains": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "endsWith": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "equals": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "in": {
+                    "items": {
+                      "maxLength": 65536,
+                      "type": "string",
+                      "x-maxUtf8Bytes": 65536
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/client.name"
+                  },
+                  "startsWith": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "client.pid": {
+            "anyOf": [
+              {
+                "maximum": 2147483647,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "maximum": 2147483647,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gt": {
+                    "maximum": 2147483647,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gte": {
+                    "maximum": 2147483647,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "in": {
+                    "items": {
+                      "maximum": 2147483647,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "lt": {
+                    "maximum": 2147483647,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "lte": {
+                    "maximum": 2147483647,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/client.pid"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "client.read_only": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "type": "boolean"
+                  },
+                  "in": {
+                    "items": {
+                      "type": "boolean"
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/client.read_only"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "client.session_id": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "anyOf": [
+                      {
+                        "maxLength": 65536,
+                        "type": "string",
+                        "x-maxUtf8Bytes": 65536
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "in": {
+                    "items": {
+                      "anyOf": [
+                        {
+                          "maxLength": 65536,
+                          "type": "string",
+                          "x-maxUtf8Bytes": 65536
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/client.session_id"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "client.tty": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "contains": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "endsWith": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "equals": {
+                    "anyOf": [
+                      {
+                        "maxLength": 65536,
+                        "type": "string",
+                        "x-maxUtf8Bytes": 65536
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "in": {
+                    "items": {
+                      "anyOf": [
+                        {
+                          "maxLength": 65536,
+                          "type": "string",
+                          "x-maxUtf8Bytes": 65536
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/client.tty"
+                  },
+                  "startsWith": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "client.utf8": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "type": "boolean"
+                  },
+                  "in": {
+                    "items": {
+                      "type": "boolean"
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/client.utf8"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "client.width": {
+            "anyOf": [
+              {
+                "maximum": 4294967295,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gt": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gte": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "in": {
+                    "items": {
+                      "maximum": 4294967295,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "lt": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "lte": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/client.width"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "pane": {
+            "additionalProperties": false,
+            "properties": {
+              "active": {
+                "$ref": "#/$defs/pane.active"
+              },
+              "and": {
+                "items": {
+                  "$ref": "#/$defs/pane"
+                },
+                "maxItems": 2048,
+                "type": "array"
+              },
+              "currentCommand": {
+                "$ref": "#/$defs/pane.current_command"
+              },
+              "currentPath": {
+                "$ref": "#/$defs/pane.current_path"
+              },
+              "dead": {
+                "$ref": "#/$defs/pane.dead"
+              },
+              "deadStatus": {
+                "$ref": "#/$defs/pane.dead_status"
+              },
+              "height": {
+                "$ref": "#/$defs/pane.height"
+              },
+              "id": {
+                "$ref": "#/$defs/pane.id"
+              },
+              "index": {
+                "$ref": "#/$defs/pane.index"
+              },
+              "not": {
+                "$ref": "#/$defs/pane"
+              },
+              "or": {
+                "items": {
+                  "$ref": "#/$defs/pane"
+                },
+                "maxItems": 2048,
+                "type": "array"
+              },
+              "pid": {
+                "$ref": "#/$defs/pane.pid"
+              },
+              "title": {
+                "$ref": "#/$defs/pane.title"
+              },
+              "width": {
+                "$ref": "#/$defs/pane.width"
+              },
+              "window": {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "is": {
+                    "$ref": "#/$defs/window"
+                  },
+                  "isNot": {
+                    "$ref": "#/$defs/window"
+                  }
+                },
+                "type": "object"
+              },
+              "windowId": {
+                "$ref": "#/$defs/pane.window_id"
+              }
+            },
+            "type": "object"
+          },
+          "pane.active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "type": "boolean"
+                  },
+                  "in": {
+                    "items": {
+                      "type": "boolean"
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/pane.active"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "pane.current_command": {
+            "anyOf": [
+              {
+                "maxLength": 65536,
+                "type": "string",
+                "x-maxUtf8Bytes": 65536
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "contains": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "endsWith": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "equals": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "in": {
+                    "items": {
+                      "maxLength": 65536,
+                      "type": "string",
+                      "x-maxUtf8Bytes": 65536
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/pane.current_command"
+                  },
+                  "startsWith": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "pane.current_path": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "contains": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "endsWith": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "equals": {
+                    "anyOf": [
+                      {
+                        "maxLength": 65536,
+                        "type": "string",
+                        "x-maxUtf8Bytes": 65536
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "in": {
+                    "items": {
+                      "anyOf": [
+                        {
+                          "maxLength": 65536,
+                          "type": "string",
+                          "x-maxUtf8Bytes": 65536
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/pane.current_path"
+                  },
+                  "startsWith": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "pane.dead": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "type": "boolean"
+                  },
+                  "in": {
+                    "items": {
+                      "type": "boolean"
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/pane.dead"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "pane.dead_status": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "maximum": 255,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "anyOf": [
+                      {
+                        "maximum": 255,
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "gt": {
+                    "maximum": 255,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gte": {
+                    "maximum": 255,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "in": {
+                    "items": {
+                      "anyOf": [
+                        {
+                          "maximum": 255,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "lt": {
+                    "maximum": 255,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "lte": {
+                    "maximum": 255,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/pane.dead_status"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "pane.height": {
+            "anyOf": [
+              {
+                "maximum": 4294967295,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gt": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gte": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "in": {
+                    "items": {
+                      "maximum": 4294967295,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "lt": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "lte": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/pane.height"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "pane.id": {
+            "anyOf": [
+              {
+                "maxLength": 65536,
+                "type": "string",
+                "x-maxUtf8Bytes": 65536
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "in": {
+                    "items": {
+                      "maxLength": 65536,
+                      "type": "string",
+                      "x-maxUtf8Bytes": 65536
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/pane.id"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "pane.index": {
+            "anyOf": [
+              {
+                "maximum": 4294967295,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gt": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gte": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "in": {
+                    "items": {
+                      "maximum": 4294967295,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "lt": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "lte": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/pane.index"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "pane.pid": {
+            "anyOf": [
+              {
+                "maximum": 2147483647,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "maximum": 2147483647,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gt": {
+                    "maximum": 2147483647,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gte": {
+                    "maximum": 2147483647,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "in": {
+                    "items": {
+                      "maximum": 2147483647,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "lt": {
+                    "maximum": 2147483647,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "lte": {
+                    "maximum": 2147483647,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/pane.pid"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "pane.title": {
+            "anyOf": [
+              {
+                "maxLength": 65536,
+                "type": "string",
+                "x-maxUtf8Bytes": 65536
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "contains": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "endsWith": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "equals": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "in": {
+                    "items": {
+                      "maxLength": 65536,
+                      "type": "string",
+                      "x-maxUtf8Bytes": 65536
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/pane.title"
+                  },
+                  "startsWith": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "pane.width": {
+            "anyOf": [
+              {
+                "maximum": 4294967295,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gt": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gte": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "in": {
+                    "items": {
+                      "maximum": 4294967295,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "lt": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "lte": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/pane.width"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "pane.window_id": {
+            "anyOf": [
+              {
+                "maxLength": 65536,
+                "type": "string",
+                "x-maxUtf8Bytes": 65536
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "in": {
+                    "items": {
+                      "maxLength": 65536,
+                      "type": "string",
+                      "x-maxUtf8Bytes": 65536
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/pane.window_id"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "session": {
+            "additionalProperties": false,
+            "properties": {
+              "and": {
+                "items": {
+                  "$ref": "#/$defs/session"
+                },
+                "maxItems": 2048,
+                "type": "array"
+              },
+              "attached": {
+                "$ref": "#/$defs/session.attached"
+              },
+              "created": {
+                "$ref": "#/$defs/session.created"
+              },
+              "currentWindow": {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "is": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/window"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "isNot": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/window"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "type": "object"
+              },
+              "id": {
+                "$ref": "#/$defs/session.id"
+              },
+              "name": {
+                "$ref": "#/$defs/session.name"
+              },
+              "not": {
+                "$ref": "#/$defs/session"
+              },
+              "or": {
+                "items": {
+                  "$ref": "#/$defs/session"
+                },
+                "maxItems": 2048,
+                "type": "array"
+              },
+              "panes": {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "every": {
+                    "$ref": "#/$defs/pane"
+                  },
+                  "none": {
+                    "$ref": "#/$defs/pane"
+                  },
+                  "some": {
+                    "$ref": "#/$defs/pane"
+                  }
+                },
+                "type": "object"
+              },
+              "windowCount": {
+                "$ref": "#/$defs/session.window_count"
+              },
+              "windowLinks": {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "every": {
+                    "$ref": "#/$defs/window_link"
+                  },
+                  "none": {
+                    "$ref": "#/$defs/window_link"
+                  },
+                  "some": {
+                    "$ref": "#/$defs/window_link"
+                  }
+                },
+                "type": "object"
+              },
+              "windows": {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "every": {
+                    "$ref": "#/$defs/window"
+                  },
+                  "none": {
+                    "$ref": "#/$defs/window"
+                  },
+                  "some": {
+                    "$ref": "#/$defs/window"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "session.attached": {
+            "anyOf": [
+              {
+                "maximum": 4294967295,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gt": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gte": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "in": {
+                    "items": {
+                      "maximum": 4294967295,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "lt": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "lte": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/session.attached"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "session.created": {
+            "anyOf": [
+              {
+                "maximum": 9223372036854776000,
+                "minimum": -9223372036854776000,
+                "type": "integer"
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "maximum": 9223372036854776000,
+                    "minimum": -9223372036854776000,
+                    "type": "integer"
+                  },
+                  "gt": {
+                    "maximum": 9223372036854776000,
+                    "minimum": -9223372036854776000,
+                    "type": "integer"
+                  },
+                  "gte": {
+                    "maximum": 9223372036854776000,
+                    "minimum": -9223372036854776000,
+                    "type": "integer"
+                  },
+                  "in": {
+                    "items": {
+                      "maximum": 9223372036854776000,
+                      "minimum": -9223372036854776000,
+                      "type": "integer"
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "lt": {
+                    "maximum": 9223372036854776000,
+                    "minimum": -9223372036854776000,
+                    "type": "integer"
+                  },
+                  "lte": {
+                    "maximum": 9223372036854776000,
+                    "minimum": -9223372036854776000,
+                    "type": "integer"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/session.created"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "session.id": {
+            "anyOf": [
+              {
+                "maxLength": 65536,
+                "type": "string",
+                "x-maxUtf8Bytes": 65536
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "in": {
+                    "items": {
+                      "maxLength": 65536,
+                      "type": "string",
+                      "x-maxUtf8Bytes": 65536
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/session.id"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "session.name": {
+            "anyOf": [
+              {
+                "maxLength": 65536,
+                "type": "string",
+                "x-maxUtf8Bytes": 65536
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "contains": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "endsWith": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "equals": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "in": {
+                    "items": {
+                      "maxLength": 65536,
+                      "type": "string",
+                      "x-maxUtf8Bytes": 65536
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/session.name"
+                  },
+                  "startsWith": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "session.window_count": {
+            "anyOf": [
+              {
+                "maximum": 4294967295,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gt": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gte": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "in": {
+                    "items": {
+                      "maximum": 4294967295,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "lt": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "lte": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/session.window_count"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "window": {
+            "additionalProperties": false,
+            "properties": {
+              "activePane": {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "is": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/pane"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "isNot": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/pane"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "type": "object"
+              },
+              "and": {
+                "items": {
+                  "$ref": "#/$defs/window"
+                },
+                "maxItems": 2048,
+                "type": "array"
+              },
+              "height": {
+                "$ref": "#/$defs/window.height"
+              },
+              "id": {
+                "$ref": "#/$defs/window.id"
+              },
+              "layout": {
+                "$ref": "#/$defs/window.layout"
+              },
+              "name": {
+                "$ref": "#/$defs/window.name"
+              },
+              "not": {
+                "$ref": "#/$defs/window"
+              },
+              "or": {
+                "items": {
+                  "$ref": "#/$defs/window"
+                },
+                "maxItems": 2048,
+                "type": "array"
+              },
+              "paneCount": {
+                "$ref": "#/$defs/window.pane_count"
+              },
+              "panes": {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "every": {
+                    "$ref": "#/$defs/pane"
+                  },
+                  "none": {
+                    "$ref": "#/$defs/pane"
+                  },
+                  "some": {
+                    "$ref": "#/$defs/pane"
+                  }
+                },
+                "type": "object"
+              },
+              "width": {
+                "$ref": "#/$defs/window.width"
+              },
+              "windowLinks": {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "every": {
+                    "$ref": "#/$defs/window_link"
+                  },
+                  "none": {
+                    "$ref": "#/$defs/window_link"
+                  },
+                  "some": {
+                    "$ref": "#/$defs/window_link"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "window_link": {
+            "additionalProperties": false,
+            "properties": {
+              "active": {
+                "$ref": "#/$defs/window_link.active"
+              },
+              "and": {
+                "items": {
+                  "$ref": "#/$defs/window_link"
+                },
+                "maxItems": 2048,
+                "type": "array"
+              },
+              "index": {
+                "$ref": "#/$defs/window_link.index"
+              },
+              "not": {
+                "$ref": "#/$defs/window_link"
+              },
+              "or": {
+                "items": {
+                  "$ref": "#/$defs/window_link"
+                },
+                "maxItems": 2048,
+                "type": "array"
+              },
+              "session": {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "is": {
+                    "$ref": "#/$defs/session"
+                  },
+                  "isNot": {
+                    "$ref": "#/$defs/session"
+                  }
+                },
+                "type": "object"
+              },
+              "sessionId": {
+                "$ref": "#/$defs/window_link.session_id"
+              },
+              "window": {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "is": {
+                    "$ref": "#/$defs/window"
+                  },
+                  "isNot": {
+                    "$ref": "#/$defs/window"
+                  }
+                },
+                "type": "object"
+              },
+              "windowId": {
+                "$ref": "#/$defs/window_link.window_id"
+              }
+            },
+            "type": "object"
+          },
+          "window_link.active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "type": "boolean"
+                  },
+                  "in": {
+                    "items": {
+                      "type": "boolean"
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/window_link.active"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "window_link.index": {
+            "anyOf": [
+              {
+                "maximum": 2147483647,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "maximum": 2147483647,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gt": {
+                    "maximum": 2147483647,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gte": {
+                    "maximum": 2147483647,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "in": {
+                    "items": {
+                      "maximum": 2147483647,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "lt": {
+                    "maximum": 2147483647,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "lte": {
+                    "maximum": 2147483647,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/window_link.index"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "window_link.session_id": {
+            "anyOf": [
+              {
+                "maxLength": 65536,
+                "type": "string",
+                "x-maxUtf8Bytes": 65536
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "in": {
+                    "items": {
+                      "maxLength": 65536,
+                      "type": "string",
+                      "x-maxUtf8Bytes": 65536
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/window_link.session_id"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "window_link.window_id": {
+            "anyOf": [
+              {
+                "maxLength": 65536,
+                "type": "string",
+                "x-maxUtf8Bytes": 65536
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "in": {
+                    "items": {
+                      "maxLength": 65536,
+                      "type": "string",
+                      "x-maxUtf8Bytes": 65536
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/window_link.window_id"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "window.height": {
+            "anyOf": [
+              {
+                "maximum": 4294967295,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gt": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gte": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "in": {
+                    "items": {
+                      "maximum": 4294967295,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "lt": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "lte": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/window.height"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "window.id": {
+            "anyOf": [
+              {
+                "maxLength": 65536,
+                "type": "string",
+                "x-maxUtf8Bytes": 65536
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "in": {
+                    "items": {
+                      "maxLength": 65536,
+                      "type": "string",
+                      "x-maxUtf8Bytes": 65536
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/window.id"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "window.layout": {
+            "anyOf": [
+              {
+                "maxLength": 65536,
+                "type": "string",
+                "x-maxUtf8Bytes": 65536
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "contains": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "endsWith": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "equals": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "in": {
+                    "items": {
+                      "maxLength": 65536,
+                      "type": "string",
+                      "x-maxUtf8Bytes": 65536
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/window.layout"
+                  },
+                  "startsWith": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "window.name": {
+            "anyOf": [
+              {
+                "maxLength": 65536,
+                "type": "string",
+                "x-maxUtf8Bytes": 65536
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "contains": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "endsWith": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "equals": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  },
+                  "in": {
+                    "items": {
+                      "maxLength": 65536,
+                      "type": "string",
+                      "x-maxUtf8Bytes": 65536
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/window.name"
+                  },
+                  "startsWith": {
+                    "maxLength": 65536,
+                    "type": "string",
+                    "x-maxUtf8Bytes": 65536
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "window.pane_count": {
+            "anyOf": [
+              {
+                "maximum": 4294967295,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gt": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gte": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "in": {
+                    "items": {
+                      "maximum": 4294967295,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "lt": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "lte": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/window.pane_count"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "window.width": {
+            "anyOf": [
+              {
+                "maximum": 4294967295,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "equals": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gt": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "gte": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "in": {
+                    "items": {
+                      "maximum": 4294967295,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "maxItems": 1024,
+                    "type": "array"
+                  },
+                  "lt": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "lte": {
+                    "maximum": 4294967295,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "not": {
+                    "$ref": "#/$defs/window.width"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "oneOf": [
+          {
+            "not": {
+              "required": [
+                "cursor"
+              ]
+            },
+            "required": [
+              "entity"
+            ]
+          },
+          {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "entity"
+                  ]
+                },
+                {
+                  "required": [
+                    "criteria"
+                  ]
+                },
+                {
+                  "required": [
+                    "limit"
+                  ]
+                }
+              ]
+            },
+            "required": [
+              "cursor"
+            ]
+          }
+        ],
+        "properties": {
+          "criteria": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "entity": {
+                    "const": "session"
+                  },
+                  "profile": {
+                    "const": "libtmux-ruby.where"
+                  },
+                  "version": {
+                    "const": 1,
+                    "type": "integer"
+                  },
+                  "where": {
+                    "$ref": "#/$defs/session"
+                  }
+                },
+                "required": [
+                  "profile",
+                  "version",
+                  "entity",
+                  "where"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "entity": {
+                    "const": "window"
+                  },
+                  "profile": {
+                    "const": "libtmux-ruby.where"
+                  },
+                  "version": {
+                    "const": 1,
+                    "type": "integer"
+                  },
+                  "where": {
+                    "$ref": "#/$defs/window"
+                  }
+                },
+                "required": [
+                  "profile",
+                  "version",
+                  "entity",
+                  "where"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "entity": {
+                    "const": "pane"
+                  },
+                  "profile": {
+                    "const": "libtmux-ruby.where"
+                  },
+                  "version": {
+                    "const": 1,
+                    "type": "integer"
+                  },
+                  "where": {
+                    "$ref": "#/$defs/pane"
+                  }
+                },
+                "required": [
+                  "profile",
+                  "version",
+                  "entity",
+                  "where"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "entity": {
+                    "const": "window_link"
+                  },
+                  "profile": {
+                    "const": "libtmux-ruby.where"
+                  },
+                  "version": {
+                    "const": 1,
+                    "type": "integer"
+                  },
+                  "where": {
+                    "$ref": "#/$defs/window_link"
+                  }
+                },
+                "required": [
+                  "profile",
+                  "version",
+                  "entity",
+                  "where"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "entity": {
+                    "const": "client"
+                  },
+                  "profile": {
+                    "const": "libtmux-ruby.where"
+                  },
+                  "version": {
+                    "const": 1,
+                    "type": "integer"
+                  },
+                  "where": {
+                    "$ref": "#/$defs/client"
+                  }
+                },
+                "required": [
+                  "profile",
+                  "version",
+                  "entity",
+                  "where"
+                ],
+                "type": "object"
+              }
+            ]
+          },
+          "cursor": {
+            "maxLength": 43,
+            "pattern": "^[a-f0-9]{32}:[0-9]{1,10}$",
+            "type": "string"
+          },
+          "entity": {
+            "enum": [
+              "session",
+              "window",
+              "pane",
+              "window_link",
+              "client"
+            ]
+          },
+          "limit": {
+            "maximum": 200,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "data": {
+                "additionalProperties": false,
+                "properties": {
+                  "capture_id": {
+                    "type": "string"
+                  },
+                  "coverage": {
+                    "additionalProperties": {
+                      "enum": [
+                        "complete",
+                        "unloaded"
+                      ]
+                    },
+                    "type": "object"
+                  },
+                  "entity": {
+                    "enum": [
+                      "session",
+                      "window",
+                      "pane",
+                      "window_link",
+                      "client"
+                    ]
+                  },
+                  "interval": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "clock": {
+                        "const": "monotonic_seconds"
+                      },
+                      "finished": {
+                        "type": "number"
+                      },
+                      "reads": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "started": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "clock",
+                      "started",
+                      "finished",
+                      "reads"
+                    ],
+                    "type": "object"
+                  },
+                  "items": {
+                    "items": {
+                      "oneOf": [
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "fields": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "attached": {
+                                  "maximum": 4294967295,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "created": {
+                                  "maximum": 9223372036854776000,
+                                  "minimum": -9223372036854776000,
+                                  "type": "integer"
+                                },
+                                "id": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
+                                "windowCount": {
+                                  "maximum": 4294967295,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "name",
+                                "created",
+                                "attached",
+                                "windowCount"
+                              ],
+                              "type": "object"
+                            },
+                            "kind": {
+                              "const": "session"
+                            },
+                            "ref": {
+                              "oneOf": [
+                                {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "generation": {
+                                      "maxLength": 128,
+                                      "minLength": 1,
+                                      "type": "string"
+                                    },
+                                    "id": {
+                                      "maxLength": 32,
+                                      "pattern": "^\\$[0-9]+$",
+                                      "type": "string"
+                                    },
+                                    "kind": {
+                                      "const": "session"
+                                    }
+                                  },
+                                  "required": [
+                                    "generation",
+                                    "kind",
+                                    "id"
+                                  ],
+                                  "type": "object"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "fields",
+                            "ref"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "fields": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "height": {
+                                  "maximum": 4294967295,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "id": {
+                                  "type": "string"
+                                },
+                                "layout": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
+                                "paneCount": {
+                                  "maximum": 4294967295,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "width": {
+                                  "maximum": 4294967295,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "name",
+                                "width",
+                                "height",
+                                "paneCount",
+                                "layout"
+                              ],
+                              "type": "object"
+                            },
+                            "kind": {
+                              "const": "window"
+                            },
+                            "ref": {
+                              "oneOf": [
+                                {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "generation": {
+                                      "maxLength": 128,
+                                      "minLength": 1,
+                                      "type": "string"
+                                    },
+                                    "id": {
+                                      "maxLength": 32,
+                                      "pattern": "^@[0-9]+$",
+                                      "type": "string"
+                                    },
+                                    "kind": {
+                                      "const": "window"
+                                    }
+                                  },
+                                  "required": [
+                                    "generation",
+                                    "kind",
+                                    "id"
+                                  ],
+                                  "type": "object"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "fields",
+                            "ref"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "fields": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "active": {
+                                  "type": "boolean"
+                                },
+                                "currentCommand": {
+                                  "type": "string"
+                                },
+                                "currentPath": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "dead": {
+                                  "type": "boolean"
+                                },
+                                "deadStatus": {
+                                  "maximum": 255,
+                                  "minimum": 0,
+                                  "type": [
+                                    "integer",
+                                    "null"
+                                  ]
+                                },
+                                "height": {
+                                  "maximum": 4294967295,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "id": {
+                                  "type": "string"
+                                },
+                                "index": {
+                                  "maximum": 4294967295,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "pid": {
+                                  "maximum": 2147483647,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "title": {
+                                  "type": "string"
+                                },
+                                "width": {
+                                  "maximum": 4294967295,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "windowId": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "windowId",
+                                "index",
+                                "pid",
+                                "currentCommand",
+                                "currentPath",
+                                "title",
+                                "active",
+                                "dead",
+                                "deadStatus",
+                                "width",
+                                "height"
+                              ],
+                              "type": "object"
+                            },
+                            "kind": {
+                              "const": "pane"
+                            },
+                            "ref": {
+                              "oneOf": [
+                                {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "generation": {
+                                      "maxLength": 128,
+                                      "minLength": 1,
+                                      "type": "string"
+                                    },
+                                    "id": {
+                                      "maxLength": 32,
+                                      "pattern": "^%[0-9]+$",
+                                      "type": "string"
+                                    },
+                                    "kind": {
+                                      "const": "pane"
+                                    }
+                                  },
+                                  "required": [
+                                    "generation",
+                                    "kind",
+                                    "id"
+                                  ],
+                                  "type": "object"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "fields",
+                            "ref"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "fields": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "active": {
+                                  "type": "boolean"
+                                },
+                                "index": {
+                                  "maximum": 2147483647,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "sessionId": {
+                                  "type": "string"
+                                },
+                                "windowId": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "sessionId",
+                                "windowId",
+                                "index",
+                                "active"
+                              ],
+                              "type": "object"
+                            },
+                            "kind": {
+                              "const": "window_link"
+                            },
+                            "ref": {
+                              "oneOf": [
+                                {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "generation": {
+                                      "maxLength": 128,
+                                      "minLength": 1,
+                                      "type": "string"
+                                    },
+                                    "id": {
+                                      "maxLength": 32,
+                                      "pattern": "^@[0-9]+$",
+                                      "type": "string"
+                                    },
+                                    "index": {
+                                      "minimum": 0,
+                                      "type": "integer"
+                                    },
+                                    "kind": {
+                                      "const": "window_link"
+                                    },
+                                    "session_id": {
+                                      "maxLength": 32,
+                                      "pattern": "^\\$[0-9]+$",
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "generation",
+                                    "kind",
+                                    "id",
+                                    "session_id",
+                                    "index"
+                                  ],
+                                  "type": "object"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "fields",
+                            "ref"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "fields": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "controlMode": {
+                                  "type": "boolean"
+                                },
+                                "created": {
+                                  "maximum": 9223372036854776000,
+                                  "minimum": -9223372036854776000,
+                                  "type": "integer"
+                                },
+                                "height": {
+                                  "maximum": 4294967295,
+                                  "minimum": 0,
+                                  "type": [
+                                    "integer",
+                                    "null"
+                                  ]
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
+                                "pid": {
+                                  "maximum": 2147483647,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "readOnly": {
+                                  "type": "boolean"
+                                },
+                                "sessionId": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "tty": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "utf8": {
+                                  "type": "boolean"
+                                },
+                                "width": {
+                                  "maximum": 4294967295,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "name",
+                                "pid",
+                                "created",
+                                "tty",
+                                "sessionId",
+                                "width",
+                                "height",
+                                "readOnly",
+                                "utf8",
+                                "controlMode"
+                              ],
+                              "type": "object"
+                            },
+                            "kind": {
+                              "const": "client"
+                            },
+                            "ref": {
+                              "type": "null"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "fields",
+                            "ref"
+                          ],
+                          "type": "object"
+                        }
+                      ]
+                    },
+                    "maxItems": 200,
+                    "type": "array"
+                  },
+                  "next_cursor": {
+                    "type": "string"
+                  },
+                  "server_identity": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "generation": {
+                        "type": "string"
+                      },
+                      "pid": {
+                        "type": "integer"
+                      },
+                      "start_time": {
+                        "type": "integer"
+                      },
+                      "tmux_version": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "generation",
+                      "pid",
+                      "start_time",
+                      "tmux_version"
+                    ],
+                    "type": "object"
+                  },
+                  "truncated": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "capture_id",
+                  "server_identity",
+                  "entity",
+                  "items",
+                  "coverage",
+                  "interval",
+                  "truncated"
+                ],
+                "type": "object"
+              },
+              "ok": {
+                "const": true
+              }
+            },
+            "required": [
+              "ok",
+              "data"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "error": {
+                "additionalProperties": false,
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "delivery": {
+                    "enum": [
+                      "not_sent",
+                      "possibly_sent",
+                      "observed"
+                    ]
+                  },
+                  "effects": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "created": {
+                        "items": {
+                          "oneOf": [
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^\\$[0-9]+$",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "const": "session"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^@[0-9]+$",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "const": "window"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^%[0-9]+$",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "const": "pane"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^@[0-9]+$",
+                                  "type": "string"
+                                },
+                                "index": {
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "kind": {
+                                  "const": "window_link"
+                                },
+                                "session_id": {
+                                  "maxLength": 32,
+                                  "pattern": "^\\$[0-9]+$",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id",
+                                "session_id",
+                                "index"
+                              ],
+                              "type": "object"
+                            }
+                          ]
+                        },
+                        "maxItems": 3,
+                        "type": "array"
+                      },
+                      "state": {
+                        "enum": [
+                          "none",
+                          "known",
+                          "unknown"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "state",
+                      "created"
+                    ],
+                    "type": "object"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "delivery"
+                ],
+                "type": "object"
+              },
+              "ok": {
+                "const": false
+              }
+            },
+            "required": [
+              "ok",
+              "error"
+            ],
+            "type": "object"
+          }
+        ]
+      }
+    }
+  },
   "prompt": "List the panes on my tmux server.",
   "steps": [
     {
