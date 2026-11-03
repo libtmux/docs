@@ -23,7 +23,7 @@
         },
         {
           "file": "justfile",
-          "contains": "doctest api-examples examples example-tables"
+          "contains": "script-env examples example-tables"
         },
         {
           "file": "scripts/run-examples.sh",
@@ -58,7 +58,7 @@
         },
         {
           "file": "justfile",
-          "contains": "doctest api-examples examples example-tables"
+          "contains": "script-env examples example-tables"
         },
         {
           "file": "scripts/run-examples.sh",

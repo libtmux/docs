@@ -8,6 +8,8 @@
   {"port":"cxx","symbol":"libtmux::Session::expand","literal":"missing","word":"missing","target":"libtmux::FailureKind::missing"},
   {"port":"cxx","symbol":"libtmux::Window::expand","literal":"missing","word":"missing","target":"libtmux::FailureKind::missing"},
   {"port":"julia","symbol":"LibTmux.snapshot","literal":"acquired","word":"acquired","target":"LibTmux.Snapshot.acquired"},
+  {"port":"ts","symbol":"pane.Pane.waitForCommand","literal":"send","word":"send","target":"types.CommandWaitOptions.send"},
   {"port":"ts","symbol":"selection.StringFilterFields","literal":"where({ active: \"1\" })","word":"where","target":"selection.Selection.where"},
-  {"port":"ts","symbol":"selection.StringFilterFields","literal":"where({ active: true })","word":"where","target":"selection.Selection.where"}
+  {"port":"ts","symbol":"selection.StringFilterFields","literal":"where({ active: true })","word":"where","target":"selection.Selection.where"},
+  {"port":"ts","symbol":"server.Server.spawn","literal":"stream","word":"stream","target":"program.Program.stream"}
 ]

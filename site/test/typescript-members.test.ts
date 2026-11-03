@@ -37,8 +37,9 @@ describe('TypeScript named values', () => {
       expect(response.status).toBe(200)
       expect(response.headers.get('Content-Type')).toBe('text/markdown; charset=utf-8')
       const markdown = await response.text()
+      // The row ends with the member's own description, whatever the port wrote.
       for (const [name, value] of families.ResizeAdjustmentDirection) {
-        expect(markdown).toContain(`| [\`${name}\`](${PORT_ROOT}/ts/${version}/reference/constants-resizeadjustmentdirection-${name.toLowerCase()}/) | \`${value}\` |  |`)
+        expect(markdown).toContain(`| [\`${name}\`](${PORT_ROOT}/ts/${version}/reference/constants-resizeadjustmentdirection-${name.toLowerCase()}/) | \`${value}\` | `)
       }
       const missing = await referenceMarkdown({ props: { port: 'ts', id: 'constants.Missing' } } as unknown as Parameters<typeof referenceMarkdown>[0])
       expect(missing.status).toBe(404)
@@ -85,7 +86,7 @@ describe('TypeScript named values', () => {
           file: 'packages/libtmux/src/constants.ts', revision: model.revision, extractedRevision: model.revision,
         })
         expect(index.resolve(member.name, 'any', owner)?.href).toBe(hrefFor(member))
-        expect(markdown).toContain(`| [\`${member.name}\`](${hrefFor(member)}) | \`${member.value}\` |  |`)
+        expect(markdown).toContain(`| [\`${member.name}\`](${hrefFor(member)}) | \`${member.value}\` | ${member.doc?.summary ?? ''} |`)
         expect(symbolMarkdown({ model, symbol: member, index, hrefFor })).toContain(`${member.publicId} = ${member.value}`)
         expect(symbolPreview(model, member, 'latest')).toMatchObject({
           signature: `${member.name} = ${member.value}`, signatureLanguage: 'ts',
@@ -96,8 +97,8 @@ describe('TypeScript named values', () => {
 
   it('preserves both declaration source identities and resolves the real contextual Up mention', () => {
     const owner = model.symbols.find((symbol) => symbol.id === 'constants.ResizeAdjustmentDirection')!
-    expect(owner.source.line).toBe(13)
-    expect(owner.declarations?.map((declaration) => declaration.source.line)).toEqual([1, 13])
+    expect(owner.source.line).toBe(18)
+    expect(owner.declarations?.map((declaration) => declaration.source.line)).toEqual([1, 18])
     const up = index.linkText(owner.doc!.body!, owner).find((span) => span.kind === 'ref' && span.label === 'Up')
     expect(up).toMatchObject({ link: { href: '/en/ts/latest/reference/constants-resizeadjustmentdirection-up/' } })
   })
@@ -121,7 +122,7 @@ it('renders linked scalar values as a semantic table with exact literal text', a
       expect(row.id).toBe(`member-${member.publicId}`)
       expect(row.querySelector('th[scope="row"] a')?.getAttribute('href')).toBe(hrefFor(member))
       expect(row.querySelector('code')?.textContent).toBe(member.value)
-      expect(row.querySelector('td:last-child')?.textContent).toBe('')
+      expect(row.querySelector('td:last-child')?.textContent).toBe(member.doc?.summary ?? '')
     }
   } finally { await window.happyDOM.abort() }
 })
