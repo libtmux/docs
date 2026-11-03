@@ -394,6 +394,24 @@ describe('the showcase section', () => {
     expect(document.querySelector('.mcp-provenance')?.textContent).toMatch(/recorded against.*libtmux\/libtmux-ts.*private tmux/si)
   })
 
+  it('tells the reader which token stands in for Julia\'s generation, and says nothing of one for a port without that rewrite', async () => {
+    const julia = await section('julia')
+    const items = [...julia.querySelectorAll('article.mcp-turn')]
+    expect(items).toHaveLength(EXAMPLES.julia!.steps.length)
+    for (const item of items) expect(item.querySelectorAll('details.mcp-result pre')).toHaveLength(1)
+    expect(julia.querySelector('.mcp-provenance')?.textContent).toMatch(/generation, which differs on every run, is shown as 3f9a1c\./)
+    expect((await section('ts')).querySelector('.mcp-provenance')?.textContent).not.toMatch(/generation/)
+  })
+
+  it('draws the pane the Julia listing names, showing what the capture read', async () => {
+    const julia = await section('julia')
+    const frames = [...julia.querySelectorAll('[data-frame]')]
+    expect(frames).toHaveLength(EXAMPLES.julia!.steps.length + 1)
+    expect(frames.at(-1)!.querySelector('.mcp-pane__id')?.textContent).toBe('%0 cat')
+    expect(frames.at(-1)!.querySelector('.mcp-pane__text')?.textContent).toBe('2026-01-01 checks started\n2026-01-01 checks finished')
+    expect(frames.at(-1)!.querySelector('.mcp-tmux__session')?.textContent).toBe('[docs]')
+  })
+
   it('says requests only, and shows no result, preview or control, for a port with no recording', async () => {
     // No port lacks a recording once all are recorded, so build the page the way a port without one would get it.
     const document = await section('go', buildShowcase('go', 'latest', onDisk('go')))
@@ -416,7 +434,7 @@ describe('recorded results', () => {
   /** Ports whose example runs commands in panes. */
   const RECORDED = ['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift']
   /** Every port with a recording; Ruby and Julia's examples only read. */
-  const ALL = [...RECORDED, 'ruby']
+  const ALL = [...RECORDED, 'ruby', 'julia']
 
   it('has a recording for the ports whose servers the recorder has run', async () => {
     for (const port of ALL) expect((await showcase(port)).example?.recording, port).toBeDefined()
@@ -447,6 +465,16 @@ describe('recorded results', () => {
         expect(earlier, `${port} ${step.tool} names ${id}`).toContain(id)
       }
     })
+  })
+
+  it('records Julia reading the log its first pane displays, through the target its own listing returned', async () => {
+    const transcript = (await transcriptFor('julia'))!
+    const [listing, capture] = transcript.steps as { structuredContent: any; arguments: any }[]
+    const listed = listing!.structuredContent.panes[0].target
+    expect(capture!.arguments.target, 'the capture names the pane and generation the listing returned').toEqual(listed)
+    expect(capture!.structuredContent.text).toMatch(/checks finished\n/)
+    expect(transcript.sandbox.rewritten?.generation, 'the generation is a fixed stand-in, which the transcript says').toBe(listed.generation)
+    expect(JSON.stringify(transcript.steps), 'no process id or start time is left in the recording').not.toMatch(/"generation\\?":\\?"\d+:\d+/)
   })
 
   it.each(RECORDED)('records %s printing the test runner\'s result and the log in their panes', async (port) => {
@@ -515,7 +543,7 @@ describe('a tool\'s contract', () => {
 })
 
 describe('a recording made at an earlier revision', () => {
-  const RECORDED = ['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift', 'ruby']
+  const RECORDED = ['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift', 'ruby', 'julia']
   type Tool = ProtocolSnapshot['protocol']['tools'][number]
 
   /**

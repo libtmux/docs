@@ -144,6 +144,8 @@ export interface Recording {
   outputsChecked: boolean
   /** The directory the sandbox ran in was replaced by this fixed path. */
   projectDirectory?: string
+  /** The server's generation, which differs on every run, was replaced by this fixed token. */
+  generation?: string
   /** What each command run left in its pane, as the last line with text, with the pane it ran in. */
   answers: { pane?: string; line: string }[]
 }
@@ -161,7 +163,7 @@ export interface Transcript {
   revision: string
   /** The input and output schemas of each tool the session called, as the server advertised them when it was recorded. */
   contracts?: Record<string, ToolContract>
-  sandbox: { tmux: string; pytest: string; rewritten?: { projectDirectory?: string } }
+  sandbox: { tmux: string; pytest: string; rewritten?: { projectDirectory?: string; generation?: string } }
   steps: { tool: string; arguments: Record<string, unknown>; isError: boolean; content: { type: string; text?: string }[]; structuredContent?: unknown }[]
 }
 
@@ -294,7 +296,7 @@ export function buildShowcase(port: string, version: string, snapshot: ProtocolS
         tool: tools.get(step.tool)!, arguments: step.arguments, caption: step.caption,
         ...(recorded ? { result: shown[index] } : {}),
       })),
-      ...(recorded ? { recording: { repo: recorded.repo, revision: recorded.revision, tmux: recorded.sandbox.tmux, runner: recorded.sandbox.pytest, frames: replayFrames(recorded.steps), shortened: shown.some((value, index) => JSON.stringify(value) !== JSON.stringify(full[index])), ...(recorded.revision === snapshot.revision ? {} : { documentedRevision: snapshot.revision }), outputsChecked: statesOutputs(recorded.contracts), ...(recorded.sandbox.rewritten?.projectDirectory ? { projectDirectory: recorded.sandbox.rewritten.projectDirectory } : {}), answers: runAnswers(recorded.steps) } } : {}),
+      ...(recorded ? { recording: { repo: recorded.repo, revision: recorded.revision, tmux: recorded.sandbox.tmux, runner: recorded.sandbox.pytest, frames: replayFrames(recorded.steps), shortened: shown.some((value, index) => JSON.stringify(value) !== JSON.stringify(full[index])), ...(recorded.revision === snapshot.revision ? {} : { documentedRevision: snapshot.revision }), outputsChecked: statesOutputs(recorded.contracts), ...(recorded.sandbox.rewritten?.projectDirectory ? { projectDirectory: recorded.sandbox.rewritten.projectDirectory } : {}), ...(recorded.sandbox.rewritten?.generation ? { generation: recorded.sandbox.rewritten.generation } : {}), answers: runAnswers(recorded.steps) } } : {}),
     }
     : undefined
   return {
