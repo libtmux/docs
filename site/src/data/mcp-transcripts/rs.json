@@ -516,7 +516,7 @@
       "content": [
         {
           "type": "text",
-          "text": "{\"active\":false,\"caller\":\"unknown\",\"command\":\"sh\",\"id\":\"%1\",\"path\":null,\"window_id\":\"@0\"}"
+          "text": "{\"active\":false,\"caller\":\"unknown\",\"command\":\"sh\",\"id\":\"%1\",\"path\":\"/home/user/project\",\"window_id\":\"@0\"}"
         }
       ],
       "structuredContent": {
@@ -524,7 +524,7 @@
         "caller": "unknown",
         "command": "sh",
         "id": "%1",
-        "path": null,
+        "path": "/home/user/project",
         "window_id": "@0"
       },
       "caption": "Split the pane the list returned (%0) in two."

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { readdirSync, readFileSync } from 'node:fs'
 import { hostname, userInfo } from 'node:os'
-import { idsIn, leaks, sanitize, verifyRecording, withoutContracts } from '../../scripts/lib/mcp-transcript-checks.mjs'
+import { idsIn, leaks, sanitize, UnsettledPaneError, verifyRecording, verifySettledPanes, withoutContracts } from '../../scripts/lib/mcp-transcript-checks.mjs'
 
 type Step = { tool: string; arguments: unknown; isError: boolean; content: unknown[]; structuredContent?: unknown }
 const OPTIONS = { port: 'x', runTool: 'run_shell_command', expected: ['2 passed'] }
@@ -79,6 +79,57 @@ describe('the checks a recording must pass', () => {
 
   it('finds ids in text', () => {
     expect([...idsIn({ a: '%0', b: ['$1', '@22'] })].sort()).toEqual(['$1', '%0', '@22'])
+  })
+})
+
+describe('a pane described before its shell has started', () => {
+  const split = (pane: Record<string, unknown>): Step[] => [
+    { tool: 'create_session', arguments: { name: 'checks' }, isError: false, content: [], structuredContent: { id: '$0', panes: [{ id: '%0', command: 'sh', path: '/home/user/project' }] } },
+    { tool: 'split_window', arguments: { pane: '%0' }, isError: false, content: [], structuredContent: pane },
+  ]
+  const settled = { id: '%1', command: 'sh', path: '/home/user/project', window_id: '@0' }
+
+  it('accepts panes that run the shell and name their path', () => {
+    expect(() => verifySettledPanes(split(settled), { port: 'x', commands: ['sh'] })).not.toThrow()
+    expect(() => verifySettledPanes(split({ ...settled, command: 'cat' }), { port: 'x', commands: ['cat', 'sh'] })).not.toThrow()
+  })
+
+  it.each([
+    ['tmux, the name of the forked child', { ...settled, command: 'tmux' }, /command "tmux"/],
+    ['a path that is null', { ...settled, path: null }, /path null/],
+    ['an empty path', { ...settled, path: '' }, /path ""/],
+    ['a command under another spelling', { id: '%1', currentCommand: 'tmux', currentPath: '/home/user/project' }, /command "tmux"/],
+    ['a pane in a list', { panes: [settled, { ...settled, id: '%2', command: 'tmux' }] }, /pane %2/],
+  ])('refuses %s, naming the pane and the step', (_name, pane, message) => {
+    const steps = split(pane)
+    expect(() => verifySettledPanes(steps, { port: 'x', commands: ['sh'] })).toThrow(UnsettledPaneError)
+    expect(() => verifySettledPanes(steps, { port: 'x', commands: ['sh'] })).toThrow(message)
+    expect(() => verifySettledPanes(steps, { port: 'x', commands: ['sh'] })).toThrow(/split_window described pane/)
+  })
+
+  it('leaves an object that is not a pane alone, and a pane with no path to the servers that do not report one', () => {
+    expect(() => verifySettledPanes(split({ id: '$1', command: 'tmux' }), { port: 'x', commands: ['sh'] })).not.toThrow()
+    expect(() => verifySettledPanes(split({ id: '%1', command: 'sh' }), { port: 'x', commands: ['sh'] })).not.toThrow()
+    expect(() => verifySettledPanes(split({ command: 'tmux' }), { port: 'x', commands: ['sh'] })).not.toThrow()
+  })
+
+  it('is part of a recording\'s checks when the caller names the commands, and its error is not a tool error', () => {
+    const steps = good()
+    steps.splice(1, 0, ...split({ ...settled, command: 'tmux' }).slice(1))
+    expect(() => verifyRecording(steps, OPTIONS), 'unchecked unless asked').not.toThrow()
+    expect(() => verifyRecording(steps, { ...OPTIONS, commands: ['sh'] })).toThrow(UnsettledPaneError)
+    const failed = good()
+    failed[0] = { ...failed[0]!, isError: true }
+    expect(() => verifyRecording(failed, { ...OPTIONS, commands: ['sh'] })).not.toThrow(UnsettledPaneError)
+  })
+
+  it('is satisfied by every committed recording', () => {
+    const dir = new URL('../src/data/mcp-transcripts/', import.meta.url)
+    for (const name of readdirSync(dir).filter((file) => file.endsWith('.json'))) {
+      const recorded = JSON.parse(readFileSync(new URL(name, dir), 'utf8')) as { steps: Step[] }
+      const commands = name === 'ruby.json' ? ['cat'] : ['sh']
+      expect(() => verifySettledPanes(recorded.steps, { port: name, commands }), name).not.toThrow()
+    }
   })
 })
 
