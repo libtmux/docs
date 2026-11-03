@@ -2371,7 +2371,7 @@
     },
     "ruby": {
       "repo": "libtmux/libtmux-ruby",
-      "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "support": {
         "presets": {
           "2-pane-synchronized": {

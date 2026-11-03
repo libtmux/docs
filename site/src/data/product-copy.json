@@ -352,7 +352,7 @@
     },
     "ruby": {
       "repo": "libtmux/libtmux-ruby",
-      "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "verbs": [
         "load"
       ],
@@ -599,7 +599,7 @@
     },
     "ruby": {
       "repo": "libtmux/libtmux-ruby",
-      "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "sdk": {
         "name": "MCP Ruby SDK",
         "href": "https://github.com/modelcontextprotocol/ruby-sdk"
@@ -610,7 +610,7 @@
           "find": [
             {
               "text": "spec.add_dependency \"mcp\"",
-              "line": 44
+              "line": 45
             }
           ],
           "absent": []
