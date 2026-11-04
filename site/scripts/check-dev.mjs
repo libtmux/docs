@@ -15,6 +15,7 @@ import { checkStatusBadges, checkStatusBadgesFail } from './check-status-badges.
 import { checkHomeLauncher } from './check-home-launcher.mjs'
 import { checkHomeTaskReset } from './check-home-task-reset.mjs'
 import { checkColorScheme } from './check-color-scheme.mjs'
+import { checkLanguageIconScheme } from './check-language-icon-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample, checkRowPermalinks } from './check-dev-sample.mjs'
 import { checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkMemberBodyInsets, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
@@ -815,6 +816,7 @@ try {
   } else if (homeControlsOnly) {
     await checkHomeTaskReset(browser, base)
     await checkColorScheme(browser, base)
+    await checkLanguageIconScheme(browser, base)
     await checkHomeExampleOptions(browser, base)
   } else if (keywordHelpOnly) {
     await retryReload(() => checkKeywordHelp(browser, base))

@@ -7,6 +7,7 @@ import { checkWorkspaceHover } from './check-workspace-hover.mjs'
 import { checkWorkspaceShift } from './check-workspace-shift.mjs'
 import { checkHomeTaskReset, chooseHomeTask } from './check-home-task-reset.mjs'
 import { checkColorScheme } from './check-color-scheme.mjs'
+import { checkLanguageIconScheme } from './check-language-icon-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 
 /** Only the homepage trigger changes artwork; reset retains the code glyph. */
@@ -420,6 +421,7 @@ export async function checkHomeLauncher(browser, base) {
   await checkWorkspaceShift(browser, base)
   await checkHomeTaskReset(browser, base)
   await checkColorScheme(browser, base)
+  await checkLanguageIconScheme(browser, base)
   await checkHomeExampleOptions(browser, base)
   console.log('Homepage: 13 languages, 52 complete selectable programs/copy, owned solutions, shared URLs, reset, blocked storage, prompt tasks/copy, shared themes, container sizing, keyboard and no-JS PASS')
 }

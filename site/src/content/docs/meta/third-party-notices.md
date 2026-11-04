@@ -36,10 +36,12 @@ URL, retrieval time, file hash, copyright information and usage terms.
 These marks identify their respective languages and do not imply endorsement
 of libtmux.
 
-The SVG files are copied unchanged except for Scala, whose empty surrounding
-canvas is cropped. Its paths, gradients and colors are preserved, and the
-original SVG is retained beside the cropped copy. Rust's supplied SVG includes
-its own dark-theme colors.
+The SVG files are copied unchanged except for Scala and Rust. Scala's empty
+surrounding canvas is cropped; its paths, gradients and colors are preserved,
+and the original SVG is retained beside the cropped copy. Rust's supplied SVG
+turns its mark white when the device is in dark mode, which an image cannot
+tie to this site's color setting. That rule is removed, its paths are
+unchanged, and the page lightens the mark on a dark theme instead.
 
 | Language | Credit and terms | Local source record |
 |---|---|---|
