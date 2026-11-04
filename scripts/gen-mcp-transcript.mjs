@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { PORTS } from '../site/src/lib/ports.ts'
 import { EXAMPLES } from '../site/src/lib/mcp-examples.ts'
 import { contractsOf, sameContracts } from '../site/src/lib/mcp-contract.ts'
-import { listedValue, recordCalls, withListed } from './lib/mcp-session.mjs'
+import { listedValue, recordCalls, standInCalls } from './lib/mcp-session.mjs'
 import { leaks, sanitize, UnsettledPaneError, verifyRecording, withoutContracts } from './lib/mcp-transcript-checks.mjs'
 
 /**
@@ -146,7 +146,7 @@ try {
   for (let attempt = 1; !run; attempt++) {
     const recorded = await recordCalls({
       command: command.startsWith('/') || !command.includes('/') ? command : join(checkout, command), args: args.map((arg) => (arg.includes('/') && !arg.startsWith('-') ? join(checkout, arg) : arg)),
-      cwd: server.inCheckout ? workdir : project, env: environment, calls: example.steps.map(({ tool, arguments: callArguments }) => ({ tool, arguments: standIn && JSON.stringify(callArguments).includes(JSON.stringify(standIn)) ? withListed(callArguments, standIn, 'generation') : callArguments })),
+      cwd: server.inCheckout ? workdir : project, env: environment, calls: standInCalls(example.steps, standIn, 'generation'),
     })
     try {
       verifyRecording(recorded.steps, { port: only, runTool: runTool[0] ?? '', expected: runTool.length ? EXPECTED_OUTPUT : [], present: PRESENT[only] ?? [], commands: PANE_COMMANDS[only] ?? ['sh'] })

@@ -104,3 +104,17 @@ export const withListed = (callArguments, standIn, key) => (steps) => {
   if (real === undefined) throw new Error(`no earlier result returned a "${key}" to send in place of ${standIn}`)
   return JSON.parse(JSON.stringify(callArguments).replaceAll(JSON.stringify(standIn), JSON.stringify(real)))
 }
+
+/**
+ * The calls of an example for `recordCalls`: a call whose arguments hold
+ * `standIn` is sent the value an earlier result returned for `key` (see
+ * `withListed`), and every other call goes out as written. Without a
+ * `standIn`, the calls are unchanged.
+ *
+ * @param {{ tool: string, arguments: Record<string, unknown> }[]} steps
+ * @param {string | undefined} standIn
+ * @param {string} key
+ */
+export const standInCalls = (steps, standIn, key) => steps.map(({ tool, arguments: callArguments }) => ({
+  tool, arguments: standIn && JSON.stringify(callArguments).includes(JSON.stringify(standIn)) ? withListed(callArguments, standIn, key) : callArguments,
+}))

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { listedValue, recordCalls, withListed } from '../../scripts/lib/mcp-session.mjs'
+import { listedValue, recordCalls, standInCalls, withListed } from '../../scripts/lib/mcp-session.mjs'
 
 /**
  * A stdio MCP server in a few lines: `list` answers with a generation, and
- * `use` fails as `stale_target` unless it is sent that generation.
+ * `use` is refused as `stale_target` unless it is sent that generation.
  */
 const SERVER = `
 const GENERATION = '4242:1700000000'
@@ -17,7 +17,7 @@ process.stdin.on('data', (chunk) => {
     if (message.method === 'tools/call' && message.params.name === 'list') send(message.id, { content: [], structuredContent: { panes: [{ target: { generation: GENERATION } }] } })
     if (message.method === 'tools/call' && message.params.name === 'use') {
       const stale = message.params.arguments.target.generation !== GENERATION
-      send(message.id, { isError: stale, content: [], structuredContent: { stale } })
+      send(message.id, { isError: stale, content: [], structuredContent: stale ? { code: 'stale_target' } : { code: 'ok' } })
     }
   }
   buffer = buffer.slice(buffer.lastIndexOf('\\n') + 1)
@@ -34,9 +34,9 @@ describe('a call that needs a value only an earlier result returns', () => {
     expect(steps[1]).toMatchObject({ isError: false, arguments: { target: { paneId: '%0', generation: '4242:1700000000' } } })
   })
 
-  it('has a control: the stand-in itself is refused by the server, so the swap is what makes the call work', async () => {
+  it('has a control: the stand-in itself is refused as stale_target, so the swap is what makes the call work', async () => {
     const { steps } = await run([{ tool: 'list', arguments: {} }, { tool: 'use', arguments: stand }])
-    expect(steps[1]).toMatchObject({ isError: true, arguments: stand })
+    expect(steps[1]).toMatchObject({ isError: true, arguments: stand, structuredContent: { code: 'stale_target' } })
   })
 
   it('refuses to send the stand-in when no earlier result returned the value', async () => {
@@ -48,5 +48,37 @@ describe('a call that needs a value only an earlier result returns', () => {
     expect(listedValue([step({ a: [{ b: { generation: 'one' } }, { generation: 'two' }] })], 'generation')).toBe('one')
     expect(listedValue([step({ generation: 7 }), step(undefined), step({ x: { generation: 'later' } })], 'generation')).toBe('later')
     expect(listedValue([step({ other: 'x' })], 'generation')).toBeUndefined()
+  })
+})
+
+describe('the calls the recorder sends for an example that holds a stand-in', () => {
+  const example = [
+    { tool: 'list', arguments: {} },
+    { tool: 'use', arguments: { target: { paneId: '%0', generation: '3f9a1c' } } },
+    { tool: 'list', arguments: { note: 'no stand-in here' } },
+  ]
+
+  it('swaps the stand-in in the calls that carry it, sends the others as written, and the recorded step keeps what went out', async () => {
+    const calls = standInCalls(example, '3f9a1c', 'generation')
+    expect(calls.map((call) => typeof call.arguments)).toEqual(['object', 'function', 'object'])
+    expect(calls[0]!.arguments).toBe(example[0]!.arguments)
+    expect(calls[2]!.arguments).toBe(example[2]!.arguments)
+    const { steps } = await run(calls)
+    expect(steps[1]).toMatchObject({ isError: false, arguments: { target: { paneId: '%0', generation: '4242:1700000000' } }, structuredContent: { code: 'ok' } })
+    expect(JSON.stringify(steps.map((step) => step.arguments)), 'the stand-in never went out').not.toContain('3f9a1c')
+  })
+
+  it('has a control: the example sent as written is refused as stale_target', async () => {
+    const { steps } = await run(example)
+    expect(steps[1]).toMatchObject({ isError: true, structuredContent: { code: 'stale_target' } })
+  })
+
+  it('refuses to send a call that carries the stand-in before any result lists the value', async () => {
+    await expect(run(standInCalls(example.slice(1), '3f9a1c', 'generation'))).rejects.toThrow(/no earlier result returned a "generation" to send in place of 3f9a1c/)
+  })
+
+  it('leaves every call as written when the example has no stand-in', () => {
+    expect(standInCalls(example, undefined, 'generation').map((call) => call.arguments)).toEqual(example.map((call) => call.arguments))
+    expect(standInCalls(example, '', 'generation').every((call) => typeof call.arguments === 'object')).toBe(true)
   })
 })
