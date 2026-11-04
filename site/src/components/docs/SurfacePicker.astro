@@ -40,11 +40,12 @@ const artwork = (id: string) => {
     </label>
     <nav aria-label={solutionsOnly ? 'Documentation solutions' : 'Documentation apps and sections'}>
       {surfaces.map((entry) => <div class="surface-entry" data-surface-entry data-surface-home={entry.id === 'home' ? '' : undefined} style={`--surface-anchor: ${anchorName(entry.id)}`}>
-      {entry.id === 'home' && !solutionsOnly ? <a class="surface-option surface-home doc-picker-option" href={entry.href}
-        data-surface-option data-picker-option data-match={`Home ${entry.label}`}
-        aria-current={!alternative && surface.id === 'home' ? 'location' : undefined}>
+      {entry.id === 'home' ? <a class={`${solutionsOnly ? 'surface-destination' : 'surface-option'} surface-home doc-picker-option`} href={entry.href}
+        data-surface-option={solutionsOnly ? undefined : ''} data-picker-option data-match={`Home ${entry.label}`}
+        aria-current={!solutionsOnly && !alternative && surface.id === 'home' ? 'location' : undefined}>
         <DocumentationIcon name="home" /><span>Home</span>
-        {!alternative && surface.id === 'home' && <span class="doc-picker-check" aria-hidden="true">✓</span>}
+        {solutionsOnly ? <span class="surface-destination-arrow" aria-hidden="true">→</span>
+          : !alternative && surface.id === 'home' && <span class="doc-picker-check" aria-hidden="true">✓</span>}
       </a> : solutionsOnly ? <a class="surface-destination doc-picker-option" href={entry.href}
         data-picker-option data-match={`${entry.label} ${descriptions[entry.id]}`}>
         <img class="surface-artwork" src={artwork(entry.id)} width="30" height="30" alt="" />
@@ -124,6 +125,8 @@ const artwork = (id: string) => {
   .surface-group > summary:hover, .surface-destination:hover { border-color: var(--color-edge); }
   .surface-group > summary { min-height: 4rem; padding: .7rem .4rem; border-radius: .4rem; }
   .surface-destination { min-height: 4rem; }
+  /* Home has a label and no description, like its row on a language page. */
+  .surface-destination.surface-home { min-height: 2.5rem; }
   .surface-destination-arrow { margin-left: auto; }
   .surface-group-name { min-width: 0; }
   .surface-group-name strong, .surface-group-name small { display: block; }

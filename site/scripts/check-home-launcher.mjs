@@ -103,6 +103,19 @@ export async function checkHomeResponsiveLayout(page, width, port = null) {
   }
 }
 
+/** The chosen language's Home leads its solution menu, opens that language's page, and is not a product. */
+async function checkSolutionHome(page, solution, port) {
+  const rows = solution.locator('nav a[data-picker-option]')
+  const home = rows.first()
+  assert.equal(await home.locator('span').first().textContent(), 'Home', `${port}: Home leads the solution menu`)
+  const intro = await page.locator(`.home-intro [data-home-language="${port}"] .brand-action`).getAttribute('href')
+  assert.equal(await home.getAttribute('href'), intro, `${port}: Home opens the language page`)
+  assert.equal(Number(await solution.locator('.doc-picker-count').textContent()), (await rows.count()) - 1, `${port}: the count excludes Home`)
+  await solution.locator('summary').click()
+  await home.waitFor({ state: 'visible' })
+  await page.keyboard.press('Escape')
+}
+
 /** Exercise the real homepage, including the prompt controlled by its picker. */
 export async function checkHomeLauncher(browser, base) {
   const context = await browser.newContext({ reducedMotion: 'reduce' })
@@ -150,8 +163,9 @@ export async function checkHomeLauncher(browser, base) {
     assert.equal(await logo.count(), 0, 'The top header has no duplicate artwork')
     for (const { slug } of PORTS) {
       await choose(slug)
-      // Destinations only: a status badge's card links to the shared concept page.
-      const links = await solution.locator('a.surface-destination').evaluateAll((links) => links.map((link) => link.getAttribute('href')))
+      await checkSolutionHome(page, solution, slug)
+      // Product destinations only: a status badge's card links to the shared concept page.
+      const links = await solution.locator('a.surface-destination:not(.surface-home)').evaluateAll((links) => links.map((link) => link.getAttribute('href')))
       assert(links.length > 0 && links.every((href) => href.startsWith(`${new URL(base).pathname}/${slug}/`)), `${slug}: owned solution destinations`)
       if (['kotlin', 'scala', 'fsharp'].includes(slug)) assert.equal(links.length, 1, `${slug}: core library only`)
       assert.match(await prompt.locator(`[data-port="${slug}"] [data-prompt-text]`).innerText(), new RegExp(`/en/${slug}/`))
@@ -159,6 +173,21 @@ export async function checkHomeLauncher(browser, base) {
       await checkHomeResponsiveLayout(page, 280, slug)
       await page.setViewportSize({ width: 1280, height: 777 })
     }
+    // Controls: a Home that points at another language, or that no longer leads, fails the check.
+    const last = PORTS.at(-1).slug
+    await page.evaluate((other) => {
+      const intro = document.querySelector(`.home-intro [data-home-language="${other}"] .brand-action`).getAttribute('href')
+      document.querySelector('.home-launcher-solution:not([hidden]) a.surface-home').setAttribute('href', intro)
+    }, PORTS[0].slug)
+    await assert.rejects(checkSolutionHome(page, solution, last), /Home opens the language page/)
+    await page.reload()
+    await choose(last)
+    await page.evaluate(() => {
+      const entry = document.querySelector('.home-launcher-solution:not([hidden]) a.surface-home').closest('.surface-entry')
+      entry.parentElement.append(entry)
+    })
+    await assert.rejects(checkSolutionHome(page, solution, last), /Home leads the solution menu/)
+    await page.reload()
     await choose('ruby')
     const rubyLink = solution.locator('a[href$="/ruby/latest/mcp/"]')
     await solution.locator('summary').click()
