@@ -118,8 +118,8 @@ describe('the committed registrations', () => {
       return tree ? registrationFileProblems(port, registrations, tree) : []
     })
     expect(problems).toEqual([])
-    // A matrix that runs ahead of a model is judged by neither, so these two must be on the model's revision.
-    expect(covered).toEqual(expect.arrayContaining(['ts', 'rs']))
+    // A matrix that runs ahead of a model is judged by neither, so Ruby, TypeScript and Rust must be on the model's revision.
+    expect(covered).toEqual(expect.arrayContaining(['ts', 'rs', 'ruby']))
   })
 
   it('refuse a tool whose file the model of its revision lacks, as a matrix ahead of its model would', () => {
