@@ -3,13 +3,14 @@ import { PNG } from 'pngjs'
 
 /**
  * The Rust mark is one dark shape that the page turns light on a dark theme.
- * An SVG shown through <img> evaluates any `prefers-color-scheme` rule it
- * carries against the device, not the site's Light, Dark or System choice, so
- * a phone in dark mode with the site on Light showed a white mark on a white
- * page. Desktop Chromium hides this while the page sets `color-scheme`, so the
- * check also runs with that property reset, which is how an image that follows
- * the device behaves. Every pairing of device and site scheme is read from
- * rendered pixels.
+ * A `prefers-color-scheme` rule inside an SVG shown through <img> does not
+ * reliably follow the site's Light, Dark or System choice: depending on the
+ * engine and on whether the page sets `color-scheme`, it follows the device,
+ * so a phone in dark mode with the site on Light showed a white mark on a
+ * white page. The check therefore also runs with the page's `color-scheme`
+ * reset. Every pairing of device and site scheme is read from rendered
+ * pixels, and again under forced colors, where the system palette repaints
+ * the page and the mark keeps its own light plate.
  */
 const SERVED_VERSION = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}').rs ?? 'latest'
 
@@ -35,9 +36,27 @@ export function readMark(buffer) {
   return { ink: ink.length, darkerThanPage: ink.reduce((sum, value) => sum + value, 0) / ink.length < page, page }
 }
 
-async function readIcon(browser, url, icon, { device, site, css, replacement }) {
+/** How far in from the screenshot's edges the plate and the mark are read. */
+const INSET = 2
+
+/**
+ * The plate under the mark and the mark's dark pixels. The Rust mark is round, so the corners
+ * of its square box show the plate. Both are read inside the edges, because an image at a
+ * fractional position puts a column or row of the page into its screenshot.
+ */
+export function readPlate(buffer) {
+  const { width, height, data } = PNG.sync.read(buffer)
+  const at = (x, y) => luminance(data, (y * width + x) * 4)
+  const [left, top, right, bottom] = [INSET, INSET, width - 1 - INSET, height - 1 - INSET]
+  const plate = Math.min(at(left, top), at(right, top), at(left, bottom), at(right, bottom))
+  let dark = 0
+  for (let y = top; y <= bottom; y += 1) for (let x = left; x <= right; x += 1) if (at(x, y) < 0.25) dark += 1
+  return { plate, dark }
+}
+
+async function readIcon(browser, url, icon, { device, site, css, replacement, forced = false, read = readMark }) {
   // A null site is a visit without JavaScript: no saved choice, so the page follows the device.
-  const context = await browser.newContext({ colorScheme: device, reducedMotion: 'reduce', javaScriptEnabled: site !== null, viewport: { width: 1280, height: 777 } })
+  const context = await browser.newContext({ colorScheme: device, forcedColors: forced ? 'active' : 'none', reducedMotion: 'reduce', javaScriptEnabled: site !== null, viewport: { width: 1280, height: 777 } })
   try {
     if (site !== null) await context.addInitScript((choice) => localStorage.setItem('color-scheme', choice), site)
     // Added before the page parses, so an image is first drawn with it.
@@ -53,7 +72,7 @@ async function readIcon(browser, url, icon, { device, site, css, replacement }) 
     await image.waitFor({ state: 'visible' })
     await image.evaluate((element) => element.complete || new Promise((resolve) => element.addEventListener('load', resolve, { once: true })))
     assert.equal(await page.locator('html').getAttribute('data-theme-mode'), site, site ? `the page is on ${site}` : 'the page has not resolved a theme')
-    return readMark(await image.screenshot())
+    return read(await image.screenshot())
   } finally {
     await context.close()
   }
@@ -65,6 +84,12 @@ function assertMark({ ink, darkerThanPage, page }, { where, device, resolved }) 
   const light = resolved === 'light'
   assert(ink >= 30 && darkerThanPage === light,
     `${where}: with the device on ${device} and the page on ${resolved}, the Rust mark is not ${light ? 'dark on a light page' : 'light on a dark page'} (${ink} pixels set apart from the page)`)
+}
+
+/** Under forced colors the mark sits dark on its own light plate. */
+function assertPlated({ plate, dark }, { where, device, site }) {
+  assert(plate > 0.75 && dark >= 30,
+    `${where}: under forced colors with the device on ${device} and the site on ${site}, the Rust mark is not dark on its light plate (plate ${plate.toFixed(2)}, ${dark} dark pixels)`)
 }
 
 /** Dark on a light page and light on a dark page, whatever the device prefers. */
@@ -82,6 +107,15 @@ export async function checkLanguageIconScheme(browser, base) {
       }
     }
   }
+  // The system palette decides the page under forced colors: Chromium follows the device, Firefox can
+  // stay light on a dark theme, WebKit keeps the page's own colors. The plate holds in each engine.
+  for (const [where, url, icon] of places) {
+    for (const device of ['light', 'dark']) {
+      for (const site of ['light', 'dark']) {
+        assertPlated(await readIcon(browser, url, icon, { device, site, forced: true, read: readPlate }), { where, device, site })
+      }
+    }
+  }
   // Without JavaScript the page follows the device, and so must the mark.
   const [rustPage, rustUrl, rustIcon] = places[1]
   for (const device of ['light', 'dark']) {
@@ -94,5 +128,13 @@ export async function checkLanguageIconScheme(browser, base) {
   assert.throws(() => assertMark(old, { where: rustPage, device: 'dark', resolved: 'light' }), /dark on a light page/)
   const unlit = await readIcon(browser, rustUrl, rustIcon, { device: 'dark', site: 'dark', css: 'img { filter: none !important }' })
   assert.throws(() => assertMark(unlit, { where: rustPage, device: 'dark', resolved: 'dark' }), /light on a dark page/)
-  console.log('Language icons: the Rust mark is dark on a light page and light on a dark page for every device and site scheme, with images following the page or the device, and without JavaScript PASS')
+  // A dark plate hides the mark in every engine. Without a plate, Chromium's forced dark palette
+  // leaves the dark mark on a black page; the other engines' emulation does not repaint it so.
+  const dark = await readIcon(browser, rustUrl, rustIcon, { device: 'dark', site: 'light', forced: true, read: readPlate, css: 'img { background-color: #000 !important }' })
+  assert.throws(() => assertPlated(dark, { where: rustPage, device: 'dark', site: 'light' }), /dark on its light plate/)
+  if (browser.browserType().name() === 'chromium') {
+    const bare = await readIcon(browser, rustUrl, rustIcon, { device: 'dark', site: 'light', forced: true, read: readPlate, css: 'img { background-color: transparent !important }' })
+    assert.throws(() => assertPlated(bare, { where: rustPage, device: 'dark', site: 'light' }), /dark on its light plate/)
+  }
+  console.log(`Language icons (${browser.browserType().name()}): the Rust mark is dark on a light page and light on a dark page for every device and site scheme, with images following the page or the device, on its own plate under forced colors, and without JavaScript PASS`)
 }

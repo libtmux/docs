@@ -15,6 +15,6 @@
     ],
     "notes": "Credit the Rust Foundation, link CC BY 4.0, and disclose modifications. The mark identifies Rust in documentation; it does not indicate endorsement. The local copy removes the upstream SVG's own dark color-scheme rule, as described under modifications."
   },
-  "modifications": "Removed the `@media (prefers-color-scheme: dark)` block from the style element, which set the mark white. An image cannot tie that rule to the site's color setting, so the mark is one dark shape and the page lightens it on a dark theme. The paths, ids and every other rule are unchanged.",
+  "modifications": "Removed the `@media (prefers-color-scheme: dark)` block from the style element, which set the mark white. An image does not reliably tie that rule to the site's color setting, so the mark is one dark shape and the page lightens it on a dark theme. The paths, ids and every other rule are unchanged.",
   "upstreamSha256": "044be39144ab304cf9ea0e9014c3f476e0c5194c62aa525b3669caf5db5ac088"
 }

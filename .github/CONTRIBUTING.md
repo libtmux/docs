@@ -164,6 +164,14 @@ focus, link, repeated link and typed hash arrivals in each engine:
 $ node site/scripts/check-dev.mjs --api-sticky
 ```
 
+The homepage controls check reads the Rust language icon in each engine too,
+because engines differ in which colour scheme an image follows and in how
+they paint forced colours:
+
+```console
+$ node site/scripts/check-dev.mjs --home-controls
+```
+
 A heading's `#` permalink stays quiet on a fine pointer and appears when its
 heading is hovered, focused with the keyboard or targeted by the URL. Touch and
 forced colours keep it in view. The check reads computed opacity, the tab stop

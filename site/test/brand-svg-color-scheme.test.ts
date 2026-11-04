@@ -5,13 +5,15 @@ import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 
 /**
- * A page shows these SVGs through `<img>`, where a `prefers-color-scheme` rule
- * inside the file follows the device, not the site's Light, Dark or System
- * choice. A mark that turns white for a dark phone then sits white on a page
- * the reader set to Light. The page sets the mark's colour from its own
- * resolved theme instead.
+ * Pages show the site's SVGs through `<img>`, where a `prefers-color-scheme`
+ * rule inside the file does not reliably follow the site's Light, Dark or
+ * System choice. A mark that turns white for a dark phone then sits white on a
+ * page the reader set to Light. The page sets the mark's colour from its own
+ * resolved theme instead. Every SVG under public/ is held to this, not only the
+ * brand artwork: the registry icons are images too, and any of them can be
+ * shown through <img>.
  */
-const BRAND = fileURLToPath(new URL('../public/brand/', import.meta.url))
+const PUBLIC = fileURLToPath(new URL('../public/', import.meta.url))
 
 /** The SVG files below `dir` whose own style follows the device's colour scheme. */
 function followingTheDevice(dir: string): string[] {
@@ -29,9 +31,9 @@ afterEach(() => {
   for (const dir of scratch.splice(0)) rmSync(dir, { recursive: true, force: true })
 })
 
-describe('brand SVGs shown through <img>', () => {
+describe('the SVGs a page shows through <img>', () => {
   it('leave their colour to the page, so none carries a prefers-color-scheme rule', () => {
-    expect(followingTheDevice(BRAND).map((path) => relative(BRAND, path))).toEqual([])
+    expect(followingTheDevice(PUBLIC).map((path) => relative(PUBLIC, path))).toEqual([])
   })
 
   it('are found by the scan when one does', () => {
@@ -41,6 +43,11 @@ describe('brand SVGs shown through <img>', () => {
     writeFileSync(join(dir, 'languages', 'rs', 'icon.svg'),
       '<svg xmlns="http://www.w3.org/2000/svg"><style>@media (prefers-color-scheme: dark) { #logo { fill: #fff } }</style><path id="logo" d="M0 0h1v1z"/></svg>')
     writeFileSync(join(dir, 'languages', 'rs', 'plain.svg'), '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1v1z"/></svg>')
-    expect(followingTheDevice(dir).map((path) => relative(dir, path))).toEqual([join('languages', 'rs', 'icon.svg')])
+    // A tree shaped like public/: the brand artwork, a registry icon and the root favicon.
+    const rule = '<svg xmlns="http://www.w3.org/2000/svg"><style>@media (prefers-color-scheme: dark) { path { fill: #fff } }</style><path d="M0 0h1v1z"/></svg>'
+    mkdirSync(join(dir, 'icons'))
+    writeFileSync(join(dir, 'icons', 'registry.svg'), rule)
+    writeFileSync(join(dir, 'favicon.svg'), rule)
+    expect(followingTheDevice(dir).map((path) => relative(dir, path)).sort()).toEqual(['favicon.svg', join('icons', 'registry.svg'), join('languages', 'rs', 'icon.svg')])
   })
 })
