@@ -3,6 +3,7 @@ import { PORT_BY_SLUG, portPageUrl } from './ports'
 import { EXAMPLES, type ExampleStep } from './mcp-examples.ts'
 import { contractOf, sameContract, statesOutputs, type ToolContract } from './mcp-contract.ts'
 import { replayFrames, runAnswers, type Frame } from './mcp-replay'
+import { hasState, recordingStateProblems, type TmuxState } from './mcp-tmux-state.ts'
 
 export { EXAMPLES }
 
@@ -134,8 +135,10 @@ export interface Recording {
   tmux: string
   /** The test runner the sandbox ran, which produced the output below. */
   runner: string
-  /** The tmux state after each call (frame 0 is before the first), read from the recorded results only. */
+  /** The tmux state after each call (frame 0 is before the first): the recording's own tmux server when it stored one, else what the results state. */
   frames: Frame[]
+  /** Whether the frames are the recording's own tmux server, read after each call. */
+  tmuxState: boolean
   /** Whether any result is shown shortened. */
   shortened: boolean
   /** The revision the page documents, when it is not the one recorded. The page does not say which of the two is newer. */
@@ -144,8 +147,12 @@ export interface Recording {
   outputsChecked: boolean
   /** The directory the sandbox ran in was replaced by this fixed path. */
   projectDirectory?: string
-  /** The server's generation, which differs on every run, was replaced by this fixed token. */
-  generation?: string
+  /**
+   * The server's generation, which differs on every run, was replaced by a fixed
+   * token. A real call sends the generation `listedBy` returned, and the server
+   * refuses the token itself, with the error code `refusedAs`.
+   */
+  generation?: { token: string; listedBy: string; refusedAs: string }
   /** What each command run left in its pane, as the last line with text, with the pane it ran in. */
   answers: { pane?: string; line: string }[]
 }
@@ -163,8 +170,10 @@ export interface Transcript {
   revision: string
   /** The input and output schemas of each tool the session called, as the server advertised them when it was recorded. */
   contracts?: Record<string, ToolContract>
-  sandbox: { tmux: string; pytest: string; rewritten?: { projectDirectory?: string; generation?: string } }
-  steps: { tool: string; arguments: Record<string, unknown>; isError: boolean; content: { type: string; text?: string }[]; structuredContent?: unknown }[]
+  sandbox: { tmux: string; pytest: string; rewritten?: { projectDirectory?: string; generation?: string; generationListedBy?: string; generationRefusedAs?: string } }
+  /** The recording's own tmux server before the first call; present with the `tmux` of every step, or with none. */
+  tmuxBefore?: TmuxState
+  steps: { tool: string; arguments: Record<string, unknown>; isError: boolean; content: { type: string; text?: string }[]; structuredContent?: unknown; tmux?: TmuxState }[]
 }
 
 const TRANSCRIPTS = import.meta.glob<Transcript>('../data/mcp-transcripts/*.json', { import: 'default' })
@@ -233,10 +242,19 @@ function listedTools(value: unknown, called: readonly string[]): string[][] {
  * schemas the transcript recorded, and any list of tools a result states is
  * the set the snapshot advertises. Matching schemas do not make the values
  * equal; the page says so.
+ *
+ * A recording that stores tmux's state holds only if every step and the start
+ * store one and each describes the session the calls made
+ * (`recordingStateProblems`); a recording that stores none is drawn from its
+ * results. One that rewrites the generation holds only if it also says which
+ * tool listed it and how the server refuses the token.
  */
 export function recordingHolds(transcript: Transcript, steps: readonly ExampleStep[], advertised: ReadonlyMap<string, ProtocolTool>): boolean {
   const called = [...new Set(transcript.steps.map((step) => step.tool))]
+  const rewritten = transcript.sandbox.rewritten
   return transcript.steps.length === steps.length
+    && recordingStateProblems(transcript).length === 0
+    && (!rewritten?.generation || (called.includes(rewritten.generationListedBy ?? '') && Boolean(rewritten.generationRefusedAs)))
     && transcript.steps.every((step, index) => {
       const tool = advertised.get(step.tool)
       return !step.isError && step.tool === steps[index]!.tool
@@ -296,7 +314,7 @@ export function buildShowcase(port: string, version: string, snapshot: ProtocolS
         tool: tools.get(step.tool)!, arguments: step.arguments, caption: step.caption,
         ...(recorded ? { result: shown[index] } : {}),
       })),
-      ...(recorded ? { recording: { repo: recorded.repo, revision: recorded.revision, tmux: recorded.sandbox.tmux, runner: recorded.sandbox.pytest, frames: replayFrames(recorded.steps), shortened: shown.some((value, index) => JSON.stringify(value) !== JSON.stringify(full[index])), ...(recorded.revision === snapshot.revision ? {} : { documentedRevision: snapshot.revision }), outputsChecked: statesOutputs(recorded.contracts), ...(recorded.sandbox.rewritten?.projectDirectory ? { projectDirectory: recorded.sandbox.rewritten.projectDirectory } : {}), ...(recorded.sandbox.rewritten?.generation ? { generation: recorded.sandbox.rewritten.generation } : {}), answers: runAnswers(recorded.steps) } } : {}),
+      ...(recorded ? { recording: { repo: recorded.repo, revision: recorded.revision, tmux: recorded.sandbox.tmux, runner: recorded.sandbox.pytest, frames: replayFrames(recorded.steps, recorded.tmuxBefore), tmuxState: hasState(recorded), shortened: shown.some((value, index) => JSON.stringify(value) !== JSON.stringify(full[index])), ...(recorded.revision === snapshot.revision ? {} : { documentedRevision: snapshot.revision }), outputsChecked: statesOutputs(recorded.contracts), ...(recorded.sandbox.rewritten?.projectDirectory ? { projectDirectory: recorded.sandbox.rewritten.projectDirectory } : {}), ...(recorded.sandbox.rewritten?.generation ? { generation: { token: recorded.sandbox.rewritten.generation, listedBy: recorded.sandbox.rewritten.generationListedBy!, refusedAs: recorded.sandbox.rewritten.generationRefusedAs! } } : {}), answers: runAnswers(recorded.steps) } } : {}),
     }
     : undefined
   return {

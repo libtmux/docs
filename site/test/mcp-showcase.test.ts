@@ -399,7 +399,8 @@ describe('the showcase section', () => {
     const items = [...julia.querySelectorAll('article.mcp-turn')]
     expect(items).toHaveLength(EXAMPLES.julia!.steps.length)
     for (const item of items) expect(item.querySelectorAll('details.mcp-result pre')).toHaveLength(1)
-    expect(julia.querySelector('.mcp-provenance')?.textContent).toMatch(/generation, which differs on every run, is shown as 3f9a1c\./)
+    const provenance = julia.querySelector('.mcp-provenance')?.textContent?.replace(/\s+/g, ' ')
+    expect(provenance).toContain("The server's generation differs on every run. A real call sends the generation list_panes returned, and the server refuses 3f9a1c itself as stale_target; the recording shows the generation as 3f9a1c.")
     expect((await section('ts')).querySelector('.mcp-provenance')?.textContent).not.toMatch(/generation/)
   })
 
@@ -474,6 +475,7 @@ describe('recorded results', () => {
     expect(capture!.arguments.target, 'the capture names the pane and generation the listing returned').toEqual(listed)
     expect(capture!.structuredContent.text).toMatch(/checks finished\n/)
     expect(transcript.sandbox.rewritten?.generation, 'the generation is a fixed stand-in, which the transcript says').toBe(listed.generation)
+    expect(transcript.sandbox.rewritten, 'and says which call listed the real one and how the server refuses the stand-in').toMatchObject({ generationListedBy: 'list_panes', generationRefusedAs: 'stale_target' })
     expect(JSON.stringify(transcript.steps), 'no process id or start time is left in the recording').not.toMatch(/"generation\\?":\\?"\d+:\d+/)
   })
 
@@ -493,6 +495,33 @@ describe('recorded results', () => {
     expect(withRecording({ ...transcript, steps: transcript.steps.slice(0, -1) }), 'fewer calls').toBeUndefined()
     expect(withRecording({ ...transcript, steps: transcript.steps.map((step, index) => (index ? step : { ...step, arguments: { name: 'other' } })) }), 'other arguments').toBeUndefined()
     expect(withRecording({ ...transcript, steps: transcript.steps.map((step, index) => (index === 1 ? { ...step, isError: true } : step)) }), 'a failed step').toBeUndefined()
+  })
+
+  it('ignores a recording whose tmux state is missing or does not match its calls, and has a control that draws one without state from its results', async () => {
+    const snapshot = onDisk('go')
+    const transcript = (await transcriptFor('go'))!
+    const shown = (changed: Transcript) => buildShowcase('go', 'latest', snapshot, changed).example!.recording
+    expect(shown(transcript)).toMatchObject({ tmuxState: true })
+    expect(shown({ ...transcript, tmuxBefore: undefined }), 'no state before the first call').toBeUndefined()
+    expect(shown({ ...transcript, steps: transcript.steps.map((step, index) => (index === 2 ? { ...step, tmux: undefined } : step)) }), 'a step with no state').toBeUndefined()
+    expect(shown({ ...transcript, steps: transcript.steps.map((step, index, all) => ({ ...step, tmux: index ? all[index - 1]!.tmux : transcript.tmuxBefore })) }), 'each state read one call late').toBeUndefined()
+    expect(shown({ ...transcript, steps: transcript.steps.map((step, index) => (index === 2 ? { ...step, tmux: { ...step.tmux!, panes: step.tmux!.panes.map((pane) => ({ ...pane, window: '@9' })) } } : step)) }), 'a pane in a window tmux lacks').toBeUndefined()
+    expect(shown({ ...transcript, steps: transcript.steps.map((step, index) => (index === 1 ? { ...step, tmux: undefined, arguments: step.arguments } : step)) }), 'a state dropped from a read').toBeUndefined()
+    const { tmuxBefore: _before, ...rest } = transcript
+    const results = shown({ ...rest, steps: transcript.steps.map(({ tmux: _state, ...step }) => step) })
+    expect(results, 'a recording that stored none keeps drawing from its results').toMatchObject({ tmuxState: false })
+    expect(results!.frames.some((frame) => frame.recorded)).toBe(false)
+  })
+
+  it('ignores a recording that rewrites the generation without saying which call listed it and how the server refuses it', async () => {
+    const snapshot = onDisk('julia')
+    const transcript = (await transcriptFor('julia'))!
+    const shown = (rewritten: NonNullable<Transcript['sandbox']['rewritten']>) => buildShowcase('julia', 'latest', snapshot, { ...transcript, sandbox: { ...transcript.sandbox, rewritten } }).example!.recording
+    const rewritten = transcript.sandbox.rewritten!
+    expect(shown(rewritten)?.generation).toEqual({ token: '3f9a1c', listedBy: 'list_panes', refusedAs: 'stale_target' })
+    expect(shown({ ...rewritten, generationRefusedAs: undefined }), 'no refusal').toBeUndefined()
+    expect(shown({ ...rewritten, generationListedBy: undefined }), 'no listing call').toBeUndefined()
+    expect(shown({ ...rewritten, generationListedBy: 'kill_pane' }), 'a call the session never made').toBeUndefined()
   })
 
   it('abbreviates long text and long lists, and leaves short values alone', () => {
@@ -751,7 +780,7 @@ describe('a recording made at an earlier revision', () => {
       }, snapshot)
       const called = recordedTools(transcript)
       expect(recordingHolds(answering({ next: [called[0], 'other'] }), EXAMPLES.ts!.steps, map), 'a hint naming one called tool').toBe(true)
-      expect(recordingHolds(answering({ ids: ['%0', '%1'], mixed: [...called, 7] }), EXAMPLES.ts!.steps, map), 'ids, and a list with a number among its names').toBe(true)
+      expect(recordingHolds(answering({ ids: ['%0', '@0'], mixed: [...called, 7] }), EXAMPLES.ts!.steps, map), 'ids, and a list with a number among its names').toBe(true)
       expect(recordingHolds(answering({ flags: ['alpha', 'beta'] }), EXAMPLES.ts!.steps, map)).toBe(true)
     })
 

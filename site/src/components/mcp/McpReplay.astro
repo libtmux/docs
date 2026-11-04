@@ -7,10 +7,11 @@
  * input schema in the port's `tools/list` snapshot. With a recorded session
  * (`gen-mcp-transcript.mjs`) the chat on the left shows each call and the
  * result the server answered, and the tmux preview on the right shows the
- * state those results describe (`lib/mcp-replay.ts`); the script below plays
- * the session, or lets a reader step through it. Without script the whole
- * chat and the final state show. Without a recording the page shows the
- * requests only, says so, and draws no preview.
+ * recording's own tmux server after that call, or the state its results
+ * describe when the recording stored none (`lib/mcp-replay.ts`). The script
+ * below plays the session, or lets a reader step through it. Without script
+ * the whole chat and the final state show. Without a recording the page shows
+ * the requests only, says so, and draws no preview.
  */
 import { Code } from 'astro-expressive-code/components'
 import { renderRects, type Rect } from '../../lib/tmux-layout'
@@ -37,7 +38,7 @@ const WIDTH = 44
 const HEIGHT = 12
 const answers = recording?.answers ?? []
 
-/** What each frame's note says happened, from the call alone. */
+/** What each frame's note says, for a recording that has no tmux state of its own: it can say only what the call read. */
 const note = (frame: Frame) => {
   if (!frame.tool) return 'Before the first call.'
   return frame.reading ? `${frame.tool} read the ${frame.reading}; tmux itself is unchanged.` : `After ${frame.tool}.`
@@ -129,7 +130,11 @@ const draw = (frame: Frame) => {
                   )}
                 </div>
               </div>
-              <p class="mcp-frame__note">{note(frame)}</p>
+              {frame.recorded ? (
+                <p class="mcp-frame__note">{frame.tool ? <>tmux after <code>{frame.tool}</code>{frame.unchanged ? ': unchanged, the call only reads.' : '.'}</> : 'tmux before the first call.'}</p>
+              ) : (
+                <p class="mcp-frame__note">{note(frame)}</p>
+              )}
             </div>
           )
         })}
@@ -186,12 +191,13 @@ const draw = (frame: Frame) => {
 {recording ? (
   <p class="not-prose mcp-provenance">
     Calls and results are recorded against <a href={`https://github.com/${recording.repo}/tree/${recording.revision}`}><code>{recording.repo}</code></a>
-    at <code>{recording.revision.slice(0, 9)}</code>, on a private {recording.tmux} server{recording.answers.length > 0 && <>, running {recording.runner}</>}. The preview draws only what those results state.
+    at <code>{recording.revision.slice(0, 9)}</code>, on a private {recording.tmux} server{recording.answers.length > 0 && <>, running {recording.runner}</>}.
+    {recording.tmuxState ? "The preview shows the recording's own tmux server after each call." : 'The preview draws only what those results state.'}
     The agent's narration is illustrative.
     {recording.documentedRevision && <> This page documents <a href={`https://github.com/${recording.repo}/tree/${recording.documentedRevision}`}><code>{recording.documentedRevision.slice(0, 9)}</code></a>, a different revision. The calls have the same input{recording.outputsChecked && ' and output'} schemas there, but the results at that revision may differ from the recorded ones.</>}
     {recording.shortened && <> Long values in a result are shortened here; the recording keeps them.</>}
     {recording.projectDirectory && <> The sandbox's project directory is shown as <code>{recording.projectDirectory}</code>.</>}
-    {recording.generation && <> The server's generation, which differs on every run, is shown as <code>{recording.generation}</code>.</>}
+    {recording.generation && <> The server's generation differs on every run. A real call sends the generation <code>{recording.generation.listedBy}</code> returned, and the server refuses <code>{recording.generation.token}</code> itself as <code>{recording.generation.refusedAs}</code>; the recording shows the generation as <code>{recording.generation.token}</code>.</>}
   </p>
 ) : (
   <p class="not-prose mcp-provenance">Requests only: no recorded results for {portName} yet.</p>

@@ -4,11 +4,23 @@ import { Window } from 'happy-dom'
 import { ModuleKind, ScriptTarget, transpileModule } from 'typescript'
 import { afterEach, describe, expect, it } from 'vitest'
 import { lastOutputLine, replayFrames, windowLabel, type Frame, type ReplayStep } from '../src/lib/mcp-replay'
-import { buildShowcase, EXAMPLES, mcpShowcase, transcriptFor } from '../src/lib/mcp-showcase'
+import { buildShowcase, EXAMPLES, mcpShowcase, transcriptFor, type Transcript } from '../src/lib/mcp-showcase'
+import { READ_ONLY_TOOLS, recordingStateProblems, type TmuxState } from '../src/lib/mcp-tmux-state'
 import { parseLayout } from '../src/lib/tmux-layout-string'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
-const steps = async (port: string) => (await transcriptFor(port))!.steps as ReplayStep[]
+/** A recording with the tmux state removed, as one made before the recorder read it: it is drawn from its results alone. */
+const withoutState = (transcript: Transcript): Transcript => {
+  const { tmuxBefore: _before, ...rest } = transcript
+  return { ...rest, steps: transcript.steps.map(({ tmux: _tmux, ...step }) => step) }
+}
+/** The calls of a recording and what they returned, without the tmux state. */
+const steps = async (port: string) => withoutState((await transcriptFor(port))!).steps as ReplayStep[]
+/** The calls of a recording with the tmux state its own server was in after each. */
+const stated = async (port: string) => {
+  const transcript = (await transcriptFor(port))!
+  return { steps: transcript.steps as ReplayStep[], before: transcript.tmuxBefore!, transcript }
+}
 
 /**
  * The recording's fields as `key=value` pairs, with the type kept (so `0` and
@@ -70,10 +82,13 @@ function untraced(frames: Frame[], steps: ReplayStep[]): string[] {
   return missing
 }
 
+/** Every port with a recording. */
+const ALL = ['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift', 'ruby', 'julia'] as const
+
 /** Calls in each port's worked example, which the frames and the replay follow. */
 const CALLS = { ts: 6, rs: 7, go: 7, py: 6, java: 7, csharp: 6, cxx: 7, swift: 7, ruby: 2, julia: 2 }
 
-describe('the tmux state each recorded call leaves', () => {
+describe('the tmux state each recorded call leaves, drawn from the results of a recording that stored none', () => {
   it('follows TypeScript: a session, a split, the layout it reports, then what each pane ran', async () => {
     const frames = replayFrames(await steps('ts'))
     expect(frames.map((frame) => frame.sessions.length)).toEqual([0, 1, 1, 1, 1, 1, 0])
@@ -247,6 +262,94 @@ describe('the tmux state each recorded call leaves', () => {
   })
 })
 
+describe('the frames of a recording that stored its tmux server\'s state', () => {
+  type Frames = ReturnType<typeof replayFrames>
+  /** A frame read back as the state it was built from, without the text the calls added to a pane. */
+  const stateOf = (frame: Frames[number]): TmuxState => ({
+    sessions: frame.sessions.map((session) => ({ id: session.id!, name: session.name! })),
+    windows: frame.sessions.flatMap((session) => session.windows.map((window) => ({ session: session.id!, id: window.id!, index: window.index!, name: window.name!, active: window.active!, layout: window.layout! }))),
+    panes: frame.sessions.flatMap((session) => session.windows.flatMap((window) => window.panes.map((pane) => ({ window: window.id!, id: pane.id!, command: pane.command!, left: pane.left!, top: pane.top!, width: pane.width!, height: pane.height!, active: pane.active! })))),
+  })
+  
+  it.each(ALL)('has state for the start and for every call of %s, and the states describe the session its calls made', async (port) => {
+    const { steps: calls, before, transcript } = await stated(port)
+    expect(before, `${port} start`).toBeDefined()
+    calls.forEach((step, index) => expect(step.tmux, `${port} after step ${index + 1} (${step.tool})`).toBeDefined())
+    expect(recordingStateProblems(transcript)).toEqual([])
+  })
+
+  it.each(ALL)('makes frame i of %s the state its own tmux server was in after call i, and frame 0 the state before the first', async (port) => {
+    const { steps: calls, before } = await stated(port)
+    const frames = replayFrames(calls, before)
+    expect(frames).toHaveLength(calls.length + 1)
+    expect(frames.every((frame) => frame.recorded)).toBe(true)
+    expect(stateOf(frames[0]!)).toEqual(before)
+    calls.forEach((step, index) => {
+      expect(stateOf(frames[index + 1]!), `${port} frame ${index + 1} (${step.tool})`).toEqual(step.tmux!)
+      expect(frames[index + 1]).toMatchObject({ done: index + 1, tool: step.tool })
+    })
+  })
+
+  it.each(ALL)('shows %s unchanged after each call that only reads, and changed or not after the others without saying it was a read', async (port) => {
+    const { steps: calls, before } = await stated(port)
+    const frames = replayFrames(calls, before)
+    let previous = before
+    calls.forEach((step, index) => {
+      const frame = frames[index + 1]!
+      if (READ_ONLY_TOOLS.has(step.tool)) {
+        expect(step.tmux, `${port} ${step.tool} leaves tmux as it was`).toEqual(previous)
+        expect(frame.unchanged, `${port} ${step.tool}`).toBe(true)
+      } else {
+        expect(frame.unchanged, `${port} ${step.tool} may change tmux`).toBeUndefined()
+      }
+      previous = step.tmux!
+    })
+    expect(frames.filter((frame) => frame.unchanged).length, `${port} reads at least once or is all writes`).toBe(calls.filter((step) => READ_ONLY_TOOLS.has(step.tool)).length)
+  })
+
+  it('has a control: a read after which tmux differs is not shown as unchanged', async () => {
+    const { steps: calls, before } = await stated('go')
+    const listed = calls.findIndex((step) => step.tool === 'list_panes')
+    const changed = calls.map((step, index) => (index === listed ? { ...step, tmux: calls[listed + 1]!.tmux } : step))
+    expect(replayFrames(calls, before)[listed + 1]!.unchanged).toBe(true)
+    expect(replayFrames(changed, before)[listed + 1]!.unchanged).toBeUndefined()
+  })
+
+  it('draws a Go-shaped split, whose result states no layout and no size, with the geometry tmux gave both panes', () => {
+    const one: TmuxState = { sessions: [{ id: '$0', name: 'checks' }], windows: [{ session: '$0', id: '@0', index: 0, name: 'sh', active: true, layout: 'a1b2,80x24,0,0,0' }], panes: [{ window: '@0', id: '%0', command: 'sh', left: 0, top: 0, width: 80, height: 24, active: true }] }
+    const two: TmuxState = { ...one, windows: [{ ...one.windows[0]!, layout: 'b25f,80x24,0,0{40x24,0,0,0,39x24,41,0,1}' }], panes: [{ ...one.panes[0]!, width: 40 }, { window: '@0', id: '%1', command: 'sh', left: 41, top: 0, width: 39, height: 24, active: false }] }
+    const calls: ReplayStep[] = [
+      { tool: 'create_session', arguments: { session_name: 'checks' }, content: [], structuredContent: { sessionId: '$0', sessionName: 'checks' }, tmux: one },
+      { tool: 'list_panes', arguments: {}, content: [], structuredContent: { panes: [{ id: '%0', geometry: { left: 0, top: 0, width: 80, height: 24 } }] }, tmux: one },
+      { tool: 'split_window', arguments: { pane_id: '%0', direction: 'right' }, content: [], structuredContent: { paneId: '%1' }, tmux: two },
+    ]
+    const split = replayFrames(calls, { sessions: [], windows: [], panes: [] }).at(-1)!
+    expect(split.sessions[0]!.windows[0]!.panes.map((pane) => [pane.id, pane.left, pane.top, pane.width, pane.height])).toEqual([['%0', 0, 0, 40, 24], ['%1', 41, 0, 39, 24]])
+    expect(JSON.stringify(split.sessions[0]!.windows[0]!.layout)).toContain('39x24,41,0')
+    // The control: from the results alone, the new pane has no size.
+    const before = replayFrames(calls.map(({ tmux: _state, ...step }) => step)).at(-1)!
+    expect(before.sessions[0]!.windows[0]!.panes.map((pane) => pane.width)).toEqual([80, undefined])
+  })
+
+  it('draws from the results unless every call and the start carry a state', async () => {
+    const { steps: calls, before } = await stated('go')
+    expect(replayFrames(calls).some((frame) => frame.recorded), 'no start state').toBe(false)
+    expect(replayFrames(calls.map((step, index) => (index === 2 ? { ...step, tmux: undefined } : step)), before).some((frame) => frame.recorded), 'one call without a state').toBe(false)
+    expect(replayFrames(calls, before).every((frame) => frame.recorded)).toBe(true)
+  })
+
+  it('shows what a run or a capture read in a pane, and nothing in a pane the calls read nothing from', async () => {
+    const { steps: calls, before } = await stated('go')
+    const frames = replayFrames(calls, before)
+    const run = calls.findIndex((step) => step.tool === 'run_shell_command') + 1
+    const [first, second] = frames[run]!.sessions[0]!.windows[0]!.panes
+    expect(first!.typed).toBe('pytest -q')
+    expect(first!.output).toMatch(/2 passed/)
+    expect(second, 'nothing was typed into or read from the other pane').not.toHaveProperty('typed')
+    expect(second).not.toHaveProperty('output')
+  })
+})
+
 describe('the replay component', () => {
   const windows: Window[] = []
   afterEach(async () => { for (const win of windows.splice(0)) await win.happyDOM.abort() })
@@ -258,16 +361,18 @@ describe('the replay component', () => {
   const component = readFileSync(new URL('../src/components/mcp/McpReplay.astro', import.meta.url), 'utf8')
   const script = transpileModule(/<script>([\s\S]*?)<\/script>/.exec(component)![1]!, { compilerOptions: { module: ModuleKind.CommonJS, target: ScriptTarget.ES2022 } }).outputText
 
-  async function markup(port: string, recorded = true) {
-    const showcase = recorded ? (await mcpShowcase(port, 'latest'))! : buildShowcase(port, 'latest', JSON.parse(readFileSync(new URL(`../src/data/mcp-protocol/${port}.json`, import.meta.url), 'utf8')))
+  async function markup(port: string, recorded = true, stateless = false) {
+    const snapshot = () => JSON.parse(readFileSync(new URL(`../src/data/mcp-protocol/${port}.json`, import.meta.url), 'utf8'))
+    // A recording without tmux state is shown from its results; a port with no recording at all, as requests only.
+    const showcase = !recorded ? buildShowcase(port, 'latest', snapshot()) : stateless ? buildShowcase(port, 'latest', snapshot(), withoutState((await transcriptFor(port))!)) : (await mcpShowcase(port, 'latest'))!
     return renderAstroTemplate(await template, { props: { example: showcase.example, portName: port } })
   }
 
   /** The page's markup in a DOM; with `run`, the page's own script on it. */
-  async function mount(port: string, options: { run?: boolean; reduced?: boolean; interval?: number; recorded?: boolean } = {}) {
+  async function mount(port: string, options: { run?: boolean; reduced?: boolean; interval?: number; recorded?: boolean; stateless?: boolean } = {}) {
     const win = new Window({ url: 'https://libtmux.org/en/rs/latest/' })
     windows.push(win)
-    win.document.body.innerHTML = await markup(port, options.recorded)
+    win.document.body.innerHTML = await markup(port, options.recorded, options.stateless)
     const root = win.document.querySelector('[data-mcp-replay]') as unknown as HTMLElement
     if (options.interval) root.setAttribute('data-interval', String(options.interval))
     if (options.run) {
@@ -368,8 +473,8 @@ describe('the replay component', () => {
     expect(document.querySelector('[data-live]')).toBeNull()
   })
 
-  it('draws the status line, the unsized list and the panes of each state from the recording', async () => {
-    const { document } = await mount('rs')
+  it('draws the status line, the unsized list and the panes of each state from the results of a recording with no tmux state', async () => {
+    const { document } = await mount('rs', { stateless: true })
     const frame = (done: number) => document.querySelector(`[data-frame="${done}"]`)!
     expect(frame(1).querySelector('.mcp-tmux__status')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('[checks]')
     expect(frame(1).querySelector('svg.gp-tmux-layout')).not.toBeNull()
@@ -385,16 +490,16 @@ describe('the replay component', () => {
     expect(frame(0).querySelector('.mcp-tmux__screen--empty')!.textContent, 'nothing is said before the first call').toBe('')
   })
 
-  it('places the Go panes at the position and size its second pane listing gives', async () => {
-    const { document } = await mount('go')
+  it('places the Go panes at the position and size its second pane listing gives, when the recording has no tmux state', async () => {
+    const { document } = await mount('go', { stateless: true })
     const panes = [...document.querySelector('[data-frame="4"]')!.querySelectorAll<HTMLElement>('.mcp-pane')]
     expect(panes.map((pane) => [pane.style.left, pane.style.width])).toEqual([['0%', '50%'], [`${(41 / 80) * 100}%`, `${(39 / 80) * 100}%`]])
     expect(document.querySelector('[data-frame="3"] svg'), 'no boxes between the split and the listing').toBeNull()
     expect(document.querySelector('[data-frame="4"] svg.gp-tmux-layout')!.getAttribute('viewBox')).toBe(`0 0 ${80 * 8} ${24 * 17}`)
   })
 
-  it.each(['ts', 'rs', 'py', 'java', 'csharp', 'cxx', 'swift'] as const)('places the %s panes at the rectangles the recorded layout gives', async (port) => {
-    const { document } = await mount(port)
+  it.each(['ts', 'rs', 'py', 'java', 'csharp', 'cxx', 'swift'] as const)('places the %s panes at the rectangles the layout a result reported gives, when the recording has no tmux state', async (port) => {
+    const { document } = await mount(port, { stateless: true })
     const layoutFrame = replayFrames(await steps(port)).find((frame) => frame.sessions[0]?.windows[0]?.layout)!
     const parsed = parseLayout(layoutFrame.sessions[0]!.windows[0]!.layout!)!
     const panes = [...document.querySelector(`[data-frame="${layoutFrame.done}"]`)!.querySelectorAll<HTMLElement>('.mcp-pane')]
@@ -413,16 +518,83 @@ describe('the replay component', () => {
     expect(layoutSvg.querySelectorAll('.divider').length, 'the split is drawn as one divider').toBe(1)
   })
 
-  it.each(['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift', 'ruby', 'julia'])('draws only recorded words, besides tmux\'s own punctuation, in the %s preview', async (port) => {
-    const { document } = await mount(port)
-    const recordedWords = new Set((await steps(port)).flatMap((step) => JSON.stringify([step.arguments, step.structuredContent, step.content]).replace(/\\n/g, ' ').split(/[\s"{}\[\],:]+/)))
-    for (const frame of document.querySelectorAll('[data-frame]')) {
-      const done = frame.getAttribute('data-frame')
-      const drawn = [...frame.querySelectorAll('.mcp-pane__id, .mcp-pane__text, .mcp-tmux__session, .mcp-tmux__window')].map((element) => element.textContent!)
-      for (const word of drawn.join(' ').replace(/\$ /g, ' ').replace(/[\[\]*:]/g, ' ').split(/\s+/).filter(Boolean)) {
-        expect(recordedWords.has(word), `${port} frame ${done}: "${word}"`).toBe(true)
+  it.each(ALL)('draws only recorded words, besides tmux\'s own punctuation, in the %s preview, from its results alone and from its tmux state', async (port) => {
+    for (const stateless of [true, false]) {
+      const { document } = await mount(port, { stateless })
+      const transcript = (await transcriptFor(port))!
+      const said = stateless ? transcript.steps.map((step) => [step.arguments, step.structuredContent, step.content]) : [transcript.steps.map((step) => [step.arguments, step.structuredContent, step.content, step.tmux]), transcript.tmuxBefore]
+      const recordedWords = new Set(JSON.stringify(said).replace(/\\n/g, ' ').split(/[\s"{}\[\],:]+/))
+      for (const frame of document.querySelectorAll('[data-frame]')) {
+        const done = frame.getAttribute('data-frame')
+        const drawn = [...frame.querySelectorAll('.mcp-pane__id, .mcp-pane__text, .mcp-tmux__session, .mcp-tmux__window')].map((element) => element.textContent!)
+        for (const word of drawn.join(' ').replace(/\$ /g, ' ').replace(/[\[\]*:]/g, ' ').split(/\s+/).filter(Boolean)) {
+          expect(recordedWords.has(word), `${port} ${stateless ? 'from results' : 'from tmux'} frame ${done}: "${word}"`).toBe(true)
+        }
       }
     }
+  })
+
+  /** The rectangles, in percent of the window, that a frame's panes are drawn at. */
+  const percents = (pane: TmuxState['panes'][number], layout: NonNullable<ReturnType<typeof parseLayout>>) => [`${(pane.left / layout.width) * 100}%`, `${(pane.top / layout.height) * 100}%`, `${(pane.width / layout.width) * 100}%`, `${(pane.height / layout.height) * 100}%`]
+
+  it.each(ALL)('draws %s as its own tmux server stood after each call: the panes in the rectangles tmux reports, the status line it shows, and a caption naming the call', async (port) => {
+    const { document } = await mount(port)
+    const { steps: calls, before } = await stated(port)
+    const states = [before, ...calls.map((step) => step.tmux!)]
+    expect(document.querySelectorAll('[data-frame]')).toHaveLength(calls.length + 1)
+    states.forEach((state, done) => {
+      const frame = document.querySelector(`[data-frame="${done}"]`)!
+      const where = `${port} frame ${done}`
+      const session = state.sessions[0]
+      const current = session ? (state.windows.find((window) => window.session === session.id && window.active) ?? state.windows[0]) : undefined
+      if (!session || !current) {
+        expect(frame.querySelector('.mcp-pane'), where).toBeNull()
+        expect(frame.querySelector('.mcp-tmux__screen--empty'), where).not.toBeNull()
+      } else {
+        const layout = parseLayout(current.layout)!
+        const panes = state.panes.filter((pane) => pane.window === current.id)
+        const drawn = [...frame.querySelectorAll<HTMLElement>('.mcp-pane')]
+        expect(drawn.map((pane) => pane.querySelector('.mcp-pane__id')!.textContent), `${where}: the panes`).toEqual(panes.map((pane) => `${pane.id} ${pane.command}`))
+        expect(drawn.map((pane) => [pane.style.left, pane.style.top, pane.style.width, pane.style.height]), `${where}: the rectangles`).toEqual(panes.map((pane) => percents(pane, layout)))
+        expect(frame.querySelector('.mcp-tmux__screen--unsized'), `${where}: no pane is left without a size`).toBeNull()
+        expect(frame.querySelector('.mcp-tmux__status')!.textContent!.replace(/\s+/g, ' ').trim(), `${where}: the status line`).toBe(`[${session.name}] ${state.windows.filter((window) => window.session === session.id).map((window) => `${window.index}:${window.name}${window.active ? '*' : ''}`).join(' ')}`)
+      }
+      const tool = done ? calls[done - 1]!.tool : undefined
+      const caption = frame.querySelector('.mcp-frame__note')!.textContent
+      expect(caption, `${where}: the caption`).toBe(!tool ? 'tmux before the first call.' : READ_ONLY_TOOLS.has(tool) ? `tmux after ${tool}: unchanged, the call only reads.` : `tmux after ${tool}.`)
+      if (tool) expect(frame.querySelector('.mcp-frame__note code')!.textContent, `${where}: the call is code`).toBe(tool)
+    })
+  })
+
+  it('draws the Go split_window frame, whose result is only the new pane\'s id, as two panes with the rectangles tmux gave them', async () => {
+    const { document } = await mount('go')
+    const { steps: calls } = await stated('go')
+    const at = calls.findIndex((step) => step.tool === 'split_window') + 1
+    expect(calls[at - 1]!.structuredContent, 'the result states no layout or size').toEqual({ paneId: '%1' })
+    const frame = document.querySelector(`[data-frame="${at}"]`)!
+    const panes = [...frame.querySelectorAll<HTMLElement>('.mcp-pane')]
+    expect(panes.map((pane) => pane.querySelector('.mcp-pane__id')!.textContent)).toEqual(['%0 sh', '%1 sh'])
+    expect(panes.map((pane) => [pane.style.left, pane.style.top, pane.style.width, pane.style.height])).toEqual([['0%', '0%', '50%', '100%'], [`${(41 / 80) * 100}%`, '0%', `${(39 / 80) * 100}%`, '100%']])
+    expect(frame.querySelector('svg.gp-tmux-layout')!.getAttribute('viewBox')).toBe(`0 0 ${80 * 8} ${24 * 17}`)
+    expect(frame.querySelector('.mcp-tmux__screen--unsized'), 'the split is not left to the next listing').toBeNull()
+    expect(frame.querySelector('.mcp-frame__note')!.textContent).toBe('tmux after split_window.')
+    // The control: drawn from the results alone, as before, the same frame is a list with no sizes.
+    const { document: results } = await mount('go', { stateless: true })
+    expect(results.querySelector(`[data-frame="${at}"] .mcp-tmux__unsized`)!.textContent).toBe('Panes, sizes not read yet')
+    expect(results.querySelector(`[data-frame="${at}"] .mcp-frame__note`)!.textContent).toBe('After split_window.')
+  })
+
+  it('names the part of tmux a listing read, and the provenance says the preview is the recording\'s own tmux server', async () => {
+    const { document } = await mount('go')
+    const { steps: calls } = await stated('go')
+    const listed = calls.findIndex((step) => step.tool === 'list_panes') + 1
+    expect(document.querySelector(`[data-frame="${listed}"] .mcp-tmux__screen`)!.className).toContain('is-reading')
+    expect(document.querySelector(`[data-frame="${listed}"] .mcp-frame__note`)!.textContent).toBe('tmux after list_panes: unchanged, the call only reads.')
+    const provenance = document.querySelector('.mcp-provenance')!.textContent!.replace(/\s+/g, ' ')
+    expect(provenance).toContain("The preview shows the recording's own tmux server after each call.")
+    expect(provenance).not.toContain('draws only what those results state')
+    const { document: results } = await mount('go', { stateless: true })
+    expect(results.querySelector('.mcp-provenance')!.textContent!.replace(/\s+/g, ' ')).toContain('The preview draws only what those results state.')
   })
 
   it('with a reduced-motion preference starts at the end and does not play', async () => {

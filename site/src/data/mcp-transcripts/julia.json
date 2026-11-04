@@ -15,7 +15,9 @@
     ],
     "rewritten": {
       "projectDirectory": "/home/user/project",
-      "generation": "3f9a1c"
+      "generation": "3f9a1c",
+      "generationListedBy": "list_panes",
+      "generationRefusedAs": "stale_target"
     }
   },
   "serverInfo": {
@@ -874,6 +876,36 @@
     }
   },
   "prompt": "Show me what the first pane is displaying.",
+  "tmuxBefore": {
+    "sessions": [
+      {
+        "id": "$0",
+        "name": "docs"
+      }
+    ],
+    "windows": [
+      {
+        "session": "$0",
+        "id": "@0",
+        "index": 0,
+        "name": "cat",
+        "active": true,
+        "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+      }
+    ],
+    "panes": [
+      {
+        "window": "@0",
+        "id": "%0",
+        "command": "cat",
+        "left": 0,
+        "top": 0,
+        "width": 80,
+        "height": 24,
+        "active": true
+      }
+    ]
+  },
   "steps": [
     {
       "tool": "list_panes",
@@ -924,6 +956,36 @@
         "nextPageToken": null,
         "truncated": false
       },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$0",
+            "name": "docs"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "cat",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "cat",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
+          }
+        ]
+      },
       "caption": "List the panes. Each result carries a target."
     },
     {
@@ -952,6 +1014,36 @@
           "paneId": "%0",
           "generation": "3f9a1c"
         }
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$0",
+            "name": "docs"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "cat",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "cat",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
+          }
+        ]
       },
       "caption": "Read the pane through the target the list returned (%0)."
     }

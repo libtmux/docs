@@ -234,6 +234,30 @@ describe('keeping the host out of a recording', () => {
     expect(sanitize(clean, marks), 'rewriting twice changes nothing').toEqual(clean)
   })
 
+  it('finds a path, a user name or a machine name planted in the tmux state of every committed recording, and the rewrite removes it', () => {
+    const dir = new URL('../src/data/mcp-transcripts/', import.meta.url)
+    const places = ['/home/d', '/tmp/t239', '/var/folders']
+    const names = ['d', 'tony-box']
+    const plants: [string, string][] = [['a sandbox path', '/tmp/t239-x/project'], ['a home directory', '/home/d/work'], ['a machine name', 'tony-box'], ['a user name', 'd']]
+    for (const file of readdirSync(dir).filter((name) => name.endsWith('.json'))) {
+      const recorded = JSON.parse(readFileSync(new URL(file, dir), 'utf8')) as { tmuxBefore?: TmuxState; steps: { tmux?: TmuxState }[] }
+      const states = [recorded.tmuxBefore, ...recorded.steps.map((step) => step.tmux)].filter((state): state is TmuxState => Boolean(state?.windows.length))
+      expect(states.length, `${file} carries a state with a window to plant in`).toBeGreaterThan(0)
+      expect(leaks(JSON.stringify(withoutContracts(recorded)), places, names), `${file} as recorded`).toEqual([])
+      for (const [what, text] of plants) {
+        // The plant goes into a window name, which is the free text a state holds, in each state in turn.
+        for (const index of states.keys()) {
+          const planted = structuredClone(recorded)
+          const target = [planted.tmuxBefore, ...planted.steps.map((step) => step.tmux)].filter((candidate): candidate is TmuxState => Boolean(candidate?.windows.length))[index]!
+          target.windows[0]!.name = text
+          expect(leaks(JSON.stringify(withoutContracts(planted)), places, names), `${file}: ${what} in state ${index}`).not.toEqual([])
+          const clean = sanitize(planted, { paths: [['/tmp/t239-x/project', '/home/user/project'], ['/home/d', '/home/user']], names })
+          expect(leaks(JSON.stringify(withoutContracts(clean)), places, names), `${file}: ${what} in state ${index} after the rewrite`).toEqual([])
+        }
+      }
+    }
+  })
+
   it('has committed recordings that name neither this machine nor the sandbox, and that the rewrite leaves as they are', () => {
     const dir = new URL('../src/data/mcp-transcripts/', import.meta.url)
     const files = readdirSync(dir).filter((name) => name.endsWith('.json'))
