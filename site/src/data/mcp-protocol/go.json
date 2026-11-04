@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-go",
-  "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+  "revision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
   "selection": {
     "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
   },
@@ -29,7 +29,7 @@
     "resourceTemplates": [],
     "serverInfo": {
       "name": "libtmux",
-      "version": "v0.0.1-alpha.14"
+      "version": "v0.1.3-0.20261103072713-f59af95c257c"
     },
     "tools": [
       {
@@ -4290,7 +4290,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Pastes literal text only to its target; optional Enter appends one newline to the same private buffer.",
+            "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Pastes literal text only to its target; optional Enter appends one newline to the same private buffer. Non-empty text requires tmux 3.4 for safe named-buffer cleanup.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -4351,7 +4351,7 @@
           "openWorldHint": true,
           "title": "Paste text"
         },
-        "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Pastes literal text only to its target; optional Enter appends one newline to the same private buffer.",
+        "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Pastes literal text only to its target; optional Enter appends one newline to the same private buffer. Non-empty text requires tmux 3.4 for safe named-buffer cleanup.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -4959,7 +4959,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Run a shell command in a pane with your user's permissions. Runs one command you author in a pane that is not synchronized with others, rechecks the pane just before sending, and waits for it to finish, reporting its exit status.",
+            "description": "Run a shell command in a pane with your user's permissions. Runs one command you author in a pane that is not synchronized with others, rechecks the pane just before sending, and waits for it to finish, reporting its exit status. A tmux command run here acts on the session's current window unless you target it, so pass `-t \"$TMUX_PANE\"` to mean this pane.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -5079,7 +5079,7 @@
           "openWorldHint": true,
           "title": "Run a shell command"
         },
-        "description": "Run a shell command in a pane with your user's permissions. Runs one command you author in a pane that is not synchronized with others, rechecks the pane just before sending, and waits for it to finish, reporting its exit status.",
+        "description": "Run a shell command in a pane with your user's permissions. Runs one command you author in a pane that is not synchronized with others, rechecks the pane just before sending, and waits for it to finish, reporting its exit status. A tmux command run here acts on the session's current window unless you target it, so pass `-t \"$TMUX_PANE\"` to mean this pane.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -7880,7 +7880,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Waits for new pane output without accepting executable input.",
+            "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Waits for new pane output without accepting executable input. Follows control output from tmux 3.7 and polls capture-pane below it, joining wrapped lines on both. Below 3.7, rows that scroll past between two reads can be missed without a flag; capture_since reports linesMissed. outcome says why it ended: matched, alreadyOnScreen, stopped, output, idle, timeout, paneDied or streamLost. paneDied means the pane was killed, its program exited under remain-on-exit, its window or session went, or the server stopped; lines holds the output it wrote first. The wait asks tmux once a second whether the pane is dead, and tmux's answer decides. streamLost means the pane is still alive but its output stream ended, so lines may be incomplete: read it again with capture_since.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -7953,6 +7953,9 @@
                 "elapsedSeconds": {
                   "type": "number"
                 },
+                "endNote": {
+                  "type": "string"
+                },
                 "entryNote": {
                   "type": "string"
                 },
@@ -8020,7 +8023,7 @@
           "openWorldHint": true,
           "title": "Wait for pane text"
         },
-        "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Waits for new pane output without accepting executable input.",
+        "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Waits for new pane output without accepting executable input. Follows control output from tmux 3.7 and polls capture-pane below it, joining wrapped lines on both. Below 3.7, rows that scroll past between two reads can be missed without a flag; capture_since reports linesMissed. outcome says why it ended: matched, alreadyOnScreen, stopped, output, idle, timeout, paneDied or streamLost. paneDied means the pane was killed, its program exited under remain-on-exit, its window or session went, or the server stopped; lines holds the output it wrote first. The wait asks tmux once a second whether the pane is dead, and tmux's answer decides. streamLost means the pane is still alive but its output stream ended, so lines may be incomplete: read it again with capture_since.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -8084,6 +8087,9 @@
             },
             "elapsedSeconds": {
               "type": "number"
+            },
+            "endNote": {
+              "type": "string"
             },
             "entryNote": {
               "type": "string"

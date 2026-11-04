@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-cxx",
-  "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+  "revision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
   "selection": {
     "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
   },
@@ -28,7 +28,7 @@
     "serverInfo": {
       "name": "libtmux-cxx",
       "title": "libtmux C++ tmux server",
-      "version": "0.1.0-alpha.11"
+      "version": "0.1.0"
     },
     "tools": [
       {
@@ -1015,7 +1015,7 @@
           "readOnlyHint": false,
           "title": "Get tmux server information"
         },
-        "description": "Report liveness, tmux version, and the resolved socket when running. Inspect tmux metadata; accepts no client-supplied executable input.",
+        "description": "Report liveness, tmux version, and the resolved socket when running. A daemon older than 3.3a is refused: upgrade tmux and restart the server, or stay on the previous libtmux release. Inspect tmux metadata; accepts no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {},
@@ -2085,7 +2085,7 @@
           "readOnlyHint": false,
           "title": "Run a shell command in a tmux pane"
         },
-        "description": "Require one live configured pane, outside human-owned mode and running a supported POSIX foreground shell, then send one command and return output after its private completion boundary. Run a shell command in a pane with your user's permissions.",
+        "description": "Require one live configured pane, outside human-owned mode and running a supported POSIX foreground shell, then send one command and return output after its private completion boundary. The library's literal-command checks do not read a command nested in a string tmux parses itself, such as an if-shell body. Run a shell command in a pane with your user's permissions.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -2218,7 +2218,7 @@
           "readOnlyHint": false,
           "title": "Select a tmux layout"
         },
-        "description": "Replace the pane layout of one window. Names and mirrored layouts follow the selected daemon version. Saved layouts accept v1 checksums and v2 JSON; v2 requires tmux 3.8 (including 3.8-rc) or newer. Change tmux state; no client-supplied executable input.",
+        "description": "Replace the pane layout of one window. Names and mirrored layouts follow the selected daemon version. Saved layouts accept v1 checksums and v2 JSON; v2 requires tmux 3.8 or newer. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -2368,7 +2368,7 @@
           "readOnlyHint": false,
           "title": "Send keys to a tmux pane"
         },
-        "description": "Require every configured synchronized pane to be live and outside human-owned mode, then send one validated tmux key name. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
+        "description": "Require every configured synchronized pane to be live and outside human-owned mode, then send one validated tmux key name. The library's literal-command checks do not read a command nested in a string tmux parses itself, such as an if-shell body. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -3222,6 +3222,9 @@
         },
         "title": "Wait for pane text"
       }
+    ],
+    "unsupportedMethods": [
+      "resources/templates/list"
     ]
   }
 }

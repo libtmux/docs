@@ -73,7 +73,8 @@ it.each(['en', 'ja'])('adds every selected-port MCP contract when the requested 
       expect(full).toContain(twin)
       expect(index).toContain(`](${url})`)
       expect(twin).toContain('Resolved Go contract')
-      expect(twin).toContain(MCP_REFERENCE.go.revision)
+      // A tool page links its source at the pinned revision; the listings cite the revision the contract was extracted from, which differs once the snapshot is refreshed to the port's head.
+      expect(twin).toContain(toolName ? MCP_REFERENCE.go.revision : (MCP_REFERENCE.go.extractedRevision ?? MCP_REFERENCE.go.revision))
       expect(twin).not.toContain('Other languages')
       expect(twin).not.toContain('](../)')
       const fence = /```json\n([\s\S]*?)\n```/.exec(twin)

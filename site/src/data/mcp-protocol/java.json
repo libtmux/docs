@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-java",
-  "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+  "revision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
   "selection": {
     "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
   },
@@ -29,7 +29,7 @@
     "resourceTemplates": [],
     "serverInfo": {
       "name": "libtmux",
-      "version": "0.0.1-alpha.17-SNAPSHOT"
+      "version": "0.1.2-SNAPSHOT"
     },
     "tools": [
       {
@@ -5017,7 +5017,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Applies a named tmux layout, a unique abbreviation or a checksummed saved layout. Names follow the running daemon's version; mirrored main layouts require tmux 3.5. Malformed syntax is refused before window lookup; tmux validates geometry. Change tmux state; no client-supplied executable input.",
+            "description": "Applies a named tmux layout, a unique abbreviation or a checksummed saved layout. Names follow the running daemon's version; mirrored main layouts require tmux 3.5. JSON layouts need tmux 3.8; a server below 3.8 refuses one before select-layout is sent. A version probe may run first. Malformed syntax is refused before window lookup; tmux validates geometry. Change tmux state; no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -5083,7 +5083,7 @@
           "readOnlyHint": false,
           "title": "Select a layout"
         },
-        "description": "Applies a named tmux layout, a unique abbreviation or a checksummed saved layout. Names follow the running daemon's version; mirrored main layouts require tmux 3.5. Malformed syntax is refused before window lookup; tmux validates geometry. Change tmux state; no client-supplied executable input.",
+        "description": "Applies a named tmux layout, a unique abbreviation or a checksummed saved layout. Names follow the running daemon's version; mirrored main layouts require tmux 3.5. JSON layouts need tmux 3.8; a server below 3.8 refuses one before select-layout is sent. A version probe may run first. Malformed syntax is refused before window lookup; tmux validates geometry. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {

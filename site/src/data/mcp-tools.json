@@ -65,7 +65,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/batch_tools.py",
             "line": 277
           },
@@ -248,7 +248,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 101
           },
@@ -376,7 +376,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 106
           },
@@ -504,7 +504,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 141
           },
@@ -608,7 +608,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/server_tools.py",
             "line": 372
           },
@@ -801,7 +801,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/session_tools.py",
             "line": 364
           },
@@ -1063,7 +1063,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/buffer_tools.py",
             "line": 401
           },
@@ -1126,7 +1126,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 179
           },
@@ -1237,7 +1237,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 184
           },
@@ -1594,7 +1594,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 189
           },
@@ -1939,7 +1939,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 136
           },
@@ -2297,7 +2297,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 131
           },
@@ -2642,7 +2642,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/server_tools.py",
             "line": 382
           },
@@ -2740,7 +2740,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/session_tools.py",
             "line": 359
           },
@@ -2874,7 +2874,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/window_tools.py",
             "line": 507
           },
@@ -3092,7 +3092,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 116
           },
@@ -3155,7 +3155,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/server_tools.py",
             "line": 377
           },
@@ -3211,7 +3211,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/session_tools.py",
             "line": 374
           },
@@ -3291,7 +3291,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/window_tools.py",
             "line": 522
           },
@@ -3354,7 +3354,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/window_tools.py",
             "line": 501
           },
@@ -3730,7 +3730,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/server_tools.py",
             "line": 367
           },
@@ -3843,7 +3843,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/server_tools.py",
             "line": 362
           },
@@ -3983,7 +3983,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/session_tools.py",
             "line": 353
           },
@@ -4208,7 +4208,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/buffer_tools.py",
             "line": 386
           },
@@ -4296,7 +4296,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/window_tools.py",
             "line": 537
           },
@@ -4531,7 +4531,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/buffer_tools.py",
             "line": 391
           },
@@ -4647,7 +4647,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 194
           },
@@ -4763,7 +4763,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 174
           },
@@ -4884,7 +4884,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/session_tools.py",
             "line": 369
           },
@@ -5025,7 +5025,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/window_tools.py",
             "line": 517
           },
@@ -5250,7 +5250,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 111
           },
@@ -5631,7 +5631,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/window_tools.py",
             "line": 532
           },
@@ -5873,7 +5873,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 121
           },
@@ -6229,7 +6229,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 96
           },
@@ -6408,7 +6408,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 146
           },
@@ -6539,7 +6539,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/window_tools.py",
             "line": 527
           },
@@ -6764,7 +6764,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 164
           },
@@ -7142,7 +7142,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/session_tools.py",
             "line": 379
           },
@@ -7377,7 +7377,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 82
           },
@@ -7503,7 +7503,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 87
           },
@@ -7733,7 +7733,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/env_tools.py",
             "line": 130
           },
@@ -7836,7 +7836,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/option_tools.py",
             "line": 158
           },
@@ -7950,7 +7950,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 126
           },
@@ -8302,7 +8302,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/buffer_tools.py",
             "line": 396
           },
@@ -8365,7 +8365,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/env_tools.py",
             "line": 125
           },
@@ -8456,7 +8456,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/hook_tools.py",
             "line": 248
           },
@@ -8581,7 +8581,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/hook_tools.py",
             "line": 243
           },
@@ -8699,7 +8699,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/option_tools.py",
             "line": 153
           },
@@ -8802,7 +8802,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/wait_for_tools.py",
             "line": 327
           },
@@ -8865,7 +8865,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 158
           },
@@ -8970,7 +8970,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/window_tools.py",
             "line": 512
           },
@@ -9407,7 +9407,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 169
           },
@@ -9716,7 +9716,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/wait_for_tools.py",
             "line": 322
           },
@@ -9785,7 +9785,7 @@
           "source": {
             "repo": "tmux-python/libtmux-mcp",
             "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-            "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+            "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
             "file": "src/libtmux_mcp/tools/pane_tools/__init__.py",
             "line": 153
           },
@@ -10009,7 +10009,7 @@
       "source": "src/libtmux_mcp/tools",
       "repo": "tmux-python/libtmux-mcp",
       "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
-      "extractedRevision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+      "extractedRevision": "800aebd268ded9b308fae1a0728e794702e86499",
       "selection": {
         "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
       },
@@ -10018,10 +10018,10 @@
           "completions": {},
           "logging": {},
           "prompts": {
-            "listChanged": false
+            "listChanged": true
           },
           "resources": {
-            "listChanged": false,
+            "listChanged": true,
             "subscribe": false
           },
           "tools": {
@@ -10210,7 +10210,7 @@
           "source": {
             "repo": "libtmux/libtmux-ruby",
             "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
-            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "c860ae5840b82dcb6e169c29b6d012d82b936f93",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
             "line": 250
           },
@@ -10576,7 +10576,7 @@
           "source": {
             "repo": "libtmux/libtmux-ruby",
             "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
-            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "c860ae5840b82dcb6e169c29b6d012d82b936f93",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
             "line": 240
           },
@@ -11196,7 +11196,7 @@
           "source": {
             "repo": "libtmux/libtmux-ruby",
             "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
-            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "c860ae5840b82dcb6e169c29b6d012d82b936f93",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
             "line": 248
           },
@@ -11623,7 +11623,7 @@
           "source": {
             "repo": "libtmux/libtmux-ruby",
             "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
-            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "c860ae5840b82dcb6e169c29b6d012d82b936f93",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
             "line": 246
           },
@@ -12348,7 +12348,7 @@
           "source": {
             "repo": "libtmux/libtmux-ruby",
             "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
-            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "c860ae5840b82dcb6e169c29b6d012d82b936f93",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
             "line": 238
           },
@@ -12808,7 +12808,7 @@
           "source": {
             "repo": "libtmux/libtmux-ruby",
             "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
-            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "c860ae5840b82dcb6e169c29b6d012d82b936f93",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
             "line": 244
           },
@@ -13238,7 +13238,7 @@
           "source": {
             "repo": "libtmux/libtmux-ruby",
             "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
-            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "c860ae5840b82dcb6e169c29b6d012d82b936f93",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
             "line": 6
           },
@@ -16350,7 +16350,7 @@
           "source": {
             "repo": "libtmux/libtmux-ruby",
             "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
-            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "c860ae5840b82dcb6e169c29b6d012d82b936f93",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
             "line": 242
           },
@@ -17371,7 +17371,7 @@
       "source": "gems/libtmux-mcp/lib/libtmux/mcp",
       "repo": "libtmux/libtmux-ruby",
       "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
-      "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "extractedRevision": "c860ae5840b82dcb6e169c29b6d012d82b936f93",
       "selection": {
         "mode": "explicit CLI options",
         "tools": "tmux_capabilities,tmux_snapshot,tmux_capture,tmux_wait,tmux_create,tmux_send,tmux_close,tmux_run"
@@ -40225,7 +40225,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 303
           },
@@ -41441,7 +41441,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 191
           },
@@ -41588,7 +41588,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 199
           },
@@ -41753,7 +41753,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 565
           },
@@ -41847,7 +41847,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 435
           },
@@ -41980,7 +41980,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 452
           },
@@ -42126,7 +42126,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 229
           },
@@ -42300,7 +42300,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 174
           },
@@ -42600,7 +42600,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 151
           },
@@ -42852,7 +42852,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 158
           },
@@ -43088,7 +43088,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 251
           },
@@ -43203,7 +43203,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 166
           },
@@ -43535,7 +43535,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 570
           },
@@ -43646,7 +43646,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 578
           },
@@ -43749,7 +43749,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 574
           },
@@ -43860,7 +43860,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 143
           },
@@ -44166,7 +44166,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 127
           },
@@ -44314,7 +44314,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 135
           },
@@ -44490,7 +44490,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 379
           },
@@ -44625,11 +44625,11 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 527
           },
-          "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Pastes literal text only to its target; optional Enter appends one newline to the same private buffer.",
+          "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Pastes literal text only to its target; optional Enter appends one newline to the same private buffer. Non-empty text requires tmux 3.4 for safe named-buffer cleanup.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -44683,7 +44683,7 @@
                 "openWorldHint": true,
                 "readOnlyHint": false
               },
-              "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Pastes literal text only to its target; optional Enter appends one newline to the same private buffer.",
+              "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Pastes literal text only to its target; optional Enter appends one newline to the same private buffer. Non-empty text requires tmux 3.4 for safe named-buffer cleanup.",
               "inputLiteralization": {},
               "inputSchema": {
                 "additionalProperties": false,
@@ -44746,7 +44746,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 333
           },
@@ -44861,7 +44861,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 341
           },
@@ -44976,7 +44976,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 372
           },
@@ -45103,7 +45103,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 365
           },
@@ -45230,7 +45230,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 481
           },
@@ -45342,11 +45342,11 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 493
           },
-          "description": "Run a shell command in a pane with your user's permissions. Runs one command you author in a pane that is not synchronized with others, rechecks the pane just before sending, and waits for it to finish, reporting its exit status.",
+          "description": "Run a shell command in a pane with your user's permissions. Runs one command you author in a pane that is not synchronized with others, rechecks the pane just before sending, and waits for it to finish, reporting its exit status. A tmux command run here acts on the session's current window unless you target it, so pass `-t \"$TMUX_PANE\"` to mean this pane.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -45458,7 +45458,7 @@
                 "openWorldHint": true,
                 "readOnlyHint": false
               },
-              "description": "Run a shell command in a pane with your user's permissions. Runs one command you author in a pane that is not synchronized with others, rechecks the pane just before sending, and waits for it to finish, reporting its exit status.",
+              "description": "Run a shell command in a pane with your user's permissions. Runs one command you author in a pane that is not synchronized with others, rechecks the pane just before sending, and waits for it to finish, reporting its exit status. A tmux command run here acts on the session's current window unless you target it, so pass `-t \"$TMUX_PANE\"` to mean this pane.",
               "inputLiteralization": {},
               "inputSchema": {
                 "additionalProperties": false,
@@ -45580,7 +45580,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 218
           },
@@ -45959,7 +45959,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 357
           },
@@ -46072,7 +46072,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 353
           },
@@ -46167,7 +46167,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 349
           },
@@ -46262,7 +46262,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 506
           },
@@ -46421,7 +46421,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 517
           },
@@ -46668,7 +46668,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 422
           },
@@ -46796,7 +46796,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 417
           },
@@ -46908,7 +46908,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 391
           },
@@ -47023,7 +47023,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 538
           },
@@ -47149,7 +47149,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 275
           },
@@ -47319,7 +47319,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 283
           },
@@ -47483,7 +47483,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 263
           },
@@ -47648,7 +47648,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 412
           },
@@ -47742,7 +47742,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 210
           },
@@ -48041,7 +48041,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 468
           },
@@ -48176,7 +48176,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 386
           },
@@ -48289,7 +48289,7 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 402
           },
@@ -48415,11 +48415,11 @@
           "source": {
             "repo": "libtmux/libtmux-go",
             "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-            "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+            "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
             "file": "mcp/manifest_catalog.go",
             "line": 239
           },
-          "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Waits for new pane output without accepting executable input.",
+          "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Waits for new pane output without accepting executable input. Follows control output from tmux 3.7 and polls capture-pane below it, joining wrapped lines on both. Below 3.7, rows that scroll past between two reads can be missed without a flag; capture_since reports linesMissed. outcome says why it ended: matched, alreadyOnScreen, stopped, output, idle, timeout, paneDied or streamLost. paneDied means the pane was killed, its program exited under remain-on-exit, its window or session went, or the server stopped; lines holds the output it wrote first. The wait asks tmux once a second whether the pane is dead, and tmux's answer decides. streamLost means the pane is still alive but its output stream ended, so lines may be incomplete: read it again with capture_since.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -48483,6 +48483,9 @@
               },
               "elapsedSeconds": {
                 "type": "number"
+              },
+              "endNote": {
+                "type": "string"
               },
               "entryNote": {
                 "type": "string"
@@ -48552,7 +48555,7 @@
                 "openWorldHint": true,
                 "readOnlyHint": false
               },
-              "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Waits for new pane output without accepting executable input.",
+              "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Waits for new pane output without accepting executable input. Follows control output from tmux 3.7 and polls capture-pane below it, joining wrapped lines on both. Below 3.7, rows that scroll past between two reads can be missed without a flag; capture_since reports linesMissed. outcome says why it ended: matched, alreadyOnScreen, stopped, output, idle, timeout, paneDied or streamLost. paneDied means the pane was killed, its program exited under remain-on-exit, its window or session went, or the server stopped; lines holds the output it wrote first. The wait asks tmux once a second whether the pane is dead, and tmux's answer decides. streamLost means the pane is still alive but its output stream ended, so lines may be incomplete: read it again with capture_since.",
               "inputLiteralization": {},
               "inputSchema": {
                 "additionalProperties": false,
@@ -48625,6 +48628,9 @@
                   "elapsedSeconds": {
                     "type": "number"
                   },
+                  "endNote": {
+                    "type": "string"
+                  },
                   "entryNote": {
                     "type": "string"
                   },
@@ -48694,7 +48700,7 @@
       "source": "mcp",
       "repo": "libtmux/libtmux-go",
       "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
-      "extractedRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+      "extractedRevision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
       "selection": {
         "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
       },
@@ -48722,7 +48728,7 @@
         "resourceTemplates": [],
         "serverInfo": {
           "name": "libtmux",
-          "version": "v0.0.1-alpha.14"
+          "version": "v0.1.3-0.20261103072713-f59af95c257c"
         }
       }
     },
@@ -48781,7 +48787,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
             "line": 391
           },
@@ -50083,7 +50089,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
             "line": 134
           },
@@ -50252,7 +50258,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
             "line": 153
           },
@@ -50427,7 +50433,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/TeardownTools.java",
             "line": 25
           },
@@ -50531,7 +50537,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ExecuteTools.java",
             "line": 39
           },
@@ -50688,7 +50694,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ExecuteTools.java",
             "line": 67
           },
@@ -50870,7 +50876,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
             "line": 219
           },
@@ -51040,7 +51046,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
             "line": 117
           },
@@ -51200,7 +51206,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
             "line": 89
           },
@@ -51306,7 +51312,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
             "line": 101
           },
@@ -51426,7 +51432,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
             "line": 272
           },
@@ -51549,7 +51555,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
             "line": 109
           },
@@ -51693,7 +51699,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/TeardownTools.java",
             "line": 33
           },
@@ -51814,7 +51820,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/TeardownTools.java",
             "line": 52
           },
@@ -51935,7 +51941,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/TeardownTools.java",
             "line": 42
           },
@@ -52056,7 +52062,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
             "line": 69
           },
@@ -52238,7 +52244,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
             "line": 39
           },
@@ -52396,7 +52402,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
             "line": 53
           },
@@ -52574,7 +52580,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
             "line": 121
           },
@@ -52707,7 +52713,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ExecuteTools.java",
             "line": 218
           },
@@ -52846,7 +52852,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
             "line": 31
           },
@@ -52979,7 +52985,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
             "line": 44
           },
@@ -53136,7 +53142,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
             "line": 106
           },
@@ -53275,7 +53281,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
             "line": 91
           },
@@ -53440,7 +53446,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ExecuteTools.java",
             "line": 118
           },
@@ -53556,7 +53562,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ExecuteTools.java",
             "line": 142
           },
@@ -53768,7 +53774,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
             "line": 201
           },
@@ -53999,11 +54005,11 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
             "line": 75
           },
-          "description": "Applies a named tmux layout, a unique abbreviation or a checksummed saved layout. Names follow the running daemon's version; mirrored main layouts require tmux 3.5. Malformed syntax is refused before window lookup; tmux validates geometry. Change tmux state; no client-supplied executable input.",
+          "description": "Applies a named tmux layout, a unique abbreviation or a checksummed saved layout. Names follow the running daemon's version; mirrored main layouts require tmux 3.5. JSON layouts need tmux 3.8; a server below 3.8 refuses one before select-layout is sent. A version probe may run first. Malformed syntax is refused before window lookup; tmux validates geometry. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -54062,7 +54068,7 @@
                 "openWorldHint": true,
                 "readOnlyHint": false
               },
-              "description": "Applies a named tmux layout, a unique abbreviation or a checksummed saved layout. Names follow the running daemon's version; mirrored main layouts require tmux 3.5. Malformed syntax is refused before window lookup; tmux validates geometry. Change tmux state; no client-supplied executable input.",
+              "description": "Applies a named tmux layout, a unique abbreviation or a checksummed saved layout. Names follow the running daemon's version; mirrored main layouts require tmux 3.5. JSON layouts need tmux 3.8; a server below 3.8 refuses one before select-layout is sent. A version probe may run first. Malformed syntax is refused before window lookup; tmux validates geometry. Change tmux state; no client-supplied executable input.",
               "inputLiteralization": {},
               "inputSchema": {
                 "additionalProperties": false,
@@ -54128,7 +54134,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
             "line": 66
           },
@@ -54289,7 +54295,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
             "line": 57
           },
@@ -54434,7 +54440,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ExecuteTools.java",
             "line": 176
           },
@@ -54607,7 +54613,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ExecuteTools.java",
             "line": 197
           },
@@ -54800,7 +54806,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
             "line": 198
           },
@@ -54914,7 +54920,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
             "line": 189
           },
@@ -55008,7 +55014,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
             "line": 148
           },
@@ -55181,7 +55187,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ExecuteTools.java",
             "line": 239
           },
@@ -55295,7 +55301,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
             "line": 328
           },
@@ -55431,7 +55437,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
             "line": 352
           },
@@ -55563,7 +55569,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
             "line": 306
           },
@@ -55710,7 +55716,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
             "line": 180
           },
@@ -55814,7 +55820,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
             "line": 171
           },
@@ -55969,7 +55975,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ExecuteTools.java",
             "line": 94
           },
@@ -56158,7 +56164,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
             "line": 139
           },
@@ -56273,7 +56279,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
             "line": 163
           },
@@ -56419,7 +56425,7 @@
           "source": {
             "repo": "libtmux/libtmux-java",
             "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
             "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
             "line": 246
           },
@@ -56682,7 +56688,7 @@
       "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp",
       "repo": "libtmux/libtmux-java",
       "revision": "a0ecbc16da00140e2520462d478a2af470878272",
-      "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "extractedRevision": "fe25ff5ede445f0423d490dc6657c4d50dfac68d",
       "selection": {
         "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
       },
@@ -56710,7 +56716,7 @@
         "resourceTemplates": [],
         "serverInfo": {
           "name": "libtmux",
-          "version": "0.0.1-alpha.17-SNAPSHOT"
+          "version": "0.1.2-SNAPSHOT"
         }
       }
     },
@@ -56768,8 +56774,8 @@
           "wireName": "call_read_tools_batch",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 586
           },
@@ -57452,8 +57458,8 @@
           "wireName": "capture_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 576
           },
@@ -57563,8 +57569,8 @@
           "wireName": "capture_since",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 577
           },
@@ -57684,8 +57690,8 @@
           "wireName": "clear_pane_scrollback",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 613
           },
@@ -57768,8 +57774,8 @@
           "wireName": "create_session",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 603
           },
@@ -57884,8 +57890,8 @@
           "wireName": "create_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 604
           },
@@ -57988,8 +57994,8 @@
           "wireName": "find_pane_by_position",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 580
           },
@@ -58139,8 +58145,8 @@
           "wireName": "get_pane_info",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 575
           },
@@ -58283,12 +58289,12 @@
           "wireName": "get_server_info",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 572
           },
-          "description": "Inspect tmux metadata; accepts no client-supplied executable input. Read the tmux server's version and how many sessions, windows and panes it holds. Use to confirm a socket is alive and which tmux is running it.",
+          "description": "Inspect tmux metadata; accepts no client-supplied executable input. Read the tmux server's version and how many sessions, windows and panes it holds. Use to confirm a socket is alive and which tmux is running it. This server needs tmux 3.3a or newer and refuses an older one.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -58380,8 +58386,8 @@
           "wireName": "get_session_info",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 573
           },
@@ -58457,8 +58463,8 @@
           "wireName": "get_tmux_variables",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 582
           },
@@ -58528,8 +58534,8 @@
           "wireName": "get_window_info",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 574
           },
@@ -58628,8 +58634,8 @@
           "wireName": "kill_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 614
           },
@@ -58712,8 +58718,8 @@
           "wireName": "kill_session",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 616
           },
@@ -58796,8 +58802,8 @@
           "wireName": "kill_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 615
           },
@@ -58880,8 +58886,8 @@
           "wireName": "list_panes",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 571
           },
@@ -59045,8 +59051,8 @@
           "wireName": "list_sessions",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 569
           },
@@ -59125,8 +59131,8 @@
           "wireName": "list_windows",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 570
           },
@@ -59238,8 +59244,8 @@
           "wireName": "move_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 595
           },
@@ -59340,8 +59346,8 @@
           "wireName": "paste_text",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 610
           },
@@ -59442,8 +59448,8 @@
           "wireName": "rename_session",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 588
           },
@@ -59536,8 +59542,8 @@
           "wireName": "rename_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 589
           },
@@ -59630,8 +59636,8 @@
           "wireName": "resize_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 594
           },
@@ -59740,8 +59746,8 @@
           "wireName": "resize_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 593
           },
@@ -59845,8 +59851,8 @@
           "wireName": "respawn_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 606
           },
@@ -59946,8 +59952,8 @@
           "wireName": "run_shell_command",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 607
           },
@@ -60103,8 +60109,8 @@
           "wireName": "search_panes",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 579
           },
@@ -60241,8 +60247,8 @@
           "wireName": "select_layout",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 592
           },
@@ -60334,8 +60340,8 @@
           "wireName": "select_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 591
           },
@@ -60418,8 +60424,8 @@
           "wireName": "select_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 590
           },
@@ -60502,8 +60508,8 @@
           "wireName": "send_keys",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 608
           },
@@ -60599,8 +60605,8 @@
           "wireName": "send_keys_batch",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 609
           },
@@ -60768,8 +60774,8 @@
           "wireName": "set_history_limit",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 601
           },
@@ -60858,8 +60864,8 @@
           "wireName": "set_mouse_enabled",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 600
           },
@@ -60941,8 +60947,8 @@
           "wireName": "set_pane_title",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 597
           },
@@ -61035,8 +61041,8 @@
           "wireName": "set_synchronize_panes",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 611
           },
@@ -61126,8 +61132,8 @@
           "wireName": "show_environment",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 584
           },
@@ -61227,8 +61233,8 @@
           "wireName": "show_hooks",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 585
           },
@@ -61330,8 +61336,8 @@
           "wireName": "show_option",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 583
           },
@@ -61444,8 +61450,8 @@
           "wireName": "signal_channel",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 599
           },
@@ -61527,8 +61533,8 @@
           "wireName": "snapshot_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 578
           },
@@ -61737,8 +61743,8 @@
           "wireName": "split_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 605
           },
@@ -61853,8 +61859,8 @@
           "wireName": "swap_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 596
           },
@@ -61952,8 +61958,8 @@
           "wireName": "wait_for_channel",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 598
           },
@@ -62038,8 +62044,8 @@
           "wireName": "wait_for_text",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+            "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 581
           },
@@ -62209,8 +62215,8 @@
       "selectable": true,
       "source": "src/LibTmux.Mcp/Policy",
       "repo": "libtmux/libtmux-dotnet",
-      "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
-      "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+      "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+      "extractedRevision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
       "selection": {
         "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
       },
@@ -62241,7 +62247,7 @@
         "resourceTemplates": [],
         "serverInfo": {
           "name": "tmux",
-          "version": "0.0.0-alpha.20"
+          "version": "0.1.1"
         }
       }
     },
@@ -62300,7 +62306,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2162
           },
@@ -62837,7 +62843,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 1836
           },
@@ -62910,7 +62916,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 1858
           },
@@ -62971,7 +62977,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 3145
           },
@@ -63026,7 +63032,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2543
           },
@@ -63119,7 +63125,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2587
           },
@@ -63202,7 +63208,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 1951
           },
@@ -63268,7 +63274,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 1823
           },
@@ -63323,11 +63329,11 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 1761
           },
-          "description": "Report liveness, tmux version, and the resolved socket when running. Inspect tmux metadata; accepts no client-supplied executable input.",
+          "description": "Report liveness, tmux version, and the resolved socket when running. A daemon older than 3.3a is refused: upgrade tmux and restart the server, or stay on the previous libtmux release. Inspect tmux metadata; accepts no client-supplied executable input.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -63370,7 +63376,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 1794
           },
@@ -63425,7 +63431,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2023
           },
@@ -63493,7 +63499,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 1809
           },
@@ -63548,7 +63554,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 3161
           },
@@ -63604,7 +63610,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 3196
           },
@@ -63660,7 +63666,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 3178
           },
@@ -63716,7 +63722,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 1733
           },
@@ -63834,7 +63840,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 1699
           },
@@ -63924,7 +63930,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 1708
           },
@@ -64036,7 +64042,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2417
           },
@@ -64099,7 +64105,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 3008
           },
@@ -64177,7 +64183,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2269
           },
@@ -64241,7 +64247,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2288
           },
@@ -64305,7 +64311,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2383
           },
@@ -64373,7 +64379,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2362
           },
@@ -64443,7 +64449,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2658
           },
@@ -64527,11 +64533,11 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2689
           },
-          "description": "Require one live configured pane, outside human-owned mode and running a supported POSIX foreground shell, then send one command and return output after its private completion boundary. Run a shell command in a pane with your user's permissions.",
+          "description": "Require one live configured pane, outside human-owned mode and running a supported POSIX foreground shell, then send one command and return output after its private completion boundary. The library's literal-command checks do not read a command nested in a string tmux parses itself, such as an if-shell body. Run a shell command in a pane with your user's permissions.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -64596,7 +64602,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 1906
           },
@@ -64677,11 +64683,11 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2339
           },
-          "description": "Replace the pane layout of one window. Names and mirrored layouts follow the selected daemon version. Saved layouts accept v1 checksums and v2 JSON; v2 requires tmux 3.8 (including 3.8-rc) or newer. Change tmux state; no client-supplied executable input.",
+          "description": "Replace the pane layout of one window. Names and mirrored layouts follow the selected daemon version. Saved layouts accept v1 checksums and v2 JSON; v2 requires tmux 3.8 or newer. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -64739,7 +64745,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2323
           },
@@ -64795,7 +64801,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2307
           },
@@ -64851,11 +64857,11 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2803
           },
-          "description": "Require every configured synchronized pane to be live and outside human-owned mode, then send one validated tmux key name. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
+          "description": "Require every configured synchronized pane to be live and outside human-owned mode, then send one validated tmux key name. The library's literal-command checks do not read a command nested in a string tmux parses itself, such as an if-shell body. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -64930,7 +64936,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2876
           },
@@ -65019,7 +65025,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2523
           },
@@ -65081,7 +65087,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2510
           },
@@ -65135,7 +65141,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2457
           },
@@ -65199,7 +65205,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 3106
           },
@@ -65259,7 +65265,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2097
           },
@@ -65317,7 +65323,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2136
           },
@@ -65375,7 +65381,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2072
           },
@@ -65436,7 +65442,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2496
           },
@@ -65491,7 +65497,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 1887
           },
@@ -65547,7 +65553,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2622
           },
@@ -65627,7 +65633,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2435
           },
@@ -65689,7 +65695,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2476
           },
@@ -65750,7 +65756,7 @@
           "source": {
             "repo": "libtmux/libtmux-cxx",
             "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
             "file": "apps/mcp/src/tool_catalog.cpp",
             "line": 2006
           },
@@ -65851,7 +65857,7 @@
       "source": "apps/mcp/src",
       "repo": "libtmux/libtmux-cxx",
       "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-      "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "extractedRevision": "166ce2c741d85a037b54990bf7bcaf89dc4efe84",
       "selection": {
         "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
       },
@@ -65878,8 +65884,11 @@
         "serverInfo": {
           "name": "libtmux-cxx",
           "title": "libtmux C++ tmux server",
-          "version": "0.1.0-alpha.11"
-        }
+          "version": "0.1.0"
+        },
+        "unsupportedMethods": [
+          "resources/templates/list"
+        ]
       }
     },
     "swift": {
@@ -65937,7 +65946,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 3
           },
@@ -67273,7 +67282,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 4
           },
@@ -67436,7 +67445,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 5
           },
@@ -67621,7 +67630,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 47
           },
@@ -67725,7 +67734,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 37
           },
@@ -67902,7 +67911,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 38
           },
@@ -68098,7 +68107,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 6
           },
@@ -68354,7 +68363,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 7
           },
@@ -68588,7 +68597,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 8
           },
@@ -68682,7 +68691,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 9
           },
@@ -68836,7 +68845,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 10
           },
@@ -68965,7 +68974,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 11
           },
@@ -69191,7 +69200,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 48
           },
@@ -69304,7 +69313,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 49
           },
@@ -69417,7 +69426,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 50
           },
@@ -69530,7 +69539,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 12
           },
@@ -69774,7 +69783,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 13
           },
@@ -69920,7 +69929,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 14
           },
@@ -70116,7 +70125,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 22
           },
@@ -70257,7 +70266,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 39
           },
@@ -70396,7 +70405,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 23
           },
@@ -70513,7 +70522,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 24
           },
@@ -70630,7 +70639,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 25
           },
@@ -70785,7 +70794,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 26
           },
@@ -70902,7 +70911,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 40
           },
@@ -71034,7 +71043,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 41
           },
@@ -71250,7 +71259,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 15
           },
@@ -71475,11 +71484,11 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 27
           },
-          "description": "Change tmux state; no client-supplied executable input. Apply a named layout, a unique abbreviation for the running tmux version, or a checksummed saved layout. Invalid syntax is refused before window lookup; tmux validates geometry when applying the layout.",
+          "description": "Change tmux state; no client-supplied executable input. Apply a named layout, a unique abbreviation for the running tmux version, or a checksummed saved layout; a JSON layout document needs tmux 3.8. Invalid syntax is refused before window lookup; tmux validates geometry when applying the layout.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -71531,7 +71540,7 @@
                 "openWorldHint": true,
                 "readOnlyHint": false
               },
-              "description": "Change tmux state; no client-supplied executable input. Apply a named layout, a unique abbreviation for the running tmux version, or a checksummed saved layout. Invalid syntax is refused before window lookup; tmux validates geometry when applying the layout.",
+              "description": "Change tmux state; no client-supplied executable input. Apply a named layout, a unique abbreviation for the running tmux version, or a checksummed saved layout; a JSON layout document needs tmux 3.8. Invalid syntax is refused before window lookup; tmux validates geometry when applying the layout.",
               "inputLiteralization": {},
               "inputSchema": {
                 "additionalProperties": false,
@@ -71590,7 +71599,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 28
           },
@@ -71687,7 +71696,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 29
           },
@@ -71810,7 +71819,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 42
           },
@@ -71983,7 +71992,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 43
           },
@@ -72240,7 +72249,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 30
           },
@@ -72340,7 +72349,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 31
           },
@@ -72436,7 +72445,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 32
           },
@@ -72553,7 +72562,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 44
           },
@@ -72667,7 +72676,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 16
           },
@@ -72771,7 +72780,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 17
           },
@@ -72903,7 +72912,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 18
           },
@@ -73064,7 +73073,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 33
           },
@@ -73168,7 +73177,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 19
           },
@@ -73463,7 +73472,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 45
           },
@@ -73710,7 +73719,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 34
           },
@@ -73825,7 +73834,7 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 35
           },
@@ -73959,11 +73968,11 @@
           "source": {
             "repo": "libtmux/libtmux-swift",
             "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-            "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+            "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
             "file": "Sources/LibTmuxMCP/ToolOperation.swift",
             "line": 20
           },
-          "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Wait within one deadline for pane text.",
+          "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Wait within one deadline for pane text. From tmux 3.7 it streams pane output over a control client; below 3.7 it reads the screen on a timer, so output that changes no row, such as blank-only output, is not seen. Ends as matched, stopped, timedOut, expiredWhileReading, paneClosed, or alternateScreen.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -74094,7 +74103,7 @@
                 "openWorldHint": true,
                 "readOnlyHint": false
               },
-              "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Wait within one deadline for pane text.",
+              "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Wait within one deadline for pane text. From tmux 3.7 it streams pane output over a control client; below 3.7 it reads the screen on a timer, so output that changes no row, such as blank-only output, is not seen. Ends as matched, stopped, timedOut, expiredWhileReading, paneClosed, or alternateScreen.",
               "inputLiteralization": {},
               "inputSchema": {
                 "additionalProperties": false,
@@ -74232,7 +74241,7 @@
       "source": "Sources/LibTmuxMCP",
       "repo": "libtmux/libtmux-swift",
       "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-      "extractedRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "extractedRevision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
       "selection": {
         "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
       },
@@ -74261,7 +74270,7 @@
         "serverInfo": {
           "name": "libtmux",
           "title": "tmux",
-          "version": "0.1.0-alpha.6"
+          "version": "0.1.1"
         }
       }
     }
