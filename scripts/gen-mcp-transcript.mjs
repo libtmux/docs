@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process'
-import { existsSync, readdirSync, realpathSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, realpathSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { homedir, hostname, tmpdir, userInfo } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
+import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PORTS } from '../site/src/lib/ports.ts'
-import { EXAMPLES } from '../site/src/lib/mcp-examples.ts'
+import { EXAMPLES, STALE_TARGET } from '../site/src/lib/mcp-examples.ts'
 import { hasState, recordingStateProblems } from '../site/src/lib/mcp-tmux-state.ts'
 import { contractsOf, sameContracts } from '../site/src/lib/mcp-contract.ts'
-import { listedBy, listedValue, recordCalls, refusalCode, standInCalls, standInControls } from './lib/mcp-session.mjs'
-import { readTmuxState, settledState } from './lib/mcp-tmux-state.mjs'
-import { leaks, sanitize, UnsettledPaneError, verifyRecording, withoutContracts } from './lib/mcp-transcript-checks.mjs'
+import { listedBy, listedValue, recordCalls, recordSettled, requireRefusal, standInCalls, standInControls } from './lib/mcp-session.mjs'
+import { readTmuxState, settledState, stopSandboxServers } from './lib/mcp-tmux-state.mjs'
+import { hostLeaks, sanitize, verifyRecording } from './lib/mcp-transcript-checks.mjs'
 
 /**
  * Record what each port's MCP server answers to the worked example on the MCP
@@ -33,10 +33,12 @@ import { leaks, sanitize, UnsettledPaneError, verifyRecording, withoutContracts 
  *
  * A server that describes a pane the moment it splits it can catch the pane
  * before its shell has started: tmux then names the child `tmux` and reports
- * no path. Such an answer is never written. The recorder stops the tmux
- * servers of its own sandbox and records again, up to ATTEMPTS times, and
- * fails if the pane is still unsettled. A server that borrows a running tmux
- * session cannot be restarted from here, so it fails on the first attempt.
+ * no path. A state read before tmux has renamed a window for its pane's
+ * program is unsettled too, and so is one that never stops changing. Such an
+ * answer is never written. Whether the settle check times out while the calls
+ * run or the answers fail the check afterwards, the recorder stops the tmux
+ * servers of its own sandbox, starts the borrowed session again when the
+ * server borrows one, and records again, up to ATTEMPTS times in all.
  *
  * The transcript also stores the input and output schemas of each tool it
  * calls, from that snapshot. A page documenting another revision shows the
@@ -123,11 +125,8 @@ const sandboxReal = realpathSync(sandbox)
 const project = join(sandbox, 'project')
 let transcript
 let listed
-// Every tmux server the sandbox started; the sandbox is the only place they can be.
-const stopServers = () => {
-  const socket = join(sandbox, `tmux-${process.getuid?.() ?? ''}`)
-  if (existsSync(socket)) for (const name of readdirSync(socket)) try { execFileSync('tmux', ['-S', join(socket, name), 'kill-server'], { stdio: 'ignore' }) } catch { /* no server left on that socket */ }
-}
+// Every tmux server the sandbox started; the sandbox is the only place they can be, and a socket that resolves outside it is not stopped.
+const stopServers = () => stopSandboxServers(sandboxReal)
 try {
   mkdirSync(project, { recursive: true })
   writeFileSync(join(project, 'test_example.py'), TEST_FILE)
@@ -139,8 +138,10 @@ try {
   const workdir = server.cwd ? join(checkout, server.cwd) : checkout
   for (const [command, ...args] of [...server.prepare, ...(server.build?.(sandbox, checkout) ?? [])]) execFileSync(command, args, { cwd: workdir, stdio: 'inherit' })
   const [command, ...args] = server.command(checkout, sandbox)
-  if (server.borrowed) {
-    execFileSync('tmux', ['-L', server.borrowed, '-f', '/dev/null', 'new-session', '-d', '-s', 'docs', ...(server.pane ?? ['/bin/cat'])], { cwd: project, env: { ...process.env, TMUX: '', TMUX_TMPDIR: sandbox }, stdio: 'inherit' })
+  // A borrowed session names its window when it is created: tmux names it `tmux` until it renames it for the program a moment after that starts.
+  const pane = server.pane ?? ['/bin/cat']
+  const startBorrowed = () => {
+    if (server.borrowed) execFileSync('tmux', ['-L', server.borrowed, '-f', '/dev/null', 'new-session', '-d', '-s', 'docs', '-n', basename(pane[0]), ...pane], { cwd: project, env: { ...process.env, TMUX: '', TMUX_TMPDIR: sandbox }, stdio: 'inherit' })
   }
   const environment = {
     TMUX: undefined, TMUX_PANE: undefined, TMUX_TMPDIR: sandbox, HOME: join(sandbox, 'home'), SHELL: '/bin/sh',
@@ -153,34 +154,35 @@ try {
   // The tool that runs commands is the one whose requests carry a `command`; a name is not trusted to say so.
   const runTool = [...new Set(example.steps.filter((step) => typeof step.arguments.command === 'string').map((step) => step.tool))]
   if (runTool.length > 1) throw new Error(`${only}: the example must run commands through one run_ tool, found ${runTool.join(', ')}`)
-  let run
-  for (let attempt = 1; !run; attempt++) {
-    const recorded = await recordCalls({
-      command: command.startsWith('/') || !command.includes('/') ? command : join(checkout, command), args: args.map((arg) => (arg.includes('/') && !arg.startsWith('-') ? join(checkout, arg) : arg)),
-      cwd: server.inCheckout ? workdir : project, env: environment, calls: standInCalls(example.steps, standIn, 'generation'), controls: standInControls(example.steps, standIn),
-      observe: settledState({ read: readTmuxState({ sandbox: sandboxReal }), commands: PANE_COMMANDS[only] ?? ['sh'], port: only }),
-    })
-    try {
-      verifyRecording(recorded.steps, { port: only, runTool: runTool[0] ?? '', expected: runTool.length ? EXPECTED_OUTPUT : [], present: PRESENT[only] ?? [], commands: PANE_COMMANDS[only] ?? ['sh'], before: recorded.before, states: true })
-      run = recorded
-    } catch (error) {
-      // The raw answers, for whoever is adding a port: nothing is written.
-      if (process.argv.includes('--debug')) console.error(JSON.stringify(recorded.steps, null, 1))
-      // A borrowed session cannot be started again from here.
-      if (!(error instanceof UnsettledPaneError) || server.borrowed) throw error
-      if (attempt === ATTEMPTS) throw new Error(`${error.message}; still unsettled after ${ATTEMPTS} recordings`, { cause: error })
-      console.warn(`gen-mcp-transcript: ${error.message}; recording again`)
-      stopServers()
-    }
-  }
+  const run = await recordSettled({
+    attempts: ATTEMPTS,
+    record: () => {
+      startBorrowed()
+      return recordCalls({
+        command: command.startsWith('/') || !command.includes('/') ? command : join(checkout, command), args: args.map((arg) => (arg.includes('/') && !arg.startsWith('-') ? join(checkout, arg) : arg)),
+        cwd: server.inCheckout ? workdir : project, env: environment, calls: standInCalls(example.steps, standIn, 'generation'), controls: standInControls(example.steps, standIn),
+        observe: settledState({ read: readTmuxState({ sandbox: sandboxReal }), commands: PANE_COMMANDS[only] ?? ['sh'], port: only }),
+      })
+    },
+    check: (recorded) => {
+      try {
+        verifyRecording(recorded.steps, { port: only, runTool: runTool[0] ?? '', expected: runTool.length ? EXPECTED_OUTPUT : [], present: PRESENT[only] ?? [], commands: PANE_COMMANDS[only] ?? ['sh'], before: recorded.before, states: true })
+      } catch (error) {
+        // The raw answers, for whoever is adding a port: nothing is written.
+        if (process.argv.includes('--debug')) console.error(JSON.stringify(recorded.steps, null, 1))
+        throw error
+      }
+    },
+    reset: stopServers,
+    warn: (message) => console.warn(`gen-mcp-transcript: ${message}`),
+  })
 
   // The project directory is a fresh temporary one each run; a fixed name keeps the file stable.
   const FIXED = '/home/user/project'
   // tmux titles a new pane with the host name, and a server may report the user's: as a token, anywhere in a string or in JSON inside one, each becomes "host".
   listed = standIn && listedValue(run.steps, 'generation')
   // The stand-in is only a token for the page if the server refuses it: a real call has to send the listed value.
-  const refusedAs = standIn ? refusalCode(run.controls[0]) : undefined
-  if (standIn && !refusedAs) throw new Error(`${only}: the server did not refuse ${standIn}, so the recording cannot say a call must send the value ${listedBy(run.steps, 'generation')} returned`)
+  const refusedAs = standIn ? requireRefusal(run.controls[0], { port: only, standIn, expected: STALE_TARGET, listedBy: listedBy(run.steps, 'generation') }) : undefined
   const marks = { paths: [[join(sandboxReal, 'project'), FIXED], [project, FIXED], ...(listed ? [[listed, standIn]] : [])], names: [hostname(), userInfo().username] }
   run.steps = run.steps.map((step) => sanitize(step, marks))
   run.before = sanitize(run.before, marks)
@@ -203,7 +205,7 @@ try {
 }
 const out = join(root, 'site/src/data/mcp-transcripts', `${only}.json`)
 const text = `${JSON.stringify(transcript, null, 2)}\n`
-const found = leaks(JSON.stringify(withoutContracts(transcript), null, 2), [sandbox, sandboxReal, homedir(), checkout, ...(listed ? [listed] : [])], [userInfo().username, hostname()])
+const found = hostLeaks(transcript, { sandbox, sandboxReal, home: homedir(), checkout, listed, user: userInfo().username, machine: hostname() })
 if (found.length) throw new Error(`${only}: the recording names the host: ${found.join(', ')}`)
 if (checking) {
   const stored = JSON.parse(readFileSync(out, 'utf8'))
