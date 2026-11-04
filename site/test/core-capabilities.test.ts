@@ -217,6 +217,8 @@ jobs:
       expect(workflowStep(planned.replace('needs: plan', 'needs: [lint, plan]'), cell)).toBe(true)
       expect(workflowStep(planned.replace('    needs: plan\n', '    needs:\n      - lint\n      - plan\n'), cell)).toBe(true)
       expect(workflowStep(planned.replace('    needs: plan\n', '    needs:\n      - lint\n      # the plan decides\n      - plan # first\n'), cell)).toBe(true)
+      expect(workflowStep(planned.replace('needs: plan', 'needs: [lint,\n      plan]'), cell)).toBe(true)
+      expect(workflowStep(planned.replace('needs: plan', 'needs: [\n      lint, # first\n      plan,\n    ]'), cell)).toBe(true)
       expect(workflowStep(planned.replace("run_cells == 'true'", "run_cells == 'true' # the plan decides"), cell)).toBe(true)
       expect(workflowStep(planned.replace('id: plan', 'id: decide').replace('steps.plan.outputs.run_cells', 'steps.decide.outputs.run_cells'), cell)).toBe(true)
       expect(workflowStep(planned.replace('    runs-on: ubuntu-24.04\n    outputs:', '    runs-on: ubuntu-24.04\n    continue-on-error: false\n    outputs:'), cell)).toBe(true)
@@ -234,6 +236,9 @@ jobs:
       ['a plan named only in a block-list comment', planned.replace('    needs: plan\n', '    needs:\n      - other # plan\n')],
       ['a conditional job beside the plan', planned.replace('needs: plan', 'needs: [plan, gate]')],
       ['a conditional job beside the plan in a block list', planned.replace('    needs: plan\n', '    needs:\n      - plan\n      - gate\n')],
+      ['a conditional job on the second line of a wrapped flow list', planned.replace('needs: plan', 'needs: [plan,\n      gate]')],
+      ['a conditional job on the third line of a wrapped flow list', planned.replace('needs: plan', 'needs: [plan,\n      lint,\n      gate,\n    ]')],
+      ['a job beside the plan on a wrapped line that needs a conditional job', planned.replace('needs: plan', 'needs: [plan,\n      lint]').replace('  lint:\n', '  lint:\n    needs: gate\n')],
       ['a tolerated job beside the plan', planned.replace('needs: plan', 'needs: [plan, gate]').replace("    if: github.ref == 'x'\n", '    continue-on-error: true\n')],
       ['a job beside the plan that needs a conditional job', planned.replace('needs: plan', 'needs: [plan, lint]').replace('  lint:\n', '  lint:\n    needs: gate\n')],
       ['a job beside the plan that the workflow does not define', planned.replace('needs: plan', 'needs: [plan, absent]')],

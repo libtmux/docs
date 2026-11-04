@@ -211,14 +211,22 @@ function mayNotRunStep(indent: string, step: string[]): boolean {
   return stepKey(indent, step, 'if') !== undefined || (tolerated !== undefined && unquote(tolerated) !== 'false')
 }
 
-/** The jobs a job lists in `needs`: `needs: a`, `needs: [a, b]` or a block list of `- a` lines. A comment names nothing. */
+/**
+ * The jobs a job lists in `needs`: `needs: a`, a flow list `needs: [a, b]`, which may wrap onto
+ * further lines up to its closing bracket, or a block list of `- a` lines. A comment names nothing.
+ */
 function neededJobs(job: string[]): string[] {
   const needs = job.findIndex((line) => /^ {4}needs:/.test(line))
   if (needs < 0) return []
+  const first = stripComment(job[needs]!.replace(/^ {4}needs:/, ''))
   const after = job.slice(needs + 1)
-  const items = after.findIndex((line) => !/^ {6}- |^\s*(?:#|$)/.test(line))
-  return [job[needs]!.replace(/^ {4}needs:/, ''), ...after.slice(0, items < 0 ? undefined : items)]
-    .map((line) => stripComment(line).replace(/^\s*-\s+/, '')).join(' ').split(/[\s,[\]]+/).filter(Boolean)
+  const wrapped = first.includes('[') && !first.includes(']')
+  // A wrapped flow list ends with the line that closes it, a block list before its first line that is not an item.
+  const stop = (found: number) => (found < 0 ? after.length : found)
+  const items = wrapped
+    ? after.slice(0, stop(after.findIndex((line) => stripComment(line).includes(']'))) + 1)
+    : after.slice(0, stop(after.findIndex((line) => !/^ {6}- |^\s*(?:#|$)/.test(line))))
+  return [first, ...items].map((line) => stripComment(line).replace(/^\s*-\s+/, '')).join(' ').split(/[\s,[\]]+/).filter(Boolean)
 }
 
 /** Whether a job runs whenever the workflow does: no `if`, no tolerated failure, and every job it needs the same. */
