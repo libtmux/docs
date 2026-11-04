@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process'
 import { createInterface } from 'node:readline'
+import { UnsettledPaneError } from './mcp-transcript-checks.mjs'
 
 /**
  * Run a stdio MCP server through a fixed list of tool calls and record each
@@ -153,3 +154,47 @@ export const standInControls = (steps, standIn) => steps
 
 /** The error code a refused control call carries, or nothing when the call was accepted. */
 export const refusalCode = (control) => (control?.isError ? listedValue([control], 'code') : undefined)
+
+/**
+ * The code with which the server refused the stand-in, which must be the one
+ * the page tells the reader (`expected`): a server that refuses it for another
+ * reason, say a malformed target, has not shown that only the listed value
+ * works.
+ *
+ * @param {{ isError?: boolean, structuredContent?: unknown } | undefined} control
+ * @param {{ port: string, standIn: string, expected: string, listedBy?: string }} options
+ * @returns {string}
+ * @throws {Error} When the call was accepted, or refused with another code.
+ */
+export function requireRefusal(control, { port, standIn, expected, listedBy: tool }) {
+  const code = refusalCode(control)
+  if (code !== expected) throw new Error(`${port}: the server ${code ? `refused ${standIn} as ${code}, not ${expected}` : `did not refuse ${standIn}`}, so the recording cannot say a call must send the value ${tool} returned`)
+  return code
+}
+
+/**
+ * Record until a recording is settled. A pane described before its shell has
+ * started, a window not yet renamed for its program, and a state that never
+ * stops changing are all `UnsettledPaneError`s, whether `record` throws one
+ * while the session runs or `check` throws one once it has ended. Each is
+ * answered by `reset` and another recording, up to `attempts` in all; the
+ * last one is thrown with the count. Any other error ends the run at once.
+ *
+ * @template T
+ * @param {{ attempts: number, record: (attempt: number) => Promise<T>, check?: (recorded: T) => void, reset: () => unknown, warn?: (message: string) => void }} options
+ * @returns {Promise<T>}
+ */
+export async function recordSettled({ attempts, record, check = () => {}, reset, warn = () => {} }) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const recorded = await record(attempt)
+      check(recorded)
+      return recorded
+    } catch (error) {
+      if (!(error instanceof UnsettledPaneError)) throw error
+      if (attempt >= attempts) throw new Error(`${error.message}; still unsettled after ${attempts} recordings`, { cause: error })
+      warn(`${error.message}; recording again`)
+      await reset()
+    }
+  }
+}

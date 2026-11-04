@@ -522,6 +522,8 @@ describe('recorded results', () => {
     expect(shown({ ...rewritten, generationRefusedAs: undefined }), 'no refusal').toBeUndefined()
     expect(shown({ ...rewritten, generationListedBy: undefined }), 'no listing call').toBeUndefined()
     expect(shown({ ...rewritten, generationListedBy: 'kill_pane' }), 'a call the session never made').toBeUndefined()
+    expect(shown({ ...rewritten, generationRefusedAs: 'invalid_target' }), 'a refusal that is not the one the page documents').toBeUndefined()
+    expect(shown({ ...rewritten, generationRefusedAs: 'Stale_Target' }), 'the code is compared as written').toBeUndefined()
   })
 
   it('abbreviates long text and long lists, and leaves short values alone', () => {

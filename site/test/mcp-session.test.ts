@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { listedBy, listedValue, recordCalls, refusalCode, standInCalls, standInControls, withListed } from '../../scripts/lib/mcp-session.mjs'
+import { listedBy, listedValue, recordCalls, recordSettled, refusalCode, requireRefusal, standInCalls, standInControls, withListed } from '../../scripts/lib/mcp-session.mjs'
+import { UnsettledPaneError } from '../../scripts/lib/mcp-transcript-checks.mjs'
 
 /**
  * A stdio MCP server in a few lines: `list` answers with a generation, and
@@ -109,6 +110,16 @@ describe('the control calls of a recording', () => {
     expect(refusalCode(undefined)).toBeUndefined()
   })
 
+  it('requires the refusal to be the code the page documents, not any refusal', () => {
+    const refused = (code: string) => ({ isError: true, structuredContent: { error: { code } } })
+    const options = { port: 'julia', standIn: '3f9a1c', expected: 'stale_target', listedBy: 'list_panes' }
+    expect(requireRefusal(refused('stale_target'), options)).toBe('stale_target')
+    expect(() => requireRefusal(refused('invalid_target'), options)).toThrow('julia: the server refused 3f9a1c as invalid_target, not stale_target, so the recording cannot say a call must send the value list_panes returned')
+    expect(() => requireRefusal({ isError: false, structuredContent: { code: 'ok' } }, options)).toThrow(/did not refuse 3f9a1c/)
+    expect(() => requireRefusal(undefined, options)).toThrow(/did not refuse 3f9a1c/)
+    expect(() => requireRefusal({ isError: true, structuredContent: {} }, options), 'a refusal that carries no code').toThrow(/did not refuse/)
+  })
+
   it('names the tool that returned the value', async () => {
     const { steps } = await run([example[0]!])
     expect(listedBy(steps, 'generation')).toBe('list')
@@ -141,5 +152,71 @@ describe('the state a recording reads after each call', () => {
     const recorded = await run(calls)
     expect(recorded).not.toHaveProperty('before')
     expect(recorded.steps.every((step) => !('tmux' in step))).toBe(true)
+  })
+})
+
+describe('recording again when the state does not settle', () => {
+  const calls = [{ tool: 'list', arguments: {} }, { tool: 'list', arguments: {} }]
+  const unsettled = (message = 'x: tmux was still changing 8000ms after list') => new UnsettledPaneError(message)
+
+  /** The recorder's loop around a real session, whose observer takes the part of a settle check that times out. */
+  const attempt = (outcomes: ('settles' | 'times out')[], extra: Partial<Parameters<typeof recordSettled<Awaited<ReturnType<typeof recordCalls>>>>[0]> = {}) => {
+    const events: string[] = []
+    let made = 0
+    const result = recordSettled({
+      attempts: 3,
+      record: async (number) => {
+        made++
+        events.push(`record ${number}`)
+        const outcome = outcomes[number - 1]!
+        return recordCalls({ command: process.execPath, args: ['-e', SERVER], calls, pauseMs: 0, callTimeoutMs: 10000, observe: (step) => { if (step && outcome === 'times out') throw unsettled() } })
+      },
+      reset: () => { events.push('reset') },
+      warn: (message) => events.push(`warn ${message}`),
+      ...extra,
+    })
+    return { result, events, made: () => made }
+  }
+
+  it('records again after a settle check that times out while the calls run, which used to end the run', async () => {
+    const { result, events } = attempt(['times out', 'settles'])
+    const recorded = await result
+    expect(recorded.steps.map((step) => step.tool)).toEqual(['list', 'list'])
+    expect(events).toEqual(['record 1', 'warn x: tmux was still changing 8000ms after list; recording again', 'reset', 'record 2'])
+  })
+
+  it('records again after an answer that fails the check once the session has ended', async () => {
+    let checks = 0
+    const { result, events } = attempt(['settles', 'settles'], { check: () => { if (++checks === 1) throw unsettled('x: tmux ran "tmux" in %1 after split_window, not sh') } })
+    await result
+    expect(events.filter((event) => event.startsWith('record'))).toEqual(['record 1', 'record 2'])
+    expect(events).toContain('reset')
+  })
+
+  it('gives up after the attempts it was given, resetting between them and not after the last', async () => {
+    const { result, events, made } = attempt(['times out', 'times out', 'times out'])
+    await expect(result).rejects.toThrow('x: tmux was still changing 8000ms after list; still unsettled after 3 recordings')
+    await expect(result).rejects.toBeInstanceOf(Error)
+    expect(made()).toBe(3)
+    expect(events.filter((event) => event === 'reset')).toHaveLength(2)
+  })
+
+  it('ends the run at once on any other error, without resetting', async () => {
+    const { result, events } = attempt(['settles'], { check: () => { throw new Error('x: step 2 returned an error') } })
+    await expect(result).rejects.toThrow('step 2 returned an error')
+    expect(events).toEqual(['record 1'])
+    const failed = recordSettled({ attempts: 3, record: async () => { throw new Error('the server did not exit') }, reset: () => { throw new Error('must not reset') } })
+    await expect(failed).rejects.toThrow('the server did not exit')
+  })
+
+  it('waits for an asynchronous reset before the next recording', async () => {
+    const order: string[] = []
+    let tries = 0
+    await recordSettled({
+      attempts: 2,
+      record: async () => { order.push('record'); if (++tries === 1) throw unsettled(); return 'done' },
+      reset: async () => { order.push('reset starts'); await new Promise((resolve) => setTimeout(resolve, 20)); order.push('reset ends') },
+    })
+    expect(order).toEqual(['record', 'reset starts', 'reset ends', 'record'])
   })
 })

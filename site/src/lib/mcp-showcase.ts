@@ -1,6 +1,6 @@
 import { mcpObjects } from './mcp-catalog'
 import { PORT_BY_SLUG, portPageUrl } from './ports'
-import { EXAMPLES, type ExampleStep } from './mcp-examples.ts'
+import { EXAMPLES, STALE_TARGET, type ExampleStep } from './mcp-examples.ts'
 import { contractOf, sameContract, statesOutputs, type ToolContract } from './mcp-contract.ts'
 import { replayFrames, runAnswers, type Frame } from './mcp-replay'
 import { hasState, recordingStateProblems, type TmuxState } from './mcp-tmux-state.ts'
@@ -247,14 +247,14 @@ function listedTools(value: unknown, called: readonly string[]): string[][] {
  * store one and each describes the session the calls made
  * (`recordingStateProblems`); a recording that stores none is drawn from its
  * results. One that rewrites the generation holds only if it also says which
- * tool listed it and how the server refuses the token.
+ * tool listed it and that the server refuses the token as `stale_target`.
  */
 export function recordingHolds(transcript: Transcript, steps: readonly ExampleStep[], advertised: ReadonlyMap<string, ProtocolTool>): boolean {
   const called = [...new Set(transcript.steps.map((step) => step.tool))]
   const rewritten = transcript.sandbox.rewritten
   return transcript.steps.length === steps.length
     && recordingStateProblems(transcript).length === 0
-    && (!rewritten?.generation || (called.includes(rewritten.generationListedBy ?? '') && Boolean(rewritten.generationRefusedAs)))
+    && (!rewritten?.generation || (called.includes(rewritten.generationListedBy ?? '') && rewritten.generationRefusedAs === STALE_TARGET))
     && transcript.steps.every((step, index) => {
       const tool = advertised.get(step.tool)
       return !step.isError && step.tool === steps[index]!.tool
