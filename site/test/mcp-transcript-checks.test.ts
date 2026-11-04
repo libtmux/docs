@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { readdirSync, readFileSync } from 'node:fs'
 import { hostname, userInfo } from 'node:os'
 import { idsIn, leaks, sanitize, UnsettledPaneError, verifyRecording, verifySettledPanes, withoutContracts } from '../../scripts/lib/mcp-transcript-checks.mjs'
+import type { TmuxState } from '../src/lib/mcp-tmux-state'
 
 type Step = { tool: string; arguments: unknown; isError: boolean; content: unknown[]; structuredContent?: unknown }
 const OPTIONS = { port: 'x', runTool: 'run_shell_command', expected: ['2 passed'] }
@@ -82,6 +83,45 @@ describe('the checks a recording must pass', () => {
   })
 })
 
+describe('the tmux state a recording must carry', () => {
+  const pane = { window: '@0', id: '%0', command: 'sh', left: 0, top: 0, width: 80, height: 24, active: true }
+  const one: TmuxState = { sessions: [{ id: '$0', name: 'checks' }], windows: [{ session: '$0', id: '@0', index: 0, name: 'sh', active: true, layout: 'a1b2,80x24,0,0,0' }], panes: [pane] }
+  const none: TmuxState = { sessions: [], windows: [], panes: [] }
+  const stated = (): (Step & { tmux?: TmuxState })[] => good().map((step, index) => ({ ...step, tmux: index === 2 ? none : one }))
+  const withStates = { ...OPTIONS, before: none, states: true }
+
+  it('accepts a recording whose states follow from its calls', () => {
+    expect(() => verifyRecording(stated(), withStates)).not.toThrow()
+  })
+
+  it('refuses a recording that read no state, when the recorder asks for one, and leaves a recording that carries none to its results', () => {
+    expect(() => verifyRecording(good(), { ...OPTIONS, states: true })).toThrow(/no tmux state was read/)
+    expect(() => verifyRecording(good(), OPTIONS)).not.toThrow()
+  })
+
+  it('refuses a step whose state could not be read, a missing start, and a state that is not one tmux can be in', () => {
+    const missing = stated()
+    delete missing[1]!.tmux
+    expect(() => verifyRecording(missing, withStates)).toThrow(/after step 2 \(run_shell_command\): the state is missing/)
+    expect(() => verifyRecording(stated(), { ...OPTIONS, states: true })).toThrow(/the state before the first call is missing/)
+    const broken = stated()
+    broken[1]!.tmux = { ...one, panes: [{ ...pane, window: '@9' }] }
+    expect(() => verifyRecording(broken, withStates)).toThrow(/pane %0 is in window @9/)
+  })
+
+  it('refuses a state that belongs to another call: one read a step late, and one that lacks what the call returned', () => {
+    const late = stated()
+    late[0]!.tmux = none
+    expect(() => verifyRecording(late, withStates)).toThrow(/after step 1 \(create_session\): the result returns \$0, which tmux does not have after the call/)
+    const other = stated()
+    other[0]!.tmux = { ...one, panes: [{ ...pane, id: '%5' }], windows: [{ ...one.windows[0]!, layout: 'a1b2,80x24,0,0,5' }] }
+    expect(() => verifyRecording(other, withStates)).toThrow(/after step 1 \(create_session\): the result returns %0, which tmux does not have after the call/)
+    const named = stated()
+    named[1]!.arguments = { paneId: '%9', command: 'pytest -q' }
+    expect(() => verifyRecording(named, withStates), 'the id was never returned, so the id check speaks first').toThrow(/names %9, which no earlier result returned/)
+  })
+})
+
 describe('a pane described before its shell has started', () => {
   const split = (pane: Record<string, unknown>): Step[] => [
     { tool: 'create_session', arguments: { name: 'checks' }, isError: false, content: [], structuredContent: { id: '$0', panes: [{ id: '%0', command: 'sh', path: '/home/user/project' }] } },
@@ -141,6 +181,16 @@ describe('keeping the host out of a recording', () => {
     expect(leaks('{\\"pane_title\\":\\"d\\"}', [], ['d'])).toEqual(['d'])
     expect(leaks('logged in as d on host d', [], ['d'])).toEqual(['d'])
     expect(leaks('ran in /tmp/t239-x/project', ['/tmp/t239-x'], [])).toEqual(['/tmp/t239-x'])
+  })
+
+  it('finds and rewrites a path whose slashes a server escapes inside its JSON text, as Swift\'s does', () => {
+    const text = String.raw`{\"currentPath\":\"\/tmp\/t239-x\/project\"}`
+    expect(leaks(text, ['/tmp/t239-x'], [])).toEqual(['/tmp/t239-x'])
+    expect(leaks('{"currentPath":"/home/user/project"}', ['/tmp/t239-x'], []), 'a control: the fixed path is not the sandbox').toEqual([])
+    const clean = sanitize(text, marks)
+    expect(clean).toBe(String.raw`{\"currentPath\":\"\/home\/user\/project\"}`)
+    expect(leaks(clean, ['/tmp/t239-x'], [])).toEqual([])
+    expect(sanitize('/tmp/t239-x/project', marks), 'a path written plainly is still rewritten').toBe('/home/user/project')
   })
 
   it('does not take a name for part of a longer word, path, option or file name', () => {

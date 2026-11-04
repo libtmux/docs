@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { listedValue, recordCalls, standInCalls, withListed } from '../../scripts/lib/mcp-session.mjs'
+import { listedBy, listedValue, recordCalls, refusalCode, standInCalls, standInControls, withListed } from '../../scripts/lib/mcp-session.mjs'
 
 /**
  * A stdio MCP server in a few lines: `list` answers with a generation, and
@@ -24,7 +24,7 @@ process.stdin.on('data', (chunk) => {
 })
 process.stdin.on('end', () => process.exit(0))
 `
-const run = (calls: Parameters<typeof recordCalls>[0]['calls']) => recordCalls({ command: process.execPath, args: ['-e', SERVER], calls, pauseMs: 0, callTimeoutMs: 10000 })
+const run = (calls: Parameters<typeof recordCalls>[0]['calls'], controls: Parameters<typeof recordCalls>[0]['controls'] = []) => recordCalls({ command: process.execPath, args: ['-e', SERVER], calls, controls, pauseMs: 0, callTimeoutMs: 10000 })
 
 describe('a call that needs a value only an earlier result returns', () => {
   const stand = { target: { paneId: '%0', generation: '3f9a1c' } }
@@ -80,5 +80,66 @@ describe('the calls the recorder sends for an example that holds a stand-in', ()
   it('leaves every call as written when the example has no stand-in', () => {
     expect(standInCalls(example, undefined, 'generation').map((call) => call.arguments)).toEqual(example.map((call) => call.arguments))
     expect(standInCalls(example, '', 'generation').every((call) => typeof call.arguments === 'object')).toBe(true)
+  })
+})
+
+describe('the control calls of a recording', () => {
+  const example = [
+    { tool: 'list', arguments: {} },
+    { tool: 'use', arguments: { target: { paneId: '%0', generation: '3f9a1c' } } },
+    { tool: 'use', arguments: { target: { paneId: '%1', generation: '3f9a1c' } } },
+  ]
+
+  it('makes the stand-in call as written once the example is done, in the same session, and keeps its answer out of the steps', async () => {
+    const controls = standInControls(example, '3f9a1c')
+    expect(controls).toEqual([{ tool: 'use', arguments: example[1]!.arguments }])
+    const { steps, controls: answered } = await run([...standInCalls(example.slice(0, 2), '3f9a1c', 'generation')], controls)
+    expect(steps.map((step) => step.tool)).toEqual(['list', 'use'])
+    expect(answered).toHaveLength(1)
+    expect(answered[0]).toMatchObject({ tool: 'use', isError: true, arguments: { target: { generation: '3f9a1c' } } })
+    expect(refusalCode(answered[0])).toBe('stale_target')
+    expect(refusalCode(steps[1]), 'a call the server accepted has no refusal').toBeUndefined()
+  })
+
+  it('has no control without a stand-in, and finds the code of a refusal wherever the server puts it', () => {
+    expect(standInControls(example, undefined)).toEqual([])
+    expect(standInControls(example.slice(0, 1), '3f9a1c')).toEqual([])
+    expect(refusalCode({ isError: true, structuredContent: { error: { code: 'stale_target' } } })).toBe('stale_target')
+    expect(refusalCode({ isError: false, structuredContent: { code: 'ok' } })).toBeUndefined()
+    expect(refusalCode(undefined)).toBeUndefined()
+  })
+
+  it('names the tool that returned the value', async () => {
+    const { steps } = await run([example[0]!])
+    expect(listedBy(steps, 'generation')).toBe('list')
+    expect(listedBy(steps, 'nothing')).toBeUndefined()
+  })
+})
+
+describe('the state a recording reads after each call', () => {
+  const calls = [{ tool: 'list', arguments: {} }, { tool: 'list', arguments: {} }, { tool: 'list', arguments: {} }]
+
+  it('reads once before the first call and after each, and stores the state on its step', async () => {
+    const { before, steps } = await recordCalls({ command: process.execPath, args: ['-e', SERVER], calls, pauseMs: 0, callTimeoutMs: 10000, observe: (step) => ({ after: step ? step.tool : null }) })
+    expect(before).toEqual({ after: null })
+    expect(steps.map((step) => step.tmux)).toEqual([{ after: 'list' }, { after: 'list' }, { after: 'list' }])
+  })
+
+  it('reads a state only once the pause that stands for an agent reading the result has passed', async () => {
+    const times: number[] = []
+    await recordCalls({ command: process.execPath, args: ['-e', SERVER], calls, pauseMs: 80, callTimeoutMs: 10000, observe: () => { times.push(Date.now()) } })
+    expect(times).toHaveLength(calls.length + 1)
+    for (let at = 1; at < times.length; at++) expect(times[at]! - times[at - 1]!, `read ${at}`).toBeGreaterThanOrEqual(70)
+  })
+
+  it('ends the session with the error when a state cannot be read, so no step is recorded without one', async () => {
+    const failing = recordCalls({ command: process.execPath, args: ['-e', SERVER], calls, pauseMs: 0, callTimeoutMs: 10000, observe: (step) => { if (step) throw new Error('tmux could not be read') } })
+    await expect(failing).rejects.toThrow('tmux could not be read')
+  })
+
+  it('stores no state, and returns none, when nothing reads it', async () => {
+    const recorded = await run(calls)
+    expect(recorded).not.toHaveProperty('before')
+    expect(recorded.steps.every((step) => !('tmux' in step))).toBe(true)
   })
 })

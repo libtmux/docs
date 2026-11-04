@@ -1,3 +1,5 @@
+import { hasState, recordingStateProblems } from '../../site/src/lib/mcp-tmux-state.ts'
+
 const ID = /[$%@]\d+(?!\d)/g
 
 /** The tmux ids (`$1`, `@2`, `%3`) in a value, as a set. */
@@ -55,11 +57,15 @@ export function verifySettledPanes(steps, { port, commands }) {
  * as that exact id, by an earlier step. The step that ran the command printed
  * the expected text on its own word boundary and exited 0. With `commands`,
  * every pane an answer describes is also settled (see `verifySettledPanes`).
+ * With `states`, every step and the start carry the tmux state the recorder
+ * read, and those states describe the session the calls made (see
+ * `recordingStateProblems`); without it a recording that carries states is
+ * held to that, and one that carries none is not.
  *
- * @param {{ tool: string, arguments: unknown, isError: boolean, content: unknown[], structuredContent?: unknown }[]} steps
- * @param {{ port: string, runTool: string, expected: string[], present?: string[], commands?: string[] }} options
+ * @param {{ tool: string, arguments: unknown, isError: boolean, content: unknown[], structuredContent?: unknown, tmux?: unknown }[]} steps
+ * @param {{ port: string, runTool: string, expected: string[], present?: string[], commands?: string[], before?: unknown, states?: boolean }} options
  */
-export function verifyRecording(steps, { port, runTool, expected, present = [], commands }) {
+export function verifyRecording(steps, { port, runTool, expected, present = [], commands, before, states = false }) {
   if (commands) verifySettledPanes(steps, { port, commands })
   const returned = new Set()
   for (const step of steps) {
@@ -69,6 +75,9 @@ export function verifyRecording(steps, { port, runTool, expected, present = [], 
     }
     for (const id of idsIn(answer(step))) returned.add(id)
   }
+  if (states && !hasState({ tmuxBefore: before, steps })) throw new Error(`${port}: no tmux state was read`)
+  const unstated = recordingStateProblems({ tmuxBefore: before, steps })
+  if (unstated.length) throw new Error(`${port}: ${unstated.join('; ')}`)
   const lastAnswer = JSON.stringify(answer(steps.at(-1) ?? { content: [] }))
   for (const text of present) if (!lastAnswer.includes(text)) throw new Error(`${port}: the last answer lacks "${text}"`)
   const runs = steps.filter((step) => step.tool === runTool)
@@ -87,6 +96,9 @@ export function verifyRecording(steps, { port, runTool, expected, present = [], 
   })
 }
 
+/** A path as a server writes it inside JSON text when it escapes slashes, as Swift's does. */
+const escapedSlashes = (text) => text.replaceAll('/', '\\/')
+
 const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /** A name as a token: not part of a longer word, path, option or file name. Short names such as `d` are matched too. */
@@ -94,7 +106,7 @@ const token = (name) => new RegExp(`(?<![\\w./-])${escapeRegExp(name)}(?![\\w./-
 
 /**
  * What a recording names that it must not: `places` (where it ran, found as
- * text anywhere) and `names` (who ran it, found as a token or a quoted value,
+ * text anywhere, also with its slashes escaped as JSON text may have them) and `names` (who ran it, found as a token or a quoted value,
  * whatever their length, inside a string or inside JSON embedded in one).
  *
  * @param {string} text
@@ -103,12 +115,12 @@ const token = (name) => new RegExp(`(?<![\\w./-])${escapeRegExp(name)}(?![\\w./-
  * @returns {string[]}
  */
 export function leaks(text, places, names = []) {
-  return [...places.filter((item) => item && text.includes(item)), ...names.filter((item) => item && token(item).test(text))]
+  return [...places.filter((item) => item && (text.includes(item) || text.includes(escapedSlashes(item)))), ...names.filter((item) => item && token(item).test(text))]
 }
 
 /**
  * A recorded value with the host's marks replaced: each `[from, to]` of
- * `paths` wherever it occurs in a string, and each of `names` as a token,
+ * `paths` wherever it occurs in a string, also with its slashes escaped, and each of `names` as a token,
  * inside embedded JSON too, becomes `alias`.
  *
  * @param {unknown} value
@@ -117,7 +129,7 @@ export function leaks(text, places, names = []) {
  */
 export function sanitize(value, { paths = [], names = [], alias = 'host' }) {
   if (typeof value === 'string') {
-    const moved = paths.reduce((text, [from, to]) => text.replaceAll(from, to), value)
+    const moved = paths.reduce((text, [from, to]) => text.replaceAll(from, to).replaceAll(escapedSlashes(from), escapedSlashes(to)), value)
     return names.filter(Boolean).reduce((text, name) => text.replace(token(name), alias), moved)
   }
   if (Array.isArray(value)) return value.map((item) => sanitize(item, { paths, names, alias }))

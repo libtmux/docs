@@ -6,8 +6,10 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PORTS } from '../site/src/lib/ports.ts'
 import { EXAMPLES } from '../site/src/lib/mcp-examples.ts'
+import { hasState, recordingStateProblems } from '../site/src/lib/mcp-tmux-state.ts'
 import { contractsOf, sameContracts } from '../site/src/lib/mcp-contract.ts'
-import { listedValue, recordCalls, standInCalls } from './lib/mcp-session.mjs'
+import { listedBy, listedValue, recordCalls, refusalCode, standInCalls, standInControls } from './lib/mcp-session.mjs'
+import { readTmuxState, settledState } from './lib/mcp-tmux-state.mjs'
 import { leaks, sanitize, UnsettledPaneError, verifyRecording, withoutContracts } from './lib/mcp-transcript-checks.mjs'
 
 /**
@@ -19,6 +21,15 @@ import { leaks, sanitize, UnsettledPaneError, verifyRecording, withoutContracts 
  * the revision its protocol snapshot records, and refuses to write otherwise.
  * It fails on a tool error, a server that does not exit 0, a request whose id
  * no earlier result returned, or an expected value that is missing.
+ *
+ * A result states only what a tool returns: Go's `split_window` returns the new
+ * pane's id and nothing of the layout. So before the first call and after each
+ * one, the recorder reads the tmux server of its own sandbox, on that
+ * sandbox's socket and never on the reader's or the default one, and stores
+ * its sessions, its windows with the layout tmux reports and its panes with
+ * their command and rectangle: `tmuxBefore` for the start and `tmux` on each
+ * step. The page draws that state. A state that cannot be read fails the
+ * recording, and so does one that does not follow from its call.
  *
  * A server that describes a pane the moment it splits it can catch the pane
  * before its shell has started: tmux then names the child `tmux` and reports
@@ -88,7 +99,7 @@ const PRESENT = { ruby: ['%0'], julia: ['checks finished'] }
 const PANE_COMMANDS = { ruby: ['cat'], julia: ['cat'] }
 // A server that describes a pane the moment it is split can catch it before its shell has started; the answer is recorded again.
 const ATTEMPTS = 6
-// A Julia target carries `generation`, the tmux server's process id and start time. list_panes returns it, capture_pane must send it back, and no two runs share one: the call goes out with the listed value and the recording keeps the example's stand-in.
+// A Julia target carries `generation`, the tmux server's process id and start time. list_panes returns it, capture_pane must send it back, and no two runs share one: the call goes out with the listed value and the recording keeps the example's stand-in. A control call with the stand-in must be refused, and the recording states how.
 const GENERATION = { julia: '3f9a1c' }
 const LOG_FILE = '2026-01-01 checks started\n2026-01-01 checks finished\n'
 const TEST_FILE = 'def test_adds():\n    assert 1 + 1 == 2\n\n\ndef test_upper():\n    assert "tmux".upper() == "TMUX"\n'
@@ -146,10 +157,11 @@ try {
   for (let attempt = 1; !run; attempt++) {
     const recorded = await recordCalls({
       command: command.startsWith('/') || !command.includes('/') ? command : join(checkout, command), args: args.map((arg) => (arg.includes('/') && !arg.startsWith('-') ? join(checkout, arg) : arg)),
-      cwd: server.inCheckout ? workdir : project, env: environment, calls: standInCalls(example.steps, standIn, 'generation'),
+      cwd: server.inCheckout ? workdir : project, env: environment, calls: standInCalls(example.steps, standIn, 'generation'), controls: standInControls(example.steps, standIn),
+      observe: settledState({ read: readTmuxState({ sandbox: sandboxReal }), commands: PANE_COMMANDS[only] ?? ['sh'], port: only }),
     })
     try {
-      verifyRecording(recorded.steps, { port: only, runTool: runTool[0] ?? '', expected: runTool.length ? EXPECTED_OUTPUT : [], present: PRESENT[only] ?? [], commands: PANE_COMMANDS[only] ?? ['sh'] })
+      verifyRecording(recorded.steps, { port: only, runTool: runTool[0] ?? '', expected: runTool.length ? EXPECTED_OUTPUT : [], present: PRESENT[only] ?? [], commands: PANE_COMMANDS[only] ?? ['sh'], before: recorded.before, states: true })
       run = recorded
     } catch (error) {
       // The raw answers, for whoever is adding a port: nothing is written.
@@ -166,15 +178,20 @@ try {
   const FIXED = '/home/user/project'
   // tmux titles a new pane with the host name, and a server may report the user's: as a token, anywhere in a string or in JSON inside one, each becomes "host".
   listed = standIn && listedValue(run.steps, 'generation')
+  // The stand-in is only a token for the page if the server refuses it: a real call has to send the listed value.
+  const refusedAs = standIn ? refusalCode(run.controls[0]) : undefined
+  if (standIn && !refusedAs) throw new Error(`${only}: the server did not refuse ${standIn}, so the recording cannot say a call must send the value ${listedBy(run.steps, 'generation')} returned`)
   const marks = { paths: [[join(sandboxReal, 'project'), FIXED], [project, FIXED], ...(listed ? [[listed, standIn]] : [])], names: [hostname(), userInfo().username] }
   run.steps = run.steps.map((step) => sanitize(step, marks))
+  run.before = sanitize(run.before, marks)
   transcript = {
     generated: 'scripts/gen-mcp-transcript.mjs',
     repo: snapshot.repo, revision,
-    sandbox: { tmux: execFileSync('tmux', ['-V'], { encoding: 'utf8' }).trim(), pytest, project: ['test_example.py', 'checks.log'], expected: EXPECTED_OUTPUT, rewritten: { projectDirectory: FIXED, ...(standIn ? { generation: standIn } : {}) } },
+    sandbox: { tmux: execFileSync('tmux', ['-V'], { encoding: 'utf8' }).trim(), pytest, project: ['test_example.py', 'checks.log'], expected: EXPECTED_OUTPUT, rewritten: { projectDirectory: FIXED, ...(standIn ? { generation: standIn, generationListedBy: listedBy(run.steps, 'generation'), generationRefusedAs: refusedAs } : {}) } },
     serverInfo: run.serverInfo,
     contracts,
     prompt: example.prompt,
+    tmuxBefore: run.before,
     steps: run.steps.map((step, index) => ({ ...step, caption: example.steps[index].caption })),
   }
 } finally {
@@ -190,6 +207,8 @@ const found = leaks(JSON.stringify(withoutContracts(transcript), null, 2), [sand
 if (found.length) throw new Error(`${only}: the recording names the host: ${found.join(', ')}`)
 if (checking) {
   const stored = JSON.parse(readFileSync(out, 'utf8'))
+  const unstated = hasState(stored) ? recordingStateProblems(stored) : ['no tmux state is recorded']
+  if (unstated.length) throw new Error(`${only}: ${unstated.join('; ')}`)
   if (stored.revision !== transcript.revision || !sameContracts(stored.contracts, transcript.contracts) || JSON.stringify(stored.steps.map((s) => [s.tool, s.arguments])) !== JSON.stringify(transcript.steps.map((s) => [s.tool, s.arguments]))) throw new Error(`${only}: transcript is stale`)
 } else {
   mkdirSync(dirname(out), { recursive: true })
