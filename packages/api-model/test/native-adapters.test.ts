@@ -106,7 +106,7 @@ describe('Ruby native documentation adapter', () => {
         files: [{ path: 'examples/api/active.rb', content: code }],
       },
     }
-    const model = extractRuby(input, REVISION)
+    const model = extractRuby(input, REVISION, {})
     for (const id of input.examples.manifest.programs[0].api.symbols) {
       const symbol = model.symbols.find((entry) => entry.id === id)!
       expect(symbol.doc?.examples).toHaveLength(4)

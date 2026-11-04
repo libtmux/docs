@@ -1,8 +1,9 @@
-import type { ApiModel } from '@libtmux/api-model'
+import { HELD_RUBY_PROGRAMS, type ApiModel } from '@libtmux/api-model'
 import { createHash } from 'node:crypto'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { describe, expect, it } from 'vitest'
 import ruby from '../src/data/api/ruby.json'
+import sources from '../src/data/example-sources.json'
 import receipt from './fixtures/api-examples.json'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 
@@ -53,5 +54,29 @@ describe('verified complete Ruby API programs', () => {
     for (const line of blocks[1].code.split('\n').filter((line) => /^\s*#/.test(line))) {
       expect(line.length).toBeLessThanOrEqual(100)
     }
+  })
+})
+
+describe('the Ruby programs held back from their pages', () => {
+  const manifest = (sources as Record<string, { revision: string, content: string }>)['ruby:examples/manifest.json']!
+  const selected = (JSON.parse(manifest.content) as { programs: { path: string, api?: { symbols: string[] } }[] }).programs
+    .filter((program) => program.api)
+  const attached = model.symbols.flatMap((symbol) => (symbol.doc?.examples ?? []).flatMap((block) =>
+    block.sourceUrl ? [{ id: symbol.id, path: block.sourceUrl.replace(/^.*\/blob\/[0-9a-f]{40}\//, '') }] : []))
+
+  it('are shown on none of the pages they document', () => {
+    expect(attached.filter(({ path }) => Object.hasOwn(HELD_RUBY_PROGRAMS, path))).toEqual([])
+  })
+
+  it('name programs the manifest at the model’s revision still selects', () => {
+    expect(manifest.revision).toBe(model.revision)
+    const missing = Object.keys(HELD_RUBY_PROGRAMS).filter((path) => !selected.some((program) => program.path === path))
+    expect(missing, 'a hold for a program that is gone').toEqual([])
+  })
+
+  it('still attach every selected program that is not held', () => {
+    const wanted = selected.filter((program) => !Object.hasOwn(HELD_RUBY_PROGRAMS, program.path))
+      .flatMap((program) => program.api!.symbols.map((id) => `${id} ${program.path}`)).sort()
+    expect(attached.map(({ id, path }) => `${id} ${path}`).sort()).toEqual(wanted)
   })
 })

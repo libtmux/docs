@@ -1,5 +1,5 @@
 import type { ApiModel, ApiProduct, ApiSymbol, DocBlock, Param, Signature, SymbolKind } from '../model.ts'
-import { attachCompleteRubyExamples } from './ruby-examples.ts'
+import { attachCompleteRubyExamples, HELD_RUBY_PROGRAMS } from './ruby-examples.ts'
 
 interface RubyPackage {
   name: string
@@ -178,7 +178,11 @@ function source(source: RubySource, artifact: RubyArtifact) {
   }
 }
 
-export function extractRuby(input: unknown, expectedRevision?: string): ApiModel {
+/**
+ * The model of a Ruby export. `held` names the complete programs left off their pages (see
+ * `HELD_RUBY_PROGRAMS`); an export built for a test passes its own, or none.
+ */
+export function extractRuby(input: unknown, expectedRevision?: string, held: Readonly<Record<string, string>> = HELD_RUBY_PROGRAMS): ApiModel {
   const artifact = assertArtifact(input, expectedRevision)
   const namespaceIds = new Set(artifact.namespaces.map((namespace) => namespace.id))
   const namespaces: ApiSymbol[] = artifact.namespaces.map((namespace) => {
@@ -229,7 +233,7 @@ export function extractRuby(input: unknown, expectedRevision?: string): ApiModel
     source: source(entry.source, artifact),
   }))
   const symbols = [...namespaces, ...aliases, ...methods]
-  attachCompleteRubyExamples(symbols, artifact.examples, artifact.source, artifact.packages)
+  attachCompleteRubyExamples(symbols, artifact.examples, artifact.source, artifact.packages, held)
   return {
     port: 'ruby',
     repo: artifact.source.repository,

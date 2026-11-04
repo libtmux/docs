@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ApiSymbol } from '../src/model.ts'
-import { attachCompleteRubyExamples } from '../src/languages/ruby-examples.ts'
+import { attachCompleteRubyExamples, HELD_RUBY_PROGRAMS } from '../src/languages/ruby-examples.ts'
 
 const source = { repository: 'libtmux/libtmux-ruby', revision: 'a'.repeat(40) }
 const packages = [{ name: 'libtmux', version: '0.1.0.alpha.3' }, { name: 'libtmux-async', version: '0.1.0.alpha.3' }]
@@ -75,6 +75,45 @@ describe('complete native Ruby examples', () => {
     expect(() => attachCompleteRubyExamples([symbol()], bundle(), source, [])).toThrow(/no release version: libtmux/)
     expect(() => attachCompleteRubyExamples([symbol()], bundle(), source, [{ name: 'libtmux', version: 'master' }]))
       .toThrow(/no release version/)
+  })
+
+  describe('a held program', () => {
+    const held = { [file]: 'Fails alone in an empty directory.' }
+
+    it('attaches to none of its symbols, and attaches once released', () => {
+      const target = symbol()
+      attachCompleteRubyExamples([target], bundle(), source, packages, held)
+      expect(target.doc!.examples).toEqual([{ lang: 'ruby', code: 'existing' }])
+      attachCompleteRubyExamples([target], bundle(), source, packages, {})
+      expect(target.doc!.examples).toHaveLength(5)
+    })
+
+    it('leaves the programs beside it attached', () => {
+      const other = { ...program(), path: 'examples/api/other.rb', api: { ...program().api, symbols: ['LibTmux::Server.other'] } }
+      const input = { manifest: { programs: [program(), other] }, files: [{ path: file, content: code }, { path: other.path, content: code }] }
+      const second = { ...symbol(), id: 'LibTmux::Server.other', publicId: 'LibTmux::Server.other', name: 'other' }
+      const targets = [symbol(), second]
+      attachCompleteRubyExamples(targets, input, source, packages, held)
+      expect(targets.map((target) => target.doc!.examples!.length)).toEqual([1, 5])
+    })
+
+    it('is refused when the manifest does not select it', () => {
+      const elsewhere = { 'examples/api/gone.rb': 'Fails alone.' }
+      expect(() => attachCompleteRubyExamples([symbol()], bundle(), source, packages, elsewhere)).toThrow(/Held Ruby example is not in the manifest: examples\/api\/gone\.rb/)
+      const unselected = { manifest: { programs: [{ path: file, gem: 'libtmux' }] } }
+      expect(() => attachCompleteRubyExamples([symbol()], unselected, source, packages, held)).toThrow(/not in the manifest/)
+    })
+
+    it('is refused without a reason', () => {
+      expect(() => attachCompleteRubyExamples([symbol()], bundle(), source, packages, { [file]: ' ' })).toThrow(/has no reason: examples\/api\/server\.rb/)
+    })
+  })
+
+  it('lists each held program by its path, with a reason', () => {
+    for (const [path, reason] of Object.entries(HELD_RUBY_PROGRAMS)) {
+      expect(path, 'a program path').toMatch(/^examples\/(?:[\w-]+\/)*[\w-]+\.rb$/)
+      expect(reason.trim(), path).not.toBe('')
+    }
   })
 
   it('rejects mutable revisions and invalid repository citations', () => {

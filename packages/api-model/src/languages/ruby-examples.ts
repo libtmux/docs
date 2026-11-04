@@ -13,24 +13,56 @@ interface RubyExamples {
 }
 
 /**
+ * Programs the port's manifest selects whose pages must not show them yet,
+ * by path, each with why it is held and what brings it back.
+ *
+ * A page that tells readers to save a program that fails, or states a tmux
+ * floor the library refuses, is wrong text. A held program attaches to none
+ * of its symbols. An entry the manifest no longer lists fails the build, so
+ * remove it when the pinned revision carries the fix it names.
+ */
+export const HELD_RUBY_PROGRAMS: Readonly<Record<string, string>> = {
+  'examples/api/workspace_apply.rb':
+    'Saved alone in an empty directory it stops with Workspace::ConfigError: it loads ../workspace.yaml, '
+    + 'which no page shows. Returns once libtmux-ruby writes the document inside the program.',
+  'examples/api/control.rb':
+    'The intro states tmux 3.3a or newer, but the library refuses a control client below tmux 3.7 (capability '
+    + 'control-mode). The manifest has no field for a program\'s tmux floor and the model states 3.7 only in '
+    + 'prose, so no floor is read. Returns once the manifest declares it and this generator uses it.',
+  'examples/api/async_control.rb':
+    'The intro states tmux 3.3a or newer, but the library refuses a control client below tmux 3.7 (capability '
+    + 'control-mode). The manifest has no field for a program\'s tmux floor and the model states 3.7 only in '
+    + 'prose, so no floor is read. Returns once the manifest declares it and this generator uses it.',
+}
+
+/**
  * Native export metadata selects whole programs; ordinary recipe helpers stay unlisted.
  *
  * Readers install the gem from RubyGems at the version the documented revision
  * declares. The port bumps that version only in its release commits, so it
  * names a published release, and Bundler needs it spelled out while the gems
  * are prereleases.
+ *
+ * `held` names programs to leave off their pages, each with a reason; one the
+ * manifest does not select is an error, so a hold cannot outlive its program.
  */
 export function attachCompleteRubyExamples(
   symbols: ApiSymbol[],
   input: unknown,
   source: { repository: string; revision: string },
   packages: { name: string; version: string }[] = [],
+  held: Readonly<Record<string, string>> = {},
 ): void {
   const bundle = input as RubyExamples | undefined
   const programs = bundle?.manifest?.programs
   if (programs === undefined) return
   if (!Array.isArray(programs)) throw new Error('Invalid Ruby example programs')
-  const selected = programs.filter((program) => Object.hasOwn(program, 'api'))
+  const listed = programs.filter((program) => Object.hasOwn(program, 'api'))
+  for (const [path, reason] of Object.entries(held)) {
+    if (!listed.some((program) => program.path === path)) throw new Error(`Held Ruby example is not in the manifest: ${path}`)
+    if (!reason.trim()) throw new Error(`Held Ruby example has no reason: ${path}`)
+  }
+  const selected = listed.filter((program) => !Object.hasOwn(held, program.path))
   if (!selected.length) return
   if (!/^[0-9a-f]{40}$/.test(source.revision)) throw new Error('Ruby examples require a full source revision')
   if (!/^[\w][\w.-]*\/[\w][\w.-]*$/.test(source.repository)) throw new Error('Invalid Ruby example repository')
