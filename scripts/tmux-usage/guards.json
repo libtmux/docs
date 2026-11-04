@@ -73,7 +73,7 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/_internal/operations/command.ts:44",
+          "at": "packages/libtmux/src/_internal/operations/command.ts:56",
           "has": [
             "lastObservedDaemon(runtime)"
           ]

@@ -285,7 +285,7 @@
     },
     "ts": {
       "repo": "libtmux/libtmux-ts",
-      "revision": "afd56d4dfa441b5bab9d9996ebd5b303fc5c4a3a",
+      "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
       "support": {
         "presets": {
           "2-pane-synchronized": {
@@ -1085,7 +1085,7 @@
     },
     "rs": {
       "repo": "libtmux/libtmux-rs",
-      "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "support": {
         "presets": {
           "2-pane-synchronized": {
@@ -1189,7 +1189,7 @@
           "cite": {
             "path": "crates/tmux-workspace/docs/cli.md",
             "find": "A window that names no `layout` is tiled",
-            "line": 97
+            "line": 115
           }
         }
       },
@@ -1215,7 +1215,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1242,7 +1242,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1271,7 +1271,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1300,7 +1300,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1329,7 +1329,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1356,7 +1356,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1390,7 +1390,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1417,7 +1417,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1453,7 +1453,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1482,7 +1482,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1518,7 +1518,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1549,7 +1549,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1583,7 +1583,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1614,7 +1614,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1641,7 +1641,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1675,7 +1675,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1709,7 +1709,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1743,7 +1743,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1777,7 +1777,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1813,7 +1813,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1847,7 +1847,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -1874,7 +1874,7 @@
             {
               "path": "scripts/tmuxp-parity.py",
               "name": "run_fixture",
-              "line": 763,
+              "line": 771,
               "via": "scheduled",
               "checks": "Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not."
             }
@@ -2371,7 +2371,7 @@
     },
     "ruby": {
       "repo": "libtmux/libtmux-ruby",
-      "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "support": {
         "presets": {
           "2-pane-synchronized": {

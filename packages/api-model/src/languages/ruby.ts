@@ -1,5 +1,5 @@
 import type { ApiModel, ApiProduct, ApiSymbol, DocBlock, Param, Signature, SymbolKind } from '../model.ts'
-import { attachCompleteRubyExamples } from './ruby-examples.ts'
+import { attachCompleteRubyExamples, HELD_RUBY_PROGRAMS } from './ruby-examples.ts'
 
 interface RubyPackage {
   name: string
@@ -143,7 +143,15 @@ function rbsSignature(raw: string, tags: RubyTag[] = []): Signature {
     if (part.startsWith('**')) return { name: 'kwargs', type: part.slice(2), variadic: 'keyword' as const }
     if (part.startsWith('*')) return { name: 'args', type: part.slice(1), variadic: 'positional' as const }
     const optional = part.startsWith('?')
-    return { name: `arg${index + 1}`, type: optional ? part.slice(1) : part, ...(optional ? { default: 'nil' } : {}) }
+    const text = optional ? part.slice(1) : part
+    // RBS lets a positional parameter carry a name after its type: `::String value`. A union ends in its last member, not a name.
+    const named = /^(.+[\w\])}?])\s+([a-z_]\w*)$/.exec(text)
+    const name = named?.[2] ?? `arg${index + 1}`
+    return {
+      name, type: named?.[1] ?? text,
+      ...(optional ? { default: 'nil' } : {}),
+      ...(named && docs.get(name) ? { doc: docs.get(name) } : {}),
+    }
   })
   const typeParams = raw.startsWith('[') ? splitTopLevel(raw.slice(1, raw.indexOf(']'))) : undefined
   const raises = tags.filter((tag) => tag.tag === 'raise').map((tag) => ({
@@ -170,7 +178,11 @@ function source(source: RubySource, artifact: RubyArtifact) {
   }
 }
 
-export function extractRuby(input: unknown, expectedRevision?: string): ApiModel {
+/**
+ * The model of a Ruby export. `held` names the complete programs left off their pages (see
+ * `HELD_RUBY_PROGRAMS`); an export built for a test passes its own, or none.
+ */
+export function extractRuby(input: unknown, expectedRevision?: string, held: Readonly<Record<string, string>> = HELD_RUBY_PROGRAMS): ApiModel {
   const artifact = assertArtifact(input, expectedRevision)
   const namespaceIds = new Set(artifact.namespaces.map((namespace) => namespace.id))
   const namespaces: ApiSymbol[] = artifact.namespaces.map((namespace) => {
@@ -221,7 +233,7 @@ export function extractRuby(input: unknown, expectedRevision?: string): ApiModel
     source: source(entry.source, artifact),
   }))
   const symbols = [...namespaces, ...aliases, ...methods]
-  attachCompleteRubyExamples(symbols, artifact.examples, artifact.source, artifact.packages)
+  attachCompleteRubyExamples(symbols, artifact.examples, artifact.source, artifact.packages, held)
   return {
     port: 'ruby',
     repo: artifact.source.repository,

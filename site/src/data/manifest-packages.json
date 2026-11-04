@@ -31,35 +31,35 @@
     },
     "ruby": {
       "repo": "libtmux/libtmux-ruby",
-      "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "distributions": [
         {
           "name": "libtmux",
-          "version": "0.1.0.alpha.1",
+          "version": "0.1.1",
           "manifest": "gems/libtmux/libtmux.gemspec",
           "repo": "libtmux/libtmux-ruby",
-          "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d"
+          "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa"
         },
         {
           "name": "libtmux-async",
-          "version": "0.1.0.alpha.1",
+          "version": "0.1.1",
           "manifest": "gems/libtmux-async/libtmux-async.gemspec",
           "repo": "libtmux/libtmux-ruby",
-          "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d"
+          "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa"
         },
         {
           "name": "libtmux-mcp",
-          "version": "0.1.0.alpha.1",
+          "version": "0.1.1",
           "manifest": "gems/libtmux-mcp/libtmux-mcp.gemspec",
           "repo": "libtmux/libtmux-ruby",
-          "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d"
+          "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa"
         },
         {
           "name": "libtmux-workspace",
-          "version": "0.1.0.alpha.1",
+          "version": "0.1.1",
           "manifest": "gems/libtmux-workspace/libtmux-workspace.gemspec",
           "repo": "libtmux/libtmux-ruby",
-          "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d"
+          "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa"
         }
       ],
       "units": []
@@ -156,70 +156,70 @@
     },
     "ts": {
       "repo": "libtmux/libtmux-ts",
-      "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
+      "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
       "distributions": [
         {
           "name": "@libtmux/mcp",
-          "version": "0.1.0-alpha.12",
+          "version": "0.1.2",
           "manifest": "packages/mcp/package.json",
           "repo": "libtmux/libtmux-ts",
-          "revision": "46cccfef2a546de55ce8b308249b8c76339089a0"
+          "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870"
         },
         {
           "name": "@libtmux/workspace",
-          "version": "0.1.0-alpha.12",
+          "version": "0.1.2",
           "manifest": "packages/workspace/package.json",
           "repo": "libtmux/libtmux-ts",
-          "revision": "46cccfef2a546de55ce8b308249b8c76339089a0"
+          "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870"
         },
         {
           "name": "@libtmux/workspace-cli",
-          "version": "0.1.0-alpha.12",
+          "version": "0.1.2",
           "manifest": "packages/workspace-cli/package.json",
           "repo": "libtmux/libtmux-ts",
-          "revision": "46cccfef2a546de55ce8b308249b8c76339089a0"
+          "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870"
         },
         {
           "name": "libtmux",
-          "version": "0.1.0-alpha.12",
+          "version": "0.1.2",
           "manifest": "packages/libtmux/package.json",
           "repo": "libtmux/libtmux-ts",
-          "revision": "46cccfef2a546de55ce8b308249b8c76339089a0"
+          "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870"
         }
       ],
       "units": []
     },
     "rs": {
       "repo": "libtmux/libtmux-rs",
-      "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "distributions": [
         {
           "name": "libtmux",
-          "version": "0.1.0-alpha.15",
+          "version": "0.1.2",
           "manifest": "crates/libtmux/Cargo.toml",
           "repo": "libtmux/libtmux-rs",
-          "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd"
+          "revision": "6942c1e602e537eab1d545e4b0589020162ce953"
         },
         {
           "name": "libtmux-macros",
-          "version": "0.1.0-alpha.15",
+          "version": "0.1.2",
           "manifest": "crates/libtmux-macros/Cargo.toml",
           "repo": "libtmux/libtmux-rs",
-          "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd"
+          "revision": "6942c1e602e537eab1d545e4b0589020162ce953"
         },
         {
           "name": "tmux-mcp",
-          "version": "0.1.0-alpha.16",
+          "version": "0.1.2",
           "manifest": "crates/tmux-mcp/Cargo.toml",
           "repo": "libtmux/libtmux-rs",
-          "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd"
+          "revision": "6942c1e602e537eab1d545e4b0589020162ce953"
         },
         {
           "name": "tmux-workspace",
-          "version": "0.1.0-alpha.15",
+          "version": "0.1.2",
           "manifest": "crates/tmux-workspace/Cargo.toml",
           "repo": "libtmux/libtmux-rs",
-          "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd"
+          "revision": "6942c1e602e537eab1d545e4b0589020162ce953"
         }
       ],
       "units": []

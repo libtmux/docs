@@ -27,7 +27,8 @@ const MARKER = /^%[\w-]+$/
 const KEBAB = /^[a-z0-9]+(?:-[a-z0-9]+)+$/
 /** The kebab-case literals no tmux name claims whole, each of which linked a word of it to an unrelated member. */
 const UNCLAIMED_KEBAB = [
-  'julia libtmux-workspace', 'rs copy-mode-vi', 'rs even-horizontal', 'rs global-session', 'rs global-window', 'rs main-horizontal', 'rs tree-mode',
+  'julia libtmux-workspace', 'rs control-mode', 'rs copy-mode-vi', 'rs even-horizontal', 'rs global-session', 'rs global-window', 'rs main-horizontal', 'rs tree-mode',
+  'ts pane-command-finished',
 ]
 
 interface Link { text: string; href: string; offset: number; kind?: string; symbol?: ApiSymbol }
@@ -181,6 +182,12 @@ function compareProse() {
 
 /** The links that are real and that the guard still loses, and why. Each key is `port symbol literal word`. */
 const KNOWN_LOSSES: Record<string, string> = {
+  'ts server.Server.run input input': 'run takes RunOptions, which extends SpawnOptions through Omit, and the TypeScript model records no extends',
+  'ts server.Server.run keep keep': 'run takes RunOptions, which extends SpawnOptions through Omit, and the TypeScript model records no extends',
+  'ts types.RunOptions.separateStderr input input': 'RunOptions extends SpawnOptions through Omit and the sentence names its input option; the TypeScript model records no extends',
+  'ts program.Program keep keep': 'Program is what spawn returns for SpawnOptions, whose keep option the sentence names; the model relates a class to no option type',
+  'ts types.ProgramPlacement from from': 'ProgramPlacement is the placement a SpawnOptions carries, and the summary names its from option; the model relates an alias to no option type',
+  'ts server.Server engine engine': 'Server is built with ServerOptions, whose engine option the sentence names; the model relates a class to no option type',
   'ts common.LogicalRef kind kind': 'LogicalRef is a union of types that extend LogicalRefBase, which declares kind, and the TypeScript model records no extends: nothing relates the alias to the base type',
   'julia LibTmux.get_environment hidden=true hidden': 'the function gives back an EnvironmentValue, and the Julia model records no return type for it',
   'cxx libtmux::ExecutorOptions refuses refuses': 'ServerCapabilities::refuses, reached through Server::capabilities(), which the same sentence names in another literal with no argument to say it is called',
@@ -229,7 +236,8 @@ describe('the links a reference page draws in doc prose', () => {
   })
 
   it('lose a real link only where the list says why', () => {
-    expect(reviewed.filter((row) => row.reason).map((row) => `${row.port} ${row.symbol} ${row.literal} ${row.word}`).sort()).toEqual(Object.keys(KNOWN_LOSSES).sort())
+    // A summary may name the same word twice; it is one loss.
+    expect([...new Set(reviewed.filter((row) => row.reason).map((row) => `${row.port} ${row.symbol} ${row.literal} ${row.word}`))].sort()).toEqual(Object.keys(KNOWN_LOSSES).sort())
   })
 
   it('keep, beside a type\'s own members, exactly the links the reviewed list holds', () => {

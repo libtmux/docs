@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-transcript.mjs",
   "repo": "libtmux/libtmux-rs",
-  "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+  "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
   "sandbox": {
     "tmux": "tmux 3.8a",
     "pytest": "pytest 9.2.0",
@@ -408,7 +408,7 @@
             "description": "How the run finished."
           },
           "output": {
-            "description": "Everything the command wrote, stdout and stderr interleaved in the\norder the program wrote them.\n\nThis is the raw output stream with escape sequences removed, not the\nrendered screen: a line redrawn in place, such as a progress bar,\nrepeats. `capture_pane` shows the screen.",
+            "description": "The retained tail of command output, stdout and stderr interleaved.\n\nThis is the raw output stream with escape sequences removed, not the\nrendered screen: a line redrawn in place, such as a progress bar,\nrepeats. Check `truncated` before treating it as complete.\n`capture_pane` shows the screen.",
             "type": "string"
           },
           "pane": {

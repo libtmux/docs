@@ -45,4 +45,4 @@ cleanup of positively identified created state after failure; it cannot undo
 shell effects. Attach and client switching are explicit post-apply choices,
 not defaults.
 
-[Source-owned CLI guide](../source-guide/#command-line-interface)
+[Source-owned CLI guide](../source-guide/#create-the-session)

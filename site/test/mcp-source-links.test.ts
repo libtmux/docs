@@ -1,9 +1,10 @@
-import { execFileSync } from 'node:child_process'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { execFileSync, spawnSync } from 'node:child_process'
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
+import { registrationFileProblems, registrationLinkProblems } from '../../scripts/lib/mcp-source-links.mjs'
 
 it('audits protocol names with the renderer’s resolver in bare Node', () => {
   const root = fileURLToPath(new URL('../../', import.meta.url))
@@ -26,4 +27,162 @@ it('audits protocol names with the renderer’s resolver in bare Node', () => {
       expect(report.unresolved).toEqual([expect.objectContaining({ text: 'mcp:prompt:run_and_wait' })])
     }
   } finally { rmSync(directory, { recursive: true, force: true }) }
+})
+
+describe('the source link of an MCP registration', () => {
+  const source = (file: string, line: number | undefined, revision = 'a'.repeat(40)) => ({ revision, file, ...(line === undefined ? {} : { line }) })
+  const row = (name: string, file: string, line: number | undefined, revision?: string) => ({ name, wireName: name, source: source(file, line, revision) })
+  const file = ['import { server } from "./server"', '', 'server.registerTool(', '  "list_windows",', '  { description: "x" },', ')', '', 'server.registerTool("kill_session", {})', ''].join('\n')
+  const read = (revision: string, path: string) => (revision === 'a'.repeat(40) && path === 'src/tools.ts' ? file : undefined)
+
+  it('resolves when the file exists at the revision and the lines from the cited one name the tool', () => {
+    expect(registrationLinkProblems('ts', [row('list_windows', 'src/tools.ts', 3), row('kill_session', 'src/tools.ts', 8)], read)).toEqual([])
+  })
+
+  it('refuses a tool whose file does not exist at the cited revision', () => {
+    expect(registrationLinkProblems('ts', [row('start_program', 'src/programs.ts', 3)], read))
+      .toEqual(['ts: start_program cites src/programs.ts at aaaaaaaaa, which does not exist'])
+    expect(registrationLinkProblems('ts', [row('list_windows', 'src/tools.ts', 3, 'b'.repeat(40))], read))
+      .toEqual(['ts: list_windows cites src/tools.ts at bbbbbbbbb, which does not exist'])
+  })
+
+  it('refuses a file that exists but does not register the tool', () => {
+    expect(registrationLinkProblems('ts', [row('run_program', 'src/tools.ts', 3)], read))
+      .toEqual(['ts: run_program cites src/tools.ts#L3 at aaaaaaaaa, where run_program is not registered'])
+    expect(registrationLinkProblems('ts', [row('list_windows', 'src/tools.ts', 8)], read), 'the line after the registration').toHaveLength(1)
+  })
+
+  it('refuses a line past the end of the file, or none', () => {
+    expect(registrationLinkProblems('ts', [row('list_windows', 'src/tools.ts', 200)], read)).toEqual(['ts: list_windows cites line 200 of src/tools.ts at aaaaaaaaa, which has 9 lines'])
+    expect(registrationLinkProblems('ts', [row('list_windows', 'src/tools.ts', 0)], read)).toHaveLength(1)
+    expect(registrationLinkProblems('ts', [row('list_windows', 'src/tools.ts', undefined)], read), 'a registration the revision lacks keeps no line')
+      .toEqual(['ts: list_windows cites src/tools.ts at aaaaaaaaa with no line, where list_windows is not registered'])
+  })
+
+  it('takes the name as a whole word, within its own registration', () => {
+    expect(registrationLinkProblems('ts', [row('list', 'src/tools.ts', 3)], read), 'part of list_windows').toHaveLength(1)
+    // alpha is registered at line 1 and its name comes at line 8, after beta's registration begins at line 5
+    const far = ['server.registerTool(', '  {', '    description: "a long description",', '  },', 'server.registerTool(', '  "beta",', '  {', '  "alpha",', ''].join('\n')
+    const readFar = (_revision: string, path: string) => (path === 'far.ts' ? far : undefined)
+    expect(registrationLinkProblems('ts', [row('alpha', 'far.ts', 1), row('beta', 'far.ts', 5)], readFar))
+      .toEqual(['ts: alpha (far.ts#L1 to L8) and beta (L5 to L6) cite overlapping registrations at aaaaaaaaa'])
+    expect(registrationLinkProblems('ts', [row('alpha', 'far.ts', 5)], readFar), 'the last registration reaches the end of the file').toEqual([])
+    // a long description before the name is part of the registration
+    const long = ['server.registerTool(', '  {', '    description: "one",', '    note: "two",', '  },', '  "alpha",', 'server.registerTool("beta")', ''].join('\n')
+    expect(registrationLinkProblems('ts', [row('alpha', 'long.ts', 1), row('beta', 'long.ts', 7)], (_revision, path) => (path === 'long.ts' ? long : undefined))).toEqual([])
+  })
+
+  describe('cited line of a neighbouring tool', () => {
+    const reader = (path: string, text: string) => (_revision: string, file: string) => (file === path ? text : undefined)
+    // The shapes the three ports register in: the name follows `registerTool(`, follows an attribute and its
+    // description, or sits in constant lists far from the branch that describes the tool.
+    const ts = [
+      'server.registerTool(', '  "get_session_info",', '  { description: "Return one session." },', ')', '',
+      'server.registerTool(', '  "get_window_info",', '  { description: "Return one window." },', ')', '',
+    ].join('\n')
+    const rs = [
+      '#[tool(', '    description = "Return metadata for one session. See get_window_info for a window.",', '    title = "Get Session Info"', ')]',
+      'pub async fn get_session_info(', '    &self,', ') -> Result<Json<SessionView>, ToolError> {', '    Ok(Json(session))', '}', '',
+      '#[tool(', '    description = "Return metadata for one window.",', ')]', 'pub async fn get_window_info(', '    &self,', ') {}', '',
+    ].join('\n')
+    const ruby = [
+      'module Catalog', '  READ_ONLY = %w[tmux_capabilities tmux_snapshot].freeze', '  MUTATIONS = %w[tmux_send tmux_run].freeze', '  def self.description(name)',
+      '    if name == "tmux_run"', '      "Run a script."', '    elsif name == "tmux_send"', '      "Send keys."', '    else', '      "Snapshot."', '    end', '  end', 'end', '',
+    ].join('\n')
+
+    const cited = (rows: ReturnType<typeof row>[], tool: string, line: number) => rows.map((entry) => (entry.name === tool ? { ...entry, source: { ...entry.source, line } } : entry))
+    const tsRows = [row('get_session_info', 'src/tools.ts', 1), row('get_window_info', 'src/tools.ts', 6)]
+    const rsRows = [row('get_session_info', 'src/tools.rs', 1), row('get_window_info', 'src/tools.rs', 11)]
+    const rubyRows = [row('tmux_snapshot', 'src/catalog.rb', 2), row('tmux_run', 'src/catalog.rb', 5), row('tmux_send', 'src/catalog.rb', 7)]
+
+    it.each([
+      { port: 'ts', path: 'src/tools.ts', text: ts, rows: tsRows },
+      { port: 'rs', path: 'src/tools.rs', text: rs, rows: rsRows },
+      { port: 'ruby', path: 'src/catalog.rb', text: ruby, rows: rubyRows },
+    ])('accepts every $port registration at its own line', ({ port, path, text, rows }) => {
+      expect(registrationLinkProblems(port, rows, reader(path, text))).toEqual([])
+    })
+
+    // The tool's own line is no longer cited, so only the file can say where the neighbour's registration ends.
+    it.each([
+      { port: 'ts', path: 'src/tools.ts', text: ts, rows: tsRows, tool: 'get_window_info', line: 1, expected: 'ts: get_session_info (src/tools.ts#L1 to L2) and get_window_info (L1 to L7) cite overlapping registrations at aaaaaaaaa' },
+      { port: 'rs', path: 'src/tools.rs', text: rs, rows: rsRows, tool: 'get_window_info', line: 1, expected: 'rs: get_session_info (src/tools.rs#L1 to L5) and get_window_info (L1 to L2) cite overlapping registrations at aaaaaaaaa' },
+      { port: 'ruby', path: 'src/catalog.rb', text: ruby, rows: rubyRows, tool: 'tmux_run', line: 2, expected: 'ruby: tmux_snapshot (src/catalog.rb#L2 to L2) and tmux_run (L2 to L3) cite overlapping registrations at aaaaaaaaa' },
+    ])('refuses a $port tool that cites the line its neighbour cites', ({ port, path, text, rows, tool, line, expected }) => {
+      expect(registrationLinkProblems(port, cited(rows, tool, line), reader(path, text))).toEqual([expected])
+    })
+
+    it.each([
+      { port: 'ts', path: 'src/tools.ts', text: ts, rows: tsRows, line: 2, expected: 'ts: get_session_info (src/tools.ts#L1 to L2) and get_window_info (L2 to L7) cite overlapping registrations at aaaaaaaaa' },
+      { port: 'rs', path: 'src/tools.rs', text: rs, rows: rsRows, line: 3, expected: 'rs: get_session_info (src/tools.rs#L1 to L5) and get_window_info (L3 to L14) cite overlapping registrations at aaaaaaaaa' },
+      { port: 'rs', path: 'src/tools.rs', text: rs, rows: rsRows, line: 5, expected: 'rs: get_session_info (src/tools.rs#L1 to L5) and get_window_info (L5 to L14) cite overlapping registrations at aaaaaaaaa' },
+    ])('refuses a $port tool that cites line $line, before its neighbour’s name', ({ port, path, text, rows, line, expected }) => {
+      expect(registrationLinkProblems(port, cited(rows, 'get_window_info', line), reader(path, text))).toEqual([expected])
+    })
+
+    it('accepts a tool whose neighbour above names it in its description', () => {
+      // get_session_info's description mentions get_window_info; the mention belongs to that registration.
+      expect(registrationLinkProblems('rs', rsRows, reader('src/tools.rs', rs))).toEqual([])
+    })
+  })
+
+  it('fails the check, and names the tool, when run over a repository that lacks the cited file', () => {
+    const root = fileURLToPath(new URL('../../', import.meta.url))
+    const directory = mkdtempSync(join(tmpdir(), 'mcp-source-links-'))
+    try {
+      const git = (...args: string[]) => execFileSync('git', ['-C', join(directory, 'repo'), '-c', 'user.name=t', '-c', 'user.email=t@example.com', ...args], { encoding: 'utf8' })
+      execFileSync('git', ['init', '-q', join(directory, 'repo')])
+      writeFileSync(join(directory, 'repo', 'tools.ts'), file)
+      git('add', 'tools.ts')
+      git('commit', '-q', '-m', 'tools')
+      const revision = git('rev-parse', 'HEAD').trim()
+      const matrix = (rows: ReturnType<typeof row>[]) => {
+        const path = join(directory, 'mcp-tools.json')
+        writeFileSync(path, JSON.stringify({ ports: { ts: { registrations: rows.map((entry) => ({ ...entry, source: { ...entry.source, revision } })) } } }))
+        return path
+      }
+      const run = (tools: string) => spawnSync(process.execPath, ['scripts/check-mcp-source-links.mjs', '--port', 'ts', '--tools', tools], {
+        cwd: root, encoding: 'utf8', env: { ...process.env, LIBTMUX_DOCS_CHECKOUT_TS: join(directory, 'repo') },
+      })
+      const clean = run(matrix([row('list_windows', 'tools.ts', 3)]))
+      expect(clean.status, clean.stderr).toBe(0)
+      expect(clean.stdout).toContain('ts 1 registrations resolve')
+      const broken = run(matrix([row('list_windows', 'tools.ts', 3), row('start_program', 'programs.ts', 1), row('run_program', 'tools.ts', 3)]))
+      expect(broken.status).toBe(1)
+      expect(broken.stderr).toMatch(/start_program cites programs\.ts at [0-9a-f]{9}, which does not exist/)
+      expect(broken.stderr).toMatch(/run_program cites tools\.ts#L3 at [0-9a-f]{9}, where run_program is not registered/)
+      expect(broken.stderr).toContain('2 link(s) do not resolve')
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+})
+
+describe('the committed registrations', () => {
+  const data = (path: string) => new URL(`../src/data/${path}`, import.meta.url)
+  const matrix = JSON.parse(readFileSync(data('mcp-tools.json'), 'utf8')) as { ports: Record<string, { registrations: { name: string, source: { revision: string, file: string } }[] }> }
+  const treeOf = (port: string) => {
+    if (!existsSync(data(`api/${port}.paths.json`))) return undefined
+    const { revision, paths } = JSON.parse(readFileSync(data(`api/${port}.paths.json`), 'utf8')) as { revision: string, paths: string[] }
+    return { revision, paths: new Set(paths) }
+  }
+
+  it('cite a file that the model of their revision holds', () => {
+    const covered: string[] = []
+    const problems = Object.entries(matrix.ports).flatMap(([port, { registrations }]) => {
+      const tree = treeOf(port)
+      if (tree && registrations.some(({ source }) => source.revision === tree.revision)) covered.push(port)
+      return tree ? registrationFileProblems(port, registrations, tree) : []
+    })
+    expect(problems).toEqual([])
+    // A matrix that runs ahead of a model is judged by neither, so Ruby, TypeScript and Rust must be on the model's revision.
+    expect(covered).toEqual(expect.arrayContaining(['ts', 'rs', 'ruby']))
+  })
+
+  it('refuse a tool whose file the model of its revision lacks, as a matrix ahead of its model would', () => {
+    const tree = { revision: 'a'.repeat(40), paths: new Set(['packages/mcp/src/tools/windows.ts']) }
+    const registration = (name: string, file: string, revision = tree.revision) => ({ name, source: { revision, file } })
+    expect(registrationFileProblems('ts', [registration('list_windows', 'packages/mcp/src/tools/windows.ts')], tree)).toEqual([])
+    expect(registrationFileProblems('ts', [registration('start_program', 'packages/mcp/src/tools/programs.ts')], tree))
+      .toEqual(['ts: start_program cites packages/mcp/src/tools/programs.ts at aaaaaaaaa, which does not exist'])
+    expect(registrationFileProblems('ts', [registration('start_program', 'packages/mcp/src/tools/programs.ts', 'b'.repeat(40))], tree), 'another revision is for a checkout to judge').toEqual([])
+  })
 })

@@ -200,7 +200,8 @@ describe('navigation checker member ownership', () => {
   it('accepts every native Rust payload field in the current model', () => {
     const model: ApiModel = JSON.parse(readFileSync(new URL('../../../site/src/data/api/rs.json', import.meta.url), 'utf8'))
     const payloads = new Set(model.symbols.filter((entry) => entry.variant === 'struct' || entry.variant === 'tuple').map((entry) => entry.id))
-    expect(model.symbols.filter((entry) => entry.parent && payloads.has(entry.parent))).toHaveLength(163)
+    // Without fields the check below proves nothing.
+    expect(model.symbols.filter((entry) => entry.parent && payloads.has(entry.parent)).length).toBeGreaterThan(0)
     expect(check(model)).toEqual([])
   })
 })

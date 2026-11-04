@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-transcript.mjs",
   "repo": "libtmux/libtmux-ts",
-  "revision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+  "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
   "sandbox": {
     "tmux": "tmux 3.8a",
     "pytest": "pytest 9.2.0",
@@ -20,7 +20,7 @@
   "serverInfo": {
     "name": "libtmux",
     "title": "tmux",
-    "version": "0.1.0-alpha.10"
+    "version": "0.1.2"
   },
   "contracts": {
     "create_session": {
@@ -335,7 +335,7 @@
                   "type": "string"
                 },
                 "layout": {
-                  "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                  "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                   "type": "string"
                 },
                 "metadataComplete": {
@@ -476,7 +476,7 @@
             "type": "integer"
           },
           "effectiveTimeoutMs": {
-            "description": "The timeout actually enforced.",
+            "description": "The timeout enforced.",
             "maximum": 9007199254740991,
             "minimum": -9007199254740991,
             "type": "integer"

@@ -42,10 +42,10 @@ describe('the workspace showcase data source', () => {
     }
   })
 
-  it('pins TypeScript to the revision whose tests load tmuxp\'s examples, which the API model predates', () => {
-    expect((SOURCES as Record<string, { revision?: string }>).ts!.revision).toBe('afd56d4dfa441b5bab9d9996ebd5b303fc5c4a3a')
-    expect(data.ports.ts!.revision).toBe('afd56d4dfa441b5bab9d9996ebd5b303fc5c4a3a')
-    expect(model('ts').sources.find((entry) => entry.product === 'workspace')!.revision).not.toBe(data.ports.ts!.revision)
+  it('reads TypeScript at its API model\'s revision, which holds the tests that load tmuxp\'s examples', () => {
+    expect((SOURCES as Record<string, { revision?: string }>).ts!.revision).toBeUndefined()
+    expect(data.ports.ts!.revision).toBe(model('ts').sources.find((entry) => entry.product === 'workspace')!.revision)
+    expect(data.ports.ts!.examples.length).toBeGreaterThan(0)
   })
 
   it('keeps a pin only while the API model records the revision the pin was chosen against', () => {

@@ -601,6 +601,7 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
     unsettled: {
       'LibTmux::Entity': 'base of the tmux entity hierarchy; the concrete entity is the subclass',
       'LibTmux::EntityRef': 'target identity shared by every entity, owned by none',
+      'LibTmux::Support': 'namespace of the tmux release check; its module and functions have their own placements',
     },
   },
   py: {
@@ -622,6 +623,10 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
       'selection.Selection': 'copy-mode selection; belongs with Buffers once TypeScript grows them',
       'types.AbortLike': 'structural type for a host-provided abort signal',
       'types.TmuxEventStream': 'structural type for a host-provided stream',
+      'common.assertSupportedTmux': 'tmux release check for a version string; no tmux object of its own',
+      'program.Program': 'a program started by Server.spawn; its pane sits with Pane, and the handle has no bucket of its own',
+      'types.ProgramPlacement': 'where Server.spawn puts a program; an option of that one method',
+      'types.ProgramExit': 'how a spawned program ended; owned by the Program that reports it',
       'types.MenuEntry': 'display-menu entry; see the Menus note below',
       'types.MenuItem': 'display-menu entry; see the Menus note below',
       'common.TmuxId': 'tmux object ids; used by every entity, owned by none',
@@ -646,6 +651,7 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
     unsettled: {
       'blocking.Runtime': 'the blocking facade’s runtime handle; async plumbing',
       'limits.OutputLimits': 'output byte and line caps; plumbing',
+      'src.SandboxCanary': 'doctest sandbox marker; test support, not tmux API',
       'config.Entry': 'workspace config entry; Workspaces covers the plan, not the file it parses',
       'target.EndpointInputs': 'socket endpoint resolution; sits below Server rather than inside it',
       'target.ResolvedEndpoint': 'socket endpoint resolution; sits below Server rather than inside it',

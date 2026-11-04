@@ -23,7 +23,7 @@
         },
         {
           "file": "justfile",
-          "contains": "doctest api-examples examples example-tables"
+          "contains": "script-env examples example-tables"
         },
         {
           "file": "scripts/run-examples.sh",
@@ -58,7 +58,7 @@
         },
         {
           "file": "justfile",
-          "contains": "doctest api-examples examples example-tables"
+          "contains": "script-env examples example-tables"
         },
         {
           "file": "scripts/run-examples.sh",
@@ -79,6 +79,7 @@
         "workflow": ".github/workflows/compatibility.yml",
         "job": "cell",
         "step": "Run the complete cell",
+        "planOutput": "run_cells",
         "command": "bundle exec scripts/matrix"
       },
       "checkedBy": [
@@ -111,6 +112,7 @@
         "workflow": ".github/workflows/compatibility.yml",
         "job": "cell",
         "step": "Run the complete cell",
+        "planOutput": "run_cells",
         "command": "bundle exec scripts/matrix"
       },
       "checkedBy": [

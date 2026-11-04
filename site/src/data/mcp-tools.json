@@ -10209,10 +10209,10 @@
           "wireName": "tmux_capabilities",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-            "extractedRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 249
+            "line": 250
           },
           "description": "Discover the fixed endpoint, server binding, enabled tools, criteria schema and limits. Acquires metadata; starts no daemon.",
           "schemaStatus": "runtime",
@@ -10560,7 +10560,8 @@
                 ],
                 "type": "object"
               }
-            ]
+            ],
+            "type": "object"
           },
           "annotations": {
             "destructiveHint": false,
@@ -10574,12 +10575,12 @@
           "wireName": "tmux_capture",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-            "extractedRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 239
+            "line": 240
           },
-          "description": "Read exact-pane screen/history rows preserving LF. Defaults: 200 lines, 65536 bytes, zero history lines, track=false. Limits: 1000 lines/history, 262144 bytes. UTF-8 or base64; truncation is separate from unknown history continuity. Tracked process cursors require tmux>=3.3 and a native process identity backend: Linux peer pidfds with matching PID namespaces, or Darwin kqueue process observation. Continuation returns an exact state row splice, not a live-output journal. Refuses capture after-hooks.",
+          "description": "Read exact-pane screen/history rows preserving LF. Defaults: 200 lines, 65536 bytes, zero history lines, track=false. Limits: 1000 lines/history, 262144 bytes. UTF-8 or base64; truncation is separate from unknown history continuity. Tracked process cursors require tmux>=3.3a and a native process identity backend: Linux peer pidfds with matching PID namespaces, or Darwin kqueue process observation. Continuation returns an exact state row splice, not a live-output journal. Refuses capture after-hooks.",
           "schemaStatus": "runtime",
           "enabledByDefault": false,
           "inputSchema": {
@@ -11179,7 +11180,8 @@
                 ],
                 "type": "object"
               }
-            ]
+            ],
+            "type": "object"
           },
           "annotations": {
             "destructiveHint": false,
@@ -11193,10 +11195,10 @@
           "wireName": "tmux_close",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-            "extractedRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 247
+            "line": 248
           },
           "description": "Destroy one exact session, window or pane. Opt-in destructive operation; closing a session or window also removes its contained topology. Never selects by name or closes the daemon directly. Returns the final tmux client outcome.",
           "schemaStatus": "runtime",
@@ -11605,7 +11607,8 @@
                 ],
                 "type": "object"
               }
-            ]
+            ],
+            "type": "object"
           },
           "annotations": {
             "destructiveHint": true,
@@ -11619,10 +11622,10 @@
           "wireName": "tmux_create",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-            "extractedRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 245
+            "line": 246
           },
           "description": "Create a session, window in an exact session, or split an exact pane using argv. Opt-in mutation; 64 KiB total string bytes and at most 256 argv entries. Window/pane focus defaults false. Cwd/environment are optional; size is cells or percent. Assigned refs prove creation, not program readiness or completion.",
           "schemaStatus": "runtime",
@@ -12329,7 +12332,8 @@
                 ],
                 "type": "object"
               }
-            ]
+            ],
+            "type": "object"
           },
           "annotations": {
             "destructiveHint": true,
@@ -12343,10 +12347,10 @@
           "wireName": "tmux_run",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-            "extractedRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 237
+            "line": 238
           },
           "description": "Run an authored POSIX script in an explicitly enrolled idle, empty zsh 5.9 editor. Opt-in; no terminal injection. Exact queue authorization binds the existing shell generation; execution may follow a later pane replacement without retargeting it. Inherits cwd/exported environment, closed stdin, separate bounded UTF-8/base64 outputs. Defaults: 65536 bytes per output, 65536 script bytes; overflow refuses completion. Reports native exit/signal only from the helper; cancellation never proves descendants stopped.",
           "schemaStatus": "runtime",
@@ -12788,7 +12792,8 @@
                 ],
                 "type": "object"
               }
-            ]
+            ],
+            "type": "object"
           },
           "annotations": {
             "destructiveHint": true,
@@ -12802,10 +12807,10 @@
           "wireName": "tmux_send",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-            "extractedRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 243
+            "line": 244
           },
           "description": "Send literal UTF-8 text or named keys to one exact pane. Opt-in mutation; 64 KiB total text bytes, at most 256 keys. Reports tmux client completion and input dispatch only; never shell completion.",
           "schemaStatus": "runtime",
@@ -13217,7 +13222,8 @@
                 ],
                 "type": "object"
               }
-            ]
+            ],
+            "type": "object"
           },
           "annotations": {
             "destructiveHint": true,
@@ -13231,8 +13237,8 @@
           "wireName": "tmux_snapshot",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-            "extractedRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
             "line": 6
           },
@@ -14265,18 +14271,32 @@
               "pane.pid": {
                 "anyOf": [
                   {
-                    "maximum": 2147483647,
-                    "minimum": 0,
-                    "type": "integer"
+                    "anyOf": [
+                      {
+                        "maximum": 2147483647,
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
                   {
                     "additionalProperties": false,
                     "minProperties": 1,
                     "properties": {
                       "equals": {
-                        "maximum": 2147483647,
-                        "minimum": 0,
-                        "type": "integer"
+                        "anyOf": [
+                          {
+                            "maximum": 2147483647,
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       },
                       "gt": {
                         "maximum": 2147483647,
@@ -14290,9 +14310,16 @@
                       },
                       "in": {
                         "items": {
-                          "maximum": 2147483647,
-                          "minimum": 0,
-                          "type": "integer"
+                          "anyOf": [
+                            {
+                              "maximum": 2147483647,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         },
                         "maxItems": 1024,
                         "type": "array"
@@ -15848,7 +15875,10 @@
                                     "pid": {
                                       "maximum": 2147483647,
                                       "minimum": 0,
-                                      "type": "integer"
+                                      "type": [
+                                        "integer",
+                                        "null"
+                                      ]
                                     },
                                     "title": {
                                       "type": "string"
@@ -16304,7 +16334,8 @@
                 ],
                 "type": "object"
               }
-            ]
+            ],
+            "type": "object"
           },
           "annotations": {
             "destructiveHint": false,
@@ -16318,12 +16349,12 @@
           "wireName": "tmux_wait",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-            "extractedRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 241
+            "line": 242
           },
-          "description": "Wait for observed literal screen text or the initial pane process exit. Deadline in seconds is capped by the application limit. Uses control events/process descriptors; no polling. Requires tmux>=3.3 and Linux peer pidfds with matching PID namespaces or Darwin kqueue process observation. Reports observed evidence, never remote termination caused by cancellation or an inferred process exit status.",
+          "description": "Wait for observed literal screen text or the initial pane process exit. Deadline in seconds is capped by the application limit. Pane exit is observed through process descriptors. The screen_contains condition joins wrapped rows, uses control events on tmux>=3.7 and polls the pane screen on older daemons, which take no control client. A pane or tmux server that ends first fails with pane_died and the last rows read in error.capture; a lost control stream fails with observation_lost. Requires tmux>=3.3a and Linux peer pidfds with matching PID namespaces or Darwin kqueue process observation. Reports observed evidence, never remote termination caused by cancellation or an inferred process exit status.",
           "schemaStatus": "runtime",
           "enabledByDefault": false,
           "inputSchema": {
@@ -16853,6 +16884,314 @@
                   "error": {
                     "additionalProperties": false,
                     "properties": {
+                      "capture": {
+                        "oneOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "bytes": {
+                                "maximum": 262144,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "capture_id": {
+                                "type": "string"
+                              },
+                              "encoding": {
+                                "enum": [
+                                  "utf-8",
+                                  "base64"
+                                ]
+                              },
+                              "history_continuity": {
+                                "const": "unknown"
+                              },
+                              "interval": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "clock": {
+                                    "const": "monotonic_seconds"
+                                  },
+                                  "finished": {
+                                    "type": "number"
+                                  },
+                                  "started": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "clock",
+                                  "started",
+                                  "finished"
+                                ],
+                                "type": "object"
+                              },
+                              "mode": {
+                                "const": "snapshot"
+                              },
+                              "next_cursor": {
+                                "type": "string"
+                              },
+                              "process_generation": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "row_count": {
+                                "maximum": 1000,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "rows": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "maxItems": 1000,
+                                "type": "array"
+                              },
+                              "scope": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "history_lines": {
+                                    "maximum": 1000,
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "max_bytes": {
+                                    "maximum": 262144,
+                                    "minimum": 1,
+                                    "type": "integer"
+                                  },
+                                  "max_lines": {
+                                    "maximum": 1000,
+                                    "minimum": 1,
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "max_lines",
+                                  "max_bytes",
+                                  "history_lines"
+                                ],
+                                "type": "object"
+                              },
+                              "target": {
+                                "oneOf": [
+                                  {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "generation": {
+                                        "maxLength": 128,
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "id": {
+                                        "maxLength": 32,
+                                        "pattern": "^%[0-9]+$",
+                                        "type": "string"
+                                      },
+                                      "kind": {
+                                        "const": "pane"
+                                      }
+                                    },
+                                    "required": [
+                                      "generation",
+                                      "kind",
+                                      "id"
+                                    ],
+                                    "type": "object"
+                                  }
+                                ]
+                              },
+                              "truncated": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "target",
+                              "capture_id",
+                              "process_generation",
+                              "encoding",
+                              "row_count",
+                              "bytes",
+                              "truncated",
+                              "history_continuity",
+                              "interval",
+                              "scope",
+                              "mode",
+                              "rows"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "base_capture_id": {
+                                "type": "string"
+                              },
+                              "bytes": {
+                                "maximum": 262144,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "capture_id": {
+                                "type": "string"
+                              },
+                              "encoding": {
+                                "enum": [
+                                  "utf-8",
+                                  "base64"
+                                ]
+                              },
+                              "history_continuity": {
+                                "const": "unknown"
+                              },
+                              "interval": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "clock": {
+                                    "const": "monotonic_seconds"
+                                  },
+                                  "finished": {
+                                    "type": "number"
+                                  },
+                                  "started": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "clock",
+                                  "started",
+                                  "finished"
+                                ],
+                                "type": "object"
+                              },
+                              "mode": {
+                                "const": "delta"
+                              },
+                              "next_cursor": {
+                                "type": "string"
+                              },
+                              "process_generation": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "reset": {
+                                "type": "boolean"
+                              },
+                              "row_count": {
+                                "maximum": 1000,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "scope": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "history_lines": {
+                                    "maximum": 1000,
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "max_bytes": {
+                                    "maximum": 262144,
+                                    "minimum": 1,
+                                    "type": "integer"
+                                  },
+                                  "max_lines": {
+                                    "maximum": 1000,
+                                    "minimum": 1,
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "max_lines",
+                                  "max_bytes",
+                                  "history_lines"
+                                ],
+                                "type": "object"
+                              },
+                              "splice": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "delete": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "rows": {
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "maxItems": 1000,
+                                    "type": "array"
+                                  },
+                                  "start": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "start",
+                                  "delete",
+                                  "rows"
+                                ],
+                                "type": "object"
+                              },
+                              "target": {
+                                "oneOf": [
+                                  {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "generation": {
+                                        "maxLength": 128,
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "id": {
+                                        "maxLength": 32,
+                                        "pattern": "^%[0-9]+$",
+                                        "type": "string"
+                                      },
+                                      "kind": {
+                                        "const": "pane"
+                                      }
+                                    },
+                                    "required": [
+                                      "generation",
+                                      "kind",
+                                      "id"
+                                    ],
+                                    "type": "object"
+                                  }
+                                ]
+                              },
+                              "truncated": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "target",
+                              "capture_id",
+                              "process_generation",
+                              "encoding",
+                              "row_count",
+                              "bytes",
+                              "truncated",
+                              "history_continuity",
+                              "interval",
+                              "scope",
+                              "mode",
+                              "base_capture_id",
+                              "reset",
+                              "splice",
+                              "next_cursor"
+                            ],
+                            "type": "object"
+                          }
+                        ]
+                      },
                       "code": {
                         "type": "string"
                       },
@@ -17016,7 +17355,8 @@
                 ],
                 "type": "object"
               }
-            ]
+            ],
+            "type": "object"
           },
           "annotations": {
             "destructiveHint": false,
@@ -17030,8 +17370,8 @@
       "selectable": false,
       "source": "gems/libtmux-mcp/lib/libtmux/mcp",
       "repo": "libtmux/libtmux-ruby",
-      "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-      "extractedRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
       "selection": {
         "mode": "explicit CLI options",
         "tools": "tmux_capabilities,tmux_snapshot,tmux_capture,tmux_wait,tmux_create,tmux_send,tmux_close,tmux_run"
@@ -17071,7 +17411,7 @@
         ],
         "serverInfo": {
           "name": "libtmux",
-          "version": "0.1.0.alpha.1"
+          "version": "0.1.1"
         }
       }
     },
@@ -17097,11 +17437,13 @@
         "list_windows",
         "move_window",
         "paste_text",
+        "read_program",
         "rename_session",
         "rename_window",
         "resize_pane",
         "resize_window",
         "respawn_pane",
+        "run_program",
         "run_shell_command",
         "search_panes",
         "select_layout",
@@ -17119,8 +17461,11 @@
         "signal_channel",
         "snapshot_pane",
         "split_window",
+        "start_program",
+        "stop_program",
         "swap_pane",
         "wait_for_channel",
+        "wait_for_exit",
         "wait_for_text"
       ],
       "registrations": [
@@ -17129,8 +17474,8 @@
           "wireName": "call_read_tools_batch",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/target.ts",
             "line": 618
           },
@@ -18558,8 +18903,8 @@
           "wireName": "capture_pane",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/capture.ts",
             "line": 27
           },
@@ -18837,8 +19182,8 @@
           "wireName": "capture_since",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/capture.ts",
             "line": 132
           },
@@ -19114,8 +19459,8 @@
           "wireName": "clear_pane_scrollback",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/target.ts",
             "line": 575
           },
@@ -19216,8 +19561,8 @@
           "wireName": "create_session",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/lifecycle.ts",
             "line": 68
           },
@@ -19476,8 +19821,8 @@
           "wireName": "create_window",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/lifecycle.ts",
             "line": 147
           },
@@ -19524,7 +19869,7 @@
                     "type": "string"
                   },
                   "layout": {
-                    "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                    "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                     "type": "string"
                   },
                   "metadataComplete": {
@@ -19680,7 +20025,7 @@
                         "type": "string"
                       },
                       "layout": {
-                        "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                        "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                         "type": "string"
                       },
                       "metadataComplete": {
@@ -19784,8 +20129,8 @@
           "wireName": "find_pane_by_position",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/target.ts",
             "line": 233
           },
@@ -20156,10 +20501,10 @@
           "wireName": "get_pane_info",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/discovery.ts",
-            "line": 196
+            "line": 197
           },
           "description": "Inspect tmux metadata; accepts no client-supplied executable input. One pane's metadata: what it runs, where, how big, and whether it is yours or watched. Does not read its contents — capture_pane does that.",
           "schemaStatus": "runtime",
@@ -20506,12 +20851,12 @@
           "wireName": "get_server_info",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/discovery.ts",
-            "line": 216
+            "line": 217
           },
-          "description": "Inspect tmux metadata; accepts no client-supplied executable input. The tmux server this process drives: its socket, version, daemon pid, and totals. Check the version before using a feature that needs a recent tmux.",
+          "description": "Inspect tmux metadata; accepts no client-supplied executable input. The tmux server this process drives: its socket, version, daemon pid, and totals, and the oldest tmux release this server drives. Check the version before using a feature that needs a recent tmux.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "$schema": "http://json-schema.org/draft-07/schema#",
@@ -20522,6 +20867,9 @@
             "$schema": "http://json-schema.org/draft-07/schema#",
             "additionalProperties": false,
             "properties": {
+              "minimumVersion": {
+                "type": "string"
+              },
               "panes": {
                 "maximum": 9007199254740991,
                 "minimum": -9007199254740991,
@@ -20554,6 +20902,7 @@
               }
             },
             "required": [
+              "minimumVersion",
               "panes",
               "pid",
               "sessions",
@@ -20578,7 +20927,7 @@
                 "openWorldHint": true,
                 "readOnlyHint": false
               },
-              "description": "Inspect tmux metadata; accepts no client-supplied executable input. The tmux server this process drives: its socket, version, daemon pid, and totals. Check the version before using a feature that needs a recent tmux.",
+              "description": "Inspect tmux metadata; accepts no client-supplied executable input. The tmux server this process drives: its socket, version, daemon pid, and totals, and the oldest tmux release this server drives. Check the version before using a feature that needs a recent tmux.",
               "inputLiteralization": {},
               "inputSchema": {
                 "properties": {},
@@ -20594,6 +20943,9 @@
               "outputSchema": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "properties": {
+                  "minimumVersion": {
+                    "type": "string"
+                  },
                   "panes": {
                     "maximum": 9007199254740991,
                     "minimum": -9007199254740991,
@@ -20626,6 +20978,7 @@
                   }
                 },
                 "required": [
+                  "minimumVersion",
                   "panes",
                   "pid",
                   "sessions",
@@ -20649,8 +21002,8 @@
           "wireName": "get_session_info",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/target.ts",
             "line": 190
           },
@@ -20840,8 +21193,8 @@
           "wireName": "get_tmux_variables",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/target.ts",
             "line": 263
           },
@@ -20975,8 +21328,8 @@
           "wireName": "get_window_info",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/target.ts",
             "line": 216
           },
@@ -21009,7 +21362,7 @@
                     "type": "string"
                   },
                   "layout": {
-                    "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                    "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                     "type": "string"
                   },
                   "metadataComplete": {
@@ -21147,7 +21500,7 @@
                         "type": "string"
                       },
                       "layout": {
-                        "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                        "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                         "type": "string"
                       },
                       "metadataComplete": {
@@ -21249,8 +21602,8 @@
           "wireName": "kill_pane",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/lifecycle.ts",
             "line": 323
           },
@@ -21360,8 +21713,8 @@
           "wireName": "kill_session",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/lifecycle.ts",
             "line": 386
           },
@@ -21469,8 +21822,8 @@
           "wireName": "kill_window",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/lifecycle.ts",
             "line": 352
           },
@@ -21580,10 +21933,10 @@
           "wireName": "list_panes",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/discovery.ts",
-            "line": 150
+            "line": 151
           },
           "description": "Inspect tmux metadata; accepts no client-supplied executable input. Panes on this server, with the command each is running and its directory. Marks the pane this server runs in (isCallerPane) and panes a person is watching (isAttended). Metadata only — search_panes reads their contents.",
           "schemaStatus": "runtime",
@@ -21958,10 +22311,10 @@
           "wireName": "list_sessions",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/discovery.ts",
-            "line": 60
+            "line": 61
           },
           "description": "Inspect tmux metadata; accepts no client-supplied executable input. Every session on this server with its id, name, window count, and whether anyone is attached. Metadata only — for what a pane shows, use capture_pane or search_panes.",
           "schemaStatus": "runtime",
@@ -22158,10 +22511,10 @@
           "wireName": "list_windows",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/discovery.ts",
-            "line": 105
+            "line": 106
           },
           "description": "Inspect tmux metadata; accepts no client-supplied executable input. Windows on this server, optionally restricted to one session by id or name.",
           "schemaStatus": "runtime",
@@ -22197,7 +22550,7 @@
                       "type": "string"
                     },
                     "layout": {
-                      "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                      "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                       "type": "string"
                     },
                     "metadataComplete": {
@@ -22344,7 +22697,7 @@
                           "type": "string"
                         },
                         "layout": {
-                          "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                          "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                           "type": "string"
                         },
                         "metadataComplete": {
@@ -22450,8 +22803,8 @@
           "wireName": "move_window",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/layout.ts",
             "line": 268
           },
@@ -22504,7 +22857,7 @@
                     "type": "string"
                   },
                   "layout": {
-                    "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                    "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                     "type": "string"
                   },
                   "metadataComplete": {
@@ -22662,7 +23015,7 @@
                         "type": "string"
                       },
                       "layout": {
-                        "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                        "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                         "type": "string"
                       },
                       "metadataComplete": {
@@ -22765,10 +23118,10 @@
           "wireName": "paste_text",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/input.ts",
-            "line": 189
+            "line": 390
           },
           "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Put text into a pane without tmux interpreting any of it as key names. Use for content — a password, a code block, anything with characters a key parser would claim.",
           "schemaStatus": "runtime",
@@ -22902,12 +23255,289 @@
           }
         },
         {
+          "name": "read_program",
+          "wireName": "read_program",
+          "source": {
+            "repo": "libtmux/libtmux-ts",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "file": "packages/mcp/src/tools/programs.ts",
+            "line": 378
+          },
+          "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Read what a started program printed after cursor, waiting up to timeoutMs for new output or its end, and report whether it has ended and how. Omit cursor on the first read and pass back the one returned; a read returns up to about 24,000 characters of text, ending on a line break, or maxLines lines when fewer, so call again with the cursor for the rest; a read that times out returns no text, and the next read with the same cursor carries on. The text is the byte stream with escape sequences removed, in write order, and a carriage return on its own starts a new line, so each state of a progress line is a line; capture_pane on its paneId shows the screen while it runs, and after the end for one beside fromPaneId, whose pane stays until stop_program or its lifetime. Output stays readable after the end until stop_program, or until enough programs have ended after it.",
+          "schemaStatus": "runtime",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "properties": {
+              "cursor": {
+                "description": "The cursor the previous read_program returned. Omit to read from the start.",
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "maxLines": {
+                "description": "Return at most this many lines from cursor. A page also stops at about 24,000 characters, so fewer lines come back when they are long.",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              },
+              "programId": {
+                "description": "The id start_program returned.",
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              "timeoutMs": {
+                "description": "How long to wait for something new: 0 returns at once, and omitted is 30 seconds. Clamped by the server ceiling.",
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "programId"
+            ],
+            "type": "object"
+          },
+          "outputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "additionalProperties": false,
+            "properties": {
+              "cursor": {
+                "description": "Pass to the next read_program.",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              "effectiveTimeoutMs": {
+                "description": "The wait allowed.",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              "ended": {
+                "description": "Whether it has ended and every byte it wrote has been returned. Until it is true, call again with cursor.",
+                "type": "boolean"
+              },
+              "exitStatus": {
+                "anyOf": [
+                  {
+                    "maximum": 9007199254740991,
+                    "minimum": -9007199254740991,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "The exit status once it completed, or 127 or 126 when not_started; null for a program a signal ended (see signal) or one still running."
+              },
+              "lostEnd": {
+                "description": "True when tmux closed the pane before reading the end of the output.",
+                "type": "boolean"
+              },
+              "outcome": {
+                "description": "How the program stands, set from the first read after it ends, while ended stays false until its output is all read. running: it still runs. completed: it ended on its own, as exitStatus or signal says. not_started: it never ran, because argv[0] was not found or is not executable, or startDirectory could not be entered; text says which. expired: its lifetime ended it; start it again with a longer lifetimeMs. stopped: stop_program ended it while this read waited. gone: its pane was removed from outside, with no status.",
+                "enum": [
+                  "running",
+                  "completed",
+                  "not_started",
+                  "expired",
+                  "stopped",
+                  "gone"
+                ],
+                "type": "string"
+              },
+              "outputComplete": {
+                "description": "True once ended is true and nothing is missing. False while it runs, when outputCut or lostEnd is true, or when a stop or the lifetime ended the program before its output was read to the end.",
+                "type": "boolean"
+              },
+              "outputCut": {
+                "description": "True once the copy stopped at its limit; later output is not kept.",
+                "type": "boolean"
+              },
+              "signal": {
+                "description": "The signal that ended the program, such as \"SIGTERM\"; otherwise null. A program that exits 130 on its own reads as SIGINT, as that status means.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "text": {
+                "description": "What it printed after cursor.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "cursor",
+              "effectiveTimeoutMs",
+              "ended",
+              "exitStatus",
+              "lostEnd",
+              "outcome",
+              "outputComplete",
+              "outputCut",
+              "signal",
+              "text"
+            ],
+            "type": "object"
+          },
+          "annotations": {
+            "destructiveHint": true,
+            "idempotentHint": false,
+            "openWorldHint": true,
+            "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "amplifiesFutureInput": false,
+              "annotations": {
+                "destructiveHint": true,
+                "idempotentHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": false
+              },
+              "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Read what a started program printed after cursor, waiting up to timeoutMs for new output or its end, and report whether it has ended and how. Omit cursor on the first read and pass back the one returned; a read returns up to about 24,000 characters of text, ending on a line break, or maxLines lines when fewer, so call again with the cursor for the rest; a read that times out returns no text, and the next read with the same cursor carries on. The text is the byte stream with escape sequences removed, in write order, and a carriage return on its own starts a new line, so each state of a progress line is a line; capture_pane on its paneId shows the screen while it runs, and after the end for one beside fromPaneId, whose pane stays until stop_program or its lifetime. Output stays readable after the end until stop_program, or until enough programs have ended after it.",
+              "inputLiteralization": {},
+              "inputSchema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "properties": {
+                  "cursor": {
+                    "description": "The cursor the previous read_program returned. Omit to read from the start.",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxLines": {
+                    "description": "Return at most this many lines from cursor. A page also stops at about 24,000 characters, so fewer lines come back when they are long.",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "type": "integer"
+                  },
+                  "programId": {
+                    "description": "The id start_program returned.",
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "timeoutMs": {
+                    "description": "How long to wait for something new: 0 returns at once, and omitted is 30 seconds. Clamped by the server ceiling.",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "programId"
+                ],
+                "type": "object"
+              },
+              "mayExposeSecrets": true,
+              "mayReturnUntrustedContent": true,
+              "name": "read_program",
+              "nestedAuthority": [],
+              "outputClasses": [
+                "tmux-metadata",
+                "terminal-content"
+              ],
+              "outputSchema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "properties": {
+                  "cursor": {
+                    "description": "Pass to the next read_program.",
+                    "maximum": 9007199254740991,
+                    "minimum": -9007199254740991,
+                    "type": "integer"
+                  },
+                  "effectiveTimeoutMs": {
+                    "description": "The wait allowed.",
+                    "maximum": 9007199254740991,
+                    "minimum": -9007199254740991,
+                    "type": "integer"
+                  },
+                  "ended": {
+                    "description": "Whether it has ended and every byte it wrote has been returned. Until it is true, call again with cursor.",
+                    "type": "boolean"
+                  },
+                  "exitStatus": {
+                    "anyOf": [
+                      {
+                        "maximum": 9007199254740991,
+                        "minimum": -9007199254740991,
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The exit status once it completed, or 127 or 126 when not_started; null for a program a signal ended (see signal) or one still running."
+                  },
+                  "lostEnd": {
+                    "description": "True when tmux closed the pane before reading the end of the output.",
+                    "type": "boolean"
+                  },
+                  "outcome": {
+                    "description": "How the program stands, set from the first read after it ends, while ended stays false until its output is all read. running: it still runs. completed: it ended on its own, as exitStatus or signal says. not_started: it never ran, because argv[0] was not found or is not executable, or startDirectory could not be entered; text says which. expired: its lifetime ended it; start it again with a longer lifetimeMs. stopped: stop_program ended it while this read waited. gone: its pane was removed from outside, with no status.",
+                    "enum": [
+                      "running",
+                      "completed",
+                      "not_started",
+                      "expired",
+                      "stopped",
+                      "gone"
+                    ],
+                    "type": "string"
+                  },
+                  "outputComplete": {
+                    "description": "True once ended is true and nothing is missing. False while it runs, when outputCut or lostEnd is true, or when a stop or the lifetime ended the program before its output was read to the end.",
+                    "type": "boolean"
+                  },
+                  "outputCut": {
+                    "description": "True once the copy stopped at its limit; later output is not kept.",
+                    "type": "boolean"
+                  },
+                  "signal": {
+                    "description": "The signal that ended the program, such as \"SIGTERM\"; otherwise null. A program that exits 130 on its own reads as SIGINT, as that status means.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "text": {
+                    "description": "What it printed after cursor.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "cursor",
+                  "effectiveTimeoutMs",
+                  "ended",
+                  "exitStatus",
+                  "lostEnd",
+                  "outcome",
+                  "outputComplete",
+                  "outputCut",
+                  "signal",
+                  "text"
+                ],
+                "type": "object"
+              },
+              "processReach": "none",
+              "title": "Read a started program",
+              "tmuxEffects": [
+                "observe"
+              ],
+              "toolset": "inspect"
+            }
+          }
+        },
+        {
           "name": "rename_session",
           "wireName": "rename_session",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/lifecycle.ts",
             "line": 234
           },
@@ -23112,8 +23742,8 @@
           "wireName": "rename_window",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/lifecycle.ts",
             "line": 260
           },
@@ -23152,7 +23782,7 @@
                     "type": "string"
                   },
                   "layout": {
-                    "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                    "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                     "type": "string"
                   },
                   "metadataComplete": {
@@ -23298,7 +23928,7 @@
                         "type": "string"
                       },
                       "layout": {
-                        "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                        "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                         "type": "string"
                       },
                       "metadataComplete": {
@@ -23401,8 +24031,8 @@
           "wireName": "resize_pane",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/layout.ts",
             "line": 85
           },
@@ -23816,8 +24446,8 @@
           "wireName": "resize_window",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/layout.ts",
             "line": 311
           },
@@ -23862,7 +24492,7 @@
                     "type": "string"
                   },
                   "layout": {
-                    "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                    "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                     "type": "string"
                   },
                   "metadataComplete": {
@@ -24012,7 +24642,7 @@
                         "type": "string"
                       },
                       "layout": {
-                        "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                        "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                         "type": "string"
                       },
                       "metadataComplete": {
@@ -24115,8 +24745,8 @@
           "wireName": "respawn_pane",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/lifecycle.ts",
             "line": 282
           },
@@ -24491,16 +25121,430 @@
           }
         },
         {
+          "name": "run_program",
+          "wireName": "run_program",
+          "source": {
+            "repo": "libtmux/libtmux-ts",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "file": "packages/mcp/src/tools/input.ts",
+            "line": 670
+          },
+          "description": "Run a program in a new pane of its own with your user's permissions. Run a program in a pane of its own and wait for it; returns its output and exit status. No shell parses argv and nothing is typed into its pane, so the output holds no command line or echo. Check outcome and outputComplete before trusting output. The pane is removed before this returns unless keep is set. A program still running at the timeout, capped by the server's wait ceiling, is ended: run longer ones with start_program. Commands come from this MCP server's PATH, and one not found or not executable fails the call before anything runs. stdin is input when given, else the terminal. PAGER and GIT_PAGER are cat. Use startDirectory in place of cd, [\"sh\", \"-c\", ...] for pipes, and run_shell_command for a command that needs an existing shell's state. Requires tmux 3.8 or newer.",
+          "schemaStatus": "runtime",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "properties": {
+              "argv": {
+                "description": "The program and its arguments, as given: [\"git\", \"status\", \"--short\"]. Put variables first with env: [\"env\", \"CI=1\", \"make\", \"test\"].",
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 256,
+                "minItems": 1,
+                "type": "array"
+              },
+              "fromPaneId": {
+                "description": "Run beside this pane, in its directory and session, with that session's tmux environment. Variables the pane's shell exported come only with inheritShell.",
+                "pattern": "^%\\d+$",
+                "type": "string"
+              },
+              "height": {
+                "description": "Rows of the program's terminal. Defaults to tmux's default-size.",
+                "exclusiveMinimum": 0,
+                "maximum": 10000,
+                "type": "integer"
+              },
+              "inheritShell": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "items": {
+                      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+                      "type": "string"
+                    },
+                    "maxItems": 256,
+                    "minItems": 1,
+                    "type": "array"
+                  }
+                ],
+                "description": "With fromPaneId, first read the variables that pane's idle shell exported, by typing one env command into it, and run the program with them: true for all, or a list of names, such as [\"PATH\", \"VIRTUAL_ENV\"], for only those. The shell must be a POSIX one at its prompt, as run_shell_command requires. argv[0] is then found on the shell's PATH, and one missing exits 127."
+              },
+              "input": {
+                "description": "Text the program reads as its stdin, from a private file, so no shell quotes it and the pane never shows it. Needs the tmux server on this machine.",
+                "type": "string"
+              },
+              "keep": {
+                "description": "Leave the pane, dead and showing the output, for a person to read and close. Set it only when a person asked to see the run.",
+                "type": "boolean"
+              },
+              "maxLines": {
+                "description": "Keep at most this many lines, from the end. Defaults to the server limit.",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              },
+              "placement": {
+                "description": "With fromPaneId: \"window\", the default, is a background window of its session; \"split\" splits that pane, so a person watching it sees the run. Focus stays put.",
+                "enum": [
+                  "window",
+                  "split"
+                ],
+                "type": "string"
+              },
+              "separateStderr": {
+                "description": "Return what the program writes to stderr apart, as stderr, so output holds stdout alone. Its stderr is then no terminal. Needs the tmux server on this machine, as input does.",
+                "type": "boolean"
+              },
+              "startDirectory": {
+                "description": "Directory the program starts in, taken literally. Defaults to the directory this MCP server was started in, or the fromPaneId pane's. One that cannot be entered fails the call, with the reason, before the program starts.",
+                "type": "string"
+              },
+              "timeoutMs": {
+                "description": "How long to let it run; 30 s by default and clamped by the server ceiling. The result says what was used.",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              },
+              "width": {
+                "description": "Columns of the program's terminal. A program that formats to its width — ls, ps, git log --graph — lays out to this at the source.",
+                "exclusiveMinimum": 0,
+                "maximum": 10000,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "argv"
+            ],
+            "type": "object"
+          },
+          "outputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "additionalProperties": false,
+            "properties": {
+              "droppedLines": {
+                "description": "Lines of output withheld by maxLines.",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              "effectiveTimeoutMs": {
+                "description": "The timeout enforced.",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              "exitStatus": {
+                "anyOf": [
+                  {
+                    "maximum": 9007199254740991,
+                    "minimum": -9007199254740991,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "The exit status; null when a signal ended the program (see signal) or the timeout ended it (outcome timed_out)."
+              },
+              "lostEnd": {
+                "description": "True when the end may be missing: tmux closed the pane before reading it. Running it again repeats what it did; for one with effects, have it write its output to a file with [\"sh\", \"-c\", \"... > file\"] and read the file.",
+                "type": "boolean"
+              },
+              "lostStart": {
+                "description": "True when the start scrolled past the scrollback limit; pipe a long output into a file, or read it with start_program.",
+                "type": "boolean"
+              },
+              "omittedBytes": {
+                "description": "Output bytes omitted by the result ceiling.",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              "outcome": {
+                "description": "completed: it ended on its own, or by the signal reported, whatever exitStatus says. timed_out: it was ended at the timeout, possibly part way through its work; running it again repeats what it did, so use start_program for one that needs longer.",
+                "enum": [
+                  "completed",
+                  "timed_out"
+                ],
+                "type": "string"
+              },
+              "output": {
+                "description": "The bounded tail of what the program printed, as its terminal shows it; stderr and stdout share it.",
+                "type": "string"
+              },
+              "outputComplete": {
+                "description": "False when outcome is timed_out, lostStart or lostEnd is true, or maxLines or the result limit cut the output or stderr.",
+                "type": "boolean"
+              },
+              "returnedBytes": {
+                "description": "UTF-8 output bytes returned.",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              "signal": {
+                "description": "The signal that ended the program, such as \"SIGTERM\"; otherwise null. A program that exits 130 on its own reads as SIGINT, as that status means.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "stderr": {
+                "description": "The bounded tail of what the program wrote to stderr, with separateStderr; otherwise null, and stderr is in output.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "droppedLines",
+              "effectiveTimeoutMs",
+              "exitStatus",
+              "omittedBytes",
+              "outcome",
+              "output",
+              "lostEnd",
+              "lostStart",
+              "outputComplete",
+              "returnedBytes",
+              "signal",
+              "stderr"
+            ],
+            "type": "object"
+          },
+          "annotations": {
+            "destructiveHint": true,
+            "idempotentHint": false,
+            "openWorldHint": true,
+            "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "amplifiesFutureInput": false,
+              "annotations": {
+                "destructiveHint": true,
+                "idempotentHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": false
+              },
+              "description": "Run a program in a new pane of its own with your user's permissions. Run a program in a pane of its own and wait for it; returns its output and exit status. No shell parses argv and nothing is typed into its pane, so the output holds no command line or echo. Check outcome and outputComplete before trusting output. The pane is removed before this returns unless keep is set. A program still running at the timeout, capped by the server's wait ceiling, is ended: run longer ones with start_program. Commands come from this MCP server's PATH, and one not found or not executable fails the call before anything runs. stdin is input when given, else the terminal. PAGER and GIT_PAGER are cat. Use startDirectory in place of cd, [\"sh\", \"-c\", ...] for pipes, and run_shell_command for a command that needs an existing shell's state. Requires tmux 3.8 or newer.",
+              "inputLiteralization": {},
+              "inputSchema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "properties": {
+                  "argv": {
+                    "description": "The program and its arguments, as given: [\"git\", \"status\", \"--short\"]. Put variables first with env: [\"env\", \"CI=1\", \"make\", \"test\"].",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 256,
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "fromPaneId": {
+                    "description": "Run beside this pane, in its directory and session, with that session's tmux environment. Variables the pane's shell exported come only with inheritShell.",
+                    "pattern": "^%\\d+$",
+                    "type": "string"
+                  },
+                  "height": {
+                    "description": "Rows of the program's terminal. Defaults to tmux's default-size.",
+                    "exclusiveMinimum": 0,
+                    "maximum": 10000,
+                    "type": "integer"
+                  },
+                  "inheritShell": {
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "items": {
+                          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+                          "type": "string"
+                        },
+                        "maxItems": 256,
+                        "minItems": 1,
+                        "type": "array"
+                      }
+                    ],
+                    "description": "With fromPaneId, first read the variables that pane's idle shell exported, by typing one env command into it, and run the program with them: true for all, or a list of names, such as [\"PATH\", \"VIRTUAL_ENV\"], for only those. The shell must be a POSIX one at its prompt, as run_shell_command requires. argv[0] is then found on the shell's PATH, and one missing exits 127."
+                  },
+                  "input": {
+                    "description": "Text the program reads as its stdin, from a private file, so no shell quotes it and the pane never shows it. Needs the tmux server on this machine.",
+                    "type": "string"
+                  },
+                  "keep": {
+                    "description": "Leave the pane, dead and showing the output, for a person to read and close. Set it only when a person asked to see the run.",
+                    "type": "boolean"
+                  },
+                  "maxLines": {
+                    "description": "Keep at most this many lines, from the end. Defaults to the server limit.",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "type": "integer"
+                  },
+                  "placement": {
+                    "description": "With fromPaneId: \"window\", the default, is a background window of its session; \"split\" splits that pane, so a person watching it sees the run. Focus stays put.",
+                    "enum": [
+                      "window",
+                      "split"
+                    ],
+                    "type": "string"
+                  },
+                  "separateStderr": {
+                    "description": "Return what the program writes to stderr apart, as stderr, so output holds stdout alone. Its stderr is then no terminal. Needs the tmux server on this machine, as input does.",
+                    "type": "boolean"
+                  },
+                  "startDirectory": {
+                    "description": "Directory the program starts in, taken literally. Defaults to the directory this MCP server was started in, or the fromPaneId pane's. One that cannot be entered fails the call, with the reason, before the program starts.",
+                    "type": "string"
+                  },
+                  "timeoutMs": {
+                    "description": "How long to let it run; 30 s by default and clamped by the server ceiling. The result says what was used.",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "type": "integer"
+                  },
+                  "width": {
+                    "description": "Columns of the program's terminal. A program that formats to its width — ls, ps, git log --graph — lays out to this at the source.",
+                    "exclusiveMinimum": 0,
+                    "maximum": 10000,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "argv"
+                ],
+                "type": "object"
+              },
+              "mayExposeSecrets": true,
+              "mayReturnUntrustedContent": true,
+              "name": "run_program",
+              "nestedAuthority": [],
+              "outputClasses": [
+                "tmux-metadata",
+                "terminal-content"
+              ],
+              "outputSchema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "properties": {
+                  "droppedLines": {
+                    "description": "Lines of output withheld by maxLines.",
+                    "maximum": 9007199254740991,
+                    "minimum": -9007199254740991,
+                    "type": "integer"
+                  },
+                  "effectiveTimeoutMs": {
+                    "description": "The timeout enforced.",
+                    "maximum": 9007199254740991,
+                    "minimum": -9007199254740991,
+                    "type": "integer"
+                  },
+                  "exitStatus": {
+                    "anyOf": [
+                      {
+                        "maximum": 9007199254740991,
+                        "minimum": -9007199254740991,
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The exit status; null when a signal ended the program (see signal) or the timeout ended it (outcome timed_out)."
+                  },
+                  "lostEnd": {
+                    "description": "True when the end may be missing: tmux closed the pane before reading it. Running it again repeats what it did; for one with effects, have it write its output to a file with [\"sh\", \"-c\", \"... > file\"] and read the file.",
+                    "type": "boolean"
+                  },
+                  "lostStart": {
+                    "description": "True when the start scrolled past the scrollback limit; pipe a long output into a file, or read it with start_program.",
+                    "type": "boolean"
+                  },
+                  "omittedBytes": {
+                    "description": "Output bytes omitted by the result ceiling.",
+                    "maximum": 9007199254740991,
+                    "minimum": -9007199254740991,
+                    "type": "integer"
+                  },
+                  "outcome": {
+                    "description": "completed: it ended on its own, or by the signal reported, whatever exitStatus says. timed_out: it was ended at the timeout, possibly part way through its work; running it again repeats what it did, so use start_program for one that needs longer.",
+                    "enum": [
+                      "completed",
+                      "timed_out"
+                    ],
+                    "type": "string"
+                  },
+                  "output": {
+                    "description": "The bounded tail of what the program printed, as its terminal shows it; stderr and stdout share it.",
+                    "type": "string"
+                  },
+                  "outputComplete": {
+                    "description": "False when outcome is timed_out, lostStart or lostEnd is true, or maxLines or the result limit cut the output or stderr.",
+                    "type": "boolean"
+                  },
+                  "returnedBytes": {
+                    "description": "UTF-8 output bytes returned.",
+                    "maximum": 9007199254740991,
+                    "minimum": -9007199254740991,
+                    "type": "integer"
+                  },
+                  "signal": {
+                    "description": "The signal that ended the program, such as \"SIGTERM\"; otherwise null. A program that exits 130 on its own reads as SIGINT, as that status means.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "stderr": {
+                    "description": "The bounded tail of what the program wrote to stderr, with separateStderr; otherwise null, and stderr is in output.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "droppedLines",
+                  "effectiveTimeoutMs",
+                  "exitStatus",
+                  "omittedBytes",
+                  "outcome",
+                  "output",
+                  "lostEnd",
+                  "lostStart",
+                  "outputComplete",
+                  "returnedBytes",
+                  "signal",
+                  "stderr"
+                ],
+                "type": "object"
+              },
+              "processReach": "pane-program",
+              "title": "Run a program and wait",
+              "tmuxEffects": [
+                "observe",
+                "change"
+              ],
+              "toolset": "execute"
+            }
+          }
+        },
+        {
           "name": "run_shell_command",
           "wireName": "run_shell_command",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/input.ts",
-            "line": 304
+            "line": 513
           },
-          "description": "Run a shell command in a pane with your user's permissions. Run a shell command in a pane, wait for it to finish, and report its exit status and output. Prefer this over send_keys plus capture_pane: it frames the command so a pane's echo of what you typed can never be mistaken for what the command printed, and it knows when the command actually ended rather than guessing from the screen. The command runs in a subshell, so cd and export do not persist to a later call. A pane is effectively single-writer: this server reserves it until the command settles, but another process with the same tmux socket can still write into it.",
+          "description": "Run a shell command in a pane with your user's permissions. Run a shell command in a pane, wait for it to finish, and report its exit status and output. Prefer this over send_keys plus capture_pane: it frames the command so a pane's echo of what you typed can never be mistaken for what the command printed, and it knows when the command actually ended rather than guessing from the screen. The command runs in a subshell, so cd and export do not persist to a later call. A pane is effectively single-writer: this server reserves it until the command settles, but another process with the same tmux socket can still write into it. When the pane's shell does not matter, run_program returns only the program's output.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "$schema": "http://json-schema.org/draft-07/schema#",
@@ -24548,7 +25592,7 @@
                 "type": "integer"
               },
               "effectiveTimeoutMs": {
-                "description": "The timeout actually enforced.",
+                "description": "The timeout enforced.",
                 "maximum": 9007199254740991,
                 "minimum": -9007199254740991,
                 "type": "integer"
@@ -24647,7 +25691,7 @@
                 "openWorldHint": true,
                 "readOnlyHint": false
               },
-              "description": "Run a shell command in a pane with your user's permissions. Run a shell command in a pane, wait for it to finish, and report its exit status and output. Prefer this over send_keys plus capture_pane: it frames the command so a pane's echo of what you typed can never be mistaken for what the command printed, and it knows when the command actually ended rather than guessing from the screen. The command runs in a subshell, so cd and export do not persist to a later call. A pane is effectively single-writer: this server reserves it until the command settles, but another process with the same tmux socket can still write into it.",
+              "description": "Run a shell command in a pane with your user's permissions. Run a shell command in a pane, wait for it to finish, and report its exit status and output. Prefer this over send_keys plus capture_pane: it frames the command so a pane's echo of what you typed can never be mistaken for what the command printed, and it knows when the command actually ended rather than guessing from the screen. The command runs in a subshell, so cd and export do not persist to a later call. A pane is effectively single-writer: this server reserves it until the command settles, but another process with the same tmux socket can still write into it. When the pane's shell does not matter, run_program returns only the program's output.",
               "inputLiteralization": {},
               "inputSchema": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
@@ -24702,7 +25746,7 @@
                     "type": "integer"
                   },
                   "effectiveTimeoutMs": {
-                    "description": "The timeout actually enforced.",
+                    "description": "The timeout enforced.",
                     "maximum": 9007199254740991,
                     "minimum": -9007199254740991,
                     "type": "integer"
@@ -24801,8 +25845,8 @@
           "wireName": "search_panes",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/search.ts",
             "line": 78
           },
@@ -25144,18 +26188,18 @@
           "wireName": "select_layout",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/layout.ts",
             "line": 201
           },
-          "description": "Change tmux state; no client-supplied executable input. Rearrange a window's panes. Takes one of tmux's named layouts, or a layout string from an earlier window whose `metadataComplete` is true to reproduce it exactly.",
+          "description": "Change tmux state; no client-supplied executable input. Rearrange a window's panes using a named layout, a unique abbreviation for the running daemon, or a checksummed saved layout from a window whose metadataComplete is true. JSON layouts need tmux 3.8. tmux may adapt dimensions or prune extra cells; the returned window.layout reports the observed result.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "properties": {
               "layout": {
-                "description": "One of even-horizontal, even-vertical, main-horizontal, main-vertical, tiled, or a tmux layout string.",
+                "description": "A tmux named layout, unique abbreviation for the running version, or checksummed saved layout. Geometry and pruning follow tmux.",
                 "type": "string"
               },
               "windowId": {
@@ -25183,7 +26227,7 @@
                     "type": "string"
                   },
                   "layout": {
-                    "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                    "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                     "type": "string"
                   },
                   "metadataComplete": {
@@ -25287,13 +26331,13 @@
                 "openWorldHint": true,
                 "readOnlyHint": false
               },
-              "description": "Change tmux state; no client-supplied executable input. Rearrange a window's panes. Takes one of tmux's named layouts, or a layout string from an earlier window whose `metadataComplete` is true to reproduce it exactly.",
+              "description": "Change tmux state; no client-supplied executable input. Rearrange a window's panes using a named layout, a unique abbreviation for the running daemon, or a checksummed saved layout from a window whose metadataComplete is true. JSON layouts need tmux 3.8. tmux may adapt dimensions or prune extra cells; the returned window.layout reports the observed result.",
               "inputLiteralization": {},
               "inputSchema": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "properties": {
                   "layout": {
-                    "description": "One of even-horizontal, even-vertical, main-horizontal, main-vertical, tiled, or a tmux layout string.",
+                    "description": "A tmux named layout, unique abbreviation for the running version, or checksummed saved layout. Geometry and pruning follow tmux.",
                     "type": "string"
                   },
                   "windowId": {
@@ -25326,7 +26370,7 @@
                         "type": "string"
                       },
                       "layout": {
-                        "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                        "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                         "type": "string"
                       },
                       "metadataComplete": {
@@ -25429,8 +26473,8 @@
           "wireName": "select_pane",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/layout.ts",
             "line": 151
           },
@@ -25780,8 +26824,8 @@
           "wireName": "select_window",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/layout.ts",
             "line": 173
           },
@@ -25824,7 +26868,7 @@
                     "type": "string"
                   },
                   "layout": {
-                    "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                    "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                     "type": "string"
                   },
                   "metadataComplete": {
@@ -25972,7 +27016,7 @@
                         "type": "string"
                       },
                       "layout": {
-                        "description": "tmux's layout string; feed it back only when metadataComplete is true.",
+                        "description": "tmux's observed saved layout, including any resizing or pruning; feed it back only when metadataComplete is true.",
                         "type": "string"
                       },
                       "metadataComplete": {
@@ -26075,12 +27119,12 @@
           "wireName": "send_keys",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/input.ts",
-            "line": 116
+            "line": 316
           },
-          "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Send keystrokes to a pane. Use for TUIs, control keys (C-c), and partial lines. For a shell command whose result you want, use run_shell_command — it waits for completion and reports exit status, which this does not.",
+          "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Send keystrokes to a pane. Use for TUIs, control keys (C-c), and partial lines. For a shell command whose result you want, use run_shell_command — it waits for completion and reports exit status, which this does not. For only a program's own output, use run_program.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "$schema": "http://json-schema.org/draft-07/schema#",
@@ -26162,7 +27206,7 @@
                 "openWorldHint": true,
                 "readOnlyHint": false
               },
-              "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Send keystrokes to a pane. Use for TUIs, control keys (C-c), and partial lines. For a shell command whose result you want, use run_shell_command — it waits for completion and reports exit status, which this does not.",
+              "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Send keystrokes to a pane. Use for TUIs, control keys (C-c), and partial lines. For a shell command whose result you want, use run_shell_command — it waits for completion and reports exit status, which this does not. For only a program's own output, use run_program.",
               "inputLiteralization": {},
               "inputSchema": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
@@ -26250,8 +27294,8 @@
           "wireName": "send_keys_batch",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/target.ts",
             "line": 468
           },
@@ -26527,8 +27571,8 @@
           "wireName": "set_history_limit",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/target.ts",
             "line": 420
           },
@@ -26631,8 +27675,8 @@
           "wireName": "set_mouse_enabled",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/target.ts",
             "line": 404
           },
@@ -26727,8 +27771,8 @@
           "wireName": "set_pane_title",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/layout.ts",
             "line": 350
           },
@@ -27092,8 +28136,8 @@
           "wireName": "set_synchronize_panes",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/target.ts",
             "line": 441
           },
@@ -27212,8 +28256,8 @@
           "wireName": "show_environment",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/settings.ts",
             "line": 199
           },
@@ -27340,8 +28384,8 @@
           "wireName": "show_hooks",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/settings.ts",
             "line": 138
           },
@@ -27476,8 +28520,8 @@
           "wireName": "show_option",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/settings.ts",
             "line": 105
           },
@@ -27627,8 +28671,8 @@
           "wireName": "signal_channel",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/target.ts",
             "line": 386
           },
@@ -27731,8 +28775,8 @@
           "wireName": "snapshot_pane",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/target.ts",
             "line": 305
           },
@@ -28162,8 +29206,8 @@
           "wireName": "split_window",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/lifecycle.ts",
             "line": 190
           },
@@ -28541,12 +29585,321 @@
           }
         },
         {
+          "name": "start_program",
+          "wireName": "start_program",
+          "source": {
+            "repo": "libtmux/libtmux-ts",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "file": "packages/mcp/src/tools/programs.ts",
+            "line": 230
+          },
+          "description": "Run a program in a new pane of its own with your user's permissions. Start a program in a pane of its own and return at once with a programId. Use it for a program that runs longer than one wait, such as a build or a server, or one that needs keys between reads; run_program is the one-call form. read_program reads its output as it is written and reports its exit; send_keys reaches its paneId; stop_program ends it. This server ends it and removes its pane when lifetimeMs runs out, even if no later call arrives, and tmux does if this server dies. No shell parses argv, and PAGER and GIT_PAGER are cat. It takes no input, keep, inheritShell or separateStderr: for those, use run_program. Requires tmux 3.8 or newer.",
+          "schemaStatus": "runtime",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "properties": {
+              "argv": {
+                "description": "The program and its arguments, as given: [\"git\", \"status\", \"--short\"]. Put variables first with env: [\"env\", \"CI=1\", \"make\", \"test\"].",
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 256,
+                "minItems": 1,
+                "type": "array"
+              },
+              "fromPaneId": {
+                "description": "Run beside this pane, in its directory and session, as run_program does.",
+                "pattern": "^%\\d+$",
+                "type": "string"
+              },
+              "height": {
+                "description": "Rows of the program's terminal. Defaults to tmux's default-size.",
+                "exclusiveMinimum": 0,
+                "maximum": 10000,
+                "type": "integer"
+              },
+              "lifetimeMs": {
+                "description": "How long the program may run: it is ended and its pane removed this long after the start. 10 minutes by default; longer than 60 is cut to that.",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              },
+              "placement": {
+                "description": "With fromPaneId: \"window\", the default, or \"split\" beside the pane, where a person watching it sees the program. Focus stays put.",
+                "enum": [
+                  "window",
+                  "split"
+                ],
+                "type": "string"
+              },
+              "startDirectory": {
+                "description": "Directory the program starts in, taken literally; one that cannot be entered means the program never runs, and read_program reports not_started.",
+                "type": "string"
+              },
+              "width": {
+                "description": "Columns of the program's terminal.",
+                "exclusiveMinimum": 0,
+                "maximum": 10000,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "argv"
+            ],
+            "type": "object"
+          },
+          "outputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "additionalProperties": false,
+            "properties": {
+              "effectiveLifetimeMs": {
+                "description": "The lifetime enforced.",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              "paneId": {
+                "description": "The program's pane, for send_keys or capture_pane.",
+                "pattern": "^%\\d+$",
+                "type": "string"
+              },
+              "programId": {
+                "description": "Pass to read_program and stop_program.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "effectiveLifetimeMs",
+              "paneId",
+              "programId"
+            ],
+            "type": "object"
+          },
+          "annotations": {
+            "destructiveHint": true,
+            "idempotentHint": false,
+            "openWorldHint": true,
+            "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "amplifiesFutureInput": false,
+              "annotations": {
+                "destructiveHint": true,
+                "idempotentHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": false
+              },
+              "description": "Run a program in a new pane of its own with your user's permissions. Start a program in a pane of its own and return at once with a programId. Use it for a program that runs longer than one wait, such as a build or a server, or one that needs keys between reads; run_program is the one-call form. read_program reads its output as it is written and reports its exit; send_keys reaches its paneId; stop_program ends it. This server ends it and removes its pane when lifetimeMs runs out, even if no later call arrives, and tmux does if this server dies. No shell parses argv, and PAGER and GIT_PAGER are cat. It takes no input, keep, inheritShell or separateStderr: for those, use run_program. Requires tmux 3.8 or newer.",
+              "inputLiteralization": {},
+              "inputSchema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "properties": {
+                  "argv": {
+                    "description": "The program and its arguments, as given: [\"git\", \"status\", \"--short\"]. Put variables first with env: [\"env\", \"CI=1\", \"make\", \"test\"].",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 256,
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "fromPaneId": {
+                    "description": "Run beside this pane, in its directory and session, as run_program does.",
+                    "pattern": "^%\\d+$",
+                    "type": "string"
+                  },
+                  "height": {
+                    "description": "Rows of the program's terminal. Defaults to tmux's default-size.",
+                    "exclusiveMinimum": 0,
+                    "maximum": 10000,
+                    "type": "integer"
+                  },
+                  "lifetimeMs": {
+                    "description": "How long the program may run: it is ended and its pane removed this long after the start. 10 minutes by default; longer than 60 is cut to that.",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "type": "integer"
+                  },
+                  "placement": {
+                    "description": "With fromPaneId: \"window\", the default, or \"split\" beside the pane, where a person watching it sees the program. Focus stays put.",
+                    "enum": [
+                      "window",
+                      "split"
+                    ],
+                    "type": "string"
+                  },
+                  "startDirectory": {
+                    "description": "Directory the program starts in, taken literally; one that cannot be entered means the program never runs, and read_program reports not_started.",
+                    "type": "string"
+                  },
+                  "width": {
+                    "description": "Columns of the program's terminal.",
+                    "exclusiveMinimum": 0,
+                    "maximum": 10000,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "argv"
+                ],
+                "type": "object"
+              },
+              "mayExposeSecrets": true,
+              "mayReturnUntrustedContent": true,
+              "name": "start_program",
+              "nestedAuthority": [],
+              "outputClasses": [
+                "tmux-metadata",
+                "terminal-content"
+              ],
+              "outputSchema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "properties": {
+                  "effectiveLifetimeMs": {
+                    "description": "The lifetime enforced.",
+                    "maximum": 9007199254740991,
+                    "minimum": -9007199254740991,
+                    "type": "integer"
+                  },
+                  "paneId": {
+                    "description": "The program's pane, for send_keys or capture_pane.",
+                    "pattern": "^%\\d+$",
+                    "type": "string"
+                  },
+                  "programId": {
+                    "description": "Pass to read_program and stop_program.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "effectiveLifetimeMs",
+                  "paneId",
+                  "programId"
+                ],
+                "type": "object"
+              },
+              "processReach": "pane-program",
+              "title": "Start a program",
+              "tmuxEffects": [
+                "observe",
+                "change"
+              ],
+              "toolset": "execute"
+            }
+          }
+        },
+        {
+          "name": "stop_program",
+          "wireName": "stop_program",
+          "source": {
+            "repo": "libtmux/libtmux-ts",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "file": "packages/mcp/src/tools/programs.ts",
+            "line": 557
+          },
+          "description": "Change tmux state; no client-supplied executable input. End a started program and remove its pane now: SIGTERM, then SIGKILL two seconds later. Its id is forgotten, so read what you need with read_program first.",
+          "schemaStatus": "runtime",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "properties": {
+              "programId": {
+                "description": "The id start_program returned.",
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "programId"
+            ],
+            "type": "object"
+          },
+          "outputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "additionalProperties": false,
+            "properties": {
+              "programId": {
+                "description": "The program that was ended. Output read_program had not returned is gone.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "programId"
+            ],
+            "type": "object"
+          },
+          "annotations": {
+            "destructiveHint": true,
+            "idempotentHint": false,
+            "openWorldHint": true,
+            "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "amplifiesFutureInput": false,
+              "annotations": {
+                "destructiveHint": true,
+                "idempotentHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": false
+              },
+              "description": "Change tmux state; no client-supplied executable input. End a started program and remove its pane now: SIGTERM, then SIGKILL two seconds later. Its id is forgotten, so read what you need with read_program first.",
+              "inputLiteralization": {},
+              "inputSchema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "properties": {
+                  "programId": {
+                    "description": "The id start_program returned.",
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "programId"
+                ],
+                "type": "object"
+              },
+              "mayExposeSecrets": true,
+              "mayReturnUntrustedContent": true,
+              "name": "stop_program",
+              "nestedAuthority": [],
+              "outputClasses": [
+                "tmux-metadata"
+              ],
+              "outputSchema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "properties": {
+                  "programId": {
+                    "description": "The program that was ended. Output read_program had not returned is gone.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "programId"
+                ],
+                "type": "object"
+              },
+              "processReach": "none",
+              "title": "Stop a started program",
+              "tmuxEffects": [
+                "observe",
+                "delete"
+              ],
+              "toolset": "execute"
+            }
+          }
+        },
+        {
           "name": "swap_pane",
           "wireName": "swap_pane",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/layout.ts",
             "line": 230
           },
@@ -28934,8 +30287,8 @@
           "wireName": "wait_for_channel",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/target.ts",
             "line": 358
           },
@@ -29046,14 +30399,196 @@
           }
         },
         {
+          "name": "wait_for_exit",
+          "wireName": "wait_for_exit",
+          "source": {
+            "repo": "libtmux/libtmux-ts",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "file": "packages/mcp/src/tools/wait.ts",
+            "line": 618
+          },
+          "description": "Inspect tmux metadata; accepts no client-supplied executable input. Wait until the program in a pane exits and return its exit status or signal. Use it for a pane you did not start, such as a person's build or a server someone launched; for run_program and start_program, their own results report the exit. A pane that closes on exit still reports its status; a pane killed from outside during the wait has none and answers gone within about two seconds, and a pane id that is already gone is not found. A pane at a shell prompt exits only when the shell does: for a command typed into it, use run_shell_command or wait_for_text. Requires tmux 3.8 or newer.",
+          "schemaStatus": "runtime",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "properties": {
+              "paneId": {
+                "description": "Stable pane id, e.g. %1.",
+                "pattern": "^%\\d+$",
+                "type": "string"
+              },
+              "timeoutMs": {
+                "description": "How long to wait for the exit: 30 seconds when omitted, clamped by the server ceiling; the result reports what was used, and timed_out leaves the program running.",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "paneId"
+            ],
+            "type": "object"
+          },
+          "outputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "additionalProperties": false,
+            "properties": {
+              "effectiveTimeoutMs": {
+                "description": "The timeout enforced.",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              "exitStatus": {
+                "anyOf": [
+                  {
+                    "maximum": 9007199254740991,
+                    "minimum": -9007199254740991,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "The exit status, as tmux read it from the pane's process: null when a signal ended it, with signal set, or when it has not exited."
+              },
+              "outcome": {
+                "description": "completed: the program ended; exitStatus holds its status, or is null with signal set. timed_out: it still runs; call again to keep waiting. gone: the pane was removed without an exit status. cancelled: the request was cancelled.",
+                "enum": [
+                  "completed",
+                  "timed_out",
+                  "gone",
+                  "cancelled"
+                ],
+                "type": "string"
+              },
+              "signal": {
+                "description": "The signal that ended the program, such as \"SIGTERM\"; otherwise null.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "effectiveTimeoutMs",
+              "exitStatus",
+              "outcome",
+              "signal"
+            ],
+            "type": "object"
+          },
+          "annotations": {
+            "destructiveHint": true,
+            "idempotentHint": false,
+            "openWorldHint": true,
+            "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "amplifiesFutureInput": false,
+              "annotations": {
+                "destructiveHint": true,
+                "idempotentHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": false
+              },
+              "description": "Inspect tmux metadata; accepts no client-supplied executable input. Wait until the program in a pane exits and return its exit status or signal. Use it for a pane you did not start, such as a person's build or a server someone launched; for run_program and start_program, their own results report the exit. A pane that closes on exit still reports its status; a pane killed from outside during the wait has none and answers gone within about two seconds, and a pane id that is already gone is not found. A pane at a shell prompt exits only when the shell does: for a command typed into it, use run_shell_command or wait_for_text. Requires tmux 3.8 or newer.",
+              "inputLiteralization": {},
+              "inputSchema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "properties": {
+                  "paneId": {
+                    "description": "Stable pane id, e.g. %1.",
+                    "pattern": "^%\\d+$",
+                    "type": "string"
+                  },
+                  "timeoutMs": {
+                    "description": "How long to wait for the exit: 30 seconds when omitted, clamped by the server ceiling; the result reports what was used, and timed_out leaves the program running.",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "paneId"
+                ],
+                "type": "object"
+              },
+              "mayExposeSecrets": true,
+              "mayReturnUntrustedContent": true,
+              "name": "wait_for_exit",
+              "nestedAuthority": [],
+              "outputClasses": [
+                "tmux-metadata"
+              ],
+              "outputSchema": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "properties": {
+                  "effectiveTimeoutMs": {
+                    "description": "The timeout enforced.",
+                    "maximum": 9007199254740991,
+                    "minimum": -9007199254740991,
+                    "type": "integer"
+                  },
+                  "exitStatus": {
+                    "anyOf": [
+                      {
+                        "maximum": 9007199254740991,
+                        "minimum": -9007199254740991,
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The exit status, as tmux read it from the pane's process: null when a signal ended it, with signal set, or when it has not exited."
+                  },
+                  "outcome": {
+                    "description": "completed: the program ended; exitStatus holds its status, or is null with signal set. timed_out: it still runs; call again to keep waiting. gone: the pane was removed without an exit status. cancelled: the request was cancelled.",
+                    "enum": [
+                      "completed",
+                      "timed_out",
+                      "gone",
+                      "cancelled"
+                    ],
+                    "type": "string"
+                  },
+                  "signal": {
+                    "description": "The signal that ended the program, such as \"SIGTERM\"; otherwise null.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "effectiveTimeoutMs",
+                  "exitStatus",
+                  "outcome",
+                  "signal"
+                ],
+                "type": "object"
+              },
+              "processReach": "none",
+              "title": "Wait for a pane's program to exit",
+              "tmuxEffects": [
+                "observe"
+              ],
+              "toolset": "inspect"
+            }
+          }
+        },
+        {
           "name": "wait_for_text",
           "wireName": "wait_for_text",
           "source": {
             "repo": "libtmux/libtmux-ts",
-            "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-            "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+            "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+            "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
             "file": "packages/mcp/src/tools/wait.ts",
-            "line": 503
+            "line": 607
           },
           "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Wait until a pane prints something, streaming tmux's notifications rather than polling. Use for output you did NOT author — another process, a person, a background job. For a command you wrote, use run_shell_command: it knows when the command ended and reports exit status, which no text match can. This discounts text this server itself typed into the pane, for as long as it is unsubmitted or was submitted within the last ten seconds, so a command you just sent cannot match its own echo — but a pane not yet reading input can still echo type-ahead back once it starts, so wait for a prompt before typing into a cold shell. Whatever happens you get back what the pane printed and why the wait ended — a timeout is never an empty answer.",
           "schemaStatus": "runtime",
@@ -29431,8 +30966,8 @@
       "selectable": true,
       "source": "packages/mcp/src",
       "repo": "libtmux/libtmux-ts",
-      "revision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-      "extractedRevision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
+      "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+      "extractedRevision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
       "selection": {
         "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
       },
@@ -29460,7 +30995,7 @@
         "serverInfo": {
           "name": "libtmux",
           "title": "tmux",
-          "version": "0.1.0-alpha.10"
+          "version": "0.1.2"
         }
       }
     },
@@ -31919,8 +33454,8 @@
           "wireName": "call_read_tools_batch",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 1145
           },
@@ -32657,8 +34192,8 @@
           "wireName": "capture_pane",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/inspect.rs",
             "line": 196
           },
@@ -32791,10 +34326,10 @@
           "wireName": "capture_since",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/observe.rs",
-            "line": 434
+            "line": 440
           },
           "description": "Read what a pane wrote since the previous call. The first call, with no cursor, starts watching and returns a cursor; later calls pass it back and receive only what is new, as the raw output stream, not the rendered screen: a line redrawn in place repeats; capture_pane shows the screen. Use this to follow a pane over several turns without re-reading the whole screen. The answer says missed=true if the cursor no longer names retained output, including when the pane outran the buffer, its live tail was evicted, or the server restarted. Starting a tail owns a retained observer until the tail is evicted or the server stops. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
           "schemaStatus": "runtime",
@@ -32888,12 +34423,12 @@
           "wireName": "clear_pane_scrollback",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/control.rs",
             "line": 584
           },
-          "description": "Discard a pane's scrollback, so the next capture_pane returns only what happens next. Use this before running something whose output you want to read cleanly: it is far cheaper than reading past the old output every time. The visible screen is left alone. Delete tmux state; accepts no command payload.",
+          "description": "Discard a pane's retained scrollback. The visible screen is left alone and remains in subsequent capture_pane results. Use capture_since to follow later output. Delete tmux state; accepts no command payload.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -32952,8 +34487,8 @@
           "wireName": "create_session",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/control.rs",
             "line": 249
           },
@@ -33042,8 +34577,8 @@
           "wireName": "create_window",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 927
           },
@@ -33155,8 +34690,8 @@
           "wireName": "find_pane_by_position",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 609
           },
@@ -33275,8 +34810,8 @@
           "wireName": "get_pane_info",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 593
           },
@@ -33390,8 +34925,8 @@
           "wireName": "get_server_info",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/inspect.rs",
             "line": 149
           },
@@ -33549,8 +35084,8 @@
           "wireName": "get_session_info",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 555
           },
@@ -33629,8 +35164,8 @@
           "wireName": "get_tmux_variables",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 652
           },
@@ -33711,8 +35246,8 @@
           "wireName": "get_window_info",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 579
           },
@@ -33807,8 +35342,8 @@
           "wireName": "kill_pane",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/control.rs",
             "line": 227
           },
@@ -33871,8 +35406,8 @@
           "wireName": "kill_session",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/control.rs",
             "line": 299
           },
@@ -33935,8 +35470,8 @@
           "wireName": "kill_window",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/control.rs",
             "line": 207
           },
@@ -33999,8 +35534,8 @@
           "wireName": "list_panes",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/inspect.rs",
             "line": 137
           },
@@ -34122,8 +35657,8 @@
           "wireName": "list_sessions",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/inspect.rs",
             "line": 110
           },
@@ -34211,8 +35746,8 @@
           "wireName": "list_windows",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/inspect.rs",
             "line": 125
           },
@@ -34316,8 +35851,8 @@
           "wireName": "move_window",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 791
           },
@@ -34423,10 +35958,10 @@
           "wireName": "paste_text",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/control.rs",
-            "line": 608
+            "line": 607
           },
           "description": "Put text into a pane through a tmux paste buffer instead of typing it key by key. Use this for anything long or awkward: send_keys types the text, so a shell reading it can react to each character, and a bracketed-paste aware program treats a paste as one block. Optional Enter is appended to that same block. Empty text without Enter is a guarded buffer-free no-op. Paste targets only the named pane, even when synchronized input is enabled. A dead, input-disabled, mode-owned, terminal-attended, or inherited-caller target is refused before setup and again immediately before paste. The private buffer is deleted after setup, refusal, and paste outcomes; observations can still race with tmux. A submitted paste is remembered briefly so wait_for_text can discount its own echo. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
           "schemaStatus": "runtime",
@@ -34503,8 +36038,8 @@
           "wireName": "rename_session",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 713
           },
@@ -34590,8 +36125,8 @@
           "wireName": "rename_window",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 745
           },
@@ -34693,8 +36228,8 @@
           "wireName": "resize_pane",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/control.rs",
             "line": 319
           },
@@ -34791,8 +36326,8 @@
           "wireName": "resize_window",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 768
           },
@@ -34899,8 +36434,8 @@
           "wireName": "respawn_pane",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 1020
           },
@@ -35020,12 +36555,12 @@
           "wireName": "run_shell_command",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/observe.rs",
             "line": 208
           },
-          "description": "Run a shell command in a pane, wait for it to finish, and report its exit status with everything it wrote. This is the tool for \"run this and tell me if it worked\". Output is the pane's raw output stream, not the rendered screen: nothing is missed, the shell prompt is not included, and a line redrawn in place repeats; capture_pane shows the screen. The command runs in a subshell, so cd and export do not persist and invalid syntax completes with a nonzero status. Valid inherited Bash and zsh ERR and DEBUG traps remain visible to the command while parent-shell traps and options remain unchanged. It requires one configured input recipient and observes its mode, liveness, input-off state, attended-client state, cohort, inherited-caller relation, known POSIX shell, and resolved route before watcher setup and again before dispatch. A process-wide endpoint-and-pane reservation blocks other MCP pane input until the completion marker or pane closure is proved. The resolved tmux executable and socket path must contain no ASCII terminal-control bytes. The reservation serializes this MCP's input, but tmux observations can still race with dispatch. The pane shell, tmux server, and configuration must be trusted. Reaching the deadline, cancelling, or an uncertain dispatch stops this request while its watcher keeps the reservation until completion is proved. To stop the command, send_keys with keys [\"C-c\"] alone passes the reservation, and the command reports completion when it ends; respawn_pane with kill_first replaces a program that ignores C-c and C-\\. Run a shell command in a pane with your user's permissions.",
+          "description": "Run a shell command in a pane, wait for it to finish, and report its exit status with retained output. This is the tool for \"run this and tell me if it worked\". Output is the pane's raw output stream, not the rendered screen. Output is a bounded tail; check truncated before treating it as complete. The shell prompt is not included, and a line redrawn in place repeats; capture_pane shows the screen. The command runs in a subshell, so cd and export do not persist and invalid syntax completes with a nonzero status. Valid inherited Bash and zsh ERR and DEBUG traps remain visible to the command while parent-shell traps and options remain unchanged. It requires one configured input recipient and observes its mode, liveness, input-off state, attended-client state, cohort, inherited-caller relation, known POSIX shell, and resolved route before watcher setup and again before dispatch. A process-wide endpoint-and-pane reservation blocks other MCP pane input until the completion marker or pane closure is proved. The resolved tmux executable and socket path must contain no ASCII terminal-control bytes. The reservation serializes this MCP's input, but tmux observations can still race with dispatch. The pane shell, tmux server, and configuration must be trusted. Reaching the deadline, cancelling, or an uncertain dispatch stops this request while its watcher keeps the reservation until completion is proved. To stop the command, send_keys with keys [\"C-c\"] alone passes the reservation, and the command reports completion when it ends; respawn_pane with kill_first replaces a program that ignores C-c and C-\\. Run a shell command in a pane with your user's permissions.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -35112,7 +36647,7 @@
                 "description": "How the run finished."
               },
               "output": {
-                "description": "Everything the command wrote, stdout and stderr interleaved in the\norder the program wrote them.\n\nThis is the raw output stream with escape sequences removed, not the\nrendered screen: a line redrawn in place, such as a progress bar,\nrepeats. `capture_pane` shows the screen.",
+                "description": "The retained tail of command output, stdout and stderr interleaved.\n\nThis is the raw output stream with escape sequences removed, not the\nrendered screen: a line redrawn in place, such as a progress bar,\nrepeats. Check `truncated` before treating it as complete.\n`capture_pane` shows the screen.",
                 "type": "string"
               },
               "pane": {
@@ -35164,8 +36699,8 @@
           "wireName": "search_panes",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/inspect.rs",
             "line": 344
           },
@@ -35304,8 +36839,8 @@
           "wireName": "select_layout",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/control.rs",
             "line": 551
           },
@@ -35378,8 +36913,8 @@
           "wireName": "select_pane",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/control.rs",
             "line": 388
           },
@@ -35518,8 +37053,8 @@
           "wireName": "select_window",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/control.rs",
             "line": 475
           },
@@ -35653,8 +37188,8 @@
           "wireName": "send_keys",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/control.rs",
             "line": 356
           },
@@ -35747,8 +37282,8 @@
           "wireName": "send_keys_batch",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 1078
           },
@@ -35965,8 +37500,8 @@
           "wireName": "set_history_limit",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 895
           },
@@ -36047,8 +37582,8 @@
           "wireName": "set_mouse_enabled",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 864
           },
@@ -36127,8 +37662,8 @@
           "wireName": "set_pane_title",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 841
           },
@@ -36249,8 +37784,8 @@
           "wireName": "set_synchronize_panes",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 1045
           },
@@ -36327,8 +37862,8 @@
           "wireName": "show_environment",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/inspect.rs",
             "line": 510
           },
@@ -36448,8 +37983,8 @@
           "wireName": "show_hooks",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/inspect.rs",
             "line": 560
           },
@@ -36543,8 +38078,8 @@
           "wireName": "show_option",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/inspect.rs",
             "line": 457
           },
@@ -36648,10 +38183,10 @@
           "wireName": "signal_channel",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/control.rs",
-            "line": 733
+            "line": 740
           },
           "description": "Signal a tmux wait-for channel, releasing every current waiter. With no waiter, one signal is latched; signalling the same channel again clears that latch. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -36720,8 +38255,8 @@
           "wireName": "snapshot_pane",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/inspect.rs",
             "line": 257
           },
@@ -36933,8 +38468,8 @@
           "wireName": "split_window",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 964
           },
@@ -37087,8 +38622,8 @@
           "wireName": "swap_pane",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 817
           },
@@ -37207,10 +38742,10 @@
           "wireName": "wait_for_channel",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/observe.rs",
-            "line": 490
+            "line": 496
           },
           "description": "Block until something signals a tmux wait-for channel. A pending signal is consumed. Pair this with a shell command that ends in `tmux wait-for -S <channel>` to synchronise with work this server did not start. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -37293,12 +38828,12 @@
           "wireName": "wait_for_text",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+            "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
             "file": "crates/tmux-mcp/src/tools/observe.rs",
-            "line": 344
+            "line": 345
           },
-          "description": "Wait until a pane writes matching text. Reads the pane's live output stream, so text that scrolls past between checks is still seen. The returned text is that raw stream, not the rendered screen: a line redrawn in place repeats; capture_pane shows the screen. Prefer run_shell_command for commands you are sending yourself: it reports an exit status instead of guessing from output. Use this for output you did not author, such as a server logging that it is ready. A line this server itself types and submits -- with send_keys, paste_text, or run_shell_command's own dispatch -- is discounted from a match for a short time afterward, so waiting for text you just sent does not match its own echo; output that happens to repeat the same words still does. A submitted line that wrapped across terminal rows when it was typed is not discounted. A pattern still on the row being typed into, not yet submitted, reports outcome pending instead of matched, and one already on a completed row before this call attached reports present_at_entry. Waiting owns an observer client until the wait ends. Each list accepts at most 32 patterns, each at most 4,096 bytes, using Rust's linear-time regex engine. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
+          "description": "Wait until a pane writes matching text. On tmux 3.7 or newer it reads the pane's live output stream, so text that scrolls past between checks is still seen, and the returned text is that raw stream, not the rendered screen: a line redrawn in place repeats. Below 3.7 it polls the visible screen about every 120 ms and misses text that appears and scrolls off between two reads. capture_pane shows the screen. Prefer run_shell_command for commands you are sending yourself: it reports an exit status instead of guessing from output. Use this for output you did not author, such as a server logging that it is ready. A line this server itself types and submits -- with send_keys, paste_text, or run_shell_command's own dispatch -- is discounted from a match for a short time afterward, so waiting for text you just sent does not match its own echo; output that happens to repeat the same words still does. A submitted line that wrapped across terminal rows is discounted as one line. A pattern still on the row being typed into, not yet submitted, reports outcome pending instead of matched, and one already on a completed row before this call attached reports present_at_entry. A pane or server that ends reports pane_closed; an observer stream that drops while the pane lives reports stream_lost. On 3.7 or newer, waiting owns an observer client until the wait ends. Each list accepts at most 32 patterns, each at most 4,096 bytes, using Rust's linear-time regex engine. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -37386,7 +38921,12 @@
                   },
                   {
                     "const": "pane_closed",
-                    "description": "The pane stopped writing for good.",
+                    "description": "The pane stopped writing for good: it closed, or the server holding it\nexited. `text` holds the output seen up to then.",
+                    "type": "string"
+                  },
+                  {
+                    "const": "stream_lost",
+                    "description": "The control stream ended while the pane was still alive, for example\nbecause its client was detached.\n\nNothing says the pane stopped, only that this wait can no longer see\nit. Wait again to watch it afresh; `text` holds the output seen up to\nthe loss. The polling path, used below tmux 3.7, has no stream to lose.",
                     "type": "string"
                   },
                   {
@@ -37428,7 +38968,7 @@
                 "type": "string"
               },
               "text": {
-                "description": "What the pane wrote, with escape sequences removed.\n\nThis is the raw output stream, not the rendered screen: a line redrawn\nin place, such as a line editor's echo, repeats. `capture_pane` shows\nthe screen.",
+                "description": "Retained stream text, or captured screen text on the polling path.\n\nStreamed results are not the rendered screen: escape sequences are\nremoved and a line redrawn in place repeats. `capture_pane` shows the\nscreen. Below tmux 3.7 this is the last visible screen read instead;\na present-at-entry match can also return captured screen text.",
                 "type": "string"
               }
             },
@@ -37471,8 +39011,8 @@
       "selectable": true,
       "source": "crates/tmux-mcp/src/tools",
       "repo": "libtmux/libtmux-rs",
-      "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
-      "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "extractedRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
       "selection": {
         "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
       },
@@ -71629,6 +73169,7 @@
     "paste_buffer",
     "paste_text",
     "pipe_pane",
+    "read_program",
     "rename_session",
     "rename_window",
     "resize_pane",
@@ -71637,6 +73178,7 @@
     "run",
     "run_command",
     "run_operations",
+    "run_program",
     "run_shell_command",
     "search_panes",
     "select_layout",
@@ -71661,10 +73203,13 @@
     "snapshot",
     "snapshot_pane",
     "split_window",
+    "start_program",
+    "stop_program",
     "swap_pane",
     "teardown_session",
     "wait",
     "wait_for_channel",
+    "wait_for_exit",
     "wait_for_text"
   ],
   "coverage": {
@@ -71913,6 +73458,9 @@
     "pipe_pane": [
       "py"
     ],
+    "read_program": [
+      "ts"
+    ],
     "rename_session": [
       "py",
       "ts",
@@ -71972,6 +73520,9 @@
     ],
     "run_operations": [
       "julia"
+    ],
+    "run_program": [
+      "ts"
     ],
     "run_shell_command": [
       "ts",
@@ -72161,6 +73712,12 @@
       "cxx",
       "swift"
     ],
+    "start_program": [
+      "ts"
+    ],
+    "stop_program": [
+      "ts"
+    ],
     "swap_pane": [
       "py",
       "ts",
@@ -72186,6 +73743,9 @@
       "csharp",
       "cxx",
       "swift"
+    ],
+    "wait_for_exit": [
+      "ts"
     ],
     "wait_for_text": [
       "py",

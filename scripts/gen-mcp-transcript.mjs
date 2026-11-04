@@ -8,7 +8,7 @@ import { PORTS } from '../site/src/lib/ports.ts'
 import { EXAMPLES } from '../site/src/lib/mcp-examples.ts'
 import { contractsOf, sameContracts } from '../site/src/lib/mcp-contract.ts'
 import { recordCalls } from './lib/mcp-session.mjs'
-import { leaks, sanitize, verifyRecording, withoutContracts } from './lib/mcp-transcript-checks.mjs'
+import { leaks, sanitize, UnsettledPaneError, verifyRecording, withoutContracts } from './lib/mcp-transcript-checks.mjs'
 
 /**
  * Record what each port's MCP server answers to the worked example on the MCP
@@ -19,6 +19,13 @@ import { leaks, sanitize, verifyRecording, withoutContracts } from './lib/mcp-tr
  * the revision its protocol snapshot records, and refuses to write otherwise.
  * It fails on a tool error, a server that does not exit 0, a request whose id
  * no earlier result returned, or an expected value that is missing.
+ *
+ * A server that describes a pane the moment it splits it can catch the pane
+ * before its shell has started: tmux then names the child `tmux` and reports
+ * no path. Such an answer is never written. The recorder stops the tmux
+ * servers of its own sandbox and records again, up to ATTEMPTS times, and
+ * fails if the pane is still unsettled. A server that borrows a running tmux
+ * session cannot be restarted from here, so it fails on the first attempt.
  *
  * The transcript also stores the input and output schemas of each tool it
  * calls, from that snapshot. A page documenting another revision shows the
@@ -67,6 +74,10 @@ const TOOLSETS = { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' }
 const EXPECTED_OUTPUT = ['2 passed', 'checks finished']
 // Without a command to run, the last answer must still state this (a value the example's prompt asks about).
 const PRESENT = { ruby: ['%0'] }
+// What a pane runs once its shell has started: the sandbox pins SHELL, and the borrowed Ruby session runs cat.
+const PANE_COMMANDS = { ruby: ['cat'] }
+// A server that describes a pane the moment it is split can catch it before its shell has started; the answer is recorded again.
+const ATTEMPTS = 6
 const LOG_FILE = '2026-01-01 checks started\n2026-01-01 checks finished\n'
 const TEST_FILE = 'def test_adds():\n    assert 1 + 1 == 2\n\n\ndef test_upper():\n    assert "tmux".upper() == "TMUX"\n'
 
@@ -87,6 +98,11 @@ const sandbox = mkdtempSync(join(tmpdir(), `t239-${only}-`))
 const sandboxReal = realpathSync(sandbox)
 const project = join(sandbox, 'project')
 let transcript
+// Every tmux server the sandbox started; the sandbox is the only place they can be.
+const stopServers = () => {
+  const socket = join(sandbox, `tmux-${process.getuid?.() ?? ''}`)
+  if (existsSync(socket)) for (const name of readdirSync(socket)) try { execFileSync('tmux', ['-S', join(socket, name), 'kill-server'], { stdio: 'ignore' }) } catch { /* no server left on that socket */ }
+}
 try {
   mkdirSync(project, { recursive: true })
   writeFileSync(join(project, 'test_example.py'), TEST_FILE)
@@ -109,20 +125,27 @@ try {
     ...TOOLSETS,
   }
   mkdirSync(environment.HOME)
-  const run = await recordCalls({
-    command: command.startsWith('/') || !command.includes('/') ? command : join(checkout, command), args: args.map((arg) => (arg.includes('/') && !arg.startsWith('-') ? join(checkout, arg) : arg)),
-    cwd: server.inCheckout ? workdir : project, env: environment, calls: example.steps.map(({ tool, arguments: callArguments }) => ({ tool, arguments: callArguments })),
-  })
-
   // The tool that runs commands is the one whose requests carry a `command`; a name is not trusted to say so.
   const runTool = [...new Set(example.steps.filter((step) => typeof step.arguments.command === 'string').map((step) => step.tool))]
   if (runTool.length > 1) throw new Error(`${only}: the example must run commands through one run_ tool, found ${runTool.join(', ')}`)
-  try {
-    verifyRecording(run.steps, { port: only, runTool: runTool[0] ?? '', expected: runTool.length ? EXPECTED_OUTPUT : [], present: PRESENT[only] ?? [] })
-  } catch (error) {
-    // The raw answers, for whoever is adding a port: nothing is written.
-    if (process.argv.includes('--debug')) console.error(JSON.stringify(run.steps, null, 1))
-    throw error
+  let run
+  for (let attempt = 1; !run; attempt++) {
+    const recorded = await recordCalls({
+      command: command.startsWith('/') || !command.includes('/') ? command : join(checkout, command), args: args.map((arg) => (arg.includes('/') && !arg.startsWith('-') ? join(checkout, arg) : arg)),
+      cwd: server.inCheckout ? workdir : project, env: environment, calls: example.steps.map(({ tool, arguments: callArguments }) => ({ tool, arguments: callArguments })),
+    })
+    try {
+      verifyRecording(recorded.steps, { port: only, runTool: runTool[0] ?? '', expected: runTool.length ? EXPECTED_OUTPUT : [], present: PRESENT[only] ?? [], commands: PANE_COMMANDS[only] ?? ['sh'] })
+      run = recorded
+    } catch (error) {
+      // The raw answers, for whoever is adding a port: nothing is written.
+      if (process.argv.includes('--debug')) console.error(JSON.stringify(recorded.steps, null, 1))
+      // A borrowed session cannot be started again from here.
+      if (!(error instanceof UnsettledPaneError) || server.borrowed) throw error
+      if (attempt === ATTEMPTS) throw new Error(`${error.message}; still unsettled after ${ATTEMPTS} recordings`, { cause: error })
+      console.warn(`gen-mcp-transcript: ${error.message}; recording again`)
+      stopServers()
+    }
   }
 
   // The project directory is a fresh temporary one each run; a fixed name keeps the file stable.
@@ -141,8 +164,7 @@ try {
   }
 } finally {
   try {
-    const socket = join(sandbox, `tmux-${process.getuid?.() ?? ''}`)
-    if (existsSync(socket)) for (const name of readdirSync(socket)) try { execFileSync('tmux', ['-S', join(socket, name), 'kill-server'], { stdio: 'ignore' }) } catch { /* no server left on that socket */ }
+    stopServers()
   } finally {
     rmSync(sandbox, { recursive: true, force: true })
   }

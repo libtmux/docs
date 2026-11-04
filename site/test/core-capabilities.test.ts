@@ -92,8 +92,8 @@ describe('the capability showcase data', () => {
   // on 2026-11-02 (commit 20744401ee9f78a131592481e251c6a09ac8f5fa, git blob
   // f070fac137b166227b34a79e5b4b0de77cf5ee95, last changed by 2156612): the
   // require sits inside the begin block, after the docs:begin marker, so README
-  // excerpts carry it. The revision-bound cache still holds the older shape with
-  // the require at column 0, so only this fixture reaches the indented form.
+  // excerpts carry it. The fixture stays as it was when the cache moves on, so
+  // the indented form keeps its own coverage.
   describe('a Ruby program that wraps its require in a begin block', () => {
     const wrapped = readFileSync(new URL('./fixtures/ruby-capture-begin-wrapped.rb', import.meta.url), 'utf8')
 
@@ -133,6 +133,12 @@ describe('the capability showcase data', () => {
       const workflow = execFileSync('git', ['-C', local!, 'show', `${model(owner).revision}:${entry.ci.workflow}`], { encoding: 'utf8', maxBuffer: 1 << 24 })
       expect(workflowStep(workflow, entry.ci), `${entry.ci.workflow} job ${entry.ci.job} step ${entry.ci.step ?? '(unnamed)'} runs ${entry.ci.command}`).toBe(true)
     })
+    if (entry.ci.planOutput) {
+      it.skipIf(!local)(`${owner}/${id} is not shown as run once its plan output is not recorded`, () => {
+        const workflow = execFileSync('git', ['-C', local!, 'show', `${model(owner).revision}:${entry.ci.workflow}`], { encoding: 'utf8', maxBuffer: 1 << 24 })
+        expect(workflowStep(workflow, { ...entry.ci, planOutput: undefined })).toBe(false)
+      })
+    }
   }
 })
 
@@ -170,6 +176,104 @@ jobs:
     ['a command inside a string', workflow.replace('        run: bun run typecheck && bun run test\n  other', '        run: echo "bun run typecheck && bun run test"\n  other')],
   ])('refuses %s', (_name, changed) => {
     expect(workflowStep(changed, ci)).toBe(false)
+  })
+  describe('a job that waits on its workflow\'s plan', () => {
+    const planned = `name: ci
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    outputs:
+      run_cells: \${{ steps.plan.outputs.run_cells }}
+      run_development: \${{ steps.plan.outputs.run_development }}
+      scope: \${{ steps.plan.outputs.scope }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Plan the run
+        id: plan
+        run: ruby scripts/ci-plan
+  gate:
+    if: github.ref == 'x'
+    runs-on: ubuntu-24.04
+    steps:
+      - run: true
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: true
+  cell:
+    needs: plan
+    if: needs.plan.outputs.run_cells == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Run the complete cell
+        run: >-
+          bundle exec scripts/matrix
+          --output build/matrix
+`
+    const cell = { workflow: '.github/workflows/x.yml', job: 'cell', step: 'Run the complete cell', planOutput: 'run_cells', command: 'bundle exec scripts/matrix --output build/matrix' }
+    const gated = "    if: needs.plan.outputs.run_cells == 'true'\n"
+    it('accepts the flag its plan job publishes', () => {
+      expect(workflowStep(planned, cell)).toBe(true)
+      expect(workflowStep(planned.replace('needs: plan', 'needs: [lint, plan]'), cell)).toBe(true)
+      expect(workflowStep(planned.replace('    needs: plan\n', '    needs:\n      - lint\n      - plan\n'), cell)).toBe(true)
+      expect(workflowStep(planned.replace('    needs: plan\n', '    needs:\n      - lint\n      # the plan decides\n      - plan # first\n'), cell)).toBe(true)
+      expect(workflowStep(planned.replace('needs: plan', 'needs: [lint,\n      plan]'), cell)).toBe(true)
+      expect(workflowStep(planned.replace('needs: plan', 'needs: [\n      lint, # first\n      plan,\n    ]'), cell)).toBe(true)
+      expect(workflowStep(planned.replace("run_cells == 'true'", "run_cells == 'true' # the plan decides"), cell)).toBe(true)
+      expect(workflowStep(planned.replace('id: plan', 'id: decide').replace('steps.plan.outputs.run_cells', 'steps.decide.outputs.run_cells'), cell)).toBe(true)
+      expect(workflowStep(planned.replace('    runs-on: ubuntu-24.04\n    outputs:', '    runs-on: ubuntu-24.04\n    continue-on-error: false\n    outputs:'), cell)).toBe(true)
+    })
+    it.each([
+      ['an event test', planned.replace(gated, "    if: github.event_name == 'workflow_dispatch'\n")],
+      ['a flag the plan job does not declare', planned.replace(gated, "    if: needs.plan.outputs.run_other == 'true'\n")],
+      ['a flag the entry does not name', planned.replace(gated, "    if: needs.plan.outputs.run_development == 'true'\n")],
+      ['a condition with a comment that looks like a pass', planned.replace(gated, "    if: github.ref == 'x' # continue-on-error: false\n")],
+      ['a flag compared with another value', planned.replace("run_cells == 'true'", "run_cells != 'true'")],
+      ['a condition added to the flag', planned.replace("run_cells == 'true'", "run_cells == 'true' && github.ref == 'x'")],
+      ['a plan the job does not need', planned.replace('    needs: plan\n', '')],
+      ['another job in needs', planned.replace('needs: plan', 'needs: other')],
+      ['a plan named only in a comment', planned.replace('needs: plan', 'needs: [other] # plan')],
+      ['a plan named only in a block-list comment', planned.replace('    needs: plan\n', '    needs:\n      - other # plan\n')],
+      ['a conditional job beside the plan', planned.replace('needs: plan', 'needs: [plan, gate]')],
+      ['a conditional job beside the plan in a block list', planned.replace('    needs: plan\n', '    needs:\n      - plan\n      - gate\n')],
+      ['a conditional job on the second line of a wrapped flow list', planned.replace('needs: plan', 'needs: [plan,\n      gate]')],
+      ['a conditional job on the third line of a wrapped flow list', planned.replace('needs: plan', 'needs: [plan,\n      lint,\n      gate,\n    ]')],
+      ['a job beside the plan on a wrapped line that needs a conditional job', planned.replace('needs: plan', 'needs: [plan,\n      lint]').replace('  lint:\n', '  lint:\n    needs: gate\n')],
+      ['a tolerated job beside the plan', planned.replace('needs: plan', 'needs: [plan, gate]').replace("    if: github.ref == 'x'\n", '    continue-on-error: true\n')],
+      ['a job beside the plan that needs a conditional job', planned.replace('needs: plan', 'needs: [plan, lint]').replace('  lint:\n', '  lint:\n    needs: gate\n')],
+      ['a job beside the plan that the workflow does not define', planned.replace('needs: plan', 'needs: [plan, absent]')],
+      ['a job beside the plan that needs the job', planned.replace('needs: plan', 'needs: [plan, lint]').replace('  lint:\n', '  lint:\n    needs: cell\n')],
+      ['a plan job that is itself conditional', planned.replace('  plan:\n', "  plan:\n    if: github.ref == 'x'\n")],
+      ['a plan job whose condition carries a comment that looks like a pass', planned.replace('  plan:\n', "  plan:\n    if: github.ref == 'x' # continue-on-error: false\n")],
+      ['a plan job that may fail', planned.replace('  plan:\n', '  plan:\n    continue-on-error: true\n')],
+      ['a plan job that needs a conditional job', planned.replace('  plan:\n', '  plan:\n    needs: gate\n')],
+      ['a plan job that needs an unconditional job', planned.replace('  plan:\n', '  plan:\n    needs: lint\n')],
+      ['a plan job that is not in the workflow', planned.replace('  plan:\n', '  planner:\n')],
+      ['a plan output that is hard-wired', planned.replace('run_cells: ${{ steps.plan.outputs.run_cells }}', "run_cells: 'false'")],
+      ['a plan output that reads a missing step', planned.replace('run_cells: ${{ steps.plan.outputs.run_cells }}', 'run_cells: ${{ steps.absent.outputs.run_cells }}')],
+      ['a plan output that reads another flag of the step', planned.replace('run_cells: ${{ steps.plan.outputs.run_cells }}', 'run_cells: ${{ steps.plan.outputs.scope }}')],
+      ['a plan that does not declare outputs', planned.replace(/ {4}outputs:\n( {6}.*\n)+/, '')],
+      ['a plan whose only step is skipped', planned.replace('      - uses: actions/checkout@v4\n', '').replace('        id: plan\n', "        id: plan\n        if: false\n")],
+      ['a plan step that may fail', planned.replace('        id: plan\n', '        id: plan\n        continue-on-error: true\n')],
+      ['a plan step with no id', planned.replace('        id: plan\n', '')],
+      ['a job that may fail', planned.replace(gated, '    continue-on-error: true\n')],
+      ['a job that may fail and waits on the plan', planned.replace(gated, `${gated}    continue-on-error: true\n`)],
+    ])('still refuses %s', (_name, changed) => {
+      expect(changed).not.toBe(planned)
+      expect(workflowStep(changed, cell)).toBe(false)
+    })
+    it('accepts the plan only for an entry that names its flag', () => {
+      expect(workflowStep(planned, { ...cell, planOutput: undefined })).toBe(false)
+      expect(workflowStep(planned, { ...cell, planOutput: 'run_development' })).toBe(false)
+      expect(workflowStep(planned.replaceAll('run_cells', 'run_development'), { ...cell, planOutput: 'run_development' })).toBe(true)
+    })
+    it('refuses a plan output name that is not a name', () => {
+      const ok = table.ruby!['send-keys']!
+      expect(ok.ci.planOutput).toBe('run_cells')
+      expect(validateCapability(ok)).toEqual([])
+      expect(validateCapability({ ...ok, ci: { ...ok.ci, planOutput: 'run_cells.*' } })).toEqual(['names a plan output that is not a workflow output name'])
+      expect(workflowStep(planned, { ...cell, planOutput: '.*' })).toBe(false)
+    })
   })
   it.each([
     ['another name', { ...ci, step: 'Gate the workspace' }],

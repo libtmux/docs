@@ -233,13 +233,29 @@ const NOT_API: { why: string; test: RegExp }[] = [
   { why: 'method without a receiver', test: /^[.:]/ },
   // Test and example fixtures live in files the extractors exclude, so they
   // are real classes that are deliberately not public API.
-  { why: 'test or example fixture', test: /(Tests?|TestCase|RunTest)$|^Test[A-Z]|^Example(?:\(\))?$/ },
+  // `Example.check`, the assertion helper a program's support file adds, belongs to the fixture too.
+  { why: 'test or example fixture', test: /(Tests?|TestCase|RunTest)$|^Test[A-Z]|^Example(?:\(\)|\.\w+[?!]?(?:\(\))?)?$/ },
 ]
 
 /** Why this span is not an API reference, or undefined if it might be. */
 export function notApiReason(text: string): string | undefined {
   const t = text.trim()
   for (const { why, test } of NOT_API) if (test.test(t)) return why
+  return undefined
+}
+
+/**
+ * Why the sentence before a span says it is not API, for a span that resolved to nothing.
+ *
+ * Only the words around it tell `Enter` in "key names such as `Enter`" from a type, or `error.message` in
+ * "with `--json`, the refusal is in `error.message`" from a method: spelled alone each reads as a symbol.
+ * It is asked after resolution fails, so a name the port defines still links wherever it is written.
+ */
+export function notApiInContext(text: string, before: string | undefined): string | undefined {
+  const t = text.trim()
+  const sentence = (before ?? '').split(/(?<=[.!?])\s+(?=[A-Z])/).pop() ?? ''
+  if (/^[A-Z][A-Za-z0-9]*$/.test(t) && /\bkey\s+names?\s+(?:such as|like|including)\b/i.test(sentence)) return 'tmux key name'
+  if (/^[a-z_]\w*(?:\.[a-z_]\w*)+$/.test(t) && /\bjson\b/i.test(sentence)) return 'field of JSON output'
   return undefined
 }
 
@@ -345,9 +361,11 @@ export function decideMention(
     }
   }
   // A known language must never resolve a similarly named API in another port.
-  if (tried.length) return ambiguous
-    ? { kind: 'skip', why: 'ambiguous within the stated port; qualify the receiver to link it' }
-    : { kind: 'unresolved', why: 'not defined in the stated port', tried }
+  if (tried.length) {
+    if (ambiguous) return { kind: 'skip', why: 'ambiguous within the stated port; qualify the receiver to link it' }
+    const context = notApiInContext(text, ctx.before)
+    return context ? { kind: 'skip', why: context } : { kind: 'unresolved', why: 'not defined in the stated port', tried }
+  }
 
   // Nothing said which language. One claimant is an answer; several are not.
   const claims: { port: string; decision: MentionDecision }[] = []
@@ -365,7 +383,8 @@ export function decideMention(
     // `ctx.pagePort` is set and this branch is not reached.
     return { kind: 'skip', why: `ambiguous across ${claims.map((c) => c.port).join(', ')}` }
   }
-  return { kind: 'unresolved', why: 'no port defines it', tried }
+  const context = notApiInContext(text, ctx.before)
+  return context ? { kind: 'skip', why: context } : { kind: 'unresolved', why: 'no port defines it', tried }
 }
 
 export type PathDecision =

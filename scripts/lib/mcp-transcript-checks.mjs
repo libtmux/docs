@@ -7,16 +7,60 @@ export const idsIn = (value) => new Set(JSON.stringify(value).match(ID) ?? [])
 const answer = (step) => [step.content, step.structuredContent ?? null]
 
 /**
+ * A pane that a server described before its shell had started. tmux names the
+ * forked child `tmux` and reports no path until the shell has replaced it, so
+ * an answer built at that moment shows a command and a path no reader would
+ * see a moment later. The recorder records again instead of keeping it.
+ */
+export class UnsettledPaneError extends Error {}
+
+const PANE_ID = /^%\d+$/
+const PANE_COMMAND = /^(?:command|currentCommand|pane_current_command)$/
+const PANE_PATH = /^(?:path|cwd|currentPath|pane_current_path)$/
+
+/** The objects in a structured answer that carry a pane id and the command that pane runs. */
+function* panesIn(value) {
+  if (!value || typeof value !== 'object') return
+  if (!Array.isArray(value)) {
+    const entries = Object.entries(value)
+    const id = entries.find(([key, item]) => /^(?:id|pane_id|paneId)$/.test(key) && PANE_ID.test(String(item)))
+    const command = entries.find(([key]) => PANE_COMMAND.test(key))
+    if (id && command) yield { id: String(id[1]), command: command[1], path: entries.find(([key]) => PANE_PATH.test(key))?.[1] }
+  }
+  for (const item of Object.values(value)) yield* panesIn(item)
+}
+
+/**
+ * Every pane a step described runs one of `commands` and, when it names a
+ * path, names one.
+ *
+ * @param {{ tool: string, structuredContent?: unknown }[]} steps
+ * @param {{ port: string, commands: string[] }} options
+ * @throws {UnsettledPaneError}
+ */
+export function verifySettledPanes(steps, { port, commands }) {
+  for (const step of steps) {
+    for (const pane of panesIn(step.structuredContent)) {
+      if (!commands.includes(pane.command) || pane.path === null || pane.path === '') {
+        throw new UnsettledPaneError(`${port}: ${step.tool} described pane ${pane.id} with command ${JSON.stringify(pane.command)} and path ${pane.path === undefined ? 'none' : JSON.stringify(pane.path)}, before its shell had started (expected ${commands.join(' or ')} and a path)`)
+      }
+    }
+  }
+}
+
+/**
  * The checks a recording must pass before it is written.
  *
  * Every step answered without an error. Every id a request names was returned,
  * as that exact id, by an earlier step. The step that ran the command printed
- * the expected text on its own word boundary and exited 0.
+ * the expected text on its own word boundary and exited 0. With `commands`,
+ * every pane an answer describes is also settled (see `verifySettledPanes`).
  *
  * @param {{ tool: string, arguments: unknown, isError: boolean, content: unknown[], structuredContent?: unknown }[]} steps
- * @param {{ port: string, runTool: string, expected: string[], present?: string[] }} options
+ * @param {{ port: string, runTool: string, expected: string[], present?: string[], commands?: string[] }} options
  */
-export function verifyRecording(steps, { port, runTool, expected, present = [] }) {
+export function verifyRecording(steps, { port, runTool, expected, present = [], commands }) {
+  if (commands) verifySettledPanes(steps, { port, commands })
   const returned = new Set()
   for (const step of steps) {
     if (step.isError) throw new Error(`${port}: ${step.tool} returned an error: ${JSON.stringify(answer(step)).slice(0, 400)}`)

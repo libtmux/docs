@@ -11664,6 +11664,48 @@
   },
   {
    "port": "ruby",
+   "symbol": "LibTmux::Async",
+   "page": "/ruby/latest/mcp/source-guide/",
+   "title": "MCP server guide",
+   "section": "mcp"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Async::ControlConnection#events",
+   "page": "/ruby/latest/guides/async/",
+   "title": "Async",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Async::ControlConnection#exchange",
+   "page": "/ruby/latest/guides/async/",
+   "title": "Async",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Async::ControlConnection#pause_output",
+   "page": "/ruby/latest/guides/async/",
+   "title": "Async",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Async::ControlConnection#resume_output",
+   "page": "/ruby/latest/guides/async/",
+   "title": "Async",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Async::ControlConnection#subscribe",
+   "page": "/ruby/latest/guides/async/",
+   "title": "Async",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
    "symbol": "LibTmux::Async::ControlSubscription#next",
    "page": "/ruby/latest/guides/async/",
    "title": "Async",
@@ -11674,6 +11716,20 @@
    "symbol": "LibTmux::Async::Scope#map",
    "page": "/ruby/latest/guides/async/",
    "title": "Async",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Async::Scope#map",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Async::Scope#map",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -11706,13 +11762,6 @@
   },
   {
    "port": "ruby",
-   "symbol": "LibTmux::Async::Server#open_control",
-   "page": "/ruby/latest/guides/core/",
-   "title": "Server bindings",
-   "section": "guides"
-  },
-  {
-   "port": "ruby",
    "symbol": "LibTmux::Async::Server#run",
    "page": "/ruby/latest/guides/async/",
    "title": "Async",
@@ -11721,6 +11770,34 @@
   {
    "port": "ruby",
    "symbol": "LibTmux::Async::Server#snapshot",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Async::Server#wait_for",
+   "page": "/ruby/latest/guides/async/",
+   "title": "Async",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Async.open",
+   "page": "/ruby/latest/guides/async/",
+   "title": "Async",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Async.open",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Async.open",
    "page": "/ruby/latest/guides/getting-started/",
    "title": "Getting started",
    "section": "guides"
@@ -11734,7 +11811,7 @@
   },
   {
    "port": "ruby",
-   "symbol": "LibTmux::Cancellation.new",
+   "symbol": "LibTmux::Cancellation",
    "page": "/ruby/latest/guides/core/",
    "title": "Server bindings",
    "section": "guides"
@@ -11759,6 +11836,13 @@
    "page": "/ruby/latest/topics/errors-and-exceptions/",
    "title": "Ownership and errors",
    "section": "topics"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Cancellation#close",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
   },
   {
    "port": "ruby",
@@ -11777,9 +11861,23 @@
   {
    "port": "ruby",
    "symbol": "LibTmux::Cancelled",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Cancelled",
    "page": "/ruby/latest/topics/errors-and-exceptions/",
    "title": "Ownership and errors",
    "section": "topics"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::CommandError",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
   },
   {
    "port": "ruby",
@@ -11797,6 +11895,62 @@
   },
   {
    "port": "ruby",
+   "symbol": "LibTmux::CommandResult#argv",
+   "page": "/ruby/latest/mcp/source-guide/",
+   "title": "MCP server guide",
+   "section": "mcp"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::ControlConnection",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::ControlConnection#exchange",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::ControlConnection#pause_output",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::ControlConnection#resume_output",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::ControlConnection#subscribe",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::ControlEvent",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::ControlSubscription#next",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
    "symbol": "LibTmux::DeadlineExceeded",
    "page": "/ruby/latest/topics/errors-and-exceptions/",
    "title": "Ownership and errors",
@@ -11804,10 +11958,38 @@
   },
   {
    "port": "ruby",
+   "symbol": "LibTmux::Endpoint.from_env",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Endpoint.new",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Endpoint.new",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
    "symbol": "LibTmux::FieldDecodeError",
    "page": "/ruby/latest/topics/errors-and-exceptions/",
    "title": "Ownership and errors",
    "section": "topics"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::GroupResult",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
   },
   {
    "port": "ruby",
@@ -11832,6 +12014,13 @@
   },
   {
    "port": "ruby",
+   "symbol": "LibTmux::Hooks#set",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
    "symbol": "LibTmux::IncompleteSnapshotError",
    "page": "/ruby/latest/topics/errors-and-exceptions/",
    "title": "Ownership and errors",
@@ -11843,6 +12032,20 @@
    "page": "/ruby/latest/topics/errors-and-exceptions/",
    "title": "Ownership and errors",
    "section": "topics"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::MCP::Application",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::MCP::Application",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "ruby",
@@ -11868,6 +12071,20 @@
   {
    "port": "ruby",
    "symbol": "LibTmux::MCP::Application#accept_shell",
+   "page": "/ruby/latest/mcp/source-guide/",
+   "title": "MCP server guide",
+   "section": "mcp"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::MCP::Application#close",
+   "page": "/ruby/latest/mcp/source-guide/",
+   "title": "MCP server guide",
+   "section": "mcp"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::MCP::Application#invite_shell",
    "page": "/ruby/latest/mcp/source-guide/",
    "title": "MCP server guide",
    "section": "mcp"
@@ -11944,7 +12161,28 @@
   },
   {
    "port": "ruby",
-   "symbol": "LibTmux::Options",
+   "symbol": "LibTmux::Options#get",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Options#set",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::OptionValue",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::OptionValue#as",
    "page": "/ruby/latest/guides/core/",
    "title": "Server bindings",
    "section": "guides"
@@ -11955,6 +12193,48 @@
    "page": "/ruby/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
    "section": "concepts"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Pane#capture",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Pane#capture",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Pane#capture",
+   "page": "/ruby/latest/mcp/source-guide/",
+   "title": "MCP server guide",
+   "section": "mcp"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Pane#send_keys",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Pane#send_text",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Pane#split",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
   },
   {
    "port": "ruby",
@@ -11973,6 +12253,13 @@
   {
    "port": "ruby",
    "symbol": "LibTmux::Selection#one",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Selection#one",
    "page": "/ruby/latest/guides/getting-started/",
    "title": "Getting started",
    "section": "guides"
@@ -11987,6 +12274,13 @@
   {
    "port": "ruby",
    "symbol": "LibTmux::Selection#one_or_nil",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Selection#one_or_nil",
    "page": "/ruby/latest/guides/getting-started/",
    "title": "Getting started",
    "section": "guides"
@@ -12000,6 +12294,20 @@
   },
   {
    "port": "ruby",
+   "symbol": "LibTmux::Selection#select",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Selection#select",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
    "symbol": "LibTmux::Selection#size",
    "page": "/ruby/latest/workspace/source-guide/",
    "title": "Workspace guide",
@@ -12008,8 +12316,57 @@
   {
    "port": "ruby",
    "symbol": "LibTmux::Selection#where",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Selection#where",
    "page": "/ruby/latest/guides/getting-started/",
    "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server",
+   "page": "/ruby/latest/guides/async/",
+   "title": "Async",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server.new",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server.new",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server.open",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
    "section": "guides"
   },
   {
@@ -12028,10 +12385,101 @@
   },
   {
    "port": "ruby",
+   "symbol": "LibTmux::Server.start",
+   "page": "/ruby/latest/guides/async/",
+   "title": "Async",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server.start",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server.start",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server#explain_panes",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server#kill",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server#list_panes",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server#list_windows",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server#open_control",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server#read_buffer",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server#snapshot",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server#write_buffer",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
    "symbol": "LibTmux::Session",
    "page": "/ruby/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
    "section": "concepts"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Session#link_window",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Session#list_windows",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
   },
   {
    "port": "ruby",
@@ -12050,9 +12498,23 @@
   {
    "port": "ruby",
    "symbol": "LibTmux::SubscriptionOverflow",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::SubscriptionOverflow",
    "page": "/ruby/latest/topics/errors-and-exceptions/",
    "title": "Ownership and errors",
    "section": "topics"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::TargetNotFoundError",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
   },
   {
    "port": "ruby",
@@ -12070,10 +12532,31 @@
   },
   {
    "port": "ruby",
+   "symbol": "LibTmux::UnsupportedFeatureError",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
    "symbol": "LibTmux::Window",
    "page": "/ruby/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
    "section": "concepts"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Window#list_panes",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Window#split",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
   },
   {
    "port": "ruby",
@@ -12088,6 +12571,20 @@
    "page": "/ruby/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Workspace",
+   "page": "/ruby/latest/guides/core/",
+   "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Workspace",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "ruby",
@@ -12119,6 +12616,13 @@
   },
   {
    "port": "ruby",
+   "symbol": "LibTmux::Workspace::ApplyResult#to_h",
+   "page": "/ruby/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "ruby",
    "symbol": "LibTmux::Workspace::ConfigError",
    "page": "/ruby/latest/workspace/source-guide/",
    "title": "Workspace guide",
@@ -12126,7 +12630,21 @@
   },
   {
    "port": "ruby",
+   "symbol": "LibTmux::Workspace::Plan::Step#target",
+   "page": "/ruby/latest/mcp/source-guide/",
+   "title": "MCP server guide",
+   "section": "mcp"
+  },
+  {
+   "port": "ruby",
    "symbol": "LibTmux::Workspace::Plan#apply",
+   "page": "/ruby/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Workspace::Plan#to_h",
    "page": "/ruby/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
@@ -12162,6 +12680,13 @@
   {
    "port": "ruby",
    "symbol": "LibTmux::Workspace.load",
+   "page": "/ruby/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Workspace.parse",
    "page": "/ruby/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
@@ -14475,21 +15000,14 @@
    "port": "ruby",
    "text": "Enumerable",
    "page": "/ruby/latest/guides/getting-started/",
-   "line": 14,
+   "line": 15,
    "why": "not defined in the stated port"
   },
   {
    "port": "ruby",
    "text": "LibTmux",
    "page": "/ruby/latest/guides/getting-started/",
-   "line": 117,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "ruby",
-   "text": "libtmux-ruby.workspace",
-   "page": "/ruby/latest/workspace/source-guide/",
-   "line": 79,
+   "line": 116,
    "why": "not defined in the stated port"
   },
   {

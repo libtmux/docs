@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { apisUsed, CORE_APIS, MAX_APIS, withoutLiterals } from '../src/lib/core-apis'
 import { portCapabilities, type CapabilityTable } from '../src/lib/core-capabilities'
@@ -6,6 +7,8 @@ import TABLE from '../src/data/core-capabilities.json'
 import SOURCES from '../src/data/example-sources.json'
 import type { CachedSource } from '../src/lib/port-landing'
 
+const showcasePorts = Object.keys(TABLE).filter((port) => portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>).length > 0)
+
 const programs = (port: string): Record<string, string> => ({
   'typed-graph': homeProgram(QUICKSTARTS[port]!.complete!, 'full'),
   ...Object.fromEntries(portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>).map((item) => [item.id, item.code])),
@@ -13,8 +16,10 @@ const programs = (port: string): Record<string, string> => ({
 
 describe('the APIs a showcase example uses', () => {
   it('has a list for every example the showcase shows, and none for another', () => {
-    for (const port of ['rs', 'ruby', 'go']) expect(Object.keys(CORE_APIS[port]!).sort(), port).toEqual(Object.keys(programs(port)).sort())
-    expect(Object.keys(CORE_APIS).sort()).toEqual(['go', 'ruby', 'rs'].sort())
+    // A port that gains a showcase example must list its APIs, whichever port it is.
+    expect(showcasePorts).toEqual(expect.arrayContaining(['rs', 'ruby', 'go']))
+    for (const port of showcasePorts) expect(Object.keys(CORE_APIS[port] ?? {}).sort(), port).toEqual(Object.keys(programs(port)).sort())
+    expect(Object.keys(CORE_APIS).sort()).toEqual([...showcasePorts].sort())
   })
 
   const cases = Object.entries(CORE_APIS).flatMap(([port, list]) => Object.entries(list).map(([id, ids]) => [`${port}/${id}`, port, id, ids] as const))
@@ -56,6 +61,30 @@ describe('the APIs a showcase example uses', () => {
     expect(withoutLiterals('puts "plain window.snapshot"', 'ruby')).not.toContain('snapshot')
     // The real programs still use every symbol they name.
     expect(apisUsed('rs', CORE_APIS.rs!['typed-graph']!, real, 'latest').shown.length).toBeGreaterThan(0)
+  })
+
+  // The Ruby send-keys program polls Pane#capture and attaches no control
+  // client. A frozen copy keeps the list held to that program whatever the
+  // example cache holds: the list must resolve against it, and a list that
+  // names a control-mode symbol the program never calls must be refused.
+  describe('the Ruby send-keys program that polls capture instead of watching', () => {
+    const polling = readFileSync(new URL('./fixtures/ruby-capture-begin-wrapped.rb', import.meta.url), 'utf8')
+    const watching = [
+      'LibTmux::Server#open_control', 'LibTmux::ControlConnection#exchange', 'LibTmux::ControlConnection#subscribe',
+      'LibTmux::ControlSubscription#next', 'LibTmux::ControlEvent#data',
+    ]
+
+    it('resolves the list the showcase holds for it', () => {
+      expect(apisUsed('ruby', CORE_APIS.ruby!['send-keys']!, polling, 'latest').shown.map((item) => item.label)).toEqual([
+        'Server', 'Server.start', 'Server#new_session', 'CreationReceipt#pane', 'Pane#send_text', 'Pane#send_keys', 'Pane#capture', 'CommandResult#stdout',
+      ])
+    })
+
+    it.each(watching)('refuses a list that still names %s', (id) => {
+      const name = id.slice(id.lastIndexOf('#') + 1)
+      expect(() => apisUsed('ruby', [...CORE_APIS.ruby!['send-keys']!, id], polling, 'latest', 'ruby/send-keys'))
+        .toThrow(`core-apis: ruby/send-keys names ${id}, but the program never uses ${name}`)
+    })
   })
 
   it('fails on a symbol the model lacks, one the program never uses, a duplicate and an internal one', () => {
