@@ -63,11 +63,10 @@ describe('the APIs a showcase example uses', () => {
     expect(apisUsed('rs', CORE_APIS.rs!['typed-graph']!, real, 'latest').shown.length).toBeGreaterThan(0)
   })
 
-  // examples/api/capture.rb as libtmux/libtmux-ruby master holds it: it polls
-  // pane.capture and attaches no control client. The cache once held a program
-  // that called open_control, exchange, subscribe, next and data, and the list
-  // for this example named all five; the port's build read the live file and
-  // refused the list, while this suite read the stale cache and passed.
+  // The Ruby send-keys program polls Pane#capture and attaches no control
+  // client. A frozen copy keeps the list held to that program whatever the
+  // example cache holds: the list must resolve against it, and a list that
+  // names a control-mode symbol the program never calls must be refused.
   describe('the Ruby send-keys program that polls capture instead of watching', () => {
     const polling = readFileSync(new URL('./fixtures/ruby-capture-begin-wrapped.rb', import.meta.url), 'utf8')
     const watching = [
