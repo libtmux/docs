@@ -181,13 +181,19 @@ describe('the tmux state each recorded call leaves', () => {
     expect(frames[2]!.sessions[0]!.windows[0]!.panes[0]!.output).toMatch(/^2026-01-01 checks started\n2026-01-01 checks finished\n/)
   })
 
-  it('places a pane for each link it has, a capture of a pane no window holds changes nothing, and a listing with no contexts places nothing', () => {
+  it('places a pane at the first link it has, even when it is linked into two places, and a capture of a pane no window holds changes nothing, and a listing with no contexts places nothing', () => {
     const listing = (panes: unknown[]): ReplayStep => ({ tool: 'list_panes', arguments: {}, content: [], structuredContent: { panes } })
-    const pane = { target: { paneId: '%4', generation: 'g' }, command: 'sh', width: 10, height: 5, contexts: [{ sessionId: '$1', sessionName: 'one', windowId: '@2', windowName: 'w', windowIndex: 3 }] }
+    const first = { sessionId: '$1', sessionName: 'one', windowId: '@2', windowName: 'w', windowIndex: 3 }
+    const second = { sessionId: '$7', sessionName: 'two', windowId: '@9', windowName: 'v', windowIndex: 0 }
+    const pane = { target: { paneId: '%4', generation: 'g' }, command: 'sh', width: 10, height: 5, contexts: [first] }
     const capture = (paneId: string): ReplayStep => ({ tool: 'capture_pane', arguments: { target: { paneId, generation: 'g' } }, content: [], structuredContent: { text: 'hello' } })
-    expect(replayFrames([listing([pane]), capture('%4')]).at(-1)!.sessions).toEqual([{ id: '$1', name: 'one', windows: [{ id: '@2', index: 3, name: 'w', panes: [{ id: '%4', command: 'sh', width: 10, height: 5, output: 'hello' }] }] }])
+    const placed = [{ id: '$1', name: 'one', windows: [{ id: '@2', index: 3, name: 'w', panes: [{ id: '%4', command: 'sh', width: 10, height: 5 }] }] }]
+    expect(replayFrames([listing([pane]), capture('%4')]).at(-1)!.sessions).toEqual([{ ...placed[0], windows: [{ ...placed[0]!.windows[0], panes: [{ ...placed[0]!.windows[0]!.panes[0], output: 'hello' }] }] }])
     expect(replayFrames([listing([pane]), capture('%9')]).at(-1)!.sessions[0]!.windows[0]!.panes[0], 'no pane %9').not.toHaveProperty('output')
     expect(replayFrames([listing([{ ...pane, contexts: [] }])]).at(-1)!.sessions).toEqual([])
+    // The pane is in two windows, and the preview draws the one the listing names first.
+    expect(replayFrames([listing([{ ...pane, contexts: [first, second] }])]).at(-1)!.sessions, 'linked into two places, drawn in the first').toEqual(placed)
+    expect(replayFrames([listing([{ ...pane, contexts: [second, first] }])]).at(-1)!.sessions.map((session) => session.id), 'the order decides').toEqual(['$7'])
   })
 
   it.each(['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift'] as const)('leaves %s with each pane\'s own output and no session after the kill', async (port) => {
