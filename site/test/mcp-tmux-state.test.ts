@@ -1,9 +1,10 @@
 import { execFileSync, spawnSync } from 'node:child_process'
-import { mkdtempSync, realpathSync, rmSync } from 'node:fs'
+import { chmodSync, mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { parseListings, readTmuxState, settledState } from '../../scripts/lib/mcp-tmux-state.mjs'
+import { ownSockets, parseListings, readTmuxState, recordedState, runTmux, sandboxSockets, settledState, stopSandboxServers } from '../../scripts/lib/mcp-tmux-state.mjs'
 import { UnsettledPaneError } from '../../scripts/lib/mcp-transcript-checks.mjs'
 import { hasState, READ_ONLY_TOOLS, recordingStateProblems, stateProblems, type StatedStep, type TmuxPane, type TmuxState, type TmuxWindow } from '../src/lib/mcp-tmux-state'
 
@@ -95,6 +96,10 @@ describe('the states of a recording', () => {
     expect(recordingStateProblems(renamed).join('\n'), 'only a tool named kill* is exempt').toMatch(/the result returns \$0/)
   })
 
+  it('names, outside the code that reads it, the tools that only read: dropping one from the set loses its check', () => {
+    expect([...READ_ONLY_TOOLS].sort()).toEqual(['capture_pane', 'get_tmux_variables', 'list_panes', 'list_sessions', 'list_windows', 'tmux_capabilities', 'tmux_snapshot'])
+  })
+
   it('refuses a read that changed tmux, and has a control: a call that writes may', () => {
     expect([...READ_ONLY_TOOLS]).toContain('list_panes')
     const changed = recording([created, split, { ...listed, tmux: oneState() }, killed])
@@ -106,7 +111,7 @@ describe('the states of a recording', () => {
 describe('reading a tmux server', () => {
   const listing = [
     'S|$0|checks',
-    'W|$0|@0|0|sh|1|b25f,80x24,0,0{40x24,0,0,0,39x24,41,0,1}',
+    'W|$0|@0|0|sh|1|b25f,80x24,0,0{40x24,0,0,0,39x24,41,0,1}|1',
     'P|@0|%0|sh|0|0|40|24|0',
     'P|@0|%1|sh|41|0|39|24|1',
     '',
@@ -116,23 +121,26 @@ describe('reading a tmux server', () => {
     const state = parseListings(listing)
     expect(state).toEqual({
       sessions: [{ id: '$0', name: 'checks' }],
-      windows: [{ session: '$0', id: '@0', index: 0, name: 'sh', active: true, layout: 'b25f,80x24,0,0{40x24,0,0,0,39x24,41,0,1}' }],
+      windows: [{ session: '$0', id: '@0', index: 0, name: 'sh', active: true, layout: 'b25f,80x24,0,0{40x24,0,0,0,39x24,41,0,1}', automaticName: true }],
       panes: [pane({ width: 40, active: false }), pane({ id: '%1', left: 41, width: 39 })],
     })
-    expect(stateProblems(state)).toEqual([])
+    expect(stateProblems(recordedState(state))).toEqual([])
   })
 
   it.each([
     ['a name that holds the separator', 'S|$0|a|b', /expected 2 fields, found 3/],
     ['a line of another listing', 'X|$0|a', /unknown listing/],
-    ['a count that is not digits', 'W|$0|@0|one|sh|1|layout', /"one" is not a number/],
-    ['a flag that is not 0 or 1', 'W|$0|@0|0|sh|yes|layout', /"yes" is not a flag/],
+    ['a count that is not digits', 'W|$0|@0|one|sh|1|layout|1', /"one" is not a number/],
+    ['a flag that is not 0 or 1', 'W|$0|@0|0|sh|yes|layout|1', /"yes" is not a flag/],
+    ['a window listed without whether tmux still names it', 'W|$0|@0|0|sh|1|layout', /expected 7 fields, found 6/],
   ])('refuses %s rather than guess', (_name, line, message) => {
     expect(() => parseListings(line)).toThrow(message)
   })
 
   const sandbox = '/tmp/sandbox'
   const socket = `${sandbox}/tmux-1000/transcript`
+  /** The paths here are not on disk, so each stands for itself. */
+  const same = (path: string) => path
   const answers = (extra: Record<string, string | Error> = {}) => (_socket: string, args: string[]) => {
     const key = args.length === 3 ? 'sessions' : 'list'
     const answer = extra[key] ?? { sessions: '$0\n', list: listing }[key]
@@ -141,30 +149,151 @@ describe('reading a tmux server', () => {
   }
 
   it('reads the one server of the sandbox', () => {
-    const state = readTmuxState({ sandbox, run: answers(), sockets: () => [socket] })()
+    const state = readTmuxState({ sandbox, run: answers(), sockets: () => [socket], realpath: same })()
     expect(state.panes.map((item: any) => [item.id, item.command, item.width])).toEqual([['%0', 'sh', 40], ['%1', 'sh', 39]])
-    expect(stateProblems(state)).toEqual([])
+    expect(stateProblems(state), 'the note for the settle check is not part of a state').toEqual(['windows[0] has an unknown field automaticName'])
+    expect(stateProblems(recordedState(state))).toEqual([])
   })
 
   it('treats a sandbox with no server, and a server that has gone, as a tmux with nothing in it', () => {
-    expect(readTmuxState({ sandbox, run: answers(), sockets: () => [] })()).toEqual(EMPTY)
+    expect(readTmuxState({ sandbox, run: answers(), sockets: () => [], realpath: same })()).toEqual(EMPTY)
     // tmux answers the window and pane listings of a server with no session with an error, so they must not be asked.
     const noSession = answers({ sessions: '\n', list: new Error('no current target') })
-    expect(readTmuxState({ sandbox, run: noSession, sockets: () => [socket] })()).toEqual(EMPTY)
+    expect(readTmuxState({ sandbox, run: noSession, sockets: () => [socket], realpath: same })()).toEqual(EMPTY)
     const gone = Object.assign(new Error(`no server running on ${socket}`), { noServer: true })
-    expect(readTmuxState({ sandbox, run: answers({ list: gone }), sockets: () => [socket] })()).toEqual(EMPTY)
+    expect(readTmuxState({ sandbox, run: answers({ list: gone }), sockets: () => [socket], realpath: same })()).toEqual(EMPTY)
   })
 
   it('fails when tmux cannot be read for any other reason, so a recording with a hole in it is never written', () => {
-    expect(() => readTmuxState({ sandbox, run: answers({ list: new Error('server exited unexpectedly') }), sockets: () => [socket] })()).toThrow(/tmux could not be read: server exited unexpectedly/)
-    expect(() => readTmuxState({ sandbox, run: answers({ sessions: new Error('lost connection') }), sockets: () => [socket] })()).toThrow(/tmux could not be read: lost connection/)
+    expect(() => readTmuxState({ sandbox, run: answers({ list: new Error('server exited unexpectedly') }), sockets: () => [socket], realpath: same })()).toThrow(/tmux could not be read: server exited unexpectedly/)
+    expect(() => readTmuxState({ sandbox, run: answers({ sessions: new Error('lost connection') }), sockets: () => [socket], realpath: same })()).toThrow(/tmux could not be read: lost connection/)
   })
 
   it('refuses a socket outside the sandbox, so it never reads the reader\'s own tmux, and a sandbox with two servers', () => {
     const run = () => { throw new Error('tmux must not be run') }
-    expect(() => readTmuxState({ sandbox, run, sockets: () => ['/tmp/tmux-1000/default'] })()).toThrow(/outside the sandbox/)
-    expect(() => readTmuxState({ sandbox, run, sockets: () => [`${sandbox}-other/tmux-1000/default`] })()).toThrow(/outside the sandbox/)
-    expect(() => readTmuxState({ sandbox, run, sockets: () => [socket, `${sandbox}/tmux-1000/default`] })()).toThrow(/more than one tmux server \(transcript, default\)/)
+    expect(() => readTmuxState({ sandbox, run, sockets: () => ['/tmp/tmux-1000/default'], realpath: same })()).toThrow(/outside the sandbox/)
+    expect(() => readTmuxState({ sandbox, run, sockets: () => [`${sandbox}-other/tmux-1000/default`], realpath: same })()).toThrow(/outside the sandbox/)
+    expect(() => readTmuxState({ sandbox, run, sockets: () => [socket, `${sandbox}/tmux-1000/default`], realpath: same })()).toThrow(/more than one tmux server \(transcript, default\)/)
+  })
+
+  it('reads a socket through the path it resolves to, and refuses one whose path resolves outside the sandbox even though its name is inside', () => {
+    const resolved = (path: string) => (path === socket ? `${sandbox}/real/transcript` : path === sandbox ? sandbox : '/home/reader/tmux-1000/default')
+    const seen: string[] = []
+    const run = (at: string, args: string[]) => { seen.push(at); return answers()(at, args) }
+    readTmuxState({ sandbox, run, sockets: () => [socket], realpath: resolved })()
+    expect(new Set(seen), 'tmux is run against the resolved path').toEqual(new Set([`${sandbox}/real/transcript`]))
+    const link = `${sandbox}/tmux-1000/default`
+    expect(() => readTmuxState({ sandbox, run: () => { throw new Error('tmux must not be run') }, sockets: () => [link], realpath: resolved })()).toThrow(/default \(\/home\/reader\/tmux-1000\/default\) is outside the sandbox/)
+    expect(() => readTmuxState({ sandbox, run, sockets: () => [socket], realpath: (path) => { if (path === socket) throw new Error('ELOOP'); return path } })()).toThrow(/cannot be resolved \(ELOOP\)/)
+  })
+
+  describe('on a real file system', () => {
+    const uid = process.getuid?.() ?? ''
+    const make = async () => {
+      const base = realpathSync(mkdtempSync(join(tmpdir(), 'mcp-links-')))
+      const sandbox = join(base, 'sandbox')
+      const outside = join(base, 'outside')
+      mkdirSync(join(sandbox, `tmux-${uid}`), { recursive: true })
+      mkdirSync(outside)
+      // A server of the reader's, standing in: a real socket, which a link can lead to.
+      const server = createServer()
+      await new Promise<void>((resolve) => server.listen(join(outside, 'default'), resolve))
+      return { base, sandbox, outside, server }
+    }
+    const refused = () => { throw new Error('tmux must not be run') }
+
+    it('lists a link to a socket outside the sandbox and refuses it, instead of following it or leaving it unseen', async () => {
+      const { base, sandbox, outside, server } = await make()
+      try {
+        symlinkSync(join(outside, 'default'), join(sandbox, `tmux-${uid}`, 'default'))
+        expect(sandboxSockets(sandbox), 'the link is listed').toEqual([join(sandbox, `tmux-${uid}`, 'default')])
+        expect(() => readTmuxState({ sandbox, run: refused })()).toThrow(/outside the sandbox/)
+        expect(ownSockets(sandbox)).toEqual({ own: [], foreign: [`${join(sandbox, `tmux-${uid}`, 'default')} (${join(outside, 'default')})`] })
+      } finally {
+        server.close()
+        rmSync(base, { recursive: true, force: true })
+      }
+    })
+
+    it('refuses a tmux directory that is itself a link out of the sandbox', async () => {
+      const { base, sandbox, outside, server } = await make()
+      try {
+        rmSync(join(sandbox, `tmux-${uid}`), { recursive: true })
+        symlinkSync(outside, join(sandbox, `tmux-${uid}`))
+        expect(() => readTmuxState({ sandbox, run: refused })()).toThrow(/outside the sandbox/)
+      } finally {
+        server.close()
+        rmSync(base, { recursive: true, force: true })
+      }
+    })
+
+    it('reads a socket of the sandbox, and a link that stays inside it, by the real path', async () => {
+      const { base, sandbox, server } = await make()
+      const inside = createServer()
+      try {
+        await new Promise<void>((resolve) => inside.listen(join(sandbox, 'real'), resolve))
+        symlinkSync(join(sandbox, 'real'), join(sandbox, `tmux-${uid}`, 'transcript'))
+        expect(ownSockets(sandbox)).toEqual({ own: [join(sandbox, 'real')], foreign: [] })
+        const seen: string[] = []
+        expect(readTmuxState({ sandbox, run: (at) => { seen.push(at); return '' } })()).toEqual(EMPTY)
+        expect(seen).toEqual([join(sandbox, 'real')])
+      } finally {
+        inside.close()
+        server.close()
+        rmSync(base, { recursive: true, force: true })
+      }
+    })
+
+    it('stops the servers of the sandbox and leaves a link to another server alone', async () => {
+      const { base, sandbox, outside, server } = await make()
+      const inside = createServer()
+      try {
+        await new Promise<void>((resolve) => inside.listen(join(sandbox, 'real'), resolve))
+        symlinkSync(join(sandbox, 'real'), join(sandbox, `tmux-${uid}`, 'transcript'))
+        symlinkSync(join(outside, 'default'), join(sandbox, `tmux-${uid}`, 'default'))
+        const stopped: string[] = []
+        stopSandboxServers(sandbox, { run: (at: string, args: string[]) => { stopped.push(`${at} ${args.join(' ')}`); return '' } })
+        expect(stopped).toEqual([`${join(sandbox, 'real')} kill-server`])
+      } finally {
+        inside.close()
+        server.close()
+        rmSync(base, { recursive: true, force: true })
+      }
+    })
+  })
+})
+
+describe('a tmux that does not answer', () => {
+  const available = spawnSync('sh', ['-c', 'exit 0']).status === 0
+
+  it.skipIf(!available)('is killed at the timeout, with an error that says so, rather than blocking the recorder', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'mcp-hung-'))
+    try {
+      const hung = join(dir, 'tmux')
+      writeFileSync(hung, '#!/bin/sh\nexec sleep 30\n')
+      chmodSync(hung, 0o755)
+      const started = Date.now()
+      expect(() => runTmux('/nowhere', ['list-sessions'], { timeoutMs: 200, command: hung })).toThrow(/tmux did not answer within 200ms/)
+      expect(Date.now() - started, 'it did not wait for the sleep').toBeLessThan(10000)
+      const socket = '/tmp/sandbox/tmux-1000/transcript'
+      const run = (at: string, args: string[]) => runTmux(at, args, { timeoutMs: 200, command: hung })
+      expect(() => readTmuxState({ sandbox: '/tmp/sandbox', run, sockets: () => [socket], realpath: (path) => path })(), 'a hung server is not a tmux with nothing in it').toThrow(/tmux could not be read: tmux did not answer within 200ms/)
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it.skipIf(!available)('still reports tmux\'s own message for a failure, and a missing server as such', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'mcp-failing-'))
+    try {
+      const failing = join(dir, 'tmux')
+      writeFileSync(failing, '#!/bin/sh\necho "no server running on /x" >&2\nexit 1\n')
+      chmodSync(failing, 0o755)
+      expect(() => runTmux('/x', ['list-sessions'], { command: failing })).toThrow(/no server running on \/x/)
+      try { runTmux('/x', ['list-sessions'], { command: failing }) } catch (error) { expect((error as { noServer?: boolean }).noServer).toBe(true) }
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   })
 })
 
@@ -191,10 +320,68 @@ describe('waiting for a state to settle', () => {
     const read = reader(state('cat'), state('cat'))
     expect(await settledState({ ...options, commands: ['cat'], read })()).toEqual(state('cat'))
   })
+
+  it('refuses two equal reads of a pane that still runs tmux, until it gives up', async () => {
+    // The sleep returns at once, so the same state is read many times before the deadline: a state that agrees with itself is not settled while its pane is the forked child.
+    const stuck = settledState({ ...options, read: reader(state('tmux')), timeoutMs: 25 })
+    await expect(stuck({ tool: 'split_window' } as never)).rejects.toThrow(UnsettledPaneError)
+    await expect(stuck({ tool: 'split_window' } as never)).rejects.toThrow(/tmux ran "tmux" in %0 after split_window, not sh/)
+  })
+
+  describe('a window tmux names after its pane\'s program', () => {
+    const named = (name: string, command: string, automaticName?: boolean): TmuxState => ({ ...oneState(), windows: [window({ name, ...(automaticName === undefined ? {} : { automaticName }) } as Partial<TmuxWindow>)], panes: [pane({ command })] })
+    const cat = { ...options, commands: ['cat'] }
+
+    it('is waited for: a window still called tmux while its pane runs cat is not a state to record', async () => {
+      const read = reader(named('tmux', 'cat', true), named('tmux', 'cat', true), named('cat', 'cat', true), named('cat', 'cat', true))
+      const settled = await settledState({ ...cat, read })({ tool: 'tmux_snapshot' } as never)
+      expect(settled.windows.map((item: TmuxWindow) => item.name)).toEqual(['cat'])
+    })
+
+    it('is refused when it never changes, naming the window and the step', async () => {
+      const stuck = settledState({ ...cat, read: reader(named('tmux', 'cat', true)), timeoutMs: 25 })
+      await expect(stuck({ tool: 'tmux_snapshot' } as never)).rejects.toThrow(UnsettledPaneError)
+      await expect(stuck({ tool: 'tmux_snapshot' } as never)).rejects.toThrow(/x: tmux still named window @0 "tmux" after tmux_snapshot, not the program its active pane runs/)
+    })
+
+    it('compares the name with the active pane of its own window', async () => {
+      const two = (name: string): TmuxState => ({ sessions: [{ id: '$0', name: 'checks' }], windows: [window({ name, automaticName: true } as Partial<TmuxWindow>)], panes: [pane({ width: 40, command: 'cat', active: false }), pane({ id: '%1', left: 41, width: 39, command: 'sh' })] })
+      expect((await settledState({ ...options, commands: ['cat', 'sh'], read: reader(two('sh'), two('sh')) })()).windows[0]!.name).toBe('sh')
+      await expect(settledState({ ...options, commands: ['cat', 'sh'], read: reader(two('cat')), timeoutMs: 25 })()).rejects.toThrow(/still named window @0 "cat"/)
+    })
+
+    it('is not waited for when it was named explicitly, or when the reader does not say', async () => {
+      expect((await settledState({ ...cat, read: reader(named('docs', 'cat', false), named('docs', 'cat', false)) })()).windows[0]!.name).toBe('docs')
+      expect((await settledState({ ...cat, read: reader(named('docs', 'cat'), named('docs', 'cat')) })()).windows[0]!.name).toBe('docs')
+    })
+
+    it('is left out of the state it returns, which a recording stores as it is', async () => {
+      const settled = await settledState({ ...cat, read: reader(named('cat', 'cat', true), named('cat', 'cat', true)) })()
+      expect(settled.windows[0]).not.toHaveProperty('automaticName')
+      expect(stateProblems(settled)).toEqual([])
+    })
+  })
 })
 
 describe('against a real tmux', () => {
   const available = spawnSync('tmux', ['-V']).status === 0
+
+  it.skipIf(!available)('reports whether tmux still names a window after its pane\'s program, and a name given at creation as explicit', () => {
+    const sandbox = realpathSync(mkdtempSync(join(tmpdir(), 'mcp-names-')))
+    const env: NodeJS.ProcessEnv = { ...process.env, TMUX_TMPDIR: sandbox, SHELL: '/bin/sh' }
+    delete env.TMUX
+    const tmux = (...args: string[]) => execFileSync('tmux', ['-L', 'names', '-f', '/dev/null', ...args], { env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
+    try {
+      tmux('new-session', '-d', '-s', 'docs', '/bin/cat')
+      tmux('new-window', '-d', '-n', 'cat', '/bin/cat')
+      const windows = (readTmuxState({ sandbox })() as { windows: (TmuxWindow & { automaticName: boolean })[] }).windows
+      expect(windows.map((item) => item.automaticName), 'the first window is named by tmux, the second by its creator').toEqual([true, false])
+      expect(windows[1]!.name).toBe('cat')
+    } finally {
+      try { tmux('kill-server') } catch { /* already gone */ }
+      rmSync(sandbox, { recursive: true, force: true })
+    }
+  })
 
   it.skipIf(!available)('reads a split window on a private socket as a state tmux can be in, and an exited server as empty', () => {
     const sandbox = realpathSync(mkdtempSync(join(tmpdir(), 'mcp-state-')))
@@ -207,7 +394,7 @@ describe('against a real tmux', () => {
       tmux('new-session', '-d', '-s', 'checks', '-x', '80', '-y', '24')
       tmux('split-window', '-h', '-t', 'checks')
       const state = read() as TmuxState
-      expect(stateProblems(state)).toEqual([])
+      expect(stateProblems(recordedState(state))).toEqual([])
       expect(state.sessions).toEqual([{ id: '$0', name: 'checks' }])
       expect(state.panes.map((item) => [item.id, item.left, item.width, item.active])).toEqual([['%0', 0, 40, false], ['%1', 41, 39, true]])
       tmux('kill-server')
