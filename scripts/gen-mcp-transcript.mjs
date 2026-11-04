@@ -20,6 +20,13 @@ import { leaks, sanitize, UnsettledPaneError, verifyRecording, withoutContracts 
  * It fails on a tool error, a server that does not exit 0, a request whose id
  * no earlier result returned, or an expected value that is missing.
  *
+ * A server that describes a pane the moment it splits it can catch the pane
+ * before its shell has started: tmux then names the child `tmux` and reports
+ * no path. Such an answer is never written. The recorder stops the tmux
+ * servers of its own sandbox and records again, up to ATTEMPTS times, and
+ * fails if the pane is still unsettled. A server that borrows a running tmux
+ * session cannot be restarted from here, so it fails on the first attempt.
+ *
  * The transcript also stores the input and output schemas of each tool it
  * calls, from that snapshot. A page documenting another revision shows the
  * recording only while the tools still have those schemas and the tools a
