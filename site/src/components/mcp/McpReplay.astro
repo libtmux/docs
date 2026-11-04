@@ -7,8 +7,9 @@
  * input schema in the port's `tools/list` snapshot. With a recorded session
  * (`gen-mcp-transcript.mjs`) the chat on the left shows each call and the
  * result the server answered, and the tmux preview on the right shows the
- * recording's own tmux server after that call, or the state its results
- * describe when the recording stored none (`lib/mcp-replay.ts`). The script
+ * layout and panes of the recording's own tmux server after that call, with
+ * pane output from the calls' results, or the state the results describe when
+ * the recording stored none (`lib/mcp-replay.ts`). The script
  * below plays the session, or lets a reader step through it. Without script
  * the whole chat and the final state show. Without a recording the page shows
  * the requests only, says so, and draws no preview.
@@ -192,7 +193,7 @@ const draw = (frame: Frame) => {
   <p class="not-prose mcp-provenance">
     Calls and results are recorded against <a href={`https://github.com/${recording.repo}/tree/${recording.revision}`}><code>{recording.repo}</code></a>
     at <code>{recording.revision.slice(0, 9)}</code>, on a private {recording.tmux} server{recording.answers.length > 0 && <>, running {recording.runner}</>}.
-    {recording.tmuxState ? "The preview shows the recording's own tmux server after each call." : 'The preview draws only what those results state.'}
+    {recording.tmuxState ? "The preview takes its layout and panes from the recording's own tmux server after each call, and a pane's output from the results of the calls." : 'The preview draws only what those results state.'}
     The agent's narration is illustrative.
     {recording.documentedRevision && <> This page documents <a href={`https://github.com/${recording.repo}/tree/${recording.documentedRevision}`}><code>{recording.documentedRevision.slice(0, 9)}</code></a>, a different revision. The calls have the same input{recording.outputsChecked && ' and output'} schemas there, but the results at that revision may differ from the recorded ones.</>}
     {recording.shortened && <> Long values in a result are shortened here; the recording keeps them.</>}

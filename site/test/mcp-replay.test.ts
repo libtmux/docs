@@ -5,7 +5,7 @@ import { ModuleKind, ScriptTarget, transpileModule } from 'typescript'
 import { afterEach, describe, expect, it } from 'vitest'
 import { lastOutputLine, replayFrames, windowLabel, type Frame, type ReplayStep } from '../src/lib/mcp-replay'
 import { buildShowcase, EXAMPLES, mcpShowcase, transcriptFor, type Transcript } from '../src/lib/mcp-showcase'
-import { READ_ONLY_TOOLS, recordingStateProblems, type TmuxState } from '../src/lib/mcp-tmux-state'
+import { recordingStateProblems, type TmuxState } from '../src/lib/mcp-tmux-state'
 import { parseLayout } from '../src/lib/tmux-layout-string'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
@@ -84,6 +84,8 @@ function untraced(frames: Frame[], steps: ReplayStep[]): string[] {
 
 /** Every port with a recording. */
 const ALL = ['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift', 'ruby', 'julia'] as const
+/** The tools that only read, named here and not taken from the code under test, so dropping one from `READ_ONLY_TOOLS` fails a test below. */
+const READS: ReadonlySet<string> = new Set(['list_sessions', 'list_windows', 'list_panes', 'tmux_snapshot', 'tmux_capabilities', 'get_tmux_variables', 'capture_pane'])
 
 /** Calls in each port's worked example, which the frames and the replay follow. */
 const CALLS = { ts: 6, rs: 7, go: 7, py: 6, java: 7, csharp: 6, cxx: 7, swift: 7, ruby: 2, julia: 2 }
@@ -296,7 +298,7 @@ describe('the frames of a recording that stored its tmux server\'s state', () =>
     let previous = before
     calls.forEach((step, index) => {
       const frame = frames[index + 1]!
-      if (READ_ONLY_TOOLS.has(step.tool)) {
+      if (READS.has(step.tool)) {
         expect(step.tmux, `${port} ${step.tool} leaves tmux as it was`).toEqual(previous)
         expect(frame.unchanged, `${port} ${step.tool}`).toBe(true)
       } else {
@@ -304,7 +306,7 @@ describe('the frames of a recording that stored its tmux server\'s state', () =>
       }
       previous = step.tmux!
     })
-    expect(frames.filter((frame) => frame.unchanged).length, `${port} reads at least once or is all writes`).toBe(calls.filter((step) => READ_ONLY_TOOLS.has(step.tool)).length)
+    expect(frames.filter((frame) => frame.unchanged).length, `${port} reads at least once or is all writes`).toBe(calls.filter((step) => READS.has(step.tool)).length)
   })
 
   it('has a control: a read after which tmux differs is not shown as unchanged', async () => {
@@ -561,7 +563,7 @@ describe('the replay component', () => {
       }
       const tool = done ? calls[done - 1]!.tool : undefined
       const caption = frame.querySelector('.mcp-frame__note')!.textContent
-      expect(caption, `${where}: the caption`).toBe(!tool ? 'tmux before the first call.' : READ_ONLY_TOOLS.has(tool) ? `tmux after ${tool}: unchanged, the call only reads.` : `tmux after ${tool}.`)
+      expect(caption, `${where}: the caption`).toBe(!tool ? 'tmux before the first call.' : READS.has(tool) ? `tmux after ${tool}: unchanged, the call only reads.` : `tmux after ${tool}.`)
       if (tool) expect(frame.querySelector('.mcp-frame__note code')!.textContent, `${where}: the call is code`).toBe(tool)
     })
   })
@@ -591,7 +593,8 @@ describe('the replay component', () => {
     expect(document.querySelector(`[data-frame="${listed}"] .mcp-tmux__screen`)!.className).toContain('is-reading')
     expect(document.querySelector(`[data-frame="${listed}"] .mcp-frame__note`)!.textContent).toBe('tmux after list_panes: unchanged, the call only reads.')
     const provenance = document.querySelector('.mcp-provenance')!.textContent!.replace(/\s+/g, ' ')
-    expect(provenance).toContain("The preview shows the recording's own tmux server after each call.")
+    expect(provenance).toContain("The preview takes its layout and panes from the recording's own tmux server after each call, and a pane's output from the results of the calls.")
+    expect(provenance, 'it does not claim the whole preview is tmux\'s own').not.toContain("The preview shows the recording's own tmux server")
     expect(provenance).not.toContain('draws only what those results state')
     const { document: results } = await mount('go', { stateless: true })
     expect(results.querySelector('.mcp-provenance')!.textContent!.replace(/\s+/g, ' ')).toContain('The preview draws only what those results state.')

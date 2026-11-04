@@ -709,7 +709,7 @@ describe('a recording made at an earlier revision', () => {
       expect(built('ts', withoutOutputs, unrecorded).example?.recording, 'the recording still holds without them').toBeDefined()
       const text = await provenance(withoutOutputs, unrecorded)
       expect(text).toContain('The calls have the same input schemas there')
-      expect(text).not.toMatch(/output/i)
+      expect(text).not.toMatch(/output schema/i)
       const full = await provenance(snapshot, transcript)
       expect(full).toContain('same input and output schemas')
     })
