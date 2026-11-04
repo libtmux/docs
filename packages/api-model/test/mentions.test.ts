@@ -3,7 +3,7 @@ import type { ApiModel } from '../src/model.ts'
 import { LinkedOwners, pageMentions, proseMentions, type LinkedOwner } from '../src/mentions.ts'
 import { Resolver } from '../src/resolver.ts'
 import { parentInventory } from '../src/parent-inventory.ts'
-import { isLikelyReference, notApiReason } from '../src/prose.ts'
+import { isLikelyReference, notApiInContext, notApiReason } from '../src/prose.ts'
 
 const LABELS = { Python: 'py', TypeScript: 'ts', Go: 'go' }
 
@@ -112,6 +112,57 @@ describe('spans that are code but not API', () => {
     for (const text of ['Server.panes', 'LibTmux.Server', 'v3.3a', '3.3a.Server', 'Version.next', 'TmuxVersion.V3_3a']) {
       expect(notApiReason(text), text).toBeUndefined()
     }
+  })
+})
+
+describe('the assertion helper of an example program', () => {
+  it('is a fixture, whichever member is named', () => {
+    for (const text of ['Example', 'Example()', 'Example.check', 'Example.check_all', 'Example.ready?']) {
+      expect(notApiReason(text), text).toBe('test or example fixture')
+    }
+    // Only the fixture itself: a type that ends or begins with the word is the resolver's.
+    for (const text of ['Examples.check', 'ExampleServer.check', 'MyExample.check']) expect(notApiReason(text), text).toBeUndefined()
+  })
+})
+
+describe('a span its sentence says is not API', () => {
+  const ruby = { port: 'ruby', version: '0', symbols: [{ id: 'LibTmux::Pane', name: 'Pane', kind: 'class', signatures: [], docs: [] }] }
+  const models = { ruby } as unknown as Record<string, ApiModel>
+  const resolver = new Resolver(Object.values(models))
+  const read = (body: string) => pageMentions({
+    body, portByLabel: LABELS, page: '/ruby/latest/guides/core/', authoredPort: 'ruby', nativeTmux: false, resolver, models, authoredTarget: () => undefined,
+  })
+  const dangling = (body: string) => read(body).dangling.map(({ text }) => text)
+
+  it('reads a key named as one, and a field of JSON output, as neither a type nor a method', () => {
+    expect(dangling('`send_keys` sends tmux key\nnames such as `Enter`.')).toEqual([])
+    expect(dangling('The keys include `Enter`, but key names like `Escape` or `Tab` also work.')).toEqual(['Enter'])
+    expect(dangling('With `--json`, the refusal is in `error.message`.')).toEqual([])
+  })
+
+  it('reports the same spellings when the sentence says nothing of the kind', () => {
+    expect(dangling('Type `Enter` to continue.')).toEqual(['Enter'])
+    expect(dangling('The refusal is in `error.message`.')).toEqual(['error.message'])
+  })
+
+  it('keeps the cue to its own sentence, and to a span shaped like what it names', () => {
+    expect(dangling('Send key names such as `Enter`. Then read `Window`.')).toEqual(['Window'])
+    expect(dangling('Print JSON. Then read `error.message`.')).toEqual(['error.message'])
+    expect(dangling('Send key names such as `Pane.send_keys`.')).toEqual(['Pane.send_keys'])
+  })
+
+  it('still links a name the port defines', () => {
+    const found = read('Send key names such as `Pane` or as JSON, for `Pane`.')
+    expect(found.dangling).toEqual([])
+    expect(found.targets).toEqual([{ port: 'ruby', symbol: 'LibTmux::Pane' }, { port: 'ruby', symbol: 'LibTmux::Pane' }])
+  })
+
+  it('asks nothing of a sentence for a name outside both shapes', () => {
+    expect(notApiInContext('Enter', 'key names such as ')).toBe('tmux key name')
+    expect(notApiInContext('error.message', 'in the JSON, ')).toBe('field of JSON output')
+    expect(notApiInContext('Enter', undefined)).toBeUndefined()
+    expect(notApiInContext('Pane.send_keys', 'key names such as ')).toBeUndefined()
+    expect(notApiInContext('error.message', 'Print JSON. Then read ')).toBeUndefined()
   })
 })
 

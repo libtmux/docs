@@ -14998,20 +14998,6 @@
   },
   {
    "port": "ruby",
-   "text": "Enter",
-   "page": "/ruby/latest/guides/core/",
-   "line": 256,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "ruby",
-   "text": "Example.check",
-   "page": "/ruby/latest/guides/core/",
-   "line": 614,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "ruby",
    "text": "Enumerable",
    "page": "/ruby/latest/guides/getting-started/",
    "line": 15,
@@ -15022,20 +15008,6 @@
    "text": "LibTmux",
    "page": "/ruby/latest/guides/getting-started/",
    "line": 116,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "ruby",
-   "text": "Example.check",
-   "page": "/ruby/latest/guides/getting-started/",
-   "line": 208,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "ruby",
-   "text": "error.message",
-   "page": "/ruby/latest/workspace/source-guide/",
-   "line": 391,
    "why": "not defined in the stated port"
   },
   {
