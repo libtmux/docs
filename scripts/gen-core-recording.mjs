@@ -148,8 +148,15 @@ function asCommand(sent, replies) {
   }
 }
 
-/** The command names a run sent, in order, for comparing two runs. */
-const sequence = (entries) => commandsOf(entries).map((entry) => { const d = describeInvocation(entry, recipe); return `${entry.control ? 'control:' : ''}${d.role}:${d.tmux.split(' ')[0]}` })
+/**
+ * The command names a run sent, in order, for comparing two runs. A command a
+ * recipe lists in `polls` is one a wait repeats until its condition holds; how
+ * often depends on how soon the output arrives, which a mark's delay changes,
+ * so a run of them counts once.
+ */
+const sequence = (entries) => commandsOf(entries)
+  .map((entry) => { const d = describeInvocation(entry, recipe); return `${entry.control ? 'control:' : ''}${d.role}:${d.tmux.split(' ')[0]}` })
+  .filter((name, index, names) => !(recipe.polls ?? []).some((poll) => name.endsWith(`:${poll}`)) || names[index - 1] !== name)
 
 /** What the program printed, as the page states it: a recipe says how the port's own test reads it. */
 const normalized = (text) => recipe.normalizeOutput?.(text) ?? text
