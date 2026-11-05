@@ -112,7 +112,9 @@ export function installAnchorNavigation(win = window) {
     // Address-bar fragment navigation can create an entry without router state.
     // Astro leaves that entry alone. If another page is still mounted, load
     // the browser's actual destination instead of leaving its old contents.
-    if (event.state === null && (win.location.pathname !== pageUrl.pathname || win.location.search !== pageUrl.search)) {
+    // Pages rewrite their own query (a chosen language, a workspace preset),
+    // so the path alone names the mounted page.
+    if (event.state === null && win.location.pathname !== pageUrl.pathname) {
       win.location.reload()
     }
   }, { signal })
