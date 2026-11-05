@@ -34,6 +34,18 @@ describe('shell sources', () => {
     expect(read('../src/components/docs/DocumentationScript.astro')).toMatch(/guardTreeNavigation\(\)/)
   })
 
+  it('holds the first frame until the header bar is parsed', async () => {
+    const header = read('../src/components/SiteHeader.astro')
+    const panel = header.indexOf('id="site-header-panel"')
+    expect(panel).toBeGreaterThan(header.indexOf('site-header__menu-button'))
+    expect(panel).toBeGreaterThan(header.indexOf('site-header__always'))
+    const { baseLayout } = await loadHeaderTemplates()
+    const html = await renderPage(baseLayout, 'https://libtmux.org/en/ts/latest/guides/panes/', { pagePath: 'guides/panes', portSlug: 'ts' })
+    expect(/<head>([\s\S]*?)<\/head>/.exec(html)![1]).toContain('<link rel="expect" href="#site-header-panel" blocking="render">')
+    expect(html).toContain('id="site-header-panel"')
+    vi.unstubAllEnvs()
+  })
+
   it('guards navigation within a page before the router listens for history', () => {
     const head = /<head>([\s\S]*?)<\/head>/.exec(read('../src/layouts/BaseLayout.astro'))![1]!
     const guard = head.indexOf('guardPageNavigation()')

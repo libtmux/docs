@@ -296,6 +296,10 @@ export async function checkHeaderLinksRender(browser, base, { path = '/rs/latest
     }
     const page = await context.newPage()
     page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
+    // A slow device draws frames while the parser is still inside the header.
+    // A sixth of the CPU makes such a frame happen on every load.
+    const cpu = javaScriptEnabled && browser.browserType().name() === 'chromium' ? await context.newCDPSession(page) : null
+    await cpu?.send('Emulation.setCPUThrottlingRate', { rate: 6 })
     try {
       await page.goto(`${base}${path}`)
       await page.waitForFunction(() => document.fonts.status === 'loaded')
@@ -305,7 +309,8 @@ export async function checkHeaderLinksRender(browser, base, { path = '/rs/latest
         // A page with no script has no frames to wait on; a scripted one has settled after a few. The wait polls once a frame and is bounded by the page timeout.
         await page.waitForFunction(() => { window.__headerFrames = (window.__headerFrames ?? 0) + 1; return window.__headerFrames >= 5 })
         const shift = await page.evaluate(() => window.__headerShiftRead())
-        assert.equal(shift, 0, `${where}: the header shifts by ${shift} while the script enhances it`)
+        assert.equal(shift, 0, `${where}: the header shifts by ${shift} while the page loads and the script enhances it`)
+        await cpu?.send('Emulation.setCPUThrottlingRate', { rate: 1 })
       }
       const compact = width < 768
       if (compact) await page.locator('.site-header__menu > summary').click()
