@@ -3,6 +3,7 @@ import type { CoreCapability, CoreCommand, CoreRecording, CoreStep } from './cor
 import { recordingProblems } from './core-recording.ts'
 import { replayFrames, type Frame, type ReplayStep } from './mcp-replay'
 import type { TmuxState, TmuxWindow } from './mcp-tmux-state.ts'
+import { parseLayout } from './tmux-layout-string'
 import type { HomeExample } from './quickstarts'
 
 /**
@@ -100,9 +101,10 @@ export function paneActivity(step: CoreStep): { typed: string[]; ran: string[]; 
   const ran: string[] = []
   const reads: { pane: string; text: string }[] = []
   for (const command of visibleCommands(step).commands) {
-    if (command.exit !== 0) continue
-    // A command line can hold several commands joined by `;`; each names its own target.
-    for (const part of command.tmux.split(/ ';' | \\; /)) {
+    // A command line can hold several commands joined by `;`, each with its own target. Its exit
+    // status is the last one's, so a capture that returned text counts even when a later check failed.
+    if (command.exit !== 0 && command.stdout === '') continue
+    for (const part of command.tmux.split(/ ';' | \\; | ; /)) {
       const pane = paneTarget(part)
       if (!pane) continue
       const verb = /^\s*([a-z-]+)/.exec(part)?.[1]
@@ -135,13 +137,17 @@ export function stepChanges(step: CoreStep, before: CoreStep['tmux']): { marks: 
   return { marks, phrases }
 }
 
-/** What the drawing marks after a call: the windows it added, the panes it added or changed, and the windows whose label changed. */
-export interface TmuxMarks { windows: string[]; panes: string[]; labels: string[] }
+/** Where a window's panes are, from its layout: the layout string also marks the active pane, which is a selection, not a resize. */
+const geometry = (layout: string): string => JSON.stringify(parseLayout(layout)?.panes.map(({ id, x, y, w, h }) => [id, x, y, w, h]) ?? layout)
+
+/** What the drawing marks after a call: the windows it added, the panes it added or changed, the windows whose label changed, and the sessions it renamed. */
+export interface TmuxMarks { windows: string[]; panes: string[]; labels: string[]; sessions: string[] }
 
 /**
  * What a call changed in tmux, from the states before and after it: the
  * marks the drawing puts on what changed, and the changes as the note words
- * them. A window that arrives with its session, or a pane with its window,
+ * them: a pane or window made active is a selection, which is what an
+ * attached client would see move. A window that arrives with its session, or a pane with its window,
  * is part of that addition rather than a change of its own.
  */
 export function tmuxChanges(before: TmuxState, after: TmuxState): { marks: TmuxMarks; phrases: string[] } {
@@ -150,14 +156,14 @@ export function tmuxChanges(before: TmuxState, after: TmuxState): { marks: TmuxM
   const [sessionsAfter, windowsAfter] = [byId(after.sessions), byId(after.windows)]
   const several = Math.max(before.sessions.length, after.sessions.length) > 1
   const label = (window: TmuxWindow) => `${several ? `${(sessionsAfter.get(window.session) ?? sessionsBefore.get(window.session))?.name}:` : ''}${window.index}:${window.name}`
-  const marks: TmuxMarks = { windows: [], panes: [], labels: [] }
+  const marks: TmuxMarks = { windows: [], panes: [], labels: [], sessions: [] }
   const phrases: string[] = []
   for (const session of after.sessions) {
     const was = sessionsBefore.get(session.id)
     if (!was) phrases.push(`added session ${session.name}`)
     else if (was.name !== session.name) {
       phrases.push(`renamed session ${was.name} to ${session.name}`)
-      marks.labels.push(...after.windows.filter((window) => window.session === session.id).map((window) => window.id))
+      marks.sessions.push(session.id)
     }
   }
   for (const session of before.sessions) if (!sessionsAfter.has(session.id)) phrases.push(`closed session ${session.name}`)
@@ -173,12 +179,13 @@ export function tmuxChanges(before: TmuxState, after: TmuxState): { marks: TmuxM
     for (const pane of panes) {
       const old = panesBefore.get(pane.id)
       if (old && old.command !== pane.command) phrases.push(`pane ${pane.id} now runs ${pane.command}`)
+      if (old && pane.active && !old.active) phrases.push(`selected pane ${pane.id} in window ${label(window)}`)
     }
-    const resized = added.length === 0 && was.layout !== window.layout
+    const resized = added.length === 0 && geometry(was.layout) !== geometry(window.layout)
     if (resized) phrases.push(`changed the layout of window ${label(window)}`)
     marks.panes.push(...panes.filter((pane) => {
       const old = panesBefore.get(pane.id)
-      return !old || old.command !== pane.command || resized
+      return !old || old.command !== pane.command || (pane.active && !old.active) || resized
     }).map((pane) => pane.id))
   }
   for (const window of before.windows) if (!windowsAfter.has(window.id) && sessionsAfter.has(window.session)) phrases.push(`closed window ${label(window)}`)

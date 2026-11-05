@@ -120,6 +120,9 @@ const GO = {
 
 const SERVER = 'map[string]any{"socketPath": server.SocketPath(), "configFile": server.ConfigFile(), "executable": server.Executable()}'
 const SESSION = 'func() any { name, _ := session.Name(); return map[string]any{"id": session.ID(), "name": name} }()'
+/** A window or a pane as a recording stores it, from the variable the statement binds. */
+const WINDOW = (name) => `func() any { windowName, _ := ${name}.Name(); return map[string]any{"id": ${name}.ID(), "index": ${name}.Index(), "name": windowName} }()`
+const PANE = (name) => `map[string]any{"id": ${name}.ID()}`
 
 /** One recipe per capability of the landing page that Go plays. */
 export const RECIPES = {
@@ -129,11 +132,24 @@ export const RECIPES = {
     file: 'quickstart.go',
     source: (root) => quickstartSource(root, 'go', 'quickstart.go'),
     helpers: [{ file: 'docs_mark.go', source: GO_HELPER }],
-    // In the order the calls run, which is not the order of their lines: the deferred Kill is above Run in the source.
+    // In the order the calls run, which is not the order of their lines: the deferred Kill is above the rest in the source.
+    // The last three read the snapshot's records and send tmux nothing.
     steps: [
       { id: 'new-server', label: 'tmux.NewServer', anchor: 'tmux.NewServer(', type: 'tmux.Server', value: SERVER },
       { id: 'new-session', label: 'Server.NewSession', anchor: 'server.NewSession(', type: 'tmux.Session', value: SESSION },
-      { id: 'run', label: 'Session.Run', anchor: 'session.Run(', type: 'tmux.RunResult', value: 'result' },
+      { id: 'resolve-window', label: 'Session.ResolveActiveWindow', anchor: 'session.ResolveActiveWindow(', type: 'tmux.Window', value: WINDOW('editor') },
+      { id: 'rename', label: 'Window.Rename', anchor: 'editor.Rename(', type: 'tmux.Window', value: WINDOW('editor') },
+      { id: 'resolve-pane', label: 'Window.ResolveActivePane', anchor: 'editor.ResolveActivePane(', type: 'tmux.Pane', value: PANE('left') },
+      { id: 'split', label: 'Pane.Split', anchor: 'left.Split(', type: 'tmux.Pane', value: PANE('right') },
+      { id: 'new-window', label: 'Session.NewWindow', anchor: 'session.NewWindow(', type: 'tmux.Window', value: WINDOW('logs') },
+      { id: 'send-keys', label: 'Pane.SendKeys', anchor: 'right.SendKeys(', type: 'error', value: 'docsError(err)' },
+      { id: 'wait', label: 'Pane.WaitForText', anchor: 'right.WaitForText(', type: 'error', value: 'docsError(err)' },
+      { id: 'select-pane', label: 'Pane.Select', anchor: 'right.Select(', type: 'error', value: 'docsError(err)' },
+      { id: 'select-window', label: 'Window.Select', anchor: 'logs.Select(', type: 'error', value: 'docsError(err)' },
+      { id: 'snapshot', label: 'Server.Snapshot', anchor: 'server.Snapshot(', type: 'tmux.Snapshot', value: 'map[string]any{"sessions": len(snapshot.Sessions()), "windows": len(snapshot.Windows()), "panes": len(snapshot.Panes())}' },
+      { id: 'pane-by-id', label: 'Snapshot.PaneByID', anchor: 'snapshot.PaneByID(', type: 'tmux.Pane', value: PANE('pane') },
+      { id: 'pane-window', label: 'Pane.Window', anchor: 'pane.Window()', type: 'tmux.Window', value: WINDOW('window') },
+      { id: 'window-session', label: 'Window.Session', anchor: 'window.Session()', type: 'tmux.Session', value: 'func() any { name, _ := owner.Name(); return map[string]any{"id": owner.ID(), "name": name} }()' },
       { id: 'kill', label: 'Server.Kill', anchor: 'server.Kill(', type: 'error', value: 'docsError(err)' },
     ],
   },

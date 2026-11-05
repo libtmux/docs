@@ -14,8 +14,10 @@
  * as tmux's own tree mode previews them, each labelled with its index and
  * name, over one status line of the sessions, so a window made in the
  * background or in another session is drawn the moment it exists. `marks` names what the call changed, which the drawing shows in the
- * accent colour: a window it added, a pane it added, changed or resized, a
- * label it renamed or selected.
+ * accent colour: a window it added, a pane it added, changed, resized or
+ * selected, a label it renamed or selected. In a window of several panes the
+ * active one's label is drawn bold, as the window's own status marks it with
+ * `*`.
  */
 import { renderRects, type Rect } from '../../lib/tmux-layout'
 import { parseLayout } from '../../lib/tmux-layout-string'
@@ -35,7 +37,7 @@ interface Props {
   /** What the call changed, for `every`'s drawing to mark. */
   marks?: TmuxMarks
 }
-const { frame, hadSessions, idPrefix = 'rp', every = false, marks = { windows: [], panes: [], labels: [] } } = Astro.props as Props
+const { frame, hadSessions, idPrefix = 'rp', every = false, marks = { windows: [], panes: [], labels: [], sessions: [] } } = Astro.props as Props
 const WIDTH = 44
 const HEIGHT = 12
 
@@ -81,8 +83,9 @@ function geometry(window: WindowState): { panes: PaneState[]; rects: Rect[]; siz
   return window.panes.length === 1 ? { panes: window.panes, rects: [{ x: 0, y: 0, w: WIDTH, h: HEIGHT }], size: [WIDTH, HEIGHT] } : undefined
 }
 const tiles = every ? frame.sessions.flatMap((owner) => owner.windows.map((window) => ({ session: owner, window, shape: geometry(window) }))) : []
-// Columns for the tiles: one window fills the screen, up to four share two columns, more share three.
-const columns = tiles.length <= 1 ? 1 : tiles.length <= 4 ? 2 : 3
+// Columns for the tiles. A tmux window is wider than it is tall, so two windows stack, which keeps a
+// side-by-side split readable; three or four share two columns, and more share three.
+const columns = tiles.length <= 2 ? 1 : tiles.length <= 4 ? 2 : 3
 const rows = Math.max(1, Math.ceil(tiles.length / columns))
 const percent = (value: number, total: number) => `${(value / total) * 100}%`
 ---
@@ -97,7 +100,7 @@ const percent = (value: number, total: number) => `${(value / total) * 100}%`
               const lines = [...(pane.typed !== undefined ? [`$ ${pane.typed}`] : []), ...(pane.output?.trimEnd().split('\n') ?? [])]
               const edges = `${rect.x + rect.w < shape.size[0] ? ' has-right' : ''}${rect.y + rect.h < shape.size[1] ? ' has-below' : ''}`
               return (
-                <div class={`mcp-pane mcp-tile__pane${edges}${pane.id && marks.panes.includes(pane.id) ? ' is-changed' : ''}`} style={`left:${percent(rect.x, shape.size[0])};top:${percent(rect.y, shape.size[1])};width:${percent(rect.w, shape.size[0])};height:${percent(rect.h, shape.size[1])}`}>
+                <div class={`mcp-pane mcp-tile__pane${edges}${pane.active && shape.panes.length > 1 ? ' is-active' : ''}${pane.id && marks.panes.includes(pane.id) ? ' is-changed' : ''}`} style={`left:${percent(rect.x, shape.size[0])};top:${percent(rect.y, shape.size[1])};width:${percent(rect.w, shape.size[0])};height:${percent(rect.h, shape.size[1])}`}>
                   {pane.id && <span class="mcp-pane__id">{pane.id}{pane.command ? ` ${pane.command}` : ''}</span>}
                   {lines.length > 0 && <pre class="mcp-pane__text">{lines.join('\n')}</pre>}
                 </div>
@@ -132,7 +135,7 @@ const percent = (value: number, total: number) => `${(value / total) * 100}%`
   ) : (
     <div class="mcp-tmux__screen mcp-tmux__screen--empty">{hadSessions && <span>No sessions</span>}</div>
   )}
-  {every && <div class="mcp-tmux__status mcp-tmux__status--sessions">{frame.sessions.map((owner) => (owner.name ?? owner.id) && <span class={`mcp-tmux__session${owner.windows.some((window) => window.id && marks.labels.includes(window.id)) && !owner.windows.some((window) => window.id && marks.windows.includes(window.id)) ? ' is-changed' : ''}`}>[{owner.name ?? owner.id}]</span>)}</div>}
+  {every && <div class="mcp-tmux__status mcp-tmux__status--sessions">{frame.sessions.map((owner) => (owner.name ?? owner.id) && <span class={`mcp-tmux__session${owner.id && marks.sessions.includes(owner.id) ? ' is-changed' : ''}`}>[{owner.name ?? owner.id}]</span>)}</div>}
   {!every && <div class={`mcp-tmux__status${frame.reading === 'sessions' ? ' is-reading' : ''}`}>
     {session && (session.name ?? session.id) && <span class="mcp-tmux__session">[{session.name ?? session.id}]</span>}
     {session && (

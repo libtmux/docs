@@ -41,21 +41,33 @@ describe('the Go recording of the landing page program', () => {
   })
 
   it('records what each call returned and the commands it sent', () => {
-    const [server, session, run, kill] = capability(stored()).steps
-    expect(server!.commands, 'NewServer builds a handle and sends nothing').toEqual([])
-    expect(server!.returned).toMatchObject({ configFile: '/dev/null', socketPath: expect.stringContaining('libtmux-quickstart-') })
-    expect(session!.returned).toEqual({ id: '$0', name: 'demo' })
-    expect(session!.commands.find((command) => command.mutates && command.role === 'command')).toMatchObject({ tmux: 'new-session -P -F#{session_id} -sdemo -d', exit: 0, stdout: '$0' })
-    expect(run!.returned).toEqual({ Status: 0, Signal: null, Lines: ['hello from tmux'], Pane: '%1' })
-    expect(run!.commands.map((command) => command.tmux.split(' ')[0])).toEqual(expect.arrayContaining(['new-window', 'respawn-pane', 'wait-for', 'capture-pane', 'kill-window']))
-    expect(kill!.commands.at(-1)).toMatchObject({ tmux: 'kill-server', mutates: true, exit: 0 })
-    expect(kill!.returned).toBeNull()
+    const step = (id: string) => capability(stored()).steps.find((each) => each.id === id)!
+    const changes = (id: string) => step(id).commands.filter((command) => command.mutates && command.role === 'command').map((command) => command.tmux.split(' ')[0])
+    expect(step('new-server').commands, 'NewServer builds a handle and sends nothing').toEqual([])
+    expect(step('new-server').returned).toMatchObject({ configFile: '/dev/null', socketPath: expect.stringContaining('libtmux-quickstart-') })
+    expect(step('new-session').returned).toEqual({ id: '$0', name: 'demo' })
+    expect(step('new-session').commands.find((command) => command.mutates && command.role === 'command')).toMatchObject({ tmux: 'new-session -P -F#{session_id} -sdemo -d', exit: 0, stdout: '$0' })
+    expect(step('rename').returned).toEqual({ id: '@0', index: 0, name: 'editor' })
+    expect(changes('rename')).toEqual(['rename-window'])
+    expect(step('split').returned).toEqual({ id: '%1' })
+    expect(changes('split')).toEqual(['split-window'])
+    expect(step('new-window').returned).toEqual({ id: '@1', index: 1, name: 'logs' })
+    expect(changes('select-pane')).toEqual(['select-pane'])
+    expect(changes('select-window')).toEqual(['select-window'])
+    expect(step('snapshot').returned).toEqual({ sessions: 1, windows: 2, panes: 3 })
+    expect(changes('snapshot'), 'a snapshot only reads').toEqual([])
+    expect(step('kill').commands.at(-1)).toMatchObject({ tmux: 'kill-server', mutates: true, exit: 0 })
+    expect(step('kill').returned).toBeNull()
   })
 
-  it('keeps the window the command ran in apart from the state after the call, which no longer holds it', () => {
-    const [, session, run] = capability(stored()).steps
-    expect(run!.transient).toEqual([{ window: '@1', name: expect.any(String) }])
-    expect(run!.tmux, 'the command\'s window was removed, so tmux is as the session left it').toEqual(session!.tmux)
+  it('walks the snapshot\'s records without asking tmux: the calls after Snapshot send nothing and change nothing', () => {
+    const steps = capability(stored()).steps
+    const snapshot = steps.findIndex((step) => step.id === 'snapshot')
+    const walk = steps.slice(snapshot + 1, -1)
+    expect(walk.map((step) => step.id)).toEqual(['pane-by-id', 'pane-window', 'window-session'])
+    expect(walk.map((step) => step.commands)).toEqual([[], [], []])
+    for (const step of walk) expect(step.tmux).toEqual(steps[snapshot]!.tmux)
+    expect(walk.map((step) => step.returned)).toEqual([{ id: '%1' }, { id: '@0', index: 0, name: 'editor' }, { id: '$0', name: 'demo' }])
   })
 
   it('draws the server gone after the last call, and none before the first', () => {

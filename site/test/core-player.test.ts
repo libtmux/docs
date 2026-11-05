@@ -39,10 +39,12 @@ describe('the calls each view of the Go program plays', () => {
   it('plays the three calls of the short program and the fourth, Kill, once the program cleans up', async () => {
     const { capability } = await recorded()
     const indexes = (view: (typeof HOME_VIEWS)[number]) => viewSteps(capability, code(view)).map((step) => step.index)
-    expect(indexes('concise')).toEqual([0, 1, 2])
-    expect(indexes('errors')).toEqual([0, 1, 2])
-    expect(indexes('cleanup')).toEqual([0, 1, 2, 3])
-    expect(indexes('full')).toEqual([0, 1, 2, 3])
+    const every = capability.steps.map((_, index) => index)
+    expect(capability.steps.at(-1)!.id).toBe('kill')
+    expect(indexes('concise')).toEqual(every.slice(0, -1))
+    expect(indexes('errors')).toEqual(every.slice(0, -1))
+    expect(indexes('cleanup')).toEqual(every)
+    expect(indexes('full')).toEqual(every)
   })
 
   it('finds each call\'s lines in the view that is shown, which differ between views', async () => {
@@ -56,7 +58,7 @@ describe('the calls each view of the Go program plays', () => {
       }
     }
     const lineOf = (view: (typeof HOME_VIEWS)[number], id: string) => viewSteps(capability, code(view)).find((step) => capability.steps[step.index]!.id === id)!.lines
-    expect(lineOf('full', 'run'), 'the error handling and cleanup lines above Run move it down').not.toEqual(lineOf('concise', 'run'))
+    expect(lineOf('full', 'split'), 'the error handling and cleanup lines above Split move it down').not.toEqual(lineOf('concise', 'split'))
   })
 
   it('keeps the calls\' lines apart, and in the order the source has them (not the order they run)', async () => {
@@ -64,7 +66,7 @@ describe('the calls each view of the Go program plays', () => {
     const lines = viewSteps(capability, code('full')).map((step) => step.lines)
     const ordered = [...lines].sort((a, b) => a[0] - b[0])
     for (let position = 1; position < ordered.length; position++) expect(ordered[position]![0]).toBeGreaterThan(ordered[position - 1]![1])
-    expect(lines.map((range) => range[0]), 'the deferred Kill is above Run in the source').not.toEqual(ordered.map((range) => range[0]))
+    expect(lines.map((range) => range[0]), 'the deferred Kill is above the calls it follows in the source').not.toEqual(ordered.map((range) => range[0]))
   })
 
   it('marks the deferred Kill on the line that makes it', async () => {
@@ -129,7 +131,7 @@ describe('the frames the player draws', () => {
   it('are the replay\'s own: frame 0 before the first call and frame i the state after call i', async () => {
     const { capability } = await recorded()
     const frames = coreFrames(capability)
-    expect(frames.map((frame) => frame.done)).toEqual([0, 1, 2, 3, 4])
+    expect(frames.map((frame) => frame.done)).toEqual([0, ...capability.steps.map((_, index) => index + 1)])
     expect(frames.every((frame) => frame.recorded)).toBe(true)
     expect(frames[0]!.sessions).toEqual([])
     expect(frames[2]!.sessions.map((session) => [session.id, session.name, session.windows.map((window) => window.panes.map((pane) => [pane.id, pane.command]))])).toEqual([['$0', 'demo', [[['%0', 'sh']]]]])
@@ -137,21 +139,45 @@ describe('the frames the player draws', () => {
     expect(frames[2]!.sessions[0]!.windows[0]!.panes[0]).toMatchObject({ left: 0, top: 0, width: 80, height: 24, active: true })
   })
 
-  it('show tmux as the call left it, not as the call needed it: Run\'s window is gone, and Kill leaves no server', async () => {
+  it('show tmux as each call left it: Split adds a pane, NewWindow a window, a selection moves the focus, and Kill leaves no server', async () => {
     const { capability } = await recorded()
     const frames = coreFrames(capability)
-    expect(frames[3]!.sessions[0]!.windows).toHaveLength(1)
-    expect(frames[4]!.sessions).toEqual([])
+    const after = (id: string) => frames[capability.steps.findIndex((step) => step.id === id) + 1]!.sessions
+    expect(after('split')[0]!.windows.map((window) => window.panes.map((pane) => pane.id))).toEqual([['%0', '%1']])
+    expect(after('new-window')[0]!.windows.map((window) => [window.name, window.active])).toEqual([['editor', true], ['logs', false]])
+    expect(after('select-pane')[0]!.windows[0]!.panes.map((pane) => [pane.id, pane.active])).toEqual([['%0', false], ['%1', true]])
+    expect(after('select-window')[0]!.windows.map((window) => [window.name, window.active])).toEqual([['editor', false], ['logs', true]])
+    expect(after('kill')).toEqual([])
   })
 
-  it('say when a call changed nothing, and name the window that came and went inside Run', async () => {
+  it('say what each call changed, and when it changed nothing or sent nothing', async () => {
     const { capability } = await recorded()
     const before = (index: number) => (index === 0 ? capability.tmuxBefore : capability.steps[index - 1]!.tmux)
-    const notes = capability.steps.map((step, index) => stepNote(step, before(index)))
-    expect(notes[0]).toBe('tmux after tmux.NewServer: no server is running; the call sent no command.')
-    expect(notes[1]).toBe('tmux after Server.NewSession: added session demo.')
-    expect(notes[2]).toBe('tmux after Session.Run: unchanged. tmux held window @1 while the call ran and removed it before it returned.')
-    expect(notes[3]).toBe('tmux after Server.Kill: the server has exited.')
+    const notes = Object.fromEntries(capability.steps.map((step, index) => [step.id, stepNote(step, before(index))]))
+    expect(notes).toEqual({
+      'new-server': 'tmux after tmux.NewServer: no server is running; the call sent no command.',
+      'new-session': 'tmux after Server.NewSession: added session demo.',
+      'resolve-window': 'tmux after Session.ResolveActiveWindow: unchanged.',
+      rename: 'tmux after Window.Rename: renamed window 0:sh to 0:editor.',
+      'resolve-pane': 'tmux after Window.ResolveActivePane: unchanged.',
+      split: 'tmux after Pane.Split: added pane %1 to window 0:editor.',
+      'new-window': 'tmux after Session.NewWindow: added window 1:logs.',
+      'send-keys': 'tmux after Pane.SendKeys: sent keys to pane %1.',
+      wait: 'tmux after Pane.WaitForText: read pane %1.',
+      'select-pane': 'tmux after Pane.Select: selected pane %1 in window 0:editor.',
+      'select-window': 'tmux after Window.Select: selected window 1:logs.',
+      snapshot: 'tmux after Server.Snapshot: unchanged.',
+      'pane-by-id': 'tmux after Snapshot.PaneByID: unchanged, the call sent no command.',
+      'pane-window': 'tmux after Pane.Window: unchanged, the call sent no command.',
+      'window-session': 'tmux after Window.Session: unchanged, the call sent no command.',
+      kill: 'tmux after Server.Kill: the server has exited.',
+    })
+  })
+
+  it('name the window that came and went inside Run', async () => {
+    const run = (await coreRecordingFor('go'))!.capabilities['run-applications']!
+    const index = run.steps.findIndex((step) => step.label === 'Session.Run')
+    expect(stepNote(run.steps[index]!, run.steps[index - 1]!.tmux)).toBe('tmux after Session.Run: unchanged. tmux held window @1 while the call ran and removed it before it returned.')
   })
 })
 
@@ -213,10 +239,12 @@ describe('the player component', () => {
 
   it('draws one frame and one result for the state before the first call and each call, and shows the last', async () => {
     const { document } = await mount()
-    expect([...document.querySelectorAll('.core-player__tmux [data-frame]')].map((frame) => frame.getAttribute('data-frame'))).toEqual(['0', '1', '2', '3', '4'])
-    expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual(['4'])
-    expect(document.querySelectorAll('.core-player__tmux .mcp-tmux')).toHaveLength(5)
-    expect([...document.querySelectorAll('.core-result')].map((result) => result.getAttribute('data-result'))).toEqual(['0', '1', '2', '3', '4'])
+    const { capability } = await recorded()
+    const frames = ['0', ...capability.steps.map((_, index) => String(index + 1))]
+    expect([...document.querySelectorAll('.core-player__tmux [data-frame]')].map((frame) => frame.getAttribute('data-frame'))).toEqual(frames)
+    expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual([frames.at(-1)])
+    expect(document.querySelectorAll('.core-player__tmux .mcp-tmux')).toHaveLength(frames.length)
+    expect([...document.querySelectorAll('.core-result')].map((result) => result.getAttribute('data-result'))).toEqual(frames)
     // The drawings are the replay's own, so their SVG ids must not collide with another player's on the page.
     const ids = [...document.querySelectorAll('.core-player__tmux [id]')].map((element) => element.id)
     expect(new Set(ids).size).toBe(ids.length)
@@ -254,16 +282,17 @@ describe('the player component', () => {
     expect(document.querySelector<HTMLElement>('[data-controls]')!.hidden).toBe(true)
     expect([...document.querySelectorAll<HTMLElement>('[data-pin]')].every((pin) => pin.hidden)).toBe(true)
     // A dot for tmux before the first call, then one per call.
-    expect(document.querySelectorAll('[data-mark]')).toHaveLength(5)
+    expect(document.querySelectorAll('[data-mark]')).toHaveLength((await recorded()).capability.steps.length + 1)
     expect(document.querySelector<HTMLElement>('[data-mark="0"]')!.style.left).toBe('0%')
   })
 
   it('marks the call that is current in the program the reader sees, and follows the player', async () => {
     const { document, win, capability } = await mount({ run: true })
-    expect(count(document)).toBe('3/3')
     const view = viewSteps(capability, code('concise'))
+    const calls = view.length
+    expect(count(document)).toBe(`${calls}/${calls}`)
     const expected = (position: number) => Array.from({ length: view[position]!.lines[1] - view[position]!.lines[0] + 1 }, (_, offset) => view[position]!.lines[0] + offset)
-    expect(lit(document, 'concise')).toEqual(expected(2))
+    expect(lit(document, 'concise')).toEqual(expected(calls - 1))
     click(win, document.querySelector('[data-mark="1"]')!)
     expect(lit(document, 'concise')).toEqual(expected(0))
     expect(shown(document, '[data-result]').map((result) => result.dataset.result)).toEqual(['1'])
@@ -276,10 +305,11 @@ describe('the player component', () => {
     const { document, win } = await mount({ run: true })
     const stage = document.querySelector('.home-example-stage')!
     click(win, document.querySelector('[data-mark="1"]')!)
-    const run = [...document.querySelectorAll('[data-home-view="concise"] .ec-line.is-call')].find((line) => line.textContent!.includes('session.Run('))!
+    const run = [...document.querySelectorAll('[data-home-view="concise"] .ec-line.is-call')].find((line) => line.textContent!.includes('left.Split('))!
+    const split = (await recorded()).capability.steps.findIndex((step) => step.id === 'split') + 1
     over(win, run)
-    expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual(['3'])
-    expect(count(document), 'hovering previews and moves nothing').toBe('1/3')
+    expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual([String(split)])
+    expect(count(document), 'hovering previews and moves nothing').toBe(`1/${(await recorded()).capability.steps.length - 1}`)
     over(win, run, 'mouseout')
     expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual(['1'])
     click(win, run)
@@ -297,37 +327,39 @@ describe('the player component', () => {
     expect(callLines).toHaveLength(viewSteps((await recorded()).capability, code('concise')).reduce((sum, step) => sum + step.lines[1] - step.lines[0] + 1, 0))
   })
 
-  it('plays the fourth call, Kill, only when the program cleans up, and keeps the step in range when the choice goes away', async () => {
+  it('plays the last call, Kill, only when the program cleans up, and keeps the step in range when the choice goes away', async () => {
     const { document, win } = await mount({ run: true })
-    expect(shown(document, '[data-mark]')).toHaveLength(4)
+    const calls = (await recorded()).capability.steps.length
+    expect(shown(document, '[data-mark]')).toHaveLength(calls)
     const cleanup = document.querySelector<HTMLInputElement>('[data-example-cleanup]')!
     cleanup.checked = true
     cleanup.dispatchEvent(new win.Event('change', { bubbles: true }) as unknown as Event)
-    expect(shown(document, '[data-mark]')).toHaveLength(5)
-    click(win, document.querySelector('[data-mark="4"]')!)
-    expect(count(document)).toBe('4/4')
+    expect(shown(document, '[data-mark]')).toHaveLength(calls + 1)
+    click(win, document.querySelector(`[data-mark="${calls}"]`)!)
+    expect(count(document)).toBe(`${calls}/${calls}`)
     expect(lit(document, 'cleanup')).toHaveLength(1)
     expect(document.querySelector('[data-home-view="cleanup"] .ec-line.is-current')!.textContent).toContain('server.Kill(')
     cleanup.checked = false
     cleanup.dispatchEvent(new win.Event('change', { bubbles: true }) as unknown as Event)
-    expect(count(document)).toBe('3/3')
-    expect(shown(document, '[data-mark]')).toHaveLength(4)
+    expect(count(document)).toBe(`${calls - 1}/${calls - 1}`)
+    expect(shown(document, '[data-mark]')).toHaveLength(calls)
     click(win, document.querySelector('[data-mark="0"]')!)
-    expect(count(document)).toBe('0/3')
+    expect(count(document)).toBe(`0/${calls - 1}`)
   })
 
   it('uses the replay\'s keys on the stage and on a result\'s pin button, and no other key', async () => {
     const { document, win } = await mount({ run: true })
     const stage = document.querySelector('.home-example-stage')!
+    const calls = (await recorded()).capability.steps.length - 1
     key(win, stage, 'Home')
     key(win, stage, 'ArrowRight')
-    expect(count(document)).toBe('1/3')
+    expect(count(document)).toBe(`1/${calls}`)
     key(win, document.querySelector('.core-result [data-pin]')!, 'ArrowRight')
-    expect(count(document)).toBe('2/3')
+    expect(count(document)).toBe(`2/${calls}`)
     key(win, stage, 'End')
-    expect(count(document)).toBe('3/3')
+    expect(count(document)).toBe(`${calls}/${calls}`)
     key(win, document.querySelector('.core-commands')!, 'Home')
-    expect(count(document), 'a key meant for a list being scrolled is left alone').toBe('3/3')
+    expect(count(document), 'a key meant for a list being scrolled is left alone').toBe(`${calls}/${calls}`)
   })
 
   it('draws no emoji, and keeps the page\'s own tokens', () => {
@@ -353,11 +385,11 @@ describe('what a call changed in tmux', () => {
     const made = stepNamed(lua, 'Session:new_window')
     const window = tmuxChanges(made.before, made.step.tmux)
     expect(window.phrases).toEqual(['added window quickstart:1:logs'])
-    expect(window.marks).toEqual({ windows: ['@2'], panes: [], labels: [] })
+    expect(window.marks).toEqual({ windows: ['@2'], panes: [], labels: [], sessions: [] })
     const split = stepNamed(lua, 'Pane:split')
     const pane = tmuxChanges(split.before, split.step.tmux)
     expect(pane.phrases).toEqual(['added pane %3 to window quickstart:1:logs'])
-    expect(pane.marks).toEqual({ windows: [], panes: ['%3'], labels: [] })
+    expect(pane.marks).toEqual({ windows: [], panes: ['%3'], labels: [], sessions: [] })
   })
 
   it('folds a new session\'s first window into the session, and names a renamed session on its windows', async () => {
@@ -368,13 +400,13 @@ describe('what a call changed in tmux', () => {
     expect(session.marks.windows).toEqual(['@1'])
     const go = (await coreRecordingFor('go'))!.capabilities.watch!
     const renamed = stepNamed(go, 'Session.Rename')
-    expect(tmuxChanges(renamed.before, renamed.step.tmux)).toEqual({ marks: { windows: [], panes: [], labels: ['@0'] }, phrases: ['renamed session libtmux-control to control-example'] })
+    expect(tmuxChanges(renamed.before, renamed.step.tmux)).toEqual({ marks: { windows: [], panes: [], labels: [], sessions: ['$0'] }, phrases: ['renamed session libtmux-control to control-example'] })
   })
 
   it('names nothing for a state that did not change, and a closed window only while its session lives', async () => {
     const lua = await quickstartOf('lua')
     const same = stepNamed(lua, 'Pane:send_keys')
-    expect(tmuxChanges(same.before, same.step.tmux)).toEqual({ marks: { windows: [], panes: [], labels: [] }, phrases: [] })
+    expect(tmuxChanges(same.before, same.step.tmux)).toEqual({ marks: { windows: [], panes: [], labels: [], sessions: [] }, phrases: [] })
     const go = (await coreRecordingFor('go'))!.capabilities['run-applications']!
     const streamed = stepNamed(go, 'Running.StreamTo')
     expect(tmuxChanges(streamed.before, streamed.step.tmux).phrases).toEqual(['closed window 1:sh'])
@@ -403,8 +435,8 @@ describe('what a call did to its panes\' contents', () => {
   it('names the panes a call typed into and read, but not a pane it removed again', async () => {
     const fsharp = await quickstartOf('fsharp')
     const sent = stepNamed(fsharp, 'Pane.sendAndWait')
-    expect(stepChanges(sent.step, sent.before)).toEqual({ marks: { windows: [], panes: ['%0'], labels: [] }, phrases: ['sent keys to pane %0', 'read pane %0'] })
-    const go = (await coreRecordingFor('go'))!.capabilities['typed-graph']!
+    expect(stepChanges(sent.step, sent.before)).toEqual({ marks: { windows: [], panes: ['%0'], labels: [], sessions: [] }, phrases: ['sent keys to pane %0', 'read pane %0'] })
+    const go = (await coreRecordingFor('go'))!.capabilities['run-applications']!
     const ran = stepNamed(go, 'Session.Run')
     expect(paneActivity(ran.step).ran, 'Run respawned the pane of the window it held').toEqual(['%1'])
     expect(stepChanges(ran.step, ran.before).phrases, 'that window was gone when Run returned').toEqual([])
@@ -443,6 +475,21 @@ describe('the drawing of every window', () => {
     // Every frame keeps the status line, empty or not, so a frame is as tall as the next.
     expect(document.querySelectorAll('.mcp-frame').length).toBe(document.querySelectorAll('.mcp-frame .mcp-tmux__status--sessions').length)
     expect(frame(0).querySelector('.mcp-tile'), 'no server, no tiles').toBeNull()
+    await win.happyDOM.abort()
+  })
+
+  it('draws the active pane of a split window bold, and outlines the pane a selection moved to', async () => {
+    const { recording, capability } = await recorded()
+    const win = new Window({ url: 'https://libtmux.org/go/latest/' })
+    win.document.body.innerHTML = await renderAstroTemplate(await template, { props: { port: 'go', language: 'Go', example, recording, capability } })
+    const document = win.document as unknown as Document
+    const frame = (id: string) => document.querySelector(`[data-frame="${capability.steps.findIndex((step) => step.id === id) + 1}"]`)!
+    const active = (id: string) => [...frame(id).querySelectorAll('.mcp-tile__pane.is-active .mcp-pane__id')].map((label) => label.textContent)
+    expect(active('split'), 'the split keeps the pane it split active').toEqual(['%0 sh'])
+    expect(active('select-pane')).toEqual(['%1 sh'])
+    expect([...frame('select-pane').querySelectorAll('.mcp-tile__pane.is-changed .mcp-pane__id')].map((label) => label.textContent)).toEqual(['%1 sh'])
+    expect([...frame('select-window').querySelectorAll('.mcp-tile__status.is-changed')].map((label) => label.textContent)).toEqual(['1:logs*'])
+    expect(frame('new-session').querySelectorAll('.mcp-tile__pane.is-active'), 'a window of one pane needs no mark').toHaveLength(0)
     await win.happyDOM.abort()
   })
 })
