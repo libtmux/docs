@@ -314,7 +314,7 @@ export const quoted = (word) => (/[\s'"\\;]/.test(word) || word === '' ? `'${wor
  * prove that the server is the one it checked (libtmux-go's `if-shell -F`
  * guard); it is dropped. `unwrap`, for a library that wraps the command itself
  * in its guard (`if-shell -F <check> '<command>' '<on failure>'`), gives the
- * command inside. `probe` recognises an invocation that only asks tmux
+ * words inside, which may hold several commands separated by `;`. `probe` recognises an invocation that only asks tmux
  * who it is (`tmux -V`, a version query), which the library makes before it
  * sends a command; it is kept apart.
  * `probeLine`, when given, rewrites the line of a control-mode probe for the
@@ -325,7 +325,9 @@ export const quoted = (word) => (/[\s'"\\;]/.test(word) || word === '' ? `'${wor
  */
 export function describeInvocation(entry, profile = {}) {
   const invocation = splitInvocation(entry.argv)
-  const kept = invocation.commands.map((command) => profile.unwrap?.(command) ?? command).filter((command) => !profile.fence?.(command))
+  // A guard may hold several commands (`a ; b`): each is a command of its own.
+  const inside = (words) => words.reduce((commands, word) => { if (word === ';') commands.push([]); else commands.at(-1).push(word); return commands }, [[]]).filter((command) => command.length > 0)
+  const kept = invocation.commands.flatMap((command) => { const unwrapped = profile.unwrap?.(command); return unwrapped ? inside(unwrapped) : [command] }).filter((command) => !profile.fence?.(command))
   const role = profile.probe?.({ flags: invocation.flags, commands: kept, line: entry.line }) ? 'probe' : 'command'
   const text = entry.line !== undefined && role === 'probe' ? (profile.probeLine?.(entry.line) ?? entry.line) : kept.map((command) => command.map(quoted).join(' ')).join(' ; ')
   return {
