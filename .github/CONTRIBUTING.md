@@ -379,6 +379,30 @@ the data with the port checkouts present:
 $ node scripts/gen-product-copy.mjs
 ```
 
+A port's Core API tab plays its homepage program when a recording of that
+program exists. `scripts/gen-core-recording.mjs` builds the displayed program
+against a clean checkout at the revision `home-examples.json` records, then
+runs it twice in a sandbox with a private tmux: as displayed, and with a marker
+after each call of the step map in `scripts/lib/core-recipes.mjs`. A `tmux`
+shim first on the program's PATH stores each command with tmux's reply, and
+each marker stores what the call returned and tmux's settled state, read by the
+reader the MCP recorder uses. The recorder refuses a run whose two programs
+sent different commands, one that printed anything but the page's expected
+output, and a recording that `recordingProblems` rejects. The step map, which
+matches each call to its anchor line and to the Go expression for its returned
+value, is written by hand. Record again after changing the program or the port's
+pin, with the checkout (a detached worktree is enough) at that revision:
+
+```console
+$ LIBTMUX_DOCS_CHECKOUT_GO=/path/to/libtmux-go-worktree \
+    node scripts/gen-core-recording.mjs \
+    --port go
+```
+
+The page draws the recording only while its program hash is the displayed
+program's; otherwise the tab shows the program alone. Add `--check` to compare
+a new run with the stored recording without writing it.
+
 The publication audit checks index freshness, rendered links, navigation targets,
 and table layout at desktop, tablet, and phone widths.
 
