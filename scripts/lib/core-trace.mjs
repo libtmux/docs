@@ -257,7 +257,8 @@ export const UNSETTLED_EXIT = 75
 export async function runMark([step, json], env = process.env) {
   const commands = (env.LIBTMUX_DOCS_PANE_COMMANDS || 'sh').split(',')
   try {
-    const tmux = await settledState({ read: reader(env), commands, port: env.LIBTMUX_DOCS_PORT || 'port' })({ tool: step })
+    const windowNames = (env.LIBTMUX_DOCS_WINDOW_NAMES || '').split(',').filter(Boolean)
+    const tmux = await settledState({ read: reader(env), commands, windowNames, port: env.LIBTMUX_DOCS_PORT || 'port' })({ tool: step })
     append(env, { type: 'mark', step, at: Date.now(), value: JSON.parse(json), tmux })
   } catch (error) {
     if (!(error instanceof UnsettledPaneError)) throw error
@@ -316,15 +317,17 @@ export const quoted = (word) => (/[\s'"\\;]/.test(word) || word === '' ? `'${wor
  * command inside. `probe` recognises an invocation that only asks tmux
  * who it is (`tmux -V`, a version query), which the library makes before it
  * sends a command; it is kept apart.
+ * `probeLine`, when given, rewrites the line of a control-mode probe for the
+ * recording, for a library whose lines carry a token that changes on every run.
  *
  * @param {{ argv: string[], exit: number, stdout: string, stderr: string }} entry
- * @param {{ fence?: (command: string[]) => boolean, unwrap?: (command: string[]) => string[] | undefined, probe?: (invocation: { flags: string[], commands: string[][] }) => boolean }} profile
+ * @param {{ fence?: (command: string[]) => boolean, unwrap?: (command: string[]) => string[] | undefined, probe?: (invocation: { flags: string[], commands: string[][] }) => boolean, probeLine?: (line: string) => string }} profile
  */
 export function describeInvocation(entry, profile = {}) {
   const invocation = splitInvocation(entry.argv)
   const kept = invocation.commands.map((command) => profile.unwrap?.(command) ?? command).filter((command) => !profile.fence?.(command))
   const role = profile.probe?.({ flags: invocation.flags, commands: kept, line: entry.line }) ? 'probe' : 'command'
-  const text = entry.line !== undefined && role === 'probe' ? entry.line : kept.map((command) => command.map(quoted).join(' ')).join(' ; ')
+  const text = entry.line !== undefined && role === 'probe' ? (profile.probeLine?.(entry.line) ?? entry.line) : kept.map((command) => command.map(quoted).join(' ')).join(' ; ')
   return {
     role,
     tmux: role === 'probe' && kept.length === 0 ? invocation.flags.join(' ') : text,

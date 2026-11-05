@@ -384,6 +384,13 @@ describe('waiting for a state to settle', () => {
       await expect(settledState({ ...options, commands: ['cat', 'sh'], read: reader(two('cat')), timeoutMs: 25 })()).rejects.toThrow(/still named window @0 "cat"/)
     })
 
+    it('accepts the name of a launcher it is told about, and no other', async () => {
+      const launched = reader(named('env', 'cat', true), named('env', 'cat', true))
+      expect((await settledState({ ...cat, windowNames: ['env'], read: launched })()).windows[0]!.name).toBe('env')
+      await expect(settledState({ ...cat, windowNames: ['env'], read: reader(named('tmux', 'cat', true)), timeoutMs: 25 })()).rejects.toThrow(/still named window @0 "tmux"/)
+      await expect(settledState({ ...cat, read: reader(named('env', 'cat', true)), timeoutMs: 25 })()).rejects.toThrow(/still named window @0 "env"/)
+    })
+
     it('is not waited for when it was named explicitly, or when the reader does not say', async () => {
       expect((await settledState({ ...cat, read: reader(named('docs', 'cat', false), named('docs', 'cat', false)) })()).windows[0]!.name).toBe('docs')
       expect((await settledState({ ...cat, read: reader(named('docs', 'cat'), named('docs', 'cat')) })()).windows[0]!.name).toBe('docs')
