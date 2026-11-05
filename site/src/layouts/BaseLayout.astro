@@ -1,6 +1,7 @@
 ---
 import { buildLocale } from '../i18n/resolve'
 import { localeSourcePath } from '../i18n/locales'
+import { ClientRouter } from 'astro:transitions'
 import type { InventoryPage } from '../lib/inventory-targets'
 import { tmuxInventoryVersion } from '../lib/inventory-links'
 import BackToTop from '../components/BackToTop.astro'
@@ -211,6 +212,7 @@ const inventoryPage: InventoryPage = {
     <meta name="libtmux-inventory" content={JSON.stringify(inventoryPage)} />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <ClientRouter fallback="swap" />
     <BrandIcons portSlug={navPort} pagePath={pagePath} />
     <ShellHead />
     <Seo

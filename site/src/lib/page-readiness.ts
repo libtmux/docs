@@ -26,17 +26,20 @@ export function initializePageReadiness(decorate: (win: Window) => unknown, mask
   const layouts = new Set<() => void>()
   const observed = new WeakSet<Element>()
   const loaded = new WeakSet<Element>()
-  const resources = new WeakMap<Element, { resolve: () => void; reject: () => void }>()
+  const resources = new Map<Element, { resolve: () => void; reject: () => void }>()
   const watchedFonts = new WeakSet<FontFace>()
   const decoded = new Set<string>()
   const decodedImages = new WeakMap<HTMLImageElement, string>()
   let revision = 0
   let parsed = false
   let finished = false
+  let swapped = false
   let failure: unknown
   let outlet: HTMLElement | undefined
+  const state = () => failure ? 'failed' : finished ? 'ready' : 'pending'
+  const hold = () => root.classList.add('fonts-pending', 'link-hints-pending')
   root.dataset.pageReadiness = 'pending'
-  root.classList.add('fonts-pending', 'link-hints-pending')
+  hold()
 
   const showFailure = () => {
     if (!document.body || outlet) return
@@ -71,6 +74,17 @@ export function initializePageReadiness(decorate: (win: Window) => unknown, mask
       else if (!layouts.has(work)) { revision++; layouts.add(work) }
     },
   }
+  // The router runs a swapped-in page's scripts itself, from copies; the parsed
+  // originals it skips or replaces never load.
+  document.addEventListener('astro:before-swap', () => { swapped = true })
+  // A router swap replaces the root's attributes with the new page's server-rendered ones.
+  document.addEventListener('astro:after-swap', () => {
+    // Removed elements never fire load or error, so they no longer hold the gate.
+    for (const [element, { resolve }] of resources) if (!element.isConnected) resolve()
+    root.dataset.pageReadiness = state()
+    if (!finished) hold()
+    if (failure) { outlet = undefined; showFailure() }
+  })
   const watchFonts = () => {
     for (const face of document.fonts) {
       // Astro's metric fallbacks use optional local Arial/Courier faces.
@@ -91,7 +105,7 @@ export function initializePageReadiness(decorate: (win: Window) => unknown, mask
     if (observed.has(element)) return
     observed.add(element)
     if (element instanceof HTMLScriptElement) {
-      if (!element.src || element.hasAttribute('data-cf-beacon') ||
+      if (swapped || !element.src || element.hasAttribute('data-cf-beacon') ||
           (element.src && new URL(element.src).hostname === 'static.cloudflareinsights.com')) return
       if (element.type && !['module', 'text/javascript', 'application/javascript'].includes(element.type)) return
     } else if (element instanceof HTMLLinkElement) {
@@ -100,7 +114,10 @@ export function initializePageReadiness(decorate: (win: Window) => unknown, mask
     } else return
     if (loaded.has(element)) return
     wait(new Promise<void>((resolve, reject) => {
-      resources.set(element, { resolve, reject: () => reject(new Error('Required resource failed')) })
+      resources.set(element, {
+        resolve: () => { resources.delete(element); resolve() },
+        reject: () => { resources.delete(element); reject(new Error('Required resource failed')) },
+      })
     }))
   }
   document.addEventListener('load', (event) => {

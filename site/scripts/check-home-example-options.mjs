@@ -77,7 +77,11 @@ export async function checkHomeExampleOptions(browser, base) {
       await check(false, false)
 
       const transition = async (navigate) => {
+        // A swap keeps the root's readiness, so a move to another path is done once the router has replaced the body.
+        await page.evaluate(() => { window.__transition = { body: document.body, path: location.pathname } })
         await navigate()
+        await page.waitForFunction(() => !window.__transition || location.pathname === window.__transition.path
+          || document.body !== window.__transition.body)
         await page.locator('html[data-page-readiness="ready"]').waitFor({ state: 'attached' })
       }
       await page.goto(`${base}/?port=rs&errors=1&cleanup=0#first`)

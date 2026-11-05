@@ -98,6 +98,53 @@ it('a delayed module cannot reveal through an empty task registry or an elapsed 
   module.dispatchEvent(new win.Event('load')); await flush()
   expect(root().dataset.pageReadiness).toBe('ready')
 })
+// A router swap replaces the root's attributes with the new page's server-rendered ones.
+const swapIn = (body = '') => {
+  for (const name of root().getAttributeNames()) root().removeAttribute(name)
+  win.document.body.innerHTML = body
+  win.document.dispatchEvent(new win.Event('astro:after-swap'))
+}
+it('marks the page a swap brings in as ready when the gate finished', async () => {
+  initializePageReadiness(decorate, 'icon')
+  await ready()
+  swapIn()
+  expect(root().dataset.pageReadiness).toBe('ready')
+  expect(root().classList.contains('fonts-pending')).toBe(false)
+})
+it('keeps the hold on a swap that arrives before the gate finished', async () => {
+  initializePageReadiness(decorate, 'icon')
+  parse(); await flush()
+  swapIn()
+  expect(root().dataset.pageReadiness).toBe('pending')
+  expect(root().classList.contains('fonts-pending')).toBe(true)
+  expect(root().classList.contains('link-hints-pending')).toBe(true)
+  mask.resolve(); fonts.resolve(); await flush()
+  expect(root().dataset.pageReadiness).toBe('ready')
+  expect(root().classList.contains('fonts-pending')).toBe(false)
+})
+it('lets a swap before the gate finished release the scripts it removed and the router runs', async () => {
+  const loading = win.document.createElement('script'); loading.type = 'module'; loading.src = '/old-page.js'
+  win.document.body.append(loading)
+  initializePageReadiness(decorate, 'icon')
+  await ready()
+  expect(root().dataset.pageReadiness).toBe('pending')
+  // The parsed copies the router skips or replaces never load; the removed one never will either.
+  win.document.dispatchEvent(new win.Event('astro:before-swap'))
+  swapIn('<script type="module" src="/new-page.js"></script>')
+  await flush()
+  expect(root().dataset.pageReadiness).toBe('ready')
+  expect(root().classList.contains('fonts-pending')).toBe(false)
+})
+it('shows a required failure again on the page a swap brings in', async () => {
+  const module = script()
+  initializePageReadiness(decorate, 'icon')
+  parse(); module.dispatchEvent(new win.Event('error')); await flush()
+  expect(win.document.querySelectorAll('[role="alert"]')).toHaveLength(1)
+  swapIn('<main>next page</main>')
+  expect(root().dataset.pageReadiness).toBe('failed')
+  expect(root().classList.contains('link-hints-pending')).toBe(true)
+  expect(win.document.querySelectorAll('[role="alert"]')).toHaveLength(1)
+})
 it('awaits visual work started by a successfully loaded module', async () => {
   const module = script(), effect = deferred()
   initializePageReadiness(decorate, 'icon')

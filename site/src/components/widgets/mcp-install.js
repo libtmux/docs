@@ -114,6 +114,12 @@
     var enabled = readCooldownEnabled()
     var type = readCooldownType()
     var days = readCooldownDays()
+    // A swap replaces <html>'s attributes with the new page's, and the router
+    // skips the head snippet that set these on an earlier visit to this page.
+    var html = document.documentElement
+    html.setAttribute('data-mcp-install-cooldown-enabled', enabled ? '1' : '0')
+    html.setAttribute('data-mcp-install-cooldown-type', type)
+    html.setAttribute('data-mcp-install-cooldown-days', String(days))
     widgets.forEach(function (widget) {
       // Always re-select client (saved or server-default). Selecting the
       // client also restores that client's saved scope as a side effect

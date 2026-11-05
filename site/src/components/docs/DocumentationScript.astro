@@ -1,8 +1,9 @@
 <script>
   import { initDocumentationNavigation } from './documentation-navigation'
+  import { guardTreeNavigation } from '../../lib/router-guard'
 
   // A Sidebar may start inside noscript; initialize shared behavior outside it.
   initDocumentationNavigation()
   document.addEventListener('astro:after-swap', initDocumentationNavigation)
-
+  guardTreeNavigation()
 </script>

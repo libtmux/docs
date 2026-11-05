@@ -336,7 +336,8 @@ export async function checkNativeFirstPaint(page, url) {
       const sample = () => {
         const heading = document.querySelector('article h1')
         const state = window.__nativePaint
-        if (heading && getComputedStyle(document.body).visibility === 'visible') {
+        if (heading && getComputedStyle(document.body).visibility === 'visible' &&
+            !document.documentElement.matches('.fonts-pending, .link-hints-pending')) {
           const { x, y, width, height } = heading.getBoundingClientRect()
           state.frames.push({ x, y, width, height })
           if (!state.first) {

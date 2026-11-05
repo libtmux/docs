@@ -29,9 +29,12 @@ const hintsCss = externalLinksCss.replace('url("./external-link.svg")', `url("${
   { weight: 600, style: 'normal' }, { weight: 700, style: 'normal' },
   { weight: 700, style: 'italic' },
 ]} />
+{/* Only the API tree waits for the gate: it restores saved state before it may draw. A hidden
+    body leaves a full document load blank until the gate ends. The page stays visible, so the
+    failure outlet stacks above its sticky and fixed parts. */}
 <style is:inline>
-  html.fonts-pending body, html.link-hints-pending body { visibility: hidden; }
-  #page-load-status { visibility: visible; position: fixed; inset: 0; display: grid; place-content: center; gap: 1rem; padding: 2rem; background: var(--background-color, white); color: var(--text-color, black); font: 1rem system-ui; }
+  html.fonts-pending .api-nav [role="tree"], html.link-hints-pending .api-nav [role="tree"] { visibility: hidden; }
+  #page-load-status { visibility: visible; position: fixed; inset: 0; z-index: 2147483647; display: grid; place-content: center; gap: 1rem; padding: 2rem; background: var(--background-color, white); color: var(--text-color, black); font: 1rem system-ui; }
   #page-load-status button { font: inherit; cursor: pointer; }
 </style>
 <script is:inline data-anchor-startup>

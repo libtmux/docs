@@ -212,8 +212,10 @@ a reference entry for each port, and member references. The native Sphinx
 page uses its own preload list and is checked separately.
 
 The delayed-font test holds font responses for 1.2s. On the home page, a
-reference entry, a topic, and a Java reference entry, the first visible frame
-matches the settled page and CLS is 0.0000.
+reference entry, a topic, and a Java reference entry, nothing moves after the
+first complete frame, the one after the readiness gate lifts. The page is
+visible before that frame, drawn in the metric-matched fallback faces, so the
+switch to IBM Plex can still shift text a little on a fresh load.
 
 **`.prose h1` is 700, not the typography plugin's 800.** IBM Plex ships no
 800, so an 800 was a weight the browser faked by smearing the Bold, on the
