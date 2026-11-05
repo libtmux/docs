@@ -316,7 +316,8 @@ export const quoted = (word) => (/[\s'"\\;]/.test(word) || word === '' ? `'${wor
  * in its guard (`if-shell -F <check> '<command>' '<on failure>'`), gives the
  * words inside, which may hold several commands separated by `;`. `probe` recognises an invocation that only asks tmux
  * who it is (`tmux -V`, a version query), which the library makes before it
- * sends a command; it is kept apart.
+ * sends a command; it is kept apart. `redact`, when given, rewrites the
+ * text of the invocation (a socket name that is different on every run).
  * `probeLine`, when given, rewrites the line of a control-mode probe for the
  * recording, for a library whose lines carry a token that changes on every run.
  *
@@ -330,9 +331,10 @@ export function describeInvocation(entry, profile = {}) {
   const kept = invocation.commands.flatMap((command) => { const unwrapped = profile.unwrap?.(command); return unwrapped ? inside(unwrapped) : [command] }).filter((command) => !profile.fence?.(command))
   const role = profile.probe?.({ flags: invocation.flags, commands: kept, line: entry.line }) ? 'probe' : 'command'
   const text = entry.line !== undefined && role === 'probe' ? (profile.probeLine?.(entry.line) ?? entry.line) : kept.map((command) => command.map(quoted).join(' ')).join(' ; ')
+  const shown = role === 'probe' && kept.length === 0 ? invocation.flags.join(' ') : text
   return {
     role,
-    tmux: role === 'probe' && kept.length === 0 ? invocation.flags.join(' ') : text,
+    tmux: profile.redact ? profile.redact(shown) : shown,
     mutates: kept.some((command) => !READ_ONLY.has(command[0])),
     exit: entry.exit,
     stdout: entry.stdout.replace(/\n$/, ''),
