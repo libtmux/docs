@@ -182,16 +182,45 @@ See <https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PayingFo
 
 ### Cloudflare in front
 
-Cloudflare never sees a CloudFront invalidation — it has its own edge cache,
-so a purge there is a separate action. Measured on the live site, it is not
-currently caching HTML at all:
+Cloudflare never sees a CloudFront invalidation. It has its own edge cache, so
+a purge there is a separate action. The zone caches pages, catalogs and
+inventories for the origin's `s-maxage`, through one Cache Rule in the
+`http_request_cache_settings` phase, "Cache HTML, catalogs and inventories for
+the origin s-maxage (libtmux/docs#255)":
+
+```text
+(http.host eq "libtmux.org" and (ends_with(http.request.uri.path, "/") or ends_with(http.request.uri.path, ".html") or ends_with(http.request.uri.path, ".json") or ends_with(http.request.uri.path, ".inv")))
+```
+
+The action is `set_cache_settings` with `cache` true and both the edge TTL and
+the browser TTL set to `respect_origin`. A page, catalog or inventory is kept
+for the `s-maxage=300` the origin sends, and the browser follows `max-age=0`.
+The port-root 302, which the origin marks `no-store`, bypasses the cache, and
+a missing object answers 403, which Cloudflare does not cache. Tiered Caching
+and Smart Tiered Cache are on, so one upper-tier cache fetches from CloudFront
+in place of every Cloudflare data center.
+
+Measured on the live site on 2026-11-04, after the rule went live:
 
 ```console
 $ curl -sI https://libtmux.org/en/ | grep -i cf-cache-status
-cf-cache-status: DYNAMIC
+cf-cache-status: MISS
+$ curl -sI https://libtmux.org/en/ | grep -i cf-cache-status
+cf-cache-status: HIT
+$ curl -sI https://libtmux.org/en/py/ | grep -i cf-cache-status
+cf-cache-status: BYPASS
 ```
 
-So Cloudflare adds no staleness window today. If that changes — a Cache Rule
-that starts respecting `s-maxage` — the bound becomes five minutes after a
-deploy, and a purge step would be the way to shorten it.
+`objects.inv` answered `MISS` and then `HIT` as the pages did, the 302 stayed
+`BYPASS`, and Cloudflare still injected the Web Analytics beacon into cached
+HTML. The change added no billable usage.
 
+So Cloudflare adds a staleness window of the origin's five minutes after a
+deploy, the same bound CloudFront has, and a deploy needs no purge. A longer
+edge TTL, a day for example, would need a Cloudflare purge after each publish.
+That takes an API token with Zone Cache Purge permission as a workflow secret,
+which is not set up.
+
+Terraform (`tf-config`) does not manage the Cache Rule or the tiered-cache
+settings. It manages the zone's DNS, email routing and the `email_obfuscation`
+setting only, so this rule lives on the zone, and this section is its record.
