@@ -11,8 +11,14 @@ interface Props {
   heading?: boolean
   /** Hold the code at one height whichever view the toggles select, scrolling inside it. */
   fixed?: boolean
+  /** Show the Error handling and Cleanup toggles; a program with one view shows none. */
+  options?: boolean
+  /** Show the "Run this example" section. */
+  run?: boolean
+  /** The views to render, which the toggles choose among. */
+  views?: readonly (typeof HOME_VIEWS)[number][]
 }
-const { port, language, example, heading = true, fixed = false } = Astro.props
+const { port, language, example, heading = true, fixed = false, options = true, run = true, views = HOME_VIEWS } = Astro.props
 // A host that plays the program (`core/CorePlayer.astro`) fills `beside`, which sits next to the code, and `controls`, under both.
 const player = Astro.slots.has('beside')
 const Frame = player ? 'div' : Fragment
@@ -21,16 +27,16 @@ const Stage = player ? 'div' : Fragment
 <div class="home-example" data-home-example={port} data-fixed={fixed ? '' : undefined} data-player={player ? '' : undefined}>
   <div class="home-example-heading">
     {heading && <h2>Start with {language}</h2>}
-    <fieldset class="home-example-options">
+    {options && <fieldset class="home-example-options">
       <legend class="sr-only">Example details</legend>
       <label><input type="checkbox" data-example-errors /> + Error handling</label>
       <label><input type="checkbox" data-example-cleanup /> + Cleanup</label>
-    </fieldset>
+    </fieldset>}
     <slot name="hint" />
   </div>
   <Frame {...(player ? { class: 'home-example-player not-prose' } : {})}>
     <Stage {...(player ? { class: 'home-example-stage', 'data-body': '', tabindex: 0, role: 'group', 'aria-label': 'The program and the tmux it leaves' } : {})}>
-      {HOME_VIEWS.map((view) => {
+      {views.map((view) => {
         const code = homeProgram(example, view).replace(/\n$/, '')
         return <div
           class="home-example-view"
@@ -45,7 +51,7 @@ const Stage = player ? 'div' : Fragment
     </Stage>
     <slot name="controls" />
   </Frame>
-  <details class="home-example-run">
+  {run && <details class="home-example-run">
     <summary>Run this example</summary>
     <p>{example.prerequisites}</p>
     <p>Save the program above as <code>{example.program}</code> in a new directory, along with the files below.</p>
@@ -67,7 +73,7 @@ const Stage = player ? 'div' : Fragment
     <h3>Expected output</h3>
     <Code code={example.expectedOutput.replace(/\n$/, '')} lang="text" />
     <p>Library revision: <a href={`https://github.com/${example.sourceRepository}/tree/${example.sourceRevision}`}>{example.sourceRevision.slice(0, 12)}</a>.</p>
-  </details>
+  </details>}
 </div>
 
 <script>
@@ -77,7 +83,7 @@ const Stage = player ? 'div' : Fragment
 
   function bindExampleOptions() {
     controller?.abort()
-    if (!document.querySelector('[data-home-example]')) return
+    if (!document.querySelector('[data-home-example] [data-example-errors]')) return
     const homepagePath = location.pathname
     controller = new AbortController()
     const { signal } = controller

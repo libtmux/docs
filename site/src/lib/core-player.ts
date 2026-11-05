@@ -2,6 +2,7 @@ import { statementLines, type LineRange } from './core-statement.ts'
 import type { CoreCapability, CoreCommand, CoreRecording, CoreStep } from './core-recording.ts'
 import { recordingProblems } from './core-recording.ts'
 import { replayFrames, type Frame, type ReplayStep } from './mcp-replay'
+import type { HomeExample } from './quickstarts'
 
 /**
  * Playing a recorded program over its source (`components/core/CorePlayer.astro`).
@@ -44,8 +45,23 @@ export function viewSteps(capability: CoreCapability, code: string): PlayerStep[
 export async function playableCapability(port: string, capability: string, program: string): Promise<{ recording: CoreRecording; capability: CoreCapability } | undefined> {
   const recording = await coreRecordingFor(port)
   const found = recording?.capabilities[capability]
-  if (!recording || !found || recordingProblems(recording, { programs: { [capability]: program } }).length > 0) return undefined
+  if (!recording || !found || recordingProblems({ ...recording, capabilities: { [capability]: found } }, { programs: { [capability]: program } }).length > 0) return undefined
   return { recording, capability: found }
+}
+
+/**
+ * A capability's program as the example the player shows: one view, since
+ * these programs have no Error handling or Cleanup to add, and no setup of
+ * their own (the panel names the program's source and the command that runs it).
+ */
+export function capabilityExample(item: { code: string; lang: string; file: string; repository: string; revision: string }): HomeExample {
+  const name = item.file.split('/').at(-1)!
+  return {
+    lang: item.lang, sourceRepository: item.repository, sourceRevision: item.revision, sourceTree: '', program: name,
+    excerpt: { startLine: 1, endLine: item.code.split('\n').length, dedent: 0, importsEndLine: 0 },
+    files: [{ name, lang: item.lang, code: item.code }], prerequisites: '', commands: [], expectedOutput: '',
+    variants: { concise: item.code, errors: item.code, cleanup: item.code },
+  }
 }
 
 /**

@@ -31,23 +31,31 @@ interface Props {
   example: Example
   recording: CoreRecording
   capability: CoreCapability
+  /** Which capability of the port this is; it keeps the ids of two players on one page apart. */
+  capabilityId?: string
+  /** A program with no Error handling and Cleanup views plays one view and shows no toggles. */
+  options?: boolean
+  /** Show the example's own "Run this example" section. */
+  run?: boolean
 }
-const { port, language, example, recording, capability } = Astro.props as Props
+const { port, language, example, recording, capability, capabilityId = 'typed-graph', options = true, run = true } = Astro.props as Props
+const shownViews = options ? HOME_VIEWS : (['concise'] as const)
+const revision = capability.revision ?? recording.revision
 const steps = capability.steps
 const total = steps.length
 const frames = coreFrames(capability)
 // Where each call is in each view of the program: the views differ in the lines they add.
-const views = Object.fromEntries(HOME_VIEWS.map((view) => [view, viewSteps(capability, homeProgram(example, view).replace(/\n$/, ''))]))
+const views = Object.fromEntries(shownViews.map((view) => [view, viewSteps(capability, homeProgram(example, view).replace(/\n$/, ''))]))
 const before = (index: number) => (index === 0 ? capability.tmuxBefore : steps[index - 1]!.tmux)
 const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server is running yet.' : 'tmux is running.'
 ---
-<HomeExample port={port} language={language} example={example} heading={false}>
+<HomeExample port={port} language={language} example={example} heading={false} options={options} run={run} views={shownViews}>
   <p slot="hint" class="core-player__hint" data-hint hidden>Hover a call in the code to preview the tmux state after it. Click to pin it.</p>
   <div slot="beside" class="core-player__side" data-core-plan={JSON.stringify(views)}>
     <div class="core-player__tmux" data-tmux role="group" aria-label="tmux state after the call shown">
       {frames.map((frame) => (
         <div class="mcp-frame" data-frame={frame.done} data-off={frame.done === total ? undefined : ''}>
-          <TmuxScreen frame={frame} idPrefix={`cp-${port}`} hadSessions={frames.some((earlier) => earlier.done < frame.done && earlier.sessions.length > 0)} />
+          <TmuxScreen frame={frame} idPrefix={`cp-${port}-${capabilityId}`} hadSessions={frames.some((earlier) => earlier.done < frame.done && earlier.sessions.length > 0)} />
           <p class="mcp-frame__note">{frame.done === 0 ? 'tmux before the first call: no server is running.' : stepNote(steps[frame.done - 1]!, before(frame.done - 1))}</p>
         </div>
       ))}
@@ -80,9 +88,17 @@ const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server
                       </li>
                     ))}
                   </ol>
-                  {probes > 0 && <p class="core-commands__note">Before these, the library asked tmux who it is {probes} time{probes === 1 ? '' : 's'} (<code>-V</code> and <code>run-shell -C</code>).</p>}
+                  {probes > 0 && <p class="core-commands__note">Before these, the library asked tmux about itself {probes} time{probes === 1 ? '' : 's'} (its version, its daemon, how a control client reads escapes).</p>}
                 </details>
               )}
+            {step.notifications && step.notifications.length > 0 && (
+              <details class="core-result__tmux">
+                <summary>{step.notifications.length} notification{step.notifications.length === 1 ? '' : 's'} from tmux while the call ran</summary>
+                <ol class="core-commands">
+                  {step.notifications.map((line) => <li><code class="core-commands__sent" title={line}>{line}</code></li>)}
+                </ol>
+              </details>
+            )}
           </section>
         )
       })}
@@ -91,8 +107,8 @@ const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server
   <ReplayControls slot="controls" start="Show tmux before the first call" marks={steps.map((step) => `Show the state after ${step.label}`)} />
 </HomeExample>
 <p class="not-prose mcp-provenance core-player__provenance">
-  Recorded by running this program against <a href={`https://github.com/${recording.repo}/tree/${recording.revision}`}><code>{recording.repo}</code></a>
-  at <code>{recording.revision.slice(0, 9)}</code> on a private {recording.sandbox.tmux} server.
+  Recorded by running this program against <a href={`https://github.com/${recording.repo}/tree/${revision}`}><code>{recording.repo}</code></a>
+  at <code>{revision.slice(0, 9)}</code> on a private {recording.sandbox.tmux} server.
   {capability.stepMap === 'hand-written' && <>A person matched each call to its lines; the values, commands and tmux states are what the run produced.</>}
   Commands appear without the library's <code>if-shell</code> guard, and the socket name and paths are set to fixed values.
 </p>
@@ -107,8 +123,9 @@ const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server
     const root = side.closest<HTMLElement>('[data-home-example]')!
     const body = root.querySelector<HTMLElement>('[data-body]')!
     const plan = JSON.parse(side.dataset.corePlan!) as Record<string, Placed[]>
-    const errors = root.querySelector<HTMLInputElement>('[data-example-errors]')!
-    const cleanup = root.querySelector<HTMLInputElement>('[data-example-cleanup]')!
+    // A program with one view has no toggles.
+    const errors = root.querySelector<HTMLInputElement>('[data-example-errors]')
+    const cleanup = root.querySelector<HTMLInputElement>('[data-example-cleanup]')
     const frames = [...root.querySelectorAll<HTMLElement>('[data-frame]')]
     const results = [...root.querySelectorAll<HTMLElement>('[data-result]')]
     const pins = [...root.querySelectorAll<HTMLButtonElement>('[data-pin]')]
@@ -117,7 +134,7 @@ const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server
     const canHover = window.matchMedia?.('(hover: hover)').matches ?? true
     const IDLE_HINT = canHover ? 'Hover a call in the code to preview the tmux state after it. Click to pin it.' : 'Tap a call in the code to pin the tmux state after it.'
     // The program the reader sees depends on the two choices above it, which another script owns; read them whenever they matter.
-    const viewName = () => (errors.checked ? (cleanup.checked ? 'full' : 'errors') : (cleanup.checked ? 'cleanup' : 'concise'))
+    const viewName = () => (errors?.checked ? (cleanup?.checked ? 'full' : 'errors') : (cleanup?.checked ? 'cleanup' : 'concise'))
     const placed = () => plan[viewName()]!
     const codeLines = (view: string) => [...root.querySelectorAll<HTMLElement>(`[data-home-view="${view}"] .ec-line`)]
     // The call a code line belongs to, as its position in the view's steps (1 is the first call).

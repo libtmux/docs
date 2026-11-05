@@ -331,4 +331,34 @@ describe('the showcase component', () => {
     expect([...doc.querySelectorAll('.core-showcase__links a')].map((a) => a.textContent)).toEqual(['Core Library documentation →', 'More examples →'])
     expect((await render('ts')).querySelector('[data-core-showcase]')).toBeNull()
   })
+
+  it('plays a capability whose recording is of its cached program, and keeps a plain block for one without', async () => {
+    const { Window } = await import('happy-dom')
+    const { createComponent, renderTemplate } = await import('astro/runtime/server/index.js')
+    const { loadAstroTemplate, renderAstroTemplate } = await import('./astro-templates')
+    const Code = createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre data-code>${props.code}</pre>`)
+    const template = await loadAstroTemplate('components/CoreShowcase.astro', {
+      stubs: {
+        'components/HomeExample.astro': '---\n---\n<div data-home-example />',
+        'components/core/CorePlayer.astro': '---\nconst { capabilityId, options, run } = Astro.props\n---\n<div data-core-player={capabilityId} data-options={String(options)} data-run={String(run)} />',
+      },
+      modules: { 'astro-expressive-code/components': { Code } },
+    })
+    const render = async (port: string) => {
+      const window = new Window()
+      window.document.body.innerHTML = await renderAstroTemplate(template, { url: `https://libtmux.org/${port}/latest/`, props: { port } })
+      return window.document as unknown as Document
+    }
+    const go = await render('go')
+    for (const id of ['watch', 'run-applications']) {
+      const panel = go.querySelector(`[data-capability-panel="${id}"]`)!
+      expect(panel.querySelector('[data-core-player]')!.getAttribute('data-core-player'), id).toBe(id)
+      expect(panel.querySelector('[data-core-player]')!.getAttribute('data-options'), 'no toggles for a program with one view').toBe('false')
+      expect(panel.querySelector('[data-code]'), `${id} is not also drawn as a plain block`).toBeNull()
+      expect(panel.textContent).toContain('The whole program')
+    }
+    const rs = await render('rs')
+    expect(rs.querySelector('[data-capability-panel] [data-core-player]'), 'no recording, no player').toBeNull()
+    expect(rs.querySelectorAll('[data-code]').length).toBeGreaterThan(0)
+  })
 })

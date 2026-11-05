@@ -3,7 +3,7 @@ import { createComponent, renderTemplate } from 'astro/runtime/server/index.js'
 import { Window } from 'happy-dom'
 import { ModuleKind, ScriptTarget, transpileModule } from 'typescript'
 import { afterEach, describe, expect, it } from 'vitest'
-import { coreFrames, coreRecordingFor, playableCapability, stepNote, viewSteps, visibleCommands } from '../src/lib/core-player'
+import { capabilityExample, coreFrames, coreRecordingFor, playableCapability, stepNote, viewSteps, visibleCommands } from '../src/lib/core-player'
 import { statementLines } from '../src/lib/core-statement'
 import { HOME_VIEWS, QUICKSTARTS, homeProgram } from '../src/lib/quickstarts'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
@@ -78,6 +78,50 @@ describe('the calls each view of the Go program plays', () => {
     expect(await playableCapability('go', 'no-such-capability', homeProgram(example, 'full'))).toBeUndefined()
     expect(await playableCapability('rs', 'typed-graph', 'fn main() {}')).toBeUndefined()
     expect(await coreRecordingFor('rs')).toBeUndefined()
+  })
+})
+
+describe('the other programs of Go\'s landing page', () => {
+  const sources = JSON.parse(readFileSync(new URL('../src/data/example-sources.json', import.meta.url), 'utf8'))
+  const program = (file: string): string => sources[`go:examples/${file}/main.go`].content.replace(/\n$/, '')
+  const watch = program('control-mode-subscribe')
+  const run = program('run-to-completion')
+
+  it('plays each for the program it was recorded from, and for no other', async () => {
+    expect(await playableCapability('go', 'watch', watch)).toBeDefined()
+    expect(await playableCapability('go', 'run-applications', run)).toBeDefined()
+    expect(await playableCapability('go', 'watch', run)).toBeUndefined()
+    expect(await playableCapability('go', 'watch', `${watch}\n// edited`)).toBeUndefined()
+    expect(await playableCapability('go', 'run-applications', `${run}\n// edited`)).toBeUndefined()
+  })
+
+  it('plays every step, each iteration of a loop on the loop\'s line', async () => {
+    const { capability } = (await playableCapability('go', 'watch', watch))!
+    const placed = viewSteps(capability, watch)
+    expect(placed.map((step) => step.index)).toEqual(capability.steps.map((_, index) => index))
+    const lineOf = (id: string) => placed.find((step) => capability.steps[step.index]!.id === id)!.lines
+    expect(lineOf('next-1')).toEqual(lineOf('next-2'))
+    expect(lineOf('next-change-1')).toEqual(lineOf('next-change-2'))
+    expect(lineOf('next-change-1')[0]).toBeGreaterThan(lineOf('next-1')[0])
+    expect(watch.split('\n')[lineOf('next-change-1')[0] - 1]).toContain('stream.Next(ctx)')
+  })
+
+  it('draws a frame for each step, tmux before the first call being frame 0', async () => {
+    const { capability } = (await playableCapability('go', 'run-applications', run))!
+    expect(coreFrames(capability).map((frame) => frame.done)).toEqual([0, 1, 2, 3, 4, 5, 6])
+  })
+
+  it('shows a program with no Error handling or Cleanup as one view of itself', () => {
+    const example = capabilityExample({ code: watch, lang: 'go', file: 'examples/control-mode-subscribe/main.go', repository: 'libtmux/libtmux-go', revision: '2de249b600d65218ee8b8fdc07c6b2b919242151' })
+    expect(example.program).toBe('main.go')
+    expect(HOME_VIEWS.map((view) => homeProgram(example, view))).toEqual(HOME_VIEWS.map(() => watch))
+  })
+
+  it('finds the second Next only when the step says which line', async () => {
+    const { capability } = (await playableCapability('go', 'watch', watch))!
+    const second = capability.steps.find((step) => step.id === 'next-change-1')!
+    expect(statementLines(watch, second.anchor, '//', second.occurrence)).toBeDefined()
+    expect(statementLines(watch, second.anchor)).toBeUndefined()
   })
 })
 
@@ -191,7 +235,7 @@ describe('the player component', () => {
     expect(change.querySelector('.core-commands__reply')!.textContent).toBe('$0')
     const refused = details.querySelector('.is-refused')!
     expect(refused.textContent, 'a refusal is shown as the reply').toMatch(/error connecting to/)
-    expect(details.querySelector('.core-commands__note')!.textContent).toMatch(/asked tmux who it is \d+ times/)
+    expect(details.querySelector('.core-commands__note')!.textContent).toMatch(/asked tmux about itself \d+ times/)
     expect(document.querySelector('[data-result="1"]')!.textContent).toContain('The call sent no tmux command.')
   })
 

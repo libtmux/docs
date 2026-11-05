@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs'
 import { hostname, userInfo } from 'node:os'
 import { describe, expect, it } from 'vitest'
 import { RECIPES as GO_RECIPES, instrumentGo, withoutMarks } from '../../scripts/lib/core-recipes/go.mjs'
-import { describeInvocation, splitInvocation } from '../../scripts/lib/core-trace.mjs'
+import { matchMarks } from '../../scripts/lib/core-recipes/common.mjs'
+import { ControlReader, commandCount, describeInvocation, isControlInvocation, shimScript, splitCommandLine, splitInvocation } from '../../scripts/lib/core-trace.mjs'
 import { leaks } from '../../scripts/lib/mcp-transcript-checks.mjs'
 import { recordingProblems, sha256, type CoreRecording } from '../src/lib/core-recording'
 import { statementLines } from '../src/lib/core-statement'
@@ -147,5 +148,149 @@ describe('the markers the recorder puts in a copy of the program', () => {
   it('refuse a step whose anchor is not on exactly one line', () => {
     expect(() => instrumentGo(program, [{ ...GO_RECIPES['typed-graph'].steps[0]!, anchor: 'err != nil' }])).toThrow(/not on exactly one line/)
     expect(() => instrumentGo(program, [{ ...GO_RECIPES['typed-graph'].steps[0]!, anchor: 'nothing.Here(' }])).toThrow(/not on exactly one line/)
+  })
+})
+
+const source = (key: string) => json('example-sources.json')[key]
+const CAPABILITIES = [
+  ['watch', 'go:examples/control-mode-subscribe/main.go', ['new-server', 'new-session', 'open', 'rename', 'next-1', 'next-2', 'subscribe', 'new-window', 'next-change-1', 'next-change-2', 'kill']],
+  ['run-applications', 'go:examples/run-to-completion/main.go', ['new-server', 'new-session', 'run', 'start', 'stream', 'kill']],
+] as const
+
+describe.each(CAPABILITIES)('the Go recording of %s', (id, key, ids) => {
+  const shown: string = source(key).content.replace(/\n$/, '')
+  const check = (recording: CoreRecording, program = shown) => recordingProblems({ ...recording, capabilities: { [id]: recording.capabilities[id]! } }, { programs: { [id]: program } })
+
+  it('is sound, is of the cached program, and says the revision the cache records', () => {
+    expect(check(stored())).toEqual([])
+    expect(stored().capabilities[id]!.program.sha256).toBe(sha256(shown))
+    expect(stored().capabilities[id]!.revision).toBe(source(key).revision)
+  })
+
+  it('has the steps of its recipe, a repeated call once per iteration', () => {
+    expect(stored().capabilities[id]!.steps.map((step) => step.id)).toEqual(ids)
+    expect(stored().capabilities[id]!.stepMap).toBe('hand-written')
+  })
+
+  it('records what the program printed, which is its output.txt', () => {
+    const output = source(key.replace('main.go', 'output.txt')).content
+    expect(stored().capabilities[id]!.printed.join('\n') + '\n').toBe(output)
+  })
+
+  it('names nothing of the machine that recorded it', () => {
+    const text = JSON.stringify(stored().capabilities[id])
+    expect(leaks(text, ['/home/', '/libtmux-docs-', process.env.HOME ?? '/home'], [userInfo().username, hostname()])).toEqual([])
+  })
+
+  it('is refused for a program that is not the cached one', () => {
+    expect(check(stored(), `${shown}\n// edited`)).toContainEqual(expect.stringContaining('different program'))
+  })
+})
+
+describe('what the watch recording holds of a control client', () => {
+  const steps = () => stored().capabilities.watch!.steps
+  const step = (id: string) => steps().find((entry) => entry.id === id)!
+
+  it('counts the commands written to the control channel as the step\'s commands', () => {
+    expect(step('rename').commands.map((command) => command.tmux.split(' ')[0])).toEqual(['rename-session', 'list-sessions'])
+    expect(step('rename').commands[0]!.tmux).toBe('rename-session -t $0 -- control-example')
+    expect(step('open').commands.find((command) => command.role === 'command')).toMatchObject({ tmux: expect.stringMatching(/^attach-session -f /), mutates: true, exit: 0 })
+    expect(step('new-window').commands[0]!.tmux).toMatch(/^new-window -t \$0/)
+  })
+
+  it('keeps what tmux sent unasked with the step it arrived in, in the order it came', () => {
+    expect(step('rename').notifications).toEqual(['%session-renamed $0 control-example'])
+    expect(step('new-window').notifications).toEqual(['%window-add @1', '%subscription-changed windows $0 - - - : 2'])
+  })
+
+  it('anchors the iterations of a loop on the loop\'s own line, and the two loops on different lines', () => {
+    const first = [step('next-1'), step('next-2')]
+    const second = [step('next-change-1'), step('next-change-2')]
+    expect(first.map((entry) => entry.iteration)).toEqual([1, 2])
+    expect(new Set([...first, ...second].map((entry) => entry.anchor))).toEqual(new Set(['stream.Next(ctx)']))
+    const lines = (list: typeof first) => list.map((entry) => statementLines(source('go:examples/control-mode-subscribe/main.go').content.replace(/\n$/, ''), entry.anchor, '//', entry.occurrence)![0])
+    expect(new Set(lines(first)).size).toBe(1)
+    expect(new Set(lines(second)).size).toBe(1)
+    expect(lines(first)[0]).toBeLessThan(lines(second)[0]!)
+  })
+
+  it('returns what each Next heard', () => {
+    expect(step('next-2').returned).toEqual({ kind: '%session-renamed' })
+    expect(step('next-change-2').returned).toEqual({ kind: '%subscription-changed', subscription: { name: 'windows', value: '2' } })
+  })
+
+  it('refuses a call that shares a line without saying it repeats, and runs that do not count up', () => {
+    const planted = structuredClone(stored())
+    const list = planted.capabilities.watch!.steps
+    delete list.find((entry) => entry.id === 'next-2')!.iteration
+    expect(recordingProblems({ ...planted, capabilities: { watch: planted.capabilities.watch! } })).toContainEqual(expect.stringContaining('does not say it is a repeated call'))
+    const skipped = structuredClone(stored())
+    skipped.capabilities.watch!.steps.find((entry) => entry.id === 'next-2')!.iteration = 3
+    expect(recordingProblems({ ...skipped, capabilities: { watch: skipped.capabilities.watch! } })).toContainEqual(expect.stringContaining('is run 3 of its call, after 1'))
+  })
+})
+
+describe('the marks a run sends against the step map', () => {
+  const map = [{ id: 'a' }, { id: 'b', repeat: true }, { id: 'c' }]
+
+  it('accepts a repeated step once or many times, and numbers the arrivals', () => {
+    expect(matchMarks(['a', 'b', 'c'], map).map((entry) => [entry.step.id, entry.iteration])).toEqual([['a', 1], ['b', 1], ['c', 1]])
+    expect(matchMarks(['a', 'b', 'b', 'b', 'c'], map).map((entry) => entry.iteration)).toEqual([1, 1, 2, 3, 1])
+  })
+
+  it('refuses a repeat the map does not allow, a missing call, and a call out of order', () => {
+    expect(() => matchMarks(['a', 'a', 'b', 'c'], map)).toThrow(/a was not expected|did not arrive/)
+    expect(() => matchMarks(['a', 'c'], map)).toThrow(/b did not arrive/)
+    expect(() => matchMarks(['b', 'a', 'c'], map)).toThrow(/did not arrive/)
+    expect(() => matchMarks(['a', 'b', 'c', 'c'], map)).toThrow(/c was not expected/)
+  })
+})
+
+describe('the control client the shim passes through', () => {
+  const feed = (chunks: string[]) => {
+    const reader = new ControlReader()
+    return chunks.flatMap((chunk) => reader.feed(Buffer.from(chunk))).flatMap(({ event }) => (event ? [event] : []))
+  }
+
+  it('reads a reply block and a notification, however the bytes are cut', () => {
+    const text = '%begin 1 2 1\nrow one\nrow two\n%end 1 2 1\n%session-renamed $0 x\n'
+    const expected = [{ kind: 'reply', exit: 0, text: 'row one\nrow two' }, { kind: 'notification', text: '%session-renamed $0 x' }]
+    expect(feed([text])).toEqual(expected)
+    expect(feed(text.split('').map((char) => char))).toEqual(expected)
+  })
+
+  it('reads %error as a refusal, and a notification line inside a reply as the reply\'s text', () => {
+    expect(feed(['%begin 1 3 1\nparse error: nope\n%error 1 3 1\n'])).toEqual([{ kind: 'reply', exit: 1, text: 'parse error: nope' }])
+    expect(feed(['%begin 1 4 1\n%output %0 x\n%end 1 4 1\n'])).toEqual([{ kind: 'reply', exit: 0, text: '%output %0 x' }])
+  })
+
+  it('passes every byte through, a line without a newline last', () => {
+    const reader = new ControlReader()
+    const lines = reader.feed(Buffer.from('%exit\npartial'))
+    expect(Buffer.concat(lines.map((entry) => entry.line)).toString()).toBe('%exit\n')
+    expect(reader.rest().toString()).toBe('partial')
+  })
+
+  it('splits a command line as tmux does, and counts a reply for each command', () => {
+    expect(splitCommandLine(`rename-session -t $0 'a b' ; display "x y";`)).toEqual(['rename-session', '-t', '$0', 'a b', ';', 'display', 'x y', ';'])
+    expect(commandCount(splitCommandLine('if-shell -F x "" guard ; attach-session -t $0'))).toBe(2)
+    expect(commandCount(['-N', '-C', 'if-shell', '-F', 'c', '', 'g', ';', 'attach-session'])).toBe(2)
+    expect(commandCount(splitCommandLine('refresh-client -B w::#{x}'))).toBe(1)
+  })
+
+  it('tells a control client by its flags, not by a letter in a value', () => {
+    expect(isControlInvocation(['-Llibtmux', '-C', 'attach-session'])).toBe(true)
+    expect(isControlInvocation(['-CC', 'new'])).toBe(true)
+    expect(isControlInvocation(['-LCache', 'list-sessions'])).toBe(false)
+    expect(isControlInvocation(['-L', 'C', 'list-sessions'])).toBe(false)
+    expect(isControlInvocation(['-V'])).toBe(false)
+  })
+
+  it('becomes the real tmux for a control client, with the program\'s input kept on a descriptor a background job can read', () => {
+    const script = shimScript({ node: '/usr/bin/node', entry: '/x/core-trace.mjs' })
+    expect(script).toContain('exec "$LIBTMUX_DOCS_REAL_TMUX" "$@"')
+    expect(script).toContain('exec 3<&0')
+    expect(script).toMatch(/control-in .* <&3 /)
+    expect(script.indexOf('control-start'), 'the startup command is logged before tmux can answer it').toBeLessThan(script.indexOf('exec "$LIBTMUX_DOCS_REAL_TMUX"'))
   })
 })
