@@ -321,7 +321,7 @@ describe('the showcase section', () => {
   afterEach(async () => { for (const win of windows.splice(0)) await win.happyDOM.abort() })
 
   const component = loadAstroTemplate('components/mcp/McpShowcase.astro', {
-    real: ['components/mcp/McpReplay.astro'],
+    real: ['components/mcp/McpReplay.astro', 'components/replay/TmuxScreen.astro', 'components/replay/ReplayControls.astro'],
     modules: {
       'astro-expressive-code/components': {
         Code: createComponent((_result: unknown, props: { code: string; lang: string; title?: string }) => renderTemplate`<pre data-lang="${props.lang}" data-title="${props.title ?? ''}">${props.code}</pre>`),
@@ -673,7 +673,7 @@ describe('a recording made at an earlier revision', () => {
       for (const win of windows.splice(0)) await win.happyDOM.abort()
     })
     const provenance = async (snapshot: ProtocolSnapshot, transcript: Transcript) => {
-      const component = await loadAstroTemplate('components/mcp/McpReplay.astro', { real: [], modules: {
+      const component = await loadAstroTemplate('components/mcp/McpReplay.astro', { real: ['components/replay/TmuxScreen.astro', 'components/replay/ReplayControls.astro'], modules: {
         'astro-expressive-code/components': { Code: createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre>${props.code}</pre>`) },
       } })
       const win = new Window({ url: 'https://libtmux.org/en/' })

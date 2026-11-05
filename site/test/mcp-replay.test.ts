@@ -352,16 +352,22 @@ describe('the frames of a recording that stored its tmux server\'s state', () =>
   })
 })
 
+/** The components McpReplay draws with; a test template renders a child only when it is listed. */
+const REPLAY_PARTS = ['components/replay/TmuxScreen.astro', 'components/replay/ReplayControls.astro']
+
 describe('the replay component', () => {
   const windows: Window[] = []
   afterEach(async () => { for (const win of windows.splice(0)) await win.happyDOM.abort() })
 
   // The page's code block, as a marked element holding the code.
   const template = loadAstroTemplate('components/mcp/McpReplay.astro', {
+    real: REPLAY_PARTS,
     modules: { 'astro-expressive-code/components': { Code: createComponent((_result: unknown, props: { code: string; lang: string; frame?: string }) => renderTemplate`<pre data-lang="${props.lang}" data-code-frame="${props.frame ?? ''}">${props.code}</pre>`) } },
   })
   const component = readFileSync(new URL('../src/components/mcp/McpReplay.astro', import.meta.url), 'utf8')
-  const script = transpileModule(/<script>([\s\S]*?)<\/script>/.exec(component)![1]!, { compilerOptions: { module: ModuleKind.CommonJS, target: ScriptTarget.ES2022 } }).outputText
+  const commonjs = (source: string) => transpileModule(source, { compilerOptions: { module: ModuleKind.CommonJS, target: ScriptTarget.ES2022 } }).outputText
+  // The page's script imports the shared player; the stand-in `require` hands it the player's own source, evaluated beside it.
+  const script = `var exports = {};\nvar playerExports = {};\n(function (exports) {\n${commonjs(readFileSync(new URL('../src/lib/replay-player.ts', import.meta.url), 'utf8'))}\n})(playerExports);\nvar require = function (name) { if (/replay-player$/.test(name)) return playerExports; throw new Error('unexpected import ' + name) };\n${commonjs(/<script>([\s\S]*?)<\/script>/.exec(component)![1]!)}`
 
   async function markup(port: string, recorded = true, stateless = false) {
     const snapshot = () => JSON.parse(readFileSync(new URL(`../src/data/mcp-protocol/${port}.json`, import.meta.url), 'utf8'))

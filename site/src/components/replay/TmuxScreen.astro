@@ -1,0 +1,94 @@
+---
+/**
+ * The drawn tmux of one frame: its panes in the layout tmux reported, a pane's
+ * id, command and output, and a status line of its windows. Shared by the MCP
+ * replay and the Core API player; each host puts its own caption under it.
+ *
+ * A layout a result reported, or a pane listing that gives every pane its
+ * position and size, gives each pane its rectangle, in cells. Without one, a
+ * window of several panes is a list with no sizes, labelled, rather than boxes
+ * whose sizes nothing stated; a window of one pane fills the screen, which is
+ * what one pane is.
+ */
+import { renderRects, type Rect } from '../../lib/tmux-layout'
+import { parseLayout } from '../../lib/tmux-layout-string'
+import { windowLabel, type Frame, type PaneState } from '../../lib/mcp-replay'
+import '../../styles/tmux-layout.css'
+import '../../styles/mcp-replay.css'
+
+interface Props {
+  frame: Frame
+  /** Whether an earlier frame had a session, so an empty one says "No sessions" rather than nothing. */
+  hadSessions: boolean
+  /** Prefix of the drawing's SVG ids, which must differ between players on one page. */
+  idPrefix?: string
+}
+const { frame, hadSessions, idPrefix = 'rp' } = Astro.props as Props
+const WIDTH = 44
+const HEIGHT = 12
+
+function windowOf(frame: Frame) {
+  const session = frame.sessions[0]
+  return session ? session.windows.find((window) => window.active) ?? session.windows[0] : undefined
+}
+const draw = (frame: Frame) => {
+  const window = windowOf(frame)
+  if (!window) return undefined
+  const parsed = window.layout ? parseLayout(window.layout) : undefined
+  if (parsed) {
+    const panes: PaneState[] = parsed.panes.map((placed) => window.panes.find((pane) => pane.id === placed.id) ?? { id: placed.id })
+    const rects: Rect[] = parsed.panes
+    const size: [number, number] = [parsed.width, parsed.height]
+    return { window, panes, rects, size, svg: renderRects(panes.map(() => []), rects, size, { id: `${idPrefix}-${frame.done}`, label: `tmux window of ${panes.length} pane${panes.length === 1 ? '' : 's'}` }) }
+  }
+  // Without a layout, a pane listing that gives every pane its position and size is geometry too; the window is as large as they reach.
+  const boxed = window.panes.every((pane) => pane.left !== undefined && pane.top !== undefined && pane.width !== undefined && pane.height !== undefined)
+  if (boxed) {
+    const rects: Rect[] = window.panes.map((pane) => ({ x: pane.left!, y: pane.top!, w: pane.width!, h: pane.height! }))
+    const size: [number, number] = [Math.max(...rects.map((rect) => rect.x + rect.w)), Math.max(...rects.map((rect) => rect.y + rect.h))]
+    return { window, panes: window.panes, rects, size, svg: renderRects(window.panes.map(() => []), rects, size, { id: `${idPrefix}-${frame.done}`, label: `tmux window of ${window.panes.length} pane${window.panes.length === 1 ? '' : 's'}` }) }
+  }
+  if (window.panes.length === 1) {
+    const size: [number, number] = [WIDTH, HEIGHT]
+    const rects: Rect[] = [{ x: 0, y: 0, w: WIDTH, h: HEIGHT }]
+    return { window, panes: window.panes, rects, size, svg: renderRects([[]], rects, size, { id: `${idPrefix}-${frame.done}`, label: 'tmux window of 1 pane' }) }
+  }
+  return { window, panes: window.panes, rects: undefined, size: [WIDTH, HEIGHT] as [number, number], svg: '' }
+}
+const drawn = draw(frame)
+const session = frame.sessions[0]
+---
+<div class="mcp-tmux">
+  {drawn && drawn.rects ? (
+    <div class={`mcp-tmux__screen${frame.reading === 'panes' ? ' is-reading' : ''}`} style={`aspect-ratio:${drawn.size[0] * 8} / ${drawn.size[1] * 17}`}>
+      <Fragment set:html={drawn.svg} />
+      {drawn.panes.map((pane, index) => {
+        const rect = drawn.rects![index]!
+        const lines = [...(pane.typed !== undefined ? [`$ ${pane.typed}`] : []), ...(pane.output?.trimEnd().split('\n') ?? [])]
+        return (
+          <div class="mcp-pane" style={`left:${(rect.x / drawn.size[0]) * 100}%;top:${(rect.y / drawn.size[1]) * 100}%;width:${(rect.w / drawn.size[0]) * 100}%;height:${(rect.h / drawn.size[1]) * 100}%`}>
+            {pane.id && <span class="mcp-pane__id">{pane.id}{pane.command ? ` ${pane.command}` : ''}</span>}
+            {lines.length > 0 && <pre class="mcp-pane__text">{lines.join('\n')}</pre>}
+          </div>
+        )
+      })}
+    </div>
+  ) : drawn ? (
+    <div class="mcp-tmux__screen mcp-tmux__screen--unsized">
+      <p class="mcp-tmux__unsized">Panes, sizes not read yet</p>
+      <ul>{drawn.panes.map((pane) => <li class="mcp-pane__id">{pane.id ?? ''}{pane.command ? ` ${pane.command}` : ''}</li>)}</ul>
+    </div>
+  ) : (
+    <div class="mcp-tmux__screen mcp-tmux__screen--empty">{hadSessions && <span>No sessions</span>}</div>
+  )}
+  <div class={`mcp-tmux__status${frame.reading === 'sessions' ? ' is-reading' : ''}`}>
+    {session && (session.name ?? session.id) && <span class="mcp-tmux__session">[{session.name ?? session.id}]</span>}
+    {session && (
+      <span class={`mcp-tmux__windows${frame.reading === 'windows' ? ' is-reading' : ''}`}>
+        {session.windows.map((window) => windowLabel(window) && (
+          <span class={`mcp-tmux__window${window === windowOf(frame) ? ' is-current' : ''}`}>{windowLabel(window)}{window.active ? '*' : ''}</span>
+        ))}
+      </span>
+    )}
+  </div>
+</div>

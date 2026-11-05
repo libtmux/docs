@@ -19,6 +19,7 @@ const Code = createComponent((_result: unknown, props: { code: string; lang: str
   renderTemplate`<pre data-lang="${props.lang}" data-title="${props.title ?? ''}">${props.code}</pre>`)
 const REAL = [
   'components/landing/LandingInstall.astro', 'components/mcp/McpReplay.astro',
+  'components/replay/TmuxScreen.astro', 'components/replay/ReplayControls.astro',
   'components/workspace/WorkspaceConfig.astro', 'components/workspace/WorkspaceWindows.astro',
 ]
 const stubs = {
