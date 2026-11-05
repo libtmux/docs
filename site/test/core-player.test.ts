@@ -3,7 +3,7 @@ import { createComponent, renderTemplate } from 'astro/runtime/server/index.js'
 import { Window } from 'happy-dom'
 import { ModuleKind, ScriptTarget, transpileModule } from 'typescript'
 import { afterEach, describe, expect, it } from 'vitest'
-import { capabilityExample, coreFrames, coreRecordingFor, playableCapability, stepNote, viewSteps, visibleCommands } from '../src/lib/core-player'
+import { capabilityExample, coreFrames, coreRecordingFor, paneActivity, playableCapability, stepChanges, stepNote, tmuxChanges, viewSteps, visibleCommands } from '../src/lib/core-player'
 import { statementLines } from '../src/lib/core-statement'
 import { HOME_VIEWS, QUICKSTARTS, homeProgram } from '../src/lib/quickstarts'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
@@ -77,7 +77,7 @@ describe('the calls each view of the Go program plays', () => {
     expect(await playableCapability('go', 'typed-graph', `${homeProgram(example, 'full')}\n// edited`)).toBeUndefined()
     expect(await playableCapability('go', 'no-such-capability', homeProgram(example, 'full'))).toBeUndefined()
     expect(await playableCapability('rs', 'typed-graph', 'fn main() {}')).toBeUndefined()
-    expect(await coreRecordingFor('rs')).toBeUndefined()
+    expect(await coreRecordingFor('no-such-port')).toBeUndefined()
   })
 })
 
@@ -149,7 +149,7 @@ describe('the frames the player draws', () => {
     const before = (index: number) => (index === 0 ? capability.tmuxBefore : capability.steps[index - 1]!.tmux)
     const notes = capability.steps.map((step, index) => stepNote(step, before(index)))
     expect(notes[0]).toBe('tmux after tmux.NewServer: no server is running; the call sent no command.')
-    expect(notes[1]).toBe('tmux after Server.NewSession.')
+    expect(notes[1]).toBe('tmux after Server.NewSession: added session demo.')
     expect(notes[2]).toBe('tmux after Session.Run: unchanged. tmux held window @1 while the call ran and removed it before it returned.')
     expect(notes[3]).toBe('tmux after Server.Kill: the server has exited.')
   })
@@ -337,5 +337,112 @@ describe('the player component', () => {
     expect(css.match(/#[0-9a-fA-F]{3,8}\b/g), 'colours come from the site\'s tokens').toBeNull()
     expect(css).toMatch(/color-mix\(in srgb, var\(--color-link\)/)
     expect(css, 'a tint marks the current call, not a bar on its edge').not.toMatch(/\.ec-line[^{]*\{[^}]*border-inline-start/)
+  })
+})
+
+/** A port's quickstart recording, as its landing page plays it. */
+const quickstartOf = async (port: string) => (await playableCapability(port, 'typed-graph', homeProgram(QUICKSTARTS[port]!.complete!, 'full')))!.capability
+const stepNamed = (capability: Awaited<ReturnType<typeof quickstartOf>>, label: string) => {
+  const index = capability.steps.findIndex((step) => step.label === label)
+  return { step: capability.steps[index]!, before: index === 0 ? capability.tmuxBefore : capability.steps[index - 1]!.tmux, index }
+}
+
+describe('what a call changed in tmux', () => {
+  it('names a window made in the background and the pane a split adds, and marks only those', async () => {
+    const lua = await quickstartOf('lua')
+    const made = stepNamed(lua, 'Session:new_window')
+    const window = tmuxChanges(made.before, made.step.tmux)
+    expect(window.phrases).toEqual(['added window quickstart:1:logs'])
+    expect(window.marks).toEqual({ windows: ['@2'], panes: [], labels: [] })
+    const split = stepNamed(lua, 'Pane:split')
+    const pane = tmuxChanges(split.before, split.step.tmux)
+    expect(pane.phrases).toEqual(['added pane %3 to window quickstart:1:logs'])
+    expect(pane.marks).toEqual({ windows: [], panes: ['%3'], labels: [] })
+  })
+
+  it('folds a new session\'s first window into the session, and names a renamed session on its windows', async () => {
+    const lua = await quickstartOf('lua')
+    const started = stepNamed(lua, 'Server:new_session')
+    const session = tmuxChanges(started.before, started.step.tmux)
+    expect(session.phrases).toEqual(['added session quickstart'])
+    expect(session.marks.windows).toEqual(['@1'])
+    const go = (await coreRecordingFor('go'))!.capabilities.watch!
+    const renamed = stepNamed(go, 'Session.Rename')
+    expect(tmuxChanges(renamed.before, renamed.step.tmux)).toEqual({ marks: { windows: [], panes: [], labels: ['@0'] }, phrases: ['renamed session libtmux-control to control-example'] })
+  })
+
+  it('names nothing for a state that did not change, and a closed window only while its session lives', async () => {
+    const lua = await quickstartOf('lua')
+    const same = stepNamed(lua, 'Pane:send_keys')
+    expect(tmuxChanges(same.before, same.step.tmux)).toEqual({ marks: { windows: [], panes: [], labels: [] }, phrases: [] })
+    const go = (await coreRecordingFor('go'))!.capabilities['run-applications']!
+    const streamed = stepNamed(go, 'Running.StreamTo')
+    expect(tmuxChanges(streamed.before, streamed.step.tmux).phrases).toEqual(['closed window 1:sh'])
+    const killed = stepNamed(go, 'Session.Kill')
+    expect(tmuxChanges(killed.before, killed.step.tmux).phrases, 'the session takes its windows with it').toEqual(['closed session libtmux-run'])
+  })
+})
+
+describe('what a call did to its panes\' contents', () => {
+  it('reads the keys a call sent and the text tmux returned for a pane', async () => {
+    const lua = await quickstartOf('lua')
+    expect(paneActivity(stepNamed(lua, 'Pane:send_text').step)).toEqual({ typed: ['%1'], ran: [], reads: [] })
+    const read = paneActivity(stepNamed(lua, 'Pane:capture').step).reads
+    expect(read.map((entry) => entry.pane)).toEqual(['%1'])
+    expect(read[0]!.text).toContain('libtmux ready')
+    expect(read[0]!.text, 'trailing blank rows are not text').not.toMatch(/\s$/)
+  })
+
+  it('takes no capture that starts below the top of the screen for what a pane shows', async () => {
+    const run = stepNamed(await quickstartOf('fsharp'), 'Pane.run').step
+    const partial = run.commands.find((command) => /capture-pane .*-S 2\b/.test(command.tmux))!
+    expect(partial.stdout, 'the recording holds the partial capture').not.toBe('')
+    expect(paneActivity(run).reads.map((entry) => entry.text)).not.toContain(partial.stdout.replace(/\s+$/, ''))
+  })
+
+  it('names the panes a call typed into and read, but not a pane it removed again', async () => {
+    const fsharp = await quickstartOf('fsharp')
+    const sent = stepNamed(fsharp, 'Pane.sendAndWait')
+    expect(stepChanges(sent.step, sent.before)).toEqual({ marks: { windows: [], panes: ['%0'], labels: [] }, phrases: ['sent keys to pane %0', 'read pane %0'] })
+    const go = (await coreRecordingFor('go'))!.capabilities['typed-graph']!
+    const ran = stepNamed(go, 'Session.Run')
+    expect(paneActivity(ran.step).ran, 'Run respawned the pane of the window it held').toEqual(['%1'])
+    expect(stepChanges(ran.step, ran.before).phrases, 'that window was gone when Run returned').toEqual([])
+    expect(stepNote(ran.step, ran.before)).toMatch(/: unchanged\. tmux held window @1/)
+  })
+
+  it('draws each pane with the text tmux last returned for it, from the call that read it on', async () => {
+    const fsharp = await quickstartOf('fsharp')
+    const frames = coreFrames(fsharp)
+    const sent = stepNamed(fsharp, 'Pane.sendAndWait').index
+    const paneIn = (frame: number) => frames[frame]!.sessions.flatMap((session) => session.windows).flatMap((window) => window.panes).find((pane) => pane.id === '%0')!
+    expect(paneIn(sent).output, 'nothing read before it').toBeUndefined()
+    expect(paneIn(sent + 1).output).toContain('build started')
+    expect(paneIn(sent + 2).output, 'kept by the next call').toContain('build started')
+  })
+})
+
+describe('the drawing of every window', () => {
+  const template = loadAstroTemplate('components/core/CorePlayer.astro', { real: PARTS, modules: { 'astro-expressive-code/components': { Code } } })
+
+  it('draws each window of each session as a tile, outlines what the call added, and keeps one status line in every frame', async () => {
+    const recording = (await coreRecordingFor('lua'))!
+    const capability = await quickstartOf('lua')
+    const win = new Window({ url: 'https://libtmux.org/lua/latest/' })
+    win.document.body.innerHTML = await renderAstroTemplate(await template, { props: { port: 'lua', language: 'Lua', example: QUICKSTARTS.lua!.complete!, recording, capability } })
+    const document = win.document as unknown as Document
+    const frame = (index: number) => document.querySelector(`[data-frame="${index}"]`)!
+    const made = stepNamed(capability, 'Session:new_window').index + 1
+    const labels = (index: number) => [...frame(index).querySelectorAll('.mcp-tile__status')].map((label) => label.textContent)
+    expect(labels(made)).toEqual(['quickstart:0:main*', 'quickstart:1:logs', 'work:0:main*'])
+    expect([...frame(made).querySelectorAll('.mcp-tile.is-new .mcp-tile__status')].map((label) => label.textContent)).toEqual(['quickstart:1:logs'])
+    expect(frame(made).querySelector('.mcp-tmux__status--sessions')!.textContent).toBe('[quickstart][work]')
+    const split = stepNamed(capability, 'Pane:split').index + 1
+    expect([...frame(split).querySelectorAll('.mcp-tile__pane.is-changed .mcp-pane__id')].map((id) => id.textContent)).toEqual(['%3 cat'])
+    expect(frame(split).querySelectorAll('.mcp-tile.is-new')).toHaveLength(0)
+    // Every frame keeps the status line, empty or not, so a frame is as tall as the next.
+    expect(document.querySelectorAll('.mcp-frame').length).toBe(document.querySelectorAll('.mcp-frame .mcp-tmux__status--sessions').length)
+    expect(frame(0).querySelector('.mcp-tile'), 'no server, no tiles').toBeNull()
+    await win.happyDOM.abort()
   })
 })

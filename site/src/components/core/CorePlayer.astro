@@ -19,7 +19,7 @@ import { Code } from 'astro-expressive-code/components'
 import HomeExample from '../HomeExample.astro'
 import ReplayControls from '../replay/ReplayControls.astro'
 import TmuxScreen from '../replay/TmuxScreen.astro'
-import { coreFrames, replyText, returnedText, stepNote, viewSteps, visibleCommands } from '../../lib/core-player'
+import { coreFrames, replyText, returnedText, stepChanges, stepNote, viewSteps, visibleCommands } from '../../lib/core-player'
 import type { CoreCapability, CoreRecording } from '../../lib/core-recording'
 import { HOME_VIEWS, homeProgram, type HomeExample as Example } from '../../lib/quickstarts'
 import '../../styles/mcp-replay.css'
@@ -54,7 +54,7 @@ const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server
     <div class="core-player__tmux" data-tmux role="group" aria-label="tmux state after the call shown">
       {frames.map((frame) => (
         <div class="mcp-frame" data-frame={frame.done} data-off={frame.done === total ? undefined : ''}>
-          <TmuxScreen frame={frame} idPrefix={`cp-${port}-${capabilityId}`} hadSessions={frames.some((earlier) => earlier.done < frame.done && earlier.sessions.length > 0)} />
+          <TmuxScreen frame={frame} every marks={frame.done === 0 ? undefined : stepChanges(steps[frame.done - 1]!, before(frame.done - 1)).marks} idPrefix={`cp-${port}-${capabilityId}`} hadSessions={frames.some((earlier) => earlier.done < frame.done && earlier.sessions.length > 0)} />
           <p class="mcp-frame__note">{frame.done === 0 ? 'tmux before the first call: no server is running.' : stepNote(steps[frame.done - 1]!, before(frame.done - 1))}</p>
         </div>
       ))}
