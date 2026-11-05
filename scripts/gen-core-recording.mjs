@@ -9,7 +9,7 @@ import { recordingProblems, sha256 } from '../site/src/lib/core-recording.ts'
 import { recordSettled } from './lib/mcp-session.mjs'
 import { readTmuxState, recordedState, stopSandboxServers } from './lib/mcp-tmux-state.mjs'
 import { hostLeaks, sanitize, UnsettledPaneError } from './lib/mcp-transcript-checks.mjs'
-import { describeInvocation, readTrace, shimScript, splitCommandLine } from './lib/core-trace.mjs'
+import { describeInvocation, readTrace, shimScript, splitCommandLine, splitInvocation } from './lib/core-trace.mjs'
 import { matchMarks, withoutMarks } from './lib/core-recipes/common.mjs'
 
 /**
@@ -142,9 +142,13 @@ function asCommand(sent, replies) {
   if (answers.length === 0 || answers.includes(undefined)) throw new Error(`${only}: tmux never answered the control command ${text}`)
   const broken = answers.find((reply) => reply.stateError)
   if (broken) throw new Error(`${only}: tmux could not be read after ${text}: ${broken.stateError}`)
+  const argv = sent.argv ?? splitCommandLine(sent.line)
+  // A command the recipe fences (the library's own guard) is not shown, so neither is its reply.
+  const commands = splitInvocation(argv).commands
+  const shown = commands.length === answers.length && recipe.fence ? answers.filter((_, index) => !recipe.fence(recipe.unwrap?.(commands[index]) ?? commands[index])) : answers
   return {
-    type: 'tmux', control: true, at: sent.at, argv: sent.argv ?? splitCommandLine(sent.line), ...(sent.line === undefined ? {} : { line: sent.line }),
-    exit: Math.max(...answers.map((reply) => reply.exit)), stdout: answers.map((reply) => reply.stdout).join(''), stderr: '', after: answers.at(-1).after,
+    type: 'tmux', control: true, at: sent.at, argv, ...(sent.line === undefined ? {} : { line: sent.line }),
+    exit: Math.max(0, ...shown.map((reply) => reply.exit)), stdout: shown.map((reply) => reply.stdout).join(''), stderr: '', after: answers.at(-1).after,
   }
 }
 
@@ -223,8 +227,10 @@ try {
   })
   const server = (name, rest) => execFileSync(name, rest, { encoding: 'utf8' }).trim()
   const pid = /libtmux-quickstart-(\d+)/.exec(JSON.stringify(pinned.steps))?.[1]
+  // A program that names its socket with a random token (`quickstart-<guid>`) says how to find it and what to call it.
+  const named = recipe.socket ? new RegExp(recipe.socket.pattern).exec(JSON.stringify(pinned.steps))?.[0] : undefined
   const marks = {
-    paths: [[join(sandboxReal, 'bin/tmux'), FIXED.tmux], [sandboxReal, '/tmp'], [`tmux-${process.getuid()}`, `tmux-${FIXED.uid}`], ...(pid ? [[`libtmux-quickstart-${pid}`, `libtmux-quickstart-${FIXED.pid}`]] : [])],
+    paths: [[join(sandboxReal, 'bin/tmux'), FIXED.tmux], [sandboxReal, '/tmp'], [`tmux-${process.getuid()}`, `tmux-${FIXED.uid}`], ...(pid ? [[`libtmux-quickstart-${pid}`, `libtmux-quickstart-${FIXED.pid}`]] : []), ...(named ? [[named, recipe.socket.fixed]] : [])],
     names: [hostname(), userInfo().username],
   }
   // The recording names one revision; a program recorded at another says its own.
@@ -242,7 +248,7 @@ try {
   if (problems.length) throw new Error(`${only}: the recording is not sound:\n${problems.join('\n')}`)
   recording = {
     generated: 'scripts/gen-core-recording.mjs', port: only, repo: stored?.repo ?? program.repository, revision,
-    sandbox: { tmux: server(realTmux, ['-V']), ...recipe.toolchain(), shell: '/bin/sh', rewritten: { socket: `libtmux-quickstart-${FIXED.pid}`, tmuxExecutable: FIXED.tmux, tmpdir: '/tmp' } },
+    sandbox: { tmux: server(realTmux, ['-V']), ...recipe.toolchain(), shell: '/bin/sh', rewritten: { socket: recipe.socket?.fixed ?? `libtmux-quickstart-${FIXED.pid}`, tmuxExecutable: FIXED.tmux, tmpdir: '/tmp' } },
     capabilities: { ...stored?.capabilities, [recipe.capability]: capability },
   }
 } finally {
