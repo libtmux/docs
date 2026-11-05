@@ -88,7 +88,7 @@ const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server
       })}
     </div>
   </div>
-  <ReplayControls slot="controls" marks={steps.map((step) => `Show the state after ${step.label}`)} />
+  <ReplayControls slot="controls" start="Show tmux before the first call" marks={steps.map((step) => `Show the state after ${step.label}`)} />
 </HomeExample>
 <p class="not-prose mcp-provenance core-player__provenance">
   Recorded by running this program against <a href={`https://github.com/${recording.repo}/tree/${recording.revision}`}><code>{recording.repo}</code></a>

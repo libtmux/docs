@@ -200,7 +200,9 @@ describe('the player component', () => {
     expect(document.querySelector<HTMLElement>('[data-controls]')!.hidden).toBe(true)
     expect(document.querySelector<HTMLElement>('[data-hint]')!.hidden).toBe(true)
     expect([...document.querySelectorAll<HTMLElement>('[data-pin]')].every((pin) => pin.hidden)).toBe(true)
-    expect(document.querySelectorAll('[data-mark]')).toHaveLength(4)
+    // A dot for tmux before the first call, then one per call.
+    expect(document.querySelectorAll('[data-mark]')).toHaveLength(5)
+    expect(document.querySelector<HTMLElement>('[data-mark="0"]')!.style.left).toBe('0%')
   })
 
   it('marks the call that is current in the program the reader sees, and follows the player', async () => {
@@ -246,11 +248,11 @@ describe('the player component', () => {
 
   it('plays the fourth call, Kill, only when the program cleans up, and keeps the step in range when the choice goes away', async () => {
     const { document, win } = await mount({ run: true })
-    expect(shown(document, '[data-mark]')).toHaveLength(3)
+    expect(shown(document, '[data-mark]')).toHaveLength(4)
     const cleanup = document.querySelector<HTMLInputElement>('[data-example-cleanup]')!
     cleanup.checked = true
     cleanup.dispatchEvent(new win.Event('change', { bubbles: true }) as unknown as Event)
-    expect(shown(document, '[data-mark]')).toHaveLength(4)
+    expect(shown(document, '[data-mark]')).toHaveLength(5)
     click(win, document.querySelector('[data-mark="4"]')!)
     expect(count(document)).toBe('4/4')
     expect(lit(document, 'cleanup')).toHaveLength(1)
@@ -258,7 +260,9 @@ describe('the player component', () => {
     cleanup.checked = false
     cleanup.dispatchEvent(new win.Event('change', { bubbles: true }) as unknown as Event)
     expect(count(document)).toBe('3/3')
-    expect(shown(document, '[data-mark]')).toHaveLength(3)
+    expect(shown(document, '[data-mark]')).toHaveLength(4)
+    click(win, document.querySelector('[data-mark="0"]')!)
+    expect(count(document)).toBe('0/3')
   })
 
   it('uses the replay\'s keys on the stage and on a result\'s pin button, and no other key', async () => {

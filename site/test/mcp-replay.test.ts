@@ -635,7 +635,8 @@ describe('the replay component', () => {
     expect(frameShown(document)).toEqual([CALLS.ts])
     click(win, document.querySelector('[data-mark="1"]')!)
     expect(frameShown(document)).toEqual([1])
-    expect(document.querySelectorAll('[data-mark].is-done')).toHaveLength(1)
+    // The start dot and the first call's.
+    expect(document.querySelectorAll('[data-mark].is-done')).toHaveLength(2)
     click(win, document.querySelector(`[data-mark="${CALLS.ts}"]`)!)
     click(win, action(document, 'play'))
     expect(turnsShown(document), 'play at the end starts again from the prompt').toBe(0)
