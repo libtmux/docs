@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { runMark, runShim } from './lib/core-trace.mjs'
+import { controlIn, controlOut, controlStart, isControlInvocation, runMark, runShim } from './lib/core-trace.mjs'
 
 /**
  * The two programs a recording puts on a program's PATH, as one entry point:
@@ -11,4 +11,8 @@ import { runMark, runShim } from './lib/core-trace.mjs'
 const [mode, ...args] = process.argv.slice(2)
 if (mode === 'shim') await runShim(args)
 else if (mode === 'mark') await runMark(args)
-else throw new Error(`usage: core-trace.mjs shim <tmux arguments> | mark <step> <json>, not ${mode}`)
+else if (mode === 'is-control') process.exit(isControlInvocation(args) ? 0 : 1)
+else if (mode === 'control-start') controlStart(args[0], args.slice(1))
+else if (mode === 'control-in') controlIn(args[0], args[1], args.slice(2))
+else if (mode === 'control-out') await controlOut(...args)
+else throw new Error(`usage: core-trace.mjs shim <tmux arguments> | mark <step> <json> | is-control | control-start | control-in | control-out, not ${mode}`)

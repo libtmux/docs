@@ -99,7 +99,7 @@ const GO = {
   /** Every libtmux-go command begins with a guard that fails if the daemon was replaced since it was checked. */
   fence: (command) => command[0] === 'if-shell' && command.some((word) => word.startsWith('__libtmux_daemon_replaced_')),
   /** What the library asks tmux about itself before it sends a command: `tmux -V`, and a `run-shell -C` that expands the daemon's identity. */
-  probe: ({ flags, commands }) => (commands.length === 0 && flags.includes('-V')) || (commands.length > 0 && commands.every((command) => command[0] === 'run-shell' && command.some((word) => word.startsWith('libtmux-version-')))),
+  probe: ({ flags, commands, line }) => line === '\\400' || line === '\\uZZZZ' || (commands.length === 0 && flags.includes('-V')) || (commands.length > 0 && commands.every((command) => command[0] === 'run-shell' && command.some((word) => word.startsWith('libtmux-version-')))),
   checkout: (port, env, expand) => checkoutOf(port, env, expand),
   instrument: instrumentGo,
   command: (dir) => [join(dir, 'program')],
@@ -142,6 +142,8 @@ export const RECIPES = {
     capability: 'run-applications',
     file: 'main.go',
     source: (root) => capabilitySource(root, 'go', 'examples/run-to-completion/main.go'),
+    // The streamed lines are the terminal's bytes and end "\r\n"; the port's own test compares them as the page shows them.
+    normalizeOutput: (text) => text.replaceAll('\r\n', '\n'),
     helpers: [{ file: 'docs_mark.go', source: GO_HELPER }],
     steps: [
       { id: 'new-server', label: 'tmux.NewServer', anchor: 'tmux.NewServer(', type: 'tmux.Server', value: SERVER },

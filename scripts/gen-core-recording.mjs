@@ -9,7 +9,7 @@ import { recordingProblems, sha256 } from '../site/src/lib/core-recording.ts'
 import { recordSettled } from './lib/mcp-session.mjs'
 import { readTmuxState, recordedState, stopSandboxServers } from './lib/mcp-tmux-state.mjs'
 import { hostLeaks, sanitize, UnsettledPaneError } from './lib/mcp-transcript-checks.mjs'
-import { describeInvocation, readTrace, splitCommandLine } from './lib/core-trace.mjs'
+import { describeInvocation, readTrace, shimScript, splitCommandLine } from './lib/core-trace.mjs'
 import { matchMarks, withoutMarks } from './lib/core-recipes/common.mjs'
 
 /**
@@ -42,7 +42,7 @@ import { matchMarks, withoutMarks } from './lib/core-recipes/common.mjs'
  *
  * Usage: node scripts/gen-core-recording.mjs --port go [--capability watch] [--check] [--debug <file>]
  * The capability is the quickstart, `typed-graph`, unless named.
- * `--check` records again and compares with the stored recording instead of
+ * `--keep` leaves the sandbox, and its traces, behind. `--check` records again and compares with the stored recording instead of
  * writing it; `--debug` writes the recording to <file> when it is refused.
  * The checkout comes from LIBTMUX_DOCS_CHECKOUT_<PORT> or the port's worktree,
  * and must be clean at the example's revision. The build is a heavy job.
@@ -87,7 +87,7 @@ const read = readTmuxState({ sandbox: sandboxReal })
 function prepare() {
   for (const name of ['home', 'config', 'bin', 'exact', 'marked']) mkdirSync(join(sandbox, name), { recursive: true })
   const entry = join(root, 'scripts/core-trace.mjs')
-  writeFileSync(join(sandbox, 'bin/tmux'), `#!/bin/sh\nexec ${JSON.stringify(process.execPath)} ${JSON.stringify(entry)} shim "$@"\n`)
+  writeFileSync(join(sandbox, 'bin/tmux'), shimScript({ node: process.execPath, entry }))
   writeFileSync(join(sandbox, 'bin/docs-mark'), `#!/bin/sh\nexec ${JSON.stringify(process.execPath)} ${JSON.stringify(entry)} mark "$@"\n`)
   for (const name of ['tmux', 'docs-mark']) chmodSync(join(sandbox, 'bin', name), 0o755)
   const marked = recipe.instrument(program.code, recipe.steps)
@@ -125,31 +125,41 @@ function run(dir) {
  * so a reply that arrives after a mark still belongs to its command.
  */
 function commandsOf(entries) {
-  const replies = new Map(entries.filter((entry) => entry.type === 'reply').map((entry) => [`${entry.client}:${entry.seq}`, entry]))
+  const replies = repliesOf(entries)
   return entries.flatMap((entry) => {
     if (entry.type === 'tmux') return [entry]
     if (entry.type !== 'send') return []
-    return [asCommand(entry, replies.get(`${entry.client}:${entry.seq}`))]
+    return [asCommand(entry, replies)]
   })
 }
 
-/** A command sent to a control client, in the form of a plain invocation, with tmux's reply to it. */
-function asCommand(sent, reply) {
+const repliesOf = (entries) => new Map(entries.filter((entry) => entry.type === 'reply').map((entry) => [`${entry.client}:${entry.seq}`, entry]))
+
+/** A command sent to a control client, in the form of a plain invocation, with tmux's replies to it: one for each command the line held. */
+function asCommand(sent, replies) {
   const text = sent.line ?? sent.argv.join(' ')
-  if (!reply) throw new Error(`${only}: tmux never answered the control command ${text}`)
-  if (reply.stateError) throw new Error(`${only}: tmux could not be read after ${text}: ${reply.stateError}`)
-  return { type: 'tmux', control: true, at: sent.at, argv: sent.argv ?? splitCommandLine(sent.line), exit: reply.exit, stdout: reply.stdout, stderr: '', after: reply.after }
+  const answers = Array.from({ length: sent.count }, (_, offset) => replies.get(`${sent.client}:${sent.seq + offset}`))
+  if (answers.length === 0 || answers.includes(undefined)) throw new Error(`${only}: tmux never answered the control command ${text}`)
+  const broken = answers.find((reply) => reply.stateError)
+  if (broken) throw new Error(`${only}: tmux could not be read after ${text}: ${broken.stateError}`)
+  return {
+    type: 'tmux', control: true, at: sent.at, argv: sent.argv ?? splitCommandLine(sent.line), ...(sent.line === undefined ? {} : { line: sent.line }),
+    exit: Math.max(...answers.map((reply) => reply.exit)), stdout: answers.map((reply) => reply.stdout).join(''), stderr: '', after: answers.at(-1).after,
+  }
 }
 
 /** The command names a run sent, in order, for comparing two runs. */
 const sequence = (entries) => commandsOf(entries).map((entry) => { const d = describeInvocation(entry, recipe); return `${entry.control ? 'control:' : ''}${d.role}:${d.tmux.split(' ')[0]}` })
+
+/** What the program printed, as the page states it: a recipe says how the port's own test reads it. */
+const normalized = (text) => recipe.normalizeOutput?.(text) ?? text
 
 const short = (text) => (text.length > LONG ? `${text.slice(0, LONG)}…` : text)
 
 /** The steps of the marked run: the commands between one mark and the next, and tmux at the mark. */
 function stepsOf({ before, entries }) {
   const arrivals = matchMarks(entries.filter((entry) => entry.type === 'mark').map((entry) => entry.step), recipe.steps)
-  const replies = new Map(entries.filter((entry) => entry.type === 'reply').map((entry) => [`${entry.client}:${entry.seq}`, entry]))
+  const replies = repliesOf(entries)
   const steps = []
   let commands = []
   let notifications = []
@@ -157,7 +167,7 @@ function stepsOf({ before, entries }) {
   let mark = 0
   for (const entry of entries) {
     if (entry.type === 'tmux') { commands.push(entry); continue }
-    if (entry.type === 'send') { commands.push(asCommand(entry, replies.get(`${entry.client}:${entry.seq}`))); continue }
+    if (entry.type === 'send') { commands.push(asCommand(entry, replies)); continue }
     if (entry.type === 'notification') { notifications.push(entry.line); continue }
     if (entry.type !== 'mark') continue
     const { step, iteration } = arrivals[mark++]
@@ -195,9 +205,9 @@ try {
     attempts: ATTEMPTS,
     record: async () => {
       const exact = run('exact')
-      if (exact.stdout !== program.expectedOutput) throw new Error(`${only}: the displayed program printed ${JSON.stringify(exact.stdout)}, the page says ${JSON.stringify(program.expectedOutput)}`)
+      if (normalized(exact.stdout) !== program.expectedOutput) throw new Error(`${only}: the displayed program printed ${JSON.stringify(exact.stdout)}, the page says ${JSON.stringify(program.expectedOutput)}`)
       const marked = run('marked')
-      if (marked.stdout !== exact.stdout) throw new Error(`${only}: the marked program printed ${JSON.stringify(marked.stdout)}, the displayed one ${JSON.stringify(exact.stdout)}`)
+      if (normalized(marked.stdout) !== normalized(exact.stdout)) throw new Error(`${only}: the marked program printed ${JSON.stringify(marked.stdout)}, the displayed one ${JSON.stringify(exact.stdout)}`)
       if (sequence(exact.entries).join() !== sequence(marked.entries).join()) throw new Error(`${only}: the marked program sent other commands than the displayed one:\n${sequence(exact.entries).join(' ')}\n${sequence(marked.entries).join(' ')}`)
       return { exact, marked, steps: stepsOf(marked) }
     },
@@ -216,7 +226,7 @@ try {
     program: { file: recipe.file, sha256: sha256(program.code) },
     ...(program.revision === revision ? {} : { revision: program.revision }),
     stepMap: recipe.stepMap,
-    printed: pinned.exact.stdout.split('\n').filter(Boolean),
+    printed: normalized(pinned.exact.stdout).split('\n').filter(Boolean),
     tmuxBefore: pinned.marked.before,
     steps: pinned.steps,
   }, marks)
@@ -229,7 +239,7 @@ try {
     capabilities: { ...stored?.capabilities, [recipe.capability]: capability },
   }
 } finally {
-  try { stopServers() } finally { rmSync(sandbox, { recursive: true, force: true }) }
+  try { stopServers() } finally { if (flag('--keep')) console.error(`gen-core-recording: kept ${sandbox}`); else rmSync(sandbox, { recursive: true, force: true }) }
 }
 
 const found = hostLeaks(recording, { sandbox, sandboxReal, home: homedir(), checkout, user: userInfo().username, machine: hostname() })

@@ -12,7 +12,8 @@ import { statementLines } from '../../../site/src/lib/core-statement.ts'
  * - `checkout(port, env)` names the library checkout the program is built against;
  * - `build({ sandbox, checkout, code, marked })` writes and builds the displayed
  *   and the marked copy under `sandbox/exact` and `sandbox/marked`;
- * - `command(dir)` is the argv that runs one built copy;
+ * - `command(dir)` is the argv that runs one built copy, and `normalizeOutput`,
+ *   when given, reads what it printed the way the port's own test does;
  * - `toolchain()` names the compiler for the recording's provenance;
  * - `instrument(code, steps)` is the marked copy;
  * - `steps` is the hand-written step map, in the order the calls run. A step

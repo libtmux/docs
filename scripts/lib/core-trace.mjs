@@ -1,5 +1,5 @@
-import { appendFileSync, mkdtempSync, openSync, closeSync, readFileSync, realpathSync, rmSync } from 'node:fs'
-import { spawn, spawnSync } from 'node:child_process'
+import { appendFileSync, closeSync, createReadStream, createWriteStream, mkdtempSync, openSync, readFileSync, realpathSync, rmSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
 import { constants } from 'node:os'
 import { join } from 'node:path'
 import { readTmuxState, recordedState, runTmux, settledState } from './mcp-tmux-state.mjs'
@@ -24,13 +24,13 @@ import { UnsettledPaneError } from './mcp-transcript-checks.mjs'
  * LIBTMUX_DOCS_PANE_COMMANDS (what a settled pane runs, comma separated).
  *
  * A control client (`tmux -C` or `-CC`) stays up while the program talks to
- * it, so it is not run to completion: its input and output pass through the
- * shim as they come, and the trace gets, in order, a `send` for each command
- * line the program writes (the startup command first), a `notification` for
- * each line tmux sends unasked, and a `reply` for each `%begin`...`%end` block
- * with the state tmux was in when the command finished. The reply is passed on
- * to the program only after it is logged, so the program's next mark comes
- * after it in the trace.
+ * it, so it is not run to completion: `shimScript` becomes the tmux client
+ * with its input and output passing through readers that log, in order, a
+ * `send` for each command line the program writes (the startup command first),
+ * a `notification` for each line tmux sends unasked, and a `reply` for each
+ * `%begin`...`%end` block with the state tmux was in when the command
+ * finished. The reply is passed on to the program only after it is logged, so
+ * the program's next mark comes after it in the trace.
  */
 
 const need = (env, name) => env[name] || (() => { throw new Error(`${name} is not set; the shim runs only inside gen-core-recording.mjs`) })()
@@ -55,7 +55,6 @@ const exitStatus = (child) => child.status ?? 128 + (constants.signals[child.sig
  * @param {NodeJS.ProcessEnv} [env]
  */
 export function runShim(argv, env = process.env) {
-  if (isControlInvocation(argv)) return runControlShim(argv, env)
   const real = need(env, 'LIBTMUX_DOCS_REAL_TMUX')
   const files = mkdtempSync(join(need(env, 'LIBTMUX_DOCS_SANDBOX'), 'io-'))
   const [out, err] = ['out', 'err'].map((name) => openSync(join(files, name), 'w'))
@@ -153,62 +152,95 @@ export class ControlReader {
   }
 }
 
+/** How many commands a line, or a startup's arguments, holds: tmux answers each with a reply of its own. */
+export const commandCount = (words) => splitInvocation(words).commands.length
+
 /**
- * Run a control client for the program and log what passes. Standard input
- * and output stream through; every complete line is logged before it is
- * passed on, and the state of tmux is read between a reply and the program
- * receiving it.
+ * What stands in for `tmux` in the program's PATH. A control client must keep
+ * the process id the program started, because libtmux-go finds its own client
+ * by it, so a control invocation does not run inside the shim: the script logs
+ * the startup command, starts a reader of the program's input and a reader of
+ * tmux's output, and becomes the real tmux with both through pipes. Anything
+ * else runs through `shim`.
  *
- * @param {string[]} argv
- * @param {NodeJS.ProcessEnv} env
+ * @param {{ node: string, entry: string }} where the node binary and `core-trace.mjs`
  */
-export async function runControlShim(argv, env = process.env) {
-  const real = need(env, 'LIBTMUX_DOCS_REAL_TMUX')
-  const read = reader(env)
-  const client = process.pid
-  const child = spawn(real, argv, { stdio: ['pipe', 'pipe', 'pipe'], env })
-  const stderr = []
-  child.stderr.on('data', (chunk) => { stderr.push(chunk); process.stderr.write(chunk) })
-  // The startup command is the first command the client answers.
-  let sent = 0
-  append(env, { type: 'send', client, seq: sent++, at: Date.now(), argv })
-  let replied = 0
-  child.stdin.on('error', () => {})
-  process.stdout.on('error', () => {})
+export const shimScript = ({ node, entry }) => `#!/bin/sh
+NODE=${JSON.stringify(node)}
+ENTRY=${JSON.stringify(entry)}
+for word in "$@"; do
+  case $word in
+    -*C*)
+      if "$NODE" "$ENTRY" is-control "$@"; then
+        dir=$(mktemp -d "$LIBTMUX_DOCS_SANDBOX/control-XXXXXX") || exit 70
+        mkfifo "$dir/in" "$dir/out" || exit 70
+        "$NODE" "$ENTRY" control-start "$$" "$@" || exit 70
+        # A background job's standard input is /dev/null, even from <&0, so the program's input is kept on 3.
+        exec 3<&0
+        "$NODE" "$ENTRY" control-in "$$" "$dir/in" "$@" <&3 3<&- >/dev/null 2>&1 &
+        "$NODE" "$ENTRY" control-out "$$" "$dir/out" "$dir" >&1 &
+        exec "$LIBTMUX_DOCS_REAL_TMUX" "$@" 3<&- <"$dir/in" >"$dir/out"
+      fi
+      break ;;
+  esac
+done
+exec "$NODE" "$ENTRY" shim "$@"
+`
 
-  const input = new ControlReader()
+/** Log the startup command of a control client: the first thing it answers. */
+export function controlStart(client, argv, env = process.env) {
+  append(env, { type: 'send', client, seq: 0, count: commandCount(argv), at: Date.now(), argv })
+}
+
+/**
+ * Relay the program's input to tmux, logging each line it writes before tmux
+ * can answer it. Ends when the program closes its input or the tmux client
+ * (process `client`, which the script became) is gone.
+ */
+export function controlIn(client, fifo, argv, env = process.env) {
+  const out = createWriteStream(fifo)
+  out.on('error', () => process.exit(0))
+  let seq = commandCount(argv)
+  const lines = new ControlReader()
   process.stdin.on('data', (chunk) => {
-    for (const { line } of input.feed(chunk)) append(env, { type: 'send', client, seq: sent++, at: Date.now(), line: line.toString('utf8').replace(/\r?\n$/, '') })
-    child.stdin.write(chunk)
+    for (const { line } of lines.feed(chunk)) {
+      const text = line.toString('utf8').replace(/\r?\n$/, '')
+      const count = commandCount(splitCommandLine(text))
+      append(env, { type: 'send', client, seq, count, at: Date.now(), line: text })
+      seq += count
+    }
+    out.write(chunk)
   })
-  process.stdin.on('end', () => child.stdin.end())
-  for (const signal of ['SIGTERM', 'SIGINT', 'SIGHUP']) process.on(signal, () => child.kill(signal))
+  process.stdin.on('end', () => out.end())
+  setInterval(() => { try { process.kill(Number(client), 0) } catch { process.exit(0) } }, 200)
+}
 
-  // One chain, so a line is logged and passed on before the next is read.
-  let chain = Promise.resolve()
+/**
+ * Pass tmux's output to the program, logging each line before the program can
+ * see it: a notification as it is, a reply with the state of tmux when it
+ * finished. Ends when tmux closes its output, and removes the script's directory.
+ */
+export async function controlOut(client, fifo, directory, env = process.env) {
+  const read = reader(env)
   const output = new ControlReader()
   const pass = (line) => new Promise((done) => { process.stdout.write(line, () => done()) })
-  child.stdout.on('data', (chunk) => {
-    const lines = output.feed(chunk)
-    chain = chain.then(async () => {
-      for (const { line, event } of lines) {
-        if (event?.kind === 'notification') append(env, { type: 'notification', client, at: Date.now(), line: event.text })
-        if (event?.kind === 'reply') {
-          let after
-          let stateError
-          try { after = recordedState(read()) } catch (error) { stateError = error.message }
-          append(env, { type: 'reply', client, seq: replied++, at: Date.now(), exit: event.exit, stdout: event.text ? `${event.text}\n` : '', after, ...(stateError ? { stateError } : {}) })
-        }
-        await pass(line)
+  process.stdout.on('error', () => {})
+  let seq = 0
+  for await (const chunk of createReadStream(fifo)) {
+    for (const { line, event } of output.feed(chunk)) {
+      if (event?.kind === 'notification') append(env, { type: 'notification', client, at: Date.now(), line: event.text })
+      if (event?.kind === 'reply') {
+        let after
+        let stateError
+        try { after = recordedState(read()) } catch (error) { stateError = error.message }
+        append(env, { type: 'reply', client, seq: seq++, at: Date.now(), exit: event.exit, stdout: event.text ? `${event.text}\n` : '', after, ...(stateError ? { stateError } : {}) })
       }
-    })
-  })
-  const [status, signal] = await new Promise((done) => child.on('close', (code, by) => done([code, by])))
-  await chain
+      await pass(line)
+    }
+  }
   const rest = output.rest()
   if (rest.length > 0) await pass(rest)
-  process.exitCode = exitStatus({ status, signal })
-  process.exit()
+  rmSync(directory, { recursive: true, force: true })
 }
 
 /** Exit status of a mark whose state never settled: the recorder runs the program again. */
@@ -289,8 +321,8 @@ export const quoted = (word) => (/[\s'"\\;]/.test(word) || word === '' ? `'${wor
 export function describeInvocation(entry, profile = {}) {
   const invocation = splitInvocation(entry.argv)
   const kept = invocation.commands.filter((command) => !profile.fence?.(command))
-  const role = profile.probe?.({ flags: invocation.flags, commands: kept }) ? 'probe' : 'command'
-  const text = kept.map((command) => command.map(quoted).join(' ')).join(' ; ')
+  const role = profile.probe?.({ flags: invocation.flags, commands: kept, line: entry.line }) ? 'probe' : 'command'
+  const text = entry.line !== undefined && role === 'probe' ? entry.line : kept.map((command) => command.map(quoted).join(' ')).join(' ; ')
   return {
     role,
     tmux: role === 'probe' && kept.length === 0 ? invocation.flags.join(' ') : text,
