@@ -321,9 +321,11 @@ export const quoted = (word) => (/[\s'"\\;]/.test(word) || word === '' ? `'${wor
  * text of the invocation (a socket name that is different on every run).
  * `probeLine`, when given, rewrites the line of a control-mode probe for the
  * recording, for a library whose lines carry a token that changes on every run.
+ * `reply`, when given, takes the library's own answer markers off what tmux printed
+ * (a guard's `list-commands` replies, whose ids differ on every run).
  *
  * @param {{ argv: string[], exit: number, stdout: string, stderr: string }} entry
- * @param {{ fence?: (command: string[]) => boolean, unwrap?: (command: string[]) => string[] | undefined, probe?: (invocation: { flags: string[], commands: string[][] }) => boolean, probeLine?: (line: string) => string }} profile
+ * @param {{ fence?: (command: string[]) => boolean, unwrap?: (command: string[]) => string[] | undefined, probe?: (invocation: { flags: string[], commands: string[][] }) => boolean, probeLine?: (line: string) => string, reply?: (stdout: string) => string }} profile
  */
 export function describeInvocation(entry, profile = {}) {
   const invocation = splitInvocation(entry.argv)
@@ -338,7 +340,7 @@ export function describeInvocation(entry, profile = {}) {
     tmux: profile.redact ? profile.redact(shown) : shown,
     mutates: kept.some((command) => !READ_ONLY.has(command[0])),
     exit: entry.exit,
-    stdout: entry.stdout.replace(/\n$/, ''),
+    stdout: (profile.reply?.(entry.stdout) ?? entry.stdout).replace(/\n$/, ''),
     stderr: entry.stderr.replace(/\n$/, ''),
   }
 }
