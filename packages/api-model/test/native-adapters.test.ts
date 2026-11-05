@@ -122,6 +122,48 @@ describe('Ruby native documentation adapter', () => {
     expect(model.symbols.find((entry) => entry.id === 'LibTmux::Pane.active?')?.doc?.examples)
       .toBeUndefined()
   })
+
+  it('shows a program held for earlier exports, stating its tmux release', () => {
+    const input = {
+      ...artifact,
+      examples: {
+        manifest: { programs: [{
+          id: 'control', path: 'examples/api/control.rb', gem: 'libtmux',
+          api: { symbols: ['LibTmux::Pane#active?'], description: 'Attach a control client.', output: 'ready\n' },
+        }] },
+        files: [{ path: 'examples/api/control.rb', content: 'require "libtmux"\n' }],
+        tmux_releases: { 'examples/api/control.rb': '3.7' },
+      },
+    }
+    const symbol = extractRuby(input, REVISION).symbols.find((entry) => entry.id === 'LibTmux::Pane#active?')
+    expect(symbol?.doc?.examples?.[0]?.intro).toContain('and tmux 3.7 or newer,')
+  })
+
+  it('keeps the default holds for an export without tmux releases', () => {
+    // Exports of earlier Ruby releases list the three programs but cannot say
+    // which tmux they need, so their pages must not show them.
+    const program = (id: string, path: string, symbol: string) => ({
+      id, path, gem: 'libtmux',
+      api: { symbols: [symbol], description: 'A held program.', output: 'ready\n' },
+    })
+    const programs = [
+      program('workspace_apply', 'examples/api/workspace_apply.rb', 'LibTmux::Pane'),
+      program('control', 'examples/api/control.rb', 'LibTmux::Pane#active?'),
+      program('async_control', 'examples/api/async_control.rb', 'LibTmux::Pane.active?'),
+    ]
+    const input = {
+      ...artifact,
+      examples: {
+        manifest: { programs },
+        files: programs.map((entry) => ({ path: entry.path, content: 'require "libtmux"\n' })),
+      },
+    }
+    const model = extractRuby(input, REVISION)
+    for (const entry of programs) {
+      const symbol = model.symbols.find((item) => item.id === entry.api.symbols[0])
+      expect(symbol?.doc?.examples, entry.path).toBeUndefined()
+    }
+  })
 })
 
 describe('Lua native documentation adapter', () => {

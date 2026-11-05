@@ -116,6 +116,101 @@ describe('complete native Ruby examples', () => {
     }
   })
 
+  describe('the tmux release a page states', () => {
+    const current = (release: unknown, path = file) => ({ ...bundle(), tmux_releases: { [path]: release } })
+    const stated = (input: unknown) => {
+      const target = symbol()
+      attachCompleteRubyExamples([target], input, source, packages)
+      return target.doc!.examples![1].intro!
+    }
+
+    it('is the release the bundle gives the program', () => {
+      for (const release of ['3.3a', '3.7', '3.7c', '3.10']) {
+        expect(stated(current(release))).toContain(`and tmux ${release} or newer, on Unix`)
+      }
+      expect(stated(current('3.7'))).not.toContain('3.3a')
+    })
+
+    it('is 3.3a for a bundle that carries no releases, an export of an earlier Ruby release', () => {
+      expect(stated(bundle())).toContain('and tmux 3.3a or newer, on Unix')
+    })
+
+    it.each([
+      ['an empty release', ''],
+      ['a branch', 'master'],
+      ['a patch release', '3.7.1'],
+      ['a prerelease', 'next-3.8'],
+      ['a padded release', ' 3.7'],
+      ['a number', 3.7],
+      ['null', null],
+    ])('rejects %s', (_name, release) => {
+      expect(() => stated(current(release))).toThrow(/tmux release/)
+    })
+
+    it('rejects a program the releases leave out, and releases that are not a map', () => {
+      expect(() => stated({ ...bundle(), tmux_releases: {} })).toThrow(/no tmux release: examples\/api\/server\.rb/)
+      expect(() => stated(current('3.7', 'examples/api/other.rb'))).toThrow(/no tmux release: examples\/api\/server\.rb/)
+      for (const releases of [[], null, '3.7']) {
+        expect(() => stated({ ...bundle(), tmux_releases: releases })).toThrow(/Invalid Ruby example tmux releases/)
+      }
+    })
+  })
+
+  describe('the programs held for an export of an earlier release', () => {
+    const [applyPath, controlPath, asyncPath] = ['workspace_apply', 'control', 'async_control'].map((name) => `examples/api/${name}.rb`)
+    const names = [applyPath, controlPath, asyncPath, file]
+    const gems = ['libtmux-workspace', 'libtmux', 'libtmux-async', 'libtmux']
+    const ids = ['LibTmux::Workspace.load', 'LibTmux::Server#open_control', 'LibTmux::Async::Server#open_control', 'LibTmux::Server.new']
+    const everyVersion = [...packages, { name: 'libtmux-workspace', version: '0.1.0.alpha.3' }]
+    const targets = () => ids.map((id, index): ApiSymbol => ({ ...symbol(), id, publicId: id, name: id, package: gems[index] }))
+    const input = (releases?: Record<string, string>) => ({
+      manifest: {
+        programs: names.map((path, index) => ({
+          path, gem: gems[index], api: { ...program().api, symbols: [ids[index]] },
+        })),
+      },
+      files: names.map((path) => ({ path, content: code })),
+      ...(releases ? { tmux_releases: releases } : {}),
+    })
+    const attach = (releases?: Record<string, string>) => {
+      const symbols = targets()
+      attachCompleteRubyExamples(symbols, input(releases), source, everyVersion, HELD_RUBY_PROGRAMS)
+      return symbols
+    }
+    const intros = (symbols: ApiSymbol[]) => symbols.map((entry) => entry.doc!.examples!.length > 1 ? entry.doc!.examples![1].intro : undefined)
+
+    it('names the three programs whose pages mislead readers', () => {
+      expect(Object.keys(HELD_RUBY_PROGRAMS).sort()).toEqual([applyPath, controlPath, asyncPath].sort())
+    })
+
+    it('stay off their pages for a bundle with no releases, while the program beside them states 3.3a', () => {
+      const symbols = attach()
+      expect(symbols.map((entry) => entry.doc!.examples!.length)).toEqual([1, 1, 1, 5])
+      expect(intros(symbols).at(-1)).toContain('and tmux 3.3a or newer, on Unix')
+    })
+
+    it('appear on their pages for a bundle that carries releases, each stating its own', () => {
+      const symbols = attach({ [applyPath]: '3.3a', [controlPath]: '3.7', [asyncPath]: '3.7', [file]: '3.3a' })
+      expect(symbols.map((entry) => entry.doc!.examples!.length)).toEqual([5, 5, 5, 5])
+      const [apply, control, async, other] = intros(symbols)
+      expect(control).toContain('and tmux 3.7 or newer, on Unix')
+      expect(async).toContain('and tmux 3.7 or newer, on Unix')
+      expect(apply).toContain('and tmux 3.3a or newer, on Unix')
+      expect(other).toContain('and tmux 3.3a or newer, on Unix')
+    })
+
+    it('are not required in the manifest of a bundle that carries releases', () => {
+      const releases = { [file]: '3.3a' }
+      const only = { manifest: { programs: [program()] }, files: [{ path: file, content: code }], tmux_releases: releases }
+      const target = symbol()
+      expect(() => attachCompleteRubyExamples([target], only, source, packages, HELD_RUBY_PROGRAMS)).not.toThrow()
+      expect(target.doc!.examples).toHaveLength(5)
+      const legacy = { manifest: only.manifest, files: only.files }
+      expect(() => attachCompleteRubyExamples([symbol()], legacy, source, packages, HELD_RUBY_PROGRAMS))
+        .toThrow(/Held Ruby example is not in the manifest: examples\/api\/workspace_apply\.rb/)
+    })
+  })
+
   it('rejects mutable revisions and invalid repository citations', () => {
     expect(() => attachCompleteRubyExamples([symbol()], bundle(), { ...source, revision: 'master' }, packages))
       .toThrow(/full source revision/)
