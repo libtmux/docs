@@ -239,10 +239,19 @@ describe('the player component', () => {
     expect(document.querySelector('[data-result="1"]')!.textContent).toContain('The call sent no tmux command.')
   })
 
-  it('hides what it has not bound: the controls, the pin buttons and the hint wait for the script', async () => {
+  it('keeps the recording note behind the info button, and no hint above the program', async () => {
+    const { document } = await mount()
+    expect(document.querySelector('[data-hint]')).toBeNull()
+    const button = document.querySelector<HTMLButtonElement>('[data-controls] [popovertarget]')!
+    const note = document.getElementById(button.getAttribute('popovertarget')!)!
+    expect(note.hasAttribute('popover')).toBe(true)
+    expect(note.textContent).toMatch(/Recorded by running this program against/)
+    expect(button.getAttribute('aria-label')).toBe('How this was recorded')
+  })
+
+  it('hides what it has not bound: the controls and the pin buttons wait for the script', async () => {
     const { document } = await mount()
     expect(document.querySelector<HTMLElement>('[data-controls]')!.hidden).toBe(true)
-    expect(document.querySelector<HTMLElement>('[data-hint]')!.hidden).toBe(true)
     expect([...document.querySelectorAll<HTMLElement>('[data-pin]')].every((pin) => pin.hidden)).toBe(true)
     // A dot for tmux before the first call, then one per call.
     expect(document.querySelectorAll('[data-mark]')).toHaveLength(5)
@@ -274,12 +283,10 @@ describe('the player component', () => {
     over(win, run, 'mouseout')
     expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual(['1'])
     click(win, run)
-    expect(document.querySelector('[data-hint]')!.textContent).toMatch(/Pinned/)
     expect([...document.querySelectorAll('[data-home-view="concise"] .ec-line.is-pinned')].length).toBeGreaterThan(0)
     expect([...document.querySelectorAll('.core-result:not([data-off]) [data-pin]')].map((pin) => pin.getAttribute('aria-pressed'))).toEqual(['true'])
     key(win, stage, 'Escape')
     expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual(['1'])
-    expect(document.querySelector('[data-hint]')!.textContent).toMatch(/Hover a call/)
   })
 
   it('makes only the lines of a call answer to the pointer', async () => {

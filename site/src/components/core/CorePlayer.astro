@@ -50,7 +50,6 @@ const before = (index: number) => (index === 0 ? capability.tmuxBefore : steps[i
 const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server is running yet.' : 'tmux is running.'
 ---
 <HomeExample port={port} language={language} example={example} heading={false} options={options} run={run} views={shownViews}>
-  <p slot="hint" class="core-player__hint" data-hint hidden>Hover a call in the code to preview the tmux state after it. Click to pin it.</p>
   <div slot="beside" class="core-player__side" data-core-plan={JSON.stringify(views)}>
     <div class="core-player__tmux" data-tmux role="group" aria-label="tmux state after the call shown">
       {frames.map((frame) => (
@@ -104,14 +103,21 @@ const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server
       })}
     </div>
   </div>
-  <ReplayControls slot="controls" start="Show tmux before the first call" marks={steps.map((step) => `Show the state after ${step.label}`)} />
-</HomeExample>
-<p class="not-prose mcp-provenance core-player__provenance">
+  <ReplayControls slot="controls" start="Show tmux before the first call" marks={steps.map((step) => `Show the state after ${step.label}`)} info={`cp-${port}-${capabilityId}-recorded`}>
+    <div slot="info" class="not-prose mcp-provenance core-player__provenance" id={`cp-${port}-${capabilityId}-recorded`} popover>
   Recorded by running this program against <a href={`https://github.com/${recording.repo}/tree/${revision}`}><code>{recording.repo}</code></a>
   at <code>{revision.slice(0, 9)}</code> on a private {recording.sandbox.tmux} server.
   {capability.stepMap === 'hand-written' && <>A person matched each call to its lines; the values, commands and tmux states are what the run produced.</>}
   Commands appear without the library's <code>if-shell</code> guard, and the socket name and paths are set to fixed values.
-</p>
+    </div>
+  </ReplayControls>
+</HomeExample>
+<noscript><p class="not-prose mcp-provenance core-player__provenance">
+  Recorded by running this program against <a href={`https://github.com/${recording.repo}/tree/${revision}`}><code>{recording.repo}</code></a>
+  at <code>{revision.slice(0, 9)}</code> on a private {recording.sandbox.tmux} server.
+  {capability.stepMap === 'hand-written' && <>A person matched each call to its lines; the values, commands and tmux states are what the run produced.</>}
+  Commands appear without the library's <code>if-shell</code> guard, and the socket name and paths are set to fixed values.
+</p></noscript>
 
 <script>
   import { bindReplay } from '../../lib/replay-player'
@@ -129,10 +135,8 @@ const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server
     const frames = [...root.querySelectorAll<HTMLElement>('[data-frame]')]
     const results = [...root.querySelectorAll<HTMLElement>('[data-result]')]
     const pins = [...root.querySelectorAll<HTMLButtonElement>('[data-pin]')]
-    const hint = root.querySelector<HTMLElement>('[data-hint]')
     // A touch screen fires mouseenter on a tap and never mouseleave, so only a pointer that can hover previews.
     const canHover = window.matchMedia?.('(hover: hover)').matches ?? true
-    const IDLE_HINT = canHover ? 'Hover a call in the code to preview the tmux state after it. Click to pin it.' : 'Tap a call in the code to pin the tmux state after it.'
     // The program the reader sees depends on the two choices above it, which another script owns; read them whenever they matter.
     const viewName = () => (errors?.checked ? (cleanup?.checked ? 'full' : 'errors') : (cleanup?.checked ? 'cleanup' : 'concise'))
     const placed = () => plan[viewName()]!
@@ -178,12 +182,10 @@ const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server
         }
         if (call && call !== revealed) reveal(call)
         revealed = call
-        if (hint) hint.textContent = pinned !== null ? 'Pinned. Click the call again, or press Escape, to follow the replay.' : IDLE_HINT
       },
       ownsKey: (target) => target.hasAttribute('data-pin'),
     })
     if (!player) return
-    if (hint) hint.hidden = false
 
     // Every line of a call answers to it: hovering previews, clicking pins.
     for (const [view, calls] of Object.entries(plan)) {

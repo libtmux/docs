@@ -10,14 +10,6 @@
  * is not current with the `hidden` attribute, so nothing here depends on it.
  */
 
-.home-example-heading .core-player__hint {
-  flex: 1 1 14rem;
-  min-width: 0;
-  margin: 0;
-  color: var(--color-muted);
-  font-size: 0.8125rem;
-  text-align: end;
-}
 
 .home-example-player {
   container: core-player / inline-size;
@@ -362,4 +354,18 @@ html[data-js] .core-player__results > .core-result[data-off] {
 
 .core-player__provenance {
   margin-top: 0.8rem;
+}
+
+/* The recording note, opened from the controls: a small card over the page, closed by a click outside or Escape. */
+.core-player__provenance[popover] {
+  max-width: min(28rem, calc(100vw - 2rem));
+  margin: auto;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-edge);
+  border-radius: var(--radius-md, 0.375rem);
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  box-shadow: 0 0.5rem 1.5rem color-mix(in srgb, black 30%, transparent);
 }

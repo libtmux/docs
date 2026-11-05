@@ -72,29 +72,31 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
       {player
         ? <CorePlayer port={port} language={PORT_BY_SLUG[port]!.name} example={quickstart!} recording={player.recording} capability={player.capability} />
         : <HomeExample port={port} language={PORT_BY_SLUG[port]!.name} example={quickstart!} heading={false} fixed />}
+      <div class="core-showcase__apis" data-core-apis>
+        <p class="core-showcase__apis-title">APIs used</p>
+        <ul class="core-showcase__apilist" data-apis-for={item.id} aria-label={`APIs used: ${item.label}`}>
+          {apis.get(item.id)!.shown.map((api) => <li><a href={api.href}><code>{api.label}</code></a></li>)}
+          {apis.get(item.id)!.more > 0 && <li><a href={apis.get(item.id)!.moreHref}>+{apis.get(item.id)!.more} more</a></li>}
+        </ul>
+      </div>
     </section> : <section class="core-showcase__panel" data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}
       style={`--home-code-columns: ${homeCodeColumns(item.code)}`}>
       {capabilityPlayers.get(item.id)
         ? <CorePlayer port={port} language={PORT_BY_SLUG[port]!.name} example={capabilityExample({ ...item, ...cachedSource(item.id) })} recording={capabilityPlayers.get(item.id)!.recording}
           capability={capabilityPlayers.get(item.id)!.capability} capabilityId={item.id} options={false} run={false} />
         : <Code code={item.code} lang={item.lang} title={item.file} frame="code" />}
+      <div class="core-showcase__apis" data-core-apis>
+        <p class="core-showcase__apis-title">APIs used</p>
+        <ul class="core-showcase__apilist" data-apis-for={item.id} aria-label={`APIs used: ${item.label}`}>
+          {apis.get(item.id)!.shown.map((api) => <li><a href={api.href}><code>{api.label}</code></a></li>)}
+          {apis.get(item.id)!.more > 0 && <li><a href={apis.get(item.id)!.moreHref}>+{apis.get(item.id)!.more} more</a></li>}
+        </ul>
+      </div>
       <p class="core-showcase__source">
         {item.tmux && <small class="core-showcase__tmux">tmux {item.tmux}</small>}
         The whole program, <a href={item.sourceUrl}><code>{item.file}</code></a>. The port's CI runs it in <code>{item.ci.workflow}</code>{(item.ci.where ?? item.ci.directory) && <> from <code>{item.ci.where ?? item.ci.directory}/</code></>}: <code>{item.ci.command}</code>.
       </p>
     </section>)}
-  </div>
-  <div class="core-showcase__apis" data-core-apis>
-    <p class="core-showcase__apis-title">APIs used</p>
-    <div class="core-showcase__apis-lists">
-      {shown.map((item, index) => {
-        const used = apis.get(item.id)!
-        return <ul class="core-showcase__apilist" data-apis-for={item.id} data-default={index === 0 ? '' : undefined} aria-label={`APIs used: ${item.label}`}>
-          {used.shown.map((api) => <li><a href={api.href}><code>{api.label}</code></a></li>)}
-          {used.more > 0 && <li><a href={used.moreHref}>+{used.more} more</a></li>}
-        </ul>
-      })}
-    </div>
   </div>
   {links.length > 0 && <p class="core-showcase__links">{links.map((link) => <a href={link.href}>{link.label}</a>)}</p>}
 </div>}
@@ -121,7 +123,7 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
     const select = (id: string) => {
       for (const option of options) option.setAttribute('href', hrefFor(option.dataset.capabilityOption!))
       root.dataset.selected = id
-      for (const panel of root.querySelectorAll<HTMLElement>('[data-capability-panel], [data-apis-for]')) panel.classList.toggle('is-selected', (panel.dataset.capabilityPanel ?? panel.dataset.apisFor) === id)
+      for (const panel of root.querySelectorAll<HTMLElement>('[data-capability-panel]')) panel.classList.toggle('is-selected', panel.dataset.capabilityPanel === id)
       for (const option of options) {
         const on = option.dataset.capabilityOption === id
         if (on) option.setAttribute('aria-current', 'true'); else option.removeAttribute('aria-current')
@@ -169,12 +171,11 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
   .core-showcase__option[aria-current='true'] { font-weight: 600; background: var(--color-surface-hover); }
   /* The panels share one grid cell, so the column is as tall as the tallest and switching moves nothing below. */
   .core-showcase__panels { display: grid; container-type: inline-size; }
-  .core-showcase__panel, .core-showcase__apilist { grid-area: 1 / 1; visibility: hidden; }
-  .core-showcase:not([data-selected]) :is(.core-showcase__panel, .core-showcase__apilist)[data-default], .core-showcase :global(:is(.core-showcase__panel, .core-showcase__apilist).is-selected) { visibility: visible; }
-  .core-showcase__apis { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem 1rem; min-width: 0; }
+  .core-showcase__panel { grid-area: 1 / 1; visibility: hidden; }
+  .core-showcase:not([data-selected]) .core-showcase__panel[data-default], .core-showcase :global(.core-showcase__panel.is-selected) { visibility: visible; }
+  .core-showcase__apis { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem 1rem; min-width: 0; margin-top: .6rem; }
   .core-showcase__apis-title { margin: 0; font-size: .75rem; font-weight: 600; text-transform: none; color: var(--color-muted); }
-  .core-showcase__apis-lists { display: grid; flex: 1 1 20rem; min-width: 0; }
-  .core-showcase__apilist { display: flex; flex-wrap: wrap; gap: .125rem 1rem; margin: 0; padding: 0; list-style: none; font-size: .8125rem; line-height: 1.5; }
+  .core-showcase__apilist { flex: 1 1 20rem; min-width: 0; display: flex; flex-wrap: wrap; gap: .125rem 1rem; margin: 0; padding: 0; list-style: none; font-size: .8125rem; line-height: 1.5; }
   .core-showcase__apilist a { color: var(--color-link); }
   .core-showcase__apilist code { font-size: inherit; overflow-wrap: anywhere; }
   /* The treatment of the front page examples: column-fit type size, a fixed height, scrolling inside the block. */
@@ -188,6 +189,7 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
     font-size: .6875rem; font-weight: 500; color: var(--color-muted);
   }
   .core-showcase__source { margin-top: .6rem; font-size: .8125rem; color: var(--color-muted); }
+  .core-showcase__source a { color: var(--color-link); }
   .core-showcase__source code { white-space: normal; overflow-wrap: anywhere; }
   .core-showcase :global(.expressive-code pre) { overflow: auto; tab-size: 8; }
   @media (min-width: 56rem) {
