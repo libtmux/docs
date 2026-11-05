@@ -55,14 +55,23 @@ export function parseListings(output) {
 /**
  * The sockets under a sandbox's `tmux-<uid>` directory, and in the directories under its `tmp`: sockets, and symbolic
  * links, which `ownSockets` resolves, so a link out of the sandbox is listed
- * and then refused rather than followed or left unseen.
+ * and then refused rather than followed or left unseen. A socket with two hard
+ * links is listed once.
  */
 export function sandboxSockets(sandbox) {
   const isSocket = (path) => { const kind = lstatSync(path); return kind.isSocket() || kind.isSymbolicLink() }
   const children = (directory) => (existsSync(directory) ? readdirSync(directory).map((name) => join(directory, name)) : [])
   // A program may also keep its socket in a directory it makes under the sandbox's `tmp`, as `tempfile.mkdtemp` does.
   const own = children(join(sandbox, 'tmp')).flatMap((directory) => (lstatSync(directory).isDirectory() ? children(directory) : []))
-  return [...children(join(sandbox, `tmux-${process.getuid?.() ?? ''}`)), ...own].filter(isSocket)
+  const found = [...children(join(sandbox, `tmux-${process.getuid?.() ?? ''}`)), ...own].filter(isSocket)
+  // Two names of one socket (a hard link a program keeps to the socket it was handed) are one server.
+  const seen = new Set()
+  return found.filter((path) => {
+    const kind = lstatSync(path)
+    if (kind.isSymbolicLink()) return true
+    const key = `${kind.dev}:${kind.ino}`
+    return seen.has(key) ? false : (seen.add(key), true)
+  })
 }
 
 /**

@@ -1,5 +1,5 @@
 import { type ChildProcess, execFileSync, spawn, spawnSync } from 'node:child_process'
-import { chmodSync, mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { chmodSync, linkSync, mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -222,6 +222,23 @@ describe('reading a tmux server', () => {
         symlinkSync(outside, join(sandbox, `tmux-${uid}`))
         expect(() => readTmuxState({ sandbox, run: refused })()).toThrow(/outside the sandbox/)
       } finally {
+        server.close()
+        rmSync(base, { recursive: true, force: true })
+      }
+    })
+
+    it('lists the two names of a hard-linked socket as one server', async () => {
+      const { base, sandbox, server } = await make()
+      const inside = createServer()
+      try {
+        mkdirSync(join(sandbox, 'tmp', 'first'), { recursive: true })
+        mkdirSync(join(sandbox, 'tmp', 'second'))
+        await new Promise<void>((resolve) => inside.listen(join(sandbox, 'tmp', 'first', 'socket'), resolve))
+        linkSync(join(sandbox, 'tmp', 'first', 'socket'), join(sandbox, 'tmp', 'second', 'socket'))
+        expect(sandboxSockets(sandbox)).toHaveLength(1)
+        expect(readTmuxState({ sandbox, run: () => '' })()).toEqual(EMPTY)
+      } finally {
+        inside.close()
         server.close()
         rmSync(base, { recursive: true, force: true })
       }
