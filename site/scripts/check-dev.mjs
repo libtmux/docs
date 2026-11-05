@@ -15,6 +15,7 @@ import { checkStatusBadges, checkStatusBadgesFail } from './check-status-badges.
 import { checkHomeLauncher } from './check-home-launcher.mjs'
 import { checkHomeTaskReset } from './check-home-task-reset.mjs'
 import { checkColorScheme } from './check-color-scheme.mjs'
+import { checkLanguageIconScheme } from './check-language-icon-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample, checkRowPermalinks } from './check-dev-sample.mjs'
 import { checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkMemberBodyInsets, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
@@ -815,7 +816,18 @@ try {
   } else if (homeControlsOnly) {
     await checkHomeTaskReset(browser, base)
     await checkColorScheme(browser, base)
+    await checkLanguageIconScheme(browser, base)
     await checkHomeExampleOptions(browser, base)
+    // Engines differ in which scheme an image's own rules follow and in how they paint forced
+    // colors, so this mode reads the mark in each engine; CI installs only Chromium.
+    for (const other of [chromium, firefox, webkit].filter((candidate) => candidate !== driver)) {
+      const extra = await other.launch(other === chromium ? { channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL } : {})
+      try {
+        await checkLanguageIconScheme(extra, base)
+      } finally {
+        await extra.close()
+      }
+    }
   } else if (keywordHelpOnly) {
     await retryReload(() => checkKeywordHelp(browser, base))
   } else if (apiSignaturesOnly) {

@@ -115,6 +115,15 @@ const families = portFamilies(entries.map((entry) => entry.port))
   .page-port-icon > img { width: 1.5rem; height: 1.5rem; object-fit: contain; }
   /* The Python SVG reserves space below the snakes for a shadow. */
   .page-port-icon > img[data-language-icon="py"] { transform: translateY(8.333%); }
+  /* The Rust SVG is one dark shape. A rule inside an image does not reliably follow the page's Light, Dark or System choice, so the page lightens the mark on a dark theme. */
+  :global(html[data-theme-mode='dark']) .page-port-icon > img[data-language-icon="rs"] { filter: invert(1); }
+  @media (prefers-color-scheme: dark) {
+    :global(html:not([data-theme-mode]):not([data-theme='light'])) .page-port-icon > img[data-language-icon="rs"] { filter: invert(1); }
+  }
+  /* Forced colors repaint the page from the system palette, which neither the theme nor the device scheme predicts: Firefox can paint a dark theme white. The mark keeps its own light plate there; the filter would invert the plate too, and !important outranks the theme rules above. */
+  @media (forced-colors: active) {
+    .page-port-icon > img[data-language-icon="rs"] { filter: none !important; background-color: #fff; forced-color-adjust: none; }
+  }
   .page-port-short-name { display: none; }
   .port-family + .port-family { margin-top: .65rem; }
   .port-family h3 { margin: .75rem .4rem .25rem; font-size: .6875rem; font-weight: 400; text-transform: uppercase; letter-spacing: .025em; color: var(--color-muted); }

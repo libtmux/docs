@@ -30,7 +30,7 @@ const descriptions: Record<string, string> = {
           <a href={referenceUrl(port, defaultVersionFor(port.slug))}>API reference</a>
         </div>
         <div class="home-solutions" aria-label={`${port.name} solutions`}>
-          {solutions[index].surfaces.map((surface) => <a href={surface.href}>
+          {solutions[index].surfaces.filter((surface) => surface.id !== 'home').map((surface) => <a href={surface.href}>
             <img src={withRoot(branding(port.slug, surface.id === 'core' ? '' : surface.id).asset('logo.svg'))} alt="" width="30" height="30" />
             <span><strong>{surface.label}</strong><small>{descriptions[surface.id]}</small></span>
             <span class="home-solution-arrow" aria-hidden="true">→</span>
