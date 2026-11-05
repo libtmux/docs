@@ -390,9 +390,14 @@ const segmentNames =
     await handle.ready
   }
 
-  for (const root of document.querySelectorAll<HTMLElement>('.search-panel')) {
-    const dialog = root.closest('dialog')
-    if (dialog) dialog.addEventListener('search-modal:open', () => { void mount(root) }, { once: true })
-    else waitForAppearance(mount(root))
+  // A swap brings its own panels, so each page's are mounted when it arrives.
+  function mountPanels() {
+    for (const root of document.querySelectorAll<HTMLElement>('.search-panel')) {
+      const dialog = root.closest('dialog')
+      if (dialog) dialog.addEventListener('search-modal:open', () => { void mount(root) }, { once: true })
+      else waitForAppearance(mount(root))
+    }
   }
+  mountPanels()
+  document.addEventListener('astro:after-swap', mountPanels)
 </script>
