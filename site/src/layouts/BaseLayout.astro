@@ -212,6 +212,11 @@ const inventoryPage: InventoryPage = {
     <meta name="libtmux-inventory" content={JSON.stringify(inventoryPage)} />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      // Ahead of the router's script, so its history listener runs first.
+      import { guardPageNavigation } from '../lib/router-guard'
+      guardPageNavigation()
+    </script>
     <ClientRouter fallback="swap" />
     <BrandIcons portSlug={navPort} pagePath={pagePath} />
     <ShellHead />

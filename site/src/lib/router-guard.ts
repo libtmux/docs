@@ -25,3 +25,44 @@ export function guardTreeNavigation(doc: Document = document) {
     }
   })
 }
+
+/**
+ * Keep navigation within the page this document shows away from the router.
+ *
+ * Pages rewrite their own query with `history.replaceState` (a chosen
+ * language, a workspace preset) and add their fields to entries the browser
+ * made for a fragment. The router compares a destination with the URL it last
+ * navigated to, and takes any entry with state for its own, so a fragment link
+ * or Back and Forward between two of the page's entries would fetch the page
+ * again and swap it in. A fragment link goes to the browser, which scrolls to
+ * it. A traversal reaches the page's own listeners without its state, which
+ * the router ignores, and the scroll position the entry saved is restored.
+ * Window listeners run in the order they were added, so this must be
+ * installed before the router's script runs.
+ */
+export function guardPageNavigation(doc: Document = document) {
+  const win = doc.defaultView!
+  let pagePath = win.location.pathname
+  doc.addEventListener('astro:after-swap', () => { pagePath = win.location.pathname })
+  doc.addEventListener('astro:before-preparation', (event) => {
+    const { pathname, search, hash } = event.to
+    if (event.navigationType !== 'traverse' && hash && pathname === win.location.pathname && search === win.location.search) {
+      event.preventDefault()
+    }
+  })
+  let resending = false
+  win.addEventListener('popstate', (event) => {
+    if (resending || event.state === null || win.location.pathname !== pagePath) return
+    event.stopImmediatePropagation()
+    const { scrollX, scrollY } = event.state
+    if (typeof scrollX === 'number' && typeof scrollY === 'number') {
+      win.scrollTo({ left: scrollX, top: scrollY, behavior: 'instant' })
+    }
+    resending = true
+    try {
+      win.dispatchEvent(new win.PopStateEvent('popstate', { state: null }))
+    } finally {
+      resending = false
+    }
+  })
+}

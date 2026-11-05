@@ -33,6 +33,13 @@ describe('shell sources', () => {
   it('guards navigation between independently built trees', () => {
     expect(read('../src/components/docs/DocumentationScript.astro')).toMatch(/guardTreeNavigation\(\)/)
   })
+
+  it('guards navigation within a page before the router listens for history', () => {
+    const head = /<head>([\s\S]*?)<\/head>/.exec(read('../src/layouts/BaseLayout.astro'))![1]!
+    const guard = head.indexOf('guardPageNavigation()')
+    expect(guard).toBeGreaterThan(-1)
+    expect(guard).toBeLessThan(head.indexOf('<ClientRouter'))
+  })
 })
 
 /** The first and last bytes of a file; the head and the end of a page are all these checks read. */

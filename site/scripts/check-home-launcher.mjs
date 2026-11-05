@@ -248,6 +248,10 @@ export async function checkHomeLauncher(browser, base) {
     await page.evaluate(() => { location.hash = 'second' })
     await choose('go')
     await chooseHomeTask(page, 'session-switcher')
+    await page.evaluate(() => {
+      window.__homePreparations = 0
+      document.addEventListener('astro:before-preparation', () => { window.__homePreparations++ })
+    })
     await page.goBack()
     await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'fsharp'
       && document.querySelector('.lm-agent-prompt [data-select="topic"]')?.value === 'setup')
@@ -257,6 +261,7 @@ export async function checkHomeLauncher(browser, base) {
     await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'go'
       && document.querySelector('.lm-agent-prompt [data-select="topic"]')?.value === 'session-switcher')
     assert.equal(new URL(page.url()).hash, '#second', 'Forward restores the matching language and task')
+    assert.equal(await page.evaluate(() => window.__homePreparations), 0, 'Back and Forward between the home page\'s entries fetch nothing')
     await checkHomeLanguageIcon(page, 'go')
     await choose('py')
     const topic = prompt.locator('[data-select="topic"]')

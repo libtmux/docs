@@ -1,6 +1,6 @@
 import { Window } from 'happy-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { guardTreeNavigation } from '../src/lib/router-guard'
+import { guardPageNavigation, guardTreeNavigation } from '../src/lib/router-guard'
 
 const windows: Window[] = []
 afterEach(async () => { await Promise.all(windows.splice(0).map((win) => win.happyDOM.close())) })
@@ -55,5 +55,62 @@ describe('router guard', () => {
     const win = mounted('/')
     expect(await prepare(win, '/guides/panes/', '/')).toEqual({ prevented: false, fetched: true })
     expect(await prepare(win, '/other/', '/other/')).toEqual({ prevented: true, fetched: true })
+  })
+})
+
+describe('page navigation guard', () => {
+  /** The home page after its script rewrote the query the router last navigated to. */
+  function home() {
+    const win = new Window({ url: 'https://libtmux.org/en/?port=fsharp#first' })
+    windows.push(win)
+    guardPageNavigation(win.document as unknown as Document)
+    const router = vi.fn((event: { state: unknown }) => event.state)
+    win.addEventListener('popstate', router as never)
+    const page = vi.fn()
+    win.addEventListener('popstate', page)
+    win.history.replaceState(null, '', '/en/?port=go#first')
+    return { win, router, page }
+  }
+
+  function prepareLink(win: Window, to: string) {
+    const event = Object.assign(new win.Event('astro:before-preparation', { cancelable: true }), {
+      from: new URL('/en/?port=fsharp#first', win.location.href), to: new URL(to, win.location.href), navigationType: 'push',
+    })
+    win.document.dispatchEvent(event)
+    return event.defaultPrevented
+  }
+
+  it('sends a fragment link on this page to the browser, which scrolls without a fetch', () => {
+    const { win } = home()
+    expect(prepareLink(win, '#second')).toBe(true)
+    expect(prepareLink(win, '/en/?port=py#second')).toBe(false)
+    expect(prepareLink(win, '/en/?port=go')).toBe(false)
+    expect(prepareLink(win, '/en/guides/#second')).toBe(false)
+  })
+
+  it('gives a traversal between two of the page\'s entries to its listeners, not the router', () => {
+    const { win, router, page } = home()
+    const scroll = vi.spyOn(win, 'scrollTo').mockImplementation(() => {})
+    win.dispatchEvent(new win.PopStateEvent('popstate', { state: { libtmuxHomeExamples: { errors: true }, scrollX: 0, scrollY: 640 } }))
+    expect(router.mock.results.map((result) => result.value)).toEqual([null])
+    expect(page).toHaveBeenCalledOnce()
+    expect(scroll).toHaveBeenCalledWith({ left: 0, top: 640, behavior: 'instant' })
+  })
+
+  it('leaves a traversal to another page, and an entry without state, to the router', () => {
+    const { win, router, page } = home()
+    win.dispatchEvent(new win.PopStateEvent('popstate', { state: null }))
+    win.history.replaceState(null, '', '/en/guides/')
+    win.dispatchEvent(new win.PopStateEvent('popstate', { state: { index: 2, scrollX: 0, scrollY: 0 } }))
+    expect(router.mock.results.map((result) => result.value)).toEqual([null, { index: 2, scrollX: 0, scrollY: 0 }])
+    expect(page).toHaveBeenCalledTimes(2)
+  })
+
+  it('follows the page a swap brings in', () => {
+    const { win, router } = home()
+    win.history.replaceState(null, '', '/en/guides/')
+    win.document.dispatchEvent(new win.Event('astro:after-swap'))
+    win.dispatchEvent(new win.PopStateEvent('popstate', { state: { index: 4, scrollX: 0, scrollY: 0 } }))
+    expect(router.mock.results.map((result) => result.value)).toEqual([null])
   })
 })
