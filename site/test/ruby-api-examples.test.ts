@@ -57,26 +57,44 @@ describe('verified complete Ruby API programs', () => {
   })
 })
 
-describe('the Ruby programs held back from their pages', () => {
+describe('the Ruby workspace and control programs on their pages', () => {
   const manifest = (sources as Record<string, { revision: string, content: string }>)['ruby:examples/manifest.json']!
-  const selected = (JSON.parse(manifest.content) as { programs: { path: string, api?: { symbols: string[] } }[] }).programs
-    .filter((program) => program.api)
+  const parsed = JSON.parse(manifest.content) as { version: number, programs: { path: string, api?: { symbols: string[], capabilities?: string[] } }[] }
+  const selected = parsed.programs.filter((program) => program.api)
   const attached = model.symbols.flatMap((symbol) => (symbol.doc?.examples ?? []).flatMap((block) =>
-    block.sourceUrl ? [{ id: symbol.id, path: block.sourceUrl.replace(/^.*\/blob\/[0-9a-f]{40}\//, '') }] : []))
+    block.sourceUrl ? [{ id: symbol.id, path: block.sourceUrl.replace(/^.*\/blob\/[0-9a-f]{40}\//, ''), intro: symbol.doc!.examples![0]!.intro! }] : []))
+  const held = Object.keys(HELD_RUBY_PROGRAMS)
 
-  it('are shown on none of the pages they document', () => {
-    expect(attached.filter(({ path }) => Object.hasOwn(HELD_RUBY_PROGRAMS, path))).toEqual([])
-  })
-
-  it('name programs the manifest at the model’s revision still selects', () => {
+  it('are selected by a manifest of version 2, which names each program\'s tmux capabilities', () => {
     expect(manifest.revision).toBe(model.revision)
-    const missing = Object.keys(HELD_RUBY_PROGRAMS).filter((path) => !selected.some((program) => program.path === path))
-    expect(missing, 'a hold for a program that is gone').toEqual([])
+    expect(parsed.version).toBe(2)
+    expect(held.filter((path) => !selected.some((program) => program.path === path)), 'a hold for a program that is gone').toEqual([])
+    expect(selected.filter((program) => program.api!.capabilities).map((program) => program.path).sort())
+      .toEqual(['examples/api/async_control.rb', 'examples/api/control.rb'])
   })
 
-  it('still attach every selected program that is not held', () => {
-    const wanted = selected.filter((program) => !Object.hasOwn(HELD_RUBY_PROGRAMS, program.path))
-      .flatMap((program) => program.api!.symbols.map((id) => `${id} ${program.path}`)).sort()
+  it('are shown on every page they document', () => {
+    const shown = (path: string) => attached.filter((entry) => entry.path === path).map((entry) => entry.id).sort()
+    for (const path of held) {
+      const wanted = selected.find((program) => program.path === path)!.api!.symbols.slice().sort()
+      expect(shown(path), path).toEqual(wanted)
+    }
+  })
+
+  it('attach every selected program, each stating the tmux release its capabilities open', () => {
+    const wanted = selected.flatMap((program) => program.api!.symbols.map((id) => `${id} ${program.path}`)).sort()
     expect(attached.map(({ id, path }) => `${id} ${path}`).sort()).toEqual(wanted)
+    // control-mode opens at tmux 3.7; every other program runs on the 3.3a floor.
+    const release = (path: string) => selected.find((program) => program.path === path)!.api!.capabilities?.includes('control-mode') ? '3.7' : '3.3a'
+    for (const { id, path, intro } of attached) expect(intro, `${id} ${path}`).toContain(`and tmux ${release(path)} or newer, on Unix`)
+  })
+
+  it('are verified by the receipt, which records the control programs on tmux 3.7 and above only', () => {
+    const control = examples.filter((example) => /\/(?:async_)?control\.rb$/.test(example.sourceFile))
+    expect(control.length).toBeGreaterThan(0)
+    for (const example of control) expect(example.tmuxVersions, example.symbol).toEqual(['3.7', '3.7c'])
+    for (const example of examples.filter((entry) => !control.includes(entry))) expect(example.tmuxVersions, example.symbol).toEqual(['3.3a', '3.7c'])
+    expect(examples.filter((example) => example.sourceFile === 'examples/api/workspace_apply.rb').map((example) => example.verificationScope))
+      .not.toContainEqual(expect.stringMatching(/^Not verified/))
   })
 })

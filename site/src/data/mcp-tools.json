@@ -10209,8 +10209,8 @@
           "wireName": "tmux_capabilities",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
-            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+            "extractedRevision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
             "line": 250
           },
@@ -10575,8 +10575,8 @@
           "wireName": "tmux_capture",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
-            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+            "extractedRevision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
             "line": 240
           },
@@ -11195,8 +11195,8 @@
           "wireName": "tmux_close",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
-            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+            "extractedRevision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
             "line": 248
           },
@@ -11622,8 +11622,8 @@
           "wireName": "tmux_create",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
-            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+            "extractedRevision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
             "line": 246
           },
@@ -12347,8 +12347,8 @@
           "wireName": "tmux_run",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
-            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+            "extractedRevision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
             "line": 238
           },
@@ -12807,8 +12807,8 @@
           "wireName": "tmux_send",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
-            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+            "extractedRevision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
             "line": 244
           },
@@ -13237,8 +13237,8 @@
           "wireName": "tmux_snapshot",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
-            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+            "extractedRevision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
             "line": 6
           },
@@ -16349,8 +16349,8 @@
           "wireName": "tmux_wait",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
-            "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+            "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+            "extractedRevision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
             "line": 242
           },
@@ -17370,8 +17370,8 @@
       "selectable": false,
       "source": "gems/libtmux-mcp/lib/libtmux/mcp",
       "repo": "libtmux/libtmux-ruby",
-      "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
-      "extractedRevision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+      "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+      "extractedRevision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
       "selection": {
         "mode": "explicit CLI options",
         "tools": "tmux_capabilities,tmux_snapshot,tmux_capture,tmux_wait,tmux_create,tmux_send,tmux_close,tmux_run"
