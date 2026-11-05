@@ -53,15 +53,16 @@ export function parseListings(output) {
 }
 
 /**
- * The sockets under a sandbox's `tmux-<uid>` directory: sockets, and symbolic
+ * The sockets under a sandbox's `tmux-<uid>` directory, and in the directories under its `tmp`: sockets, and symbolic
  * links, which `ownSockets` resolves, so a link out of the sandbox is listed
  * and then refused rather than followed or left unseen.
  */
 export function sandboxSockets(sandbox) {
-  const directory = join(sandbox, `tmux-${process.getuid?.() ?? ''}`)
-  return existsSync(directory)
-    ? readdirSync(directory).map((name) => join(directory, name)).filter((path) => { const kind = lstatSync(path); return kind.isSocket() || kind.isSymbolicLink() })
-    : []
+  const isSocket = (path) => { const kind = lstatSync(path); return kind.isSocket() || kind.isSymbolicLink() }
+  const children = (directory) => (existsSync(directory) ? readdirSync(directory).map((name) => join(directory, name)) : [])
+  // A program may also keep its socket in a directory it makes under the sandbox's `tmp`, as `tempfile.mkdtemp` does.
+  const own = children(join(sandbox, 'tmp')).flatMap((directory) => (lstatSync(directory).isDirectory() ? children(directory) : []))
+  return [...children(join(sandbox, `tmux-${process.getuid?.() ?? ''}`)), ...own].filter(isSocket)
 }
 
 /**
