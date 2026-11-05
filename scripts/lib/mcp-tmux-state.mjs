@@ -18,8 +18,12 @@ const SEPARATOR = '|'
 const format = (tag, fields) => `${tag}${SEPARATOR}${fields.map((field) => `#{${field}}`).join(SEPARATOR)}`
 const LISTINGS = ['list-sessions', '-F', format('S', SESSION), ';', 'list-windows', '-a', '-F', format('W', WINDOW), ';', 'list-panes', '-a', '-F', format('P', PANE)]
 
-/** tmux's answer when the server is gone or has nothing left in it: the state of a server that has exited. */
-const NO_SERVER = /no server running|no sessions|error connecting to .*\((?:No such file or directory|Connection refused)\)/
+/**
+ * tmux's answer when the server is gone or has nothing left in it: the state of a server that has exited.
+ * A server told to exit stays up until its last client has gone, and drops every client that connects
+ * meanwhile with "server exited unexpectedly".
+ */
+const NO_SERVER = /no server running|no sessions|server exited unexpectedly|error connecting to .*\((?:No such file or directory|Connection refused)\)/
 
 /**
  * Parse what the three tagged listings printed. A field count that is not the
@@ -116,9 +120,9 @@ export function stopSandboxServers(sandbox, { run = runTmux, ...options } = {}) 
  * A function that reads the state of the one tmux server the sandbox started.
  * It refuses a socket that resolves outside the sandbox, so it can never reach
  * a reader's server, and more than one server in the sandbox, because it could
- * not say which one the recording is of. A sandbox with no server, or a server
- * with no session, is a tmux with nothing in it. Any other failure to read
- * throws.
+ * not say which one the recording is of. A sandbox with no server, a server
+ * that is exiting, or a server with no session, is a tmux with nothing in it.
+ * Any other failure to read throws.
  *
  * @param {{ sandbox: string, run?: (socket: string, args: string[]) => string, sockets?: (sandbox: string) => string[], realpath?: (path: string) => string }} options
  * @returns {() => { sessions: object[], windows: object[], panes: object[] }}

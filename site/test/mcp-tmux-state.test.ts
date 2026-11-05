@@ -1,4 +1,4 @@
-import { execFileSync, spawnSync } from 'node:child_process'
+import { type ChildProcess, execFileSync, spawn, spawnSync } from 'node:child_process'
 import { chmodSync, mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
@@ -165,7 +165,7 @@ describe('reading a tmux server', () => {
   })
 
   it('fails when tmux cannot be read for any other reason, so a recording with a hole in it is never written', () => {
-    expect(() => readTmuxState({ sandbox, run: answers({ list: new Error('server exited unexpectedly') }), sockets: () => [socket], realpath: same })()).toThrow(/tmux could not be read: server exited unexpectedly/)
+    expect(() => readTmuxState({ sandbox, run: answers({ list: new Error('protocol version mismatch (client 8, server 7)') }), sockets: () => [socket], realpath: same })()).toThrow(/tmux could not be read: protocol version mismatch/)
     expect(() => readTmuxState({ sandbox, run: answers({ sessions: new Error('lost connection') }), sockets: () => [socket], realpath: same })()).toThrow(/tmux could not be read: lost connection/)
   })
 
@@ -295,6 +295,23 @@ describe('a tmux that does not answer', () => {
       rmSync(dir, { recursive: true, force: true })
     }
   })
+
+  it.skipIf(!available)('reads a server that drops the client while it exits as gone, and any other failure as a failure', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'mcp-exiting-'))
+    const tmux = (message: string) => {
+      const path = join(dir, 'tmux')
+      writeFileSync(path, `#!/bin/sh\necho "${message}" >&2\nexit 1\n`)
+      chmodSync(path, 0o755)
+      return path
+    }
+    const noServer = (command: string) => { try { runTmux('/x', ['list-sessions'], { command }) } catch (error) { return (error as { noServer?: boolean }).noServer } }
+    try {
+      expect(noServer(tmux('server exited unexpectedly')), 'a client connected during kill-server').toBe(true)
+      expect(noServer(tmux('protocol version mismatch (client 8, server 7)')), 'a server that answers wrongly').toBe(false)
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
 })
 
 describe('waiting for a state to settle', () => {
@@ -401,6 +418,29 @@ describe('against a real tmux', () => {
       for (let waited = 0; waited < 50 && read().sessions.length; waited++) execFileSync('sleep', ['0.1'])
       expect(read(), 'after the server exits').toEqual(EMPTY)
     } finally {
+      try { tmux('kill-server') } catch { /* already gone */ }
+      rmSync(sandbox, { recursive: true, force: true })
+    }
+  })
+
+  it.skipIf(!available)('reads a server that kill-server told to exit, while a client still holds it up, as a tmux with nothing in it', () => {
+    const sandbox = realpathSync(mkdtempSync(join(tmpdir(), 'mcp-exit-')))
+    const env: NodeJS.ProcessEnv = { ...process.env, TMUX_TMPDIR: sandbox, SHELL: '/bin/sh' }
+    delete env.TMUX
+    const tmux = (...args: string[]) => execFileSync('tmux', ['-L', 'exit', '-f', '/dev/null', ...args], { env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
+    let control: ChildProcess | undefined
+    try {
+      tmux('new-session', '-d', '-s', 'held')
+      // A stopped control client never reads its exit message, so the server stays up after kill-server and drops every new client: the window a read after kill-server can land in.
+      control = spawn('tmux', ['-L', 'exit', '-C', 'attach', '-t', 'held'], { env, stdio: ['pipe', 'ignore', 'ignore'] })
+      for (let waited = 0; waited < 50 && tmux('list-clients', '-F', '#{client_pid}').trim() === ''; waited++) execFileSync('sleep', ['0.1'])
+      control.kill('SIGSTOP')
+      tmux('kill-server')
+      const [socket] = sandboxSockets(sandbox)
+      expect(() => runTmux(socket!, ['list-sessions']), 'the server is still exiting').toThrow(/server exited unexpectedly/)
+      expect(readTmuxState({ sandbox })(), 'a server that is exiting').toEqual(EMPTY)
+    } finally {
+      control?.kill('SIGKILL')
       try { tmux('kill-server') } catch { /* already gone */ }
       rmSync(sandbox, { recursive: true, force: true })
     }
