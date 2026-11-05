@@ -71,23 +71,19 @@ export function projectFiles(port, names) {
  * Every libtmux-dotnet command is preceded by its guards: `if-shell -F` checks
  * that fail if the daemon or its version changed (they name `libtmux-version-`
  * or `libtmux_stale_`), and, on its control client, a `display-message` that reads
- * the daemon's pid and start time. They are dropped, with their replies.
+ * the daemon's pid and start time. After each command it sends a line that is
+ * no command (`libtmux-control-<hash>`), which tmux answers with a parse
+ * error to mark the end of the reply, and a pane's control client opens with a
+ * `%if` block that names the daemon. All of them are dropped, with their replies.
  */
 export const dotnetFence = (command) => (command[0] === 'if-shell' && command.some((word) => /^libtmux[-_](version|stale)/.test(word)))
   || (command[0] === 'display-message' && command.includes('#{pid}:#{start_time}'))
+  || (command.length === 1 && command[0].startsWith('libtmux-control-'))
+  || command[0] === '%if'
 
-/**
- * What the library asks tmux about itself: `tmux -V`, the `run-shell -C` that
- * expands the daemon's identity, and the line it sends on a control client to
- * mark the end of a reply (an unknown command, `libtmux-control-<hash>`, which
- * tmux answers with a parse error).
- */
+/** What the library asks tmux about itself: `tmux -V`, and the `run-shell -C` that expands the daemon's identity. */
 export const dotnetProbe = ({ flags, commands }) => (commands.length === 0 && flags.includes('-V'))
   || (commands.length > 0 && commands.every((command) => command[0] === 'run-shell' && command.some((word) => word.startsWith('libtmux-version-'))))
-  || (commands.length === 1 && commands[0].length === 1 && commands[0][0].startsWith('libtmux-control-'))
-
-/** The end-of-reply line carries a hash that changes on every run. */
-export const dotnetProbeLine = (line) => line.replace(/libtmux-control-[0-9A-Fa-f]+/, 'libtmux-control-<end-of-reply>')
 
 export const toolchain = () => ({ dotnet: execFileSync('dotnet', ['--version'], { encoding: 'utf8', cwd: homedir() }).trim() })
 

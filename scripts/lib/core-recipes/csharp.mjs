@@ -1,5 +1,5 @@
 import { instrumentLines, quickstartSource, checkoutOf, withoutMarks } from './common.mjs'
-import { buildDotnet, dotnetFence, dotnetProbe, dotnetProbeLine, projectFiles, runCommand, toolchain } from './dotnet.mjs'
+import { buildDotnet, dotnetFence, dotnetProbe, projectFiles, runCommand, toolchain } from './dotnet.mjs'
 
 export { withoutMarks }
 
@@ -113,7 +113,6 @@ export const RECIPES = {
     ],
     fence: dotnetFence,
     probe: dotnetProbe,
-    probeLine: dotnetProbeLine,
     /** The program names its socket `quickstart-<guid>`. */
     socket: { pattern: 'quickstart-[0-9a-f]{32}', fixed: 'quickstart-0123456789abcdef0123456789abcdef' },
     instrument: instrumentCsharp,
