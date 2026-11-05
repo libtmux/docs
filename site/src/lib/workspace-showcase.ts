@@ -363,11 +363,12 @@ export const offersPicker = (showcase: Pick<WorkspaceShowcase, 'examples'>) => s
 /**
  * The presets a picker offers: each example, in the order of the classics, with
  * its YAML, its JSON and every window drawn. The first is what a reader sees
- * before choosing.
+ * before choosing; `first` moves one preset there and leaves the rest in order.
  */
-export function presetOptions(showcase: WorkspaceShowcase): PresetOption[] {
+export function presetOptions(showcase: WorkspaceShowcase, first?: TopicId): PresetOption[] {
   const order = TOPICS.map((topic) => topic.id)
-  return [...showcase.examples].sort((a, b) => order.indexOf(a.topic) - order.indexOf(b.topic)).map((example) => {
+  const rank = (topic: TopicId) => (topic === first ? -1 : order.indexOf(topic))
+  return [...showcase.examples].sort((a, b) => rank(a.topic) - rank(b.topic)).map((example) => {
     const topic = TOPICS[order.indexOf(example.topic)]!
     const config = JSON.parse(example.json) as Config
     const windows = previewWindows(config, `ws-pick-${showcase.port}-${example.topic}`, showcase.support.defaultLayout?.layout)
@@ -400,11 +401,36 @@ export const VIA: Readonly<Record<TestVia, string>> = {
 }
 
 /**
- * The example a port's landing page shows: the first, in preset order, that a
- * test runs the load command on, else the first in preset order.
+ * The layout classics that read as a working workspace, best first. Each names
+ * a window, sets a layout and gives panes something to run. The other presets
+ * exist to show one key, or one quirk of a loader, in a file built for that.
+ */
+const LANDING_CLASSICS: readonly TopicId[] = ['three-pane', 'two-pane', 'main-horizontal', 'four-pane', 'tiled']
+
+/**
+ * The example a port's landing page opens on. Each rule breaks the ties of the
+ * one before it:
+ *
+ * 1. A test runs the load command on the file, since the tab names that command.
+ * 2. It is a layout classic, not a fixture built to show one key.
+ * 3. It has one window, which the page draws whole before script runs.
+ * 4. It comes first in `LANDING_CLASSICS`, then in the order of `TOPICS`.
  */
 export function landingExample(showcase: Pick<WorkspaceShowcase, 'examples'>): ShowcaseExample {
   const order = TOPICS.map((topic) => topic.id)
-  const sorted = [...showcase.examples].sort((a, b) => order.indexOf(a.topic) - order.indexOf(b.topic))
-  return sorted.find((example) => example.tests.some((test) => test.via === 'cli')) ?? sorted[0]!
+  const rank = (example: ShowcaseExample) => {
+    const classic = LANDING_CLASSICS.indexOf(example.topic)
+    return [
+      example.tests.some((test) => test.via === 'cli') ? 0 : 1,
+      classic < 0 ? 1 : 0,
+      windowsOf(JSON.parse(example.json) as Config).length > 1 ? 1 : 0,
+      classic < 0 ? 0 : classic,
+      order.indexOf(example.topic),
+    ]
+  }
+  const compare = (a: number[], b: number[]) => a.map((value, index) => value - b[index]!).find((difference) => difference !== 0) ?? 0
+  return [...showcase.examples].sort((a, b) => compare(rank(a), rank(b)))[0]!
 }
+
+/** The test the page cites for an example: one that runs the load command when there is one, else the first. */
+export const citedTest = (example: ShowcaseExample): ShowcaseTest => example.tests.find((test) => test.via === 'cli') ?? example.tests[0]!

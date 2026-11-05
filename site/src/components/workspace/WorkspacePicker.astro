@@ -13,12 +13,18 @@
  *
  * A port with one preset has nothing to choose, so it renders no picker; the
  * example below is the only copy of its file.
+ *
+ * On a port's landing page (`landing`) nothing follows the picker, so each
+ * preset carries its own summary, load command and evidence, the preset the
+ * page opens on leads the menu, and the page's own heading stands in for the
+ * section's. Without script the opening preset shows alone, complete.
  */
 import RerollButton from '../RerollButton.astro'
 import PickerSearch from '../docs/PickerSearch.astro'
-import { offersPicker, presetOptions, type WorkspaceShowcase } from '../../lib/workspace-showcase'
+import { offersPicker, presetOptions, type TopicId, type WorkspaceShowcase } from '../../lib/workspace-showcase'
 import { paintScript, selectionRules } from '../../lib/workspace-picker'
 import WorkspaceConfig from './WorkspaceConfig.astro'
+import WorkspaceEvidence from './WorkspaceEvidence.astro'
 import '../../styles/documentation-picker.css'
 import '../../styles/tmux-layout.css'
 import '../../styles/workspace-showcase.css'
@@ -26,15 +32,18 @@ import '../../styles/workspace-picker.css'
 
 interface Props {
   showcase: WorkspaceShowcase
+  /** Set on a landing page: the preset it opens on and the program its CLI manual lists for `load`. */
+  landing?: { first: TopicId; program?: string }
 }
-const { showcase } = Astro.props as Props
-const presets = offersPicker(showcase) ? presetOptions(showcase) : []
+const { showcase, landing } = Astro.props as Props
+const presets = offersPicker(showcase) ? presetOptions(showcase, landing?.first) : []
 const ids = presets.map((preset) => preset.id)
 const first = presets[0]
+const example = (id: string) => showcase.examples.find((item) => item.topic === id)!
 ---
 {first && (
-  <section class="ws-picker" data-workspace-picker data-pagefind-ignore="all">
-    <h2 id="try-a-preset">Try a preset</h2>
+  <section class:list={['ws-picker', { 'ws-picker--landing': landing }]} data-workspace-picker data-pagefind-ignore="all">
+    {!landing && <h2 id="try-a-preset">Try a preset</h2>}
     <style is:inline set:html={selectionRules(ids)}></style>
     <libtmux-workspace-picker data-port={showcase.port}>
       <script is:inline set:html={paintScript(showcase.port, ids)}></script>
@@ -68,6 +77,12 @@ const first = presets[0]
       <div class="ws-picker__stage">
         {presets.map((preset) => (
           <section class="ws-picker__panel" data-preset={preset.id} data-first={preset === first ? '' : undefined} inert={preset !== first} aria-label={preset.title}>
+            {landing && (
+              <header class="ws-picker__head">
+                <h3 class="ws-picker__title">{preset.title}</h3>
+                <p class="ws-picker__summary">{preset.summary}</p>
+              </header>
+            )}
             <div class="ws-body">
               <WorkspaceConfig id={`pick-${showcase.port}-${preset.id}`} yaml={preset.yaml} json={preset.json} />
               {preset.windows.length > 0 && (
@@ -106,6 +121,7 @@ const first = presets[0]
                 </div>
               )}
             </div>
+            {landing && <WorkspaceEvidence showcase={showcase} example={example(preset.id)} program={landing.program} />}
           </section>
         ))}
       </div>

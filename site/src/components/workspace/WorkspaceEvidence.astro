@@ -1,0 +1,40 @@
+---
+/**
+ * What stands behind one workspace file on a port's landing page: the command
+ * that loads it, when a test runs that command on it, and the file and test at
+ * the revision the page read them at.
+ *
+ * Shared by the single-file view and by each preset of the landing picker, so
+ * the command and the evidence always belong to the file above them.
+ */
+import { Code } from 'astro-expressive-code/components'
+import { citedTest, revisionUrl, VIA, type ShowcaseExample, type WorkspaceShowcase } from '../../lib/workspace-showcase'
+
+interface Props {
+  showcase: Pick<WorkspaceShowcase, 'repo' | 'revision'>
+  example: ShowcaseExample
+  /** The program the port's CLI manual lists for `load`; a port without one names no command. */
+  program?: string
+}
+const { showcase, example, program } = Astro.props as Props
+const test = citedTest(example)
+// Name the command only for a file a test runs it on; the evidence line says how any other file is reached.
+const command = test.via === 'cli' ? program : undefined
+---
+{command && <>
+  <p class="ws-evidence__lead">Save the file as <code>workspace.yaml</code> and load it with:</p>
+  <Code code={`${command} load workspace.yaml`} lang="sh" frame="none" />
+</>}
+<p class="ws-evidence" data-landing-evidence>
+  Workspace file: <a href={revisionUrl(showcase, example.source.path, example.source.lines)}><code>{example.source.path}</code></a>.
+  Tested by <a href={revisionUrl(showcase, test.path, test.line)}><code>{test.name}</code></a>
+  ({test.path}; {VIA[test.via]}).
+</p>
+
+<style>
+  .ws-evidence__lead { margin: .9rem 0 .25rem; font-size: .875rem; }
+  .ws-evidence { margin: .8rem 0 0; font-size: .8125rem; color: var(--color-muted); }
+  .ws-evidence a { color: var(--color-link); }
+  /* A long command or path wraps instead of widening the page. */
+  .ws-evidence code { white-space: normal; overflow-wrap: anywhere; }
+</style>

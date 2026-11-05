@@ -7,14 +7,14 @@ import CAPABILITIES from '../data/core-capabilities.json'
 import LandingInstall from './landing/LandingInstall.astro'
 import McpReplay from './mcp/McpReplay.astro'
 import WorkspaceConfig from './workspace/WorkspaceConfig.astro'
+import WorkspaceEvidence from './workspace/WorkspaceEvidence.astro'
+import WorkspacePicker from './workspace/WorkspacePicker.astro'
 import WorkspaceWindows from './workspace/WorkspaceWindows.astro'
 import { PORT_BY_SLUG, portPageUrl, type Port } from '../lib/ports'
 import { landingPanels, type CachedSource, type LandingTable } from '../lib/port-landing'
 import { mcpShowcase, showcaseHeadings } from '../lib/mcp-showcase'
 import { loadCommand } from '../lib/workspace-links'
-import {
-  landingExample, offersPicker, previewWindows, revisionUrl, TOPICS, VIA, workspaceShowcase,
-} from '../lib/workspace-showcase'
+import { landingExample, offersPicker, previewWindows, TOPICS, workspaceShowcase } from '../lib/workspace-showcase'
 import { QUICKSTARTS, homeCodeColumns } from '../lib/quickstarts'
 import LANDING from '../data/landing-examples.json'
 import SOURCES from '../data/example-sources.json'
@@ -29,7 +29,9 @@ import SOURCES from '../data/example-sources.json'
  * shows the picker and the links, never invented calls. Workspace Manager
  * shows a workspace file one of the port's tests loads, the command that
  * loads it and the panes it builds, from the showcase the workspace overview
- * uses. Both panels keep the excerpt of a program the port's CI runs behind a
+ * uses. A port with several files offers that overview's preset picker, opening
+ * on the file `landingExample` chooses; a port with one shows it alone. Both
+ * panels keep the excerpt of a program the port's CI runs behind a
  * disclosure, read from the revision-bound example cache by the `from` and
  * `to` anchors in `landing-examples.json`. A port that ships only the
  * library shows its panel without a selector, since there is nothing to choose.
@@ -46,12 +48,10 @@ const showcases = new Map(await Promise.all(panels.filter((panel) => panel.produ
 const workspace = workspaceShowcase(port.slug)
 const workspaceExample = workspace && landingExample(workspace)
 const workspaceTopic = workspaceExample && TOPICS.find((topic) => topic.id === workspaceExample.topic)!
-const workspaceWindows = workspace && workspaceExample
+// Only the single-file view draws here; the picker draws every preset itself.
+const workspaceWindows = workspace && workspaceExample && !offersPicker(workspace)
   ? previewWindows(JSON.parse(workspaceExample.json), `landing-${port.slug}`, workspace.support.defaultLayout?.layout) : []
-const workspaceTest = workspaceExample && (workspaceExample.tests.find((test) => test.via === 'cli') ?? workspaceExample.tests[0]!)
-// Name the command only for a file a test runs it on; the evidence line says how any other file is reached.
 const workspaceProgram = loadCommand(port.slug)
-const workspaceLoad = workspaceTest?.via === 'cli' ? workspaceProgram : undefined
 const hasShowcase = portCapabilities(port.slug, CAPABILITIES as CapabilityTable, SOURCES as Record<string, CachedSource>).length > 0
 const complete = QUICKSTARTS[port.slug]?.complete
 if (!complete) throw new Error(`PortLanding: ${port.slug} has no complete homepage example; add it to home-examples.json`)
@@ -105,26 +105,22 @@ const panelId = (product: string) => `landing-panel-${product}`
       {excerpt}
     </> : <>
       <h2 class="sr-only">{panel.label}</h2>
-      {workspace && workspaceExample && workspaceTopic && workspaceTest && <div class="landing-example" data-landing-example="workspace">
-        <h3>{workspaceTopic.title}</h3>
-        <p>{workspaceTopic.summary}</p>
-        <div class="ws-body">
-          <WorkspaceConfig id={`landing-${port.slug}-${workspaceExample.topic}`} yaml={workspaceExample.yaml} json={workspaceExample.json} note />
-          <WorkspaceWindows windows={workspaceWindows} />
-        </div>
-        {workspaceLoad && <>
-          <p class="landing-command-lead">Save the file as <code>workspace.yaml</code> and load it with:</p>
-          <Code code={`${workspaceLoad.program} load workspace.yaml`} lang="sh" frame="none" />
-        </>}
-        <p class="landing-source" data-landing-evidence>
-          Workspace file: <a href={revisionUrl(workspace, workspaceExample.source.path, workspaceExample.source.lines)}><code>{workspaceExample.source.path}</code></a>.
-          Tested by <a href={revisionUrl(workspace, workspaceTest.path, workspaceTest.line)}><code>{workspaceTest.name}</code></a>
-          ({workspaceTest.path}; {VIA[workspaceTest.via]}).
-        </p>
+      {workspace && workspaceExample && workspaceTopic && <div class="landing-example" data-landing-example="workspace">
+        {offersPicker(workspace)
+          ? <WorkspacePicker showcase={workspace} landing={{ first: workspaceExample.topic, program: workspaceProgram?.program }} />
+          : <>
+            <h3>{workspaceTopic.title}</h3>
+            <p>{workspaceTopic.summary}</p>
+            <div class="ws-body">
+              <WorkspaceConfig id={`landing-${port.slug}-${workspaceExample.topic}`} yaml={workspaceExample.yaml} json={workspaceExample.json} note />
+              <WorkspaceWindows windows={workspaceWindows} />
+            </div>
+            <WorkspaceEvidence showcase={workspace} example={workspaceExample} program={workspaceProgram?.program} />
+          </>}
       </div>}
       <LandingInstall panel={panel} port={port.slug} />
       <ul class="landing-links">
-        {workspace && <li><a href={`${panel.href}#${offersPicker(workspace) ? 'try-a-preset' : 'example-workspaces'}`}>{offersPicker(workspace) ? 'Try other presets' : 'Example workspaces'} →</a></li>}
+        {workspace && <li><a href={`${panel.href}#example-workspaces`}>Example workspaces →</a></li>}
         {workspaceProgram && <li><a href={portPageUrl(port, version, workspaceProgram.path)}>The <code>{workspaceProgram.program} load</code> command →</a></li>}
         <li><a href={panel.href}>{panel.label} documentation →</a></li>
       </ul>
@@ -210,7 +206,6 @@ const panelId = (product: string) => `landing-panel-${product}`
   .landing-example :global(h3) { margin: 0 0 .5rem; font-weight: 600; line-height: 1.4; }
   .landing-example > :global(p:not(.mcp-provenance)) { margin: 0 0 1rem; }
   .landing-note { margin: 0 0 1rem; }
-  .landing-command-lead { margin-block: .9rem .25rem; font-size: .875rem; }
   .landing-links { margin: 1.25rem 0 0; padding: 0; list-style: none; display: grid; gap: .35rem; font-size: .875rem; }
   .landing-links a { color: var(--color-link); }
   .landing-excerpt { margin-top: 1.25rem; }
