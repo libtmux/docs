@@ -133,15 +133,6 @@ const defaults = ASIDE_VARIANT_DEFAULTS.hybrid
       </section>
     ))
   }
-</DemoLayout>
-
-<style>
-  /* The grid spaces the asides, so their own margins go. Scoped rather than
-   * a Tailwind utility, which sits in a layer the unlayered aside CSS beats. */
-  .aside-grid :global(.lm-aside) {
-    margin: 0;
-  }
-</style>
 
 <script>
   import {
@@ -196,3 +187,12 @@ const defaults = ASIDE_VARIANT_DEFAULTS.hybrid
     update(root, form)
   })
 </script>
+</DemoLayout>
+
+<style>
+  /* The grid spaces the asides, so their own margins go. Scoped rather than
+   * a Tailwind utility, which sits in a layer the unlayered aside CSS beats. */
+  .aside-grid :global(.lm-aside) {
+    margin: 0;
+  }
+</style>

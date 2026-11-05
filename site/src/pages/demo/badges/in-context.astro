@@ -483,7 +483,6 @@ const modeCss = `@media print{.ic-bar{display:none!important}${printRules('.ic-r
 
   <style is:inline set:html={familyCss + pillCss}></style>
   <style is:inline set:html={modeCss}></style>
-</DemoLayout>
 
 <script is:inline>
   document.addEventListener('click', (event) => {
@@ -514,6 +513,7 @@ const modeCss = `@media print{.ic-bar{display:none!important}${printRules('.ic-r
   for (const name of ['print', 'forced', 'shape']) if (query.get(name) === '1') apply(name, true)
   if (query.get('fonts') === 'fallback' && root) root.dataset.fonts = 'fallback'
 </script>
+</DemoLayout>
 
 <style is:global>
   /* Page chrome */

@@ -40,13 +40,13 @@ const src = withRoot(`/demo/sidebar/preview/${port}.json`)
       </main>
     </div>
   </div>
-</BaseLayout>
 
 <script>
   import { initSidebarPreview } from '../../../../components/demo/sidebar-preview'
   import { waitForAppearance } from '../../../../lib/page-readiness'
   waitForAppearance(initSidebarPreview())
 </script>
+</BaseLayout>
 
 <style is:global>
   /* The frame takes the viewport above the footer's page-source line. */

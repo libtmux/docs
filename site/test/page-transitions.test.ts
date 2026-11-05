@@ -71,6 +71,11 @@ describe.skipIf(!SITE_BUILT)('built shell pages', () => {
     expect(without.map(({ path }) => path).slice(0, 5)).toEqual([])
   })
 
+  it('end at </body> and </html>, so the zone-injected beacon follows every required module', () => {
+    const late = pages.filter(({ tail }) => !/<\/body>\s*<\/html>\s*$/.test(tail))
+    expect(late.map(({ path }) => path).slice(0, 5)).toEqual([])
+  })
+
   it('hide only the API tree while the gate runs', () => {
     const body = pages.filter(({ head }) => /html\.fonts-pending body|html\.link-hints-pending body/.test(head))
     expect(body.map(({ path }) => path).slice(0, 5)).toEqual([])
