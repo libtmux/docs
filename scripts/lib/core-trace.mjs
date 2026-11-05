@@ -327,8 +327,8 @@ export const quoted = (word) => (/[\s'"\\;]/.test(word) || word === '' ? `'${wor
  * `reply`, when given, takes the library's own answer markers off what tmux printed
  * (a guard's `list-commands` replies, whose ids differ on every run).
  *
- * @param {{ argv: string[], exit: number, stdout: string, stderr: string }} entry
- * @param {{ fence?: (command: string[]) => boolean, unwrap?: (command: string[]) => string[] | undefined, probe?: (invocation: { flags: string[], commands: string[][] }) => boolean }} profile
+ * @param {{ argv: string[], exit: number, stdout: string, stderr: string, line?: string }} entry
+ * @param {{ fence?: (command: string[]) => boolean, unwrap?: (command: string[]) => string[] | undefined, probe?: (invocation: { flags: string[], commands: string[][], line: string | undefined }) => boolean, redact?: (text: string) => string, reply?: (text: string) => string }} profile
  */
 export function describeInvocation(entry, profile = {}) {
   const invocation = splitInvocation(entry.argv)

@@ -16,8 +16,8 @@ describe('Python recipe', () => {
   })
   it('marks every call except the one the program makes in a while condition, which the wrapper marks', () => {
     const body = marked.slice(marked.indexOf('libtmux.Pane.capture_pane = '))
-    const marks = body.split('\n').filter((line) => line.trimStart().startsWith('docs_mark("'))
-    expect(marks.map((line) => /docs_mark\("([^"]+)"/.exec(line)?.[1])).toEqual(recipe.steps.filter((step) => !step.wrapped).map((step) => step.id))
+    const marks = body.split('\n').filter((line: string) => line.trimStart().startsWith('docs_mark("'))
+    expect(marks.map((line: string) => /docs_mark\("([^"]+)"/.exec(line)?.[1])).toEqual(recipe.steps.filter((step) => !step.wrapped).map((step) => step.id))
     expect(marked).toContain('libtmux.Pane.capture_pane = _docs_wrap_capture')
   })
   it('refuses an anchor the program does not hold', () => {

@@ -2,7 +2,7 @@
 import { Code } from 'astro-expressive-code/components'
 import HomeExample from './HomeExample.astro'
 import CorePlayer from './core/CorePlayer.astro'
-import { CAPABILITIES, capabilityCacheKey, portCapabilities, type CapabilityTable } from '../lib/core-capabilities'
+import { CAPABILITIES, capabilityCacheKey, portCapabilities, type CapabilityId, type CapabilityTable } from '../lib/core-capabilities'
 import { QUICKSTARTS, homeProgram } from '../lib/quickstarts'
 import { capabilityExample, playableCapability } from '../lib/core-player'
 import { PORT_BY_SLUG } from '../lib/ports'
@@ -44,7 +44,7 @@ const shown = [
   ...(quickstart ? [{ id: 'typed-graph', label: CAPABILITIES[0].label, quickstart: true as const, tmux: undefined as string | undefined }] : []),
   ...programs.map((item) => ({ ...item, quickstart: false as const })),
 ]
-const cachedSource = (id: string) => {
+const cachedSource = (id: CapabilityId) => {
   const entry = (TABLE as CapabilityTable)[port]![id]!
   const cached = (SOURCES as Record<string, CachedSource>)[capabilityCacheKey(port, entry.file)]!
   return { repository: cached.repository, revision: cached.revision }
