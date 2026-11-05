@@ -13,8 +13,12 @@ interface Props {
   fixed?: boolean
 }
 const { port, language, example, heading = true, fixed = false } = Astro.props
+// A host that plays the program (`core/CorePlayer.astro`) fills `beside`, which sits next to the code, and `controls`, under both.
+const player = Astro.slots.has('beside')
+const Frame = player ? 'div' : Fragment
+const Stage = player ? 'div' : Fragment
 ---
-<div class="home-example" data-home-example={port} data-fixed={fixed ? '' : undefined}>
+<div class="home-example" data-home-example={port} data-fixed={fixed ? '' : undefined} data-player={player ? '' : undefined}>
   <div class="home-example-heading">
     {heading && <h2>Start with {language}</h2>}
     <fieldset class="home-example-options">
@@ -22,18 +26,25 @@ const { port, language, example, heading = true, fixed = false } = Astro.props
       <label><input type="checkbox" data-example-errors /> + Error handling</label>
       <label><input type="checkbox" data-example-cleanup /> + Cleanup</label>
     </fieldset>
+    <slot name="hint" />
   </div>
-  {HOME_VIEWS.map((view) => {
-    const code = homeProgram(example, view).replace(/\n$/, '')
-    return <div
-      class="home-example-view"
-      data-home-view={view}
-      data-home-file={example.program}
-      style={`--home-code-columns: ${homeCodeColumns(code)}`}
-    >
-      <Code code={code} lang={example.lang} frame="none" />
-    </div>
-  })}
+  <Frame {...(player ? { class: 'home-example-player not-prose' } : {})}>
+    <Stage {...(player ? { class: 'home-example-stage', 'data-body': '', tabindex: 0, role: 'group', 'aria-label': 'The program and the tmux it leaves' } : {})}>
+      {HOME_VIEWS.map((view) => {
+        const code = homeProgram(example, view).replace(/\n$/, '')
+        return <div
+          class="home-example-view"
+          data-home-view={view}
+          data-home-file={example.program}
+          style={`--home-code-columns: ${homeCodeColumns(code)}`}
+        >
+          <Code code={code} lang={example.lang} frame="none" />
+        </div>
+      })}
+      <slot name="beside" />
+    </Stage>
+    <slot name="controls" />
+  </Frame>
   <details class="home-example-run">
     <summary>Run this example</summary>
     <p>{example.prerequisites}</p>

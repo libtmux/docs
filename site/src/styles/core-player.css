@@ -1,0 +1,339 @@
+/*
+ * The Core API player (components/core/CorePlayer.astro): the program on one
+ * side, the tmux its current call left on the other, a result under it, and
+ * the MCP replay's controls below. The drawing and the controls keep the
+ * MCP replay's classes and are styled by mcp-replay.css; this sheet places
+ * them, and styles the code's current call and the result. Colours come from
+ * the site's tokens, so it follows the colour scheme.
+ *
+ * Without script every result and the final tmux show; the script hides what
+ * is not current with the `hidden` attribute, so nothing here depends on it.
+ */
+
+.home-example-heading .core-player__hint {
+  flex: 1 1 14rem;
+  min-width: 0;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  text-align: end;
+}
+
+.home-example-player {
+  container: core-player / inline-size;
+  --mcp-mono: var(--font-ibm-plex-mono, ui-monospace, 'SFMono-Regular', Menlo, monospace);
+  border: 1px solid var(--color-edge);
+  border-radius: var(--card-radius, 0.5rem);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.home-example-player:fullscreen {
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+  background: var(--color-background-primary, var(--color-surface));
+}
+
+.home-example-player:fullscreen .home-example-stage {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+}
+
+.home-example-stage:focus-visible {
+  outline: 2px solid var(--focus-ring-color, currentColor);
+  outline-offset: -2px;
+}
+
+/* The code is the first column; the side holds the tmux and the result. Narrow, they stack: code, tmux, result. */
+.home-example-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.home-example-stage > .home-example-view {
+  min-width: 0;
+  container-type: inline-size;
+}
+
+.home-example-stage > .core-player__side {
+  min-width: 0;
+  border-top: 1px solid var(--color-edge);
+}
+
+/* The program is set a size smaller than the homepage's, so that most of its lines fit the column beside the tmux. */
+.home-example-player .home-example-stage > .home-example-view .expressive-code {
+  --ec-codeFontSize: clamp(0.75rem, calc((100cqi - 2rem) / (var(--home-code-columns) * 0.625)), 0.875rem);
+}
+
+/* More specific than the landing page's cap on every program in its panels, which holds for the stand-alone example. */
+.home-example-player .home-example-stage > .home-example-view .expressive-code {
+  margin: 0;
+}
+
+.home-example-player .home-example-stage > .home-example-view .expressive-code .frame,
+.home-example[data-player] .home-example-player .home-example-stage > .home-example-view .expressive-code pre {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.home-example[data-player] .home-example-player .home-example-stage > .home-example-view .expressive-code pre {
+  box-sizing: border-box;
+  height: 17rem;
+  max-height: none;
+  overflow: auto;
+  tab-size: 8;
+  scrollbar-gutter: stable;
+}
+
+/* Named, because the code column is a container of its own (the font size follows its width) and must not answer for the player. */
+@container core-player (min-width: 44rem) {
+  .home-example-stage {
+    grid-template-columns: minmax(0, 1fr) 22rem;
+    grid-template-rows: minmax(0, 1fr);
+    height: 35rem;
+  }
+
+  .home-example-stage > .home-example-view,
+  .home-example-stage > .home-example-view .expressive-code,
+  .home-example-stage > .home-example-view .expressive-code .frame {
+    height: 100%;
+  }
+
+  .home-example[data-player] .home-example-player .home-example-stage > .home-example-view .expressive-code pre {
+    height: 100%;
+  }
+
+  .home-example-stage > .core-player__side {
+    border-top: 0;
+    border-inline-start: 1px solid var(--color-edge);
+  }
+}
+
+/* The call being shown. A tint, not a bar: the code's own colours stay readable on it. */
+.home-example-view .ec-line.is-call {
+  cursor: pointer;
+}
+
+.home-example-view .ec-line.is-current {
+  background: color-mix(in srgb, var(--color-link) 14%, transparent);
+}
+
+.home-example-view .ec-line.is-current.is-pinned {
+  background: color-mix(in srgb, var(--color-link) 24%, transparent);
+}
+
+/* The side */
+.core-player__side {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.core-player__tmux {
+  flex: none;
+  padding: 0.75rem 1rem 0.25rem;
+}
+
+.core-player__tmux .mcp-tmux {
+  width: min(100%, 15rem);
+}
+
+.core-player__results {
+  flex: 1;
+  min-height: 0;
+  padding: 0 1rem 0.75rem;
+  border-top: 1px solid var(--color-edge);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.core-result[hidden] {
+  display: none;
+}
+
+.core-result + .core-result {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--color-edge);
+}
+
+.core-result__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0.5rem 0 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.core-result__title code {
+  font-family: var(--mcp-mono);
+}
+
+.core-result__title code:first-child {
+  font-weight: 700;
+}
+
+.core-result__pin {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-block: -0.25rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0.375rem;
+  background: none;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.core-result__pin[hidden] {
+  display: none;
+}
+
+.core-result__pin:hover,
+.core-result__pin[aria-pressed='true'] {
+  color: var(--color-link);
+}
+
+.core-result__pin[aria-pressed='true'] svg {
+  fill: currentColor;
+}
+
+.core-result__pin:focus-visible,
+.core-result__tmux > summary:focus-visible {
+  outline: 2px solid var(--focus-ring-color, currentColor);
+  outline-offset: 1px;
+}
+
+.core-result__plain {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.core-result__value + .core-result__plain {
+  margin-top: 0.5rem;
+}
+
+/* The returned value is the site's own highlighted JSON in a box of its own; the box draws the one border. */
+.core-result__value {
+  overflow: auto;
+  border: 1px solid var(--color-edge);
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+}
+
+.home-example-player .core-player__side .core-result__value .expressive-code,
+.home-example-player .core-player__side .core-result__value .expressive-code .frame,
+.home-example-player .core-player__side .core-result__value .expressive-code pre {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-size: inherit;
+}
+
+/* A returned value is a few lines in a narrow column: the code block's own padding is more than it needs. */
+.home-example-player .core-player__side .core-result__value .expressive-code {
+  --ec-codePadBlk: 0.5rem;
+  --ec-codePadInl: 0.75rem;
+}
+
+/* The showcase and the landing page set the height of their programs on every code block in a panel; a returned value takes the height it needs. */
+.home-example-player .core-player__side .core-result__value .expressive-code pre {
+  height: auto;
+  max-height: none;
+  overflow: auto;
+}
+
+.core-result__tmux {
+  margin-top: 0.5rem;
+}
+
+.core-result__tmux > summary {
+  cursor: pointer;
+  color: var(--color-muted);
+}
+
+.core-commands {
+  display: grid;
+  gap: 0.375rem;
+  margin: 0.375rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--mcp-mono);
+  font-size: 0.75rem;
+}
+
+.core-commands li {
+  min-width: 0;
+}
+
+.core-commands__sent {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A command that can change tmux is set apart by weight, not by colour. */
+.is-change > .core-commands__sent {
+  font-weight: 700;
+}
+
+.core-commands__reply {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  color: var(--color-muted);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.core-commands__reply.is-refused {
+  color: inherit;
+  font-style: italic;
+}
+
+.core-commands__note {
+  margin: 0.5rem 0 0;
+  color: var(--color-muted);
+}
+
+/* The article's inline-code chips come from rules that ignore `not-prose` (see mcp-replay.css). */
+.core-player__side code:not(pre code),
+.core-player__provenance code {
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  overflow-wrap: normal;
+}
+
+.core-player__side code:not(pre code)::before,
+.core-player__side code:not(pre code)::after,
+.core-player__provenance code::before,
+.core-player__provenance code::after {
+  content: none;
+}
+
+.core-player__side a {
+  color: inherit;
+}
+
+.core-player__provenance {
+  margin-top: 0.8rem;
+}

@@ -1,0 +1,207 @@
+---
+/**
+ * A port's landing-page program, played: stepping through it marks each API
+ * call in the source, draws the tmux that call left, and shows what it
+ * returned and the tmux commands it sent.
+ *
+ * Everything shown was recorded by running the displayed program
+ * (`scripts/gen-core-recording.mjs`, `data/core-recordings/<port>.json`). The
+ * drawing and the controls are the MCP replay's own (`replay/TmuxScreen.astro`,
+ * `replay/ReplayControls.astro`, `lib/replay-player.ts`); the code and the
+ * Error handling and Cleanup choices are `HomeExample.astro`'s, so each choice
+ * plays the steps its view of the program holds (`lib/core-player.ts`).
+ *
+ * Without script the program, the final tmux and every step's result show.
+ * The caller decides whether the recording may be played at all
+ * (`playableCapability`); with none, it keeps `HomeExample` on its own.
+ */
+import { Code } from 'astro-expressive-code/components'
+import HomeExample from '../HomeExample.astro'
+import ReplayControls from '../replay/ReplayControls.astro'
+import TmuxScreen from '../replay/TmuxScreen.astro'
+import { coreFrames, replyText, returnedText, stepNote, viewSteps, visibleCommands } from '../../lib/core-player'
+import type { CoreCapability, CoreRecording } from '../../lib/core-recording'
+import { HOME_VIEWS, homeProgram, type HomeExample as Example } from '../../lib/quickstarts'
+import '../../styles/mcp-replay.css'
+import '../../styles/core-player.css'
+
+interface Props {
+  port: string
+  language: string
+  example: Example
+  recording: CoreRecording
+  capability: CoreCapability
+}
+const { port, language, example, recording, capability } = Astro.props as Props
+const steps = capability.steps
+const total = steps.length
+const frames = coreFrames(capability)
+// Where each call is in each view of the program: the views differ in the lines they add.
+const views = Object.fromEntries(HOME_VIEWS.map((view) => [view, viewSteps(capability, homeProgram(example, view).replace(/\n$/, ''))]))
+const before = (index: number) => (index === 0 ? capability.tmuxBefore : steps[index - 1]!.tmux)
+const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server is running yet.' : 'tmux is running.'
+---
+<HomeExample port={port} language={language} example={example} heading={false}>
+  <p slot="hint" class="core-player__hint" data-hint hidden>Hover a call in the code to preview the tmux state after it. Click to pin it.</p>
+  <div slot="beside" class="core-player__side" data-core-plan={JSON.stringify(views)}>
+    <div class="core-player__tmux" data-tmux role="group" aria-label="tmux state after the call shown">
+      {frames.map((frame) => (
+        <div class="mcp-frame" data-frame={frame.done} hidden={frame.done !== total}>
+          <TmuxScreen frame={frame} idPrefix={`cp-${port}`} hadSessions={frames.some((earlier) => earlier.done < frame.done && earlier.sessions.length > 0)} />
+          <p class="mcp-frame__note">{frame.done === 0 ? 'tmux before the first call: no server is running.' : stepNote(steps[frame.done - 1]!, before(frame.done - 1))}</p>
+        </div>
+      ))}
+    </div>
+    <div class="core-player__results" data-results>
+      <section class="core-result" data-result="0" hidden>
+        <h3 class="core-result__title">Before the first call</h3>
+        <p class="core-result__plain">{beforeText}</p>
+      </section>
+      {steps.map((step, index) => {
+        const { commands, probes } = visibleCommands(step)
+        const changes = commands.filter((command) => command.mutates).length
+        return (
+          <section class="core-result" data-result={index + 1}>
+            <h3 class="core-result__title">
+              <span><code>{step.label}</code> returned <code>{step.type}</code></span>
+              <button type="button" class="core-result__pin" data-pin aria-pressed="false" hidden aria-label={`Pin the tmux state after ${step.label}`}><svg class="mcp-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2.5h6v11L8 11l-3 2.5z" /></svg></button>
+            </h3>
+            <div class="core-result__value"><Code code={returnedText(step)} lang="json" frame="none" wrap /></div>
+            {commands.length === 0
+              ? <p class="core-result__plain">The call sent no tmux command.</p>
+              : (
+                <details class="core-result__tmux">
+                  <summary>{commands.length} tmux command{commands.length === 1 ? '' : 's'}{changes > 0 && <>, {changes} that change{changes === 1 ? 's' : ''} tmux</>}</summary>
+                  <ol class="core-commands">
+                    {commands.map((command) => (
+                      <li class={command.mutates ? 'is-change' : undefined}>
+                        <code class="core-commands__sent" title={command.tmux}>{command.tmux}</code>
+                        <span class={`core-commands__reply${command.exit === 0 ? '' : ' is-refused'}`}>{replyText(command)}</span>
+                      </li>
+                    ))}
+                  </ol>
+                  {probes > 0 && <p class="core-commands__note">Before these, the library asked tmux who it is {probes} time{probes === 1 ? '' : 's'} (<code>-V</code> and <code>run-shell -C</code>).</p>}
+                </details>
+              )}
+          </section>
+        )
+      })}
+    </div>
+  </div>
+  <ReplayControls slot="controls" marks={steps.map((step) => `Show the state after ${step.label}`)} />
+</HomeExample>
+<p class="not-prose mcp-provenance core-player__provenance">
+  Recorded by running this program against <a href={`https://github.com/${recording.repo}/tree/${recording.revision}`}><code>{recording.repo}</code></a>
+  at <code>{recording.revision.slice(0, 9)}</code> on a private {recording.sandbox.tmux} server.
+  {capability.stepMap === 'hand-written' && <>A person matched each call to its lines; the values, commands and tmux states are what the run produced.</>}
+  Commands appear without the library's <code>if-shell</code> guard, and the socket name and paths are set to fixed values.
+</p>
+
+<script>
+  import { bindReplay } from '../../lib/replay-player'
+
+  /** A call's place in a view: the step it is in the recording, and its lines in that view's code. */
+  type Placed = { index: number; lines: [number, number] }
+
+  function bindCore(side: HTMLElement) {
+    const root = side.closest<HTMLElement>('[data-home-example]')!
+    const body = root.querySelector<HTMLElement>('[data-body]')!
+    const plan = JSON.parse(side.dataset.corePlan!) as Record<string, Placed[]>
+    const errors = root.querySelector<HTMLInputElement>('[data-example-errors]')!
+    const cleanup = root.querySelector<HTMLInputElement>('[data-example-cleanup]')!
+    const frames = [...root.querySelectorAll<HTMLElement>('[data-frame]')]
+    const results = [...root.querySelectorAll<HTMLElement>('[data-result]')]
+    const pins = [...root.querySelectorAll<HTMLButtonElement>('[data-pin]')]
+    const hint = root.querySelector<HTMLElement>('[data-hint]')
+    // A touch screen fires mouseenter on a tap and never mouseleave, so only a pointer that can hover previews.
+    const canHover = window.matchMedia?.('(hover: hover)').matches ?? true
+    const IDLE_HINT = canHover ? 'Hover a call in the code to preview the tmux state after it. Click to pin it.' : 'Tap a call in the code to pin the tmux state after it.'
+    // The program the reader sees depends on the two choices above it, which another script owns; read them whenever they matter.
+    const viewName = () => (errors.checked ? (cleanup.checked ? 'full' : 'errors') : (cleanup.checked ? 'cleanup' : 'concise'))
+    const placed = () => plan[viewName()]!
+    const codeLines = (view: string) => [...root.querySelectorAll<HTMLElement>(`[data-home-view="${view}"] .ec-line`)]
+    // The call a code line belongs to, as its position in the view's steps (1 is the first call).
+    const callAt = (line: HTMLElement) => {
+      const lines = codeLines(viewName())
+      const number = lines.indexOf(line) + 1
+      return number === 0 ? 0 : placed().findIndex((call) => number >= call.lines[0] && number <= call.lines[1]) + 1
+    }
+
+    // The program is longer than its box: bring the call into the middle of it when the call changes, without moving the page.
+    let revealed: Placed | undefined
+    const reveal = (call: Placed) => {
+      const lines = codeLines(viewName())
+      const first = lines[call.lines[0] - 1]
+      const last = lines[call.lines[1] - 1]
+      const pre = first?.closest('pre')
+      if (!first || !last || !pre) return
+      const origin = pre.getBoundingClientRect().top - pre.scrollTop
+      const top = first.getBoundingClientRect().top - origin
+      const bottom = last.getBoundingClientRect().bottom - origin
+      if (top >= pre.scrollTop && bottom <= pre.scrollTop + pre.clientHeight) return
+      pre.scrollTo({ top: Math.max(0, top - (pre.clientHeight - (bottom - top)) / 2), behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+    }
+
+    // Full screen takes the frame that holds the program, the tmux and the controls, not the choices above it or the setup below.
+    const player = bindReplay(root.querySelector<HTMLElement>('.home-example-player')!, {
+      body,
+      total: () => placed().length,
+      render({ shown, pinned }) {
+        const call = shown === 0 ? undefined : placed()[shown - 1]
+        const frame = call ? call.index + 1 : 0
+        frames.forEach((element) => { element.hidden = Number(element.dataset.frame) !== frame })
+        results.forEach((element) => { element.hidden = Number(element.dataset.result) !== frame })
+        pins.forEach((pin) => { pin.setAttribute('aria-pressed', String(pinned !== null && shown === pinned)) })
+        for (const view of Object.keys(plan)) {
+          codeLines(view).forEach((line, position) => {
+            const mine = view === viewName() && call !== undefined && position + 1 >= call.lines[0] && position + 1 <= call.lines[1]
+            line.classList.toggle('is-current', mine)
+            line.classList.toggle('is-pinned', mine && pinned !== null)
+          })
+        }
+        if (call && call !== revealed) reveal(call)
+        revealed = call
+        if (hint) hint.textContent = pinned !== null ? 'Pinned. Click the call again, or press Escape, to follow the replay.' : IDLE_HINT
+      },
+      ownsKey: (target) => target.hasAttribute('data-pin'),
+    })
+    if (!player) return
+    if (hint) hint.hidden = false
+
+    // Every line of a call answers to it: hovering previews, clicking pins.
+    for (const [view, calls] of Object.entries(plan)) {
+      codeLines(view).forEach((line, position) => {
+        if (calls.some((call) => position + 1 >= call.lines[0] && position + 1 <= call.lines[1])) line.classList.add('is-call')
+      })
+    }
+    const code = root.querySelector<HTMLElement>('.home-example-stage')!
+    if (canHover) {
+      code.addEventListener('mouseover', (event) => {
+        const line = (event.target as HTMLElement).closest<HTMLElement>('.ec-line.is-call')
+        if (line) player.hover(callAt(line))
+      })
+      code.addEventListener('mouseout', (event) => {
+        if ((event.target as HTMLElement).closest('.ec-line.is-call')) player.hover(null)
+      })
+    }
+    code.addEventListener('click', (event) => {
+      const line = (event.target as HTMLElement).closest<HTMLElement>('.ec-line.is-call')
+      if (line) player.togglePin(callAt(line))
+    })
+    pins.forEach((pin) => {
+      pin.hidden = false
+      pin.addEventListener('click', () => player.togglePin(player.state().shown))
+    })
+    // The choices change which calls the program has, and another script restores them after this one has bound.
+    root.addEventListener('change', () => player.refresh())
+    window.addEventListener('popstate', () => setTimeout(() => player.refresh(), 0))
+    requestAnimationFrame(() => player.refresh())
+  }
+
+  const bindAll = () => document.querySelectorAll<HTMLElement>('[data-core-plan]:not([data-live])').forEach((side) => {
+    side.setAttribute('data-live', '')
+    bindCore(side)
+  })
+  bindAll()
+  document.addEventListener('astro:after-swap', bindAll)
+</script>

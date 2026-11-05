@@ -1,8 +1,10 @@
 ---
 import { Code } from 'astro-expressive-code/components'
 import HomeExample from './HomeExample.astro'
+import CorePlayer from './core/CorePlayer.astro'
 import { CAPABILITIES, portCapabilities, type CapabilityTable } from '../lib/core-capabilities'
 import { QUICKSTARTS, homeProgram } from '../lib/quickstarts'
+import { playableCapability } from '../lib/core-player'
 import { PORT_BY_SLUG } from '../lib/ports'
 import { apisUsed, CORE_APIS } from '../lib/core-apis'
 import { buildTarget } from '../lib/versions'
@@ -14,8 +16,9 @@ import { homeCodeColumns } from '../lib/quickstarts'
 /**
  * What the library does, one tested example per capability.
  *
- * A vertical list of capabilities on the left and the selected example on the
- * right. Narrow pages fold the list into a dropdown. The list is plain links, so Tab and Enter reach every capability.
+ * The capabilities as a row of menu items, the selected example under them
+ * and the APIs it uses under that. Narrow pages fold the menu into a dropdown.
+ * The menu is plain links, so Tab and Enter reach every capability.
  * The selection is the `capability` query parameter and leaves `product` and
  * the example toggles alone. Every example is an excerpt of a program or test
  * the port's CI runs; see `lib/core-capabilities.ts`.
@@ -32,6 +35,8 @@ const { port, links = [] } = Astro.props as Props
 const programs = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>)
 const quickstart = QUICKSTARTS[port]?.complete
 const quickstartCode = quickstart ? homeProgram(quickstart, 'full') : ''
+// A recording of this program, run for real, makes the first capability a player; without one the program stands alone.
+const player = quickstart ? await playableCapability(port, 'typed-graph', quickstartCode) : undefined
 // The first capability is the port's homepage quickstart, which already walks server, session, window and pane.
 const shown = [
   ...(quickstart ? [{ id: 'typed-graph', label: CAPABILITIES[0].label, quickstart: true as const, tmux: undefined as string | undefined }] : []),
@@ -57,7 +62,9 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
   <div class="core-showcase__panels">
     {shown.map((item, index) => item.quickstart ? <section class="core-showcase__panel" data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}
       style={`--home-code-columns: ${homeCodeColumns(quickstartCode)}`}>
-      <HomeExample port={port} language={PORT_BY_SLUG[port]!.name} example={quickstart!} heading={false} fixed />
+      {player
+        ? <CorePlayer port={port} language={PORT_BY_SLUG[port]!.name} example={quickstart!} recording={player.recording} capability={player.capability} />
+        : <HomeExample port={port} language={PORT_BY_SLUG[port]!.name} example={quickstart!} heading={false} fixed />}
     </section> : <section class="core-showcase__panel" data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}
       style={`--home-code-columns: ${homeCodeColumns(item.code)}`}>
       <Code code={item.code} lang={item.lang} title={item.file} frame="code" />
@@ -141,7 +148,7 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
 
 <style>
   .core-showcase { display: grid; gap: 1rem; container-type: inline-size; }
-  .core-showcase__links { display: grid; gap: .35rem; margin: 0; font-size: .8125rem; }
+  .core-showcase__links { display: flex; flex-wrap: wrap; gap: .35rem 1.5rem; margin: 0; font-size: .8125rem; }
   .core-showcase__links a { color: var(--color-link); }
   .core-showcase__panels, .core-showcase__panel, .core-showcase__picker { min-width: 0; max-width: 100%; }
   .core-showcase :global(.expressive-code) { max-width: 100%; }
@@ -154,10 +161,10 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
   .core-showcase__panels { display: grid; container-type: inline-size; }
   .core-showcase__panel, .core-showcase__apilist { grid-area: 1 / 1; visibility: hidden; }
   .core-showcase:not([data-selected]) :is(.core-showcase__panel, .core-showcase__apilist)[data-default], .core-showcase :global(:is(.core-showcase__panel, .core-showcase__apilist).is-selected) { visibility: visible; }
-  .core-showcase__apis { min-width: 0; min-height: 0; overflow: auto; }
-  .core-showcase__apis-title { margin: 0 0 .35rem; font-size: .75rem; font-weight: 600; text-transform: none; color: var(--color-muted); }
-  .core-showcase__apis-lists { display: grid; }
-  .core-showcase__apilist { margin: 0; padding: 0; list-style: none; font-size: .8125rem; line-height: 1.5; }
+  .core-showcase__apis { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem 1rem; min-width: 0; }
+  .core-showcase__apis-title { margin: 0; font-size: .75rem; font-weight: 600; text-transform: none; color: var(--color-muted); }
+  .core-showcase__apis-lists { display: grid; flex: 1 1 20rem; min-width: 0; }
+  .core-showcase__apilist { display: flex; flex-wrap: wrap; gap: .125rem 1rem; margin: 0; padding: 0; list-style: none; font-size: .8125rem; line-height: 1.5; }
   .core-showcase__apilist a { color: var(--color-link); }
   .core-showcase__apilist code { font-size: inherit; overflow-wrap: anywhere; }
   /* The treatment of the front page examples: column-fit type size, a fixed height, scrolling inside the block. */
@@ -174,12 +181,9 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
   .core-showcase__source code { white-space: normal; overflow-wrap: anywhere; }
   .core-showcase :global(.expressive-code pre) { overflow: auto; tab-size: 8; }
   @media (min-width: 56rem) {
-    .core-showcase { grid-template-columns: 14rem minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; align-items: start; column-gap: 1rem; }
-    .core-showcase__picker { grid-column: 1; grid-row: 1; }
-    .core-showcase__panels { grid-column: 2; grid-row: 1 / span 3; }
-    .core-showcase__apis { grid-column: 1; grid-row: 2; align-self: stretch; }
-    .core-showcase__links { grid-column: 1; grid-row: 3; align-self: end; }
     .core-showcase__picker > summary { display: none !important; }
-
+    .core-showcase__panel-list nav { display: flex; flex-wrap: wrap; gap: .375rem; }
+    .core-showcase__option { border: 1px solid var(--color-edge); }
+    .core-showcase__option[aria-current='true'] { border-color: color-mix(in srgb, var(--color-link) 55%, var(--color-edge)); }
   }
 </style>
