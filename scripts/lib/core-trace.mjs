@@ -101,7 +101,8 @@ export function splitCommandLine(line) {
     const char = line[at]
     if (quote) {
       if (char === quote) quote = undefined
-      else if (char === '\\' && quote === '"' && at + 1 < line.length) word += line[++at]
+      // tmux reads \r, \n, \t, \e, \u... inside double quotes as control characters; they stay as written so that the text stays readable.
+      else if (char === '\\' && quote === '"' && at + 1 < line.length) { word += /[rntaebfvuU0-7]/.test(line[at + 1]) ? char + line[++at] : line[++at] }
       else word += char
     } else if (char === "'" || char === '"') { quote = char; word ??= '' }
     else if (char === '\\' && at + 1 < line.length) word = (word ?? '') + line[++at]
