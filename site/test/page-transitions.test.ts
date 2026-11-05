@@ -78,3 +78,22 @@ describe.skipIf(!SITE_BUILT)('built shell pages', () => {
     expect(tree.length).toBe(pages.length)
   })
 })
+
+describe.skipIf(!SITE_BUILT)('built pages with code frames', () => {
+  // Reading every page body is slow on a full assembly, so an evenly spaced sample stands for them.
+  const framed = (SITE_BUILT ? shellPages() : []).filter((_, index) => index % 40 === 0)
+    .map(({ path }) => ({ path, html: readFileSync(path, 'utf8') }))
+    .filter(({ html }) => html.includes('class="expressive-code"'))
+  const stylesheet = /<link rel="stylesheet" href="[^"]*\/ec\.[A-Za-z0-9_-]+\.css"\s*\/?>/g
+
+  it('are sampled', () => { expect(framed.length).toBeGreaterThan(0) })
+
+  it('load the code stylesheet from the head, where the router preloads it before a swap', () => {
+    for (const { path, html } of framed) {
+      const body = html.indexOf('<body')
+      expect(html.slice(0, body).match(stylesheet) ?? [], `${path}: one link in the head`).toHaveLength(1)
+      expect(html.slice(body).match(/<link\b[^>]*rel="stylesheet"/g) ?? [], `${path}: no stylesheet link in the body`).toEqual([])
+    }
+  })
+})
+
