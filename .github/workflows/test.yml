@@ -170,6 +170,7 @@ jobs:
           set -euo pipefail
           node scripts/publication-metadata.mjs
           cp scripts/publish-root.sh publish-root.sh
+          cp scripts/large-json.sh large-json.sh
           cp scripts/publish-default-versions.sh publish-default-versions.sh
           mv "_site/$LOCALE" dist
           mkdir bin

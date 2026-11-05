@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import { DOC_PRODUCTS, PORTS as SUPPORTED_PORTS } from '../src/lib/ports'
 import { DEFAULT_LOCALE } from '../src/i18n/locales'
+import { CLOUDFRONT_LIMIT, expectLargeJsonGzipped, recordedCommands, recordingAws, uploads, writeSized } from './aws-uploads'
 
 // Retain coverage for a port whose native API migrates before its prose.
 const PORTS = [...SUPPORTED_PORTS, { slug: 'fixture', publishesOwnApi: true, publishesOwnTree: false }]
@@ -61,31 +62,17 @@ function fixture(products = true): string {
   write(join(directory, 'shell-paths.json'), JSON.stringify({
     schema: 1, locale: 'en', directories, files, nativeApi: NATIVE_API, portTrees: PORT_TREES,
   }))
-  const executable = join(directory, 'bin/aws')
-  mkdirSync(dirname(executable), { recursive: true })
-  writeFileSync(executable, '#!/bin/bash\nprintf "%s\\0" "$#" "$@" >> "$AWS_RECORD"\n', { mode: 0o755 })
+  recordingAws(directory)
   return directory
 }
 
 function publish(directory: string, locale = 'en') {
-  const record = join(directory, 'aws.args')
   const result = spawnSync('bash', [script], {
     cwd: directory, encoding: 'utf8', timeout: 10000,
-    env: {
-      ...process.env, PATH: `${join(directory, 'bin')}:${process.env.PATH}`, BUCKET: 'docs-test',
-      LOCALE: locale, RUNNER_TEMP: directory, AWS_RECORD: record,
-    },
+    env: recordingAws(directory, { BUCKET: 'docs-test', LOCALE: locale, RUNNER_TEMP: directory }),
   })
   expect(result.error, result.stderr).toBeUndefined()
-  const fields = existsSync(record) ? readFileSync(record, 'utf8').split('\0').slice(0, -1) : []
-  const commands: string[][] = []
-  for (let index = 0; index < fields.length;) {
-    const count = Number(fields[index++])
-    expect(Number.isSafeInteger(count) && count >= 0 && index + count <= fields.length).toBe(true)
-    commands.push(fields.slice(index, index + count))
-    index += count
-  }
-  return { ...result, commands }
+  return { ...result, commands: recordedCommands(directory) }
 }
 
 function assemblyFixture(): string {
@@ -320,6 +307,94 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
     expect(result.status).toBe(1)
     expect(result.stderr).toContain('symlink')
     expect(result.commands).toEqual([])
+  })
+})
+
+// CloudFront compresses an object only up to 10,000,000 bytes, so the shell
+// publishes a larger JSON file gzip-encoded. Each case here is carried out the
+// way `aws` would: a sync sends whatever its source holds that no --exclude
+// names, which is how a catalog slips out plain.
+describe('JSON files above the size CloudFront compresses', { timeout: 30_000 }, () => {
+  const MUTABLE = 'public, max-age=0, s-maxage=300'
+  const GUIDES = `${SHELL_PORT}/latest/guides/ledger.json`
+  const LARGE = [
+    'targets.json', 'targets.partial.json', 'tmux/targets.json', 'tmux/latest/targets.json',
+    'tmux/3.7c/targets.json', '_astro/index.json', `${SHELL_PORT}/latest/docs.json`, GUIDES,
+  ]
+
+  // Sizes either side of the limit; objects-full.inv is an inventory and stays as built.
+  function withCatalogs(): string {
+    const directory = fixture()
+    const dist = join(directory, 'dist')
+    for (const path of LARGE) writeSized(join(dist, path), CLOUDFRONT_LIMIT + 1)
+    writeSized(join(dist, 'at-the-limit.json'), CLOUDFRONT_LIMIT)
+    writeSized(join(dist, 'tmux/3.2a/targets.json'), 1_000_000)
+    writeSized(join(dist, 'objects-full.inv'), CLOUDFRONT_LIMIT + 355_982)
+    write(join(dist, 'tmux/index.html'))
+    return directory
+  }
+
+  it('sends each one gzip-encoded, once, and nothing larger than the limit plain', () => {
+    const directory = withCatalogs()
+    const result = publish(directory)
+    expect(result.status, result.stderr).toBe(0)
+    expect(expectLargeJsonGzipped(directory, 'dist', 's3://docs-test/en', MUTABLE)).toEqual([...LARGE].sort())
+  })
+
+  it('keeps them out of the sync that deletes, by exact path', () => {
+    const directory = withCatalogs()
+    const result = publish(directory)
+    const sync = result.commands.find((args) => args[1] === 'sync' && args[3] === 's3://docs-test/en/tmux/')!
+    expect(sync).toContain('--delete')
+    const excludes = sync.flatMap((arg, index) => sync[index - 1] === '--exclude' ? [arg] : [])
+    expect(excludes.sort()).toEqual(['3.7c/targets.json', 'latest/targets.json', 'targets.json'])
+  })
+
+  it('writes them after every sync, so the encoded copy is the last write to its key', () => {
+    const result = publish(withCatalogs())
+    const gzipped = result.commands.flatMap((args, index) => args.includes('--content-encoding') ? [index] : [])
+    expect(gzipped).toHaveLength(LARGE.length)
+    const lastSync = result.commands.reduce((last, args, index) => args[1] === 'sync' ? index : last, -1)
+    expect(Math.min(...gzipped)).toBeGreaterThan(lastSync)
+  })
+
+  it('leaves a build with none exactly as it was', () => {
+    const directory = fixture()
+    expect(publish(directory).commands.some((args) => args.includes('--content-encoding'))).toBe(false)
+  })
+
+  describe('the check itself', () => {
+    const rewrite = (directory: string, edit: (commands: string[][]) => string[][]) => {
+      const commands = edit(recordedCommands(directory))
+      writeFileSync(join(directory, 'aws.args'), commands.map((args) => [String(args.length), ...args].map((field) => `${field}\0`).join('')).join(''))
+    }
+    const published = () => {
+      const directory = withCatalogs()
+      expect(publish(directory).status).toBe(0)
+      return directory
+    }
+    const check = (directory: string) => () => expectLargeJsonGzipped(directory, 'dist', 's3://docs-test/en', MUTABLE)
+
+    it('notices a sync that sends a catalog because nothing excludes it', () => {
+      const directory = published()
+      rewrite(directory, (commands) => commands.map((args) => args[1] === 'sync'
+        ? args.filter((arg, index) => arg !== '--exclude' && args[index - 1] !== '--exclude') : args))
+      expect(uploads(recordedCommands(directory), directory).filter((upload) => upload.key === 's3://docs-test/en/tmux/3.7c/targets.json')).toHaveLength(2)
+      expect(check(directory)).toThrow('is written once')
+    })
+
+    it('notices a catalog copied as it is', () => {
+      const directory = published()
+      rewrite(directory, (commands) => [...commands,
+        ['s3', 'cp', 'dist/targets.json', 's3://docs-test/en/targets.json', '--cache-control', MUTABLE]])
+      expect(check(directory)).toThrow('is written once')
+    })
+
+    it('notices a catalog stored without its encoding', () => {
+      const directory = published()
+      rewrite(directory, (commands) => commands.map((args) => args.filter((arg, index) => arg !== '--content-encoding' && args[index - 1] !== '--content-encoding')))
+      expect(check(directory)).toThrow('is gzip-encoded')
+    })
   })
 })
 

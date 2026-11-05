@@ -47,6 +47,37 @@ exactly why today's `libtmux.git-pull.com` workflow already invalidates two of
 them by name (see README). An `--exclude "*.html"` pass would hand them a
 year of `immutable` by accident.
 
+## JSON above 10,000,000 bytes is stored gzipped
+
+CloudFront compresses an object only when it is between 1,000 and 10,000,000
+bytes. A larger file crosses from the origin whole on every fetch that reaches
+it, whatever the client accepts. The `targets.json` catalogs at the locale root
+and under `tmux/` are the biggest such files, and a port version's catalog can
+pass the limit as it grows.
+
+Both writers of the bucket, `scripts/publish-root.sh` and
+`reusable-deploy.yml`, therefore upload every `*.json` file over the limit
+gzipped, with `Content-Encoding: gzip`, `Content-Type: application/json` and
+the `Cache-Control` of its path class. `scripts/large-json.sh` holds the limit
+and the upload. Inventories (`*.inv`) stay as built: Sphinx already compresses
+their bodies, so gzip saves them almost nothing.
+
+`sync` compares sizes, so it would find the stored gzip smaller than the local
+file and upload the file again without the encoding. Each `cp` and `sync`
+therefore excludes these files by exact path, and the gzipped copies go up in
+one pass at the end. An exclude names only files the build still has, so
+`--delete` still removes the object of a file the build drops.
+
+Clients that ask for gzip, such as browsers, `curl --compressed`, Node's
+`fetch`, Go's default transport and Python's `requests`, decode the response.
+By its compression documentation Cloudflare decodes it for a client that sends
+no `Accept-Encoding`. CloudFront itself returns the stored bytes to every
+client, because S3 does no content negotiation, so a client that reaches the
+distribution directly and does not decode gets gzip. `aws s3 cp` and
+`aws s3 sync` also download the stored bytes. The immutable-tag guard in
+`reusable-deploy.yml` and `scripts/compose-published-inventory.mjs` decode a
+catalog before they use it.
+
 ## Why every release needs (at least) two sync passes
 
 A tag release and its rolling alias are separate builds with separate

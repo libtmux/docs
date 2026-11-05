@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { gunzipSync } from 'node:zlib'
 
 /** Compose against the final published manifest, including independently owned port trees. */
 export async function compose({ directory, runtime, catalogs, bucket, locale }) {
@@ -60,7 +61,10 @@ export async function compose({ directory, runtime, catalogs, bucket, locale }) 
       continue
     }
     if (used !== version) fallback.push({ port, default: version, used, catalog: `${base}${relative}` })
-    const bytes = readFileSync(file)
+    // A catalog above CloudFront's compression limit is stored gzip-encoded,
+    // and `aws s3 cp` writes the stored bytes. The hash names the decoded ones.
+    const stored = readFileSync(file)
+    const bytes = stored[0] === 0x1f && stored[1] === 0x8b ? gunzipSync(stored) : stored
     const published = used
     const catalog = JSON.parse(bytes.toString())
     const expectedBase = `${base}${port}/${published}/`

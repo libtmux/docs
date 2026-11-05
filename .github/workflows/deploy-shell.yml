@@ -207,6 +207,7 @@ jobs:
           # holds it at a path publish-root can name without depending on how
           # upload-artifact roots a multi-path upload.
           cp scripts/publish-root.sh publish-root.sh
+          cp scripts/large-json.sh large-json.sh
           cp scripts/publish-default-versions.sh publish-default-versions.sh
           cp scripts/merge-version-manifests.mjs merge-version-manifests.mjs
           cp scripts/skip-unchanged.mjs skip-unchanged.mjs
@@ -232,6 +233,7 @@ jobs:
             reserved-products.txt
             shell-paths.json
             publish-root.sh
+            large-json.sh
             publish-default-versions.sh
             merge-version-manifests.mjs
             skip-unchanged.mjs

@@ -15,8 +15,14 @@
 # the commit that built the tree it is publishing.
 #
 # Reads BUCKET, LOCALE and RUNNER_TEMP, and the metadata files beside `dist/`.
+# Its sibling `large-json.sh` ships beside it, in the repository and in that
+# artifact.
 
 set -euo pipefail
+# shellcheck source=large-json.sh
+. "$(dirname "${BASH_SOURCE[0]}")/large-json.sh"
+# Filled by `large_json_excludes` before each copy and sync.
+large_json_args=()
 locale="${LOCALE:?LOCALE is required}"
 # The artifact declares the shell-owned ports, products and paths. Missing
 # metadata must never turn a reserved port into an unrestricted sync.
@@ -176,17 +182,21 @@ done
 
 # Each deleting sync owns one shell subtree, never a locale, port,
 # or version root shared with a native documentation publisher.
+# A JSON file above CloudFront's compression limit is left out of every copy
+# and sync here and published gzip-encoded last (large-json.sh).
 # Upload immutable assets before any HTML that refers to them. Copy also
 # updates metadata on existing hashes; sync alone skips unchanged objects.
 for name in "${dirs[@]}"; do
   [[ "${name##*/}" == _astro ]] || continue
+  large_json_excludes "dist/$name"
   aws s3 cp "dist/$name/" "s3://$BUCKET/$locale/$name/" \
-    --recursive --cache-control "public, max-age=31536000, immutable"
+    --recursive "${large_json_args[@]}" --cache-control "public, max-age=31536000, immutable"
 done
 for name in "${dirs[@]}"; do
   [[ "${name##*/}" == _astro ]] && continue
+  large_json_excludes "dist/$name"
   aws s3 sync "dist/$name/" "s3://$BUCKET/$locale/$name/" \
-    --delete --cache-control "public, max-age=0, s-maxage=300"
+    --delete "${large_json_args[@]}" --cache-control "public, max-age=0, s-maxage=300"
 done
 for name in "${reserved_index_dirs[@]}"; do
   aws s3 cp "dist/$name/index.html" "s3://$BUCKET/$locale/$name/index.html" \
@@ -198,11 +208,13 @@ for name in "${reserved_index_dirs[@]}"; do
   fi
 done
 for path in "${version_files[@]}"; do
+  large_json_is_large "dist/$path" && continue
   aws s3 cp "dist/$path" "s3://$BUCKET/$locale/$path" \
     --cache-control "public, max-age=0, s-maxage=300"
 done
 for file in dist/*; do
   [[ -f "$file" ]] || continue
+  large_json_is_large "$file" && continue
   aws s3 cp "$file" "s3://$BUCKET/$locale/${file##*/}" \
     --cache-control "public, max-age=0, s-maxage=300"
 done
@@ -210,6 +222,8 @@ if [[ -f dist/robots.txt ]]; then
   aws s3 cp dist/robots.txt "s3://$BUCKET/robots.txt" \
     --cache-control "public, max-age=0, s-maxage=300"
 fi
+# Every key is its path under dist/, whichever loop above covers its parent.
+large_json_upload dist "s3://$BUCKET/$locale" "public, max-age=0, s-maxage=300"
 
 # Only the locale crosses into the next step now. The three lists
 # that used to be written here fed the per-path invalidation and
