@@ -153,8 +153,13 @@ export class ControlReader {
   }
 }
 
-/** How many commands a line, or a startup's arguments, holds: tmux answers each with a reply of its own. */
-export const commandCount = (words) => splitInvocation(words).commands.length
+/**
+ * How many commands a line, or a startup's arguments, holds: tmux answers each
+ * with a reply of its own. A line that is a `%if` block gets none while its
+ * condition is false, which is how a library guards a control client against a
+ * replaced daemon; a guard that fails is the end of the program anyway.
+ */
+export const commandCount = (words) => (words[0] === '%if' ? 0 : splitInvocation(words).commands.length)
 
 /**
  * What stands in for `tmux` in the program's PATH. A control client must keep
@@ -319,13 +324,11 @@ export const quoted = (word) => (/[\s'"\\;]/.test(word) || word === '' ? `'${wor
  * who it is (`tmux -V`, a version query), which the library makes before it
  * sends a command; it is kept apart. `redact`, when given, rewrites the
  * text of the invocation (a socket name that is different on every run).
- * `probeLine`, when given, rewrites the line of a control-mode probe for the
- * recording, for a library whose lines carry a token that changes on every run.
  * `reply`, when given, takes the library's own answer markers off what tmux printed
  * (a guard's `list-commands` replies, whose ids differ on every run).
  *
  * @param {{ argv: string[], exit: number, stdout: string, stderr: string }} entry
- * @param {{ fence?: (command: string[]) => boolean, unwrap?: (command: string[]) => string[] | undefined, probe?: (invocation: { flags: string[], commands: string[][] }) => boolean, probeLine?: (line: string) => string, reply?: (stdout: string) => string }} profile
+ * @param {{ fence?: (command: string[]) => boolean, unwrap?: (command: string[]) => string[] | undefined, probe?: (invocation: { flags: string[], commands: string[][] }) => boolean }} profile
  */
 export function describeInvocation(entry, profile = {}) {
   const invocation = splitInvocation(entry.argv)
@@ -333,7 +336,7 @@ export function describeInvocation(entry, profile = {}) {
   const inside = (words) => words.reduce((commands, word) => { if (word === ';') commands.push([]); else commands.at(-1).push(word); return commands }, [[]]).filter((command) => command.length > 0)
   const kept = invocation.commands.flatMap((command) => { const unwrapped = profile.unwrap?.(command); return unwrapped ? inside(unwrapped) : [command] }).filter((command) => !profile.fence?.(command))
   const role = profile.probe?.({ flags: invocation.flags, commands: kept, line: entry.line }) ? 'probe' : 'command'
-  const text = entry.line !== undefined && role === 'probe' ? (profile.probeLine?.(entry.line) ?? entry.line) : kept.map((command) => command.map(quoted).join(' ')).join(' ; ')
+  const text = entry.line !== undefined && role === 'probe' ? entry.line : kept.map((command) => command.map(quoted).join(' ')).join(' ; ')
   const shown = role === 'probe' && kept.length === 0 ? invocation.flags.join(' ') : text
   return {
     role,

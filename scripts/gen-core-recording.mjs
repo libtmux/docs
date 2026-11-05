@@ -129,7 +129,8 @@ function commandsOf(entries) {
   return entries.flatMap((entry) => {
     if (entry.type === 'tmux') return [entry]
     if (entry.type !== 'send') return []
-    return [asCommand(entry, replies)]
+    const command = asCommand(entry, replies)
+    return command.hidden ? [] : [command]
   })
 }
 
@@ -138,6 +139,9 @@ const repliesOf = (entries) => new Map(entries.filter((entry) => entry.type === 
 /** A command sent to a control client, in the form of a plain invocation, with tmux's replies to it: one for each command the line held. */
 function asCommand(sent, replies) {
   const text = sent.line ?? sent.argv.join(' ')
+  // A line that holds nothing but fenced commands (a library's own guard or end-of-reply marker) is not shown, whether or not tmux answered it before the client closed.
+  const lone = splitInvocation(sent.argv ?? splitCommandLine(sent.line)).commands
+  if (recipe.fence && lone.length > 0 && lone.every((command) => recipe.fence(recipe.unwrap?.(command) ?? command))) return { type: 'tmux', control: true, hidden: true }
   const answers = Array.from({ length: sent.count }, (_, offset) => replies.get(`${sent.client}:${sent.seq + offset}`))
   if (answers.length === 0 || answers.includes(undefined)) throw new Error(`${only}: tmux never answered the control command ${text}`)
   const broken = answers.find((reply) => reply.stateError)
@@ -157,20 +161,24 @@ function asCommand(sent, replies) {
  * recipe lists in `polls` is one a wait repeats until its condition holds; how
  * often depends on how soon the output arrives, which a mark's delay changes,
  * so a run of them counts once. A wait that polls with several commands
- * (`display-message`, then `capture-pane`) counts once as well: a poll name is
- * kept only the first time it follows a command that is not a poll.
+ * (`display-message`, then `capture-pane`) counts once as well, and in no
+ * particular order: the poll names between two commands that are not polls are
+ * kept once each, sorted.
  */
-const sequence = (entries) => {
-  const polled = new Set()
-  return commandsOf(entries)
-    .map((entry) => { const d = describeInvocation(entry, recipe); return `${entry.control ? 'control:' : ''}${d.role}:${d.tmux.split(' ')[0]}` })
-    .filter((name) => {
-      if (!(recipe.polls ?? []).some((poll) => name.endsWith(`:${poll}`))) { polled.clear(); return true }
-      if (polled.has(name)) return false
-      polled.add(name)
-      return true
-    })
+const withoutRepeatedPolls = (names) => {
+  const result = []
+  let run = new Set()
+  const flush = () => { result.push(...[...run].sort()); run = new Set() }
+  for (const name of names) {
+    if ((recipe.polls ?? []).some((poll) => name.endsWith(`:${poll}`))) { run.add(name); continue }
+    flush()
+    result.push(name)
+  }
+  flush()
+  return result
 }
+const sequence = (entries) => withoutRepeatedPolls(commandsOf(entries)
+  .map((entry) => { const d = describeInvocation(entry, recipe); return `${entry.control ? 'control:' : ''}${d.role}:${d.tmux.split(' ')[0]}` }))
 
 /** What the program printed, as the page states it: a recipe says how the port's own test reads it. */
 const normalized = (text) => recipe.normalizeOutput?.(text) ?? text
@@ -188,7 +196,7 @@ function stepsOf({ before, entries }) {
   let mark = 0
   for (const entry of entries) {
     if (entry.type === 'tmux') { commands.push(entry); continue }
-    if (entry.type === 'send') { commands.push(asCommand(entry, replies)); continue }
+    if (entry.type === 'send') { const command = asCommand(entry, replies); if (!command.hidden) commands.push(command); continue }
     if (entry.type === 'notification') { notifications.push(entry.line); continue }
     if (entry.type !== 'mark') continue
     const { step, iteration } = arrivals[mark++]
@@ -269,7 +277,7 @@ const found = hostLeaks(recording, { sandbox, sandboxReal, home: homedir(), chec
 if (found.length) throw new Error(`${only}: the recording names the host: ${found.join(', ')}`)
 if (flag('--check')) {
   const stored = JSON.parse(readFileSync(out, 'utf8'))
-  const same = (value) => JSON.stringify([value.capabilities[recipe.capability].revision ?? value.revision, value.capabilities[recipe.capability].program, value.capabilities[recipe.capability].steps.map((step) => [step.id, step.anchor, step.commands.map((command) => command.role + command.tmux.split(' ')[0])])])
+  const same = (value) => JSON.stringify([value.capabilities[recipe.capability].revision ?? value.revision, value.capabilities[recipe.capability].program, value.capabilities[recipe.capability].steps.map((step) => [step.id, step.anchor, withoutRepeatedPolls(step.commands.map((command) => `${command.role}:${command.tmux.split(' ')[0]}`))])])
   if (same(stored) !== same(recording)) throw new Error(`${only}: the stored recording is stale`)
 } else {
   mkdirSync(dirname(out), { recursive: true })
