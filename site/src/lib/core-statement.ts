@@ -16,13 +16,15 @@ export type LineRange = readonly [start: number, end: number]
  * it to the line where the first parenthesis opened at or after it closes.
  * Strings, runes and `//` comments are skipped, so a bracket inside them does
  * not count. It returns nothing when the anchor is on no line or on several,
- * since a call that cannot be found once cannot be highlighted.
+ * since a call that cannot be found once cannot be highlighted. A program that
+ * makes the same call on several lines says which one with `occurrence`
+ * (one-based, among the lines that hold the anchor).
  */
-export function statementLines(code: string, anchor: string, comment = '//'): LineRange | undefined {
+export function statementLines(code: string, anchor: string, comment = '//', occurrence?: number): LineRange | undefined {
   const lines = code.split('\n')
   const hits = lines.flatMap((line, index) => (line.includes(anchor) ? [index] : []))
-  if (hits.length !== 1) return undefined
-  const first = hits[0]!
+  if (occurrence === undefined ? hits.length !== 1 : !Number.isInteger(occurrence) || occurrence < 1 || occurrence > hits.length) return undefined
+  const first = hits[occurrence === undefined ? 0 : occurrence - 1]!
   let depth = 0
   let opened = false
   let quote: string | undefined

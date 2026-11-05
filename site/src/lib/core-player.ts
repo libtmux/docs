@@ -31,7 +31,7 @@ export interface PlayerStep {
 /** The steps a view's code makes, in the order the program runs them. A step whose call the view does not hold is not played. */
 export function viewSteps(capability: CoreCapability, code: string): PlayerStep[] {
   return capability.steps.flatMap((step, index): PlayerStep[] => {
-    const lines = statementLines(code, step.anchor)
+    const lines = statementLines(code, step.anchor, '//', step.occurrence)
     return lines ? [{ index, lines }] : []
   })
 }

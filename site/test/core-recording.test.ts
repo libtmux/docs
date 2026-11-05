@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { hostname, userInfo } from 'node:os'
 import { describe, expect, it } from 'vitest'
-import { RECIPES, instrumentGo, withoutMarks } from '../../scripts/lib/core-recipes.mjs'
+import { RECIPES as GO_RECIPES, instrumentGo, withoutMarks } from '../../scripts/lib/core-recipes/go.mjs'
 import { describeInvocation, splitInvocation } from '../../scripts/lib/core-trace.mjs'
 import { leaks } from '../../scripts/lib/mcp-transcript-checks.mjs'
 import { recordingProblems, sha256, type CoreRecording } from '../src/lib/core-recording'
@@ -29,9 +29,9 @@ describe('the Go recording of the landing page program', () => {
 
   it('has one step per call of the step map, in the order the calls ran, and says the map was written by hand', () => {
     const recorded = capability(stored())
-    expect(recorded.steps.map((step) => step.id)).toEqual(RECIPES.go.steps.map((step) => step.id))
-    expect(recorded.steps.map((step) => [step.label, step.anchor, step.type])).toEqual(RECIPES.go.steps.map((step) => [step.label, step.anchor, step.type]))
-    expect(RECIPES.go.stepMap).toBe('hand-written')
+    expect(recorded.steps.map((step) => step.id)).toEqual(GO_RECIPES['typed-graph'].steps.map((step) => step.id))
+    expect(recorded.steps.map((step) => [step.label, step.anchor, step.type])).toEqual(GO_RECIPES['typed-graph'].steps.map((step) => [step.label, step.anchor, step.type]))
+    expect(GO_RECIPES['typed-graph'].stepMap).toBe('hand-written')
     expect(recorded.stepMap).toBe('hand-written')
   })
 
@@ -112,32 +112,32 @@ describe('what the recorder reads from tmux invocations', () => {
 
   it('drops the library\'s guard, names what remains, and says whether it can change tmux', () => {
     const guarded = entry(['-N', '-Lx', 'if-shell', '-F', '#{==:a,b}', '', '__libtmux_daemon_replaced_ABC', ';', 'new-window', '-t', '$0', '--', 'echo hello'], { stdout: '@1\n' })
-    expect(describeInvocation(guarded, RECIPES.go)).toEqual({ role: 'command', tmux: "new-window -t $0 -- 'echo hello'", mutates: true, exit: 0, stdout: '@1', stderr: '' })
-    expect(describeInvocation(entry(['-Lx', 'if-shell', '-F', 'c', '', '__libtmux_daemon_replaced_A', ';', 'list-panes', '-a']), RECIPES.go)).toMatchObject({ tmux: 'list-panes -a', mutates: false })
+    expect(describeInvocation(guarded, GO_RECIPES['typed-graph'])).toEqual({ role: 'command', tmux: "new-window -t $0 -- 'echo hello'", mutates: true, exit: 0, stdout: '@1', stderr: '' })
+    expect(describeInvocation(entry(['-Lx', 'if-shell', '-F', 'c', '', '__libtmux_daemon_replaced_A', ';', 'list-panes', '-a']), GO_RECIPES['typed-graph'])).toMatchObject({ tmux: 'list-panes -a', mutates: false })
   })
 
   it('tells an identity probe from a command', () => {
-    expect(describeInvocation(entry(['-V']), RECIPES.go)).toMatchObject({ role: 'probe', tmux: '-V' })
-    expect(describeInvocation(entry(['-N', '-Lx', 'run-shell', '-C', 'libtmux-version-ab12-#{q:pid}']), RECIPES.go).role).toBe('probe')
-    expect(describeInvocation(entry(['-Lx', 'run-shell', 'echo hi']), RECIPES.go).role, 'a run-shell that is not the probe is a command').toBe('command')
+    expect(describeInvocation(entry(['-V']), GO_RECIPES['typed-graph'])).toMatchObject({ role: 'probe', tmux: '-V' })
+    expect(describeInvocation(entry(['-N', '-Lx', 'run-shell', '-C', 'libtmux-version-ab12-#{q:pid}']), GO_RECIPES['typed-graph']).role).toBe('probe')
+    expect(describeInvocation(entry(['-Lx', 'run-shell', 'echo hi']), GO_RECIPES['typed-graph']).role, 'a run-shell that is not the probe is a command').toBe('command')
   })
 
   it('keeps a refusal as the reply, with its exit status', () => {
-    expect(describeInvocation(entry(['-Lx', 'list-sessions'], { exit: 1, stderr: 'no server running\n' }), RECIPES.go)).toMatchObject({ exit: 1, stderr: 'no server running' })
+    expect(describeInvocation(entry(['-Lx', 'list-sessions'], { exit: 1, stderr: 'no server running\n' }), GO_RECIPES['typed-graph'])).toMatchObject({ exit: 1, stderr: 'no server running' })
   })
 })
 
 describe('the markers the recorder puts in a copy of the program', () => {
-  const marked: string = instrumentGo(program, RECIPES.go.steps)
+  const marked: string = instrumentGo(program, GO_RECIPES['typed-graph'].steps)
   const lines: string[] = marked.split('\n')
 
   it('leave the displayed program as it is once they are taken out', () => {
     expect(withoutMarks(marked)).toBe(program)
-    expect(lines.filter((line) => line.endsWith('// docs:mark'))).toHaveLength(RECIPES.go.steps.length)
+    expect(lines.filter((line) => line.endsWith('// docs:mark'))).toHaveLength(GO_RECIPES['typed-graph'].steps.length)
   })
 
   it('come after the whole of each call, where its value is in scope, never inside it', () => {
-    for (const step of RECIPES.go.steps) {
+    for (const step of GO_RECIPES['typed-graph'].steps) {
       const [, end] = statementLines(program, step.anchor)!
       const at = lines.findIndex((line) => line.includes(`docsMark(${JSON.stringify(step.id)},`))
       expect(lines[at - 1], step.id).toBe(program.split('\n')[end - 1])
@@ -145,7 +145,7 @@ describe('the markers the recorder puts in a copy of the program', () => {
   })
 
   it('refuse a step whose anchor is not on exactly one line', () => {
-    expect(() => instrumentGo(program, [{ ...RECIPES.go.steps[0]!, anchor: 'err != nil' }])).toThrow(/not on exactly one line/)
-    expect(() => instrumentGo(program, [{ ...RECIPES.go.steps[0]!, anchor: 'nothing.Here(' }])).toThrow(/not on exactly one line/)
+    expect(() => instrumentGo(program, [{ ...GO_RECIPES['typed-graph'].steps[0]!, anchor: 'err != nil' }])).toThrow(/not on exactly one line/)
+    expect(() => instrumentGo(program, [{ ...GO_RECIPES['typed-graph'].steps[0]!, anchor: 'nothing.Here(' }])).toThrow(/not on exactly one line/)
   })
 })

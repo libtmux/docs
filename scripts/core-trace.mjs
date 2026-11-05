@@ -9,6 +9,6 @@ import { runMark, runShim } from './lib/core-trace.mjs'
  * them. See lib/core-trace.mjs.
  */
 const [mode, ...args] = process.argv.slice(2)
-if (mode === 'shim') runShim(args)
+if (mode === 'shim') await runShim(args)
 else if (mode === 'mark') await runMark(args)
 else throw new Error(`usage: core-trace.mjs shim <tmux arguments> | mark <step> <json>, not ${mode}`)

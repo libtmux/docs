@@ -39,11 +39,17 @@ export interface CoreStep {
   label: string
   /** The text of the call's first line in the program; the page finds its lines from it (`statementLines`). */
   anchor: string
+  /** Which of the lines that hold the anchor, when the program makes the same call on several (one-based). */
+  occurrence?: number
+  /** Set on a call that ran more than once, such as one in a loop: this run of it (one-based). Every run is a step of its own, anchored on the same line. */
+  iteration?: number
   /** The type of what the call returned. */
   type: string
   /** What it returned, as the recorder's marker encoded it as JSON. */
   returned: unknown
   commands: CoreCommand[]
+  /** What tmux sent unasked while the call ran, as control-mode notification lines. */
+  notifications?: string[]
   /** Windows tmux held while the call ran and no longer holds when it returned. */
   transient: { window: string; name: string }[]
   /** The recording's tmux server once the call had returned. */
@@ -53,6 +59,8 @@ export interface CoreStep {
 export interface CoreCapability {
   /** The program that was run, and the hash of the bytes the page displays for it. */
   program: { file: string; sha256: string }
+  /** The revision of the library this program was built against, when it is not the recording's. */
+  revision?: string
   /** `hand-written` when a person mapped the calls of the program to anchors and returned values. */
   stepMap: 'hand-written' | 'generated'
   /** What the displayed program printed. */
@@ -109,6 +117,7 @@ export function recordingProblems(recording: unknown, { programs }: { programs?:
     before.forEach((problem) => problems.push(at(`before the first call: ${problem}`)))
     let previous = capability.tmuxBefore as TmuxState
     const seen = new Set<string>()
+    const runs = new Map<string, number>()
     steps.forEach((step, index) => {
       const here = (text: string) => at(`step ${index + 1} (${step.label ?? step.id}): ${text}`)
       if (!step.id || seen.has(step.id)) problems.push(here('has no unique id'))
@@ -116,8 +125,13 @@ export function recordingProblems(recording: unknown, { programs }: { programs?:
       if (!step.label || !step.type) problems.push(here('has no label or no type'))
       if (!('returned' in step)) problems.push(here('records no returned value'))
       if (program !== undefined) {
-        if (!step.anchor || !statementLines(program, step.anchor)) problems.push(here(`its anchor ${JSON.stringify(step.anchor)} is not on exactly one line of the program`))
+        if (!step.anchor || !statementLines(program, step.anchor, '//', step.occurrence)) problems.push(here(`its anchor ${JSON.stringify(step.anchor)} is not on exactly one line of the program`))
       } else if (!step.anchor) problems.push(here('has no anchor'))
+      // A call shares its line with its other runs only when it says it ran more than once, and the runs count up from one.
+      const place = `${step.anchor}#${step.occurrence ?? ''}`
+      const earlier = runs.get(place) ?? 0
+      if (step.iteration === undefined ? earlier > 0 : step.iteration !== earlier + 1) problems.push(here(step.iteration === undefined ? 'shares its line with another step but does not say it is a repeated call' : `is run ${step.iteration} of its call, after ${earlier}`))
+      runs.set(place, earlier + 1)
       if (!Array.isArray(step.commands)) { problems.push(here('lists no commands')); return }
       for (const command of step.commands) {
         const ok = (command.role === 'command' || command.role === 'probe') && typeof command.tmux === 'string' && command.tmux !== '' && typeof command.mutates === 'boolean'
