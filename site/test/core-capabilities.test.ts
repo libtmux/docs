@@ -288,13 +288,16 @@ jobs:
 })
 
 describe('the showcase component', () => {
-  it('leads with the quickstart, then each program once, and renders nothing for a port with only the quickstart', async () => {
+  it('leads with the quickstart, then each program once, and shows a port with only the quickstart that one panel, with no list', async () => {
     const { Window } = await import('happy-dom')
     const { createComponent, renderTemplate } = await import('astro/runtime/server/index.js')
     const { loadAstroTemplate, renderAstroTemplate } = await import('./astro-templates')
     const Code = createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre data-code>${props.code}</pre>`)
     const template = await loadAstroTemplate('components/CoreShowcase.astro', {
-      stubs: { 'components/HomeExample.astro': '---\nconst { port, heading } = Astro.props\n---\n<div data-home-example={port} data-heading={String(heading)} />' },
+      stubs: {
+        'components/HomeExample.astro': '---\nconst { port, heading } = Astro.props\n---\n<div data-home-example={port} data-heading={String(heading)} />',
+        'components/core/CorePlayer.astro': '---\nconst { capabilityId = "typed-graph" } = Astro.props\n---\n<div data-core-player={capabilityId} />',
+      },
       modules: { 'astro-expressive-code/components': { Code } },
     })
     const render = async (port: string) => {
@@ -310,7 +313,7 @@ describe('the showcase component', () => {
     const options = [...doc.querySelectorAll('[data-capability-option]')].map((a) => a.getAttribute('data-capability-option'))
     expect(options).toEqual(['typed-graph', ...programs])
     expect([...doc.querySelectorAll('[data-capability-panel]')].map((a) => a.getAttribute('data-capability-panel'))).toEqual(options)
-    expect(doc.querySelector('[data-capability-panel="typed-graph"] [data-home-example]')!.getAttribute('data-heading')).toBe('false')
+    expect(doc.querySelector('[data-capability-panel="typed-graph"] [data-core-player]')!.getAttribute('data-core-player'), 'the quickstart plays its recording').toBe('typed-graph')
     expect(doc.querySelectorAll('[data-capability-panel][data-default]')).toHaveLength(1)
     expect(doc.querySelector('[data-capability-option]')!.getAttribute('href')).toBe('?capability=typed-graph')
     expect(doc.querySelector('input, label, [data-capability-search]'), 'no search box for a list this short').toBeNull()
@@ -329,7 +332,12 @@ describe('the showcase component', () => {
     expect(doc.body.textContent).toContain('just check')
     expect(doc.body.textContent).toContain('The whole program')
     expect([...doc.querySelectorAll('.core-showcase__links a')].map((a) => a.textContent)).toEqual(['Core Library documentation →', 'More examples →'])
-    expect((await render('ts')).querySelector('[data-core-showcase]')).toBeNull()
+    const ts = await render('ts')
+    expect(portCapabilities('ts', table, cache), 'ts has only its quickstart').toEqual([])
+    expect([...ts.querySelectorAll('[data-capability-panel]')].map((panel) => panel.getAttribute('data-capability-panel'))).toEqual(['typed-graph'])
+    expect(ts.querySelector('[data-capability-panel="typed-graph"][data-default] [data-core-player]')).not.toBeNull()
+    expect(ts.querySelector('.core-showcase__picker, [data-capability-option]'), 'no list of one').toBeNull()
+    expect(ts.querySelector('[data-apis-for="typed-graph"]')).not.toBeNull()
   })
 
   it('plays a capability whose recording is of its cached program, and keeps a plain block for one without', async () => {
@@ -357,8 +365,10 @@ describe('the showcase component', () => {
       expect(panel.querySelector('[data-code]'), `${id} is not also drawn as a plain block`).toBeNull()
       expect(panel.textContent).toContain('The whole program')
     }
+    // rs records its send-keys program, but not create-windows, whose values the recorder cannot reach.
     const rs = await render('rs')
-    expect(rs.querySelector('[data-capability-panel] [data-core-player]'), 'no recording, no player').toBeNull()
-    expect(rs.querySelectorAll('[data-code]').length).toBeGreaterThan(0)
+    expect(rs.querySelector('[data-capability-panel="send-keys"] [data-core-player]')!.getAttribute('data-core-player')).toBe('send-keys')
+    expect(rs.querySelector('[data-capability-panel="create-windows"] [data-core-player]'), 'no recording, no player').toBeNull()
+    expect(rs.querySelector('[data-capability-panel="create-windows"] [data-code]')).not.toBeNull()
   })
 })

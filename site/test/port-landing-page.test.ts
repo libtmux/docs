@@ -34,6 +34,7 @@ const REAL = [
 ]
 const stubs = {
   'components/HomeExample.astro': '---\nconst { port, language } = Astro.props\n---\n<div data-home-example={port} data-language={language} />',
+  'components/CoreShowcase.astro': '---\nconst { port, links } = Astro.props\n---\n<div data-core-showcase={port} data-links={links.length} />',
   'components/widgets/PackageInstall.astro': '---\nconst { ports, packageId = "core" } = Astro.props\n---\n<div data-package-install={ports.join()} data-package-id={packageId} />',
   'components/widgets/McpInstall.astro': '---\nconst { port } = Astro.props\n---\n<div data-mcp-install={port} />',
 }
@@ -77,11 +78,13 @@ describe('the landing page markup', () => {
     }
   })
 
-  it('fixes the Core API panel to the port language with the homepage example', async () => {
+  it('fixes the Core API panel to the port, with its showcase even when the quickstart is its only example', async () => {
+    // py has no capability programs of its own: its quickstart still shows in the showcase, as every port's does.
     const document = await render('py')
-    const home = document.querySelector('[data-landing-panel="core"] [data-home-example]')!
-    expect(home.getAttribute('data-home-example')).toBe('py')
-    expect(home.getAttribute('data-language')).toBe('Python')
+    const showcase = document.querySelector('[data-landing-panel="core"] [data-core-showcase]')!
+    expect(showcase.getAttribute('data-core-showcase')).toBe('py')
+    expect(showcase.getAttribute('data-links'), 'the showcase carries the panel links').toBe('2')
+    expect(document.querySelector('[data-landing-panel="core"] [data-home-example]'), 'no second, plain quickstart').toBeNull()
     expect(document.querySelector('[data-landing-panel="core"] [data-package-install]')!.getAttribute('data-package-id')).toBe('core')
     expect(document.querySelector('[data-home-language]'), 'no language switcher').toBeNull()
   })
@@ -588,8 +591,11 @@ describe('the quickstart code height', () => {
   it('is fixed wherever the quickstart is shown, so a toggle moves nothing', () => {
     const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8')
     expect(read('../src/components/HomeExample.astro')).toMatch(/\[data-fixed\] \.home-example-view :global\(\.expressive-code pre\) \{ height: 34rem;/)
-    for (const path of ['../src/components/CoreHome.astro', '../src/components/CoreShowcase.astro', '../src/components/PortLanding.astro']) {
-      expect(read(path), path).toMatch(/<HomeExample [^>]*\bfixed\b/)
+    // The landing and the Core home show the quickstart through the showcase, which fixes it.
+    expect(read('../src/components/CoreShowcase.astro')).toMatch(/<HomeExample [^>]*\bfixed\b/)
+    for (const path of ['../src/components/CoreHome.astro', '../src/components/PortLanding.astro']) {
+      expect(read(path), path).not.toMatch(/<HomeExample\b/)
+      expect(read(path), path).toMatch(/<CoreShowcase\b/)
     }
   })
 })

@@ -1,9 +1,6 @@
 ---
 import { Code } from 'astro-expressive-code/components'
 import CoreShowcase from './CoreShowcase.astro'
-import HomeExample from './HomeExample.astro'
-import { portCapabilities, type CapabilityTable } from '../lib/core-capabilities'
-import CAPABILITIES from '../data/core-capabilities.json'
 import LandingInstall from './landing/LandingInstall.astro'
 import McpReplay from './mcp/McpReplay.astro'
 import WorkspaceConfig from './workspace/WorkspaceConfig.astro'
@@ -52,7 +49,6 @@ const workspaceTopic = workspaceExample && TOPICS.find((topic) => topic.id === w
 const workspaceWindows = workspace && workspaceExample && !offersPicker(workspace)
   ? previewWindows(JSON.parse(workspaceExample.json), `landing-${port.slug}`, workspace.support.defaultLayout?.layout) : []
 const workspaceProgram = loadCommand(port.slug)
-const hasShowcase = portCapabilities(port.slug, CAPABILITIES as CapabilityTable, SOURCES as Record<string, CachedSource>).length > 0
 const complete = QUICKSTARTS[port.slug]?.complete
 if (!complete) throw new Error(`PortLanding: ${port.slug} has no complete homepage example; add it to home-examples.json`)
 const coreLinks = [
@@ -83,10 +79,7 @@ const panelId = (product: string) => `landing-panel-${product}`
     </details>
     return <div class="landing-panel" id={panelId(panel.product)} data-landing-panel={panel.product}>
     {panel.product === 'core' ? <>
-      {hasShowcase ? <CoreShowcase port={port.slug} links={coreLinks} /> : <>
-        <HomeExample port={port.slug} language={port.name} example={complete} fixed />
-        <p class="landing-more landing-more--lines">{coreLinks.map((link) => <a href={link.href}>{link.label}</a>)}</p>
-      </>}
+      <CoreShowcase port={port.slug} links={coreLinks} />
       <LandingInstall panel={panel} port={port.slug} />
     </> : panel.product === 'mcp' ? <>
       <h2 class="sr-only">{panel.label}</h2>
@@ -196,9 +189,8 @@ const panelId = (product: string) => `landing-panel-${product}`
   .landing-note { font-size: .875rem; color: var(--color-muted); }
   .landing-excerpt :global(.expressive-code pre) { overflow: auto; tab-size: 8; }
   .landing-panel :global(.home-example .expressive-code pre) { max-height: 34rem; overflow: auto; tab-size: 8; scrollbar-gutter: stable; }
-  .landing-more--lines { display: grid; gap: .35rem; }
-  .landing-source, .landing-more { margin-top: .8rem; font-size: .8125rem; color: var(--color-muted); }
-  .landing-source a, .landing-more a { color: var(--color-link); }
+  .landing-source { margin-top: .8rem; font-size: .8125rem; color: var(--color-muted); }
+  .landing-source a { color: var(--color-link); }
   /* A long command or path wraps instead of widening the page. */
   .landing-source code { white-space: normal; overflow-wrap: anywhere; }
   /* One gap, 1rem, between a panel's blocks; half of it from a title to what it introduces. The tab row's own margin is the only space above the first block. */
