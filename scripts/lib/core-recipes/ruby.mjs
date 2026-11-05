@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process'
-import { chmodSync, mkdirSync, writeFileSync } from 'node:fs'
+import { chmodSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { capabilitySource, checkoutOf, instrumentLines, quickstartSource, withoutMarks } from './common.mjs'
+import { checkoutOf, instrumentLines, quickstartSource, withoutMarks } from './common.mjs'
 
 export { withoutMarks }
 
@@ -106,7 +106,7 @@ const RUBY = {
       mkdirSync(join(sandbox, 'tmp'), { recursive: true })
       writeFileSync(join(sandbox, dir, this.file), source)
       const preload = dir === 'marked' ? ` -r ${JSON.stringify(join(sandbox, dir, 'docs_mark.rb'))}` : ''
-      writeFileSync(join(sandbox, dir, 'program'), `#!/bin/sh\nTMPDIR=${JSON.stringify(join(sandbox, 'tmp'))}\nexport TMPDIR\nPATH=${JSON.stringify(join(sandbox, 'rbbin'))}:$PATH\nexport PATH\nexec ${JSON.stringify(rubyBinary())} -I ${JSON.stringify(join(checkout, 'gems/libtmux/lib'))}${preload} ${JSON.stringify(join(sandbox, dir, this.file))}\n`)
+      writeFileSync(join(sandbox, dir, 'program'), `#!/bin/sh\nTMPDIR=${JSON.stringify(join(sandbox, 'tmp'))}\nexport TMPDIR\nPATH=${JSON.stringify(join(sandbox, 'rbbin'))}:$PATH\nexport PATH\nLIBTMUX_DOCS_WINDOW_NAMES=env\nexport LIBTMUX_DOCS_WINDOW_NAMES\nexec ${JSON.stringify(rubyBinary())} -I ${JSON.stringify(join(checkout, 'gems/libtmux/lib'))}${preload} ${JSON.stringify(join(sandbox, dir, this.file))}\n`)
       chmodSync(join(sandbox, dir, 'program'), 0o755)
     }
     mkdirSync(join(sandbox, 'rbbin'), { recursive: true })
@@ -116,7 +116,23 @@ const RUBY = {
   },
 }
 
+/**
+ * A capability's program from the example cache, and what it prints from the port's `examples/manifest.json`, which its own
+ * tests compare the run with (the cache holds no `output.txt` for Ruby). The manifest is read from the checkout the recording is made on.
+ */
+function capabilityProgram(root, file, id) {
+  const cached = JSON.parse(readFileSync(join(root, 'site/src/data/example-sources.json'), 'utf8'))[`ruby:${file}`]
+  if (!cached) throw new Error(`ruby: ${file} is not in the example cache`)
+  const checkout = process.env.LIBTMUX_DOCS_CHECKOUT_RUBY
+  if (!checkout) throw new Error('ruby: set LIBTMUX_DOCS_CHECKOUT_RUBY to a checkout at the example\'s revision, which holds examples/manifest.json')
+  const manifest = JSON.parse(readFileSync(join(checkout, 'examples/manifest.json'), 'utf8'))
+  const entry = manifest.programs.find((example) => example.id === id)
+  if (!entry) throw new Error(`ruby: examples/manifest.json has no ${id}`)
+  return { code: cached.content.replace(/\n$/, ''), file: file.split('/').at(-1), revision: cached.revision, repository: cached.repository, expectedOutput: entry.api.output }
+}
+
 const SERVER = '{"owned" => server.owned?, "tmuxVersion" => server.tmux_version}'
+const CAPTURED = '{"lines" => LibTmuxDocs.returned("Pane#capture").stdout.lines(chomp: true).reject(&:empty?)}'
 const HELPERS = [{ file: 'docs_mark.rb', source: RUBY_HELPER }]
 
 /** One recipe per capability of the landing page that Ruby plays. */
@@ -133,6 +149,35 @@ export const RECIPES = {
       { id: 'new-window', label: 'Session#new_window', anchor: 'session.new_window(', type: 'LibTmux::Window', value: '{"id" => window.id}' },
       { id: 'split', label: 'Window#split', anchor: 'window.split(', type: 'LibTmux::Pane', value: '{"id" => LibTmuxDocs.returned("Window#split").id}' },
       { id: 'snapshot', label: 'Server#snapshot', anchor: 'server.snapshot', type: 'LibTmux::Snapshot', value: '{"windows" => snapshot.windows.map { |entry| {"name" => entry.name, "panes" => entry.panes.map(&:id)} }}' },
+    ],
+  },
+  'create-windows': {
+    ...RUBY,
+    capability: 'create-windows',
+    file: 'new_window.rb',
+    source: (root) => capabilityProgram(root, 'examples/api/new_window.rb', 'api_new_window'),
+    helpers: HELPERS,
+    steps: [
+      { id: 'start', label: 'Server.start', anchor: 'LibTmux::Server.start do |server|', type: 'LibTmux::Server', value: SERVER },
+      { id: 'new-session', label: 'Server#new_session', anchor: 'server.new_session(', type: 'LibTmux::Session', value: '{"id" => session.id}' },
+      { id: 'new-window', label: 'Session#new_window', anchor: 'session.new_window(', type: 'LibTmux::Window', value: '{"id" => window.id}' },
+      { id: 'window-snapshot', label: 'Window#snapshot', anchor: 'window.snapshot.name', type: 'LibTmux::WindowSnapshot', value: '{"id" => LibTmuxDocs.returned("Window#snapshot").id, "name" => LibTmuxDocs.returned("Window#snapshot").name}' },
+      { id: 'list-windows', label: 'Session#list_windows', anchor: 'session.list_windows.length', type: 'Array<LibTmux::Window>', value: '{"windows" => LibTmuxDocs.returned("Session#list_windows").map(&:id)}' },
+    ],
+  },
+  'send-keys': {
+    ...RUBY,
+    capability: 'send-keys',
+    file: 'capture.rb',
+    source: (root) => capabilityProgram(root, 'examples/api/capture.rb', 'api_capture'),
+    helpers: HELPERS,
+    // The program polls, and the loop's capture is not a step: a mark waits for tmux to settle, so by the next capture the output has arrived and the loop does not run.
+    steps: [
+      { id: 'start', label: 'Server.start', anchor: 'LibTmux::Server.start do |server|', type: 'LibTmux::Server', value: SERVER },
+      { id: 'new-session', label: 'Server#new_session', anchor: 'server.new_session(', type: 'LibTmux::CreationReceipt', value: '{"session" => created.entity.id, "window" => created.window.id, "pane" => created.pane.id}' },
+      { id: 'send-text', label: 'Pane#send_text', anchor: 'pane.send_text(', type: 'LibTmux::CommandResult', value: 'LibTmuxDocs.result(LibTmuxDocs.returned("Pane#send_text"))' },
+      { id: 'send-keys', label: 'Pane#send_keys', anchor: 'pane.send_keys(', type: 'LibTmux::CommandResult', value: 'LibTmuxDocs.result(LibTmuxDocs.returned("Pane#send_keys"))' },
+      { id: 'capture', label: 'Pane#capture', anchor: 'captured = pane.capture.stdout.lines(chomp: true)', occurrence: 1, type: 'LibTmux::CommandResult', value: CAPTURED },
     ],
   },
 }
