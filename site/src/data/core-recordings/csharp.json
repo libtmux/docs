@@ -1,0 +1,674 @@
+{
+  "generated": "scripts/gen-core-recording.mjs",
+  "port": "csharp",
+  "repo": "libtmux/libtmux-dotnet",
+  "revision": "472c2bcfbda6735139849324cc109ad70300001e",
+  "sandbox": {
+    "tmux": "tmux 3.8a",
+    "dotnet": "10.0.400",
+    "shell": "/bin/sh",
+    "rewritten": {
+      "socket": "quickstart-0123456789abcdef0123456789abcdef",
+      "tmuxExecutable": "/usr/bin/tmux",
+      "tmpdir": "/tmp"
+    }
+  },
+  "capabilities": {
+    "typed-graph": {
+      "program": {
+        "file": "Program.cs",
+        "sha256": "e82c07187deea5fd8a9a2eb0814a543eb3ef7401c66a030f5f4e3ef14fc6dc89"
+      },
+      "stepMap": "hand-written",
+      "printed": [
+        "hello-from-libtmux"
+      ],
+      "tmuxBefore": {
+        "sessions": [],
+        "windows": [],
+        "panes": []
+      },
+      "steps": [
+        {
+          "id": "create-owned",
+          "label": "Server.CreateOwnedAsync",
+          "anchor": "Server.CreateOwnedAsync(",
+          "type": "Task<OwnedServerScope>",
+          "returned": {
+            "socketName": "quickstart-0123456789abcdef0123456789abcdef",
+            "configFile": "/dev/null"
+          },
+          "commands": [
+            {
+              "role": "probe",
+              "tmux": "-V",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "run-shell -C libtmux-version-f62f178b7bcf41dab5f26997b8379545-#{version},#{pid},#{start_time}",
+              "mutates": false,
+              "exit": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "run-shell -C libtmux-version-69460ad54d5f4d7581a9b1e8aa5087ee-#{version},#{pid},#{start_time}",
+              "mutates": false,
+              "exit": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-sessions",
+              "mutates": false,
+              "exit": 1,
+              "stdout": "",
+              "stderr": "error connecting to /tmp/tmux-1000/quickstart-0123456789abcdef0123456789abcdef (No such file or directory)"
+            },
+            {
+              "role": "command",
+              "tmux": "start-server",
+              "mutates": true,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "run-shell -C libtmux-version-8fa9b6f069e64613b5bedb18826119a8-#{version},#{pid},#{start_time}",
+              "mutates": false,
+              "exit": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-sessions",
+              "mutates": false,
+              "exit": 1,
+              "stdout": "",
+              "stderr": "no server running on /tmp/tmux-1000/quickstart-0123456789abcdef0123456789abcdef"
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [],
+            "windows": [],
+            "panes": []
+          }
+        },
+        {
+          "id": "create-session",
+          "label": "Server.CreateSessionAsync",
+          "anchor": "server.CreateSessionAsync(",
+          "type": "Task<Session>",
+          "returned": {
+            "id": "$0",
+            "name": "build"
+          },
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "new-session -P -F '#{pid}:#{start_time}\t#{session_id}\t#{window_id}\t#{pane_id}\t#{window_index}' -d -s build -- /bin/sh",
+              "mutates": true,
+              "exit": 0,
+              "stdout": "2581047:1793875454\t$0\t@0\t%0\t0",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "run-shell -C libtmux-version-e3932f8669f2406783b4b78be523113c-#{version},#{pid},#{start_time}",
+              "mutates": false,
+              "exit": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "run-shell -C libtmux-version-2417e260e9ea4fcaa746a7edf0ed24b1-#{version},#{pid},#{start_time}",
+              "mutates": false,
+              "exit": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "attach-session -f ignore-size,no-output,new-layouts",
+              "mutates": true,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "display-message -p -t $0 #{config_files}LT8e93e52bb8c94ec582b107#{line}LT8e93e52bb8c94ec582b107#{next_session_id}LT8e93e52bb8c94ec582b107#{pid}LT8e93e52bb8c94ec582b107#{socket_path}LT8e93e52bb8c94ec582b107#{start_time}LT8e93e52bb8c94ec582b107#{uid}LT8e93e52bb8c94ec582b107#{user}LT8e93e52bb8c94ec582b107#{version}LT8e93e52bb8c94ec582b107#{active_window_index}LT8e93e52bb8c94ec582b107#{last_window_ind…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "/dev/nullLT8e93e52bb8c94ec582b107LT8e93e52bb8c94ec582b107$1LT8e93e52bb8c94ec582b1072581047LT8e93e52bb8c94ec582b107/tmp/tmux-1000/quickstart-0123456789abcdef0123456789abcdefLT8e93e52bb8c94ec582b1071793875454LT8e93e52bb8c94ec582b1071000LT8e93e52bb8c94ec582b107dLT8e93e52bb8c94ec582b1073.8aLT8e93e52bb8c94ec582b1070LT8e93e52bb8c94ec582b1070LT8e93e52bb8c94ec582b1071793875454LT8e93e52…",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "probe",
+              "tmux": "libtmux-control-<end-of-reply>",
+              "mutates": false,
+              "exit": 1,
+              "stdout": "",
+              "stderr": ""
+            }
+          ],
+          "notifications": [
+            "%session-changed $0 build"
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "build"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "sh",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "create-window",
+          "label": "Session.CreateWindowAsync",
+          "anchor": "session.CreateWindowAsync(",
+          "type": "Task<Window>",
+          "returned": {
+            "id": "@1",
+            "name": "tests"
+          },
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "new-window -P -F #{window_id} -d -t $0: -n tests -- /bin/sh",
+              "mutates": true,
+              "exit": 0,
+              "stdout": "@1",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "libtmux-control-<end-of-reply>",
+              "mutates": false,
+              "exit": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-windows -t $0 -F #{config_files}LT8e93e52bb8c94ec582b107#{line}LT8e93e52bb8c94ec582b107#{next_session_id}LT8e93e52bb8c94ec582b107#{pid}LT8e93e52bb8c94ec582b107#{socket_path}LT8e93e52bb8c94ec582b107#{start_time}LT8e93e52bb8c94ec582b107#{uid}LT8e93e52bb8c94ec582b107#{user}LT8e93e52bb8c94ec582b107#{version}LT8e93e52bb8c94ec582b107#{active_window_index}LT8e93e52bb8c94ec582b107#{last_window_index}…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "/dev/nullLT8e93e52bb8c94ec582b1072LT8e93e52bb8c94ec582b107$1LT8e93e52bb8c94ec582b1072581047LT8e93e52bb8c94ec582b107/tmp/tmux-1000/quickstart-0123456789abcdef0123456789abcdefLT8e93e52bb8c94ec582b1071793875454LT8e93e52bb8c94ec582b1071000LT8e93e52bb8c94ec582b107dLT8e93e52bb8c94ec582b1073.8aLT8e93e52bb8c94ec582b1070LT8e93e52bb8c94ec582b1071LT8e93e52bb8c94ec582b1071793875454LT8e93e5…",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "probe",
+              "tmux": "libtmux-control-<end-of-reply>",
+              "mutates": false,
+              "exit": 1,
+              "stdout": "",
+              "stderr": ""
+            }
+          ],
+          "notifications": [
+            "%window-add @1"
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "build"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "sh",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "tests",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%1",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "get-panes",
+          "label": "Window.GetPanesAsync",
+          "anchor": "window.GetPanesAsync(",
+          "type": "Task<IReadOnlyList<Pane>>",
+          "returned": {
+            "id": "%1"
+          },
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "list-panes -t $0:1 -F #{config_files}LT8e93e52bb8c94ec582b107#{line}LT8e93e52bb8c94ec582b107#{next_session_id}LT8e93e52bb8c94ec582b107#{pid}LT8e93e52bb8c94ec582b107#{socket_path}LT8e93e52bb8c94ec582b107#{start_time}LT8e93e52bb8c94ec582b107#{uid}LT8e93e52bb8c94ec582b107#{user}LT8e93e52bb8c94ec582b107#{version}LT8e93e52bb8c94ec582b107#{active_window_index}LT8e93e52bb8c94ec582b107#{last_window_index}…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "/dev/nullLT8e93e52bb8c94ec582b1071LT8e93e52bb8c94ec582b107$1LT8e93e52bb8c94ec582b1072581047LT8e93e52bb8c94ec582b107/tmp/tmux-1000/quickstart-0123456789abcdef0123456789abcdefLT8e93e52bb8c94ec582b1071793875454LT8e93e52bb8c94ec582b1071000LT8e93e52bb8c94ec582b107dLT8e93e52bb8c94ec582b1073.8aLT8e93e52bb8c94ec582b1070LT8e93e52bb8c94ec582b1071LT8e93e52bb8c94ec582b1071793875454LT8e93e5…",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "probe",
+              "tmux": "libtmux-control-<end-of-reply>",
+              "mutates": false,
+              "exit": 1,
+              "stdout": "",
+              "stderr": ""
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "build"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "sh",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "tests",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%1",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "send-text",
+          "label": "Pane.SendTextAsync",
+          "anchor": "pane.SendTextAsync(",
+          "type": "Task",
+          "returned": null,
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "send-keys -t %1 -l -- 'printf '\\''hello-from-%s\\n'\\'' libtmux'",
+              "mutates": true,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "libtmux-control-<end-of-reply>",
+              "mutates": false,
+              "exit": 1,
+              "stdout": "",
+              "stderr": ""
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "build"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "sh",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "tests",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%1",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "enter",
+          "label": "Pane.EnterAsync",
+          "anchor": "pane.EnterAsync(",
+          "type": "Task<Pane>",
+          "returned": {
+            "id": "%1"
+          },
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "send-keys -t %1 Enter",
+              "mutates": true,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "libtmux-control-<end-of-reply>",
+              "mutates": false,
+              "exit": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "display-message -p -t $0:.%1 #{config_files}LT8e93e52bb8c94ec582b107#{line}LT8e93e52bb8c94ec582b107#{next_session_id}LT8e93e52bb8c94ec582b107#{pid}LT8e93e52bb8c94ec582b107#{socket_path}LT8e93e52bb8c94ec582b107#{start_time}LT8e93e52bb8c94ec582b107#{uid}LT8e93e52bb8c94ec582b107#{user}LT8e93e52bb8c94ec582b107#{version}LT8e93e52bb8c94ec582b107#{active_window_index}LT8e93e52bb8c94ec582b107#{last_window…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "/dev/nullLT8e93e52bb8c94ec582b107LT8e93e52bb8c94ec582b107$1LT8e93e52bb8c94ec582b1072581047LT8e93e52bb8c94ec582b107/tmp/tmux-1000/quickstart-0123456789abcdef0123456789abcdefLT8e93e52bb8c94ec582b1071793875454LT8e93e52bb8c94ec582b1071000LT8e93e52bb8c94ec582b107dLT8e93e52bb8c94ec582b1073.8aLT8e93e52bb8c94ec582b1070LT8e93e52bb8c94ec582b1071LT8e93e52bb8c94ec582b1071793875454LT8e93e52…",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "probe",
+              "tmux": "libtmux-control-<end-of-reply>",
+              "mutates": false,
+              "exit": 1,
+              "stdout": "",
+              "stderr": ""
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "build"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "sh",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "tests",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%1",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "capture-1",
+          "label": "Pane.CaptureAsync",
+          "anchor": "pane.CaptureAsync(",
+          "iteration": 1,
+          "type": "Task<IReadOnlyList<string>>",
+          "returned": [
+            "$ printf 'hello-from-%s\\n' libtmux",
+            "hello-from-libtmux",
+            "$"
+          ],
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "capture-pane -t %1 -p",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "$ printf 'hello-from-%s\\n' libtmux\nhello-from-libtmux\n$\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "libtmux-control-<end-of-reply>",
+              "mutates": false,
+              "exit": 1,
+              "stdout": "",
+              "stderr": ""
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "build"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "sh",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "tests",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%1",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "kill",
+          "label": "OwnedServerScope.DisposeAsync",
+          "anchor": "await using var owned",
+          "type": "ValueTask",
+          "returned": null,
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "display-message -p #{pid}",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "2581047",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "libtmux-control-<end-of-reply>",
+              "mutates": false,
+              "exit": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "run-shell -C libtmux-version-4461c7f515c7404c91d18138692022a4-#{version},#{pid},#{start_time}",
+              "mutates": false,
+              "exit": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "kill-server",
+              "mutates": true,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            }
+          ],
+          "notifications": [
+            "%exit"
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [],
+            "windows": [],
+            "panes": []
+          }
+        }
+      ]
+    }
+  }
+}
