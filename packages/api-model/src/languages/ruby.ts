@@ -179,7 +179,8 @@ function source(source: RubySource, artifact: RubyArtifact) {
 }
 
 /**
- * The model of a Ruby export. `held` names the complete programs left off their pages (see
+ * The model of a Ruby export. `held` names the complete programs left off their pages when the
+ * export states no tmux release per program, as exports of earlier releases do (see
  * `HELD_RUBY_PROGRAMS`); an export built for a test passes its own, or none.
  */
 export function extractRuby(input: unknown, expectedRevision?: string, held: Readonly<Record<string, string>> = HELD_RUBY_PROGRAMS): ApiModel {

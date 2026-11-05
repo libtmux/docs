@@ -3,6 +3,9 @@
 export interface ExampleStep { tool: string; arguments: Record<string, unknown>; caption: string }
 export interface ExampleDefinition { prompt: string; steps: ExampleStep[] }
 
+/** The error code a server answers when a call sends the example's stand-in generation: the page tells the reader it is refused as this. */
+export const STALE_TARGET = 'stale_target'
+
 const CREATE = 'Create the session.'
 const RUN = 'Run the command and wait for its output.'
 const RUN_IN_CREATED = 'Run the command in the pane the create result returned (%0).'

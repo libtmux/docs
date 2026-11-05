@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-dotnet",
-  "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+  "revision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
   "selection": {
     "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
   },
@@ -32,7 +32,7 @@
     "resourceTemplates": [],
     "serverInfo": {
       "name": "tmux",
-      "version": "0.0.0-alpha.20"
+      "version": "0.1.1"
     },
     "tools": [
       {
@@ -1512,7 +1512,7 @@
           "readOnlyHint": false,
           "title": "Get server info"
         },
-        "description": "Inspect tmux metadata; accepts no client-supplied executable input. Read the tmux server's version and how many sessions, windows and panes it holds. Use to confirm a socket is alive and which tmux is running it.",
+        "description": "Inspect tmux metadata; accepts no client-supplied executable input. Read the tmux server's version and how many sessions, windows and panes it holds. Use to confirm a socket is alive and which tmux is running it. This server needs tmux 3.3a or newer and refuses an older one.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {},

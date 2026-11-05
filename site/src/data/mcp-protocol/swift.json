@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-swift",
-  "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+  "revision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
   "selection": {
     "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
   },
@@ -30,7 +30,7 @@
     "serverInfo": {
       "name": "libtmux",
       "title": "tmux",
-      "version": "0.1.0-alpha.6"
+      "version": "0.1.1"
     },
     "tools": [
       {
@@ -5365,7 +5365,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Change tmux state; no client-supplied executable input. Apply a named layout, a unique abbreviation for the running tmux version, or a checksummed saved layout. Invalid syntax is refused before window lookup; tmux validates geometry when applying the layout.",
+            "description": "Change tmux state; no client-supplied executable input. Apply a named layout, a unique abbreviation for the running tmux version, or a checksummed saved layout; a JSON layout document needs tmux 3.8. Invalid syntax is refused before window lookup; tmux validates geometry when applying the layout.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -5424,7 +5424,7 @@
           "readOnlyHint": false,
           "title": "Select layout"
         },
-        "description": "Change tmux state; no client-supplied executable input. Apply a named layout, a unique abbreviation for the running tmux version, or a checksummed saved layout. Invalid syntax is refused before window lookup; tmux validates geometry when applying the layout.",
+        "description": "Change tmux state; no client-supplied executable input. Apply a named layout, a unique abbreviation for the running tmux version, or a checksummed saved layout; a JSON layout document needs tmux 3.8. Invalid syntax is refused before window lookup; tmux validates geometry when applying the layout.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -7713,7 +7713,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Wait within one deadline for pane text.",
+            "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Wait within one deadline for pane text. From tmux 3.7 it streams pane output over a control client; below 3.7 it reads the screen on a timer, so output that changes no row, such as blank-only output, is not seen. Ends as matched, stopped, timedOut, expiredWhileReading, paneClosed, or alternateScreen.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -7851,7 +7851,7 @@
           "readOnlyHint": false,
           "title": "Wait for text"
         },
-        "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Wait within one deadline for pane text.",
+        "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Wait within one deadline for pane text. From tmux 3.7 it streams pane output over a control client; below 3.7 it reads the screen on a timer, so output that changes no row, such as blank-only output, is not seen. Ends as matched, stopped, timedOut, expiredWhileReading, paneClosed, or alternateScreen.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {

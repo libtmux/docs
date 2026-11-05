@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-transcript.mjs",
   "repo": "libtmux/libtmux-dotnet",
-  "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+  "revision": "486830df176be8b1881a15c8a3ca65524dcb9fb9",
   "sandbox": {
     "tmux": "tmux 3.8a",
     "pytest": "pytest 9.2.0",
@@ -19,7 +19,7 @@
   },
   "serverInfo": {
     "name": "tmux",
-    "version": "0.0.0-alpha.20"
+    "version": "0.1.1"
   },
   "contracts": {
     "create_session": {
@@ -419,6 +419,11 @@
     }
   },
   "prompt": "Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.",
+  "tmuxBefore": {
+    "sessions": [],
+    "windows": [],
+    "panes": []
+  },
   "steps": [
     {
       "tool": "create_session",
@@ -437,6 +442,36 @@
         "paneId": "%0",
         "windowId": "@0",
         "sessionId": "$0"
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$0",
+            "name": "checks"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
+          }
+        ]
       },
       "caption": "Create the session."
     },
@@ -458,6 +493,46 @@
         "paneId": "%1",
         "windowId": "@0",
         "sessionId": "$0"
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$0",
+            "name": "checks"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 40,
+            "height": 24,
+            "active": true
+          },
+          {
+            "window": "@0",
+            "id": "%1",
+            "command": "sh",
+            "left": 41,
+            "top": 0,
+            "width": 39,
+            "height": 24,
+            "active": false
+          }
+        ]
       },
       "caption": "Split the pane the create result returned (%0) in two."
     },
@@ -488,6 +563,46 @@
           }
         ]
       },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$0",
+            "name": "checks"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 40,
+            "height": 24,
+            "active": true
+          },
+          {
+            "window": "@0",
+            "id": "%1",
+            "command": "sh",
+            "left": 41,
+            "top": 0,
+            "width": 39,
+            "height": 24,
+            "active": false
+          }
+        ]
+      },
       "caption": "Read the window's layout."
     },
     {
@@ -500,7 +615,7 @@
       "content": [
         {
           "type": "text",
-          "text": "{\"paneId\":\"%0\",\"exitStatus\":0,\"timedOut\":false,\"output\":{\"lines\":[\"..                               [100%]\",\"2 passed in 0.01s\"],\"truncated\":false,\"droppedLines\":0,\"droppedBytes\":0},\"elapsedSeconds\":0.437,\"effectiveTimeoutSeconds\":30,\"linesMissed\":false,\"anchorLost\":false,\"started\":true,\"paneExited\":false}"
+          "text": "{\"paneId\":\"%0\",\"exitStatus\":0,\"timedOut\":false,\"output\":{\"lines\":[\"..                               [100%]\",\"2 passed in 0.00s\"],\"truncated\":false,\"droppedLines\":0,\"droppedBytes\":0},\"elapsedSeconds\":0.292,\"effectiveTimeoutSeconds\":30,\"linesMissed\":false,\"anchorLost\":false,\"started\":true,\"paneExited\":false}"
         }
       ],
       "structuredContent": {
@@ -510,18 +625,58 @@
         "output": {
           "lines": [
             "..                               [100%]",
-            "2 passed in 0.01s"
+            "2 passed in 0.00s"
           ],
           "truncated": false,
           "droppedLines": 0,
           "droppedBytes": 0
         },
-        "elapsedSeconds": 0.437,
+        "elapsedSeconds": 0.292,
         "effectiveTimeoutSeconds": 30,
         "linesMissed": false,
         "anchorLost": false,
         "started": true,
         "paneExited": false
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$0",
+            "name": "checks"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 40,
+            "height": 24,
+            "active": true
+          },
+          {
+            "window": "@0",
+            "id": "%1",
+            "command": "sh",
+            "left": 41,
+            "top": 0,
+            "width": 39,
+            "height": 24,
+            "active": false
+          }
+        ]
       },
       "caption": "Run the tests in the pane the create result returned (%0)."
     },
@@ -535,7 +690,7 @@
       "content": [
         {
           "type": "text",
-          "text": "{\"paneId\":\"%1\",\"exitStatus\":0,\"timedOut\":false,\"output\":{\"lines\":[\"2026-01-01 checks started\",\"2026-01-01 checks finished\"],\"truncated\":false,\"droppedLines\":0,\"droppedBytes\":0},\"elapsedSeconds\":0.029,\"effectiveTimeoutSeconds\":30,\"linesMissed\":false,\"anchorLost\":false,\"started\":true,\"paneExited\":false}"
+          "text": "{\"paneId\":\"%1\",\"exitStatus\":0,\"timedOut\":false,\"output\":{\"lines\":[\"2026-01-01 checks started\",\"2026-01-01 checks finished\"],\"truncated\":false,\"droppedLines\":0,\"droppedBytes\":0},\"elapsedSeconds\":0.014,\"effectiveTimeoutSeconds\":30,\"linesMissed\":false,\"anchorLost\":false,\"started\":true,\"paneExited\":false}"
         }
       ],
       "structuredContent": {
@@ -551,12 +706,52 @@
           "droppedLines": 0,
           "droppedBytes": 0
         },
-        "elapsedSeconds": 0.029,
+        "elapsedSeconds": 0.014,
         "effectiveTimeoutSeconds": 30,
         "linesMissed": false,
         "anchorLost": false,
         "started": true,
         "paneExited": false
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$0",
+            "name": "checks"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 40,
+            "height": 24,
+            "active": true
+          },
+          {
+            "window": "@0",
+            "id": "%1",
+            "command": "sh",
+            "left": 41,
+            "top": 0,
+            "width": 39,
+            "height": 24,
+            "active": false
+          }
+        ]
       },
       "caption": "Show the log in the new pane the split returned (%1)."
     },
@@ -577,6 +772,11 @@
         "paneId": null,
         "windowId": null,
         "sessionId": "$0"
+      },
+      "tmux": {
+        "sessions": [],
+        "windows": [],
+        "panes": []
       },
       "caption": "Remove the session once the result is read."
     }

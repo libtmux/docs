@@ -94,7 +94,7 @@
   ],
   "port": "ruby",
   "repo": "libtmux/libtmux-ruby",
-  "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+  "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
   "schemaVersion": 1,
   "symbols": {
     "LibTmux::Async::ControlConnection#pause_output": [

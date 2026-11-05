@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-transcript.mjs",
   "repo": "libtmux/libtmux-swift",
-  "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+  "revision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
   "sandbox": {
     "tmux": "tmux 3.8a",
     "pytest": "pytest 9.2.0",
@@ -18,9 +18,9 @@
     }
   },
   "serverInfo": {
+    "title": "tmux",
     "name": "libtmux",
-    "version": "0.1.0-alpha.6",
-    "title": "tmux"
+    "version": "0.1.1"
   },
   "contracts": {
     "create_session": {
@@ -455,6 +455,11 @@
     }
   },
   "prompt": "Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.",
+  "tmuxBefore": {
+    "sessions": [],
+    "windows": [],
+    "panes": []
+  },
   "steps": [
     {
       "tool": "create_session",
@@ -464,17 +469,47 @@
       "isError": false,
       "content": [
         {
-          "type": "text",
-          "text": "{\"createdAt\":1793562471,\"id\":\"$0\",\"isAttached\":false,\"name\":\"checks\",\"ref\":\"tmux1_AYhNqdHMhQmmLBDDYJQllA9YboJcBoLlKmwhLaLadkeJ\",\"windowCount\":1}"
+          "text": "{\"createdAt\":1793757185,\"id\":\"$0\",\"isAttached\":false,\"name\":\"checks\",\"ref\":\"tmux1_AQ3atHtng1Jj30-gqW-Fv541MVcZ4sFXqPNXZIudQNAT\",\"windowCount\":1}",
+          "type": "text"
         }
       ],
       "structuredContent": {
-        "createdAt": 1793562471,
-        "isAttached": false,
         "id": "$0",
         "name": "checks",
-        "ref": "tmux1_AYhNqdHMhQmmLBDDYJQllA9YboJcBoLlKmwhLaLadkeJ",
-        "windowCount": 1
+        "ref": "tmux1_AQ3atHtng1Jj30-gqW-Fv541MVcZ4sFXqPNXZIudQNAT",
+        "isAttached": false,
+        "windowCount": 1,
+        "createdAt": 1793757185
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$0",
+            "name": "checks"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
+          }
+        ]
       },
       "caption": "Create the session."
     },
@@ -486,29 +521,59 @@
       "isError": false,
       "content": [
         {
-          "text": "{\"panes\":[{\"currentCommand\":\"sh\",\"currentPath\":\"\\/tmp\\/t239-swift-exZ1SX\\/project\",\"height\":24,\"id\":\"%0\",\"index\":0,\"isActive\":true,\"isAtBottom\":true,\"isAtLeft\":true,\"isAtRight\":true,\"isAtTop\":true,\"isDead\":false,\"isSynchronized\":false,\"modeCount\":0,\"ref\":\"tmux1_BIhNqdHMhQmmLBDDYJQllA8KU47hPZeYzn9C19zIUxa-\",\"width\":80,\"windowID\":\"@0\"}]}",
+          "text": "{\"panes\":[{\"currentCommand\":\"sh\",\"currentPath\":\"\\/home\\/user\\/project\",\"height\":24,\"id\":\"%0\",\"index\":0,\"isActive\":true,\"isAtBottom\":true,\"isAtLeft\":true,\"isAtRight\":true,\"isAtTop\":true,\"isDead\":false,\"isSynchronized\":false,\"modeCount\":0,\"ref\":\"tmux1_BA3atHtng1Jj30-gqW-Fv56j-w_GfT5lw2c-1M9eytN5\",\"width\":80,\"windowID\":\"@0\"}]}",
           "type": "text"
         }
       ],
       "structuredContent": {
         "panes": [
           {
-            "ref": "tmux1_BIhNqdHMhQmmLBDDYJQllA8KU47hPZeYzn9C19zIUxa-",
-            "height": 24,
-            "windowID": "@0",
-            "isAtBottom": true,
-            "isAtTop": true,
+            "ref": "tmux1_BA3atHtng1Jj30-gqW-Fv56j-w_GfT5lw2c-1M9eytN5",
             "isAtLeft": true,
-            "isDead": false,
-            "isAtRight": true,
-            "isSynchronized": false,
-            "modeCount": 0,
-            "currentPath": "/home/user/project",
-            "width": 80,
             "isActive": true,
-            "currentCommand": "sh",
+            "width": 80,
+            "height": 24,
+            "isAtBottom": true,
+            "isSynchronized": false,
+            "windowID": "@0",
+            "isAtTop": true,
+            "isDead": false,
             "id": "%0",
-            "index": 0
+            "modeCount": 0,
+            "index": 0,
+            "currentCommand": "sh",
+            "currentPath": "/home/user/project",
+            "isAtRight": true
+          }
+        ]
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$0",
+            "name": "checks"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
           }
         ]
       },
@@ -523,27 +588,67 @@
       "isError": false,
       "content": [
         {
-          "text": "{\"currentCommand\":\"sh\",\"currentPath\":\"\\/tmp\\/t239-swift-exZ1SX\\/project\",\"height\":24,\"id\":\"%1\",\"index\":1,\"isActive\":false,\"isAtBottom\":true,\"isAtLeft\":false,\"isAtRight\":true,\"isAtTop\":true,\"isDead\":false,\"isSynchronized\":false,\"modeCount\":0,\"ref\":\"tmux1_BIhNqdHMhQmmLBDDYJQllA_jO9WTXpq9PZ6qR2sTvGG3\",\"width\":39,\"windowID\":\"@0\"}",
+          "text": "{\"currentCommand\":\"sh\",\"currentPath\":\"\\/home\\/user\\/project\",\"height\":24,\"id\":\"%1\",\"index\":1,\"isActive\":false,\"isAtBottom\":true,\"isAtLeft\":false,\"isAtRight\":true,\"isAtTop\":true,\"isDead\":false,\"isSynchronized\":false,\"modeCount\":0,\"ref\":\"tmux1_BA3atHtng1Jj30-gqW-Fv57PdeYPGTOQg9noVSe2N4-7\",\"width\":39,\"windowID\":\"@0\"}",
           "type": "text"
         }
       ],
       "structuredContent": {
-        "ref": "tmux1_BIhNqdHMhQmmLBDDYJQllA_jO9WTXpq9PZ6qR2sTvGG3",
-        "windowID": "@0",
+        "id": "%1",
         "isSynchronized": false,
-        "isActive": false,
-        "isAtBottom": true,
+        "currentPath": "/home/user/project",
+        "isAtTop": true,
         "currentCommand": "sh",
         "height": 24,
+        "isActive": false,
+        "ref": "tmux1_BA3atHtng1Jj30-gqW-Fv57PdeYPGTOQg9noVSe2N4-7",
         "isAtLeft": false,
-        "currentPath": "/home/user/project",
-        "isDead": false,
+        "isAtBottom": true,
         "index": 1,
-        "id": "%1",
-        "modeCount": 0,
-        "isAtRight": true,
+        "isDead": false,
         "width": 39,
-        "isAtTop": true
+        "modeCount": 0,
+        "windowID": "@0",
+        "isAtRight": true
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$0",
+            "name": "checks"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 40,
+            "height": 24,
+            "active": true
+          },
+          {
+            "window": "@0",
+            "id": "%1",
+            "command": "sh",
+            "left": 41,
+            "top": 0,
+            "width": 39,
+            "height": 24,
+            "active": false
+          }
+        ]
       },
       "caption": "Split the pane the list returned (%0) in two."
     },
@@ -558,14 +663,54 @@
       "isError": false,
       "content": [
         {
-          "type": "text",
-          "text": "{\"values\":{\"window_layout\":\"{\\\"V\\\":2,\\\"L\\\":{\\\"t\\\":\\\"h\\\",\\\"w\\\":80,\\\"h\\\":24,\\\"x\\\":0,\\\"y\\\":0,\\\"c\\\":[{\\\"t\\\":\\\"p\\\",\\\"w\\\":40,\\\"h\\\":24,\\\"x\\\":0,\\\"y\\\":0,\\\"a\\\":true,\\\"i\\\":0,\\\"I\\\":\\\"%0\\\"},{\\\"t\\\":\\\"p\\\",\\\"w\\\":39,\\\"h\\\":24,\\\"x\\\":41,\\\"y\\\":0,\\\"i\\\":1,\\\"I\\\":\\\"%1\\\"}]}}\"}}"
+          "text": "{\"values\":{\"window_layout\":\"{\\\"V\\\":2,\\\"L\\\":{\\\"t\\\":\\\"h\\\",\\\"w\\\":80,\\\"h\\\":24,\\\"x\\\":0,\\\"y\\\":0,\\\"c\\\":[{\\\"t\\\":\\\"p\\\",\\\"w\\\":40,\\\"h\\\":24,\\\"x\\\":0,\\\"y\\\":0,\\\"a\\\":true,\\\"i\\\":0,\\\"I\\\":\\\"%0\\\"},{\\\"t\\\":\\\"p\\\",\\\"w\\\":39,\\\"h\\\":24,\\\"x\\\":41,\\\"y\\\":0,\\\"i\\\":1,\\\"I\\\":\\\"%1\\\"}]}}\"}}",
+          "type": "text"
         }
       ],
       "structuredContent": {
         "values": {
           "window_layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
         }
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$0",
+            "name": "checks"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 40,
+            "height": 24,
+            "active": true
+          },
+          {
+            "window": "@0",
+            "id": "%1",
+            "command": "sh",
+            "left": 41,
+            "top": 0,
+            "width": 39,
+            "height": 24,
+            "active": false
+          }
+        ]
       },
       "caption": "Read the window's layout through the pane the list returned (%0)."
     },
@@ -578,23 +723,63 @@
       "isError": false,
       "content": [
         {
-          "text": "{\"droppedLines\":0,\"effectiveTimeout\":30,\"exitStatus\":0,\"linesMissed\":false,\"output\":[\"..                               [100%]\",\"2 passed in 0.01s\"],\"pane\":\"%0\",\"paneRef\":\"tmux1_BIhNqdHMhQmmLBDDYJQllA8KU47hPZeYzn9C19zIUxa-\",\"seconds\":0.454349473,\"timedOut\":false}",
+          "text": "{\"droppedLines\":0,\"effectiveTimeout\":30,\"exitStatus\":0,\"linesMissed\":false,\"output\":[\"..                               [100%]\",\"2 passed in 0.00s\"],\"pane\":\"%0\",\"paneRef\":\"tmux1_BA3atHtng1Jj30-gqW-Fv56j-w_GfT5lw2c-1M9eytN5\",\"seconds\":0.346968068,\"timedOut\":false}",
           "type": "text"
         }
       ],
       "structuredContent": {
-        "paneRef": "tmux1_BIhNqdHMhQmmLBDDYJQllA8KU47hPZeYzn9C19zIUxa-",
-        "effectiveTimeout": 30,
-        "exitStatus": 0,
-        "linesMissed": false,
         "droppedLines": 0,
-        "timedOut": false,
-        "seconds": 0.454349473,
+        "effectiveTimeout": 30,
         "output": [
           "..                               [100%]",
-          "2 passed in 0.01s"
+          "2 passed in 0.00s"
         ],
-        "pane": "%0"
+        "paneRef": "tmux1_BA3atHtng1Jj30-gqW-Fv56j-w_GfT5lw2c-1M9eytN5",
+        "seconds": 0.346968068,
+        "pane": "%0",
+        "exitStatus": 0,
+        "timedOut": false,
+        "linesMissed": false
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$0",
+            "name": "checks"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 40,
+            "height": 24,
+            "active": true
+          },
+          {
+            "window": "@0",
+            "id": "%1",
+            "command": "sh",
+            "left": 41,
+            "top": 0,
+            "width": 39,
+            "height": 24,
+            "active": false
+          }
+        ]
       },
       "caption": "Run the tests in the pane the list returned (%0)."
     },
@@ -607,23 +792,63 @@
       "isError": false,
       "content": [
         {
-          "text": "{\"droppedLines\":0,\"effectiveTimeout\":30,\"exitStatus\":0,\"linesMissed\":false,\"output\":[\"2026-01-01 checks started\",\"2026-01-01 checks finished\"],\"pane\":\"%1\",\"paneRef\":\"tmux1_BIhNqdHMhQmmLBDDYJQllA_jO9WTXpq9PZ6qR2sTvGG3\",\"seconds\":0.09802671,\"timedOut\":false}",
+          "text": "{\"droppedLines\":0,\"effectiveTimeout\":30,\"exitStatus\":0,\"linesMissed\":false,\"output\":[\"2026-01-01 checks started\",\"2026-01-01 checks finished\"],\"pane\":\"%1\",\"paneRef\":\"tmux1_BA3atHtng1Jj30-gqW-Fv57PdeYPGTOQg9noVSe2N4-7\",\"seconds\":0.087398972,\"timedOut\":false}",
           "type": "text"
         }
       ],
       "structuredContent": {
+        "seconds": 0.087398972,
+        "exitStatus": 0,
+        "paneRef": "tmux1_BA3atHtng1Jj30-gqW-Fv57PdeYPGTOQg9noVSe2N4-7",
+        "pane": "%1",
         "effectiveTimeout": 30,
-        "droppedLines": 0,
+        "linesMissed": false,
         "output": [
           "2026-01-01 checks started",
           "2026-01-01 checks finished"
         ],
-        "pane": "%1",
-        "seconds": 0.09802671,
-        "paneRef": "tmux1_BIhNqdHMhQmmLBDDYJQllA_jO9WTXpq9PZ6qR2sTvGG3",
-        "exitStatus": 0,
-        "timedOut": false,
-        "linesMissed": false
+        "droppedLines": 0,
+        "timedOut": false
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$0",
+            "name": "checks"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 40,
+            "height": 24,
+            "active": true
+          },
+          {
+            "window": "@0",
+            "id": "%1",
+            "command": "sh",
+            "left": 41,
+            "top": 0,
+            "width": 39,
+            "height": 24,
+            "active": false
+          }
+        ]
       },
       "caption": "Show the log in the new pane the split returned (%1)."
     },
@@ -642,6 +867,11 @@
       "structuredContent": {
         "deleted": true,
         "sessionId": "$0"
+      },
+      "tmux": {
+        "sessions": [],
+        "windows": [],
+        "panes": []
       },
       "caption": "Remove the session once the result is read."
     }

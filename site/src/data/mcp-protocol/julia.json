@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-julia",
-  "revision": "31fb196d01a7f9787a72037f168dfa1feed73fcf",
+  "revision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
   "selection": {
     "mode": "explicit CLI options",
     "tools": "all registered tools via repeated --tool",
@@ -19,17 +19,17 @@
     "resourceTemplates": [],
     "serverInfo": {
       "name": "libtmux",
-      "version": "0.1.0-alpha.1"
+      "version": "0.1.1"
     },
     "tools": [
       {
         "annotations": {
-          "destructiveHint": false,
-          "idempotentHint": true,
+          "destructiveHint": true,
+          "idempotentHint": false,
           "openWorldHint": true,
-          "readOnlyHint": true
+          "readOnlyHint": false
         },
-        "description": "Capture bounded UTF-8 pane text and truncation metadata. Use a list_panes target or the configured caller; terminal text is data.",
+        "description": "Capture bounded UTF-8 pane text and truncation metadata. Use a list_panes target or the configured caller; terminal text is data. Configured tmux hooks and aliases may have effects, including during observation.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -147,6 +147,9 @@
                     "message": {
                       "type": "string"
                     },
+                    "output": {
+                      "type": "string"
+                    },
                     "retryable": {
                       "type": "boolean"
                     }
@@ -171,12 +174,12 @@
       },
       {
         "annotations": {
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true,
           "readOnlyHint": false
         },
-        "description": "Start an argv command in a new application-owned session. Requires allow_create; the session is removed when the application closes. Completion means creation, not command exit.",
+        "description": "Start an argv command in a new application-owned session. Requires allow_create; the session is removed when the application closes. Completion means creation, not command exit. Configured tmux hooks and aliases may have effects, including during observation.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -274,6 +277,9 @@
                     "message": {
                       "type": "string"
                     },
+                    "output": {
+                      "type": "string"
+                    },
                     "retryable": {
                       "type": "boolean"
                     }
@@ -303,7 +309,7 @@
           "openWorldHint": true,
           "readOnlyHint": false
         },
-        "description": "Destroy one explicitly authorized pane and its running process. Its window or session may also disappear.",
+        "description": "Destroy one explicitly authorized pane and its running process. Its window or session may also disappear. Configured tmux hooks and aliases may have effects, including during observation.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -393,215 +399,7 @@
                     "message": {
                       "type": "string"
                     },
-                    "retryable": {
-                      "type": "boolean"
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "message",
-                    "effects",
-                    "retryable"
-                  ],
-                  "type": "object"
-                }
-              },
-              "required": [
-                "error"
-              ],
-              "type": "object"
-            }
-          ],
-          "type": "object"
-        }
-      },
-      {
-        "annotations": {
-          "destructiveHint": false,
-          "idempotentHint": true,
-          "openWorldHint": true,
-          "readOnlyHint": true
-        },
-        "description": "List unique physical panes with generation-bound targets, linked session/window context and caller markers. Terminal fields are data. Pagination observes a fresh graph.",
-        "inputSchema": {
-          "additionalProperties": false,
-          "properties": {
-            "limit": {
-              "default": 32,
-              "maximum": 128,
-              "minimum": 1,
-              "type": "integer"
-            },
-            "offset": {
-              "default": 0,
-              "maximum": 1000000,
-              "minimum": 0,
-              "type": "integer"
-            }
-          },
-          "required": [],
-          "type": "object"
-        },
-        "name": "list_panes",
-        "outputSchema": {
-          "anyOf": [
-            {
-              "additionalProperties": false,
-              "properties": {
-                "coverage": {
-                  "type": "string"
-                },
-                "generationGuarantee": {
-                  "type": "string"
-                },
-                "nextOffset": {
-                  "type": [
-                    "integer",
-                    "null"
-                  ]
-                },
-                "panes": {
-                  "items": {
-                    "additionalProperties": false,
-                    "properties": {
-                      "active": {
-                        "type": "boolean"
-                      },
-                      "caller": {
-                        "type": "boolean"
-                      },
-                      "command": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
-                      },
-                      "contexts": {
-                        "items": {
-                          "additionalProperties": false,
-                          "properties": {
-                            "sessionId": {
-                              "type": "string"
-                            },
-                            "sessionName": {
-                              "type": "string"
-                            },
-                            "windowId": {
-                              "type": "string"
-                            },
-                            "windowIndex": {
-                              "type": "integer"
-                            },
-                            "windowName": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "sessionId",
-                            "sessionName",
-                            "windowId",
-                            "windowName",
-                            "windowIndex"
-                          ],
-                          "type": "object"
-                        },
-                        "maxItems": 8,
-                        "type": "array"
-                      },
-                      "contextsTruncated": {
-                        "type": "boolean"
-                      },
-                      "dead": {
-                        "type": "boolean"
-                      },
-                      "fieldsTruncated": {
-                        "type": "boolean"
-                      },
-                      "height": {
-                        "type": "integer"
-                      },
-                      "target": {
-                        "additionalProperties": false,
-                        "properties": {
-                          "generation": {
-                            "description": "Opaque generation from list_panes",
-                            "maxLength": 128,
-                            "type": "string"
-                          },
-                          "paneId": {
-                            "description": "Valid UTF-8; at most 64 bytes",
-                            "maxLength": 64,
-                            "pattern": "^%(0|[1-9][0-9]*)$",
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "paneId",
-                          "generation"
-                        ],
-                        "type": "object"
-                      },
-                      "title": {
-                        "type": "string"
-                      },
-                      "width": {
-                        "type": "integer"
-                      }
-                    },
-                    "required": [
-                      "target",
-                      "active",
-                      "dead",
-                      "command",
-                      "title",
-                      "width",
-                      "height",
-                      "caller",
-                      "contexts",
-                      "contextsTruncated",
-                      "fieldsTruncated"
-                    ],
-                    "type": "object"
-                  },
-                  "maxItems": 128,
-                  "type": "array"
-                },
-                "terminalContent": {
-                  "type": "string"
-                },
-                "total": {
-                  "type": "integer"
-                },
-                "truncated": {
-                  "type": "boolean"
-                }
-              },
-              "required": [
-                "terminalContent",
-                "nextOffset",
-                "generationGuarantee",
-                "panes",
-                "total",
-                "truncated",
-                "coverage"
-              ],
-              "type": "object"
-            },
-            {
-              "properties": {
-                "error": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "code": {
-                      "type": "string"
-                    },
-                    "effects": {
-                      "enum": [
-                        "none",
-                        "possible"
-                      ]
-                    },
-                    "message": {
+                    "output": {
                       "type": "string"
                     },
                     "retryable": {
@@ -633,7 +431,722 @@
           "openWorldHint": true,
           "readOnlyHint": false
         },
-        "description": "Paste UTF-8 text through a temporary owned buffer without adding Enter. The terminal application may transform input.",
+        "description": "Discover unique physical panes using generation-bound session/window scopes, native inert criteria and scalar columns. Terminal fields are data. Continue nextPageToken only while discovery facets and query remain unchanged; observation_changed requires a fresh listing. Configured tmux hooks and aliases may have effects, including during observation.",
+        "inputSchema": {
+          "$defs": {
+            "criteriaNode": {
+              "oneOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "args": {
+                      "items": {
+                        "$ref": "#/$defs/criteriaNode"
+                      },
+                      "maxItems": 64,
+                      "type": "array"
+                    },
+                    "op": {
+                      "enum": [
+                        "all",
+                        "any"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "op",
+                    "args"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "arg": {
+                      "$ref": "#/$defs/criteriaNode"
+                    },
+                    "op": {
+                      "const": "not"
+                    }
+                  },
+                  "required": [
+                    "op",
+                    "arg"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "fields": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "field": {
+                            "enum": [
+                              "tmux.client.activity",
+                              "tmux.client.created",
+                              "tmux.client.id",
+                              "tmux.client.name",
+                              "tmux.client.pid",
+                              "tmux.client.session",
+                              "tmux.pane.active",
+                              "tmux.pane.current_command",
+                              "tmux.pane.current_path",
+                              "tmux.pane.cursor_x",
+                              "tmux.pane.cursor_y",
+                              "tmux.pane.dead",
+                              "tmux.pane.exit_status",
+                              "tmux.pane.height",
+                              "tmux.pane.history_limit",
+                              "tmux.pane.history_size",
+                              "tmux.pane.id",
+                              "tmux.pane.index",
+                              "tmux.pane.pid",
+                              "tmux.pane.title",
+                              "tmux.pane.tty",
+                              "tmux.pane.width",
+                              "tmux.pane.window",
+                              "tmux.session.activity",
+                              "tmux.session.attached_clients",
+                              "tmux.session.created",
+                              "tmux.session.id",
+                              "tmux.session.last_attached",
+                              "tmux.session.name",
+                              "tmux.session.windowlinks",
+                              "tmux.session.windows",
+                              "tmux.window.activity",
+                              "tmux.window.height",
+                              "tmux.window.id",
+                              "tmux.window.layout",
+                              "tmux.window.name",
+                              "tmux.window.panes",
+                              "tmux.window.visible_layout",
+                              "tmux.window.width",
+                              "tmux.window.windowlinks",
+                              "tmux.window.zoomed",
+                              "tmux.windowlink.active",
+                              "tmux.windowlink.index",
+                              "tmux.windowlink.session",
+                              "tmux.windowlink.window"
+                            ]
+                          },
+                          "match": {
+                            "oneOf": [
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "op": {
+                                    "enum": [
+                                      "eq",
+                                      "ne",
+                                      "ge",
+                                      "le",
+                                      "gt",
+                                      "lt"
+                                    ]
+                                  },
+                                  "value": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "op",
+                                  "value"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "op": {
+                                    "const": "in"
+                                  },
+                                  "values": {
+                                    "items": {
+                                      "type": [
+                                        "string",
+                                        "number",
+                                        "boolean",
+                                        "null"
+                                      ]
+                                    },
+                                    "maxItems": 64,
+                                    "type": "array"
+                                  }
+                                },
+                                "required": [
+                                  "op",
+                                  "values"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "case": {
+                                    "enum": [
+                                      "sensitive",
+                                      "ascii_insensitive"
+                                    ]
+                                  },
+                                  "op": {
+                                    "enum": [
+                                      "contains",
+                                      "startsWith",
+                                      "endsWith"
+                                    ]
+                                  },
+                                  "value": {
+                                    "description": "Valid UTF-8; at most 1024 bytes",
+                                    "maxLength": 1024,
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "op",
+                                  "value",
+                                  "case"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "op": {
+                                    "enum": [
+                                      "is",
+                                      "anyRelated",
+                                      "allRelated",
+                                      "noRelated"
+                                    ]
+                                  },
+                                  "where": {
+                                    "$ref": "#/$defs/criteriaNode"
+                                  }
+                                },
+                                "required": [
+                                  "op",
+                                  "where"
+                                ],
+                                "type": "object"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "match"
+                        ],
+                        "type": "object"
+                      },
+                      "maxItems": 64,
+                      "type": "array"
+                    },
+                    "op": {
+                      "const": "fields"
+                    }
+                  },
+                  "required": [
+                    "op",
+                    "fields"
+                  ],
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "properties": {
+            "columns": {
+              "items": {
+                "enum": [
+                  "active",
+                  "current_command",
+                  "current_path",
+                  "cursor_x",
+                  "cursor_y",
+                  "dead",
+                  "exit_status",
+                  "height",
+                  "history_limit",
+                  "history_size",
+                  "id",
+                  "index",
+                  "pid",
+                  "title",
+                  "tty",
+                  "width"
+                ]
+              },
+              "maxItems": 16,
+              "minItems": 1,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "limit": {
+              "default": 32,
+              "maximum": 128,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "offset": {
+              "default": 0,
+              "maximum": 1000000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "pageToken": {
+              "description": "Continue nextPageToken; changed discovery facets or query refuse with observation_changed.",
+              "maxLength": 80,
+              "pattern": "^v1\\.(0|[1-9][0-9]{0,6})\\.[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "scope": {
+              "oneOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "generation": {
+                      "description": "Valid UTF-8; at most 128 bytes",
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    "sessionId": {
+                      "description": "Valid UTF-8; at most 64 bytes",
+                      "maxLength": 64,
+                      "pattern": "^\\$(0|[1-9][0-9]*)$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "sessionId",
+                    "generation"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "generation": {
+                      "description": "Valid UTF-8; at most 128 bytes",
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    "windowId": {
+                      "description": "Valid UTF-8; at most 64 bytes",
+                      "maxLength": 64,
+                      "pattern": "^@(0|[1-9][0-9]*)$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "windowId",
+                    "generation"
+                  ],
+                  "type": "object"
+                }
+              ]
+            },
+            "where": {
+              "additionalProperties": false,
+              "description": "Native inert pane criteria; field types and relation targets use the core catalog. Maximum nesting 24, 512 nodes, 64 items, 1024 bytes per string, 8192 string/key bytes total.",
+              "properties": {
+                "entity": {
+                  "const": "pane"
+                },
+                "schema": {
+                  "const": "libtmux.julia.where"
+                },
+                "version": {
+                  "const": 1
+                },
+                "where": {
+                  "$ref": "#/$defs/criteriaNode"
+                }
+              },
+              "required": [
+                "schema",
+                "version",
+                "entity",
+                "where"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [],
+          "type": "object"
+        },
+        "name": "list_panes",
+        "outputSchema": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "contextsCoverage": {
+                  "enum": [
+                    "selected_session",
+                    "all_observed_links"
+                  ]
+                },
+                "coverage": {
+                  "type": "string"
+                },
+                "generationGuarantee": {
+                  "type": "string"
+                },
+                "nextOffset": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "nextPageToken": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "pagination": {
+                  "const": "verified_discovery_facets"
+                },
+                "panes": {
+                  "items": {
+                    "oneOf": [
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "active": {
+                            "type": "boolean"
+                          },
+                          "caller": {
+                            "type": "boolean"
+                          },
+                          "command": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "contexts": {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "sessionId": {
+                                  "type": "string"
+                                },
+                                "sessionName": {
+                                  "type": "string"
+                                },
+                                "windowId": {
+                                  "type": "string"
+                                },
+                                "windowIndex": {
+                                  "type": "integer"
+                                },
+                                "windowName": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "sessionId",
+                                "sessionName",
+                                "windowId",
+                                "windowName",
+                                "windowIndex"
+                              ],
+                              "type": "object"
+                            },
+                            "maxItems": 8,
+                            "type": "array"
+                          },
+                          "contextsTruncated": {
+                            "type": "boolean"
+                          },
+                          "dead": {
+                            "type": "boolean"
+                          },
+                          "fieldsTruncated": {
+                            "type": "boolean"
+                          },
+                          "height": {
+                            "type": "integer"
+                          },
+                          "target": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "generation": {
+                                "description": "Opaque generation from list_panes",
+                                "maxLength": 128,
+                                "type": "string"
+                              },
+                              "paneId": {
+                                "description": "Valid UTF-8; at most 64 bytes",
+                                "maxLength": 64,
+                                "pattern": "^%(0|[1-9][0-9]*)$",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "paneId",
+                              "generation"
+                            ],
+                            "type": "object"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "width": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "target",
+                          "active",
+                          "dead",
+                          "command",
+                          "title",
+                          "width",
+                          "height",
+                          "caller",
+                          "contexts",
+                          "contextsTruncated",
+                          "fieldsTruncated"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "caller": {
+                            "type": "boolean"
+                          },
+                          "contexts": {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "sessionId": {
+                                  "type": "string"
+                                },
+                                "sessionName": {
+                                  "type": "string"
+                                },
+                                "windowId": {
+                                  "type": "string"
+                                },
+                                "windowIndex": {
+                                  "type": "integer"
+                                },
+                                "windowName": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "sessionId",
+                                "sessionName",
+                                "windowId",
+                                "windowName",
+                                "windowIndex"
+                              ],
+                              "type": "object"
+                            },
+                            "maxItems": 8,
+                            "type": "array"
+                          },
+                          "contextsTruncated": {
+                            "type": "boolean"
+                          },
+                          "fieldsTruncated": {
+                            "type": "boolean"
+                          },
+                          "target": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "generation": {
+                                "description": "Opaque generation from list_panes",
+                                "maxLength": 128,
+                                "type": "string"
+                              },
+                              "paneId": {
+                                "description": "Valid UTF-8; at most 64 bytes",
+                                "maxLength": 64,
+                                "pattern": "^%(0|[1-9][0-9]*)$",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "paneId",
+                              "generation"
+                            ],
+                            "type": "object"
+                          },
+                          "values": {
+                            "additionalProperties": false,
+                            "maxProperties": 16,
+                            "minProperties": 1,
+                            "properties": {
+                              "active": {
+                                "type": "boolean"
+                              },
+                              "current_command": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "current_path": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "cursor_x": {
+                                "type": "integer"
+                              },
+                              "cursor_y": {
+                                "type": "integer"
+                              },
+                              "dead": {
+                                "type": "boolean"
+                              },
+                              "exit_status": {
+                                "type": [
+                                  "integer",
+                                  "null"
+                                ]
+                              },
+                              "height": {
+                                "type": "integer"
+                              },
+                              "history_limit": {
+                                "type": "integer"
+                              },
+                              "history_size": {
+                                "type": "integer"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "index": {
+                                "type": "integer"
+                              },
+                              "pid": {
+                                "type": [
+                                  "integer",
+                                  "null"
+                                ]
+                              },
+                              "title": {
+                                "type": "string"
+                              },
+                              "tty": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "width": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [],
+                            "type": "object"
+                          }
+                        },
+                        "required": [
+                          "target",
+                          "caller",
+                          "contexts",
+                          "contextsTruncated",
+                          "fieldsTruncated",
+                          "values"
+                        ],
+                        "type": "object"
+                      }
+                    ]
+                  },
+                  "maxItems": 128,
+                  "type": "array"
+                },
+                "terminalContent": {
+                  "type": "string"
+                },
+                "total": {
+                  "type": "integer"
+                },
+                "truncated": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "nextPageToken",
+                "contextsCoverage",
+                "terminalContent",
+                "nextOffset",
+                "pagination",
+                "generationGuarantee",
+                "truncated",
+                "coverage",
+                "panes",
+                "total"
+              ],
+              "type": "object"
+            },
+            {
+              "properties": {
+                "error": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "effects": {
+                      "enum": [
+                        "none",
+                        "possible"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "output": {
+                      "type": "string"
+                    },
+                    "retryable": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "effects",
+                    "retryable"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "error"
+              ],
+              "type": "object"
+            }
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false
+        },
+        "description": "Paste UTF-8 text through a temporary owned buffer without adding Enter. The terminal application may transform input. Configured tmux hooks and aliases may have effects, including during observation.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -729,6 +1242,9 @@
                     "message": {
                       "type": "string"
                     },
+                    "output": {
+                      "type": "string"
+                    },
                     "retryable": {
                       "type": "boolean"
                     }
@@ -754,11 +1270,11 @@
       {
         "annotations": {
           "destructiveHint": true,
-          "idempotentHint": true,
+          "idempotentHint": false,
           "openWorldHint": true,
           "readOnlyHint": false
         },
-        "description": "Request pane width or height in cells. tmux may constrain the resulting size to fit its window.",
+        "description": "Request pane width or height in cells. tmux may constrain the resulting size to fit its window. Configured tmux hooks and aliases may have effects, including during observation.",
         "inputSchema": {
           "additionalProperties": false,
           "anyOf": [
@@ -870,6 +1386,9 @@
                     "message": {
                       "type": "string"
                     },
+                    "output": {
+                      "type": "string"
+                    },
                     "retryable": {
                       "type": "boolean"
                     }
@@ -899,8 +1418,236 @@
           "openWorldHint": true,
           "readOnlyHint": false
         },
-        "description": "Run up to eight enabled tool calls sequentially after validating every item. Stop at the first execution failure and return ordered completed results plus a one-based failedIndex; no rollback.",
+        "description": "Run up to eight enabled tool calls sequentially after validating every item. Stop at the first execution failure and return ordered completed results plus a one-based failedIndex; no rollback. Configured tmux hooks and aliases may have effects, including during observation.",
         "inputSchema": {
+          "$defs": {
+            "criteriaNode": {
+              "oneOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "args": {
+                      "items": {
+                        "$ref": "#/$defs/criteriaNode"
+                      },
+                      "maxItems": 64,
+                      "type": "array"
+                    },
+                    "op": {
+                      "enum": [
+                        "all",
+                        "any"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "op",
+                    "args"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "arg": {
+                      "$ref": "#/$defs/criteriaNode"
+                    },
+                    "op": {
+                      "const": "not"
+                    }
+                  },
+                  "required": [
+                    "op",
+                    "arg"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "fields": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "field": {
+                            "enum": [
+                              "tmux.client.activity",
+                              "tmux.client.created",
+                              "tmux.client.id",
+                              "tmux.client.name",
+                              "tmux.client.pid",
+                              "tmux.client.session",
+                              "tmux.pane.active",
+                              "tmux.pane.current_command",
+                              "tmux.pane.current_path",
+                              "tmux.pane.cursor_x",
+                              "tmux.pane.cursor_y",
+                              "tmux.pane.dead",
+                              "tmux.pane.exit_status",
+                              "tmux.pane.height",
+                              "tmux.pane.history_limit",
+                              "tmux.pane.history_size",
+                              "tmux.pane.id",
+                              "tmux.pane.index",
+                              "tmux.pane.pid",
+                              "tmux.pane.title",
+                              "tmux.pane.tty",
+                              "tmux.pane.width",
+                              "tmux.pane.window",
+                              "tmux.session.activity",
+                              "tmux.session.attached_clients",
+                              "tmux.session.created",
+                              "tmux.session.id",
+                              "tmux.session.last_attached",
+                              "tmux.session.name",
+                              "tmux.session.windowlinks",
+                              "tmux.session.windows",
+                              "tmux.window.activity",
+                              "tmux.window.height",
+                              "tmux.window.id",
+                              "tmux.window.layout",
+                              "tmux.window.name",
+                              "tmux.window.panes",
+                              "tmux.window.visible_layout",
+                              "tmux.window.width",
+                              "tmux.window.windowlinks",
+                              "tmux.window.zoomed",
+                              "tmux.windowlink.active",
+                              "tmux.windowlink.index",
+                              "tmux.windowlink.session",
+                              "tmux.windowlink.window"
+                            ]
+                          },
+                          "match": {
+                            "oneOf": [
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "op": {
+                                    "enum": [
+                                      "eq",
+                                      "ne",
+                                      "ge",
+                                      "le",
+                                      "gt",
+                                      "lt"
+                                    ]
+                                  },
+                                  "value": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "op",
+                                  "value"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "op": {
+                                    "const": "in"
+                                  },
+                                  "values": {
+                                    "items": {
+                                      "type": [
+                                        "string",
+                                        "number",
+                                        "boolean",
+                                        "null"
+                                      ]
+                                    },
+                                    "maxItems": 64,
+                                    "type": "array"
+                                  }
+                                },
+                                "required": [
+                                  "op",
+                                  "values"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "case": {
+                                    "enum": [
+                                      "sensitive",
+                                      "ascii_insensitive"
+                                    ]
+                                  },
+                                  "op": {
+                                    "enum": [
+                                      "contains",
+                                      "startsWith",
+                                      "endsWith"
+                                    ]
+                                  },
+                                  "value": {
+                                    "description": "Valid UTF-8; at most 1024 bytes",
+                                    "maxLength": 1024,
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "op",
+                                  "value",
+                                  "case"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "op": {
+                                    "enum": [
+                                      "is",
+                                      "anyRelated",
+                                      "allRelated",
+                                      "noRelated"
+                                    ]
+                                  },
+                                  "where": {
+                                    "$ref": "#/$defs/criteriaNode"
+                                  }
+                                },
+                                "required": [
+                                  "op",
+                                  "where"
+                                ],
+                                "type": "object"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "match"
+                        ],
+                        "type": "object"
+                      },
+                      "maxItems": 64,
+                      "type": "array"
+                    },
+                    "op": {
+                      "const": "fields"
+                    }
+                  },
+                  "required": [
+                    "op",
+                    "fields"
+                  ],
+                  "type": "object"
+                }
+              ]
+            }
+          },
           "additionalProperties": false,
           "properties": {
             "operations": {
@@ -910,8 +1657,262 @@
                     "additionalProperties": false,
                     "properties": {
                       "arguments": {
+                        "$defs": {
+                          "criteriaNode": {
+                            "oneOf": [
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "args": {
+                                    "items": {
+                                      "$ref": "#/$defs/criteriaNode"
+                                    },
+                                    "maxItems": 64,
+                                    "type": "array"
+                                  },
+                                  "op": {
+                                    "enum": [
+                                      "all",
+                                      "any"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "op",
+                                  "args"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "arg": {
+                                    "$ref": "#/$defs/criteriaNode"
+                                  },
+                                  "op": {
+                                    "const": "not"
+                                  }
+                                },
+                                "required": [
+                                  "op",
+                                  "arg"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "fields": {
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "field": {
+                                          "enum": [
+                                            "tmux.client.activity",
+                                            "tmux.client.created",
+                                            "tmux.client.id",
+                                            "tmux.client.name",
+                                            "tmux.client.pid",
+                                            "tmux.client.session",
+                                            "tmux.pane.active",
+                                            "tmux.pane.current_command",
+                                            "tmux.pane.current_path",
+                                            "tmux.pane.cursor_x",
+                                            "tmux.pane.cursor_y",
+                                            "tmux.pane.dead",
+                                            "tmux.pane.exit_status",
+                                            "tmux.pane.height",
+                                            "tmux.pane.history_limit",
+                                            "tmux.pane.history_size",
+                                            "tmux.pane.id",
+                                            "tmux.pane.index",
+                                            "tmux.pane.pid",
+                                            "tmux.pane.title",
+                                            "tmux.pane.tty",
+                                            "tmux.pane.width",
+                                            "tmux.pane.window",
+                                            "tmux.session.activity",
+                                            "tmux.session.attached_clients",
+                                            "tmux.session.created",
+                                            "tmux.session.id",
+                                            "tmux.session.last_attached",
+                                            "tmux.session.name",
+                                            "tmux.session.windowlinks",
+                                            "tmux.session.windows",
+                                            "tmux.window.activity",
+                                            "tmux.window.height",
+                                            "tmux.window.id",
+                                            "tmux.window.layout",
+                                            "tmux.window.name",
+                                            "tmux.window.panes",
+                                            "tmux.window.visible_layout",
+                                            "tmux.window.width",
+                                            "tmux.window.windowlinks",
+                                            "tmux.window.zoomed",
+                                            "tmux.windowlink.active",
+                                            "tmux.windowlink.index",
+                                            "tmux.windowlink.session",
+                                            "tmux.windowlink.window"
+                                          ]
+                                        },
+                                        "match": {
+                                          "oneOf": [
+                                            {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "op": {
+                                                  "enum": [
+                                                    "eq",
+                                                    "ne",
+                                                    "ge",
+                                                    "le",
+                                                    "gt",
+                                                    "lt"
+                                                  ]
+                                                },
+                                                "value": {
+                                                  "type": [
+                                                    "string",
+                                                    "number",
+                                                    "boolean",
+                                                    "null"
+                                                  ]
+                                                }
+                                              },
+                                              "required": [
+                                                "op",
+                                                "value"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "op": {
+                                                  "const": "in"
+                                                },
+                                                "values": {
+                                                  "items": {
+                                                    "type": [
+                                                      "string",
+                                                      "number",
+                                                      "boolean",
+                                                      "null"
+                                                    ]
+                                                  },
+                                                  "maxItems": 64,
+                                                  "type": "array"
+                                                }
+                                              },
+                                              "required": [
+                                                "op",
+                                                "values"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "case": {
+                                                  "enum": [
+                                                    "sensitive",
+                                                    "ascii_insensitive"
+                                                  ]
+                                                },
+                                                "op": {
+                                                  "enum": [
+                                                    "contains",
+                                                    "startsWith",
+                                                    "endsWith"
+                                                  ]
+                                                },
+                                                "value": {
+                                                  "description": "Valid UTF-8; at most 1024 bytes",
+                                                  "maxLength": 1024,
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "required": [
+                                                "op",
+                                                "value",
+                                                "case"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "op": {
+                                                  "enum": [
+                                                    "is",
+                                                    "anyRelated",
+                                                    "allRelated",
+                                                    "noRelated"
+                                                  ]
+                                                },
+                                                "where": {
+                                                  "$ref": "#/$defs/criteriaNode"
+                                                }
+                                              },
+                                              "required": [
+                                                "op",
+                                                "where"
+                                              ],
+                                              "type": "object"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "field",
+                                        "match"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "maxItems": 64,
+                                    "type": "array"
+                                  },
+                                  "op": {
+                                    "const": "fields"
+                                  }
+                                },
+                                "required": [
+                                  "op",
+                                  "fields"
+                                ],
+                                "type": "object"
+                              }
+                            ]
+                          }
+                        },
                         "additionalProperties": false,
                         "properties": {
+                          "columns": {
+                            "items": {
+                              "enum": [
+                                "active",
+                                "current_command",
+                                "current_path",
+                                "cursor_x",
+                                "cursor_y",
+                                "dead",
+                                "exit_status",
+                                "height",
+                                "history_limit",
+                                "history_size",
+                                "id",
+                                "index",
+                                "pid",
+                                "title",
+                                "tty",
+                                "width"
+                              ]
+                            },
+                            "maxItems": 16,
+                            "minItems": 1,
+                            "type": "array",
+                            "uniqueItems": true
+                          },
                           "limit": {
                             "default": 32,
                             "maximum": 128,
@@ -923,6 +1924,83 @@
                             "maximum": 1000000,
                             "minimum": 0,
                             "type": "integer"
+                          },
+                          "pageToken": {
+                            "description": "Continue nextPageToken; changed discovery facets or query refuse with observation_changed.",
+                            "maxLength": 80,
+                            "pattern": "^v1\\.(0|[1-9][0-9]{0,6})\\.[0-9a-f]{64}$",
+                            "type": "string"
+                          },
+                          "scope": {
+                            "oneOf": [
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "generation": {
+                                    "description": "Valid UTF-8; at most 128 bytes",
+                                    "maxLength": 128,
+                                    "type": "string"
+                                  },
+                                  "sessionId": {
+                                    "description": "Valid UTF-8; at most 64 bytes",
+                                    "maxLength": 64,
+                                    "pattern": "^\\$(0|[1-9][0-9]*)$",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "sessionId",
+                                  "generation"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "generation": {
+                                    "description": "Valid UTF-8; at most 128 bytes",
+                                    "maxLength": 128,
+                                    "type": "string"
+                                  },
+                                  "windowId": {
+                                    "description": "Valid UTF-8; at most 64 bytes",
+                                    "maxLength": 64,
+                                    "pattern": "^@(0|[1-9][0-9]*)$",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "windowId",
+                                  "generation"
+                                ],
+                                "type": "object"
+                              }
+                            ]
+                          },
+                          "where": {
+                            "additionalProperties": false,
+                            "description": "Native inert pane criteria; field types and relation targets use the core catalog. Maximum nesting 24, 512 nodes, 64 items, 1024 bytes per string, 8192 string/key bytes total.",
+                            "properties": {
+                              "entity": {
+                                "const": "pane"
+                              },
+                              "schema": {
+                                "const": "libtmux.julia.where"
+                              },
+                              "version": {
+                                "const": 1
+                              },
+                              "where": {
+                                "$ref": "#/$defs/criteriaNode"
+                              }
+                            },
+                            "required": [
+                              "schema",
+                              "version",
+                              "entity",
+                              "where"
+                            ],
+                            "type": "object"
                           }
                         },
                         "required": [],
@@ -1319,6 +2397,13 @@
                             "maxLength": 1024,
                             "minLength": 1,
                             "type": "string"
+                          },
+                          "timeoutSeconds": {
+                            "default": 5,
+                            "description": "Total wait budget in seconds, capped by the remaining application call deadline",
+                            "exclusiveMinimum": 0,
+                            "maximum": 5,
+                            "type": "number"
                           }
                         },
                         "required": [
@@ -1384,6 +2469,13 @@
                             "maxLength": 1024,
                             "minLength": 1,
                             "type": "string"
+                          },
+                          "timeoutSeconds": {
+                            "default": 5,
+                            "description": "Total wait budget in seconds, capped by the remaining application call deadline",
+                            "exclusiveMinimum": 0,
+                            "maximum": 5,
+                            "type": "number"
                           }
                         },
                         "required": [
@@ -1494,6 +2586,9 @@
                       ]
                     },
                     "message": {
+                      "type": "string"
+                    },
+                    "output": {
                       "type": "string"
                     },
                     "retryable": {
@@ -1692,6 +2787,9 @@
                     "message": {
                       "type": "string"
                     },
+                    "output": {
+                      "type": "string"
+                    },
                     "retryable": {
                       "type": "boolean"
                     }
@@ -1721,7 +2819,7 @@
           "openWorldHint": true,
           "readOnlyHint": false
         },
-        "description": "Send explicit key tokens or literal text to one captured target. No Enter is added; use a separate Enter token when intended.",
+        "description": "Send explicit key tokens or literal text to one captured target. No Enter is added; use a separate Enter token when intended. Configured tmux hooks and aliases may have effects, including during observation.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -1826,6 +2924,9 @@
                     "message": {
                       "type": "string"
                     },
+                    "output": {
+                      "type": "string"
+                    },
                     "retryable": {
                       "type": "boolean"
                     }
@@ -1855,7 +2956,7 @@
           "openWorldHint": true,
           "readOnlyHint": false
         },
-        "description": "Register output before sending explicit keys, then wait for literal text in output observed since registration. No Enter is added. Concurrent output may also match; this is not command-exit proof.",
+        "description": "Send explicit keys and wait for literal text. On tmux 3.7+, register output before sending; older tmux polls for more screen occurrences than the initial count. No Enter is added. Concurrent output may also match; this is not command-exit proof. Configured tmux hooks and aliases may have effects, including during observation.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -1900,6 +3001,13 @@
               "maxLength": 1024,
               "minLength": 1,
               "type": "string"
+            },
+            "timeoutSeconds": {
+              "default": 5,
+              "description": "Total wait budget in seconds, capped by the remaining application call deadline",
+              "exclusiveMinimum": 0,
+              "maximum": 5,
+              "type": "number"
             }
           },
           "required": [
@@ -1916,7 +3024,10 @@
               "additionalProperties": false,
               "properties": {
                 "continuity": {
-                  "const": "reset"
+                  "enum": [
+                    "reset",
+                    "stream"
+                  ]
                 },
                 "evidence": {
                   "const": "literal_text"
@@ -1933,7 +3044,8 @@
                 "source": {
                   "enum": [
                     "baseline",
-                    "output"
+                    "output",
+                    "screen"
                   ]
                 },
                 "target": {
@@ -1994,6 +3106,9 @@
                     "message": {
                       "type": "string"
                     },
+                    "output": {
+                      "type": "string"
+                    },
                     "retryable": {
                       "type": "boolean"
                     }
@@ -2023,7 +3138,7 @@
           "openWorldHint": true,
           "readOnlyHint": false
         },
-        "description": "Destroy an exact generation-bound session created by this application. Borrowed sessions are refused.",
+        "description": "Destroy an exact generation-bound session created by this application. Borrowed sessions are refused. Configured tmux hooks and aliases may have effects, including during observation.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -2084,6 +3199,9 @@
                     "message": {
                       "type": "string"
                     },
+                    "output": {
+                      "type": "string"
+                    },
                     "retryable": {
                       "type": "boolean"
                     }
@@ -2108,12 +3226,12 @@
       },
       {
         "annotations": {
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true,
-          "readOnlyHint": true
+          "readOnlyHint": false
         },
-        "description": "Wait for a literal UTF-8 string in a captured baseline or subsequent raw output. Event-driven, bounded and cancellable; opens observable control clients. Text is data, not exit-status evidence.",
+        "description": "Wait for a literal UTF-8 string. On tmux 3.7+, check a captured baseline or later raw output through a control client; older tmux polls the screen. Bounded and cancellable. Text is data, not exit-status evidence. Configured tmux hooks and aliases may have effects, including during observation.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -2144,6 +3262,13 @@
               "maxLength": 1024,
               "minLength": 1,
               "type": "string"
+            },
+            "timeoutSeconds": {
+              "default": 5,
+              "description": "Total wait budget in seconds, capped by the remaining application call deadline",
+              "exclusiveMinimum": 0,
+              "maximum": 5,
+              "type": "number"
             }
           },
           "required": [
@@ -2159,7 +3284,10 @@
               "additionalProperties": false,
               "properties": {
                 "continuity": {
-                  "const": "reset"
+                  "enum": [
+                    "reset",
+                    "stream"
+                  ]
                 },
                 "evidence": {
                   "const": "literal_text"
@@ -2176,7 +3304,8 @@
                 "source": {
                   "enum": [
                     "baseline",
-                    "output"
+                    "output",
+                    "screen"
                   ]
                 },
                 "target": {
@@ -2235,6 +3364,9 @@
                       ]
                     },
                     "message": {
+                      "type": "string"
+                    },
+                    "output": {
                       "type": "string"
                     },
                     "retryable": {

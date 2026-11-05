@@ -1,13 +1,16 @@
+import { READ_ONLY_TOOLS, type TmuxState } from './mcp-tmux-state.ts'
 import { parseLayout } from './tmux-layout-string'
 
 /**
  * The tmux state a recorded MCP session leaves after each call.
  *
- * The replay's preview draws these frames. Every value in one is read from the
- * recording: a name, an id, a command or some output a result or a request
- * carried. A fact the recording never states stays absent, so the preview draws
- * a window without an index rather than guessing `0`. `site/test/mcp-replay.test.ts`
- * checks that each string and number in a frame occurs in the recording.
+ * The replay's preview draws these frames. A recording made with
+ * `gen-mcp-transcript.mjs` carries the state of its own tmux server after
+ * every call, and each frame is that state. A recording without it is drawn
+ * from what the calls returned: every value in such a frame is a name, an id,
+ * a command or some output a result or a request carried, and a fact the
+ * recording never states stays absent, so the preview draws a window without
+ * an index rather than guessing `0`. `site/test/mcp-replay.test.ts` checks both.
  */
 
 /** One recorded call and what the server answered, as `gen-mcp-transcript.mjs` writes it. */
@@ -16,10 +19,14 @@ export interface ReplayStep {
   arguments: Record<string, unknown>
   structuredContent?: unknown
   content: { type: string; text?: string }[]
+  /** The recording's own tmux server after the call. */
+  tmux?: TmuxState
 }
 
 export interface PaneState {
   id?: string
+  /** Whether tmux has this pane as its window's active one, when the frame is tmux's own state. */
+  active?: boolean
   /** The program the pane runs, from a pane listing. */
   command?: string
   path?: string
@@ -60,6 +67,10 @@ export interface Frame {
   tool?: string
   sessions: SessionState[]
   reading?: Reading
+  /** Whether the sessions are the recording's own tmux server as it stood, rather than what the calls returned. */
+  recorded?: true
+  /** A call that only reads, after which tmux is as it was. */
+  unchanged?: true
 }
 
 type Record_ = Record<string, unknown>
@@ -144,8 +155,34 @@ function applyWindows(sessions: SessionState[], answer: Record_) {
   }
 }
 
+/**
+ * A pane listing whose panes carry the sessions and windows they are linked
+ * into (`contexts`) and a `target` naming the pane, as Julia's does. The first
+ * link places the pane; a listing may be the first call to say what exists.
+ */
+function applyLinkedPane(sessions: SessionState[], item: Record_) {
+  const context = entries(item.contexts)[0]
+  const target = isRecord(item.target) ? item.target : {}
+  if (!context) return
+  const sessionId = str(context.sessionId)
+  const session = sessions.find((candidate) => sessionId !== undefined && candidate.id === sessionId) ?? (sessions.push({ windows: [] }), sessions.at(-1)!)
+  if (sessionId) session.id = sessionId
+  if (str(context.sessionName)) session.name = str(context.sessionName)!
+  const windowId = str(context.windowId)
+  const window = session.windows.find((candidate) => windowId !== undefined && candidate.id === windowId) ?? (session.windows.push({ panes: [] }), session.windows.at(-1)!)
+  if (windowId) window.id = windowId
+  if (num(context.windowIndex) !== undefined) window.index = num(context.windowIndex)!
+  if (str(context.windowName)) window.name = str(context.windowName)!
+  const paneId = str(target.paneId)
+  const pane = window.panes.find((candidate) => paneId !== undefined && candidate.id === paneId) ?? (window.panes.push({}), window.panes.at(-1)!)
+  if (paneId) pane.id = paneId
+  if (str(item.command)) pane.command = str(item.command)!
+  for (const key of ['width', 'height'] as const) if (num(item[key]) !== undefined) pane[key] = num(item[key])!
+}
+
 function applyPanes(sessions: SessionState[], answer: Record_) {
   for (const item of entries(answer.panes)) {
+    if (Array.isArray(item.contexts)) { applyLinkedPane(sessions, item); continue }
     const windows = sessions.flatMap((session) => session.windows)
     const window = windows.find((candidate) => candidate.id !== undefined && candidate.id === str(item.window_id)) ?? windows[0]
     if (!window) continue
@@ -234,6 +271,14 @@ function applyRun(sessions: SessionState[], step: ReplayStep, answer: Record_) {
   if (output !== undefined) pane.output = output
 }
 
+/** A capture reads a pane's screen; the target names the pane, as an object holding its id. */
+function applyCapture(sessions: SessionState[], step: ReplayStep, answer: Record_) {
+  const target = isRecord(step.arguments.target) ? step.arguments.target : {}
+  const pane = findPane(sessions, str(target.paneId))
+  const text = textOf(answer.text)
+  if (pane && text !== undefined) pane.output = text
+}
+
 function applyKill(sessions: SessionState[], answer: Record_, args: Record_): SessionState[] {
   // What was killed may be said as an id or as a name, by the answer or by the request.
   const said = [str(answer.killed), str(answer.id), str(answer.sessionId), str(answer.session_id), str(args.session_id), str(args.session), str(args.session_name), str(args.name)].filter((item): item is string => item !== undefined)
@@ -244,8 +289,67 @@ function applyKill(sessions: SessionState[], answer: Record_, args: Record_): Se
 
 const READS: Record<string, Reading> = { list_sessions: 'sessions', list_windows: 'windows', list_panes: 'panes', tmux_snapshot: 'panes' }
 
-/** The frames of a recording: the state before the first call, then the state after each. */
-export function replayFrames(steps: readonly ReplayStep[]): Frame[] {
+/** What a pane showed because of the calls so far: the command typed into it and what a run or a capture read from it. */
+type PaneText = { typed?: string; output?: string }
+
+/** A run or a capture adds to what its pane showed; a run is named by the pane it ran in, else the first pane. */
+function noteText(texts: Map<string, PaneText>, step: ReplayStep, answer: Record_, state: TmuxState) {
+  if (step.tool === 'run_shell_command' || step.tool === 'run_command') {
+    const id = paneOf(step.arguments) ?? str(answer.paneId) ?? str(answer.pane) ?? state.panes[0]?.id
+    if (!id) return
+    const typed = str(step.arguments.command)
+    const output = textOf(answer.output) ?? textOf(answer.text)
+    texts.set(id, { ...texts.get(id), ...(typed !== undefined ? { typed } : {}), ...(output !== undefined ? { output } : {}) })
+  } else if (step.tool === 'capture_pane') {
+    const target = isRecord(step.arguments.target) ? step.arguments.target : {}
+    const id = str(target.paneId)
+    const output = textOf(answer.text)
+    if (id && output !== undefined && state.panes.some((pane) => pane.id === id)) texts.set(id, { ...texts.get(id), output })
+  }
+}
+
+/** The sessions of a tmux state. A pane shows what the calls typed into it and read from it. */
+function sessionsOfState(state: TmuxState, texts: ReadonlyMap<string, PaneText>): SessionState[] {
+  return state.sessions.map((session) => ({
+    id: session.id,
+    name: session.name,
+    windows: state.windows.filter((window) => window.session === session.id).map((window): WindowState => ({
+      id: window.id, index: window.index, name: window.name, active: window.active, layout: window.layout,
+      panes: state.panes.filter((pane) => pane.window === window.id).map((pane): PaneState => {
+        const text = texts.get(pane.id)
+        return {
+          id: pane.id, command: pane.command, left: pane.left, top: pane.top, width: pane.width, height: pane.height, active: pane.active,
+          ...(text?.typed !== undefined ? { typed: text.typed } : {}),
+          ...(text?.output !== undefined ? { output: text.output } : {}),
+        }
+      }),
+    })),
+  }))
+}
+
+/** The frames of a recording that carries its tmux server's state: frame i is the state after call i. */
+function recordedFrames(steps: readonly ReplayStep[], before: TmuxState): Frame[] {
+  const texts = new Map<string, PaneText>()
+  const frames: Frame[] = [{ done: 0, recorded: true, sessions: sessionsOfState(before, texts) }]
+  let previous: TmuxState = before
+  steps.forEach((step, index) => {
+    const state = step.tmux!
+    noteText(texts, step, answerOf(step), state)
+    const reading = READS[step.tool]
+    const unchanged = READ_ONLY_TOOLS.has(step.tool) && JSON.stringify(state) === JSON.stringify(previous)
+    frames.push({ done: index + 1, tool: step.tool, recorded: true, sessions: sessionsOfState(state, texts), ...(reading ? { reading } : {}), ...(unchanged ? { unchanged: true } : {}) })
+    previous = state
+  })
+  return frames
+}
+
+/**
+ * The frames of a recording: the state before the first call, then the state
+ * after each. With `before` and a `tmux` state on every step, they are tmux's
+ * own; otherwise they are built from what the calls returned.
+ */
+export function replayFrames(steps: readonly ReplayStep[], before?: TmuxState): Frame[] {
+  if (before && steps.every((step) => step.tmux)) return recordedFrames(steps, before)
   let sessions: SessionState[] = []
   const frames: Frame[] = [{ done: 0, sessions: [] }]
   steps.forEach((step, index) => {
@@ -258,6 +362,7 @@ export function replayFrames(steps: readonly ReplayStep[]): Frame[] {
     else if (step.tool === 'split_window') applySplit(sessions, step, answer)
     else if (step.tool === 'get_tmux_variables' || step.tool === 'select_layout') applyLayoutRead(sessions, step, answer)
     else if (step.tool === 'run_shell_command' || step.tool === 'run_command') applyRun(sessions, step, answer)
+    else if (step.tool === 'capture_pane') applyCapture(sessions, step, answer)
     else if (step.tool === 'kill_session') sessions = applyKill(sessions, answer, step.arguments)
     frames.push({ done: index + 1, tool: step.tool, sessions: clone(sessions), ...(reading ? { reading } : {}) })
   })

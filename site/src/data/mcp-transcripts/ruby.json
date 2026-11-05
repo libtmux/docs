@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-transcript.mjs",
   "repo": "libtmux/libtmux-ruby",
-  "revision": "20744401ee9f78a131592481e251c6a09ac8f5fa",
+  "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
   "sandbox": {
     "tmux": "tmux 3.8a",
     "pytest": "pytest 9.2.0",
@@ -3466,6 +3466,36 @@
     }
   },
   "prompt": "List the panes on my tmux server.",
+  "tmuxBefore": {
+    "sessions": [
+      {
+        "id": "$0",
+        "name": "docs"
+      }
+    ],
+    "windows": [
+      {
+        "session": "$0",
+        "id": "@0",
+        "index": 0,
+        "name": "cat",
+        "active": true,
+        "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+      }
+    ],
+    "panes": [
+      {
+        "window": "@0",
+        "id": "%0",
+        "command": "cat",
+        "left": 0,
+        "top": 0,
+        "width": 80,
+        "height": 24,
+        "active": true
+      }
+    ]
+  },
   "steps": [
     {
       "tool": "tmux_capabilities",
@@ -3482,9 +3512,9 @@
         "data": {
           "endpoint": "docs",
           "server_identity": {
-            "generation": "2b7aa398dd617620e4e735be8ff694bc",
-            "pid": 2482776,
-            "start_time": 1793692756,
+            "generation": "6963609593170335729d5963e689cc1f",
+            "pid": 1408341,
+            "start_time": 1793847042,
             "tmux_version": "3.8a"
           },
           "enabled_tools": [
@@ -5867,6 +5897,36 @@
           }
         }
       },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$0",
+            "name": "docs"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "cat",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "cat",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
+          }
+        ]
+      },
       "caption": "Ask the server which tools and limits are enabled."
     },
     {
@@ -5885,11 +5945,11 @@
       "structuredContent": {
         "ok": true,
         "data": {
-          "capture_id": "aec1a3d6e62a4ceb2c8326b8a54dcbc7",
+          "capture_id": "6f71a480108cbc794e76da556379dc4f",
           "server_identity": {
-            "generation": "2b7aa398dd617620e4e735be8ff694bc",
-            "pid": 2482776,
-            "start_time": 1793692756,
+            "generation": "6963609593170335729d5963e689cc1f",
+            "pid": 1408341,
+            "start_time": 1793847042,
             "tmux_version": "3.8a"
           },
           "entity": "pane",
@@ -5902,8 +5962,8 @@
           },
           "interval": {
             "clock": "monotonic_seconds",
-            "started": 216410.154280461,
-            "finished": 216410.167168026,
+            "started": 370696.033652687,
+            "finished": 370696.045557008,
             "reads": 5
           },
           "items": [
@@ -5913,7 +5973,7 @@
                 "id": "%0",
                 "windowId": "@0",
                 "index": 0,
-                "pid": 2482777,
+                "pid": 1408342,
                 "currentCommand": "cat",
                 "currentPath": "/home/user/project",
                 "title": "host",
@@ -5924,7 +5984,7 @@
                 "height": 24
               },
               "ref": {
-                "generation": "2b7aa398dd617620e4e735be8ff694bc",
+                "generation": "6963609593170335729d5963e689cc1f",
                 "kind": "pane",
                 "id": "%0"
               }
@@ -5932,6 +5992,36 @@
           ],
           "truncated": false
         }
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$0",
+            "name": "docs"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "cat",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "cat",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
+          }
+        ]
       },
       "caption": "List the panes."
     }
