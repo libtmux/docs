@@ -43,7 +43,6 @@ const note = (frame: Frame) => {
 }
 ---
 <Heading id="worked-example">Worked example</Heading>
-<p>Given this prompt, an agent connected to the {portName} server makes these calls{recording ? ' and gets these results' : ''}.</p>
 <section class={`not-prose mcp-replay${recording ? '' : ' mcp-replay--requests'}`} data-mcp-replay data-steps={total} aria-label="Worked example replay">
   {recording && (
     <header class="mcp-replay__head" data-head hidden>

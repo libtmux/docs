@@ -10,7 +10,7 @@ import WorkspaceConfig from './workspace/WorkspaceConfig.astro'
 import WorkspaceWindows from './workspace/WorkspaceWindows.astro'
 import { PORT_BY_SLUG, portPageUrl, type Port } from '../lib/ports'
 import { landingPanels, type CachedSource, type LandingTable } from '../lib/port-landing'
-import { mcpShowcase, showcaseHeadings, showcaseSentence } from '../lib/mcp-showcase'
+import { mcpShowcase, showcaseHeadings } from '../lib/mcp-showcase'
 import { loadCommand } from '../lib/workspace-links'
 import {
   landingExample, offersPicker, previewWindows, revisionUrl, TOPICS, VIA, workspaceShowcase,
@@ -93,7 +93,6 @@ const panelId = (product: string) => `landing-panel-${product}`
       {panel.servedBy && <p class="landing-note">
         {port.name} has no {panel.label} package of its own. It uses the {panel.servedBy} port's <code>{panel.packageName}</code>.
       </p>}
-      {showcase && <p class="landing-lead" data-landing-lead>{showcaseSentence(showcase)}</p>}
       {showcase?.example && !panel.servedBy && <div class="landing-example" data-landing-example="mcp">
         <McpReplay example={showcase.example} portName={port.name} level={3} />
       </div>}
@@ -207,7 +206,6 @@ const panelId = (product: string) => `landing-panel-${product}`
   /* A long command or path wraps instead of widening the page. */
   .landing-source code { white-space: normal; overflow-wrap: anywhere; }
   /* One gap, 1rem, between a panel's blocks; half of it from a title to what it introduces. The tab row's own margin is the only space above the first block. */
-  .landing-lead { margin: 0 0 1rem; }
   .landing-example { margin: 0; }
   .landing-example :global(h3) { margin: 0 0 .5rem; font-weight: 600; line-height: 1.4; }
   .landing-example > :global(p:not(.mcp-provenance)) { margin: 0 0 1rem; }
