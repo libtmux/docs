@@ -46,14 +46,14 @@ const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server
   <div slot="beside" class="core-player__side" data-core-plan={JSON.stringify(views)}>
     <div class="core-player__tmux" data-tmux role="group" aria-label="tmux state after the call shown">
       {frames.map((frame) => (
-        <div class="mcp-frame" data-frame={frame.done} hidden={frame.done !== total}>
+        <div class="mcp-frame" data-frame={frame.done} data-off={frame.done === total ? undefined : ''}>
           <TmuxScreen frame={frame} idPrefix={`cp-${port}`} hadSessions={frames.some((earlier) => earlier.done < frame.done && earlier.sessions.length > 0)} />
           <p class="mcp-frame__note">{frame.done === 0 ? 'tmux before the first call: no server is running.' : stepNote(steps[frame.done - 1]!, before(frame.done - 1))}</p>
         </div>
       ))}
     </div>
     <div class="core-player__results" data-results>
-      <section class="core-result" data-result="0" hidden>
+      <section class="core-result" data-result="0" data-off>
         <h3 class="core-result__title">Before the first call</h3>
         <p class="core-result__plain">{beforeText}</p>
       </section>
@@ -61,7 +61,7 @@ const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server
         const { commands, probes } = visibleCommands(step)
         const changes = commands.filter((command) => command.mutates).length
         return (
-          <section class="core-result" data-result={index + 1}>
+          <section class="core-result" data-result={index + 1} data-off={index + 1 === total ? undefined : ''}>
             <h3 class="core-result__title">
               <span><code>{step.label}</code> returned <code>{step.type}</code></span>
               <button type="button" class="core-result__pin" data-pin aria-pressed="false" hidden aria-label={`Pin the tmux state after ${step.label}`}><svg class="mcp-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2.5h6v11L8 11l-3 2.5z" /></svg></button>
@@ -149,8 +149,8 @@ const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server
       render({ shown, pinned }) {
         const call = shown === 0 ? undefined : placed()[shown - 1]
         const frame = call ? call.index + 1 : 0
-        frames.forEach((element) => { element.hidden = Number(element.dataset.frame) !== frame })
-        results.forEach((element) => { element.hidden = Number(element.dataset.result) !== frame })
+        frames.forEach((element) => { element.toggleAttribute('data-off', Number(element.dataset.frame) !== frame) })
+        results.forEach((element) => { element.toggleAttribute('data-off', Number(element.dataset.result) !== frame) })
         pins.forEach((pin) => { pin.setAttribute('aria-pressed', String(pinned !== null && shown === pinned)) })
         for (const view of Object.keys(plan)) {
           codeLines(view).forEach((line, position) => {

@@ -151,7 +151,7 @@ describe('the player component', () => {
     return { win, document, capability }
   }
 
-  const shown = (document: Document, selector: string) => [...document.querySelectorAll<HTMLElement>(selector)].filter((element) => !element.hidden)
+  const shown = (document: Document, selector: string) => [...document.querySelectorAll<HTMLElement>(selector)].filter((element) => !element.hidden && !element.hasAttribute('data-off'))
   const lit = (document: Document, view: string) => [...document.querySelectorAll(`[data-home-view="${view}"] .ec-line`)].flatMap((line, index) => (line.classList.contains('is-current') ? [index + 1] : []))
   const click = (win: Window, element: Element) => element.dispatchEvent(new win.MouseEvent('click', { bubbles: true }) as unknown as Event)
   const over = (win: Window, element: Element, type = 'mouseover') => element.dispatchEvent(new win.MouseEvent(type, { bubbles: true }) as unknown as Event)
@@ -230,7 +230,7 @@ describe('the player component', () => {
     click(win, run)
     expect(document.querySelector('[data-hint]')!.textContent).toMatch(/Pinned/)
     expect([...document.querySelectorAll('[data-home-view="concise"] .ec-line.is-pinned')].length).toBeGreaterThan(0)
-    expect([...document.querySelectorAll('.core-result:not([hidden]) [data-pin]')].map((pin) => pin.getAttribute('aria-pressed'))).toEqual(['true'])
+    expect([...document.querySelectorAll('.core-result:not([data-off]) [data-pin]')].map((pin) => pin.getAttribute('aria-pressed'))).toEqual(['true'])
     key(win, stage, 'Escape')
     expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual(['1'])
     expect(document.querySelector('[data-hint]')!.textContent).toMatch(/Hover a call/)

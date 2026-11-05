@@ -153,14 +153,40 @@
   line-height: 1.5;
 }
 
-.core-result[hidden] {
+/*
+ * Without script the final tmux shows and every result lists. With it, one
+ * step's frame and result show at a time: every frame, and every result,
+ * keeps its place in a single grid cell, so the side is as tall as its
+ * tallest step and moving between steps moves nothing. ThemeScript sets
+ * data-js before the first paint, so the page is drawn this way from the
+ * start. A step out of view is data-off, not [hidden]: Tailwind's preflight
+ * hides [hidden] with !important from a layer, which no rule here can undo.
+ */
+.core-player__tmux > .mcp-frame[data-off] {
   display: none;
 }
 
-.core-result + .core-result {
+html:not([data-js]) .core-result + .core-result {
   margin-top: 0.5rem;
   padding-top: 0.5rem;
   border-top: 1px solid var(--color-edge);
+}
+
+html[data-js] .core-player__tmux,
+html[data-js] .core-player__results {
+  display: grid;
+  align-content: start;
+}
+
+html[data-js] .core-player__tmux > .mcp-frame,
+html[data-js] .core-player__results > .core-result {
+  grid-area: 1 / 1;
+}
+
+html[data-js] .core-player__tmux > .mcp-frame[data-off],
+html[data-js] .core-player__results > .core-result[data-off] {
+  display: block;
+  visibility: hidden;
 }
 
 .core-result__title {
