@@ -102,8 +102,16 @@ const escapedSlashes = (text) => text.replaceAll('/', '\\/')
 
 const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-/** A name as a token: not part of a longer word, path, option or file name. Short names such as `d` are matched too. */
-const token = (name) => new RegExp(`(?<![\\w./-])${escapeRegExp(name)}(?![\\w./-])`, 'g')
+/**
+ * A name as a token: not part of a longer word, path, option or file name.
+ * Short names such as `d` are matched too. After a backslash a name counts
+ * only as a whole Windows path segment, so an escape such as `\d` in a format
+ * string is not taken for a user called `d`.
+ */
+const token = (name) => {
+  const word = escapeRegExp(name)
+  return new RegExp(`(?<![\\w./\\\\-])${word}(?![\\w./-])|(?<=\\\\)${word}(?=\\\\|$|[\\s"'])`, 'g')
+}
 
 /**
  * Each way of undoing one layer of encoding. JSON escapes stop at `\\`, `\/`,
