@@ -35,6 +35,14 @@ Installing a fresh beacon on each `astro:page-load` would duplicate that
 work. The automatic installation has no switch for it: turning SPA tracking
 off takes the manual snippet with `"spa": false`.
 
+The zone's automatic installation adds a beacon module script before
+`</body>`. Module scripts run in document order, so every script the gate
+requires is written inside `<body>`: one written after `</html>` would wait
+for a beacon request that a blocking network never answers. That request
+can still hold `document.fonts.ready` in Firefox and WebKit, so the gate
+lifts its hold on the API tree after five seconds and sets
+`data-page-readiness="timeout"` until the page finishes.
+
 ## Preview configuration
 
 [web-analytics-preview.json](web-analytics-preview.json) limits the edge

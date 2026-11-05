@@ -33,13 +33,21 @@ export function initializePageReadiness(decorate: (win: Window) => unknown, mask
   let revision = 0
   let parsed = false
   let finished = false
+  let revealed = false
   let swapped = false
   let failure: unknown
   let outlet: HTMLElement | undefined
-  const state = () => failure ? 'failed' : finished ? 'ready' : 'pending'
+  const state = () => failure ? 'failed' : finished ? 'ready' : revealed ? 'timeout' : 'pending'
   const hold = () => root.classList.add('fonts-pending', 'link-hints-pending')
   root.dataset.pageReadiness = 'pending'
   hold()
+  // A resource that never answers holds the API tree for at most this long.
+  const limit = setTimeout(() => {
+    if (finished || failure) return
+    revealed = true
+    root.dataset.pageReadiness = 'timeout'
+    root.classList.remove('fonts-pending', 'link-hints-pending')
+  }, 5000)
 
   const showFailure = () => {
     if (!document.body || outlet) return
@@ -58,6 +66,9 @@ export function initializePageReadiness(decorate: (win: Window) => unknown, mask
     if (finished || failure) return
     failure = error || new Error('Required appearance failed')
     console.error('Page appearance failed', failure)
+    clearTimeout(limit)
+    revealed = false
+    hold()
     root.dataset.pageReadiness = 'failed'
     showFailure()
   }
@@ -82,7 +93,7 @@ export function initializePageReadiness(decorate: (win: Window) => unknown, mask
     // Removed elements never fire load or error, so they no longer hold the gate.
     for (const [element, { resolve }] of resources) if (!element.isConnected) resolve()
     root.dataset.pageReadiness = state()
-    if (!finished) hold()
+    if (!finished && !revealed) hold()
     if (failure) { outlet = undefined; showFailure() }
   })
   const watchFonts = () => {
@@ -216,6 +227,7 @@ export function initializePageReadiness(decorate: (win: Window) => unknown, mask
       }
       if (failure) return
       finished = true
+      clearTimeout(limit)
       observer.disconnect()
       root.dataset.pageReadiness = 'ready'
       root.classList.remove('fonts-pending', 'link-hints-pending')

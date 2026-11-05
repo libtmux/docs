@@ -195,7 +195,11 @@ export async function checkRequiredAppearance(browser, base) {
     const errors = []
     page.on('pageerror', (error) => errors.push(error.message))
     try {
-      await page.clock.install()
+      // Paused before the page loads, the page's clock moves only when this check
+      // moves it, so a slow server cannot carry the hold past the five-second limit.
+      const start = Date.now()
+      await page.clock.install({ time: start })
+      await page.clock.pauseAt(start + 1000)
       let module
       if (kind === 'module') {
         const html = await page.request.get(`${base}${path}`).then((response) => response.text())
@@ -226,7 +230,7 @@ export async function checkRequiredAppearance(browser, base) {
       await page.goto(`${base}${path}`, { waitUntil: 'commit' })
       await incoming
       await page.waitForFunction(() => Boolean(document.querySelector('main h1')))
-      // The test clock crosses the former cutoff; no product timer is used.
+      // Past the former three-second cutoff, short of the five-second limit on the API tree's hold.
       await page.clock.fastForward(3500)
       assert(requested, `${kind}: the actual required request was held`)
       const held = await page.evaluate(() => ({ ...window.__appearance,
@@ -242,6 +246,15 @@ export async function checkRequiredAppearance(browser, base) {
       assert(shown.heading, `${kind}: the page text is readable while the resource is held`)
       if (kind === 'module') assert.equal(shown.tree, false, 'The API tree stays hidden until its state is restored')
       release()
+      // Frames and timers run only as the paused clock moves: step it, inside the limit, until the gate lifts.
+      for (let moved = 0; moved < 1200; moved += 16) {
+        if (await page.evaluate(() => document.documentElement.dataset.pageReadiness) !== 'pending') break
+        await page.clock.runFor(16)
+        await page.waitForTimeout(25)
+      }
+      assert.equal(await page.evaluate(() => document.documentElement.dataset.pageReadiness), 'ready',
+        `${kind}: a resource released inside the limit lifts the gate as ready`)
+      await page.clock.resume()
       const sample = await page.waitForFunction((document) => {
         const result = window.__appearance
         if (result.document !== document) return { changed: true }

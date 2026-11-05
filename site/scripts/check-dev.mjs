@@ -30,6 +30,7 @@ const apiAnchorsOnly = process.argv.includes('--api-anchors')
 const apiStickyOnly = process.argv.includes('--api-sticky')
 const permalinkRevealOnly = process.argv.includes('--permalink-reveal')
 const typeParametersOnly = process.argv.includes('--type-parameters')
+const requiredAppearanceOnly = process.argv.includes('--required-appearance')
 const apiSignaturesOnly = process.argv.includes('--api-signatures')
 const referenceLayoutOnly = process.argv.includes('--reference-layout')
 const memberBodiesOnly = process.argv.includes('--member-bodies')
@@ -792,7 +793,7 @@ try {
     : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/'
     : typeParametersOnly ? '/ts/latest/reference/selection-selection-where/' : '/tmux/concepts/server-session-window-pane/'
   const fullRun = ![homeLauncherOnly, homeControlsOnly, keywordHelpOnly, apiSignaturesOnly, referenceLayoutOnly, globalHeaderOnly, headerMenuSectionsOnly, statusBadgesOnly, badgeCentringOnly, referencePreviewsOnly,
-    referencePreferencesOnly, documentationNavigationOnly, apiNavigationOnly, apiAnchorsOnly, typeParametersOnly, permalinkRevealOnly].some(Boolean)
+    referencePreferencesOnly, documentationNavigationOnly, apiNavigationOnly, apiAnchorsOnly, typeParametersOnly, permalinkRevealOnly, requiredAppearanceOnly].some(Boolean)
   const setupPages = sampleOnly ? [firstPage, '/demo/widgets/pickers/', ...TMUX_KEY_PAGES]
     : [firstPage, ...(fullRun ? TMUX_KEY_PAGES : [])]
   const ready = Promise.all(setupPages.map(async (path) => {
@@ -891,6 +892,8 @@ try {
     }
   } else if (typeParametersOnly) {
     await retryReload(() => checkTypeParameters(browser, base))
+  } else if (requiredAppearanceOnly) {
+    await retryReload(() => checkRequiredAppearance(browser, base))
   } else {
     await retryReload(() => checkRequiredAppearance(browser, base))
     await retryReload(() => checkTmuxKeys(browser, base))

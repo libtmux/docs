@@ -89,7 +89,7 @@ it('does not turn a required failure into success when remaining resources settl
   expect(root().classList.contains('link-hints-pending')).toBe(true)
   expect(win.document.querySelectorAll('[role="alert"]')).toHaveLength(1)
 })
-it('a delayed module cannot reveal through an empty task registry or an elapsed cutoff', async () => {
+it('a delayed module cannot reveal through an empty task registry before the time limit', async () => {
   const module = script()
   initializePageReadiness(decorate, 'icon')
   await ready()
@@ -98,6 +98,35 @@ it('a delayed module cannot reveal through an empty task registry or an elapsed 
   module.dispatchEvent(new win.Event('load')); await flush()
   expect(root().dataset.pageReadiness).toBe('ready')
 })
+it('lifts the hold at the time limit when a required resource never answers, and still reports success late', async () => {
+  const module = script()
+  initializePageReadiness(decorate, 'icon')
+  await ready()
+  vi.advanceTimersByTime(4999); await flush()
+  expect(root().dataset.pageReadiness).toBe('pending')
+  expect(root().classList.contains('fonts-pending')).toBe(true)
+  vi.advanceTimersByTime(1); await flush()
+  expect(root().dataset.pageReadiness).toBe('timeout')
+  expect(root().classList.contains('fonts-pending')).toBe(false)
+  expect(root().classList.contains('link-hints-pending')).toBe(false)
+  module.dispatchEvent(new win.Event('load')); await flush()
+  expect(root().dataset.pageReadiness).toBe('ready')
+})
+it('does not lift the hold at the time limit after a required failure', async () => {
+  const module = script()
+  initializePageReadiness(decorate, 'icon')
+  parse(); module.dispatchEvent(new win.Event('error')); await flush()
+  vi.advanceTimersByTime(60_000); await flush()
+  expect(root().dataset.pageReadiness).toBe('failed')
+  expect(root().classList.contains('link-hints-pending')).toBe(true)
+})
+it('does not time out once the gate has finished', async () => {
+  initializePageReadiness(decorate, 'icon')
+  await ready()
+  vi.advanceTimersByTime(60_000); await flush()
+  expect(root().dataset.pageReadiness).toBe('ready')
+})
+
 // A router swap replaces the root's attributes with the new page's server-rendered ones.
 const swapIn = (body = '') => {
   for (const name of root().getAttributeNames()) root().removeAttribute(name)
@@ -134,6 +163,17 @@ it('lets a swap before the gate finished release the scripts it removed and the 
   await flush()
   expect(root().dataset.pageReadiness).toBe('ready')
   expect(root().classList.contains('fonts-pending')).toBe(false)
+})
+it('reports the time limit on the page a swap brings in', async () => {
+  const module = script()
+  initializePageReadiness(decorate, 'icon')
+  await ready()
+  vi.advanceTimersByTime(5000); await flush()
+  swapIn()
+  expect(root().dataset.pageReadiness).toBe('timeout')
+  expect(root().classList.contains('fonts-pending')).toBe(false)
+  module.dispatchEvent(new win.Event('load')); await flush()
+  expect(root().dataset.pageReadiness).toBe('ready')
 })
 it('shows a required failure again on the page a swap brings in', async () => {
   const module = script()
