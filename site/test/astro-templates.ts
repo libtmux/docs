@@ -35,6 +35,13 @@ export interface AstroTemplateOptions {
 
 let loads = 0
 
+/** What `ClientRouter` renders in the head; its script is dropped like every bundled script. */
+const CLIENT_ROUTER = `---
+const { fallback = 'animate' } = Astro.props
+---
+<meta name="astro-view-transitions-enabled" content="true" />
+<meta name="astro-view-transitions-fallback" content={fallback} />`
+
 /**
  * Compile `entry`, a path below `site/src`, and return its default export.
  *
@@ -75,6 +82,11 @@ export async function loadAstroTemplate(entry: string, options: AstroTemplateOpt
       const key = relative(fileURLToPath(SOURCE), fileURLToPath(local))
       if (options.stubs?.[key] !== undefined) return compile(local, options.stubs[key])
       return real.has(key) ? compile(local) : compile(local, '<slot />')
+    }
+    // A virtual module of the Astro build, which Node cannot resolve.
+    if (specifier === 'astro:transitions' && !options.modules?.[specifier]) {
+      const router = await compile(new URL('components/ClientRouter.astro', SOURCE), CLIENT_ROUTER)
+      return dataModule(`export { default as ClientRouter } from ${JSON.stringify(router)};`)
     }
     const exports: Exports = options.modules?.[specifier] ?? await import(/* @vite-ignore */ local ? fileURLToPath(local) : specifier)
     const key = `${load}:${local?.href ?? specifier}`

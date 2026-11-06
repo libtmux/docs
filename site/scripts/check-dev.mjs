@@ -8,7 +8,7 @@ import { chromium, firefox, webkit } from 'playwright'
 import { API_MODEL_PORTS, PORTS, productAvailable, referenceSegment } from '../src/lib/ports.ts'
 import { buildTarget, defaultVersionFor } from '../src/lib/versions.ts'
 import { checkClipboard, checkCompleteApiExamples } from './check-clipboard.mjs'
-import { checkApiAnchorArrival, checkApiExampleOwnership, checkApiNavigation, checkApiNavigationFail, checkApiStickyHeadings, checkApiStickyHeadingsFail, checkReferenceSidebarBounds, checkReferenceSidebarBoundsFail, checkDocumentationNavigation, checkNavigation, checkPermalinkReveal, checkPermalinkRevealFail } from './check-navigation.mjs'
+import { checkApiAnchorArrival, checkApiExampleOwnership, checkApiNavigation, checkApiNavigationFail, checkApiStickyHeadings, checkApiStickyHeadingsFail, checkReferenceSidebarBounds, checkReferenceSidebarBoundsFail, checkDocumentationNavigation, checkMcpInstallRevisit, checkNavigation, checkPermalinkReveal, checkPermalinkRevealFail } from './check-navigation.mjs'
 import { checkReferencePreferences, checkGlobalHeader, checkHeaderLinksFail, checkHeaderLinksRender, checkHeaderLinksRenderFail } from './check-reference-preferences.mjs'
 import { checkHeaderMenuSections, checkHeaderMenuSectionsFail } from './check-header-menu-sections.mjs'
 import { checkStatusBadges, checkStatusBadgesFail } from './check-status-badges.mjs'
@@ -30,6 +30,7 @@ const apiAnchorsOnly = process.argv.includes('--api-anchors')
 const apiStickyOnly = process.argv.includes('--api-sticky')
 const permalinkRevealOnly = process.argv.includes('--permalink-reveal')
 const typeParametersOnly = process.argv.includes('--type-parameters')
+const requiredAppearanceOnly = process.argv.includes('--required-appearance')
 const apiSignaturesOnly = process.argv.includes('--api-signatures')
 const referenceLayoutOnly = process.argv.includes('--reference-layout')
 const memberBodiesOnly = process.argv.includes('--member-bodies')
@@ -792,7 +793,7 @@ try {
     : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/'
     : typeParametersOnly ? '/ts/latest/reference/selection-selection-where/' : '/tmux/concepts/server-session-window-pane/'
   const fullRun = ![homeLauncherOnly, homeControlsOnly, keywordHelpOnly, apiSignaturesOnly, referenceLayoutOnly, globalHeaderOnly, headerMenuSectionsOnly, statusBadgesOnly, badgeCentringOnly, referencePreviewsOnly,
-    referencePreferencesOnly, documentationNavigationOnly, apiNavigationOnly, apiAnchorsOnly, typeParametersOnly, permalinkRevealOnly].some(Boolean)
+    referencePreferencesOnly, documentationNavigationOnly, apiNavigationOnly, apiAnchorsOnly, typeParametersOnly, permalinkRevealOnly, requiredAppearanceOnly].some(Boolean)
   const setupPages = sampleOnly ? [firstPage, '/demo/widgets/pickers/', ...TMUX_KEY_PAGES]
     : [firstPage, ...(fullRun ? TMUX_KEY_PAGES : [])]
   const ready = Promise.all(setupPages.map(async (path) => {
@@ -891,6 +892,8 @@ try {
     }
   } else if (typeParametersOnly) {
     await retryReload(() => checkTypeParameters(browser, base))
+  } else if (requiredAppearanceOnly) {
+    await retryReload(() => checkRequiredAppearance(browser, base))
   } else {
     await retryReload(() => checkRequiredAppearance(browser, base))
     await retryReload(() => checkTmuxKeys(browser, base))
@@ -919,7 +922,8 @@ try {
     const clipboard = schedule(() => checkClipboard(clipboardPage, base).finally(() => clipboardPage.close()))
     const navigationPage = await browser.newPage({ reducedMotion: 'reduce' })
     navigationPage.setDefaultTimeout(process.env.CI ? 20000 : 10000)
-    const navigation = schedule(() => retryReload(() => checkNavigation(navigationPage, base)).finally(() => navigationPage.close()))
+    const navigation = schedule(() => retryReload(() => checkNavigation(navigationPage, base)).finally(() => navigationPage.close())
+      .then(() => retryReload(() => checkMcpInstallRevisit(browser, base))))
     const reference = schedule(() => checkReferenceAndHeroes(browser, base)
       .then(() => retryReload(() => checkMemberBodies(browser, base)))
       .then(() => checkSignatureLayouts(browser, base))

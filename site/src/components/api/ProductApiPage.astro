@@ -54,9 +54,9 @@ const tmuxSections = apiTmuxSections(model.port, symbol, alternativesFor(symbol)
     {members.map((member) => <ApiEntry symbol={member} index={index} port={model.port} alternativesFor={alternativesFor} member nameHref={hrefFor(member)} sourceUrl={(entry) => sourceUrl(model, entry)} />)}
   </div>}
   </div>
-</DocsLayout>
 
 <script>
   import { crossHighlight } from '../../lib/cross-highlight'
   crossHighlight(document)
 </script>
+</DocsLayout>

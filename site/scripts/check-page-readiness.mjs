@@ -2,21 +2,31 @@ import assert from 'node:assert/strict'
 import pixelmatch from 'pixelmatch'
 import { PNG } from 'pngjs'
 
-/** Real font selection, link drawing and geometry at the first visible frame. */
+/**
+ * Real font selection, link drawing and geometry at the first complete frame.
+ *
+ * The page is visible while the gate runs; only the API tree waits. A frame is complete once the gate lifts.
+ */
 async function observeAppearance(context) {
   await context.addInitScript(() => {
-    window.__appearance = { document: crypto.randomUUID(), first: null, shifts: 0, positions: [] }
+    window.__appearance = { document: crypto.randomUUID(), first: null, firstAt: null, shifts: 0, positions: [] }
+    // A check's fake clock replaces performance.now; layout-shift entries keep the real timeline.
+    const now = performance.now.bind(performance)
     new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
-        if (window.__appearance.first && !entry.hadRecentInput) window.__appearance.shifts += entry.value
+        // The page is visible before the gate lifts, so only shifts after the first complete frame count.
+        const { firstAt } = window.__appearance
+        if (firstAt !== null && entry.startTime >= firstAt && !entry.hadRecentInput) window.__appearance.shifts += entry.value
       }
     }).observe({ type: 'layout-shift', buffered: true })
     const sample = () => {
       const heading = document.querySelector('main h1')
-      if (heading && getComputedStyle(document.body).visibility === 'visible') {
+      if (heading && getComputedStyle(document.body).visibility === 'visible' &&
+          !document.documentElement.matches('.fonts-pending, .link-hints-pending')) {
         const rect = heading.getBoundingClientRect()
         window.__appearance.positions.push([rect.x, rect.y, rect.width, rect.height])
         if (!window.__appearance.first) {
+          window.__appearance.firstAt = now()
           const text = [heading, document.querySelector('main code')].filter(Boolean)
           // Icon-only links draw no glyph, and a closed header menu is not what a reader sees first.
           const glyphLinks = [...document.querySelectorAll('a[data-external-link]:not([data-external-link-icon])')]
@@ -185,7 +195,11 @@ export async function checkRequiredAppearance(browser, base) {
     const errors = []
     page.on('pageerror', (error) => errors.push(error.message))
     try {
-      await page.clock.install()
+      // Paused before the page loads, the page's clock moves only when this check
+      // moves it, so a slow server cannot carry the hold past the five-second limit.
+      const start = Date.now()
+      await page.clock.install({ time: start })
+      await page.clock.pauseAt(start + 1000)
       let module
       if (kind === 'module') {
         const html = await page.request.get(`${base}${path}`).then((response) => response.text())
@@ -216,14 +230,31 @@ export async function checkRequiredAppearance(browser, base) {
       await page.goto(`${base}${path}`, { waitUntil: 'commit' })
       await incoming
       await page.waitForFunction(() => Boolean(document.querySelector('main h1')))
-      // The test clock crosses the former cutoff; no product timer is used.
+      // Past the former three-second cutoff, short of the five-second limit on the API tree's hold.
       await page.clock.fastForward(3500)
       assert(requested, `${kind}: the actual required request was held`)
       const held = await page.evaluate(() => ({ ...window.__appearance,
         readiness: document.documentElement.dataset.pageReadiness }))
       assert.equal(held.readiness, 'pending', `${kind}: stays pending past the old cutoff`)
-      assert.equal(held.first, null, `${kind}: no incomplete visible frame`)
+      assert.equal(held.first, null, `${kind}: no frame counts as complete while the resource is held`)
+      const shown = await page.evaluate(() => ({
+        body: getComputedStyle(document.body).visibility,
+        heading: document.querySelector('main h1').checkVisibility({ visibilityProperty: true }),
+        tree: document.querySelector('.api-nav [role="tree"]')?.checkVisibility({ visibilityProperty: true }),
+      }))
+      assert.equal(shown.body, 'visible', `${kind}: a held resource does not blank the page`)
+      assert(shown.heading, `${kind}: the page text is readable while the resource is held`)
+      if (kind === 'module') assert.equal(shown.tree, false, 'The API tree stays hidden until its state is restored')
       release()
+      // Frames and timers run only as the paused clock moves: step it, inside the limit, until the gate lifts.
+      for (let moved = 0; moved < 1200; moved += 16) {
+        if (await page.evaluate(() => document.documentElement.dataset.pageReadiness) !== 'pending') break
+        await page.clock.runFor(16)
+        await page.waitForTimeout(25)
+      }
+      assert.equal(await page.evaluate(() => document.documentElement.dataset.pageReadiness), 'ready',
+        `${kind}: a resource released inside the limit lifts the gate as ready`)
+      await page.clock.resume()
       const sample = await page.waitForFunction((document) => {
         const result = window.__appearance
         if (result.document !== document) return { changed: true }
@@ -250,7 +281,8 @@ export async function checkRequiredAppearance(browser, base) {
     await page.goto(`${base}/`, { waitUntil: 'commit' })
     await page.getByRole('alert').waitFor({ state: 'visible' })
     assert.equal(await page.locator('html').getAttribute('data-page-readiness'), 'failed')
-    assert.equal(await page.locator('main h1').isVisible(), false, 'Required failure keeps incomplete content gated')
+    assert(await page.evaluate(() => document.elementFromPoint(innerWidth / 2, innerHeight / 2)?.closest('#page-load-status') != null),
+      'Required failure covers the incomplete page with the recovery outlet')
     await page.unroute('**/*')
     await page.getByRole('button', { name: 'Reload', exact: true }).click()
     await page.locator('html[data-page-readiness="ready"]').waitFor({ state: 'attached' })
@@ -267,7 +299,7 @@ export async function checkRequiredAppearance(browser, base) {
     assert.equal(await legacy.locator('a').getAttribute('data-external-link'), 'example.com', 'Standalone and cached older heads retain decoration')
     assert.match(await legacy.locator('a').evaluate((link) => getComputedStyle(link, '::after').maskImage), /external-link\.svg/)
   } finally { await legacy.close() }
-  console.log('Appearance: held font/module/effect, first visible fonts/icons/dotted links, stable geometry, failure and Reload PASS')
+  console.log('Appearance: held font/module/effect keep the page readable and the API tree hidden, first complete fonts/icons/dotted links, stable geometry, failure and Reload PASS')
 }
 
 /**

@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto'
 import { chmodSync, cpSync, existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
+import { gzipSync } from 'node:zlib'
 import { afterEach, describe, expect, it } from 'vitest'
 import { readInventory, targetKey, writeInventoryEntries } from '@libtmux/api-model'
 
@@ -135,6 +136,22 @@ describe('published default inventory composition', () => {
     expect(catalog.coverage.inputs).toEqual([])
     expect(catalog.targets.map((entry: { scope: string }) => entry.scope).sort()).toEqual(['site', 'tmux@3.7c'])
     expect(readInventory(readFileSync(join(path, 'dist/objects-full.inv'))).entries.length).toBe(2)
+  })
+  it('reads a catalog the bucket stores gzip-encoded, as `aws s3 cp` downloads it', () => {
+    // A catalog above CloudFront's compression limit is published with
+    // `Content-Encoding: gzip`, and the CLI saves the stored bytes undecoded.
+    const plain = fixture()
+    const expected = resultOf(compose(plain.path))
+    const { path, catalog } = fixture(false)
+    const bytes = JSON.stringify(catalog)
+    writeFileSync(join(path, 'stored.gz'), gzipSync(bytes))
+    const bin = join(path, 'bin'); mkdirSync(bin, { recursive: true })
+    writeFileSync(join(bin, 'aws'), '#!/bin/sh\ncp "$STORED" "$4"\n'); chmodSync(join(bin, 'aws'), 0o755)
+    const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, STORED: join(path, 'stored.gz') }
+    const result = resultOf(compose(path, ['--bucket', 'bucket'], env))
+    expect(result.inputs[0].sha256).toBe(createHash('sha256').update(bytes).digest('hex'))
+    expect(result).toEqual(expected)
+    expect(readFileSync(join(path, 'dist/targets.json'), 'utf8')).toBe(readFileSync(join(plain.path, 'dist/targets.json'), 'utf8'))
   })
   it('treats an S3 404 as absent', () => {
     const { path } = fixture(false)

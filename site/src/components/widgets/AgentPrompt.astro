@@ -197,9 +197,14 @@ const activePortRules = items
       {/* Beside the label, not in it: a button inside a label passes its click to the select. */}
       <RerollButton size={showTaskReset ? 'lg' : 'sm'} title="Pick another task" data-action="reroll" />
     </div>
-    {showVersionPicker && <label class="lm-agent-prompt__control" data-version-control hidden>
+    {/* Drawn from the first frame, holding the served version until the
+        manifest fills it: every published port has more than one version, and
+        a control that appeared later would push the prompt down. */}
+    {showVersionPicker && <label class="lm-agent-prompt__control" data-version-control>
       <span class="lm-agent-prompt__label">Version</span>
-      <select class="lm-agent-prompt__select" data-select="version" />
+      <select class="lm-agent-prompt__select" data-select="version">
+        <option value={versionFor(initialSlug)} selected>{versionFor(initialSlug)}</option>
+      </select>
     </label>}
     <p class="lm-agent-prompt__summary" data-summary>
       {TOPICS.find((t) => t.id === defaultTopic)!.summary}
@@ -684,13 +689,19 @@ const activePortRules = items
     const control = widget.querySelector<HTMLElement>('[data-version-control]')
     const select = widget.querySelector<HTMLSelectElement>('[data-select="version"]')
     if (!control || !select) return
+    const current = widget.querySelector<HTMLElement>(`.lm-agent-prompt__panel[data-port="${slug}"]`)?.dataset.version
+    // Until the manifest answers, the control names the version this port's prompt is served at.
+    if (current && select.value !== current) {
+      const option = document.createElement('option')
+      option.value = option.textContent = current
+      select.replaceChildren(option)
+    }
     return versionManifest().then((ports) => {
       const entries = (ports?.[slug] ?? []).filter((e) => e.supported)
       if (entries.length < 2) {
         control.hidden = true
         return
       }
-      const current = widget.querySelector<HTMLElement>(`.lm-agent-prompt__panel[data-port="${slug}"]`)?.dataset.version
       select.replaceChildren(
         ...entries.map((entry) => {
           const option = document.createElement('option')

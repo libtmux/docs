@@ -47,6 +47,37 @@ exactly why today's `libtmux.git-pull.com` workflow already invalidates two of
 them by name (see README). An `--exclude "*.html"` pass would hand them a
 year of `immutable` by accident.
 
+## JSON above 10,000,000 bytes is stored gzipped
+
+CloudFront compresses an object only when it is between 1,000 and 10,000,000
+bytes. A larger file crosses from the origin whole on every fetch that reaches
+it, whatever the client accepts. The `targets.json` catalogs at the locale root
+and under `tmux/` are the biggest such files, and a port version's catalog can
+pass the limit as it grows.
+
+Both writers of the bucket, `scripts/publish-root.sh` and
+`reusable-deploy.yml`, therefore upload every `*.json` file over the limit
+gzipped, with `Content-Encoding: gzip`, `Content-Type: application/json` and
+the `Cache-Control` of its path class. `scripts/large-json.sh` holds the limit
+and the upload. Inventories (`*.inv`) stay as built: Sphinx already compresses
+their bodies, so gzip saves them almost nothing.
+
+`sync` compares sizes, so it would find the stored gzip smaller than the local
+file and upload the file again without the encoding. Each `cp` and `sync`
+therefore excludes these files by exact path, and the gzipped copies go up in
+one pass at the end. An exclude names only files the build still has, so
+`--delete` still removes the object of a file the build drops.
+
+Clients that ask for gzip, such as browsers, `curl --compressed`, Node's
+`fetch`, Go's default transport and Python's `requests`, decode the response.
+By its compression documentation Cloudflare decodes it for a client that sends
+no `Accept-Encoding`. CloudFront itself returns the stored bytes to every
+client, because S3 does no content negotiation, so a client that reaches the
+distribution directly and does not decode gets gzip. `aws s3 cp` and
+`aws s3 sync` also download the stored bytes. The immutable-tag guard in
+`reusable-deploy.yml` and `scripts/compose-published-inventory.mjs` decode a
+catalog before they use it.
+
 ## Why every release needs (at least) two sync passes
 
 A tag release and its rolling alias are separate builds with separate
@@ -151,16 +182,45 @@ See <https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PayingFo
 
 ### Cloudflare in front
 
-Cloudflare never sees a CloudFront invalidation — it has its own edge cache,
-so a purge there is a separate action. Measured on the live site, it is not
-currently caching HTML at all:
+Cloudflare never sees a CloudFront invalidation. It has its own edge cache, so
+a purge there is a separate action. The zone caches pages, catalogs and
+inventories for the origin's `s-maxage`, through one Cache Rule in the
+`http_request_cache_settings` phase, "Cache HTML, catalogs and inventories for
+the origin s-maxage (libtmux/docs#255)":
+
+```text
+(http.host eq "libtmux.org" and (ends_with(http.request.uri.path, "/") or ends_with(http.request.uri.path, ".html") or ends_with(http.request.uri.path, ".json") or ends_with(http.request.uri.path, ".inv")))
+```
+
+The action is `set_cache_settings` with `cache` true and both the edge TTL and
+the browser TTL set to `respect_origin`. A page, catalog or inventory is kept
+for the `s-maxage=300` the origin sends, and the browser follows `max-age=0`.
+The port-root 302, which the origin marks `no-store`, bypasses the cache, and
+a missing object answers 403, which Cloudflare does not cache. Tiered Caching
+and Smart Tiered Cache are on, so one upper-tier cache fetches from CloudFront
+in place of every Cloudflare data center.
+
+Measured on the live site on 2026-11-04, after the rule went live:
 
 ```console
 $ curl -sI https://libtmux.org/en/ | grep -i cf-cache-status
-cf-cache-status: DYNAMIC
+cf-cache-status: MISS
+$ curl -sI https://libtmux.org/en/ | grep -i cf-cache-status
+cf-cache-status: HIT
+$ curl -sI https://libtmux.org/en/py/ | grep -i cf-cache-status
+cf-cache-status: BYPASS
 ```
 
-So Cloudflare adds no staleness window today. If that changes — a Cache Rule
-that starts respecting `s-maxage` — the bound becomes five minutes after a
-deploy, and a purge step would be the way to shorten it.
+`objects.inv` answered `MISS` and then `HIT` as the pages did, the 302 stayed
+`BYPASS`, and Cloudflare still injected the Web Analytics beacon into cached
+HTML. The change added no billable usage.
 
+So Cloudflare adds a staleness window of the origin's five minutes after a
+deploy, the same bound CloudFront has, and a deploy needs no purge. A longer
+edge TTL, a day for example, would need a Cloudflare purge after each publish.
+That takes an API token with Zone Cache Purge permission as a workflow secret,
+which is not set up.
+
+Terraform (`tf-config`) does not manage the Cache Rule or the tiered-cache
+settings. It manages the zone's DNS, email routing and the `email_obfuscation`
+setting only, so this rule lives on the zone, and this section is its record.

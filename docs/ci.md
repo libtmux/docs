@@ -421,6 +421,12 @@ the handful of root-level files — the workflow-level twin of the IAM
 `NotResource` policy that should back it, so a bug here fails the run rather
 than depending on IAM alone.
 
+Both this job and `reusable-deploy.yml` keep a JSON file over CloudFront's
+10,000,000-byte compression limit out of their `cp` and `sync` calls and upload
+it last, gzip-encoded, through `scripts/large-json.sh`. The `publish-root`
+artifact and the preview dry run carry that script beside `publish-root.sh`.
+`infra/cache-policy.md` explains why.
+
 ## PR audit and preview (`test.yml`)
 
 Every PR runs source checks before generators can refresh committed data,
@@ -442,7 +448,10 @@ are confined to the same workflow run and fail on a digest mismatch. A missing
 or replaced artifact cannot fall back to another artifact with the same name.
 Publication depends on the audit and both publisher dry-runs succeeding.
 The privileged job treats the artifact as files to publish; it executes no
-script from that artifact.
+script from that artifact. The scripts it does run, such as
+`scripts/large-json.sh`, come from `job.workflow_sha`, which for a preview is
+the pull request's merge commit: the same code that supplies the workflow
+file, so they grant the pull request nothing its workflow could not.
 
 `publish-preview` calls `reusable-deploy.yml` with `version-kind: pr`, the
 artifact ID, and no `port`. Its exclusive prefix is `pr-<n>/`; it writes no

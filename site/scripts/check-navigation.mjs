@@ -408,13 +408,14 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
   console.log('Surface picker: search, keyboard, history and scoped page lists pass on phone/tablet/desktop, both themes and without JavaScript')
 }
 
-/** Observe the first visible appearance in every destination document. */
+/** Observe the first complete appearance in every destination document: the gate has lifted. */
 async function observeInitialPageLoad(page) {
   await page.addInitScript(() => {
     window.__docsPageLoaded = false
     document.addEventListener('libtmux:page-ready', () => { window.__docsPageLoaded = true }, { once: true })
     const observe = () => {
-      if (document.querySelector('main h1') && getComputedStyle(document.body).visibility === 'visible') {
+      if (document.querySelector('main h1') && getComputedStyle(document.body).visibility === 'visible' &&
+          !document.documentElement.matches('.fonts-pending, .link-hints-pending')) {
         window.__firstVisibleAppearance = {
           readiness: document.documentElement.dataset.pageReadiness,
           theme: document.documentElement.dataset.themeMode,
@@ -441,7 +442,7 @@ export async function checkApiNavigation(page, base, { sabotage } = {}) {
     await page.locator('.api-member-link[href$="libtmux-server-snapshot/"]').click()
     await page.waitForURL(snapshot, { waitUntil: 'commit' })
     await page.waitForFunction(() => window.__docsPageLoaded)
-    assert.equal(await page.evaluate(() => window.__apiNavigationProbe), undefined, 'API navigation loads a new document')
+    assert(await page.evaluate(() => window.__apiNavigationProbe), 'API navigation swaps the page in place')
     assert(await page.locator('html').evaluate((el) => el.hasAttribute('data-api-nav')),
       `API navigation restores the drawer styles at ${width}px`)
     const nav = page.locator('#api-nav')
@@ -504,7 +505,7 @@ export async function checkApiNavigation(page, base, { sabotage } = {}) {
   await page.locator('#api-nav').waitFor({ state: 'visible' })
   assert.equal(await page.locator('#api-nav').evaluate((el) => el.inert), false)
   assert.equal(await page.locator('[data-api-nav-toggle]').isVisible(), false)
-  console.log('API navigation: native documents, Back, drawer close controls, disclosure alignment and desktop pass')
+  console.log('API navigation: page swaps, Back, drawer close controls, disclosure alignment and desktop pass')
 
   const search = page.getByRole('searchbox', { name: 'Find a type or member' })
   const results = page.locator('[data-api-search-results]')
@@ -1239,18 +1240,32 @@ export async function checkNavigation(page, base) {
     localStorage.removeItem('libtmux-code-tab')
     localStorage.setItem('libtmux-docs.mcp-install.cooldown.enabled', '1')
     window.__applyTheme()
-    window.__navigationProbe = true
+    window.__navigationProbe = { swaps: 0, wrongTheme: false, gated: false }
+    document.addEventListener('astro:after-swap', () => {
+      window.__navigationProbe.swaps++
+      window.__navigationProbe.wrongTheme ||= document.documentElement.dataset.themeMode !== 'dark'
+      window.__navigationProbe.gated ||= document.documentElement.classList.contains('fonts-pending')
+    })
   })
-  const assertArrival = async () => {
-    await page.waitForFunction(() => window.__firstVisibleAppearance)
-    assert.deepEqual(await page.evaluate(() => window.__firstVisibleAppearance),
-      { readiness: 'ready', theme: 'dark', cooldown: '1' }, 'Saved preferences are present at the first visible frame')
+  const assertArrival = async ({ fresh = false } = {}) => {
+    const arrived = { readiness: 'ready', theme: 'dark', cooldown: '1' }
+    // A swap keeps the first document, so only a fresh document has a first complete frame of its own.
+    if (fresh) {
+      await page.waitForFunction(() => window.__firstVisibleAppearance)
+      assert.deepEqual(await page.evaluate(() => window.__firstVisibleAppearance), arrived,
+        'Saved preferences are present at the first complete frame')
+    }
+    await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready')
+    assert.deepEqual(await page.evaluate(() => ({ readiness: document.documentElement.dataset.pageReadiness,
+      theme: document.documentElement.dataset.themeMode, cooldown: document.documentElement.dataset.mcpInstallCooldownEnabled })),
+    arrived, 'Saved preferences are present on the page that arrived')
   }
   await page.getByRole('navigation', { name: 'Breadcrumb', exact: true }).getByRole('link', { name: 'Examples', exact: true }).click()
   await page.waitForURL(`${base}/tmux/examples/`)
   await page.waitForFunction(() => window.__docsPageLoaded)
   await assertArrival()
-  assert.equal(await page.evaluate(() => window.__navigationProbe), undefined, 'A link loads a new document')
+  assert.deepEqual(await page.evaluate(() => window.__navigationProbe), { swaps: 1, wrongTheme: false, gated: false },
+    'A link swaps the page in place, with the saved theme and no gate')
   assert.match(page.url(), /\/examples\/$/)
   const example = page.locator('main').getByRole('link').filter({
     has: page.getByRole('heading', { name: 'Attach and send keys', exact: true }),
@@ -1272,8 +1287,11 @@ export async function checkNavigation(page, base) {
   assert.equal(await page.locator('main libtmux-code-tabs').count(), 0, 'Native tmux prose has no language tabs')
   await page.goBack()
   await page.waitForURL(`${base}/tmux/examples/`)
-  await page.waitForFunction(() => window.__docsPageLoaded)
+  // History arrives before the router has swapped the page back.
+  await page.waitForFunction(() => window.__navigationProbe.swaps === 3)
   await assertArrival()
+  assert.deepEqual(await page.evaluate(() => window.__navigationProbe), { swaps: 3, wrongTheme: false, gated: false },
+    'Back swaps the previous page in place')
   assert.equal(await page.locator('html').getAttribute('data-theme-mode'), 'dark')
   assert.equal(await page.locator('html').getAttribute('data-page-readiness'), 'ready')
   assert.equal(await page.locator('html').getAttribute('data-mcp-install-cooldown-enabled'), '1')
@@ -1281,7 +1299,7 @@ export async function checkNavigation(page, base) {
   await page.goto(`${base}/code-tabs-probe/`, { waitUntil: 'load' })
   await page.waitForFunction(() => window.__docsPageLoaded)
   await page.waitForFunction(() => customElements.get('libtmux-code-tabs'))
-  await assertArrival()
+  await assertArrival({ fresh: true })
   const savedTab = page.locator('.code-tab[aria-selected="false"]').first()
   const savedPort = await savedTab.getAttribute('data-port')
   await savedTab.click()
@@ -1292,17 +1310,16 @@ export async function checkNavigation(page, base) {
   await page.waitForFunction(() => window.__docsPageLoaded)
   await page.waitForFunction(() => customElements.get('libtmux-code-tabs'))
   await assertArrival()
-  assert.equal(await page.evaluate(() => window.__codeTabsProbeDocument), undefined,
-    'The query link initializes a new native document')
+  assert(await page.evaluate(() => window.__codeTabsProbeDocument), 'The query link swaps the page in place')
   assert.match(page.url(), /\/code-tabs-probe\/\?from=client$/)
   assert.equal(await page.locator(`.code-tab-panel[data-port="${savedPort}"]:not([hidden])`).count(), 2,
-    'The new document restores the saved language in both real Markdown tab groups')
+    'The swapped page restores the saved language in both real Markdown tab groups')
   const otherTab = page.locator('.code-tab[aria-selected="false"]').first()
   const port = await otherTab.getAttribute('data-port')
   await otherTab.click()
   assert.equal(await page.locator(`.code-tab[data-port="${port}"]`).first().getAttribute('aria-selected'), 'true')
   assert.equal(await page.locator(`.code-tab-panel[data-port="${port}"]:not([hidden])`).count(), 2,
-    'Native navigation initializes both real Markdown tab groups')
+    'The swapped page initializes both real Markdown tab groups')
   assert.equal(await page.evaluate(() => localStorage.getItem('libtmux-code-tab')), port)
   await page.goBack()
   await page.waitForURL(`${base}/code-tabs-probe/`)
@@ -1311,7 +1328,7 @@ export async function checkNavigation(page, base) {
   assert.equal(await page.locator('main libtmux-code-tabs').count(), 2)
   assert.equal(await page.evaluate(() => localStorage.getItem('libtmux-code-tab')), port,
     'Back preserves the saved language preference')
-  console.log('Navigation: native documents, Back, search, code tabs, menu and saved theme/cooldown pass')
+  console.log('Navigation: page swaps, Back, search, code tabs, menu and saved theme/cooldown pass')
 
   for (const [port, version] of [['ts', 'latest'], ['py', defaultVersion('py')]]) {
     const prefix = new URL(`${base}/${port}/${version}/`).pathname
@@ -1361,4 +1378,35 @@ export async function checkApiExampleOwnership(page, base, path = 'ts/latest/ref
   assert.equal(await page.locator('[data-page-port-switcher]').count(), 1,
     'Readers can still switch ports from the documentation context')
   console.log('Reference examples: TypeScript examples stay visible without other languages')
+}
+
+/**
+ * A swap back to a page the reader already saw keeps the MCP install command.
+ * The router skips a head snippet it ran before, and the swap strips the
+ * attributes that snippet set on <html>, so the widget has to restore them.
+ */
+export async function checkMcpInstallRevisit(browser, base) {
+  const page = await browser.newPage({ reducedMotion: 'reduce' })
+  try {
+    const shown = () => page.evaluate(() => [...document.querySelectorAll('.lm-mcp-install__panel')]
+      .filter((panel) => panel.checkVisibility()).length)
+    await page.goto(`${base}/ts/latest/mcp/`)
+    await page.locator('html[data-page-readiness="ready"]').waitFor({ state: 'attached' })
+    assert.equal(await shown(), 1, 'The MCP page shows one install command')
+    await page.evaluate(() => {
+      window.__mcpRevisit = 0
+      document.addEventListener('astro:after-swap', () => { window.__mcpRevisit++ })
+    })
+    for (const back of [false, true]) {
+      await page.locator('a[href$="/ts/latest/mcp/reference/"]').filter({ visible: true }).first().click()
+      await page.waitForURL(/\/mcp\/reference\/$/)
+      await page.waitForFunction((count) => window.__mcpRevisit === count, back ? 3 : 1)
+      if (back) await page.goBack()
+      else await page.locator('a[href$="/ts/latest/mcp/"]').filter({ visible: true }).first().click()
+      await page.waitForURL(/\/ts\/latest\/mcp\/$/)
+      await page.waitForFunction((count) => window.__mcpRevisit === count, back ? 4 : 2)
+      assert.equal(await shown(), 1, `${back ? 'Back' : 'A link'} to the MCP page keeps its install command`)
+    }
+    console.log('MCP install: a link and Back to a page seen before keep the install command PASS')
+  } finally { await page.close() }
 }

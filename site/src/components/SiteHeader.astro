@@ -101,7 +101,8 @@ const links = port ? portHeaderLinks(port) : undefined
         <span class="site-header__menu-label">Menu</span>
       </summary>
 
-      <div class="site-header__panel">
+      {/* The last part of the bar: the base layout holds the first frame until this arrives. */}
+      <div id="site-header-panel" class="site-header__panel">
         {!documentationContext && <div class="site-header__panel-row site-header__panel-controls">
           <VersionSwitcher portSlug={pagePath.startsWith('reference') ? undefined : portSlug} version={version} />
           {

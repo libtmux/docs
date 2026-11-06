@@ -12,6 +12,7 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import { apiDb } from './src/integrations/api-db'
 import { pagefind } from './src/integrations/pagefind'
 import { markdownTwins } from './src/integrations/markdown-twins'
+import { codeStylesheet } from './src/integrations/code-stylesheet'
 import { remarkPortCode } from './src/plugins/remark-port-code.mjs'
 import { rehypeSiteRoot } from './src/plugins/rehype-site-root.mjs'
 import { rehypeCodeTabs } from './src/plugins/rehype-code-tabs.mjs'
@@ -161,6 +162,7 @@ export default defineConfig({
         ]
       : []),
     markdownTwins(),
+    codeStylesheet(),
     pagefind(),
   ],
 

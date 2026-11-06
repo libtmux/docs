@@ -518,7 +518,6 @@ const bar = `<div class="bd-bar">${SETS.map((s) => {
   </div>
 
   <style is:inline set:html={paletteCss}></style>
-</DemoLayout>
 
 <script is:inline>
   document.addEventListener('click', (event) => {
@@ -539,6 +538,7 @@ const bar = `<div class="bd-bar">${SETS.map((s) => {
   if (query.get('fonts') === 'fallback') apply('fonts', true)
   if (query.get('zoom') === '2') apply('zoom', true)
 </script>
+</DemoLayout>
 
 <style is:global>
   /* Page chrome */

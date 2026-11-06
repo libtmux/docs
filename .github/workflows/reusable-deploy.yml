@@ -222,8 +222,11 @@ jobs:
             echo "::error::GitHub Cloud job.workflow_repository/job.workflow_sha are required" >&2
             exit 1
           }
-      - if: inputs.port != ''
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Every call needs the publisher's scripts, a preview included:
+      # large-json.sh decides how the sync below treats the catalogs. For a
+      # preview, job.workflow_sha is the pull request's merge commit, the
+      # same commit that supplies this workflow file.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ job.workflow_repository }}
           ref: ${{ job.workflow_sha }}
@@ -353,6 +356,9 @@ jobs:
             remote="$RUNNER_TEMP/immutable-existing"
             mkdir -p "$remote"
             aws s3 sync "s3://$BUCKET/$PREFIX/" "$remote/" --only-show-errors
+            # A large JSON file is stored gzip-encoded and downloads that way.
+            . publisher/scripts/large-json.sh
+            large_json_decode dist "$remote"
             if ! diff -qr dist "$remote"; then
               echo "::error::immutable tag '$PREFIX' already exists with different bytes" >&2
               exit 1
@@ -366,15 +372,22 @@ jobs:
           BUCKET: ${{ secrets.bucket }}
         run: |
           set -euo pipefail
+          . publisher/scripts/large-json.sh
           # Retain old hashes for cached HTML, and update existing asset TTLs.
           # Every copy and deleting sync remains inside this call's prefix.
+          # A JSON file above CloudFront's compression limit stays out of
+          # both and goes up gzip-encoded last, under the same cache policy.
           while IFS= read -r -d '' assets; do
+            large_json_excludes "$assets"
             aws s3 cp "$assets/" "s3://$BUCKET/$PREFIX/${assets#dist/}/" \
-              --recursive --cache-control "public, max-age=31536000, immutable"
+              --recursive "${large_json_args[@]}" \
+              --cache-control "public, max-age=31536000, immutable"
           done < <(find dist -type d -name _astro -print0)
+          large_json_excludes dist
           aws s3 sync dist/ "s3://$BUCKET/$PREFIX/" \
             --delete --exclude "_astro/*" --exclude "*/_astro/*" \
-            --cache-control "$CACHE_CONTROL"
+            "${large_json_args[@]}" --cache-control "$CACHE_CONTROL"
+          large_json_upload dist "s3://$BUCKET/$PREFIX" "$CACHE_CONTROL"
 
       - name: Upsert manifest/<port>.json
         if: inputs.port != '' && inputs.version-kind != 'pr'

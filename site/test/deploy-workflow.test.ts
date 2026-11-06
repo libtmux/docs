@@ -1,9 +1,11 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
-import { describe, expect, it } from 'vitest'
+import { gzipSync } from 'node:zlib'
+import { afterEach, describe, expect, it } from 'vitest'
 import { API_MODEL_PORTS, PORTS } from '../src/lib/ports'
+import { CLOUDFRONT_LIMIT, excluded, expectLargeJsonGzipped, recordedCommands, recordingAws, writeSized } from './aws-uploads'
 
 const reusable = readFileSync(new URL('../../.github/workflows/reusable-deploy.yml', import.meta.url), 'utf8')
 const shell = readFileSync(new URL('../../.github/workflows/deploy-shell.yml', import.meta.url), 'utf8')
@@ -226,7 +228,14 @@ describe('port manifest publication', () => {
 })
 
 describe('immutable byte guard', () => {
-  it.each(['identical', 'changed', 'legacy-no-record'])('handles %s remote bytes without rewriting them', (mode) => {
+  // The first three differ in a small file. The rest differ in a JSON file above
+  // CloudFront's compression limit, which the bucket holds gzip-encoded and
+  // `aws s3 sync` downloads that way.
+  const modes = {
+    identical: true, changed: false, 'legacy-no-record': false,
+    'large-gzip': true, 'large-before-gzip': true, 'large-gzip-other-bytes': false, 'large-missing': false,
+  } as const
+  it.each(Object.entries(modes))('handles %s remote bytes without rewriting them', (mode, accepted) => {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-immutable-'))
     try {
       mkdirSync(join(directory, 'dist'))
@@ -235,6 +244,18 @@ describe('immutable byte guard', () => {
         writeFileSync(join(directory, folder, 'index.html'), folder === 'remote' && mode === 'changed' ? 'other bytes' : 'same page')
         if (folder === 'dist' || mode !== 'legacy-no-record') writeFileSync(join(directory, folder, 'build-provenance.json'), '{}')
       }
+      if (mode.startsWith('large-')) {
+        writeSized(join(directory, 'dist/targets.json'), CLOUDFRONT_LIMIT + 1)
+        const stored = {
+          'large-gzip': () => gzipSync(readFileSync(join(directory, 'dist/targets.json'))),
+          'large-before-gzip': () => readFileSync(join(directory, 'dist/targets.json')),
+          'large-gzip-other-bytes': () => gzipSync(Buffer.from('{"other":true}')),
+          'large-missing': () => null,
+        }[mode as 'large-gzip']()
+        if (stored) writeFileSync(join(directory, 'remote/targets.json'), stored)
+      }
+      mkdirSync(join(directory, 'publisher/scripts'), { recursive: true })
+      copyFileSync(new URL('../../scripts/large-json.sh', import.meta.url), join(directory, 'publisher/scripts/large-json.sh'))
       writeFileSync(join(directory, 'env'), '')
       writeFileSync(join(directory, 'aws'), `#!${process.execPath}
 const fs = require('node:fs')
@@ -248,9 +269,9 @@ else process.exit(90)
         ...process.env, PATH: `${directory}:${process.env.PATH}`, RUNNER_TEMP: directory,
         BUCKET: 'docs-test', PREFIX: 'en/go/v1', GITHUB_ENV: join(directory, 'env'), REMOTE: join(directory, 'remote'),
       } })
-      expect(result.status, result.stderr).toBe(mode === 'identical' ? 0 : 1)
-      expect(readFileSync(join(directory, 'env'), 'utf8')).toBe(mode === 'identical' ? 'SKIP_SYNC=true\n' : '')
-      if (mode !== 'identical') expect(result.stderr).toContain('already exists with different bytes')
+      expect(result.status, result.stderr).toBe(accepted ? 0 : 1)
+      expect(readFileSync(join(directory, 'env'), 'utf8')).toBe(accepted ? 'SKIP_SYNC=true\n' : '')
+      if (!accepted) expect(result.stderr).toContain('already exists with different bytes')
     } finally {
       rmSync(directory, { recursive: true, force: true })
     }
@@ -543,6 +564,120 @@ describe('shell publish', () => {
     expect(skip).toBeGreaterThan(-1)
     expect(skip).toBeLessThan(shell.indexOf('run: bash publish-root.sh'))
     expect(shell).toContain('cp scripts/skip-unchanged.mjs skip-unchanged.mjs')
+  })
+})
+
+// The body of a workflow step's `run: |` block, as bash would receive it.
+function stepBody(workflow: string, name: string): string {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`- name: ${escaped}\\n[\\s\\S]*?        run: \\|\\n((?: {10}[^\\n]*\\n|\\n)*)`).exec(workflow)![1].replace(/^ {10}/gm, '')
+}
+
+// A JSON file above 10,000,000 bytes leaves CloudFront whole unless the
+// object is stored gzip-encoded. The reusable publisher writes every port
+// version and every pull request preview, so it holds to the same rule as the
+// shell: such a file never goes through the sync, and goes up once, encoded.
+describe('large JSON in the reusable publisher', { timeout: 30_000 }, () => {
+  const MUTABLE = 'public, max-age=0, s-maxage=300'
+  const IMMUTABLE = 'public, max-age=31536000, immutable'
+  const scratch: string[] = []
+  afterEach(() => { for (const path of scratch.splice(0)) rmSync(path, { recursive: true, force: true }) })
+
+  function workspace(large: string[], small: string[] = []): string {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-reusable-large-json-'))
+    scratch.push(directory)
+    mkdirSync(join(directory, 'publisher/scripts'), { recursive: true })
+    copyFileSync(new URL('../../scripts/large-json.sh', import.meta.url), join(directory, 'publisher/scripts/large-json.sh'))
+    for (const path of large) writeSized(join(directory, 'dist', path), CLOUDFRONT_LIMIT + 1)
+    for (const path of small) writeSized(join(directory, 'dist', path), 1_000_000)
+    writeSized(join(directory, 'dist/at-the-limit.json'), CLOUDFRONT_LIMIT)
+    writeSized(join(directory, 'dist/objects-full.inv'), CLOUDFRONT_LIMIT + 355_982)
+    writeSized(join(directory, 'dist/index.html'), 1_000)
+    writeSized(join(directory, 'dist/_astro/app.js'), 1_000)
+    return directory
+  }
+
+  function sync(directory: string, prefix: string, cacheControl: string) {
+    const result = spawnSync('bash', ['-c', stepBody(reusable, "Sync to this call's own prefix")], {
+      cwd: directory, encoding: 'utf8', timeout: 20000,
+      env: recordingAws(directory, { BUCKET: 'docs-test', PREFIX: prefix, CACHE_CONTROL: cacheControl, RUNNER_TEMP: directory }),
+    })
+    expect(result.error, result.stderr).toBeUndefined()
+    expect(result.status, result.stderr).toBe(0)
+  }
+
+  it('publishes a port version\'s catalogs gzip-encoded and keeps them out of the sync', () => {
+    const large = ['targets.json', 'reference/data/index.json', '_astro/catalog.json']
+    const directory = workspace(large, ['docs.json', 'guides/_astro/more.json'])
+    sync(directory, 'en/py/latest', MUTABLE)
+    expect(expectLargeJsonGzipped(directory, 'dist', 's3://docs-test/en/py/latest', MUTABLE)).toEqual([...large].sort())
+    const deleting = recordedCommands(directory).find((args) => args[1] === 'sync')!
+    expect(deleting).toContain('--delete')
+    expect(deleting.filter((arg, index) => deleting[index - 1] === '--exclude' && arg.endsWith('.json')).sort())
+      .toEqual(['_astro/catalog.json', 'reference/data/index.json', 'targets.json'])
+  })
+
+  it('excludes a catalog whose name holds wildcards or a newline, and nothing else', () => {
+    // Unescaped, `[symbol]x.json` would also match `sx.json`, and `a*b?.json` would match `aXXbY.json`.
+    const large = ['reference/[symbol]x.json', 'reference/a*b?.json', 'reference/two\nlines.json']
+    const directory = workspace(large, ['reference/sx.json', 'reference/aXXbY.json', 'reference/two'])
+    sync(directory, 'en/py/latest', MUTABLE)
+    expect(expectLargeJsonGzipped(directory, 'dist', 's3://docs-test/en/py/latest', MUTABLE)).toEqual([...large].sort())
+  })
+
+  it('reads an exclude pattern the way the CLI does', () => {
+    expect(excluded('reference/[symbol]x.json', 'reference/sx.json')).toBe(true)
+    expect(excluded('reference/[[]symbol[]]x.json', 'reference/sx.json')).toBe(false)
+    expect(excluded('reference/[[]symbol[]]x.json', 'reference/[symbol]x.json')).toBe(true)
+    expect(excluded('a[*]b[?].json', 'aXXbY.json')).toBe(false)
+    expect(excluded('*/_astro/*', 'guides/_astro/more.json')).toBe(true)
+  })
+
+  it('gives an immutable tag\'s catalogs the immutable policy', () => {
+    const directory = workspace(['targets.json'])
+    sync(directory, 'en/py/v0.46.2', IMMUTABLE)
+    expect(expectLargeJsonGzipped(directory, 'dist', 's3://docs-test/en/py/v0.46.2', IMMUTABLE)).toEqual(['targets.json'])
+  })
+
+  it('publishes a preview\'s nested catalogs, not just those at its top', () => {
+    const large = ['en/targets.json', 'en/tmux/3.7c/targets.json']
+    const directory = workspace(large)
+    sync(directory, 'pr-42', MUTABLE)
+    expect(expectLargeJsonGzipped(directory, 'dist', 's3://docs-test/pr-42', MUTABLE)).toEqual([...large].sort())
+  })
+
+  it('sends a build with none exactly as before', () => {
+    const directory = workspace([])
+    sync(directory, 'en/py/latest', MUTABLE)
+    expect(recordedCommands(directory).some((args) => args.includes('--content-encoding'))).toBe(false)
+    expect(expectLargeJsonGzipped(directory, 'dist', 's3://docs-test/en/py/latest', MUTABLE)).toEqual([])
+  })
+
+  it('fetches the scripts for every call, a preview included', () => {
+    // The step that checks out the publisher is not conditional on a port.
+    const path = reusable.indexOf('path: publisher')
+    const checkout = reusable.slice(reusable.lastIndexOf('\n      - ', path), path)
+    expect(checkout).toContain('actions/checkout')
+    expect(checkout).not.toMatch(/\bif:/)
+  })
+})
+
+describe('large JSON publication wiring', () => {
+  // publish-root.sh sources large-json.sh from beside itself. The production
+  // job and both dry runs run a copy of it with no checkout, so each one has
+  // to carry the library along.
+  it('ships large-json.sh wherever publish-root.sh is copied', () => {
+    expect(publishRoot).toContain('large-json.sh')
+    for (const workflow of [shell, testWorkflow]) expect(workflow).toContain('cp scripts/large-json.sh large-json.sh')
+    const artifact = shell.slice(shell.indexOf('name: reserved-prefixes'), shell.indexOf('retention-days', shell.indexOf('name: reserved-prefixes')))
+    expect(artifact).toMatch(/^\s+publish-root\.sh$/m)
+    expect(artifact).toMatch(/^\s+large-json\.sh$/m)
+  })
+
+  it('has the reusable publisher and the shell write catalogs through the same library', () => {
+    expect(reusable).toContain('. publisher/scripts/large-json.sh')
+    expect(reusable).toContain('large_json_upload dist "s3://$BUCKET/$PREFIX" "$CACHE_CONTROL"')
+    expect(publishRoot).toContain('large_json_upload dist "s3://$BUCKET/$locale"')
   })
 })
 

@@ -29,8 +29,19 @@ The beacon carries Astro's handled-script marker so a late insertion during
 a swap cannot enter the router's script wait. The isolated ClientRouter
 probe checks this race and a negative control with the marker removed.
 Cloudflare's [SPA measurement](https://developers.cloudflare.com/web-analytics/get-started/web-analytics-spa/)
-already tracks route changes; installing a fresh beacon on each
-`astro:page-load` would duplicate that work.
+already tracks route changes, by patching `history.pushState` and listening
+for `popstate`, so a page the router swaps in counts as a page view.
+Installing a fresh beacon on each `astro:page-load` would duplicate that
+work. The automatic installation has no switch for it: turning SPA tracking
+off takes the manual snippet with `"spa": false`.
+
+The zone's automatic installation adds a beacon module script before
+`</body>`. Module scripts run in document order, so every script the gate
+requires is written inside `<body>`: one written after `</html>` would wait
+for a beacon request that a blocking network never answers. That request
+can still hold `document.fonts.ready` in Firefox and WebKit, so the gate
+lifts its hold on the API tree after five seconds and sets
+`data-page-readiness="timeout"` until the page finishes.
 
 ## Preview configuration
 
