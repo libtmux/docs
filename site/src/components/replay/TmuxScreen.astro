@@ -112,7 +112,10 @@ const percent = (value: number, total: number) => `${(value / total) * 100}%`
       ))}
     </div>
   ) : (
-    <div class="mcp-tmux__screen mcp-tmux__screen--tiles mcp-tmux__screen--empty">{hadSessions && <span>No sessions</span>}</div>
+    <div class="mcp-tmux__screen mcp-tmux__screen--tiles mcp-tmux__screen--empty mcp-tmux__screen--placeholder">
+      <svg class="mcp-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1.75" y="2.75" width="12.5" height="10.5" rx="1.5" /><path d="m4.5 6.5 2 1.5-2 1.5M8.5 10h3" /></svg>
+      <span>{hadSessions ? 'No sessions' : 'No tmux server yet'}</span>
+    </div>
   )) : drawn && drawn.rects ? (
     <div class={`mcp-tmux__screen${frame.reading === 'panes' ? ' is-reading' : ''}`} style={`aspect-ratio:${drawn.size[0] * 8} / ${drawn.size[1] * 17}`}>
       <Fragment set:html={drawn.svg} />

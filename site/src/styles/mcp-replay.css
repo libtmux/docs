@@ -447,6 +447,19 @@
   white-space: nowrap;
 }
 
+/* With nothing in tmux the screen is a placeholder of the same size, so the drawing reads as empty rather than missing. */
+.mcp-tmux__screen--placeholder {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.375rem;
+  border: 1px dashed var(--color-edge);
+  border-radius: 0.25rem;
+  background: color-mix(in srgb, var(--color-background-secondary) 50%, transparent);
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+
 /* With no server there is no status line to draw, but it keeps its height. */
 .mcp-tmux__status--sessions:empty {
   background: none;
@@ -470,10 +483,12 @@
 /* Controls */
 .mcp-replay__controls {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   border-top: 1px solid var(--color-edge);
+  container-type: inline-size;
 }
 
 .mcp-replay__controls[hidden] {
@@ -583,6 +598,18 @@
   font-size: 0.75rem;
   color: var(--color-muted);
   text-align: end;
+}
+
+/*
+ * A narrow bar gives the track a row of its own above the buttons: beside
+ * them, a program's dots would sit closer than a finger can tell apart.
+ */
+@container (max-width: 40rem) {
+  .mcp-replay__track {
+    flex: 1 0 100%;
+    order: -1;
+    margin-block: 0.5rem 0.25rem;
+  }
 }
 
 @container (min-width: 44rem) {
