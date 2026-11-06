@@ -30,7 +30,7 @@ import LibTmux
 # The program drops what these calls return. Each is shadowed in Main, before the program's \`using LibTmux\`, by a
 # function that remembers the value and gives it back; the program's own text is unchanged.
 const DOCS_RETURNED = Dict{String,Any}()
-for name in (:split_window, :new_window, :capture_pane)
+for name in (:rename_window, :send_keys, :wait_for_text, :select_pane, :select_window)
     @eval $name(args...; kwargs...) = (DOCS_RETURNED[$(String(name))] = LibTmux.$name(args...; kwargs...))
 end
 
@@ -106,6 +106,8 @@ exec SHIM "$@"
 const julia = () => join(execFileSync('mise', ['where', 'julia@1.13.0'], { encoding: 'utf8' }).trim(), 'bin/julia')
 const depot = () => process.env.LIBTMUX_DOCS_JULIA_DEPOT || join(homedir(), '.julia')
 
+/** What a shadowed call returned: a CommandResult's exit code. */
+const RETURNED = (name) => `Dict("exitcode" => DOCS_RETURNED["${name}"].exitcode)`
 const SERVER = 'Dict("socketPath" => something(server.socket_path, ""), "tmux" => server.tmux)'
 
 export const RECIPES = {
@@ -115,26 +117,40 @@ export const RECIPES = {
     stepMap: 'hand-written',
     source: (root) => quickstartSource(root, 'julia', 'quickstart.jl'),
     helpers: [{ file: 'docs_mark.jl', source: JULIA_HELPER }],
-    // The pane's `cat` is what a pane runs once it has settled: the sandbox pins SHELL to /bin/sh.
-    paneCommands: ['cat'],
-    // The first `snapshot` is read for its panes inside one expression, so only the pane it yields is in scope at its mark.
+    // What a pane runs once it has settled: the sandbox pins SHELL to /bin/sh.
+    paneCommands: ['sh'],
+    // In the order the calls run. The five calls whose result the program drops (a CommandResult, or the wait's) are
+    // shadowed by the helper, which keeps what they returned. The last six read the snapshot and send tmux nothing;
+    // the loops mark once per session and once per window.
     steps: [
       { id: 'with-server', label: 'with_server', anchor: 'with_server() do server', afterAnchor: 'with_server() do server', type: 'Server', value: SERVER },
-      { id: 'new-session', label: 'new_session', anchor: 'session = new_session(', type: 'SessionRef', value: 'Dict("id" => string(session.id))' },
-      { id: 'snapshot', label: 'snapshot', anchor: 'pane = only(panes(snapshot(server))).ref', type: 'Snapshot', value: 'Dict("pane" => string(pane.id))' },
-      { id: 'split-window', label: 'split_window', anchor: 'split_window(server, pane;', type: 'PaneRef', value: 'Dict("pane" => string(DOCS_RETURNED["split_window"].id))' },
-      { id: 'new-window', label: 'new_window', anchor: 'new_window(server, session;', type: 'WindowRef', value: 'Dict("window" => string(DOCS_RETURNED["new_window"].id))' },
-      { id: 'snapshot-2', label: 'snapshot', anchor: 'snap = snapshot(server)', type: 'Snapshot', value: 'Dict("sessions" => [s.name for s in sessions(snap)], "windows" => length(windows(snap)), "panes" => length(panes(snap)))' },
-      { id: 'capture-pane', label: 'capture_pane', anchor: '@assert isempty(strip(capture_pane(server, pane)))', type: 'String', value: 'Dict("text" => DOCS_RETURNED["capture_pane"])' },
+      { id: 'new-session', label: 'new_session', anchor: 'demo = new_session(', type: 'SessionRef', value: 'Dict("id" => string(demo.id))' },
+      { id: 'snapshot-window', label: 'snapshot', anchor: 'editor = only(windows(snapshot(server, demo))).ref', type: 'Snapshot', value: 'Dict("window" => string(editor.id))' },
+      { id: 'rename-window', label: 'rename_window', anchor: 'rename_window(server, editor,', type: 'CommandResult', value: RETURNED('rename_window') },
+      { id: 'snapshot-pane', label: 'snapshot', anchor: 'left = only(filter(', type: 'Snapshot', value: 'Dict("pane" => string(left.id))' },
+      { id: 'split-window', label: 'split_window', anchor: 'right = split_window(', type: 'PaneRef', value: 'Dict("pane" => string(right.id))' },
+      { id: 'new-window', label: 'new_window', anchor: 'logs = new_window(', type: 'WindowRef', value: 'Dict("window" => string(logs.id))' },
+      { id: 'send-keys', label: 'send_keys', anchor: 'send_keys(server, right,', type: 'CommandResult', value: RETURNED('send_keys') },
+      { id: 'wait-for-text', label: 'wait_for_text', anchor: 'wait_for_text(server, right,', type: 'ScreenWaitResult', value: 'Dict("source" => DOCS_RETURNED["wait_for_text"].source)' },
+      { id: 'select-pane', label: 'select_pane', anchor: 'select_pane(server, right)', type: 'CommandResult', value: RETURNED('select_pane') },
+      { id: 'select-window', label: 'select_window', anchor: 'select_window(server, WindowLinkRef(', type: 'CommandResult', value: RETURNED('select_window') },
+      { id: 'snapshot', label: 'snapshot', anchor: 'snap = snapshot(server)', type: 'Snapshot', value: 'Dict("sessions" => length(sessions(snap)), "windows" => length(windows(snap)), "panes" => length(panes(snap)))' },
+      { id: 'sessions', label: 'sessions', anchor: 'listed = sessions(snap)', type: 'Selection{SessionSnapshot}', value: 'Dict("sessions" => [string(each.id) for each in listed])' },
+      { id: 'windowlinks', label: 'windowlinks', anchor: 'links = windowlinks(each)', type: 'Selection{WindowLink}', value: 'Dict("windows" => [string(link.window_id) for link in links])', repeat: true },
+      { id: 'link-windows', label: 'window', anchor: 'wins = [window(link) for link in links]', type: 'Vector{WindowSnapshot}', value: 'Dict("windows" => [string(win.id) for win in wins])', repeat: true },
+      { id: 'panes', label: 'panes', anchor: 'members = panes(win)', type: 'Selection{PaneSnapshot}', value: 'Dict("panes" => [string(member.id) for member in members])', repeat: true },
+      { id: 'snapshot-pane-ref', label: 'Snapshot[PaneRef]', anchor: 'pane = snap[right]', type: 'PaneSnapshot', value: 'Dict("id" => string(pane.id))' },
+      { id: 'pane-window', label: 'window', anchor: 'home = window(pane)', type: 'WindowSnapshot', value: 'Dict("id" => string(home.id), "name" => home.name)' },
+      { id: 'window-session', label: 'session', anchor: 'owner = session(only(windowlinks(home)))', type: 'SessionSnapshot', value: 'Dict("id" => string(owner.id), "name" => owner.name)' },
     ],
     /** The owned daemon lives in a directory `mktempdir` names with six random characters under TMPDIR; the recording shows one fixed name, directly under `/tmp`. */
     socket: { pattern: 'tmp/libtmux-julia-[A-Za-z0-9]{6}', fixed: 'libtmux-julia-AbC123' },
     /**
-     * What the library asks tmux about itself: the readiness probe it sends the daemon it has just started (`-N`,
+     * What the library asks tmux about itself: `tmux -V` before it starts a daemon, the readiness probe it sends the daemon it has just started (`-N`,
      * `display-message -p #{pid}`), and, after each command, a `display-message` that reads the daemon's identity
      * (`pid`, `start_time`, `version`, `socket_path`) or round-trips the escape of a format value (`:version}`).
      */
-    probe: ({ flags, commands }) => commands.length > 0 && commands.every((command) => command[0] === 'display-message' && command.some((word) => word === '#{pid}' || /:version\}/.test(word))),
+    probe: ({ flags, commands }) => (commands.length === 0 && flags.includes('-V')) || (commands.length > 0 && commands.every((command) => command[0] === 'display-message' && command.some((word) => word === '#{pid}' || /:version\}/.test(word)))),
     checkout: (port, env, expand) => checkoutOf(port, env, expand),
     instrument: instrumentJulia,
     command: (dir) => [join(dir, 'program')],

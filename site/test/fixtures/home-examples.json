@@ -4,60 +4,64 @@
       "port": "py",
       "page": "home",
       "sourceRepository": "tmux-python/libtmux",
-      "sourceRevision": "9fdd083a8181a827889337b63cd4e6daea661a8c",
-      "sourceTree": "e96d4764638e6fcec75029a82bd11ecc638772f5",
+      "sourceRevision": "38e368c11117fb4aeb2f082d552cd4f210eae06a",
+      "sourceTree": "eee900223a11c00a4b9b0cc6944e7d5a4d503bc8",
       "files": [
         {
           "name": "quickstart.py",
-          "sha256": "40525d10df813cfd8158deb99f48292f496f2d7d7ee2b6024b4c233b6be6d1e0",
-          "clipboardSha256": "d43060b3986a2b4ff602718bb4fc527feb70fa75b27e584708ff3b873c41e9fd"
+          "sha256": "9adf1c1daedefd6cbba32ecc076daaf0595bd2d6e3f3964479095bec43f21cfe",
+          "clipboardSha256": "338b8f3a5ee6fe1d78b9451cb07aa232ea2cb6554de3344550573fc85511cccb"
         }
       ],
       "shellRecipe": [
-        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/tmux-python/libtmux.git \\\n  9fdd083a8181a827889337b63cd4e6daea661a8c\ngit -C source checkout -q --detach FETCH_HEAD\nuv venv .venv\nuv pip install --python .venv/bin/python ./source",
+        "uv venv .venv\nuv pip install --python .venv/bin/python libtmux==0.62.0",
         "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\n.venv/bin/python quickstart.py"
       ],
       "expectedOutputs": [
         [],
         [
-          "Hello world"
+          "session demo",
+          "  window 0:editor: %0 %1",
+          "  window 1:logs: %2",
+          "%1 is in window editor of session demo"
         ]
       ],
-      "excerptSha256": "d43060b3986a2b4ff602718bb4fc527feb70fa75b27e584708ff3b873c41e9fd",
+      "excerptSha256": "338b8f3a5ee6fe1d78b9451cb07aa232ea2cb6554de3344550573fc85511cccb",
       "tmuxVersions": [
-        "3.2a",
-        "3.7c"
+        "3.3a",
+        "3.7c",
+        "3.8"
       ],
       "variants": {
         "concise": {
           "files": [
             {
               "name": "quickstart.py",
-              "sha256": "a401a2da19c8f5f5dfd1acd43645d4eddda35d0331cb812c973cd27194af008f",
-              "clipboardSha256": "81bffb0a7ac008e59cb7955f3662608efcbe4abf5043a3d9107aa69245772f29"
+              "sha256": "1f82dc198867525e645f6149c9e654f7645b0ce6d554f29a441a72213d00ae58",
+              "clipboardSha256": "9977541d4253a330e7cabfef0336bd84bcac5acbe34c383d2949c6b2f8e42194"
             }
           ],
-          "excerptSha256": "81bffb0a7ac008e59cb7955f3662608efcbe4abf5043a3d9107aa69245772f29"
+          "excerptSha256": "9977541d4253a330e7cabfef0336bd84bcac5acbe34c383d2949c6b2f8e42194"
         },
         "errors": {
           "files": [
             {
               "name": "quickstart.py",
-              "sha256": "13aa0769214275e904a0fc44d6d802125bdfe1e30a12da5cc2652e0140910b3d",
-              "clipboardSha256": "0f90646fe3caf4da4fc4808030a4a5d1beb13c8431f97a5a12d1f7fae0bfb65f"
+              "sha256": "4b8352de0f14a2dadcf6d4effee906a0189be7a4b9e48caf269792143dce199c",
+              "clipboardSha256": "86569c7ab8ced5d7233e48a857822d30992bc2982d359f7ed4da77436d5df823"
             }
           ],
-          "excerptSha256": "0f90646fe3caf4da4fc4808030a4a5d1beb13c8431f97a5a12d1f7fae0bfb65f"
+          "excerptSha256": "86569c7ab8ced5d7233e48a857822d30992bc2982d359f7ed4da77436d5df823"
         },
         "cleanup": {
           "files": [
             {
               "name": "quickstart.py",
-              "sha256": "07a710fa289ca1e6c44fb6383c32b5987086c86af36151d8dc0801f813608169",
-              "clipboardSha256": "52aee0f3e9903153a937544b4c1cc5570858f2bb2700aa7d1774c6c63cda2caf"
+              "sha256": "374ae029056fec7a28293723ab96e5a9696e536e6f58fe545650a5c96dc61e82",
+              "clipboardSha256": "ee3a7945af94dd0b794375013debea59964bf572e6e0bfa3c59b39f69ba0d2d0"
             }
           ],
-          "excerptSha256": "52aee0f3e9903153a937544b4c1cc5570858f2bb2700aa7d1774c6c63cda2caf"
+          "excerptSha256": "ee3a7945af94dd0b794375013debea59964bf572e6e0bfa3c59b39f69ba0d2d0"
         }
       }
     },
@@ -65,13 +69,13 @@
       "port": "ruby",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-ruby",
-      "sourceRevision": "c8b839595d5a30e271e3f9be0d0fe811ddb11b7e",
-      "sourceTree": "0cf427e8bbe586e4e86ab6fc66d325edb62e6646",
+      "sourceRevision": "46474e8a2f03e39fc2b0ff73b6a841777b79c4d2",
+      "sourceTree": "df766c699529d324b9da8cda45934c4324f358b4",
       "files": [
         {
           "name": "quickstart.rb",
-          "sha256": "260a7c81413464c67cf8d5da037a2ec5f181f19b9c58536f1630fef79ced846f",
-          "clipboardSha256": "01a8dfb7d28e85966191445cf912045fd6435ff20805845d63282bc534898e1f"
+          "sha256": "832c235043681ed7f3d4af710e94a7336aa6870ff274d0dc341f86b4ff455e58",
+          "clipboardSha256": "56b4b539bd13c7195d99ea0a90e9520a8a12f5fafa5deb8d6f0c432ea01cbf94"
         },
         {
           "name": "Gemfile",
@@ -80,8 +84,8 @@
         },
         {
           "name": "Gemfile.lock",
-          "sha256": "8d7e466a3a679c7cddd6a2231d1b4d6f13dfc3bb2fd46683f87426c37d455b85",
-          "clipboardSha256": "b332eddd94d8530b773c941417ba6bbd840ca28b95f77ae9fba7ae521379d764"
+          "sha256": "c4852133d0aa2c9e7ac001f484f993404456ebed45be9fe9d1f45aff9bde3504",
+          "clipboardSha256": "a9cde24642056d053a9da264e0320e2bbc20e590bdf35fce8d700a0c860ab81c"
         }
       ],
       "shellRecipe": [
@@ -91,13 +95,16 @@
       "expectedOutputs": [
         [],
         [
-          "main: %0",
-          "logs: %1, %2"
+          "session demo",
+          "  window 0:editor: %0 %1",
+          "  window 1:logs: %2",
+          "%1 is in window editor of session demo"
         ]
       ],
-      "excerptSha256": "01a8dfb7d28e85966191445cf912045fd6435ff20805845d63282bc534898e1f",
+      "excerptSha256": "56b4b539bd13c7195d99ea0a90e9520a8a12f5fafa5deb8d6f0c432ea01cbf94",
       "tmuxVersions": [
         "3.3a",
+        "3.7c",
         "3.8"
       ],
       "variants": {
@@ -105,8 +112,8 @@
           "files": [
             {
               "name": "quickstart.rb",
-              "sha256": "4a64059fe1f42990108592b2abed1a3d70cd29b12dcc3fbed394df3591203ca6",
-              "clipboardSha256": "e9417db23319b374411d6b8089329dd0be7345a4e719ad4cf810e368a040c7da"
+              "sha256": "e9130816a83e50411e94ab659c0e6de292d809a5ff3c3fb6ee4b97cd1e66b1f3",
+              "clipboardSha256": "388356fbe4faca35c9b84a7e2ddd9c2a4c73230d42d1ae0cfb91eaa4cc92979d"
             },
             {
               "name": "Gemfile",
@@ -115,18 +122,18 @@
             },
             {
               "name": "Gemfile.lock",
-              "sha256": "8d7e466a3a679c7cddd6a2231d1b4d6f13dfc3bb2fd46683f87426c37d455b85",
-              "clipboardSha256": "b332eddd94d8530b773c941417ba6bbd840ca28b95f77ae9fba7ae521379d764"
+              "sha256": "c4852133d0aa2c9e7ac001f484f993404456ebed45be9fe9d1f45aff9bde3504",
+              "clipboardSha256": "a9cde24642056d053a9da264e0320e2bbc20e590bdf35fce8d700a0c860ab81c"
             }
           ],
-          "excerptSha256": "e9417db23319b374411d6b8089329dd0be7345a4e719ad4cf810e368a040c7da"
+          "excerptSha256": "388356fbe4faca35c9b84a7e2ddd9c2a4c73230d42d1ae0cfb91eaa4cc92979d"
         },
         "errors": {
           "files": [
             {
               "name": "quickstart.rb",
-              "sha256": "a80fc4d083bb98641ef1e31b8e39fc6204663dcc5038ff7eb4bd26a0be4ec621",
-              "clipboardSha256": "03a72a7fb00f53f0ef023e515783172c76b5e6379270c5ff6187656c1528cf44"
+              "sha256": "9f4f0137b9209233ac47aa51a6ecf56dfe72240ddf3ea5bce7a9a82988ee758b",
+              "clipboardSha256": "5b968524d9d55ccdbd56cc4629f79e2c62b14cffef4fd022d1388e0224d0588e"
             },
             {
               "name": "Gemfile",
@@ -135,18 +142,18 @@
             },
             {
               "name": "Gemfile.lock",
-              "sha256": "8d7e466a3a679c7cddd6a2231d1b4d6f13dfc3bb2fd46683f87426c37d455b85",
-              "clipboardSha256": "b332eddd94d8530b773c941417ba6bbd840ca28b95f77ae9fba7ae521379d764"
+              "sha256": "c4852133d0aa2c9e7ac001f484f993404456ebed45be9fe9d1f45aff9bde3504",
+              "clipboardSha256": "a9cde24642056d053a9da264e0320e2bbc20e590bdf35fce8d700a0c860ab81c"
             }
           ],
-          "excerptSha256": "03a72a7fb00f53f0ef023e515783172c76b5e6379270c5ff6187656c1528cf44"
+          "excerptSha256": "5b968524d9d55ccdbd56cc4629f79e2c62b14cffef4fd022d1388e0224d0588e"
         },
         "cleanup": {
           "files": [
             {
               "name": "quickstart.rb",
-              "sha256": "2ab99dad6faabe4e93275aa0d3591fa54d6dd6588ccbb27ed4d9119309f3b919",
-              "clipboardSha256": "c4d6f09d4b055c31f4830c9c8b62751cd4efa3115a61877ae5ca41b7178d71ed"
+              "sha256": "a68a9168fca3c0b1561d5ede63ccad66c51ddad8592d5a22029c94df43f5af8e",
+              "clipboardSha256": "8f9e7ad4f5179513628554b85455065000874f404657e10fd21ac9c32669411e"
             },
             {
               "name": "Gemfile",
@@ -155,11 +162,11 @@
             },
             {
               "name": "Gemfile.lock",
-              "sha256": "8d7e466a3a679c7cddd6a2231d1b4d6f13dfc3bb2fd46683f87426c37d455b85",
-              "clipboardSha256": "b332eddd94d8530b773c941417ba6bbd840ca28b95f77ae9fba7ae521379d764"
+              "sha256": "c4852133d0aa2c9e7ac001f484f993404456ebed45be9fe9d1f45aff9bde3504",
+              "clipboardSha256": "a9cde24642056d053a9da264e0320e2bbc20e590bdf35fce8d700a0c860ab81c"
             }
           ],
-          "excerptSha256": "c4d6f09d4b055c31f4830c9c8b62751cd4efa3115a61877ae5ca41b7178d71ed"
+          "excerptSha256": "8f9e7ad4f5179513628554b85455065000874f404657e10fd21ac9c32669411e"
         }
       }
     },
@@ -167,60 +174,64 @@
       "port": "lua",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-lua",
-      "sourceRevision": "0395620d362ef75c74cd488f9577afda68922586",
-      "sourceTree": "ce8ac2d6cbc167566b6a9d92e9fc52eb3b4092ba",
+      "sourceRevision": "d68f829fe097e38dcbbf7147e276666fe615f0cf",
+      "sourceTree": "40934a15a6fcd30b2d06184a90108d4b484cb5b5",
       "files": [
         {
           "name": "quickstart.lua",
-          "sha256": "17a14800dc544efd9a7659d312e9bc63993fc64a2eae3e65f4d54f3eae2955b5",
-          "clipboardSha256": "2d67a3f65955a44150009c39a2d93a41799c3c9d0e417390158ea3a66c82eca2"
+          "sha256": "e452b7a565301144a81b576d41469d4389190b7480f7f3086c80a1a837d90f48",
+          "clipboardSha256": "8f8f4fe78cd85c99ddc629d2687b63b601d692b22b66e98304ec28741bf1dce9"
         }
       ],
       "shellRecipe": [
-        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-lua.git \\\n  0395620d362ef75c74cd488f9577afda68922586\ngit -C source checkout -q --detach FETCH_HEAD\nluarocks --tree .rocks install luv 1.52.1-0\n(cd source && luarocks --tree ../.rocks make \\\n  rockspecs/libtmux-scm-1.rockspec)",
+        "luarocks --tree .rocks install luv 1.52.1-0\nluarocks --tree .rocks install libtmux 0.1.1-1",
         "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\neval \"$(luarocks --tree .rocks path)\"\nlua quickstart.lua"
       ],
       "expectedOutputs": [
         [],
         [
-          "libtmux ready"
+          "session demo",
+          "  window 0:editor: %0 %1",
+          "  window 1:logs: %2",
+          "%1 is in window editor of session demo"
         ]
       ],
-      "excerptSha256": "2d67a3f65955a44150009c39a2d93a41799c3c9d0e417390158ea3a66c82eca2",
+      "excerptSha256": "8f8f4fe78cd85c99ddc629d2687b63b601d692b22b66e98304ec28741bf1dce9",
       "tmuxVersions": [
-        "3.2a",
-        "3.7c"
+        "3.3a",
+        "3.7c",
+        "3.8"
       ],
       "variants": {
         "concise": {
           "files": [
             {
               "name": "quickstart.lua",
-              "sha256": "2e990d8996247435879eb38faffbac69dc392b152f32b0e4448e37e0c32ef875",
-              "clipboardSha256": "4684352817ba0ba48a2be832bb13e568acdf1e835fa8945a10520f98f601f560"
+              "sha256": "3fcb7ccf70382683d572a8085aa3dc93e79e461f84fb1ac8fa73e1f9867a0b92",
+              "clipboardSha256": "d59616d6ca5c8d2c888f9d0b2e912cf37b27e59edbe1f8b87d1bfdc765dc8457"
             }
           ],
-          "excerptSha256": "4684352817ba0ba48a2be832bb13e568acdf1e835fa8945a10520f98f601f560"
+          "excerptSha256": "d59616d6ca5c8d2c888f9d0b2e912cf37b27e59edbe1f8b87d1bfdc765dc8457"
         },
         "errors": {
           "files": [
             {
               "name": "quickstart.lua",
-              "sha256": "3ed4d856fbe332174af4d2fa3b149672930f6e3f9e4cc4f2fe22a140baf687dc",
-              "clipboardSha256": "0bf2127ba88fcf38e5840f01a02cd0889f0c187c9541abb11adad5553c49ee5a"
+              "sha256": "301b1e2f20002fa09b9ffb598d6dee4fd2cc402a3ec0db19e1f653c9dd15b240",
+              "clipboardSha256": "b1a4f19536c5b6444fab9a48ea67916fa022c6c220b3e6dccacc82ee8be8f754"
             }
           ],
-          "excerptSha256": "0bf2127ba88fcf38e5840f01a02cd0889f0c187c9541abb11adad5553c49ee5a"
+          "excerptSha256": "b1a4f19536c5b6444fab9a48ea67916fa022c6c220b3e6dccacc82ee8be8f754"
         },
         "cleanup": {
           "files": [
             {
               "name": "quickstart.lua",
-              "sha256": "bbd920eb7c0800df8c3a36f43da4321e4f786b75e67750803913cc95e7d7a5aa",
-              "clipboardSha256": "dec2570749e30bc243c976e48606df8c52bd186e6a7fbed35ddc1b76b7a80fff"
+              "sha256": "208c362f2fc9ee3c6483196149ceaedae94d085f1a383d07401c2efb88ba5b22",
+              "clipboardSha256": "4469a3f62f558d2d48720a278d63d9784365c048843499b2751cc750f0a08d62"
             }
           ],
-          "excerptSha256": "dec2570749e30bc243c976e48606df8c52bd186e6a7fbed35ddc1b76b7a80fff"
+          "excerptSha256": "4469a3f62f558d2d48720a278d63d9784365c048843499b2751cc750f0a08d62"
         }
       }
     },
@@ -228,80 +239,84 @@
       "port": "ts",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-ts",
-      "sourceRevision": "46cccfef2a546de55ce8b308249b8c76339089a0",
-      "sourceTree": "72aa97efc1e3efc3b8658edd07928b26818869b9",
+      "sourceRevision": "9a6b695471fbb77ac1e494b879ee9bc59adc201d",
+      "sourceTree": "c82d9110c4f7062c1000dc8ed1dd8839af3d297b",
       "files": [
         {
           "name": "quickstart.ts",
-          "sha256": "621a3339d1a4961854a6fe0474591a34c8c2b30056f02064e8435538e3130e2d",
-          "clipboardSha256": "925e80386cc511985460cc1742fa323d137448d180d117cf9cf37dcebad45375"
+          "sha256": "aea5324fa10f695c23ce8cdbeb89b6d81fa413b79c331592e71ca300da6dd970",
+          "clipboardSha256": "5dd1bf0ad7c5b918ec10c09302f251e315dbc984734134e3caf0a65488226200"
         },
         {
           "name": "package.json",
-          "sha256": "e6d914f254f053adec9ce12fb22aae65c21ab678d0251bd009ea4f063cf56297",
-          "clipboardSha256": "3f09ad4e491a69a688cfbff987db7c288f96188ac0b0def0d1a481d264bd68b4"
+          "sha256": "26d88a6feea572fe35fd80ae3bab9f99290f491c6398ce9b761218a7442cbf5f",
+          "clipboardSha256": "800e18978783b06bd8b0a4e687b81a8566d1be82a0033dae7037784a46f57b3e"
         }
       ],
       "shellRecipe": [
-        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-ts.git \\\n  46cccfef2a546de55ce8b308249b8c76339089a0\ngit -C source checkout -q --detach FETCH_HEAD\nbun install",
+        "bun install",
         "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\nbun run quickstart.ts"
       ],
       "expectedOutputs": [
         [],
         [
-          "hello"
+          "session demo",
+          "  window 0:editor: %0 %1",
+          "  window 1:logs: %2",
+          "%1 is in window editor of session demo"
         ]
       ],
-      "excerptSha256": "925e80386cc511985460cc1742fa323d137448d180d117cf9cf37dcebad45375",
+      "excerptSha256": "5dd1bf0ad7c5b918ec10c09302f251e315dbc984734134e3caf0a65488226200",
       "tmuxVersions": [
-        "3.2a",
-        "3.7c"
+        "3.3a",
+        "3.7c",
+        "3.8"
       ],
       "variants": {
         "concise": {
           "files": [
             {
               "name": "quickstart.ts",
-              "sha256": "ad73621d73be95b3be2b2d2402eec5f64bdd6aa31125de1162fbe5a66ea1f880",
-              "clipboardSha256": "dde1932ac2b1c77fa529bd3d863afa89b2429270cf1c376d699762972d86b273"
+              "sha256": "45baadd7bb9d6d693c114a3fd2e8a375ad8556f256e63cb6800ec63d4489812a",
+              "clipboardSha256": "aea52c3780c0fbff04945e9aa87117929e4ab3c3fbe41cd02141cd43d2e0f8ac"
             },
             {
               "name": "package.json",
-              "sha256": "e6d914f254f053adec9ce12fb22aae65c21ab678d0251bd009ea4f063cf56297",
-              "clipboardSha256": "3f09ad4e491a69a688cfbff987db7c288f96188ac0b0def0d1a481d264bd68b4"
+              "sha256": "26d88a6feea572fe35fd80ae3bab9f99290f491c6398ce9b761218a7442cbf5f",
+              "clipboardSha256": "800e18978783b06bd8b0a4e687b81a8566d1be82a0033dae7037784a46f57b3e"
             }
           ],
-          "excerptSha256": "dde1932ac2b1c77fa529bd3d863afa89b2429270cf1c376d699762972d86b273"
+          "excerptSha256": "aea52c3780c0fbff04945e9aa87117929e4ab3c3fbe41cd02141cd43d2e0f8ac"
         },
         "errors": {
           "files": [
             {
               "name": "quickstart.ts",
-              "sha256": "a7e9e8ee1c32ee34a3201aeb5a60bb8eb72f2a0165d2eb5c5c15aafeddf2d364",
-              "clipboardSha256": "e923a0bdf786a19539aa56029475857d94f4436c5165fbbc87612f4da1b8d7d7"
+              "sha256": "335bbebd050b7eda7abb8fd700b699f4f1722f2d55e0e7836a315f1577a4cafd",
+              "clipboardSha256": "50e44c249c9d137e0a837982461aa56939808aa66ddd36880225f820bd60236b"
             },
             {
               "name": "package.json",
-              "sha256": "e6d914f254f053adec9ce12fb22aae65c21ab678d0251bd009ea4f063cf56297",
-              "clipboardSha256": "3f09ad4e491a69a688cfbff987db7c288f96188ac0b0def0d1a481d264bd68b4"
+              "sha256": "26d88a6feea572fe35fd80ae3bab9f99290f491c6398ce9b761218a7442cbf5f",
+              "clipboardSha256": "800e18978783b06bd8b0a4e687b81a8566d1be82a0033dae7037784a46f57b3e"
             }
           ],
-          "excerptSha256": "e923a0bdf786a19539aa56029475857d94f4436c5165fbbc87612f4da1b8d7d7"
+          "excerptSha256": "50e44c249c9d137e0a837982461aa56939808aa66ddd36880225f820bd60236b"
         },
         "cleanup": {
           "files": [
             {
               "name": "quickstart.ts",
-              "sha256": "d8438369d8beb364ee19cb8fe71798bd7da1adb87de99e3336f26a65da618a45",
-              "clipboardSha256": "39cb95daf62e9c1e47a90ad6c0e72e9c9ce5b762c791e5c7e196aa975585c085"
+              "sha256": "6d0a50af22f44ee9d8994d135c63b369e121168c603f2ab11d08f93d24a1553b",
+              "clipboardSha256": "5e711b900fdb882a865e99ab380738fb046ce2766181ee69ef52897965c86461"
             },
             {
               "name": "package.json",
-              "sha256": "e6d914f254f053adec9ce12fb22aae65c21ab678d0251bd009ea4f063cf56297",
-              "clipboardSha256": "3f09ad4e491a69a688cfbff987db7c288f96188ac0b0def0d1a481d264bd68b4"
+              "sha256": "26d88a6feea572fe35fd80ae3bab9f99290f491c6398ce9b761218a7442cbf5f",
+              "clipboardSha256": "800e18978783b06bd8b0a4e687b81a8566d1be82a0033dae7037784a46f57b3e"
             }
           ],
-          "excerptSha256": "39cb95daf62e9c1e47a90ad6c0e72e9c9ce5b762c791e5c7e196aa975585c085"
+          "excerptSha256": "5e711b900fdb882a865e99ab380738fb046ce2766181ee69ef52897965c86461"
         }
       }
     },
@@ -309,23 +324,23 @@
       "port": "rs",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "ce7610a3b46376c377292e5a640b3798c18708fe",
-      "sourceTree": "32c8792ffcd03d4d1c58d1f25b8d29fd36fc2287",
+      "sourceRevision": "15cfa2b1845d9894c93d8025d8b83e75d756f073",
+      "sourceTree": "2165cbd6a434a62ba7e0ab8b1db4365b61724715",
       "files": [
         {
           "name": "src/main.rs",
-          "sha256": "cc41f05f8c8e8457b072913ffa340d43c4042a00bd86824154ba79235b157071",
-          "clipboardSha256": "2322ba9f0427da9f242413dbde8fe60567d2dfa89e5d3fcf3d3a2e4608dc2dd6"
+          "sha256": "b57e0033edc8b7926bbcf17e2991b9e951fc48794f5942bcda80389a916976d6",
+          "clipboardSha256": "7a9a05bff86bbc5a3b7f269b65558ad1e1967e3f36165c9fb05e85e88b44a800"
         },
         {
           "name": "Cargo.toml",
-          "sha256": "0886a13de14b8c6642db2c46926c95a5d5bc7a979e64c989ba6b91308e42f678",
-          "clipboardSha256": "11ed755469ef808e06d92029f18eca7fd76c6d73f8d5c7935ac25cbcc6026aa0"
+          "sha256": "3ea775a7b5a3d01e5a3982cb57cd8ee9596d63d753ab82b9bd63849dd718b993",
+          "clipboardSha256": "a23d365edcbfd42c3072c6a60709c74f1c7024b144850ce675fdda2561e8e6a0"
         },
         {
           "name": "Cargo.lock",
-          "sha256": "1bd0b462408850261d8c59d3ab2884ae594607af3fdd522f2726989517674538",
-          "clipboardSha256": "1c0b3ecf064cad986bea6e1e904a8290469750bdaa947699847d655ab11e8e9f"
+          "sha256": "8999771c367c9fcc2d945033f1c208e0ed6d432b89f79b0ff5f4daa66c5e89e1",
+          "clipboardSha256": "cfe2545ce0013e7deb7744fa8e55b7696bb68e896b6d13649fe609e9b3e9348f"
         },
         {
           "name": "rust-toolchain.toml",
@@ -340,31 +355,35 @@
       "expectedOutputs": [
         [],
         [
-          "hello"
+          "session demo",
+          "  window 0:editor: %0 %1",
+          "  window 1:logs: %2",
+          "%1 is in window editor of session demo"
         ]
       ],
-      "excerptSha256": "2322ba9f0427da9f242413dbde8fe60567d2dfa89e5d3fcf3d3a2e4608dc2dd6",
+      "excerptSha256": "7a9a05bff86bbc5a3b7f269b65558ad1e1967e3f36165c9fb05e85e88b44a800",
       "tmuxVersions": [
         "3.3a",
-        "3.7c"
+        "3.7c",
+        "3.8"
       ],
       "variants": {
         "concise": {
           "files": [
             {
               "name": "src/main.rs",
-              "sha256": "f985139a718982c6c32a391c7872dd28f8b30eb5ccea2529b0ad7a6100ae88c1",
-              "clipboardSha256": "2055335f9e2ebd06b8040b23f81f6004ad45c01982c599c98b612576875d7b0a"
+              "sha256": "591a0df1c8508b87da2b0441cf47ce174eb00b7ba133100b9f0cc0e053d93cb5",
+              "clipboardSha256": "8f577dbed23e3c102dac0b93c56e09d2bc64389b6bffb587c2a3df997750d9be"
             },
             {
               "name": "Cargo.toml",
-              "sha256": "0886a13de14b8c6642db2c46926c95a5d5bc7a979e64c989ba6b91308e42f678",
-              "clipboardSha256": "11ed755469ef808e06d92029f18eca7fd76c6d73f8d5c7935ac25cbcc6026aa0"
+              "sha256": "3ea775a7b5a3d01e5a3982cb57cd8ee9596d63d753ab82b9bd63849dd718b993",
+              "clipboardSha256": "a23d365edcbfd42c3072c6a60709c74f1c7024b144850ce675fdda2561e8e6a0"
             },
             {
               "name": "Cargo.lock",
-              "sha256": "1bd0b462408850261d8c59d3ab2884ae594607af3fdd522f2726989517674538",
-              "clipboardSha256": "1c0b3ecf064cad986bea6e1e904a8290469750bdaa947699847d655ab11e8e9f"
+              "sha256": "8999771c367c9fcc2d945033f1c208e0ed6d432b89f79b0ff5f4daa66c5e89e1",
+              "clipboardSha256": "cfe2545ce0013e7deb7744fa8e55b7696bb68e896b6d13649fe609e9b3e9348f"
             },
             {
               "name": "rust-toolchain.toml",
@@ -372,24 +391,24 @@
               "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
             }
           ],
-          "excerptSha256": "2055335f9e2ebd06b8040b23f81f6004ad45c01982c599c98b612576875d7b0a"
+          "excerptSha256": "8f577dbed23e3c102dac0b93c56e09d2bc64389b6bffb587c2a3df997750d9be"
         },
         "errors": {
           "files": [
             {
               "name": "src/main.rs",
-              "sha256": "f1cb391d571ac0848a53642eb84611e812b1bcd045b2f372ad0766c735cf5a5f",
-              "clipboardSha256": "e1a4439e2154b51e24d983a1a447bb52433556c48fd8b26f030ed6a838b6a974"
+              "sha256": "57c16dd6044a7e24d0163e2ef378f0d17414f74778af53d9e8264377411e1fd5",
+              "clipboardSha256": "57d09ac6e792f93c95124ee5f493c0bfb17cc9cb976f05ad6807f161a411100d"
             },
             {
               "name": "Cargo.toml",
-              "sha256": "0886a13de14b8c6642db2c46926c95a5d5bc7a979e64c989ba6b91308e42f678",
-              "clipboardSha256": "11ed755469ef808e06d92029f18eca7fd76c6d73f8d5c7935ac25cbcc6026aa0"
+              "sha256": "3ea775a7b5a3d01e5a3982cb57cd8ee9596d63d753ab82b9bd63849dd718b993",
+              "clipboardSha256": "a23d365edcbfd42c3072c6a60709c74f1c7024b144850ce675fdda2561e8e6a0"
             },
             {
               "name": "Cargo.lock",
-              "sha256": "1bd0b462408850261d8c59d3ab2884ae594607af3fdd522f2726989517674538",
-              "clipboardSha256": "1c0b3ecf064cad986bea6e1e904a8290469750bdaa947699847d655ab11e8e9f"
+              "sha256": "8999771c367c9fcc2d945033f1c208e0ed6d432b89f79b0ff5f4daa66c5e89e1",
+              "clipboardSha256": "cfe2545ce0013e7deb7744fa8e55b7696bb68e896b6d13649fe609e9b3e9348f"
             },
             {
               "name": "rust-toolchain.toml",
@@ -397,24 +416,24 @@
               "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
             }
           ],
-          "excerptSha256": "e1a4439e2154b51e24d983a1a447bb52433556c48fd8b26f030ed6a838b6a974"
+          "excerptSha256": "57d09ac6e792f93c95124ee5f493c0bfb17cc9cb976f05ad6807f161a411100d"
         },
         "cleanup": {
           "files": [
             {
               "name": "src/main.rs",
-              "sha256": "40724a1aaf367cff7da5559916dc7af8fbca255fdce6c038772ae99560912b0b",
-              "clipboardSha256": "e17c3430b6a4dbcbfcf42c1d5f699fb7f42a6617a77282e734fd2e47fa2d7c0b"
+              "sha256": "90df50a1c51505178ee0e5209b5ca02d982006d8150d9a40659d871cadbed8d4",
+              "clipboardSha256": "b00193c9b434e1e8309cf91b5fdff1307938b6e90cbbd535e43bacd7e30937b7"
             },
             {
               "name": "Cargo.toml",
-              "sha256": "0886a13de14b8c6642db2c46926c95a5d5bc7a979e64c989ba6b91308e42f678",
-              "clipboardSha256": "11ed755469ef808e06d92029f18eca7fd76c6d73f8d5c7935ac25cbcc6026aa0"
+              "sha256": "3ea775a7b5a3d01e5a3982cb57cd8ee9596d63d753ab82b9bd63849dd718b993",
+              "clipboardSha256": "a23d365edcbfd42c3072c6a60709c74f1c7024b144850ce675fdda2561e8e6a0"
             },
             {
               "name": "Cargo.lock",
-              "sha256": "1bd0b462408850261d8c59d3ab2884ae594607af3fdd522f2726989517674538",
-              "clipboardSha256": "1c0b3ecf064cad986bea6e1e904a8290469750bdaa947699847d655ab11e8e9f"
+              "sha256": "8999771c367c9fcc2d945033f1c208e0ed6d432b89f79b0ff5f4daa66c5e89e1",
+              "clipboardSha256": "cfe2545ce0013e7deb7744fa8e55b7696bb68e896b6d13649fe609e9b3e9348f"
             },
             {
               "name": "rust-toolchain.toml",
@@ -422,7 +441,7 @@
               "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
             }
           ],
-          "excerptSha256": "e17c3430b6a4dbcbfcf42c1d5f699fb7f42a6617a77282e734fd2e47fa2d7c0b"
+          "excerptSha256": "b00193c9b434e1e8309cf91b5fdff1307938b6e90cbbd535e43bacd7e30937b7"
         }
       }
     },
@@ -515,13 +534,13 @@
       "port": "java",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-java",
-      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
-      "sourceTree": "546ecf68a8a31e0503e18323ba82ce3a490490ab",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
+      "sourceTree": "46c13099dabae47072176f887d4c427c596e750b",
       "files": [
         {
           "name": "build.gradle.kts",
-          "sha256": "bad8c79d41e933b5a92326cad82fbab9fd25d5264e77e0f0017ecd15bc335c4c",
-          "clipboardSha256": "60880800d5bd207f753f33e0fb20e65fc5eb6f5786146606cf3490db481795e8"
+          "sha256": "293ac553bd949c894770c59ed2270e90157b072fe34bb8ed521bd9ddfe9e953a",
+          "clipboardSha256": "2681a25916c71ab2dbbef43524876e09a658bc7c476ecb928bc0b5e3d5f9655a"
         },
         {
           "name": "settings.gradle.kts",
@@ -535,30 +554,34 @@
         },
         {
           "name": "src/main/java/Main.java",
-          "sha256": "e0c22bd992cb22e6e240eae5d5916058cbbae9da017d3fdc6506ccb50a1e5cc3",
-          "clipboardSha256": "23fe2c99d5f57a06c2e0dfaabba35107acd0f23e250192dcf58fd6babeedfccf"
+          "sha256": "731b692b71107f998af287b6dfd09c62b803f1a1bd759fcab088e23e09130473",
+          "clipboardSha256": "ebc166c0745fd1de45615527ed85880183b16fc9e85d51ae7cc3ae94c2ea2f95"
         }
       ],
       "shellRecipe": [
-        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach 5c181887918351119bfdb3a046719fa792048e59\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=Main\nSHELL=/bin/sh build/install/api-example/bin/api-example"
+        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach e8a39689d8d60968ac978a1dd2a89c6112333896\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=Main\nSHELL=/bin/sh build/install/api-example/bin/api-example"
       ],
       "expectedOutputs": [
         [
-          "hello from libtmux"
+          "session demo",
+          "  window 0:editor: %0 %1",
+          "  window 1:logs: %2",
+          "%1 is in window editor of session demo"
         ]
       ],
-      "excerptSha256": "23fe2c99d5f57a06c2e0dfaabba35107acd0f23e250192dcf58fd6babeedfccf",
+      "excerptSha256": "ebc166c0745fd1de45615527ed85880183b16fc9e85d51ae7cc3ae94c2ea2f95",
       "tmuxVersions": [
         "3.3a",
-        "3.7c"
+        "3.7c",
+        "3.8"
       ],
       "variants": {
         "concise": {
           "files": [
             {
               "name": "build.gradle.kts",
-              "sha256": "bad8c79d41e933b5a92326cad82fbab9fd25d5264e77e0f0017ecd15bc335c4c",
-              "clipboardSha256": "60880800d5bd207f753f33e0fb20e65fc5eb6f5786146606cf3490db481795e8"
+              "sha256": "293ac553bd949c894770c59ed2270e90157b072fe34bb8ed521bd9ddfe9e953a",
+              "clipboardSha256": "2681a25916c71ab2dbbef43524876e09a658bc7c476ecb928bc0b5e3d5f9655a"
             },
             {
               "name": "settings.gradle.kts",
@@ -572,18 +595,18 @@
             },
             {
               "name": "src/main/java/Main.java",
-              "sha256": "13d387b49f7fbb1ca024bede53db2b5b90301b5c51a38fb5eb120bb1424d52d3",
-              "clipboardSha256": "efbb271e865da511db20a7477082767bf1df8ef5040cac2505565e980685c4dc"
+              "sha256": "24bbbaf797442c5b6f984783295e7dbb4a8a89530e0d1302d3358faba40a9d1a",
+              "clipboardSha256": "2a22dd11b9800d3fa60243b2c5920f68ad6a4b8a31a8c6d807b6aff1fac16c20"
             }
           ],
-          "excerptSha256": "efbb271e865da511db20a7477082767bf1df8ef5040cac2505565e980685c4dc"
+          "excerptSha256": "2a22dd11b9800d3fa60243b2c5920f68ad6a4b8a31a8c6d807b6aff1fac16c20"
         },
         "errors": {
           "files": [
             {
               "name": "build.gradle.kts",
-              "sha256": "bad8c79d41e933b5a92326cad82fbab9fd25d5264e77e0f0017ecd15bc335c4c",
-              "clipboardSha256": "60880800d5bd207f753f33e0fb20e65fc5eb6f5786146606cf3490db481795e8"
+              "sha256": "293ac553bd949c894770c59ed2270e90157b072fe34bb8ed521bd9ddfe9e953a",
+              "clipboardSha256": "2681a25916c71ab2dbbef43524876e09a658bc7c476ecb928bc0b5e3d5f9655a"
             },
             {
               "name": "settings.gradle.kts",
@@ -597,18 +620,18 @@
             },
             {
               "name": "src/main/java/Main.java",
-              "sha256": "d09080bd5013ceb480f0cc59be1b12917839487cc38f1d5981de137a7459fd39",
-              "clipboardSha256": "c58c9e70c9998b80c29298c1cd994604b232e083cc0f60378714fc3e0cf198bc"
+              "sha256": "7dda32d43aa3eff1000e233f498277fe8980635e113086026d077f92ed8c417e",
+              "clipboardSha256": "7a37e1eacb1de6ca07b84d2927038ea26d10226bafbb1e409482bc8c3eb0bdc6"
             }
           ],
-          "excerptSha256": "c58c9e70c9998b80c29298c1cd994604b232e083cc0f60378714fc3e0cf198bc"
+          "excerptSha256": "7a37e1eacb1de6ca07b84d2927038ea26d10226bafbb1e409482bc8c3eb0bdc6"
         },
         "cleanup": {
           "files": [
             {
               "name": "build.gradle.kts",
-              "sha256": "bad8c79d41e933b5a92326cad82fbab9fd25d5264e77e0f0017ecd15bc335c4c",
-              "clipboardSha256": "60880800d5bd207f753f33e0fb20e65fc5eb6f5786146606cf3490db481795e8"
+              "sha256": "293ac553bd949c894770c59ed2270e90157b072fe34bb8ed521bd9ddfe9e953a",
+              "clipboardSha256": "2681a25916c71ab2dbbef43524876e09a658bc7c476ecb928bc0b5e3d5f9655a"
             },
             {
               "name": "settings.gradle.kts",
@@ -622,11 +645,11 @@
             },
             {
               "name": "src/main/java/Main.java",
-              "sha256": "ca65298731b5c52055730de4252fcd82ca9b4c1c516758c1ac9b456abeb05739",
-              "clipboardSha256": "72013dd745231bd3ebea275fb0d0958de7678e2aeb42357ae63ca12de9308fd3"
+              "sha256": "a2d6b4d0481e4785aa518e14a1937416c17c4422f5bef1d8e4e17b1cd39b25b7",
+              "clipboardSha256": "cc3d400ac819706dbddc988459281b3fd13de1ade74b18c2480f069e0d8c9cd7"
             }
           ],
-          "excerptSha256": "72013dd745231bd3ebea275fb0d0958de7678e2aeb42357ae63ca12de9308fd3"
+          "excerptSha256": "cc3d400ac819706dbddc988459281b3fd13de1ade74b18c2480f069e0d8c9cd7"
         }
       }
     },
@@ -634,13 +657,13 @@
       "port": "kotlin",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-java",
-      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
-      "sourceTree": "546ecf68a8a31e0503e18323ba82ce3a490490ab",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
+      "sourceTree": "46c13099dabae47072176f887d4c427c596e750b",
       "files": [
         {
           "name": "build.gradle.kts",
-          "sha256": "df1a5d328bd409d027101a3a1c30d491a790158bb51151102cd7e64b336a1089",
-          "clipboardSha256": "56054b0671305014d4e5b3160d2d33acabaf3f67289287a053f4e50342152141"
+          "sha256": "61526eee8185b8817e1ce5a1d73655de1ff548a28977dbbb07376c4bfc800684",
+          "clipboardSha256": "fff899f4ab24e653653ce47fbe86c5b59b5645f2b0336530ad309532fbdb8c1a"
         },
         {
           "name": "settings.gradle.kts",
@@ -654,30 +677,34 @@
         },
         {
           "name": "src/main/kotlin/Main.kt",
-          "sha256": "3795500febc78f9e45cad8142f8aa237ce002cdf26180d4303836c0165e81595",
-          "clipboardSha256": "fe931c04c4b06767c5dc75322d28cc0391a6cd16ac9eb6de7444af7bc6061e7d"
+          "sha256": "175c3e7cc43c731660dd939e8ef78054030b4ece26517b7ceda773d0b02ae0fe",
+          "clipboardSha256": "f2682f1783fd1e3fa45c989a495629e13edc7b61d07425f53dace86c0fb73054"
         }
       ],
       "shellRecipe": [
-        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach 5c181887918351119bfdb3a046719fa792048e59\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=MainKt\nSHELL=/bin/sh build/install/api-example/bin/api-example"
+        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach e8a39689d8d60968ac978a1dd2a89c6112333896\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=MainKt\nSHELL=/bin/sh build/install/api-example/bin/api-example"
       ],
       "expectedOutputs": [
         [
-          "ready; exit 3"
+          "session demo",
+          "  window 0:editor: %0 %1",
+          "  window 1:logs: %2",
+          "%1 is in window editor of session demo"
         ]
       ],
-      "excerptSha256": "fe931c04c4b06767c5dc75322d28cc0391a6cd16ac9eb6de7444af7bc6061e7d",
+      "excerptSha256": "f2682f1783fd1e3fa45c989a495629e13edc7b61d07425f53dace86c0fb73054",
       "tmuxVersions": [
         "3.3a",
-        "3.7c"
+        "3.7c",
+        "3.8"
       ],
       "variants": {
         "concise": {
           "files": [
             {
               "name": "build.gradle.kts",
-              "sha256": "df1a5d328bd409d027101a3a1c30d491a790158bb51151102cd7e64b336a1089",
-              "clipboardSha256": "56054b0671305014d4e5b3160d2d33acabaf3f67289287a053f4e50342152141"
+              "sha256": "61526eee8185b8817e1ce5a1d73655de1ff548a28977dbbb07376c4bfc800684",
+              "clipboardSha256": "fff899f4ab24e653653ce47fbe86c5b59b5645f2b0336530ad309532fbdb8c1a"
             },
             {
               "name": "settings.gradle.kts",
@@ -691,18 +718,18 @@
             },
             {
               "name": "src/main/kotlin/Main.kt",
-              "sha256": "955c89ac11fa96bc8f26ca17c3b3f6176dd42c508cdfb8c9f7bb3747de6e1144",
-              "clipboardSha256": "faa77d179428d7ba841fdad26b879b85e831e680f4d6f118df68e21e92e55d7a"
+              "sha256": "c4a3718fdeba88b18111664c8e9aa4804142be52419262ffe93e873c000a9050",
+              "clipboardSha256": "d7a8ee782bd65c6e12d98062141c10d9162d23c1f409b08e8650f9e6abae1e34"
             }
           ],
-          "excerptSha256": "faa77d179428d7ba841fdad26b879b85e831e680f4d6f118df68e21e92e55d7a"
+          "excerptSha256": "d7a8ee782bd65c6e12d98062141c10d9162d23c1f409b08e8650f9e6abae1e34"
         },
         "errors": {
           "files": [
             {
               "name": "build.gradle.kts",
-              "sha256": "df1a5d328bd409d027101a3a1c30d491a790158bb51151102cd7e64b336a1089",
-              "clipboardSha256": "56054b0671305014d4e5b3160d2d33acabaf3f67289287a053f4e50342152141"
+              "sha256": "61526eee8185b8817e1ce5a1d73655de1ff548a28977dbbb07376c4bfc800684",
+              "clipboardSha256": "fff899f4ab24e653653ce47fbe86c5b59b5645f2b0336530ad309532fbdb8c1a"
             },
             {
               "name": "settings.gradle.kts",
@@ -716,18 +743,18 @@
             },
             {
               "name": "src/main/kotlin/Main.kt",
-              "sha256": "477679c123e25338facc35936b1f712372630827c696ca9dcdb6204267b8903f",
-              "clipboardSha256": "44ef0a3afc60759f36b60566d0dacc81975f3c75c9b7af69489bf88a20e0b1c3"
+              "sha256": "bc5b8b6e42e532a2dfd0f7417ad558c4ca0a54f6c9850b9ddb984f7a0761bc49",
+              "clipboardSha256": "a3f688bb63174eca42b21d6554f248affeb75a88917f79142f14c614639cd910"
             }
           ],
-          "excerptSha256": "44ef0a3afc60759f36b60566d0dacc81975f3c75c9b7af69489bf88a20e0b1c3"
+          "excerptSha256": "a3f688bb63174eca42b21d6554f248affeb75a88917f79142f14c614639cd910"
         },
         "cleanup": {
           "files": [
             {
               "name": "build.gradle.kts",
-              "sha256": "df1a5d328bd409d027101a3a1c30d491a790158bb51151102cd7e64b336a1089",
-              "clipboardSha256": "56054b0671305014d4e5b3160d2d33acabaf3f67289287a053f4e50342152141"
+              "sha256": "61526eee8185b8817e1ce5a1d73655de1ff548a28977dbbb07376c4bfc800684",
+              "clipboardSha256": "fff899f4ab24e653653ce47fbe86c5b59b5645f2b0336530ad309532fbdb8c1a"
             },
             {
               "name": "settings.gradle.kts",
@@ -741,11 +768,11 @@
             },
             {
               "name": "src/main/kotlin/Main.kt",
-              "sha256": "490c2f3736955990aa343d0ea7f3d12407de5049d60c598acd61b9d96d57e1bd",
-              "clipboardSha256": "4733feb0a8567af3d2d6175aa53c4e1e330dad9fd3b1ba7165b123861ed1ad1b"
+              "sha256": "c4cf24ce448ed1466ada2f238bc5703fa7d0396a7444f8b2421d60475626dedf",
+              "clipboardSha256": "900706ca56def2717693678a296abc927f86d57acb481b2b9a70df9a8d1de2ae"
             }
           ],
-          "excerptSha256": "4733feb0a8567af3d2d6175aa53c4e1e330dad9fd3b1ba7165b123861ed1ad1b"
+          "excerptSha256": "900706ca56def2717693678a296abc927f86d57acb481b2b9a70df9a8d1de2ae"
         }
       }
     },
@@ -753,13 +780,13 @@
       "port": "scala",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-java",
-      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
-      "sourceTree": "546ecf68a8a31e0503e18323ba82ce3a490490ab",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
+      "sourceTree": "46c13099dabae47072176f887d4c427c596e750b",
       "files": [
         {
           "name": "build.gradle.kts",
-          "sha256": "25cf12ecf6b6edda898a18fe2ae7bd9341952dbcb943513582b79e5da226caf9",
-          "clipboardSha256": "027b815eb60ff8d6a2ff4a4e19f60a20670807cf5da6c3242645fa8855cf7745"
+          "sha256": "a5b2efd3aacb45b0eb7e0bf4e256ca55504e32ce79a5a4f67b37a92274e54608",
+          "clipboardSha256": "2aa56f2c5ae90f4eb01616f15611b876bb2207e6088627505507e8bda9c5eba6"
         },
         {
           "name": "settings.gradle.kts",
@@ -773,31 +800,34 @@
         },
         {
           "name": "src/main/scala/Main.scala",
-          "sha256": "0a43ea0057b3ed55b629f2265631e6ffa884f5c3463e35accc70d2a0d1534573",
-          "clipboardSha256": "0d52e72c9363570f0e992167f486298ea1312a467d4de38ecb1f54d4b0136195"
+          "sha256": "c2d63cea1013941822224a82db1a966f9c1518d7c6c9fd64d2c5ca5f80187e46",
+          "clipboardSha256": "d5b822e6b2c775f51cc0b1c59c03bba9ff98e560d032c12cf910773890def38b"
         }
       ],
       "shellRecipe": [
-        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach 5c181887918351119bfdb3a046719fa792048e59\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=Main\nSHELL=/bin/sh build/install/api-example/bin/api-example"
+        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach e8a39689d8d60968ac978a1dd2a89c6112333896\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=Main\nSHELL=/bin/sh build/install/api-example/bin/api-example"
       ],
       "expectedOutputs": [
         [
-          "work: 2 panes",
-          "commands: sh"
+          "session demo",
+          "  window 0:editor: %0 %1",
+          "  window 1:logs: %2",
+          "%1 is in window editor of session demo"
         ]
       ],
-      "excerptSha256": "0d52e72c9363570f0e992167f486298ea1312a467d4de38ecb1f54d4b0136195",
+      "excerptSha256": "d5b822e6b2c775f51cc0b1c59c03bba9ff98e560d032c12cf910773890def38b",
       "tmuxVersions": [
         "3.3a",
-        "3.7c"
+        "3.7c",
+        "3.8"
       ],
       "variants": {
         "concise": {
           "files": [
             {
               "name": "build.gradle.kts",
-              "sha256": "25cf12ecf6b6edda898a18fe2ae7bd9341952dbcb943513582b79e5da226caf9",
-              "clipboardSha256": "027b815eb60ff8d6a2ff4a4e19f60a20670807cf5da6c3242645fa8855cf7745"
+              "sha256": "a5b2efd3aacb45b0eb7e0bf4e256ca55504e32ce79a5a4f67b37a92274e54608",
+              "clipboardSha256": "2aa56f2c5ae90f4eb01616f15611b876bb2207e6088627505507e8bda9c5eba6"
             },
             {
               "name": "settings.gradle.kts",
@@ -811,18 +841,18 @@
             },
             {
               "name": "src/main/scala/Main.scala",
-              "sha256": "0aae0e1898277ad75dfc0896593233d632c2a013690d1ffdc4317131d97925e1",
-              "clipboardSha256": "906a7fe5161f5108ddbc746237aa6321b4b2a57c1025b5d2e29d089c45730891"
+              "sha256": "89e5983e81d57d9a1fc2209de06303a65ea31bf534f1d00658a13315e41b3205",
+              "clipboardSha256": "521f2f631c5f22d22297a13688a2358b27c98a75ec13be1fdf4bce49eee37bf5"
             }
           ],
-          "excerptSha256": "906a7fe5161f5108ddbc746237aa6321b4b2a57c1025b5d2e29d089c45730891"
+          "excerptSha256": "521f2f631c5f22d22297a13688a2358b27c98a75ec13be1fdf4bce49eee37bf5"
         },
         "errors": {
           "files": [
             {
               "name": "build.gradle.kts",
-              "sha256": "25cf12ecf6b6edda898a18fe2ae7bd9341952dbcb943513582b79e5da226caf9",
-              "clipboardSha256": "027b815eb60ff8d6a2ff4a4e19f60a20670807cf5da6c3242645fa8855cf7745"
+              "sha256": "a5b2efd3aacb45b0eb7e0bf4e256ca55504e32ce79a5a4f67b37a92274e54608",
+              "clipboardSha256": "2aa56f2c5ae90f4eb01616f15611b876bb2207e6088627505507e8bda9c5eba6"
             },
             {
               "name": "settings.gradle.kts",
@@ -836,18 +866,18 @@
             },
             {
               "name": "src/main/scala/Main.scala",
-              "sha256": "e11f3251a53c86da6ddad0f294e4b2d5f880b67f8c7e7d3df8bc415247f3e4a4",
-              "clipboardSha256": "1095a1fe7c2be576aae96e7cd6138ba36fa757b27316799e2dae60845abd41b2"
+              "sha256": "18c05da54e1aa0a4355cbd10da0acb16d08595c6c654d0ab3bda9bc8a2bf9edc",
+              "clipboardSha256": "eadc101e724fb74e36333b3449cfcfc015f15b2793943b232b101c0e119f087d"
             }
           ],
-          "excerptSha256": "1095a1fe7c2be576aae96e7cd6138ba36fa757b27316799e2dae60845abd41b2"
+          "excerptSha256": "eadc101e724fb74e36333b3449cfcfc015f15b2793943b232b101c0e119f087d"
         },
         "cleanup": {
           "files": [
             {
               "name": "build.gradle.kts",
-              "sha256": "25cf12ecf6b6edda898a18fe2ae7bd9341952dbcb943513582b79e5da226caf9",
-              "clipboardSha256": "027b815eb60ff8d6a2ff4a4e19f60a20670807cf5da6c3242645fa8855cf7745"
+              "sha256": "a5b2efd3aacb45b0eb7e0bf4e256ca55504e32ce79a5a4f67b37a92274e54608",
+              "clipboardSha256": "2aa56f2c5ae90f4eb01616f15611b876bb2207e6088627505507e8bda9c5eba6"
             },
             {
               "name": "settings.gradle.kts",
@@ -861,11 +891,11 @@
             },
             {
               "name": "src/main/scala/Main.scala",
-              "sha256": "135a384feaefd2456609295b960d23e3fd5336ae8ed081758a4d88d96a28b2cc",
-              "clipboardSha256": "b98429fa9f5a0ef371706f364f5e8596ad85bb89caea1ae13f1e26f8e274cbfd"
+              "sha256": "65c2dc0a5e14252ae3ff07477b0a5fdfe9610512e75491606d6b71b5fcaaabea",
+              "clipboardSha256": "1028a6cd3998ef4c9ef69e0507ab88257b3668dedd2c4cb2eb98e47b80c80051"
             }
           ],
-          "excerptSha256": "b98429fa9f5a0ef371706f364f5e8596ad85bb89caea1ae13f1e26f8e274cbfd"
+          "excerptSha256": "1028a6cd3998ef4c9ef69e0507ab88257b3668dedd2c4cb2eb98e47b80c80051"
         }
       }
     },
@@ -873,18 +903,18 @@
       "port": "csharp",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "472c2bcfbda6735139849324cc109ad70300001e",
-      "sourceTree": "4ef96f46e6f60db9f55e7349ed3e5ab60315af1a",
+      "sourceRevision": "8d47af7d89638ad267528ac56897cec67df597f7",
+      "sourceTree": "2ed474899421282b339d0d790d725b88839cfeea",
       "files": [
         {
           "name": "app/Program.cs",
-          "sha256": "e82c07187deea5fd8a9a2eb0814a543eb3ef7401c66a030f5f4e3ef14fc6dc89",
-          "clipboardSha256": "b929ea7aef844d63bdc65d28749ad6023a7ebff4762fe4f3b95cb7e7cfde3e3b"
+          "sha256": "474af9629ca26061b9c2b843e92da5618364f083777ff1c03c401a818cbc299f",
+          "clipboardSha256": "81357c8beedb7346ac476cd52bfea61cd2a2785b2adda1e48559888f22581b1e"
         },
         {
           "name": "app/Example.csproj",
-          "sha256": "5f86230b0760f6cda27f409af90150803d04dcc493c24a16ab9e6ed8bedd7f4e",
-          "clipboardSha256": "4543e328ee0a4e45f73ebb504dd01cff171a7b3ee2ccbbfb5121fd90a8db82e6"
+          "sha256": "c7e58c54dbf0dbabf0c0f18a9d6a045e914ae7779419c6fe54562d9d94f6465f",
+          "clipboardSha256": "13e98dd17edaa0b1a9165417ed22d0cde8f4b8175103cb7a032c056e30ebebb4"
         },
         {
           "name": "app/global.json",
@@ -897,26 +927,30 @@
       ],
       "expectedOutputs": [
         [
-          "hello-from-libtmux"
+          "session demo",
+          "  window 0:editor: %0 %1",
+          "  window 1:logs: %2",
+          "%1 is in window editor of session demo"
         ]
       ],
-      "excerptSha256": "b929ea7aef844d63bdc65d28749ad6023a7ebff4762fe4f3b95cb7e7cfde3e3b",
+      "excerptSha256": "81357c8beedb7346ac476cd52bfea61cd2a2785b2adda1e48559888f22581b1e",
       "tmuxVersions": [
         "3.3a",
-        "3.7c"
+        "3.7c",
+        "3.8"
       ],
       "variants": {
         "concise": {
           "files": [
             {
               "name": "app/Program.cs",
-              "sha256": "a88433a9fb644fc5f2b5dfedec6f34724cfec8f13006768c21f4f9c5f6f5e1cc",
-              "clipboardSha256": "18a511f52d30e5117c9393fcf9dfd471223738f31b9cf5c5b78ce3ba54fe5488"
+              "sha256": "77a87fdb0e4fa236ccb2992141a11cbdd600babb1b6a7fc125987bf18b4b05c1",
+              "clipboardSha256": "b9464797deb50a041424a25be421cb4a128bc580275890a5146b4de36c4c4bec"
             },
             {
               "name": "app/Example.csproj",
-              "sha256": "5f86230b0760f6cda27f409af90150803d04dcc493c24a16ab9e6ed8bedd7f4e",
-              "clipboardSha256": "4543e328ee0a4e45f73ebb504dd01cff171a7b3ee2ccbbfb5121fd90a8db82e6"
+              "sha256": "c7e58c54dbf0dbabf0c0f18a9d6a045e914ae7779419c6fe54562d9d94f6465f",
+              "clipboardSha256": "13e98dd17edaa0b1a9165417ed22d0cde8f4b8175103cb7a032c056e30ebebb4"
             },
             {
               "name": "app/global.json",
@@ -924,19 +958,19 @@
               "clipboardSha256": "11c4f249624d34097497a6b8dbac72acadc2216d9736e033258e2397a0f945a6"
             }
           ],
-          "excerptSha256": "18a511f52d30e5117c9393fcf9dfd471223738f31b9cf5c5b78ce3ba54fe5488"
+          "excerptSha256": "b9464797deb50a041424a25be421cb4a128bc580275890a5146b4de36c4c4bec"
         },
         "errors": {
           "files": [
             {
               "name": "app/Program.cs",
-              "sha256": "26efa036bf8bd18dc2e214ee85e894ac8da689ee6e3bd4bfb9417177c5b34dfc",
-              "clipboardSha256": "8700a98b89c2f6f1937bdbc0a644a81242d56b342f496b7090e58cad622c9ea4"
+              "sha256": "3749b308ac875266f933b6029d66bb2a0d29a0647218ed5d2619fdbb30c78e3d",
+              "clipboardSha256": "97dd79820f48fa8aee2660c35b3cc9c5c4d52687ad0b09f43682041d52397494"
             },
             {
               "name": "app/Example.csproj",
-              "sha256": "5f86230b0760f6cda27f409af90150803d04dcc493c24a16ab9e6ed8bedd7f4e",
-              "clipboardSha256": "4543e328ee0a4e45f73ebb504dd01cff171a7b3ee2ccbbfb5121fd90a8db82e6"
+              "sha256": "c7e58c54dbf0dbabf0c0f18a9d6a045e914ae7779419c6fe54562d9d94f6465f",
+              "clipboardSha256": "13e98dd17edaa0b1a9165417ed22d0cde8f4b8175103cb7a032c056e30ebebb4"
             },
             {
               "name": "app/global.json",
@@ -944,19 +978,19 @@
               "clipboardSha256": "11c4f249624d34097497a6b8dbac72acadc2216d9736e033258e2397a0f945a6"
             }
           ],
-          "excerptSha256": "8700a98b89c2f6f1937bdbc0a644a81242d56b342f496b7090e58cad622c9ea4"
+          "excerptSha256": "97dd79820f48fa8aee2660c35b3cc9c5c4d52687ad0b09f43682041d52397494"
         },
         "cleanup": {
           "files": [
             {
               "name": "app/Program.cs",
-              "sha256": "81915b0267891548ede163e032fdb1301e1fc4d0bf42f3787ac71a5d16825a94",
-              "clipboardSha256": "2803c70899673755433036a6539790ce05b25ad87a8c6c22a2c79840d711ae52"
+              "sha256": "e8cec0eca2822d37a7352a16987dc8ec2af3b28b36e52c202604e75eb59d7ba0",
+              "clipboardSha256": "8331cbdbadc4c8949998ffdc55705522d43f898ebc791bc78c0d5fd688137149"
             },
             {
               "name": "app/Example.csproj",
-              "sha256": "5f86230b0760f6cda27f409af90150803d04dcc493c24a16ab9e6ed8bedd7f4e",
-              "clipboardSha256": "4543e328ee0a4e45f73ebb504dd01cff171a7b3ee2ccbbfb5121fd90a8db82e6"
+              "sha256": "c7e58c54dbf0dbabf0c0f18a9d6a045e914ae7779419c6fe54562d9d94f6465f",
+              "clipboardSha256": "13e98dd17edaa0b1a9165417ed22d0cde8f4b8175103cb7a032c056e30ebebb4"
             },
             {
               "name": "app/global.json",
@@ -964,7 +998,7 @@
               "clipboardSha256": "11c4f249624d34097497a6b8dbac72acadc2216d9736e033258e2397a0f945a6"
             }
           ],
-          "excerptSha256": "2803c70899673755433036a6539790ce05b25ad87a8c6c22a2c79840d711ae52"
+          "excerptSha256": "8331cbdbadc4c8949998ffdc55705522d43f898ebc791bc78c0d5fd688137149"
         }
       }
     },
@@ -972,18 +1006,18 @@
       "port": "fsharp",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "472c2bcfbda6735139849324cc109ad70300001e",
-      "sourceTree": "4ef96f46e6f60db9f55e7349ed3e5ab60315af1a",
+      "sourceRevision": "8d47af7d89638ad267528ac56897cec67df597f7",
+      "sourceTree": "2ed474899421282b339d0d790d725b88839cfeea",
       "files": [
         {
           "name": "app/Program.fs",
-          "sha256": "f69e6f35e8f288fa7f5748f52d68ebc41f3108b176852802c82ad67f1fd2c6ae",
-          "clipboardSha256": "ad1792892d6af026eaf952694f0d5462ddd858b4dc12671773012b47320e2a97"
+          "sha256": "ea0c0bc800446fcb9b76bf48546caee491f821460fe5e243c0f2cb937c2bb273",
+          "clipboardSha256": "f63cbdc01ab94488ee5675c112ae6744ca40af4c2a98ff3e9a0913feadcc8b13"
         },
         {
           "name": "app/Example.fsproj",
-          "sha256": "b52f2c94dc6349e917eba205573e2eb361c286aadcb8261557ddcf052baca861",
-          "clipboardSha256": "ca7c5193ba23f5fa1128a7889fc08e692f6ad3d85adb85e6ab2b7851a91a6ef7"
+          "sha256": "737717c93fb938297e3486ee106918a15e5b328e6a59d65eb297346aa7ce0573",
+          "clipboardSha256": "ca743da9cb894fd192c39b8078eb2ae7a7e9e3a8142a475fd86c2980c2c0d0db"
         },
         {
           "name": "app/global.json",
@@ -996,28 +1030,30 @@
       ],
       "expectedOutputs": [
         [
-          "other sessions: web, worker",
-          "wait found: true",
-          "run: exit 3, output [\"ok\"]"
+          "session demo",
+          "  window 0:editor: %0 %1",
+          "  window 1:logs: %2",
+          "%1 is in window editor of session demo"
         ]
       ],
-      "excerptSha256": "ad1792892d6af026eaf952694f0d5462ddd858b4dc12671773012b47320e2a97",
+      "excerptSha256": "f63cbdc01ab94488ee5675c112ae6744ca40af4c2a98ff3e9a0913feadcc8b13",
       "tmuxVersions": [
-        "3.4",
-        "3.7c"
+        "3.3a",
+        "3.7c",
+        "3.8"
       ],
       "variants": {
         "concise": {
           "files": [
             {
               "name": "app/Program.fs",
-              "sha256": "509b26f164aa5e33544d3bd55351c383674317e93311fa904cdae8c54a7dd51a",
-              "clipboardSha256": "e235031ac538f209036df425383c0279b849d7f65c2eefae63dfcccfb2ec4480"
+              "sha256": "82f5c42265c6d389a4c2e204872013ba44685e719fc7fffd98d20e63b8fe90eb",
+              "clipboardSha256": "2020af921a8b178a277b5588d3011e446a495e9089cb76537df0f663ba6c625a"
             },
             {
               "name": "app/Example.fsproj",
-              "sha256": "b52f2c94dc6349e917eba205573e2eb361c286aadcb8261557ddcf052baca861",
-              "clipboardSha256": "ca7c5193ba23f5fa1128a7889fc08e692f6ad3d85adb85e6ab2b7851a91a6ef7"
+              "sha256": "737717c93fb938297e3486ee106918a15e5b328e6a59d65eb297346aa7ce0573",
+              "clipboardSha256": "ca743da9cb894fd192c39b8078eb2ae7a7e9e3a8142a475fd86c2980c2c0d0db"
             },
             {
               "name": "app/global.json",
@@ -1025,19 +1061,19 @@
               "clipboardSha256": "11c4f249624d34097497a6b8dbac72acadc2216d9736e033258e2397a0f945a6"
             }
           ],
-          "excerptSha256": "e235031ac538f209036df425383c0279b849d7f65c2eefae63dfcccfb2ec4480"
+          "excerptSha256": "2020af921a8b178a277b5588d3011e446a495e9089cb76537df0f663ba6c625a"
         },
         "errors": {
           "files": [
             {
               "name": "app/Program.fs",
-              "sha256": "5e82bc3569c21be5bae3cbcef834f3c72f232b91a04378bb7be0631b2c0dce7d",
-              "clipboardSha256": "119cb2671cababa87cb2e11875c3ef4f5232d1090755fe3c4363bb294f321715"
+              "sha256": "fd15da2e2c47c64c221b47018128ba732fc21a9c4d54074af75f5f5db117342b",
+              "clipboardSha256": "b14bc73d6af7ab4c86e119c048fa19cfeb875fbbf0b1f2aa4390778256363b59"
             },
             {
               "name": "app/Example.fsproj",
-              "sha256": "b52f2c94dc6349e917eba205573e2eb361c286aadcb8261557ddcf052baca861",
-              "clipboardSha256": "ca7c5193ba23f5fa1128a7889fc08e692f6ad3d85adb85e6ab2b7851a91a6ef7"
+              "sha256": "737717c93fb938297e3486ee106918a15e5b328e6a59d65eb297346aa7ce0573",
+              "clipboardSha256": "ca743da9cb894fd192c39b8078eb2ae7a7e9e3a8142a475fd86c2980c2c0d0db"
             },
             {
               "name": "app/global.json",
@@ -1045,19 +1081,19 @@
               "clipboardSha256": "11c4f249624d34097497a6b8dbac72acadc2216d9736e033258e2397a0f945a6"
             }
           ],
-          "excerptSha256": "119cb2671cababa87cb2e11875c3ef4f5232d1090755fe3c4363bb294f321715"
+          "excerptSha256": "b14bc73d6af7ab4c86e119c048fa19cfeb875fbbf0b1f2aa4390778256363b59"
         },
         "cleanup": {
           "files": [
             {
               "name": "app/Program.fs",
-              "sha256": "fb0e47d7044f5cdfe5c36d5d3664801fb718d0d89d5147a91e90af90a5de907f",
-              "clipboardSha256": "89e4d781c4499d2dc8db65da4de720e6b783289e260576777e7baf98d7ace27b"
+              "sha256": "b9418fad0f7a304df186444a638c61ff6a23fffb39e27a6197345ed8b3cb031f",
+              "clipboardSha256": "7731cc800c50511c8aa808eec16d34da4a315d07be61948ee1b348dbe564a059"
             },
             {
               "name": "app/Example.fsproj",
-              "sha256": "b52f2c94dc6349e917eba205573e2eb361c286aadcb8261557ddcf052baca861",
-              "clipboardSha256": "ca7c5193ba23f5fa1128a7889fc08e692f6ad3d85adb85e6ab2b7851a91a6ef7"
+              "sha256": "737717c93fb938297e3486ee106918a15e5b328e6a59d65eb297346aa7ce0573",
+              "clipboardSha256": "ca743da9cb894fd192c39b8078eb2ae7a7e9e3a8142a475fd86c2980c2c0d0db"
             },
             {
               "name": "app/global.json",
@@ -1065,7 +1101,7 @@
               "clipboardSha256": "11c4f249624d34097497a6b8dbac72acadc2216d9736e033258e2397a0f945a6"
             }
           ],
-          "excerptSha256": "89e4d781c4499d2dc8db65da4de720e6b783289e260576777e7baf98d7ace27b"
+          "excerptSha256": "7731cc800c50511c8aa808eec16d34da4a315d07be61948ee1b348dbe564a059"
         }
       }
     },
@@ -1073,13 +1109,13 @@
       "port": "cxx",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-cxx",
-      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
-      "sourceTree": "f6bc4187d0f44ae265e2937f4a6072572d4c5f58",
+      "sourceRevision": "888167d2d908e7f1c0e6969f96c5582edd4ac8f2",
+      "sourceTree": "366f2111c064051a79948de88ab5e2c2fc23a080",
       "files": [
         {
           "name": "main.cpp",
-          "sha256": "17946bba3149cb8527acbf899710eb7299ea52d58cd3bfb45f62f9a6a16378df",
-          "clipboardSha256": "c8bf11536323da1f965e7b3c167b4cac74e1cc920f5f2aa537c59e34329a174d"
+          "sha256": "c9c0203b8bcc473757d52f5411ec25789813d40c4d7417c1a97df42e1240446f",
+          "clipboardSha256": "18bf3a4323f89d8a3cfdb49683186b71b213204a2036b1f64ef1427ebe4b8f52"
         },
         {
           "name": "CMakeLists.txt",
@@ -1088,25 +1124,29 @@
         }
       ],
       "shellRecipe": [
-        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-cxx.git libtmux-source\ngit -C libtmux-source checkout --detach 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f\ncmake -S libtmux-source -B library \\\n  -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n  -DCMAKE_BUILD_TYPE=Release -DLIBTMUX_BUILD_TESTS=OFF -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n  -DLIBTMUX_BUILD_TESTING_LIBRARY=OFF -DLIBTMUX_CXX_STANDARD=23 \\\n  -DCMAKE_CXX_COMPILER=clang++\ncmake --build library -j 2\ncmake --install library --prefix \"$PWD/prefix\"\ncmake -S . -B build -DCMAKE_PREFIX_PATH=\"$PWD/prefix\" -DCMAKE_CXX_COMPILER=clang++ \\\n  -DCMAKE_CXX_FLAGS=-stdlib=libc++ -DCMAKE_CXX_STANDARD=23\ncmake --build build -j 2\nbuild/api_example"
+        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-cxx.git libtmux-source\ngit -C libtmux-source checkout --detach 888167d2d908e7f1c0e6969f96c5582edd4ac8f2\ncmake -S libtmux-source -B library \\\n  -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n  -DCMAKE_BUILD_TYPE=Release -DLIBTMUX_BUILD_TESTS=OFF -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n  -DLIBTMUX_BUILD_TESTING_LIBRARY=OFF -DLIBTMUX_CXX_STANDARD=23 \\\n  -DCMAKE_CXX_COMPILER=clang++\ncmake --build library -j 2\ncmake --install library --prefix \"$PWD/prefix\"\ncmake -S . -B build -DCMAKE_PREFIX_PATH=\"$PWD/prefix\" -DCMAKE_CXX_COMPILER=clang++ \\\n  -DCMAKE_CXX_FLAGS=-stdlib=libc++ -DCMAKE_CXX_STANDARD=23\ncmake --build build -j 2\nbuild/api_example"
       ],
       "expectedOutputs": [
         [
-          "hello from libtmux"
+          "session demo",
+          "  window 0:editor: %0 %1",
+          "  window 1:logs: %2",
+          "%1 is in window editor of session demo"
         ]
       ],
-      "excerptSha256": "c8bf11536323da1f965e7b3c167b4cac74e1cc920f5f2aa537c59e34329a174d",
+      "excerptSha256": "18bf3a4323f89d8a3cfdb49683186b71b213204a2036b1f64ef1427ebe4b8f52",
       "tmuxVersions": [
-        "3.2a",
-        "3.7c"
+        "3.3a",
+        "3.7c",
+        "3.8"
       ],
       "variants": {
         "concise": {
           "files": [
             {
               "name": "main.cpp",
-              "sha256": "396aff7dceb0b0e5b9c6cdeba7485b7fd70257db87aac218a3a04a37ad0b5f70",
-              "clipboardSha256": "5ef2b84705bc0dd5184d7e4babdbe3f609dc4de58196fa8d9da32c74b9661c49"
+              "sha256": "2b32baab84237db45227c614570845de385355b5435e6ad140cae988e3ff1020",
+              "clipboardSha256": "bf79eb8367c3e3c0127a0c8669068c824934153fd051ffa806e8f2be7a7694c9"
             },
             {
               "name": "CMakeLists.txt",
@@ -1114,14 +1154,14 @@
               "clipboardSha256": "6062661992aaec3b018e014c12a1cbcec1518ca856d8a7fc20013542181ef488"
             }
           ],
-          "excerptSha256": "5ef2b84705bc0dd5184d7e4babdbe3f609dc4de58196fa8d9da32c74b9661c49"
+          "excerptSha256": "bf79eb8367c3e3c0127a0c8669068c824934153fd051ffa806e8f2be7a7694c9"
         },
         "errors": {
           "files": [
             {
               "name": "main.cpp",
-              "sha256": "d4b73be493756a4304f3ed1b37a3be159dbed6dcc9bd754352e35afa2658cde0",
-              "clipboardSha256": "e627900e3fea50ec67781ba4f6d8a9111f223a2d075e8ea7085c8d8b80969c97"
+              "sha256": "fd06976fb0da2a975e850a5f4df8580592129fd641b5b56448ea68694a91c31a",
+              "clipboardSha256": "7eecd514deb32c535a1e024ec72a97c8beb75b1e44f0523ba40e5a0754a94eb5"
             },
             {
               "name": "CMakeLists.txt",
@@ -1129,14 +1169,14 @@
               "clipboardSha256": "6062661992aaec3b018e014c12a1cbcec1518ca856d8a7fc20013542181ef488"
             }
           ],
-          "excerptSha256": "e627900e3fea50ec67781ba4f6d8a9111f223a2d075e8ea7085c8d8b80969c97"
+          "excerptSha256": "7eecd514deb32c535a1e024ec72a97c8beb75b1e44f0523ba40e5a0754a94eb5"
         },
         "cleanup": {
           "files": [
             {
               "name": "main.cpp",
-              "sha256": "74e39bc80721c8ac41fdc778c1b9c49bd0bb44f21cdccb26a6cc0034b2aaf15a",
-              "clipboardSha256": "8147dbe5d08f709525b39fa82741b9f2cbf570cdb19fef5d4b7bac9dc9852439"
+              "sha256": "a001acff5bca4b992cf13662c2575d94ea7d4b3128140ea6bb207bd8aadc0a0b",
+              "clipboardSha256": "bb7402de19f54cce16c57bb91430bd111b1df60b3258fb1ce7caed3ad18851d6"
             },
             {
               "name": "CMakeLists.txt",
@@ -1144,7 +1184,7 @@
               "clipboardSha256": "6062661992aaec3b018e014c12a1cbcec1518ca856d8a7fc20013542181ef488"
             }
           ],
-          "excerptSha256": "8147dbe5d08f709525b39fa82741b9f2cbf570cdb19fef5d4b7bac9dc9852439"
+          "excerptSha256": "bb7402de19f54cce16c57bb91430bd111b1df60b3258fb1ce7caed3ad18851d6"
         }
       }
     },
@@ -1152,78 +1192,84 @@
       "port": "swift",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-swift",
-      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
-      "sourceTree": "2b5161e4fb6850163cdde957602aa75524abe315",
+      "sourceRevision": "e28b31d25dd9f3efcb7536de7930414f29b36e10",
+      "sourceTree": "5e6a0c821b4d6aca4536423057a3dd93c1a5bee8",
       "files": [
         {
           "name": "Package.swift",
-          "sha256": "6773b0d4d3a8e54266d8ab4d5c9085d8aba18dca8936e42b2bbf798dbd832ad0",
-          "clipboardSha256": "1cd4c6750cf3a06fdf4b6f0e3e7175ec543203e7410bb2dd516147aa43696346"
+          "sha256": "d72573c5f8777ff87d8e3528e6315b8eba881991aae4796a1524526e4162002f",
+          "clipboardSha256": "ea883524a23b63b00b79bfc57bbb63ffafb8f7f1a5a3a19864eede3fca258871"
         },
         {
           "name": "Sources/Main.swift",
-          "sha256": "3b91f926caaeb6146d25b08af5ff4ff31b73e09a235979f1e5dc36bf837e1c39",
-          "clipboardSha256": "3db7869b09e7944b5a180cc7110fa7ab75fd0721c6239844a58abe294274a2f2"
+          "sha256": "babbb2ba98d4a3355e3aab80d3348c805182ce29b676a445ed5c23a5b467ea9b",
+          "clipboardSha256": "f3795bdb75ccc6b1266e2a36051f852863e8ec81b3089f482cf8c22d12a70bc0"
         }
       ],
       "shellRecipe": [
-        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-swift.git libtmux-source\ngit -C libtmux-source checkout --detach 7993e7044347629b08020e9b02ae8bcffa0e5898\nswift build --jobs 2 --product ApiExample\n.build/debug/ApiExample"
+        "# Save the files above at their displayed relative paths.\nswift build --jobs 2 --product ApiExample",
+        "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\n.build/debug/ApiExample"
       ],
       "expectedOutputs": [
+        [],
         [
-          "hello from libtmux"
+          "session demo",
+          "  window 0:editor: %0 %1",
+          "  window 1:logs: %2",
+          "%1 is in window editor of session demo"
         ]
       ],
-      "excerptSha256": "3db7869b09e7944b5a180cc7110fa7ab75fd0721c6239844a58abe294274a2f2",
+      "excerptSha256": "f3795bdb75ccc6b1266e2a36051f852863e8ec81b3089f482cf8c22d12a70bc0",
       "tmuxVersions": [
-        "3.2a",
-        "3.7c"
+        "3.3a",
+        "3.7c",
+        "3.8"
       ],
       "variants": {
         "concise": {
           "files": [
             {
               "name": "Package.swift",
-              "sha256": "6773b0d4d3a8e54266d8ab4d5c9085d8aba18dca8936e42b2bbf798dbd832ad0",
-              "clipboardSha256": "1cd4c6750cf3a06fdf4b6f0e3e7175ec543203e7410bb2dd516147aa43696346"
+              "sha256": "d72573c5f8777ff87d8e3528e6315b8eba881991aae4796a1524526e4162002f",
+              "clipboardSha256": "ea883524a23b63b00b79bfc57bbb63ffafb8f7f1a5a3a19864eede3fca258871"
             },
             {
               "name": "Sources/Main.swift",
-              "sha256": "aa44210431ea7702b37fcee3715e01ada1cdff21e1fa2d2386b3de0b53c6c600",
-              "clipboardSha256": "88183ef5edd9be6ce18e3b4d41a0e833ec3c1e250a430b4970668678a39a95b7"
+              "sha256": "2fd7336c50ce47785ab7dfa1563c25b2e41c6433841fbc546266d4b2e74d3ea3",
+              "clipboardSha256": "15bf8bf6e8de9c97072ecd8092d070803239adb00bc9953bfe863608a3aa598a"
             }
           ],
-          "excerptSha256": "88183ef5edd9be6ce18e3b4d41a0e833ec3c1e250a430b4970668678a39a95b7"
+          "excerptSha256": "15bf8bf6e8de9c97072ecd8092d070803239adb00bc9953bfe863608a3aa598a"
         },
         "errors": {
           "files": [
             {
               "name": "Package.swift",
-              "sha256": "6773b0d4d3a8e54266d8ab4d5c9085d8aba18dca8936e42b2bbf798dbd832ad0",
-              "clipboardSha256": "1cd4c6750cf3a06fdf4b6f0e3e7175ec543203e7410bb2dd516147aa43696346"
+              "sha256": "d72573c5f8777ff87d8e3528e6315b8eba881991aae4796a1524526e4162002f",
+              "clipboardSha256": "ea883524a23b63b00b79bfc57bbb63ffafb8f7f1a5a3a19864eede3fca258871"
             },
             {
               "name": "Sources/Main.swift",
-              "sha256": "369712d51910f1e144a438a02e5d8997cd06e3fbc055c55f9e1b0ae404a17281",
-              "clipboardSha256": "a6ce19c44a365a66016368673965328d1a92234b05f51ace98df3f22b1ba07d3"
+              "sha256": "cf425ea24864d2322f3596fbcefb8c5d883a136107edea620ab136c927df96bd",
+              "clipboardSha256": "9220530faee9658f90fd7c62c2c511ea2a160130e9fe142fcab96ad9eb1dced5"
             }
           ],
-          "excerptSha256": "a6ce19c44a365a66016368673965328d1a92234b05f51ace98df3f22b1ba07d3"
+          "excerptSha256": "9220530faee9658f90fd7c62c2c511ea2a160130e9fe142fcab96ad9eb1dced5"
         },
         "cleanup": {
           "files": [
             {
               "name": "Package.swift",
-              "sha256": "6773b0d4d3a8e54266d8ab4d5c9085d8aba18dca8936e42b2bbf798dbd832ad0",
-              "clipboardSha256": "1cd4c6750cf3a06fdf4b6f0e3e7175ec543203e7410bb2dd516147aa43696346"
+              "sha256": "d72573c5f8777ff87d8e3528e6315b8eba881991aae4796a1524526e4162002f",
+              "clipboardSha256": "ea883524a23b63b00b79bfc57bbb63ffafb8f7f1a5a3a19864eede3fca258871"
             },
             {
               "name": "Sources/Main.swift",
-              "sha256": "d07ea10b58969ad49896c249b3b694e8af4a285f8ac89dfa6ecb100b70c8eca3",
-              "clipboardSha256": "8968ddf7741769be9ab0f6d50a0e38d31310cacfd36a9336c821ac63e740fdca"
+              "sha256": "91cab5dd413dad8cf2f5e6da1f20bccc24aa5edfc931608a273e0025bf5112e8",
+              "clipboardSha256": "ee6eb91be702e0faaa5437b31a9abbfa51151b64b9abccf0d0793cb3dc5ee84a"
             }
           ],
-          "excerptSha256": "8968ddf7741769be9ab0f6d50a0e38d31310cacfd36a9336c821ac63e740fdca"
+          "excerptSha256": "ee6eb91be702e0faaa5437b31a9abbfa51151b64b9abccf0d0793cb3dc5ee84a"
         }
       }
     },
@@ -1236,8 +1282,8 @@
       "files": [
         {
           "name": "quickstart.ps1",
-          "sha256": "327bc9fdf32d4cffaa5033f04e61838e551bf5aa2bed50551383f305b8478fd1",
-          "clipboardSha256": "2e0437140b5dc07e1fc5ad142052afd74cb550a7828f41e441c958bd1423cc72"
+          "sha256": "bfc279e9634ec061d83de0fe01c1dd6a35d701405893298c776ef367dfaa3614",
+          "clipboardSha256": "0a8790fa1b1a0a6b5b7e849d3e4f772b4ad6568ee0301dc921116f19ae9c03ef"
         }
       ],
       "shellRecipe": [
@@ -1247,12 +1293,16 @@
       "expectedOutputs": [
         [],
         [
-          "editor: %0, %1",
-          "logs: %2"
+          "session demo",
+          "  window 0:editor: %0 %1",
+          "  window 1:logs: %2",
+          "%1 is in window editor of session demo"
         ]
       ],
-      "excerptSha256": "2e0437140b5dc07e1fc5ad142052afd74cb550a7828f41e441c958bd1423cc72",
+      "excerptSha256": "0a8790fa1b1a0a6b5b7e849d3e4f772b4ad6568ee0301dc921116f19ae9c03ef",
       "tmuxVersions": [
+        "3.3a",
+        "3.7c",
         "3.8"
       ],
       "variants": {
@@ -1260,31 +1310,31 @@
           "files": [
             {
               "name": "quickstart.ps1",
-              "sha256": "09d4b7effc0b3af230bec38e04fc2455c7016e3fec0490babefa68ccc45a1ae1",
-              "clipboardSha256": "e4fcc84eaac81992fd4715ac41a9d02dc528db812fb68eb1f2773defc8880447"
+              "sha256": "419b830fb9044c94b8000ba7e6f09dfbb9223a32d365014aa5525a5ff117ba18",
+              "clipboardSha256": "d60ce96078fe437905c2b66347d3e4b9e8ee3d6abc7e086fddd38069efb1faa2"
             }
           ],
-          "excerptSha256": "e4fcc84eaac81992fd4715ac41a9d02dc528db812fb68eb1f2773defc8880447"
+          "excerptSha256": "d60ce96078fe437905c2b66347d3e4b9e8ee3d6abc7e086fddd38069efb1faa2"
         },
         "errors": {
           "files": [
             {
               "name": "quickstart.ps1",
-              "sha256": "7c31cf6da65294e2d7d6b17640b9dc445162790a64ad6b23a01447c619dae6a1",
-              "clipboardSha256": "9cb1cdfb1de03fd3b7b7065d1621d04357aa94107281f24531afd4512849f37a"
+              "sha256": "41ddebfb856f13cef2ea3fc903f694850fa2f5fa301d838f8e6e19ce869e21b3",
+              "clipboardSha256": "3d7b8bd33a40fd9365f10c3867d7f322334dfeb8f0f46c65fa684c26d0924884"
             }
           ],
-          "excerptSha256": "9cb1cdfb1de03fd3b7b7065d1621d04357aa94107281f24531afd4512849f37a"
+          "excerptSha256": "3d7b8bd33a40fd9365f10c3867d7f322334dfeb8f0f46c65fa684c26d0924884"
         },
         "cleanup": {
           "files": [
             {
               "name": "quickstart.ps1",
-              "sha256": "1303c71ad0dcce2d039fad06b02e26e36723e04cb87f4051d88af335dce4fa6f",
-              "clipboardSha256": "ed47cdb553515d1eb26908880ec25aee4df30f8f23b607f1e514e97b8b8a288d"
+              "sha256": "94fb5849209ac3ab993d18d9a98dca2cd79cf37cdbc65dd6a2df82bcb5d50d65",
+              "clipboardSha256": "2d9fe59a797d2a5b8f0c4c4db6107ee2a4d0e9620b4a98f30ef4858840af601e"
             }
           ],
-          "excerptSha256": "ed47cdb553515d1eb26908880ec25aee4df30f8f23b607f1e514e97b8b8a288d"
+          "excerptSha256": "2d9fe59a797d2a5b8f0c4c4db6107ee2a4d0e9620b4a98f30ef4858840af601e"
         }
       }
     },
@@ -1292,27 +1342,31 @@
       "port": "julia",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-julia",
-      "sourceRevision": "6f62bd72cb8d99f3759ca5e2cc3591165a03c768",
-      "sourceTree": "d0a50bcd9691a14b2a304387cb74b62444425eb8",
+      "sourceRevision": "f2b0fb8e3c4d2e951579e9620cb3396dd5cdc59f",
+      "sourceTree": "28aa98b879a83eefe15372e55f8716eb67aa3d50",
       "files": [
         {
           "name": "quickstart.jl",
-          "sha256": "e8e28b416b8fa5e5cefc42a67e13b5f47118840516c33cd79c46d997e99e063e",
-          "clipboardSha256": "fcbea45d0f895ae82f18d7b5efb5d51e074fcec65d9b4d65eb3f6102149a1e78"
+          "sha256": "7874edbb03e611a0d8c6f16c7ac0267bdd61ca85242ed5d5478246e1b5f9cf23",
+          "clipboardSha256": "81d1aa85422c93445ad07d5659000f3706faccafed696ba19ef32999de537b0c"
         }
       ],
       "shellRecipe": [
-        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-julia.git \\\n  6f62bd72cb8d99f3759ca5e2cc3591165a03c768\ngit -C source checkout -q --detach FETCH_HEAD",
+        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-julia.git \\\n  f2b0fb8e3c4d2e951579e9620cb3396dd5cdc59f\ngit -C source checkout -q --detach FETCH_HEAD",
         "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\njulia --startup-file=no --project=source quickstart.jl"
       ],
       "expectedOutputs": [
         [],
         [
-          "demo: 2 windows, 3 panes"
+          "session demo",
+          "  window 0:editor: %0 %1",
+          "  window 1:logs: %2",
+          "%1 is in window editor of session demo"
         ]
       ],
-      "excerptSha256": "fcbea45d0f895ae82f18d7b5efb5d51e074fcec65d9b4d65eb3f6102149a1e78",
+      "excerptSha256": "81d1aa85422c93445ad07d5659000f3706faccafed696ba19ef32999de537b0c",
       "tmuxVersions": [
+        "3.3a",
         "3.7c",
         "3.8"
       ],
@@ -1321,31 +1375,31 @@
           "files": [
             {
               "name": "quickstart.jl",
-              "sha256": "9cac65d0ae2a7b87208532b204e464eca5d4a54bc676a4f307367109e918fd63",
-              "clipboardSha256": "392832084f7b9acc0821ac71e1963d35bcef4f945ab65d241aa573e1d0191e3c"
+              "sha256": "e0d8970021713d1783c32253b08ed1008889a1c3a1d0f635bcfc51f5bb08bb79",
+              "clipboardSha256": "5d107da4963345ba2cafee8233073f839e6bc4ec87e60b7124962c7bead9c40a"
             }
           ],
-          "excerptSha256": "392832084f7b9acc0821ac71e1963d35bcef4f945ab65d241aa573e1d0191e3c"
+          "excerptSha256": "5d107da4963345ba2cafee8233073f839e6bc4ec87e60b7124962c7bead9c40a"
         },
         "errors": {
           "files": [
             {
               "name": "quickstart.jl",
-              "sha256": "b5e9dab3a90713b63c5bbcab652f8b5ff405fafe5992829497608a4d0b277183",
-              "clipboardSha256": "558d26e274ee60a9bd5b9e81af8780a56df9c0a45a42012fb14c08103ecdf115"
+              "sha256": "63af0fc1d82d392aa53b30e587b612cc6399ddeb9efc3f0dc449e758fbc4bed1",
+              "clipboardSha256": "4f594525500110865c48f1ad3b7c60531cb15ad40bbbef14d3b4402741dfd3ea"
             }
           ],
-          "excerptSha256": "558d26e274ee60a9bd5b9e81af8780a56df9c0a45a42012fb14c08103ecdf115"
+          "excerptSha256": "4f594525500110865c48f1ad3b7c60531cb15ad40bbbef14d3b4402741dfd3ea"
         },
         "cleanup": {
           "files": [
             {
               "name": "quickstart.jl",
-              "sha256": "6735e374b088c91c01ad47eef01bd80b2eca876e7a2a4bc968a8acebe53d42e8",
-              "clipboardSha256": "376fe3a7bea19970b4eeaa33482edbb71dbb54391371966d7dcf44b7f6bcb776"
+              "sha256": "7d2e2e24521f789d1f6113066f77d2254b54494af60ca30f9ef812a6decf6eab",
+              "clipboardSha256": "32e3ec50c11cdd13c015101803dd8e5e7f1caa731fab5bf0cf1bfe576a2b0cb1"
             }
           ],
-          "excerptSha256": "376fe3a7bea19970b4eeaa33482edbb71dbb54391371966d7dcf44b7f6bcb776"
+          "excerptSha256": "32e3ec50c11cdd13c015101803dd8e5e7f1caa731fab5bf0cf1bfe576a2b0cb1"
         }
       }
     },
@@ -1353,13 +1407,13 @@
       "port": "elixir",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-elixir",
-      "sourceRevision": "cac4252bfc52069980d47db2b7803dc9b33f36f1",
-      "sourceTree": "f2c639ac8c99fa284acf6d122aa7af7177e068a9",
+      "sourceRevision": "a740a1308e51e5e975d4239e0e017efacf4cb169",
+      "sourceTree": "623133e2d512443e196749424980c166964815f8",
       "files": [
         {
           "name": "quickstart.exs",
-          "sha256": "9a5be3e88f6e21081b22c9b884b94d2b1225368b0e1e0656549024c14b1ed88e",
-          "clipboardSha256": "a0a04cbe7b9922255ba1f93d776ab775a5eab839c8479a4d25c57801b4a6769d"
+          "sha256": "16d09ee54ef6e4073740b50fe6496b668e615fda51e2f97acfcb25b7fb54f86c",
+          "clipboardSha256": "315b120fc40982d69ab2945b84a0b2c6df5faf8d63d75bf940739cd6e23b68af"
         }
       ],
       "shellRecipe": [
@@ -1367,12 +1421,16 @@
       ],
       "expectedOutputs": [
         [
-          "demo: 2 windows, 3 panes"
+          "session demo",
+          "  window 0:editor: %0 %1",
+          "  window 1:logs: %2",
+          "%1 is in window editor of session demo"
         ]
       ],
-      "excerptSha256": "a0a04cbe7b9922255ba1f93d776ab775a5eab839c8479a4d25c57801b4a6769d",
+      "excerptSha256": "315b120fc40982d69ab2945b84a0b2c6df5faf8d63d75bf940739cd6e23b68af",
       "tmuxVersions": [
         "3.3a",
+        "3.7c",
         "3.8"
       ],
       "variants": {
@@ -1380,31 +1438,31 @@
           "files": [
             {
               "name": "quickstart.exs",
-              "sha256": "e7671613e3fb2c0bb20affb48539ebdbc6947f3620d4af6705a651e27396c3c2",
-              "clipboardSha256": "086dd47af5d82109690a8607f11b1f3e12b84cd6afafc8f36f2da1a54e871ad4"
+              "sha256": "21245dfcb27eb921ccfba934e76aca56dac56a0adf1328e392444164abb8aade",
+              "clipboardSha256": "2251ccd20f5d8c2eca341b71f114a937a2f979f44a185513ed14db8ec087ff99"
             }
           ],
-          "excerptSha256": "086dd47af5d82109690a8607f11b1f3e12b84cd6afafc8f36f2da1a54e871ad4"
+          "excerptSha256": "2251ccd20f5d8c2eca341b71f114a937a2f979f44a185513ed14db8ec087ff99"
         },
         "errors": {
           "files": [
             {
               "name": "quickstart.exs",
-              "sha256": "e7671613e3fb2c0bb20affb48539ebdbc6947f3620d4af6705a651e27396c3c2",
-              "clipboardSha256": "086dd47af5d82109690a8607f11b1f3e12b84cd6afafc8f36f2da1a54e871ad4"
+              "sha256": "21245dfcb27eb921ccfba934e76aca56dac56a0adf1328e392444164abb8aade",
+              "clipboardSha256": "2251ccd20f5d8c2eca341b71f114a937a2f979f44a185513ed14db8ec087ff99"
             }
           ],
-          "excerptSha256": "086dd47af5d82109690a8607f11b1f3e12b84cd6afafc8f36f2da1a54e871ad4"
+          "excerptSha256": "2251ccd20f5d8c2eca341b71f114a937a2f979f44a185513ed14db8ec087ff99"
         },
         "cleanup": {
           "files": [
             {
               "name": "quickstart.exs",
-              "sha256": "9a5be3e88f6e21081b22c9b884b94d2b1225368b0e1e0656549024c14b1ed88e",
-              "clipboardSha256": "a0a04cbe7b9922255ba1f93d776ab775a5eab839c8479a4d25c57801b4a6769d"
+              "sha256": "16d09ee54ef6e4073740b50fe6496b668e615fda51e2f97acfcb25b7fb54f86c",
+              "clipboardSha256": "315b120fc40982d69ab2945b84a0b2c6df5faf8d63d75bf940739cd6e23b68af"
             }
           ],
-          "excerptSha256": "a0a04cbe7b9922255ba1f93d776ab775a5eab839c8479a4d25c57801b4a6769d"
+          "excerptSha256": "315b120fc40982d69ab2945b84a0b2c6df5faf8d63d75bf940739cd6e23b68af"
         }
       }
     }

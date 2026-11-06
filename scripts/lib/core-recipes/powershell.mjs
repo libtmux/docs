@@ -22,11 +22,9 @@ export { withoutMarks }
 
 /**
  * The script the marked copy dot-sources after it imports the module. `Send-DocsMark`
- * runs `LIBTMUX_DOCS_MARK` and stops the program if that fails. A cmdlet whose
- * result the program drops (`$null = ...`) or consumes inside a pipeline is
- * shadowed by a function of the same name, which calls the cmdlet with the same
- * arguments and input and remembers what it returned; a function wins over a cmdlet
- * of the same name, and nothing else changes.
+ * runs `LIBTMUX_DOCS_MARK` and stops the program if that fails. The program binds
+ * what each call returns to a variable, so a mark reads the value from there and no
+ * cmdlet is shadowed.
  */
 const POWERSHELL_HELPER = `function Send-DocsMark {
     param([string] $Step, $Value)
@@ -34,31 +32,9 @@ const POWERSHELL_HELPER = `function Send-DocsMark {
     $null = & $env:LIBTMUX_DOCS_MARK $Step $json
     if ($LASTEXITCODE) { [Environment]::Exit($LASTEXITCODE) }
 }
-
-$global:DocsReturned = @{}
-
-function Get-TmuxPane {
-    $cmdlet = $ExecutionContext.InvokeCommand.GetCommand('Get-TmuxPane', 'Cmdlet')
-    @($input | & $cmdlet @args)
-}
 `
 
-const WRAPPED = {
-  'Split-TmuxPane': '',
-  'New-TmuxWindow': '',
-  'Get-TmuxSnapshot': "    Send-DocsMark 'snapshot' ([ordered]@{ sessions = @($result.Sessions | ForEach-Object { \"$($_.Id)\" }) })\n",
-}
-
-const wrapper = (name, after) => `
-function ${name} {
-    $cmdlet = $ExecutionContext.InvokeCommand.GetCommand('${name}', 'Cmdlet')
-    $result = @($input | & $cmdlet @args)
-    $global:DocsReturned['${name}'] = $result[0]
-${after}    $result
-}
-`
-
-const HELPER = POWERSHELL_HELPER.replace(/function Get-TmuxPane \{[^]*?\n\}\n$/, '') + Object.entries(WRAPPED).map(([name, after]) => wrapper(name, after)).join('')
+const HELPER = POWERSHELL_HELPER
 
 /** The mark line, and the line that loads the helper after the module has been imported. */
 const mark = (step) => `Send-DocsMark ${JSON.stringify(step.id).replace(/"/g, "'")} (${step.value}) # docs:mark`
@@ -67,7 +43,7 @@ const LOAD = '. "$PSScriptRoot/docs_mark.ps1" # docs:mark'
 /** Insert a mark after the last line of each step's statement (a line that ends in a backtick or a pipe goes on to the next). */
 export function instrumentPowerShell(source, steps) {
   const lines = source.split('\n')
-  const inserts = steps.filter((step) => !step.hooked).map((step) => {
+  const inserts = steps.map((step) => {
     const range = statementLines(source, step.anchor, '//', step.occurrence)
     if (!range) throw new Error(`${step.id}: the anchor ${JSON.stringify(step.anchor)} is not on exactly one line of the program`)
     let last = range[1]
@@ -129,33 +105,45 @@ const probe = ({ flags, commands }) => (commands.length === 0 && flags.includes(
   || (commands.length > 0 && commands.every((command) => command[0] === 'run-shell' && command.some((word) => word.startsWith('libtmux-version-'))))
 
 const SERVER = '[ordered]@{ socketName = $server.ConnectionOptions.SocketName; configFile = $server.ConnectionOptions.ConfigurationFile }'
-const WINDOW = '[ordered]@{ id = "$($DocsReturned[\'New-TmuxWindow\'].Id)"; name = $DocsReturned[\'New-TmuxWindow\'].Name }'
+/** A session, window or pane as a recording stores it, from the variable the statement binds. */
+const SESSION = (name) => `[ordered]@{ id = "$($${name}.Id)"; name = $${name}.Name }`
+const WINDOW = (name) => `[ordered]@{ id = "$($${name}.Id)"; index = $${name}.Index; name = $${name}.Name }`
+const PANE = (name) => `[ordered]@{ id = "$($${name}.Id)" }`
 
 export const RECIPES = {
   'typed-graph': {
     capability: 'typed-graph',
     file: 'quickstart.ps1',
     stepMap: 'hand-written',
-    /** What a pane runs once it has settled: the program starts `/bin/cat`. */
-    paneCommands: ['cat'],
+    /** What a pane runs once it has settled: the default shell, `SHELL=/bin/sh`. */
+    paneCommands: ['sh'],
     source: (root) => quickstartSource(root, 'powershell', 'quickstart.ps1'),
     checkout: (port, env, expand) => checkoutOf(port, env, expand),
     helpers: [{ file: 'docs_mark.ps1', source: HELPER }],
-    // In the order the calls run. The pipeline of the snapshot marks inside the function that shadows its cmdlet.
+    // In the order the calls run. The cmdlets have no rename or select, so those three steps are the native handle's methods.
+    // The last four read the snapshot, which holds what tmux said and sends it nothing.
     steps: [
       { id: 'new-server', label: 'New-TmuxServer', anchor: 'New-TmuxServer', type: 'Server', value: SERVER },
-      { id: 'new-session', label: 'New-TmuxSession', anchor: 'New-TmuxSession', type: 'Session', value: '[ordered]@{ id = "$($session.Id)"; name = $session.Name }' },
-      { id: 'get-pane', label: 'Get-TmuxPane', anchor: 'Get-TmuxPane', type: 'Pane', value: '[ordered]@{ id = "$($pane.Id)" }' },
-      { id: 'split', label: 'Split-TmuxPane', anchor: 'Split-TmuxPane', type: 'Pane', value: '[ordered]@{ id = "$($DocsReturned[\'Split-TmuxPane\'].Id)" }' },
-      { id: 'new-window', label: 'New-TmuxWindow', anchor: 'New-TmuxWindow', type: 'Window', value: WINDOW },
-      { id: 'snapshot', label: 'Get-TmuxSnapshot', anchor: 'Get-TmuxSnapshot', type: 'Server', value: 'null', hooked: true },
-      { id: 'select', label: 'Select-TmuxSession', anchor: 'Select-TmuxSession', type: 'Session', value: '[ordered]@{ id = "$($captured.Id)"; windows = @($captured.Windows | ForEach-Object { [ordered]@{ name = $_.Name; panes = @($_.Panes | ForEach-Object { "$($_.Id)" }) } }) }' },
+      { id: 'new-session', label: 'New-TmuxSession', anchor: 'New-TmuxSession', type: 'Session', value: SESSION('session') },
+      { id: 'active-window', label: 'Get-TmuxWindow', anchor: '$session | Get-TmuxWindow', type: 'Window', value: WINDOW('window') },
+      { id: 'rename', label: 'Window.RenameAsync', anchor: '.RenameAsync(', type: 'Window', value: WINDOW('editor') },
+      { id: 'active-pane', label: 'Get-TmuxPane', anchor: '$editor | Get-TmuxPane', type: 'Pane', value: PANE('left') },
+      { id: 'split', label: 'Split-TmuxPane', anchor: 'Split-TmuxPane', type: 'Pane', value: PANE('right') },
+      { id: 'new-window', label: 'New-TmuxWindow', anchor: 'New-TmuxWindow', type: 'Window', value: WINDOW('logs') },
+      { id: 'send-text', label: 'Send-TmuxText', anchor: 'Send-TmuxText', type: 'void', value: '$null' },
+      { id: 'wait', label: 'Wait-TmuxPaneText', anchor: 'Wait-TmuxPaneText', type: 'PaneWaitResult', value: '[ordered]@{ outcome = "$($found.Outcome)"; found = $found.Found }' },
+      { id: 'select-pane', label: 'Pane.SelectAsync', anchor: '$right.SelectAsync(', type: 'Pane', value: PANE('right') },
+      { id: 'select-window', label: 'Window.SelectAsync', anchor: '$logs.SelectAsync(', type: 'Window', value: WINDOW('logs') },
+      { id: 'snapshot', label: 'Get-TmuxSnapshot', anchor: 'Get-TmuxSnapshot', type: 'Snapshot', value: '[ordered]@{ sessions = @($snapshot.Sessions).Count; windows = @($snapshot.Windows).Count; panes = @($snapshot.Panes).Count }' },
+      { id: 'pane-lookup', label: 'Snapshot.Panes', anchor: '$snapshot.Panes |', type: 'Pane', value: PANE('pane') },
+      { id: 'pane-window', label: 'Pane.Window', anchor: '$pane.Window', type: 'Window', value: WINDOW('window') },
+      { id: 'window-session', label: 'Pane.Session', anchor: '$pane.Session', type: 'Session', value: SESSION('owner') },
       { id: 'remove', label: 'Remove-TmuxSession', anchor: 'Remove-TmuxSession', type: 'void', value: '[ordered]@{ errors = @($cleanupErrors).Count }' },
     ],
     fence,
     probe,
-    /** The program names its socket `libtmux-home-<guid>`. */
-    socket: { pattern: 'libtmux-home-[0-9a-f]{32}', fixed: 'libtmux-home-0123456789abcdef0123456789abcdef' },
+    /** The program names its socket `libtmux-home-<process id>`. */
+    socket: { pattern: 'libtmux-home-[0-9]+', fixed: 'libtmux-home-12345' },
     instrument: instrumentPowerShell,
     command: (dir) => ['env', 'DOTNET_CLI_TELEMETRY_OPTOUT=1', 'DOTNET_NOLOGO=1', 'POWERSHELL_TELEMETRY_OPTOUT=1', 'POWERSHELL_UPDATECHECK=Off', pwsh.path, '-NoProfile', '-NonInteractive', '-File', join(dir, 'quickstart.ps1')],
     toolchain: () => ({ powershell: execFileSync(pwsh.path, ['-NoProfile', '-NonInteractive', '-Command', '$PSVersionTable.PSVersion.ToString()'], { encoding: 'utf8', cwd: homedir() }).trim() }),

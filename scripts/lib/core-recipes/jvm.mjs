@@ -69,14 +69,27 @@ export function instrumentJvm(source, steps, mark) {
  */
 export const PREAMBLE = {
   fence: (command) => command[0] === 'if-shell' && command.some((word) => word.startsWith('libtmux-stale-version-')),
-  /** The program names its socket `libtmux-home-<uuid>`, which the `-V` probe shows among its flags and which differs on every run. */
-  redact: (text) => text.replace(/libtmux-home-[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}/g, 'libtmux-home-0000'),
-  unwrap: (command) => (command[0] === 'if-shell' && command[1] === '-F' && command.length === 5 && command[2].includes('#{pid}') ? splitCommandLine(command[3]) : undefined),
+  /**
+   * What differs on every run: the program's socket `libtmux-home-<uuid>`, which the `-V` probe shows among its flags,
+   * the random channel in the version probe (`libtmux-version-<16 hex>-`), and the three random markers around the
+   * pid, version and start time the daemon probe prints.
+   */
+  redact: (text) =>
+    text
+      .replace(/libtmux-home-[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}/g, 'libtmux-home-0000')
+      .replace(/libtmux-version-[0-9a-f]{16}-/g, 'libtmux-version-0000-')
+      .replace(/(#\{pid\}|#\{version\}|#\{start_time\})[0-9a-f]{32}/g, (_, token) => `${token}0000`),
+  unwrap: (command) => {
+    if (command[0] !== 'if-shell' || command[1] !== '-F') return undefined
+    // Window.select guards with a target of its own: `if-shell -F -t <window> <condition> '<commands>' libtmux-stale-winlink-<pid>-<id>`.
+    const rest = command[2] === '-t' ? command.slice(4) : command.slice(2)
+    return rest.length === 3 && rest[0].includes('#{pid}') ? splitCommandLine(rest[1]) : undefined
+  },
   probe: ({ flags, commands }) => (commands.length === 0 && flags.includes('-V')) || (commands.length > 0 && commands.every((command) => (command[0] === 'run-shell' && command.some((word) => word.startsWith('libtmux-version-'))) || (command[0] === 'display-message' && command.some((word) => word.startsWith('#{pid}') && word.includes('#{version}'))))),
 }
 
-/** What every JVM recipe shares; `port` and `modules` (the Gradle projects to publish) vary. */
-export function jvmRecipe({ port, file, mainClass, modules, helpers, steps, terminator = '' }) {
+/** What every JVM recipe shares; `port`, `modules` (the Gradle projects to publish) and `version` (the release the displayed build file names) vary. */
+export function jvmRecipe({ port, file, mainClass, modules, helpers, steps, terminator = '', version = '0.1.0' }) {
   return {
     capability: 'typed-graph',
     file,
@@ -95,7 +108,7 @@ export function jvmRecipe({ port, file, mainClass, modules, helpers, steps, term
     build({ sandbox, checkout, code, marked, helpers: extra }) {
       const repository = join(sandbox, 'm2')
       mkdirSync(repository, { recursive: true })
-      gradle(checkout, checkout, ['-PlibtmuxVersion=0.1.0', `-Dmaven.repo.local=${repository}`, ...modules.map((module) => `:${module}:publishToMavenLocal`), '-x', 'test'])
+      gradle(checkout, checkout, [`-PlibtmuxVersion=${version}`, `-Dmaven.repo.local=${repository}`, ...modules.map((module) => `:${module}:publishToMavenLocal`), '-x', 'test'])
       writeFileSync(join(sandbox, 'init.gradle.kts'), INIT(repository))
       for (const [dir, program] of [['exact', code], ['marked', marked]]) {
         for (const entry of projectFiles(port)) {

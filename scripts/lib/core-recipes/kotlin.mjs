@@ -64,23 +64,35 @@ object DocsMark {
 }
 `
 
+/** A window or a pane as a recording stores it, from the variable the statement binds. */
+const WINDOW = (name) => `mapOf("id" to ${name}.id.value(), "index" to ${name}.index.value(), "name" to ${name}.name)`
+const PANE = (name) => `mapOf("id" to ${name}.id.value())`
+
 export const RECIPES = {
   'typed-graph': jvmRecipe({
     port: 'kotlin',
     file: 'src/main/kotlin/Main.kt',
     mainClass: 'MainKt',
+    version: '0.1.2',
     modules: ['libtmux', 'libtmux-kotlin'],
     helpers: [{ file: 'src/main/kotlin/DocsMark.kt', source: KOTLIN_HELPER }],
-    // `session.activeWindow` and `.activePane` are pure reads of the capture: no tmux command is sent for either, so they share one mark point after the statement that holds both.
+    // In the order the calls run. `session.activeWindow`, `.activePane`, `Pane.window` and `Window.session` are pure reads of a capture: no tmux command is sent for them.
     steps: [
       { id: 'with-server', label: 'withServer', anchor: 'withServer(', type: 'Server', value: 'mapOf("endpoint" to "named socket", "configFile" to config.configFile().get().toString())' },
       { id: 'new-session', label: 'Server.newSession', anchor: 'server.newSession(', type: 'Session', value: 'mapOf("id" to session.id.value(), "name" to session.name)' },
-      { id: 'active-window', label: 'Session.activeWindow', anchor: 'session.activeWindow', afterAnchor: '?: error("no active pane")', type: 'Window?', value: 'mapOf("id" to session.activeWindow!!.id.value(), "name" to session.activeWindow!!.name)' },
-      { id: 'active-pane', label: 'Window.activePane', anchor: '?.activePane', joinTo: 'active-window', type: 'Pane?', value: 'mapOf("id" to pane.id.value())' },
-      { id: 'send-line', label: 'Pane.sendLine', anchor: 'pane.sendLine(', type: 'Unit', value: 'null' },
-      { id: 'await-text', label: 'Pane.awaitText', anchor: 'pane.awaitText(', type: 'TextOutcome', value: 'outcome.name' },
-      { id: 'capture', label: 'Pane.capture', anchor: 'pane.capture(', type: 'List<String>', value: 'lines' },
-      { id: 'run', label: 'Pane.run', anchor: 'pane.run(', type: 'PaneRun', value: 'mapOf("outcome" to run.outcome().name, "exitStatus" to run.exitStatus.orNull(), "output" to run.output())' },
+      { id: 'active-window', label: 'Session.activeWindow', anchor: 'session.activeWindow', type: 'Window?', value: 'mapOf("id" to first.id.value())' },
+      { id: 'rename', label: 'Window.rename', anchor: 'first.rename(', type: 'Window', value: WINDOW('editor') },
+      { id: 'active-pane', label: 'Window.activePane', anchor: 'editor.activePane', type: 'Pane?', value: PANE('left') },
+      { id: 'split', label: 'Pane.split', anchor: 'left.split(', type: 'Pane', value: PANE('right') },
+      { id: 'new-window', label: 'Session.newWindow', anchor: 'session.newWindow(', type: 'Window', value: WINDOW('logs') },
+      { id: 'send-line', label: 'Pane.sendLine', anchor: 'right.sendLine(', type: 'Unit', value: 'null' },
+      { id: 'await-text', label: 'Pane.awaitText', anchor: 'right.awaitText(', afterAnchor: 'check(outcome', type: 'TextOutcome', value: 'outcome.name' },
+      { id: 'select-pane', label: 'Pane.select', anchor: 'right.select()', type: 'Unit', value: 'null' },
+      { id: 'select-window', label: 'Window.select', anchor: 'logs.select()', type: 'Unit', value: 'null' },
+      { id: 'sessions', label: 'Server.sessions', anchor: 'server.sessions()', type: 'List<Session>', value: 'mapOf("sessions" to sessions.size, "windows" to sessions.sumOf { it.windows.size }, "panes" to sessions.sumOf { s -> s.windows.sumOf { it.panes.size } })' },
+      { id: 'pane-by-id', label: 'Server.pane', anchor: 'server.pane(', type: 'Pane?', value: PANE('pane') },
+      { id: 'pane-window', label: 'Pane.window', anchor: 'pane.window', type: 'Window', value: WINDOW('home') },
+      { id: 'window-session', label: 'Window.session', anchor: 'home.session', type: 'Session', value: 'mapOf("id" to owner.id.value(), "name" to owner.name)' },
       { id: 'kill', label: 'Server.killServer', anchor: 'server.killServer(', type: 'Unit', value: 'null' },
     ],
   }),

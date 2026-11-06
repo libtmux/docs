@@ -87,6 +87,10 @@ export function instrumentCsharp(source, steps) {
   return lines.join('\n')
 }
 
+/** A window or a pane as a recording stores it, from the variable the statement binds. */
+const WINDOW = (name) => `new { id = ${name}.Id.ToString(), index = ${name}.Index, name = ${name}.Name }`
+const PANE = (name) => `new { id = ${name}.Id.ToString() }`
+
 const OWNED = 'new { socketName = owned.Value.ConnectionOptions.SocketName, configFile = owned.Value.ConnectionOptions.ConfigurationFile }'
 
 export const RECIPES = {
@@ -100,15 +104,27 @@ export const RECIPES = {
     checkout: (port, env, expand) => checkoutOf(port, env, expand),
     helpers: [],
     // In the order the calls run. The owned server is stopped when its scope ends, after the last line of the program.
+    // The reads after CaptureSnapshotAsync (the relations and properties) send tmux nothing.
     steps: [
       { id: 'create-owned', label: 'Server.CreateOwnedAsync', anchor: 'Server.CreateOwnedAsync(', type: 'Task<OwnedServerScope>', value: OWNED },
       { id: 'create-session', label: 'Server.CreateSessionAsync', anchor: 'server.CreateSessionAsync(', type: 'Task<Session>', value: 'new { id = session.Id.ToString(), name = session.Name }' },
-      { id: 'create-window', label: 'Session.CreateWindowAsync', anchor: 'session.CreateWindowAsync(', type: 'Task<Window>', value: 'new { id = window.Id.ToString(), name = window.Name }' },
-      { id: 'get-panes', label: 'Window.GetPanesAsync', anchor: 'window.GetPanesAsync(', type: 'Task<IReadOnlyList<Pane>>', value: 'new { id = pane.Id.ToString() }' },
-      { id: 'send-text', label: 'Pane.SendTextAsync', anchor: 'pane.SendTextAsync(', type: 'Task', value: 'null' },
-      { id: 'enter', label: 'Pane.EnterAsync', anchor: 'pane.EnterAsync(', type: 'Task<Pane>', value: 'new { id = pane.Id.ToString() }' },
+      { id: 'get-windows', label: 'Session.GetWindowsAsync', anchor: 'session.GetWindowsAsync(', type: 'Task<IReadOnlyList<Window>>', value: WINDOW('editor') },
+      { id: 'rename', label: 'Window.RenameAsync', anchor: 'editor.RenameAsync(', type: 'Task<Window>', value: WINDOW('editor') },
+      { id: 'get-active-pane', label: 'Window.GetActivePaneAsync', anchor: 'editor.GetActivePaneAsync(', type: 'Task<Pane>', value: PANE('left') },
+      { id: 'split', label: 'Pane.SplitAsync', anchor: 'left.SplitAsync(', type: 'Task<Pane>', value: PANE('right') },
+      { id: 'create-window', label: 'Session.CreateWindowAsync', anchor: 'session.CreateWindowAsync(', type: 'Task<Window>', value: WINDOW('logs') },
+      { id: 'send-text', label: 'Pane.SendTextAsync', anchor: 'right.SendTextAsync(', type: 'Task', value: 'null' },
       // The capture is polled inside TmuxWait.UntilAsync; the helper's stand-in for it marks each result.
-      { id: 'capture', label: 'Pane.CaptureAsync', anchor: 'pane.CaptureAsync(', type: 'Task<IReadOnlyList<string>>', value: 'null', repeat: true, wrapped: true },
+      { id: 'capture', label: 'Pane.CaptureAsync', anchor: 'right.CaptureAsync(', type: 'Task<IReadOnlyList<string>>', value: 'null', repeat: true, wrapped: true },
+      { id: 'select-pane', label: 'Pane.SelectAsync', anchor: 'right.SelectAsync(', type: 'Task<Pane>', value: PANE('right') },
+      { id: 'select-window', label: 'Window.SelectAsync', anchor: 'logs.SelectAsync(', type: 'Task<Window>', value: WINDOW('logs') },
+      { id: 'snapshot', label: 'Server.CaptureSnapshotAsync', anchor: 'server.CaptureSnapshotAsync(', type: 'Task<Server>', value: 'new { sessions = snapshot.Sessions.Count, windows = snapshot.Windows.Count, panes = snapshot.Panes.Count }' },
+      { id: 'sessions', label: 'Server.Sessions', anchor: 'snapshot.Sessions;', type: 'CapturedRelation<Session>', value: 'new { sessions = sessions.Select(item => item.Id.ToString()).ToArray() }' },
+      { id: 'windows', label: 'Session.Windows', anchor: 'each.Windows;', type: 'CapturedRelation<Window>', value: 'new { windows = windows.Select(item => item.Id.ToString()).ToArray() }', repeat: true },
+      { id: 'panes', label: 'Window.Panes', anchor: 'placed.Panes;', type: 'CapturedRelation<Pane>', value: 'new { panes = panes.Select(item => item.Id.ToString()).ToArray() }', repeat: true },
+      { id: 'pane-by-id', label: 'Server.Panes', anchor: 'snapshot.Panes.Single(', type: 'Pane', value: PANE('found') },
+      { id: 'pane-window', label: 'Pane.Window', anchor: 'found.Window;', type: 'Window', value: WINDOW('window') },
+      { id: 'window-session', label: 'Window.Session', anchor: 'window.Session;', type: 'Session', value: 'new { id = owner.Id.ToString(), name = owner.Name }' },
       { id: 'kill', label: 'OwnedServerScope.DisposeAsync', anchor: 'await using var owned', type: 'ValueTask', value: 'null', wrapped: true },
     ],
     fence: dotnetFence,

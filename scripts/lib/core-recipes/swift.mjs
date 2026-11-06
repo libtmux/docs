@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { checkoutOf, instrumentLines, quickstartSource, withoutMarks } from './common.mjs'
 import { readFileSync } from 'node:fs'
 import { splitCommandLine } from '../core-trace.mjs'
+import { statementLines } from '../../../site/src/lib/core-statement.ts'
 
 export { withoutMarks }
 
@@ -81,6 +82,7 @@ func docsEndpoint(_ endpoint: Endpoint) -> String {
     switch endpoint {
     case .socketName(let name): docsObject([("socketName", docsString(name))])
     case .socketPath(let path): docsObject([("socketPath", docsString(path))])
+    case .tmuxChoice: docsObject([("tmuxChoice", "true")])
     }
 }
 `
@@ -136,8 +138,33 @@ const PREAMBLE = {
   polls: ['display-message', 'capture-pane'],
 }
 
-/** A mark goes after the statement its anchor starts. */
-const instrumentSwift = (source, steps) => instrumentLines(source, steps, (step) => `docsMark(${JSON.stringify(step.id)}, ${step.value}) // docs:mark`)
+/**
+ * A mark goes after the statement its anchor starts. A `guard` is marked after the block of its `else`, where what
+ * it bound is in scope; marks that land on the same line are given in reverse, which is the order they are inserted in.
+ */
+function instrumentSwift(source, steps) {
+  const lines = source.split('\n')
+  const placed = steps.map((step) => {
+    const range = statementLines(source, step.anchor, '//', step.occurrence)
+    if (!range) return { step, after: undefined }
+    const indentOf = (line) => /^\s*/.exec(line)[0].length
+    let start = range[0] - 1
+    while (start > 0 && !/^\s*guard /.test(lines[start]) && indentOf(lines[start]) > indentOf(lines[start - 1])) start--
+    if (!/^\s*guard /.test(lines[start])) return { step, after: undefined }
+    const indent = /^\s*/.exec(lines[start])[0]
+    const close = lines.findIndex((line, index) => index >= range[1] && line === `${indent}}`)
+    if (close < 0) throw new Error(`${step.id}: the guard the call is in is not closed at its own indentation`)
+    return { step, after: close + 1 }
+  })
+  const key = (entry) => entry.after ?? statementLines(source, entry.step.anchor, '//', entry.step.occurrence)?.[1]
+  const ordered = []
+  for (const entry of placed) {
+    let run = ordered.length
+    while (run > 0 && key(ordered[run - 1]) === key(entry)) run--
+    ordered.splice(run, 0, entry)
+  }
+  return instrumentLines(source, ordered.map(({ step, after }) => (after === undefined ? step : { ...step, after })), (step) => `docsMark(${JSON.stringify(step.id)}, ${step.value}) // docs:mark`)
+}
 
 const swiftVersion = () => /Swift version (\S+)/.exec(execFileSync('swift', ['--version'], { encoding: 'utf8' }))?.[1] ?? 'unknown'
 
@@ -153,8 +180,8 @@ const SWIFT = {
   command: (dir) => [join(dir, 'program')],
   toolchain: () => ({ swift: swiftVersion() }),
   /**
-   * Write the displayed and the marked copy as packages whose `libtmux-source` is the checkout
-   * (the displayed `Package.swift` names that path, so it is shown untouched), and build both offline:
+   * Write the displayed and the marked copy as packages whose `libtmux-swift` is the checkout (the displayed
+   * `Package.swift` asks the registry for the release, so the copy swaps that one dependency for the path), and build both offline:
    * the checkout's `Package.resolved` pins the dependencies, and SwiftPM's cache holds them.
    */
   build({ sandbox, checkout, code, marked }) {
@@ -162,11 +189,11 @@ const SWIFT = {
     for (const [dir, source] of [['exact', code], ['marked', marked]]) {
       const root = join(BUILD, dir)
       rmSync(join(root, 'Sources'), { recursive: true, force: true })
-      rmSync(join(root, 'libtmux-source'), { recursive: true, force: true })
+      rmSync(join(root, 'libtmux-swift'), { recursive: true, force: true })
       mkdirSync(join(root, 'Sources'), { recursive: true })
-      symlinkSync(checkout, join(root, 'libtmux-source'))
+      symlinkSync(checkout, join(root, 'libtmux-swift'))
       copyFileSync(join(checkout, 'Package.resolved'), join(root, 'Package.resolved'))
-      writeFileSync(join(root, 'Package.swift'), manifest)
+      writeFileSync(join(root, 'Package.swift'), manifest.replace(/\.package\(\s*url: "[^"]+",\s*from: "[^"]+"\s*\)/, '.package(path: "libtmux-swift")'))
       writeFileSync(join(root, this.file), source)
       if (dir === 'marked') writeFileSync(join(root, 'Sources/DocsMark.swift'), HELPER)
       execFileSync('swift', ['build', '--jobs', '2', '--product', 'ApiExample', '--disable-automatic-resolution', '--only-use-versions-from-resolved-file'], { cwd: root, stdio: 'inherit', env: { ...process.env, LD_LIBRARY_PATH: LIBS } })
@@ -177,9 +204,11 @@ const SWIFT = {
 }
 
 const SERVER = 'docsEndpoint(server.endpoint)'
-const SESSION = `docsObject([("id", ${ID('session')}), ("name", docsString(session.name))])`
-const WINDOW = `docsObject([("id", ${ID('logs')}), ("name", docsString(logs.name))])`
-const PANE = `docsObject([("id", ${ID('pane')})])`
+const SESSION = (name) => `docsObject([("id", ${ID(name)}), ("name", docsString(${name}.name))])`
+const WINDOW = (name) => `docsObject([("id", ${ID(name)}), ("name", docsString(${name}.name))])`
+const PANE = (name) => `docsObject([("id", docsString(${name}.id.rawValue))])`
+const COUNTS = (name) => `docsObject([("sessions", String(${name}.sessions.count)), ("windows", String(${name}.windows.count)), ("panes", String(${name}.panes.count))])`
+const IDS = (items) => `docsArray(${items}.map { docsString($0.id.rawValue) })`
 const WAIT = 'docsObject([("outcome", docsString(result.outcome.rawValue)), ("matched", docsString(result.matched ?? "")), ("tail", docsArray(result.tail.map(docsString)))])'
 
 /** One recipe per program of the landing page that Swift plays. */
@@ -189,14 +218,27 @@ export const RECIPES = {
     capability: 'typed-graph',
     file: 'Sources/Main.swift',
     source: (root) => quickstartSource(root, 'swift', 'Sources/Main.swift'),
+    // In the order the calls run. The reads after the second snapshot send tmux nothing: they walk the snapshot's values.
     steps: [
       { id: 'server', label: 'Server.init', anchor: 'let server = try Server(', type: 'Server', value: SERVER },
-      { id: 'new-session', label: 'Server.newSession', anchor: 'server.newSession(', type: 'Session', value: SESSION },
-      { id: 'new-window', label: 'Server.newWindow', anchor: 'server.newWindow(', type: 'WindowAppearance', value: WINDOW },
-      { id: 'split', label: 'Server.splitWindow', anchor: 'server.splitWindow(', type: 'Pane', value: PANE },
+      { id: 'new-session', label: 'Server.newSession', anchor: 'server.newSession(', type: 'Session', value: SESSION('session') },
+      { id: 'layout', label: 'Server.snapshot', anchor: 'let layout = try await server.snapshot()', type: 'Snapshot', value: COUNTS('layout') },
+      { id: 'resolve-window', label: 'Snapshot.windows(of:)', anchor: 'layout.windows(of: session)', type: 'Window', value: WINDOW('editor') },
+      { id: 'resolve-pane', label: 'Snapshot.panes(of:)', anchor: 'layout.panes(of: editor)', type: 'Pane', value: PANE('left') },
+      { id: 'rename', label: 'Server.rename', anchor: 'server.rename(editor', type: 'Void', value: '"null"' },
+      { id: 'split', label: 'Server.split', anchor: 'server.split(', type: 'Pane', value: PANE('right') },
+      { id: 'new-window', label: 'Server.newWindow', anchor: 'server.newWindow(', type: 'WindowAppearance', value: `docsObject([("id", ${ID('logs.window')}), ("index", String(logs.link.index)), ("name", docsString(logs.window.name))])` },
       { id: 'run', label: 'Server.run', anchor: 'server.run(', type: 'Void', value: '"null"' },
       { id: 'regex', label: 'RegexPattern.init', anchor: 'RegexPattern(', type: 'RegexPattern', value: 'docsObject([("source", docsString(ready.source))])' },
       { id: 'wait', label: 'Server.waitForOutput', anchor: 'server.waitForOutput(', type: 'OutputWait', value: WAIT },
+      { id: 'select-pane', label: 'Server.select(Pane)', anchor: 'server.select(right)', type: 'Void', value: '"null"' },
+      { id: 'select-window', label: 'Server.select(WindowLink)', anchor: 'server.select(logs.link)', type: 'Void', value: '"null"' },
+      { id: 'snapshot', label: 'Server.snapshot', anchor: 'let snapshot = try await server.snapshot()', type: 'Snapshot', value: COUNTS('snapshot') },
+      { id: 'session-windows', label: 'Snapshot.windows(of:)', anchor: 'snapshot.windows(of: session)', type: '[Window]', value: IDS('windows') },
+      { id: 'session-links', label: 'Snapshot.windowLinks(of:)', anchor: 'snapshot.windowLinks(of: session)', type: '[WindowLink]', value: 'docsArray(links.map { docsString($0.target) })' },
+      { id: 'window-panes', label: 'Snapshot.panes(of:)', anchor: 'snapshot.panes(of: window)', type: '[Pane]', value: IDS('panes'), repeat: true },
+      { id: 'pane-window', label: 'Snapshot.windows', anchor: 'snapshot.windows.first(where:', type: 'Window', value: WINDOW('window') },
+      { id: 'window-session', label: 'Snapshot.sessions(of:)', anchor: 'snapshot.sessions(of: window)', type: 'Session', value: SESSION('owner') },
       { id: 'kill', label: 'Server.killServer', anchor: 'try await server.killServer()', occurrence: 2, type: 'Void', value: '"null"' },
     ],
   },

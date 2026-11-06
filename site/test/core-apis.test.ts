@@ -36,9 +36,9 @@ describe('the APIs a showcase example uses', () => {
   it('lists the Rust quickstart symbols in order of first use', () => {
     const used = apisUsed('rs', CORE_APIS.rs!['typed-graph']!, programs('rs')['typed-graph']!, 'latest')
     expect(used.shown.map((item) => item.label)).toEqual([
-      'PaneWait', 'Server', 'Server::new_session', 'Session::new_window', 'Window::active_pane', 'Pane::send_line', 'Pane::wait_until', 'Pane::capture', 'Server::builder', 'ServerBuilder::build',
+      'PaneWait', 'Server', 'SplitDirection', 'SplitOptions', 'Server::new_session', 'Session::active_window', 'Window::rename', 'Window::active_pane', 'Pane::split', 'Session::new_window',
     ])
-    expect(used.more).toBe(2)
+    expect(used.more).toBe(17)
   })
 
   it('counts a use, not a mention in a comment or a string, and a call by its qualified form', () => {
@@ -90,7 +90,7 @@ describe('the APIs a showcase example uses', () => {
   it('fails on a symbol the model lacks, one the program never uses, a duplicate and an internal one', () => {
     const code = programs('rs')['typed-graph']!
     expect(() => apisUsed('rs', ['server.Server.no_such'], code, 'latest')).toThrow(/not in the rs API model/)
-    expect(() => apisUsed('rs', ['window.Window.panes'], code, 'latest')).toThrow(/never uses panes/)
+    expect(() => apisUsed('rs', ['pane.Pane.capture'], code, 'latest')).toThrow(/never uses capture/)
     expect(() => apisUsed('rs', ['server.Server', 'server.Server'], code, 'latest')).toThrow(/twice/)
     expect(() => apisUsed('rs', ['libtmux.Pane'], code, 'latest')).toThrow(/not in the rs API model/)
     expect(() => apisUsed('nope', [], code, 'latest')).toThrow(/unknown port/)

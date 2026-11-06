@@ -384,20 +384,20 @@ describe('what a call changed in tmux', () => {
     const lua = await quickstartOf('lua')
     const made = stepNamed(lua, 'Session:new_window')
     const window = tmuxChanges(made.before, made.step.tmux)
-    expect(window.phrases).toEqual(['added window quickstart:1:logs'])
-    expect(window.marks).toEqual({ windows: ['@2'], panes: [], labels: [], sessions: [] })
+    expect(window.phrases).toEqual(['added window 1:logs'])
+    expect(window.marks).toEqual({ windows: ['@1'], panes: [], labels: [], sessions: [] })
     const split = stepNamed(lua, 'Pane:split')
     const pane = tmuxChanges(split.before, split.step.tmux)
-    expect(pane.phrases).toEqual(['added pane %3 to window quickstart:1:logs'])
-    expect(pane.marks).toEqual({ windows: [], panes: ['%3'], labels: [], sessions: [] })
+    expect(pane.phrases).toEqual(['added pane %1 to window 0:editor'])
+    expect(pane.marks).toEqual({ windows: [], panes: ['%1'], labels: [], sessions: [] })
   })
 
   it('folds a new session\'s first window into the session, and names a renamed session on its windows', async () => {
     const lua = await quickstartOf('lua')
     const started = stepNamed(lua, 'Server:new_session')
     const session = tmuxChanges(started.before, started.step.tmux)
-    expect(session.phrases).toEqual(['added session quickstart'])
-    expect(session.marks.windows).toEqual(['@1'])
+    expect(session.phrases).toEqual(['added session demo'])
+    expect(session.marks.windows).toEqual(['@0'])
     const go = (await coreRecordingFor('go'))!.capabilities.watch!
     const renamed = stepNamed(go, 'Session.Rename')
     expect(tmuxChanges(renamed.before, renamed.step.tmux)).toEqual({ marks: { windows: [], panes: [], labels: [], sessions: ['$0'] }, phrases: ['renamed session libtmux-control to control-example'] })
@@ -419,23 +419,23 @@ describe('what a call did to its panes\' contents', () => {
   it('reads the keys a call sent and the text tmux returned for a pane', async () => {
     const lua = await quickstartOf('lua')
     expect(paneActivity(stepNamed(lua, 'Pane:send_text').step)).toEqual({ typed: ['%1'], ran: [], reads: [] })
-    const read = paneActivity(stepNamed(lua, 'Pane:capture').step).reads
+    const read = paneActivity(stepNamed(lua, 'Pane:wait_for_text').step).reads
     expect(read.map((entry) => entry.pane)).toEqual(['%1'])
-    expect(read[0]!.text).toContain('libtmux ready')
+    expect(read[0]!.text).toContain('hello from tmux')
     expect(read[0]!.text, 'trailing blank rows are not text').not.toMatch(/\s$/)
   })
 
-  it('takes no capture that starts below the top of the screen for what a pane shows', async () => {
-    const run = stepNamed(await quickstartOf('fsharp'), 'Pane.run').step
-    const partial = run.commands.find((command) => /capture-pane .*-S 2\b/.test(command.tmux))!
-    expect(partial.stdout, 'the recording holds the partial capture').not.toBe('')
-    expect(paneActivity(run).reads.map((entry) => entry.text)).not.toContain(partial.stdout.replace(/\s+$/, ''))
+  it('takes no capture that starts below the top of the screen for what a pane shows', () => {
+    // No recording holds one now that F#'s quickstart has no Pane.run, so the step is made here.
+    const capture = (flags: string, stdout: string) => ({ role: 'command', tmux: `capture-pane -t %0 -p ${flags}`, stdout, stderr: '', exit: 0 })
+    const step = { commands: [capture('-S 0', 'the whole screen\n'), capture('-S 2', 'part of it\n')] } as unknown as Parameters<typeof paneActivity>[0]
+    expect(paneActivity(step).reads).toEqual([{ pane: '%0', text: 'the whole screen' }])
   })
 
   it('names the panes a call typed into and read, but not a pane it removed again', async () => {
     const fsharp = await quickstartOf('fsharp')
     const sent = stepNamed(fsharp, 'Pane.sendAndWait')
-    expect(stepChanges(sent.step, sent.before)).toEqual({ marks: { windows: [], panes: ['%0'], labels: [], sessions: [] }, phrases: ['sent keys to pane %0', 'read pane %0'] })
+    expect(stepChanges(sent.step, sent.before)).toEqual({ marks: { windows: [], panes: ['%1'], labels: [], sessions: [] }, phrases: ['sent keys to pane %1', 'read pane %1'] })
     const go = (await coreRecordingFor('go'))!.capabilities['run-applications']!
     const ran = stepNamed(go, 'Session.Run')
     expect(paneActivity(ran.step).ran, 'Run respawned the pane of the window it held').toEqual(['%1'])
@@ -447,10 +447,10 @@ describe('what a call did to its panes\' contents', () => {
     const fsharp = await quickstartOf('fsharp')
     const frames = coreFrames(fsharp)
     const sent = stepNamed(fsharp, 'Pane.sendAndWait').index
-    const paneIn = (frame: number) => frames[frame]!.sessions.flatMap((session) => session.windows).flatMap((window) => window.panes).find((pane) => pane.id === '%0')!
+    const paneIn = (frame: number) => frames[frame]!.sessions.flatMap((session) => session.windows).flatMap((window) => window.panes).find((pane) => pane.id === '%1')!
     expect(paneIn(sent).output, 'nothing read before it').toBeUndefined()
-    expect(paneIn(sent + 1).output).toContain('build started')
-    expect(paneIn(sent + 2).output, 'kept by the next call').toContain('build started')
+    expect(paneIn(sent + 1).output).toContain('hello from tmux')
+    expect(paneIn(sent + 2).output, 'kept by the next call').toContain('hello from tmux')
   })
 })
 
@@ -466,11 +466,11 @@ describe('the drawing of every window', () => {
     const frame = (index: number) => document.querySelector(`[data-frame="${index}"]`)!
     const made = stepNamed(capability, 'Session:new_window').index + 1
     const labels = (index: number) => [...frame(index).querySelectorAll('.mcp-tile__status')].map((label) => label.textContent)
-    expect(labels(made)).toEqual(['quickstart:0:main*', 'quickstart:1:logs', 'work:0:main*'])
-    expect([...frame(made).querySelectorAll('.mcp-tile.is-new .mcp-tile__status')].map((label) => label.textContent)).toEqual(['quickstart:1:logs'])
-    expect(frame(made).querySelector('.mcp-tmux__status--sessions')!.textContent).toBe('[quickstart][work]')
+    expect(labels(made)).toEqual(['0:editor*', '1:logs'])
+    expect([...frame(made).querySelectorAll('.mcp-tile.is-new .mcp-tile__status')].map((label) => label.textContent)).toEqual(['1:logs'])
+    expect(frame(made).querySelector('.mcp-tmux__status--sessions')!.textContent).toBe('[demo]')
     const split = stepNamed(capability, 'Pane:split').index + 1
-    expect([...frame(split).querySelectorAll('.mcp-tile__pane.is-changed .mcp-pane__id')].map((id) => id.textContent)).toEqual(['%3 cat'])
+    expect([...frame(split).querySelectorAll('.mcp-tile__pane.is-changed .mcp-pane__id')].map((id) => id.textContent)).toEqual(['%1 sh'])
     expect(frame(split).querySelectorAll('.mcp-tile.is-new')).toHaveLength(0)
     // Every frame keeps the status line, empty or not, so a frame is as tall as the next.
     expect(document.querySelectorAll('.mcp-frame').length).toBe(document.querySelectorAll('.mcp-frame .mcp-tmux__status--sessions').length)
@@ -490,6 +490,11 @@ describe('the drawing of every window', () => {
     expect([...frame('select-pane').querySelectorAll('.mcp-tile__pane.is-changed .mcp-pane__id')].map((label) => label.textContent)).toEqual(['%1 sh'])
     expect([...frame('select-window').querySelectorAll('.mcp-tile__status.is-changed')].map((label) => label.textContent)).toEqual(['1:logs*'])
     expect(frame('new-session').querySelectorAll('.mcp-tile__pane.is-active'), 'a window of one pane needs no mark').toHaveLength(0)
+    // With nothing in tmux the screen is a placeholder that says so: before the first session, and after the server goes.
+    const placeholder = (selector: string) => document.querySelector(`${selector} .mcp-tmux__screen--placeholder`)?.textContent?.trim()
+    expect(placeholder('[data-frame="0"]')).toBe('No tmux server yet')
+    expect(placeholder(`[data-frame="${capability.steps.length}"]`)).toBe('No sessions')
+    expect(document.querySelectorAll('.mcp-tmux__screen--placeholder'), 'before the first call, after NewServer, and after Kill').toHaveLength(3)
     await win.happyDOM.abort()
   })
 })

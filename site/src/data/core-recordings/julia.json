@@ -2,7 +2,7 @@
   "generated": "scripts/gen-core-recording.mjs",
   "port": "julia",
   "repo": "libtmux/libtmux-julia",
-  "revision": "6f62bd72cb8d99f3759ca5e2cc3591165a03c768",
+  "revision": "f2b0fb8e3c4d2e951579e9620cb3396dd5cdc59f",
   "sandbox": {
     "tmux": "tmux 3.8a",
     "julia": "1.13.0",
@@ -17,11 +17,14 @@
     "typed-graph": {
       "program": {
         "file": "quickstart.jl",
-        "sha256": "e8e28b416b8fa5e5cefc42a67e13b5f47118840516c33cd79c46d997e99e063e"
+        "sha256": "7874edbb03e611a0d8c6f16c7ac0267bdd61ca85242ed5d5478246e1b5f9cf23"
       },
       "stepMap": "hand-written",
       "printed": [
-        "demo: 2 windows, 3 panes"
+        "session demo",
+        "  window 0:editor: %0 %1",
+        "  window 1:logs: %2",
+        "%1 is in window editor of session demo"
       ],
       "tmuxBefore": {
         "sessions": [],
@@ -41,6 +44,14 @@
           "commands": [
             {
               "role": "probe",
+              "tmux": "-V",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
               "tmux": "display-message -p #{pid}",
               "mutates": false,
               "exit": 0,
@@ -58,7 +69,7 @@
         {
           "id": "new-session",
           "label": "new_session",
-          "anchor": "session = new_session(",
+          "anchor": "demo = new_session(",
           "type": "SessionRef",
           "returned": {
             "id": "$0"
@@ -66,10 +77,18 @@
           "commands": [
             {
               "role": "command",
-              "tmux": "new-session -d -P -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}' -s demo -- /bin/sh -c 'exec \"$0\"' /bin/cat",
+              "tmux": "run-shell -C libtmux-version-465045ed74ec4dd197fc1cc5f73f0fef#{version}",
+              "mutates": true,
+              "exit": 1,
+              "stdout": "",
+              "stderr": "unknown command: libtmux-version-465045ed74ec4dd197fc1cc5f73f0fef3.8a"
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-cbb9aebed37b4e658e50ab5a318dbcf7 ; new-session -d -P -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}' -s demo --",
               "mutates": true,
               "exit": 0,
-              "stdout": "2696926\t1793876934\t/tmp/libtmux-julia-AbC123/s\t\\d0",
+              "stdout": "3441885\t1793890630\t/tmp/libtmux-julia-AbC123/s\t\\d0",
               "stderr": ""
             }
           ],
@@ -95,7 +114,7 @@
               {
                 "window": "@0",
                 "id": "%0",
-                "command": "cat",
+                "command": "sh",
                 "left": 0,
                 "top": 0,
                 "width": 80,
@@ -106,104 +125,90 @@
           }
         },
         {
-          "id": "snapshot",
+          "id": "snapshot-window",
           "label": "snapshot",
-          "anchor": "pane = only(panes(snapshot(server))).ref",
+          "anchor": "editor = only(windows(snapshot(server, demo))).ref",
           "type": "Snapshot",
           "returned": {
-            "pane": "%0"
+            "window": "@0"
           },
           "commands": [
             {
-              "role": "probe",
-              "tmux": "display-message -p '#{s|^.*$|A\\\\B\tC\nD|;s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}'",
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-9d45de1df1384f03a09737c2d38fb790 ; display-message -p '#{s|^.*$|A\\\\B\tC\nD|;s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "",
-              "stderr": ""
-            },
-            {
-              "role": "probe",
-              "tmux": "display-message -p -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}'",
-              "mutates": false,
-              "exit": 0,
-              "stdout": "",
+              "stdout": "A\\\\B\\tC\\nD",
               "stderr": ""
             },
             {
               "role": "command",
-              "tmux": "list-sessions -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_attached}'",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-f02f9c82a2f94cb29d454113d03ad31f ; display-message -p -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "\\d0\tdemo\t0",
+              "stdout": "3441885\t1793890630\t3.8a\t/tmp/libtmux-julia-AbC123/s",
               "stderr": ""
             },
             {
               "role": "command",
-              "tmux": "list-windows -a -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_width}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_height}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_index}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_…",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-4ef6f1f9d0fe438ab48542ed2db0ff2c ; list-sessions -f #{==:#{session_id},$0} -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_attached}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_created}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\…",
               "mutates": false,
               "exit": 0,
-              "stdout": "@0\tsh\t80\t24\t\\d0\t0\t1",
+              "stdout": "\\d0\tdemo\t0\t1793890631\t1793890631\t",
               "stderr": "",
               "shortened": true
             },
             {
               "role": "command",
-              "tmux": "list-panes -a -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_index}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_active}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_dead}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_width}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_height}\t#{s|\\\\|…",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-285052c50b2945c582c8f526993ab50d ; list-windows -t $0 -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_width}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_height}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s…",
               "mutates": false,
               "exit": 0,
-              "stdout": "%0\t@0\t0\t1\t0\t80\t24\tcat\t/tmp/marked\thost",
+              "stdout": "@0\tsh\t80\t24\t\\d0\t0\t1\t{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}\t{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}\t0\t1793890631",
               "stderr": "",
               "shortened": true
             },
             {
               "role": "command",
-              "tmux": "list-clients -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:client_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:client_pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:client_created}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}'",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-32fed395ac7f454fbf27d0fa8ef8d4c9 ; list-panes -s -t $0 -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_index}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_active}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_dead}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d…",
               "mutates": false,
               "exit": 0,
-              "stdout": "",
-              "stderr": ""
-            },
-            {
-              "role": "command",
-              "tmux": "list-sessions -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_attached}'",
-              "mutates": false,
-              "exit": 0,
-              "stdout": "\\d0\tdemo\t0",
-              "stderr": ""
-            },
-            {
-              "role": "command",
-              "tmux": "list-windows -a -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_width}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_height}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_index}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_…",
-              "mutates": false,
-              "exit": 0,
-              "stdout": "@0\tsh\t80\t24\t\\d0\t0\t1",
+              "stdout": "%0\t@0\t0\t1\t0\t80\t24\tsh\t/tmp/marked\thost\t3442058\t/dev/pts/14\t\t0\t2000\t2\t0",
               "stderr": "",
               "shortened": true
             },
             {
               "role": "command",
-              "tmux": "list-panes -a -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_index}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_active}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_dead}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_width}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_height}\t#{s|\\\\|…",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-b8ee171b0f5f47c3b995c427e672232a ; list-sessions -f #{==:#{session_id},$0} -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_attached}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_created}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\…",
               "mutates": false,
               "exit": 0,
-              "stdout": "%0\t@0\t0\t1\t0\t80\t24\tcat\t/tmp/marked\thost",
+              "stdout": "\\d0\tdemo\t0\t1793890631\t1793890631\t",
               "stderr": "",
               "shortened": true
             },
             {
               "role": "command",
-              "tmux": "list-clients -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:client_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:client_pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:client_created}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}'",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-0b01827cc4e04752a4330e319138995f ; list-windows -t $0 -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_width}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_height}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s…",
               "mutates": false,
               "exit": 0,
-              "stdout": "",
-              "stderr": ""
+              "stdout": "@0\tsh\t80\t24\t\\d0\t0\t1\t{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}\t{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}\t0\t1793890631",
+              "stderr": "",
+              "shortened": true
             },
             {
-              "role": "probe",
-              "tmux": "display-message -p -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}'",
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-d300136b9b8e4698b31e42d3b48d8f47 ; list-panes -s -t $0 -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_index}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_active}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_dead}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d…",
               "mutates": false,
               "exit": 0,
-              "stdout": "",
+              "stdout": "%0\t@0\t0\t1\t0\t80\t24\tsh\t/tmp/marked\thost\t3442058\t/dev/pts/14\t\t0\t2000\t2\t0",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-5f1aa1c0684c4e81b42b09c7c5ac0983 ; display-message -p -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "3441885\t1793890630\t3.8a\t/tmp/libtmux-julia-AbC123/s",
               "stderr": ""
             }
           ],
@@ -229,7 +234,193 @@
               {
                 "window": "@0",
                 "id": "%0",
-                "command": "cat",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "rename-window",
+          "label": "rename_window",
+          "anchor": "rename_window(server, editor,",
+          "type": "CommandResult",
+          "returned": {
+            "exitcode": 0
+          },
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-9ccb18b99b7343029ffdd702e708e462 ; display-message -p '#{s|^.*$|A\\\\B\tC\nD|;s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "A\\\\B\\tC\\nD",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-d1c5e54b9ab549239c91f4412cf0d0a6 ; display-message -p -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "3441885\t1793890630\t3.8a\t/tmp/libtmux-julia-AbC123/s",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-81243a57913144adbcf3a4b49ead44fe ; rename-window -t @0 -- editor",
+              "mutates": true,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "snapshot-pane",
+          "label": "snapshot",
+          "anchor": "left = only(filter(",
+          "type": "Snapshot",
+          "returned": {
+            "pane": "%0"
+          },
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-ef2cb5112cd5497a8543c4503cd55422 ; display-message -p '#{s|^.*$|A\\\\B\tC\nD|;s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "A\\\\B\\tC\\nD",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-b929b2eddc3949d682c8f048435a06e5 ; display-message -p -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "3441885\t1793890630\t3.8a\t/tmp/libtmux-julia-AbC123/s",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-0ba9b16d373043079d539d143d214a87 ; list-windows -a -f #{==:#{window_id},@0} -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_width}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_height}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:sess…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "@0\teditor\t80\t24\t\\d0\t0\t1\t{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}\t{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}\t0\t1793890631",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-79b0437f39ce45b3a39d37cbf192e3c0 ; list-sessions -f #{m/r:^[$](0)$,#{session_id}} -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_attached}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_created}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "\\d0\tdemo\t0\t1793890631\t1793890631\t",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-61a6eba6063a4a399eeaa4575d8a8684 ; list-panes -t @0 -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_index}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_active}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_dead}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "%0\t@0\t0\t1\t0\t80\t24\tsh\t/tmp/marked\thost\t3442058\t/dev/pts/14\t\t0\t2000\t2\t0",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-391b290769654a2cbd0f88ae1d722d55 ; list-windows -a -f #{==:#{window_id},@0} -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_width}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_height}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:sess…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "@0\teditor\t80\t24\t\\d0\t0\t1\t{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}\t{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}\t0\t1793890631",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-81c7dbab83fa4225985cf43b705d9959 ; list-sessions -f #{m/r:^[$](0)$,#{session_id}} -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_attached}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_created}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "\\d0\tdemo\t0\t1793890631\t1793890631\t",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-76dfabd48f4442a5a1894ef4ed3c871e ; list-panes -t @0 -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_index}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_active}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_dead}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "%0\t@0\t0\t1\t0\t80\t24\tsh\t/tmp/marked\thost\t3442058\t/dev/pts/14\t\t0\t2000\t2\t0",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-e6147f39a505402ab58ccf0162c354b2 ; display-message -p -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "3441885\t1793890630\t3.8a\t/tmp/libtmux-julia-AbC123/s",
+              "stderr": ""
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
                 "left": 0,
                 "top": 0,
                 "width": 80,
@@ -242,34 +433,34 @@
         {
           "id": "split-window",
           "label": "split_window",
-          "anchor": "split_window(server, pane;",
+          "anchor": "right = split_window(",
           "type": "PaneRef",
           "returned": {
             "pane": "%1"
           },
           "commands": [
             {
-              "role": "probe",
-              "tmux": "display-message -p '#{s|^.*$|A\\\\B\tC\nD|;s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}'",
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-0d9bfd316c33447c9b0d15b240c6765b ; display-message -p '#{s|^.*$|A\\\\B\tC\nD|;s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "",
-              "stderr": ""
-            },
-            {
-              "role": "probe",
-              "tmux": "display-message -p -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}'",
-              "mutates": false,
-              "exit": 0,
-              "stdout": "",
+              "stdout": "A\\\\B\\tC\\nD",
               "stderr": ""
             },
             {
               "role": "command",
-              "tmux": "split-window -d -P -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_id}' -t %0 -v -- /bin/sh -c 'exec \"$0\"' /bin/cat",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-8516fe805ffb4faebfa0bd930afece46 ; display-message -p -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "3441885\t1793890630\t3.8a\t/tmp/libtmux-julia-AbC123/s",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-d71a02c9acb24bfdbc78bee1ab63c1ac ; split-window -d -P -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_id}' -t %0 -h --",
               "mutates": true,
               "exit": 0,
-              "stdout": "2696926\t1793876934\t/tmp/libtmux-julia-AbC123/s\t%1",
+              "stdout": "3441885\t1793890630\t/tmp/libtmux-julia-AbC123/s\t%1",
               "stderr": ""
             }
           ],
@@ -286,30 +477,30 @@
                 "session": "$0",
                 "id": "@0",
                 "index": 0,
-                "name": "sh",
+                "name": "editor",
                 "active": true,
-                "layout": "{\"V\":2,\"L\":{\"t\":\"v\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":80,\"h\":12,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":80,\"h\":11,\"x\":0,\"y\":13,\"i\":1,\"I\":\"%1\"}]}}"
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
               }
             ],
             "panes": [
               {
                 "window": "@0",
                 "id": "%0",
-                "command": "cat",
+                "command": "sh",
                 "left": 0,
                 "top": 0,
-                "width": 80,
-                "height": 12,
+                "width": 40,
+                "height": 24,
                 "active": true
               },
               {
                 "window": "@0",
                 "id": "%1",
-                "command": "cat",
-                "left": 0,
-                "top": 13,
-                "width": 80,
-                "height": 11,
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
                 "active": false
               }
             ]
@@ -318,34 +509,34 @@
         {
           "id": "new-window",
           "label": "new_window",
-          "anchor": "new_window(server, session;",
+          "anchor": "logs = new_window(",
           "type": "WindowRef",
           "returned": {
             "window": "@1"
           },
           "commands": [
             {
-              "role": "probe",
-              "tmux": "display-message -p '#{s|^.*$|A\\\\B\tC\nD|;s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}'",
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-10884d55952b4848b5840b1e94ebdca5 ; display-message -p '#{s|^.*$|A\\\\B\tC\nD|;s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "",
-              "stderr": ""
-            },
-            {
-              "role": "probe",
-              "tmux": "display-message -p -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}'",
-              "mutates": false,
-              "exit": 0,
-              "stdout": "",
+              "stdout": "A\\\\B\\tC\\nD",
               "stderr": ""
             },
             {
               "role": "command",
-              "tmux": "new-window -d -P -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}' -t $0: -n logs -- /bin/sh -c 'exec \"$0\"' /bin/cat",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-7371001bb5614d35b330b81d59055823 ; display-message -p -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "3441885\t1793890630\t3.8a\t/tmp/libtmux-julia-AbC123/s",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-2452f1d108494e429eb29f6b0b1bbf6d ; new-window -d -P -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}' -t $0: -n logs --",
               "mutates": true,
               "exit": 0,
-              "stdout": "2696926\t1793876934\t/tmp/libtmux-julia-AbC123/s\t@1",
+              "stdout": "3441885\t1793890630\t/tmp/libtmux-julia-AbC123/s\t@1",
               "stderr": ""
             }
           ],
@@ -362,9 +553,9 @@
                 "session": "$0",
                 "id": "@0",
                 "index": 0,
-                "name": "sh",
+                "name": "editor",
                 "active": true,
-                "layout": "{\"V\":2,\"L\":{\"t\":\"v\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":80,\"h\":12,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":80,\"h\":11,\"x\":0,\"y\":13,\"i\":1,\"I\":\"%1\"}]}}"
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
               },
               {
                 "session": "$0",
@@ -379,27 +570,27 @@
               {
                 "window": "@0",
                 "id": "%0",
-                "command": "cat",
+                "command": "sh",
                 "left": 0,
                 "top": 0,
-                "width": 80,
-                "height": 12,
+                "width": 40,
+                "height": 24,
                 "active": true
               },
               {
                 "window": "@0",
                 "id": "%1",
-                "command": "cat",
-                "left": 0,
-                "top": 13,
-                "width": 80,
-                "height": 11,
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
                 "active": false
               },
               {
                 "window": "@1",
                 "id": "%2",
-                "command": "cat",
+                "command": "sh",
                 "left": 0,
                 "top": 0,
                 "width": 80,
@@ -410,63 +601,430 @@
           }
         },
         {
-          "id": "snapshot-2",
+          "id": "send-keys",
+          "label": "send_keys",
+          "anchor": "send_keys(server, right,",
+          "type": "CommandResult",
+          "returned": {
+            "exitcode": 0
+          },
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-55866a72153346748e35d00434521e22 ; display-message -p '#{s|^.*$|A\\\\B\tC\nD|;s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "A\\\\B\\tC\\nD",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-8f06ee6323ed4354ae3a26910219ec11 ; display-message -p -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "3441885\t1793890630\t3.8a\t/tmp/libtmux-julia-AbC123/s",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-79d8597862c247eeab577a2975ae215c ; send-keys -t %1 -- 'printf '\\''hello from %s\\n'\\'' tmux' Enter",
+              "mutates": true,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "wait-for-text",
+          "label": "wait_for_text",
+          "anchor": "wait_for_text(server, right,",
+          "type": "ScreenWaitResult",
+          "returned": {
+            "source": "baseline"
+          },
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-cafd9f55e97d41218c19365c3573d15f ; capture-pane -p -J -t %1 ; run-shell -C -t %1 libtmux-screen-d833d97117db4003#{q:pane_id}-#{q:pane_dead}-#{q:alternate_on}-#{q:pid}-#{q:start_time}|",
+              "mutates": true,
+              "exit": 1,
+              "stdout": "$ printf 'hello from %s\\n' tmux\nhello from tmux\n$ \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+              "stderr": "unknown command: libtmux-screen-d833d97117db4003%1-0-0-3441885-1793890630|"
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "select-pane",
+          "label": "select_pane",
+          "anchor": "select_pane(server, right)",
+          "type": "CommandResult",
+          "returned": {
+            "exitcode": 0
+          },
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-c4806e1305e44df9ade40a59080ea8e1 ; display-message -p '#{s|^.*$|A\\\\B\tC\nD|;s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "A\\\\B\\tC\\nD",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-59fbea4cdc174c44acd0b6488eae1d5b ; display-message -p -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "3441885\t1793890630\t3.8a\t/tmp/libtmux-julia-AbC123/s",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-4caff35b1e92492684f74521b437f0bf ; select-pane -t %1",
+              "mutates": true,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "select-window",
+          "label": "select_window",
+          "anchor": "select_window(server, WindowLinkRef(",
+          "type": "CommandResult",
+          "returned": {
+            "exitcode": 0
+          },
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-05de955e80694346b7abfde866439e70 ; display-message -p '#{s|^.*$|A\\\\B\tC\nD|;s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "A\\\\B\\tC\\nD",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-83272f07bb98465eb06ece31564abdb5 ; display-message -p -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "3441885\t1793890630\t3.8a\t/tmp/libtmux-julia-AbC123/s",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-6325ad74e74043ddb55f078a2ea60e22 ; list-windows -t $0 -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_index}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "0\t@0\n1\t@1",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-23fceeabb69d4ab69c18b486fa45dc7b ; select-window -t $0:1",
+              "mutates": true,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "snapshot",
           "label": "snapshot",
           "anchor": "snap = snapshot(server)",
           "type": "Snapshot",
           "returned": {
-            "sessions": [
-              "demo"
-            ],
+            "sessions": 1,
             "panes": 3,
             "windows": 2
           },
           "commands": [
             {
-              "role": "probe",
-              "tmux": "display-message -p '#{s|^.*$|A\\\\B\tC\nD|;s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}'",
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-0dadc8c62ce34043a1aa2fe094ebaf06 ; display-message -p '#{s|^.*$|A\\\\B\tC\nD|;s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "",
-              "stderr": ""
-            },
-            {
-              "role": "probe",
-              "tmux": "display-message -p -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}'",
-              "mutates": false,
-              "exit": 0,
-              "stdout": "",
+              "stdout": "A\\\\B\\tC\\nD",
               "stderr": ""
             },
             {
               "role": "command",
-              "tmux": "list-sessions -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_attached}'",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-f1f9e9ccb6574b13ad9993b0ad2fb767 ; display-message -p -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "\\d0\tdemo\t0",
+              "stdout": "3441885\t1793890630\t3.8a\t/tmp/libtmux-julia-AbC123/s",
               "stderr": ""
             },
             {
               "role": "command",
-              "tmux": "list-windows -a -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_width}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_height}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_index}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_…",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-2d597e77a4d946e3a4109aab72e102a1 ; list-sessions -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_attached}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_created}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_activity}\t#{s|\\…",
               "mutates": false,
               "exit": 0,
-              "stdout": "@0\tsh\t80\t24\t\\d0\t0\t1\n@1\tlogs\t80\t24\t\\d0\t1\t0",
+              "stdout": "\\d0\tdemo\t0\t1793890631\t1793890631\t",
               "stderr": "",
               "shortened": true
             },
             {
               "role": "command",
-              "tmux": "list-panes -a -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_index}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_active}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_dead}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_width}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_height}\t#{s|\\\\|…",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-f7f1308aa46940df9eb9989d59978085 ; list-windows -a -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_width}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_height}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|[$…",
               "mutates": false,
               "exit": 0,
-              "stdout": "%0\t@0\t0\t1\t0\t80\t12\tcat\t/tmp/marked\thost\n%1\t@0\t1\t0\t0\t80\t11\tcat\t/tmp/marked\thost\n%2\t@1\t0\t1\t0\t80\t24\tcat\t/tmp/marked\thost",
+              "stdout": "@0\teditor\t80\t24\t\\d0\t0\t0\t{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}\t{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}\t0\t1793890636\n@1\tlogs\t80\t24\t\\d0\t1…",
               "stderr": "",
               "shortened": true
             },
             {
               "role": "command",
-              "tmux": "list-clients -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:client_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:client_pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:client_created}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}'",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-f4f85bf687204eb99181c354c354f960 ; list-panes -a -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_index}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_active}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_dead}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "%0\t@0\t0\t0\t0\t40\t24\tsh\t/tmp/marked\thost\t3442058\t/dev/pts/14\t\t0\t2000\t2\t0\n%1\t@0\t1\t1\t0\t39\t24\tsh\t/tmp/marked\thost\t3442541\t/dev/pts/16\t\t0\t2000\t2\t2\n%2\t@1\t0\t1\t0\t80\t24\tsh\t/tmp/marked\thost\t3442666\t/dev/pts/17\t\t0\t2000\t2\t0",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-fe2889d3c6c548b6a01a3d647626fd35 ; list-clients -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:client_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:client_pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:client_created}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:client_activity}'",
               "mutates": false,
               "exit": 0,
               "stdout": "",
@@ -474,44 +1032,45 @@
             },
             {
               "role": "command",
-              "tmux": "list-sessions -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_attached}'",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-4815c9935096410bb1fd5dc11e584a7b ; list-sessions -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_attached}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_created}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_activity}\t#{s|\\…",
               "mutates": false,
               "exit": 0,
-              "stdout": "\\d0\tdemo\t0",
-              "stderr": ""
-            },
-            {
-              "role": "command",
-              "tmux": "list-windows -a -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_width}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_height}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_index}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_…",
-              "mutates": false,
-              "exit": 0,
-              "stdout": "@0\tsh\t80\t24\t\\d0\t0\t1\n@1\tlogs\t80\t24\t\\d0\t1\t0",
+              "stdout": "\\d0\tdemo\t0\t1793890631\t1793890631\t",
               "stderr": "",
               "shortened": true
             },
             {
               "role": "command",
-              "tmux": "list-panes -a -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_index}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_active}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_dead}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_width}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_height}\t#{s|\\\\|…",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-e988d0c6698343428e33d7f2b6405c13 ; list-windows -a -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_width}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_height}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|[$…",
               "mutates": false,
               "exit": 0,
-              "stdout": "%0\t@0\t0\t1\t0\t80\t12\tcat\t/tmp/marked\thost\n%1\t@0\t1\t0\t0\t80\t11\tcat\t/tmp/marked\thost\n%2\t@1\t0\t1\t0\t80\t24\tcat\t/tmp/marked\thost",
+              "stdout": "@0\teditor\t80\t24\t\\d0\t0\t0\t{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}\t{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}\t0\t1793890636\n@1\tlogs\t80\t24\t\\d0\t1…",
               "stderr": "",
               "shortened": true
             },
             {
               "role": "command",
-              "tmux": "list-clients -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:client_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:client_pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:client_created}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}'",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-7d60def5f8aa4b21b562502025462822 ; list-panes -a -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_index}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_active}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pane_dead}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "%0\t@0\t0\t0\t0\t40\t24\tsh\t/tmp/marked\thost\t3442058\t/dev/pts/14\t\t0\t2000\t2\t0\n%1\t@0\t1\t1\t0\t39\t24\tsh\t/tmp/marked\thost\t3442541\t/dev/pts/16\t\t0\t2000\t2\t2\n%2\t@1\t0\t1\t0\t80\t24\tsh\t/tmp/marked\thost\t3442666\t/dev/pts/17\t\t0\t2000\t2\t0",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-0bf9111f9b2a434987384cebcf81f5fa ; list-clients -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:client_name}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:client_pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:client_created}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:client_activity}'",
               "mutates": false,
               "exit": 0,
               "stdout": "",
               "stderr": ""
             },
             {
-              "role": "probe",
-              "tmux": "display-message -p -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}'",
+              "role": "command",
+              "tmux": "if-shell -F #{==:#{version},3.8a} '' libtmux-version-e8d63025cf4f442a97a847cff9a36933 ; display-message -p -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "",
+              "stdout": "3441885\t1793890630\t3.8a\t/tmp/libtmux-julia-AbC123/s",
               "stderr": ""
             }
           ],
@@ -528,16 +1087,16 @@
                 "session": "$0",
                 "id": "@0",
                 "index": 0,
-                "name": "sh",
-                "active": true,
-                "layout": "{\"V\":2,\"L\":{\"t\":\"v\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":80,\"h\":12,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":80,\"h\":11,\"x\":0,\"y\":13,\"i\":1,\"I\":\"%1\"}]}}"
+                "name": "editor",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}"
               },
               {
                 "session": "$0",
                 "id": "@1",
                 "index": 1,
                 "name": "logs",
-                "active": false,
+                "active": true,
                 "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
               }
             ],
@@ -545,27 +1104,27 @@
               {
                 "window": "@0",
                 "id": "%0",
-                "command": "cat",
+                "command": "sh",
                 "left": 0,
                 "top": 0,
-                "width": 80,
-                "height": 12,
-                "active": true
+                "width": 40,
+                "height": 24,
+                "active": false
               },
               {
                 "window": "@0",
                 "id": "%1",
-                "command": "cat",
-                "left": 0,
-                "top": 13,
-                "width": 80,
-                "height": 11,
-                "active": false
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": true
               },
               {
                 "window": "@1",
                 "id": "%2",
-                "command": "cat",
+                "command": "sh",
                 "left": 0,
                 "top": 0,
                 "width": 80,
@@ -576,39 +1135,16 @@
           }
         },
         {
-          "id": "capture-pane",
-          "label": "capture_pane",
-          "anchor": "@assert isempty(strip(capture_pane(server, pane)))",
-          "type": "String",
+          "id": "sessions",
+          "label": "sessions",
+          "anchor": "listed = sessions(snap)",
+          "type": "Selection{SessionSnapshot}",
           "returned": {
-            "text": "\n\n\n\n\n\n\n\n\n\n\n\n"
+            "sessions": [
+              "$0"
+            ]
           },
-          "commands": [
-            {
-              "role": "probe",
-              "tmux": "display-message -p '#{s|^.*$|A\\\\B\tC\nD|;s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}'",
-              "mutates": false,
-              "exit": 0,
-              "stdout": "",
-              "stderr": ""
-            },
-            {
-              "role": "probe",
-              "tmux": "display-message -p -F '#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|[$]|\\\\d|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}'",
-              "mutates": false,
-              "exit": 0,
-              "stdout": "",
-              "stderr": ""
-            },
-            {
-              "role": "command",
-              "tmux": "capture-pane -p -t %0",
-              "mutates": false,
-              "exit": 0,
-              "stdout": "\n\n\n\n\n\n\n\n\n\n\n",
-              "stderr": ""
-            }
-          ],
+          "commands": [],
           "transient": [],
           "tmux": {
             "sessions": [
@@ -622,16 +1158,16 @@
                 "session": "$0",
                 "id": "@0",
                 "index": 0,
-                "name": "sh",
-                "active": true,
-                "layout": "{\"V\":2,\"L\":{\"t\":\"v\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":80,\"h\":12,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":80,\"h\":11,\"x\":0,\"y\":13,\"i\":1,\"I\":\"%1\"}]}}"
+                "name": "editor",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}"
               },
               {
                 "session": "$0",
                 "id": "@1",
                 "index": 1,
                 "name": "logs",
-                "active": false,
+                "active": true,
                 "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
               }
             ],
@@ -639,27 +1175,527 @@
               {
                 "window": "@0",
                 "id": "%0",
-                "command": "cat",
+                "command": "sh",
                 "left": 0,
                 "top": 0,
-                "width": 80,
-                "height": 12,
-                "active": true
+                "width": 40,
+                "height": 24,
+                "active": false
               },
               {
                 "window": "@0",
                 "id": "%1",
-                "command": "cat",
-                "left": 0,
-                "top": 13,
-                "width": 80,
-                "height": 11,
-                "active": false
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": true
               },
               {
                 "window": "@1",
                 "id": "%2",
-                "command": "cat",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "windowlinks-1",
+          "label": "windowlinks",
+          "anchor": "links = windowlinks(each)",
+          "iteration": 1,
+          "type": "Selection{WindowLink}",
+          "returned": {
+            "windows": [
+              "@0",
+              "@1"
+            ]
+          },
+          "commands": [],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "link-windows-1",
+          "label": "window",
+          "anchor": "wins = [window(link) for link in links]",
+          "iteration": 1,
+          "type": "Vector{WindowSnapshot}",
+          "returned": {
+            "windows": [
+              "@0",
+              "@1"
+            ]
+          },
+          "commands": [],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "panes-1",
+          "label": "panes",
+          "anchor": "members = panes(win)",
+          "iteration": 1,
+          "type": "Selection{PaneSnapshot}",
+          "returned": {
+            "panes": [
+              "%0",
+              "%1"
+            ]
+          },
+          "commands": [],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "panes-2",
+          "label": "panes",
+          "anchor": "members = panes(win)",
+          "iteration": 2,
+          "type": "Selection{PaneSnapshot}",
+          "returned": {
+            "panes": [
+              "%2"
+            ]
+          },
+          "commands": [],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "snapshot-pane-ref",
+          "label": "Snapshot[PaneRef]",
+          "anchor": "pane = snap[right]",
+          "type": "PaneSnapshot",
+          "returned": {
+            "id": "%1"
+          },
+          "commands": [],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "pane-window",
+          "label": "window",
+          "anchor": "home = window(pane)",
+          "type": "WindowSnapshot",
+          "returned": {
+            "name": "editor",
+            "id": "@0"
+          },
+          "commands": [],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "window-session",
+          "label": "session",
+          "anchor": "owner = session(only(windowlinks(home)))",
+          "type": "SessionSnapshot",
+          "returned": {
+            "name": "demo",
+            "id": "$0"
+          },
+          "commands": [],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
                 "left": 0,
                 "top": 0,
                 "width": 80,

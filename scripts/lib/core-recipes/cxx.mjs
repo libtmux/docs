@@ -148,6 +148,10 @@ const run = (command, args, options = {}) => execFileSync(command, args, { stdio
 
 const COMPILER = 'clang++-18'
 
+/** A window or a pane as a recording stores it, from the variable the statement binds. */
+const WINDOW = (name) => `docs::object({{"id", docs::str(${name}.id().value())}, {"index", std::to_string(${name}.index())}, {"name", docs::str(${name}.name())}})`
+const PANE = (name) => `docs::object({{"id", docs::str(${name}.id().value())}})`
+
 export const RECIPES = {
   'typed-graph': {
     capability: 'typed-graph',
@@ -164,19 +168,26 @@ export const RECIPES = {
     steps: [
       { id: 'startable', label: 'Server.startable_at_socket_path', anchor: 'libtmux::Server::startable_at_socket_path(', afterAnchor: 'const auto server = std::move(created).value();', type: 'expected<Server, CommandFailure>', value: 'docs::object({{"socketPath", docs::str(server.socket_path())}})' },
       { id: 'new-session', label: 'Server.new_session', anchor: 'server.new_session(', type: 'expected<Session, CommandFailure>', value: 'docs::object({{"id", docs::str(session.id().value())}, {"name", docs::str(session.name())}})' },
-      { id: 'new-window', label: 'Session.new_window', anchor: 'session.new_window(', type: 'expected<Window, CommandFailure>', value: 'docs::object({{"id", docs::str(editor.id().value())}, {"name", docs::str(editor.name())}})' },
-      { id: 'split', label: 'Window.split', anchor: 'editor.split(', type: 'expected<Pane, CommandFailure>', value: 'docs::object({{"id", docs::str(logs.id().value())}})' },
-      { id: 'send-text', label: 'Pane.send_text', anchor: 'logs.send_text(', type: 'expected<void, CommandFailure>', value: 'docs::null()' },
-      { id: 'send-key', label: 'Pane.send_key', anchor: 'logs.send_key(', type: 'expected<void, CommandFailure>', value: 'docs::null()' },
-      { id: 'wait-for-text', label: 'Pane.wait_for_text', anchor: 'logs.wait_for_text(', type: 'expected<WaitResult, CommandFailure>', value: 'docs::object({{"matched", docs::boolean(ready.matched)}})' },
-      { id: 'capture', label: 'Pane.capture', anchor: 'logs.capture()', type: 'expected<std::string, CommandFailure>', value: 'docs::str(visible)' },
-      // The range expression of the loop is evaluated once, and is pure; the marked copy evaluates it a second time where the value is in scope.
-      { id: 'capture-lines', label: 'capture_lines', anchor: 'libtmux::capture_lines(visible)', joinTo: 'capture', type: 'std::vector<std::string_view>', value: 'docs::lines(libtmux::capture_lines(visible))' },
+      { id: 'active-window', label: 'Session.active_window', anchor: 'session.active_window()', type: 'expected<Window, CommandFailure>', value: WINDOW('editor') },
+      { id: 'rename', label: 'Window.rename', anchor: 'editor.rename(', type: 'expected<void, CommandFailure>', value: 'docs::null()' },
+      { id: 'active-pane', label: 'Window.active_pane', anchor: 'editor.active_pane()', type: 'expected<Pane, CommandFailure>', value: PANE('left') },
+      { id: 'split', label: 'Pane.split', anchor: 'left.split(', type: 'expected<Pane, CommandFailure>', value: PANE('right') },
+      { id: 'new-window', label: 'Session.new_window', anchor: 'session.new_window(', type: 'expected<Window, CommandFailure>', value: WINDOW('logs') },
+      { id: 'send-line', label: 'Pane.send_line', anchor: 'right.send_line(', type: 'expected<void, CommandFailure>', value: 'docs::null()' },
+      { id: 'wait-for-text', label: 'Pane.wait_for_text', anchor: 'right.wait_for_text(', type: 'expected<WaitResult, CommandFailure>', value: 'docs::object({{"matched", docs::boolean(ready.matched)}})' },
+      { id: 'select-pane', label: 'Pane.select', anchor: 'right.select()', type: 'expected<void, CommandFailure>', value: 'docs::null()' },
+      { id: 'select-window', label: 'Window.select', anchor: 'logs.select()', type: 'expected<void, CommandFailure>', value: 'docs::null()' },
+      // The three listings are reads of tmux: the server's sessions, then each session's windows and each window's panes.
+      { id: 'sessions', label: 'Server.sessions', anchor: 'server.sessions()', type: 'expected<std::vector<Session>, CommandFailure>', value: 'docs::object({{"count", std::to_string(sessions.size())}})' },
+      { id: 'windows', label: 'Session.windows', anchor: 'each.windows()', type: 'expected<std::vector<Window>, CommandFailure>', value: 'docs::object({{"count", std::to_string(windows.size())}})', repeat: true },
+      { id: 'panes', label: 'Window.panes', anchor: 'window.panes()', type: 'expected<std::vector<Pane>, CommandFailure>', value: 'docs::object({{"count", std::to_string(panes.size())}})', repeat: true },
+      { id: 'pane-window', label: 'Pane.window', anchor: 'right.window()', type: 'expected<Window, CommandFailure>', value: WINDOW('window') },
+      { id: 'window-session', label: 'Window.session', anchor: 'window.session()', type: 'expected<Session, CommandFailure>', value: 'docs::object({{"id", docs::str(owner.id().value())}, {"name", docs::str(owner.name())}})' },
       { id: 'kill', label: 'Server.kill', anchor: 'server.kill()', type: 'expected<void, CommandFailure>', value: 'docs::null()' },
     ],
-    // Every libtmux-cxx command is an `if-shell` guard; its text is learned from the trace.
+    // v0.1.0 asks tmux about itself before it sends a command: `tmux -V`, and a `run-shell -C` that expands the version under a `libtmux-version-` marker.
     fence: () => false,
-    probe: () => false,
+    probe: ({ flags, commands }) => (commands.length === 0 && flags.includes('-V')) || (commands.length > 0 && commands.every((command) => command[0] === 'run-shell' && command.some((word) => word.startsWith('libtmux-version-')))),
     instrument: instrumentCxx,
     /**
      * The program keeps its socket under a fixed `/tmp/ltx-cxx-home-XXXXXX`,

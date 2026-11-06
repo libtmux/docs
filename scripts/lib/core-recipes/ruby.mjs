@@ -1,7 +1,9 @@
 import { execFileSync } from 'node:child_process'
 import { chmodSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { statementLines } from '../../../site/src/lib/core-statement.ts'
 import { checkoutOf, instrumentLines, quickstartSource, withoutMarks } from './common.mjs'
+import { splitCommandLine } from '../core-trace.mjs'
 
 export { withoutMarks }
 
@@ -51,6 +53,9 @@ module LibTmuxDocs
 end
 
 LibTmuxDocs.watch(LibTmux::Window, :split)
+LibTmuxDocs.watch(LibTmux::Window, :rename)
+LibTmuxDocs.watch(LibTmux::Pane, :select)
+LibTmuxDocs.watch(LibTmux::WindowLink, :select)
 LibTmuxDocs.watch(LibTmux::Window, :snapshot)
 LibTmuxDocs.watch(LibTmux::Session, :list_windows)
 LibTmuxDocs.watch(LibTmux::Pane, :send_text)
@@ -60,7 +65,18 @@ LibTmuxDocs.watch(LibTmux::Pane, :capture)
 
 /** Insert a mark after each step's statement; the mark ends in the trailer the displayed copy is stripped by. */
 export function instrumentRuby(source, steps) {
-  return instrumentLines(source, steps, (step) => `LibTmuxDocs.mark(${JSON.stringify(step.id)}, ${step.value}) # docs:mark`, '#')
+  const lines = source.split('\n')
+  // A step that opens a block (`until right.capture ...`) is marked after the block's `end`, at the statement's own indentation.
+  const placed = steps.map((step) => {
+    if (!step.afterBlock) return step
+    const range = statementLines(source, step.anchor, '#', step.occurrence)
+    if (!range) return step
+    const indent = /^\s*/.exec(lines[range[0] - 1])[0]
+    const close = lines.findIndex((line, index) => index >= range[1] && line === `${indent}end`)
+    if (close < 0) throw new Error(`${step.id}: the block the call opens is not closed at its own indentation`)
+    return { ...step, after: close + 1 }
+  })
+  return instrumentLines(source, placed, (step) => `LibTmuxDocs.mark(${JSON.stringify(step.id)}, ${step.value}) # docs:mark`, '#')
 }
 
 /**
@@ -85,6 +101,17 @@ exec SHIM "$@"
 
 const rubyBinary = () => execFileSync('ruby', ['-e', 'print RbConfig.ruby'], { encoding: 'utf8' })
 
+/** The words of the command inside one layer of a link guard (`if-shell -F [-t <target>] <check> '<command>' ...`). */
+function peel(words) {
+  const positional = []
+  for (let index = 1; index < words.length; index++) {
+    if (words[index] === '-t') index++
+    else if (!words[index].startsWith('-') || positional.length > 0) positional.push(words[index])
+  }
+  const inner = splitCommandLine(positional[1] ?? '')
+  return inner[0] === 'if-shell' ? peel(inner) : inner
+}
+
 /** What every Ruby recipe shares: the interpreter, the run against the checkout's library, and libtmux-ruby's tmux preamble. */
 const RUBY = {
   stepMap: 'hand-written',
@@ -94,6 +121,8 @@ const RUBY = {
   fence: (command) => command[0] === 'if-shel' && command.some((word) => /^libtmux-version-/.test(word)),
   /** What the library asks tmux about itself: `tmux -V`, the check that no alias shadows its guard (`if-shel` around an unknown `run-shel`), and an unknown `run-shel` whose error text carries the version or the daemon's identity. */
   probe: ({ flags, commands }) => (commands.length === 0 && flags.includes('-V')) || (commands.length > 0 && commands.every((command) => (command[0] === 'run-shel' && command.some((word) => /^libtmux-(version|identity)-/.test(word))) || (command[0] === 'if-shel' && command.some((word) => /run-shel -C libtmux-fence-/.test(word))))),
+  /** A window link's command is sent as `if-shell -F 1 '<guard>'`, the guard being `if-shell -F -t <link> <check> '<command>' '<stale>'`, each layer quoted inside the one before: peeled, it is the command. */
+  unwrap: (command) => (command[0] === 'if-shell' && command[1] === '-F' && command[2] === '1' ? peel(command) : undefined),
   checkout: (port, env, expand) => checkoutOf(port, env, expand),
   instrument: instrumentRuby,
   command: (dir) => [join(dir, 'program')],
@@ -143,12 +172,26 @@ export const RECIPES = {
     file: 'quickstart.rb',
     source: (root) => quickstartSource(root, 'ruby', 'quickstart.rb'),
     helpers: HELPERS,
+    // In the order the calls run. The wait is the capture its loop ends on, marked after the loop (line 26 of the displayed program).
+    // The last three read the snapshot's records and send tmux nothing; the walk down from the server is not a step.
+    // Server#close is not a step: the library stops the daemon with a signal, which no recorded command carries.
     steps: [
       { id: 'start', label: 'Server.start', anchor: 'LibTmux::Server.start', type: 'LibTmux::Server', value: SERVER },
       { id: 'new-session', label: 'Server#new_session', anchor: 'server.new_session(', type: 'LibTmux::Session', value: '{"id" => session.id}' },
-      { id: 'new-window', label: 'Session#new_window', anchor: 'session.new_window(', type: 'LibTmux::Window', value: '{"id" => window.id}' },
-      { id: 'split', label: 'Window#split', anchor: 'window.split(', type: 'LibTmux::Pane', value: '{"id" => LibTmuxDocs.returned("Window#split").id}' },
-      { id: 'snapshot', label: 'Server#snapshot', anchor: 'server.snapshot', type: 'LibTmux::Snapshot', value: '{"windows" => snapshot.windows.map { |entry| {"name" => entry.name, "panes" => entry.panes.map(&:id)} }}' },
+      { id: 'resolve-window', label: 'Server#window', anchor: 'server.window(', type: 'LibTmux::Window', value: '{"id" => editor.id}' },
+      { id: 'rename', label: 'Window#rename', anchor: 'editor.rename(', type: 'LibTmux::CommandResult', value: 'LibTmuxDocs.result(LibTmuxDocs.returned("Window#rename"))' },
+      { id: 'resolve-pane', label: 'Server#pane', anchor: 'server.pane(', type: 'LibTmux::Pane', value: '{"id" => left.id}' },
+      { id: 'split', label: 'Pane#split', anchor: 'left.split(', type: 'LibTmux::Pane', value: '{"id" => right.id}' },
+      { id: 'new-window', label: 'Session#new_window', anchor: 'session.new_window(', type: 'LibTmux::Window', value: '{"id" => logs.id}' },
+      { id: 'send-text', label: 'Pane#send_text', anchor: 'right.send_text(', type: 'LibTmux::CommandResult', value: 'LibTmuxDocs.result(LibTmuxDocs.returned("Pane#send_text"))' },
+      { id: 'send-keys', label: 'Pane#send_keys', anchor: 'right.send_keys(', type: 'LibTmux::CommandResult', value: 'LibTmuxDocs.result(LibTmuxDocs.returned("Pane#send_keys"))' },
+      { id: 'wait', label: 'Pane#capture', anchor: 'until right.capture', afterBlock: true, type: 'LibTmux::CommandResult', value: CAPTURED },
+      { id: 'select-pane', label: 'Pane#select', anchor: 'right.select', type: 'LibTmux::CommandResult', value: 'LibTmuxDocs.result(LibTmuxDocs.returned("Pane#select"))' },
+      { id: 'select-window', label: 'WindowLink#select', anchor: 'session.list_window_links', type: 'LibTmux::CommandResult', value: 'LibTmuxDocs.result(LibTmuxDocs.returned("WindowLink#select"))' },
+      { id: 'snapshot', label: 'Server#snapshot', anchor: 'server.snapshot', type: 'LibTmux::Snapshot', value: '{"sessions" => snapshot.sessions.size, "windows" => snapshot.windows.size, "panes" => snapshot.panes.size}' },
+      { id: 'pane-by-ref', label: 'Snapshot#resolve', anchor: 'snapshot.resolve(', type: 'LibTmux::PaneSnapshot', value: '{"id" => pane.id}' },
+      { id: 'pane-window', label: 'PaneSnapshot#window', anchor: 'window = pane.window', type: 'LibTmux::WindowSnapshot', value: '{"id" => window.id, "name" => window.name}' },
+      { id: 'window-session', label: 'WindowSnapshot#window_links', anchor: 'owner = window.window_links', type: 'LibTmux::SessionSnapshot', value: '{"id" => owner.id, "name" => owner.name}' },
     ],
   },
   'create-windows': {

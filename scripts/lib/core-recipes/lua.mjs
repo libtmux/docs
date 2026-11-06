@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process'
 import { chmodSync, existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { splitCommandLine } from '../core-trace.mjs'
 import { checkoutOf, instrumentLines, quickstartSource, withoutMarks } from './common.mjs'
 
 export { withoutMarks }
@@ -120,6 +121,8 @@ const luaBinary = () => join(execFileSync('mise', ['where', 'lua@5.5.1'], { enco
 const luvTree = (checkout) => join(dirname(checkout), 'lua-core-player-luv')
 
 const SESSION_REFS = '{ session = LibtmuxDocs.id(created.session), window = LibtmuxDocs.id(created.window), pane = LibtmuxDocs.id(created.pane) }'
+/** A window or a pane as a recording stores it, from the variable the statement binds. */
+const WINDOW = (name) => `{ id = ${name}.id, name = ${name}.name }`
 
 export const RECIPES = {
   'typed-graph': {
@@ -127,7 +130,7 @@ export const RECIPES = {
     file: 'quickstart.lua',
     stepMap: 'hand-written',
     /** What a pane runs once it has settled: the sandbox pins SHELL to /bin/sh. */
-    paneCommands: ['sh', 'cat'],
+    paneCommands: ['sh'],
     source: (root) => quickstartSource(root, 'lua', 'quickstart.lua'),
     checkout: (port, env, expand) => checkoutOf(port, env, expand),
     /** The program makes its socket directory under `/tmp/ltx-lua-home-<six characters>`. */
@@ -138,19 +141,36 @@ export const RECIPES = {
       { id: 'daemon', label: 'tmux', anchor: 'tmux({', occurrence: 1, type: 'exit status', value: '{ status = 0 }' },
       { id: 'connect', label: 'Runtime:connect', anchor: 'runtime:connect(', type: 'Server', value: '{ binary = binary, socketPath = socket }' },
       { id: 'new-session', label: 'Server:new_session', anchor: 'server:new_session(', type: 'Creation', value: SESSION_REFS },
+      { id: 'rename', label: 'Window:rename', anchor: 'editor:rename(', type: 'boolean', value: 'LibtmuxDocs.returned()' },
+      { id: 'split', label: 'Pane:split', anchor: 'created.pane:split(', type: 'Creation', value: '{ pane = LibtmuxDocs.id(split.pane) }' },
       { id: 'new-window', label: 'Session:new_window', anchor: 'created.session:new_window(', type: 'Creation', value: '{ window = LibtmuxDocs.id(logs.window), pane = LibtmuxDocs.id(logs.pane) }' },
-      { id: 'split', label: 'Pane:split', anchor: 'logs.pane:split(', type: 'Creation', value: '{ pane = LibtmuxDocs.id(LibtmuxDocs.returned().pane) }' },
-      { id: 'send-text', label: 'Pane:send_text', anchor: 'created.pane:send_text(', type: 'boolean', value: 'LibtmuxDocs.returned()' },
-      { id: 'send-keys', label: 'Pane:send_keys', anchor: 'created.pane:send_keys(', type: 'boolean', value: 'LibtmuxDocs.returned()' },
-      { id: 'wait-for', label: 'Server:command', anchor: 'server:command(', type: 'CommandResult', value: '{ exitCode = LibtmuxDocs.returned().exit_code, stdout = LibtmuxDocs.returned().stdout, stderr = LibtmuxDocs.returned().stderr }' },
-      { id: 'capture', label: 'Pane:capture', anchor: 'created.pane:capture()', type: 'Capture', value: '{ text = (must(capture:text()):gsub("%s+$", "")) }' },
+      { id: 'send-text', label: 'Pane:send_text', anchor: 'right:send_text(', type: 'boolean', value: 'LibtmuxDocs.returned()' },
+      { id: 'send-keys', label: 'Pane:send_keys', anchor: 'right:send_keys(', type: 'boolean', value: 'LibtmuxDocs.returned()' },
+      { id: 'wait', label: 'Pane:wait_for_text', anchor: 'right:wait_for_text(', type: 'TextWait', value: '{ found = LibtmuxDocs.returned().text:find("hello from tmux", 1, true) ~= nil }' },
+      { id: 'select-pane', label: 'Pane:select', anchor: 'right:select(', type: 'boolean', value: 'LibtmuxDocs.returned()' },
+      { id: 'select-window', label: 'WindowLink:select', anchor: 'logs.window_link:select(', type: 'boolean', value: 'LibtmuxDocs.returned()' },
+      // The reads after the snapshot send tmux nothing: records are plain tables.
+      { id: 'snapshot', label: 'Server:snapshot', anchor: 'server:snapshot(', type: 'Snapshot', value: '{ sessions = #snapshot.sessions, windows = #snapshot.windows, panes = #snapshot.panes }' },
+      { id: 'link-window', label: 'SnapshotWindowLink.window', anchor: 'link.window', type: 'SnapshotWindow', value: WINDOW('window'), repeat: true },
+      { id: 'pane-id', label: 'Pane:reference', anchor: 'right:reference(', type: 'string', value: '{ id = id }' },
+      { id: 'pane-window', label: 'SnapshotPane.window', anchor: 'pane.window', type: 'SnapshotWindow', value: WINDOW('window') },
+      { id: 'window-session', label: 'SnapshotWindowLink.session', anchor: 'window.window_links[1].session', type: 'SnapshotSession', value: WINDOW('owner') },
       { id: 'close', label: 'Server:close', anchor: 'server:close()', type: 'boolean', value: 'LibtmuxDocs.returned()' },
       { id: 'kill-server', label: 'tmux', anchor: 'tmux({ "kill-server" })', type: 'exit status', value: '{ status = 0 }' },
     ],
-    // libtmux-lua's guard and version queries are learned from the trace.
-    fence: () => false,
-    /** Before each operation the library asks the daemon who it is (pid, start time, version, socket) with one `display-message`. */
-    probe: ({ commands }) => commands.length > 0 && commands.every((command) => command[0] === 'display-message' && command.some((word) => /^LQ1\r\$a;#\{q:pid\}/.test(word))),
+    /**
+     * Every command the library sends begins with a guard that fails if the daemon was replaced since it was checked:
+     * `if-shell -F <pid, start time and version are the checked ones> '' libtmux-version-<id>-`. Its marker is an unknown command whose error ends the reply.
+     */
+    fence: (command) => command[0] === 'if-shell' && command[1] === '-F' && command.length === 5 && command[2].includes('#{pid}') && command[4].startsWith('libtmux-version-'),
+    /** A command on a window link carries itself in a second guard: `if-shell -F -t <link> <the link is still there> '"select-window" "-t" "\\044<link>"' '<what to say if it moved>'`. */
+    unwrap: (command) => (command[0] === 'if-shell' && command[1] === '-F' && command[2] === '-t' && command.length === 7 && command[5].startsWith('"') ? splitCommandLine(command[5]).map((word) => word.replaceAll('\\044', '$')) : undefined),
+    /** What the library asks tmux about itself before its first command: the daemon's pid, start time and version. */
+    probe: ({ commands }) => commands.length > 0 && commands.every((command) => command[0] === 'run-shell' && command.some((word) => word.startsWith('libtmux-version-'))),
+    /** The ids in the library's markers differ on every run. */
+    redact: (text) => text.replace(/libtmux-(version|pane)-[0-9a-f]{16,20}-/g, 'libtmux-$1-<id>-'),
+    /** A wait polls the pane with a `capture-pane` until its text shows. */
+    polls: ['capture-pane'],
     instrument: instrumentLua,
     /**
      * The program keeps its socket under a fixed `/tmp/ltx-lua-home-XXXXXX`,

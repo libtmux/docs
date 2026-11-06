@@ -67,6 +67,11 @@ object DocsMark {
 }
 `
 
+/** A session, window or pane as a recording stores it, from the variable the statement binds. */
+const SESSION = 'Map("id" -> session.asJava.id().value(), "name" -> session.name)'
+const WINDOW = (name) => `Map("id" -> ${name}.id.value(), "index" -> ${name}.index.value(), "name" -> ${name}.name)`
+const PANE = (name) => `Map("id" -> ${name}.id.value())`
+
 export const RECIPES = {
   'typed-graph': jvmRecipe({
     port: 'scala',
@@ -74,11 +79,23 @@ export const RECIPES = {
     mainClass: 'Main',
     modules: ['libtmux', 'libtmux-scala'],
     helpers: [{ file: 'src/main/scala/DocsMark.scala', source: SCALA_HELPER }],
+    version: '0.1.2',
     steps: [
       { id: 'open', label: 'Server.open', anchor: 'Server.open(', type: 'Server', value: 'Map("endpoint" -> "named socket", "configFile" -> config.configFile().get().toString)' },
-      { id: 'new-session', label: 'Server.newSession', anchor: 'server.newSession(', type: 'Session', value: 'Map("id" -> session.asJava.id().value(), "name" -> session.name)' },
-      { id: 'new-window', label: 'Session.newWindow', anchor: 'session.newWindow(', type: 'Window', value: 'Map("name" -> "logs")' },
-      { id: 'panes', label: 'Server.panes', anchor: 'server.panes(', type: 'Vector[Pane]', value: 'panes.map(pane => Map("id" -> pane.asJava.id().value(), "title" -> pane.asJava.title(), "command" -> pane.asJava.currentCommand()))' },
+      { id: 'new-session', label: 'Server.newSession', anchor: 'server.newSession(', type: 'Session', value: SESSION },
+      { id: 'active-window', label: 'Session.activeWindow', anchor: 'session.activeWindow', type: 'Window', value: WINDOW('active') },
+      { id: 'rename', label: 'Window.rename', anchor: 'active.rename(', type: 'Window', value: WINDOW('editor') },
+      { id: 'active-pane', label: 'Window.activePane', anchor: 'editor.activePane', type: 'Pane', value: PANE('left') },
+      { id: 'split', label: 'Pane.split', anchor: 'left.split(', type: 'Pane', value: PANE('right') },
+      { id: 'new-window', label: 'Session.newWindow', anchor: 'session.newWindow(', type: 'Window', value: WINDOW('logs') },
+      { id: 'send-line', label: 'Pane.sendLine', anchor: 'right.sendLine(', type: 'Unit', value: 'null' },
+      { id: 'await-text', label: 'Pane.awaitText', anchor: 'right.awaitText(', type: 'TextOutcome', value: 'seen' },
+      { id: 'select-pane', label: 'Pane.select', anchor: 'right.select(', type: 'Unit', value: 'null' },
+      { id: 'select-window', label: 'Window.select', anchor: 'logs.select(', type: 'Unit', value: 'null' },
+      { id: 'snapshot', label: 'Server.snapshot', anchor: 'server.snapshot(', type: 'ServerSnapshot', value: 'Map("sessions" -> snapshot.sessions().size(), "windows" -> snapshot.windows().size(), "panes" -> snapshot.panes().size())' },
+      { id: 'snapshot-sessions', label: 'ServerSnapshot.sessions', anchor: 'snapshot.sessions(', type: 'Buffer[SessionState]', value: 'sessions.map(found => Map("id" -> found.id().value(), "name" -> found.name()))' },
+      { id: 'pane-window', label: 'Pane.window', anchor: 'right.window', type: 'Window', value: WINDOW('window') },
+      { id: 'window-session', label: 'Window.session', anchor: 'window.session', type: 'Session', value: SESSION.replace(/\bsession\b/g, 'owner') },
       { id: 'kill', label: 'Server.killServer', anchor: 'server.killServer(', type: 'Unit', value: 'null' },
     ],
   }),

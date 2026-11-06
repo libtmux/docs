@@ -60,21 +60,6 @@ fn docs_error<T, E: std::fmt::Display>(result: &Result<T, E>) -> String {
     }
 }
 
-#[allow(dead_code)]
-static DOCS_LINES: std::sync::Mutex<Vec<String>> = std::sync::Mutex::new(Vec::new());
-
-/// Keeps a line the program walks over, so the call that returned them all can be marked once.
-#[allow(dead_code)]
-fn docs_collect(line: &libtmux::TmuxText) {
-    DOCS_LINES.lock().unwrap().push(line.to_string_lossy().into_owned());
-}
-
-/// The lines kept since the last call, as the value of the capture that returned them.
-#[allow(dead_code)]
-fn docs_lines() -> String {
-    docs_array(DOCS_LINES.lock().unwrap().drain(..).map(|line| docs_json(&line)).collect())
-}
-
 /// Tells the recorder that an API call has returned, and what it returned.
 fn docs_mark(step: &str, value: String) {
     let mark = std::env::var("LIBTMUX_DOCS_MARK").expect("LIBTMUX_DOCS_MARK");
@@ -115,16 +100,6 @@ export function instrumentRust(source, steps, extra) {
   return extra ? extra(marked) : marked
 }
 
-/** After a line that opens a loop over the call's result, keep each line it visits (the call's value is not bound to anything). */
-const collectAfter = (header, variable) => (marked) => {
-  const lines = marked.split('\n')
-  const at = lines.map((line, index) => (line.trim() === header ? index : -1)).filter((index) => index >= 0)
-  if (at.length !== 1) throw new Error(`${JSON.stringify(header)} is not on exactly one line of the program`)
-  const indent = `${/^\s*/.exec(lines[at[0]])[0]}    `
-  lines.splice(at[0] + 1, 0, `${indent}docs_collect(&${variable}); // docs:mark`)
-  return lines.join('\n')
-}
-
 const ENV = { ...process.env, RUSTUP_TOOLCHAIN: '1.97.1' }
 /** Cargo's target directory, on disk (`/tmp` is memory), one per copy: cargo gives two packages of one name the same artifact when their paths differ only in the sandbox. */
 const TARGET = '/home/d/tmp-wave/rs-core-player-target'
@@ -133,6 +108,10 @@ const ID = (value) => `docs_json(&${value}.id().to_string())`
 const NAME = (value) => `docs_json(&${value}.name().to_string_lossy())`
 const BUILD_VALUE = 'docs_object(&[("socket", docs_json(&server.socket_path().file_name().unwrap().to_string_lossy())), ("configFile", docs_json(&server.config_file().unwrap().to_string_lossy()))])'
 const SESSION = `docs_object(&[("id", ${ID('session')}), ("name", ${NAME('session')})])`
+const WINDOW = (name) => `docs_object(&[("id", ${ID(name)}), ("name", ${NAME(name)})])`
+const PANE = (name) => `docs_object(&[("id", ${ID(name)})])`
+/** The ids of the objects a read returned, in the order it returned them. */
+const LIST = (name, item) => `docs_array(${name}.iter().map(|${item}| ${ID(item)}).collect())`
 const RESULT = (name) => `docs_error(&${name})`
 
 /** What every Rust recipe shares: the toolchain, the build against the checkout, and libtmux-rs's tmux preamble. */
@@ -197,16 +176,27 @@ export const RECIPES = {
     source: (root) => quickstartSource(root, 'rs', 'src/main.rs'),
     // The quickstart's dependencies, with the library taken from the checkout instead of crates.io.
     manifest: (checkout) => MANIFEST(checkout),
-    instrument: (source, steps) => instrumentRust(source, steps, collectAfter('for line in pane.capture().await? {', 'line')),
+    instrument: (source, steps) => instrumentRust(source, steps),
     // In the order the calls run, which is not the order of their lines: work() is above main().
+    // The walk binds each read (`let windows = ...;`) so its value is in scope, and
+    // the last two reads, `window()` and `session()`, go up from the right pane.
     steps: [
       { id: 'build', label: 'ServerBuilder.build', anchor: 'Server::builder()', type: 'Server', value: BUILD_VALUE },
       { id: 'new-session', label: 'Server.new_session', anchor: '.new_session(', type: 'Session', value: SESSION },
-      { id: 'new-window', label: 'Session.new_window', anchor: '.new_window(', type: 'Window', value: `docs_object(&[("id", ${ID('window')}), ("name", ${NAME('window')})])` },
-      { id: 'active-pane', label: 'Window.active_pane', anchor: '.active_pane(', type: 'Option<Pane>', value: `docs_object(&[("id", ${ID('pane')})])` },
-      { id: 'send-line', label: 'Pane.send_line', anchor: 'pane.send_line(', type: '()', value: 'String::from("null")' },
-      { id: 'wait-until', label: 'Pane.wait_until', anchor: '.wait_until(', type: 'PaneWait', value: 'docs_json(&format!("{seen:?}"))' },
-      { id: 'capture', label: 'Pane.capture', anchor: 'pane.capture()', type: 'Vec<TmuxText>', value: 'docs_lines()' },
+      { id: 'active-window', label: 'Session.active_window', anchor: '.active_window(', type: 'Option<Window>', value: WINDOW('editor') },
+      { id: 'rename', label: 'Window.rename', anchor: 'editor.rename(', type: '&mut Window', value: WINDOW('editor') },
+      { id: 'active-pane', label: 'Window.active_pane', anchor: '.active_pane(', type: 'Option<Pane>', value: PANE('left') },
+      { id: 'split', label: 'Pane.split', anchor: 'left.split(', type: 'Pane', value: PANE('right') },
+      { id: 'new-window', label: 'Session.new_window', anchor: 'session.new_window(', type: 'Window', value: WINDOW('logs') },
+      { id: 'send-line', label: 'Pane.send_line', anchor: 'right.send_line(', type: '()', value: 'String::from("null")' },
+      { id: 'wait-for-text', label: 'Pane.wait_for_text', anchor: '.wait_for_text(', type: 'PaneWait', value: 'docs_json(&format!("{seen:?}"))' },
+      { id: 'select-pane', label: 'Pane.select', anchor: 'right.select()', type: '&mut Pane', value: PANE('right') },
+      { id: 'select-window', label: 'Window.select', anchor: 'logs.select()', type: '&mut Window', value: WINDOW('logs') },
+      { id: 'sessions', label: 'Server.sessions', anchor: 'server.sessions()', type: 'Vec<Session>', value: LIST('sessions', 'session') },
+      { id: 'windows', label: 'Session.windows', anchor: 'each.windows()', type: 'Vec<Window>', value: LIST('windows', 'window'), repeat: true },
+      { id: 'panes', label: 'Window.panes', anchor: 'window.panes()', type: 'Vec<Pane>', value: LIST('panes', 'pane'), repeat: true },
+      { id: 'pane-window', label: 'Pane.window', anchor: 'right.window()', type: 'Option<Window>', value: WINDOW('window') },
+      { id: 'window-session', label: 'Window.session', anchor: 'window.session()', type: 'Option<Session>', value: `docs_object(&[("id", ${ID('owner')}), ("name", ${NAME('owner')})])` },
       { id: 'kill', label: 'Server.kill', anchor: 'server.kill()', type: 'Result<(), Error>', value: RESULT('killed') },
       { id: 'shutdown', label: 'Server.shutdown', anchor: 'server.shutdown()', type: 'Result<(), Error>', value: RESULT('closed') },
     ],

@@ -83,23 +83,40 @@ final class DocsMark {
 }
 `
 
+const SESSION_OF = (name) => `java.util.Map.of("id", ${name}.id().value(), "name", ${name}.name())`
+const SESSION = SESSION_OF('session')
+const WINDOW = (name) => `java.util.Map.of("id", ${name}.id().value(), "name", ${name}.name())`
+const PANE = (name) => `java.util.Map.of("id", ${name}.id().value())`
+
 export const RECIPES = {
   'typed-graph': jvmRecipe({
     port: 'java',
     file: 'src/main/java/Main.java',
     mainClass: 'Main',
     modules: ['libtmux'],
+    version: '0.1.2',
     terminator: ';',
     helpers: [{ file: 'src/main/java/DocsMark.java', source: JAVA_HELPER }],
-    // The server is opened lazily: no tmux runs until the first command.
+    // The server is opened lazily: no tmux runs until the first command. The
+    // snapshot and the reads taken from it send tmux nothing.
     steps: [
       { id: 'open', label: 'Server.open', anchor: 'Server.open(', type: 'Server', value: 'java.util.Map.of("endpoint", "named socket", "configFile", config.configFile().get().toString())' },
-      { id: 'new-session', label: 'Server.newSession', anchor: 'server.newSession(', type: 'Session', value: 'java.util.Map.of("id", session.id().value(), "name", session.name())' },
-      { id: 'new-window', label: 'Session.newWindow', anchor: 'session.newWindow(', type: 'Window', value: 'java.util.Map.of("id", window.id().value(), "name", window.name())' },
-      { id: 'split', label: 'Window.split', anchor: 'window.split(', type: 'Pane', value: 'java.util.Map.of("id", pane.id().value())' },
-      { id: 'send-line', label: 'Pane.sendLine', anchor: 'pane.sendLine(', type: 'void', value: 'null' },
-      { id: 'await-text', label: 'Pane.awaitText', anchor: 'pane.awaitText(', type: 'TextOutcome', value: 'seen.name()' },
-      { id: 'capture', label: 'Pane.capture', anchor: 'pane.capture(', type: 'List<String>', value: 'lines' },
+      { id: 'new-session', label: 'Server.newSession', anchor: 'server.newSession(', type: 'Session', value: SESSION },
+      { id: 'active-window', label: 'Session.activeWindow', anchor: 'session.activeWindow(', type: 'Optional<Window>', value: WINDOW('first') },
+      { id: 'rename', label: 'Window.rename', anchor: 'first.rename(', type: 'Window', value: WINDOW('editor') },
+      { id: 'active-pane', label: 'Window.activePane', anchor: 'editor.activePane(', type: 'Optional<Pane>', value: PANE('left') },
+      { id: 'split', label: 'Pane.split', anchor: 'left.split(', type: 'Pane', value: PANE('right') },
+      { id: 'new-window', label: 'Session.newWindow', anchor: 'session.newWindow(', type: 'Window', value: WINDOW('logs') },
+      { id: 'send-line', label: 'Pane.sendLine', anchor: 'right.sendLine(', type: 'void', value: 'null' },
+      { id: 'await-text', label: 'Pane.awaitText', anchor: 'right.awaitText(', type: 'TextOutcome', value: 'seen.name()' },
+      { id: 'select-pane', label: 'Pane.select', anchor: 'right.select(', type: 'void', value: 'null' },
+      { id: 'select-window', label: 'Window.select', anchor: 'logs.select(', type: 'void', value: 'null' },
+      { id: 'snapshot', label: 'Server.snapshot', anchor: 'server.snapshot(', type: 'ServerSnapshot', value: 'java.util.Map.of("sessions", snapshot.sessions().size(), "windows", snapshot.windows().size(), "panes", snapshot.panes().size())' },
+      { id: 'sessions', label: 'ServerSnapshot.sessions', anchor: 'snapshot.sessions(', type: 'List<SessionState>', value: 'sessions.stream().map(x -> x.id().value()).toList()' },
+      { id: 'windows', label: 'ServerSnapshot.windowsOf', anchor: 'snapshot.windowsOf(', type: 'List<WindowState>', value: 'windows.stream().map(x -> x.context().window().value()).toList()', repeat: true },
+      { id: 'panes', label: 'ServerSnapshot.panesOf', anchor: 'snapshot.panesOf(', type: 'List<PaneState>', value: 'panes.stream().map(x -> x.id().value()).toList()', repeat: true },
+      { id: 'pane-window', label: 'Pane.window', anchor: 'right.window(', type: 'Window', value: WINDOW('window') },
+      { id: 'window-session', label: 'Window.session', anchor: 'window.session(', type: 'Session', value: SESSION_OF('owner') },
       { id: 'kill', label: 'Server.killServer', anchor: 'server.killServer(', type: 'void', value: 'null' },
     ],
   }),

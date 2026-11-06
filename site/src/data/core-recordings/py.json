@@ -2,7 +2,7 @@
   "generated": "scripts/gen-core-recording.mjs",
   "port": "py",
   "repo": "tmux-python/libtmux",
-  "revision": "9fdd083a8181a827889337b63cd4e6daea661a8c",
+  "revision": "38e368c11117fb4aeb2f082d552cd4f210eae06a",
   "sandbox": {
     "tmux": "tmux 3.8a",
     "python": "3.14.6",
@@ -17,11 +17,14 @@
     "typed-graph": {
       "program": {
         "file": "quickstart.py",
-        "sha256": "40525d10df813cfd8158deb99f48292f496f2d7d7ee2b6024b4c233b6be6d1e0"
+        "sha256": "9adf1c1daedefd6cbba32ecc076daaf0595bd2d6e3f3964479095bec43f21cfe"
       },
       "stepMap": "hand-written",
       "printed": [
-        "Hello world"
+        "session demo",
+        "  window 0:editor: %0 %1",
+        "  window 1:logs: %2",
+        "%1 is in window editor of session demo"
       ],
       "tmuxBefore": {
         "sessions": [],
@@ -35,7 +38,7 @@
           "anchor": "libtmux.Server(",
           "type": "Server",
           "returned": {
-            "socketPath": "/tmp/tmp/libtmux-py-home-zrvlz9es/tmux.sock",
+            "socketPath": "/tmp/tmp/libtmux-py-home-azy0qyi_/tmux.sock",
             "configFile": "/dev/null"
           },
           "commands": [],
@@ -62,7 +65,7 @@
               "mutates": false,
               "exit": 1,
               "stdout": "",
-              "stderr": "error connecting to /tmp/tmp/libtmux-py-home-zrvlz9es/tmux.sock (No such file or directory)"
+              "stderr": "error connecting to /tmp/tmp/libtmux-py-home-azy0qyi_/tmux.sock (No such file or directory)"
             },
             {
               "role": "probe",
@@ -77,7 +80,7 @@
               "tmux": "new-session -P -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_standar…",
               "mutates": true,
               "exit": 0,
-              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞0␞0␞960␞2000␞0␞0␞0␞0␞0␞␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞1␞1␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞24␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2521275␞0␞␞79␞␞␞/tmp/marked␞0␞8,16,24,32,40,48,56,64,72␞host␞0␞/dev/pts/14␞80␞0␞0␞1␞0␞2521274␞23␞0␞1793874928␞␞0␞␞1793874928␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/libtmux-d…",
+              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞0␞0␞960␞2000␞0␞0␞0␞0␞0␞␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞1␞1␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞24␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2889449␞0␞␞79␞␞␞/tmp/marked␞0␞8,16,24,32,40,48,56,64,72␞host␞0␞/dev/pts/14␞80␞0␞0␞1␞0␞2889448␞23␞0␞1793886161␞␞0␞␞1793886161␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/libtmux-d…",
               "stderr": "",
               "shortened": true
             }
@@ -121,6 +124,7 @@
           "type": "Window",
           "returned": {
             "id": "@0",
+            "index": "0",
             "name": "sh"
           },
           "commands": [
@@ -129,7 +133,7 @@
               "tmux": "list-windows -t $0 -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_sta…",
               "mutates": false,
               "exit": 0,
-              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞1060␞2000␞0␞0␞0␞0␞0␞1␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞1␞1␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞24␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2521275␞0␞␞79␞␞␞/tmp/marked␞0␞8,16,24,32,40,48,56,64,72␞host␞0␞/dev/pts/14␞80␞0␞0␞1␞0␞2521274␞23␞0␞1793874928␞␞0␞␞1793874928␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/libtmux…",
+              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞1060␞2000␞0␞0␞0␞0␞0␞1␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞1␞1␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞24␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2889449␞0␞␞79␞␞␞/tmp/marked␞0␞8,16,24,32,40,48,56,64,72␞host␞0␞/dev/pts/14␞80␞0␞0␞1␞0␞2889448␞23␞0␞1793886161␞␞0␞␞1793886161␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/libtmux…",
               "stderr": "",
               "shortened": true
             }
@@ -167,91 +171,30 @@
           }
         },
         {
-          "id": "split",
-          "label": "Window.split",
-          "anchor": "window.split(",
-          "type": "Pane",
+          "id": "rename",
+          "label": "Window.rename_window",
+          "anchor": "editor.rename_window(",
+          "type": "Window",
           "returned": {
-            "id": "%1"
+            "id": "@0",
+            "index": "0",
+            "name": "editor"
           },
           "commands": [
             {
               "role": "command",
-              "tmux": "list-panes -t @0 -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_stand…",
-              "mutates": false,
-              "exit": 0,
-              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞1060␞2000␞0␞0␞0␞0␞0␞1␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞1␞1␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞1␞24␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2521275␞0␞␞79␞␞␞/tmp/marked␞0␞8,16,24,32,40,48,56,64,72␞host␞0␞/dev/pts/14␞80␞0␞0␞1␞0␞2521274␞23␞0␞1793874928␞␞0␞␞1793874928␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/libtmux…",
-              "stderr": "",
-              "shortened": true
-            },
-            {
-              "role": "command",
-              "tmux": "split-window -t %0 -v -P -F#{pane_id}␞ -d sh",
+              "tmux": "rename-window -t @0 editor",
               "mutates": true,
               "exit": 0,
-              "stdout": "%1␞",
+              "stdout": "",
               "stderr": ""
             },
             {
               "role": "command",
-              "tmux": "list-panes -t %1 -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_stand…",
-              "mutates": false,
-              "exit": 0,
-              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞580␞2000␞0␞0␞0␞0␞0␞2␞0␞0␞0␞0␞0␞$1␞0␞1␞0␞1␞1␞1␞default␞11␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞1␞12␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2521275␞0␞␞79␞␞␞/tmp/marked␞0␞8,16,24,32,40,48,56,64,72␞host␞0␞/dev/pts/14␞80␞0␞0␞1␞0␞2521274␞11␞0␞1793874928␞␞0␞␞1793874928␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/libtmux-…",
-              "stderr": "",
-              "shortened": true
-            },
-            {
-              "role": "command",
               "tmux": "list-windows -t @0 -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_sta…",
               "mutates": false,
               "exit": 0,
-              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞580␞2000␞0␞0␞0␞0␞0␞1␞0␞0␞0␞0␞0␞$1␞0␞1␞0␞1␞1␞1␞default␞11␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞12␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2521275␞0␞␞79␞␞␞/tmp/marked␞0␞8,16,24,32,40,48,56,64,72␞host␞0␞/dev/pts/14␞80␞0␞0␞1␞0␞2521274␞11␞0␞1793874928␞␞0␞␞1793874928␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/libtmux-…",
-              "stderr": "",
-              "shortened": true
-            },
-            {
-              "role": "command",
-              "tmux": "list-sessions -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_standard…",
-              "mutates": false,
-              "exit": 0,
-              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞580␞2000␞0␞0␞0␞0␞0␞0␞0␞0␞0␞0␞0␞$1␞0␞1␞0␞1␞1␞1␞default␞11␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞12␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2521275␞0␞␞79␞␞␞/tmp/marked␞0␞8,16,24,32,40,48,56,64,72␞host␞0␞/dev/pts/14␞80␞0␞0␞1␞0␞2521274␞11␞0␞1793874928␞␞0␞␞1793874928␞1␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/libtmux-…",
-              "stderr": "",
-              "shortened": true
-            },
-            {
-              "role": "command",
-              "tmux": "list-windows -t @0 -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_sta…",
-              "mutates": false,
-              "exit": 0,
-              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞580␞2000␞0␞0␞0␞0␞0␞1␞0␞0␞0␞0␞0␞$1␞0␞1␞0␞1␞1␞1␞default␞11␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞12␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2521275␞0␞␞79␞␞␞/tmp/marked␞0␞8,16,24,32,40,48,56,64,72␞host␞0␞/dev/pts/14␞80␞0␞0␞1␞0␞2521274␞11␞0␞1793874928␞␞0␞␞1793874928␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/libtmux-…",
-              "stderr": "",
-              "shortened": true
-            },
-            {
-              "role": "command",
-              "tmux": "list-sessions -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_standard…",
-              "mutates": false,
-              "exit": 0,
-              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞580␞2000␞0␞0␞0␞0␞0␞0␞0␞0␞0␞0␞0␞$1␞0␞1␞0␞1␞1␞1␞default␞11␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞12␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2521275␞0␞␞79␞␞␞/tmp/marked␞0␞8,16,24,32,40,48,56,64,72␞host␞0␞/dev/pts/14␞80␞0␞0␞1␞0␞2521274␞11␞0␞1793874928␞␞0␞␞1793874928␞1␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/libtmux-…",
-              "stderr": "",
-              "shortened": true
-            },
-            {
-              "role": "command",
-              "tmux": "list-windows -t @0 -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_sta…",
-              "mutates": false,
-              "exit": 0,
-              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞580␞2000␞0␞0␞0␞0␞0␞1␞0␞0␞0␞0␞0␞$1␞0␞1␞0␞1␞1␞1␞default␞11␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞12␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2521275␞0␞␞79␞␞␞/tmp/marked␞0␞8,16,24,32,40,48,56,64,72␞host␞0␞/dev/pts/14␞80␞0␞0␞1␞0␞2521274␞11␞0␞1793874928␞␞0␞␞1793874928␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/libtmux-…",
-              "stderr": "",
-              "shortened": true
-            },
-            {
-              "role": "command",
-              "tmux": "list-windows -t @0 -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_sta…",
-              "mutates": false,
-              "exit": 0,
-              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞580␞2000␞0␞0␞0␞0␞0␞1␞0␞0␞0␞0␞0␞$1␞0␞1␞0␞1␞1␞1␞default␞11␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞12␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2521275␞0␞␞79␞␞␞/tmp/marked␞0␞8,16,24,32,40,48,56,64,72␞host␞0␞/dev/pts/14␞80␞0␞0␞1␞0␞2521274␞11␞0␞1793874928␞␞0␞␞1793874928␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/libtmux-…",
+              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞1060␞2000␞0␞0␞0␞0␞0␞1␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞1␞1␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞24␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2889449␞0␞␞79␞␞␞/tmp/marked␞0␞8,16,24,32,40,48,56,64,72␞host␞0␞/dev/pts/14␞80␞0␞0␞1␞0␞2889448␞23␞0␞1793886161␞␞0␞␞1793886161␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/libtmux…",
               "stderr": "",
               "shortened": true
             }
@@ -269,9 +212,9 @@
                 "session": "$0",
                 "id": "@0",
                 "index": 0,
-                "name": "sh",
+                "name": "editor",
                 "active": true,
-                "layout": "{\"V\":2,\"L\":{\"t\":\"v\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":80,\"h\":12,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":80,\"h\":11,\"x\":0,\"y\":13,\"i\":1,\"I\":\"%1\"}]}}"
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
               }
             ],
             "panes": [
@@ -282,18 +225,271 @@
                 "left": 0,
                 "top": 0,
                 "width": 80,
-                "height": 12,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "active-pane",
+          "label": "Window.active_pane",
+          "anchor": "editor.active_pane",
+          "type": "Pane",
+          "returned": {
+            "id": "%0"
+          },
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "list-panes -t @0 -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_stand…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞1060␞2000␞0␞0␞0␞0␞0␞1␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞1␞1␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞1␞24␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2889449␞0␞␞79␞␞␞/tmp/marked␞0␞8,16,24,32,40,48,56,64,72␞host␞0␞/dev/pts/14␞80␞0␞0␞1␞0␞2889448␞23␞0␞1793886161␞␞0␞␞1793886161␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/libtmux…",
+              "stderr": "",
+              "shortened": true
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "split",
+          "label": "Pane.split",
+          "anchor": "left.split(",
+          "type": "Pane",
+          "returned": {
+            "id": "%1"
+          },
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "split-window -t %0 -h -P -F#{pane_id}␞ -d sh",
+              "mutates": true,
+              "exit": 0,
+              "stdout": "%1␞",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-panes -t %1 -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_stand…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞1060␞2000␞0␞0␞0␞0␞0␞2␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞1␞0␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞1␞24␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2889449␞0␞␞39␞␞␞/tmp/marked␞0␞8,16,24,32␞host␞0␞/dev/pts/14␞40␞0␞0␞1␞0␞2889448␞23␞0␞1793886161␞␞0␞␞1793886161␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/tm…",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-windows -t @0 -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_sta…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞1060␞2000␞0␞0␞0␞0␞0␞1␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞1␞0␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞24␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2889449␞0␞␞39␞␞␞/tmp/marked␞0␞8,16,24,32␞host␞0␞/dev/pts/14␞40␞0␞0␞1␞0␞2889448␞23␞0␞1793886161␞␞0␞␞1793886161␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/tm…",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-sessions -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_standard…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞1060␞2000␞0␞0␞0␞0␞0␞0␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞1␞0␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞24␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2889449␞0␞␞39␞␞␞/tmp/marked␞0␞8,16,24,32␞host␞0␞/dev/pts/14␞40␞0␞0␞1␞0␞2889448␞23␞0␞1793886161␞␞0␞␞1793886161␞1␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/tm…",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-windows -t @0 -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_sta…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞1060␞2000␞0␞0␞0␞0␞0␞1␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞1␞0␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞24␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2889449␞0␞␞39␞␞␞/tmp/marked␞0␞8,16,24,32␞host␞0␞/dev/pts/14␞40␞0␞0␞1␞0␞2889448␞23␞0␞1793886161␞␞0␞␞1793886161␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/tm…",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-sessions -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_standard…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞1060␞2000␞0␞0␞0␞0␞0␞0␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞1␞0␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞24␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2889449␞0␞␞39␞␞␞/tmp/marked␞0␞8,16,24,32␞host␞0␞/dev/pts/14␞40␞0␞0␞1␞0␞2889448␞23␞0␞1793886161␞␞0␞␞1793886161␞1␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/tm…",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-windows -t @0 -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_sta…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞1060␞2000␞0␞0␞0␞0␞0␞1␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞1␞0␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞24␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2889449␞0␞␞39␞␞␞/tmp/marked␞0␞8,16,24,32␞host␞0␞/dev/pts/14␞40␞0␞0␞1␞0␞2889448␞23␞0␞1793886161␞␞0␞␞1793886161␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/tm…",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-windows -t @0 -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_sta…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞1060␞2000␞0␞0␞0␞0␞0␞1␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞1␞0␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞24␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2889449␞0␞␞39␞␞␞/tmp/marked␞0␞8,16,24,32␞host␞0␞/dev/pts/14␞40␞0␞0␞1␞0␞2889448␞23␞0␞1793886161␞␞0␞␞1793886161␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞1␞/tmp/tm…",
+              "stderr": "",
+              "shortened": true
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
                 "active": true
               },
               {
                 "window": "@0",
                 "id": "%1",
                 "command": "sh",
-                "left": 0,
-                "top": 13,
-                "width": 80,
-                "height": 11,
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
                 "active": false
+              }
+            ]
+          }
+        },
+        {
+          "id": "new-window",
+          "label": "Session.new_window",
+          "anchor": "session.new_window(",
+          "type": "Window",
+          "returned": {
+            "id": "@1",
+            "index": "1",
+            "name": "logs"
+          },
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "new-window -t $0: -d -P -F#{window_id} -n logs -t$0:",
+              "mutates": true,
+              "exit": 0,
+              "stdout": "@1",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-windows -t @1 -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_sta…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞1060␞2000␞0␞0␞0␞0␞1␞2␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞1␞0␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞24␞%0␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2889449␞0␞␞39␞␞␞/tmp/marked␞0␞8,16,24,32␞host␞0␞/dev/pts/14␞40␞0␞0␞1␞0␞2889448␞23␞0␞1793886161␞␞0␞␞1793886161␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞2␞/tmp/tm…",
+              "stderr": "",
+              "shortened": true
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
               }
             ]
           }
@@ -301,13 +497,13 @@
         {
           "id": "send-keys",
           "label": "Pane.send_keys",
-          "anchor": "pane.send_keys(",
+          "anchor": "right.send_keys(",
           "type": "None",
           "returned": null,
           "commands": [
             {
               "role": "command",
-              "tmux": "send-keys -t %1 'printf '\\''\\nHello world\\n'\\'''",
+              "tmux": "send-keys -t %1 'printf '\\''hello from %s\\n'\\'' tmux'",
               "mutates": true,
               "exit": 0,
               "stdout": "",
@@ -335,9 +531,17 @@
                 "session": "$0",
                 "id": "@0",
                 "index": 0,
-                "name": "sh",
+                "name": "editor",
                 "active": true,
-                "layout": "{\"V\":2,\"L\":{\"t\":\"v\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":80,\"h\":12,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":80,\"h\":11,\"x\":0,\"y\":13,\"i\":1,\"I\":\"%1\"}]}}"
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
               }
             ],
             "panes": [
@@ -347,19 +551,29 @@
                 "command": "sh",
                 "left": 0,
                 "top": 0,
-                "width": 80,
-                "height": 12,
+                "width": 40,
+                "height": 24,
                 "active": true
               },
               {
                 "window": "@0",
                 "id": "%1",
                 "command": "sh",
-                "left": 0,
-                "top": 13,
-                "width": 80,
-                "height": 11,
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
                 "active": false
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
               }
             ]
           }
@@ -367,13 +581,12 @@
         {
           "id": "capture-1",
           "label": "Pane.capture_pane",
-          "anchor": "pane.capture_pane()",
+          "anchor": "right.capture_pane()",
           "iteration": 1,
           "type": "list[str]",
           "returned": [
-            "$ printf '\\nHello world\\n'",
-            "",
-            "Hello world",
+            "$ printf 'hello from %s\\n' tmux",
+            "hello from tmux",
             "$"
           ],
           "commands": [
@@ -382,7 +595,7 @@
               "tmux": "capture-pane -t %1 -p",
               "mutates": false,
               "exit": 0,
-              "stdout": "$ printf '\\nHello world\\n'\n\nHello world\n$\n\n\n\n\n\n\n",
+              "stdout": "$ printf 'hello from %s\\n' tmux\nhello from tmux\n$\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
               "stderr": ""
             }
           ],
@@ -399,9 +612,17 @@
                 "session": "$0",
                 "id": "@0",
                 "index": 0,
-                "name": "sh",
+                "name": "editor",
                 "active": true,
-                "layout": "{\"V\":2,\"L\":{\"t\":\"v\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":80,\"h\":12,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":80,\"h\":11,\"x\":0,\"y\":13,\"i\":1,\"I\":\"%1\"}]}}"
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
               }
             ],
             "panes": [
@@ -411,19 +632,687 @@
                 "command": "sh",
                 "left": 0,
                 "top": 0,
-                "width": 80,
-                "height": 12,
+                "width": 40,
+                "height": 24,
                 "active": true
               },
               {
                 "window": "@0",
                 "id": "%1",
                 "command": "sh",
-                "left": 0,
-                "top": 13,
-                "width": 80,
-                "height": 11,
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
                 "active": false
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "select-pane",
+          "label": "Pane.select",
+          "anchor": "right.select()",
+          "type": "Pane",
+          "returned": {
+            "id": "%1"
+          },
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "select-pane -t %1",
+              "mutates": true,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-panes -t %1 -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_stand…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "0␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞1060␞2000␞0␞0␞0␞0␞1␞2␞0␞0␞0␞0␞0␞$1␞0␞0␞1␞1␞0␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞-␞0␞1␞24␞%0␞0␞0␞0␞1␞0␞0␞0␞␞␞0␞hidden␞2889449␞0␞␞39␞␞␞/tmp/marked␞0␞8,16,24,32␞host␞0␞/dev/pts/14␞40␞0␞0␞1␞0␞2889448␞23␞0␞1793886161␞␞0␞␞1793886161␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞0␞2␞/tmp/tm…",
+              "stderr": "",
+              "shortened": true
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "select-window",
+          "label": "Window.select",
+          "anchor": "logs.select()",
+          "type": "Window",
+          "returned": {
+            "id": "@1",
+            "index": "1",
+            "name": "logs"
+          },
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "select-window -t @1",
+              "mutates": true,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-windows -t @1 -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_sta…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "1␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞2␞1295␞2000␞0␞0␞0␞0␞1␞2␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞0␞1␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞24␞%1␞0␞1␞0␞0␞41␞0␞0␞␞␞0␞hidden␞2890032␞0␞␞79␞␞sh␞/tmp/marked␞0␞8,16,24,32␞host␞0␞/dev/pts/16␞39␞41␞0␞1␞0␞2889448␞23␞0␞1793886161␞␞0␞␞1793886161␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞1,0␞2␞/tmp/libtmux-docs-7y8…",
+              "stderr": "",
+              "shortened": true
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "sessions",
+          "label": "Server.sessions",
+          "anchor": "server.sessions",
+          "type": "QueryList[Session]",
+          "returned": [
+            "$0"
+          ],
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "list-sessions -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_standard…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "1␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞1060␞2000␞0␞0␞0␞0␞1␞0␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞1␞1␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞24␞%2␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2890194␞0␞␞79␞␞␞/tmp/marked␞0␞8,16,24,32,40,48,56,64,72␞host␞0␞/dev/pts/17␞80␞0␞0␞1␞0␞2889448␞23␞0␞1793886161␞␞0␞␞1793886161␞1␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞1,0␞2␞/tmp/libtm…",
+              "stderr": "",
+              "shortened": true
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "windows-1",
+          "label": "Session.windows",
+          "anchor": "each.windows",
+          "iteration": 1,
+          "type": "QueryList[Window]",
+          "returned": [
+            "@0",
+            "@1"
+          ],
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "list-windows -t $0 -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_sta…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "1␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞2␞1295␞2000␞0␞0␞0␞0␞1␞2␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞0␞1␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞24␞%1␞0␞1␞0␞0␞41␞0␞0␞␞␞0␞hidden␞2890032␞0␞␞79␞␞sh␞/tmp/marked␞0␞8,16,24,32␞host␞0␞/dev/pts/16␞39␞41␞0␞1␞0␞2889448␞23␞0␞1793886161␞␞0␞␞1793886161␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞1,0␞2␞/tmp/libtmux-docs-7y8…",
+              "stderr": "",
+              "shortened": true
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "panes-1",
+          "label": "Window.panes",
+          "anchor": "window.panes",
+          "iteration": 1,
+          "type": "QueryList[Pane]",
+          "returned": [
+            "%0",
+            "%1"
+          ],
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "list-panes -t @0 -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_stand…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "1␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞1060␞2000␞0␞0␞0␞0␞1␞2␞0␞0␞0␞0␞0␞$1␞0␞0␞1␞1␞0␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞-␞0␞1␞24␞%0␞0␞0␞0␞1␞0␞0␞0␞␞␞0␞hidden␞2889449␞0␞␞39␞␞␞/tmp/marked␞0␞8,16,24,32␞host␞0␞/dev/pts/14␞40␞0␞0␞1␞0␞2889448␞23␞0␞1793886161␞␞0␞␞1793886161␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞1,0␞2␞/tmp/…",
+              "stderr": "",
+              "shortened": true
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "panes-2",
+          "label": "Window.panes",
+          "anchor": "window.panes",
+          "iteration": 2,
+          "type": "QueryList[Pane]",
+          "returned": [
+            "%2"
+          ],
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "list-panes -t @1 -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_stand…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "1␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞1060␞2000␞0␞0␞0␞0␞1␞1␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞1␞1␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞1␞24␞%2␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2890194␞0␞␞79␞␞␞/tmp/marked␞0␞8,16,24,32,40,48,56,64,72␞host␞0␞/dev/pts/17␞80␞0␞0␞1␞0␞2889448␞23␞0␞1793886161␞␞0␞␞1793886161␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞1,0␞2␞/tmp/libtm…",
+              "stderr": "",
+              "shortened": true
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "pane-window",
+          "label": "Pane.window",
+          "anchor": "right.window",
+          "type": "Window",
+          "returned": {
+            "id": "@0",
+            "index": "0",
+            "name": "editor"
+          },
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "list-windows -t @0 -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_sta…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "1␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞2␞1295␞2000␞0␞0␞0␞0␞1␞2␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞0␞1␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞24␞%1␞0␞1␞0␞0␞41␞0␞0␞␞␞0␞hidden␞2890032␞0␞␞79␞␞sh␞/tmp/marked␞0␞8,16,24,32␞host␞0␞/dev/pts/16␞39␞41␞0␞1␞0␞2889448␞23␞0␞1793886161␞␞0␞␞1793886161␞0␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞1,0␞2␞/tmp/libtmux-docs-7y8…",
+              "stderr": "",
+              "shortened": true
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "window-session",
+          "label": "Window.session",
+          "anchor": "window.session",
+          "type": "Session",
+          "returned": {
+            "id": "$0",
+            "name": "demo"
+          },
+          "commands": [
+            {
+              "role": "command",
+              "tmux": "list-sessions -F#{active_window_index}␞#{alternate_saved_x}␞#{alternate_saved_y}␞#{bracket_paste_flag}␞#{config_files}␞#{cursor_character}␞#{cursor_flag}␞#{cursor_x}␞#{cursor_y}␞#{history_bytes}␞#{history_limit}␞#{history_size}␞#{insert_flag}␞#{keypad_cursor_flag}␞#{keypad_flag}␞#{last_window_index}␞#{line}␞#{mouse_all_flag}␞#{mouse_any_flag}␞#{mouse_button_flag}␞#{mouse_sgr_flag}␞#{mouse_standard…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "1␞4294967295␞4294967295␞0␞/dev/null␞ ␞1␞2␞0␞1060␞2000␞0␞0␞0␞0␞1␞0␞0␞0␞0␞0␞0␞$1␞0␞1␞1␞1␞1␞1␞default␞23␞sh␞/tmp/marked␞0␞␞␞␞default␞*␞0␞0␞24␞%2␞0␞0␞0␞0␞0␞0␞0␞␞␞0␞hidden␞2890194␞0␞␞79␞␞␞/tmp/marked␞0␞8,16,24,32,40,48,56,64,72␞host␞0␞/dev/pts/17␞80␞0␞0␞1␞0␞2889448␞23␞0␞1793886161␞␞0␞␞1793886161␞1␞␞␞␞␞␞␞0␞$0␞␞0␞0␞demo␞/tmp/marked␞1,0␞2␞/tmp/libtm…",
+              "stderr": "",
+              "shortened": true
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "sh",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
               }
             ]
           }

@@ -50,7 +50,12 @@ export function instrumentPython(source, steps) {
 const interpreter = () => execFileSync('python3', ['-c', 'import sys; print(sys.executable)'], { encoding: 'utf8' }).trim()
 let library
 
+const SESSION_OF = (name) => `{"id": ${name}.session_id, "name": ${name}.session_name}`
 const SERVER = '{"socketPath": str(server.socket_path), "configFile": server.config_file}'
+
+const SESSION = SESSION_OF('session')
+const WINDOW = (name) => `{"id": ${name}.window_id, "index": ${name}.window_index, "name": ${name}.window_name}`
+const PANE = (name) => `{"id": ${name}.pane_id}`
 
 export const RECIPES = {
   'typed-graph': {
@@ -70,13 +75,25 @@ export const RECIPES = {
     toolchain: () => ({ python: execFileSync('python3', ['--version'], { encoding: 'utf8' }).trim().split(' ')[1] }),
     helpers: [],
     // In the order the calls run. `session.active_window` is a property and still asks tmux.
+    // The last five read the objects the walk reaches: `server.sessions`, `each.windows` and `window.panes` ask tmux
+    // (the last two once per session and once per window), `right.window` and `window.session` ask it again for their parent.
     steps: [
       { id: 'new-server', label: 'Server', anchor: 'libtmux.Server(', type: 'Server', value: SERVER },
-      { id: 'new-session', label: 'Server.new_session', anchor: 'server.new_session(', type: 'Session', value: '{"id": session.session_id, "name": session.session_name}' },
-      { id: 'active-window', label: 'Session.active_window', anchor: 'session.active_window', type: 'Window', value: '{"id": window.window_id, "name": window.window_name}' },
-      { id: 'split', label: 'Window.split', anchor: 'window.split(', type: 'Pane', value: '{"id": pane.pane_id}' },
-      { id: 'send-keys', label: 'Pane.send_keys', anchor: 'pane.send_keys(', type: 'None', value: 'None' },
-      { id: 'capture', label: 'Pane.capture_pane', anchor: 'pane.capture_pane()', type: 'list[str]', value: 'None', repeat: true, wrapped: true },
+      { id: 'new-session', label: 'Server.new_session', anchor: 'server.new_session(', type: 'Session', value: SESSION },
+      { id: 'active-window', label: 'Session.active_window', anchor: 'session.active_window', type: 'Window', value: WINDOW('editor') },
+      { id: 'rename', label: 'Window.rename_window', anchor: 'editor.rename_window(', type: 'Window', value: WINDOW('editor') },
+      { id: 'active-pane', label: 'Window.active_pane', anchor: 'editor.active_pane', type: 'Pane', value: PANE('left') },
+      { id: 'split', label: 'Pane.split', anchor: 'left.split(', type: 'Pane', value: PANE('right') },
+      { id: 'new-window', label: 'Session.new_window', anchor: 'session.new_window(', type: 'Window', value: WINDOW('logs') },
+      { id: 'send-keys', label: 'Pane.send_keys', anchor: 'right.send_keys(', type: 'None', value: 'None' },
+      { id: 'capture', label: 'Pane.capture_pane', anchor: 'right.capture_pane()', type: 'list[str]', value: 'None', repeat: true, wrapped: true },
+      { id: 'select-pane', label: 'Pane.select', anchor: 'right.select()', type: 'Pane', value: PANE('right') },
+      { id: 'select-window', label: 'Window.select', anchor: 'logs.select()', type: 'Window', value: WINDOW('logs') },
+      { id: 'sessions', label: 'Server.sessions', anchor: 'server.sessions', type: 'QueryList[Session]', value: '[each.session_id for each in sessions]' },
+      { id: 'windows', label: 'Session.windows', anchor: 'each.windows', type: 'QueryList[Window]', value: '[member.window_id for member in windows]', repeat: true },
+      { id: 'panes', label: 'Window.panes', anchor: 'window.panes', type: 'QueryList[Pane]', value: '[member.pane_id for member in panes]', repeat: true },
+      { id: 'pane-window', label: 'Pane.window', anchor: 'right.window', type: 'Window', value: WINDOW('window') },
+      { id: 'window-session', label: 'Window.session', anchor: 'window.session', type: 'Session', value: SESSION_OF('owner') },
       { id: 'kill', label: 'Server.kill', anchor: 'server.kill()', type: 'None', value: 'None' },
     ],
     build({ sandbox, checkout, code, marked }) {

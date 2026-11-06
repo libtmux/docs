@@ -26,32 +26,15 @@ const TS_HELPER = `import { execFileSync } from "node:child_process";
 export function docsMark(step: string, value: unknown): void {
   execFileSync(process.env.LIBTMUX_DOCS_MARK as string, [step, JSON.stringify(value ?? null)], { stdio: ["ignore", "inherit", "inherit"] });
 }
-
-/** The last value a hooked method returned. */
-export const docsReturned: Record<string, unknown> = {};
-
-/** Keep what \`target.method()\` resolves to, for a call whose statement does not bind it. */
-export function docsHook(target: object, method: string): void {
-  const prototype = Object.getPrototypeOf(target);
-  const original = prototype[method];
-  if (original.docsHooked) return;
-  const hooked = async function (this: unknown, ...args: unknown[]) {
-    const value = await original.apply(this, args);
-    docsReturned[method] = value;
-    return value;
-  };
-  Object.defineProperty(hooked, "docsHooked", { value: true });
-  prototype[method] = hooked;
-}
 `
 
 /** A handle as a recording stores it: tmux's id, and its name where it has one. */
 const handle = (name, extra = '') => `{ id: ${name}.id${extra} }`
 
-/** Insert the marker lines, the import that provides them, and the hook for the one call whose result its statement drops. */
+/** Insert the marker lines and the import that provides them. */
 export function instrumentTs(source, steps) {
-  const marked = instrumentLines(source, steps, (step) => [`docsMark(${JSON.stringify(step.id)}, ${step.value}); // docs:mark`, ...(step.hook ? [`docsHook(${step.hook.target}, ${JSON.stringify(step.hook.method)}); // docs:mark`] : [])].join('\n'))
-  return `import { docsHook, docsMark, docsReturned } from "./docs_mark.ts"; // docs:mark\n${marked}`
+  const marked = instrumentLines(source, steps, (step) => `docsMark(${JSON.stringify(step.id)}, ${step.value}); // docs:mark`)
+  return `import { docsMark } from "./docs_mark.ts"; // docs:mark\n${marked}`
 }
 
 /** The checkout's own source is what Bun loads (the package's \`bun\` export condition), so there is nothing to build; \`node_modules/libtmux\` is a link to the package in the checkout. */
@@ -65,14 +48,24 @@ export const RECIPES = {
     source: (root) => quickstartSource(root, 'ts', 'quickstart.ts'),
     checkout: (port, env, expand) => checkoutOf(port, env, expand),
     helpers: [{ file: 'docs_mark.ts', source: TS_HELPER }],
-    // The split's result is dropped by its statement, so a hook placed after the window is made keeps it.
+    // In the order the calls run. `activeWindow`, `activePane`, `window` and `session` are getters that read the handle's own snapshot and send tmux nothing; `window.panes.map(` runs once for each window of each session.
     steps: [
       { id: 'new-server', label: 'Server', anchor: 'new Server(', type: 'Server', value: '{ socketPath: server.socketPath, configFile: server.configFile }' },
       { id: 'new-session', label: 'Server.newSession', anchor: 'server.newSession(', type: 'Promise<Session>', value: '{ id: session.id, name: session.name }' },
-      { id: 'new-window', label: 'Session.newWindow', anchor: 'session.newWindow(', type: 'Promise<Window>', value: '{ id: editor.id, name: editor.name }', hook: { target: 'editor', method: 'split' } },
-      { id: 'split', label: 'Window.split', anchor: 'editor.split(', type: 'Promise<Pane>', value: `{ id: (docsReturned.split as { id: string }).id }` },
-      { id: 'send-keys', label: 'Pane.sendKeys', anchor: 'pane.sendKeys(', type: 'Promise<void>', value: 'null' },
-      { id: 'capture', label: 'Pane.capture', anchor: 'pane.capture(', type: 'Promise<readonly string[]>', value: 'lines', repeat: true },
+      { id: 'active-window', label: 'Session.activeWindow', anchor: 'session.activeWindow', type: 'Window | undefined', value: '{ id: editor?.id, index: editor?.index, name: editor?.name }' },
+      { id: 'rename', label: 'Window.rename', anchor: 'editor.rename(', type: 'Promise<void>', value: 'null' },
+      { id: 'active-pane', label: 'Window.activePane', anchor: 'editor.activePane', type: 'Pane | undefined', value: '{ id: left?.id }' },
+      { id: 'split', label: 'Pane.split', anchor: 'left.split(', type: 'Promise<Pane>', value: '{ id: right.id }' },
+      { id: 'new-window', label: 'Session.newWindow', anchor: 'session.newWindow(', type: 'Promise<Window>', value: '{ id: logs.id, index: logs.index, name: logs.name }' },
+      { id: 'send-keys', label: 'Pane.sendKeys', anchor: 'right.sendKeys(', type: 'Promise<void>', value: 'null' },
+      { id: 'capture', label: 'Pane.capture', anchor: 'right.capture(', type: 'Promise<readonly string[]>', value: 'lines', repeat: true },
+      { id: 'select-pane', label: 'Pane.select', anchor: 'right.select(', type: 'Promise<void>', value: 'null' },
+      { id: 'select-window', label: 'Window.select', anchor: 'logs.select(', type: 'Promise<void>', value: 'null' },
+      { id: 'snapshot', label: 'Server.snapshot', anchor: 'server.snapshot(', type: 'Promise<ServerSnapshot>', value: '{ sessions: snapshot.sessions.length, windows: snapshot.windows.length, panes: snapshot.panes.length }' },
+      { id: 'window-panes', label: 'Window.panes', anchor: 'window.panes.map(', type: 'Selection<Pane>', value: '{ panes: ids }', repeat: true },
+      { id: 'pane-by-id', label: 'Selection.one', anchor: 'snapshot.panes.one(', type: 'Pane', value: '{ id: pane.id }' },
+      { id: 'pane-window', label: 'Pane.window', anchor: 'pane.window', type: 'Window | undefined', value: '{ id: home?.id, index: home?.index, name: home?.name }' },
+      { id: 'pane-session', label: 'Pane.session', anchor: 'pane.session', type: 'Session | undefined', value: '{ id: owner?.id, name: owner?.name }' },
       { id: 'kill', label: 'Server.kill', anchor: 'server.kill(', type: 'Promise<void>', value: 'null' },
     ],
     /** The guard carries the command itself: `if-shell -F <the daemon is the one checked> '<command>' '<what to say if it was replaced>'`. */
