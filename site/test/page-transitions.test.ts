@@ -67,57 +67,67 @@ function ends(path: string, size = 16_384) {
   } finally { closeSync(fd) }
 }
 
-/** Every page the Astro shell built, native Sphinx and generated pages excluded. */
-function shellPages() {
-  const pages: { path: string; head: string; tail: string }[] = []
+/**
+ * One pass over every page the Astro shell built, native Sphinx and generated
+ * pages excluded, keeping only what the checks report: how many pages there
+ * are, the first few that fail each check, and every fortieth page's path as a
+ * sample. A full assembly has tens of thousands of pages; holding each page's
+ * head and tail took a test worker past its heap.
+ */
+function scanShellPages() {
+  const scan = { count: 0, noRouter: [] as string[], late: [] as string[], bodyHidden: [] as string[], treeHidden: 0, sample: [] as string[] }
+  const note = (list: string[], path: string) => { if (list.length < 5) list.push(path) }
   for (const file of readdirSync(SITE_ROOT, { recursive: true }) as string[]) {
     if (!file.endsWith('.html')) continue
     const path = join(SITE_ROOT, file)
     const { head, tail } = ends(path)
-    if (/<html\b[^>]*\bdata-shell-base=/.test(head) && !/<html\b[^>]*\bdata-native-shell-export/.test(head)) pages.push({ path, head, tail })
+    if (!/<html\b[^>]*\bdata-shell-base=/.test(head) || /<html\b[^>]*\bdata-native-shell-export/.test(head)) continue
+    if (scan.count % 40 === 0) scan.sample.push(path)
+    scan.count++
+    if (!head.includes('<meta name="astro-view-transitions-enabled" content="true"')
+      || !/<meta name="astro-view-transitions-fallback" content="swap"/.test(head)) note(scan.noRouter, path)
+    if (!/<\/body>\s*<\/html>\s*$/.test(tail)) note(scan.late, path)
+    if (/html\.fonts-pending body|html\.link-hints-pending body/.test(head)) note(scan.bodyHidden, path)
+    if (head.includes('html.fonts-pending .api-nav [role="tree"]')) scan.treeHidden++
   }
-  return pages
+  return scan
 }
 
-describe.skipIf(!SITE_BUILT)('built shell pages', () => {
-  const pages = SITE_BUILT ? shellPages() : []
+let scanned: ReturnType<typeof scanShellPages> | undefined
+/** The scan, made once, by the first check that needs it. */
+const shellScan = () => (scanned ??= scanShellPages())
 
-  it('are found', () => { expect(pages.length).toBeGreaterThan(0) })
+describe.skipIf(!SITE_BUILT)('built shell pages', () => {
+  it('are found', () => { expect(shellScan().count).toBeGreaterThan(0) })
 
   it('enable the client router so a link swaps the page in place', () => {
-    const without = pages.filter(({ head }) => !head.includes('<meta name="astro-view-transitions-enabled" content="true"')
-      || !/<meta name="astro-view-transitions-fallback" content="swap"/.test(head))
-    expect(without.map(({ path }) => path).slice(0, 5)).toEqual([])
+    expect(shellScan().noRouter).toEqual([])
   })
 
   it('end at </body> and </html>, so the zone-injected beacon follows every required module', () => {
-    const late = pages.filter(({ tail }) => !/<\/body>\s*<\/html>\s*$/.test(tail))
-    expect(late.map(({ path }) => path).slice(0, 5)).toEqual([])
+    expect(shellScan().late).toEqual([])
   })
 
   it('hide only the API tree while the gate runs', () => {
-    const body = pages.filter(({ head }) => /html\.fonts-pending body|html\.link-hints-pending body/.test(head))
-    expect(body.map(({ path }) => path).slice(0, 5)).toEqual([])
-    const tree = pages.filter(({ head }) => head.includes('html.fonts-pending .api-nav [role="tree"]'))
-    expect(tree.length).toBe(pages.length)
+    expect(shellScan().bodyHidden).toEqual([])
+    expect(shellScan().treeHidden).toBe(shellScan().count)
   })
 })
 
 describe.skipIf(!SITE_BUILT)('built pages with code frames', () => {
-  // Reading every page body is slow on a full assembly, so an evenly spaced sample stands for them.
-  const framed = (SITE_BUILT ? shellPages() : []).filter((_, index) => index % 40 === 0)
-    .map(({ path }) => ({ path, html: readFileSync(path, 'utf8') }))
-    .filter(({ html }) => html.includes('class="expressive-code"'))
   const stylesheet = /<link rel="stylesheet" href="[^"]*\/ec\.[A-Za-z0-9_-]+\.css"\s*\/?>/g
 
-  it('are sampled', () => { expect(framed.length).toBeGreaterThan(0) })
-
+  // Reading every page body is slow on a full assembly, so the scan's sample stands for them, read one page at a time.
   it('load the code stylesheet from the head, where the router preloads it before a swap', () => {
-    for (const { path, html } of framed) {
+    let framed = 0
+    for (const path of shellScan().sample) {
+      const html = readFileSync(path, 'utf8')
+      if (!html.includes('class="expressive-code"')) continue
+      framed++
       const body = html.indexOf('<body')
       expect(html.slice(0, body).match(stylesheet) ?? [], `${path}: one link in the head`).toHaveLength(1)
       expect(html.slice(body).match(/<link\b[^>]*rel="stylesheet"/g) ?? [], `${path}: no stylesheet link in the body`).toEqual([])
     }
+    expect(framed, 'the sample holds pages with code frames').toBeGreaterThan(0)
   })
 })
-
