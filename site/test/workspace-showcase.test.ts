@@ -8,8 +8,8 @@ import { SOURCES, TOPICS as MANIFEST_TOPICS } from '../../scripts/lib/workspace-
 import { PORT_BY_SLUG, productAvailable } from '../src/lib/ports'
 import { renderLayout } from '../src/lib/tmux-layout'
 import {
-  paneCommands, portSupport, previewSize, previewWindows, revisionUrl, showcaseHeadings, showsTopic, supportedPorts, TMUXP, tmuxpExampleUrl, TOPICS,
-  workspaceShowcase, type ShowcaseExample, type TopicId, type WorkspaceShowcase,
+  citedTest, landingExample, offersPicker, paneCommands, portSupport, presetOptions, previewSize, previewWindows, revisionUrl, showcaseHeadings, showsTopic,
+  supportedPorts, TMUXP, tmuxpExampleUrl, TOPICS, workspaceShowcase, type ShowcaseExample, type TopicId, type WorkspaceShowcase,
 } from '../src/lib/workspace-showcase'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
@@ -138,6 +138,68 @@ describe('the workspace showcase data source', () => {
 
   it('lists the classics in the order the generator uses', () => {
     expect(TOPICS.map((topic) => topic.id)).toEqual(MANIFEST_TOPICS)
+  })
+})
+
+describe('the example a landing page opens on', () => {
+  /** An example of `topic` whose file has `windows` windows and which `via` ways of reaching it test. */
+  const example = (topic: TopicId, via: ShowcaseExample['tests'][number]['via'][] = ['cli'], windows = 1) => ({
+    topic, tests: via.map((route) => ({ via: route })), json: JSON.stringify({ windows: Array.from({ length: windows }, () => ({ panes: ['echo'] })) }),
+  }) as unknown as ShowcaseExample
+  const pick = (...examples: ShowcaseExample[]) => landingExample({ examples }).topic
+
+  it('is never the short-hand fixture where the port has a classic to show', () => {
+    for (const port of supportedPorts()) {
+      const showcase = workspaceShowcase(port)
+      if (!showcase || !offersPicker(showcase)) continue
+      expect(landingExample(showcase).topic, port).not.toBe('shorthand')
+    }
+  })
+
+  it('opens each port on the file that best shows a workspace', () => {
+    const topics = Object.fromEntries(supportedPorts().flatMap((port) => {
+      const showcase = workspaceShowcase(port)
+      return showcase ? [[port, landingExample(showcase).topic]] : []
+    }))
+    expect(topics).toEqual({
+      py: 'main-horizontal', ts: 'three-pane', rs: 'three-pane', go: 'environment', cxx: 'two-pane',
+      csharp: 'two-pane', ruby: 'tiled', julia: 'shell-command-before', powershell: 'main-horizontal',
+    })
+  })
+
+  it('prefers a file a test runs the command on to a better classic only the library loads', () => {
+    expect(pick(example('three-pane', ['library']), example('tiled', ['cli']))).toBe('tiled')
+    expect(pick(example('three-pane', ['library']), example('two-pane', ['library', 'cli']))).toBe('two-pane')
+  })
+
+  it('prefers a classic to a fixture that shows one key, even a tested fixture of the same route', () => {
+    expect(pick(example('shorthand'), example('blank-panes'), example('main-horizontal'))).toBe('main-horizontal')
+    expect(pick(example('sleep'), example('tiled'))).toBe('tiled')
+  })
+
+  it('prefers a single window among classics, then the order of the classics', () => {
+    expect(pick(example('three-pane', ['cli'], 3), example('main-horizontal', ['cli'], 1))).toBe('main-horizontal')
+    expect(pick(example('main-horizontal'), example('three-pane'), example('two-pane'))).toBe('three-pane')
+    expect(pick(example('three-pane', ['cli'], 2), example('two-pane', ['cli'], 2), example('tiled', ['cli'], 2))).toBe('three-pane')
+  })
+
+  it('keeps the first of the presets when none is a classic', () => {
+    expect(pick(example('sleep'), example('environment'), example('shorthand'))).toBe('shorthand')
+    expect(pick(example('sleep', ['library']), example('minimal', ['cli']))).toBe('minimal')
+  })
+
+  it('cites a test that runs the command, else the first test', () => {
+    const tests = [{ via: 'library', name: 'a' }, { via: 'cli', name: 'b' }, { via: 'cli', name: 'c' }]
+    expect(citedTest({ tests } as unknown as ShowcaseExample).name).toBe('b')
+    expect(citedTest({ tests: tests.slice(0, 1) } as unknown as ShowcaseExample).name).toBe('a')
+  })
+
+  it('lists the chosen preset first and the rest in the order of the classics', () => {
+    const showcase = workspaceShowcase('ts')!
+    const order = TOPICS.map((topic) => topic.id).filter((id) => showcase.examples.some((item) => item.topic === id))
+    expect(presetOptions(showcase).map((preset) => preset.id)).toEqual(order)
+    expect(presetOptions(showcase, 'three-pane').map((preset) => preset.id)).toEqual(['three-pane', ...order.filter((id) => id !== 'three-pane')])
+    expect(presetOptions(showcase, 'no-such' as TopicId).map((preset) => preset.id), 'a topic the port lacks changes nothing').toEqual(order)
   })
 })
 

@@ -1,5 +1,5 @@
 import { type ChildProcess, execFileSync, spawn, spawnSync } from 'node:child_process'
-import { chmodSync, mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { chmodSync, linkSync, mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -227,6 +227,23 @@ describe('reading a tmux server', () => {
       }
     })
 
+    it('lists the two names of a hard-linked socket as one server', async () => {
+      const { base, sandbox, server } = await make()
+      const inside = createServer()
+      try {
+        mkdirSync(join(sandbox, 'tmp', 'first'), { recursive: true })
+        mkdirSync(join(sandbox, 'tmp', 'second'))
+        await new Promise<void>((resolve) => inside.listen(join(sandbox, 'tmp', 'first', 'socket'), resolve))
+        linkSync(join(sandbox, 'tmp', 'first', 'socket'), join(sandbox, 'tmp', 'second', 'socket'))
+        expect(sandboxSockets(sandbox)).toHaveLength(1)
+        expect(readTmuxState({ sandbox, run: () => '' })()).toEqual(EMPTY)
+      } finally {
+        inside.close()
+        server.close()
+        rmSync(base, { recursive: true, force: true })
+      }
+    })
+
     it('reads a socket of the sandbox, and a link that stays inside it, by the real path', async () => {
       const { base, sandbox, server } = await make()
       const inside = createServer()
@@ -365,6 +382,13 @@ describe('waiting for a state to settle', () => {
       const two = (name: string): TmuxState => ({ sessions: [{ id: '$0', name: 'checks' }], windows: [window({ name, automaticName: true } as Partial<TmuxWindow>)], panes: [pane({ width: 40, command: 'cat', active: false }), pane({ id: '%1', left: 41, width: 39, command: 'sh' })] })
       expect((await settledState({ ...options, commands: ['cat', 'sh'], read: reader(two('sh'), two('sh')) })()).windows[0]!.name).toBe('sh')
       await expect(settledState({ ...options, commands: ['cat', 'sh'], read: reader(two('cat')), timeoutMs: 25 })()).rejects.toThrow(/still named window @0 "cat"/)
+    })
+
+    it('accepts the name of a launcher it is told about, and no other', async () => {
+      const launched = reader(named('env', 'cat', true), named('env', 'cat', true))
+      expect((await settledState({ ...cat, windowNames: ['env'], read: launched })()).windows[0]!.name).toBe('env')
+      await expect(settledState({ ...cat, windowNames: ['env'], read: reader(named('tmux', 'cat', true)), timeoutMs: 25 })()).rejects.toThrow(/still named window @0 "tmux"/)
+      await expect(settledState({ ...cat, read: reader(named('env', 'cat', true)), timeoutMs: 25 })()).rejects.toThrow(/still named window @0 "env"/)
     })
 
     it('is not waited for when it was named explicitly, or when the reader does not say', async () => {

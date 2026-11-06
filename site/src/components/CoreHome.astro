@@ -2,7 +2,6 @@
 import { Code } from 'astro-expressive-code/components'
 import CoreShowcase from './CoreShowcase.astro'
 import DocCard from './DocCard.astro'
-import HomeExample from './HomeExample.astro'
 import { PORT_BY_SLUG } from '../lib/ports'
 import { CAPABILITY_GROUPS, coreLead, resolveCoreHome } from '../lib/core-home'
 import { portCapabilities, type CapabilityTable } from '../lib/core-capabilities'
@@ -78,9 +77,7 @@ const rest = (group: keyof typeof CAPABILITY_GROUPS) => home.capabilities[group]
 </div>
 
 <h2 id="what-it-does">What it does</h2>
-{showcase.length > 0
-  ? <div class="not-prose"><CoreShowcase port={port} /></div>
-  : example && <div class="not-prose"><HomeExample port={port} language={info.name} example={example} fixed /></div>}
+{(example || showcase.length > 0) && <div class="not-prose"><CoreShowcase port={port} /></div>}
 
 {Object.entries(CAPABILITY_GROUPS).map(([group, title]) => {
   const rows = rest(group as keyof typeof CAPABILITY_GROUPS)

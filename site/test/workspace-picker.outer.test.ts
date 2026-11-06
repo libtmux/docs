@@ -15,7 +15,9 @@ import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
  * where there is room and stack where there is not; a preset that is not shown
  * paints nothing; nothing scrolls the page sideways; the remembered or named
  * preset is on screen before the picker's script runs; and a page without
- * script shows the first preset with every example below it.
+ * script shows the first preset with every example below it. The last
+ * describe holds the same picker as a port's landing page uses it, with its
+ * summary, load command and evidence in each preset.
  *
  * The page is the real picker and examples templates, the real stylesheets,
  * the real client code and the site's own menu script. Expressive Code is
@@ -31,6 +33,8 @@ const script = (...names: string[]) => names
 const CLIENT = script('lib/home-hover-preview.ts', 'lib/status-toggletip.ts', 'lib/workspace-picker.ts')
 const MENU = script('components/docs/documentation-navigation.ts')
 const REROLL = /<style is:global>([\s\S]*?)<\/style>/.exec(read('components/RerollButton.astro'))![1]!
+/** The evidence's own rules: the page template compiles its scoped stylesheet away, so the landing page below adds it by hand. */
+const EVIDENCE = /<style>([\s\S]*?)<\/style>/.exec(read('components/workspace/WorkspaceEvidence.astro'))![1]!
 
 /** Expressive Code's frame as it draws before a stylesheet narrows it: a border and a radius of its own. */
 const FRAME = `.expressive-code { margin: 1rem 0; }
@@ -48,7 +52,7 @@ const STYLES = `${TOKENS}\n${FRAME}\n${REROLL}\n${SHEETS}`
 
 const Code = createComponent((_result: unknown, props: { code: string }) => renderTemplate`<div class="expressive-code"><figure class="frame"><figcaption class="header"></figcaption><pre><code>${props.code}</code></pre></figure></div>`)
 const modules = { 'astro-expressive-code/components': { Code } }
-const REAL = ['components/RerollButton.astro', 'components/workspace/WorkspaceConfig.astro', 'components/workspace/WorkspaceWindows.astro', 'components/docs/PickerSearch.astro']
+const REAL = ['components/RerollButton.astro', 'components/workspace/WorkspaceConfig.astro', 'components/workspace/WorkspaceWindows.astro', 'components/workspace/WorkspaceEvidence.astro', 'components/docs/PickerSearch.astro']
 const showcase = workspaceShowcase('rs')!
 const PRESETS = presetOptions(showcase)
 const IDS = PRESETS.map((preset) => preset.id)
@@ -848,6 +852,98 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
       expect(await drawings.count(), preset.id).toBe(preset.windows.length)
       for (let window = 0; window < preset.windows.length; window++) expect(await drawings.nth(window).isVisible(), `${preset.id} ${window}`).toBe(true)
     }
+    await context.close()
+  })
+})
+
+/**
+ * The picker as the landing page's Workspace tab: nothing follows it, so each
+ * preset brings its own summary, load command and evidence. The panel is a
+ * column whose configuration and drawing take what the tallest preset leaves,
+ * so the evidence of every preset ends where the stage ends.
+ */
+describe('the workspace picker as a landing page tab in Chromium', { timeout: 60_000 }, () => {
+  const ts = workspaceShowcase('ts')!
+  const OPENING = 'three-pane'
+  const LANDING = presetOptions(ts, OPENING).map((preset) => preset.id)
+
+  async function landing(styles = `${STYLES}\n${EVIDENCE}`): Promise<string> {
+    const picker = await renderAstroTemplate(await loadAstroTemplate('components/workspace/WorkspacePicker.astro', { real: REAL, modules, inlineScripts: true }),
+      { props: { showcase: ts, landing: { first: OPENING, program: 'tmux-workspace' } } })
+    return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Landing</title>
+<script>document.documentElement.dataset.js = ''</script><style>${styles}</style></head>
+<body><p id="before">Tabs</p>${picker}<p id="after">After the picker</p>
+<script>${MENU}\ninitDocumentationNavigation()</script>
+<script>${CLIENT}\ndefineWorkspacePicker()</script></body></html>`
+  }
+
+  /** Where the evidence of the shown preset ends, against the stage, and what else a reader sees of it. */
+  const foot = (tab: Page) => tab.evaluate(() => {
+    const stage = document.querySelector('.ws-picker__stage')!.getBoundingClientRect()
+    const root = document.querySelector('libtmux-workspace-picker')!
+    const panel = root.querySelector<HTMLElement>(`.ws-picker__panel[data-preset="${root.getAttribute('data-selected')}"]`)!
+    const evidence = panel.querySelector('[data-landing-evidence]')!.getBoundingClientRect()
+    const body = panel.querySelector('.ws-body')!.getBoundingClientRect()
+    const shown = (selector: string) => panel.querySelector(selector)!.checkVisibility({ visibilityProperty: true })
+    return {
+      stage: stage.height, stageBottom: stage.bottom, evidenceBottom: evidence.bottom, evidenceTop: evidence.top, bodyBottom: body.bottom, bodyHeight: body.height,
+      after: document.getElementById('after')!.getBoundingClientRect().top + scrollY,
+      summary: shown('.ws-picker__summary'), title: shown('.ws-picker__title'), evidence: shown('[data-landing-evidence]'),
+      sideways: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    }
+  })
+
+  let page: string
+  beforeAll(async () => { page = await landing() })
+
+  for (const width of [1440, 768, 390]) {
+    it(`ends every preset's evidence where the stage ends, and moves nothing below, at ${width} px`, async () => {
+      const context = await browser.newContext({ viewport: { width, height: 900 } })
+      await context.addInitScript(layoutShift)
+      const tab = await open(context, '', page)
+      const first = await foot(tab)
+      expect((await measure(tab)).visible).toEqual([OPENING])
+      for (const preset of [...LANDING, ...LANDING.toReversed()]) {
+        await choose(tab, preset)
+        const now = await foot(tab)
+        expect(now.stage, preset).toBe(first.stage)
+        expect(now.after, preset).toBe(first.after)
+        expect(now.evidenceBottom, preset).toBeCloseTo(now.stageBottom, 0)
+        expect(now.bodyBottom, preset).toBeLessThanOrEqual(now.evidenceTop)
+        expect(now.bodyHeight, preset).toBeGreaterThan(0)
+        expect(now.sideways, preset).toBeLessThanOrEqual(0)
+        // The menu names the preset, so the heading shows only without script.
+        expect([now.summary, now.title, now.evidence], preset).toEqual([true, false, true])
+      }
+      expect(await shifts(tab)).toBe(0)
+      await context.close()
+    })
+  }
+
+  it('shows the opening preset, with its command and evidence, to a reader without script', async () => {
+    const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, javaScriptEnabled: false })
+    const tab = await open(context, '', page)
+    const panels = tab.locator('.ws-picker__panel')
+    expect(await panels.count()).toBe(LANDING.length)
+    expect(await tab.locator('.ws-picker__bar').isVisible()).toBe(false)
+    for (const [index, id] of LANDING.entries()) expect(await panels.nth(index).isVisible(), id).toBe(index === 0)
+    const shown = panels.first()
+    expect(await shown.locator('.ws-picker__title').isVisible()).toBe(true)
+    expect(await shown.locator('.ws-picker__title').textContent()).toBe('Three panes')
+    expect(await shown.locator('.ws-config__panel--yaml').isVisible()).toBe(true)
+    expect(await shown.locator('svg.gp-tmux-layout').first().isVisible()).toBe(true)
+    expect(await shown.locator('[data-landing-evidence]').isVisible()).toBe(true)
+    expect(await shown.textContent()).toContain('tmux-workspace load workspace.yaml')
+    await context.close()
+  })
+
+  it('leaves the evidence off the foot of the stage when the panel is not a column, so the check can fail', async () => {
+    const bad = STYLES.replace(/html\[data-js\] \.ws-picker--landing \.ws-picker__panel \{[^}]*\}/, '')
+    expect(bad).not.toBe(STYLES)
+    const context = await browser.newContext({ viewport: { width: 1280, height: 900 } })
+    const tab = await open(context, '', await landing(`${bad}\n${EVIDENCE}`))
+    const now = await foot(tab)
+    expect(Math.abs(now.evidenceBottom - now.stageBottom)).toBeGreaterThan(1)
     await context.close()
   })
 })

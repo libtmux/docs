@@ -197,6 +197,14 @@ describe('keeping the host out of a recording', () => {
     for (const text of ['id and sidebar and d2 and a-d and -d flag', '/home/d/x', 'pytest.d', '"idle"']) expect(leaks(text, [], ['d']), text).toEqual([])
   })
 
+  it('does not take an escape after a backslash for a name', () => {
+    // libtmux-julia escapes `$` as `\d` in its format strings; a user called d is not in them.
+    for (const text of [String.raw`#{s|[$]|\\d|;s|\t|\\t|}`, String.raw`ids \d0 and \d1`]) {
+      expect(leaks(text, [], ['d']), text).toEqual([])
+      expect(sanitize(text, { names: ['d'] }), text).toBe(text)
+    }
+  })
+
   it('finds a name beside a backslash, as in a Windows path, a network share or an environment line, and rewrites it', () => {
     const cases: [string, string][] = [
       [String.raw`C:\Users\d\AppData`, 'd'],
@@ -217,7 +225,7 @@ describe('keeping the host out of a recording', () => {
       contracts: { kill_pane: { inputSchema: { type: 'object', properties: { pane: { type: 'string', pattern } } } } },
       steps: [{ tool: 'kill_pane', arguments: { pane: '%0' }, isError: false, content: [] }],
     }
-    expect(leaks(JSON.stringify(recorded), [], ['d']), 'the pattern reads as the name when it is scanned').toEqual(['d'])
+    expect(leaks(JSON.stringify(recorded), [], ['d']), 'an escape in the pattern is not a name').toEqual([])
     expect(leaks(JSON.stringify(withoutContracts(recorded)), [], ['d'])).toEqual([])
     expect(withoutContracts(recorded)).toEqual({ repo: 'o/r', revision: recorded.revision, steps: recorded.steps })
     const ranBy = { ...recorded, steps: [{ ...recorded.steps[0]!, content: [{ type: 'text', text: 'run by d' }] }] }

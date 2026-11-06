@@ -53,15 +53,25 @@ export function parseListings(output) {
 }
 
 /**
- * The sockets under a sandbox's `tmux-<uid>` directory: sockets, and symbolic
+ * The sockets under a sandbox's `tmux-<uid>` directory, and in the directories under its `tmp`: sockets, and symbolic
  * links, which `ownSockets` resolves, so a link out of the sandbox is listed
- * and then refused rather than followed or left unseen.
+ * and then refused rather than followed or left unseen. A socket with two hard
+ * links is listed once.
  */
 export function sandboxSockets(sandbox) {
-  const directory = join(sandbox, `tmux-${process.getuid?.() ?? ''}`)
-  return existsSync(directory)
-    ? readdirSync(directory).map((name) => join(directory, name)).filter((path) => { const kind = lstatSync(path); return kind.isSocket() || kind.isSymbolicLink() })
-    : []
+  const isSocket = (path) => { const kind = lstatSync(path); return kind.isSocket() || kind.isSymbolicLink() }
+  const children = (directory) => (existsSync(directory) ? readdirSync(directory).map((name) => join(directory, name)) : [])
+  // A program may also keep its socket in a directory it makes under the sandbox's `tmp`, as `tempfile.mkdtemp` does.
+  const own = children(join(sandbox, 'tmp')).flatMap((directory) => (lstatSync(directory).isDirectory() ? children(directory) : []))
+  const found = [...children(join(sandbox, `tmux-${process.getuid?.() ?? ''}`)), ...own].filter(isSocket)
+  // Two names of one socket (a hard link a program keeps to the socket it was handed) are one server.
+  const seen = new Set()
+  return found.filter((path) => {
+    const kind = lstatSync(path)
+    if (kind.isSymbolicLink()) return true
+    const key = `${kind.dev}:${kind.ino}`
+    return seen.has(key) ? false : (seen.add(key), true)
+  })
 }
 
 /**
@@ -157,11 +167,13 @@ export const recordedState = (state) => ({ ...state, windows: state.windows.map(
  * window is renamed for the program a pane runs a while after that program
  * starts, so a state read before either is not the state a reader would see. A
  * state that has not settled by `timeoutMs` is an `UnsettledPaneError`, which
- * the recorder answers by recording again.
+ * the recorder answers by recording again. A window named one of `windowNames`
+ * is settled as it is: a program started through a launcher (`env -- cat`)
+ * leaves its window named for the launcher, and tmux never renames it.
  *
- * @param {{ read: () => object, commands: string[], port: string, timeoutMs?: number, intervalMs?: number, sleep?: (ms: number) => Promise<void> }} options
+ * @param {{ read: () => object, commands: string[], port: string, windowNames?: string[], timeoutMs?: number, intervalMs?: number, sleep?: (ms: number) => Promise<void> }} options
  */
-export function settledState({ read, commands, port, timeoutMs = 8000, intervalMs = 250, sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)) }) {
+export function settledState({ read, commands, port, windowNames = [], timeoutMs = 8000, intervalMs = 250, sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)) }) {
   return async (step) => {
     const deadline = Date.now() + timeoutMs
     const after = step ? step.tool : 'the server started'
@@ -169,7 +181,7 @@ export function settledState({ read, commands, port, timeoutMs = 8000, intervalM
     for (;;) {
       const state = read()
       const odd = state.panes.find((pane) => !commands.includes(pane.command))
-      const unnamed = state.windows.find((window) => window.automaticName && window.name !== state.panes.find((pane) => pane.window === window.id && pane.active)?.command)
+      const unnamed = state.windows.find((window) => window.automaticName && !windowNames.includes(window.name) && window.name !== state.panes.find((pane) => pane.window === window.id && pane.active)?.command)
       const text = JSON.stringify(state)
       if (!odd && !unnamed && text === previous) return recordedState(state)
       if (Date.now() >= deadline) {

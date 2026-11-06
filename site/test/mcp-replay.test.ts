@@ -352,16 +352,22 @@ describe('the frames of a recording that stored its tmux server\'s state', () =>
   })
 })
 
+/** The components McpReplay draws with; a test template renders a child only when it is listed. */
+const REPLAY_PARTS = ['components/replay/TmuxScreen.astro', 'components/replay/ReplayControls.astro']
+
 describe('the replay component', () => {
   const windows: Window[] = []
   afterEach(async () => { for (const win of windows.splice(0)) await win.happyDOM.abort() })
 
   // The page's code block, as a marked element holding the code.
   const template = loadAstroTemplate('components/mcp/McpReplay.astro', {
+    real: REPLAY_PARTS,
     modules: { 'astro-expressive-code/components': { Code: createComponent((_result: unknown, props: { code: string; lang: string; frame?: string }) => renderTemplate`<pre data-lang="${props.lang}" data-code-frame="${props.frame ?? ''}">${props.code}</pre>`) } },
   })
   const component = readFileSync(new URL('../src/components/mcp/McpReplay.astro', import.meta.url), 'utf8')
-  const script = transpileModule(/<script>([\s\S]*?)<\/script>/.exec(component)![1]!, { compilerOptions: { module: ModuleKind.CommonJS, target: ScriptTarget.ES2022 } }).outputText
+  const commonjs = (source: string) => transpileModule(source, { compilerOptions: { module: ModuleKind.CommonJS, target: ScriptTarget.ES2022 } }).outputText
+  // The page's script imports the shared player; the stand-in `require` hands it the player's own source, evaluated beside it.
+  const script = `var exports = {};\nvar playerExports = {};\n(function (exports) {\n${commonjs(readFileSync(new URL('../src/lib/replay-player.ts', import.meta.url), 'utf8'))}\n})(playerExports);\nvar require = function (name) { if (/replay-player$/.test(name)) return playerExports; throw new Error('unexpected import ' + name) };\n${commonjs(/<script>([\s\S]*?)<\/script>/.exec(component)![1]!)}`
 
   async function markup(port: string, recorded = true, stateless = false) {
     const snapshot = () => JSON.parse(readFileSync(new URL(`../src/data/mcp-protocol/${port}.json`, import.meta.url), 'utf8'))
@@ -439,6 +445,16 @@ describe('the replay component', () => {
     expect(document.querySelector('a.mcp-call__tool')).toBeNull()
     const css = readFileSync(new URL('../src/styles/mcp-replay.css', import.meta.url), 'utf8')
     expect(css, 'the replay draws no dotted line of its own').not.toMatch(/\.mcp-replay a[^{]*\{[^}]*dotted/)
+  })
+
+  it('gives the track a row of its own on a narrow bar, after the rule that sizes it beside the buttons', () => {
+    const css = readFileSync(new URL('../src/styles/mcp-replay.css', import.meta.url), 'utf8')
+    expect(css).toMatch(/\.mcp-replay__controls \{[^}]*flex-wrap: wrap;[^}]*container-type: inline-size;/)
+    const base = css.search(/^\.mcp-replay__track \{/m)
+    const narrow = css.search(/@container \(max-width: 40rem\) \{\s*\.mcp-replay__track \{\s*flex: 1 0 100%;\s*order: -1;/)
+    expect(base).toBeGreaterThan(0)
+    // Both rules have one class, so the later one wins: before the base rule, the narrow one would lose its flex.
+    expect(narrow, 'the narrow rule comes after the base rule').toBeGreaterThan(base)
   })
 
   it('opts out of the article\'s prose styles, so it renders the same on the overview as on the language page', async () => {
@@ -629,7 +645,8 @@ describe('the replay component', () => {
     expect(frameShown(document)).toEqual([CALLS.ts])
     click(win, document.querySelector('[data-mark="1"]')!)
     expect(frameShown(document)).toEqual([1])
-    expect(document.querySelectorAll('[data-mark].is-done')).toHaveLength(1)
+    // The start dot and the first call's.
+    expect(document.querySelectorAll('[data-mark].is-done')).toHaveLength(2)
     click(win, document.querySelector(`[data-mark="${CALLS.ts}"]`)!)
     click(win, action(document, 'play'))
     expect(turnsShown(document), 'play at the end starts again from the prompt').toBe(0)
