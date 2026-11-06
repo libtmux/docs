@@ -1,6 +1,6 @@
 import { closeSync, openSync, readFileSync, readSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { loadHeaderTemplates, renderPage } from './header-page'
 import { SITE_BUILT, SITE_ROOT } from './site-root'
 
@@ -96,8 +96,12 @@ function scanShellPages() {
 let scanned: ReturnType<typeof scanShellPages> | undefined
 /** The scan, made once, by the first check that needs it. */
 const shellScan = () => (scanned ??= scanShellPages())
+/** A full assembly takes longer to scan than one test may run, so each suite scans before its tests. */
+const SCAN_TIMEOUT_MS = 180_000
 
 describe.skipIf(!SITE_BUILT)('built shell pages', () => {
+  beforeAll(() => { shellScan() }, SCAN_TIMEOUT_MS)
+
   it('are found', () => { expect(shellScan().count).toBeGreaterThan(0) })
 
   it('enable the client router so a link swaps the page in place', () => {
@@ -115,6 +119,8 @@ describe.skipIf(!SITE_BUILT)('built shell pages', () => {
 })
 
 describe.skipIf(!SITE_BUILT)('built pages with code frames', () => {
+  beforeAll(() => { shellScan() }, SCAN_TIMEOUT_MS)
+
   const stylesheet = /<link rel="stylesheet" href="[^"]*\/ec\.[A-Za-z0-9_-]+\.css"\s*\/?>/g
 
   // Reading every page body is slow on a full assembly, so the scan's sample stands for them, read one page at a time.
