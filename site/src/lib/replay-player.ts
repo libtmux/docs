@@ -32,6 +32,12 @@ export interface ReplayOptions {
   ownsKey?: (target: HTMLElement) => boolean
   /** The element that listens for keys, and that a reader tabs to. */
   body: HTMLElement
+  /**
+   * What the dot for `step` shows: the call, in code, and what it did. With
+   * it, a dot under the pointer or focus shows a tooltip, and a pointer over
+   * it previews that step as hovering the call's code does.
+   */
+  tip?: (step: number) => { call?: string; text: string } | undefined
 }
 
 export interface ReplayPlayer {
@@ -135,6 +141,35 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
   root.querySelector('[data-action="back"]')!.addEventListener('click', () => go(step - 1))
   root.querySelector('[data-action="forward"]')!.addEventListener('click', () => go(step + 1))
   marks.forEach((mark) => mark.addEventListener('click', () => go(Number(mark.dataset.mark))))
+  const tip = root.querySelector<HTMLElement>('[data-tip]')
+  if (tip && options.tip) {
+    const describe = options.tip
+    // A touch screen fires mouseenter on a tap and never mouseleave, so only a pointer that can hover previews.
+    const canHover = window.matchMedia?.('(hover: hover)').matches ?? true
+    const show = (mark: HTMLElement) => {
+      const content = describe(Number(mark.dataset.mark))
+      if (!content) { tip.hidden = true; return }
+      const call = document.createElement('code')
+      call.textContent = content.call ?? ''
+      const text = document.createElement('span')
+      text.textContent = content.text
+      tip.replaceChildren(...(content.call ? [call] : []), ...(content.text ? [text] : []))
+      tip.hidden = false
+      // Centred on the dot, and kept inside the track's ends so a dot at either end keeps its tooltip on the page.
+      const half = tip.offsetWidth / 2
+      const width = tip.parentElement!.clientWidth
+      tip.style.left = `${Math.max(half - 8, Math.min(width - half + 8, mark.offsetLeft))}px`
+    }
+    const hide = () => { tip.hidden = true }
+    marks.forEach((mark) => {
+      if (canHover) {
+        mark.addEventListener('mouseenter', () => { show(mark); hover = Number(mark.dataset.mark); render() })
+        mark.addEventListener('mouseleave', () => { hide(); hover = null; render() })
+      }
+      mark.addEventListener('focus', () => show(mark))
+      mark.addEventListener('blur', hide)
+    })
+  }
   fullscreen.addEventListener('click', () => {
     if (document.fullscreenElement) void document.exitFullscreen()
     else void root.requestFullscreen?.()
@@ -175,4 +210,30 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
     watcher.observe(root)
   }
   return player
+}
+
+/**
+ * The screens of a `TmuxScreen` drawn with `client` inside `container`: a
+ * button in a screen's status line, a window's label or another session's
+ * name, shows that window there; `reset` shows every screen's client window
+ * again, which the host calls when it moves to another call.
+ */
+export function bindClientViews(container: HTMLElement): { reset: () => void } {
+  const show = (screen: HTMLElement, key: string) => {
+    screen.querySelectorAll<HTMLElement>('[data-view]').forEach((view) => { view.hidden = view.dataset.view !== key })
+    // The status line holds the shown window's session and its windows, and names every other session at its end.
+    screen.querySelectorAll<HTMLElement>('[data-session-windows]').forEach((group) => { group.hidden = !group.dataset.sessionWindows!.split(' ').includes(key) })
+    screen.querySelectorAll<HTMLElement>('[data-session-switch]').forEach((other) => { other.hidden = other.dataset.sessionSwitch!.split(' ').includes(key) })
+    screen.querySelectorAll<HTMLButtonElement>('.mcp-tmux__window[data-show]').forEach((button) => {
+      button.classList.toggle('is-current', button.dataset.show === key)
+      button.setAttribute('aria-pressed', String(button.dataset.show === key))
+    })
+    screen.classList.toggle('is-peeking', key !== screen.dataset.clientView)
+  }
+  container.addEventListener('click', (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-show]')
+    const screen = button?.closest<HTMLElement>('[data-client-view]')
+    if (button?.dataset.show && screen) show(screen, button.dataset.show)
+  })
+  return { reset: () => container.querySelectorAll<HTMLElement>('[data-client-view]').forEach((screen) => show(screen, screen.dataset.clientView!)) }
 }

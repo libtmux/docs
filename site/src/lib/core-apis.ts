@@ -109,3 +109,102 @@ export function apisUsed(port: string, ids: readonly string[], code: string, ver
   }).sort((a, b) => a.at - b.at)
   return { shown: found.slice(0, MAX_APIS), more: Math.max(0, found.length - MAX_APIS), moreHref: referenceUrl(info, version) }
 }
+
+/** Part of a call's name or returned type as the Core player prints it, with the reference page of the API it names. */
+export interface ApiText { text: string; href?: string }
+
+/** What a recorded program's names resolve against: this build's version on the port's own site, and the program's text, which says which of two same-named APIs it means. */
+export interface ApiLinkContext { version?: string; code?: string }
+
+type Symbol = (typeof API_MODELS)[string]['symbols'][number]
+// What holds a value rather than names a type: such a symbol never answers to a name in a returned type.
+const VALUE_KINDS = new Set(['method', 'function', 'field', 'property', 'attribute', 'constant', 'variable', 'parameter'])
+const indexes = new Map<string, { symbols: Symbol[]; byId: Map<string, Symbol> }>()
+function indexOf(port: string) {
+  const model = API_MODELS[port]
+  if (!model) return undefined
+  if (!indexes.has(port)) indexes.set(port, {
+    symbols: model.symbols.filter((symbol) => symbol.apiScope !== 'internal' && (symbol.product ?? 'core') === 'core'),
+    byId: new Map(model.symbols.map((symbol) => [symbol.id, symbol])),
+  })
+  return indexes.get(port)!
+}
+// A name as a program writes it: no Swift argument labels, no Elixir arity.
+const bare = (name: string) => name.replace(/\(.*$/s, '').replace(/\/\d+$/, '')
+const lastSegment = (name: string) => name.split(/::|[.:]/).at(-1) ?? name
+// The namespace words of a symbol's public id, such as LibTmux, Async and Server for LibTmux::Async::Server#start.
+const words = (symbol: Symbol) => (symbol.publicId ?? symbol.id).replace(/\(.*$/s, '').split(/::|[.#:/]/).filter((word) => word !== '' && !/^\d+$/.test(word))
+
+/**
+ * One page for the symbols a name could mean, or none. Overloads of one
+ * function (Swift argument labels, Elixir arities, Julia methods) are one
+ * name, so the first is its page. Of a type or call a library defines twice,
+ * such as Ruby's LibTmux::Server and LibTmux::Async::Server or Scala's plain
+ * and Cats APIs, the program means the one whose extra namespace it writes,
+ * else the one with none. A name still left with two meanings is text.
+ */
+function pick(found: readonly Symbol[], code: string | undefined): Symbol | undefined {
+  // Overloads share a public id but for their argument labels or arity.
+  const family = (symbols: readonly Symbol[]) => symbols.length > 0 && symbols.every((symbol) => words(symbol).join('.') === words(symbols[0]!).join('.')) ? symbols[0] : undefined
+  if (found.length === 0) return undefined
+  const one = family(found)
+  if (one) return one
+  const shared = found.map(words).reduce((common, list) => common.filter((word) => list.includes(word)))
+  const extra = (symbol: Symbol) => words(symbol).filter((word) => !shared.includes(word))
+  const written = new Set(code?.match(/[A-Za-z_]\w*/g) ?? [])
+  const named = found.filter((symbol) => extra(symbol).length > 0 && extra(symbol).every((word) => written.has(word)))
+  return family(named) ?? family(found.filter((symbol) => extra(symbol).length === 0))
+}
+
+// The models a port's programs call into: its own, then the library it wraps or depends on, such as F#'s and PowerShell's .NET LibTmux.
+const modelsOf = (port: string) => [port, ...(PORT_BY_SLUG[port]?.parentLibrary ? [PORT_BY_SLUG[port]!.parentLibrary!.slug] : []), ...(PORT_BY_SLUG[port]?.apiDependencies ?? [])]
+
+function resolve(port: string, context: ApiLinkContext, find: (index: NonNullable<ReturnType<typeof indexOf>>) => Symbol[]): string | undefined {
+  for (const model of modelsOf(port)) {
+    const index = indexOf(model)
+    const found = index ? find(index) : []
+    if (found.length === 0) continue
+    const symbol = pick(found, context.code)
+    return symbol ? referenceHref(model, symbol.publicId ?? symbol.id, model === port ? context.version : undefined) : undefined
+  }
+  return undefined
+}
+
+const typeNamed = (index: NonNullable<ReturnType<typeof indexOf>>, name: string) => index.symbols.filter((symbol) => !VALUE_KINDS.has(symbol.kind) && bare(symbol.name) === name)
+
+/**
+ * The reference page of the call a player step names, such as
+ * `Server.new_session`, `Pane:split`, `Pane#send_keys`, `tmux.NewServer` or a
+ * bare `new_window`, when the port's models hold one API by that name. An
+ * index into a value, such as Julia's `Snapshot[PaneRef]`, is that type's page.
+ */
+export function callHref(port: string, label: string, context: ApiLinkContext = {}): string | undefined {
+  const indexed = /^(\w+)\[.+\]$/.exec(label)
+  if (indexed) return resolve(port, context, (index) => typeNamed(index, indexed[1]!))
+  // A Swift label can carry the argument labels or type of the overload it called: `windows(of:)`, `select(Pane)`.
+  const signature = /\(.*\)$/s.exec(label)?.[0] ?? ''
+  const parts = label.slice(0, label.length - signature.length).split(/::|[.#:]/)
+  const name = parts.at(-1)!
+  const owner = parts.length > 1 ? parts.at(-2)! : undefined
+  // A package function is written with its package, which is no parent: Go's tmux.NewServer.
+  const qualified = owner ? new RegExp(`(?:^|[.:#/])${escape(owner)}[.:#]${escape(name)}(?:$|[(/])`) : undefined
+  return resolve(port, context, (index) => {
+    const found = index.symbols.filter((symbol) => {
+      if (bare(symbol.name) !== name) return false
+      const parent = symbol.parent ? index.byId.get(symbol.parent) : undefined
+      // A bare name is a top-level function, or one a module exports, such as PowerShell's New-TmuxServer.
+      if (owner === undefined) return parent === undefined || parent.kind === 'module'
+      return parent !== undefined ? parent.name === owner || lastSegment(parent.name) === owner : qualified!.test(symbol.publicId ?? symbol.id)
+    })
+    const exact = found.filter((symbol) => symbol.name === name + signature)
+    return exact.length > 0 ? exact : found
+  })
+}
+
+/** A returned type as text, each name in it that is one type of the port's models linked to its page; `expected`, `Result<T, E>`'s `Result` and the like stay text unless the library defines them. */
+export function typeText(port: string, type: string, context: ApiLinkContext = {}): ApiText[] {
+  return type.split(/([A-Za-z_]\w*)/).filter((text) => text !== '').map((text) => {
+    const href = /^[A-Za-z_]/.test(text) ? resolve(port, context, (index) => typeNamed(index, text)) : undefined
+    return href ? { text, href } : { text }
+  })
+}
