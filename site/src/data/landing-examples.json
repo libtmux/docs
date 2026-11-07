@@ -241,5 +241,23 @@
         "command": "swift test --package-path Examples"
       }
     }
+  },
+  "ocaml": {
+    "workspace": {
+      "file": "examples/showcase_graph.ml",
+      "lang": "ocaml",
+      "from": "let config =",
+      "to": "let operation = get (Workspace.submit_bootstrap ~binary:wrapper plan) in",
+      "ci": {
+        "workflow": ".github/workflows/ocaml.yml",
+        "command": "opam exec -- python3 test/showcase_test.py \"$TMUX_BINARY\""
+      },
+      "more": [
+        {
+          "from": "let receipt = get (Workspace.await operation) in",
+          "to": "let initial = List.hd (Iarray.get receipt.steps 0).created in"
+        }
+      ]
+    }
   }
 }

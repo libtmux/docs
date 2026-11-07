@@ -8373,6 +8373,237 @@
    "section": "guides"
   },
   {
+   "port": "ocaml",
+   "symbol": "Libtmux_eio.Client",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_eio.Workspace",
+   "page": "/ocaml/latest/guides/packages/",
+   "title": "Choose the packages your application needs",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_json.Workspace.of_string",
+   "page": "/ocaml/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_unix.Cancellation",
+   "page": "/ocaml/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_unix.Cancellation.Cancelled",
+   "page": "/ocaml/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_unix.Client",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_unix.Workspace",
+   "page": "/ocaml/latest/guides/packages/",
+   "title": "Choose the packages your application needs",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_workspace.Config.pane:type.startup",
+   "page": "/ocaml/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_workspace.Execution.executor.protect",
+   "page": "/ocaml/latest/guides/getting-started/",
+   "title": "Install and run your first capture",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_workspace.Execution.status",
+   "page": "/ocaml/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_workspace.Plan.make",
+   "page": "/ocaml/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Cardinality.error.No_match",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Cardinality.pp_error",
+   "page": "/ocaml/latest/guides/testing/",
+   "title": "Testing and CI",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Endpoint.named_socket",
+   "page": "/ocaml/latest/guides/getting-started/",
+   "title": "Install and run your first capture",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Endpoint.socket_path",
+   "page": "/ocaml/latest/guides/getting-started/",
+   "title": "Install and run your first capture",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Error.pp",
+   "page": "/ocaml/latest/guides/getting-started/",
+   "title": "Install and run your first capture",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Error.t",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Expr.compile",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Expr.Rel.any",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Expr.Rel.none",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Formats.lookup",
+   "page": "/ocaml/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Plan.panes",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Plan.pushdown.Require_exact",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Plan.source_filter",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Query.exactly_one",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Query.matching",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Query.one_or_none",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Session.window_links",
+   "page": "/ocaml/latest/guides/graph/",
+   "title": "Sessions, window links and panes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Session.windows",
+   "page": "/ocaml/latest/guides/graph/",
+   "title": "Sessions, window links and panes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Snapshot.panes",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Spawn.command.Exec",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Spawn.command.Shell",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Window.panes",
+   "page": "/ocaml/latest/guides/graph/",
+   "title": "Sessions, window links and panes",
+   "section": "guides"
+  },
+  {
    "port": "powershell",
    "symbol": "LibTmux",
    "page": "/powershell/latest/guides/commands/",
@@ -14994,6 +15225,90 @@
    "text": "Since",
    "page": "/lua/latest/topics/format-token-fields/",
    "line": 33,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "ocaml",
+   "text": "libtmux.filter/1",
+   "page": "/ocaml/latest/guides/compatibility/",
+   "line": 85,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "ocaml",
+   "text": "main.ml",
+   "page": "/ocaml/latest/guides/getting-started/",
+   "line": 40,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "ocaml",
+   "text": "List",
+   "page": "/ocaml/latest/guides/packages/",
+   "line": 16,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "ocaml",
+   "text": "Unix",
+   "page": "/ocaml/latest/guides/packages/",
+   "line": 23,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "ocaml",
+   "text": "libtmux.filter/1",
+   "page": "/ocaml/latest/guides/queries/",
+   "line": 87,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "ocaml",
+   "text": "Seq.filter",
+   "page": "/ocaml/latest/guides/queries/",
+   "line": 89,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "ocaml",
+   "text": "main.ml",
+   "page": "/ocaml/latest/guides/showcases/",
+   "line": 21,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "ocaml",
+   "text": "None",
+   "page": "/ocaml/latest/guides/streaming/",
+   "line": 46,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "ocaml",
+   "text": "Alcotest.testable",
+   "page": "/ocaml/latest/guides/testing/",
+   "line": 17,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "ocaml",
+   "text": "libtmux.workspace-receipt/1",
+   "page": "/ocaml/latest/workspace/source-guide/",
+   "line": 112,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "ocaml",
+   "text": "editor:2",
+   "page": "/ocaml/latest/workspace/source-guide/",
+   "line": 124,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "ocaml",
+   "text": "logs:1",
+   "page": "/ocaml/latest/workspace/source-guide/",
+   "line": 124,
    "why": "not defined in the stated port"
   },
   {

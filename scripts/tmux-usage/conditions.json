@@ -673,6 +673,36 @@
           ]
         }
       ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.subscribe",
+      "command": "refresh-client",
+      "scope": null,
+      "when": "when opening a new stream lane",
+      "evidence": [
+        {
+          "at": "unix/streaming.ml:376",
+          "has": [
+            "if fresh && raw \"refresh-client\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.subscribe",
+      "command": "refresh-client",
+      "scope": null,
+      "when": "when opening a new stream lane",
+      "evidence": [
+        {
+          "at": "unix/streaming.ml:376",
+          "has": [
+            "if fresh && raw \"refresh-client\""
+          ]
+        }
+      ]
     }
   ]
 }

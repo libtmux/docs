@@ -29,7 +29,7 @@ export default defineEcConfig({
   },
   plugins: [shellPrompt(), copyReadiness()],
   shiki: { langs: [tmuxUsage, ...bash, tmuxShell, tmuxConfig, properties],
-    langAlias: { sbt: 'scala', tmux: 'tmux-config', properties: properties.name } },
+    langAlias: { dune: 'lisp', sbt: 'scala', tmux: 'tmux-config', properties: properties.name } },
   useDarkModeMediaQuery: false,
   themeCssSelector: (theme) =>
     theme.name === 'github-light'

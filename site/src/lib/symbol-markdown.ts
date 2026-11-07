@@ -71,8 +71,9 @@ function inlineCode(code: string): string {
 }
 
 /** A reference as Markdown, linked as the page links it: whole when it resolves, by the names in its literal when it does not. */
-function referenceMarkdown(span: { label: string; link?: { href: string }; parts?: { text: string; link?: { href: string } }[] }): string | undefined {
-  if (span.link) return `[${inlineCode(span.label)}](${span.link.href})`
+function referenceMarkdown(span: { label: string; code?: boolean; link?: { href: string }; parts?: { text: string; link?: { href: string } }[] }): string | undefined {
+  const label = span.code === false ? span.label.replace(/[\\[\]]/g, '\\$&') : inlineCode(span.label)
+  if (span.link) return `[${label}](${span.link.href})`
   if (!span.parts?.some((part) => part.link)) return undefined
   let plain = ''
   let linked = ''
@@ -122,8 +123,8 @@ function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, 
       } else if (markdown.slice(start, end) === node.value) {
         const spans = index.docSpans(node.value, symbol)
         const linked = spans.map((span) => (span.kind === 'ref' ? referenceMarkdown(span) : undefined))
-        if (linked.some(Boolean)) edits.push({ start, end,
-          text: spans.map((span, i) => linked[i] ?? ('text' in span ? span.text : span.label)).join('') })
+        if (linked.some(Boolean) || (index.language === 'ocaml' && spans.some((span) => span.kind === 'ref'))) edits.push({ start, end,
+          text: spans.map((span, i) => linked[i] ?? ('text' in span ? span.text : span.kind === 'citation' || span.code === false ? span.label : inlineCode(span.label))).join('') })
       }
     } else if ('children' in node) for (const child of node.children) visit(child as Parameters<typeof visit>[0])
   }
@@ -199,7 +200,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const port = 'port' in model ? model.port : undefined
   const language = 'language' in model ? model.language : port
   const index = ctx.index ?? (port && 'port' in model ? productApiIndex(model, ctx.version ?? defaultVersionFor(port)) : undefined)
-  const prose = (text: string) => index ? proseMarkdown(text, index, symbol, ['powershell', 'scala', 'ts'].includes(language ?? '')) : text
+  const prose = (text: string) => index ? proseMarkdown(text, index, symbol, ['powershell', 'scala', 'ts', 'ocaml'].includes(language ?? '')) : text
   const id = qualifiedNameOf(symbol)
   const out: string[] = [`# ${id}`, '']
   const info = port ? PORT_BY_SLUG[port] : undefined
@@ -261,6 +262,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   else if (parent?.variant && symbol.type) out.push(fencedCode(`${symbol.name}: ${symbol.type}`, language), '')
   else if (symbol.value !== undefined) out.push(fencedCode(`${qualifiedNameOf(symbol)}${symbol.type ? `: ${symbol.type}` : ''} = ${symbol.value}`, language ?? ''), '')
   else if (language === 'c') out.push(`${anonymousDeclarationLabel(symbol)}.`, '')
+  else if (language === 'ocaml' && ['module', 'interface'].includes(symbol.kind)) out.push(fencedCode(`${symbol.kind === 'interface' ? 'module type' : 'module'} ${symbol.name}`, 'ocaml'), '')
 
   if (symbol.doc?.summary) out.push(prose(symbol.doc.summary), '')
   if (symbol.doc?.body) out.push(prose(symbol.doc.body), '')

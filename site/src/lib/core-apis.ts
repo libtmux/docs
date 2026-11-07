@@ -14,7 +14,7 @@ import { API_MODELS, referenceHref } from './api-models.ts'
 import { PORT_BY_SLUG, referenceUrl } from './ports.ts'
 
 /** The language each port's examples are written in. */
-const LANG: Record<string, string> = { rs: 'rust', go: 'go', ruby: 'ruby' }
+const LANG: Record<string, string> = { rs: 'rust', go: 'go', ruby: 'ruby', ocaml: 'ocaml' }
 
 /** Entries shown before "+N more". */
 export const MAX_APIS = 10
@@ -38,7 +38,8 @@ export interface ApisUsed {
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /** Languages the examples are written in, and what starts a comment or a string in each. */
-const SYNTAX: Record<string, { line: string; block?: [string, string]; quotes: string[] }> = {
+const SYNTAX: Record<string, { line?: string; block?: [string, string]; quotes: string[] }> = {
+  ocaml: { block: ['(*', '*)'], quotes: ['"'] },
   rust: { line: '//', block: ['/*', '*/'], quotes: ['"'] },
   go: { line: '//', block: ['/*', '*/'], quotes: ['"', '`', "'"] },
   ruby: { line: '#', quotes: ['"', "'"] },
@@ -52,11 +53,21 @@ export function withoutLiterals(code: string, lang: string): string {
   for (let i = 0; i < code.length;) {
     const rest = code.slice(i)
     const blank = (length: number) => { out += code.slice(i, i + length).replace(/[^\n]/g, ' '); i += length }
-    if (rest.startsWith(syntax.line)) {
+    if (syntax.line && rest.startsWith(syntax.line)) {
       const end = rest.indexOf('\n')
       blank(end < 0 ? rest.length : end)
     } else if (syntax.block && rest.startsWith(syntax.block[0])) {
-      const end = rest.indexOf(syntax.block[1], syntax.block[0].length)
+      let end = rest.indexOf(syntax.block[1], syntax.block[0].length)
+      if (lang === 'ocaml') {
+        let depth = 1
+        let at = syntax.block[0].length
+        while (at < rest.length && depth > 0) {
+          if (rest.startsWith(syntax.block[0], at)) { depth++; at += syntax.block[0].length }
+          else if (rest.startsWith(syntax.block[1], at)) { depth--; at += syntax.block[1].length }
+          else at++
+        }
+        end = depth ? -1 : at - syntax.block[1].length
+      }
       blank(end < 0 ? rest.length : end + syntax.block[1].length)
     } else if (syntax.quotes.includes(rest[0]!)) {
       const quote = rest[0]!

@@ -21,6 +21,7 @@ import { visit } from 'unist-util-visit'
  */
 /** @type {Record<string, string | undefined>} */
 export const LANG_TO_PORT = {
+  ocaml: 'ocaml',
   python: 'py',
   py: 'py',
   ruby: 'ruby',
@@ -51,6 +52,7 @@ export const LANG_TO_PORT = {
 
 /** Checkout locations used to refresh the revision-bound cache. */
 export const CHECKOUTS = {
+  ocaml: '~/work/libtmux/libtmux-ocaml-docs-site',
   py: '~/work/python/libtmux',
   ruby: '~/work/libtmux/libtmux-ruby-docs',
   lua: '~/work/libtmux/libtmux-lua-docs',

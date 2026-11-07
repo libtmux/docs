@@ -49,6 +49,7 @@ export const FORMS: Record<string, Language | 'as-written'> = {
   kotlin: { qualifier: '.', call: false },
   scala: { qualifier: '.', call: false },
   fsharp: { qualifier: '.', call: false },
+  ocaml: { qualifier: '.', call: false },
   julia: { qualifier: '.', call: false },
   ruby: { qualifier: '::', call: false },
   lua: { qualifier: '.', call: true },
@@ -158,6 +159,7 @@ interface EnumContext extends Pick<FormInput, 'symbol' | 'owner' | 'onOwnerPage'
 function enumMember({ lang, forms, names, args, symbol, owner, onOwnerPage, chip }: EnumContext): string {
   const name = names.at(-1)!
   switch (lang) {
+    case 'ocaml': return names.join('.')
     case 'ruby': case 'elixir': return `:${name}`
     case 'lua': return `"${name}"`
     case 'julia': return name

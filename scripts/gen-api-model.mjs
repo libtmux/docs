@@ -18,9 +18,11 @@ import { extractLua } from '../packages/api-model/src/languages/lua.ts'
 import { extractRuby } from '../packages/api-model/src/languages/ruby.ts'
 import { extractPowerShell } from '../packages/api-model/src/languages/powershell.ts'
 import { extractJulia } from '../packages/api-model/src/languages/julia.ts'
+import { extractOcamlArtifact } from '../packages/api-model/src/languages/ocaml.ts'
 import { extractElixir } from '../packages/api-model/src/languages/elixir.ts'
 import { attachCompleteGoExamples, readCompleteGoExamples } from '../packages/api-model/src/languages/go-examples.ts'
 import { attachCompleteCSharpExamples } from '../packages/api-model/src/languages/csharp-examples.ts'
+import { attachCompleteOcamlExamples } from '../packages/api-model/src/languages/ocaml-examples.ts'
 import { attachCompleteFSharpExamples } from '../packages/api-model/src/languages/fsharp-examples.ts'
 import { attachCompleteRustExamples } from '../packages/api-model/src/languages/rust-examples.ts'
 import { attachNativeRustIdStructs } from '../packages/api-model/src/languages/rust-id-structs.ts'
@@ -303,6 +305,11 @@ const PORTS = {
     pathRoots: ['libtmux-scala/', 'libtmux-scala-cats/', 'libtmux-scala-ox/',
       'docs/guide/scala/', 'examples/src/main/scala/'],
     repo: 'libtmux/libtmux-java', options: {},
+  },
+  ocaml: {
+    checkout: '~/work/libtmux/libtmux-ocaml-docs-site',
+    root: '.', nativeArtifact: '_build/docs/ocaml.json',
+    repo: 'libtmux/libtmux-ocaml', options: {},
   },
   fsharp: {
     checkout: '~/work/libtmux/libtmux-dotnet',
@@ -639,7 +646,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       process.exit(1)
     }
     const artifact = JSON.parse(readFileSync(artifactPath, 'utf8'))
-    const nativeExtractors = { ruby: extractRuby, lua: extractLua, powershell: extractPowerShell, julia: extractJulia, elixir: extractElixir }
+    const nativeExtractors = { ruby: extractRuby, lua: extractLua, powershell: extractPowerShell, julia: extractJulia, elixir: extractElixir, ocaml: extractOcamlArtifact }
     model = nativeExtractors[port](artifact, head)
   } else {
     model = await extractProject({
@@ -650,6 +657,9 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       options: cfg.options,
     })
   }
+
+  if (port === 'ocaml') attachCompleteOcamlExamples(model.symbols, (file) =>
+    execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], { encoding: 'utf8', maxBuffer: 1 << 26 }), revision)
 
   if (port === 'go') {
     // Read committed bytes at the citation revision, never a newer working tree.

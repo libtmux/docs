@@ -1,0 +1,15 @@
+{
+  "name": "OCaml",
+  "asset": "icon.svg",
+  "sourceUrl": "https://raw.githubusercontent.com/libtmux/libtmux-ocaml/cb2c4469394f8c3b4a45331969730130f6f10a29/docs/assets/logo.svg",
+  "sourcePage": "https://github.com/libtmux/libtmux-ocaml/blob/cb2c4469394f8c3b4a45331969730130f6f10a29/docs/assets/source.json",
+  "upstreamRevision": "cb2c4469394f8c3b4a45331969730130f6f10a29",
+  "sha256": "510affa78d0068e768a33146edd5028a409d4d599172809ad21ced27cf07ce9f",
+  "modifications": "Uses the approved port logo as its language-picker icon.",
+  "license": {
+    "name": "MIT",
+    "urls": [
+      "https://github.com/libtmux/libtmux-ocaml/blob/cb2c4469394f8c3b4a45331969730130f6f10a29/LICENSE"
+    ]
+  }
+}

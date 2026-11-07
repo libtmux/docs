@@ -3824,6 +3824,74 @@ for (const [id, binding] of Object.entries(ELIXIR_CONCEPTS)) {
   if (binding.note) (concept.notes ??= {}).elixir = binding.note
 }
 CONCEPTS['list-session-panes']!.absent!.julia = 'Traverse `windows(session)` and `panes(window)` in the captured snapshot. `panes(snapshot)` has server-wide scope.'
+
+const OCAML_CONCEPTS: Record<string, { symbol: string; note?: string; variants?: string[] }> = {
+  server: { symbol: 'Libtmux_unix.Client.t', variants: ['Libtmux_eio.Client.t'], note: 'A client is a live, generation-bound server connection. Endpoint describes a socket without connecting; closing a client releases its resources.' },
+  session: { symbol: 'Libtmux.Session.t' },
+  window: { symbol: 'Libtmux.Window.t', note: 'A global window can have several session placements. Window_link holds the session, index and current flag.' },
+  pane: { symbol: 'Libtmux.Pane.t' },
+  'workspace-description': { symbol: 'Libtmux_workspace.Config.t' },
+  'build-workspace': { symbol: 'Libtmux_unix.Workspace.await', variants: ['Libtmux_eio.Workspace.await'], note: 'Apply a validated Plan through submit, then await its retained execution receipt. Inspect preserves partial and late outcomes.' },
+  snapshot: { symbol: 'Libtmux_unix.Client.capture', variants: ['Libtmux_eio.Client.capture'], note: 'Acquires a complete immutable graph over an interval. Earlier observations remain readable without refreshing.' },
+  'list-sessions': { symbol: 'Libtmux.Snapshot.sessions', note: 'Reads an immutable array of already captured sessions without I/O.' },
+  'list-windows': { symbol: 'Libtmux.Session.windows', note: 'Reads distinct captured global windows in this session. window_links preserves individual indexed placements.' },
+  'list-panes': { symbol: 'Libtmux.Window.panes', note: 'Reads captured panes in one global window without I/O.' },
+  'list-server-windows': { symbol: 'Libtmux.Snapshot.windows', note: 'Reads captured global windows; use window_links for indexed session placements.' },
+  'list-server-panes': { symbol: 'Libtmux.Snapshot.panes' },
+  'list-clients': { symbol: 'Libtmux.Snapshot.clients', note: 'Reads captured attached-client observations, separate from transport Client.t handles.' },
+  'pane-window': { symbol: 'Libtmux.Pane.window' },
+  'window-session': { symbol: 'Libtmux.Window_link.session', note: 'The session belongs to a placement. A global Window has no single containing session.' },
+  'window-link-window': { symbol: 'Libtmux.Window_link.window' },
+  'client-session': { symbol: 'Libtmux.Client_observation.session', note: 'Returns the captured session when the attached client had one.' },
+  'get-session': { symbol: 'Libtmux.Snapshot.find_session', note: 'Exact opaque-ID lookup in an existing snapshot, without I/O or tmux target expansion.' },
+  'get-window': { symbol: 'Libtmux.Snapshot.find_window', note: 'Exact opaque-ID lookup in an existing snapshot, without I/O.' },
+  'get-pane': { symbol: 'Libtmux.Snapshot.find_pane', note: 'Exact opaque-ID lookup in an existing snapshot, without I/O.' },
+  'window-index': { symbol: 'Libtmux.Window_link.index' },
+  'window-active': { symbol: 'Libtmux.Window_link.is_current' },
+}
+for (const [concept, operation] of Object.entries({
+  'capture-pane': 'capture_text', 'send-keys': 'send_keys', 'split-pane': 'split_pane',
+  'respawn-pane': 'respawn_pane', 'clear-history': 'clear_history', 'set-pane-title': 'set_pane_title',
+  'select-layout': 'select_layout', 'rotate-panes': 'rotate_panes', 'unlink-window': 'unlink_window_at',
+  'new-session': 'create_session', 'new-window': 'create_window', 'kill-session': 'kill_session',
+  'kill-window': 'kill_window', 'kill-pane': 'kill_pane', 'rename-session': 'rename_session',
+  'rename-window': 'rename_window', 'select-window': 'select_window_at', 'select-pane': 'select_pane',
+  'resize-pane': 'resize_pane', 'resize-window': 'resize_window', 'link-window': 'link_window',
+  'move-window': 'move_window_at', 'break-pane': 'break_pane', 'move-pane': 'move_pane',
+  'join-pane': 'move_pane', 'swap-pane': 'swap_panes', 'detach-client': 'request_detach_client_at',
+  'refresh-client': 'refresh_client_at', 'switch-client': 'switch_client_at',
+  'wait-for': 'wait_for', 'server-version': 'version',
+})) OCAML_CONCEPTS[concept] = { symbol: `Libtmux_unix.Client.${operation}`, variants: [`Libtmux_eio.Client.${operation}`] }
+for (const [prefix, owner, members] of [
+  ['session', 'Session', ['id', 'name', 'attached']],
+  ['window', 'Window', ['id', 'name', 'height', 'width', 'layout']],
+  ['pane', 'Pane', ['id', 'index', 'height', 'width', 'title', 'active', 'current_command', 'current_path', 'pid', 'dead']],
+] as const) for (const member of members) OCAML_CONCEPTS[`${prefix}-${member.replaceAll('_', '-')}`] = { symbol: `Libtmux.${owner}.${member}` }
+for (const scope of ['server', 'session', 'window', 'pane']) {
+  for (const [suffix, operation] of Object.entries({ options: 'capture_options', option: 'read_option', hooks: 'capture_hooks' })) {
+    OCAML_CONCEPTS[`${scope}-${suffix}`] = { symbol: `Libtmux_unix.Client.${operation}`, variants: [`Libtmux_eio.Client.${operation}`], note: 'Pass the corresponding explicit Options scope; captured tables preserve their source and inheritance policy.' }
+  }
+  for (const [prefix, operation] of Object.entries({ 'set-': 'set_option', 'unset-': 'unset_option' })) OCAML_CONCEPTS[`${prefix}${scope}-option`] = { symbol: `Libtmux_unix.Client.${operation}`, variants: [`Libtmux_eio.Client.${operation}`] }
+  for (const [prefix, operation] of Object.entries({ 'set-': 'set_hook', 'unset-': 'remove_hook' })) OCAML_CONCEPTS[`${prefix}${scope}-hook`] = { symbol: `Libtmux_unix.Client.${operation}`, variants: [`Libtmux_eio.Client.${operation}`] }
+}
+for (const scope of ['server', 'session']) {
+  OCAML_CONCEPTS[`${scope}-environment`] = { symbol: 'Libtmux_unix.Client.capture_environment', variants: ['Libtmux_eio.Client.capture_environment'], note: 'Pass Environment.Global for server values or Environment.Session with a bound session target. Acquisition is explicit.' }
+  for (const [prefix, operation] of Object.entries({ 'set-': 'set_environment', 'unset-': 'unset_environment', 'remove-': 'remove_environment' })) OCAML_CONCEPTS[`${prefix}${scope}-environment`] = { symbol: `Libtmux_unix.Client.${operation}`, variants: [`Libtmux_eio.Client.${operation}`] }
+}
+for (const [id, binding] of Object.entries(OCAML_CONCEPTS)) {
+  const concept = CONCEPTS[id]
+  if (!concept) throw new Error(`concepts: OCaml maps unknown concept ${id}`)
+  concept.symbols.ocaml = binding.symbol
+  if (binding.note) (concept.notes ??= {}).ocaml = binding.note
+  if (binding.variants) (concept.variants ??= {}).ocaml = binding.variants
+}
+for (const [id, reason] of Object.entries({
+  'freeze-workspace': 'The workspace packages validate and apply descriptions; they do not export a live session as configuration.',
+  'list-session-panes': 'Traverse Session.windows and Window.panes in the captured graph. Snapshot.panes has server-wide scope.',
+  'pane-session': 'A pane belongs to a global window that can have several session placements. Traverse Window.links and Window_link.session.',
+  'kill-server': 'Client.close releases transport resources. The public client API does not terminate a borrowed tmux daemon.',
+  'server-from-env': 'Endpoint selection is explicit. Construct a named socket or socket path; the library does not infer an ambient server.',
+})) (CONCEPTS[id]!.absent ??= {}).ocaml = reason
 for (const concept of Object.values(CONCEPTS)) {
   concept.absent ??= {}
   if (!concept.symbols.powershell) concept.absent.powershell ??= 'No source-verified PowerShell equivalent is recorded for this operation.'
@@ -3834,6 +3902,7 @@ for (const concept of Object.values(CONCEPTS)) {
   if (!concept.symbols.kotlin) concept.absent.kotlin = 'No source-verified Kotlin equivalent is recorded for this operation.'
   if (!concept.symbols.scala) concept.absent.scala = 'No source-verified Scala equivalent is recorded for this operation.'
   if (!concept.symbols.fsharp) concept.absent.fsharp = 'No source-verified F# equivalent is recorded for this operation.'
+  if (!concept.symbols.ocaml) concept.absent.ocaml ??= 'No direct public OCaml equivalent is recorded for this operation.'
 }
 
 /** Every concept naming this symbol, including concepts sharing an overload group. */

@@ -49,7 +49,10 @@ export function navSidecarFor(scope: string, model: ApiModelBase, nav: NavConfig
   // type alias has a page, and a sidebar that placed only types gave 1,282 of
   // those pages no row.
   const moduleIds = new Set(model.symbols.filter((symbol) => symbol.kind === 'module').map((symbol) => symbol.id))
-  const topLevel = model.symbols.filter((s) => !s.parent || (['powershell', 'julia'].includes(scope) && moduleIds.has(s.parent)))
+  const roots = new Set(model.symbols.filter((symbol) => !symbol.parent).map((symbol) => symbol.id))
+  const topLevel = model.symbols.filter((s) => !s.parent ||
+    (scope === 'ocaml' && roots.has(s.parent)) ||
+    (['powershell', 'julia'].includes(scope) && moduleIds.has(s.parent)))
   const conceptIds = Object.fromEntries(
     Object.entries(CONCEPTS)
       .map(([k, c]) => [k, c.symbols[scope]] as const)

@@ -602,7 +602,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                       {mod.free.includes(o) && legacyIndexAnchors(o).map((id) => <span id={id} class="sr-only" />)}
                       <div class="api-index-card__heading">
                         <a class="api-index-card__link font-mono font-semibold" href={hrefFor(o)}><ApiBadge label={kind} variant="kind" value={kind} compact preview={false} />{o.name}</a>
-                        <ApiBadge label={kind === 'typealias' ? 'type alias' : kind} variant="kind" value={kind} plain />
+                        <ApiBadge label={kind === 'typealias' ? (port === 'ocaml' ? 'type' : 'type alias') : kind} variant="kind" value={kind} plain />
                         {context && <span class="api-index-card__context">
                           <ApiBadge label={context.label} variant="mod" value={context.kind} preview={false} />
                         </span>}

@@ -24,6 +24,19 @@ const elixirDocs = (page: string) => `https://elixir.hexdocs.pm/${page}`
 const swiftBook = (page: string) => `https://docs.swift.org/latest/documentation/the-swift-programming-language/${page}/`
 
 export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> = {
+  ocaml: {
+    package: term('An installable OCaml library package. Its public modules supply the declarations in this reference.', 'OCaml libraries with Dune', 'https://ocaml.org/docs/libraries-dune', 'A package name and an OCaml module path are distinct: libtmux-unix provides Libtmux_unix.'),
+    module: term('An OCaml module exposing values, types and nested modules through a signature.', 'OCaml module types', 'https://ocaml.org/manual/5.5/modtypes.html#s:modtypes'),
+    interface: term('An OCaml module type specifying the declarations a module must provide.', 'OCaml module types', 'https://ocaml.org/manual/5.5/modtypes.html#s:modtypes'),
+    typealias: term('An OCaml type declaration. A declaration without an equation or representation is abstract.', 'OCaml type and exception definitions', 'https://ocaml.org/manual/5.5/typedecl.html#s:tydef'),
+    opaque: term('An abstract OCaml type whose representation is hidden by its public signature.', 'OCaml module types', 'https://ocaml.org/manual/5.5/modtypes.html#s:modtypes'),
+    enum: term('An OCaml variant type with named constructors, which can carry values.', 'OCaml type and exception definitions', 'https://ocaml.org/manual/5.5/typedecl.html#s:tydef'),
+    struct: term('An OCaml record type with named fields.', 'OCaml type and exception definitions', 'https://ocaml.org/manual/5.5/typedecl.html#s:tydef'),
+    constant: term('A named OCaml value or variant constructor. The signature does not promise a compile-time constant.', 'OCaml module types', 'https://ocaml.org/manual/5.5/modtypes.html#s:modtypes'),
+    function: term('An OCaml value with a function type. Arguments are curried and can carry labels or be optional.', 'OCaml expressions', 'https://ocaml.org/manual/5.5/expr.html#s:value-expr'),
+    attribute: term('A field of an OCaml record. Its module supplies the qualified name; the reference groups it under its declaring type.', 'OCaml type and exception definitions', 'https://ocaml.org/manual/5.5/typedecl.html#s:tydef'),
+    exception: term('An OCaml exception constructor.', 'OCaml type and exception definitions', 'https://ocaml.org/manual/5.5/typedecl.html#s:tydef'),
+  },
   scala: {
     module: term('A singleton object that groups Scala declarations.', 'Scala singleton objects', scalaTour('singleton-objects'), 'The module badge represents object declarations here. Its members belong to that object; the label does not identify a separately installed artifact.'),
     class: term('A Scala class that defines instances, constructors and members.', 'Scala classes', scalaTour('classes'), 'Traits and case classes have their own declaration syntax; read the displayed signature for those distinctions.'),

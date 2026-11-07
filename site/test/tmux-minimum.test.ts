@@ -46,6 +46,24 @@ export const PORT_FLOORS = [
  */
 export const OTHER_FLOORS = [
   {
+    path: 'packages/api-model/src/languages/ocaml-examples.ts',
+    version: '3.3',
+    near: /OCaml 5\.5\.2/,
+    why: 'The OCaml capability programs run on the native literal tmux 3.3 floor.',
+  },
+  {
+    path: 'site/src/data/home-examples.json',
+    version: '3.3',
+    within: 'ocaml',
+    why: 'The OCaml quickstart is executed on the native 3.3 floor.',
+  },
+  {
+    path: 'site/src/lib/ports.ts',
+    version: '3.3',
+    near: /OCaml 5\.5\.2/,
+    why: 'The OCaml source installation names its tested tmux 3.3 floor.',
+  },
+  {
     path: 'site/src/content/_workspace-shared/workspace/guides/installation.md',
     version: '3.2a',
     near: /tmuxp/,

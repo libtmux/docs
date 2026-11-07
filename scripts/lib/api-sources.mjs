@@ -62,6 +62,7 @@ export const GO_PACKAGES = {
  * is one whole name. The rest are read from the name by `kindOf`.
  */
 export const NAME_KINDS = {
+  ocaml: { Iarray: 'module', Seq: 'module', 'Iarray.t': 'type', 'Seq.t': 'type' },
   kotlin: { Dispatchers: 'object', NonCancellable: 'object', Unit: 'object' },
   // `String` in Scala is the alias `Predef` declares, and its page is Predef's.
   scala: { Using: 'object', String: 'object' },
@@ -130,6 +131,7 @@ export const PRELUDE_MACROS = new Set(['std', 'core', 'alloc'])
 
 /** What each port means by a bare name it imports, as the owner the name's page is under. */
 export const BARE_OWNERS = Object.fromEntries(Object.entries({
+  ocaml: { '': ['Iarray', 'Seq'] },
   java: {
     'java.util': ['List', 'Set', 'Map', 'Optional', 'OptionalInt', 'OptionalLong', 'Collection', 'Iterator'],
     'java.util.function': ['Function', 'Supplier', 'Consumer', 'Predicate', 'LongSupplier'],
@@ -214,7 +216,7 @@ export function hintOwners(port, hint) {
 /** Ports whose names carry a kind a page can contradict: PascalCase types, camelCase members. */
 const PASCAL = new Set(['java', 'kotlin', 'scala', 'csharp', 'fsharp'])
 /** Ports that compare kinds at all. */
-const KIND_CHECKED = new Set(['java', 'kotlin', 'scala', 'csharp', 'fsharp', 'rs', 'cxx', 'elixir'])
+const KIND_CHECKED = new Set(['java', 'kotlin', 'scala', 'csharp', 'fsharp', 'rs', 'cxx', 'elixir', 'ocaml'])
 
 /**
  * A name as written: its segments with generics and subscripts out of the way

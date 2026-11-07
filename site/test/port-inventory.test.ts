@@ -18,7 +18,7 @@ const coordinates = (slug: string, kinds?: InventoryEntry['kind'][]) =>
  */
 const manifests = manifestPackages.ports as Record<string, {
   wrapper?: string
-  distributions: { name: string; version: string }[]
+  distributions: { name: string; version?: string }[]
   units: { unit: string; name: string }[]
 }>
 const distributions = (slug: string) => published(slug).filter((entry) => !entry.within && entry.kind !== 'source')

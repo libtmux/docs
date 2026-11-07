@@ -92,10 +92,10 @@ it('advertises local native loaders while retaining their development status', (
   // py-vs-generic-local-CLI dichotomy this test covers.
   const native = (p: Port) => p.workspaceCliAvailability === 'local' || p.workspaceCliAvailability === 'published'
   for (const port of PORTS.filter((p) => p.slug === 'py' || native(p))) {
-    expect(port.workspaceCli).toBe(port.slug === 'julia' ? 'libtmux-workspace load' : native(port) ? 'tmux-workspace load' : 'tmuxp load')
+    expect(port.workspaceCli).toBe(port.slug === 'julia' ? 'libtmux-workspace load' : port.slug === 'ocaml' ? 'tmux-workspace apply' : native(port) ? 'tmux-workspace load' : 'tmuxp load')
     if (!native(port)) expect(port.workspaceCliAvailability).toBe('released')
     expect(productInDevelopment(port, 'workspace')).toBe(native(port))
-    expect(productInDevelopment(port, 'mcp')).toBe(true)
+    expect(productInDevelopment(port, 'mcp')).toBe(port.productAvailability?.mcp !== 'excluded')
     expect(productDescription(port, 'workspace')).not.toMatch(/worktree|checkpoint/)
     if (port.workspaceCliAvailability === 'local') {
       expect(productDescription(port, 'workspace')).toContain(port.slug === 'julia' ? 'LibTmuxWorkspace' : 'Build the CLI from source')

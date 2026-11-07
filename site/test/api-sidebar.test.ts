@@ -51,6 +51,16 @@ describe('API sidebar presentations', () => {
     expect(nodes[0]?.kind).toBeUndefined()
   })
 
+  it('opens a curated root once when its module also lists it as a member', () => {
+    const inventory = structuredClone(json)
+    inventory.buckets[0]!.types.push({ id: 'nested', name: 'Companion', slug: 'companion', m: 1, kind: 'module', category: 'types' })
+    for (const selected of ['nested', 'create']) {
+      const rows = rowsOf(sidebarNodes(inventory, '/reference/', 'outline', selected))
+      expect(rows.filter((row) => row.current)).toHaveLength(1)
+      expect(rows.find((row) => row.label === 'Session')?.expanded).toBe(false)
+    }
+  })
+
   it('focuses the selected owner and represents empty owners without invented members', () => {
     const nodes = sidebarNodes(json, '/reference/', 'focus', 'create')
     expect(nodes.map((node) => node.label)).toEqual(['Companion', 'create'])

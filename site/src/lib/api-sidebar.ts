@@ -154,8 +154,6 @@ export function sidebarNodes(source: ApiTreeJson, base: string, mode: SidebarPre
   branch?: { lazy: string; level: number }): SidebarNode[] {
   const json = sidebarInventory(source)
   const catalog = sidebarCatalog(json)
-  const ancestry = new Set<string>()
-  for (let id: string | undefined = selected; id && !ancestry.has(id); id = catalog.parent.get(id)) ancestry.add(id)
   const buckets = new Map<string, ApiTreeBucket>()
   const placements = new Map<string, string[]>()
   const index = (list: ApiTreeBucket[], path: string[] = []) => {
@@ -167,6 +165,12 @@ export function sidebarNodes(source: ApiTreeJson, base: string, mode: SidebarPre
     }
   }
   index(json.buckets)
+  const ancestry = new Set<string>()
+  for (let id: string | undefined = selected; id && !ancestry.has(id); id = catalog.parent.get(id)) {
+    ancestry.add(id)
+    // A curated root owns its branch even when its language module is also listed.
+    if (placements.has(id)) break
+  }
   const currentBuckets = new Set([...ancestry].map((id) => placements.get(id)).find(Boolean) ?? [])
   let seq = 0
   const nextId = () => `api-presentation-${++seq}`

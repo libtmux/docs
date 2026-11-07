@@ -121,7 +121,7 @@ const EC_LANGS = new Set([
   'python', 'ruby', 'lua', 'rust', 'ts', 'tsx', 'js', 'jsx', 'java', 'kotlin', 'scala', 'fsharp', 'swift',
   'csharp', 'cpp', 'c', 'go', 'bash', 'shell', 'console', 'json', 'yaml',
   'toml', 'xml', 'diff', 'text', 'tmux-usage', 'tmux-shell', 'tmux-config', 'powershell', 'julia', 'elixir', 'properties', 'ini',
-  'cmake',
+  'cmake', 'ocaml', 'lisp',
 ])
 
 const EC_ALIASES: Record<string, string> = {
@@ -133,6 +133,8 @@ const EC_ALIASES: Record<string, string> = {
   rs: 'rust',
   'c#': 'csharp',
   cs: 'csharp',
+  dune: 'lisp',
+  ml: 'ocaml',
   ex: 'elixir',
   exs: 'elixir',
   sh: 'bash',

@@ -37,6 +37,8 @@ import swiftModel from '../data/api/swift.json'
 import tsModel from '../data/api/ts.json'
 import kotlinModel from '../data/api/kotlin.json'
 import scalaModel from '../data/api/scala.json'
+import ocamlModel from '../data/api/ocaml.json'
+import ocamlNav from '../data/api/ocaml.nav.json'
 import fsharpModel from '../data/api/fsharp.json'
 import kotlinNav from '../data/api/kotlin.nav.json'
 import scalaNav from '../data/api/scala.nav.json'
@@ -67,6 +69,7 @@ export const API_MODELS: Record<string, ApiModel> = {
   swift: swiftModel as unknown as ApiModel,
   kotlin: kotlinModel as unknown as ApiModel,
   scala: scalaModel as unknown as ApiModel,
+  ocaml: ocamlModel as unknown as ApiModel,
   fsharp: fsharpModel as unknown as ApiModel,
 }
 
@@ -130,6 +133,7 @@ export const API_NAV: Record<string, PortNavData> = {
   swift: swiftNav as unknown as PortNavData,
   kotlin: kotlinNav as unknown as PortNavData,
   scala: scalaNav as unknown as PortNavData,
+  ocaml: ocamlNav as unknown as PortNavData,
   fsharp: fsharpNav as unknown as PortNavData,
 }
 
@@ -152,6 +156,7 @@ export const PORT_NAME: Record<string, string> = {
   kotlin: 'Kotlin',
   scala: 'Scala',
   fsharp: 'F#',
+  ocaml: 'OCaml',
 }
 
 /**

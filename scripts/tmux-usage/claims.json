@@ -15193,6 +15193,6200 @@
           "in": "server.Server.kill"
         }
       ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.rename_window",
+      "command": "rename-window",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:13",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.rename_window"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:247",
+          "has": [
+            "let rename_window target ~name = Command.Rename_window (target, name)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:247",
+          "has": [
+            "let rename_window target ~name = Command.Rename_window (target, name)"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:145",
+          "has": [
+            "| Rename_window (target, name) ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:148",
+          "has": [
+            "( \"rename-window\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.rename_session",
+      "command": "rename-session",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:17",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.rename_session"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:248",
+          "has": [
+            "let rename_session target ~name = Command.Rename_session (target, name)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:248",
+          "has": [
+            "let rename_session target ~name = Command.Rename_session (target, name)"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:154",
+          "has": [
+            "| Rename_session (target, name) ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:157",
+          "has": [
+            "( \"rename-session\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.switch_client_at",
+      "command": "switch-client",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:21",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.switch_client_at"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:250",
+          "has": [
+            "let switch_client_at ?(update_environment = false) client ~session ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:251",
+          "has": [
+            "Command.Mutate (Switch_client_at { client; session; update_environment })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:223",
+          "has": [
+            "| Command.Switch_client_at { client; session = target; update_environment } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:224",
+          "has": [
+            "( \"switch-client\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.request_detach_client_at",
+      "command": "detach-client",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:25",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.request_detach_client_at"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:253",
+          "has": [
+            "let request_detach_client_at client ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:254",
+          "has": [
+            "Command.Mutate (Request_detach_client_at client)"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:227",
+          "has": [
+            "| Request_detach_client_at client ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:228",
+          "has": [
+            "(\"detach-client\", [ \"-t\"; client_name c client ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.refresh_client_at",
+      "command": "refresh-client",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:29",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.refresh_client_at"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:256",
+          "has": [
+            "let refresh_client_at ?(status_only = false) client ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:257",
+          "has": [
+            "Command.Mutate (Refresh_client_at (client, status_only))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:229",
+          "has": [
+            "| Refresh_client_at (client, status_only) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:230",
+          "has": [
+            "( \"refresh-client\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.resize_control_client_at",
+      "command": "refresh-client",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:33",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.resize_control_client_at"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:259",
+          "has": [
+            "let resize_control_client_at client ~width ~height ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:260",
+          "has": [
+            "Command.Mutate (Resize_control_client_at { client; width; height })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:232",
+          "has": [
+            "| Resize_control_client_at { client; width; height } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:233",
+          "has": [
+            "( \"refresh-client\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.send_text",
+      "command": "send-keys",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:37",
+          "has": [
+            "Client.run ?cancel connection (Libtmux.Operations.send_text target ~text)"
+          ],
+          "in": "Libtmux_unix.Client.send_text"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:262",
+          "has": [
+            "let send_text target ~text = Command.Send_text (target, text)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:262",
+          "has": [
+            "let send_text target ~text = Command.Send_text (target, text)"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:163",
+          "has": [
+            "| Send_text (target, text) ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:164",
+          "has": [
+            "Some (\"send-keys\", [ \"-t\"; pane target; \"-l\"; \"--\"; text ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.send_keys",
+      "command": "send-keys",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:40",
+          "has": [
+            "Client.run ?cancel connection (Libtmux.Operations.send_keys target keys)"
+          ],
+          "in": "Libtmux_unix.Client.send_keys"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:263",
+          "has": [
+            "let send_keys target keys = Command.Send_keys (target, keys)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:263",
+          "has": [
+            "let send_keys target keys = Command.Send_keys (target, keys)"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:165",
+          "has": [
+            "| Send_keys (target, keys) ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:174",
+          "has": [
+            "Some (\"send-keys\", [ \"-t\"; pane target; \"--\" ] @ List.map key keys)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.wait_for",
+      "command": "wait-for",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:315",
+          "has": [
+            "C.raw lane ~pidfd:(Some c.pidfd)"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:43",
+          "has": [
+            "Client.run ?cancel connection (Libtmux.Operations.wait_for channel)"
+          ],
+          "in": "Libtmux_unix.Client.wait_for"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:264",
+          "has": [
+            "let wait_for channel = Command.Wait_for channel"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:264",
+          "has": [
+            "let wait_for channel = Command.Wait_for channel"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:175",
+          "has": [
+            "| Wait_for channel | Signal channel ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:183",
+          "has": [
+            "Some (\"wait-for\", args)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.signal",
+      "command": "wait-for",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:46",
+          "has": [
+            "Client.run ?cancel connection (Libtmux.Operations.signal channel)"
+          ],
+          "in": "Libtmux_unix.Client.signal"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:265",
+          "has": [
+            "let signal channel = Command.Signal channel"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:265",
+          "has": [
+            "let signal channel = Command.Signal channel"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:175",
+          "has": [
+            "| Wait_for channel | Signal channel ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:183",
+          "has": [
+            "Some (\"wait-for\", args)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.capture_environment",
+      "command": "show-environment",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/environment_io.ml:103",
+          "has": [
+            "Read_process.run c \"show-environment\" arguments (fun body ->"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:49",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.capture_environment"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:267",
+          "has": [
+            "let capture_environment ?(hidden = false) scope ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:268",
+          "has": [
+            "Command.Capture_environment (scope, hidden)"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:101",
+          "has": [
+            "| Capture_environment (scope, hidden) ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:103",
+          "has": [
+            "( \"show-environment\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.set_environment",
+      "command": "set-environment",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:53",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.set_environment"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:270",
+          "has": [
+            "let set_environment ?(hidden = false) scope ~name value ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:271",
+          "has": [
+            "Command.Mutate (Set_environment { scope; name; value; hidden })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:286",
+          "has": [
+            "| Set_environment { scope; name; value; hidden } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:288",
+          "has": [
+            "( \"set-environment\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.unset_environment",
+      "command": "set-environment",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:57",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.unset_environment"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:273",
+          "has": [
+            "let unset_environment scope name ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:274",
+          "has": [
+            "Command.Mutate (Unset_environment (scope, name))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:292",
+          "has": [
+            "| Unset_environment (scope, name) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:294",
+          "has": [
+            "(\"set-environment\", environment_scope c scope @ [ \"-u\"; \"--\"; name ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.remove_environment",
+      "command": "set-environment",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:61",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.remove_environment"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:276",
+          "has": [
+            "let remove_environment scope name ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:277",
+          "has": [
+            "Command.Mutate (Remove_environment (scope, name))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:295",
+          "has": [
+            "| Remove_environment (scope, name) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:297",
+          "has": [
+            "(\"set-environment\", environment_scope c scope @ [ \"-r\"; \"--\"; name ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.capture_options",
+      "command": "show-options",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/options_io.ml:199",
+          "has": [
+            "Read_process.run c"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:65",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.capture_options"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:279",
+          "has": [
+            "let capture_options ?(include_inherited = false) scope ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:280",
+          "has": [
+            "Command.Capture_options (scope, include_inherited)"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:107",
+          "has": [
+            "| Capture_options (scope, include_inherited) ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:110",
+          "has": [
+            "( \"show-options\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.read_option",
+      "command": "show-options",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/options_io.ml:223",
+          "has": [
+            "Read_process.run c \"show-options\" arguments (fun body ->"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:69",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.read_option"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:282",
+          "has": [
+            "let read_option ?(include_inherited = true) scope name ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:283",
+          "has": [
+            "Command.Read_option (scope, name, include_inherited)"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:113",
+          "has": [
+            "| Read_option (scope, name, include_inherited) ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:116",
+          "has": [
+            "( \"show-options\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.set_option",
+      "command": "set-option",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:73",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.set_option"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:285",
+          "has": [
+            "let set_option ?index ?(append = false) scope ~name value ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:286",
+          "has": [
+            "Command.Mutate (Set_option { scope; name; index; value; append })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:298",
+          "has": [
+            "| Set_option { scope; name; index = number; value; append } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:307",
+          "has": [
+            "( \"set-option\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.unset_option",
+      "command": "set-option",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:77",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.unset_option"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:288",
+          "has": [
+            "let unset_option ?index scope name ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:289",
+          "has": [
+            "Command.Mutate (Unset_option (scope, name, index))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:311",
+          "has": [
+            "| Unset_option (scope, name, number) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:313",
+          "has": [
+            "( \"set-option\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.clear_option_array",
+      "command": "set-option",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:81",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.clear_option_array"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:291",
+          "has": [
+            "let clear_option_array scope name ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:292",
+          "has": [
+            "Command.Mutate (Clear_option_array (scope, name))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:315",
+          "has": [
+            "| Clear_option_array (scope, name) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:319",
+          "has": [
+            "(\"set-option\", option_scope c scope @ [ \"--\"; name; \"\" ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.capture_hooks",
+      "command": "show-hooks",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/options_io.ml:199",
+          "has": [
+            "Read_process.run c"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:85",
+          "has": [
+            "Client.run ?cancel connection (Libtmux.Operations.capture_hooks scope)"
+          ],
+          "in": "Libtmux_unix.Client.capture_hooks"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:294",
+          "has": [
+            "let capture_hooks scope = Command.Capture_hooks scope"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:294",
+          "has": [
+            "let capture_hooks scope = Command.Capture_hooks scope"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:120",
+          "has": [
+            "| Capture_hooks scope ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:126",
+          "has": [
+            "Some (\"show-hooks\", Command_encoding.option_scope connection scope)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.read_hook",
+      "command": "show-options",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/options_io.ml:223",
+          "has": [
+            "Read_process.run c \"show-options\" arguments (fun body ->"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:88",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.read_hook"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:296",
+          "has": [
+            "let read_hook ?(include_inherited = true) scope name ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:297",
+          "has": [
+            "Command.Read_hook (scope, name, include_inherited)"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:127",
+          "has": [
+            "| Read_hook (scope, name, include_inherited) ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:131",
+          "has": [
+            "( \"show-options\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.set_hook",
+      "command": "set-hook",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:92",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.set_hook"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:299",
+          "has": [
+            "let set_hook ?index ?(append = false) scope ~name commands ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:300",
+          "has": [
+            "Command.Mutate (Set_hook { scope; name; index; commands; append })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:320",
+          "has": [
+            "| Set_hook { scope; name; index = number; commands; append } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:325",
+          "has": [
+            "( \"set-hook\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.remove_hook",
+      "command": "set-hook",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:96",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.remove_hook"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:302",
+          "has": [
+            "let remove_hook ?index scope name ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:303",
+          "has": [
+            "Command.Mutate (Remove_hook (scope, name, index))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:329",
+          "has": [
+            "| Remove_hook (scope, name, number) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:331",
+          "has": [
+            "( \"set-hook\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.run_hook",
+      "command": "set-hook",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:100",
+          "has": [
+            "Client.run ?cancel connection (Libtmux.Operations.run_hook scope name)"
+          ],
+          "in": "Libtmux_unix.Client.run_hook"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:305",
+          "has": [
+            "let run_hook scope name = Command.Mutate (Run_hook (scope, name))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:305",
+          "has": [
+            "let run_hook scope name = Command.Mutate (Run_hook (scope, name))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:333",
+          "has": [
+            "| Run_hook (scope, name) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:345",
+          "has": [
+            "(\"set-hook\", option_scope c scope @ [ \"-R\"; \"--\"; name ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.create_session",
+      "command": "new-session",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:288",
+          "has": [
+            "ignore (C.request c ~acknowledged ~replied name args);"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:104",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.create_session"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:307",
+          "has": [
+            "let create_session ?window_name ?(width = 80) ?(height = 24)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:309",
+          "has": [
+            "Command.Create_session { name; window_name; width; height; spawn }"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:356",
+          "has": [
+            "| Create_session { name; window_name; width; height; spawn = spec } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:360",
+          "has": [
+            "( \"new-session\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.create_window",
+      "command": "new-window",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:288",
+          "has": [
+            "ignore (C.request c ~acknowledged ~replied name args);"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:109",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.create_window"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:311",
+          "has": [
+            "let create_window ?index ?name ?(spawn = Spawn.default) session ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:312",
+          "has": [
+            "Command.Create_window { session; index; name; spawn }"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:372",
+          "has": [
+            "| Create_window { session = target; index = number; name; spawn = spec } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:377",
+          "has": [
+            "( \"new-window\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.split_pane",
+      "command": "split-window",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:288",
+          "has": [
+            "ignore (C.request c ~acknowledged ~replied name args);"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:113",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.split_pane"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:314",
+          "has": [
+            "let split_pane ?size ?(spawn = Spawn.default) pane ~direction ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:315",
+          "has": [
+            "Command.Split_pane { pane; direction; size; spawn }"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:381",
+          "has": [
+            "| Split_pane { pane = target; direction = side; size = extent; spawn = spec }"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:384",
+          "has": [
+            "( \"split-window\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.break_pane",
+      "command": "break-pane",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:288",
+          "has": [
+            "ignore (C.request c ~acknowledged ~replied name args);"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:117",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.break_pane"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:317",
+          "has": [
+            "let break_pane ?name pane ~session ~index ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:318",
+          "has": [
+            "Command.Break_pane { pane; session; index; name }"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:389",
+          "has": [
+            "| Break_pane { pane = target; session; index; name } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:390",
+          "has": [
+            "( \"break-pane\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.kill_session",
+      "command": "kill-session",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:121",
+          "has": [
+            "Client.run ?cancel connection (Libtmux.Operations.kill_session session)"
+          ],
+          "in": "Libtmux_unix.Client.kill_session"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:320",
+          "has": [
+            "let kill_session session = Command.Mutate (Kill_session session)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:320",
+          "has": [
+            "let kill_session session = Command.Mutate (Kill_session session)"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:240",
+          "has": [
+            "| Command.Kill_session target -> (\"kill-session\", [ \"-t\"; session c target ])"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:240",
+          "has": [
+            "| Command.Kill_session target -> (\"kill-session\", [ \"-t\"; session c target ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.kill_window",
+      "command": "kill-window",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:124",
+          "has": [
+            "Client.run ?cancel connection (Libtmux.Operations.kill_window window)"
+          ],
+          "in": "Libtmux_unix.Client.kill_window"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:321",
+          "has": [
+            "let kill_window window = Command.Mutate (Kill_window window)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:321",
+          "has": [
+            "let kill_window window = Command.Mutate (Kill_window window)"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:241",
+          "has": [
+            "| Kill_window target -> (\"kill-window\", [ \"-t\"; window c target ])"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:241",
+          "has": [
+            "| Kill_window target -> (\"kill-window\", [ \"-t\"; window c target ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.kill_pane",
+      "command": "kill-pane",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:127",
+          "has": [
+            "Client.run ?cancel connection (Libtmux.Operations.kill_pane pane)"
+          ],
+          "in": "Libtmux_unix.Client.kill_pane"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:322",
+          "has": [
+            "let kill_pane pane = Command.Mutate (Kill_pane pane)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:322",
+          "has": [
+            "let kill_pane pane = Command.Mutate (Kill_pane pane)"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:242",
+          "has": [
+            "| Kill_pane target -> (\"kill-pane\", [ \"-t\"; pane c target ])"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:242",
+          "has": [
+            "| Kill_pane target -> (\"kill-pane\", [ \"-t\"; pane c target ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.select_window_at",
+      "command": "select-window",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:130",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.select_window_at"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:324",
+          "has": [
+            "let select_window_at session ~index ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:325",
+          "has": [
+            "Command.Mutate (Select_window_at (session, index))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:243",
+          "has": [
+            "| Select_window_at (target, number) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:244",
+          "has": [
+            "(\"select-window\", [ \"-t\"; at c target number ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.unlink_window_at",
+      "command": "unlink-window",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:134",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.unlink_window_at"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:327",
+          "has": [
+            "let unlink_window_at ?(allow_kill = false) session ~index ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:328",
+          "has": [
+            "Command.Mutate (Unlink_window_at { session; index; allow_kill })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:245",
+          "has": [
+            "| Unlink_window_at { session; index; allow_kill } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:246",
+          "has": [
+            "( \"unlink-window\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.link_window",
+      "command": "link-window",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:138",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.link_window"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:330",
+          "has": [
+            "let link_window window ~session ~index ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:331",
+          "has": [
+            "Command.Mutate (Link_window { window; session; index })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:248",
+          "has": [
+            "| Link_window { window = target; session; index } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:249",
+          "has": [
+            "(\"link-window\", [ \"-d\"; \"-s\"; window c target; \"-t\"; at c session index ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.move_window_at",
+      "command": "move-window",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:143",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.move_window_at"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:333",
+          "has": [
+            "let move_window_at from_session ~from_index ~session ~index ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:334",
+          "has": [
+            "Command.Mutate (Move_window_at { from_session; from_index; session; index })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:250",
+          "has": [
+            "| Move_window_at { from_session; from_index; session; index } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:251",
+          "has": [
+            "( \"move-window\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.select_pane",
+      "command": "select-pane",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:148",
+          "has": [
+            "Client.run ?cancel connection (Libtmux.Operations.select_pane pane)"
+          ],
+          "in": "Libtmux_unix.Client.select_pane"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:336",
+          "has": [
+            "let select_pane pane = Command.Mutate (Select_pane pane)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:336",
+          "has": [
+            "let select_pane pane = Command.Mutate (Select_pane pane)"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:254",
+          "has": [
+            "| Select_pane target -> (\"select-pane\", [ \"-t\"; pane c target ])"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:254",
+          "has": [
+            "| Select_pane target -> (\"select-pane\", [ \"-t\"; pane c target ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.set_pane_title",
+      "command": "select-pane",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:151",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.set_pane_title"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:337",
+          "has": [
+            "let set_pane_title pane ~title = Command.Mutate (Set_pane_title (pane, title))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:337",
+          "has": [
+            "let set_pane_title pane ~title = Command.Mutate (Set_pane_title (pane, title))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:255",
+          "has": [
+            "| Set_pane_title (target, title) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:256",
+          "has": [
+            "(\"select-pane\", [ \"-t\"; pane c target; \"-T\"; format_text title ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.resize_pane",
+      "command": "resize-pane",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:155",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.resize_pane"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:339",
+          "has": [
+            "let resize_pane ?width ?height pane ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:340",
+          "has": [
+            "Command.Mutate (Resize_pane { pane; width; height })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:257",
+          "has": [
+            "| Resize_pane { pane = target; width; height } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:258",
+          "has": [
+            "(\"resize-pane\", [ \"-t\"; pane c target ] @ geometry width height)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.resize_window",
+      "command": "resize-window",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:159",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.resize_window"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:342",
+          "has": [
+            "let resize_window ?width ?height window ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:343",
+          "has": [
+            "Command.Mutate (Resize_window { window; width; height })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:259",
+          "has": [
+            "| Resize_window { window = target; width; height } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:260",
+          "has": [
+            "(\"resize-window\", [ \"-t\"; window c target ] @ geometry width height)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.select_layout",
+      "command": "select-layout",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:163",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.select_layout"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:345",
+          "has": [
+            "let select_layout window layout ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:346",
+          "has": [
+            "Command.Mutate (Select_layout (window, layout))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:261",
+          "has": [
+            "| Select_layout (target, value) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:262",
+          "has": [
+            "(\"select-layout\", [ \"-t\"; window c target; \"--\"; layout value ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.cycle_layout",
+      "command": "next-layout",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:167",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.cycle_layout"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:348",
+          "has": [
+            "let cycle_layout window direction ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:349",
+          "has": [
+            "Command.Mutate (Cycle_layout (window, direction))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:263",
+          "has": [
+            "| Cycle_layout (target, value) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:265",
+          "has": [
+            "| `Next -> \"next-layout\""
+          ]
+        }
+      ],
+      "when": "direction is `Next"
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.cycle_layout",
+      "command": "previous-layout",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:167",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.cycle_layout"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:348",
+          "has": [
+            "let cycle_layout window direction ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:349",
+          "has": [
+            "Command.Mutate (Cycle_layout (window, direction))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:263",
+          "has": [
+            "| Cycle_layout (target, value) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:266",
+          "has": [
+            "| `Previous -> \"previous-layout\"),"
+          ]
+        }
+      ],
+      "when": "direction is `Previous"
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.move_pane",
+      "command": "move-pane",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:171",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.move_pane"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:351",
+          "has": [
+            "let move_pane ?size pane ~beside ~direction ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:352",
+          "has": [
+            "Command.Mutate (Move_pane { pane; beside; direction; size })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:268",
+          "has": [
+            "| Move_pane { pane = target; beside; direction = side; size = extent } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:269",
+          "has": [
+            "( \"move-pane\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.swap_panes",
+      "command": "swap-pane",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:175",
+          "has": [
+            "Client.run ?cancel connection (Libtmux.Operations.swap_panes pane other)"
+          ],
+          "in": "Libtmux_unix.Client.swap_panes"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:354",
+          "has": [
+            "let swap_panes pane other = Command.Mutate (Swap_panes (pane, other))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:354",
+          "has": [
+            "let swap_panes pane other = Command.Mutate (Swap_panes (pane, other))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:272",
+          "has": [
+            "| Swap_panes (target, other) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:273",
+          "has": [
+            "(\"swap-pane\", [ \"-d\"; \"-s\"; pane c target; \"-t\"; pane c other ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.rotate_panes",
+      "command": "rotate-window",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:178",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.rotate_panes"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:356",
+          "has": [
+            "let rotate_panes window direction ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:357",
+          "has": [
+            "Command.Mutate (Rotate_panes (window, direction))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:274",
+          "has": [
+            "| Rotate_panes (target, value) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:275",
+          "has": [
+            "( \"rotate-window\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.zoom_pane",
+      "command": "resize-pane",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:182",
+          "has": [
+            "Client.run ?cancel connection (Libtmux.Operations.zoom_pane pane)"
+          ],
+          "in": "Libtmux_unix.Client.zoom_pane"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:359",
+          "has": [
+            "let zoom_pane pane = Command.Mutate (Zoom_pane pane)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:359",
+          "has": [
+            "let zoom_pane pane = Command.Mutate (Zoom_pane pane)"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:278",
+          "has": [
+            "| Zoom_pane target -> (\"resize-pane\", [ \"-Z\"; \"-t\"; pane c target ])"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:278",
+          "has": [
+            "| Zoom_pane target -> (\"resize-pane\", [ \"-Z\"; \"-t\"; pane c target ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.respawn_pane",
+      "command": "respawn-pane",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:185",
+          "has": [
+            "Client.run ?cancel connection"
+          ],
+          "in": "Libtmux_unix.Client.respawn_pane"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:361",
+          "has": [
+            "let respawn_pane ?(kill_running = false) pane spawn ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:362",
+          "has": [
+            "Command.Mutate (Respawn_pane { pane; spawn; kill_running })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:279",
+          "has": [
+            "| Respawn_pane { pane = target; spawn = spec; kill_running } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:281",
+          "has": [
+            "( \"respawn-pane\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.clear_history",
+      "command": "clear-history",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "unix/generated_operations.ml:189",
+          "has": [
+            "Client.run ?cancel connection (Libtmux.Operations.clear_history pane)"
+          ],
+          "in": "Libtmux_unix.Client.clear_history"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:102",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:364",
+          "has": [
+            "let clear_history pane = Command.Mutate (Clear_history pane)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:364",
+          "has": [
+            "let clear_history pane = Command.Mutate (Clear_history pane)"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:285",
+          "has": [
+            "| Clear_history target -> (\"clear-history\", [ \"-t\"; pane c target ])"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:285",
+          "has": [
+            "| Clear_history target -> (\"clear-history\", [ \"-t\"; pane c target ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.capture",
+      "command": "list-sessions",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/acquisition.ml:16",
+          "has": [
+            "metadata client \"list-sessions\" []"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:100",
+          "has": [
+            "let capture ?cancel t = run ?cancel t (Libtmux.Operations.capture ())"
+          ],
+          "in": "Libtmux_unix.Client.capture"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:294",
+          "has": [
+            "| Capture -> Acquisition.snapshot c"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.capture",
+      "command": "list-windows",
+      "scope": "server",
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/acquisition.ml:30",
+          "has": [
+            "metadata client \"list-windows\" [ \"-a\" ]"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:100",
+          "has": [
+            "let capture ?cancel t = run ?cancel t (Libtmux.Operations.capture ())"
+          ],
+          "in": "Libtmux_unix.Client.capture"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:294",
+          "has": [
+            "| Capture -> Acquisition.snapshot c"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.capture",
+      "command": "list-panes",
+      "scope": "server",
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/acquisition.ml:65",
+          "has": [
+            "metadata client \"list-panes\" [ \"-a\" ]"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:100",
+          "has": [
+            "let capture ?cancel t = run ?cancel t (Libtmux.Operations.capture ())"
+          ],
+          "in": "Libtmux_unix.Client.capture"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:294",
+          "has": [
+            "| Capture -> Acquisition.snapshot c"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.capture",
+      "command": "list-clients",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/acquisition.ml:118",
+          "has": [
+            "metadata client \"list-clients\" []"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:100",
+          "has": [
+            "let capture ?cancel t = run ?cancel t (Libtmux.Operations.capture ())"
+          ],
+          "in": "Libtmux_unix.Client.capture"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:294",
+          "has": [
+            "| Capture -> Acquisition.snapshot c"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.capture_text",
+      "command": "capture-pane",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/rendered.ml:88",
+          "has": [
+            "no_output client \"capture-pane\""
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:109",
+          "has": [
+            "run ?cancel t"
+          ],
+          "in": "Libtmux_unix.Client.capture_text"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:311",
+          "has": [
+            "Rendered.capture ~scratch_dir c pane ~start ~end_"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.capture_text",
+      "command": "list-buffers",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/rendered.ml:100",
+          "has": [
+            "metadata client \"list-buffers\""
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:109",
+          "has": [
+            "run ?cancel t"
+          ],
+          "in": "Libtmux_unix.Client.capture_text"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:311",
+          "has": [
+            "Rendered.capture ~scratch_dir c pane ~start ~end_"
+          ]
+        }
+      ],
+      "incidental": true
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.capture_text",
+      "command": "save-buffer",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/rendered.ml:125",
+          "has": [
+            "no_output client \"save-buffer\" [ \"-b\"; buffer; file.path ];"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:109",
+          "has": [
+            "run ?cancel t"
+          ],
+          "in": "Libtmux_unix.Client.capture_text"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:311",
+          "has": [
+            "Rendered.capture ~scratch_dir c pane ~start ~end_"
+          ]
+        }
+      ],
+      "incidental": true
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.capture_text",
+      "command": "delete-buffer",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/rendered.ml:81",
+          "has": [
+            "no_output client \"delete-buffer\" [ \"-b\"; buffer ];"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:109",
+          "has": [
+            "run ?cancel t"
+          ],
+          "in": "Libtmux_unix.Client.capture_text"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:311",
+          "has": [
+            "Rendered.capture ~scratch_dir c pane ~start ~end_"
+          ]
+        }
+      ],
+      "incidental": true,
+      "when": "while the connection remains open"
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.capture_text",
+      "command": "show-hooks",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/rendered.ml:27",
+          "has": [
+            "let body = request client \"show-hooks\" arguments in"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml:109",
+          "has": [
+            "run ?cancel t"
+          ],
+          "in": "Libtmux_unix.Client.capture_text"
+        },
+        {
+          "at": "unix/libtmux_unix.ml:92",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:311",
+          "has": [
+            "Rendered.capture ~scratch_dir c pane ~start ~end_"
+          ]
+        }
+      ],
+      "incidental": true
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.rename_window",
+      "command": "rename-window",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:9",
+          "has": [
+            "Client.run connection (Libtmux.Operations.rename_window target ~name)"
+          ],
+          "in": "Libtmux_eio.Client.rename_window"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:247",
+          "has": [
+            "let rename_window target ~name = Command.Rename_window (target, name)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:247",
+          "has": [
+            "let rename_window target ~name = Command.Rename_window (target, name)"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:145",
+          "has": [
+            "| Rename_window (target, name) ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:148",
+          "has": [
+            "( \"rename-window\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.rename_session",
+      "command": "rename-session",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:12",
+          "has": [
+            "Client.run connection (Libtmux.Operations.rename_session target ~name)"
+          ],
+          "in": "Libtmux_eio.Client.rename_session"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:248",
+          "has": [
+            "let rename_session target ~name = Command.Rename_session (target, name)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:248",
+          "has": [
+            "let rename_session target ~name = Command.Rename_session (target, name)"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:154",
+          "has": [
+            "| Rename_session (target, name) ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:157",
+          "has": [
+            "( \"rename-session\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.switch_client_at",
+      "command": "switch-client",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:15",
+          "has": [
+            "Client.run connection"
+          ],
+          "in": "Libtmux_eio.Client.switch_client_at"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:250",
+          "has": [
+            "let switch_client_at ?(update_environment = false) client ~session ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:251",
+          "has": [
+            "Command.Mutate (Switch_client_at { client; session; update_environment })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:223",
+          "has": [
+            "| Command.Switch_client_at { client; session = target; update_environment } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:224",
+          "has": [
+            "( \"switch-client\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.request_detach_client_at",
+      "command": "detach-client",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:19",
+          "has": [
+            "Client.run connection (Libtmux.Operations.request_detach_client_at client)"
+          ],
+          "in": "Libtmux_eio.Client.request_detach_client_at"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:253",
+          "has": [
+            "let request_detach_client_at client ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:254",
+          "has": [
+            "Command.Mutate (Request_detach_client_at client)"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:227",
+          "has": [
+            "| Request_detach_client_at client ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:228",
+          "has": [
+            "(\"detach-client\", [ \"-t\"; client_name c client ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.refresh_client_at",
+      "command": "refresh-client",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:22",
+          "has": [
+            "Client.run connection"
+          ],
+          "in": "Libtmux_eio.Client.refresh_client_at"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:256",
+          "has": [
+            "let refresh_client_at ?(status_only = false) client ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:257",
+          "has": [
+            "Command.Mutate (Refresh_client_at (client, status_only))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:229",
+          "has": [
+            "| Refresh_client_at (client, status_only) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:230",
+          "has": [
+            "( \"refresh-client\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.resize_control_client_at",
+      "command": "refresh-client",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:26",
+          "has": [
+            "Client.run connection"
+          ],
+          "in": "Libtmux_eio.Client.resize_control_client_at"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:259",
+          "has": [
+            "let resize_control_client_at client ~width ~height ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:260",
+          "has": [
+            "Command.Mutate (Resize_control_client_at { client; width; height })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:232",
+          "has": [
+            "| Resize_control_client_at { client; width; height } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:233",
+          "has": [
+            "( \"refresh-client\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.send_text",
+      "command": "send-keys",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:30",
+          "has": [
+            "Client.run connection (Libtmux.Operations.send_text target ~text)"
+          ],
+          "in": "Libtmux_eio.Client.send_text"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:262",
+          "has": [
+            "let send_text target ~text = Command.Send_text (target, text)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:262",
+          "has": [
+            "let send_text target ~text = Command.Send_text (target, text)"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:163",
+          "has": [
+            "| Send_text (target, text) ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:164",
+          "has": [
+            "Some (\"send-keys\", [ \"-t\"; pane target; \"-l\"; \"--\"; text ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.send_keys",
+      "command": "send-keys",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:33",
+          "has": [
+            "Client.run connection (Libtmux.Operations.send_keys target keys)"
+          ],
+          "in": "Libtmux_eio.Client.send_keys"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:263",
+          "has": [
+            "let send_keys target keys = Command.Send_keys (target, keys)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:263",
+          "has": [
+            "let send_keys target keys = Command.Send_keys (target, keys)"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:165",
+          "has": [
+            "| Send_keys (target, keys) ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:174",
+          "has": [
+            "Some (\"send-keys\", [ \"-t\"; pane target; \"--\" ] @ List.map key keys)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.wait_for",
+      "command": "wait-for",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:315",
+          "has": [
+            "C.raw lane ~pidfd:(Some c.pidfd)"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:36",
+          "has": [
+            "Client.run connection (Libtmux.Operations.wait_for channel)"
+          ],
+          "in": "Libtmux_eio.Client.wait_for"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:264",
+          "has": [
+            "let wait_for channel = Command.Wait_for channel"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:264",
+          "has": [
+            "let wait_for channel = Command.Wait_for channel"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:175",
+          "has": [
+            "| Wait_for channel | Signal channel ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:183",
+          "has": [
+            "Some (\"wait-for\", args)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.signal",
+      "command": "wait-for",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:39",
+          "has": [
+            "Client.run connection (Libtmux.Operations.signal channel)"
+          ],
+          "in": "Libtmux_eio.Client.signal"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:265",
+          "has": [
+            "let signal channel = Command.Signal channel"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:265",
+          "has": [
+            "let signal channel = Command.Signal channel"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:175",
+          "has": [
+            "| Wait_for channel | Signal channel ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:183",
+          "has": [
+            "Some (\"wait-for\", args)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.capture_environment",
+      "command": "show-environment",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/environment_io.ml:103",
+          "has": [
+            "Read_process.run c \"show-environment\" arguments (fun body ->"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:42",
+          "has": [
+            "Client.run connection (Libtmux.Operations.capture_environment ?hidden scope)"
+          ],
+          "in": "Libtmux_eio.Client.capture_environment"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:267",
+          "has": [
+            "let capture_environment ?(hidden = false) scope ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:268",
+          "has": [
+            "Command.Capture_environment (scope, hidden)"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:101",
+          "has": [
+            "| Capture_environment (scope, hidden) ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:103",
+          "has": [
+            "( \"show-environment\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.set_environment",
+      "command": "set-environment",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:45",
+          "has": [
+            "Client.run connection"
+          ],
+          "in": "Libtmux_eio.Client.set_environment"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:270",
+          "has": [
+            "let set_environment ?(hidden = false) scope ~name value ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:271",
+          "has": [
+            "Command.Mutate (Set_environment { scope; name; value; hidden })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:286",
+          "has": [
+            "| Set_environment { scope; name; value; hidden } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:288",
+          "has": [
+            "( \"set-environment\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.unset_environment",
+      "command": "set-environment",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:49",
+          "has": [
+            "Client.run connection (Libtmux.Operations.unset_environment scope name)"
+          ],
+          "in": "Libtmux_eio.Client.unset_environment"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:273",
+          "has": [
+            "let unset_environment scope name ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:274",
+          "has": [
+            "Command.Mutate (Unset_environment (scope, name))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:292",
+          "has": [
+            "| Unset_environment (scope, name) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:294",
+          "has": [
+            "(\"set-environment\", environment_scope c scope @ [ \"-u\"; \"--\"; name ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.remove_environment",
+      "command": "set-environment",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:52",
+          "has": [
+            "Client.run connection (Libtmux.Operations.remove_environment scope name)"
+          ],
+          "in": "Libtmux_eio.Client.remove_environment"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:276",
+          "has": [
+            "let remove_environment scope name ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:277",
+          "has": [
+            "Command.Mutate (Remove_environment (scope, name))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:295",
+          "has": [
+            "| Remove_environment (scope, name) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:297",
+          "has": [
+            "(\"set-environment\", environment_scope c scope @ [ \"-r\"; \"--\"; name ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.capture_options",
+      "command": "show-options",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/options_io.ml:199",
+          "has": [
+            "Read_process.run c"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:55",
+          "has": [
+            "Client.run connection"
+          ],
+          "in": "Libtmux_eio.Client.capture_options"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:279",
+          "has": [
+            "let capture_options ?(include_inherited = false) scope ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:280",
+          "has": [
+            "Command.Capture_options (scope, include_inherited)"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:107",
+          "has": [
+            "| Capture_options (scope, include_inherited) ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:110",
+          "has": [
+            "( \"show-options\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.read_option",
+      "command": "show-options",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/options_io.ml:223",
+          "has": [
+            "Read_process.run c \"show-options\" arguments (fun body ->"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:59",
+          "has": [
+            "Client.run connection"
+          ],
+          "in": "Libtmux_eio.Client.read_option"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:282",
+          "has": [
+            "let read_option ?(include_inherited = true) scope name ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:283",
+          "has": [
+            "Command.Read_option (scope, name, include_inherited)"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:113",
+          "has": [
+            "| Read_option (scope, name, include_inherited) ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:116",
+          "has": [
+            "( \"show-options\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.set_option",
+      "command": "set-option",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:63",
+          "has": [
+            "Client.run connection"
+          ],
+          "in": "Libtmux_eio.Client.set_option"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:285",
+          "has": [
+            "let set_option ?index ?(append = false) scope ~name value ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:286",
+          "has": [
+            "Command.Mutate (Set_option { scope; name; index; value; append })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:298",
+          "has": [
+            "| Set_option { scope; name; index = number; value; append } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:307",
+          "has": [
+            "( \"set-option\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.unset_option",
+      "command": "set-option",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:67",
+          "has": [
+            "Client.run connection (Libtmux.Operations.unset_option ?index scope name)"
+          ],
+          "in": "Libtmux_eio.Client.unset_option"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:288",
+          "has": [
+            "let unset_option ?index scope name ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:289",
+          "has": [
+            "Command.Mutate (Unset_option (scope, name, index))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:311",
+          "has": [
+            "| Unset_option (scope, name, number) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:313",
+          "has": [
+            "( \"set-option\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.clear_option_array",
+      "command": "set-option",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:70",
+          "has": [
+            "Client.run connection (Libtmux.Operations.clear_option_array scope name)"
+          ],
+          "in": "Libtmux_eio.Client.clear_option_array"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:291",
+          "has": [
+            "let clear_option_array scope name ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:292",
+          "has": [
+            "Command.Mutate (Clear_option_array (scope, name))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:315",
+          "has": [
+            "| Clear_option_array (scope, name) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:319",
+          "has": [
+            "(\"set-option\", option_scope c scope @ [ \"--\"; name; \"\" ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.capture_hooks",
+      "command": "show-hooks",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/options_io.ml:199",
+          "has": [
+            "Read_process.run c"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:73",
+          "has": [
+            "Client.run connection (Libtmux.Operations.capture_hooks scope)"
+          ],
+          "in": "Libtmux_eio.Client.capture_hooks"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:294",
+          "has": [
+            "let capture_hooks scope = Command.Capture_hooks scope"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:294",
+          "has": [
+            "let capture_hooks scope = Command.Capture_hooks scope"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:120",
+          "has": [
+            "| Capture_hooks scope ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:126",
+          "has": [
+            "Some (\"show-hooks\", Command_encoding.option_scope connection scope)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.read_hook",
+      "command": "show-options",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/options_io.ml:223",
+          "has": [
+            "Read_process.run c \"show-options\" arguments (fun body ->"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:76",
+          "has": [
+            "Client.run connection"
+          ],
+          "in": "Libtmux_eio.Client.read_hook"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:296",
+          "has": [
+            "let read_hook ?(include_inherited = true) scope name ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:297",
+          "has": [
+            "Command.Read_hook (scope, name, include_inherited)"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:127",
+          "has": [
+            "| Read_hook (scope, name, include_inherited) ->"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:131",
+          "has": [
+            "( \"show-options\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.set_hook",
+      "command": "set-hook",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:80",
+          "has": [
+            "Client.run connection"
+          ],
+          "in": "Libtmux_eio.Client.set_hook"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:299",
+          "has": [
+            "let set_hook ?index ?(append = false) scope ~name commands ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:300",
+          "has": [
+            "Command.Mutate (Set_hook { scope; name; index; commands; append })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:320",
+          "has": [
+            "| Set_hook { scope; name; index = number; commands; append } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:325",
+          "has": [
+            "( \"set-hook\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.remove_hook",
+      "command": "set-hook",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:84",
+          "has": [
+            "Client.run connection (Libtmux.Operations.remove_hook ?index scope name)"
+          ],
+          "in": "Libtmux_eio.Client.remove_hook"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:302",
+          "has": [
+            "let remove_hook ?index scope name ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:303",
+          "has": [
+            "Command.Mutate (Remove_hook (scope, name, index))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:329",
+          "has": [
+            "| Remove_hook (scope, name, number) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:331",
+          "has": [
+            "( \"set-hook\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.run_hook",
+      "command": "set-hook",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:87",
+          "has": [
+            "Client.run connection (Libtmux.Operations.run_hook scope name)"
+          ],
+          "in": "Libtmux_eio.Client.run_hook"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:305",
+          "has": [
+            "let run_hook scope name = Command.Mutate (Run_hook (scope, name))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:305",
+          "has": [
+            "let run_hook scope name = Command.Mutate (Run_hook (scope, name))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:333",
+          "has": [
+            "| Run_hook (scope, name) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:345",
+          "has": [
+            "(\"set-hook\", option_scope c scope @ [ \"-R\"; \"--\"; name ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.create_session",
+      "command": "new-session",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:288",
+          "has": [
+            "ignore (C.request c ~acknowledged ~replied name args);"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:90",
+          "has": [
+            "Client.run connection"
+          ],
+          "in": "Libtmux_eio.Client.create_session"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:307",
+          "has": [
+            "let create_session ?window_name ?(width = 80) ?(height = 24)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:309",
+          "has": [
+            "Command.Create_session { name; window_name; width; height; spawn }"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:356",
+          "has": [
+            "| Create_session { name; window_name; width; height; spawn = spec } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:360",
+          "has": [
+            "( \"new-session\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.create_window",
+      "command": "new-window",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:288",
+          "has": [
+            "ignore (C.request c ~acknowledged ~replied name args);"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:95",
+          "has": [
+            "Client.run connection"
+          ],
+          "in": "Libtmux_eio.Client.create_window"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:311",
+          "has": [
+            "let create_window ?index ?name ?(spawn = Spawn.default) session ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:312",
+          "has": [
+            "Command.Create_window { session; index; name; spawn }"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:372",
+          "has": [
+            "| Create_window { session = target; index = number; name; spawn = spec } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:377",
+          "has": [
+            "( \"new-window\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.split_pane",
+      "command": "split-window",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:288",
+          "has": [
+            "ignore (C.request c ~acknowledged ~replied name args);"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:99",
+          "has": [
+            "Client.run connection"
+          ],
+          "in": "Libtmux_eio.Client.split_pane"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:314",
+          "has": [
+            "let split_pane ?size ?(spawn = Spawn.default) pane ~direction ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:315",
+          "has": [
+            "Command.Split_pane { pane; direction; size; spawn }"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:381",
+          "has": [
+            "| Split_pane { pane = target; direction = side; size = extent; spawn = spec }"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:384",
+          "has": [
+            "( \"split-window\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.break_pane",
+      "command": "break-pane",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:288",
+          "has": [
+            "ignore (C.request c ~acknowledged ~replied name args);"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:103",
+          "has": [
+            "Client.run connection"
+          ],
+          "in": "Libtmux_eio.Client.break_pane"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:317",
+          "has": [
+            "let break_pane ?name pane ~session ~index ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:318",
+          "has": [
+            "Command.Break_pane { pane; session; index; name }"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:389",
+          "has": [
+            "| Break_pane { pane = target; session; index; name } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:390",
+          "has": [
+            "( \"break-pane\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.kill_session",
+      "command": "kill-session",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:107",
+          "has": [
+            "Client.run connection (Libtmux.Operations.kill_session session)"
+          ],
+          "in": "Libtmux_eio.Client.kill_session"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:320",
+          "has": [
+            "let kill_session session = Command.Mutate (Kill_session session)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:320",
+          "has": [
+            "let kill_session session = Command.Mutate (Kill_session session)"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:240",
+          "has": [
+            "| Command.Kill_session target -> (\"kill-session\", [ \"-t\"; session c target ])"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:240",
+          "has": [
+            "| Command.Kill_session target -> (\"kill-session\", [ \"-t\"; session c target ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.kill_window",
+      "command": "kill-window",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:110",
+          "has": [
+            "Client.run connection (Libtmux.Operations.kill_window window)"
+          ],
+          "in": "Libtmux_eio.Client.kill_window"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:321",
+          "has": [
+            "let kill_window window = Command.Mutate (Kill_window window)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:321",
+          "has": [
+            "let kill_window window = Command.Mutate (Kill_window window)"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:241",
+          "has": [
+            "| Kill_window target -> (\"kill-window\", [ \"-t\"; window c target ])"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:241",
+          "has": [
+            "| Kill_window target -> (\"kill-window\", [ \"-t\"; window c target ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.kill_pane",
+      "command": "kill-pane",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:113",
+          "has": [
+            "Client.run connection (Libtmux.Operations.kill_pane pane)"
+          ],
+          "in": "Libtmux_eio.Client.kill_pane"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:322",
+          "has": [
+            "let kill_pane pane = Command.Mutate (Kill_pane pane)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:322",
+          "has": [
+            "let kill_pane pane = Command.Mutate (Kill_pane pane)"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:242",
+          "has": [
+            "| Kill_pane target -> (\"kill-pane\", [ \"-t\"; pane c target ])"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:242",
+          "has": [
+            "| Kill_pane target -> (\"kill-pane\", [ \"-t\"; pane c target ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.select_window_at",
+      "command": "select-window",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:116",
+          "has": [
+            "Client.run connection (Libtmux.Operations.select_window_at session ~index)"
+          ],
+          "in": "Libtmux_eio.Client.select_window_at"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:324",
+          "has": [
+            "let select_window_at session ~index ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:325",
+          "has": [
+            "Command.Mutate (Select_window_at (session, index))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:243",
+          "has": [
+            "| Select_window_at (target, number) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:244",
+          "has": [
+            "(\"select-window\", [ \"-t\"; at c target number ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.unlink_window_at",
+      "command": "unlink-window",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:119",
+          "has": [
+            "Client.run connection"
+          ],
+          "in": "Libtmux_eio.Client.unlink_window_at"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:327",
+          "has": [
+            "let unlink_window_at ?(allow_kill = false) session ~index ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:328",
+          "has": [
+            "Command.Mutate (Unlink_window_at { session; index; allow_kill })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:245",
+          "has": [
+            "| Unlink_window_at { session; index; allow_kill } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:246",
+          "has": [
+            "( \"unlink-window\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.link_window",
+      "command": "link-window",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:123",
+          "has": [
+            "Client.run connection"
+          ],
+          "in": "Libtmux_eio.Client.link_window"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:330",
+          "has": [
+            "let link_window window ~session ~index ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:331",
+          "has": [
+            "Command.Mutate (Link_window { window; session; index })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:248",
+          "has": [
+            "| Link_window { window = target; session; index } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:249",
+          "has": [
+            "(\"link-window\", [ \"-d\"; \"-s\"; window c target; \"-t\"; at c session index ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.move_window_at",
+      "command": "move-window",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:127",
+          "has": [
+            "Client.run connection"
+          ],
+          "in": "Libtmux_eio.Client.move_window_at"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:333",
+          "has": [
+            "let move_window_at from_session ~from_index ~session ~index ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:334",
+          "has": [
+            "Command.Mutate (Move_window_at { from_session; from_index; session; index })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:250",
+          "has": [
+            "| Move_window_at { from_session; from_index; session; index } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:251",
+          "has": [
+            "( \"move-window\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.select_pane",
+      "command": "select-pane",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:132",
+          "has": [
+            "Client.run connection (Libtmux.Operations.select_pane pane)"
+          ],
+          "in": "Libtmux_eio.Client.select_pane"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:336",
+          "has": [
+            "let select_pane pane = Command.Mutate (Select_pane pane)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:336",
+          "has": [
+            "let select_pane pane = Command.Mutate (Select_pane pane)"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:254",
+          "has": [
+            "| Select_pane target -> (\"select-pane\", [ \"-t\"; pane c target ])"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:254",
+          "has": [
+            "| Select_pane target -> (\"select-pane\", [ \"-t\"; pane c target ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.set_pane_title",
+      "command": "select-pane",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:135",
+          "has": [
+            "Client.run connection (Libtmux.Operations.set_pane_title pane ~title)"
+          ],
+          "in": "Libtmux_eio.Client.set_pane_title"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:337",
+          "has": [
+            "let set_pane_title pane ~title = Command.Mutate (Set_pane_title (pane, title))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:337",
+          "has": [
+            "let set_pane_title pane ~title = Command.Mutate (Set_pane_title (pane, title))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:255",
+          "has": [
+            "| Set_pane_title (target, title) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:256",
+          "has": [
+            "(\"select-pane\", [ \"-t\"; pane c target; \"-T\"; format_text title ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.resize_pane",
+      "command": "resize-pane",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:138",
+          "has": [
+            "Client.run connection (Libtmux.Operations.resize_pane ?width ?height pane)"
+          ],
+          "in": "Libtmux_eio.Client.resize_pane"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:339",
+          "has": [
+            "let resize_pane ?width ?height pane ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:340",
+          "has": [
+            "Command.Mutate (Resize_pane { pane; width; height })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:257",
+          "has": [
+            "| Resize_pane { pane = target; width; height } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:258",
+          "has": [
+            "(\"resize-pane\", [ \"-t\"; pane c target ] @ geometry width height)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.resize_window",
+      "command": "resize-window",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:141",
+          "has": [
+            "Client.run connection"
+          ],
+          "in": "Libtmux_eio.Client.resize_window"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:342",
+          "has": [
+            "let resize_window ?width ?height window ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:343",
+          "has": [
+            "Command.Mutate (Resize_window { window; width; height })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:259",
+          "has": [
+            "| Resize_window { window = target; width; height } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:260",
+          "has": [
+            "(\"resize-window\", [ \"-t\"; window c target ] @ geometry width height)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.select_layout",
+      "command": "select-layout",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:145",
+          "has": [
+            "Client.run connection (Libtmux.Operations.select_layout window layout)"
+          ],
+          "in": "Libtmux_eio.Client.select_layout"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:345",
+          "has": [
+            "let select_layout window layout ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:346",
+          "has": [
+            "Command.Mutate (Select_layout (window, layout))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:261",
+          "has": [
+            "| Select_layout (target, value) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:262",
+          "has": [
+            "(\"select-layout\", [ \"-t\"; window c target; \"--\"; layout value ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.cycle_layout",
+      "command": "next-layout",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:148",
+          "has": [
+            "Client.run connection (Libtmux.Operations.cycle_layout window direction)"
+          ],
+          "in": "Libtmux_eio.Client.cycle_layout"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:348",
+          "has": [
+            "let cycle_layout window direction ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:349",
+          "has": [
+            "Command.Mutate (Cycle_layout (window, direction))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:263",
+          "has": [
+            "| Cycle_layout (target, value) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:265",
+          "has": [
+            "| `Next -> \"next-layout\""
+          ]
+        }
+      ],
+      "when": "direction is `Next"
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.cycle_layout",
+      "command": "previous-layout",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:148",
+          "has": [
+            "Client.run connection (Libtmux.Operations.cycle_layout window direction)"
+          ],
+          "in": "Libtmux_eio.Client.cycle_layout"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:348",
+          "has": [
+            "let cycle_layout window direction ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:349",
+          "has": [
+            "Command.Mutate (Cycle_layout (window, direction))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:263",
+          "has": [
+            "| Cycle_layout (target, value) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:266",
+          "has": [
+            "| `Previous -> \"previous-layout\"),"
+          ]
+        }
+      ],
+      "when": "direction is `Previous"
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.move_pane",
+      "command": "move-pane",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:151",
+          "has": [
+            "Client.run connection"
+          ],
+          "in": "Libtmux_eio.Client.move_pane"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:351",
+          "has": [
+            "let move_pane ?size pane ~beside ~direction ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:352",
+          "has": [
+            "Command.Mutate (Move_pane { pane; beside; direction; size })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:268",
+          "has": [
+            "| Move_pane { pane = target; beside; direction = side; size = extent } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:269",
+          "has": [
+            "( \"move-pane\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.swap_panes",
+      "command": "swap-pane",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:155",
+          "has": [
+            "Client.run connection (Libtmux.Operations.swap_panes pane other)"
+          ],
+          "in": "Libtmux_eio.Client.swap_panes"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:354",
+          "has": [
+            "let swap_panes pane other = Command.Mutate (Swap_panes (pane, other))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:354",
+          "has": [
+            "let swap_panes pane other = Command.Mutate (Swap_panes (pane, other))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:272",
+          "has": [
+            "| Swap_panes (target, other) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:273",
+          "has": [
+            "(\"swap-pane\", [ \"-d\"; \"-s\"; pane c target; \"-t\"; pane c other ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.rotate_panes",
+      "command": "rotate-window",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:158",
+          "has": [
+            "Client.run connection (Libtmux.Operations.rotate_panes window direction)"
+          ],
+          "in": "Libtmux_eio.Client.rotate_panes"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:356",
+          "has": [
+            "let rotate_panes window direction ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:357",
+          "has": [
+            "Command.Mutate (Rotate_panes (window, direction))"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:274",
+          "has": [
+            "| Rotate_panes (target, value) ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:275",
+          "has": [
+            "( \"rotate-window\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.zoom_pane",
+      "command": "resize-pane",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:161",
+          "has": [
+            "Client.run connection (Libtmux.Operations.zoom_pane pane)"
+          ],
+          "in": "Libtmux_eio.Client.zoom_pane"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:359",
+          "has": [
+            "let zoom_pane pane = Command.Mutate (Zoom_pane pane)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:359",
+          "has": [
+            "let zoom_pane pane = Command.Mutate (Zoom_pane pane)"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:278",
+          "has": [
+            "| Zoom_pane target -> (\"resize-pane\", [ \"-Z\"; \"-t\"; pane c target ])"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:278",
+          "has": [
+            "| Zoom_pane target -> (\"resize-pane\", [ \"-Z\"; \"-t\"; pane c target ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.respawn_pane",
+      "command": "respawn-pane",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:164",
+          "has": [
+            "Client.run connection"
+          ],
+          "in": "Libtmux_eio.Client.respawn_pane"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:361",
+          "has": [
+            "let respawn_pane ?(kill_running = false) pane spawn ="
+          ]
+        },
+        {
+          "at": "lib/commands.ml:362",
+          "has": [
+            "Command.Mutate (Respawn_pane { pane; spawn; kill_running })"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:279",
+          "has": [
+            "| Respawn_pane { pane = target; spawn = spec; kill_running } ->"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:281",
+          "has": [
+            "( \"respawn-pane\","
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.clear_history",
+      "command": "clear-history",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:283",
+          "has": [
+            "C.no_output c ~acknowledged name args"
+          ]
+        },
+        {
+          "at": "eio/generated_operations.ml:168",
+          "has": [
+            "Client.run connection (Libtmux.Operations.clear_history pane)"
+          ],
+          "in": "Libtmux_eio.Client.clear_history"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:402",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:364",
+          "has": [
+            "let clear_history pane = Command.Mutate (Clear_history pane)"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:364",
+          "has": [
+            "let clear_history pane = Command.Mutate (Clear_history pane)"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:285",
+          "has": [
+            "| Clear_history target -> (\"clear-history\", [ \"-t\"; pane c target ])"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:285",
+          "has": [
+            "| Clear_history target -> (\"clear-history\", [ \"-t\"; pane c target ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.capture",
+      "command": "list-sessions",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/acquisition.ml:16",
+          "has": [
+            "metadata client \"list-sessions\" []"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:400",
+          "has": [
+            "let capture t = run t (Operations.capture ())"
+          ],
+          "in": "Libtmux_eio.Client.capture"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:294",
+          "has": [
+            "| Capture -> Acquisition.snapshot c"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.capture",
+      "command": "list-windows",
+      "scope": "server",
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/acquisition.ml:30",
+          "has": [
+            "metadata client \"list-windows\" [ \"-a\" ]"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:400",
+          "has": [
+            "let capture t = run t (Operations.capture ())"
+          ],
+          "in": "Libtmux_eio.Client.capture"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:294",
+          "has": [
+            "| Capture -> Acquisition.snapshot c"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.capture",
+      "command": "list-panes",
+      "scope": "server",
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/acquisition.ml:65",
+          "has": [
+            "metadata client \"list-panes\" [ \"-a\" ]"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:400",
+          "has": [
+            "let capture t = run t (Operations.capture ())"
+          ],
+          "in": "Libtmux_eio.Client.capture"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:294",
+          "has": [
+            "| Capture -> Acquisition.snapshot c"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.capture",
+      "command": "list-clients",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/acquisition.ml:118",
+          "has": [
+            "metadata client \"list-clients\" []"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:400",
+          "has": [
+            "let capture t = run t (Operations.capture ())"
+          ],
+          "in": "Libtmux_eio.Client.capture"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:294",
+          "has": [
+            "| Capture -> Acquisition.snapshot c"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.capture_text",
+      "command": "capture-pane",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/rendered.ml:88",
+          "has": [
+            "no_output client \"capture-pane\""
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:409",
+          "has": [
+            "run t (Operations.capture_text ?scratch_dir pane ~start ~end_)"
+          ],
+          "in": "Libtmux_eio.Client.capture_text"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:311",
+          "has": [
+            "Rendered.capture ~scratch_dir c pane ~start ~end_"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.capture_text",
+      "command": "list-buffers",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/rendered.ml:100",
+          "has": [
+            "metadata client \"list-buffers\""
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:409",
+          "has": [
+            "run t (Operations.capture_text ?scratch_dir pane ~start ~end_)"
+          ],
+          "in": "Libtmux_eio.Client.capture_text"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:311",
+          "has": [
+            "Rendered.capture ~scratch_dir c pane ~start ~end_"
+          ]
+        }
+      ],
+      "incidental": true
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.capture_text",
+      "command": "save-buffer",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/rendered.ml:125",
+          "has": [
+            "no_output client \"save-buffer\" [ \"-b\"; buffer; file.path ];"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:409",
+          "has": [
+            "run t (Operations.capture_text ?scratch_dir pane ~start ~end_)"
+          ],
+          "in": "Libtmux_eio.Client.capture_text"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:311",
+          "has": [
+            "Rendered.capture ~scratch_dir c pane ~start ~end_"
+          ]
+        }
+      ],
+      "incidental": true
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.capture_text",
+      "command": "delete-buffer",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/rendered.ml:81",
+          "has": [
+            "no_output client \"delete-buffer\" [ \"-b\"; buffer ];"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:409",
+          "has": [
+            "run t (Operations.capture_text ?scratch_dir pane ~start ~end_)"
+          ],
+          "in": "Libtmux_eio.Client.capture_text"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:311",
+          "has": [
+            "Rendered.capture ~scratch_dir c pane ~start ~end_"
+          ]
+        }
+      ],
+      "incidental": true,
+      "when": "while the connection remains open"
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.capture_text",
+      "command": "show-hooks",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the constructor and encoder select this tmux command.",
+      "evidence": [
+        {
+          "at": "unix/rendered.ml:27",
+          "has": [
+            "let body = request client \"show-hooks\" arguments in"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:409",
+          "has": [
+            "run t (Operations.capture_text ?scratch_dir pane ~start ~end_)"
+          ],
+          "in": "Libtmux_eio.Client.capture_text"
+        },
+        {
+          "at": "eio/libtmux_eio.ml:390",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:311",
+          "has": [
+            "Rendered.capture ~scratch_dir c pane ~start ~end_"
+          ]
+        }
+      ],
+      "incidental": true
     }
   ]
 }

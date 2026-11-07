@@ -4557,6 +4557,255 @@
           ]
         }
       ]
+    },
+    {
+      "port": "ocaml",
+      "owner": "Operations",
+      "in": "lib/",
+      "kind": "builds",
+      "names": [
+        "break_pane",
+        "clear_history",
+        "create_session",
+        "create_window",
+        "kill_pane",
+        "kill_session",
+        "kill_window",
+        "link_window",
+        "move_pane",
+        "move_window_at",
+        "read_hook",
+        "read_option",
+        "refresh_client_at",
+        "rename_session",
+        "rename_window",
+        "request_detach_client_at",
+        "resize_pane",
+        "resize_window",
+        "respawn_pane",
+        "select_layout",
+        "select_pane",
+        "select_window_at",
+        "send_keys",
+        "set_environment",
+        "set_hook",
+        "set_option",
+        "swap_panes",
+        "switch_client_at",
+        "unlink_window_at",
+        "unset_environment",
+        "unset_option",
+        "wait_for"
+      ],
+      "why": "These core functions construct typed command descriptions. Only a backend client executes them.",
+      "evidence": [
+        {
+          "at": "lib/libtmux.mli:1049",
+          "has": [
+            "Construction performs no I/O"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:247",
+          "has": [
+            "Command.Rename_window"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:320",
+          "has": [
+            "Command.Mutate (Kill_session"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "owner": "Session",
+      "names": [
+        "window_links"
+      ],
+      "kind": "values",
+      "why": "Reads window links from the captured arena without issuing link-window.",
+      "evidence": [
+        {
+          "at": "lib/graph.ml:212",
+          "has": [
+            "value.arena.session_links"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "owner": "Snapshot",
+      "names": [
+        "find_pane",
+        "find_session",
+        "find_window",
+        "window_links"
+      ],
+      "kind": "values",
+      "why": "Searches the immutable captured graph and returns existing rows without tmux I/O.",
+      "evidence": [
+        {
+          "at": "lib/graph.ml:396",
+          "has": [
+            "value.link_rows"
+          ]
+        },
+        {
+          "at": "lib/graph.ml:405",
+          "has": [
+            "value.session_index"
+          ]
+        },
+        {
+          "at": "lib/graph.ml:409",
+          "has": [
+            "value.window_index"
+          ]
+        },
+        {
+          "at": "lib/graph.ml:413",
+          "has": [
+            "value.pane_index"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "owner": "Window",
+      "names": [
+        "links"
+      ],
+      "kind": "values",
+      "why": "Reads links of the captured window without issuing link-window.",
+      "evidence": [
+        {
+          "at": "lib/graph.ml:268",
+          "has": [
+            "value.arena.window_links"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "owner": "Client",
+      "names": [
+        "clear_history"
+      ],
+      "commands": [
+        "clear-prompt-history"
+      ],
+      "kind": "other-command",
+      "why": "Clears the target pane history with clear-history. It does not clear command-prompt history.",
+      "evidence": [
+        {
+          "at": "lib/commands.ml:364",
+          "has": [
+            "Command.Mutate (Clear_history"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:285",
+          "has": [
+            "\"clear-history\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "owner": "Client",
+      "names": [
+        "read_hook"
+      ],
+      "commands": [
+        "show-hooks"
+      ],
+      "kind": "other-command",
+      "why": "Reads a single hook through show-options, including named user hooks, rather than listing hooks with show-hooks.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:307",
+          "has": [
+            "Read_hook"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:309",
+          "has": [
+            "Options_io.read"
+          ]
+        },
+        {
+          "at": "unix/options_io.ml:223",
+          "has": [
+            "\"show-options\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "owner": "Client",
+      "names": [
+        "wait_for_text"
+      ],
+      "commands": [
+        "wait-for"
+      ],
+      "kind": "no-send",
+      "why": "Observes rendered text and stream notifications. It does not use a tmux wait-for channel.",
+      "evidence": [
+        {
+          "at": "unix/libtmux_unix.ml:114",
+          "has": [
+            "Observation_wait.rendered"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:413",
+          "has": [
+            "Observation_wait.rendered"
+          ]
+        },
+        {
+          "at": "unix/observation_wait.ml:46",
+          "has": [
+            "capture_text !current"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "owner": "Subscription",
+      "names": [
+        "wait_for_bytes"
+      ],
+      "commands": [
+        "wait-for"
+      ],
+      "kind": "no-send",
+      "why": "Matches a byte pattern against streamed output. It does not use a tmux wait-for channel.",
+      "evidence": [
+        {
+          "at": "unix/libtmux_unix.ml:48",
+          "has": [
+            "Streaming.wait_for_bytes"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:203",
+          "has": [
+            "Streaming.wait_for_bytes"
+          ]
+        }
+      ]
     }
   ]
 }

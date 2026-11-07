@@ -744,6 +744,18 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
 
 /** Place language-specific public helpers with the task they support. */
 const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
+  ocaml: {
+    server: ['Libtmux_unix.Client', 'Libtmux_eio.Client', 'Libtmux.Endpoint', 'Libtmux.Generation', 'Libtmux.Source'],
+    snapshots: ['Libtmux.Snapshot', 'Libtmux.Captured_text', 'Libtmux_unix.Rendered', 'Libtmux_eio.Rendered'],
+    queries: ['Libtmux.Field', 'Libtmux.Relation', 'Libtmux.Expr', 'Libtmux.Query', 'Libtmux.Model', 'Libtmux.Cardinality', 'Libtmux.Plan', 'Libtmux_json.Expr'],
+    commands: ['Libtmux', 'Libtmux.ID', 'Libtmux.Created', 'Libtmux.Operations', 'Libtmux.Spawn'],
+    layout: ['Libtmux.Geometry'],
+    options: ['Libtmux.Options'],
+    errors: ['Libtmux_json.Decode_error'],
+    workspace: ['Libtmux_workspace', 'Libtmux_workspace.Config', 'Libtmux_workspace.Execution'],
+    runtime: ['Libtmux_unix', 'Libtmux_eio', 'Libtmux_json'],
+    control: ['Libtmux.Output', 'Libtmux_unix.Cancellation', 'Libtmux_unix.Operation', 'Libtmux_eio.Operation', 'Libtmux_unix.Subscription', 'Libtmux_eio.Subscription'],
+  },
   powershell: {
     commands: ['LibTmux\\Invoke-TmuxChain'],
     pane: ['LibTmux\\Send-TmuxText'],
@@ -801,6 +813,7 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
 
 /** Free functions and cmdlets need the same discovery-first order as object members. */
 const LANGUAGE_ORDER: Record<string, Record<string, string[]>> = {
+  ocaml: { server: ['Libtmux_unix.Client', 'Libtmux_eio.Client', 'Libtmux.Endpoint', 'Libtmux.Source', 'Libtmux.Generation'] },
   julia: Object.fromEntries(Object.entries({
     server: ['Server', 'open_server', 'with_server', 'from_env', 'OwnedServer', 'ServerIdentity'],
     session: ['sessions', 'session', 'new_session', 'rename_session', 'kill_session', 'SessionRef', 'SessionID', 'SessionWhere'],
@@ -854,7 +867,7 @@ function languageBucket(bucket: Bucket, port: string, root = bucket.id): Bucket 
 }
 
 export const NAV: Record<string, PortNav> = Object.fromEntries(
-  ['powershell', 'julia', 'elixir', 'py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'kotlin', 'scala', 'fsharp', 'csharp', 'cxx', 'swift'].map((port) => [
+  ['powershell', 'julia', 'elixir', 'py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'kotlin', 'scala', 'fsharp', 'csharp', 'cxx', 'swift', 'ocaml'].map((port) => [
     port,
     {
       port,

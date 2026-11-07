@@ -89,7 +89,12 @@ describe('shared reference index sections', () => {
     expect(sections[0].id).toBe('server')
     if (port === 'powershell') expect(sections[0].free.map((symbol) => symbol.name))
       .toEqual(expect.arrayContaining(['Connect-TmuxServer', 'Get-TmuxServer', 'New-TmuxServer']))
-    else expect(sections[0].types[0].name).toBe('Server')
+    else if (port === 'ocaml') {
+      expect(sections[0].types).toEqual([])
+      expect(sections[0].free.slice(0, 2).map((symbol) => [symbol.id, symbol.kind]))
+        .toEqual([['Libtmux_unix.Client', 'module'], ['Libtmux_eio.Client', 'module']])
+      expect(firstEntry(navTree(port)[0]!)?.id).toBe('Libtmux_unix.Client')
+    } else expect(sections[0].types[0].name).toBe('Server')
     const ids = sections.flatMap((section) => [...section.types, ...section.free]).map((symbol) => symbol.id)
     expect(new Set(ids).size).toBe(ids.length)
     const available = new Set(sections.map((section) => section.id))
@@ -241,14 +246,24 @@ describe('major tmux object domains', () => {
     expect(Object.keys(API_MODELS).sort()).toEqual([...PORTS].sort())
     expect(Object.keys(API_NAV).sort()).toEqual([...PORTS].sort())
   })
+  it('separates OCaml live server connections from captured client observations', () => {
+    const buckets = navTree('ocaml')
+    expect(buckets.find((bucket) => bucket.id === 'server')!.entries.slice(0, 2).map((entry) => entry.id))
+      .toEqual(['Libtmux_unix.Client', 'Libtmux_eio.Client'])
+    expect(buckets.find((bucket) => bucket.id === 'client')!.entries.map((entry) => entry.id))
+      .toContain('Libtmux.Client_observation')
+    expect(API_MODELS.ocaml.symbols.some((symbol) => symbol.kind === 'class' && symbol.name === 'Server')).toBe(false)
+  })
   it.each(PORTS)('uses the same useful member order for %s pages and lazy branches', (port) => {
     const model = API_MODELS[port]!
     const branches = membersByType(port)
     const compare = compareMembers(memberSignals(port, mentions.mentions))
     const owners = model.symbols.filter((symbol) => port === 'powershell'
       ? symbol.kind === 'module'
-      : OWNER_KINDS.has(symbol.kind) && ['Server', 'Session', 'Window', 'Pane', 'Client', 'Snapshot'].includes(symbol.name))
+      : OWNER_KINDS.has(symbol.kind) && ['Server', 'Session', 'Window', 'Pane', 'Client', 'Snapshot', ...(port === 'ocaml' ? ['Client_observation', 'Window_link'] : [])].includes(symbol.name))
     if (port === 'powershell') expect(owners.map((owner) => owner.name).sort()).toEqual(['LibTmux', 'LibTmux.Workspace'])
+    else if (port === 'ocaml') expect(owners.filter((owner) => owner.name === 'Client').map((owner) => owner.id))
+      .toEqual(['Libtmux_eio.Client', 'Libtmux_unix.Client'])
     else expect(owners.some((owner) => owner.name === 'Server'), port).toBe(true)
     for (const owner of owners) {
       const displayed = membersOf(model, owner, memberSignals(port, mentions.mentions)).sort(compare)

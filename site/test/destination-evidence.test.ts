@@ -183,6 +183,7 @@ describe('destination evidence', () => {
   describe('age', () => {
     const checked = new Date(`${evidence.checkedAt}T12:00:00Z`)
     const later = (days: number) => new Date(checked.getTime() + days * DAY)
+    const sameDate = withEvidence(evidence.destinations.map((record) => ({ ...record, checkedAt: evidence.checkedAt })))
 
     it('is measured, never judged, by the agreement check, so a change that touches none of this cannot fail for the passage of time', () => {
       const ancient = withEvidence(evidence.destinations.map((record) => ({ ...record, checkedAt: '2001-01-01' })))
@@ -192,8 +193,8 @@ describe('destination evidence', () => {
     })
 
     it('reports a record as stale only after the bound, oldest first, with its date', () => {
-      expect(staleRecords(evidence, { today: later(EVIDENCE_MAX_AGE_DAYS) })).toEqual([])
-      const stale = staleRecords(evidence, { today: later(EVIDENCE_MAX_AGE_DAYS + 2) })
+      expect(staleRecords(sameDate, { today: later(EVIDENCE_MAX_AGE_DAYS) })).toEqual([])
+      const stale = staleRecords(sameDate, { today: later(EVIDENCE_MAX_AGE_DAYS + 2) })
       expect(stale).toHaveLength(evidence.destinations.length)
       expect(stale[0]).toMatchObject({ checkedAt: evidence.checkedAt, days: EVIDENCE_MAX_AGE_DAYS + 2 })
       const old = new Date(checked.getTime() - (EVIDENCE_MAX_AGE_DAYS + 5) * DAY).toISOString().slice(0, 10)
@@ -203,7 +204,7 @@ describe('destination evidence', () => {
     })
 
     it('words a warning with the date and the command that clears it', () => {
-      const stale = staleRecords(evidence, { today: later(EVIDENCE_MAX_AGE_DAYS + 2) })
+      const stale = staleRecords(sameDate, { today: later(EVIDENCE_MAX_AGE_DAYS + 2) })
       expect(staleWarnings(stale)).toEqual([`${evidence.destinations.length} destination records were last checked ${evidence.checkedAt}, more than ${EVIDENCE_MAX_AGE_DAYS} days ago: run node scripts/verify-destinations.mjs`])
       expect(staleWarnings(stale.slice(0, 1))[0]).toMatch(/^1 destination record was last checked/)
     })
@@ -244,12 +245,12 @@ describe('destination evidence', () => {
       })
 
       it('names every record dated beyond a day ahead of today, and fails the agreement check on it', () => {
-        expect(futureRecords(evidence, { today: new Date(checked.getTime() - DAY) })).toEqual([])
-        const early = futureRecords(evidence, { today: new Date(checked.getTime() - 3 * DAY) })
+        expect(futureRecords(sameDate, { today: new Date(checked.getTime() - DAY) })).toEqual([])
+        const early = futureRecords(sameDate, { today: new Date(checked.getTime() - 3 * DAY) })
         expect(early).toHaveLength(evidence.destinations.length)
         expect(early[0]).toMatchObject({ checkedAt: evidence.checkedAt })
-        expect(checkEvidence(INVENTORY, evidence, { manifests, today: checked })).toEqual([])
-        expect(checkEvidence(INVENTORY, evidence, { manifests, today: new Date(checked.getTime() - 3 * DAY) }))
+        expect(checkEvidence(INVENTORY, sameDate, { manifests, today: checked })).toEqual([])
+        expect(checkEvidence(INVENTORY, sameDate, { manifests, today: new Date(checked.getTime() - 3 * DAY) }))
           .toContain(`${evidence.destinations[0]!.url} was checked ${evidence.checkedAt}, which is in the future`)
       })
 

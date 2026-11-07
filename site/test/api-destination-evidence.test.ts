@@ -274,6 +274,16 @@ describe('what the verifier reads from a page', () => {
   })
 
   it('knows which hosts document a language or an SDK', () => {
+    expect(apiHostOf('https://ocaml.org/manual/5.5/api/Iarray.html#TYPEt')).toBe('ocaml.org')
+    expect(languageOfUrl('https://ocaml.org/manual/5.5/api/Iarray.html#TYPEt')).toBe('ocaml')
+    expect(languageProblem('ocaml', 'https://ocaml.org/manual/5.5/api/Iarray.html#TYPEt')).toBeUndefined()
+    const url = 'https://ocaml.org/manual/5.5/api/Iarray.html#TYPEt'
+    const html = '<title>OCaml library : Iarray</title><h1>Module <a>Iarray</a></h1><pre><span id="TYPEt"><span>type</span> <code>\'a</code> t</span> = <code>\'a iarray</code></pre>'
+    const identity = pageIdentity(url, readPage(html))
+    expect(identity).toMatchObject({ kind: 'type', path: ['Iarray', 't'] })
+    expect(judge(sourceIdentity({ port: 'ocaml', name: 'Iarray.t', source: 'type' }), identity)).toBeUndefined()
+    expect(judge(sourceIdentity({ port: 'ocaml', name: 'Seq.t', source: 'type' }), identity)).toMatchObject({ failure: 'owner' })
+    expect(pageIdentity(url, readPage(html.replace('<span>type</span>', '<span>val</span>')))).toMatchObject({ kind: 'other' })
     expect(apiHostOf('https://pkg.go.dev/time#Duration')).toBe('pkg.go.dev')
     expect(apiHostOf('https://elixir.hexdocs.pm/Enum.html')).toBe('elixir.hexdocs.pm')
     expect(apiHostOf('https://github.com/libtmux/libtmux')).toBeUndefined()

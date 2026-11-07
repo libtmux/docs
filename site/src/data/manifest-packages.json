@@ -735,6 +735,49 @@
           "name": "TmuxWorkspace"
         }
       ]
+    },
+    "ocaml": {
+      "repo": "https://github.com/libtmux/libtmux-ocaml",
+      "revision": "ade2f9787024a5426710cec06f864648c217263c",
+      "distributions": [
+        {
+          "name": "libtmux",
+          "manifest": "libtmux.opam",
+          "repo": "https://github.com/libtmux/libtmux-ocaml",
+          "revision": "ade2f9787024a5426710cec06f864648c217263c"
+        },
+        {
+          "name": "libtmux-eio",
+          "manifest": "libtmux-eio.opam",
+          "repo": "https://github.com/libtmux/libtmux-ocaml",
+          "revision": "ade2f9787024a5426710cec06f864648c217263c"
+        },
+        {
+          "name": "libtmux-json",
+          "manifest": "libtmux-json.opam",
+          "repo": "https://github.com/libtmux/libtmux-ocaml",
+          "revision": "ade2f9787024a5426710cec06f864648c217263c"
+        },
+        {
+          "name": "libtmux-unix",
+          "manifest": "libtmux-unix.opam",
+          "repo": "https://github.com/libtmux/libtmux-ocaml",
+          "revision": "ade2f9787024a5426710cec06f864648c217263c"
+        },
+        {
+          "name": "libtmux-workspace",
+          "manifest": "libtmux-workspace.opam",
+          "repo": "https://github.com/libtmux/libtmux-ocaml",
+          "revision": "ade2f9787024a5426710cec06f864648c217263c"
+        },
+        {
+          "name": "libtmux-workspace-cli",
+          "manifest": "libtmux-workspace-cli.opam",
+          "repo": "https://github.com/libtmux/libtmux-ocaml",
+          "revision": "ade2f9787024a5426710cec06f864648c217263c"
+        }
+      ],
+      "units": []
     }
   }
 }
