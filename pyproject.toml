@@ -30,7 +30,11 @@ exclude-newer = "3 days"
 [tool.ruff]
 target-version = "py312"
 line-length = 100
-include = ["scripts/**/*.py"]
+include = [
+    "scripts/**/*.py",
+    "packages/api-model/scripts/**/*.py",
+    "packages/api-model/test/test_*.py",
+]
 extend-exclude = ["output"]
 
 [tool.ruff.lint]
@@ -55,7 +59,7 @@ convention = "numpy"
 python-version = "3.12"
 
 [tool.ty.src]
-include = ["scripts"]
+include = ["scripts", "packages/api-model/scripts"]
 
 [tool.ty.terminal]
 error-on-warning = true
