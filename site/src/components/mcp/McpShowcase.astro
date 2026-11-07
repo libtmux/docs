@@ -1,6 +1,10 @@
 ---
 /**
- * A port's MCP tools grouped by what they request, with a worked prompt.
+ * A port's MCP worked example and its tools grouped by what they request.
+ *
+ * `part` picks one half: the overview opens with the example (a reader who
+ * came to see the server work should not scroll past the tool grid) and closes
+ * with the tools. Without it, both render, the example first.
  *
  * Rendered from the MCP overview rather than from Markdown, because a
  * content-collection entry cannot import a component. Grouping, purposes and
@@ -15,13 +19,18 @@ import '../../styles/mcp-showcase.css'
 
 interface Props {
   showcase: McpShowcase
+  part?: 'example' | 'tools'
 }
-const { showcase } = Astro.props as Props
+const { showcase, part } = Astro.props as Props
+const showExample = part !== 'tools' && Boolean(showcase.example)
+const showTools = part !== 'example'
 const grouped = showcase.groups.some((group) => group.tier)
 const tier = (tool: ShowcaseTool) => tierFor(tool)
 const name = PORT_BY_SLUG[showcase.port].name
 ---
 <section class="mcp-showcase" data-mcp-showcase>
+  {showExample && <McpReplay example={showcase.example!} portName={name} />}
+  {showTools && <>
   <h2 id={grouped ? 'tools-by-tier' : 'tools'}>{grouped ? 'Tools by tier' : 'Tools'}</h2>
   <p>
     {grouped
@@ -55,7 +64,7 @@ const name = PORT_BY_SLUG[showcase.port].name
     ))}
   </div>
   <p><a href={showcase.toolsHref}>Browse every tool</a>, with its arguments, result and protocol data.</p>
-  {showcase.example && <McpReplay example={showcase.example} portName={name} />}
+  </>}
 </section>
 <style>
   .mcp-group {

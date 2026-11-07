@@ -331,12 +331,21 @@ export async function mcpShowcase(port: string, version: string): Promise<McpSho
   return snapshot && PORT_BY_SLUG[port] ? buildShowcase(port, version, snapshot, await transcriptFor(port)) : undefined
 }
 
-/** The headings the showcase adds to a page's table of contents. */
-export function showcaseHeadings(showcase: McpShowcase): { depth: number; slug: string; text: string }[] {
+/** The heading of the worked example, which opens the overview. */
+export function exampleHeadings(showcase: McpShowcase): { depth: number; slug: string; text: string }[] {
+  return showcase.example ? [{ depth: 2, slug: 'worked-example', text: 'Worked example' }] : []
+}
+
+/** The headings of the tool grid, which follows the page's prose. */
+export function toolHeadings(showcase: McpShowcase): { depth: number; slug: string; text: string }[] {
   const tiers = showcase.groups.flatMap((group) => (group.tier ? [group.tier] : []))
   return [
     { depth: 2, slug: tiers.length ? 'tools-by-tier' : 'tools', text: tiers.length ? 'Tools by tier' : 'Tools' },
     ...tiers.map((tier) => ({ depth: 3, slug: `tier-${tier.id}`, text: tier.label })),
-    ...(showcase.example ? [{ depth: 2, slug: 'worked-example', text: 'Worked example' }] : []),
   ]
+}
+
+/** Every heading the showcase draws, in the order it draws them when both halves render together. */
+export function showcaseHeadings(showcase: McpShowcase): { depth: number; slug: string; text: string }[] {
+  return [...exampleHeadings(showcase), ...toolHeadings(showcase)]
 }

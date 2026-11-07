@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { contractOf, contractsOf, sameContract, sameContracts, type ToolContract } from '../src/lib/mcp-contract'
 import { MCP_REFERENCE, mcpReferenceRoutes } from '../src/lib/mcp-reference'
 import {
-  abbreviate, buildShowcase, CAPABILITY_KEY, transcriptFor, EXAMPLES, mcpShowcase, protocolSnapshot, recordingHolds, showcaseHeadings, TIERS, toolPurposes, toolTier,
+  abbreviate, buildShowcase, CAPABILITY_KEY, transcriptFor, EXAMPLES, mcpShowcase, protocolSnapshot, recordingHolds, showcaseHeadings, TIERS, toolHeadings, toolPurposes, toolTier,
   type McpShowcase, type ProtocolSnapshot, type ProtocolTool, type Transcript,
 } from '../src/lib/mcp-showcase'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
@@ -308,14 +308,33 @@ describe('the worked example', () => {
 describe('the overview page', () => {
   const page = readFileSync(new URL('../src/components/docs/DocPage.astro', import.meta.url), 'utf8')
 
-  it('draws the showcase on the MCP overview, after the prose, and lists its headings', () => {
+  it('opens the MCP overview with the worked example, then install, and closes it with the tools', () => {
     expect(page).toContain("const mcpTools = isMcpOverview && port ? await mcpShowcase(port, version ?? buildTarget(process.env).version) : undefined")
-    expect(page).toContain('...(mcpTools ? mcpHeadings(mcpTools) : []),')
-    expect(page.indexOf('<Content />')).toBeLessThan(page.indexOf('<McpShowcase showcase={mcpTools} />'))
+    const example = page.indexOf('<McpShowcase showcase={mcpTools} part="example" />')
+    const install = page.indexOf('<h2 id="install">Install</h2>')
+    const tools = page.indexOf('<McpShowcase showcase={mcpTools} part="tools" />')
+    expect(page.indexOf('productIntro && <ProductIntro parts={productIntro} />'), 'the example follows the intro').toBeLessThan(example)
+    expect(example, 'the example comes before install').toBeLessThan(install)
+    expect(install).toBeLessThan(page.indexOf('placeholderLocale && <Content />'))
+    expect(page.indexOf('placeholderLocale && <Content />'), 'the tool grid follows the prose').toBeLessThan(tools)
     expect(page).toContain('!placeholderLocale && mcpTools && <McpShowcase')
   })
 })
 
+
+  it('lists the table of contents in the order the page draws: example, install, prose, tools', () => {
+    const order = ['mcpExampleHeadings(mcpTools)', "slug: 'install'", '...headings,', 'mcpToolHeadings(mcpTools)'].map((needle) => page.indexOf(needle, page.indexOf('headings={placeholderLocale')))
+    expect(order.every((at) => at > 0), 'every list is in the headings prop').toBe(true)
+    expect([...order].sort((a, b) => a - b)).toEqual(order)
+  })
+
+  it('lists the example heading before the tool headings', async () => {
+    for (const port of PORTS) {
+      const slugs = showcaseHeadings(await showcase(port)).map((heading) => heading.slug)
+      expect(slugs[0], port).toBe('worked-example')
+      expect(slugs.slice(1), port).toEqual(toolHeadings(await showcase(port)).map((heading) => heading.slug))
+    }
+  })
 describe('the showcase section', () => {
   const windows: Window[] = []
   afterEach(async () => { for (const win of windows.splice(0)) await win.happyDOM.abort() })
@@ -353,7 +372,8 @@ describe('the showcase section', () => {
 
   it('lists a server that declares no toolsets together, with no badge', async () => {
     const document = await section('ruby')
-    expect(document.querySelector('h2')?.id).toBe('tools')
+    expect(document.querySelector('h2#tools')).not.toBeNull()
+    expect(document.querySelector('h2#tools-by-tier')).toBeNull()
     expect(document.querySelector('.mcp-group__title')).toBeNull()
     expect(document.querySelector('.mcp-tier')).toBeNull()
     expect(document.querySelectorAll('li.mcp-tool')).toHaveLength(onDisk('ruby').protocol.tools.length)
