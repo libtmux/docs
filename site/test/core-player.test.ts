@@ -319,6 +319,58 @@ describe('the player component', () => {
     expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual(['1'])
   })
 
+  it('shows a window its label names, and the client\'s window again at the next call', async () => {
+    const { document, win, capability } = await mount({ run: true })
+    const made = String(capability.steps.findIndex((step) => step.label === 'Session.NewWindow') + 1)
+    click(win, document.querySelector(`[data-mark="${made}"]`)!)
+    const frame = document.querySelector(`[data-frame="${made}"]`)!
+    const drawn = () => [...frame.querySelectorAll<HTMLElement>('[data-view]')].filter((view) => !view.hidden).map((view) => view.dataset.view)
+    expect(drawn()).toEqual(['$0/@0'])
+    click(win, frame.querySelector('.mcp-tmux__window[data-show="$0/@1"]')!)
+    expect(drawn()).toEqual(['$0/@1'])
+    expect(frame.querySelector('.mcp-tmux')!.classList.contains('is-peeking')).toBe(true)
+    expect(shown(document, '.core-player__tmux [data-frame]').map((each) => each.dataset.frame), 'a look moves no call').toEqual([made])
+    click(win, document.querySelector('[data-action="forward"]')!)
+    click(win, document.querySelector('[data-action="back"]')!)
+    expect(drawn(), 'back at the call, the client\'s window').toEqual(['$0/@0'])
+    expect(frame.querySelector('.mcp-tmux')!.classList.contains('is-peeking')).toBe(false)
+  })
+
+  it('names a dot\'s call and what it did in a tooltip, and previews it while the pointer is on the dot', async () => {
+    const { document, win, capability } = await mount({ run: true })
+    click(win, document.querySelector('[data-mark="1"]')!)
+    const made = capability.steps.findIndex((step) => step.label === 'Session.NewWindow') + 1
+    const dot = document.querySelector(`[data-mark="${made}"]`)!
+    const tip = document.querySelector<HTMLElement>('[data-tip]')!
+    expect(tip.hidden).toBe(true)
+    dot.dispatchEvent(new win.MouseEvent('mouseenter') as unknown as Event)
+    expect(tip.hidden).toBe(false)
+    expect([tip.querySelector('code')!.textContent, tip.querySelector('span')!.textContent]).toEqual(['Session.NewWindow', 'added window 1:logs'])
+    expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual([String(made)])
+    expect(count(document), 'a preview moves nothing').toBe(`1/${viewSteps(capability, code('concise')).length}`)
+    dot.dispatchEvent(new win.MouseEvent('mouseleave') as unknown as Event)
+    expect(tip.hidden).toBe(true)
+    expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual(['1'])
+    document.querySelector('[data-mark="0"]')!.dispatchEvent(new win.FocusEvent('focus') as unknown as Event)
+    expect(tip.textContent).toBe('tmux before the first call')
+    // Each dot names the call it shows in the view on the page.
+    expect(document.querySelector(`[data-mark="${made}"]`)!.getAttribute('aria-label')).toBe('Show the state after Session.NewWindow')
+  })
+
+  it('links a call and the library types it returned to the reference, and leaves the language\'s own types as text', async () => {
+    const { document } = await mount()
+    const title = document.querySelector('[data-result="2"] .core-result__title')!
+    expect([...title.querySelectorAll('a')].map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
+      ['Server.NewSession', '/go/latest/reference/tmux-server-newsession/'],
+      ['Session', '/go/latest/reference/tmux-session/'],
+    ])
+    const waited = document.querySelector(`[data-frame="${(await recorded()).capability.steps.findIndex((step) => step.label === 'Pane.WaitForText') + 1}"] .mcp-frame__note`)!
+    expect(waited.querySelector('a'), 'a call the API model lacks stays text').toBeNull()
+    expect(waited.querySelector('code')!.textContent).toBe('Pane.WaitForText')
+    const made = document.querySelector(`[data-frame="${(await recorded()).capability.steps.findIndex((step) => step.label === 'Session.NewWindow') + 1}"] .mcp-frame__note a`)!
+    expect([made.textContent, made.getAttribute('href')]).toEqual(['Session.NewWindow', '/go/latest/reference/tmux-session-newwindow/'])
+  })
+
   it('makes only the lines of a call answer to the pointer', async () => {
     const { document } = await mount({ run: true })
     const callLines = [...document.querySelectorAll('[data-home-view="concise"] .ec-line.is-call')].map((line) => line.textContent)
@@ -454,47 +506,109 @@ describe('what a call did to its panes\' contents', () => {
   })
 })
 
-describe('the drawing of every window', () => {
+describe('the drawing an attached client sees', () => {
   const template = loadAstroTemplate('components/core/CorePlayer.astro', { real: PARTS, modules: { 'astro-expressive-code/components': { Code } } })
-
-  it('draws each window of each session as a tile, outlines what the call added, and keeps one status line in every frame', async () => {
-    const recording = (await coreRecordingFor('lua'))!
-    const capability = await quickstartOf('lua')
-    const win = new Window({ url: 'https://libtmux.org/lua/latest/' })
-    win.document.body.innerHTML = await renderAstroTemplate(await template, { props: { port: 'lua', language: 'Lua', example: QUICKSTARTS.lua!.complete!, recording, capability } })
-    const document = win.document as unknown as Document
-    const frame = (index: number) => document.querySelector(`[data-frame="${index}"]`)!
-    const made = stepNamed(capability, 'Session:new_window').index + 1
-    const labels = (index: number) => [...frame(index).querySelectorAll('.mcp-tile__status')].map((label) => label.textContent)
-    expect(labels(made)).toEqual(['0:editor*', '1:logs'])
-    expect([...frame(made).querySelectorAll('.mcp-tile.is-new .mcp-tile__status')].map((label) => label.textContent)).toEqual(['1:logs'])
-    expect(frame(made).querySelector('.mcp-tmux__status--sessions')!.textContent).toBe('[demo]')
-    const split = stepNamed(capability, 'Pane:split').index + 1
-    expect([...frame(split).querySelectorAll('.mcp-tile__pane.is-changed .mcp-pane__id')].map((id) => id.textContent)).toEqual(['%1 sh'])
-    expect(frame(split).querySelectorAll('.mcp-tile.is-new')).toHaveLength(0)
-    // Every frame keeps the status line, empty or not, so a frame is as tall as the next.
-    expect(document.querySelectorAll('.mcp-frame').length).toBe(document.querySelectorAll('.mcp-frame .mcp-tmux__status--sessions').length)
-    expect(frame(0).querySelector('.mcp-tile'), 'no server, no tiles').toBeNull()
-    await win.happyDOM.abort()
+  const screen = loadAstroTemplate('components/replay/TmuxScreen.astro')
+  const windows: Window[] = []
+  afterEach(async () => { for (const win of windows.splice(0)) await win.happyDOM.abort() })
+  const page = async (html: string, url = 'https://libtmux.org/lua/latest/') => {
+    const win = new Window({ url })
+    windows.push(win)
+    win.document.body.innerHTML = html
+    return { win, document: win.document as unknown as Document }
+  }
+  const text = (elements: Iterable<Element>) => [...elements].map((element) => element.textContent)
+  // What a frame's screen shows: the window drawn, and the status line's visible parts.
+  const visible = (frame: Element) => ({
+    views: [...frame.querySelectorAll<HTMLElement>('[data-view]')].filter((view) => !view.hidden).map((view) => view.dataset.view),
+    windows: text([...frame.querySelectorAll<HTMLElement>('.mcp-client__session')].filter((group) => !group.hidden).flatMap((group) => [...group.querySelectorAll('.mcp-tmux__window')])),
+    sessions: text([...frame.querySelectorAll<HTMLElement>('.mcp-client__session')].filter((group) => !group.hidden).flatMap((group) => [...group.querySelectorAll('.mcp-tmux__session')])),
+    others: text([...frame.querySelectorAll<HTMLElement>('.mcp-client__other')].filter((other) => !other.hidden)),
   })
 
-  it('draws the active pane of a split window bold, and outlines the pane a selection moved to', async () => {
+  it('shows the window the session is on, a window made in the background as a label, and one status line in every frame', async () => {
+    const recording = (await coreRecordingFor('lua'))!
+    const capability = await quickstartOf('lua')
+    const { document } = await page(await renderAstroTemplate(await template, { props: { port: 'lua', language: 'Lua', example: QUICKSTARTS.lua!.complete!, recording, capability } }))
+    const frame = (index: number) => document.querySelector(`[data-frame="${index}"]`)!
+    const made = stepNamed(capability, 'Session:new_window').index + 1
+    expect(visible(frame(made))).toEqual({ views: ['$0/@0'], windows: ['0:editor*', '1:logs'], sessions: ['[demo]'], others: [] })
+    expect(text(frame(made).querySelectorAll('.mcp-tmux__window.is-changed')), 'the new window is marked in the status line').toEqual(['1:logs'])
+    expect(text(frame(made).querySelectorAll('.mcp-tmux__window.is-current'))).toEqual(['0:editor*'])
+    expect(frame(made).querySelectorAll('[data-view]'), 'every window is drawn, the others hidden').toHaveLength(2)
+    expect(frame(made).querySelector('.mcp-tile.is-new')!.getAttribute('data-view'), 'the new window is outlined where it is drawn').toBe('$0/@1')
+    const split = stepNamed(capability, 'Pane:split').index + 1
+    expect(text(frame(split).querySelectorAll('[data-view]:not([hidden]) .mcp-tile__pane.is-changed .mcp-pane__id'))).toEqual(['%1 sh'])
+    expect(frame(split).querySelectorAll('.mcp-tmux__window.is-changed'), 'a change on screen needs no flag').toHaveLength(0)
+    // Every frame keeps one status line or the placeholder of the same size, so a frame is as tall as the next.
+    const frames = [...document.querySelectorAll('.mcp-frame')]
+    expect(frames.every((each) => each.querySelectorAll('.mcp-client__status').length + each.querySelectorAll('.mcp-tmux__screen--placeholder').length === 1)).toBe(true)
+    expect(frame(0).querySelector('[data-view]'), 'no server, no windows').toBeNull()
+  })
+
+  it('lets two panes meet at the line tmux draws between them', async () => {
+    const recording = (await coreRecordingFor('lua'))!
+    const capability = await quickstartOf('lua')
+    const { document } = await page(await renderAstroTemplate(await template, { props: { port: 'lua', language: 'Lua', example: QUICKSTARTS.lua!.complete!, recording, capability } }))
+    const split = document.querySelector(`[data-frame="${stepNamed(capability, 'Pane:split').index + 1}"]`)!
+    const [left, right] = [...split.querySelectorAll<HTMLElement>('[data-view]:not([hidden]) .mcp-tile__pane')].map((pane) => ({ left: parseFloat(pane.style.left), width: parseFloat(pane.style.width) }))
+    expect(left!.left).toBe(0)
+    expect(right!.left).toBeCloseTo(left!.left + left!.width, 6)
+    expect(right!.left + right!.width).toBeCloseTo(100, 6)
+  })
+
+  it('moves the view with a selection, marks the window selected, and keeps a split\'s active pane bold', async () => {
     const { recording, capability } = await recorded()
-    const win = new Window({ url: 'https://libtmux.org/go/latest/' })
-    win.document.body.innerHTML = await renderAstroTemplate(await template, { props: { port: 'go', language: 'Go', example, recording, capability } })
-    const document = win.document as unknown as Document
+    const { document } = await page(await renderAstroTemplate(await template, { props: { port: 'go', language: 'Go', example, recording, capability } }), 'https://libtmux.org/go/latest/')
     const frame = (id: string) => document.querySelector(`[data-frame="${capability.steps.findIndex((step) => step.id === id) + 1}"]`)!
-    const active = (id: string) => [...frame(id).querySelectorAll('.mcp-tile__pane.is-active .mcp-pane__id')].map((label) => label.textContent)
+    const active = (id: string) => text(frame(id).querySelectorAll('[data-view]:not([hidden]) .mcp-tile__pane.is-active .mcp-pane__id'))
     expect(active('split'), 'the split keeps the pane it split active').toEqual(['%0 sh'])
     expect(active('select-pane')).toEqual(['%1 sh'])
-    expect([...frame('select-pane').querySelectorAll('.mcp-tile__pane.is-changed .mcp-pane__id')].map((label) => label.textContent)).toEqual(['%1 sh'])
-    expect([...frame('select-window').querySelectorAll('.mcp-tile__status.is-changed')].map((label) => label.textContent)).toEqual(['1:logs*'])
+    expect(text(frame('select-pane').querySelectorAll('[data-view]:not([hidden]) .mcp-tile__pane.is-changed .mcp-pane__id'))).toEqual(['%1 sh'])
+    expect(visible(frame('select-window')).windows).toEqual(['0:editor', '1:logs*'])
+    expect(visible(frame('select-window')).views).toEqual(['$0/@1'])
+    expect(text(frame('select-window').querySelectorAll('.mcp-tmux__window.is-changed'))).toEqual(['1:logs*'])
     expect(frame('new-session').querySelectorAll('.mcp-tile__pane.is-active'), 'a window of one pane needs no mark').toHaveLength(0)
-    // With nothing in tmux the screen is a placeholder that says so: before the first session, and after the server goes.
     const placeholder = (selector: string) => document.querySelector(`${selector} .mcp-tmux__screen--placeholder`)?.textContent?.trim()
     expect(placeholder('[data-frame="0"]')).toBe('No tmux server yet')
     expect(placeholder(`[data-frame="${capability.steps.length}"]`)).toBe('No sessions')
     expect(document.querySelectorAll('.mcp-tmux__screen--placeholder'), 'before the first call, after NewServer, and after Kill').toHaveLength(3)
-    await win.happyDOM.abort()
+  })
+
+  // No recorded program makes a second session, so this frame is written by hand: three sessions, listed out of id order.
+  const pane = (id: string) => ({ id, command: 'sh', left: 0, top: 0, width: 80, height: 24, active: true })
+  const sessions = {
+    done: 3,
+    sessions: [
+      { id: '$2', name: 'build', windows: [{ id: '@2', index: 0, name: 'make', active: true, panes: [pane('%2')] }] },
+      { id: '$0', name: 'demo', windows: [{ id: '@0', index: 0, name: 'editor', active: true, panes: [pane('%0')] }, { id: '@3', index: 1, name: 'logs', active: false, panes: [pane('%3')] }] },
+      { id: '$1', name: 'scratch', windows: [{ id: '@1', index: 0, name: 'sh', active: true, panes: [pane('%1')] }] },
+    ],
+  }
+
+  it('stays on the oldest session, and names every other session at the status line\'s end', async () => {
+    const { document } = await page(await renderAstroTemplate(await screen, { props: { frame: sessions, hadSessions: true, client: true, marks: { windows: ['@2'], panes: ['%2'], labels: [], sessions: [] } } }))
+    const root = document.querySelector('.mcp-tmux')!
+    expect(root.getAttribute('data-client-view')).toBe('$0/@0')
+    expect(visible(root)).toEqual({ views: ['$0/@0'], windows: ['0:editor*', '1:logs'], sessions: ['[demo]'], others: ['build', 'scratch'] })
+    expect(text(root.querySelectorAll('.mcp-client__other.is-changed')), 'a session the call added a window to is marked').toEqual(['build'])
+    expect(root.querySelectorAll('[data-view]')).toHaveLength(4)
+  })
+
+  it('shows a window or a session a button names until it is reset, and says when the view is not the client\'s', async () => {
+    const { win, document } = await page(await renderAstroTemplate(await screen, { props: { frame: sessions, hadSessions: true, client: true } }))
+    const { bindClientViews } = await import('../src/lib/replay-player')
+    const root = document.querySelector<HTMLElement>('.mcp-tmux')!
+    const views = bindClientViews(document.body as unknown as HTMLElement)
+    const press = (selector: string) => document.querySelector(selector)!.dispatchEvent(new win.MouseEvent('click', { bubbles: true }) as unknown as Event)
+    press('.mcp-tmux__window[data-show="$0/@3"]')
+    expect(visible(root)).toEqual({ views: ['$0/@3'], windows: ['0:editor*', '1:logs'], sessions: ['[demo]'], others: ['build', 'scratch'] })
+    expect(text(root.querySelectorAll('.mcp-tmux__window.is-current')), 'the shown window is current in the status line, the * stays').toEqual(['1:logs'])
+    expect(root.classList.contains('is-peeking')).toBe(true)
+    press('.mcp-client__other[data-show="$2/@2"]')
+    expect(visible(root)).toEqual({ views: ['$2/@2'], windows: ['0:make*'], sessions: ['[build]'], others: ['demo', 'scratch'] })
+    views.reset()
+    expect(visible(root)).toEqual({ views: ['$0/@0'], windows: ['0:editor*', '1:logs'], sessions: ['[demo]'], others: ['build', 'scratch'] })
+    expect(root.classList.contains('is-peeking')).toBe(false)
   })
 })

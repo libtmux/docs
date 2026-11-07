@@ -18,6 +18,19 @@
  * selected, a label it renamed or selected. In a window of several panes the
  * active one's label is drawn bold, as the window's own status marks it with
  * `*`.
+ *
+ * With `client`, the screen is what a client attached to the oldest session
+ * (the lowest `$` id) sees: that session's current window, under one status
+ * line of its windows, as tmux draws them, with `*` on the current one. A
+ * window made in the background is a new label in the status line, not a
+ * second screen; another session is a name at the status line's right end.
+ * Each window of each session is drawn too, hidden: a window's label, or
+ * another session's name, is a button that shows it until the player moves
+ * to another call, which shows the client's window again
+ * (`bindClientViews`). A label whose window the call added, renamed or
+ * selected, or whose panes it changed out of sight, is drawn in the accent
+ * colour, as tmux flags a window with activity; so is a session the call
+ * added or changed.
  */
 import { renderRects, type Rect } from '../../lib/tmux-layout'
 import { parseLayout } from '../../lib/tmux-layout-string'
@@ -34,10 +47,12 @@ interface Props {
   idPrefix?: string
   /** Draw every window of every session, not only the first session's active one. */
   every?: boolean
-  /** What the call changed, for `every`'s drawing to mark. */
+  /** Draw the first session's current window as an attached client sees it, with every other window a click away. */
+  client?: boolean
+  /** What the call changed, for `every`'s and `client`'s drawings to mark. */
   marks?: TmuxMarks
 }
-const { frame, hadSessions, idPrefix = 'rp', every = false, marks = { windows: [], panes: [], labels: [], sessions: [] } } = Astro.props as Props
+const { frame, hadSessions, idPrefix = 'rp', every = false, client = false, marks = { windows: [], panes: [], labels: [], sessions: [] } } = Astro.props as Props
 const WIDTH = 44
 const HEIGHT = 12
 
@@ -69,7 +84,7 @@ const draw = (frame: Frame) => {
   }
   return { window, panes: window.panes, rects: undefined, size: [WIDTH, HEIGHT] as [number, number], svg: '' }
 }
-const drawn = every ? undefined : draw(frame)
+const drawn = every || client ? undefined : draw(frame)
 const session = frame.sessions[0]
 
 // A window's panes as rectangles in its own cells, for `every`: the layout, else the pane listing, else one pane filling it.
@@ -88,9 +103,78 @@ const tiles = every ? frame.sessions.flatMap((owner) => owner.windows.map((windo
 const columns = tiles.length <= 2 ? 1 : tiles.length <= 4 ? 2 : 3
 const rows = Math.max(1, Math.ceil(tiles.length / columns))
 const percent = (value: number, total: number) => `${(value / total) * 100}%`
+
+// `client`: one view per window, keyed by session and window, and the one the first session's client is on.
+type SessionOf = Frame['sessions'][number]
+const viewKey = (owner: SessionOf, window: WindowState) => `${owner.id ?? owner.name ?? ''}/${window.id ?? window.index ?? window.name ?? ''}`
+const currentOf = (owner: SessionOf) => owner.windows.find((window) => window.active) ?? owner.windows[0]
+const sessionNumber = (owner: SessionOf) => Number(/^\$(\d+)$/.exec(owner.id ?? '')?.[1] ?? Number.POSITIVE_INFINITY)
+const clientSession = client ? [...frame.sessions].sort((a, b) => sessionNumber(a) - sessionNumber(b))[0] : undefined
+const clientWindow = clientSession ? currentOf(clientSession) : undefined
+const clientKey = clientSession && clientWindow ? viewKey(clientSession, clientWindow) : ''
+const views = client ? frame.sessions.flatMap((owner) => owner.windows.map((window) => ({ owner, window, key: viewKey(owner, window), shape: geometry(window) }))) : []
+// What changed out of sight: a pane of a window the client is not on.
+// tmux draws the line between two panes in a cell of its own; each pane takes half of it, so the line, and an outline inside a pane, meet with no gap.
+const spread = (rect: Rect, size: [number, number]) => {
+  const left = rect.x > 0 ? rect.x - 0.5 : 0
+  const top = rect.y > 0 ? rect.y - 0.5 : 0
+  const right = rect.x + rect.w < size[0] ? rect.x + rect.w + 0.5 : size[0]
+  const bottom = rect.y + rect.h < size[1] ? rect.y + rect.h + 0.5 : size[1]
+  return `left:${percent(left, size[0])};top:${percent(top, size[1])};width:${percent(right - left, size[0])};height:${percent(bottom - top, size[1])}`
+}
+const changedPanes = (window: WindowState) => window.panes.some((pane) => pane.id !== undefined && marks.panes.includes(pane.id))
+const labelMarked = (window: WindowState) => window.id !== undefined && (marks.windows.includes(window.id) || marks.labels.includes(window.id) || (window !== clientWindow && changedPanes(window)))
+const sessionMarked = (owner: SessionOf) => (owner.id !== undefined && marks.sessions.includes(owner.id)) || (owner !== clientSession && owner.windows.some(labelMarked))
 ---
-<div class={`mcp-tmux${every ? ' mcp-tmux--tiles' : ''}`}>
-  {every ? (tiles.length > 0 ? (
+<div class={`mcp-tmux${every || client ? ' mcp-tmux--tiles' : ''}${client ? ' mcp-tmux--client' : ''}`} data-client-view={client ? clientKey : undefined}>
+  {client ? (views.length > 0 ? (
+    <div class="mcp-tmux__screen mcp-tmux__screen--client mcp-client">
+      <div class="mcp-client__views">
+        {views.map(({ window, key, shape }) => (
+          <div class={`mcp-tile mcp-client__view${window.id && marks.windows.includes(window.id) ? ' is-new' : ''}`} data-view={key} hidden={key !== clientKey}>
+            <div class="mcp-tile__panes">
+              {shape ? shape.panes.map((pane, index) => {
+                const rect = shape.rects[index]!
+                const lines = [...(pane.typed !== undefined ? [`$ ${pane.typed}`] : []), ...(pane.output?.trimEnd().split('\n') ?? [])]
+                const edges = `${rect.x + rect.w < shape.size[0] ? ' has-right' : ''}${rect.y + rect.h < shape.size[1] ? ' has-below' : ''}`
+                return (
+                  <div class={`mcp-pane mcp-tile__pane${edges}${pane.active && shape.panes.length > 1 ? ' is-active' : ''}${pane.id && marks.panes.includes(pane.id) ? ' is-changed' : ''}`} style={spread(rect, shape.size)}>
+                    {pane.id && <span class="mcp-pane__id">{pane.id}{pane.command ? ` ${pane.command}` : ''}</span>}
+                    {lines.length > 0 && <pre class="mcp-pane__text">{lines.join('\n')}</pre>}
+                  </div>
+                )
+              }) : <ul class="mcp-tile__list">{window.panes.map((pane) => <li class="mcp-pane__id">{pane.id ?? ''}{pane.command ? ` ${pane.command}` : ''}</li>)}</ul>}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div class="mcp-tmux__status mcp-client__status" role="group" aria-label="tmux status line: show a window or a session">
+        {frame.sessions.map((owner) => (
+          <span class="mcp-client__session" data-session-windows={owner.windows.map((window) => viewKey(owner, window)).join(' ')} hidden={owner !== clientSession}>
+            <span class={`mcp-tmux__session${owner.id && marks.sessions.includes(owner.id) ? ' is-changed' : ''}`}>[{owner.name ?? owner.id}]</span>
+            <span class="mcp-tmux__windows">
+              {owner.windows.map((window) => (
+                <button type="button" class={`mcp-client__button mcp-tmux__window${viewKey(owner, window) === clientKey ? ' is-current' : ''}${labelMarked(window) ? ' is-changed' : ''}`} data-show={viewKey(owner, window)} aria-pressed={viewKey(owner, window) === clientKey ? 'true' : 'false'} title={window.active ? `Window ${windowLabel(window)}, the session's current window` : `Show window ${windowLabel(window)}`}>{windowLabel(window)}{window.active ? '*' : ''}</button>
+              ))}
+            </span>
+          </span>
+        ))}
+        {frame.sessions.length > 1 && (
+          <span class="mcp-client__others">
+            {frame.sessions.map((owner) => {
+              const current = currentOf(owner)
+              return <button type="button" class={`mcp-client__button mcp-client__other${sessionMarked(owner) ? ' is-changed' : ''}`} data-show={current ? viewKey(owner, current) : ''} data-session-switch={owner.windows.map((window) => viewKey(owner, window)).join(' ')} hidden={owner === clientSession} title={`Show session ${owner.name ?? owner.id}`}>{owner.name ?? owner.id}</button>
+            })}
+          </span>
+        )}
+      </div>
+    </div>
+  ) : (
+    <div class="mcp-tmux__screen mcp-tmux__screen--client mcp-tmux__screen--empty mcp-tmux__screen--placeholder">
+      <svg class="mcp-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1.75" y="2.75" width="12.5" height="10.5" rx="1.5" /><path d="m4.5 6.5 2 1.5-2 1.5M8.5 10h3" /></svg>
+      <span>{hadSessions ? 'No sessions' : 'No tmux server yet'}</span>
+    </div>
+  )) : every ? (tiles.length > 0 ? (
     <div class="mcp-tmux__screen mcp-tmux__screen--tiles" style={`grid-template-columns:repeat(${columns},minmax(0,1fr));grid-template-rows:repeat(${rows},minmax(0,1fr))`}>
       {tiles.map(({ session: owner, window, shape }) => (
         <div class={`mcp-tile${window.id && marks.windows.includes(window.id) ? ' is-new' : ''}`}>
@@ -139,7 +223,7 @@ const percent = (value: number, total: number) => `${(value / total) * 100}%`
     <div class="mcp-tmux__screen mcp-tmux__screen--empty">{hadSessions && <span>No sessions</span>}</div>
   )}
   {every && <div class="mcp-tmux__status mcp-tmux__status--sessions">{frame.sessions.map((owner) => (owner.name ?? owner.id) && <span class={`mcp-tmux__session${owner.id && marks.sessions.includes(owner.id) ? ' is-changed' : ''}`}>[{owner.name ?? owner.id}]</span>)}</div>}
-  {!every && <div class={`mcp-tmux__status${frame.reading === 'sessions' ? ' is-reading' : ''}`}>
+  {!every && !client && <div class={`mcp-tmux__status${frame.reading === 'sessions' ? ' is-reading' : ''}`}>
     {session && (session.name ?? session.id) && <span class="mcp-tmux__session">[{session.name ?? session.id}]</span>}
     {session && (
       <span class={`mcp-tmux__windows${frame.reading === 'windows' ? ' is-reading' : ''}`}>
