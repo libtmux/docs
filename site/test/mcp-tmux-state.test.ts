@@ -92,8 +92,9 @@ describe('the states of a recording', () => {
 
   it('lets a removal return the id it removed', () => {
     expect(recordingStateProblems(recording()), 'kill_session returns $0, which is gone').toEqual([])
+    expect(recordingStateProblems(recording([created, split, listed, { ...killed, tool: 'tmux_close' }])), 'tmux_close removes too').toEqual([])
     const renamed = recording([created, split, listed, { ...killed, tool: 'close_session' }])
-    expect(recordingStateProblems(renamed).join('\n'), 'only a tool named kill* is exempt').toMatch(/the result returns \$0/)
+    expect(recordingStateProblems(renamed).join('\n'), 'only kill* and tmux_close are exempt').toMatch(/the result returns \$0/)
   })
 
   it('names, outside the code that reads it, the tools that only read: dropping one from the set loses its check', () => {

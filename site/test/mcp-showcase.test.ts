@@ -78,9 +78,11 @@ function resultPaths(schema: Schema | undefined, root: Schema | undefined = sche
     return resultPaths(target, root, at, [...seen, object.$ref])
   }
   const branches: Schema[] = [...(object.anyOf ?? []), ...(object.oneOf ?? []), ...(object.allOf ?? [])]
+  // A result that tags each entry with a `kind` (Ruby's `created` list holds sessions, windows and panes) names it in the path: `created[]<pane>.id`.
+  const kind = typeof object.properties?.kind?.const === 'string' ? `<${object.properties.kind.const}>` : ''
   return [
     ...Object.entries<Schema>(object.properties ?? {}).flatMap(([key, item]) => {
-      const path = at ? `${at}.${key}` : key
+      const path = at ? `${at}${kind}.${key}` : key
       return [path, ...resultPaths(item, root, path, seen)]
     }),
     ...(object.items ? resultPaths(object.items, root, `${at}[]`, seen) : []),
@@ -319,8 +321,6 @@ describe('the overview page', () => {
     expect(page.indexOf('placeholderLocale && <Content />'), 'the tool grid follows the prose').toBeLessThan(tools)
     expect(page).toContain('!placeholderLocale && mcpTools && <McpShowcase')
   })
-})
-
 
   it('lists the table of contents in the order the page draws: example, install, prose, tools', () => {
     const order = ['mcpExampleHeadings(mcpTools)', "slug: 'install'", '...headings,', 'mcpToolHeadings(mcpTools)'].map((needle) => page.indexOf(needle, page.indexOf('headings={placeholderLocale')))
@@ -335,6 +335,8 @@ describe('the overview page', () => {
       expect(slugs.slice(1), port).toEqual(toolHeadings(await showcase(port)).map((heading) => heading.slug))
     }
   })
+})
+
 describe('the showcase section', () => {
   const windows: Window[] = []
   afterEach(async () => { for (const win of windows.splice(0)) await win.happyDOM.abort() })
@@ -454,7 +456,7 @@ describe('the showcase section', () => {
 describe('recorded results', () => {
   /** Ports whose example runs commands in panes. */
   const RECORDED = ['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift']
-  /** Every port with a recording; Ruby and Julia's examples only read. */
+  /** Every port with a recording; Julia's example only reads, and Ruby's runs its commands through `tmux_send` and `tmux_wait`. */
   const ALL = [...RECORDED, 'ruby', 'julia']
 
   it('has a recording for the ports whose servers the recorder has run', async () => {
