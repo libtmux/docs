@@ -14,7 +14,10 @@
       "checks finished"
     ],
     "rewritten": {
-      "projectDirectory": "/home/user/project"
+      "projectDirectory": "/home/user/project",
+      "generation": "3f9a1c",
+      "generationListedBy": "tmux_capabilities",
+      "generationRefusedAs": "stale_target"
     }
   },
   "serverInfo": {
@@ -184,6 +187,713 @@
                   "resource_subscriptions",
                   "authored_run",
                   "observation"
+                ],
+                "type": "object"
+              },
+              "ok": {
+                "const": true
+              }
+            },
+            "required": [
+              "ok",
+              "data"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "error": {
+                "additionalProperties": false,
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "delivery": {
+                    "enum": [
+                      "not_sent",
+                      "possibly_sent",
+                      "observed"
+                    ]
+                  },
+                  "effects": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "created": {
+                        "items": {
+                          "oneOf": [
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^\\$[0-9]+$",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "const": "session"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^@[0-9]+$",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "const": "window"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^%[0-9]+$",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "const": "pane"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^@[0-9]+$",
+                                  "type": "string"
+                                },
+                                "index": {
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "kind": {
+                                  "const": "window_link"
+                                },
+                                "session_id": {
+                                  "maxLength": 32,
+                                  "pattern": "^\\$[0-9]+$",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id",
+                                "session_id",
+                                "index"
+                              ],
+                              "type": "object"
+                            }
+                          ]
+                        },
+                        "maxItems": 3,
+                        "type": "array"
+                      },
+                      "state": {
+                        "enum": [
+                          "none",
+                          "known",
+                          "unknown"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "state",
+                      "created"
+                    ],
+                    "type": "object"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "delivery"
+                ],
+                "type": "object"
+              },
+              "ok": {
+                "const": false
+              }
+            },
+            "required": [
+              "ok",
+              "error"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      }
+    },
+    "tmux_create": {
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "argv": {
+                "items": {
+                  "maxLength": 65536,
+                  "pattern": "^[^\\u0000]*$",
+                  "type": "string"
+                },
+                "maxItems": 256,
+                "minItems": 1,
+                "prefixItems": [
+                  {
+                    "maxLength": 65536,
+                    "minLength": 1,
+                    "pattern": "^[^\\u0000]*$",
+                    "type": "string"
+                  }
+                ],
+                "type": "array"
+              },
+              "cwd": {
+                "maxLength": 65536,
+                "minLength": 1,
+                "pattern": "^[^\\u0000]*$",
+                "type": "string"
+              },
+              "environment": {
+                "additionalProperties": {
+                  "maxLength": 65536,
+                  "pattern": "^[^\\u0000]*$",
+                  "type": "string"
+                },
+                "maxProperties": 128,
+                "propertyNames": {
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                },
+                "type": "object"
+              },
+              "height": {
+                "maximum": 2147483647,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "kind": {
+                "const": "session"
+              },
+              "name": {
+                "maxLength": 65536,
+                "minLength": 1,
+                "pattern": "^[^\\u0000]*$",
+                "type": "string"
+              },
+              "width": {
+                "maximum": 2147483647,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "window_name": {
+                "maxLength": 65536,
+                "minLength": 1,
+                "pattern": "^[^\\u0000]*$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "name",
+              "argv"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "argv": {
+                "items": {
+                  "maxLength": 65536,
+                  "pattern": "^[^\\u0000]*$",
+                  "type": "string"
+                },
+                "maxItems": 256,
+                "minItems": 1,
+                "prefixItems": [
+                  {
+                    "maxLength": 65536,
+                    "minLength": 1,
+                    "pattern": "^[^\\u0000]*$",
+                    "type": "string"
+                  }
+                ],
+                "type": "array"
+              },
+              "cwd": {
+                "maxLength": 65536,
+                "minLength": 1,
+                "pattern": "^[^\\u0000]*$",
+                "type": "string"
+              },
+              "environment": {
+                "additionalProperties": {
+                  "maxLength": 65536,
+                  "pattern": "^[^\\u0000]*$",
+                  "type": "string"
+                },
+                "maxProperties": 128,
+                "propertyNames": {
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                },
+                "type": "object"
+              },
+              "focus": {
+                "type": "boolean"
+              },
+              "index": {
+                "maximum": 2147483647,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "kind": {
+                "const": "window"
+              },
+              "name": {
+                "maxLength": 65536,
+                "minLength": 1,
+                "pattern": "^[^\\u0000]*$",
+                "type": "string"
+              },
+              "parent": {
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "generation": {
+                        "maxLength": 128,
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "id": {
+                        "maxLength": 32,
+                        "pattern": "^\\$[0-9]+$",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "const": "session"
+                      }
+                    },
+                    "required": [
+                      "generation",
+                      "kind",
+                      "id"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "parent",
+              "name",
+              "argv"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "argv": {
+                "items": {
+                  "maxLength": 65536,
+                  "pattern": "^[^\\u0000]*$",
+                  "type": "string"
+                },
+                "maxItems": 256,
+                "minItems": 1,
+                "prefixItems": [
+                  {
+                    "maxLength": 65536,
+                    "minLength": 1,
+                    "pattern": "^[^\\u0000]*$",
+                    "type": "string"
+                  }
+                ],
+                "type": "array"
+              },
+              "cwd": {
+                "maxLength": 65536,
+                "minLength": 1,
+                "pattern": "^[^\\u0000]*$",
+                "type": "string"
+              },
+              "direction": {
+                "enum": [
+                  "horizontal",
+                  "vertical"
+                ]
+              },
+              "environment": {
+                "additionalProperties": {
+                  "maxLength": 65536,
+                  "pattern": "^[^\\u0000]*$",
+                  "type": "string"
+                },
+                "maxProperties": 128,
+                "propertyNames": {
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                },
+                "type": "object"
+              },
+              "focus": {
+                "type": "boolean"
+              },
+              "kind": {
+                "const": "pane"
+              },
+              "parent": {
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "generation": {
+                        "maxLength": 128,
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "id": {
+                        "maxLength": 32,
+                        "pattern": "^%[0-9]+$",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "const": "pane"
+                      }
+                    },
+                    "required": [
+                      "generation",
+                      "kind",
+                      "id"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "size": {
+                "oneOf": [
+                  {
+                    "maximum": 2147483647,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  {
+                    "pattern": "^(?:[1-9][0-9]?|100)%$",
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "parent",
+              "direction",
+              "argv"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "data": {
+                "additionalProperties": false,
+                "properties": {
+                  "created": {
+                    "items": {
+                      "oneOf": [
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "generation": {
+                              "maxLength": 128,
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "id": {
+                              "maxLength": 32,
+                              "pattern": "^\\$[0-9]+$",
+                              "type": "string"
+                            },
+                            "kind": {
+                              "const": "session"
+                            }
+                          },
+                          "required": [
+                            "generation",
+                            "kind",
+                            "id"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "generation": {
+                              "maxLength": 128,
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "id": {
+                              "maxLength": 32,
+                              "pattern": "^@[0-9]+$",
+                              "type": "string"
+                            },
+                            "kind": {
+                              "const": "window"
+                            }
+                          },
+                          "required": [
+                            "generation",
+                            "kind",
+                            "id"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "generation": {
+                              "maxLength": 128,
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "id": {
+                              "maxLength": 32,
+                              "pattern": "^%[0-9]+$",
+                              "type": "string"
+                            },
+                            "kind": {
+                              "const": "pane"
+                            }
+                          },
+                          "required": [
+                            "generation",
+                            "kind",
+                            "id"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "generation": {
+                              "maxLength": 128,
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "id": {
+                              "maxLength": 32,
+                              "pattern": "^@[0-9]+$",
+                              "type": "string"
+                            },
+                            "index": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "kind": {
+                              "const": "window_link"
+                            },
+                            "session_id": {
+                              "maxLength": 32,
+                              "pattern": "^\\$[0-9]+$",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "generation",
+                            "kind",
+                            "id",
+                            "session_id",
+                            "index"
+                          ],
+                          "type": "object"
+                        }
+                      ]
+                    },
+                    "maxItems": 3,
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "delivery": {
+                    "const": "observed"
+                  },
+                  "entity": {
+                    "oneOf": [
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "generation": {
+                            "maxLength": 128,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "id": {
+                            "maxLength": 32,
+                            "pattern": "^\\$[0-9]+$",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "const": "session"
+                          }
+                        },
+                        "required": [
+                          "generation",
+                          "kind",
+                          "id"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "generation": {
+                            "maxLength": 128,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "id": {
+                            "maxLength": 32,
+                            "pattern": "^@[0-9]+$",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "const": "window"
+                          }
+                        },
+                        "required": [
+                          "generation",
+                          "kind",
+                          "id"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "generation": {
+                            "maxLength": 128,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "id": {
+                            "maxLength": 32,
+                            "pattern": "^%[0-9]+$",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "const": "pane"
+                          }
+                        },
+                        "required": [
+                          "generation",
+                          "kind",
+                          "id"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "generation": {
+                            "maxLength": 128,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "id": {
+                            "maxLength": 32,
+                            "pattern": "^@[0-9]+$",
+                            "type": "string"
+                          },
+                          "index": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "kind": {
+                            "const": "window_link"
+                          },
+                          "session_id": {
+                            "maxLength": 32,
+                            "pattern": "^\\$[0-9]+$",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "generation",
+                          "kind",
+                          "id",
+                          "session_id",
+                          "index"
+                        ],
+                        "type": "object"
+                      }
+                    ]
+                  },
+                  "program_completion": {
+                    "const": "unobserved"
+                  }
+                },
+                "required": [
+                  "entity",
+                  "created",
+                  "delivery",
+                  "program_completion"
                 ],
                 "type": "object"
               },
@@ -3463,9 +4173,1833 @@
         ],
         "type": "object"
       }
+    },
+    "tmux_send": {
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "input": {
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "text": {
+                        "maxLength": 65536,
+                        "pattern": "^[^\\u0000]*$",
+                        "type": "string"
+                      },
+                      "type": {
+                        "const": "text"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "text"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "keys": {
+                        "items": {
+                          "maxLength": 65536,
+                          "minLength": 1,
+                          "pattern": "^[^\\u0000]*$",
+                          "type": "string"
+                        },
+                        "maxItems": 256,
+                        "minItems": 1,
+                        "type": "array"
+                      },
+                      "type": {
+                        "const": "keys"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "keys"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "target": {
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "generation": {
+                        "maxLength": 128,
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "id": {
+                        "maxLength": 32,
+                        "pattern": "^%[0-9]+$",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "const": "pane"
+                      }
+                    },
+                    "required": [
+                      "generation",
+                      "kind",
+                      "id"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "target",
+              "input"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "data": {
+                "additionalProperties": false,
+                "properties": {
+                  "client_exit_status": {
+                    "const": 0
+                  },
+                  "completion": {
+                    "const": "dispatch_only"
+                  },
+                  "delivery": {
+                    "const": "observed"
+                  },
+                  "target": {
+                    "oneOf": [
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "generation": {
+                            "maxLength": 128,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "id": {
+                            "maxLength": 32,
+                            "pattern": "^\\$[0-9]+$",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "const": "session"
+                          }
+                        },
+                        "required": [
+                          "generation",
+                          "kind",
+                          "id"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "generation": {
+                            "maxLength": 128,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "id": {
+                            "maxLength": 32,
+                            "pattern": "^@[0-9]+$",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "const": "window"
+                          }
+                        },
+                        "required": [
+                          "generation",
+                          "kind",
+                          "id"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "generation": {
+                            "maxLength": 128,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "id": {
+                            "maxLength": 32,
+                            "pattern": "^%[0-9]+$",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "const": "pane"
+                          }
+                        },
+                        "required": [
+                          "generation",
+                          "kind",
+                          "id"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "generation": {
+                            "maxLength": 128,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "id": {
+                            "maxLength": 32,
+                            "pattern": "^@[0-9]+$",
+                            "type": "string"
+                          },
+                          "index": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "kind": {
+                            "const": "window_link"
+                          },
+                          "session_id": {
+                            "maxLength": 32,
+                            "pattern": "^\\$[0-9]+$",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "generation",
+                          "kind",
+                          "id",
+                          "session_id",
+                          "index"
+                        ],
+                        "type": "object"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "target",
+                  "delivery",
+                  "client_exit_status",
+                  "completion"
+                ],
+                "type": "object"
+              },
+              "ok": {
+                "const": true
+              }
+            },
+            "required": [
+              "ok",
+              "data"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "error": {
+                "additionalProperties": false,
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "delivery": {
+                    "enum": [
+                      "not_sent",
+                      "possibly_sent",
+                      "observed"
+                    ]
+                  },
+                  "effects": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "created": {
+                        "items": {
+                          "oneOf": [
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^\\$[0-9]+$",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "const": "session"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^@[0-9]+$",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "const": "window"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^%[0-9]+$",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "const": "pane"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^@[0-9]+$",
+                                  "type": "string"
+                                },
+                                "index": {
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "kind": {
+                                  "const": "window_link"
+                                },
+                                "session_id": {
+                                  "maxLength": 32,
+                                  "pattern": "^\\$[0-9]+$",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id",
+                                "session_id",
+                                "index"
+                              ],
+                              "type": "object"
+                            }
+                          ]
+                        },
+                        "maxItems": 3,
+                        "type": "array"
+                      },
+                      "state": {
+                        "enum": [
+                          "none",
+                          "known",
+                          "unknown"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "state",
+                      "created"
+                    ],
+                    "type": "object"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "delivery"
+                ],
+                "type": "object"
+              },
+              "ok": {
+                "const": false
+              }
+            },
+            "required": [
+              "ok",
+              "error"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      }
+    },
+    "tmux_wait": {
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "condition": {
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "text": {
+                        "maxLength": 4096,
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "type": {
+                        "const": "screen_contains"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "text"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "type": {
+                        "const": "process_exit"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "history_lines": {
+                "maximum": 1000,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "max_bytes": {
+                "maximum": 262144,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "max_lines": {
+                "maximum": 1000,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "target": {
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "generation": {
+                        "maxLength": 128,
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "id": {
+                        "maxLength": 32,
+                        "pattern": "^%[0-9]+$",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "const": "pane"
+                      }
+                    },
+                    "required": [
+                      "generation",
+                      "kind",
+                      "id"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "timeout": {
+                "exclusiveMinimum": 0,
+                "maximum": 60,
+                "type": "number"
+              }
+            },
+            "required": [
+              "target",
+              "condition"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "data": {
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "capture": {
+                        "oneOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "bytes": {
+                                "maximum": 262144,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "capture_id": {
+                                "type": "string"
+                              },
+                              "encoding": {
+                                "enum": [
+                                  "utf-8",
+                                  "base64"
+                                ]
+                              },
+                              "history_continuity": {
+                                "const": "unknown"
+                              },
+                              "interval": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "clock": {
+                                    "const": "monotonic_seconds"
+                                  },
+                                  "finished": {
+                                    "type": "number"
+                                  },
+                                  "started": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "clock",
+                                  "started",
+                                  "finished"
+                                ],
+                                "type": "object"
+                              },
+                              "mode": {
+                                "const": "snapshot"
+                              },
+                              "next_cursor": {
+                                "type": "string"
+                              },
+                              "process_generation": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "row_count": {
+                                "maximum": 1000,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "rows": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "maxItems": 1000,
+                                "type": "array"
+                              },
+                              "scope": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "history_lines": {
+                                    "maximum": 1000,
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "max_bytes": {
+                                    "maximum": 262144,
+                                    "minimum": 1,
+                                    "type": "integer"
+                                  },
+                                  "max_lines": {
+                                    "maximum": 1000,
+                                    "minimum": 1,
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "max_lines",
+                                  "max_bytes",
+                                  "history_lines"
+                                ],
+                                "type": "object"
+                              },
+                              "target": {
+                                "oneOf": [
+                                  {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "generation": {
+                                        "maxLength": 128,
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "id": {
+                                        "maxLength": 32,
+                                        "pattern": "^%[0-9]+$",
+                                        "type": "string"
+                                      },
+                                      "kind": {
+                                        "const": "pane"
+                                      }
+                                    },
+                                    "required": [
+                                      "generation",
+                                      "kind",
+                                      "id"
+                                    ],
+                                    "type": "object"
+                                  }
+                                ]
+                              },
+                              "truncated": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "target",
+                              "capture_id",
+                              "process_generation",
+                              "encoding",
+                              "row_count",
+                              "bytes",
+                              "truncated",
+                              "history_continuity",
+                              "interval",
+                              "scope",
+                              "mode",
+                              "rows"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "base_capture_id": {
+                                "type": "string"
+                              },
+                              "bytes": {
+                                "maximum": 262144,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "capture_id": {
+                                "type": "string"
+                              },
+                              "encoding": {
+                                "enum": [
+                                  "utf-8",
+                                  "base64"
+                                ]
+                              },
+                              "history_continuity": {
+                                "const": "unknown"
+                              },
+                              "interval": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "clock": {
+                                    "const": "monotonic_seconds"
+                                  },
+                                  "finished": {
+                                    "type": "number"
+                                  },
+                                  "started": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "clock",
+                                  "started",
+                                  "finished"
+                                ],
+                                "type": "object"
+                              },
+                              "mode": {
+                                "const": "delta"
+                              },
+                              "next_cursor": {
+                                "type": "string"
+                              },
+                              "process_generation": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "reset": {
+                                "type": "boolean"
+                              },
+                              "row_count": {
+                                "maximum": 1000,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "scope": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "history_lines": {
+                                    "maximum": 1000,
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "max_bytes": {
+                                    "maximum": 262144,
+                                    "minimum": 1,
+                                    "type": "integer"
+                                  },
+                                  "max_lines": {
+                                    "maximum": 1000,
+                                    "minimum": 1,
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "max_lines",
+                                  "max_bytes",
+                                  "history_lines"
+                                ],
+                                "type": "object"
+                              },
+                              "splice": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "delete": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "rows": {
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "maxItems": 1000,
+                                    "type": "array"
+                                  },
+                                  "start": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "start",
+                                  "delete",
+                                  "rows"
+                                ],
+                                "type": "object"
+                              },
+                              "target": {
+                                "oneOf": [
+                                  {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "generation": {
+                                        "maxLength": 128,
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "id": {
+                                        "maxLength": 32,
+                                        "pattern": "^%[0-9]+$",
+                                        "type": "string"
+                                      },
+                                      "kind": {
+                                        "const": "pane"
+                                      }
+                                    },
+                                    "required": [
+                                      "generation",
+                                      "kind",
+                                      "id"
+                                    ],
+                                    "type": "object"
+                                  }
+                                ]
+                              },
+                              "truncated": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "target",
+                              "capture_id",
+                              "process_generation",
+                              "encoding",
+                              "row_count",
+                              "bytes",
+                              "truncated",
+                              "history_continuity",
+                              "interval",
+                              "scope",
+                              "mode",
+                              "base_capture_id",
+                              "reset",
+                              "splice",
+                              "next_cursor"
+                            ],
+                            "type": "object"
+                          }
+                        ]
+                      },
+                      "condition": {
+                        "const": "screen_contains"
+                      },
+                      "target": {
+                        "oneOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "generation": {
+                                "maxLength": 128,
+                                "minLength": 1,
+                                "type": "string"
+                              },
+                              "id": {
+                                "maxLength": 32,
+                                "pattern": "^%[0-9]+$",
+                                "type": "string"
+                              },
+                              "kind": {
+                                "const": "pane"
+                              }
+                            },
+                            "required": [
+                              "generation",
+                              "kind",
+                              "id"
+                            ],
+                            "type": "object"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "target",
+                      "condition",
+                      "capture"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "condition": {
+                        "const": "process_exit"
+                      },
+                      "exit_status": {
+                        "const": "unobserved"
+                      },
+                      "observed_at": {
+                        "type": "number"
+                      },
+                      "process_generation": {
+                        "type": "string"
+                      },
+                      "target": {
+                        "oneOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "generation": {
+                                "maxLength": 128,
+                                "minLength": 1,
+                                "type": "string"
+                              },
+                              "id": {
+                                "maxLength": 32,
+                                "pattern": "^%[0-9]+$",
+                                "type": "string"
+                              },
+                              "kind": {
+                                "const": "pane"
+                              }
+                            },
+                            "required": [
+                              "generation",
+                              "kind",
+                              "id"
+                            ],
+                            "type": "object"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "target",
+                      "condition",
+                      "process_generation",
+                      "observed_at",
+                      "exit_status"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "ok": {
+                "const": true
+              }
+            },
+            "required": [
+              "ok",
+              "data"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "error": {
+                "additionalProperties": false,
+                "properties": {
+                  "capture": {
+                    "oneOf": [
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "bytes": {
+                            "maximum": 262144,
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "capture_id": {
+                            "type": "string"
+                          },
+                          "encoding": {
+                            "enum": [
+                              "utf-8",
+                              "base64"
+                            ]
+                          },
+                          "history_continuity": {
+                            "const": "unknown"
+                          },
+                          "interval": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "clock": {
+                                "const": "monotonic_seconds"
+                              },
+                              "finished": {
+                                "type": "number"
+                              },
+                              "started": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "clock",
+                              "started",
+                              "finished"
+                            ],
+                            "type": "object"
+                          },
+                          "mode": {
+                            "const": "snapshot"
+                          },
+                          "next_cursor": {
+                            "type": "string"
+                          },
+                          "process_generation": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "row_count": {
+                            "maximum": 1000,
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "rows": {
+                            "items": {
+                              "type": "string"
+                            },
+                            "maxItems": 1000,
+                            "type": "array"
+                          },
+                          "scope": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "history_lines": {
+                                "maximum": 1000,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "max_bytes": {
+                                "maximum": 262144,
+                                "minimum": 1,
+                                "type": "integer"
+                              },
+                              "max_lines": {
+                                "maximum": 1000,
+                                "minimum": 1,
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "max_lines",
+                              "max_bytes",
+                              "history_lines"
+                            ],
+                            "type": "object"
+                          },
+                          "target": {
+                            "oneOf": [
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "generation": {
+                                    "maxLength": 128,
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "maxLength": 32,
+                                    "pattern": "^%[0-9]+$",
+                                    "type": "string"
+                                  },
+                                  "kind": {
+                                    "const": "pane"
+                                  }
+                                },
+                                "required": [
+                                  "generation",
+                                  "kind",
+                                  "id"
+                                ],
+                                "type": "object"
+                              }
+                            ]
+                          },
+                          "truncated": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "target",
+                          "capture_id",
+                          "process_generation",
+                          "encoding",
+                          "row_count",
+                          "bytes",
+                          "truncated",
+                          "history_continuity",
+                          "interval",
+                          "scope",
+                          "mode",
+                          "rows"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "base_capture_id": {
+                            "type": "string"
+                          },
+                          "bytes": {
+                            "maximum": 262144,
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "capture_id": {
+                            "type": "string"
+                          },
+                          "encoding": {
+                            "enum": [
+                              "utf-8",
+                              "base64"
+                            ]
+                          },
+                          "history_continuity": {
+                            "const": "unknown"
+                          },
+                          "interval": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "clock": {
+                                "const": "monotonic_seconds"
+                              },
+                              "finished": {
+                                "type": "number"
+                              },
+                              "started": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "clock",
+                              "started",
+                              "finished"
+                            ],
+                            "type": "object"
+                          },
+                          "mode": {
+                            "const": "delta"
+                          },
+                          "next_cursor": {
+                            "type": "string"
+                          },
+                          "process_generation": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "reset": {
+                            "type": "boolean"
+                          },
+                          "row_count": {
+                            "maximum": 1000,
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "scope": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "history_lines": {
+                                "maximum": 1000,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "max_bytes": {
+                                "maximum": 262144,
+                                "minimum": 1,
+                                "type": "integer"
+                              },
+                              "max_lines": {
+                                "maximum": 1000,
+                                "minimum": 1,
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "max_lines",
+                              "max_bytes",
+                              "history_lines"
+                            ],
+                            "type": "object"
+                          },
+                          "splice": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "delete": {
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "rows": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "maxItems": 1000,
+                                "type": "array"
+                              },
+                              "start": {
+                                "minimum": 0,
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "start",
+                              "delete",
+                              "rows"
+                            ],
+                            "type": "object"
+                          },
+                          "target": {
+                            "oneOf": [
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "generation": {
+                                    "maxLength": 128,
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "maxLength": 32,
+                                    "pattern": "^%[0-9]+$",
+                                    "type": "string"
+                                  },
+                                  "kind": {
+                                    "const": "pane"
+                                  }
+                                },
+                                "required": [
+                                  "generation",
+                                  "kind",
+                                  "id"
+                                ],
+                                "type": "object"
+                              }
+                            ]
+                          },
+                          "truncated": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "target",
+                          "capture_id",
+                          "process_generation",
+                          "encoding",
+                          "row_count",
+                          "bytes",
+                          "truncated",
+                          "history_continuity",
+                          "interval",
+                          "scope",
+                          "mode",
+                          "base_capture_id",
+                          "reset",
+                          "splice",
+                          "next_cursor"
+                        ],
+                        "type": "object"
+                      }
+                    ]
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "delivery": {
+                    "enum": [
+                      "not_sent",
+                      "possibly_sent",
+                      "observed"
+                    ]
+                  },
+                  "effects": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "created": {
+                        "items": {
+                          "oneOf": [
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^\\$[0-9]+$",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "const": "session"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^@[0-9]+$",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "const": "window"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^%[0-9]+$",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "const": "pane"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^@[0-9]+$",
+                                  "type": "string"
+                                },
+                                "index": {
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "kind": {
+                                  "const": "window_link"
+                                },
+                                "session_id": {
+                                  "maxLength": 32,
+                                  "pattern": "^\\$[0-9]+$",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id",
+                                "session_id",
+                                "index"
+                              ],
+                              "type": "object"
+                            }
+                          ]
+                        },
+                        "maxItems": 3,
+                        "type": "array"
+                      },
+                      "state": {
+                        "enum": [
+                          "none",
+                          "known",
+                          "unknown"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "state",
+                      "created"
+                    ],
+                    "type": "object"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "delivery"
+                ],
+                "type": "object"
+              },
+              "ok": {
+                "const": false
+              }
+            },
+            "required": [
+              "ok",
+              "error"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      }
+    },
+    "tmux_close": {
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "target": {
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "generation": {
+                        "maxLength": 128,
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "id": {
+                        "maxLength": 32,
+                        "pattern": "^\\$[0-9]+$",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "const": "session"
+                      }
+                    },
+                    "required": [
+                      "generation",
+                      "kind",
+                      "id"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "generation": {
+                        "maxLength": 128,
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "id": {
+                        "maxLength": 32,
+                        "pattern": "^@[0-9]+$",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "const": "window"
+                      }
+                    },
+                    "required": [
+                      "generation",
+                      "kind",
+                      "id"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "generation": {
+                        "maxLength": 128,
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "id": {
+                        "maxLength": 32,
+                        "pattern": "^%[0-9]+$",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "const": "pane"
+                      }
+                    },
+                    "required": [
+                      "generation",
+                      "kind",
+                      "id"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "target"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "data": {
+                "additionalProperties": false,
+                "properties": {
+                  "client_exit_status": {
+                    "const": 0
+                  },
+                  "delivery": {
+                    "const": "observed"
+                  },
+                  "target": {
+                    "oneOf": [
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "generation": {
+                            "maxLength": 128,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "id": {
+                            "maxLength": 32,
+                            "pattern": "^\\$[0-9]+$",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "const": "session"
+                          }
+                        },
+                        "required": [
+                          "generation",
+                          "kind",
+                          "id"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "generation": {
+                            "maxLength": 128,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "id": {
+                            "maxLength": 32,
+                            "pattern": "^@[0-9]+$",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "const": "window"
+                          }
+                        },
+                        "required": [
+                          "generation",
+                          "kind",
+                          "id"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "generation": {
+                            "maxLength": 128,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "id": {
+                            "maxLength": 32,
+                            "pattern": "^%[0-9]+$",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "const": "pane"
+                          }
+                        },
+                        "required": [
+                          "generation",
+                          "kind",
+                          "id"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "generation": {
+                            "maxLength": 128,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "id": {
+                            "maxLength": 32,
+                            "pattern": "^@[0-9]+$",
+                            "type": "string"
+                          },
+                          "index": {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "kind": {
+                            "const": "window_link"
+                          },
+                          "session_id": {
+                            "maxLength": 32,
+                            "pattern": "^\\$[0-9]+$",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "generation",
+                          "kind",
+                          "id",
+                          "session_id",
+                          "index"
+                        ],
+                        "type": "object"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "target",
+                  "delivery",
+                  "client_exit_status"
+                ],
+                "type": "object"
+              },
+              "ok": {
+                "const": true
+              }
+            },
+            "required": [
+              "ok",
+              "data"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "error": {
+                "additionalProperties": false,
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "delivery": {
+                    "enum": [
+                      "not_sent",
+                      "possibly_sent",
+                      "observed"
+                    ]
+                  },
+                  "effects": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "created": {
+                        "items": {
+                          "oneOf": [
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^\\$[0-9]+$",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "const": "session"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^@[0-9]+$",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "const": "window"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^%[0-9]+$",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "const": "pane"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "generation": {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "maxLength": 32,
+                                  "pattern": "^@[0-9]+$",
+                                  "type": "string"
+                                },
+                                "index": {
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                "kind": {
+                                  "const": "window_link"
+                                },
+                                "session_id": {
+                                  "maxLength": 32,
+                                  "pattern": "^\\$[0-9]+$",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "generation",
+                                "kind",
+                                "id",
+                                "session_id",
+                                "index"
+                              ],
+                              "type": "object"
+                            }
+                          ]
+                        },
+                        "maxItems": 3,
+                        "type": "array"
+                      },
+                      "state": {
+                        "enum": [
+                          "none",
+                          "known",
+                          "unknown"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "state",
+                      "created"
+                    ],
+                    "type": "object"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "delivery"
+                ],
+                "type": "object"
+              },
+              "ok": {
+                "const": false
+              }
+            },
+            "required": [
+              "ok",
+              "error"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      }
     }
   },
-  "prompt": "List the panes on my tmux server.",
+  "prompt": "Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.",
   "tmuxBefore": {
     "sessions": [
       {
@@ -3512,9 +6046,9 @@
         "data": {
           "endpoint": "docs",
           "server_identity": {
-            "generation": "6963609593170335729d5963e689cc1f",
-            "pid": 1408341,
-            "start_time": 1793847042,
+            "generation": "3f9a1c",
+            "pid": 1119217,
+            "start_time": 1794050582,
             "tmux_version": "3.8a"
           },
           "enabled_tools": [
@@ -5843,7 +8377,7 @@
             "max_captures": 16,
             "max_capture_bytes": 8388608,
             "capture_ttl_seconds": 30,
-            "request_timeout_seconds": 5,
+            "request_timeout_seconds": 30,
             "max_response_bytes": 1048576,
             "max_mutation_bytes": 65536,
             "max_observers": 16,
@@ -5930,10 +8464,212 @@
       "caption": "Ask the server which tools and limits are enabled."
     },
     {
+      "tool": "tmux_create",
+      "arguments": {
+        "kind": "session",
+        "name": "checks",
+        "argv": [
+          "sh"
+        ]
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "tmux_create completed; structuredContent contains the result."
+        }
+      ],
+      "structuredContent": {
+        "ok": true,
+        "data": {
+          "entity": {
+            "generation": "3f9a1c",
+            "kind": "session",
+            "id": "$1"
+          },
+          "created": [
+            {
+              "generation": "3f9a1c",
+              "kind": "session",
+              "id": "$1"
+            },
+            {
+              "generation": "3f9a1c",
+              "kind": "window",
+              "id": "@1"
+            },
+            {
+              "generation": "3f9a1c",
+              "kind": "pane",
+              "id": "%1"
+            }
+          ],
+          "delivery": "observed",
+          "program_completion": "unobserved"
+        }
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$1",
+            "name": "checks"
+          },
+          {
+            "id": "$0",
+            "name": "docs"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$1",
+            "id": "@1",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"}}"
+          },
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "cat",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@1",
+            "id": "%1",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
+          },
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "cat",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
+          }
+        ]
+      },
+      "caption": "Create the session."
+    },
+    {
+      "tool": "tmux_create",
+      "arguments": {
+        "kind": "pane",
+        "parent": {
+          "kind": "pane",
+          "id": "%1",
+          "generation": "3f9a1c"
+        },
+        "direction": "horizontal",
+        "argv": [
+          "sh"
+        ]
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "tmux_create completed; structuredContent contains the result."
+        }
+      ],
+      "structuredContent": {
+        "ok": true,
+        "data": {
+          "entity": {
+            "generation": "3f9a1c",
+            "kind": "pane",
+            "id": "%2"
+          },
+          "created": [
+            {
+              "generation": "3f9a1c",
+              "kind": "pane",
+              "id": "%2"
+            }
+          ],
+          "delivery": "observed",
+          "program_completion": "unobserved"
+        }
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$1",
+            "name": "checks"
+          },
+          {
+            "id": "$0",
+            "name": "docs"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$1",
+            "id": "@1",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%2\"}]}}"
+          },
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "cat",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@1",
+            "id": "%1",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 40,
+            "height": 24,
+            "active": true
+          },
+          {
+            "window": "@1",
+            "id": "%2",
+            "command": "sh",
+            "left": 41,
+            "top": 0,
+            "width": 39,
+            "height": 24,
+            "active": false
+          },
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "cat",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
+          }
+        ]
+      },
+      "caption": "Split the pane the create result returned (%1) in two."
+    },
+    {
       "tool": "tmux_snapshot",
       "arguments": {
-        "entity": "pane",
-        "limit": 20
+        "entity": "window"
       },
       "isError": false,
       "content": [
@@ -5945,14 +8681,14 @@
       "structuredContent": {
         "ok": true,
         "data": {
-          "capture_id": "6f71a480108cbc794e76da556379dc4f",
+          "capture_id": "a13829fbcf68c4d13192d49431427978",
           "server_identity": {
-            "generation": "6963609593170335729d5963e689cc1f",
-            "pid": 1408341,
-            "start_time": 1793847042,
+            "generation": "3f9a1c",
+            "pid": 1119217,
+            "start_time": 1794050582,
             "tmux_version": "3.8a"
           },
-          "entity": "pane",
+          "entity": "window",
           "coverage": {
             "session": "complete",
             "window": "complete",
@@ -5962,35 +8698,625 @@
           },
           "interval": {
             "clock": "monotonic_seconds",
-            "started": 370696.033652687,
-            "finished": 370696.045557008,
+            "started": 6950.386331011,
+            "finished": 6950.398742721,
             "reads": 5
           },
           "items": [
             {
-              "kind": "pane",
+              "kind": "window",
               "fields": {
-                "id": "%0",
-                "windowId": "@0",
-                "index": 0,
-                "pid": 1408342,
-                "currentCommand": "cat",
-                "currentPath": "/home/user/project",
-                "title": "host",
-                "active": true,
-                "dead": false,
-                "deadStatus": null,
+                "id": "@0",
+                "name": "cat",
                 "width": 80,
-                "height": 24
+                "height": 24,
+                "paneCount": 1,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
               },
               "ref": {
-                "generation": "6963609593170335729d5963e689cc1f",
-                "kind": "pane",
-                "id": "%0"
+                "generation": "3f9a1c",
+                "kind": "window",
+                "id": "@0"
+              }
+            },
+            {
+              "kind": "window",
+              "fields": {
+                "id": "@1",
+                "name": "sh",
+                "width": 80,
+                "height": 24,
+                "paneCount": 2,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%2\"}]}}"
+              },
+              "ref": {
+                "generation": "3f9a1c",
+                "kind": "window",
+                "id": "@1"
               }
             }
           ],
           "truncated": false
+        }
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$1",
+            "name": "checks"
+          },
+          {
+            "id": "$0",
+            "name": "docs"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$1",
+            "id": "@1",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%2\"}]}}"
+          },
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "cat",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@1",
+            "id": "%1",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 40,
+            "height": 24,
+            "active": true
+          },
+          {
+            "window": "@1",
+            "id": "%2",
+            "command": "sh",
+            "left": 41,
+            "top": 0,
+            "width": 39,
+            "height": 24,
+            "active": false
+          },
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "cat",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
+          }
+        ]
+      },
+      "caption": "Read the window's layout."
+    },
+    {
+      "tool": "tmux_send",
+      "arguments": {
+        "target": {
+          "kind": "pane",
+          "id": "%1",
+          "generation": "3f9a1c"
+        },
+        "input": {
+          "type": "text",
+          "text": "pytest -q\n"
+        }
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "tmux_send completed; structuredContent contains the result."
+        }
+      ],
+      "structuredContent": {
+        "ok": true,
+        "data": {
+          "target": {
+            "generation": "3f9a1c",
+            "kind": "pane",
+            "id": "%1"
+          },
+          "delivery": "observed",
+          "client_exit_status": 0,
+          "completion": "dispatch_only"
+        }
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$1",
+            "name": "checks"
+          },
+          {
+            "id": "$0",
+            "name": "docs"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$1",
+            "id": "@1",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%2\"}]}}"
+          },
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "cat",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@1",
+            "id": "%1",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 40,
+            "height": 24,
+            "active": true
+          },
+          {
+            "window": "@1",
+            "id": "%2",
+            "command": "sh",
+            "left": 41,
+            "top": 0,
+            "width": 39,
+            "height": 24,
+            "active": false
+          },
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "cat",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
+          }
+        ]
+      },
+      "caption": "Type the command into the pane the create result returned (%1)."
+    },
+    {
+      "tool": "tmux_wait",
+      "arguments": {
+        "target": {
+          "kind": "pane",
+          "id": "%1",
+          "generation": "3f9a1c"
+        },
+        "condition": {
+          "type": "screen_contains",
+          "text": "2 passed"
+        },
+        "timeout": 10
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "tmux_wait completed; structuredContent contains the result."
+        }
+      ],
+      "structuredContent": {
+        "ok": true,
+        "data": {
+          "target": {
+            "kind": "pane",
+            "id": "%1",
+            "generation": "3f9a1c"
+          },
+          "condition": "screen_contains",
+          "capture": {
+            "mode": "snapshot",
+            "target": {
+              "kind": "pane",
+              "id": "%1",
+              "generation": "3f9a1c"
+            },
+            "capture_id": "7614cc6ece6c7b3bbcb5119bb6291b2f",
+            "process_generation": "23fb4e239db0000be47a27a2b54059d5",
+            "rows": [
+              "$ pytest -q\n",
+              "..                               [100%]\n",
+              "2 passed in 0.01s\n",
+              "$ \n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n"
+            ],
+            "encoding": "utf-8",
+            "row_count": 24,
+            "bytes": 93,
+            "truncated": false,
+            "history_continuity": "unknown",
+            "scope": {
+              "max_lines": 200,
+              "max_bytes": 65536,
+              "history_lines": 0
+            },
+            "interval": {
+              "clock": "monotonic_seconds",
+              "started": 6953.983863023,
+              "finished": 6954.004227945
+            }
+          }
+        }
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$1",
+            "name": "checks"
+          },
+          {
+            "id": "$0",
+            "name": "docs"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$1",
+            "id": "@1",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%2\"}]}}"
+          },
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "cat",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@1",
+            "id": "%1",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 40,
+            "height": 24,
+            "active": true
+          },
+          {
+            "window": "@1",
+            "id": "%2",
+            "command": "sh",
+            "left": 41,
+            "top": 0,
+            "width": 39,
+            "height": 24,
+            "active": false
+          },
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "cat",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
+          }
+        ]
+      },
+      "caption": "Wait for the test summary in the pane the create result returned (%1)."
+    },
+    {
+      "tool": "tmux_send",
+      "arguments": {
+        "target": {
+          "kind": "pane",
+          "id": "%2",
+          "generation": "3f9a1c"
+        },
+        "input": {
+          "type": "text",
+          "text": "cat checks.log\n"
+        }
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "tmux_send completed; structuredContent contains the result."
+        }
+      ],
+      "structuredContent": {
+        "ok": true,
+        "data": {
+          "target": {
+            "generation": "3f9a1c",
+            "kind": "pane",
+            "id": "%2"
+          },
+          "delivery": "observed",
+          "client_exit_status": 0,
+          "completion": "dispatch_only"
+        }
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$1",
+            "name": "checks"
+          },
+          {
+            "id": "$0",
+            "name": "docs"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$1",
+            "id": "@1",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%2\"}]}}"
+          },
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "cat",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@1",
+            "id": "%1",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 40,
+            "height": 24,
+            "active": true
+          },
+          {
+            "window": "@1",
+            "id": "%2",
+            "command": "sh",
+            "left": 41,
+            "top": 0,
+            "width": 39,
+            "height": 24,
+            "active": false
+          },
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "cat",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
+          }
+        ]
+      },
+      "caption": "Type the command into the new pane the split returned (%2)."
+    },
+    {
+      "tool": "tmux_wait",
+      "arguments": {
+        "target": {
+          "kind": "pane",
+          "id": "%2",
+          "generation": "3f9a1c"
+        },
+        "condition": {
+          "type": "screen_contains",
+          "text": "checks finished"
+        },
+        "timeout": 10
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "tmux_wait completed; structuredContent contains the result."
+        }
+      ],
+      "structuredContent": {
+        "ok": true,
+        "data": {
+          "target": {
+            "kind": "pane",
+            "id": "%2",
+            "generation": "3f9a1c"
+          },
+          "condition": "screen_contains",
+          "capture": {
+            "mode": "snapshot",
+            "target": {
+              "kind": "pane",
+              "id": "%2",
+              "generation": "3f9a1c"
+            },
+            "capture_id": "14373ab34e565f19369f7e1bc9e0b210",
+            "process_generation": "0dd4defa031cdb8636cd70dc67eede49",
+            "rows": [
+              "$ cat checks.log\n",
+              "2026-01-01 checks started\n",
+              "2026-01-01 checks finished\n",
+              "$ \n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n",
+              "\n"
+            ],
+            "encoding": "utf-8",
+            "row_count": 24,
+            "bytes": 93,
+            "truncated": false,
+            "history_continuity": "unknown",
+            "scope": {
+              "max_lines": 200,
+              "max_bytes": 65536,
+              "history_lines": 0
+            },
+            "interval": {
+              "clock": "monotonic_seconds",
+              "started": 6957.556795452,
+              "finished": 6957.578571397
+            }
+          }
+        }
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$1",
+            "name": "checks"
+          },
+          {
+            "id": "$0",
+            "name": "docs"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$1",
+            "id": "@1",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%2\"}]}}"
+          },
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "cat",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@1",
+            "id": "%1",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 40,
+            "height": 24,
+            "active": true
+          },
+          {
+            "window": "@1",
+            "id": "%2",
+            "command": "sh",
+            "left": 41,
+            "top": 0,
+            "width": 39,
+            "height": 24,
+            "active": false
+          },
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "cat",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
+          }
+        ]
+      },
+      "caption": "Wait for the last line of the log in the pane the split returned (%2)."
+    },
+    {
+      "tool": "tmux_close",
+      "arguments": {
+        "target": {
+          "kind": "session",
+          "id": "$1",
+          "generation": "3f9a1c"
+        }
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "tmux_close completed; structuredContent contains the result."
+        }
+      ],
+      "structuredContent": {
+        "ok": true,
+        "data": {
+          "target": {
+            "generation": "3f9a1c",
+            "kind": "session",
+            "id": "$1"
+          },
+          "delivery": "observed",
+          "client_exit_status": 0
         }
       },
       "tmux": {
@@ -6023,7 +9349,7 @@
           }
         ]
       },
-      "caption": "List the panes."
+      "caption": "Remove the session by the id the create result returned ($1)."
     }
   ]
 }

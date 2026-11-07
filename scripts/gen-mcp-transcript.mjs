@@ -75,10 +75,10 @@ const SERVERS = {
   // This server borrows a tmux that is already running, so the recorder starts one on the sandbox's own tmpdir first.
   ruby: {
     borrowed: 'transcript',
-    // `bundle exec` needs the Gemfile; the session it borrows was started in the project directory.
-    inCheckout: true,
+    // `bundle exec` needs the Gemfile, found through the checkout. The server runs in the project directory: a session or pane it creates without a `cwd` starts there, where pytest and checks.log are.
+    env: (checkout) => ({ BUNDLE_GEMFILE: join(checkout, 'Gemfile') }),
     prepare: [['bundle', 'install']],
-    command: () => ['bundle', 'exec', 'libtmux-mcp', '--socket-name', 'transcript', '--endpoint', 'docs', ...['tmux_capture', 'tmux_wait', 'tmux_create', 'tmux_send', 'tmux_close', 'tmux_run'].flatMap((tool) => ['--enable-tool', tool])],
+    command: () => ['bundle', 'exec', 'libtmux-mcp', '--socket-name', 'transcript', '--endpoint', 'docs', '--timeout', '30', ...['tmux_capture', 'tmux_wait', 'tmux_create', 'tmux_send', 'tmux_close', 'tmux_run'].flatMap((tool) => ['--enable-tool', tool])],
   },
   go: { cwd: 'mcp', prepare: [], build: (sandbox) => [['go', 'build', '-mod=readonly', '-o', join(sandbox, 'libtmux-mcp'), './cmd/libtmux-mcp']], command: (_checkout, sandbox) => [join(sandbox, 'libtmux-mcp')] },
   // The documented install: both packages from the checkout into an environment, and the launcher `install_cli` writes for it. This server borrows a tmux that is already running, and the pane it reads shows the log.
@@ -96,13 +96,13 @@ const TOOLSETS = { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' }
 // What each run step must have printed, in order: the project below has two passing tests and a log of two lines.
 const EXPECTED_OUTPUT = ['2 passed', 'checks finished']
 // Without a command to run, the last answer must still state this (a value the example's prompt asks about).
-const PRESENT = { ruby: ['%0'], julia: ['checks finished'] }
-// What a pane runs once its shell has started: the sandbox pins SHELL, and the borrowed Ruby and Julia sessions run cat.
-const PANE_COMMANDS = { ruby: ['cat'], julia: ['cat'] }
+const PRESENT = { julia: ['checks finished'] }
+// What a pane runs once its shell has started: the sandbox pins SHELL, the borrowed Ruby and Julia sessions run cat, and Ruby's example creates panes that run sh.
+const PANE_COMMANDS = { ruby: ['cat', 'sh'], julia: ['cat'] }
 // A server that describes a pane the moment it is split can catch it before its shell has started; the answer is recorded again.
 const ATTEMPTS = 6
-// A Julia target carries `generation`, the tmux server's process id and start time. list_panes returns it, capture_pane must send it back, and no two runs share one: the call goes out with the listed value and the recording keeps the example's stand-in. A control call with the stand-in must be refused, and the recording states how.
-const GENERATION = { julia: '3f9a1c' }
+// A Julia or Ruby target carries `generation`, the tmux server's process id and start time. list_panes returns it, capture_pane must send it back, and no two runs share one: the call goes out with the listed value and the recording keeps the example's stand-in. A control call with the stand-in must be refused, and the recording states how.
+const GENERATION = { ruby: '3f9a1c', julia: '3f9a1c' }
 const LOG_FILE = '2026-01-01 checks started\n2026-01-01 checks finished\n'
 const TEST_FILE = 'def test_adds():\n    assert 1 + 1 == 2\n\n\ndef test_upper():\n    assert "tmux".upper() == "TMUX"\n'
 
@@ -138,17 +138,18 @@ try {
   const workdir = server.cwd ? join(checkout, server.cwd) : checkout
   for (const [command, ...args] of [...server.prepare, ...(server.build?.(sandbox, checkout) ?? [])]) execFileSync(command, args, { cwd: workdir, stdio: 'inherit' })
   const [command, ...args] = server.command(checkout, sandbox)
+  // The tmux server inherits this PATH, so a pane it starts finds the sandbox's pytest.
   // A borrowed session names its window when it is created: tmux names it `tmux` until it renames it for the program a moment after that starts.
   const pane = server.pane ?? ['/bin/cat']
   const startBorrowed = () => {
-    if (server.borrowed) execFileSync('tmux', ['-L', server.borrowed, '-f', '/dev/null', 'new-session', '-d', '-s', 'docs', '-n', basename(pane[0]), ...pane], { cwd: project, env: { ...process.env, TMUX: '', TMUX_TMPDIR: sandbox }, stdio: 'inherit' })
+    if (server.borrowed) execFileSync('tmux', ['-L', server.borrowed, '-f', '/dev/null', 'new-session', '-d', '-s', 'docs', '-n', basename(pane[0]), ...pane], { cwd: project, env: { ...process.env, TMUX: '', TMUX_TMPDIR: sandbox, PATH: `${join(sandbox, 'venv/bin')}:${process.env.PATH}` }, stdio: 'inherit' })
   }
   const environment = {
     TMUX: undefined, TMUX_PANE: undefined, TMUX_TMPDIR: sandbox, HOME: join(sandbox, 'home'), SHELL: '/bin/sh',
     // No user tmux configuration, whichever way tmux looks for it.
     XDG_CONFIG_HOME: join(sandbox, 'config'), XDG_CONFIG_DIRS: join(sandbox, 'config'),
     PATH: `${join(sandbox, 'venv/bin')}:${process.env.PATH}`, PS1: '$ ', ENV: '', LIBTMUX_SOCKET: 'transcript',
-    ...TOOLSETS, ...server.env?.(),
+    ...TOOLSETS, ...server.env?.(checkout),
   }
   mkdirSync(environment.HOME)
   // The tool that runs commands is the one whose requests carry a `command`; a name is not trusted to say so.
@@ -160,7 +161,7 @@ try {
       startBorrowed()
       return recordCalls({
         command: command.startsWith('/') || !command.includes('/') ? command : join(checkout, command), args: args.map((arg) => (arg.includes('/') && !arg.startsWith('-') ? join(checkout, arg) : arg)),
-        cwd: server.inCheckout ? workdir : project, env: environment, calls: standInCalls(example.steps, standIn, 'generation'), controls: standInControls(example.steps, standIn),
+        cwd: project, env: environment, calls: standInCalls(example.steps, standIn, 'generation'), controls: standInControls(example.steps, standIn),
         observe: settledState({ read: readTmuxState({ sandbox: sandboxReal }), commands: PANE_COMMANDS[only] ?? ['sh'], port: only }),
       })
     },
