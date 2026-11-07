@@ -38,6 +38,7 @@ const DOMAIN: Record<PortSlug, string> = {
   powershell: 'std',
   julia: 'std',
   elixir: 'std',
+  haskell: 'std',
   cxx: 'cpp',
   ts: 'js',
   rs: 'std',

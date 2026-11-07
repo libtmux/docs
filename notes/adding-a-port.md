@@ -153,6 +153,16 @@ In the new worktree, on `docs-site`:
   notes in `notes/research/04-versioning.md` §5 for the pattern used by each
   existing skinned generator.
 
+Haskell's [Haddock exporter](../packages/api-model/scripts/export-haskell.py)
+builds a selected committed source archive. Its
+[adapter](../packages/api-model/src/languages/haskell.ts) currently qualifies
+`LibTmux.Id`, `LibTmux.Value` and `LibTmux.Version` with the port's pinned
+GHC/Haddock toolchain. It preserves native signature links, opaque data
+heads, constructor and record-label ownership, instance heads, and authored
+export groups. The stored model retains those groups so sidebar regeneration
+needs no checkout or native toolchain. Additional module and declaration
+forms need native fixtures and qualification before the adapter accepts them.
+
 ### Wrapper libraries
 
 Kotlin and Scala share Java's repository and release version. F# shares

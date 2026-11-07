@@ -14,7 +14,7 @@
  */
 
 /** Language libraries, by the slug the site uses. */
-export type PortSlug = 'py' | 'ruby' | 'lua' | 'ts' | 'rs' | 'go' | 'java' | 'csharp' | 'cxx' | 'swift' | 'kotlin' | 'scala' | 'fsharp' | 'powershell' | 'julia' | 'elixir'
+export type PortSlug = 'py' | 'ruby' | 'lua' | 'ts' | 'rs' | 'go' | 'java' | 'csharp' | 'cxx' | 'swift' | 'kotlin' | 'scala' | 'fsharp' | 'powershell' | 'julia' | 'elixir' | 'haskell'
 
 export type ApiProduct = 'core' | 'workspace' | 'mcp'
 
@@ -360,6 +360,8 @@ export interface ApiSymbol {
 /** Everything extracted from one port's source tree. */
 /** Declarations and provenance shared by library and source references. */
 export interface ApiModelBase {
+  /** Native module export groups, in authored order, with exact public identities. */
+  exportGroups?: { owner: string; title: string; members: string[] }[]
   /** Native producer and inputs retained alongside the normalized surface. */
   nativeProvenance?: {
     files: { path: string; sha256: string }[]
