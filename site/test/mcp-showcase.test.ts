@@ -274,7 +274,7 @@ describe('the worked example', () => {
   it('finds the ids a call uses, in a nested argument too', () => {
     expect(EXAMPLES.ts!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%0', '%0', '%1'])
     expect(EXAMPLES.go!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%0', '%0', '%1', '$0'])
-    expect(EXAMPLES.julia!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%0'])
+    expect(EXAMPLES.julia!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%1', '$1', '%1', '%2', '$1'])
     expect(EXAMPLES.py!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%0', '%0', '%1'])
   })
 
@@ -422,16 +422,15 @@ describe('the showcase section', () => {
     expect(items).toHaveLength(EXAMPLES.julia!.steps.length)
     for (const item of items) expect(item.querySelectorAll('details.mcp-result pre')).toHaveLength(1)
     const provenance = julia.querySelector('.mcp-provenance')?.textContent?.replace(/\s+/g, ' ')
-    expect(provenance).toContain("The server's generation differs on every run. A real call sends the generation list_panes returned, and the server refuses 3f9a1c itself as stale_target; the recording shows the generation as 3f9a1c.")
+    expect(provenance).toContain("The server's generation differs on every run. A real call sends the generation create_session returned, and the server refuses 3f9a1c itself as stale_target; the recording shows the generation as 3f9a1c.")
     expect((await section('ts')).querySelector('.mcp-provenance')?.textContent).not.toMatch(/generation/)
   })
 
-  it('draws the pane the Julia listing names, showing what the capture read', async () => {
+  it('draws the borrowed docs session alone once Julia\'s example removes its own', async () => {
     const julia = await section('julia')
     const frames = [...julia.querySelectorAll('[data-frame]')]
     expect(frames).toHaveLength(EXAMPLES.julia!.steps.length + 1)
     expect(frames.at(-1)!.querySelector('.mcp-pane__id')?.textContent).toBe('%0 cat')
-    expect(frames.at(-1)!.querySelector('.mcp-pane__text')?.textContent).toBe('2026-01-01 checks started\n2026-01-01 checks finished')
     expect(frames.at(-1)!.querySelector('.mcp-tmux__session')?.textContent).toBe('[docs]')
   })
 
@@ -490,14 +489,15 @@ describe('recorded results', () => {
     })
   })
 
-  it('records Julia reading the log its first pane displays, through the target its own listing returned', async () => {
+  it('records Julia sending each pane the generation its create result returned, and the log in the split pane', async () => {
     const transcript = (await transcriptFor('julia'))!
-    const [listing, capture] = transcript.steps as { structuredContent: any; arguments: any }[]
-    const listed = listing!.structuredContent.panes[0].target
-    expect(capture!.arguments.target, 'the capture names the pane and generation the listing returned').toEqual(listed)
-    expect(capture!.structuredContent.text).toMatch(/checks finished\n/)
-    expect(transcript.sandbox.rewritten?.generation, 'the generation is a fixed stand-in, which the transcript says').toBe(listed.generation)
-    expect(transcript.sandbox.rewritten, 'and says which call listed the real one and how the server refuses the stand-in').toMatchObject({ generationListedBy: 'list_panes', generationRefusedAs: 'stale_target' })
+    const [create, , listing, tests, log] = transcript.steps as { structuredContent: any; arguments: any }[]
+    expect(create!.structuredContent.panes[0], 'the create result returns the pane the later calls name').toEqual({ paneId: '%1', generation: '3f9a1c' })
+    expect(listing!.structuredContent.panes.map((pane: any) => pane.target.paneId).sort()).toEqual(['%1', '%2'])
+    expect(tests!.arguments.target).toEqual(create!.structuredContent.panes[0])
+    expect(log!.structuredContent).toMatchObject({ matched: true, text: 'checks finished', target: { paneId: '%2' } })
+    expect(transcript.sandbox.rewritten?.generation, 'the generation is a fixed stand-in, which the transcript says').toBe('3f9a1c')
+    expect(transcript.sandbox.rewritten, 'and says which call listed the real one and how the server refuses the stand-in').toMatchObject({ generationListedBy: 'create_session', generationRefusedAs: 'stale_target' })
     expect(JSON.stringify(transcript.steps), 'no process id or start time is left in the recording').not.toMatch(/"generation\\?":\\?"\d+:\d+/)
   })
 
@@ -540,7 +540,7 @@ describe('recorded results', () => {
     const transcript = (await transcriptFor('julia'))!
     const shown = (rewritten: NonNullable<Transcript['sandbox']['rewritten']>) => buildShowcase('julia', 'latest', snapshot, { ...transcript, sandbox: { ...transcript.sandbox, rewritten } }).example!.recording
     const rewritten = transcript.sandbox.rewritten!
-    expect(shown(rewritten)?.generation).toEqual({ token: '3f9a1c', listedBy: 'list_panes', refusedAs: 'stale_target' })
+    expect(shown(rewritten)?.generation).toEqual({ token: '3f9a1c', listedBy: 'create_session', refusedAs: 'stale_target' })
     expect(shown({ ...rewritten, generationRefusedAs: undefined }), 'no refusal').toBeUndefined()
     expect(shown({ ...rewritten, generationListedBy: undefined }), 'no listing call').toBeUndefined()
     expect(shown({ ...rewritten, generationListedBy: 'kill_pane' }), 'a call the session never made').toBeUndefined()

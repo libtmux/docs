@@ -89,16 +89,18 @@ const SERVERS = {
     build: (sandbox, checkout) => [['julia', '--startup-file=no', '-e', 'using Pkg; Pkg.activate(ARGS[1]); Pkg.develop([Pkg.PackageSpec(path=ARGS[2]), Pkg.PackageSpec(path=joinpath(ARGS[2], "packages", "LibTmuxMCP"))]); Pkg.instantiate(); Pkg.precompile(); using LibTmuxMCP; install_cli(ARGS[3])', join(sandbox, 'julia-env'), checkout, join(sandbox, 'bin')]],
     // The sandbox's HOME holds no packages: the server reads the depot the build filled.
     env: () => ({ JULIA_DEPOT_PATH: process.env.JULIA_DEPOT_PATH || join(homedir(), '.julia') }),
-    command: (_checkout, sandbox) => [join(sandbox, 'bin/libtmux-mcp'), '--socket-name', 'transcript'],
+    // Every tool the snapshot lists is enabled, and creation is allowed, as the example creates and removes a session.
+    command: (_checkout, sandbox) => [join(sandbox, 'bin/libtmux-mcp'), '--socket-name', 'transcript', '--allow-create', ...JULIA_TOOLS.flatMap((tool) => ['--tool', tool])],
   },
 }
+const JULIA_TOOLS = ['capture_pane', 'create_session', 'kill_pane', 'list_panes', 'paste_text', 'resize_pane', 'run_operations', 'send_keys', 'send_keys_and_wait', 'teardown_session', 'wait_for_text']
 const TOOLSETS = { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' }
 // What each run step must have printed, in order: the project below has two passing tests and a log of two lines.
 const EXPECTED_OUTPUT = ['2 passed', 'checks finished']
 // Without a command to run, the last answer must still state this (a value the example's prompt asks about).
-const PRESENT = { julia: ['checks finished'] }
+const PRESENT = {}
 // What a pane runs once its shell has started: the sandbox pins SHELL, the borrowed Ruby and Julia sessions run cat, and Ruby's example creates panes that run sh.
-const PANE_COMMANDS = { ruby: ['cat', 'sh'], julia: ['cat'] }
+const PANE_COMMANDS = { ruby: ['cat', 'sh'], julia: ['cat', 'sh'] }
 // A server that describes a pane the moment it is split can catch it before its shell has started; the answer is recorded again.
 const ATTEMPTS = 6
 // A Julia or Ruby target carries `generation`, the tmux server's process id and start time. list_panes returns it, capture_pane must send it back, and no two runs share one: the call goes out with the listed value and the recording keeps the example's stand-in. A control call with the stand-in must be refused, and the recording states how.

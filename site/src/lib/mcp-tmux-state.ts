@@ -27,8 +27,8 @@ export interface TmuxState { sessions: TmuxSession[]; windows: TmuxWindow[]; pan
 /** The tools that only read tmux. A recording's state after one of them equals the state before it. */
 export const READ_ONLY_TOOLS: ReadonlySet<string> = new Set(['list_sessions', 'list_windows', 'list_panes', 'tmux_snapshot', 'tmux_capabilities', 'get_tmux_variables', 'capture_pane'])
 
-/** The tools that remove what they name, so their result returns ids tmux no longer has: `kill*`, and Ruby's `tmux_close`. */
-const removes = (tool: string): boolean => tool.startsWith('kill') || tool === 'tmux_close'
+/** The tools that remove what they name, so their result returns ids tmux no longer has: `kill*`, and the `tmux_close` and `teardown_session` of Ruby and Julia. */
+const removes = (tool: string): boolean => tool.startsWith('kill') || tool === 'tmux_close' || tool === 'teardown_session'
 
 type Kind = 'string' | 'number' | 'boolean'
 const FIELDS: Record<keyof TmuxState, { required: Record<string, Kind>; optional?: Record<string, Kind> }> = {
