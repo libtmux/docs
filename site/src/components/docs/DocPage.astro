@@ -124,6 +124,8 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
 // its tests load, or the tools its server advertises. The MCP worked example
 // follows the intro and the tool grid closes the page.
 const workspaceExamples = isWorkspaceOverview && port ? workspaceShowcase(port) : undefined
+// A port with one example has no picker to open the page with, so its example opens it instead.
+const workspaceExampleLeads = Boolean(workspaceExamples && !offersPicker(workspaceExamples))
 const mcpTools = isMcpOverview && port ? await mcpShowcase(port, version ?? buildTarget(process.env).version) : undefined
 
 // A product overview opens with what the product is, in the words of its port's
@@ -155,11 +157,12 @@ const productIntro = isProductOverview && port && coreHome
   version={version}
   headings={placeholderLocale ? [] : [
     ...(workspaceExamples && offersPicker(workspaceExamples) ? [{ depth: 2, slug: 'try-a-preset', text: 'Try a preset' }] : []),
+    ...(workspaceExamples && workspaceExampleLeads ? workspaceHeadings(workspaceExamples) : []),
     ...(mcpTools ? mcpExampleHeadings(mcpTools) : []),
     ...(isMcpOverview || isWorkspaceOverview ? [{ depth: 2, slug: 'install', text: 'Install' }] : []),
     ...(isCoreHome ? coreHomeHeadings(port!, version ?? buildTarget(process.env).version) : []),
     ...headings,
-    ...(workspaceExamples ? workspaceHeadings(workspaceExamples) : []),
+    ...(workspaceExamples && !workspaceExampleLeads ? workspaceHeadings(workspaceExamples) : []),
     ...(mcpTools ? mcpToolHeadings(mcpTools) : []),
     ...(isProductApi ? [{ depth: 2, slug: 'generated-api', text: 'API declarations' }] : []),
   ]}
@@ -266,6 +269,7 @@ const productIntro = isProductOverview && port && coreHome
   {!placeholderLocale && productIntro && <ProductIntro parts={productIntro} />}
   {!placeholderLocale && mcpTools && <McpShowcase showcase={mcpTools} part="example" />}
   {!placeholderLocale && workspaceExamples && <WorkspacePicker showcase={workspaceExamples} />}
+  {!placeholderLocale && workspaceExamples && workspaceExampleLeads && <WorkspaceShowcase showcase={workspaceExamples} />}
   {!placeholderLocale && isMcpOverview && port && (
     <>
       <h2 id="install">Install</h2>
@@ -294,7 +298,7 @@ const productIntro = isProductOverview && port && coreHome
     </div>
   )}
   {!placeholderLocale && <Content />}
-  {!placeholderLocale && workspaceExamples && <WorkspaceShowcase showcase={workspaceExamples} />}
+  {!placeholderLocale && workspaceExamples && !workspaceExampleLeads && <WorkspaceShowcase showcase={workspaceExamples} />}
   {!placeholderLocale && isWorkspaceOverview && !workspaceExamples && (
     <p class="mt-6 text-sm opacity-75" data-workspace-coming>Tested example workspace files for this port are coming.</p>
   )}
