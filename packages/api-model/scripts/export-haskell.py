@@ -249,6 +249,60 @@ def extract_modules(pages, installed, exposed, locations, revision):
             raise ValueError(msg)
         return content
 
+    def signature(header, module, constructor=False):
+        spans = []
+        pending_space = False
+
+        def append(character, metadata):
+            if (
+                spans
+                and {key: value for key, value in spans[-1].items() if key != "text"} == metadata
+            ):
+                spans[-1]["text"] += character
+            else:
+                spans.append({"text": character, **metadata})
+
+        def text(value, metadata):
+            nonlocal pending_space
+            for character in value:
+                if character.isspace():
+                    pending_space = True
+                    continue
+                if pending_space and spans:
+                    append(" ", {})
+                pending_space = False
+                append(character, metadata)
+
+        def walk(node, inherited=None):
+            metadata = inherited or {}
+            if isinstance(node, str):
+                text(node, metadata)
+                return
+            if node.has("link") or node.has("selflink"):
+                return
+            if node.has("def"):
+                metadata = {**metadata, "declaration": True}
+            if node.has("keyword"):
+                metadata = {**metadata, "keyword": True}
+            if node.tag == "a" and "href" in node.attrs:
+                href = node.attrs["href"]
+                target = link(href, module)
+                metadata = {**metadata, "href": href, **({"target": target} if target else {})}
+            for child in node.children:
+                walk(child, metadata)
+
+        walk(header)
+        raw = _compact(header.text())
+        if "".join(span["text"] for span in spans) != raw:
+            msg = f"Native signature spans disagree with their declaration: {module}: {raw}"
+            raise ValueError(msg)
+        return {
+            "raw": raw,
+            "params": [],
+            "nativeSpans": spans,
+            **({"methodKind": "constructor"} if constructor else {}),
+        }
+
     def documentation(container, module):
         docs = [node for node in container.elements() if node.has("doc")]
         if not docs:
@@ -307,7 +361,7 @@ def extract_modules(pages, installed, exposed, locations, revision):
             "kind": kind,
             "parent": parent,
             "modifiers": [],
-            "signatures": [{"raw": _compact(header.text()), "params": []}],
+            "signatures": [signature(header, module, kind == "function" and parent != module)],
             "doc": documentation(block, module),
             "source": source(
                 module,

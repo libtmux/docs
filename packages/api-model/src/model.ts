@@ -169,6 +169,16 @@ export interface Signature {
   extension?: string
   /** Native signature text when its grammar carries more than the shared fields. */
   raw?: string
+  /** Native header text and links, in order. Their text concatenates exactly to `raw`. */
+  nativeSpans?: {
+    text: string
+    /** Original native destination, retained even when a public target is remapped. */
+    href?: string
+    /** Public identity resolved by the native producer. */
+    target?: string
+    declaration?: boolean
+    keyword?: boolean
+  }[]
   /** Native impl or trait header that owns this callable, without its body. */
   enclosingDeclaration?: string
   /** Lexical bindings from that impl or trait, separate from callable generics. */

@@ -258,6 +258,55 @@ class _NativeExportTest(unittest.TestCase):
         self.assertEqual(strict["source"]["revision"], REVISION)
         self.assertGreater(strict["source"]["line"], 0)
 
+    def test_native_signature_links_and_constructor_roles_survive(self):
+        symbols = {s["id"]: s for s in _artifact()["symbols"]}
+        parser = symbols["LibTmux.Id#v:parsePaneId"]["signatures"][0]
+        self.assertIn("nativeSpans", parser)
+        spans = parser["nativeSpans"]
+        self.assertEqual("".join(span["text"] for span in spans), parser["raw"])
+        self.assertEqual(
+            [(span["text"], span["target"]) for span in spans if "target" in span],
+            [("IdError", "LibTmux.Id#t:IdError"), ("PaneId", "LibTmux.Id#t:PaneId")],
+        )
+        external = {
+            span["text"]: span["href"] for span in spans if "href" in span and "target" not in span
+        }
+        self.assertRegex(external["Text"], r"^https://hackage[.]haskell[.]org/package/text-")
+        self.assertRegex(external["Either"], r"^https://hackage[.]haskell[.]org/package/base-")
+        self.assertTrue(
+            next(span for span in spans if span["text"] == "parsePaneId")["declaration"]
+        )
+        constructors = [
+            signature
+            for symbol in symbols.values()
+            if symbol["kind"] == "function" and symbol["parent"] != symbol["namespace"]
+            for signature in symbol["signatures"]
+        ]
+        self.assertEqual(len(constructors), 5)
+        self.assertTrue(all(signature["methodKind"] == "constructor" for signature in constructors))
+        for symbol in symbols.values():
+            for signature in symbol["signatures"]:
+                self.assertEqual(
+                    "".join(span["text"] for span in signature["nativeSpans"]), signature["raw"]
+                )
+
+    def test_signature_links_reject_nonpublic_or_unsafe_destinations(self):
+        for href in ["LibTmux-Internal-Process.html#v:submit", "#t:Missing", "javascript:alert(1)"]:
+            with self.subTest(href=href):
+                inputs = _native_inputs()
+                marker = '<a id="v:parsePaneId"'
+                before, tail = inputs[0]["LibTmux.Id"].split(marker, 1)
+                header, after = tail.split("</p>", 1)
+                original = 'href="LibTmux-Id.html#t:IdError"'
+                self.assertIn(original, header)
+                inputs[0]["LibTmux.Id"] = (
+                    before + marker + header.replace(original, f'href="{href}"', 1) + "</p>" + after
+                )
+                with self.assertRaisesRegex(
+                    ValueError, "no public target|Unsupported documentation link scheme"
+                ):
+                    EXPORT.extract_modules(*inputs)
+
     def test_opaque_ids_do_not_reveal_their_newtype_constructor(self):
         symbols = {s["id"]: s for s in _artifact()["symbols"]}
         self.assertIn("LibTmux.Id#t:PaneId", symbols)
