@@ -94,3 +94,65 @@ describe('existing port sidecars', () => {
     expect(`${JSON.stringify(navSidecar(port, model))}\n`).toBe(expected)
   })
 })
+
+describe('native export groups', () => {
+  const fixture = (): ApiModel => ({
+    port: 'haskell', extractor: 'fixture',
+    exportGroups: [
+      { owner: 'Module.Z', title: 'Types', members: ['Module.Z#t:Value'] },
+      { owner: 'Module.Z', title: 'Read values', members: ['Module.Z#v:z', 'Module.Z#v:a'] },
+      { owner: 'Module.A', title: 'Types', members: ['Module.A#t:Other'] },
+    ],
+    symbols: [
+      symbol('Module.Z', 'module'), symbol('Module.A', 'module'),
+      symbol('Module.Z#v:a', 'function', 'Module.Z'),
+      symbol('Module.Z#v:z', 'function', 'Module.Z'),
+      symbol('Module.Z#t:Value', 'typealias', 'Module.Z'),
+      symbol('Module.Z#v:Value', 'function', 'Module.Z#t:Value'),
+      symbol('Module.A#t:Other', 'typealias', 'Module.A'),
+    ].map((entry) => ({ ...entry, apiScope: 'exported' })),
+  })
+
+  it('preserves native module, group and declaration order without reparenting', () => {
+    const model = fixture()
+    const before = structuredClone(model)
+    const actual = navSidecar('haskell', model)!
+    expect(actual.buckets.map((bucket) => bucket.label)).toEqual(['Module.Z', 'Module.A'])
+    const [first, second] = actual.buckets
+    expect(first.children?.map((bucket) => bucket.label)).toEqual(['Types', 'Read values'])
+    expect(first.children![0].id).not.toBe(second.children![0].id)
+    expect(actual.assignments[first.children![1].id].map((entry) => entry.id)).toEqual(['Module.Z#v:z', 'Module.Z#v:a'])
+    expect(actual.assignments[first.id].map((entry) => entry.id)).toEqual(['Module.Z'])
+    expect(actual.placement).not.toHaveProperty('Module.Z#v:Value')
+    expect(actual.diagnostics).toEqual({ unmatched: [], deadBuckets: [], ambiguous: [], staleUnsettled: [] })
+    expect(navSidecar('haskell', structuredClone(model))).toEqual(actual)
+    expect(model).toEqual(before)
+  })
+
+  it('excludes nonpublic declarations that are absent from the native export groups', () => {
+    const model = fixture()
+    model.symbols.push(symbol('private', 'function', 'Module.Z'), symbol('private.module', 'module'))
+    const actual = navSidecar('haskell', model)!
+    expect(actual.placement).not.toHaveProperty('private')
+    expect(actual.placement).not.toHaveProperty('private.module')
+    expect(actual.diagnostics.unmatched).toEqual([])
+  })
+
+  it.each([
+    ['missing direct declaration', (model: ApiModel) => model.exportGroups![1].members.pop()],
+    ['duplicate declaration', (model: ApiModel) => model.exportGroups![1].members.push('Module.Z#v:z')],
+    ['duplicate symbol identity', (model: ApiModel) => { model.symbols.push({ ...model.symbols[2] }) }],
+    ['unknown declaration', (model: ApiModel) => model.exportGroups![1].members.push('missing')],
+    ['nested constructor', (model: ApiModel) => model.exportGroups![0].members.push('Module.Z#v:Value')],
+    ['wrong owner', (model: ApiModel) => { model.exportGroups![0].owner = 'Module.A' }],
+    ['nonpublic declaration', (model: ApiModel) => { model.symbols[2].apiScope = 'internal' }],
+    ['ungrouped module', (model: ApiModel) => { model.exportGroups!.pop() }],
+    ['malformed group', (model: ApiModel) => { Object.assign(model.exportGroups!, { 0: null }) }],
+    ['no groups', (model: ApiModel) => { model.exportGroups = [] }],
+    ['no metadata', (model: ApiModel) => { delete model.exportGroups }],
+  ])('rejects %s before filtering navigation candidates', (_name, mutate) => {
+    const model = fixture()
+    mutate(model)
+    expect(() => navSidecar('haskell', model)).toThrow(/export group/i)
+  })
+})

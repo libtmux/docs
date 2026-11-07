@@ -28,6 +28,54 @@ export interface NavSidecarBucket {
   target?: { id: string; name: string; slug: string; kind: ApiSymbol['kind'] }
 }
 
+/** Validate native export coverage before selecting sidebar candidates. */
+export function exportGroupsNav(model: ApiModelBase): NavConfig {
+  const groups = model.exportGroups
+  const fail = (reason: string): never => { throw new Error(`Invalid native export groups: ${reason}`) }
+  if (!Array.isArray(groups) || !groups.length) fail('no groups')
+  const byId = new Map(model.symbols.map((symbol) => [symbol.publicId ?? symbol.id, symbol]))
+  if (byId.size !== model.symbols.length || new Set(model.symbols.map((symbol) => symbol.id)).size !== model.symbols.length) {
+    fail('repeated declaration identity')
+  }
+  const publicSymbol = (symbol: ApiSymbol) => !symbol.apiScope || symbol.apiScope === 'exported'
+  const modules = new Map(model.symbols.filter((symbol) => symbol.kind === 'module' && publicSymbol(symbol))
+    .map((symbol) => [symbol.id, symbol]))
+  const owners = new Map<string, Bucket>()
+  const members = new Set<string>()
+  for (const group of groups!) {
+    if (!group || typeof group.owner !== 'string') fail('missing group owner')
+    const owner = byId.get(group.owner)
+    if (!owner || !modules.has(owner.id)) fail(`unknown or nonpublic module ${group.owner}`)
+    if (typeof group.title !== 'string' || !group.title.trim() || !Array.isArray(group.members) || !group.members.length) {
+      fail(`empty group in ${group.owner}`)
+    }
+    let bucket = owners.get(group.owner)
+    if (!bucket) {
+      bucket = { id: `exports:${encodeURIComponent(group.owner)}`, label: owner!.name,
+        match: { kind: 'id', is: group.owner }, order: [group.owner], children: [] }
+      owners.set(group.owner, bucket)
+    }
+    for (const id of group.members) {
+      const member = byId.get(id)
+      if (!member || member.parent !== owner!.id || !publicSymbol(member) || members.has(id)) {
+        fail(`unknown, repeated or nonpublic direct export ${id} in ${group.owner}`)
+      }
+      members.add(id)
+    }
+    bucket.children!.push({ id: `${bucket.id}:${bucket.children!.length}`, label: group.title,
+      match: { kind: 'id', is: [...group.members] }, order: [...group.members] })
+  }
+  for (const symbol of model.symbols) {
+    if (symbol.kind === 'module' && publicSymbol(symbol) && !owners.has(symbol.publicId ?? symbol.id)) {
+      fail(`module has no groups: ${symbol.id}`)
+    }
+    if (symbol.parent && modules.has(symbol.parent) && publicSymbol(symbol) && !members.has(symbol.publicId ?? symbol.id)) {
+      fail(`direct export has no group: ${symbol.id}`)
+    }
+  }
+  return { buckets: [...owners.values()] }
+}
+
 /**
  * A port's compiled sidebar, exactly as `<port>.nav.json` holds it.
  *
@@ -38,18 +86,21 @@ export interface NavSidecarBucket {
  * `gen-api-model.mjs --nav` writes this and `check-nav.mjs` compares it.
  */
 export function navSidecar(port: string, model: ApiModel) {
-  const nav = NAV[port]
+  const nav = model.exportGroups || port === 'haskell' ? exportGroupsNav(model) : NAV[port]
   if (!nav) return undefined
   return navSidecarFor(port, model, nav)
 }
 
 /** Compile the same navigation contract for an explicitly supplied catalog. */
 export function navSidecarFor(scope: string, model: ApiModelBase, nav: NavConfig) {
+  if (model.exportGroups || scope === 'haskell') exportGroupsNav(model)
   // Every top-level symbol, not only the types: a free function, constant or
   // type alias has a page, and a sidebar that placed only types gave 1,282 of
   // those pages no row.
   const moduleIds = new Set(model.symbols.filter((symbol) => symbol.kind === 'module').map((symbol) => symbol.id))
-  const topLevel = model.symbols.filter((s) => !s.parent || (['powershell', 'julia'].includes(scope) && moduleIds.has(s.parent)))
+  const topLevel = model.symbols.filter((s) =>
+    (!model.exportGroups || !s.apiScope || s.apiScope === 'exported') &&
+    (!s.parent || ((model.exportGroups || ['powershell', 'julia'].includes(scope)) && moduleIds.has(s.parent))))
   const conceptIds = Object.fromEntries(
     Object.entries(CONCEPTS)
       .map(([k, c]) => [k, c.symbols[scope]] as const)
