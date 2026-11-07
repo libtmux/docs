@@ -501,6 +501,22 @@ describe('recorded results', () => {
     expect(JSON.stringify(transcript.steps), 'no process id or start time is left in the recording').not.toMatch(/"generation\\?":\\?"\d+:\d+/)
   })
 
+  const panesPerWindow = (step: { tmux?: { panes: { window: string }[] } }) => Object.values((step.tmux?.panes ?? []).reduce<Record<string, number>>((count, pane) => ({ ...count, [pane.window]: (count[pane.window] ?? 0) + 1 }), {}))
+
+  it('counts a read-only example as one pane per window, so the split check can fail', async () => {
+    const reading = (await transcriptFor('ruby'))!.steps.slice(0, 1)
+    expect(Math.max(...reading.flatMap(panesPerWindow))).toBe(1)
+  })
+
+  it.each(PORTS)('runs the split flow for %s, recorded: two panes in one window, then the session gone', async (port) => {
+    const { example } = await showcase(port)
+    expect(example?.prompt, 'every port answers the shared split prompt').toMatch(/^Create a tmux session called checks, split its window into two panes/)
+    expect(example?.recording, `${port} is not "requests only"`).toBeDefined()
+    const { steps } = (await transcriptFor(port))!
+    expect(Math.max(...steps.flatMap(panesPerWindow)), 'a window holds two panes at some step').toBe(2)
+    expect(steps.at(-1)!.tmux!.sessions.map((session) => session.name), 'the session the example made is gone').not.toContain('checks')
+  })
+
   it.each(RECORDED)('records %s printing the test runner\'s result and the log in their panes', async (port) => {
     const { example } = await showcase(port)
     const lines = example!.recording!.answers.map((answer) => answer.line)
