@@ -53,11 +53,14 @@ jobs:
       - name: Resolve integrated guide sources
         id: integrated-sources
         run: |
-          echo "ruby=$(jq -r .revision site/src/data/api/ruby.json)" >> "$GITHUB_OUTPUT"
-          echo "lua=$(jq -r .revision site/src/data/api/lua.json)" >> "$GITHUB_OUTPUT"
-          echo "powershell=$(jq -r .revision site/src/data/api/powershell.json)" >> "$GITHUB_OUTPUT"
-          echo "julia=$(jq -r .revision site/src/data/api/julia.json)" >> "$GITHUB_OUTPUT"
-          echo "elixir=$(jq -r .revision site/src/data/api/elixir.json)" >> "$GITHUB_OUTPUT"
+          {
+            echo "ruby=$(jq -r .revision site/src/data/api/ruby.json)"
+            echo "lua=$(jq -r .revision site/src/data/api/lua.json)"
+            echo "powershell=$(jq -r .revision site/src/data/api/powershell.json)"
+            echo "julia=$(jq -r .revision site/src/data/api/julia.json)"
+            echo "elixir=$(jq -r .revision site/src/data/api/elixir.json)"
+            echo "ocaml=$(jq -r .revision site/src/data/api/ocaml.json)"
+          } >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v7
         with:
@@ -89,6 +92,12 @@ jobs:
           ref: ${{ steps.integrated-sources.outputs.elixir }}
           path: .port-sources/elixir
           persist-credentials: false
+      - uses: actions/checkout@v7
+        with:
+          repository: libtmux/libtmux-ocaml
+          ref: ${{ steps.integrated-sources.outputs.ocaml }}
+          path: .port-sources/ocaml
+          persist-credentials: false
 
       # The exporter tests compile a fixture with the package's own toolchain:
       # the exact pair the integrated Elixir source pins, read as port-docs.yml
@@ -112,6 +121,7 @@ jobs:
           LIBTMUX_DOCS_CHECKOUT_POWERSHELL: ${{ github.workspace }}/.port-sources/powershell
           LIBTMUX_DOCS_CHECKOUT_JULIA: ${{ github.workspace }}/.port-sources/julia
           LIBTMUX_DOCS_CHECKOUT_ELIXIR: ${{ github.workspace }}/.port-sources/elixir
+          LIBTMUX_DOCS_CHECKOUT_OCAML: ${{ github.workspace }}/.port-sources/ocaml
         run: |
           node scripts/stage-port-docs.mjs --from-source
           node scripts/stage-port-docs.mjs --cached --check
@@ -131,12 +141,15 @@ jobs:
           PREVIEW_PREFIX: pr-${{ github.event.pull_request.number }}
           LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby
           LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua
+          LIBTMUX_DOCS_CHECKOUT_OCAML: ${{ github.workspace }}/.port-sources/ocaml
           # PowerShell, Julia and Elixir paths stay scoped to guide staging
           # above, which checks the cache used by ordinary builds. Native API
           # and MCP export freshness remain owning-port checks, not claims of
           # this root audit. Elixir's exporter tests run in the unit step; its
           # committed model is derived again by port-docs.yml at publication.
-          LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua,powershell,julia,elixir
+          # OCaml's checkout also feeds source-derived usage checks. Its
+          # compiled API is qualified by the owning port's exporter job.
+          LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua,powershell,julia,elixir,ocaml
 
       - name: Upload audited preview
         if: github.event_name == 'pull_request'
