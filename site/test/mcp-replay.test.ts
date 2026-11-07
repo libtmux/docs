@@ -186,12 +186,12 @@ describe('the tmux state each recorded call leaves, drawn from the results of a 
     expect(frames.every((frame) => frame.sessions.length === 0), 'the page relies on the stored tmux state').toBe(true)
   })
 
-  it('follows Julia: the listing places the pane in the session and window it is linked into, and the capture shows what the pane displayed', async () => {
+  it('follows Julia: the create result names the session, and the listing places the split panes in their window', async () => {
     const frames = replayFrames(await steps('julia'))
-    expect(frames.map((frame) => frame.sessions.length)).toEqual([0, 1, 1])
-    expect(frames[1]).toMatchObject({ reading: 'panes', sessions: [{ id: '$0', name: 'docs', windows: [{ id: '@0', index: 0, name: 'cat', panes: [{ id: '%0', command: 'cat', width: 80, height: 24 }] }] }] })
-    expect(frames[1]!.sessions[0]!.windows[0]!.panes[0], 'a listing reads no screen').not.toHaveProperty('output')
-    expect(frames[2]!.sessions[0]!.windows[0]!.panes[0]!.output).toMatch(/^2026-01-01 checks started\n2026-01-01 checks finished\n/)
+    expect(frames[1]).toMatchObject({ sessions: [{ id: '$1', name: 'checks' }] })
+    expect(frames[3]!.reading).toBe('panes')
+    const window = frames[3]!.sessions[0]!.windows.find((item) => item.id === '@1')!
+    expect(window.panes.map((pane) => `${pane.id} ${pane.command}`)).toEqual(['%1 sh', '%2 sh'])
   })
 
   it('places a pane at the first link it has, even when it is linked into two places, and a capture of a pane no window holds changes nothing, and a listing with no contexts places nothing', () => {

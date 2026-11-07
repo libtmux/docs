@@ -16,7 +16,7 @@
     "rewritten": {
       "projectDirectory": "/home/user/project",
       "generation": "3f9a1c",
-      "generationListedBy": "list_panes",
+      "generationListedBy": "create_session",
       "generationRefusedAs": "stale_target"
     }
   },
@@ -25,6 +25,257 @@
     "name": "libtmux"
   },
   "contracts": {
+    "create_session": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "command": {
+            "description": "Executable and argv; no shell expansion",
+            "items": {
+              "description": "Valid UTF-8; at most 1024 bytes",
+              "maxLength": 1024,
+              "type": "string"
+            },
+            "maxItems": 32,
+            "minItems": 1,
+            "type": "array"
+          },
+          "name": {
+            "description": "Valid UTF-8; at most 64 bytes",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "command"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "completed": {
+                "type": "boolean"
+              },
+              "generation": {
+                "type": "string"
+              },
+              "ownership": {
+                "const": "application"
+              },
+              "panes": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "generation": {
+                      "description": "Opaque generation from list_panes",
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    "paneId": {
+                      "description": "Valid UTF-8; at most 64 bytes",
+                      "maxLength": 64,
+                      "pattern": "^%(0|[1-9][0-9]*)$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "paneId",
+                    "generation"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 256,
+                "type": "array"
+              },
+              "sessionId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "completed",
+              "panes",
+              "sessionId",
+              "generation",
+              "ownership"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "error": {
+                "additionalProperties": false,
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "effects": {
+                    "enum": [
+                      "none",
+                      "possible"
+                    ]
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "output": {
+                    "type": "string"
+                  },
+                  "retryable": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "effects",
+                  "retryable"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "error"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      }
+    },
+    "send_keys": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "keys": {
+            "items": {
+              "description": "Valid UTF-8; at most 1024 bytes",
+              "maxLength": 1024,
+              "type": "string"
+            },
+            "maxItems": 64,
+            "minItems": 1,
+            "type": "array"
+          },
+          "literal": {
+            "default": false,
+            "type": "boolean"
+          },
+          "target": {
+            "additionalProperties": false,
+            "description": "Explicit captured target; omission requires a configured caller pane",
+            "properties": {
+              "generation": {
+                "description": "Opaque generation from list_panes",
+                "maxLength": 128,
+                "type": "string"
+              },
+              "paneId": {
+                "description": "Valid UTF-8; at most 64 bytes",
+                "maxLength": 64,
+                "pattern": "^%(0|[1-9][0-9]*)$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "paneId",
+              "generation"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "target",
+          "keys"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "completed": {
+                "type": "boolean"
+              },
+              "generationGuarantee": {
+                "type": "string"
+              },
+              "target": {
+                "additionalProperties": false,
+                "properties": {
+                  "generation": {
+                    "description": "Opaque generation from list_panes",
+                    "maxLength": 128,
+                    "type": "string"
+                  },
+                  "paneId": {
+                    "description": "Valid UTF-8; at most 64 bytes",
+                    "maxLength": 64,
+                    "pattern": "^%(0|[1-9][0-9]*)$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "paneId",
+                  "generation"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "completed",
+              "generationGuarantee",
+              "target"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "error": {
+                "additionalProperties": false,
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "effects": {
+                    "enum": [
+                      "none",
+                      "possible"
+                    ]
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "output": {
+                    "type": "string"
+                  },
+                  "retryable": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "effects",
+                  "retryable"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "error"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      }
+    },
     "list_panes": {
       "inputSchema": {
         "$defs": {
@@ -732,21 +983,23 @@
         "type": "object"
       }
     },
-    "capture_pane": {
+    "send_keys_and_wait": {
       "inputSchema": {
         "additionalProperties": false,
         "properties": {
-          "lines": {
-            "default": 100,
-            "maximum": 1000,
-            "minimum": 1,
-            "type": "integer"
+          "keys": {
+            "items": {
+              "description": "Valid UTF-8; at most 1024 bytes",
+              "maxLength": 1024,
+              "type": "string"
+            },
+            "maxItems": 64,
+            "minItems": 1,
+            "type": "array"
           },
-          "maxBytes": {
-            "default": 65536,
-            "maximum": 65536,
-            "minimum": 1,
-            "type": "integer"
+          "literal": {
+            "default": false,
+            "type": "boolean"
           },
           "target": {
             "additionalProperties": false,
@@ -769,10 +1022,25 @@
               "generation"
             ],
             "type": "object"
+          },
+          "text": {
+            "description": "Valid UTF-8; at most 1024 bytes",
+            "maxLength": 1024,
+            "minLength": 1,
+            "type": "string"
+          },
+          "timeoutSeconds": {
+            "default": 5,
+            "description": "Total wait budget in seconds, capped by the remaining application call deadline",
+            "exclusiveMinimum": 0,
+            "maximum": 5,
+            "type": "number"
           }
         },
         "required": [
-          "target"
+          "target",
+          "keys",
+          "text"
         ],
         "type": "object"
       },
@@ -781,14 +1049,30 @@
           {
             "additionalProperties": false,
             "properties": {
-              "byteLimit": {
-                "type": "integer"
+              "continuity": {
+                "enum": [
+                  "reset",
+                  "stream"
+                ]
               },
-              "encoding": {
+              "evidence": {
+                "const": "literal_text"
+              },
+              "generationGuarantee": {
                 "type": "string"
               },
-              "lineLimit": {
-                "type": "integer"
+              "keysSent": {
+                "type": "boolean"
+              },
+              "matched": {
+                "type": "boolean"
+              },
+              "source": {
+                "enum": [
+                  "baseline",
+                  "output",
+                  "screen"
+                ]
               },
               "target": {
                 "additionalProperties": false,
@@ -812,23 +1096,107 @@
                 "type": "object"
               },
               "terminalContent": {
-                "type": "string"
+                "const": "data"
               },
               "text": {
                 "type": "string"
-              },
-              "truncated": {
-                "type": "boolean"
               }
             },
             "required": [
+              "matched",
+              "source",
               "terminalContent",
-              "encoding",
-              "lineLimit",
+              "evidence",
+              "continuity",
               "text",
-              "truncated",
-              "byteLimit",
+              "generationGuarantee",
+              "keysSent",
               "target"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "error": {
+                "additionalProperties": false,
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "effects": {
+                    "enum": [
+                      "none",
+                      "possible"
+                    ]
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "output": {
+                    "type": "string"
+                  },
+                  "retryable": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "effects",
+                  "retryable"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "error"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      }
+    },
+    "teardown_session": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "generation": {
+            "description": "Valid UTF-8; at most 128 bytes",
+            "maxLength": 128,
+            "type": "string"
+          },
+          "sessionId": {
+            "description": "Valid UTF-8; at most 64 bytes",
+            "maxLength": 64,
+            "type": "string"
+          }
+        },
+        "required": [
+          "sessionId",
+          "generation"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "completed": {
+                "type": "boolean"
+              },
+              "generation": {
+                "type": "string"
+              },
+              "sessionId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "completed",
+              "sessionId",
+              "generation"
             ],
             "type": "object"
           },
@@ -875,7 +1243,7 @@
       }
     }
   },
-  "prompt": "Show me what the first pane is displaying.",
+  "prompt": "Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.",
   "tmuxBefore": {
     "sessions": [
       {
@@ -908,20 +1276,195 @@
   },
   "steps": [
     {
-      "tool": "list_panes",
+      "tool": "create_session",
       "arguments": {
-        "limit": 10
+        "name": "checks",
+        "command": [
+          "sh"
+        ]
       },
       "isError": false,
       "content": [
         {
           "type": "text",
-          "text": "{\"contextsCoverage\":\"all_observed_links\",\"coverage\":\"complete_observed_graph\",\"generationGuarantee\":\"best_effort\",\"nextOffset\":null,\"nextPageToken\":null,\"pagination\":\"verified_discovery_facets\",\"panes\":[{\"active\":true,\"caller\":false,\"command\":\"cat\",\"contexts\":[{\"sessionId\":\"$0\",\"sessionName\":\"docs\",\"windowId\":\"@0\",\"windowIndex\":0,\"windowName\":\"cat\"}],\"contextsTruncated\":false,\"dead\":false,\"fieldsTruncated\":false,\"height\":24,\"target\":{\"generation\":\"3f9a1c\",\"paneId\":\"%0\"},\"title\":\"host\",\"width\":80}],\"terminalContent\":\"data\",\"total\":1,\"truncated\":false}"
+          "text": "{\"completed\":true,\"generation\":\"3f9a1c\",\"ownership\":\"application\",\"panes\":[{\"generation\":\"3f9a1c\",\"paneId\":\"%1\"}],\"sessionId\":\"$1\"}"
         }
       ],
       "structuredContent": {
-        "coverage": "complete_observed_graph",
-        "contextsCoverage": "all_observed_links",
+        "completed": true,
+        "panes": [
+          {
+            "paneId": "%1",
+            "generation": "3f9a1c"
+          }
+        ],
+        "sessionId": "$1",
+        "generation": "3f9a1c",
+        "ownership": "application"
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$1",
+            "name": "checks"
+          },
+          {
+            "id": "$0",
+            "name": "docs"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$1",
+            "id": "@1",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"}}"
+          },
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "cat",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@1",
+            "id": "%1",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
+          },
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "cat",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
+          }
+        ]
+      },
+      "caption": "Create the session."
+    },
+    {
+      "tool": "send_keys",
+      "arguments": {
+        "target": {
+          "paneId": "%1",
+          "generation": "3f9a1c"
+        },
+        "keys": [
+          "tmux split-window -h sh",
+          "Enter"
+        ]
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"completed\":true,\"generationGuarantee\":\"best_effort\",\"target\":{\"generation\":\"3f9a1c\",\"paneId\":\"%1\"}}"
+        }
+      ],
+      "structuredContent": {
+        "completed": true,
+        "generationGuarantee": "best_effort",
+        "target": {
+          "paneId": "%1",
+          "generation": "3f9a1c"
+        }
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$1",
+            "name": "checks"
+          },
+          {
+            "id": "$0",
+            "name": "docs"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$1",
+            "id": "@1",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%1\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%2\"}]}}"
+          },
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "cat",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@1",
+            "id": "%1",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 40,
+            "height": 24,
+            "active": false
+          },
+          {
+            "window": "@1",
+            "id": "%2",
+            "command": "sh",
+            "left": 41,
+            "top": 0,
+            "width": 39,
+            "height": 24,
+            "active": true
+          },
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "cat",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
+          }
+        ]
+      },
+      "caption": "This server has no split tool, so split from inside the pane the create result returned (%1) with tmux itself."
+    },
+    {
+      "tool": "list_panes",
+      "arguments": {
+        "scope": {
+          "sessionId": "$1",
+          "generation": "3f9a1c"
+        }
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"contextsCoverage\":\"selected_session\",\"coverage\":\"session_scope\",\"generationGuarantee\":\"best_effort\",\"nextOffset\":null,\"nextPageToken\":null,\"pagination\":\"verified_discovery_facets\",\"panes\":[{\"active\":false,\"caller\":false,\"command\":\"sh\",\"contexts\":[{\"sessionId\":\"$1\",\"sessionName\":\"checks\",\"windowId\":\"@1\",\"windowIndex\":0,\"windowName\":\"sh\"}],\"contextsTruncated\":false,\"dead\":false,\"fieldsTruncated\":false,\"height\":24,\"target\":{\"generation\":\"3f9a1c\",\"paneId\":\"%1\"},\"title\":\"host\",\"width\":40},{\"active\":true,\"caller\":false,\"command\":\"sh\",\"contexts\":[{\"sessionId\":\"$1\",\"sessionName\":\"checks\",\"windowId\":\"@1\",\"windowIndex\":0,\"windowName\":\"sh\"}],\"contextsTruncated\":false,\"dead\":false,\"fieldsTruncated\":false,\"height\":24,\"target\":{\"generation\":\"3f9a1c\",\"paneId\":\"%2\"},\"title\":\"host\",\"width\":39}],\"terminalContent\":\"data\",\"total\":2,\"truncated\":false}"
+        }
+      ],
+      "structuredContent": {
+        "coverage": "session_scope",
+        "contextsCoverage": "selected_session",
         "terminalContent": "data",
         "nextOffset": null,
         "pagination": "verified_discovery_facets",
@@ -929,15 +1472,39 @@
         "panes": [
           {
             "contextsTruncated": false,
-            "width": 80,
+            "width": 40,
             "caller": false,
             "contexts": [
               {
-                "sessionName": "docs",
-                "windowName": "cat",
+                "sessionName": "checks",
+                "windowName": "sh",
                 "windowIndex": 0,
-                "sessionId": "$0",
-                "windowId": "@0"
+                "sessionId": "$1",
+                "windowId": "@1"
+              }
+            ],
+            "height": 24,
+            "fieldsTruncated": false,
+            "title": "host",
+            "active": false,
+            "dead": false,
+            "command": "sh",
+            "target": {
+              "paneId": "%1",
+              "generation": "3f9a1c"
+            }
+          },
+          {
+            "contextsTruncated": false,
+            "width": 39,
+            "caller": false,
+            "contexts": [
+              {
+                "sessionName": "checks",
+                "windowName": "sh",
+                "windowIndex": 0,
+                "sessionId": "$1",
+                "windowId": "@1"
               }
             ],
             "height": 24,
@@ -945,25 +1512,37 @@
             "title": "host",
             "active": true,
             "dead": false,
-            "command": "cat",
+            "command": "sh",
             "target": {
-              "paneId": "%0",
+              "paneId": "%2",
               "generation": "3f9a1c"
             }
           }
         ],
-        "total": 1,
+        "total": 2,
         "nextPageToken": null,
         "truncated": false
       },
       "tmux": {
         "sessions": [
           {
+            "id": "$1",
+            "name": "checks"
+          },
+          {
             "id": "$0",
             "name": "docs"
           }
         ],
         "windows": [
+          {
+            "session": "$1",
+            "id": "@1",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%1\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%2\"}]}}"
+          },
           {
             "session": "$0",
             "id": "@0",
@@ -974,6 +1553,26 @@
           }
         ],
         "panes": [
+          {
+            "window": "@1",
+            "id": "%1",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 40,
+            "height": 24,
+            "active": false
+          },
+          {
+            "window": "@1",
+            "id": "%2",
+            "command": "sh",
+            "left": 41,
+            "top": 0,
+            "width": 39,
+            "height": 24,
+            "active": true
+          },
           {
             "window": "@0",
             "id": "%0",
@@ -986,34 +1585,221 @@
           }
         ]
       },
-      "caption": "List the panes. Each result carries a target."
+      "caption": "List the panes of the session the create result returned ($1); each carries its position and size."
     },
     {
-      "tool": "capture_pane",
+      "tool": "send_keys_and_wait",
       "arguments": {
         "target": {
-          "paneId": "%0",
+          "paneId": "%1",
           "generation": "3f9a1c"
-        }
+        },
+        "keys": [
+          "pytest -q",
+          "Enter"
+        ],
+        "text": "2 passed"
       },
       "isError": false,
       "content": [
         {
           "type": "text",
-          "text": "{\"byteLimit\":65536,\"encoding\":\"utf-8\",\"lineLimit\":100,\"target\":{\"generation\":\"3f9a1c\",\"paneId\":\"%0\"},\"terminalContent\":\"data\",\"text\":\"2026-01-01 checks started\\n2026-01-01 checks finished\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\",\"truncated\":false}"
+          "text": "{\"continuity\":\"stream\",\"evidence\":\"literal_text\",\"generationGuarantee\":\"best_effort\",\"keysSent\":true,\"matched\":true,\"source\":\"output\",\"target\":{\"generation\":\"3f9a1c\",\"paneId\":\"%1\"},\"terminalContent\":\"data\",\"text\":\"2 passed\"}"
         }
       ],
       "structuredContent": {
+        "matched": true,
+        "source": "output",
         "terminalContent": "data",
-        "encoding": "utf-8",
-        "lineLimit": 100,
-        "text": "2026-01-01 checks started\n2026-01-01 checks finished\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
-        "truncated": false,
-        "byteLimit": 65536,
+        "evidence": "literal_text",
+        "continuity": "stream",
+        "text": "2 passed",
+        "generationGuarantee": "best_effort",
+        "keysSent": true,
         "target": {
-          "paneId": "%0",
+          "paneId": "%1",
           "generation": "3f9a1c"
         }
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$1",
+            "name": "checks"
+          },
+          {
+            "id": "$0",
+            "name": "docs"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$1",
+            "id": "@1",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%1\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%2\"}]}}"
+          },
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "cat",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@1",
+            "id": "%1",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 40,
+            "height": 24,
+            "active": false
+          },
+          {
+            "window": "@1",
+            "id": "%2",
+            "command": "sh",
+            "left": 41,
+            "top": 0,
+            "width": 39,
+            "height": 24,
+            "active": true
+          },
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "cat",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
+          }
+        ]
+      },
+      "caption": "Run the tests in the pane the create result returned (%1) and wait for the summary."
+    },
+    {
+      "tool": "send_keys_and_wait",
+      "arguments": {
+        "target": {
+          "paneId": "%2",
+          "generation": "3f9a1c"
+        },
+        "keys": [
+          "cat checks.log",
+          "Enter"
+        ],
+        "text": "checks finished"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"continuity\":\"stream\",\"evidence\":\"literal_text\",\"generationGuarantee\":\"best_effort\",\"keysSent\":true,\"matched\":true,\"source\":\"output\",\"target\":{\"generation\":\"3f9a1c\",\"paneId\":\"%2\"},\"terminalContent\":\"data\",\"text\":\"checks finished\"}"
+        }
+      ],
+      "structuredContent": {
+        "matched": true,
+        "source": "output",
+        "terminalContent": "data",
+        "evidence": "literal_text",
+        "continuity": "stream",
+        "text": "checks finished",
+        "generationGuarantee": "best_effort",
+        "keysSent": true,
+        "target": {
+          "paneId": "%2",
+          "generation": "3f9a1c"
+        }
+      },
+      "tmux": {
+        "sessions": [
+          {
+            "id": "$1",
+            "name": "checks"
+          },
+          {
+            "id": "$0",
+            "name": "docs"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$1",
+            "id": "@1",
+            "index": 0,
+            "name": "sh",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"l\":0,\"i\":0,\"I\":\"%1\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"a\":true,\"i\":1,\"I\":\"%2\"}]}}"
+          },
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "cat",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@1",
+            "id": "%1",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 40,
+            "height": 24,
+            "active": false
+          },
+          {
+            "window": "@1",
+            "id": "%2",
+            "command": "sh",
+            "left": 41,
+            "top": 0,
+            "width": 39,
+            "height": 24,
+            "active": true
+          },
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "cat",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
+          }
+        ]
+      },
+      "caption": "Show the log in the new pane the list returned (%2) and wait for its last line."
+    },
+    {
+      "tool": "teardown_session",
+      "arguments": {
+        "sessionId": "$1",
+        "generation": "3f9a1c"
+      },
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"completed\":true,\"generation\":\"3f9a1c\",\"sessionId\":\"$1\"}"
+        }
+      ],
+      "structuredContent": {
+        "completed": true,
+        "sessionId": "$1",
+        "generation": "3f9a1c"
       },
       "tmux": {
         "sessions": [
@@ -1045,7 +1831,7 @@
           }
         ]
       },
-      "caption": "Read the pane through the target the list returned (%0)."
+      "caption": "Remove the session by the id the create result returned ($1)."
     }
   ]
 }
