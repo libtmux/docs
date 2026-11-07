@@ -186,10 +186,16 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
     }
 
     // Full screen takes the frame that holds the program, the tmux and the controls, not the choices above it or the setup below.
+    // The program's size follows the width of its own column and its longest line, which a returned value beside it cannot see; it takes the size the program was given.
+    const matchProgramSize = () => {
+      const program = root.querySelector<HTMLElement>(`.home-example-view[data-home-view="${viewName()}"] pre code`)
+      if (program) side.style.setProperty('--core-program-size', getComputedStyle(program).fontSize)
+    }
     const player = bindReplay(root.querySelector<HTMLElement>('.home-example-player')!, {
       body,
       total: () => placed().length,
       render({ shown, pinned }) {
+        matchProgramSize()
         const call = shown === 0 ? undefined : placed()[shown - 1]
         const frame = call ? call.index + 1 : 0
         if (frame !== drawnFrame) clientViews.reset()
@@ -229,6 +235,7 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
       })
     }
     const code = root.querySelector<HTMLElement>('.home-example-stage')!
+    new ResizeObserver(matchProgramSize).observe(code)
     if (canHover) {
       code.addEventListener('mouseover', (event) => {
         const line = (event.target as HTMLElement).closest<HTMLElement>('.ec-line.is-call')
