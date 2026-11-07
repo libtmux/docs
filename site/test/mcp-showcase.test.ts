@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { contractOf, contractsOf, sameContract, sameContracts, type ToolContract } from '../src/lib/mcp-contract'
 import { MCP_REFERENCE, mcpReferenceRoutes } from '../src/lib/mcp-reference'
 import {
-  abbreviate, buildShowcase, CAPABILITY_KEY, transcriptFor, EXAMPLES, mcpShowcase, protocolSnapshot, recordingHolds, showcaseHeadings, TIERS, toolPurposes, toolTier,
+  abbreviate, buildShowcase, CAPABILITY_KEY, transcriptFor, EXAMPLES, mcpShowcase, protocolSnapshot, recordingHolds, showcaseHeadings, TIERS, toolHeadings, toolPurposes, toolTier,
   type McpShowcase, type ProtocolSnapshot, type ProtocolTool, type Transcript,
 } from '../src/lib/mcp-showcase'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
@@ -78,9 +78,11 @@ function resultPaths(schema: Schema | undefined, root: Schema | undefined = sche
     return resultPaths(target, root, at, [...seen, object.$ref])
   }
   const branches: Schema[] = [...(object.anyOf ?? []), ...(object.oneOf ?? []), ...(object.allOf ?? [])]
+  // A result that tags each entry with a `kind` (Ruby's `created` list holds sessions, windows and panes) names it in the path: `created[]<pane>.id`.
+  const kind = typeof object.properties?.kind?.const === 'string' ? `<${object.properties.kind.const}>` : ''
   return [
     ...Object.entries<Schema>(object.properties ?? {}).flatMap(([key, item]) => {
-      const path = at ? `${at}.${key}` : key
+      const path = at ? `${at}${kind}.${key}` : key
       return [path, ...resultPaths(item, root, path, seen)]
     }),
     ...(object.items ? resultPaths(object.items, root, `${at}[]`, seen) : []),
@@ -272,7 +274,7 @@ describe('the worked example', () => {
   it('finds the ids a call uses, in a nested argument too', () => {
     expect(EXAMPLES.ts!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%0', '%0', '%1'])
     expect(EXAMPLES.go!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%0', '%0', '%1', '$0'])
-    expect(EXAMPLES.julia!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%0'])
+    expect(EXAMPLES.julia!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%1', '$1', '%1', '%2', '$1'])
     expect(EXAMPLES.py!.steps.flatMap((step) => idsIn(step.arguments))).toEqual(['%0', '%0', '%1'])
   })
 
@@ -308,11 +310,30 @@ describe('the worked example', () => {
 describe('the overview page', () => {
   const page = readFileSync(new URL('../src/components/docs/DocPage.astro', import.meta.url), 'utf8')
 
-  it('draws the showcase on the MCP overview, after the prose, and lists its headings', () => {
+  it('opens the MCP overview with the worked example, then install, and closes it with the tools', () => {
     expect(page).toContain("const mcpTools = isMcpOverview && port ? await mcpShowcase(port, version ?? buildTarget(process.env).version) : undefined")
-    expect(page).toContain('...(mcpTools ? mcpHeadings(mcpTools) : []),')
-    expect(page.indexOf('<Content />')).toBeLessThan(page.indexOf('<McpShowcase showcase={mcpTools} />'))
+    const example = page.indexOf('<McpShowcase showcase={mcpTools} part="example" />')
+    const install = page.indexOf('<h2 id="install">Install</h2>')
+    const tools = page.indexOf('<McpShowcase showcase={mcpTools} part="tools" />')
+    expect(page.indexOf('productIntro && <ProductIntro parts={productIntro} />'), 'the example follows the intro').toBeLessThan(example)
+    expect(example, 'the example comes before install').toBeLessThan(install)
+    expect(install).toBeLessThan(page.indexOf('placeholderLocale && <Content />'))
+    expect(page.indexOf('placeholderLocale && <Content />'), 'the tool grid follows the prose').toBeLessThan(tools)
     expect(page).toContain('!placeholderLocale && mcpTools && <McpShowcase')
+  })
+
+  it('lists the table of contents in the order the page draws: example, install, prose, tools', () => {
+    const order = ['mcpExampleHeadings(mcpTools)', "slug: 'install'", '...headings,', 'mcpToolHeadings(mcpTools)'].map((needle) => page.indexOf(needle, page.indexOf('headings={placeholderLocale')))
+    expect(order.every((at) => at > 0), 'every list is in the headings prop').toBe(true)
+    expect([...order].sort((a, b) => a - b)).toEqual(order)
+  })
+
+  it('lists the example heading before the tool headings', async () => {
+    for (const port of PORTS) {
+      const slugs = showcaseHeadings(await showcase(port)).map((heading) => heading.slug)
+      expect(slugs[0], port).toBe('worked-example')
+      expect(slugs.slice(1), port).toEqual(toolHeadings(await showcase(port)).map((heading) => heading.slug))
+    }
   })
 })
 
@@ -353,7 +374,8 @@ describe('the showcase section', () => {
 
   it('lists a server that declares no toolsets together, with no badge', async () => {
     const document = await section('ruby')
-    expect(document.querySelector('h2')?.id).toBe('tools')
+    expect(document.querySelector('h2#tools')).not.toBeNull()
+    expect(document.querySelector('h2#tools-by-tier')).toBeNull()
     expect(document.querySelector('.mcp-group__title')).toBeNull()
     expect(document.querySelector('.mcp-tier')).toBeNull()
     expect(document.querySelectorAll('li.mcp-tool')).toHaveLength(onDisk('ruby').protocol.tools.length)
@@ -400,16 +422,15 @@ describe('the showcase section', () => {
     expect(items).toHaveLength(EXAMPLES.julia!.steps.length)
     for (const item of items) expect(item.querySelectorAll('details.mcp-result pre')).toHaveLength(1)
     const provenance = julia.querySelector('.mcp-provenance')?.textContent?.replace(/\s+/g, ' ')
-    expect(provenance).toContain("The server's generation differs on every run. A real call sends the generation list_panes returned, and the server refuses 3f9a1c itself as stale_target; the recording shows the generation as 3f9a1c.")
+    expect(provenance).toContain("The server's generation differs on every run. A real call sends the generation create_session returned, and the server refuses 3f9a1c itself as stale_target; the recording shows the generation as 3f9a1c.")
     expect((await section('ts')).querySelector('.mcp-provenance')?.textContent).not.toMatch(/generation/)
   })
 
-  it('draws the pane the Julia listing names, showing what the capture read', async () => {
+  it('draws the borrowed docs session alone once Julia\'s example removes its own', async () => {
     const julia = await section('julia')
     const frames = [...julia.querySelectorAll('[data-frame]')]
     expect(frames).toHaveLength(EXAMPLES.julia!.steps.length + 1)
     expect(frames.at(-1)!.querySelector('.mcp-pane__id')?.textContent).toBe('%0 cat')
-    expect(frames.at(-1)!.querySelector('.mcp-pane__text')?.textContent).toBe('2026-01-01 checks started\n2026-01-01 checks finished')
     expect(frames.at(-1)!.querySelector('.mcp-tmux__session')?.textContent).toBe('[docs]')
   })
 
@@ -434,7 +455,7 @@ describe('the showcase section', () => {
 describe('recorded results', () => {
   /** Ports whose example runs commands in panes. */
   const RECORDED = ['ts', 'rs', 'go', 'py', 'java', 'csharp', 'cxx', 'swift']
-  /** Every port with a recording; Ruby and Julia's examples only read. */
+  /** Every port with a recording; Julia's example only reads, and Ruby's runs its commands through `tmux_send` and `tmux_wait`. */
   const ALL = [...RECORDED, 'ruby', 'julia']
 
   it('has a recording for the ports whose servers the recorder has run', async () => {
@@ -468,15 +489,32 @@ describe('recorded results', () => {
     })
   })
 
-  it('records Julia reading the log its first pane displays, through the target its own listing returned', async () => {
+  it('records Julia sending each pane the generation its create result returned, and the log in the split pane', async () => {
     const transcript = (await transcriptFor('julia'))!
-    const [listing, capture] = transcript.steps as { structuredContent: any; arguments: any }[]
-    const listed = listing!.structuredContent.panes[0].target
-    expect(capture!.arguments.target, 'the capture names the pane and generation the listing returned').toEqual(listed)
-    expect(capture!.structuredContent.text).toMatch(/checks finished\n/)
-    expect(transcript.sandbox.rewritten?.generation, 'the generation is a fixed stand-in, which the transcript says').toBe(listed.generation)
-    expect(transcript.sandbox.rewritten, 'and says which call listed the real one and how the server refuses the stand-in').toMatchObject({ generationListedBy: 'list_panes', generationRefusedAs: 'stale_target' })
+    const [create, , listing, tests, log] = transcript.steps as { structuredContent: any; arguments: any }[]
+    expect(create!.structuredContent.panes[0], 'the create result returns the pane the later calls name').toEqual({ paneId: '%1', generation: '3f9a1c' })
+    expect(listing!.structuredContent.panes.map((pane: any) => pane.target.paneId).sort()).toEqual(['%1', '%2'])
+    expect(tests!.arguments.target).toEqual(create!.structuredContent.panes[0])
+    expect(log!.structuredContent).toMatchObject({ matched: true, text: 'checks finished', target: { paneId: '%2' } })
+    expect(transcript.sandbox.rewritten?.generation, 'the generation is a fixed stand-in, which the transcript says').toBe('3f9a1c')
+    expect(transcript.sandbox.rewritten, 'and says which call listed the real one and how the server refuses the stand-in').toMatchObject({ generationListedBy: 'create_session', generationRefusedAs: 'stale_target' })
     expect(JSON.stringify(transcript.steps), 'no process id or start time is left in the recording').not.toMatch(/"generation\\?":\\?"\d+:\d+/)
+  })
+
+  const panesPerWindow = (step: { tmux?: { panes: { window: string }[] } }) => Object.values((step.tmux?.panes ?? []).reduce<Record<string, number>>((count, pane) => ({ ...count, [pane.window]: (count[pane.window] ?? 0) + 1 }), {}))
+
+  it('counts a read-only example as one pane per window, so the split check can fail', async () => {
+    const reading = (await transcriptFor('ruby'))!.steps.slice(0, 1)
+    expect(Math.max(...reading.flatMap(panesPerWindow))).toBe(1)
+  })
+
+  it.each(PORTS)('runs the split flow for %s, recorded: two panes in one window, then the session gone', async (port) => {
+    const { example } = await showcase(port)
+    expect(example?.prompt, 'every port answers the shared split prompt').toMatch(/^Create a tmux session called checks, split its window into two panes/)
+    expect(example?.recording, `${port} is not "requests only"`).toBeDefined()
+    const { steps } = (await transcriptFor(port))!
+    expect(Math.max(...steps.flatMap(panesPerWindow)), 'a window holds two panes at some step').toBe(2)
+    expect(steps.at(-1)!.tmux!.sessions.map((session) => session.name), 'the session the example made is gone').not.toContain('checks')
   })
 
   it.each(RECORDED)('records %s printing the test runner\'s result and the log in their panes', async (port) => {
@@ -518,7 +556,7 @@ describe('recorded results', () => {
     const transcript = (await transcriptFor('julia'))!
     const shown = (rewritten: NonNullable<Transcript['sandbox']['rewritten']>) => buildShowcase('julia', 'latest', snapshot, { ...transcript, sandbox: { ...transcript.sandbox, rewritten } }).example!.recording
     const rewritten = transcript.sandbox.rewritten!
-    expect(shown(rewritten)?.generation).toEqual({ token: '3f9a1c', listedBy: 'list_panes', refusedAs: 'stale_target' })
+    expect(shown(rewritten)?.generation).toEqual({ token: '3f9a1c', listedBy: 'create_session', refusedAs: 'stale_target' })
     expect(shown({ ...rewritten, generationRefusedAs: undefined }), 'no refusal').toBeUndefined()
     expect(shown({ ...rewritten, generationListedBy: undefined }), 'no listing call').toBeUndefined()
     expect(shown({ ...rewritten, generationListedBy: 'kill_pane' }), 'a call the session never made').toBeUndefined()
