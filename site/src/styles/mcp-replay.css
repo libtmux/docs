@@ -121,7 +121,7 @@
 .mcp-turn {
   margin: 0 0 var(--mcp-gap);
   padding: 0.25rem 0.5rem;
-  border-inline-start: 2px solid transparent;
+  border-inline-start: 3px solid transparent;
   border-radius: 0.25rem;
 }
 
@@ -138,14 +138,23 @@
   cursor: pointer;
 }
 
-.mcp-replay[data-live] .mcp-turn[data-turn]:not([data-turn='prompt']):hover,
-.mcp-turn[aria-current='step'] {
+.mcp-replay[data-live] .mcp-turn[data-turn]:not([data-turn='prompt']):not([aria-current='step']):hover {
   border-inline-start-color: var(--color-muted);
   background: var(--color-surface-hover);
 }
 
+/* The call the tmux shows: an accent edge, which is what tells it from the rest (a tint alone is too close to the panel), and the tint the Core player gives its current line. */
+.mcp-turn[aria-current='step'] {
+  border-inline-start-color: var(--color-link);
+  background: color-mix(in srgb, var(--color-link) 14%, transparent);
+}
+
 .mcp-turn.is-pinned {
   border-inline-start-color: var(--color-link);
+}
+
+.mcp-turn[aria-current='step'].is-pinned {
+  background: color-mix(in srgb, var(--color-link) 24%, transparent);
 }
 
 /* A call is pinned with a real button at its top right; the state is aria-pressed. */

@@ -395,13 +395,20 @@ describe('the pane drawing', () => {
 describe('the overview page', () => {
   const page = readFileSync(new URL('../src/components/docs/DocPage.astro', import.meta.url), 'utf8')
 
-  it('draws the showcase on the workspace overview, after the prose, and lists its headings', () => {
+  it('draws the showcase on the workspace overview, after the prose behind a picker and first without one, and lists its headings where it stands', () => {
     expect(page).toContain('const workspaceExamples = isWorkspaceOverview && port ? workspaceShowcase(port) : undefined')
-    expect(page).toContain('...(workspaceExamples ? workspaceHeadings(workspaceExamples) : []),')
+    expect(page).toContain('const workspaceExampleLeads = Boolean(workspaceExamples && !offersPicker(workspaceExamples))')
     // A port with one preset renders no picker, so its table of contents lists no "Try a preset" either.
     expect(page).toContain("...(workspaceExamples && offersPicker(workspaceExamples) ? [{ depth: 2, slug: 'try-a-preset', text: 'Try a preset' }] : []),")
-    expect(page.indexOf('<Content />')).toBeLessThan(page.indexOf('<WorkspaceShowcase showcase={workspaceExamples} />'))
-    expect(page).toContain('!placeholderLocale && workspaceExamples && <WorkspaceShowcase')
+    // With no picker to open the page, the one example opens it, before Install; behind a picker it follows the prose.
+    const leads = page.indexOf('{!placeholderLocale && workspaceExamples && workspaceExampleLeads && <WorkspaceShowcase')
+    const follows = page.indexOf('{!placeholderLocale && workspaceExamples && !workspaceExampleLeads && <WorkspaceShowcase')
+    expect(leads).toBeGreaterThan(page.indexOf('<WorkspacePicker showcase={workspaceExamples} />'))
+    expect(leads).toBeLessThan(page.indexOf('<h2 id="install">Install</h2>\n      <p>Install the workspace package'))
+    expect(page.indexOf('<Content />')).toBeLessThan(follows)
+    const toc = page.slice(page.indexOf('headings={'), page.indexOf('pagePath={publicPagePath}'))
+    expect(toc.indexOf('workspaceExampleLeads ? workspaceHeadings')).toBeLessThan(toc.indexOf("slug: 'install'"))
+    expect(toc.indexOf('!workspaceExampleLeads ? workspaceHeadings')).toBeGreaterThan(toc.indexOf('...headings,'))
   })
 })
 

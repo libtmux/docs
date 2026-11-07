@@ -27,6 +27,9 @@ export interface TmuxState { sessions: TmuxSession[]; windows: TmuxWindow[]; pan
 /** The tools that only read tmux. A recording's state after one of them equals the state before it. */
 export const READ_ONLY_TOOLS: ReadonlySet<string> = new Set(['list_sessions', 'list_windows', 'list_panes', 'tmux_snapshot', 'tmux_capabilities', 'get_tmux_variables', 'capture_pane'])
 
+/** The tools that remove what they name, so their result returns ids tmux no longer has: `kill*`, and the `tmux_close` and `teardown_session` of Ruby and Julia. */
+const removes = (tool: string): boolean => tool.startsWith('kill') || tool === 'tmux_close' || tool === 'teardown_session'
+
 type Kind = 'string' | 'number' | 'boolean'
 const FIELDS: Record<keyof TmuxState, { required: Record<string, Kind>; optional?: Record<string, Kind> }> = {
   sessions: { required: { id: 'string', name: 'string' } },
@@ -132,7 +135,7 @@ export function recordingStateProblems(recording: { tmuxBefore?: unknown; steps:
     const after = step.tmux as TmuxState
     const where = `after step ${index + 1} (${step.tool})`
     for (const id of new Set(idsIn(step.arguments))) if (!idsOf(before).has(id)) problems.push(`${where}: the call names ${id}, which tmux did not have before it`)
-    if (!step.tool.startsWith('kill')) for (const id of new Set(idsIn([step.content, step.structuredContent]))) if (!idsOf(after).has(id)) problems.push(`${where}: the result returns ${id}, which tmux does not have after the call`)
+    if (!removes(step.tool)) for (const id of new Set(idsIn([step.content, step.structuredContent]))) if (!idsOf(after).has(id)) problems.push(`${where}: the result returns ${id}, which tmux does not have after the call`)
     if (READ_ONLY_TOOLS.has(step.tool) && JSON.stringify(before) !== JSON.stringify(after)) problems.push(`${where}: ${step.tool} only reads, yet tmux changed`)
     before = after
   })

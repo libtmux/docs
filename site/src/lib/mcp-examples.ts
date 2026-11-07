@@ -102,12 +102,25 @@ export const EXAMPLES: Record<string, ExampleDefinition> = {
     { tool: 'run_shell_command', arguments: { pane_id: '%1', ...SHOW_LOG_COMMAND }, caption: SHOW_LOG },
     { tool: 'kill_session', arguments: { session_id: '$0' }, caption: REMOVE_BY_ID },
   ] },
-  ruby: { prompt: 'List the panes on my tmux server.', steps: [
+  // Ruby's targets carry the server's generation, which differs on every run; the recorder sends the listed one and keeps this token.
+  ruby: { prompt: SPLIT, steps: [
     { tool: 'tmux_capabilities', arguments: {}, caption: 'Ask the server which tools and limits are enabled.' },
-    { tool: 'tmux_snapshot', arguments: { entity: 'pane', limit: 20 }, caption: 'List the panes.' },
+    { tool: 'tmux_create', arguments: { kind: 'session', name: 'checks', argv: ['sh'] }, caption: CREATE },
+    { tool: 'tmux_create', arguments: { kind: 'pane', parent: { kind: 'pane', id: '%1', generation: '3f9a1c' }, direction: 'horizontal', argv: ['sh'] }, caption: 'Split the pane the create result returned (%1) in two.' },
+    { tool: 'tmux_snapshot', arguments: { entity: 'window' }, caption: LAYOUT },
+    { tool: 'tmux_send', arguments: { target: { kind: 'pane', id: '%1', generation: '3f9a1c' }, input: { type: 'text', text: 'pytest -q\n' } }, caption: 'Type the command into the pane the create result returned (%1).' },
+    { tool: 'tmux_wait', arguments: { target: { kind: 'pane', id: '%1', generation: '3f9a1c' }, condition: { type: 'screen_contains', text: '2 passed' }, timeout: 10 }, caption: 'Wait for the test summary in the pane the create result returned (%1).' },
+    { tool: 'tmux_send', arguments: { target: { kind: 'pane', id: '%2', generation: '3f9a1c' }, input: { type: 'text', text: 'cat checks.log\n' } }, caption: 'Type the command into the new pane the split returned (%2).' },
+    { tool: 'tmux_wait', arguments: { target: { kind: 'pane', id: '%2', generation: '3f9a1c' }, condition: { type: 'screen_contains', text: 'checks finished' }, timeout: 10 }, caption: 'Wait for the last line of the log in the pane the split returned (%2).' },
+    { tool: 'tmux_close', arguments: { target: { kind: 'session', id: '$1', generation: '3f9a1c' } }, caption: 'Remove the session by the id the create result returned ($1).' },
   ] },
-  julia: { prompt: 'Show me what the first pane is displaying.', steps: [
-    { tool: 'list_panes', arguments: { limit: 10 }, caption: 'List the panes. Each result carries a target.' },
-    { tool: 'capture_pane', arguments: { target: { paneId: '%0', generation: '3f9a1c' } }, caption: 'Read the pane through the target the list returned (%0).' },
+  // LibTmuxMCP has no split tool, so the split is a tmux command typed into the pane. Its targets carry the server's generation, which differs on every run: the recorder sends the listed one and keeps this token.
+  julia: { prompt: SPLIT, steps: [
+    { tool: 'create_session', arguments: { name: 'checks', command: ['sh'] }, caption: CREATE },
+    { tool: 'send_keys', arguments: { target: { paneId: '%1', generation: '3f9a1c' }, keys: ['tmux split-window -h sh', 'Enter'] }, caption: 'This server has no split tool, so split from inside the pane the create result returned (%1) with tmux itself.' },
+    { tool: 'list_panes', arguments: { scope: { sessionId: '$1', generation: '3f9a1c' } }, caption: 'List the panes of the session the create result returned ($1); each carries its position and size.' },
+    { tool: 'send_keys_and_wait', arguments: { target: { paneId: '%1', generation: '3f9a1c' }, keys: ['pytest -q', 'Enter'], text: '2 passed' }, caption: 'Run the tests in the pane the create result returned (%1) and wait for the summary.' },
+    { tool: 'send_keys_and_wait', arguments: { target: { paneId: '%2', generation: '3f9a1c' }, keys: ['cat checks.log', 'Enter'], text: 'checks finished' }, caption: 'Show the log in the new pane the list returned (%2) and wait for its last line.' },
+    { tool: 'teardown_session', arguments: { sessionId: '$1', generation: '3f9a1c' }, caption: 'Remove the session by the id the create result returned ($1).' },
   ] },
 }

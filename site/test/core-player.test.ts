@@ -267,6 +267,20 @@ describe('the player component', () => {
     expect(document.querySelector('[data-result="1"]')!.textContent).toContain('The call sent no tmux command.')
   })
 
+  it('sets a returned value at the size of the program shown beside it, in each view', async () => {
+    const { document, win } = await mount({ run: true })
+    const side = document.querySelector<HTMLElement>('.core-player__side')!
+    const program = (view: string) => document.querySelector<HTMLElement>(`[data-home-view="${view}"] pre code`)!
+    program('concise').style.fontSize = '12px'
+    program('errors').style.fontSize = '13px'
+    click(win, document.querySelector('[data-mark="1"]')!)
+    expect(side.style.getPropertyValue('--core-program-size')).toBe('12px')
+    const errors = document.querySelector<HTMLInputElement>('[data-example-errors]')!
+    errors.checked = true
+    errors.dispatchEvent(new win.Event('change', { bubbles: true }) as unknown as Event)
+    expect(side.style.getPropertyValue('--core-program-size'), 'the program with error handling is the one shown').toBe('13px')
+  })
+
   it('keeps the recording note behind the info button, and no hint above the program', async () => {
     const { document } = await mount()
     expect(document.querySelector('[data-hint]')).toBeNull()
