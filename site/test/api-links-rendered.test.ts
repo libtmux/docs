@@ -34,14 +34,14 @@ const collected = (href: string) => destinations.has(normalizeAddress(href))
 const PORTS = Object.keys(API_MODELS)
 
 /** Every address on an API host that a tree of Markdown links, and where. */
-function markdownAddresses(markdown: string): string[] {
+function markdownAddresses(markdown: string, tree = fromMarkdown(markdown)): string[] {
   const found: string[] = []
   const walk = (node: any) => {
     if ((node.type === 'link' || node.type === 'definition') && apiHostOf(node.url)) found.push(node.url)
     if (node.type === 'html') for (const match of node.value.matchAll(/href\s*=\s*["']([^"']+)["']/gi)) if (apiHostOf(match[1])) found.push(match[1])
     for (const child of node.children ?? []) walk(child)
   }
-  walk(fromMarkdown(markdown))
+  walk(tree)
   return found
 }
 
@@ -240,7 +240,8 @@ describe('the pages, rendered for each port', () => {
       const pagePort = (page.data.port as string | undefined) || undefined
       for (const build of builds(page)) {
         const markdown = twin(page, build)
-        for (const href of markdownAddresses(markdown)) {
+        const tree = fromMarkdown(markdown)
+        for (const href of markdownAddresses(markdown, tree)) {
           linked += 1
           if (!collected(href) && !missing.has(href)) missing.set(href, where(page, build))
         }
@@ -253,7 +254,7 @@ describe('the pages, rendered for each port', () => {
           }
           for (const child of node.children ?? []) walk(child)
         }
-        walk(fromMarkdown(markdown))
+        walk(tree)
       }
     }
     expect([...missing].map(([href, place]) => `${href} (${place})`)).toEqual([])
@@ -302,16 +303,18 @@ describe('the symbol pages, drawn by the components', () => {
 
   it('draw the types of every symbol with the addresses the index gives them, each one a destination the collector reads', async () => {
     components ??= await apiComponents()
-    const container = await experimental_AstroContainer.create()
     const stray = new Map<string, string>()
     let drawn = 0
     let linked = 0
     for (const [port, model] of Object.entries(API_MODELS)) {
       const index = productApiIndex(model, defaultVersionFor(port))
       for (const symbol of model.symbols) {
+        // Containers retain rendered routes; keep that history within one symbol.
+        let container: experimental_AstroContainer | undefined
         for (const { signature, text } of typeInputs(symbol)) {
           const expected = given(index.linkType(text, symbol, signature))
           if (!expected.size) continue
+          container ??= await experimental_AstroContainer.create()
           const html = await container.renderToString(components.type, { props: { type: text, index, context: symbol, signature } })
           drawn += 1
           for (const href of hostAddresses(html)) {
