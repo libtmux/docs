@@ -33,6 +33,11 @@ assets are ready for the separate port integrations; they do not add routes
 or claim that workspace/MCP consumers are implemented. Clojure's library
 card uses the facade in the Java repository.
 
+Perl includes the same three product sets, with Linguist's `#0298C3` primary
+and neutral reading surfaces. Its library cards describe the repository
+scaffold without an API example. Provenance is recorded in
+[`perl/source.json`](../site/public/brand/perl/source.json).
+
 - [GitHub Linguist colors](https://github.com/github-linguist/linguist/blob/538da05f034fa5c83bd81df128d144e208898da3/lib/linguist/languages.yml)
 - The original libtmux and tmuxp geometry was supplied by the project owner.
 - The MCP overlay uses the symbol, without the wordmark, from the
