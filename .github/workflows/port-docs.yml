@@ -642,6 +642,21 @@ jobs:
             test -s "_site/en/py/$LIBTMUX_DOCS_VERSION/api/api/index.html"
           fi
 
+      - name: Check Perl native model and authored POD links
+        if: matrix.port == 'perl'
+        working-directory: docs
+        env:
+          LIBTMUX_DOCS_TEST_SOURCE_ONLY: '1'
+        run: |
+          time node site/node_modules/vitest/vitest.mjs run --root packages/api-model test/perl.test.ts
+          time node site/node_modules/vitest/vitest.mjs run --root site \
+            test/perl-pod-links.test.ts test/perl-source-usage.test.ts test/source-only-inventory.test.ts
+
+      - name: Check shared TypeScript and Astro types for Perl
+        if: matrix.port == 'perl'
+        working-directory: docs
+        run: time pnpm run --recursive type-check
+
       # The version directory itself: its contents become
       # <locale>/<port>/<version>.
       - id: content
