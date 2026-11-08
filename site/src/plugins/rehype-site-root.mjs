@@ -31,7 +31,12 @@ export function rehypeSiteRoot() {
       if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) return
       const owner = typeof node.properties.dataDocPort === 'string' ? node.properties.dataDocPort : port
       const version = owner === buildPort ? buildTarget(process.env).version : (defaults[owner] || 'latest')
-      node.properties[attr] = attr === 'href' ? proseHref(value, root, owner, version, portRoot) : `${root}${value}`
+      // Badge SVGs ship in every shell's own `public/`, so a port build serves
+      // its guides' badges from its own mount and never depends on the root
+      // build having published the same content hash.
+      const ownMount = attr === 'src' && value.startsWith('/badges/') && owner === buildPort
+      node.properties[attr] = attr === 'href' ? proseHref(value, root, owner, version, portRoot)
+        : ownMount ? `${portRoot}/${owner}/${version}${value}` : `${root}${value}`
     })
   }
 }

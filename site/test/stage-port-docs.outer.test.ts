@@ -8,7 +8,7 @@ import { PORTS } from '../src/lib/ports.ts'
 
 const root = new URL('../../', import.meta.url).pathname
 const cachedRevision = 'a'.repeat(40)
-const files = ['scripts/stage-port-docs.mjs', 'site/src/lib/ports.ts',
+const files = ['scripts/stage-port-docs.mjs', 'scripts/lib/badges.mjs', 'site/src/lib/ports.ts',
   'site/src/lib/site-root.ts', 'site/src/lib/cooldown.ts', 'site/src/lib/port-documentation.ts',
   'site/src/lib/versions.ts']
 const stagedPorts = ['ruby', 'lua', 'powershell', 'julia', 'elixir', 'kotlin', 'scala', 'fsharp']

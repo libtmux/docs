@@ -32,5 +32,8 @@
     "oxlint": "catalog:",
     "smol-toml": "1.9.1",
     "typescript": "catalog:"
+  },
+  "dependencies": {
+    "badge-maker": "6.0.0"
   }
 }
