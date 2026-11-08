@@ -11,9 +11,12 @@ import { PORTS } from '../site/src/lib/ports.ts'
 import { defaultVersionFor, linkedVersionFor } from '../site/src/lib/versions.ts'
 import { sourceGuidesFor, sourceGuideRedirectsFor, stagedSectionsFor, SOURCE_GUIDE_PORTS } from '../site/src/lib/port-documentation.ts'
 import { SymbolIndex, parameterId } from '../packages/api-model/src/link.ts'
+import { BADGE_DIRECTORY, badgesStale, localizeBadges } from './lib/badges.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const output = join(root, 'site/src/content/docs/_staged')
+// Badge SVGs are content-hashed, so every build publishes the same bytes at the same path.
+const badgeOutput = join(root, 'site/public', BADGE_DIRECTORY)
 const selectedPort = process.argv.includes('--port') ? process.argv[process.argv.indexOf('--port') + 1] : undefined
 const check = process.argv.includes('--check')
 const fromSource = process.argv.includes('--from-source')
@@ -172,7 +175,9 @@ export function stagedPortGuides(port, artifact) {
     const linked = port === 'fsharp' && sourcePath === 'docs/fsharp/supported-query-fields.md'
       ? linkSnapshotDepths(body) : body
     const nativeLinked = port === 'julia' ? linkDocumenter(linked, artifact.source) : linked
-    const rewritten = rewriteLinks(nativeLinked, sourcePath, route, linkRoutes, artifact.source.repository, artifact.source.revision, nativeReferenceFiles)
+    const { content: badged, files: badgeFiles } = localizeBadges(nativeLinked, port)
+    for (const [name, svg] of badgeFiles) files.set(name, svg)
+    const rewritten = rewriteLinks(badged, sourcePath, route, linkRoutes, artifact.source.repository, artifact.source.revision, nativeReferenceFiles)
     const data = {
       title,
       description: guide.description ?? `${title}: ${identity.packageName} documentation.`,
@@ -352,20 +357,26 @@ export function run() {
       }
     }
     walk(output)
-    const stale = generated.size !== actual.size || [...generated].some(([file, content]) => actual.get(file) !== content)
+    const isBadge = (file) => file.startsWith(`${BADGE_DIRECTORY}/`)
+    const guides = [...generated].filter(([file]) => !isBadge(file))
+    const badgeStale = badgesStale(generated, badgeOutput)
+    const stale = badgeStale || guides.length !== actual.size || guides.some(([file, content]) => actual.get(file) !== content)
     if (stale) throw new Error('staged port guides are missing or stale; rerun without --check')
   } else {
     if (selectedPort || wrappersOnly) {
       for (const port of selected) rmSync(join(output, port.slug), { recursive: true, force: true })
-    } else rmSync(output, { recursive: true, force: true })
+    } else {
+      rmSync(output, { recursive: true, force: true })
+      rmSync(badgeOutput, { recursive: true, force: true })
+    }
     for (const [file, content] of generated) {
-      const destination = join(output, file)
+      const destination = file.startsWith(`${BADGE_DIRECTORY}/`) ? join(badgeOutput, posix.basename(file)) : join(output, file)
       mkdirSync(dirname(destination), { recursive: true })
       writeFileSync(destination, content)
     }
   }
 
-  console.log(`stage-port-docs: ${generated.size} guides from ${selected.map((port) => port.slug).join(',')}`)
+  console.log(`stage-port-docs: ${[...generated.keys()].filter((file) => !file.startsWith(`${BADGE_DIRECTORY}/`)).length} guides from ${selected.map((port) => port.slug).join(',')}`)
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) run()
