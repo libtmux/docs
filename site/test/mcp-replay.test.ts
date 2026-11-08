@@ -468,13 +468,13 @@ describe('the replay component', () => {
     for (const recorded of [true, false]) {
       const { document } = await mount('ts', { recorded })
       expect(document.querySelector('[data-mcp-replay]')!.classList.contains('not-prose'), `recorded ${recorded}`).toBe(true)
-      expect(document.querySelector('.mcp-provenance')!.classList.contains('not-prose')).toBe(true)
+      expect(document.querySelector('.mcp-provenance'), `recorded ${recorded}`).toBeNull()
     }
-    // The inline-code chip rule ignores not-prose, so the sheet must undo it for both the replay and its provenance line.
+    // The inline-code chip rule ignores not-prose, so the sheet must undo it for the replay.
     const css = readFileSync(new URL('../src/styles/mcp-replay.css', import.meta.url), 'utf8')
-    const reset = /\.mcp-replay code,\s*\.mcp-provenance code \{([^}]*)\}/.exec(css)![1]!
+    const reset = /\.mcp-replay code \{([^}]*)\}/.exec(css)![1]!
     for (const declaration of ['background: none', 'padding: 0', 'color: inherit', 'font-weight: inherit']) expect(reset).toContain(declaration)
-    expect(css).toMatch(/\.mcp-provenance code::after \{\s*content: none/)
+    expect(css).toMatch(/\.mcp-replay code::after \{\s*content: none/)
     const global = readFileSync(new URL('../src/styles/global.css', import.meta.url), 'utf8')
     expect(global, 'the rule being undone still exists; if it learns not-prose, drop the reset').toContain('.prose code:not(pre code)')
   })
@@ -614,18 +614,16 @@ describe('the replay component', () => {
     expect(results.querySelector(`[data-frame="${at}"] .mcp-frame__note`)!.textContent).toBe('After split_window.')
   })
 
-  it('names the part of tmux a listing read, and the provenance says the preview is the recording\'s own tmux server', async () => {
+  it('names the part of tmux a listing read, and adds no note on how the preview was recorded', async () => {
     const { document } = await mount('go')
     const { steps: calls } = await stated('go')
     const listed = calls.findIndex((step) => step.tool === 'list_panes') + 1
     expect(document.querySelector(`[data-frame="${listed}"] .mcp-tmux__screen`)!.className).toContain('is-reading')
     expect(document.querySelector(`[data-frame="${listed}"] .mcp-frame__note`)!.textContent).toBe('tmux after list_panes: unchanged, the call only reads.')
-    const provenance = document.querySelector('.mcp-provenance')!.textContent!.replace(/\s+/g, ' ')
-    expect(provenance).toContain("The preview takes its layout and panes from the recording's own tmux server after each call, and a pane's output from the results of the calls.")
-    expect(provenance, 'it does not claim the whole preview is tmux\'s own').not.toContain("The preview shows the recording's own tmux server")
-    expect(provenance).not.toContain('draws only what those results state')
+    expect(document.querySelector('.mcp-provenance')).toBeNull()
+    expect(document.body.textContent).not.toMatch(/The preview (takes|draws)/)
     const { document: results } = await mount('go', { stateless: true })
-    expect(results.querySelector('.mcp-provenance')!.textContent!.replace(/\s+/g, ' ')).toContain('The preview draws only what those results state.')
+    expect(results.querySelector('.mcp-provenance')).toBeNull()
   })
 
   it('with a reduced-motion preference starts at the end and does not play', async () => {

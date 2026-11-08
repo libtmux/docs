@@ -66,7 +66,7 @@ export async function checkWorkspaceShift(browser, base) {
         starts: window.__starts,
         scrolls: window.__scrolls,
         selected: document.querySelector('libtmux-workspace-picker')?.getAttribute('data-selected'),
-        top: document.getElementById('try-a-preset')?.getBoundingClientRect().top,
+        top: document.getElementById('explore-tmux-layout-workspace-possibilities')?.getBoundingClientRect().top,
       }))
       if (state.shift >= 0.01) {
         // The changed samples within 400 ms either side of each shift, the first being what the page looked like just before.

@@ -407,8 +407,8 @@ describe('the overview page', () => {
   it('draws the showcase on the workspace overview, after the prose behind a picker and first without one, and lists its headings where it stands', () => {
     expect(page).toContain('const workspaceExamples = isWorkspaceOverview && port ? workspaceShowcase(port) : undefined')
     expect(page).toContain('const workspaceExampleLeads = Boolean(workspaceExamples && !offersPicker(workspaceExamples))')
-    // A port with one preset renders no picker, so its table of contents lists no "Try a preset" either.
-    expect(page).toContain("...(workspaceExamples && offersPicker(workspaceExamples) ? [{ depth: 2, slug: 'try-a-preset', text: 'Try a preset' }] : []),")
+    // A port with one preset renders no picker, so its table of contents lists no "Explore tmux layout" either.
+    expect(page).toContain("...(workspaceExamples && offersPicker(workspaceExamples) ? [{ depth: 2, slug: 'explore-tmux-layout-workspace-possibilities', text: 'Explore tmux layout / workspace possibilities' }] : []),")
     // With no picker to open the page, the one example opens it, before Install; behind a picker it follows the prose.
     const leads = page.indexOf('{!placeholderLocale && workspaceExamples && workspaceExampleLeads && <WorkspaceShowcase')
     const follows = page.indexOf('{!placeholderLocale && workspaceExamples && !workspaceExampleLeads && <WorkspaceShowcase')

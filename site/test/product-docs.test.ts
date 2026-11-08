@@ -563,12 +563,12 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       checked++
       // A workspace overview with several presets leads with the preset picker, which stands above the install.
       // An MCP overview with a worked example leads with it, then install: the reader sees the server work before choosing a client.
-      const presets = document.querySelector('article section.ws-picker h2#try-a-preset')
+      const presets = document.querySelector('article section.ws-picker h2#explore-tmux-layout-workspace-possibilities')
       // A workspace overview with one example has no picker, so that example leads, then install.
       const example = page.product === 'mcp'
-        ? document.querySelector('article h2#worked-example')
+        ? document.querySelector('article h2#tmux-through-mcp')
         : presets ? null : document.querySelector('article h2#example-workspaces')
-      const first = presets ? 'try-a-preset' : example ? example.id : 'install'
+      const first = presets ? 'explore-tmux-layout-workspace-possibilities' : example ? example.id : 'install'
       expect(document.querySelector('article h2')?.id, `${page.path} ${first} is the first section`).toBe(first)
       if (presets) expect(presets.compareDocumentPosition(install) & 4, `${page.path} install follows the preset picker`).toBeTruthy()
       if (example) expect(example.compareDocumentPosition(install) & 4, `${page.path} install follows the ${example.id}`).toBeTruthy()

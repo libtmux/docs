@@ -283,14 +283,13 @@ describe('the player component', () => {
     expect(side.style.getPropertyValue('--core-program-size'), 'the program with error handling is the one shown').toBe('13px')
   })
 
-  it('keeps the recording note behind the info button, and no hint above the program', async () => {
+  it('has no info button, popover or noscript note about how the run was recorded, and no hint above the program', async () => {
     const { document } = await mount()
     expect(document.querySelector('[data-hint]')).toBeNull()
-    const button = document.querySelector<HTMLButtonElement>('[data-controls] [popovertarget]')!
-    const note = document.getElementById(button.getAttribute('popovertarget')!)!
-    expect(note.hasAttribute('popover')).toBe(true)
-    expect(note.textContent).toMatch(/Recorded by running this program against/)
-    expect(button.getAttribute('aria-label')).toBe('How this was recorded')
+    expect(document.querySelector('[data-controls] [popovertarget]')).toBeNull()
+    expect(document.querySelector('[popover]')).toBeNull()
+    expect(document.querySelector('.mcp-provenance')).toBeNull()
+    expect(document.body.innerHTML).not.toMatch(/Recorded by running this program|How this was recorded/)
   })
 
   it('is drawn at the state the script first shows, so binding the script changes nothing on screen', async () => {

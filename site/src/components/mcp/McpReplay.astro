@@ -42,8 +42,10 @@ const note = (frame: Frame) => {
   return frame.reading ? `${frame.tool} read the ${frame.reading}; tmux itself is unchanged.` : `After ${frame.tool}.`
 }
 ---
-<Heading id="worked-example">Worked example</Heading>
-<section class={`not-prose mcp-replay${recording ? '' : ' mcp-replay--requests'}`} data-mcp-replay data-steps={total} aria-label="Worked example replay">
+{/* The heading was "Worked example"; links to that anchor still land here. */}
+<span id="worked-example"></span>
+<Heading id="tmux-through-mcp">tmux through MCP</Heading>
+<section class={`not-prose mcp-replay${recording ? '' : ' mcp-replay--requests'}`} data-mcp-replay data-steps={total} aria-label="tmux through MCP replay">
   {recording && (
     <header class="mcp-replay__head" data-head>
       <span class="mcp-replay__title">Replay</span>
@@ -101,20 +103,7 @@ const note = (frame: Frame) => {
   </div>
   {recording && <ReplayControls start="Show tmux before the first call" marks={example.steps.map((step) => `Show the state after ${step.tool.name}`)} />}
 </section>
-{recording ? (
-  <p class="not-prose mcp-provenance">
-    Calls and results are recorded against <a href={`https://github.com/${recording.repo}/tree/${recording.revision}`}><code>{recording.repo}</code></a>
-    at <code>{recording.revision.slice(0, 9)}</code>, on a private {recording.tmux} server{recording.answers.length > 0 && <>, running {recording.runner}</>}.
-    {recording.tmuxState ? "The preview takes its layout and panes from the recording's own tmux server after each call, and a pane's output from the results of the calls." : 'The preview draws only what those results state.'}
-    The agent's narration is illustrative.
-    {recording.documentedRevision && <> This page documents <a href={`https://github.com/${recording.repo}/tree/${recording.documentedRevision}`}><code>{recording.documentedRevision.slice(0, 9)}</code></a>, a different revision. The calls have the same input{recording.outputsChecked && ' and output'} schemas there, but the results at that revision may differ from the recorded ones.</>}
-    {recording.shortened && <> Long values in a result are shortened here; the recording keeps them.</>}
-    {recording.projectDirectory && <> The sandbox's project directory is shown as <code>{recording.projectDirectory}</code>.</>}
-    {recording.generation && <> The server's generation differs on every run. A real call sends the generation <code>{recording.generation.listedBy}</code> returned, and the server refuses <code>{recording.generation.token}</code> itself as <code>{recording.generation.refusedAs}</code>; the recording shows the generation as <code>{recording.generation.token}</code>.</>}
-  </p>
-) : (
-  <p class="not-prose mcp-provenance">Requests only: no recorded results for {portName} yet.</p>
-)}
+{!recording && <p class="not-prose mcp-replay-note">Requests only: no recorded results for {portName} yet.</p>}
 
 <script>
   import { bindReplay } from '../../lib/replay-player'

@@ -331,7 +331,7 @@ describe('the overview page', () => {
   it('lists the example heading before the tool headings', async () => {
     for (const port of PORTS) {
       const slugs = showcaseHeadings(await showcase(port)).map((heading) => heading.slug)
-      expect(slugs[0], port).toBe('worked-example')
+      expect(slugs[0], port).toBe('tmux-through-mcp')
       expect(slugs.slice(1), port).toEqual(toolHeadings(await showcase(port)).map((heading) => heading.slug))
     }
   })
@@ -413,17 +413,27 @@ describe('the showcase section', () => {
     for (const item of items) expect(item.querySelectorAll('details.mcp-result pre')).toHaveLength(1)
     expect(JSON.parse(items[0]!.querySelector('details.mcp-result pre')!.textContent!).paneId, 'the id later calls use comes from this result').toBe('%0')
     expect([...document.querySelectorAll('.mcp-turn--answer q')].map((q) => q.textContent)).toEqual([expect.stringMatching(/^2 passed/), expect.stringMatching(/checks finished$/)])
-    expect(document.querySelector('.mcp-provenance')?.textContent).toMatch(/recorded against.*libtmux\/libtmux-ts.*private tmux/si)
+    expect(document.querySelector('.mcp-provenance'), 'how the recording was made is for the commit that refreshed it').toBeNull()
+    expect(document.body.textContent).not.toMatch(/recorded against|private tmux|illustrative|is shown as|generation differs/i)
   })
 
-  it('tells the reader which token stands in for Julia\'s generation, and says nothing of one for a port without that rewrite', async () => {
+  it('says nothing of the sandbox or of a stand-in generation, for Julia or any port', async () => {
     const julia = await section('julia')
     const items = [...julia.querySelectorAll('article.mcp-turn')]
     expect(items).toHaveLength(EXAMPLES.julia!.steps.length)
     for (const item of items) expect(item.querySelectorAll('details.mcp-result pre')).toHaveLength(1)
-    const provenance = julia.querySelector('.mcp-provenance')?.textContent?.replace(/\s+/g, ' ')
-    expect(provenance).toContain("The server's generation differs on every run. A real call sends the generation create_session returned, and the server refuses 3f9a1c itself as stale_target; the recording shows the generation as 3f9a1c.")
-    expect((await section('ts')).querySelector('.mcp-provenance')?.textContent).not.toMatch(/generation/)
+    expect(julia.querySelector('.mcp-provenance')).toBeNull()
+    expect(julia.body.textContent).not.toMatch(/generation differs|refuses 3f9a1c|stale_target itself/)
+  })
+
+  it('keeps the old worked-example anchor beside the renamed heading', async () => {
+    const document = await section('ts')
+    const heading = document.querySelector('h2#tmux-through-mcp')!
+    expect(heading.textContent).toBe('tmux through MCP')
+    expect(document.querySelector('#worked-example'), 'old links keep landing here').not.toBeNull()
+    expect(document.querySelector('#worked-example')!.nextElementSibling).toBe(heading)
+    expect(document.querySelector('[data-mcp-replay]')!.getAttribute('aria-label')).toBe('tmux through MCP replay')
+    expect(document.body.textContent).not.toContain('Worked example')
   })
 
   it('draws the borrowed docs session alone once Julia\'s example removes its own', async () => {
@@ -439,7 +449,7 @@ describe('the showcase section', () => {
     const document = await section('go', buildShowcase('go', 'latest', onDisk('go')))
     expect(document.querySelectorAll('article.mcp-turn')).toHaveLength(EXAMPLES.go!.steps.length)
     for (const selector of ['details.mcp-result', '[data-frame]', '[data-controls]', '[data-tmux]', '.mcp-turn--answer']) expect(document.querySelector(selector), selector).toBeNull()
-    expect(document.querySelector('.mcp-provenance')?.textContent).toContain('Requests only: no recorded results for Go yet.')
+    expect(document.querySelector('.mcp-replay-note')?.textContent).toBe('Requests only: no recorded results for Go yet.')
   })
 
   it('gives every heading the table of contents lists an id on the page', async () => {
@@ -710,55 +720,21 @@ describe('a recording made at an earlier revision', () => {
     afterEach(async () => {
       for (const win of windows.splice(0)) await win.happyDOM.abort()
     })
-    const provenance = async (snapshot: ProtocolSnapshot, transcript: Transcript) => {
+    const rendered = async (snapshot: ProtocolSnapshot, transcript: Transcript) => {
       const component = await loadAstroTemplate('components/mcp/McpReplay.astro', { real: ['components/replay/TmuxScreen.astro', 'components/replay/ReplayControls.astro'], modules: {
         'astro-expressive-code/components': { Code: createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre>${props.code}</pre>`) },
       } })
       const win = new Window({ url: 'https://libtmux.org/en/' })
       windows.push(win)
       win.document.body.innerHTML = await renderAstroTemplate(component, { props: { example: built('ts', snapshot, transcript).example!, portName: 'TypeScript' } })
-      return win.document.querySelector('.mcp-provenance')!.textContent!.replace(/\s+/g, ' ')
+      return win.document.body.textContent!.replace(/\s+/g, ' ')
     }
 
-    it('names the revision recorded alone when the page documents that revision', async () => {
+    it.each(['same revision', 'f', '0'])('does not tell the reader which revision was recorded or documented (%s)', async (digit) => {
       const transcript = (await transcriptFor('ts'))!
-      const same = await provenance(onDisk('ts'), transcript)
-      expect(same).toContain(`at ${transcript.revision.slice(0, 9)}`)
-      expect(same).not.toContain('This page documents')
-    })
-
-    it.each(['f', '0'])('says plainly that the results are from one revision, the page documents another, the schemas match and the values may differ (documented %s)', async (digit) => {
-      const transcript = (await transcriptFor('ts'))!
-      const text = await provenance({ ...onDisk('ts'), revision: digit.repeat(40) }, transcript)
-      expect(text).toContain(`at ${transcript.revision.slice(0, 9)}`)
-      expect(text).toContain(`This page documents ${digit.repeat(9)}, a different revision.`)
-      expect(text).toContain('The calls have the same input and output schemas there, but the results at that revision may differ from the recorded ones.')
-      expect(text).not.toContain('Requests only')
-      // A snapshot's revision says nothing about which of the two is newer, so neither is called so.
-      expect(text).not.toMatch(/\b(later|newer|earlier|older)\b/)
-    })
-
-    it('claims the input schemas alone when no output schema was recorded', async () => {
-      const transcript = (await transcriptFor('ts'))!
-      const bare = (contract: ToolContract): ToolContract => ({ inputSchema: contract.inputSchema })
-      const unrecorded: Transcript = { ...transcript, contracts: Object.fromEntries(Object.entries(transcript.contracts!).map(([name, contract]) => [name, bare(contract)])) }
-      const snapshot = atHead(onDisk('ts'))
-      const withoutOutputs = { ...snapshot, protocol: { tools: snapshot.protocol.tools.map(({ outputSchema: _output, ...tool }) => tool) } }
-      expect(built('ts', withoutOutputs, unrecorded).example?.recording, 'the recording still holds without them').toBeDefined()
-      const text = await provenance(withoutOutputs, unrecorded)
-      expect(text).toContain('The calls have the same input schemas there')
-      expect(text).not.toMatch(/output schema/i)
-      const full = await provenance(snapshot, transcript)
-      expect(full).toContain('same input and output schemas')
-    })
-
-    it('does not count an output schema that one recorded tool lacks as checked for the rest', async () => {
-      const transcript = (await transcriptFor('ts'))!
-      const [first] = Object.keys(transcript.contracts!)
-      const partial: Transcript = { ...transcript, contracts: { ...transcript.contracts!, [first!]: { inputSchema: transcript.contracts![first!]!.inputSchema } } }
-      const snapshot = changing(atHead(onDisk('ts')), first!, ({ outputSchema: _output, ...tool }) => tool)
-      expect(built('ts', snapshot, partial).example?.recording?.outputsChecked).toBe(false)
-      expect(built('ts', atHead(onDisk('ts')), transcript).example?.recording?.outputsChecked).toBe(true)
+      const text = await rendered(digit === 'same revision' ? onDisk('ts') : { ...onDisk('ts'), revision: digit.repeat(40) }, transcript)
+      expect(text).not.toContain(transcript.revision.slice(0, 9))
+      expect(text).not.toMatch(/a different revision|This page documents|schemas there|Requests only/)
     })
   })
 
