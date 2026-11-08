@@ -9,7 +9,7 @@ import { productApiHref } from '../src/lib/product-api'
  * The page's Qualified name row says a declaration the way the language writes it, in full: Rust spells a path with `::`
  * from its crate and TypeScript names a member by its owner, and every other port already keeps its own spelling in the
  * public id, which must stay as it was. A card's header says it in short: the owner and the member in the language's
- * separator. The page heading still joins them with a dot in every port.
+ * separator. Common Lisp also keeps its package colon in the page heading.
  */
 const symbolNamed = (port: string, id: string) => {
   const symbol = API_MODELS[port].symbols.find((entry) => (entry.publicId ?? entry.id) === id)

@@ -1,6 +1,6 @@
 ---
 /**
- * The bar that says the libraries are released but still change between releases.
+ * Release availability and API stability for the selected library.
  *
  * Sits directly under the header and scrolls away with the page rather than
  * pinning: the header is `sticky top-0`, and a second sticky strip would take
@@ -24,16 +24,19 @@
 interface Props {
   /** Match the root landing page's centered content column. */
   centered?: boolean
+  /** The selected library has no registry release or repository tag. */
+  unreleased?: boolean
 }
-const { centered = false } = Astro.props
+const { centered = false, unreleased = false } = Astro.props
 ---
 
 <div class:list={['prerelease-notice', { 'prerelease-notice--centered': centered }]} data-prerelease-notice>
   <div class="prerelease-notice__inner">
     <p class="prerelease-notice__text">
-      <strong class="prerelease-notice__badge">Early release</strong>
+      <strong class="prerelease-notice__badge">{unreleased ? 'Not released' : 'Early release'}</strong>
       <span>
-        libtmux is released, and its APIs may still change between releases.
+        {unreleased ? 'Install this library from source; its APIs may change.'
+          : 'libtmux is released, and its APIs may still change between releases.'}
         This site's structure and URLs may change too.
       </span>
     </p>

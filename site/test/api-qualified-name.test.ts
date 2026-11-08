@@ -172,7 +172,6 @@ describe('a qualified name as a path to one declaration', () => {
 })
 
 describe('the rows of the source and package disclosure', () => {
-  const model = API_MODELS.rs
   const options = {
     real: ['components/api/ApiType.astro', 'components/api/SymbolName.astro', 'components/api/ApiBadge.astro', 'components/api/ApiQualifiedName.astro'],
     modules: {
@@ -183,7 +182,7 @@ describe('the rows of the source and package disclosure', () => {
   }
 
   /** The real `ApiReference` page of one Rust member, with its shell stubbed. */
-  async function page(id: string) {
+  async function page(id: string, model = API_MODELS.rs) {
     const template = await loadAstroTemplate('components/api/ApiReference.astro', options)
     const win = new Window()
     windows.push(win)
@@ -207,6 +206,11 @@ describe('the rows of the source and package disclosure', () => {
     const name = row(await page('pane.Pane.send_keys'), 'Qualified name')!
     expect(name.querySelector('.api-qualified-name__path')?.textContent).toBe('libtmux::pane::Pane::')
     expect([name.querySelector('.api-qualified-name__leaf')?.textContent, name.querySelector('.api-qualified-name__leaf')?.getAttribute('data-api-kind')]).toEqual(['send_keys', 'method'])
+  })
+
+  it('keeps the Common Lisp package separator in the page heading', async () => {
+    const document = await page('libtmux:fetch-snapshot', API_MODELS.lisp)
+    expect(document.querySelector('h1')?.textContent.trim()).toBe('libtmux:fetch-snapshot')
   })
 })
 

@@ -7,7 +7,8 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import { buildLocale, localeSourcePath } from '../src/i18n/locales'
 import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, repoPath } from '../src/i18n/contribute'
 import { markdownPath } from '../src/lib/markdown-twins'
-import { pageBrand, PORT_BY_SLUG, PORTS, portSourceUrl } from '../src/lib/ports'
+import { pageBrand, PORT_BY_SLUG, PORTS, portSourceUrl, releaseMaturity } from '../src/lib/ports'
+import { registryFor } from '../src/lib/registry'
 import { withPortRoot, withRoot } from '../src/lib/site-root'
 import { buildTarget } from '../src/lib/versions'
 import { renderedTargets } from '../src/lib/inventory-targets'
@@ -36,6 +37,7 @@ beforeAll(async () => {
   const helpers = {
     buildLocale, localeSourcePath, CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, repoPath,
     markdownPath, pageBrand, PORT_BY_SLUG, portSourceUrl, withPortRoot, withRoot, buildTarget, tmuxInventoryVersion,
+    releaseMaturity, registryFor,
   }
   vi.stubGlobal('__prereleaseHelpers', helpers)
   const helperModule = `data:text/javascript,export const {${Object.keys(helpers).join(',')}}=globalThis.__prereleaseHelpers`
@@ -140,6 +142,13 @@ describe('prerelease notice ownership', () => {
     expect(html).toContain('libtmux is released, and its APIs may still change between releases.')
     expect(html).toContain('structure and URLs may change too')
     expect(html).not.toMatch(/alpha/i)
+  })
+
+  it('identifies a source-only port as unreleased', async () => {
+    const html = await render('/en/lisp/latest/', '', 'lisp')
+    expect(html).toContain('Not released')
+    expect(html).toContain('Install this library from source; its APIs may change.')
+    expect(html).not.toContain('libtmux is released')
   })
 
   it('stores dismissal under a key the alpha notice never wrote', () => {
