@@ -8528,6 +8528,13 @@
   },
   {
    "port": "ocaml",
+   "symbol": "Libtmux.Output.event.End",
+   "page": "/ocaml/latest/guides/benchmarking/",
+   "title": "Measure capture, concurrency and output delivery",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
    "symbol": "Libtmux.Plan.panes",
    "page": "/ocaml/latest/guides/queries/",
    "title": "Query captured data",
