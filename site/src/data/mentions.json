@@ -15068,13 +15068,6 @@
   },
   {
    "port": "clojure",
-   "text": "CompletionStage",
-   "page": "/clojure/latest/guides/captures-and-effects/",
-   "line": 374,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "clojure",
    "text": "libtmux.docs.socket",
    "page": "/clojure/latest/guides/getting-started/",
    "line": 37,

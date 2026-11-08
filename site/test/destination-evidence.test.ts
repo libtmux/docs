@@ -246,11 +246,11 @@ describe('destination evidence', () => {
 
       it('names every record dated beyond a day ahead of today, and fails the agreement check on it', () => {
         expect(futureRecords(sameDay, { today: new Date(checked.getTime() - DAY) })).toEqual([])
-        const early = futureRecords(evidence, { today: new Date(checked.getTime() - 3 * DAY) })
+        const early = futureRecords(sameDay, { today: new Date(checked.getTime() - 3 * DAY) })
         expect(early).toHaveLength(evidence.destinations.length)
         expect(early[0]).toMatchObject({ checkedAt: evidence.checkedAt })
         expect(checkEvidence(INVENTORY, sameDay, { manifests, today: checked })).toEqual([])
-        expect(checkEvidence(INVENTORY, evidence, { manifests, today: new Date(checked.getTime() - 3 * DAY) }))
+        expect(checkEvidence(INVENTORY, sameDay, { manifests, today: new Date(checked.getTime() - 3 * DAY) }))
           .toContain(`${evidence.destinations[0]!.url} was checked ${evidence.checkedAt}, which is in the future`)
       })
 

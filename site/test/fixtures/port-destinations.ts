@@ -20,6 +20,9 @@ export interface ExpectedDestinations {
 const github = (url: string, name: string): ExpectedLink => ({ url, label: `${name} on GitHub` })
 
 export const DESTINATIONS: Record<string, ExpectedDestinations> = {
+  clojure: {
+    source: github('https://github.com/libtmux/libtmux-java/tree/master/libtmux-clojure', 'libtmux-java/libtmux-clojure'),
+  },
   py: {
     source: github('https://github.com/tmux-python/libtmux', 'libtmux'),
     registry: { name: 'PyPI', url: 'https://pypi.org/project/libtmux/', icon: 'pypi', label: 'libtmux on PyPI' },

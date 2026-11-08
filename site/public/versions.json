@@ -25,6 +25,30 @@
         "supported": true
       }
     ],
+    "powershell": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "julia": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "elixir": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
     "ts": [
       {
         "slug": "latest",
@@ -50,6 +74,14 @@
       }
     ],
     "java": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "clojure": [
       {
         "slug": "latest",
         "label": "latest",
@@ -104,57 +136,25 @@
         "kind": "trunk",
         "supported": true
       }
-    ],
-    "powershell": [
-      {
-        "slug": "latest",
-        "label": "latest",
-        "kind": "trunk",
-        "supported": true
-      }
-    ],
-    "julia": [
-      {
-        "slug": "latest",
-        "label": "latest",
-        "kind": "trunk",
-        "supported": true
-      }
-    ],
-    "elixir": [
-      {
-        "slug": "latest",
-        "label": "latest",
-        "kind": "trunk",
-        "supported": true
-      }
-    ],
-    "clojure": [
-      {
-        "slug": "latest",
-        "label": "development",
-        "kind": "trunk",
-        "supported": true
-      }
     ]
   },
   "defaultVersion": {
     "py": "latest",
     "ruby": "latest",
     "lua": "latest",
+    "powershell": "latest",
+    "julia": "latest",
+    "elixir": "latest",
     "ts": "latest",
     "rs": "latest",
     "go": "latest",
     "java": "latest",
+    "clojure": "latest",
     "kotlin": "latest",
     "scala": "latest",
     "csharp": "latest",
     "fsharp": "latest",
     "cxx": "latest",
-    "swift": "latest",
-    "powershell": "latest",
-    "julia": "latest",
-    "elixir": "latest",
-    "clojure": "latest"
+    "swift": "latest"
   }
 }

@@ -39,7 +39,7 @@ for (const port of PORT_DEFS) {
 // Match the renderer's external names before considering a cross-port fallback.
 for (const [file, project, baseUrl, langs] of [
   ['python', 'Python', 'https://docs.python.org/3/', ['py']],
-  ['jdk', 'Java SE', 'https://docs.oracle.com/en/java/javase/21/docs/api/', ['java', 'kotlin', 'scala']],
+  ['jdk', 'Java SE', 'https://docs.oracle.com/en/java/javase/21/docs/api/', ['java', 'kotlin', 'scala', 'clojure']],
   ['dom', 'MDN', 'https://developer.mozilla.org/', ['ts']],
   ['julia', 'Julia', 'https://docs.julialang.org/en/v1/', ['julia']],
 ]) {
