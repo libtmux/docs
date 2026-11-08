@@ -58,6 +58,7 @@ jobs:
           echo "powershell=$(jq -r .revision site/src/data/api/powershell.json)" >> "$GITHUB_OUTPUT"
           echo "julia=$(jq -r .revision site/src/data/api/julia.json)" >> "$GITHUB_OUTPUT"
           echo "elixir=$(jq -r .revision site/src/data/api/elixir.json)" >> "$GITHUB_OUTPUT"
+          echo "lisp=$(jq -r .revision site/src/data/api/lisp.json)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v7
         with:
@@ -89,6 +90,12 @@ jobs:
           ref: ${{ steps.integrated-sources.outputs.elixir }}
           path: .port-sources/elixir
           persist-credentials: false
+      - uses: actions/checkout@v7
+        with:
+          repository: libtmux/libtmux-lisp
+          ref: ${{ steps.integrated-sources.outputs.lisp }}
+          path: .port-sources/lisp
+          persist-credentials: false
 
       # The exporter tests compile a fixture with the package's own toolchain:
       # the exact pair the integrated Elixir source pins, read as port-docs.yml
@@ -112,6 +119,7 @@ jobs:
           LIBTMUX_DOCS_CHECKOUT_POWERSHELL: ${{ github.workspace }}/.port-sources/powershell
           LIBTMUX_DOCS_CHECKOUT_JULIA: ${{ github.workspace }}/.port-sources/julia
           LIBTMUX_DOCS_CHECKOUT_ELIXIR: ${{ github.workspace }}/.port-sources/elixir
+          LIBTMUX_DOCS_CHECKOUT_LISP: ${{ github.workspace }}/.port-sources/lisp
         run: |
           node scripts/stage-port-docs.mjs --from-source
           node scripts/stage-port-docs.mjs --cached --check
@@ -131,12 +139,15 @@ jobs:
           PREVIEW_PREFIX: pr-${{ github.event.pull_request.number }}
           LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby
           LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua
+          LIBTMUX_DOCS_CHECKOUT_LISP: ${{ github.workspace }}/.port-sources/lisp
           # PowerShell, Julia and Elixir paths stay scoped to guide staging
           # above, which checks the cache used by ordinary builds. Native API
           # and MCP export freshness remain owning-port checks, not claims of
-          # this root audit. Elixir's exporter tests run in the unit step; its
-          # committed model is derived again by port-docs.yml at publication.
-          LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua,powershell,julia,elixir
+          # this root audit. Common Lisp stays available here so example
+          # sources are checked against the exact revision. Elixir's exporter
+          # tests run in the unit step; each committed model is derived again
+          # by port-docs.yml at publication.
+          LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua,powershell,julia,elixir,lisp
 
       - name: Upload audited preview
         if: github.event_name == 'pull_request'

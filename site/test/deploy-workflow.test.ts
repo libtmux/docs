@@ -12,7 +12,7 @@ const shell = readFileSync(new URL('../../.github/workflows/deploy-shell.yml', i
 const testWorkflow = readFileSync(new URL('../../.github/workflows/test.yml', import.meta.url), 'utf8')
 const publicationAudit = readFileSync(new URL('../../scripts/test-all.sh', import.meta.url), 'utf8')
 const publishRoot = readFileSync(new URL('../../scripts/publish-root.sh', import.meta.url), 'utf8')
-const sourceGuidePorts = ['ruby', 'lua', 'powershell', 'julia', 'elixir']
+const sourceGuidePorts = ['ruby', 'lua', 'powershell', 'julia', 'elixir', 'lisp']
 
 function sourceCheckoutContract(workflow: string): void {
   for (const port of sourceGuidePorts) {
@@ -407,7 +407,7 @@ describe('port publisher contract', () => {
     }
     expect(stage).toContain('node scripts/stage-port-docs.mjs --cached --check')
     expect(stage.indexOf('--cached --check')).toBeGreaterThan(stage.indexOf('--from-source'))
-    for (const port of ['ruby', 'lua']) {
+    for (const port of ['ruby', 'lua', 'lisp']) {
       expect(audit).toContain(`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}: ` + '${{ github.workspace }}/.port-sources/' + port)
     }
     expect(audit).not.toMatch(/LIBTMUX_DOCS_CHECKOUT_(POWERSHELL|JULIA|ELIXIR):/)
