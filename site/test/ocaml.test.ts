@@ -1,9 +1,24 @@
 import { expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { parseFrontmatter } from '@astrojs/markdown-remark'
 import { PORT_BY_SLUG, productAvailable } from '../src/lib/ports'
 import { usesNativeSignatures, nativeSignatureText } from '../src/lib/api-sections'
 import { API_MODELS } from '../src/lib/api-models'
 import { navSidecar } from '../../packages/api-model/src/nav-sidecar'
 import { SymbolIndex } from '@libtmux/api-model'
+import { docsPath } from '../src/lib/docs-paths'
+
+it('publishes authored overviews at their advertised section routes', () => {
+  for (const [file, route] of [
+    ['concepts/index.md', 'concepts'], ['examples/index.md', 'examples'],
+    ['topics/index.md', 'topics'], ['workspace/reference.md', 'workspace/reference'],
+  ]) {
+    const source = readFileSync(new URL(`../src/content/docs/ports/ocaml/${file}`, import.meta.url), 'utf8')
+    const { frontmatter } = parseFrontmatter(source, { frontmatter: 'remove' })
+    const id = `ports/ocaml/${file}`.replace(/\.md$/, '').replace(/\/index$/, '')
+    expect(docsPath({ id, data: frontmatter }), file).toBe(route)
+  }
+})
 
 it('resolves authored odoc references from every exported public declaration', () => {
   const model = API_MODELS.ocaml!

@@ -8388,6 +8388,13 @@
   },
   {
    "port": "ocaml",
+   "symbol": "Libtmux_json",
+   "page": "/ocaml/latest/workspace/reference/",
+   "title": "OCaml workspace API reference",
+   "section": "ports"
+  },
+  {
+   "port": "ocaml",
    "symbol": "Libtmux_json.Workspace.of_string",
    "page": "/ocaml/latest/workspace/source-guide/",
    "title": "Workspace guide",
@@ -8427,6 +8434,13 @@
    "page": "/ocaml/latest/guides/packages/",
    "title": "Choose the packages your application needs",
    "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_workspace",
+   "page": "/ocaml/latest/workspace/reference/",
+   "title": "OCaml workspace API reference",
+   "section": "ports"
   },
   {
    "port": "ocaml",

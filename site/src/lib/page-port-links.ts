@@ -92,7 +92,7 @@ export function pagePortLinks({
   const entries = own?.data.equivalence
     ? docs.filter((entry) => entry.data.equivalence === own.data.equivalence && entry.data.product === own.data.product)
     : paths.flatMap((candidate) => docs.filter((entry) => docsPath(entry) === candidate || entry.data.aliases?.includes(candidate)))
-  const product = /^(mcp|workspace)\//.exec(path)?.[1] as 'mcp' | 'workspace' | undefined
+  const product = /^(mcp|workspace)(?:\/|$)/.exec(path)?.[1] as 'mcp' | 'workspace' | undefined
   const protocol = /^mcp\/(tools|prompts|resources)(?:\/(.+))?$/.exec(path)
   const object = protocol && portSlug ? mcpObjectAt(portSlug, protocol[1] as McpSection, protocol[2]) : undefined
 
@@ -139,7 +139,7 @@ export function pagePortLinks({
     } else if (protocol && !protocol[2]) {
       if (productAvailable(port, 'mcp') && MCP_REFERENCE[port.slug]) links = [{ href: portPageUrl(port, targetVersion, path) }]
     } else if (!port.parentLibrary && (SHARED_PAGE_PATHS as readonly string[]).includes(path)) {
-      links = [{ href: portPageUrl(port, targetVersion, path) }]
+      if (!product || productAvailable(port, product)) links = [{ href: portPageUrl(port, targetVersion, path) }]
     } else {
       const eligible = entries.filter((entry) => docsEntryAvailable(entry, port.slug)
         && (!product || productAvailable(port, product)))

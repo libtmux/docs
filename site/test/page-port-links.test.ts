@@ -46,6 +46,18 @@ describe('prose route ownership', () => {
 })
 
 describe('reference picker exits', () => {
+  it('keeps an excluded MCP product out of shared-page language links', () => {
+    for (const pagePath of ['mcp', 'mcp/tools']) {
+      const entries = pagePortLinks({ ...options, pagePath, portSlug: 'ts' })
+      expect(entries.find((entry) => entry.port === 'ocaml')).toMatchObject({
+        links: [], home: { href: '/pr-42/en/ocaml/latest/', label: 'Go to OCaml home' },
+      })
+      expect(entries.find((entry) => entry.port === 'ts')?.links).toEqual([
+        { href: `/pr-42/en/ts/v1.2.3/${pagePath}/` },
+      ])
+    }
+  })
+
   it('keeps missing equivalents distinct from product and language home shortcuts', () => {
     const entries = pagePortLinks({ ...options, pagePath: 'mcp/reference/libtmux-mcp-arguments', portSlug: 'cxx' })
     expect(entries.find((entry) => entry.port === 'rs')).toMatchObject({
