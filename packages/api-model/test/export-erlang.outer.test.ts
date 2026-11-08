@@ -1,7 +1,8 @@
 import { execFileSync, spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, relative } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 const script = new URL('../scripts/export-erlang.escript', import.meta.url).pathname
@@ -39,6 +40,7 @@ describe.skipIf(!available)('Erlang compiler export', { timeout: 30_000 }, () =>
       const artifact = JSON.parse(readFileSync(join(directory, '_build/api.json'), 'utf8'))
       expect(artifact).toMatchObject({ schema: 1, port: 'erlang', source: { repository: 'libtmux/probe', revision }, package: { name: 'probe', version: '0.1.0' } })
       expect(artifact.source.files.map((file: { path: string }) => file.path)).toContain('src/probe.erl')
+      expect(artifact.exporter.source_sha256).toBe(createHash('sha256').update(readFileSync(script)).digest('hex'))
       const module = artifact.modules[0]
       expect(module.name).toBe('probe')
       expect(module.doc).toContain('`m:probe` and `read/1`')
@@ -47,6 +49,11 @@ describe.skipIf(!available)('Erlang compiler export', { timeout: 30_000 }, () =>
       expect(member('function', 'double')).toMatchObject({ arity: 1, since: '0.1.0', deprecated: 'Use a calculator.', source: { file: 'src/probe.erl' } })
       expect(member('function', 'double').declarations.join('')).toContain('float()')
       expect(member('function', 'double').declarations.join('')).toContain('integer()')
+      expect(member('function', 'double').specs).toEqual([
+        expect.objectContaining({ parameters: [{ name: 'Number', type: 'integer()' }], returns: 'integer()' }),
+        expect.objectContaining({ parameters: [{ name: 'Number', type: 'float()' }], returns: 'float()' }),
+      ])
+      expect(member('type', 'λ-handle').display_name).toBe("'λ-handle'")
       expect(member('type', 'handle')).toMatchObject({ visibility: 'opaque', declarations: ['-opaque handle().'] })
       expect(JSON.stringify(artifact)).not.toContain('private_token')
       expect(member('type', 'id').declarations.join('')).toContain('-nominal id()')
@@ -59,7 +66,9 @@ describe.skipIf(!available)('Erlang compiler export', { timeout: 30_000 }, () =>
       expect(module.records[0].declaration).toContain('-record #row{')
       expect(module.members.every((m: { source: { line: number } }) => m.source.line > 0)).toBe(true)
       const first = readFileSync(join(directory, '_build/api.json'), 'utf8')
-      const repeat = exportFrom(directory)
+      const repository = new URL('../../../', import.meta.url).pathname
+      const repeat = spawnSync('escript', [relative(repository, script), relative(repository, directory), 'probe', join(directory, '_build/api.json')],
+        { cwd: repository, encoding: 'utf8', env })
       expect(repeat.status, repeat.stderr).toBe(0)
       expect(readFileSync(join(directory, '_build/api.json'), 'utf8')).toBe(first)
     } finally { rmSync(directory, { recursive: true, force: true }) }

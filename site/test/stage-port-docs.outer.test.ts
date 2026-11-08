@@ -12,9 +12,9 @@ const cachedRevision = 'a'.repeat(40)
 const files = ['scripts/stage-port-docs.mjs', 'scripts/lib/badges.mjs', 'site/src/lib/ports.ts',
   'site/src/lib/site-root.ts', 'site/src/lib/cooldown.ts', 'site/src/lib/port-documentation.ts',
   'site/src/lib/versions.ts']
-const stagedPorts = SOURCE_GUIDE_PORTS['ruby', 'lua', 'powershell', 'julia', 'elixir', 'haskell''clojure''lisp', 'kotlin', 'scala', 'fsharp', 'perl']
+const stagedPorts = SOURCE_GUIDE_PORTS
 
-function fixture(slug: 'ruby' | 'lua' | 'kotlin' | 'ocaml''haskell', run: (fixture: {
+function fixture(slug: 'ruby' | 'lua' | 'kotlin' | 'ocaml', 'haskell', run: (fixture: {
   directory: string; checkout: string; revision: string;
   write: (path: string, value: string) => void;
   artifact: (port: string, revision: string, label: string) => string;
@@ -87,7 +87,7 @@ it('leaves the preview mount to Markdown while selecting the parent API version'
   })
 })
 
-it.each(['ruby', 'lua', 'kotlin', 'ocaml''haskell'] as const)('stages other caches before accepting only the selected %s source', (slug) => {
+it.each(['ruby', 'lua', 'kotlin', 'ocaml', 'haskell'] as const)('stages other caches before accepting only the selected %s source', (slug) => {
   fixture(slug, ({ directory, checkout, revision, write, artifact, invoke }) => {
     const staged = join(directory, 'site/src/content/docs/_staged')
     const cache = join(directory, `site/src/data/port-guides/${slug}.json`)

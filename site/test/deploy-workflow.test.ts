@@ -12,7 +12,7 @@ const shell = readFileSync(new URL('../../.github/workflows/deploy-shell.yml', i
 const testWorkflow = readFileSync(new URL('../../.github/workflows/test.yml', import.meta.url), 'utf8')
 const publicationAudit = readFileSync(new URL('../../scripts/test-all.sh', import.meta.url), 'utf8')
 const publishRoot = readFileSync(new URL('../../scripts/publish-root.sh', import.meta.url), 'utf8')
-const sourceGuidePorts = ['ruby', 'lua', 'powershell', 'julia', 'elixir', 'ocaml''haskell''perl''lisp']
+const sourceGuidePorts = ['ruby', 'lua', 'powershell', 'julia', 'elixir', 'ocaml', 'haskell', 'perl', 'lisp']
 
 function sourceCheckoutContract(workflow: string): void {
   const body = /- name: Resolve integrated guide sources\n\s+id: integrated-sources\n\s+run: \|\n((?: {10}[^\n]*\n|\n)*)/.exec(workflow)?.[1]?.replace(/^ {10}/gm, '')
@@ -456,7 +456,7 @@ describe('port publisher contract', () => {
     }
     expect(stage).toContain('node scripts/stage-port-docs.mjs --cached --check')
     expect(stage.indexOf('--cached --check')).toBeGreaterThan(stage.indexOf('--from-source'))
-    for (const port of ['ruby', 'lua', 'ocaml''lisp']) {
+    for (const port of ['ruby', 'lua', 'ocaml', 'lisp']) {
       expect(audit).toContain(`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}: ` + '${{ github.workspace }}/.port-sources/' + port)
     }
     expect(audit).not.toMatch(/LIBTMUX_DOCS_CHECKOUT_(POWERSHELL|JULIA|ELIXIR|HASKELL|PERL):/)

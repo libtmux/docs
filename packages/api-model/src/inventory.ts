@@ -41,6 +41,7 @@ const DOMAIN: Record<PortSlug, string> = {
   elixir: 'std',
   haskell: 'std',
   lisp: 'std',
+  erlang: 'std',
   cxx: 'cpp',
   ts: 'js',
   rs: 'std',

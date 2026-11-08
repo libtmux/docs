@@ -210,7 +210,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const port = 'port' in model ? model.port : undefined
   const language = 'language' in model ? model.language : port
   const index = ctx.index ?? (port && 'port' in model ? productApiIndex(model, ctx.version ?? defaultVersionFor(port)) : undefined)
-  const prose = (text: string, context = symbol) => index ? proseMarkdown(text, index, context, ['perl', 'powershell', 'scala', 'ts', 'ocaml''haskell'].includes(language ?? ''), language) : text
+  const prose = (text: string, context = symbol) => index ? proseMarkdown(text, index, context, ['perl', 'powershell', 'scala', 'ts', 'ocaml', 'haskell'].includes(language ?? ''), language) : text
   const id = qualifiedNameOf(symbol)
   const out: string[] = [`# ${id}`, '']
   const info = port ? PORT_BY_SLUG[port] : undefined

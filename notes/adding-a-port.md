@@ -214,16 +214,20 @@ $ escript packages/api-model/scripts/export-erlang.escript \
     ../libtmux-erlang/_build/docs/api.json
 ```
 
-The artifact records the source commit, tracked input hashes and OTP version.
+The artifact records the source commit, tracked input hashes, OTP version and
+exporter source digest.
 It retains native module, function, type and callback documentation, typespecs,
 nominal types, supporting non-exported types and exported native records.
 Source locations follow included headers. Opaque declarations expose their
 name and parameters. Hidden modules and members stay out. Dirty sources,
 missing compiler chunks and ambiguous source paths fail the export.
 
-This artifact is preparation for an Erlang model adapter. Erlang has no shared
-site routes or package destinations until that adapter and the port's delivery
-checks are complete. The compiler fixture runs in the outer test loop; it
+`extractErlang` maps the artifact to the shared API model. The compiler supplies
+callable parameters, return types, overload clauses and quoted atom spellings.
+The model retains native arities, supporting types and distinct type/callback
+identities. Native `m:`, `t:` and `c:` references resolve within their module.
+Erlang has no shared site routes or package destinations until the port's
+delivery checks are complete. The compiler fixture runs in the outer test loop; it
 requires OTP 29 and Rebar3 on CI and skips locally when that toolchain is absent.
 
 ### Wrapper libraries
