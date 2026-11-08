@@ -16,8 +16,13 @@ describe('Erlang compiler artifact adapter', () => {
     expect(result.nativeProvenance?.files).toEqual(fixture.source.files)
     expect(fixture.exporter.source_sha256).toBe(createHash('sha256')
       .update(readFileSync(new URL('../scripts/export-erlang.escript', import.meta.url))).digest('hex'))
+    for (const file of fixture.source.files) {
+      expect(file.sha256).toBe(createHash('sha256')
+        .update(readFileSync(new URL(`./fixtures/erlang-project/${file.path}`, import.meta.url))).digest('hex'))
+    }
     expect(symbol('probe:double/1')).toMatchObject({ name: 'double/1', parent: 'probe', kind: 'function' })
-    expect(symbol('probe:double/1').signatures.map((signature) => signature.params)).toEqual([
+    expect(symbol('probe:double/1').signatures.map((signature) =>
+      signature.params.map(({ name, type }) => ({ name, type })))).toEqual([
       [{ name: 'Number', type: 'integer()' }], [{ name: 'Number', type: 'float()' }],
     ])
     expect(symbol('probe:double/1').modifiers).toContain('overload')
@@ -69,5 +74,65 @@ describe('Erlang compiler artifact adapter', () => {
     const parameter = structuredClone(fixture)
     delete parameter.modules[0].members.find((member: { kind: string; arity: number }) => member.kind === 'function' && member.arity > 0).specs[0].parameters[0].type
     expect(() => extractErlang(parameter)).toThrow(/signature/)
+  })
+
+  it('links compiler type ranges by native arity and namespace without rewriting text', () => {
+    const result = model()
+    const index = new SymbolIndex(result.symbols, (symbol) => `/reference/${encodeURIComponent(symbol.id)}`, 'erlang')
+    const read = result.symbols.find((symbol) => symbol.id === 'probe:read/1')!
+    const handle = result.symbols.find((symbol) => symbol.id === 'probe:handle/0')!
+    expect(index.linkType(read.signatures[0]!.params[0]!.type!, read)
+      .filter((span) => span.link).map((span) => span.link?.symbol?.id)).toEqual(['t:probe:handle/0'])
+    const handleSpans = index.linkType(handle.signatures[0]!.raw!, handle, handle.signatures[0])
+    expect(handleSpans.filter((span) => span.link).map((span) => span.link?.symbol?.id)).toEqual(['t:probe:handle/0'])
+    const links = result.symbols.find((symbol) => symbol.id === 'probe:links/1')!
+    const signature = links.signatures[0]!
+    const spans = index.linkType(signature.raw!, links, signature)
+    expect(spans.map((span) => span.text).join('')).toBe(signature.raw)
+    expect(spans.filter((span) => span.link?.symbol).map((span) => span.link!.symbol!.id)).toEqual([
+      't:probe:container/3', 't:probe:box/0', '#probe:row{}',
+      't:probe:box/0', "t:probe:'🧭'/0", "t:probe:'a::b'/0", 't:probe:box/1',
+    ])
+    expect(spans.find((span) => span.link?.href.includes('/kernel/file.html'))?.text).toBe('file:filename_all')
+    expect(spans.find((span) => span.link?.symbol?.id === "t:probe:'🧭'/0")?.text).toBe("'🧭'")
+    expect(spans.find((span) => span.link?.symbol?.id === '#probe:row{}')?.text).toBe('#probe:row')
+    expect(spans.filter((span) => span.link).some((span) => span.text.includes('literal'))).toBe(false)
+    expect(spans.filter((span) => span.link).some((span) => span.text.includes('__libtmux_record'))).toBe(false)
+    const unresolved = result.symbols.find((symbol) => symbol.id === 't:probe:unresolved/0')!
+    expect(index.linkType(unresolved.signatures[0]!.raw!, unresolved)
+      .find((span) => span.text === 'file:no_such_type')?.link).toBeUndefined()
+  })
+
+  it('retains the workspace application product boundary', () => {
+    const workspace = structuredClone(fixture)
+    workspace.package.name = 'libtmux_erlang_workspace'
+    expect(extractErlang(workspace).symbols.every((symbol) => symbol.product === 'workspace' &&
+      symbol.package === 'libtmux_erlang_workspace')).toBe(true)
+    expect(model().symbols.every((symbol) => symbol.product === 'core')).toBe(true)
+  })
+
+  it('rejects malformed, overlapping, surrogate-splitting and unsafe external reference ranges', () => {
+    const changed = (mutate: (input: typeof fixture) => void) => {
+      const input = structuredClone(fixture)
+      mutate(input)
+      return () => extractErlang(input)
+    }
+    const read = (input: typeof fixture) => input.modules[0].members.find((member: { name: string }) => member.name === 'read')
+    expect(changed((input) => { delete read(input).specs[0].parameters[0].references })).toThrow(/references/)
+    expect(changed((input) => { read(input).specs[0].references[1].start = 0 })).toThrow(/ranges/)
+    expect(changed((input) => { read(input).specs[0].parameters[0].references[0].end = 999 })).toThrow(/ranges/)
+    expect(changed((input) => {
+      const spec = input.modules[0].members.find((member: { name: string }) => member.name === 'links').specs[0]
+      const at = spec.parameters[0].type.indexOf('🧭')
+      expect(at).toBeGreaterThan(0)
+      spec.parameters[0].references = [{ start: at + 1, end: at + 2, target: "t:probe:'🧭'/0" }]
+    })).toThrow(/ranges/)
+    expect(changed((input) => {
+      read(input).specs[0].parameters[0].references[0].external = { href: 'javascript:alert(1)', project: 'Erlang/OTP' }
+    })).toThrow(/destination/)
+    expect(changed((input) => {
+      input.modules[0].members.find((member: { name: string; kind: string }) => member.name === 'handle' && member.kind === 'type')
+        .declaration_references[0] = [{ start: 8, end: 14, target: 't:probe:private/0' }]
+    })).toThrow(/opaque/)
   })
 })

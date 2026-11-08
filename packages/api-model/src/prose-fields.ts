@@ -61,6 +61,9 @@ export const STRUCTURAL_FIELDS: string[] = [
   '.signatures[].receiver.*', '.signatures[].raises[].type',
   '.signatures[].params[].name', '.signatures[].params[].type', '.signatures[].params[].default', '.signatures[].params[].variadic',
   '.signatures[].params[].since', '.signatures[].params[].deprecated',
+  '.signatures[].references[].target', '.signatures[].references[].external.*',
+  '.signatures[].returnsReferences[].target', '.signatures[].returnsReferences[].external.*',
+  '.signatures[].params[].typeReferences[].target', '.signatures[].params[].typeReferences[].external.*',
   // A command's facts and a parameter's binding are written into prose by `commandFacts` and `parameterBindingText`.
   '.command.confirmImpact', '.command.defaultParameterSet', '.command.kind', '.command.outputTypes[]',
   '.command.inputTypes[].type', '.command.inputTypes[].description', '.command.relatedLinks[].*',

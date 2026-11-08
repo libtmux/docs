@@ -80,11 +80,22 @@ export type Modifier =
   | 'unsafe'
   | 'annotation'
 
+/** A compiler-resolved name in exact annotation text; offsets use UTF-16 code units. */
+export interface TypeReference {
+  start: number
+  end: number
+  /** Native symbol identity, including its namespace and arity where applicable. */
+  target: string
+  /** A provider-validated canonical language-library destination. */
+  external?: { href: string; project: string }
+}
+
 /** One parameter, as written. */
 export interface Param {
   name: string
   /** Type annotation verbatim from the source, unresolved. */
   type?: string
+  typeReferences?: TypeReference[]
   /** Default value verbatim, when one is written. */
   default?: string
   /** The caller may omit the parameter without supplying a default. */
@@ -169,12 +180,15 @@ export interface Signature {
   extension?: string
   /** Native signature text when its grammar carries more than the shared fields. */
   raw?: string
+  /** References into `raw`, supplied by the native compiler rather than inferred from spelling. */
+  references?: TypeReference[]
   /** Native impl or trait header that owns this callable, without its body. */
   enclosingDeclaration?: string
   /** Lexical bindings from that impl or trait, separate from callable generics. */
   enclosingTypeParamNames?: string[]
   params: Param[]
   returns?: string
+  returnsReferences?: TypeReference[]
   returnsDoc?: string
   /** Type parameters / generics, as written: `T`, `T: Clone`, `<T extends X>`. */
   typeParams?: string[]

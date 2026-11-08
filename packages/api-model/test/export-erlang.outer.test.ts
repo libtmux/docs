@@ -45,14 +45,42 @@ describe.skipIf(!available)('Erlang compiler export', { timeout: 30_000 }, () =>
       expect(module.name).toBe('probe')
       expect(module.doc).toContain('`m:probe` and `read/1`')
       const member = (kind: string, name: string) => module.members.find((m: { kind: string; name: string }) => m.kind === kind && m.name === name)
+      const parameter = member('function', 'read').specs[0].parameters[0]
+      expect(parameter.references).toEqual([
+        { start: 0, end: 6, target: 't:probe:handle/0' },
+      ])
+      expect(member('type', 'handle').declaration_references).toEqual([[]])
       expect(member('function', 'hidden')).toBeUndefined()
+      expect(member('function', 'wide').specs[0].text.split('\n')
+        .every((line: string) => Array.from(line).length <= 60)).toBe(true)
       expect(member('function', 'double')).toMatchObject({ arity: 1, since: '0.1.0', deprecated: 'Use a calculator.', source: { file: 'src/probe.erl' } })
       expect(member('function', 'double').declarations.join('')).toContain('float()')
       expect(member('function', 'double').declarations.join('')).toContain('integer()')
       expect(member('function', 'double').specs).toEqual([
-        expect.objectContaining({ parameters: [{ name: 'Number', type: 'integer()' }], returns: 'integer()' }),
-        expect.objectContaining({ parameters: [{ name: 'Number', type: 'float()' }], returns: 'float()' }),
+        expect.objectContaining({ parameters: [expect.objectContaining({ name: 'Number', type: 'integer()' })], returns: 'integer()' }),
+        expect.objectContaining({ parameters: [expect.objectContaining({ name: 'Number', type: 'float()' })], returns: 'float()' }),
       ])
+      const linked = member('function', 'links').specs[0]
+      const parameterTargets = linked.parameters[0].references.map((ref: { target: string }) => ref.target)
+      expect(parameterTargets).toEqual([
+        't:probe:container/3', 't:probe:box/0', '#probe:row{}',
+        't:probe:box/0', "t:probe:'🧭'/0",
+      ])
+      const returned = linked.returns_references
+      expect(returned.map((ref: { target: string }) => ref.target)).toEqual([
+        "t:probe:'a::b'/0", 't:probe:box/1', 't:erlang:term/0', 't:file:filename_all/0',
+      ])
+      expect(returned.at(-1).external).toEqual({
+        href: 'https://www.erlang.org/doc/apps/kernel/file.html#t:filename_all/0',
+        project: 'Erlang/OTP',
+      })
+      expect(member('type', 'unresolved').declaration_references[0]).toEqual([
+        expect.objectContaining({ target: 't:file:no_such_type/0' }),
+      ])
+      expect(member('type', 'unresolved').declaration_references[0][0].external).toBeUndefined()
+      for (const ref of returned) {
+        expect(linked.returns.slice(ref.start, ref.end)).not.toContain('literal')
+      }
       expect(member('type', 'λ-handle').display_name).toBe("'λ-handle'")
       expect(member('type', 'handle')).toMatchObject({ visibility: 'opaque', declarations: ['-opaque handle().'] })
       expect(JSON.stringify(artifact)).not.toContain('private_token')
@@ -88,5 +116,24 @@ describe.skipIf(!available)('Erlang compiler export', { timeout: 30_000 }, () =>
       expect(failure.stderr).toContain('compiler chunks')
       expect(spawnSync('test', ['-e', join(directory, '_build/api.json')]).status).toBe(1)
     } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+
+  it('rejects an external public header even when its basename matches a tracked header', () => {
+    const { directory, git } = checkout()
+    const outside = mkdtempSync(join(tmpdir(), 'export-erlang-header-'))
+    try {
+      const header = join(outside, 'public_types.hrl')
+      writeFileSync(header, '-type outsourced() :: binary().\n')
+      const source = join(directory, 'src/probe.erl')
+      writeFileSync(source, readFileSync(source, 'utf8').replace('-module(probe).',
+        `-module(probe).\n-export_type([outsourced/0]).\n-include("${header}").`))
+      git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qam', 'Include external type')
+      const result = exportFrom(directory)
+      expect(result.status).not.toBe(0)
+      expect(result.stderr).toContain('public_types.hrl: source path is missing or ambiguous')
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+      rmSync(outside, { recursive: true, force: true })
+    }
   })
 })

@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { commandFacts, memberTier, moduleOf, parameterBindingFacts, parameterBindingText, qualifiedNameOf, typeParametersOf, type ApiModelBase, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model'
 import { apiGlossaryHref } from './api-glossary'
 import { relatedLabels } from './api-labels'
-import { csharpParameters, supportsCSharpSignatures, supportsElixirSignatures, supportsGoSignatures, supportsJavaSignatures, supportsLuaSignatures, supportsRubySignatures, supportsRustSignatures, supportsTypeScriptSignatures, swiftBaseName } from './code-layout'
+import { csharpParameters, supportsCSharpSignatures, supportsElixirSignatures, supportsErlangSignatures, supportsGoSignatures, supportsJavaSignatures, supportsLuaSignatures, supportsRubySignatures, supportsRustSignatures, supportsTypeScriptSignatures, swiftBaseName } from './code-layout'
 
 export interface ApiSection {
   id: string
@@ -228,7 +228,7 @@ export function aliasDeclaration(symbol: ApiSymbol, language?: string): { name: 
 
 /** Keep native declaration syntax consistent in HTML and copied Markdown. */
 export function usesNativeSignatures(symbol: ApiSymbol, port?: string): boolean {
-  return (port === 'rs' && Boolean(symbol.variant)) || supportsRustSignatures(symbol, port) || supportsTypeScriptSignatures(symbol, port) || supportsGoSignatures(symbol, port) || supportsJavaSignatures(symbol, port) || supportsCSharpSignatures(symbol, port) || supportsRubySignatures(symbol, port) || supportsLuaSignatures(symbol, port) || supportsElixirSignatures(symbol, port) || ['kotlin', 'scala', 'fsharp', 'c', 'powershell', 'julia'].includes(port ?? '') ||
+  return (port === 'rs' && Boolean(symbol.variant)) || supportsRustSignatures(symbol, port) || supportsTypeScriptSignatures(symbol, port) || supportsGoSignatures(symbol, port) || supportsJavaSignatures(symbol, port) || supportsCSharpSignatures(symbol, port) || supportsRubySignatures(symbol, port) || supportsLuaSignatures(symbol, port) || supportsElixirSignatures(symbol, port) || supportsErlangSignatures(symbol, port) || ['kotlin', 'scala', 'fsharp', 'c', 'powershell', 'julia'].includes(port ?? '') ||
     (port === 'cxx' && symbol.signatures.length > 0 && symbol.signatures.every((signature) => Boolean(signature.raw)))
 }
 

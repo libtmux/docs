@@ -167,18 +167,29 @@ $ escript packages/api-model/scripts/export-erlang.escript \
     ../libtmux-erlang/_build/docs/api.json
 ```
 
-The artifact records the source commit, tracked input hashes, OTP version and
-exporter source digest.
+The version-3 artifact records the source commit, tracked input hashes, OTP
+version and exporter source digest.
 It retains native module, function, type and callback documentation, typespecs,
 nominal types, supporting non-exported types and exported native records.
 Source locations follow included headers. Opaque declarations expose their
 name and parameters. Hidden modules and members stay out. Dirty sources,
 missing compiler chunks and ambiguous source paths fail the export.
 
+The exporter parses formatted declarations to identify type and native-record
+references, including their arities and UTF-16 ranges. It checks that formatting
+preserves the syntax tree. OTP destinations require a compiler-known builtin or
+an entry in that module's documentation; unknown types remain unresolved.
+Private OTP headers may supply implementation records, but every documented
+declaration must have a tracked source location.
+
 `extractErlang` maps the artifact to the shared API model. The compiler supplies
 callable parameters, return types, overload clauses and quoted atom spellings.
 The model retains native arities, supporting types and distinct type/callback
 identities. Native `m:`, `t:` and `c:` references resolve within their module.
+API signatures and their Markdown copies retain Erlang syntax and use the
+compiler's reference ranges for links. The site checks the 60-column display
+limit after native formatting. The `libtmux_erlang_workspace` application maps
+to the workspace product; the core application maps to core.
 Erlang has no shared site routes or package destinations until the port's
 delivery checks are complete. The compiler fixture runs in the outer test loop; it
 requires OTP 29 and Rebar3 on CI and skips locally when that toolchain is absent.

@@ -258,6 +258,12 @@ export function supportsElixirSignatures(symbol: ApiSymbol, language?: string): 
     symbol.signatures.length > 0 && symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
 }
 
+/** Erlang declarations already carry compiler formatting and resolved reference ranges. */
+export function supportsErlangSignatures(symbol: ApiSymbol, language?: string): boolean {
+  return language === 'erlang' && ['function', 'typealias', 'struct'].includes(symbol.kind) &&
+    symbol.signatures.length > 0 && symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
+}
+
 export function supportsLuaSignatures(symbol: ApiSymbol, language?: string): boolean {
   return language === 'lua' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length > 0 &&
     symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
@@ -292,6 +298,13 @@ export function supportsCSignatures(symbol: ApiSymbol, language?: string): boole
 
 /** Prepare one layout per overload for both HTML and the Markdown twin. */
 export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string): Promise<Map<Signature, CodeLayout>> {
+  if (supportsErlangSignatures(symbol, language)) {
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) => {
+      const text = signature.raw!
+      return [signature, { text, limit: CODE_COLUMNS.api,
+        failures: await codeWidthFailures(text, 'api') }] as const
+    })))
+  }
   if (language === 'rs' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length && !supportsRustSignatures(symbol, language)) {
     throw new Error(`Unavailable native Rust callable header: ${symbol.id}`)
   }

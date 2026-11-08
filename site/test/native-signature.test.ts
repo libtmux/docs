@@ -7,7 +7,7 @@ import { runInNewContext } from 'node:vm'
 import { describe, expect, it } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window, type Element, type HTMLElement } from 'happy-dom'
-import { parameterId, parentInventory, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
+import { extractErlang, parameterId, parentInventory, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
 import { apiEntryFields, nativeSignatureText, usesNativeSignatures } from '../src/lib/api-sections'
 import { API_MODEL_PORTS } from '../src/lib/ports'
 import { extractSourceWithSpec } from '../../packages/api-model/src/languages/spec'
@@ -57,6 +57,45 @@ function displayedSignature(element: Element): string {
   copy.querySelectorAll('[popover]').forEach((popover) => popover.remove())
   return copy.textContent ?? ''
 }
+
+it('renders Erlang compiler references with exact native declarations and Markdown', async () => {
+  const artifact = JSON.parse(readFileSync(new URL('../../packages/api-model/test/fixtures/erlang-native.json', import.meta.url), 'utf8'))
+  const model = extractErlang(artifact)
+  const href = (symbol: ApiSymbol) => `/reference/${encodeURIComponent(symbol.id)}/`
+  const index = new SymbolIndex(model.symbols, href, 'erlang')
+  const component = await (componentPromise ??= signatureComponent())
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  try {
+    for (const id of ['probe:read/1', 'probe:links/1', '#probe:row{}', 't:probe:handle/0', 'c:probe:prepare/1']) {
+      const symbol = model.symbols.find((entry) => entry.id === id)!
+      const sig = symbol.signatures[0]!
+      expect(usesNativeSignatures(symbol, 'erlang')).toBe(true)
+      const signatureLayouts = await apiSignatureLayouts(symbol, 'erlang')
+      expect(signatureLayouts.get(sig)?.failures).toEqual([])
+      win.document.body.innerHTML = await container.renderToString(component, { props: {
+        symbol, sig, port: 'erlang', language: 'erlang', index, signatureLayouts,
+        nativeSignatureText: () => signatureLayouts.get(sig)!.text,
+      } })
+      const element = win.document.querySelector('.api-native-signature')!
+      expect(displayedSignature(element)).toBe(sig.raw)
+      expect(element.getAttribute('data-code-width-status')).toBe('fits')
+      const links = [...element.querySelectorAll('a.api-type-link')].map((link) => link.getAttribute('href'))
+      if (id === 'probe:read/1') {
+        expect(links).toContain(href(model.symbols.find((entry) => entry.id === 't:probe:handle/0')!))
+        expect(links).not.toContain(href(model.symbols.find((entry) => entry.id === 'probe:handle/0')!))
+      }
+      if (id === 'probe:links/1') {
+        for (const target of ['#probe:row{}', 't:probe:box/0', 't:probe:box/1']) {
+          expect(links).toContain(href(model.symbols.find((entry) => entry.id === target)!))
+        }
+        expect(links).toContain('https://www.erlang.org/doc/apps/kernel/file.html#t:filename_all/0')
+      }
+      const markdown = await symbolMarkdownWithLayout({ model, symbol, index })
+      expect(fromMarkdown(markdown).children.find((node) => node.type === 'code')).toMatchObject({ value: sig.raw })
+    }
+  } finally { await win.happyDOM.abort() }
+})
 
 const cases = [
   ['ts', 'server.Server.setHook'],
