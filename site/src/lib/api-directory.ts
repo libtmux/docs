@@ -1,4 +1,4 @@
-import type { ProseBlock } from './api-prose'
+import type { ProseBlock } from '@libtmux/api-model/reference'
 
 /** The names one row lists, under an optional label such as `Buffers`. */
 export interface DirectoryGroup { label?: string; refs: string[] }

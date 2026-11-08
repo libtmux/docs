@@ -1,4 +1,5 @@
 import { RUST_CRATE_PREFIX, tokenizeDoc, type DocSpan } from './doc/roles.ts'
+import { docSectionId, docSectionTitles } from './doc/prose-blocks.ts'
 import { symbolEntries, type InventoryEntry } from './inventory.ts'
 import type { ApiProduct, ApiSource, ApiSymbol, Signature, SymbolKind, TypeParameter } from './model.ts'
 import { cargoFeatureHref, documentedFeature } from './cargo-features.ts'
@@ -716,6 +717,14 @@ export class SymbolIndex {
   }
 
   private resolveSymbol(target: string, role: string, context?: ApiSymbol): LinkTarget | undefined {
+    if (this.lang === 'perl' && target.includes('#')) {
+      const separator = target.indexOf('#')
+      const owner = this.byDeclared.get(target.slice(0, separator))
+      let section: string
+      try { section = decodeURIComponent(target.slice(separator + 1)) } catch { return undefined }
+      if (!owner || docSectionTitles(owner).filter((title) => title === section).length !== 1) return undefined
+      return { href: `${this.hrefFor(owner).split('#')[0]}#${encodeURIComponent(docSectionId(owner, section))}`, external: false, symbol: owner }
+    }
     const relative = target.startsWith('.')
     const goType = this.lang === 'go' && role === 'class'
     if (this.lang === 'ruby') {

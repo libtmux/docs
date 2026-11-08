@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { SymbolIndex } from '../src/link.ts'
 import { extractPerlArtifact } from '../src/languages/perl.ts'
+import type { DocBlock } from '../src/model.ts'
 
 const revision = 'a'.repeat(40)
 const source = { file: 'packages/core/lib/LibTmux/Selection.pm', line: 1, revision, repo: 'libtmux/libtmux-perl' }
@@ -9,11 +10,41 @@ const artifact = () => ({
   nativeProvenance: { files: [{ path: source.file, sha256: 'b'.repeat(64) }], exporter: { repository: 'libtmux/libtmux-perl', revision: 'c'.repeat(40), working_tree: false } },
   sources: [{ package: 'LibTmux', product: 'core', revision, version: '0.001_001' }],
   symbols: [
-    { id: 'LibTmux::Selection', publicId: 'LibTmux::Selection', name: 'Selection', kind: 'class', modifiers: [], signatures: [], package: 'LibTmux', product: 'core', apiScope: 'exported', source },
+    { id: 'LibTmux::Selection', publicId: 'LibTmux::Selection', name: 'Selection', kind: 'class', modifiers: [], signatures: [], doc: { summary: 'Selection.' } as DocBlock, package: 'LibTmux', product: 'core', apiScope: 'exported', source },
     { id: 'LibTmux::Selection::grep', publicId: 'LibTmux::Selection::grep', name: 'grep', parent: 'LibTmux::Selection', kind: 'method', modifiers: [], signatures: [{ raw: 'sub grep($self, $callback)', receiver: { name: 'self' }, params: [{ name: 'callback' }] }], doc: { summary: 'See [Selection](pod:LibTmux::Selection).' }, package: 'LibTmux', product: 'core', apiScope: 'exported', source },
   ],
 })
 describe('native Perl POD and signatures', () => {
+  it('links encoded and legacy POD sections to their exact rendered owner', () => {
+    for (const [section, component] of [
+      ['VERIFICATION REPORT', 'VERIFICATION%20REPORT'],
+      ['État 100% / #', '%C3%89tat%20100%25%20%2F%20%23'],
+      ['REPORT )', 'REPORT%20%29'],
+    ]) {
+      for (const target of [component, ...(section === 'REPORT )' ? [] : [section])]) {
+        const input = artifact()
+        input.symbols[0].doc = { summary: 'Selection.', body: `## ${section}\n\nReport fields.` }
+        input.symbols[1].doc = { summary: `[report](pod:LibTmux::Selection/${target})` }
+        const model = extractPerlArtifact(input)
+        const index = new SymbolIndex(model.symbols, (symbol) => `/${symbol.id}/#declaration`, 'perl')
+        const spans = index.docSpans(model.symbols[1].doc!.summary, model.symbols[1])
+        expect(spans).toContainEqual(expect.objectContaining({ kind: 'ref', link: expect.objectContaining({
+          href: `/LibTmux::Selection/#${encodeURIComponent(`LibTmux::Selection.section.${component}`)}`,
+        }) }))
+      }
+    }
+  })
+  it('rejects unknown, ambiguous, fenced and malformed POD section targets', () => {
+    for (const body of ['## OTHER\nText.', '## REPORT\nOne.\n## REPORT\nTwo.', '```perl\n## REPORT\n```']) {
+      const input = artifact()
+      input.symbols[0].doc = { summary: 'Selection.', body }
+      input.symbols[1].doc = { summary: '[report](pod:LibTmux::Selection/REPORT)' }
+      expect(() => extractPerlArtifact(input)).toThrow(/(?:Unresolved|Ambiguous) authored Perl POD target/)
+    }
+    const input = artifact()
+    input.symbols[1].doc = { summary: '[report](pod:LibTmux::Selection/%ZZ)' }
+    expect(() => extractPerlArtifact(input)).toThrow(/Malformed authored Perl POD target/)
+  })
   it('preserves declared signatures and resolves authored links to exact owners', () => {
     const model = extractPerlArtifact(artifact(), revision)
     expect(model.symbols[1].signatures[0].raw).toBe('sub grep($self, $callback)')

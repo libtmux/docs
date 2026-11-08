@@ -1,5 +1,6 @@
 export { extractPerlArtifact } from './languages/perl.ts'
 export * from './model.ts'
+export * from './doc/prose-blocks.ts'
 export { sourceUrl, symbolsForProduct } from './products.ts'
 export { loadLanguage, parserFor, type GrammarName } from './parser.ts'
 export { extractPython } from './languages/python.ts'
