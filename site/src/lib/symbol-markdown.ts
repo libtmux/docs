@@ -204,7 +204,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const port = 'port' in model ? model.port : undefined
   const language = 'language' in model ? model.language : port
   const index = ctx.index ?? (port && 'port' in model ? productApiIndex(model, ctx.version ?? defaultVersionFor(port)) : undefined)
-  const prose = (text: string) => index ? proseMarkdown(text, index, symbol, ['perl', 'powershell', 'scala', 'ts'].includes(language ?? '')) : text
+  const prose = (text: string, context = symbol) => index ? proseMarkdown(text, index, context, ['perl', 'powershell', 'scala', 'ts'].includes(language ?? '')) : text
   const id = qualifiedNameOf(symbol)
   const out: string[] = [`# ${id}`, '']
   const info = port ? PORT_BY_SLUG[port] : undefined
@@ -377,7 +377,9 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   }
   const appendMembers = (entries: ApiSymbol[]) => {
     for (const member of entries) {
-      out.push(`- ${ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)} (${symbol.variant && member.type ? inlineCode(member.type) : member.kind})${member.inheritedFrom ? `, inherited from ${inlineCode(member.inheritedFrom)}` : ''}${member.doc?.summary ? `: ${member.doc.summary}` : ''}`)
+      const summary = member.doc?.summary
+      const description = summary && language === 'perl' ? prose(summary, member) : summary
+      out.push(`- ${ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)} (${symbol.variant && member.type ? inlineCode(member.type) : member.kind})${member.inheritedFrom ? `, inherited from ${inlineCode(member.inheritedFrom)}` : ''}${description ? `: ${description}` : ''}`)
     }
     out.push('')
   }
