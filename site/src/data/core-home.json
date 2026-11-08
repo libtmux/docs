@@ -302,6 +302,12 @@
       "capture": "libtmux::Pane::capture"
     }
   },
+  "haskell": {
+    "title": "Typed tmux values for Haskell",
+    "lead": "Parse tmux entity IDs, validate dimensions and indices, and check stable tmux releases with pure Haskell functions",
+    "modules": ["LibTmux.Id", "LibTmux.Value", "LibTmux.Version"],
+    "capabilities": {}
+  },
   "swift": {
     "objects": {
       "server": "Server",
