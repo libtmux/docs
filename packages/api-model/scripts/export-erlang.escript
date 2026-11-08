@@ -6,6 +6,7 @@
 main([Root0, AppName, Output0]) ->
     Output = filename:absname(Output0),
     try
+        ExporterDigest = exporter_digest(),
         "29" = erlang:system_info(otp_release),
         Root = filename:absname(Root0),
         ok = file:set_cwd(Root),
@@ -28,8 +29,9 @@ main([Root0, AppName, Output0]) ->
             "source revision changed while compiling"),
         Artifact = #{schema => 1, port => <<"erlang">>,
             source => #{repository => Repository, revision => Revision, files => Files},
-            exporter => #{name => <<"Erlang EEP-48 and abstract code">>, version => 1,
-                otp => otp_version(), columns => 60},
+            exporter => #{name => <<"Erlang EEP-48 and abstract code">>, version => 2,
+                otp => otp_version(), columns => 60,
+                source_sha256 => ExporterDigest},
             package => #{name => bin(AppName), version => bin(proplists:get_value(vsn, Properties))},
             modules => Public},
         ok = filelib:ensure_dir(Output),
@@ -60,10 +62,10 @@ module(Name, Ebin, Files) ->
                     Records = lists:append([Rs || {attribute, _, export_record, Rs} <- Forms]),
                     Members = [member(E, Located, Types) || E <- lists:sort(Entries),
                         public(E, Exports)],
-                    #{name => bin(Name), doc => documentation(Doc),
+                    #{name => bin(Name), display_name => atom_text(Name), doc => documentation(Doc),
                         source => location(File, maps:get(source_anno, Meta, 1)),
                         members => Members,
-                        records => [#{name => bin(R), declaration => pretty(F),
+                        records => [#{name => bin(R), display_name => atom_text(R), declaration => pretty(F),
                             source => location(RecordFile, Anno)} ||
                             {RecordFile, F = {attribute, Anno, native_record, {R, _}}} <- Located,
                             lists:member(R, Records)]};
@@ -87,13 +89,59 @@ member({{Kind, Name, Arity}, _, Signatures, Doc, Meta}, Located, Types) ->
         [nominal] -> nominal;
         _ -> public
     end,
-    #{kind => Kind, name => bin(Name), arity => Arity,
+    #{kind => Kind, name => bin(Name), display_name => atom_text(Name), arity => Arity,
         signatures => Signatures, doc => documentation(Doc),
+        specs => callable_specs(Kind, Name, Arity, Located, Declarations),
         since => metadata(since, Meta), deprecated => metadata(deprecated, Meta),
         visibility => Visibility,
         exported => Kind =/= type orelse lists:member({Name, Arity}, Types),
         source => member_location(Kind, Name, Arity, Located, Declarations),
         declarations => [declaration_text(F) || {_, F} <- Declarations]}.
+
+callable_specs(type, _, _, _, _) -> [];
+callable_specs(Kind, Name, Arity, Located, Declarations) ->
+    Patterns = case [Args || {_, {function, _, N, A, [{clause, _, Args, _, _} | _]}} <- Located,
+                            N =:= Name, A =:= Arity] of
+        [Args] -> Args;
+        [] -> lists:duplicate(Arity, none)
+    end,
+    Attribute = case Kind of function -> spec; callback -> callback end,
+    [spec_clause(Clause, Patterns, Attribute, Anno, Name, Arity)
+     || {_, {attribute, Anno, AttributeName, {{Name1, Arity1}, Clauses}}} <- Declarations,
+        AttributeName =:= Attribute, Name1 =:= Name, Arity1 =:= Arity, Clause <- Clauses].
+
+spec_clause(Clause, Patterns, Attribute, Anno, Name, Arity) ->
+    Fun = case Clause of
+        {type, _, bounded_fun, [Function, _]} -> Function;
+        _ -> Clause
+    end,
+    {type, _, 'fun', [{type, _, product, Parameters}, Return]} = Fun,
+    require(length(Parameters) =:= Arity, "compiler typespec arity mismatch"),
+    #{parameters => [parameter(Type, Pattern, Index)
+        || {Type, Pattern, Index} <- lists:zip3(Parameters, Patterns, lists:seq(1, Arity))],
+      returns => type_text(Return),
+      text => pretty({attribute, Anno, Attribute, {{Name, Arity}, [Clause]}})}.
+
+parameter({ann_type, _, [{var, _, Name}, Type]}, _, _) ->
+    #{name => bin(Name), type => type_text(Type)};
+parameter(Type, Pattern, Index) ->
+    Name = case Pattern of
+        {var, _, Variable} when Variable =/= '_' -> bin(Variable);
+        {match, _, {var, _, Variable}, _} when Variable =/= '_' -> bin(Variable);
+        {match, _, _, {var, _, Variable}} when Variable =/= '_' -> bin(Variable);
+        _ -> <<"Argument", (integer_to_binary(Index))/binary>>
+    end,
+    #{name => Name, type => type_text(Type)}.
+
+type_text(Type) ->
+    [_, Body] = binary:split(pretty({attribute, 0, type, {doc_type, Type, []}}), <<"::">>),
+    trim(binary:part(Body, 0, byte_size(Body) - 1)).
+
+atom_text(Name) -> unicode:characters_to_binary(erl_pp:expr({atom, 0, Name}, [{encoding, unicode}])).
+
+exporter_digest() ->
+    {ok, Source} = file:read_file(escript:script_name()),
+    binary:encode_hex(crypto:hash(sha256, Source), lowercase).
 
 member_location(function, Name, Arity, Located, _) ->
     [{File, {function, Anno, Name, Arity, _}}] =

@@ -295,6 +295,7 @@ const SYNTAX: Record<string, ReadonlySet<string>> = {
   julia: new Set(['markdown-link', 'documenter']),
   // ExDoc links a Markdown destination written as code: [the server](`LibTmux.Server`).
   elixir: new Set(['markdown-link', 'exdoc']),
+  erlang: new Set(['markdown-link', 'exdoc']),
   powershell: new Set(['markdown-link']),
 }
 
@@ -604,6 +605,7 @@ function tokenizeRun(text: string, lang?: string): DocSpan[] {
         : syntax.has('docc') && code.ticks === 2
           ? { kind: 'ref', role: 'any', target: doccTarget(code.text), label: code.text }
           : { kind: 'code', text: code.text }
+      if (lang === 'erlang' && span.kind === 'ref') span.label = span.label.replace(/^[mtc]:/, '')
       hits.push({ start: code.start, end: code.end, span })
     }
   }

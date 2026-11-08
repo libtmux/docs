@@ -716,6 +716,7 @@ export class SymbolIndex {
   }
 
   private resolveSymbol(target: string, role: string, context?: ApiSymbol): LinkTarget | undefined {
+    if (this.lang === 'erlang') return this.resolveErlang(target, role, context)
     const relative = target.startsWith('.')
     const goType = this.lang === 'go' && role === 'class'
     if (this.lang === 'ruby') {
@@ -946,6 +947,25 @@ export class SymbolIndex {
     }
 
     return undefined
+  }
+
+  /** Resolve compiler-qualified Erlang identities within the native namespace. */
+  private resolveErlang(target: string, role: string, context?: ApiSymbol): LinkTarget | undefined {
+    const prefix = /^(?:([mtc]):)?/.exec(target)![1]
+    const body = prefix ? target.slice(2) : target
+    const wanted = prefix === 'm' ? body : target
+    const kinds = ROLE_KINDS[role] ?? []
+    const matches = (symbol: ApiSymbol | undefined) => symbol &&
+      (!kinds.length || kinds.includes(symbol.kind)) &&
+      (prefix === 'm' ? symbol.kind === 'module' : prefix === 't' ? symbol.kind === 'typealias'
+        : prefix === 'c' ? symbol.modifiers.includes('abstract') : !symbol.id.startsWith('t:') && !symbol.id.startsWith('c:'))
+    let hit = this.byDeclared.get(wanted)
+    if (!matches(hit) && prefix !== 'm') {
+      let owner = context
+      while (owner?.parent) owner = this.byDeclared.get(owner.parent)
+      if (owner?.kind === 'module') hit = this.byDeclared.get(`${prefix ? `${prefix}:` : ''}${owner.id}:${body}`)
+    }
+    return matches(hit) ? { href: this.hrefFor(hit!), external: false, symbol: hit } : undefined
   }
 
   /** The module a declaration belongs to: itself, or its parent. */
