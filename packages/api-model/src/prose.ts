@@ -21,6 +21,7 @@ export const PORT_NAME: Record<string, string> = {
   rs: 'Rust',
   go: 'Go',
   java: 'Java',
+  clojure: 'Clojure',
   csharp: 'C#',
   cxx: 'C++',
   swift: 'Swift',

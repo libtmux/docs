@@ -120,6 +120,7 @@ describe('product context in prose', () => {
     expect(portFromSentence('Python\'s checked wait is ')).toBe('py')
     expect(portFromSentence('In C++20 and ')).toBe('cxx')
     expect(portFromSentence('Go has ')).toBe('go')
+    expect(portFromSentence('In Clojure, ')).toBe('clojure')
     // JavaScript is not Java, an algorithm is not Go, and a trust is not Rust.
     expect(portFromSentence('JavaScript has a ')).toBeUndefined()
     expect(portFromSentence('An algorithm going to Google uses a trust of ')).toBeUndefined()
@@ -220,22 +221,23 @@ describe('product context in prose', () => {
   })
 })
 
-describe('a Java-only libtmux symbol on a Kotlin or Scala page', () => {
+describe('a Java-only libtmux symbol on a JVM facade page', () => {
   const symbol = (id: string, name: string) => ({ id, name, kind: 'class', signatures: [], source: { file: `${name}.java` } })
   const kotlin = { port: 'kotlin', version: '0', symbols: [symbol('io.example.Snapshot', 'Snapshot')] } as unknown as ApiModel
   const scala = { port: 'scala', version: '0', symbols: [symbol('io.example.Snapshot', 'Snapshot')] } as unknown as ApiModel
+  const clojure = { port: 'clojure', version: '0', symbols: [symbol('io.example.Snapshot', 'Snapshot')] } as unknown as ApiModel
   const java = {
     port: 'java', version: '0',
     symbols: [symbol('io.example.PaneState', 'PaneState'), symbol('io.example.Snapshot', 'Snapshot')],
   } as unknown as ApiModel
-  const models = { kotlin, scala, java }
+  const models = { kotlin, scala, clojure, java }
   const jdk = ['Phaser', 'Flow', 'Vector'].map((name) => ({ name, uri: `java.base/java/util/concurrent/${name}.html`, type: 'std:label', priority: 1, dispname: '-' }))
 
-  /** The inventories a Kotlin or Scala build holds: the parent library the port wraps, and the JDK's. The site and the generators name the first differently. */
+  /** The parent library and JDK inventories, under the names the site and generators use. */
   const resolverNamed = (parent: string) => {
-    const resolver = new Resolver([kotlin, scala, java])
-    resolver.addInventory(parent, '', parentInventory(java, (entry) => `/reference/java/${entry.name}/`), ['kotlin', 'scala'])
-    resolver.addInventory('Java SE', 'https://docs.oracle.com/en/java/javase/21/docs/api/', jdk, ['java', 'kotlin', 'scala'])
+    const resolver = new Resolver([kotlin, scala, clojure, java])
+    resolver.addInventory(parent, '', parentInventory(java, (entry) => `/reference/java/${entry.name}/`), ['kotlin', 'scala', 'clojure'])
+    resolver.addInventory('Java SE', 'https://docs.oracle.com/en/java/javase/21/docs/api/', jdk, ['java', 'kotlin', 'scala', 'clojure'])
     return resolver
   }
   const builds = ['Library API', 'libtmux Java']
@@ -243,14 +245,14 @@ describe('a Java-only libtmux symbol on a Kotlin or Scala page', () => {
   describe.each(builds)('where the parent library\'s inventory is named %s', (parent) => {
     const resolver = resolverNamed(parent)
 
-    it.each(['kotlin', 'scala'])('credits the symbol to Java when the %s sentence says Java: the page\'s port holds only an inventory entry for it', (pagePort) => {
+    it.each(['kotlin', 'scala', 'clojure'])('credits the symbol to Java when the %s sentence says Java: the page\'s port holds only an inventory entry for it', (pagePort) => {
       for (const before of ['returning the real Java ', 'Wraps Java\'s ']) {
         expect(decideMention('PaneState', { pagePort, before }, resolver, models), before)
           .toMatchObject({ kind: 'link', port: 'java', external: false })
       }
     })
 
-    it.each(['kotlin', 'scala'])('records the Java symbol as the %s page\'s backlink, and records nothing for a name Java lacks', (authoredPort) => {
+    it.each(['kotlin', 'scala', 'clojure'])('records the Java symbol as the %s page\'s backlink, and records nothing for a name Java lacks', (authoredPort) => {
       const mentioned = (body: string) => pageMentions({
         body, portByLabel: {}, page: `/${authoredPort}/latest/guides/state/`, authoredPort, nativeTmux: false, resolver, models, authoredTarget: () => undefined,
       }).targets
@@ -258,10 +260,11 @@ describe('a Java-only libtmux symbol on a Kotlin or Scala page', () => {
       expect(mentioned('Each call returns the real Java `Missing` for the pane.\n')).toEqual([])
     })
 
-    it.each(['kotlin', 'scala'])('leaves the %s page its own symbols and curated names, and sends the JDK\'s names to Java', (pagePort) => {
+    it.each(['kotlin', 'scala', 'clojure'])('leaves the %s page its own symbols and curated names, and sends the JDK\'s names to Java', (pagePort) => {
       const said = { pagePort, before: 'the real Java ' }
       expect(decideMention('Snapshot', said, resolver, models)).toMatchObject({ kind: 'link', port: pagePort })
       expect(decideMention('Phaser', said, resolver, models)).toMatchObject({ kind: 'link', port: 'java' })
+      if (pagePort === 'clojure') return
       // A curated name written as a call is still the port's, where the JDK's inventory holds the same word.
       const curated = pagePort === 'kotlin' ? 'Flow' : 'Vector'
       expect(decideMention(`${curated}()`, said, resolver, models)).toMatchObject({ kind: 'link', port: pagePort, href: builtinHref(pagePort, curated) })

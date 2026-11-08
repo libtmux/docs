@@ -59,6 +59,18 @@ function problems(root: Pick<DomElement, 'querySelectorAll'>): string[] {
 }
 
 describe('a doc comment cross-reference', () => {
+  it('keeps Clojure keyword values out of Java dependency links', async () => {
+    const model = API_MODELS.clojure
+    const clojure = indexFor(model, (symbol) => `/en/clojure/latest/reference/${symbol.slug}/`)
+    const root = await render('Use `:timeout`, `::timeout`, `:request/timeout` or `{:timeout 100}`. See [[libtmux.core/open!]] and `CompletionStage`.', undefined, clojure)
+    expect([...root.querySelectorAll('code.api-literal')].slice(0, 4).map((code) => [code.textContent, code.querySelectorAll('a').length]))
+      .toEqual([[':timeout', 0], ['::timeout', 0], [':request/timeout', 0], ['{:timeout 100}', 0]])
+    expect([...root.querySelectorAll<DomAnchor>('a')].map((link) => link.getAttribute('href'))).toEqual([
+      '/en/clojure/latest/reference/libtmux-core-open/',
+      'https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CompletionStage.html',
+    ])
+  })
+
   it('names its kind in the title, the data attribute and the accessible name, and draws no badge', async () => {
     const root = await render('`Pane` sits in a `Window`. Send keys to a `Pane` again.')
     const links = [...root.querySelectorAll<DomAnchor>('a.api-xref')]
