@@ -1270,7 +1270,7 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
     packages: [
       { id: 'core', name: 'LibTmux', require: 'LibTmux::Server', source: { path: 'packages/core', ref: 'master' } },
       { id: 'async', name: 'LibTmux-Async', require: 'LibTmux::Async::Server', source: { path: 'packages/async', ref: 'master' },
-        installs: [{ label: 'cpm (source)', lang: 'console', code: 'cpm install --global ./packages/async', note: 'From the source checkout after core installation; adds Future and IO::Async.' }] },
+        installs: [{ label: 'cpm (source)', lang: 'console', code: 'cpm install --global ./packages/async', note: 'From the source checkout after core installation; adds Future and IO::Async with its required Ppoll backend.' }] },
       { id: 'workspace', name: 'LibTmux-Workspace', require: 'LibTmux::Workspace', executable: 'libtmux-workspace',
         source: { path: 'packages/workspace', ref: 'master' },
         installs: [{ label: 'cpm (source)', lang: 'console', code: 'cpm install --global ./packages/workspace', note: 'From the source checkout after core installation. No CPAN release.' }] },

@@ -94,7 +94,7 @@
   ],
   "port": "perl",
   "repo": "libtmux/libtmux-perl",
-  "revision": "e5a46c5e379ee58468c3cf700bb898d769aae222",
+  "revision": "618a4a063da27ad9861d4fe136991c68bba5a038",
   "schemaVersion": 1,
   "symbols": {
     "LibTmux::Async::Server::capture_pane": [
@@ -102,9 +102,9 @@
         "command": "capture-pane",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:82",
-          "packages/core/lib/LibTmux/Server.pm:671"
+          "packages/core/lib/LibTmux/Server.pm:673"
         ],
         "reviewed": true,
         "scope": null
@@ -113,9 +113,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:82",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -127,9 +127,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:87",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -139,9 +139,9 @@
         "command": "list-clients",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:87",
-          "packages/core/lib/LibTmux/Server.pm:157"
+          "packages/core/lib/LibTmux/Server.pm:159"
         ],
         "reviewed": true,
         "scope": null
@@ -150,9 +150,9 @@
         "command": "list-panes",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:87",
-          "packages/core/lib/LibTmux/Server.pm:156"
+          "packages/core/lib/LibTmux/Server.pm:158"
         ],
         "reviewed": true,
         "scope": "server"
@@ -161,9 +161,9 @@
         "command": "list-sessions",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:87",
-          "packages/core/lib/LibTmux/Server.pm:154"
+          "packages/core/lib/LibTmux/Server.pm:156"
         ],
         "reviewed": true,
         "scope": null
@@ -172,9 +172,9 @@
         "command": "list-windows",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:87",
-          "packages/core/lib/LibTmux/Server.pm:155"
+          "packages/core/lib/LibTmux/Server.pm:157"
         ],
         "reviewed": true,
         "scope": "server"
@@ -185,9 +185,9 @@
         "command": "delete-buffer",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:103",
-          "packages/core/lib/LibTmux/Server.pm:757"
+          "packages/core/lib/LibTmux/Server.pm:767"
         ],
         "reviewed": true,
         "scope": null
@@ -198,9 +198,9 @@
         "command": "detach-client",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:89",
-          "packages/core/lib/LibTmux/Server.pm:614"
+          "packages/core/lib/LibTmux/Server.pm:616"
         ],
         "reviewed": true,
         "scope": null
@@ -209,9 +209,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:89",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -223,9 +223,9 @@
         "command": "show-environment",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:96",
-          "packages/core/lib/LibTmux/Server.pm:730"
+          "packages/core/lib/LibTmux/Server.pm:736"
         ],
         "reviewed": true,
         "scope": null
@@ -236,9 +236,9 @@
         "command": "show-options",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:91",
-          "packages/core/lib/LibTmux/Server.pm:697"
+          "packages/core/lib/LibTmux/Server.pm:699"
         ],
         "reviewed": true,
         "scope": null
@@ -249,9 +249,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:83",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -261,9 +261,9 @@
         "command": "kill-pane",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:83",
-          "packages/core/lib/LibTmux/Server.pm:611"
+          "packages/core/lib/LibTmux/Server.pm:613"
         ],
         "reviewed": true,
         "scope": null
@@ -274,9 +274,9 @@
         "command": "kill-server",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:86",
-          "packages/core/lib/LibTmux/Server.pm:634"
+          "packages/core/lib/LibTmux/Server.pm:636"
         ],
         "reviewed": true,
         "scope": null
@@ -287,9 +287,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:85",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -299,9 +299,9 @@
         "command": "kill-session",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:85",
-          "packages/core/lib/LibTmux/Server.pm:613"
+          "packages/core/lib/LibTmux/Server.pm:615"
         ],
         "reviewed": true,
         "scope": null
@@ -312,9 +312,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:84",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -324,9 +324,9 @@
         "command": "kill-window",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:84",
-          "packages/core/lib/LibTmux/Server.pm:612"
+          "packages/core/lib/LibTmux/Server.pm:614"
         ],
         "reviewed": true,
         "scope": null
@@ -337,9 +337,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:72",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -349,9 +349,9 @@
         "command": "link-window",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:72",
-          "packages/core/lib/LibTmux/Server.pm:577"
+          "packages/core/lib/LibTmux/Server.pm:579"
         ],
         "reviewed": true,
         "scope": null
@@ -362,9 +362,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:61",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -374,9 +374,9 @@
         "command": "list-clients",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:61",
-          "packages/core/lib/LibTmux/Server.pm:157"
+          "packages/core/lib/LibTmux/Server.pm:159"
         ],
         "reviewed": true,
         "scope": null,
@@ -386,9 +386,9 @@
         "command": "list-panes",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:61",
-          "packages/core/lib/LibTmux/Server.pm:156"
+          "packages/core/lib/LibTmux/Server.pm:158"
         ],
         "reviewed": true,
         "scope": "server",
@@ -398,9 +398,9 @@
         "command": "list-sessions",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:61",
-          "packages/core/lib/LibTmux/Server.pm:154"
+          "packages/core/lib/LibTmux/Server.pm:156"
         ],
         "reviewed": true,
         "scope": null,
@@ -410,9 +410,9 @@
         "command": "list-windows",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:61",
-          "packages/core/lib/LibTmux/Server.pm:155"
+          "packages/core/lib/LibTmux/Server.pm:157"
         ],
         "reviewed": true,
         "scope": "server",
@@ -424,9 +424,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:74",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -436,9 +436,9 @@
         "command": "move-window",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:74",
-          "packages/core/lib/LibTmux/Server.pm:593"
+          "packages/core/lib/LibTmux/Server.pm:595"
         ],
         "reviewed": true,
         "scope": null
@@ -449,9 +449,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:64",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -461,9 +461,9 @@
         "command": "list-clients",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:64",
-          "packages/core/lib/LibTmux/Server.pm:157"
+          "packages/core/lib/LibTmux/Server.pm:159"
         ],
         "reviewed": true,
         "scope": null,
@@ -473,9 +473,9 @@
         "command": "list-panes",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:64",
-          "packages/core/lib/LibTmux/Server.pm:156"
+          "packages/core/lib/LibTmux/Server.pm:158"
         ],
         "reviewed": true,
         "scope": "server",
@@ -485,9 +485,9 @@
         "command": "list-sessions",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:64",
-          "packages/core/lib/LibTmux/Server.pm:154"
+          "packages/core/lib/LibTmux/Server.pm:156"
         ],
         "reviewed": true,
         "scope": null,
@@ -497,9 +497,9 @@
         "command": "list-windows",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:64",
-          "packages/core/lib/LibTmux/Server.pm:155"
+          "packages/core/lib/LibTmux/Server.pm:157"
         ],
         "reviewed": true,
         "scope": "server",
@@ -509,9 +509,9 @@
         "command": "new-session",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:64",
-          "packages/core/lib/LibTmux/Server.pm:522"
+          "packages/core/lib/LibTmux/Server.pm:524"
         ],
         "reviewed": true,
         "scope": null
@@ -522,9 +522,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:65",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -534,9 +534,9 @@
         "command": "list-clients",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:65",
-          "packages/core/lib/LibTmux/Server.pm:157"
+          "packages/core/lib/LibTmux/Server.pm:159"
         ],
         "reviewed": true,
         "scope": null,
@@ -546,9 +546,9 @@
         "command": "list-panes",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:65",
-          "packages/core/lib/LibTmux/Server.pm:156"
+          "packages/core/lib/LibTmux/Server.pm:158"
         ],
         "reviewed": true,
         "scope": "server",
@@ -558,9 +558,9 @@
         "command": "list-sessions",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:65",
-          "packages/core/lib/LibTmux/Server.pm:154"
+          "packages/core/lib/LibTmux/Server.pm:156"
         ],
         "reviewed": true,
         "scope": null,
@@ -570,9 +570,9 @@
         "command": "list-windows",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:65",
-          "packages/core/lib/LibTmux/Server.pm:155"
+          "packages/core/lib/LibTmux/Server.pm:157"
         ],
         "reviewed": true,
         "scope": "server",
@@ -582,9 +582,9 @@
         "command": "new-window",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:65",
-          "packages/core/lib/LibTmux/Server.pm:547"
+          "packages/core/lib/LibTmux/Server.pm:549"
         ],
         "reviewed": true,
         "scope": null
@@ -595,9 +595,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:68",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -607,9 +607,9 @@
         "command": "list-clients",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:68",
-          "packages/core/lib/LibTmux/Server.pm:157"
+          "packages/core/lib/LibTmux/Server.pm:159"
         ],
         "reviewed": true,
         "scope": null
@@ -618,9 +618,9 @@
         "command": "list-panes",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:68",
-          "packages/core/lib/LibTmux/Server.pm:156"
+          "packages/core/lib/LibTmux/Server.pm:158"
         ],
         "reviewed": true,
         "scope": "server"
@@ -629,9 +629,9 @@
         "command": "list-sessions",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:68",
-          "packages/core/lib/LibTmux/Server.pm:154"
+          "packages/core/lib/LibTmux/Server.pm:156"
         ],
         "reviewed": true,
         "scope": null
@@ -640,9 +640,9 @@
         "command": "list-windows",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:68",
-          "packages/core/lib/LibTmux/Server.pm:155"
+          "packages/core/lib/LibTmux/Server.pm:157"
         ],
         "reviewed": true,
         "scope": "server"
@@ -653,9 +653,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:70",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -665,9 +665,9 @@
         "command": "rename-session",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:70",
-          "packages/core/lib/LibTmux/Server.pm:604"
+          "packages/core/lib/LibTmux/Server.pm:606"
         ],
         "reviewed": true,
         "scope": null
@@ -678,9 +678,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:71",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -690,9 +690,9 @@
         "command": "rename-window",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:71",
-          "packages/core/lib/LibTmux/Server.pm:606"
+          "packages/core/lib/LibTmux/Server.pm:608"
         ],
         "reviewed": true,
         "scope": null
@@ -703,9 +703,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:78",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -715,9 +715,9 @@
         "command": "resize-pane",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:78",
-          "packages/core/lib/LibTmux/Server.pm:646"
+          "packages/core/lib/LibTmux/Server.pm:648"
         ],
         "reviewed": true,
         "scope": null
@@ -728,9 +728,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:77",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -740,9 +740,9 @@
         "command": "select-layout",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:77",
-          "packages/core/lib/LibTmux/Server.pm:610"
+          "packages/core/lib/LibTmux/Server.pm:612"
         ],
         "reviewed": true,
         "scope": null
@@ -753,9 +753,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:76",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -765,9 +765,9 @@
         "command": "select-pane",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:76",
-          "packages/core/lib/LibTmux/Server.pm:609"
+          "packages/core/lib/LibTmux/Server.pm:611"
         ],
         "reviewed": true,
         "scope": null
@@ -778,9 +778,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:75",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -790,9 +790,9 @@
         "command": "select-window",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:75",
-          "packages/core/lib/LibTmux/Server.pm:608"
+          "packages/core/lib/LibTmux/Server.pm:610"
         ],
         "reviewed": true,
         "scope": null
@@ -803,9 +803,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:80",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -815,9 +815,9 @@
         "command": "send-keys",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:80",
-          "packages/core/lib/LibTmux/Server.pm:661"
+          "packages/core/lib/LibTmux/Server.pm:663"
         ],
         "reviewed": true,
         "scope": null
@@ -828,9 +828,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:81",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -840,9 +840,9 @@
         "command": "send-keys",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:81",
-          "packages/core/lib/LibTmux/Server.pm:661"
+          "packages/core/lib/LibTmux/Server.pm:663"
         ],
         "reviewed": true,
         "scope": null
@@ -853,9 +853,9 @@
         "command": "load-buffer",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:101",
-          "packages/core/lib/LibTmux/Server.pm:755"
+          "packages/core/lib/LibTmux/Server.pm:765"
         ],
         "reviewed": true,
         "scope": null
@@ -866,9 +866,9 @@
         "command": "set-environment",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:95",
-          "packages/core/lib/LibTmux/Server.pm:731"
+          "packages/core/lib/LibTmux/Server.pm:737"
         ],
         "reviewed": true,
         "scope": null
@@ -879,7 +879,7 @@
         "command": "set-hook",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:93",
           "packages/core/lib/LibTmux/Server.pm:716"
         ],
@@ -892,9 +892,9 @@
         "command": "set-option",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:90",
-          "packages/core/lib/LibTmux/Server.pm:697"
+          "packages/core/lib/LibTmux/Server.pm:699"
         ],
         "reviewed": true,
         "scope": null
@@ -905,9 +905,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:79",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -917,9 +917,9 @@
         "command": "select-pane",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:79",
-          "packages/core/lib/LibTmux/Server.pm:609"
+          "packages/core/lib/LibTmux/Server.pm:611"
         ],
         "reviewed": true,
         "scope": null
@@ -930,9 +930,9 @@
         "command": "show-buffer",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:102",
-          "packages/core/lib/LibTmux/Server.pm:756"
+          "packages/core/lib/LibTmux/Server.pm:766"
         ],
         "reviewed": true,
         "scope": null
@@ -943,7 +943,7 @@
         "command": "show-hooks",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:94",
           "packages/core/lib/LibTmux/Server.pm:716"
         ],
@@ -956,9 +956,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:67",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -968,9 +968,9 @@
         "command": "list-clients",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:67",
-          "packages/core/lib/LibTmux/Server.pm:157"
+          "packages/core/lib/LibTmux/Server.pm:159"
         ],
         "reviewed": true,
         "scope": null
@@ -979,9 +979,9 @@
         "command": "list-panes",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:67",
-          "packages/core/lib/LibTmux/Server.pm:156"
+          "packages/core/lib/LibTmux/Server.pm:158"
         ],
         "reviewed": true,
         "scope": "server"
@@ -990,9 +990,9 @@
         "command": "list-sessions",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:67",
-          "packages/core/lib/LibTmux/Server.pm:154"
+          "packages/core/lib/LibTmux/Server.pm:156"
         ],
         "reviewed": true,
         "scope": null
@@ -1001,9 +1001,9 @@
         "command": "list-windows",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:67",
-          "packages/core/lib/LibTmux/Server.pm:155"
+          "packages/core/lib/LibTmux/Server.pm:157"
         ],
         "reviewed": true,
         "scope": "server"
@@ -1014,9 +1014,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:66",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1026,9 +1026,9 @@
         "command": "list-clients",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:66",
-          "packages/core/lib/LibTmux/Server.pm:157"
+          "packages/core/lib/LibTmux/Server.pm:159"
         ],
         "reviewed": true,
         "scope": null,
@@ -1038,9 +1038,9 @@
         "command": "list-panes",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:66",
-          "packages/core/lib/LibTmux/Server.pm:156"
+          "packages/core/lib/LibTmux/Server.pm:158"
         ],
         "reviewed": true,
         "scope": "server",
@@ -1050,9 +1050,9 @@
         "command": "list-sessions",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:66",
-          "packages/core/lib/LibTmux/Server.pm:154"
+          "packages/core/lib/LibTmux/Server.pm:156"
         ],
         "reviewed": true,
         "scope": null,
@@ -1062,9 +1062,9 @@
         "command": "list-windows",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:66",
-          "packages/core/lib/LibTmux/Server.pm:155"
+          "packages/core/lib/LibTmux/Server.pm:157"
         ],
         "reviewed": true,
         "scope": "server",
@@ -1074,9 +1074,9 @@
         "command": "split-window",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:66",
-          "packages/core/lib/LibTmux/Server.pm:547"
+          "packages/core/lib/LibTmux/Server.pm:549"
         ],
         "reviewed": true,
         "scope": null
@@ -1087,9 +1087,9 @@
         "command": "display-message",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:73",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1099,9 +1099,9 @@
         "command": "unlink-window",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:73",
-          "packages/core/lib/LibTmux/Server.pm:607"
+          "packages/core/lib/LibTmux/Server.pm:609"
         ],
         "reviewed": true,
         "scope": null
@@ -1112,9 +1112,9 @@
         "command": "set-environment",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:99",
-          "packages/core/lib/LibTmux/Server.pm:731"
+          "packages/core/lib/LibTmux/Server.pm:737"
         ],
         "reviewed": true,
         "scope": null
@@ -1125,9 +1125,9 @@
         "command": "set-option",
         "evidence": [
           "packages/async/lib/LibTmux/Async/Server.pm:42",
-          "packages/core/lib/LibTmux/Server.pm:845",
+          "packages/core/lib/LibTmux/Server.pm:867",
           "packages/async/lib/LibTmux/Async/Server.pm:92",
-          "packages/core/lib/LibTmux/Server.pm:697"
+          "packages/core/lib/LibTmux/Server.pm:699"
         ],
         "reviewed": true,
         "scope": null
@@ -1137,10 +1137,10 @@
       {
         "command": "capture-pane",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1036",
-          "packages/core/lib/LibTmux/Server.pm:671"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1059",
+          "packages/core/lib/LibTmux/Server.pm:673"
         ],
         "reviewed": true,
         "scope": null
@@ -1148,10 +1148,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1036",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1059",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1162,10 +1162,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1054",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1077",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1174,10 +1174,10 @@
       {
         "command": "list-clients",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1054",
-          "packages/core/lib/LibTmux/Server.pm:157"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1077",
+          "packages/core/lib/LibTmux/Server.pm:159"
         ],
         "reviewed": true,
         "scope": null
@@ -1185,10 +1185,10 @@
       {
         "command": "list-panes",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1054",
-          "packages/core/lib/LibTmux/Server.pm:156"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1077",
+          "packages/core/lib/LibTmux/Server.pm:158"
         ],
         "reviewed": true,
         "scope": "server"
@@ -1196,10 +1196,10 @@
       {
         "command": "list-sessions",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1054",
-          "packages/core/lib/LibTmux/Server.pm:154"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1077",
+          "packages/core/lib/LibTmux/Server.pm:156"
         ],
         "reviewed": true,
         "scope": null
@@ -1207,10 +1207,10 @@
       {
         "command": "list-windows",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1054",
-          "packages/core/lib/LibTmux/Server.pm:155"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1077",
+          "packages/core/lib/LibTmux/Server.pm:157"
         ],
         "reviewed": true,
         "scope": "server"
@@ -1220,10 +1220,10 @@
       {
         "command": "delete-buffer",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1098",
-          "packages/core/lib/LibTmux/Server.pm:757"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1121",
+          "packages/core/lib/LibTmux/Server.pm:767"
         ],
         "reviewed": true,
         "scope": null
@@ -1233,10 +1233,10 @@
       {
         "command": "detach-client",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1057",
-          "packages/core/lib/LibTmux/Server.pm:614"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1080",
+          "packages/core/lib/LibTmux/Server.pm:616"
         ],
         "reviewed": true,
         "scope": null
@@ -1244,10 +1244,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1057",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1080",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1258,10 +1258,10 @@
       {
         "command": "show-environment",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1082",
-          "packages/core/lib/LibTmux/Server.pm:730"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1105",
+          "packages/core/lib/LibTmux/Server.pm:736"
         ],
         "reviewed": true,
         "scope": null
@@ -1271,10 +1271,10 @@
       {
         "command": "show-options",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1065",
-          "packages/core/lib/LibTmux/Server.pm:697"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1088",
+          "packages/core/lib/LibTmux/Server.pm:699"
         ],
         "reviewed": true,
         "scope": null
@@ -1284,10 +1284,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1040",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1063",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1296,10 +1296,10 @@
       {
         "command": "kill-pane",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1040",
-          "packages/core/lib/LibTmux/Server.pm:611"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1063",
+          "packages/core/lib/LibTmux/Server.pm:613"
         ],
         "reviewed": true,
         "scope": null
@@ -1309,10 +1309,10 @@
       {
         "command": "kill-server",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1052",
-          "packages/core/lib/LibTmux/Server.pm:634"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1075",
+          "packages/core/lib/LibTmux/Server.pm:636"
         ],
         "reviewed": true,
         "scope": null
@@ -1322,10 +1322,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1048",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1071",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1334,10 +1334,10 @@
       {
         "command": "kill-session",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1048",
-          "packages/core/lib/LibTmux/Server.pm:613"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1071",
+          "packages/core/lib/LibTmux/Server.pm:615"
         ],
         "reviewed": true,
         "scope": null
@@ -1347,10 +1347,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1044",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1067",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1359,10 +1359,10 @@
       {
         "command": "kill-window",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1044",
-          "packages/core/lib/LibTmux/Server.pm:612"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1067",
+          "packages/core/lib/LibTmux/Server.pm:614"
         ],
         "reviewed": true,
         "scope": null
@@ -1372,10 +1372,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:996",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1019",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1384,10 +1384,10 @@
       {
         "command": "link-window",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:996",
-          "packages/core/lib/LibTmux/Server.pm:577"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1019",
+          "packages/core/lib/LibTmux/Server.pm:579"
         ],
         "reviewed": true,
         "scope": null
@@ -1397,10 +1397,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:948",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:971",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1409,10 +1409,10 @@
       {
         "command": "list-clients",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:948",
-          "packages/core/lib/LibTmux/Server.pm:157"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:971",
+          "packages/core/lib/LibTmux/Server.pm:159"
         ],
         "reviewed": true,
         "scope": null,
@@ -1421,10 +1421,10 @@
       {
         "command": "list-panes",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:948",
-          "packages/core/lib/LibTmux/Server.pm:156"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:971",
+          "packages/core/lib/LibTmux/Server.pm:158"
         ],
         "reviewed": true,
         "scope": "server",
@@ -1433,10 +1433,10 @@
       {
         "command": "list-sessions",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:948",
-          "packages/core/lib/LibTmux/Server.pm:154"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:971",
+          "packages/core/lib/LibTmux/Server.pm:156"
         ],
         "reviewed": true,
         "scope": null,
@@ -1445,10 +1445,10 @@
       {
         "command": "list-windows",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:948",
-          "packages/core/lib/LibTmux/Server.pm:155"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:971",
+          "packages/core/lib/LibTmux/Server.pm:157"
         ],
         "reviewed": true,
         "scope": "server",
@@ -1459,10 +1459,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1004",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1027",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1471,10 +1471,10 @@
       {
         "command": "move-window",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1004",
-          "packages/core/lib/LibTmux/Server.pm:593"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1027",
+          "packages/core/lib/LibTmux/Server.pm:595"
         ],
         "reviewed": true,
         "scope": null
@@ -1484,10 +1484,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:967",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:990",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1496,10 +1496,10 @@
       {
         "command": "list-clients",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:967",
-          "packages/core/lib/LibTmux/Server.pm:157"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:990",
+          "packages/core/lib/LibTmux/Server.pm:159"
         ],
         "reviewed": true,
         "scope": null,
@@ -1508,10 +1508,10 @@
       {
         "command": "list-panes",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:967",
-          "packages/core/lib/LibTmux/Server.pm:156"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:990",
+          "packages/core/lib/LibTmux/Server.pm:158"
         ],
         "reviewed": true,
         "scope": "server",
@@ -1520,10 +1520,10 @@
       {
         "command": "list-sessions",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:967",
-          "packages/core/lib/LibTmux/Server.pm:154"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:990",
+          "packages/core/lib/LibTmux/Server.pm:156"
         ],
         "reviewed": true,
         "scope": null,
@@ -1532,10 +1532,10 @@
       {
         "command": "list-windows",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:967",
-          "packages/core/lib/LibTmux/Server.pm:155"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:990",
+          "packages/core/lib/LibTmux/Server.pm:157"
         ],
         "reviewed": true,
         "scope": "server",
@@ -1544,10 +1544,10 @@
       {
         "command": "new-session",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:967",
-          "packages/core/lib/LibTmux/Server.pm:522"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:990",
+          "packages/core/lib/LibTmux/Server.pm:524"
         ],
         "reviewed": true,
         "scope": null
@@ -1557,10 +1557,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:971",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:994",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1569,10 +1569,10 @@
       {
         "command": "list-clients",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:971",
-          "packages/core/lib/LibTmux/Server.pm:157"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:994",
+          "packages/core/lib/LibTmux/Server.pm:159"
         ],
         "reviewed": true,
         "scope": null,
@@ -1581,10 +1581,10 @@
       {
         "command": "list-panes",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:971",
-          "packages/core/lib/LibTmux/Server.pm:156"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:994",
+          "packages/core/lib/LibTmux/Server.pm:158"
         ],
         "reviewed": true,
         "scope": "server",
@@ -1593,10 +1593,10 @@
       {
         "command": "list-sessions",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:971",
-          "packages/core/lib/LibTmux/Server.pm:154"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:994",
+          "packages/core/lib/LibTmux/Server.pm:156"
         ],
         "reviewed": true,
         "scope": null,
@@ -1605,10 +1605,10 @@
       {
         "command": "list-windows",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:971",
-          "packages/core/lib/LibTmux/Server.pm:155"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:994",
+          "packages/core/lib/LibTmux/Server.pm:157"
         ],
         "reviewed": true,
         "scope": "server",
@@ -1617,10 +1617,10 @@
       {
         "command": "new-window",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:971",
-          "packages/core/lib/LibTmux/Server.pm:547"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:994",
+          "packages/core/lib/LibTmux/Server.pm:549"
         ],
         "reviewed": true,
         "scope": null
@@ -1630,10 +1630,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:980",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1003",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1642,10 +1642,10 @@
       {
         "command": "list-clients",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:980",
-          "packages/core/lib/LibTmux/Server.pm:157"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1003",
+          "packages/core/lib/LibTmux/Server.pm:159"
         ],
         "reviewed": true,
         "scope": null
@@ -1653,10 +1653,10 @@
       {
         "command": "list-panes",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:980",
-          "packages/core/lib/LibTmux/Server.pm:156"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1003",
+          "packages/core/lib/LibTmux/Server.pm:158"
         ],
         "reviewed": true,
         "scope": "server"
@@ -1664,10 +1664,10 @@
       {
         "command": "list-sessions",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:980",
-          "packages/core/lib/LibTmux/Server.pm:154"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1003",
+          "packages/core/lib/LibTmux/Server.pm:156"
         ],
         "reviewed": true,
         "scope": null
@@ -1675,10 +1675,10 @@
       {
         "command": "list-windows",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:980",
-          "packages/core/lib/LibTmux/Server.pm:155"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1003",
+          "packages/core/lib/LibTmux/Server.pm:157"
         ],
         "reviewed": true,
         "scope": "server"
@@ -1688,10 +1688,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:988",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1011",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1700,10 +1700,10 @@
       {
         "command": "rename-session",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:988",
-          "packages/core/lib/LibTmux/Server.pm:604"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1011",
+          "packages/core/lib/LibTmux/Server.pm:606"
         ],
         "reviewed": true,
         "scope": null
@@ -1713,10 +1713,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:992",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1015",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1725,10 +1725,10 @@
       {
         "command": "rename-window",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:992",
-          "packages/core/lib/LibTmux/Server.pm:606"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1015",
+          "packages/core/lib/LibTmux/Server.pm:608"
         ],
         "reviewed": true,
         "scope": null
@@ -1738,10 +1738,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1020",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1043",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1750,10 +1750,10 @@
       {
         "command": "resize-pane",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1020",
-          "packages/core/lib/LibTmux/Server.pm:646"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1043",
+          "packages/core/lib/LibTmux/Server.pm:648"
         ],
         "reviewed": true,
         "scope": null
@@ -1763,10 +1763,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1016",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1039",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1775,10 +1775,10 @@
       {
         "command": "select-layout",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1016",
-          "packages/core/lib/LibTmux/Server.pm:610"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1039",
+          "packages/core/lib/LibTmux/Server.pm:612"
         ],
         "reviewed": true,
         "scope": null
@@ -1788,10 +1788,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1012",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1035",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1800,10 +1800,10 @@
       {
         "command": "select-pane",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1012",
-          "packages/core/lib/LibTmux/Server.pm:609"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1035",
+          "packages/core/lib/LibTmux/Server.pm:611"
         ],
         "reviewed": true,
         "scope": null
@@ -1813,10 +1813,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1008",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1031",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1825,10 +1825,10 @@
       {
         "command": "select-window",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1008",
-          "packages/core/lib/LibTmux/Server.pm:608"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1031",
+          "packages/core/lib/LibTmux/Server.pm:610"
         ],
         "reviewed": true,
         "scope": null
@@ -1838,10 +1838,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1028",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1051",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1850,10 +1850,10 @@
       {
         "command": "send-keys",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1028",
-          "packages/core/lib/LibTmux/Server.pm:661"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1051",
+          "packages/core/lib/LibTmux/Server.pm:663"
         ],
         "reviewed": true,
         "scope": null
@@ -1863,10 +1863,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1032",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1055",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1875,10 +1875,10 @@
       {
         "command": "send-keys",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1032",
-          "packages/core/lib/LibTmux/Server.pm:661"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1055",
+          "packages/core/lib/LibTmux/Server.pm:663"
         ],
         "reviewed": true,
         "scope": null
@@ -1888,10 +1888,10 @@
       {
         "command": "load-buffer",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1090",
-          "packages/core/lib/LibTmux/Server.pm:755"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1113",
+          "packages/core/lib/LibTmux/Server.pm:765"
         ],
         "reviewed": true,
         "scope": null
@@ -1901,10 +1901,10 @@
       {
         "command": "set-environment",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1078",
-          "packages/core/lib/LibTmux/Server.pm:731"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1101",
+          "packages/core/lib/LibTmux/Server.pm:737"
         ],
         "reviewed": true,
         "scope": null
@@ -1914,9 +1914,9 @@
       {
         "command": "set-hook",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1071",
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1094",
           "packages/core/lib/LibTmux/Server.pm:716"
         ],
         "reviewed": true,
@@ -1927,10 +1927,10 @@
       {
         "command": "set-option",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1061",
-          "packages/core/lib/LibTmux/Server.pm:697"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1084",
+          "packages/core/lib/LibTmux/Server.pm:699"
         ],
         "reviewed": true,
         "scope": null
@@ -1940,10 +1940,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1024",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1047",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -1952,10 +1952,10 @@
       {
         "command": "select-pane",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1024",
-          "packages/core/lib/LibTmux/Server.pm:609"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1047",
+          "packages/core/lib/LibTmux/Server.pm:611"
         ],
         "reviewed": true,
         "scope": null
@@ -1965,10 +1965,10 @@
       {
         "command": "show-buffer",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1094",
-          "packages/core/lib/LibTmux/Server.pm:756"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1117",
+          "packages/core/lib/LibTmux/Server.pm:766"
         ],
         "reviewed": true,
         "scope": null
@@ -1978,9 +1978,9 @@
       {
         "command": "show-hooks",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1074",
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1097",
           "packages/core/lib/LibTmux/Server.pm:716"
         ],
         "reviewed": true,
@@ -1991,10 +1991,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:977",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1000",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -2003,10 +2003,10 @@
       {
         "command": "list-clients",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:977",
-          "packages/core/lib/LibTmux/Server.pm:157"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1000",
+          "packages/core/lib/LibTmux/Server.pm:159"
         ],
         "reviewed": true,
         "scope": null
@@ -2014,10 +2014,10 @@
       {
         "command": "list-panes",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:977",
-          "packages/core/lib/LibTmux/Server.pm:156"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1000",
+          "packages/core/lib/LibTmux/Server.pm:158"
         ],
         "reviewed": true,
         "scope": "server"
@@ -2025,10 +2025,10 @@
       {
         "command": "list-sessions",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:977",
-          "packages/core/lib/LibTmux/Server.pm:154"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1000",
+          "packages/core/lib/LibTmux/Server.pm:156"
         ],
         "reviewed": true,
         "scope": null
@@ -2036,10 +2036,10 @@
       {
         "command": "list-windows",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:977",
-          "packages/core/lib/LibTmux/Server.pm:155"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1000",
+          "packages/core/lib/LibTmux/Server.pm:157"
         ],
         "reviewed": true,
         "scope": "server"
@@ -2049,10 +2049,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:975",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:998",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -2061,10 +2061,10 @@
       {
         "command": "list-clients",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:975",
-          "packages/core/lib/LibTmux/Server.pm:157"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:998",
+          "packages/core/lib/LibTmux/Server.pm:159"
         ],
         "reviewed": true,
         "scope": null,
@@ -2073,10 +2073,10 @@
       {
         "command": "list-panes",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:975",
-          "packages/core/lib/LibTmux/Server.pm:156"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:998",
+          "packages/core/lib/LibTmux/Server.pm:158"
         ],
         "reviewed": true,
         "scope": "server",
@@ -2085,10 +2085,10 @@
       {
         "command": "list-sessions",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:975",
-          "packages/core/lib/LibTmux/Server.pm:154"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:998",
+          "packages/core/lib/LibTmux/Server.pm:156"
         ],
         "reviewed": true,
         "scope": null,
@@ -2097,10 +2097,10 @@
       {
         "command": "list-windows",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:975",
-          "packages/core/lib/LibTmux/Server.pm:155"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:998",
+          "packages/core/lib/LibTmux/Server.pm:157"
         ],
         "reviewed": true,
         "scope": "server",
@@ -2109,10 +2109,10 @@
       {
         "command": "split-window",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:975",
-          "packages/core/lib/LibTmux/Server.pm:547"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:998",
+          "packages/core/lib/LibTmux/Server.pm:549"
         ],
         "reviewed": true,
         "scope": null
@@ -2122,10 +2122,10 @@
       {
         "command": "display-message",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1000",
-          "packages/core/lib/LibTmux/Server.pm:130"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1023",
+          "packages/core/lib/LibTmux/Server.pm:132"
         ],
         "reviewed": true,
         "scope": null,
@@ -2134,10 +2134,10 @@
       {
         "command": "unlink-window",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1000",
-          "packages/core/lib/LibTmux/Server.pm:607"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1023",
+          "packages/core/lib/LibTmux/Server.pm:609"
         ],
         "reviewed": true,
         "scope": null
@@ -2147,10 +2147,10 @@
       {
         "command": "set-environment",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1086",
-          "packages/core/lib/LibTmux/Server.pm:731"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1109",
+          "packages/core/lib/LibTmux/Server.pm:737"
         ],
         "reviewed": true,
         "scope": null
@@ -2160,10 +2160,10 @@
       {
         "command": "set-option",
         "evidence": [
-          "packages/core/lib/LibTmux/Server.pm:932",
-          "packages/core/lib/LibTmux/Server.pm:845",
-          "packages/core/lib/LibTmux/Server.pm:1069",
-          "packages/core/lib/LibTmux/Server.pm:697"
+          "packages/core/lib/LibTmux/Server.pm:955",
+          "packages/core/lib/LibTmux/Server.pm:867",
+          "packages/core/lib/LibTmux/Server.pm:1092",
+          "packages/core/lib/LibTmux/Server.pm:699"
         ],
         "reviewed": true,
         "scope": null
