@@ -62,6 +62,31 @@ describe('OCaml compiled public interfaces', () => {
     expect(model.nativeProvenance?.exporter.revision).toBe(exporter)
   })
 
+  it('resolves module-alias members in odoc and signatures without crossing namespaces', () => {
+    const root = artifact().symbols[0]! as ApiSymbol
+    const symbol = (id: string, kind: ApiSymbol['kind'], parent: string, extra = {}): ApiSymbol => ({
+      ...root, id, publicId: id, qualifiedName: id.replace(/:type$/, ''),
+      name: id.split('.').at(-1)!.replace(/:type$/, ''), kind, parent, ...extra,
+    })
+    const owner = symbol('Libtmux.Client', 'module', 'Libtmux')
+    const values = [root, owner,
+      symbol('Libtmux.Report', 'module', 'Libtmux'),
+      symbol('Libtmux.Report.state', 'function', 'Libtmux.Report'),
+      symbol('Libtmux.Report.state:type', 'typealias', 'Libtmux.Report'),
+      symbol('Libtmux.Cleanup', 'module', 'Libtmux', { exportedFrom: 'Libtmux.Report' }),
+      symbol('Libtmux.Client.Local', 'module', owner.id, { exportedFrom: 'Libtmux.Cleanup' }),
+      symbol('Libtmux.Cycle', 'module', 'Libtmux', { exportedFrom: 'Libtmux.Cycle' }),
+    ]
+    const index = new SymbolIndex(values, (value) => `/${value.id}`, 'ocaml')
+    expect(index.resolve('Cleanup.state', 'odoc:val', owner)?.symbol?.id).toBe('Libtmux.Report.state')
+    expect(index.resolve('module-Local.type-state', 'odoc:type', owner)?.symbol?.id).toBe('Libtmux.Report.state:type')
+    expect(index.linkType('Local.state', owner)[0]?.link?.symbol?.id).toBe('Libtmux.Report.state:type')
+    expect(index.resolve('Cleanup.state', 'odoc:module', owner)).toBeUndefined()
+    expect(index.resolve('type-Cleanup.val-state', 'odoc:val', owner)).toBeUndefined()
+    expect(index.resolve('Cleanup.missing', 'odoc:val', owner)).toBeUndefined()
+    expect(index.resolve('Cycle.state', 'odoc:val', owner)).toBeUndefined()
+  })
+
   it('rejects stale revisions, private paths, unknown products and unresolved aliases', () => {
     expect(() => extractOcamlArtifact(artifact(), exporter)).toThrow(/revision/)
     const privateSymbol = artifact()

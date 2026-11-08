@@ -736,7 +736,7 @@ export class SymbolIndex {
   }
 
   /** Resolve odoc's namespaces from the containing module outward, without a global suffix guess. */
-  private resolveOdoc(target: string, role: string, context?: ApiSymbol): LinkTarget | undefined {
+  private resolveOdoc(target: string, role: string, context?: ApiSymbol, aliases = new Set<string>()): LinkTarget | undefined {
     const segments = target.split('.').map((part) => {
       const typed = /^(module-type|class-type|type|val|value|module|class|exception|exn|constructor|const|field|recfield)-(.+)$/.exec(part)
       return { name: typed?.[2] ?? part, role: typed?.[1] }
@@ -755,23 +755,37 @@ export class SymbolIndex {
       if (owner.kind === 'module' || owner.kind === 'interface') scopes.add(`${qualifiedNameOf(owner)}.`)
     }
     scopes.add('')
+    const parentsMatch = (symbol: ApiSymbol, last: number) => {
+      let ancestor = this.parentOf(symbol)
+      for (let i = last - 1; i >= 0; i--) {
+        // OCaml also exposes record labels and variant constructors directly in their module.
+        while (ancestor && ancestor.name !== segments[i]!.name && !['module', 'interface'].includes(ancestor.kind)) ancestor = this.parentOf(ancestor)
+        if (!ancestor || ancestor.name !== segments[i]!.name || !matches(ancestor, segments[i]!.role)) return false
+        ancestor = this.parentOf(ancestor)
+      }
+      return true
+    }
     for (const scope of scopes) {
-      const candidates = (this.ocamlPaths.get(`${scope}${path}`) ?? []).filter((symbol) => {
-        if (!matches(symbol, role)) return false
-        let ancestor = this.parentOf(symbol)
-        for (let i = segments.length - 2; i >= 0; i--) {
-          // OCaml also exposes record labels and variant constructors directly in their module.
-          while (ancestor && ancestor.name !== segments[i]!.name && !['module', 'interface'].includes(ancestor.kind)) ancestor = this.parentOf(ancestor)
-          if (!ancestor || ancestor.name !== segments[i]!.name || !matches(ancestor, segments[i]!.role)) return false
-          ancestor = this.parentOf(ancestor)
-        }
-        return true
-      })
+      const candidates = (this.ocamlPaths.get(`${scope}${path}`) ?? [])
+        .filter((symbol) => matches(symbol, role) && parentsMatch(symbol, segments.length - 1))
       if (candidates.length === 1) {
         const symbol = candidates[0]!
         return { href: this.hrefFor(symbol), external: false, symbol }
       }
       if (candidates.length > 1) return undefined
+      // A module alias keeps its own page; its members link to their public declarations.
+      for (let count = segments.length - 1; count > 0; count--) {
+        const prefix = `${scope}${segments.slice(0, count).map((part) => part.name).join('.')}`
+        const modules = (this.ocamlPaths.get(prefix) ?? []).filter((symbol) =>
+          symbol.kind === 'module' && symbol.exportedFrom &&
+          matches(symbol, segments[count - 1]!.role) && parentsMatch(symbol, count - 1))
+        if (modules.length > 1) return undefined
+        const alias = modules[0]
+        if (!alias) continue
+        if (aliases.has(alias.id)) return undefined
+        const suffix = target.split('.').slice(count).join('.')
+        return this.resolveOdoc(`${alias.exportedFrom}.${suffix}`, role, undefined, new Set([...aliases, alias.id]))
+      }
     }
     return undefined
   }
