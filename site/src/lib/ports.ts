@@ -1540,10 +1540,12 @@ export function workspaceOverviewNotice(port: Port): { title: string; body: stri
     }
   }
   if (port.workspaceCliAvailability !== 'local') return concept
+  const cliPackage = port.packages?.find((pkg) => pkg.executable === command)
   return {
     title,
     body: scope + `Build \`${command}\` from the source revision in the installation guide. `
-      + 'Its CLI and workspace library have separate installation and configuration contracts.',
+      + (cliPackage ? `The \`${cliPackage.name}\` package supplies this command. ` : '')
+      + 'Follow the workspace guide for its configuration format.',
   }
 }
 
