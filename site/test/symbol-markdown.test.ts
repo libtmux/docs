@@ -55,6 +55,9 @@ describe('API Markdown content parity', () => {
       expect(links).toContain(index.resolve(target, 'obj', symbol)!.href)
       expect(text).toContain('[`server`](/en/perl/latest/reference/server/)')
       expect(text).toContain('```perl\n' + section + '\n```')
+      const ownerText = symbolMarkdown({ model, symbol: owner, index })
+      expect(ownerText).toContain('[`report`](' + index.resolve(target, 'obj', symbol)!.href + ')')
+      expect(ownerText).not.toContain(':obj:')
     }
   })
   it('links native tmux command mentions in every port without editing examples', () => {
