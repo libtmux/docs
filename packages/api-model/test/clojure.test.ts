@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { extractClojure } from '../src/languages/clojure.ts'
+import { attachCompleteClojureExamples } from '../src/languages/clojure-examples.ts'
 import { SymbolIndex } from '../src/link.ts'
 
 const revision = '1'.repeat(40)
@@ -63,5 +64,38 @@ describe('compiled Clojure artifact', () => {
     if (boundary === 'reference') input.symbols[4]!.docstring = 'See [[missing-var]].'
     if (boundary === 'provenance') input.nativeProvenance.files[0]!.sha256 = 'stale'
     expect(() => extractClojure(input, revision)).toThrow(/Clojure/)
+  })
+})
+
+describe('Clojure example ownership', () => {
+  it.each([false, true])('preserves the selected source with launcher=%s', (launcher) => {
+    const symbol = extractClojure(artifact(), revision).symbols.find((entry) => entry.id === 'libtmux.core/close!')!
+    const program = '(ns libtmux.examples.api.connect)\n'
+    const setup = [
+      { sourceFile: 'examples/api/clojure/deps.edn', path: 'deps.edn' },
+      ...(launcher ? [{ sourceFile: 'examples/api/run.sh', path: 'run.sh' }] : []),
+    ]
+    const files: Record<string, string> = {
+      'examples/api/clojure/manifest.json': JSON.stringify({
+        schemaVersion: 1, variants: { clojure: { files: setup } },
+        examples: [{ id: 'connect', variant: 'clojure', language: 'clojure', description: 'Connect.',
+          mainNamespace: 'libtmux.examples.api.connect', path: 'src/main/clojure/libtmux/examples/api/connect.clj',
+          sourceFile: 'examples/src/main/clojure/libtmux/examples/api/connect.clj',
+          targets: [symbol.id], expectedOutput: 'connected=true\n' }],
+      }),
+      'examples/api/clojure/deps.edn': '{:paths ["src/main/clojure"]}\n',
+      'examples/src/main/clojure/libtmux/examples/api/connect.clj': program,
+      ...(launcher ? { 'examples/api/run.sh': '#!/bin/sh\nexec "$@"\n' } : {}),
+    }
+    attachCompleteClojureExamples([symbol], (path) => files[path], { repo, revision })
+    const blocks = symbol.doc!.examples!
+    expect(blocks.find((block) => block.code === program)?.sourceUrl)
+      .toBe(`https://github.com/${repo}/blob/${revision}/examples/src/main/clojure/libtmux/examples/api/connect.clj`)
+    const run = blocks.filter((block) => block.lang === 'console').at(-1)!
+    expect(run.code).toBe(`$ ${launcher ? 'sh run.sh ' : ''}clojure \\\n  -J-Dclojure.main.report=stderr \\\n  -M \\\n  -m libtmux.examples.api.connect\n`)
+    expect(blocks.some((block) => block.sourceUrl?.endsWith('/examples/api/run.sh'))).toBe(launcher)
+    const ownership = blocks.find((block) => block.code === program)!.intro!
+    expect(ownership.includes('own private tmux server')).toBe(!launcher)
+    expect(ownership.includes("launcher's server")).toBe(launcher)
   })
 })
