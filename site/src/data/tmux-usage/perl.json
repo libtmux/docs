@@ -94,7 +94,7 @@
   ],
   "port": "perl",
   "repo": "libtmux/libtmux-perl",
-  "revision": "618a4a063da27ad9861d4fe136991c68bba5a038",
+  "revision": "4bd4ec11d78bbaa35c203373373d8727b8821875",
   "schemaVersion": 1,
   "symbols": {
     "LibTmux::Async::Server::capture_pane": [
