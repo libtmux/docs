@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { extractCommonLisp } from '../src/languages/lisp.ts'
+import { SymbolIndex } from '../src/link.ts'
 
 const revision = '1'.repeat(40)
 const source = (file: string, line: number) => ({ file, line })
@@ -78,6 +79,62 @@ describe('Common Lisp native API adapter', () => {
     ])
   })
 
+  it('renders authored cross-package references as linked prose', () => {
+    const model = extractCommonLisp(fixture, revision)
+    const declaration = model.symbols.find((entry) => entry.id === 'libtmux.workspace:apply-workspace')!
+    const index = new SymbolIndex(model.symbols, (entry) => `/${entry.id}/`, 'lisp')
+    expect(declaration.doc?.body).toContain('See also: `libtmux.workspace:result-outcomes`')
+    expect(index.docSpans(declaration.doc!.body!, declaration)).toContainEqual(expect.objectContaining({
+      kind: 'ref', link: expect.objectContaining({ href: '/libtmux.workspace:result-outcomes/' }),
+    }))
+  })
+
+  it('preserves native CLOS dispatch signatures and required parameter types', () => {
+    const input = structuredClone(fixture)
+    Object.assign(input.packages[0]!.symbols[0]!, {
+      generic: true, signature: '(session value &key raw)',
+      methods: [{ signature: '(session (value libtmux:session) &key (raw nil))',
+        qualifiers: [], specializers: ['libtmux:session/type'] },
+      { signature: '(session :around (value libtmux:session) &key (raw nil))',
+        qualifiers: [':around'], specializers: ['libtmux:session/type'] }],
+    })
+    const declaration = extractCommonLisp(input, revision).symbols
+      .find((entry) => entry.id === 'libtmux:session/function')!
+    expect(declaration.signatures).toHaveLength(3)
+    expect(declaration.signatures[1]).toMatchObject({
+      raw: '(session (value libtmux:session) &key (raw nil))', methodKind: 'function',
+      params: [{ name: 'value', type: 'libtmux:session' },
+        { name: 'raw', default: 'nil', optional: true, keywordOnly: true }],
+    })
+    expect(declaration.signatures[1]!.identity).toContain('libtmux:session/type')
+    expect(declaration.signatures[2]!.params).toEqual(declaration.signatures[1]!.params)
+    expect(declaration.signatures[2]!.identity).not.toBe(declaration.signatures[1]!.identity)
+    expect(declaration.signatures[2]!.label).toBe(':around method: libtmux:session')
+    const index = new SymbolIndex(extractCommonLisp(input, revision).symbols, (entry) => `/${entry.id}/`, 'lisp')
+    const spans = index.linkType(declaration.signatures[2]!.raw!, declaration, declaration.signatures[2])
+    expect(spans.filter((span) => span.link).map((span) => [span.text, span.link!.symbol?.id]))
+      .toEqual([['libtmux:session', 'libtmux:session/type']])
+  })
+
+  it('links whole Lisp type names without linking lexical bindings or string defaults', () => {
+    const model = extractCommonLisp(fixture, revision)
+    for (const name of ['window', 'window-link']) model.symbols.push({
+      id: `libtmux:${name}`, name, kind: 'class', modifiers: [], signatures: [],
+      namespace: 'libtmux', qualifiedName: `libtmux:${name}`, source: { file: 'src/model.lisp' },
+    })
+    const index = new SymbolIndex(model.symbols, (entry) => `/${entry.id}/`, 'lisp')
+    const signature = { raw: '(window-links (session libtmux:window-link) &key (label "libtmux:window"))',
+      params: [{ name: 'session', type: 'libtmux:window-link' },
+        { name: 'label', default: '"libtmux:window"', optional: true, keywordOnly: true }] }
+    const declaration = { ...model.symbols[1]!, name: 'window-links', signatures: [signature] }
+    const spans = index.linkType(signature.raw, declaration, signature)
+    expect(spans.map((span) => span.text).join('')).toBe(signature.raw)
+    expect(spans.filter((span) => span.link).map((span) => [span.text, span.link!.symbol?.id]))
+      .toEqual([['libtmux:window-link', 'libtmux:window-link']])
+    expect(index.linkType('libtmux:window-link').filter((span) => span.link))
+      .toMatchObject([{ text: 'libtmux:window-link', link: { symbol: { id: 'libtmux:window-link' } } }])
+  })
+
   it('preserves required macro destructuring without inventing defaults', () => {
     const input = structuredClone(fixture)
     const declaration = input.packages[0]!.symbols[0]!
@@ -110,6 +167,11 @@ describe('Common Lisp native API adapter', () => {
     ['a duplicate declaration', (input: typeof fixture) => { input.packages[0]!.symbols.push(input.packages[0]!.symbols[0]!) }],
     ['a missing source line', (input: typeof fixture) => { input.packages[0]!.symbols[0]!.source.line = 0 }],
     ['an unresolved cross-reference', (input: typeof fixture) => { input.packages[3]!.symbols[0]!.documentation.seeAlso = ['libtmux.workspace:missing'] }],
+    ['a generic without dispatch metadata', (input: typeof fixture) => { input.packages[0]!.symbols[0]!.generic = true }],
+    ['a private dispatch type', (input: typeof fixture) => {
+      Object.assign(input.packages[0]!.symbols[0]!, { generic: true,
+        methods: [{ signature: '(session (value private-class))', qualifiers: [], specializers: ['libtmux.internal:private-class'] }] })
+    }],
   ])('rejects %s', (_name, mutate) => {
     const input = structuredClone(fixture)
     mutate(input)

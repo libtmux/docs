@@ -41,6 +41,16 @@ const ROWS: Record<string, Row> = {
 const declared = (kind: FormSymbol['kind'], id: string, name = id.split(/::|[.#:\\]/).at(-1)!): FormSymbol => ({ id, kind, name })
 
 describe('how a language writes a linked symbol', () => {
+  it('preserves dotted Common Lisp package names and hides namespace disambiguators', () => {
+    for (const label of ['libtmux.workspace:apply-workspace', 'libtmux.query:error-operator']) {
+      expect(writtenForm({ lang: 'lisp', kind: 'function', label,
+        symbol: declared('function', label) })).toBe(label)
+    }
+    expect(writtenForm({ lang: 'lisp', kind: 'type', label: 'libtmux:window/type',
+      symbol: declared('class', 'libtmux:window/type', 'window') })).toBe('libtmux:window')
+    expect(writtenForm({ lang: 'lisp', kind: 'type', label: 'libtmux.workspace',
+      symbol: declared('module', 'libtmux.workspace', 'libtmux.workspace') })).toBe('libtmux.workspace')
+  })
   it('has a row for every port and an entry in the table for each', () => {
     expect(Object.keys(ROWS).sort()).toEqual(API_MODEL_PORTS.map((port) => port.slug).sort())
     expect(Object.keys(FORMS).sort()).toEqual(Object.keys(ROWS).sort())

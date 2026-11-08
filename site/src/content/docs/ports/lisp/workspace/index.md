@@ -18,8 +18,9 @@ $ mise exec -- tools/lisp.sh tools/workspace-cli.lisp -h
 ```
 
 The command validates a bounded JSON document before it contacts tmux. Planning
-is local. Applying a plan uses the native client and reports every step's
-outcome; it does not claim transactional rollback.
+is local. Applying a plan uses the native client and returns a JSON summary.
+An application failure reports the retained step outcomes and dispatch status;
+it does not claim transactional rollback.
 
 Read the [source installation and command guide](source-guide/) for the file
 format, validation limits, planning output, apply behavior, and exit status.

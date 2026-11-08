@@ -117,6 +117,14 @@ export function writtenForm({ lang, kind, symbol, owner, label, onOwnerPage = fa
   const parsed = PATH.exec(label)
   if (!parsed) return label
   const [, lead, body, args = ''] = parsed as unknown as [string, string, string, string | undefined]
+  if (lang === 'lisp' && kind !== 'enum-member') {
+    const name = body === symbol?.id ? body.replace(/\/(?:type|function)$/, '') : body
+    const split = name.lastIndexOf('.')
+    // A dot belongs to the package name once its colon is present. Modules are packages themselves.
+    const shown = name.includes(':') || symbol?.kind === 'module' || split < 0
+      ? name : `${name.slice(0, split)}:${name.slice(split + 1)}`
+    return `${lead}${shown}${args === '()' ? '' : args}`
+  }
   const pieces = body.split(JOIN)
   const names = pieces.filter((_, i) => i % 2 === 0)
   const joins = pieces.filter((_, i) => i % 2 === 1)

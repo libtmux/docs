@@ -1,7 +1,8 @@
-import type { ApiModel, ApiProduct, ApiSymbol, DocBlock, Modifier, Param, SymbolKind } from '../model.ts'
+import type { ApiModel, ApiProduct, ApiSymbol, DocBlock, Modifier, Param, Signature, SymbolKind } from '../model.ts'
 
 interface NativeDocumentation { summary: string; body?: string; seeAlso?: string[] }
 interface NativeSource { file: string; line: number }
+interface NativeMethod { signature: string; qualifiers: string[]; specializers: string[] }
 interface NativeSymbol {
   id: string
   name: string
@@ -9,6 +10,7 @@ interface NativeSymbol {
   signature?: string
   modifiers: string[]
   generic?: boolean
+  methods?: NativeMethod[]
   supertypes?: string[]
   documentation: NativeDocumentation
   source: NativeSource
@@ -47,10 +49,30 @@ const PACKAGE_CONTRACT = [
 ] as const
 
 function documentation(value: NativeDocumentation): DocBlock {
+  const body = [value.body, value.seeAlso?.length
+    ? `See also: ${value.seeAlso.map((target) => `\`${target}\``).join(', ')}.` : undefined]
+    .filter(Boolean).join('\n\n')
   return {
     summary: value.summary,
-    ...(value.body ? { body: value.body } : {}),
+    ...(body ? { body } : {}),
     ...(value.seeAlso?.length ? { seeAlso: [...value.seeAlso] } : {}),
+  }
+}
+
+/** A CLOS method specializes required arguments; optional/key bindings keep their ordinary roles. */
+function methodSignature(id: string, method: NativeMethod, names: Map<string, string>): Signature {
+  const [name, ...argumentsAndQualifiers] = listItems(method.signature)
+  const args = argumentsAndQualifiers.slice(method.qualifiers.length)
+  const plain = args.map((argument, index) => index < method.specializers.length
+    ? listItems(argument)[0]! : argument)
+  const params = parameters(`(${name} ${plain.join(' ')})`).map((param, index) => ({
+    ...param, ...(index < method.specializers.length
+      ? { type: names.get(method.specializers[index]!) ?? method.specializers[index]! } : {}),
+  }))
+  return {
+    identity: JSON.stringify([id, method.qualifiers, method.specializers]),
+    methodKind: 'function', raw: method.signature, params,
+    label: `${method.qualifiers.join(' ') || 'Primary'} method: ${method.specializers.map((type) => names.get(type) ?? type).join(', ')}`,
   }
 }
 
@@ -181,6 +203,18 @@ function assertArtifact(input: unknown, revision?: string): CommonLispArtifact {
       for (const target of symbol.documentation.seeAlso ?? []) {
         if (!ids.has(target)) throw new Error(`Unresolved Common Lisp cross-reference: ${target}`)
       }
+      if (symbol.generic && (!Array.isArray(symbol.methods) || !symbol.methods.length)) {
+        throw new Error(`Missing Common Lisp method applicability: ${symbol.id}`)
+      }
+      for (const method of symbol.methods ?? []) {
+        if (!symbol.generic || !method.signature || !Array.isArray(method.qualifiers) ||
+            method.qualifiers.some((qualifier) => typeof qualifier !== 'string') ||
+            !Array.isArray(method.specializers) || !method.specializers.length ||
+            method.specializers.some((target) => target !== 'common-lisp:t' &&
+              !artifact.packages.some((owner) => owner.symbols.some((entry) => entry.id === target && entry.kind !== 'function')))) {
+          throw new Error(`Invalid Common Lisp method applicability: ${symbol.id}`)
+        }
+      }
     }
   }
   return artifact
@@ -194,6 +228,8 @@ export function extractCommonLisp(input: unknown, revision?: string): ApiModel {
     extractedRevision: artifact.exporter.revision,
   })
   const symbols: ApiSymbol[] = []
+  const names = new Map(artifact.packages.flatMap((pkg) => pkg.symbols
+    .map((symbol) => [symbol.id, `${pkg.name}:${symbol.name}`] as const)))
   for (const pkg of artifact.packages) {
     symbols.push({
       id: pkg.name, publicId: pkg.name, qualifiedName: pkg.name, namespace: '', name: pkg.name,
@@ -205,7 +241,10 @@ export function extractCommonLisp(input: unknown, revision?: string): ApiModel {
         id: symbol.id, publicId: symbol.id, qualifiedName: `${pkg.name}:${symbol.name}`,
         namespace: pkg.name, name: symbol.name, kind: symbol.kind as SymbolKind,
         modifiers: symbol.modifiers as Modifier[], parent: pkg.name,
-        signatures: symbol.signature ? [{ raw: symbol.signature, params: parameters(symbol.signature) }] : [],
+        signatures: [
+          ...(symbol.signature ? [{ raw: symbol.signature, params: parameters(symbol.signature) }] : []),
+          ...(symbol.methods ?? []).map((method) => methodSignature(symbol.id, method, names)),
+        ],
         product: pkg.product, package: pkg.system, publicOwner: pkg.name, apiScope: 'exported',
         doc: documentation(symbol.documentation), source: source(symbol.source),
         ...(symbol.supertypes?.length ? { extends: [...symbol.supertypes] } : {}),
