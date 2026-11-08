@@ -7,18 +7,18 @@
  * with the command, because the flags choose the scope tmux lists.
  */
 import { parserFor } from '../../packages/api-model/src/parser.ts'
-import { receiverOf, scanElixir, scanFSharp, scanJulia } from './tmux-usage-lexical.mjs'
+import { receiverOf, scanElixir, scanFSharp, scanJulia, scanLisp } from './tmux-usage-lexical.mjs'
 
 /** Port to the grammar that reads its source. PowerShell cmdlets are C#; Julia, F# and Elixir are read by their text. */
 export const GRAMMARS = {
   py: 'python', ts: 'typescript', rs: 'rust', go: 'go', java: 'java', kotlin: 'kotlin', scala: 'scala',
-  csharp: 'csharp', powershell: 'csharp', cxx: 'cpp', swift: 'swift', ruby: 'ruby', lua: 'lua', julia: 'julia', fsharp: 'fsharp', elixir: 'elixir',
+  csharp: 'csharp', powershell: 'csharp', cxx: 'cpp', swift: 'swift', ruby: 'ruby', lua: 'lua', julia: 'julia', fsharp: 'fsharp', elixir: 'elixir', lisp: 'commonlisp',
 }
 
 /** Source extensions per grammar, minus declaration-only files. */
 export const EXTENSIONS = {
   python: /\.py$/, typescript: /(?<!\.d)\.ts$/, rust: /\.rs$/, go: /\.go$/, java: /\.java$/, kotlin: /\.kt$/,
-  scala: /\.scala$/, csharp: /\.cs$/, cpp: /\.(?:cpp|cc|cxx|hpp|hh|h)$/, swift: /\.swift$/, ruby: /\.rb$/, lua: /\.lua$/, julia: /\.jl$/, fsharp: /\.fs$/, elixir: /\.ex$/,
+  scala: /\.scala$/, csharp: /\.cs$/, cpp: /\.(?:cpp|cc|cxx|hpp|hh|h)$/, swift: /\.swift$/, ruby: /\.rb$/, lua: /\.lua$/, julia: /\.jl$/, fsharp: /\.fs$/, elixir: /\.ex$/, commonlisp: /\.(?:lisp|cl)$/,
 }
 
 /** Directories and names that hold tests, examples, tooling and build output rather than the library. */
@@ -603,8 +603,9 @@ export async function scanSource({ grammar, text, commands, known, dispatch, bui
   if (grammar === 'julia') return scanJulia(text, { commands, known, dispatch })
   if (grammar === 'elixir') return scanElixir(text, { commands, known, dispatch })
   if (grammar === 'fsharp') return scanFSharp(text)
+  if (grammar === 'commonlisp') return scanLisp(text, { commands, known, dispatch })
   // A grammar that no reader above or below handles would reach the loader as a file that does not exist.
-  if (!(grammar in FUNCTIONS)) throw new Error(`no reader for the grammar ${JSON.stringify(grammar)}: scanSource reads ${[...Object.keys(FUNCTIONS), 'julia', 'fsharp', 'elixir'].join(', ')}`)
+  if (!(grammar in FUNCTIONS)) throw new Error(`no reader for the grammar ${JSON.stringify(grammar)}: scanSource reads ${[...Object.keys(FUNCTIONS), 'julia', 'fsharp', 'elixir', 'commonlisp'].join(', ')}`)
   const parser = await parserFor(grammar)
   // The Swift grammar predates typed throws; blanking the type keeps every line and column.
   const tree = parser.parse(grammar === 'swift' ? withoutNewSwift(text) : grammar === 'csharp' ? withoutPrimaryConstructors(text) : text)

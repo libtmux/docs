@@ -98,6 +98,12 @@
       "release": "0.1.0",
       "tag": "v0.1.0"
     },
+    "lisp": {
+      "status": "unpublished",
+      "version": null,
+      "release": null,
+      "tag": null
+    },
     "ts": {
       "status": "release",
       "version": "0.1.0",

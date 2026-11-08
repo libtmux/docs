@@ -19,6 +19,7 @@ import { extractRuby } from '../packages/api-model/src/languages/ruby.ts'
 import { extractPowerShell } from '../packages/api-model/src/languages/powershell.ts'
 import { extractJulia } from '../packages/api-model/src/languages/julia.ts'
 import { extractElixir } from '../packages/api-model/src/languages/elixir.ts'
+import { extractCommonLisp } from '../packages/api-model/src/languages/lisp.ts'
 import { attachCompleteGoExamples, readCompleteGoExamples } from '../packages/api-model/src/languages/go-examples.ts'
 import { attachCompleteCSharpExamples } from '../packages/api-model/src/languages/csharp-examples.ts'
 import { attachCompleteFSharpExamples } from '../packages/api-model/src/languages/fsharp-examples.ts'
@@ -242,6 +243,11 @@ const PORTS = {
     checkout: '~/work/libtmux/libtmux-elixir-docs-site',
     root: '.', nativeArtifact: '_build/docs/api.json',
     repo: 'libtmux/libtmux-elixir', options: {},
+  },
+  lisp: {
+    checkout: '~/work/libtmux/libtmux-lisp-docs-site',
+    root: '.', nativeArtifact: 'docs/_build/api.json',
+    repo: 'libtmux/libtmux-lisp', options: {},
   },
   lua: {
     checkout: '~/work/libtmux/libtmux-lua-docs',
@@ -639,7 +645,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       process.exit(1)
     }
     const artifact = JSON.parse(readFileSync(artifactPath, 'utf8'))
-    const nativeExtractors = { ruby: extractRuby, lua: extractLua, powershell: extractPowerShell, julia: extractJulia, elixir: extractElixir }
+    const nativeExtractors = { ruby: extractRuby, lua: extractLua, powershell: extractPowerShell, julia: extractJulia, elixir: extractElixir, lisp: extractCommonLisp }
     model = nativeExtractors[port](artifact, head)
   } else {
     model = await extractProject({

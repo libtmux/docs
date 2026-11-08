@@ -25,6 +25,38 @@
         "supported": true
       }
     ],
+    "powershell": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "julia": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "elixir": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "lisp": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
     "ts": [
       {
         "slug": "latest",
@@ -104,36 +136,16 @@
         "kind": "trunk",
         "supported": true
       }
-    ],
-    "powershell": [
-      {
-        "slug": "latest",
-        "label": "latest",
-        "kind": "trunk",
-        "supported": true
-      }
-    ],
-    "julia": [
-      {
-        "slug": "latest",
-        "label": "latest",
-        "kind": "trunk",
-        "supported": true
-      }
-    ],
-    "elixir": [
-      {
-        "slug": "latest",
-        "label": "latest",
-        "kind": "trunk",
-        "supported": true
-      }
     ]
   },
   "defaultVersion": {
     "py": "latest",
     "ruby": "latest",
     "lua": "latest",
+    "powershell": "latest",
+    "julia": "latest",
+    "elixir": "latest",
+    "lisp": "latest",
     "ts": "latest",
     "rs": "latest",
     "go": "latest",
@@ -143,9 +155,6 @@
     "csharp": "latest",
     "fsharp": "latest",
     "cxx": "latest",
-    "swift": "latest",
-    "powershell": "latest",
-    "julia": "latest",
-    "elixir": "latest"
+    "swift": "latest"
   }
 }

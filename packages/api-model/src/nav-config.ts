@@ -584,6 +584,14 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
       'LibTmux.Base.show': 'one display extension page shared by IDs, servers, snapshots, control connections and observation streams',
     },
   },
+  lisp: {
+    unsettled: {
+      libtmux: 'public package spanning the task buckets; its exported declarations have their own placements',
+      'libtmux.json': 'optional interchange package; its exported declarations sit under Formats and Errors',
+      'libtmux.workspace': 'workspace package spanning plans, steps, errors and operations',
+      'libtmux.workspace.cli': 'workspace command package; MAIN has its own placement',
+    },
+  },
   lua: {
     unsettled: {
       'libtmux.Configurable': 'options and hooks shared by sessions, windows and panes; the concrete handle is the subclass',
@@ -774,6 +782,22 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
     control: ['LibTmux.Protocol'],
     snapshots: ['LibTmux.Ref'],
   },
+  lisp: {
+    session: ['libtmux:session/type'],
+    window: ['libtmux:window/type', 'libtmux:window-link'],
+    pane: ['libtmux:pane', 'libtmux:clear-history', 'libtmux:copy-mode', 'libtmux:current-path',
+      'libtmux:dead-p'],
+    client: ['libtmux:attached-client'],
+    keys: ['libtmux:send-prefix', 'libtmux:send-text'],
+    layout: ['libtmux:height', 'libtmux:width'],
+    formats: ['libtmux.json:document-limit', 'libtmux.json:document-path'],
+    snapshots: ['libtmux:active-p', 'libtmux:entity', 'libtmux:entity-data', 'libtmux:entity-model',
+      'libtmux:id', 'libtmux:index', 'libtmux:name', 'libtmux:provenance', 'libtmux:refresh',
+      'libtmux:same-entity-p', 'libtmux:snapshot', 'libtmux:title'],
+    workspace: ['libtmux.workspace:workspace', 'libtmux.workspace:workspace-plan',
+      'libtmux.workspace:workspace-result', 'libtmux.workspace:workspace-step',
+      'libtmux.workspace.cli:main'],
+  },
   java: {
     commands: ['MessageLog', 'PrintedText', 'Prompt', 'Shell'].map((name) => `io.github.libtmux.${name}.${name}`),
     server: ['io.github.libtmux.IncarnationFence.IncarnationFence'],
@@ -854,7 +878,7 @@ function languageBucket(bucket: Bucket, port: string, root = bucket.id): Bucket 
 }
 
 export const NAV: Record<string, PortNav> = Object.fromEntries(
-  ['powershell', 'julia', 'elixir', 'py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'kotlin', 'scala', 'fsharp', 'csharp', 'cxx', 'swift'].map((port) => [
+  ['powershell', 'julia', 'elixir', 'lisp', 'py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'kotlin', 'scala', 'fsharp', 'csharp', 'cxx', 'swift'].map((port) => [
     port,
     {
       port,

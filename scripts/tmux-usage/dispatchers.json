@@ -2,6 +2,153 @@
   "schemaVersion": 1,
   "dispatchers": [
     {
+      "port": "lisp",
+      "name": "perform-command",
+      "why": "Validates and guards the tmux argument list, then sends it through the owned subprocess transport.",
+      "evidence": [
+        {
+          "at": "src/dispatch.lisp:167",
+          "has": [
+            "(defun perform-command"
+          ],
+          "reaches": [
+            {
+              "at": "src/dispatch.lisp:212",
+              "has": [
+                "(execute-tmux client encoded token"
+              ],
+              "calls": "execute-tmux"
+            },
+            {
+              "at": "src/client.lisp:169",
+              "has": [
+                "(execute-command"
+              ],
+              "calls": "execute-command"
+            },
+            {
+              "at": "src/client.lisp:12",
+              "has": [
+                "(run-process argv"
+              ],
+              "calls": "run-process"
+            },
+            {
+              "at": "src/process-sbcl.lisp:370",
+              "has": [
+                "(acquire-job job)"
+              ],
+              "calls": "acquire-job"
+            },
+            {
+              "at": "src/process-sbcl.lisp:138",
+              "has": [
+                "(uiop:launch-program"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "lisp",
+      "name": "execute-tmux",
+      "why": "Sends the complete tmux argument list through the owned subprocess transport.",
+      "evidence": [
+        {
+          "at": "src/client.lisp:168",
+          "has": [
+            "(defun execute-tmux"
+          ],
+          "reaches": [
+            {
+              "at": "src/client.lisp:169",
+              "has": [
+                "(execute-command"
+              ],
+              "calls": "execute-command"
+            },
+            {
+              "at": "src/client.lisp:12",
+              "has": [
+                "(run-process argv"
+              ],
+              "calls": "run-process"
+            },
+            {
+              "at": "src/process-sbcl.lisp:370",
+              "has": [
+                "(acquire-job job)"
+              ],
+              "calls": "acquire-job"
+            },
+            {
+              "at": "src/process-sbcl.lisp:138",
+              "has": [
+                "(uiop:launch-program"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "lisp",
+      "name": "operate-on-target",
+      "why": "Adds an exact target to the command it is given, then sends it through the guarded subprocess path.",
+      "evidence": [
+        {
+          "at": "src/geometry.lisp:19",
+          "has": [
+            "(defun operate-on-target"
+          ],
+          "reaches": [
+            {
+              "at": "src/geometry.lisp:20",
+              "has": [
+                "(apply #'perform-command"
+              ],
+              "calls": "perform-command"
+            },
+            {
+              "at": "src/dispatch.lisp:212",
+              "has": [
+                "(execute-tmux client encoded token"
+              ],
+              "calls": "execute-tmux"
+            },
+            {
+              "at": "src/client.lisp:169",
+              "has": [
+                "(execute-command"
+              ],
+              "calls": "execute-command"
+            },
+            {
+              "at": "src/client.lisp:12",
+              "has": [
+                "(run-process argv"
+              ],
+              "calls": "run-process"
+            },
+            {
+              "at": "src/process-sbcl.lisp:370",
+              "has": [
+                "(acquire-job job)"
+              ],
+              "calls": "acquire-job"
+            },
+            {
+              "at": "src/process-sbcl.lisp:138",
+              "has": [
+                "(uiop:launch-program"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "port": "py",
       "name": "check_call",
       "why": "Runs the tmux binary with the argument list it is given and raises when it fails.",

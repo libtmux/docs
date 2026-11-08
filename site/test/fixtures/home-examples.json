@@ -1465,6 +1465,70 @@
           "excerptSha256": "315b120fc40982d69ab2945b84a0b2c6df5faf8d63d75bf940739cd6e23b68af"
         }
       }
+    },
+    {
+      "port": "lisp",
+      "page": "home",
+      "sourceRepository": "libtmux/libtmux-lisp",
+      "sourceRevision": "99874b44dbe29b3651597a5debbacccde235d96c",
+      "sourceTree": "217b52ace3c9136fbbaafd74ae46a26267cd484d",
+      "files": [
+        {
+          "name": "quickstart.lisp",
+          "sha256": "d6f5dfbc7f59d35f03717afe659e7b1bb5a6c0e6df926cf255757eed44db0808",
+          "clipboardSha256": "69f304fc94cf051a831d48012f8955e652cc66b7549ccbf6a42abe1745e71826"
+        }
+      ],
+      "shellRecipe": [
+        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-lisp.git \\\n  99874b44dbe29b3651597a5debbacccde235d96c\ngit -C source checkout -q --detach FETCH_HEAD\nmise trust source\nmise -C source install",
+        "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\nexport LIBTMUX_SOURCE=\"$PWD/source\"\nexport LIBTMUX_PROGRAM=\"${LIBTMUX_NATIVE_TMUX:-$(command -v tmux)}\"\nLIBTMUX_DEMO_DIR=\"$(mktemp -d)\"\nexport LIBTMUX_EXAMPLE_SOCKET=\"$LIBTMUX_DEMO_DIR/tmux.sock\"\ntrap 'rm -rf \"$LIBTMUX_DEMO_DIR\"' EXIT\ntmux -S \"$LIBTMUX_EXAMPLE_SOCKET\" -f /dev/null \\\n  new-session -d -s demo -n editor -x 80 -y 24 -- /bin/cat\nLIBTMUX_ASDF=\"$(mise -C source where http:asdf-lisp)/asdf.lisp\"\nmise -C source exec -- sbcl --noinform --no-sysinit --no-userinit \\\n  --load \"$LIBTMUX_ASDF\" --script \"$PWD/quickstart.lisp\""
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "session demo",
+          "  window 0:editor: %0 %1",
+          "  window 1:logs: %2",
+          "%1 is in window editor of session demo"
+        ]
+      ],
+      "excerptSha256": "69f304fc94cf051a831d48012f8955e652cc66b7549ccbf6a42abe1745e71826",
+      "tmuxVersions": [
+        "3.3a",
+        "3.8a"
+      ],
+      "variants": {
+        "concise": {
+          "files": [
+            {
+              "name": "quickstart.lisp",
+              "sha256": "bbe7f458850ed69228d2c5d71c5aa5314a0d13e1a22331f857afcc864e78453e",
+              "clipboardSha256": "bc50e619446d6407b58c449547f89db59133a6b8b1c76d733f8bfb3066510eeb"
+            }
+          ],
+          "excerptSha256": "bc50e619446d6407b58c449547f89db59133a6b8b1c76d733f8bfb3066510eeb"
+        },
+        "errors": {
+          "files": [
+            {
+              "name": "quickstart.lisp",
+              "sha256": "bbe7f458850ed69228d2c5d71c5aa5314a0d13e1a22331f857afcc864e78453e",
+              "clipboardSha256": "bc50e619446d6407b58c449547f89db59133a6b8b1c76d733f8bfb3066510eeb"
+            }
+          ],
+          "excerptSha256": "bc50e619446d6407b58c449547f89db59133a6b8b1c76d733f8bfb3066510eeb"
+        },
+        "cleanup": {
+          "files": [
+            {
+              "name": "quickstart.lisp",
+              "sha256": "d6f5dfbc7f59d35f03717afe659e7b1bb5a6c0e6df926cf255757eed44db0808",
+              "clipboardSha256": "69f304fc94cf051a831d48012f8955e652cc66b7549ccbf6a42abe1745e71826"
+            }
+          ],
+          "excerptSha256": "69f304fc94cf051a831d48012f8955e652cc66b7549ccbf6a42abe1745e71826"
+        }
+      }
     }
   ]
 }

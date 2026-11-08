@@ -154,6 +154,45 @@
       ],
       "units": []
     },
+    "lisp": {
+      "repo": "libtmux/libtmux-lisp",
+      "revision": "99874b44dbe29b3651597a5debbacccde235d96c",
+      "distributions": [
+        {
+          "name": "libtmux",
+          "version": "0.1.0",
+          "manifest": "libtmux.asd",
+          "repo": "libtmux/libtmux-lisp",
+          "revision": "99874b44dbe29b3651597a5debbacccde235d96c"
+        }
+      ],
+      "units": [
+        {
+          "unit": "ASDF system",
+          "name": "libtmux/json"
+        },
+        {
+          "unit": "ASDF system",
+          "name": "libtmux/query"
+        },
+        {
+          "unit": "ASDF system",
+          "name": "libtmux/regex"
+        },
+        {
+          "unit": "ASDF system",
+          "name": "libtmux/workspace"
+        },
+        {
+          "unit": "ASDF system",
+          "name": "libtmux/workspace/cli"
+        },
+        {
+          "unit": "mise task",
+          "name": "workspace"
+        }
+      ]
+    },
     "ts": {
       "repo": "libtmux/libtmux-ts",
       "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",

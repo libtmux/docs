@@ -3823,6 +3823,28 @@ for (const [id, binding] of Object.entries(ELIXIR_CONCEPTS)) {
   concept.symbols.elixir = binding.symbol
   if (binding.note) (concept.notes ??= {}).elixir = binding.note
 }
+// Common Lisp keeps captured relationships on ordinary generic functions.
+// FETCH-SNAPSHOT performs acquisition; SESSIONS, WINDOWS, PANES and CLIENTS
+// only traverse the retained observation.
+const LISP_CONCEPTS: Record<string, { symbol: string; note?: string }> = {
+  session: { symbol: 'libtmux:session/type', note: '`session` is an immutable captured entity. The same name also has a relation accessor with a distinct public identity.' },
+  window: { symbol: 'libtmux:window/type', note: '`window` is a physical captured window. `window-link` preserves each session placement.' },
+  pane: { symbol: 'libtmux:pane', note: '`pane` is an immutable captured physical pane.' },
+  snapshot: { symbol: 'libtmux:fetch-snapshot', note: '`fetch-snapshot` acquires a new interval observation. Retained snapshots never refresh in place.' },
+  'list-sessions': { symbol: 'libtmux:sessions', note: '`sessions` returns a fresh vector from a captured snapshot without contacting tmux.' },
+  'list-windows': { symbol: 'libtmux:windows', note: '`windows` traverses a captured session. Repeated links preserve their physical-window multiplicity.' },
+  'list-panes': { symbol: 'libtmux:panes', note: '`panes` traverses a captured window without contacting tmux.' },
+  'list-session-panes': { symbol: 'libtmux:panes', note: '`panes` traverses captured observations; applying it to a session returns panes reachable through its retained links.' },
+  'list-server-windows': { symbol: 'libtmux:windows', note: '`windows` on a snapshot returns captured physical windows once each.' },
+  'list-server-panes': { symbol: 'libtmux:panes', note: '`panes` on a snapshot returns captured physical panes once each.' },
+  'list-clients': { symbol: 'libtmux:clients', note: '`clients` returns fresh attached-client observations from a retained snapshot.' },
+}
+for (const [id, binding] of Object.entries(LISP_CONCEPTS)) {
+  const concept = CONCEPTS[id]
+  if (!concept) throw new Error(`concepts: Common Lisp maps unknown concept ${id}`)
+  concept.symbols.lisp = binding.symbol
+  if (binding.note) (concept.notes ??= {}).lisp = binding.note
+}
 CONCEPTS['list-session-panes']!.absent!.julia = 'Traverse `windows(session)` and `panes(window)` in the captured snapshot. `panes(snapshot)` has server-wide scope.'
 for (const concept of Object.values(CONCEPTS)) {
   concept.absent ??= {}
@@ -3834,6 +3856,7 @@ for (const concept of Object.values(CONCEPTS)) {
   if (!concept.symbols.kotlin) concept.absent.kotlin = 'No source-verified Kotlin equivalent is recorded for this operation.'
   if (!concept.symbols.scala) concept.absent.scala = 'No source-verified Scala equivalent is recorded for this operation.'
   if (!concept.symbols.fsharp) concept.absent.fsharp = 'No source-verified F# equivalent is recorded for this operation.'
+  if (!concept.symbols.lisp) concept.absent.lisp = 'No source-verified Common Lisp equivalent is recorded for this operation.'
 }
 
 /** Every concept naming this symbol, including concepts sharing an overload group. */

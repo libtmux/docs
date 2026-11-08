@@ -32,6 +32,7 @@ export const TRANSPORT = {
   cxx: { pattern: /::posix_spawnp?\(|::write\(/, files: /(?:posix_child|connection|process)\.cpp$/ },
   swift: { pattern: /Subprocess\.run\(|Glibc\.write\(/, files: /Sources\/LibTmux\/(?:Transport|ControlMode|NonblockingLineWriter)\.swift$/ },
   elixir: { pattern: /\bsend_port\(/, files: /transport\/oneshot\.ex$/ },
+  lisp: { pattern: /uiop:launch-program/, files: /process-sbcl\.lisp$/ },
 }
 
 const CONSTRUCTOR = /^(?:__init__|constructor|init|new|initialize)$/

@@ -269,6 +269,11 @@ const PROBES = {
     const retired = new Set(Object.keys(body.retirements ?? {}))
     return (body.releases ?? []).map((release) => release.version).filter((version) => !retired.has(version))
   },
+  async lisp() {
+    // This port is source-installed through ASDF and Qlot. It deliberately
+    // has no central package-registry entry to probe.
+    return null
+  },
   async ts() {
     // `libtmux`, not the scoped `@libtmux/libtmux` this probe used to ask for.
     // The scoped name 404s, which classified a published package as having

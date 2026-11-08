@@ -122,6 +122,7 @@ os.execv({self.binary!r}, [{self.binary!r}, *sys.argv[1:]])
             TMUX_TMPDIR=str(self.directory),
             TMUX_BIN=str(wrapper),
             LIBTMUX_TMUX=str(wrapper),
+            LIBTMUX_NATIVE_TMUX=self.binary,
         )
 
     def finish(self, require_cleanup):

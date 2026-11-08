@@ -698,7 +698,7 @@ describe('the rendered lists', () => {
     // Every language has one somewhere for list-panes, so the table has no such line.
     expect((await render({ usage: tmuxResolvedUsage('latest', 'list-panes') })).querySelector('.tmux-usage__absent')).toBeNull()
     const windowPage = await render({ usage: tmuxResolvedUsage('latest', 'list-panes', 'window') })
-    expect(windowPage.querySelector('.tmux-usage__absent')!.textContent).toMatch(/^No method in Lua, Elixir, TypeScript, .*sends this command at this scope itself\.$/)
+    expect(windowPage.querySelector('.tmux-usage__absent')!.textContent).toMatch(/^No method in Lua, Elixir, Common Lisp, TypeScript, .*sends this command at this scope itself\.$/)
     // A command a few languages send names the rest, in the order the site lists them.
     const choose = await render({ usage: tmuxResolvedUsage('latest', 'choose-tree') })
     const named = choose.querySelector('.tmux-usage__absent')!.textContent!

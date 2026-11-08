@@ -65,6 +65,32 @@ const libraryDomain = (description: string): DocumentationDomain => ({
 })
 
 const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
+  lisp: {
+    domains: [
+      libraryDomain('Native CLOS observations, ordinary sequences and explicit tmux operations.'),
+      { id: 'workspace', label: 'Workspace Manager', kind: 'product', navGroup: 'Apps', route: 'workspace', package: 'workspace', product: 'workspace',
+        description: 'Validate, plan and explicitly apply bounded JSON workspaces through the native Lisp engine.' },
+    ],
+    sourceGuides: [
+      guide('README.md', 'guides/getting-started', 'core', { title: 'Getting started', aliases: [], sidebar: { group: 'Guides', order: 1 } }),
+      guide('docs/tutorial.md', 'guides/tutorial', 'core', { title: 'REPL tutorial', aliases: [], sidebar: { group: 'Guides', order: 2 } }),
+      guide('docs/captures.md', 'concepts/captures', 'core', { title: 'Captures and identity', aliases: [], sidebar: { group: 'Concepts', order: 1 } }),
+      guide('docs/queries.md', 'guides/queries', 'core', { title: 'Native queries', aliases: [], sidebar: { group: 'Guides', order: 3 } }),
+      guide('docs/query-interchange.md', 'topics/query-interchange', 'core', { title: 'Query interchange', aliases: [], sidebar: { group: 'Topics', order: 1 } }),
+      guide('docs/operations.md', 'guides/operations', 'core', { title: 'Explicit operations', aliases: [], sidebar: { group: 'Guides', order: 4 } }),
+      guide('docs/transport.md', 'concepts/transport', 'core', { title: 'Transport and cleanup', aliases: [], sidebar: { group: 'Concepts', order: 2 } }),
+      guide('docs/capabilities.md', 'guides/capabilities', 'core', { title: 'Capabilities and limits', aliases: [], sidebar: { group: 'Guides', order: 5 } }),
+      guide('docs/testing.md', 'guides/testing', 'core', { title: 'Testing', aliases: [], sidebar: { group: 'Guides', order: 6 } }),
+      guide('verification.md', 'guides/verification', 'core', { title: 'Verification evidence', aliases: [], sidebar: { group: 'Guides', order: 7 } }),
+      guide('docs/workspaces.md', 'workspace/source-guide', 'workspace', { title: 'Workspace guide', product: 'workspace', package: 'workspace', aliases: [], sidebar: { group: 'Guides', order: 2 } }),
+    ],
+    redirects: [
+      { sourcePath: 'docs/api.md', path: 'guides/api', target: 'reference' },
+      { sourcePath: 'docs/query-api.md', path: 'guides/query-api', target: 'reference' },
+      { sourcePath: 'docs/json-api.md', path: 'guides/json-api', target: 'reference' },
+      { sourcePath: 'docs/workspace-api.md', path: 'workspace/api', target: 'reference' },
+    ],
+  },
   powershell: {
     domains: [
       libraryDomain('Install LibTmux and use cmdlets to read and control tmux.'),

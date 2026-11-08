@@ -7260,6 +7260,195 @@
    "section": "topics"
   },
   {
+   "port": "lisp",
+   "symbol": "libtmux",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:cancel",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:client",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:clients",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:height",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:id",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:index",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:name",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:panes",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:refresh",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:sessions",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:title",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:width",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:windows",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:windows",
+   "page": "/lisp/latest/guides/tutorial/",
+   "title": "REPL tutorial",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query",
+   "page": "/lisp/latest/guides/tutorial/",
+   "title": "REPL tutorial",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:fields",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:from",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:items",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:matching",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:matching",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:matching",
+   "page": "/lisp/latest/guides/tutorial/",
+   "title": "REPL tutorial",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:one",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:where",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
    "port": "lua",
    "symbol": "libtmux.CaptureOptions.alternate_screen",
    "page": "/lua/latest/guides/panes/",
@@ -14973,6 +15162,69 @@
    "text": "@kotlin.Metadata",
    "page": "/kotlin/latest/guides/getting-started/",
    "line": 241,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "lisp",
+   "text": "LC_ALL=C.UTF-8",
+   "page": "/lisp/latest/concepts/transport/",
+   "line": 90,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "lisp",
+   "text": "Enter",
+   "page": "/lisp/latest/guides/operations/",
+   "line": 80,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "lisp",
+   "text": "#()",
+   "page": "/lisp/latest/guides/operations/",
+   "line": 174,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "lisp",
+   "text": "@[A-Za-z0-9_.-]+",
+   "page": "/lisp/latest/guides/operations/",
+   "line": 240,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "lisp",
+   "text": "fiveam:!!",
+   "page": "/lisp/latest/guides/testing/",
+   "line": 41,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "lisp",
+   "text": "fiveam:!!!",
+   "page": "/lisp/latest/guides/testing/",
+   "line": 41,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "lisp",
+   "text": "libtmux.lisp.filter/1",
+   "page": "/lisp/latest/guides/tutorial/",
+   "line": 275,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "lisp",
+   "text": "dist/libtmux-source.tar.gz",
+   "page": "/lisp/latest/guides/verification/",
+   "line": 38,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "lisp",
+   "text": "libtmux.lisp.filter/1",
+   "page": "/lisp/latest/topics/query-interchange/",
+   "line": 82,
    "why": "not defined in the stated port"
   },
   {
