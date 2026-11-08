@@ -55,12 +55,13 @@ def wait_for_socket_exit(path, seconds=2):
 class ExampleTmuxSandbox:
     """Observe explicit tmux endpoints and retire only owned servers."""
 
-    def __init__(self, output, env):
+    def __init__(self, output, env, *, forbid_tmux=False):
+        self.forbid_tmux = forbid_tmux
         binary = shutil.which("tmux", path=env["PATH"])
-        if binary is None:
+        if binary is None and not forbid_tmux:
             msg = "tmux is required to verify native examples"
             raise FileNotFoundError(msg)
-        self.binary = str(Path(binary).resolve())
+        self.binary = str(Path(binary).resolve()) if binary else ""
         self.directory = Path(tempfile.mkdtemp(prefix="ltx-example-"))
         self.trace = output / "tmux-commands.jsonl"
         bindir = output / "native-tools"
@@ -70,6 +71,12 @@ class ExampleTmuxSandbox:
 import json, os, sys
 from pathlib import Path
 
+if {forbid_tmux!r}:
+    descriptor = os.open({str(self.trace)!r}, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+    os.write(descriptor, (json.dumps(sys.argv[1:]) + '\\n').encode())
+    os.close(descriptor)
+    sys.stderr.write('tmux is forbidden by this example execution profile\\n')
+    raise SystemExit(125)
 args = sys.argv[1:]
 endpoint = None
 i = 0
@@ -126,6 +133,16 @@ os.execv({self.binary!r}, [{self.binary!r}, *sys.argv[1:]])
 
     def finish(self, require_cleanup):
         """Record cleanup and stop only servers created by this example."""
+        if self.forbid_tmux:
+            invocations = self.trace.read_text().splitlines() if self.trace.exists() else []
+            shutil.rmtree(self.directory)
+            return {
+                "required": False,
+                "endpoints": [],
+                "tmuxInvocations": len(invocations),
+                "passed": not invocations,
+                "scope": "Pure values profile: PATH tmux invocations are rejected before dispatch.",
+            }
         first: dict[str, SocketSelection] = {}
         if self.trace.exists():
             for line in self.trace.read_text().splitlines():
