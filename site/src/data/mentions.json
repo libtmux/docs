@@ -7381,6 +7381,13 @@
   {
    "port": "lisp",
    "symbol": "libtmux:kill-server",
+   "page": "/lisp/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:kill-server",
    "page": "/lisp/latest/guides/getting-started/",
    "title": "Getting started",
    "section": "guides"
@@ -7419,6 +7426,13 @@
    "page": "/lisp/latest/concepts/captures/",
    "title": "Captures and identity",
    "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:new-session",
+   "page": "/lisp/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
   },
   {
    "port": "lisp",
