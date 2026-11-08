@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { Window } from 'happy-dom'
 import { API_MODEL_PORTS, PORTS } from '../src/lib/ports'
+import { referenceIndexSections } from '../src/lib/api-tree'
 import { SITE_BUILT, SITE_PREFIX, PREVIEW_PREFIX, productionPath, publishedHas, publishedPath, sitePath } from './site-root'
 
 /**
@@ -134,10 +135,12 @@ describeIfAssembled('published exports', () => {
         template.innerHTML = readPublished(join(root, 'index.html'))
         const actual = [...template.content.querySelectorAll('.api-index-summary[id]')].map((node) => node.id)
         expect(reference.headings.map((heading: { id: string }) => heading.id)).toEqual(actual)
-        expect(actual[0]).toBe('section-server')
-        if (port.slug === 'powershell') expect(reference.symbols.slice(0, 3).map((symbol: { name: string }) => symbol.name))
-          .toEqual(['New-TmuxServer', 'Get-TmuxServer', 'Connect-TmuxServer'])
-        else expect(reference.symbols[0].name).toBe('Server')
+        const sections = referenceIndexSections(port.slug)
+        expect(sections.length, `${port.slug} model reference sections`).toBeGreaterThan(0)
+        expect(actual, `${port.slug} model section order`).toEqual(sections.map((section) => `section-${section.id}`))
+        expect(reference.symbols.map((symbol: { id: string; name: string }) => ({ id: symbol.id, name: symbol.name })),
+          `${port.slug} complete declaration order`).toEqual(sections.flatMap((section) => [...section.types, ...section.free])
+          .map((symbol) => ({ id: symbol.publicId ?? symbol.id, name: symbol.name })))
         for (const symbol of reference.symbols) {
           const target = new URL(symbol.url).pathname.replace(/^\//, '')
           expect(has(join(target, 'index.html')), symbol.url).toBe(true)
