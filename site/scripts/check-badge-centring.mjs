@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { newCheckContext } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 import { PNG } from 'pngjs'
 import { chromium } from 'playwright'
@@ -590,7 +591,7 @@ export async function checkBadgeCentring(browser, base, { sample: bounded = fals
   const hi = await chromium.launch({ args: ['--force-device-scale-factor=2', '--window-size=1440,1000'] })
   try {
     for (const [engine, factor] of [[browser, 1], [hi, 2]]) {
-      const context = await engine.newContext(factor === 1 ? { viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' } : { viewport: null, reducedMotion: 'reduce' })
+      const context = await newCheckContext(engine, base, factor === 1 ? { viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' } : { viewport: null, reducedMotion: 'reduce' })
       const page = await context.newPage()
       page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
       // The first request for a reference page compiles it in the dev server, and the index and tool pages are large.
@@ -616,7 +617,7 @@ export async function checkBadgeCentring(browser, base, { sample: bounded = fals
  * carries the mark and a later one is a plain link that keeps its kind.
  */
 export async function checkMentionDensity(browser, base) {
-  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } })
+  const context = await newCheckContext(browser, base, { viewport: { width: 1440, height: 1000 } })
   const page = await context.newPage()
   page.setDefaultNavigationTimeout(60000)
   try {
@@ -666,7 +667,7 @@ const CHIP_PAGES = ['server', 'session', 'window', 'pane', 'client'].map((name) 
  */
 export async function checkChipGrowth(browser, base) {
   // The contents column, and the Related APIs in it, show from 85rem.
-  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' })
+  const context = await newCheckContext(browser, base, { viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' })
   const page = await context.newPage()
   page.setDefaultNavigationTimeout(60000)
   const open = async (path) => {
@@ -712,7 +713,7 @@ const USAGE = { list: '.tmux-usage', where: 'usage table', ink: true }
  * a chip squeezed by its qualifier and one chip moved onto another.
  */
 export async function checkUsageChips(browser, base) {
-  const context = await browser.newContext({ viewport: { width: 1134, height: 900 } })
+  const context = await newCheckContext(browser, base, { viewport: { width: 1134, height: 900 } })
   const page = await context.newPage()
   page.setDefaultNavigationTimeout(60000)
   const ready = () => page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})

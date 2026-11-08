@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { newCheckPage } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 import { globSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -31,7 +32,7 @@ const browser = await chromium.launch({ channel: process.env.LIBTMUX_DOCS_BROWSE
 let checked = 0
 try {
   for (const width of [1440, 768, 390]) {
-    const page = await browser.newPage({ viewport: { width, height: 1000 } })
+    const page = await newCheckPage(browser, base, { viewport: { width, height: 1000 } })
     for (const path of paths) {
       const response = await page.goto(base + path)
       assert(response?.ok(), `${path}: HTTP ${response?.status()}`)

@@ -1,13 +1,14 @@
+import { newCheckContext } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 import { PORTS } from '../src/lib/ports.ts'
 import { chooseHomeTask } from './check-home-task-reset.mjs'
 
 export async function checkHomeExampleOptions(browser, base) {
   for (const blocked of [false, true]) {
-    const context = await browser.newContext({ viewport: { width: 944, height: 777 }, reducedMotion: 'reduce' })
+    const context = await newCheckContext(browser, base, { viewport: { width: 944, height: 777 }, reducedMotion: 'reduce' })
     try {
       if (blocked) {
-        await context.route('**/astro/runtime/client/dev-toolbar/entrypoint.js', (route) => route.fulfill({ contentType: 'application/javascript', body: 'export {}' }))
+        await context.route('**/astro/runtime/client/dev-toolbar/entrypoint.js', (route) => new URL(route.request().url()).origin !== new URL(base).origin ? route.fallback() : route.fulfill({ contentType: 'application/javascript', body: 'export {}' }))
         await context.addInitScript(() => Object.defineProperty(window, 'localStorage', {
           get() { throw new DOMException('Storage blocked', 'SecurityError') },
         }))

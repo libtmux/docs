@@ -1,3 +1,4 @@
+import { newCheckContext } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 
 /**
@@ -18,7 +19,7 @@ export const TYPE_PARAMETER_PAGES = [
  * declaration exists on the owner's page, and the Markdown twin says the same.
  */
 export async function checkTypeParameters(browser, base, pages = TYPE_PARAMETER_PAGES) {
-  const context = await browser.newContext({ viewport: { width: 1280, height: 1000 }, reducedMotion: 'reduce' })
+  const context = await newCheckContext(browser, base, { viewport: { width: 1280, height: 1000 }, reducedMotion: 'reduce' })
   const page = await context.newPage()
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   try {
