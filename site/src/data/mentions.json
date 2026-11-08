@@ -8395,6 +8395,41 @@
   },
   {
    "port": "ocaml",
+   "symbol": "Libtmux_json.Decode_error.category.Wrong_type",
+   "page": "/ocaml/latest/guides/query-interchange/",
+   "title": "Share a scalar pane query",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_json.Decode_error.t",
+   "page": "/ocaml/latest/guides/query-interchange/",
+   "title": "Share a scalar pane query",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_json.Expr",
+   "page": "/ocaml/latest/guides/query-interchange/",
+   "title": "Share a scalar pane query",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_json.Expr.decode",
+   "page": "/ocaml/latest/guides/query-interchange/",
+   "title": "Share a scalar pane query",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_json.Expr.of_string",
+   "page": "/ocaml/latest/guides/query-interchange/",
+   "title": "Share a scalar pane query",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
    "symbol": "Libtmux_json.Workspace.of_string",
    "page": "/ocaml/latest/workspace/source-guide/",
    "title": "Workspace guide",
@@ -8417,6 +8452,41 @@
   {
    "port": "ocaml",
    "symbol": "Libtmux_unix.Cancellation.with_",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_unix.Cleanup.create",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_unix.Cleanup.inspect",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_unix.Cleanup.phase.Open_pidfd",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_unix.Cleanup.phase.Unreaped_child",
+   "page": "/ocaml/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_unix.Cleanup.phase.Unreaped_child",
    "page": "/ocaml/latest/guides/control/",
    "title": "Submit actions and retain their outcomes",
    "section": "guides"
@@ -8538,6 +8608,13 @@
    "symbol": "Libtmux.Formats.lookup",
    "page": "/ocaml/latest/guides/compatibility/",
    "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Model.pane",
+   "page": "/ocaml/latest/guides/query-interchange/",
+   "title": "Share a scalar pane query",
    "section": "guides"
   },
   {

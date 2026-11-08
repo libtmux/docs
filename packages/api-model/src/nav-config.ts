@@ -751,7 +751,7 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
     commands: ['Libtmux', 'Libtmux.ID', 'Libtmux.Created', 'Libtmux.Operations', 'Libtmux.Spawn'],
     layout: ['Libtmux.Geometry'],
     options: ['Libtmux.Options'],
-    errors: ['Libtmux_json.Decode_error'],
+    errors: ['Libtmux_json.Decode_error', 'Libtmux_unix.Cleanup', 'Libtmux_eio.Cleanup'],
     workspace: ['Libtmux_workspace', 'Libtmux_workspace.Config', 'Libtmux_workspace.Execution'],
     runtime: ['Libtmux_unix', 'Libtmux_eio', 'Libtmux_json'],
     control: ['Libtmux.Output', 'Libtmux_unix.Cancellation', 'Libtmux_unix.Operation', 'Libtmux_eio.Operation', 'Libtmux_unix.Subscription', 'Libtmux_eio.Subscription'],

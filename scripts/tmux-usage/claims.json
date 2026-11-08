@@ -15215,13 +15215,13 @@
           "in": "Libtmux_unix.Client.rename_window"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -15273,13 +15273,13 @@
           "in": "Libtmux_unix.Client.rename_session"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -15331,13 +15331,13 @@
           "in": "Libtmux_unix.Client.switch_client_at"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -15389,13 +15389,13 @@
           "in": "Libtmux_unix.Client.request_detach_client_at"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -15447,13 +15447,13 @@
           "in": "Libtmux_unix.Client.refresh_client_at"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -15505,13 +15505,13 @@
           "in": "Libtmux_unix.Client.resize_control_client_at"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -15563,13 +15563,13 @@
           "in": "Libtmux_unix.Client.send_text"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -15621,13 +15621,13 @@
           "in": "Libtmux_unix.Client.send_keys"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -15679,13 +15679,13 @@
           "in": "Libtmux_unix.Client.wait_for"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -15737,13 +15737,13 @@
           "in": "Libtmux_unix.Client.signal"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -15795,13 +15795,13 @@
           "in": "Libtmux_unix.Client.capture_environment"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -15853,13 +15853,13 @@
           "in": "Libtmux_unix.Client.set_environment"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -15911,13 +15911,13 @@
           "in": "Libtmux_unix.Client.unset_environment"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -15969,13 +15969,13 @@
           "in": "Libtmux_unix.Client.remove_environment"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -16027,13 +16027,13 @@
           "in": "Libtmux_unix.Client.capture_options"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -16085,13 +16085,13 @@
           "in": "Libtmux_unix.Client.read_option"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -16143,13 +16143,13 @@
           "in": "Libtmux_unix.Client.set_option"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -16201,13 +16201,13 @@
           "in": "Libtmux_unix.Client.unset_option"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -16259,13 +16259,13 @@
           "in": "Libtmux_unix.Client.clear_option_array"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -16317,13 +16317,13 @@
           "in": "Libtmux_unix.Client.capture_hooks"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -16375,13 +16375,13 @@
           "in": "Libtmux_unix.Client.read_hook"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -16433,13 +16433,13 @@
           "in": "Libtmux_unix.Client.set_hook"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -16491,13 +16491,13 @@
           "in": "Libtmux_unix.Client.remove_hook"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -16549,13 +16549,13 @@
           "in": "Libtmux_unix.Client.run_hook"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -16607,13 +16607,13 @@
           "in": "Libtmux_unix.Client.create_session"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -16665,13 +16665,13 @@
           "in": "Libtmux_unix.Client.create_window"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -16723,13 +16723,13 @@
           "in": "Libtmux_unix.Client.split_pane"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -16781,13 +16781,13 @@
           "in": "Libtmux_unix.Client.break_pane"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -16839,13 +16839,13 @@
           "in": "Libtmux_unix.Client.kill_session"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -16897,13 +16897,13 @@
           "in": "Libtmux_unix.Client.kill_window"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -16955,13 +16955,13 @@
           "in": "Libtmux_unix.Client.kill_pane"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -17013,13 +17013,13 @@
           "in": "Libtmux_unix.Client.select_window_at"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -17071,13 +17071,13 @@
           "in": "Libtmux_unix.Client.unlink_window_at"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -17129,13 +17129,13 @@
           "in": "Libtmux_unix.Client.link_window"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -17187,13 +17187,13 @@
           "in": "Libtmux_unix.Client.move_window_at"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -17245,13 +17245,13 @@
           "in": "Libtmux_unix.Client.select_pane"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -17303,13 +17303,13 @@
           "in": "Libtmux_unix.Client.set_pane_title"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -17361,13 +17361,13 @@
           "in": "Libtmux_unix.Client.resize_pane"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -17419,13 +17419,13 @@
           "in": "Libtmux_unix.Client.resize_window"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -17477,13 +17477,13 @@
           "in": "Libtmux_unix.Client.select_layout"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -17535,13 +17535,13 @@
           "in": "Libtmux_unix.Client.cycle_layout"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -17594,13 +17594,13 @@
           "in": "Libtmux_unix.Client.cycle_layout"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -17653,13 +17653,13 @@
           "in": "Libtmux_unix.Client.move_pane"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -17711,13 +17711,13 @@
           "in": "Libtmux_unix.Client.swap_panes"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -17769,13 +17769,13 @@
           "in": "Libtmux_unix.Client.rotate_panes"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -17827,13 +17827,13 @@
           "in": "Libtmux_unix.Client.zoom_pane"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -17885,13 +17885,13 @@
           "in": "Libtmux_unix.Client.respawn_pane"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -17943,13 +17943,13 @@
           "in": "Libtmux_unix.Client.clear_history"
         },
         {
-          "at": "unix/libtmux_unix.ml:102",
+          "at": "unix/libtmux_unix.ml:111",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -17994,14 +17994,14 @@
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:100",
+          "at": "unix/libtmux_unix.ml:109",
           "has": [
             "let capture ?cancel t = run ?cancel t (Libtmux.Operations.capture ())"
           ],
           "in": "Libtmux_unix.Client.capture"
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -18028,14 +18028,14 @@
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:100",
+          "at": "unix/libtmux_unix.ml:109",
           "has": [
             "let capture ?cancel t = run ?cancel t (Libtmux.Operations.capture ())"
           ],
           "in": "Libtmux_unix.Client.capture"
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -18062,14 +18062,14 @@
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:100",
+          "at": "unix/libtmux_unix.ml:109",
           "has": [
             "let capture ?cancel t = run ?cancel t (Libtmux.Operations.capture ())"
           ],
           "in": "Libtmux_unix.Client.capture"
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -18096,14 +18096,14 @@
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:100",
+          "at": "unix/libtmux_unix.ml:109",
           "has": [
             "let capture ?cancel t = run ?cancel t (Libtmux.Operations.capture ())"
           ],
           "in": "Libtmux_unix.Client.capture"
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -18130,14 +18130,14 @@
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:109",
+          "at": "unix/libtmux_unix.ml:118",
           "has": [
             "run ?cancel t"
           ],
           "in": "Libtmux_unix.Client.capture_text"
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -18164,14 +18164,14 @@
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:109",
+          "at": "unix/libtmux_unix.ml:118",
           "has": [
             "run ?cancel t"
           ],
           "in": "Libtmux_unix.Client.capture_text"
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -18199,14 +18199,14 @@
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:109",
+          "at": "unix/libtmux_unix.ml:118",
           "has": [
             "run ?cancel t"
           ],
           "in": "Libtmux_unix.Client.capture_text"
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -18234,14 +18234,14 @@
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:109",
+          "at": "unix/libtmux_unix.ml:118",
           "has": [
             "run ?cancel t"
           ],
           "in": "Libtmux_unix.Client.capture_text"
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -18270,14 +18270,14 @@
           ]
         },
         {
-          "at": "unix/libtmux_unix.ml:109",
+          "at": "unix/libtmux_unix.ml:118",
           "has": [
             "run ?cancel t"
           ],
           "in": "Libtmux_unix.Client.capture_text"
         },
         {
-          "at": "unix/libtmux_unix.ml:92",
+          "at": "unix/libtmux_unix.ml:101",
           "has": [
             "await_owned ?cancel (Engine.submit t.engine command)))"
           ]
@@ -18312,13 +18312,13 @@
           "in": "Libtmux_eio.Client.rename_window"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -18370,13 +18370,13 @@
           "in": "Libtmux_eio.Client.rename_session"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -18428,13 +18428,13 @@
           "in": "Libtmux_eio.Client.switch_client_at"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -18486,13 +18486,13 @@
           "in": "Libtmux_eio.Client.request_detach_client_at"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -18544,13 +18544,13 @@
           "in": "Libtmux_eio.Client.refresh_client_at"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -18602,13 +18602,13 @@
           "in": "Libtmux_eio.Client.resize_control_client_at"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -18660,13 +18660,13 @@
           "in": "Libtmux_eio.Client.send_text"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -18718,13 +18718,13 @@
           "in": "Libtmux_eio.Client.send_keys"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -18776,13 +18776,13 @@
           "in": "Libtmux_eio.Client.wait_for"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -18834,13 +18834,13 @@
           "in": "Libtmux_eio.Client.signal"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -18892,13 +18892,13 @@
           "in": "Libtmux_eio.Client.capture_environment"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -18950,13 +18950,13 @@
           "in": "Libtmux_eio.Client.set_environment"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -19008,13 +19008,13 @@
           "in": "Libtmux_eio.Client.unset_environment"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -19066,13 +19066,13 @@
           "in": "Libtmux_eio.Client.remove_environment"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -19124,13 +19124,13 @@
           "in": "Libtmux_eio.Client.capture_options"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -19182,13 +19182,13 @@
           "in": "Libtmux_eio.Client.read_option"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -19240,13 +19240,13 @@
           "in": "Libtmux_eio.Client.set_option"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -19298,13 +19298,13 @@
           "in": "Libtmux_eio.Client.unset_option"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -19356,13 +19356,13 @@
           "in": "Libtmux_eio.Client.clear_option_array"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -19414,13 +19414,13 @@
           "in": "Libtmux_eio.Client.capture_hooks"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -19472,13 +19472,13 @@
           "in": "Libtmux_eio.Client.read_hook"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -19530,13 +19530,13 @@
           "in": "Libtmux_eio.Client.set_hook"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -19588,13 +19588,13 @@
           "in": "Libtmux_eio.Client.remove_hook"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -19646,13 +19646,13 @@
           "in": "Libtmux_eio.Client.run_hook"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -19704,13 +19704,13 @@
           "in": "Libtmux_eio.Client.create_session"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -19762,13 +19762,13 @@
           "in": "Libtmux_eio.Client.create_window"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -19820,13 +19820,13 @@
           "in": "Libtmux_eio.Client.split_pane"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -19878,13 +19878,13 @@
           "in": "Libtmux_eio.Client.break_pane"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -19936,13 +19936,13 @@
           "in": "Libtmux_eio.Client.kill_session"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -19994,13 +19994,13 @@
           "in": "Libtmux_eio.Client.kill_window"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -20052,13 +20052,13 @@
           "in": "Libtmux_eio.Client.kill_pane"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -20110,13 +20110,13 @@
           "in": "Libtmux_eio.Client.select_window_at"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -20168,13 +20168,13 @@
           "in": "Libtmux_eio.Client.unlink_window_at"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -20226,13 +20226,13 @@
           "in": "Libtmux_eio.Client.link_window"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -20284,13 +20284,13 @@
           "in": "Libtmux_eio.Client.move_window_at"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -20342,13 +20342,13 @@
           "in": "Libtmux_eio.Client.select_pane"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -20400,13 +20400,13 @@
           "in": "Libtmux_eio.Client.set_pane_title"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -20458,13 +20458,13 @@
           "in": "Libtmux_eio.Client.resize_pane"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -20516,13 +20516,13 @@
           "in": "Libtmux_eio.Client.resize_window"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -20574,13 +20574,13 @@
           "in": "Libtmux_eio.Client.select_layout"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -20632,13 +20632,13 @@
           "in": "Libtmux_eio.Client.cycle_layout"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -20691,13 +20691,13 @@
           "in": "Libtmux_eio.Client.cycle_layout"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -20750,13 +20750,13 @@
           "in": "Libtmux_eio.Client.move_pane"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -20808,13 +20808,13 @@
           "in": "Libtmux_eio.Client.swap_panes"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -20866,13 +20866,13 @@
           "in": "Libtmux_eio.Client.rotate_panes"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -20924,13 +20924,13 @@
           "in": "Libtmux_eio.Client.zoom_pane"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -20982,13 +20982,13 @@
           "in": "Libtmux_eio.Client.respawn_pane"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -21040,13 +21040,13 @@
           "in": "Libtmux_eio.Client.clear_history"
         },
         {
-          "at": "eio/libtmux_eio.ml:402",
+          "at": "eio/libtmux_eio.ml:365",
           "has": [
             "include Generated_operations.Make (struct"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -21091,14 +21091,14 @@
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:400",
+          "at": "eio/libtmux_eio.ml:363",
           "has": [
             "let capture t = run t (Operations.capture ())"
           ],
           "in": "Libtmux_eio.Client.capture"
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -21125,14 +21125,14 @@
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:400",
+          "at": "eio/libtmux_eio.ml:363",
           "has": [
             "let capture t = run t (Operations.capture ())"
           ],
           "in": "Libtmux_eio.Client.capture"
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -21159,14 +21159,14 @@
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:400",
+          "at": "eio/libtmux_eio.ml:363",
           "has": [
             "let capture t = run t (Operations.capture ())"
           ],
           "in": "Libtmux_eio.Client.capture"
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -21193,14 +21193,14 @@
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:400",
+          "at": "eio/libtmux_eio.ml:363",
           "has": [
             "let capture t = run t (Operations.capture ())"
           ],
           "in": "Libtmux_eio.Client.capture"
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -21227,14 +21227,14 @@
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:409",
+          "at": "eio/libtmux_eio.ml:372",
           "has": [
             "run t (Operations.capture_text ?scratch_dir pane ~start ~end_)"
           ],
           "in": "Libtmux_eio.Client.capture_text"
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -21261,14 +21261,14 @@
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:409",
+          "at": "eio/libtmux_eio.ml:372",
           "has": [
             "run t (Operations.capture_text ?scratch_dir pane ~start ~end_)"
           ],
           "in": "Libtmux_eio.Client.capture_text"
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -21296,14 +21296,14 @@
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:409",
+          "at": "eio/libtmux_eio.ml:372",
           "has": [
             "run t (Operations.capture_text ?scratch_dir pane ~start ~end_)"
           ],
           "in": "Libtmux_eio.Client.capture_text"
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -21331,14 +21331,14 @@
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:409",
+          "at": "eio/libtmux_eio.ml:372",
           "has": [
             "run t (Operations.capture_text ?scratch_dir pane ~start ~end_)"
           ],
           "in": "Libtmux_eio.Client.capture_text"
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]
@@ -21367,14 +21367,14 @@
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:409",
+          "at": "eio/libtmux_eio.ml:372",
           "has": [
             "run t (Operations.capture_text ?scratch_dir pane ~start ~end_)"
           ],
           "in": "Libtmux_eio.Client.capture_text"
         },
         {
-          "at": "eio/libtmux_eio.ml:390",
+          "at": "eio/libtmux_eio.ml:352",
           "has": [
             "let run t command = Result.bind (submit t command) await"
           ]

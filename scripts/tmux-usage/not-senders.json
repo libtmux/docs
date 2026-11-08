@@ -4600,7 +4600,7 @@
       "why": "These core functions construct typed command descriptions. Only a backend client executes them.",
       "evidence": [
         {
-          "at": "lib/libtmux.mli:1049",
+          "at": "lib/libtmux.mli:1071",
           "has": [
             "Construction performs no I/O"
           ]
@@ -4762,19 +4762,19 @@
       "why": "Observes rendered text and stream notifications. It does not use a tmux wait-for channel.",
       "evidence": [
         {
-          "at": "unix/libtmux_unix.ml:114",
+          "at": "unix/libtmux_unix.ml:123",
           "has": [
             "Observation_wait.rendered"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:413",
+          "at": "eio/libtmux_eio.ml:376",
           "has": [
             "Observation_wait.rendered"
           ]
         },
         {
-          "at": "unix/observation_wait.ml:46",
+          "at": "unix/observation_wait.ml:49",
           "has": [
             "capture_text !current"
           ]
@@ -4794,13 +4794,13 @@
       "why": "Matches a byte pattern against streamed output. It does not use a tmux wait-for channel.",
       "evidence": [
         {
-          "at": "unix/libtmux_unix.ml:48",
+          "at": "unix/libtmux_unix.ml:49",
           "has": [
             "Streaming.wait_for_bytes"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:203",
+          "at": "eio/libtmux_eio.ml:122",
           "has": [
             "Streaming.wait_for_bytes"
           ]
