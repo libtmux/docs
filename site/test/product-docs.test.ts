@@ -86,6 +86,11 @@ const mcpClientSetupRoutes: Record<string, string[]> = {
   go: ['mcp/guides/connect-client'], java: ['mcp/guides'], csharp: ['mcp/guides/connect-client'],
   cxx: ['mcp/guides'], swift: ['mcp/guides'],
 }
+// Placeholder overviews are not equivalent implementations of a product.
+const unavailableProductPorts: Record<ProductPage['product'], readonly string[]> = {
+  mcp: ['lua', 'elixir', 'powershell', 'perl'],
+  workspace: ['lua', 'elixir'],
+}
 
 it('advertises local native loaders while retaining their development status', () => {
   // Ruby ships its own released `libtmux-workspace load` and published MCP
@@ -461,8 +466,11 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       const sharedBrowse = page.product === 'workspace' && !['py', 'ruby'].includes(page.port)
         && ['guides', 'examples'].includes(page.section)
       if (nativeProductDocs(page.port)) {
+        const workspaceNames: Record<string, string> = {
+          powershell: 'LibTmux.Workspace', julia: 'LibTmuxWorkspace', perl: 'LibTmux::Workspace',
+        }
         const nativeTitles = page.product === 'workspace'
-          ? { '': `${workspaceTitle(page.port)} ${workspaceSubtitle(page.port)}`, 'source-guide': 'Workspace guide', reference: `${page.port === 'julia' ? 'LibTmuxWorkspace' : 'LibTmux.Workspace'} API reference` }
+          ? { '': `${workspaceTitle(page.port)} ${workspaceSubtitle(page.port)}`, 'source-guide': page.port === 'perl' ? 'Workspace loading' : 'Workspace guide', reference: `${workspaceNames[page.port]} API reference` }
           : { '': mcpTitle(page.port), 'source-guide': 'MCP server guide', reference: 'LibTmuxMCP API reference' }
         expect(text(headings1[0]!), page.path).toBe(nativeTitles[page.section as keyof typeof nativeTitles])
       } else if (sharedBrowse) {
@@ -795,10 +803,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         routes.map((route) => urlFor(`${port}/${port === page.port ? page.version : defaults[port]}/${route}/`).pathname),
       ])) : new Map(PORTS.flatMap((port) => {
         const section = page.section
-        if (port.slug === 'powershell' && page.product === 'mcp' && !section) {
-          return [[port.slug, [urlFor(`${port.slug}/${defaults[port.slug]}/mcp/`).pathname]]]
-        }
-        if (port.parentLibrary || !sectionsFor(port.slug, page.product).includes(section)) return []
+        if (port.parentLibrary || unavailableProductPorts[page.product].includes(port.slug)
+          || !sectionsFor(port.slug, page.product).includes(section)) return []
         const version = port.slug === page.port ? page.version : defaults[port.slug]
         return [[port.slug, [urlFor(`${port.slug}/${version}/${page.product}/${section ? `${section}/` : ''}`).pathname]]]
       }))
@@ -816,6 +822,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           expect(unavailable?.textContent, `${page.path} unavailable ${port.name}`).toContain('No matching page')
           const home = unavailable?.querySelector('a[data-picker-home]')?.getAttribute('href')
           expect(home, `${page.path} ${port.name} home exit`).toBeDefined()
+          if (unavailableProductPorts[page.product].includes(port.slug)) {
+            const version = port.slug === page.port ? page.version : defaults[port.slug]
+            expect(home, `${page.path} unavailable product uses core home`).toBe(urlFor(`${port.slug}/${version}/`).pathname)
+          }
           expect(resolves(home!, urlFor(page.path).href), `${page.path} ${port.name} home exists`).toBe(true)
         }
       }
@@ -838,11 +848,11 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   })
 
   it.each([
-    ['powershell', 'workspace'], ['julia', 'workspace'], ['julia', 'mcp'],
+    ['powershell', 'workspace'], ['julia', 'workspace'], ['julia', 'mcp'], ['perl', 'workspace'],
   ])('switches from the native %s %s source guide to verified task counterparts', async (port, product) => {
     const defaults = manifest().defaultVersion
     const routes: Record<string, string[]> = product === 'workspace' ? {
-      ruby: ['workspace/source-guide'], powershell: ['workspace/source-guide'], julia: ['workspace/source-guide'],
+      ruby: ['workspace/source-guide'], powershell: ['workspace/source-guide'], julia: ['workspace/source-guide'], perl: ['workspace/source-guide'],
     } : mcpClientSetupRoutes
     const path = `${port}/${defaults[port]}/${product}/source-guide/`
     await inspect(path, (document) => {
@@ -869,7 +879,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   })
 
   it.each(PORTS.filter((port) => !port.parentLibrary && productAvailable(port, 'workspace')
-    && !['py', 'ruby', 'powershell', 'julia'].includes(port.slug)))
+    && !['py', 'ruby'].includes(port.slug) && !nativeProductDocs(port.slug)))
     ('$name publishes workspace Guides and Examples browse pages', async (port) => {
     for (const page of pages().filter((entry) => entry.product === 'workspace'
       && entry.port === port.slug && ['guides', 'examples'].includes(entry.section))) await inspect(page.path, (document) => {
