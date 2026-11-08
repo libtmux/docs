@@ -261,10 +261,11 @@ html[data-js] .core-player__results > .core-result[data-off] {
   font-size: inherit;
 }
 
-/* A returned value is a few lines in a narrow column: the code block's own padding is more than it needs. */
+/* A returned value is a few lines in a narrow column: the code block's own padding is more than it needs. It is set at the size of the program beside it (the script copies that size into --core-program-size); without the script, at the program's smallest size. */
 .home-example-player .core-player__side .core-result__value .expressive-code {
   --ec-codePadBlk: 0.5rem;
   --ec-codePadInl: 0.75rem;
+  --ec-codeFontSize: var(--core-program-size, 0.75rem);
 }
 
 /* The showcase and the landing page set the height of their programs on every code block in a panel; a returned value takes the height it needs. */

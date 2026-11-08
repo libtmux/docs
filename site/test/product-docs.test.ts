@@ -557,9 +557,17 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       if (!install) return
       checked++
       // A workspace overview with several presets leads with the preset picker, which stands above the install.
+      // An MCP overview with a worked example leads with it, then install: the reader sees the server work before choosing a client.
       const presets = document.querySelector('article section.ws-picker h2#try-a-preset')
-      expect(document.querySelector('article h2')?.id, `${page.path} ${presets ? 'the preset picker' : 'install'} is the first section`).toBe(presets ? 'try-a-preset' : 'install')
+      // A workspace overview with one example has no picker, so that example leads, then install.
+      const example = page.product === 'mcp'
+        ? document.querySelector('article h2#worked-example')
+        : presets ? null : document.querySelector('article h2#example-workspaces')
+      const first = presets ? 'try-a-preset' : example ? example.id : 'install'
+      expect(document.querySelector('article h2')?.id, `${page.path} ${first} is the first section`).toBe(first)
       if (presets) expect(presets.compareDocumentPosition(install) & 4, `${page.path} install follows the preset picker`).toBeTruthy()
+      if (example) expect(example.compareDocumentPosition(install) & 4, `${page.path} install follows the ${example.id}`).toBeTruthy()
+      if (page.product === 'workspace') expect(document.querySelectorAll('article h2#example-workspaces').length, `${page.path} shows its examples once`).toBeLessThanOrEqual(1)
       for (const card of document.querySelectorAll('article .doc-card')) {
         expect(install.compareDocumentPosition(card) & 4, `${page.path} cards follow install`).toBeTruthy()
       }

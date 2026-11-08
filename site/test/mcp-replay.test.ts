@@ -180,22 +180,18 @@ describe('the tmux state each recorded call leaves, drawn from the results of a 
     expect(lastOutputLine('..\n2 passed in 0.00s\n$ ')).toBe('2 passed in 0.00s')
   })
 
-  it('follows Ruby: the pane the snapshot lists appears with nothing said about a session', async () => {
+  it('draws nothing for Ruby from its results alone: they carry no pane geometry and name no session', async () => {
     const frames = replayFrames(await steps('ruby'))
-    expect(frames.map((frame) => frame.sessions.length)).toEqual([0, 0, 1])
-    expect(frames[1], 'tmux_capabilities lists no pane').toMatchObject({ sessions: [] })
-    const session = frames[2]!.sessions[0]!
-    expect(session.name, 'a pane snapshot names no session').toBeUndefined()
-    expect(session.windows[0]).toMatchObject({ id: '@0', panes: [{ id: '%0', command: 'cat', path: '/home/user/project', width: 80, height: 24 }] })
-    expect(frames[2]).toMatchObject({ reading: 'panes' })
+    expect(frames).toHaveLength((await steps('ruby')).length + 1)
+    expect(frames.every((frame) => frame.sessions.length === 0), 'the page relies on the stored tmux state').toBe(true)
   })
 
-  it('follows Julia: the listing places the pane in the session and window it is linked into, and the capture shows what the pane displayed', async () => {
+  it('follows Julia: the create result names the session, and the listing places the split panes in their window', async () => {
     const frames = replayFrames(await steps('julia'))
-    expect(frames.map((frame) => frame.sessions.length)).toEqual([0, 1, 1])
-    expect(frames[1]).toMatchObject({ reading: 'panes', sessions: [{ id: '$0', name: 'docs', windows: [{ id: '@0', index: 0, name: 'cat', panes: [{ id: '%0', command: 'cat', width: 80, height: 24 }] }] }] })
-    expect(frames[1]!.sessions[0]!.windows[0]!.panes[0], 'a listing reads no screen').not.toHaveProperty('output')
-    expect(frames[2]!.sessions[0]!.windows[0]!.panes[0]!.output).toMatch(/^2026-01-01 checks started\n2026-01-01 checks finished\n/)
+    expect(frames[1]).toMatchObject({ sessions: [{ id: '$1', name: 'checks' }] })
+    expect(frames[3]!.reading).toBe('panes')
+    const window = frames[3]!.sessions[0]!.windows.find((item) => item.id === '@1')!
+    expect(window.panes.map((pane) => `${pane.id} ${pane.command}`)).toEqual(['%1 sh', '%2 sh'])
   })
 
   it('places a pane at the first link it has, even when it is linked into two places, and a capture of a pane no window holds changes nothing, and a listing with no contexts places nothing', () => {
@@ -290,6 +286,17 @@ describe('the frames of a recording that stored its tmux server\'s state', () =>
       expect(stateOf(frames[index + 1]!), `${port} frame ${index + 1} (${step.tool})`).toEqual(step.tmux!)
       expect(frames[index + 1]).toMatchObject({ done: index + 1, tool: step.tool })
     })
+  })
+
+  it('follows Ruby through its state: the split adds a second pane to checks, and closing the session leaves only the borrowed docs session', async () => {
+    const { steps: calls, before } = await stated('ruby')
+    const frames = replayFrames(calls, before)
+    const panesOf = (frame: Frames[number]) => frame.sessions.flatMap((session) => session.windows.flatMap((window) => window.panes.map((pane) => `${session.name}:${pane.id}`))).sort()
+    const at = (tool: string, nth = 0) => frames[calls.map((step, index) => [step.tool, index] as const).filter(([name]) => name === tool)[nth]![1] + 1]!
+    expect(panesOf(frames[0]!)).toEqual(['docs:%0'])
+    expect(panesOf(at('tmux_create', 0))).toEqual(['checks:%1', 'docs:%0'])
+    expect(panesOf(at('tmux_create', 1))).toEqual(['checks:%1', 'checks:%2', 'docs:%0'])
+    expect(panesOf(frames.at(-1)!)).toEqual(['docs:%0'])
   })
 
   it.each(ALL)('shows %s unchanged after each call that only reads, and changed or not after the others without saying it was a read', async (port) => {

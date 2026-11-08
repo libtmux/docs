@@ -121,7 +121,7 @@
 .mcp-turn {
   margin: 0 0 var(--mcp-gap);
   padding: 0.25rem 0.5rem;
-  border-inline-start: 2px solid transparent;
+  border-inline-start: 3px solid transparent;
   border-radius: 0.25rem;
 }
 
@@ -138,14 +138,23 @@
   cursor: pointer;
 }
 
-.mcp-replay[data-live] .mcp-turn[data-turn]:not([data-turn='prompt']):hover,
-.mcp-turn[aria-current='step'] {
+.mcp-replay[data-live] .mcp-turn[data-turn]:not([data-turn='prompt']):not([aria-current='step']):hover {
   border-inline-start-color: var(--color-muted);
   background: var(--color-surface-hover);
 }
 
+/* The call the tmux shows: an accent edge, which is what tells it from the rest (a tint alone is too close to the panel), and the tint the Core player gives its current line. */
+.mcp-turn[aria-current='step'] {
+  border-inline-start-color: var(--color-link);
+  background: color-mix(in srgb, var(--color-link) 14%, transparent);
+}
+
 .mcp-turn.is-pinned {
   border-inline-start-color: var(--color-link);
+}
+
+.mcp-turn[aria-current='step'].is-pinned {
+  background: color-mix(in srgb, var(--color-link) 24%, transparent);
 }
 
 /* A call is pinned with a real button at its top right; the state is aria-pressed. */
@@ -468,9 +477,134 @@
 .mcp-tile.is-new .mcp-tile__status,
 .mcp-tile__status.is-changed,
 .mcp-tmux__session.is-changed,
+.mcp-tmux__window.is-changed,
 .mcp-tile__pane.is-changed .mcp-pane__id {
   color: var(--color-accent);
   font-weight: 700;
+}
+
+/*
+ * An attached client's view (TmuxScreen's `client`): one window over its
+ * session's status line, in a screen whose size does not depend on which
+ * window shows, so showing another window moves nothing outside it. Every
+ * window is drawn in the same cell, and all but the one shown are [hidden].
+ */
+.mcp-tmux__screen--client {
+  aspect-ratio: 16 / 11;
+}
+
+.mcp-client {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  border: 1px solid var(--color-edge);
+  border-radius: 0.25rem;
+  overflow: hidden;
+  background: var(--color-background-secondary);
+}
+
+/* A window shown that the client is not on is a look, not a select-window: the screen's edge says so. */
+.mcp-tmux--client.is-peeking .mcp-client {
+  border-style: dashed;
+}
+
+.mcp-client__views {
+  display: grid;
+  min-height: 0;
+}
+
+.mcp-client__view {
+  grid-area: 1 / 1;
+  border: 0;
+  border-radius: 0;
+}
+
+.mcp-client__status {
+  gap: 0.5rem;
+  min-height: 0;
+  padding: 0 0.25rem;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.mcp-client__session {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.mcp-client__session .mcp-tmux__windows {
+  gap: 0.125rem;
+}
+
+.mcp-client__button {
+  margin: 0;
+  padding: 0 0.25rem;
+  border: 0;
+  border-radius: 0.125rem;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.mcp-client__button:hover {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.mcp-client__button:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: -2px;
+}
+
+.mcp-client .mcp-tmux__window.is-current {
+  background: color-mix(in srgb, currentColor 16%, transparent);
+}
+
+/* Other sessions sit at the status line's right end, as tmux's status-right would hold them: a name each, which shows that session. */
+.mcp-client__others {
+  display: flex;
+  gap: 0.125rem;
+  min-width: 0;
+  margin-left: auto;
+  overflow: hidden;
+  color: var(--color-muted);
+}
+
+.mcp-client__other.is-changed {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+/* A call's dot names the call and what it did to tmux, above the track. */
+.mcp-replay__tip {
+  position: absolute;
+  bottom: calc(100% + 0.75rem);
+  z-index: 5;
+  display: grid;
+  gap: 0.125rem;
+  width: max-content;
+  max-inline-size: min(20rem, 80vw);
+  padding: 0.35rem 0.6rem;
+  transform: translateX(-50%);
+  border: 1px solid var(--color-edge);
+  border-radius: 0.5rem;
+  background: var(--background-color);
+  color: var(--text-color);
+  box-shadow: 0 0.4rem 1.5rem #0003;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+.mcp-replay__tip[hidden] {
+  display: none;
+}
+
+.mcp-replay__tip code {
+  font-weight: 600;
+}
+
+.mcp-replay__tip span {
+  color: var(--color-muted);
 }
 
 .mcp-frame__note {

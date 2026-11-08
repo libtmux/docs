@@ -9,7 +9,7 @@ import WorkspacePicker from './workspace/WorkspacePicker.astro'
 import WorkspaceWindows from './workspace/WorkspaceWindows.astro'
 import { PORT_BY_SLUG, portPageUrl, type Port } from '../lib/ports'
 import { landingPanels, type CachedSource, type LandingTable } from '../lib/port-landing'
-import { mcpShowcase, showcaseHeadings } from '../lib/mcp-showcase'
+import { mcpShowcase, toolHeadings } from '../lib/mcp-showcase'
 import { loadCommand } from '../lib/workspace-links'
 import { landingExample, offersPicker, previewWindows, TOPICS, workspaceShowcase } from '../lib/workspace-showcase'
 import { QUICKSTARTS, homeCodeColumns } from '../lib/quickstarts'
@@ -91,7 +91,7 @@ const panelId = (product: string) => `landing-panel-${product}`
       </div>}
       <LandingInstall panel={panel} port={port.slug} />
       <ul class="landing-links">
-        {showcase && !panel.servedBy && <li><a href={`${panel.href}#${showcaseHeadings(showcase)[0]!.slug}`}>All tools{showcase.groups.some((group) => group.tier) ? ' by tier' : ''} →</a></li>}
+        {showcase && !panel.servedBy && <li><a href={`${panel.href}#${toolHeadings(showcase)[0]!.slug}`}>All tools{showcase.groups.some((group) => group.tier) ? ' by tier' : ''} →</a></li>}
         {showcase && <li><a href={showcase.toolsHref}>Every tool, with its arguments and result →</a></li>}
         <li><a href={panel.href}>{panel.label} documentation →</a></li>
       </ul>

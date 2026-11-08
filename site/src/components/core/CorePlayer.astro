@@ -21,6 +21,8 @@ import ReplayControls from '../replay/ReplayControls.astro'
 import TmuxScreen from '../replay/TmuxScreen.astro'
 import { coreFrames, replyText, returnedText, stepChanges, stepNote, viewSteps, visibleCommands } from '../../lib/core-player'
 import type { CoreCapability, CoreRecording } from '../../lib/core-recording'
+import { callHref, typeText } from '../../lib/core-apis'
+import { buildTarget } from '../../lib/versions'
 import { HOME_VIEWS, homeProgram, type HomeExample as Example } from '../../lib/quickstarts'
 import '../../styles/mcp-replay.css'
 import '../../styles/core-player.css'
@@ -48,14 +50,29 @@ const frames = coreFrames(capability)
 const views = Object.fromEntries(shownViews.map((view) => [view, viewSteps(capability, homeProgram(example, view).replace(/\n$/, ''))]))
 const before = (index: number) => (index === 0 ? capability.tmuxBefore : steps[index - 1]!.tmux)
 const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server is running yet.' : 'tmux is running.'
+// A call's name and its returned type link to the API reference: this build's version on the port's own site, its default version elsewhere.
+const links = { version: process.env.LIBTMUX_DOCS_PORT === port ? buildTarget(process.env).version : undefined, code: shownViews.map((view) => homeProgram(example, view)).join('\n') }
+const callLinks = new Map(steps.map((step) => [step.label, callHref(port, step.label, links)]))
+// The note under the drawing starts with the call it follows; that name links too.
+const noteParts = (index: number) => {
+  const step = steps[index]!
+  const note = stepNote(step, before(index))
+  const head = `tmux after ${step.label}`
+  return note.startsWith(head) ? { label: step.label, href: callLinks.get(step.label), rest: note.slice(head.length) } : { rest: note }
+}
+// What each call's dot names in its tooltip: the call, and what the note says it did.
+const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(index).rest.replace(/^: /, '').replace(/\.$/, '') }))
 ---
 <HomeExample port={port} language={language} example={example} heading={false} options={options} run={run} views={shownViews}>
-  <div slot="beside" class="core-player__side" data-core-plan={JSON.stringify(views)}>
+  <div slot="beside" class="core-player__side" data-core-plan={JSON.stringify(views)} data-core-tips={JSON.stringify(tips)}>
     <div class="core-player__tmux" data-tmux role="group" aria-label="tmux state after the call shown">
       {frames.map((frame) => (
         <div class="mcp-frame" data-frame={frame.done} data-off={frame.done === total ? undefined : ''}>
-          <TmuxScreen frame={frame} every marks={frame.done === 0 ? undefined : stepChanges(steps[frame.done - 1]!, before(frame.done - 1)).marks} idPrefix={`cp-${port}-${capabilityId}`} hadSessions={frames.some((earlier) => earlier.done < frame.done && earlier.sessions.length > 0)} />
-          <p class="mcp-frame__note">{frame.done === 0 ? 'tmux before the first call: no server is running.' : stepNote(steps[frame.done - 1]!, before(frame.done - 1))}</p>
+          <TmuxScreen frame={frame} client marks={frame.done === 0 ? undefined : stepChanges(steps[frame.done - 1]!, before(frame.done - 1)).marks} idPrefix={`cp-${port}-${capabilityId}`} hadSessions={frames.some((earlier) => earlier.done < frame.done && earlier.sessions.length > 0)} />
+          <p class="mcp-frame__note">{frame.done === 0 ? 'tmux before the first call: no server is running.' : (() => {
+            const note = noteParts(frame.done - 1)
+            return <>{note.label && <>tmux after {note.href ? <a href={note.href}><code>{note.label}</code></a> : <code>{note.label}</code>}</>}{note.rest}</>
+          })()}</p>
         </div>
       ))}
     </div>
@@ -70,7 +87,7 @@ const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server
         return (
           <section class="core-result" data-result={index + 1} data-off={index + 1 === total ? undefined : ''}>
             <h3 class="core-result__title">
-              <span><code>{step.label}</code> returned <code>{step.type}</code></span>
+              <span>{callLinks.get(step.label) ? <a href={callLinks.get(step.label)}><code>{step.label}</code></a> : <code>{step.label}</code>} returned <code>{typeText(port, step.type, links).map((part) => part.href ? <a href={part.href}>{part.text}</a> : part.text)}</code></span>
               <button type="button" class="core-result__pin" data-pin aria-pressed="false" hidden aria-label={`Pin the tmux state after ${step.label}`}><svg class="mcp-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2.5h6v11L8 11l-3 2.5z" /></svg></button>
             </h3>
             <div class="core-result__value"><Code code={returnedText(step)} lang="json" frame="none" wrap /></div>
@@ -120,7 +137,7 @@ const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server
 </p></noscript>
 
 <script>
-  import { bindReplay } from '../../lib/replay-player'
+  import { bindClientViews, bindReplay } from '../../lib/replay-player'
 
   /** A call's place in a view: the step it is in the recording, and its lines in that view's code. */
   type Placed = { index: number; lines: [number, number] }
@@ -135,6 +152,11 @@ const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server
     const frames = [...root.querySelectorAll<HTMLElement>('[data-frame]')]
     const results = [...root.querySelectorAll<HTMLElement>('[data-result]')]
     const pins = [...root.querySelectorAll<HTMLButtonElement>('[data-pin]')]
+    const tips = JSON.parse(side.dataset.coreTips!) as { call: string; text: string }[]
+    const marks = [...root.querySelectorAll<HTMLElement>('[data-mark]')]
+    // A label in a frame's status line shows its window there; moving to another call shows the client's window again.
+    const clientViews = bindClientViews(root.querySelector<HTMLElement>('[data-tmux]')!)
+    let drawnFrame = -1
     // A touch screen fires mouseenter on a tap and never mouseleave, so only a pointer that can hover previews.
     const canHover = window.matchMedia?.('(hover: hover)').matches ?? true
     // The program the reader sees depends on the two choices above it, which another script owns; read them whenever they matter.
@@ -164,15 +186,29 @@ const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server
     }
 
     // Full screen takes the frame that holds the program, the tmux and the controls, not the choices above it or the setup below.
+    // The program's size follows the width of its own column and its longest line, which a returned value beside it cannot see; it takes the size the program was given.
+    const matchProgramSize = () => {
+      const program = root.querySelector<HTMLElement>(`.home-example-view[data-home-view="${viewName()}"] pre code`)
+      if (program) side.style.setProperty('--core-program-size', getComputedStyle(program).fontSize)
+    }
     const player = bindReplay(root.querySelector<HTMLElement>('.home-example-player')!, {
       body,
       total: () => placed().length,
       render({ shown, pinned }) {
+        matchProgramSize()
         const call = shown === 0 ? undefined : placed()[shown - 1]
         const frame = call ? call.index + 1 : 0
+        if (frame !== drawnFrame) clientViews.reset()
+        drawnFrame = frame
         frames.forEach((element) => { element.toggleAttribute('data-off', Number(element.dataset.frame) !== frame) })
         results.forEach((element) => { element.toggleAttribute('data-off', Number(element.dataset.result) !== frame) })
         pins.forEach((pin) => { pin.setAttribute('aria-pressed', String(pinned !== null && shown === pinned)) })
+        // A dot names the call it shows in this view of the program, which the choices above it change.
+        marks.forEach((mark) => {
+          const position = Number(mark.dataset.mark)
+          const at = position === 0 ? undefined : placed()[position - 1]
+          if (at) mark.setAttribute('aria-label', `Show the state after ${tips[at.index]!.call}`)
+        })
         for (const view of Object.keys(plan)) {
           codeLines(view).forEach((line, position) => {
             const mine = view === viewName() && call !== undefined && position + 1 >= call.lines[0] && position + 1 <= call.lines[1]
@@ -184,6 +220,11 @@ const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server
         revealed = call
       },
       ownsKey: (target) => target.hasAttribute('data-pin'),
+      tip: (position) => {
+        if (position === 0) return { text: 'tmux before the first call' }
+        const at = placed()[position - 1]
+        return at ? tips[at.index] : undefined
+      },
     })
     if (!player) return
 
@@ -194,6 +235,7 @@ const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server
       })
     }
     const code = root.querySelector<HTMLElement>('.home-example-stage')!
+    new ResizeObserver(matchProgramSize).observe(code)
     if (canHover) {
       code.addEventListener('mouseover', (event) => {
         const line = (event.target as HTMLElement).closest<HTMLElement>('.ec-line.is-call')

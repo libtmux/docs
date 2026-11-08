@@ -16,7 +16,7 @@ import WorkspaceShowcase from '../workspace/WorkspaceShowcase.astro'
 import PackageInstall from '../widgets/PackageInstall.astro'
 import ProductApiIndex from '../api/ProductApiIndex.astro'
 import { buildTarget } from '../../lib/versions'
-import { mcpShowcase, showcaseHeadings as mcpHeadings } from '../../lib/mcp-showcase'
+import { exampleHeadings as mcpExampleHeadings, mcpShowcase, toolHeadings as mcpToolHeadings } from '../../lib/mcp-showcase'
 import { mcpIntro, workspaceIntro } from '../../lib/product-copy'
 import { offersPicker, showcaseHeadings as workspaceHeadings, workspaceShowcase } from '../../lib/workspace-showcase'
 import { API_MODELS } from '../../lib/api-models'
@@ -120,9 +120,12 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
   && productIsAvailable
   && Boolean(port && hasPackageInstalls(PORT_BY_SLUG[port], 'workspace'))
 
-// Each overview closes with what its port's own sources can show: workspace
-// files its tests load, or the tools its server advertises.
+// Each overview shows what its port's own sources can show: workspace files
+// its tests load, or the tools its server advertises. The MCP worked example
+// follows the intro and the tool grid closes the page.
 const workspaceExamples = isWorkspaceOverview && port ? workspaceShowcase(port) : undefined
+// A port with one example has no picker to open the page with, so its example opens it instead.
+const workspaceExampleLeads = Boolean(workspaceExamples && !offersPicker(workspaceExamples))
 const mcpTools = isMcpOverview && port ? await mcpShowcase(port, version ?? buildTarget(process.env).version) : undefined
 
 // A product overview opens with what the product is, in the words of its port's
@@ -154,11 +157,13 @@ const productIntro = isProductOverview && port && coreHome
   version={version}
   headings={placeholderLocale ? [] : [
     ...(workspaceExamples && offersPicker(workspaceExamples) ? [{ depth: 2, slug: 'try-a-preset', text: 'Try a preset' }] : []),
+    ...(workspaceExamples && workspaceExampleLeads ? workspaceHeadings(workspaceExamples) : []),
+    ...(mcpTools ? mcpExampleHeadings(mcpTools) : []),
     ...(isMcpOverview || isWorkspaceOverview ? [{ depth: 2, slug: 'install', text: 'Install' }] : []),
     ...(isCoreHome ? coreHomeHeadings(port!, version ?? buildTarget(process.env).version) : []),
     ...headings,
-    ...(workspaceExamples ? workspaceHeadings(workspaceExamples) : []),
-    ...(mcpTools ? mcpHeadings(mcpTools) : []),
+    ...(workspaceExamples && !workspaceExampleLeads ? workspaceHeadings(workspaceExamples) : []),
+    ...(mcpTools ? mcpToolHeadings(mcpTools) : []),
     ...(isProductApi ? [{ depth: 2, slug: 'generated-api', text: 'API declarations' }] : []),
   ]}
   pagePath={publicPagePath}
@@ -255,13 +260,16 @@ const productIntro = isProductOverview && port && coreHome
     <code>{packageSource.package}</code>{packageSource.version ? ` ${packageSource.version}` : ''} · <a href={`https://github.com/${packageSource.repo}/tree/${packageSource.revision}`}>Source</a>
   </p>}
   {/*
-    What the product is, then the preset picker where a workspace has several,
-    then install, then the way in, then the prose: a reader who landed on a
-    product overview came to get the thing, and the boxes are where they go
-    next. Both used to follow the whole page, below the fold.
+    What the product is, then the MCP worked example, then the preset picker
+    where a workspace has several, then install, then the way in, then the
+    prose: a reader who landed on a product overview came to get the thing, and
+    the boxes are where they go next. The example and install used to follow
+    the whole page, below the fold.
   */}
   {!placeholderLocale && productIntro && <ProductIntro parts={productIntro} />}
+  {!placeholderLocale && mcpTools && <McpShowcase showcase={mcpTools} part="example" />}
   {!placeholderLocale && workspaceExamples && <WorkspacePicker showcase={workspaceExamples} />}
+  {!placeholderLocale && workspaceExamples && workspaceExampleLeads && <WorkspaceShowcase showcase={workspaceExamples} />}
   {!placeholderLocale && isMcpOverview && port && (
     <>
       <h2 id="install">Install</h2>
@@ -290,11 +298,11 @@ const productIntro = isProductOverview && port && coreHome
     </div>
   )}
   {!placeholderLocale && <Content />}
-  {!placeholderLocale && workspaceExamples && <WorkspaceShowcase showcase={workspaceExamples} />}
+  {!placeholderLocale && workspaceExamples && !workspaceExampleLeads && <WorkspaceShowcase showcase={workspaceExamples} />}
   {!placeholderLocale && isWorkspaceOverview && !workspaceExamples && (
     <p class="mt-6 text-sm opacity-75" data-workspace-coming>Tested example workspace files for this port are coming.</p>
   )}
-  {!placeholderLocale && mcpTools && <McpShowcase showcase={mcpTools} />}
+  {!placeholderLocale && mcpTools && <McpShowcase showcase={mcpTools} part="tools" />}
   {!placeholderLocale && entry.data.product && productIsAvailable && isProductApi &&
     <ProductApiIndex port={port!} product={entry.data.product} version={version ?? buildTarget(process.env).version} />}
 </DocsLayout>
