@@ -258,7 +258,7 @@ describe('the player component', () => {
     const example = readFileSync(new URL('../src/components/HomeExample.astro', import.meta.url), 'utf8')
     expect(example).toMatch(/\.home-example-code \{[^}]*grid-template-rows: minmax\(0, 1fr\) auto;/)
     expect(example).toMatch(/\.home-example-toolbar \{[^}]*grid-row: 2;[^}]*\}/)
-    expect(example).toMatch(/\.home-example-code:has\(> \.home-example-toolbar\) \{ --home-toolbar-row: 1\.875rem; \}/)
+    expect(example).toMatch(/\.home-example-code:has\(> \.home-example-toolbar\) \{ --home-toolbar-row: 1\.5rem; \}/)
     expect(css, 'the stacked code gives up the toolbar\'s row').toMatch(/height: calc\(17rem - var\(--home-toolbar-row, 0rem\)\);/)
     for (const host of ['HomeIntro', 'PortLanding', 'CoreShowcase']) {
       expect(readFileSync(new URL(`../src/components/${host}.astro`, import.meta.url), 'utf8'), host).toMatch(/calc\(34rem - var\(--home-toolbar-row, 0rem\)\)/)
