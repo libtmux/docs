@@ -32,7 +32,7 @@ intersphinx_mapping = {
 }
 ```
 
-`None` discovers `objects.inv` at the mapping's base URL. The full inventory
+Python's `None` discovers `objects.inv` at the mapping's base URL. The full inventory
 uses each port's advertised default version. The `py` mapping explicitly
 selects `latest`; `tmux` selects the latest tmux manual and C reference.
 Use the root URL from an inventory's footer link when selecting a preview
@@ -89,7 +89,9 @@ Destination: [Pane](/py/latest/reference/libtmux-pane/#libtmux.Pane).
 
 ## MyST roles and inventory URLs
 
-Enable `myst_parser` alongside `sphinx.ext.intersphinx` for Markdown sources.
+Enable `myst_parser` alongside
+[`sphinx.ext.intersphinx`](https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html)
+for Markdown sources.
 Named roles accept the same targets as reStructuredText:
 
 ```markdown

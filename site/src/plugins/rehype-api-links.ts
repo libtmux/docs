@@ -1,7 +1,7 @@
 import { appendFileSync, mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { visit } from 'unist-util-visit'
-import { isLikelyReference, modulesIn, notApiReason, type ApiProduct } from '@libtmux/api-model'
+import { isLikelyReference, modulesIn, notApiReason, portFromSentence, type ApiProduct } from '@libtmux/api-model'
 import { createProseLinker, PORT_BY_LABEL, protocolRunMentions } from '../lib/prose-resolver'
 import { PORT_BY_SLUG } from '../lib/ports'
 import { API_MODELS, pageSlug } from '../lib/api-models'
@@ -19,6 +19,7 @@ export interface DanglingReference {
   port: string
   text: string
   why: string
+  source?: string
 }
 
 /**
@@ -229,6 +230,9 @@ export function rehypeApiLinks() {
     // A page shared by every port is rendered once for each: the port of the build is where it is read, not what it is about.
     const ownPort = frontmatter?.port ?? file?.path?.replaceAll('\\', '/').match(/\/content\/docs\/(?:ja\/)?ports\/([^/]+)\//)?.[1]
     const source = file?.path?.replaceAll('\\', '/').match(/\/content\/(docs|_workspace-shared)\/(.+)\.mdx?$/)
+    const recordHere = (entry: DanglingReference) => record({
+      ...entry, ...(source ? { source: source[0].slice('/content/'.length) } : {}),
+    })
     const id = source ? `${source[1] === '_workspace-shared' ? `ports/${buildPort}/` : ''}${source[2]}`.replace(/(?:^|\/)index$/, '') : undefined
     const route = frontmatter?.route ?? (id !== undefined ? docsPath({ id, data: { ...frontmatter, port: buildPort } }) : undefined)
     // Native tmux prose and wrapper references own their names; a library's
@@ -305,10 +309,10 @@ export function rehypeApiLinks() {
         if (child.tagName === 'a') {
           const href = child.properties?.href
           if (typeof href === 'string' && href.startsWith('mcp:')) {
-            const pagePort = buildPort ?? rowPort ?? fence.lang ?? sections.at(-1)?.port
+            const pagePort = ownPort ?? rowPort ?? fence.lang ?? sections.at(-1)?.port ?? buildPort
             const decision = link(href, { pagePort, before: scope.text })
             if (decision.kind === 'link') child.properties!.href = decision.href
-            else if (decision.kind === 'unresolved') record({ port: pagePort ?? 'shared', text: href, why: decision.why })
+            else if (decision.kind === 'unresolved') recordHere({ port: pagePort ?? 'shared', text: href, why: decision.why })
           }
           walk(child, true, rowPort, fence, scope)
           scope.text += textOf(child)
@@ -321,7 +325,8 @@ export function rehypeApiLinks() {
           if (containsAnchor(child)) { scope.text += text; continue }
           const explicitPort = child.properties?.dataDocPort
           const pagePort = (typeof explicitPort === 'string' ? explicitPort : undefined)
-            ?? buildPort ?? rowPort ?? fence.lang ?? sections.at(-1)?.port
+            ?? ownPort ?? rowPort ?? fence.lang ?? sections.at(-1)?.port ?? buildPort
+          const effectivePort = portFromSentence(scope.text) ?? pagePort
           // The page says its language when it, a fence, a row or a section names the port the span is read in; the build alone does not.
           const said = typeof explicitPort === 'string' ? explicitPort : ownPort ?? rowPort ?? fence.lang ?? sections.at(-1)?.port
           const languageSaid = said !== undefined && said === pagePort
@@ -367,8 +372,8 @@ export function rehypeApiLinks() {
             addKindBadge(kids[i]!, buildPort, route, first)
           } else {
             if (decision.kind === 'unresolved' && !decision.file &&
-              (text.startsWith('mcp:') || (pagePort && isLikelyReference(text) && !notApiReason(text)))) {
-              record({ port: pagePort ?? 'shared', text, why: decision.why })
+              (text.startsWith('mcp:') || (effectivePort && isLikelyReference(text) && !notApiReason(text, effectivePort)))) {
+              recordHere({ port: effectivePort ?? 'shared', text, why: decision.why })
             }
             linkMentions()
           }
@@ -396,6 +401,7 @@ const LANG_TO_PORT: Record<string, string> = {
   cpp: 'cxx', 'c++': 'cxx', swift: 'swift',
   powershell: 'powershell', pwsh: 'powershell', ps1: 'powershell', julia: 'julia',
   elixir: 'elixir', ex: 'elixir', exs: 'elixir',
+  lisp: 'lisp', 'common-lisp': 'lisp',
 }
 
 function textOf(node: unknown): string {

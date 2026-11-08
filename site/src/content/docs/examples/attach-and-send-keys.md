@@ -100,8 +100,9 @@ has been pressed.
 ## 7. Press Enter
 
 Without `-l`, `send-keys` treats an argument that names a key as that key.
-Send the `Enter` key to run the typed command. Names such as `Enter`, `C-c`,
-and `Up` work this way. Adding `-l` here would type the word `Enter` instead.
+Send the [`Enter`](/tmux/latest/manual/send-keys/) key to run the typed command.
+Key names such as `Enter`, `C-c`, and `Up` work this way. Adding `-l` here
+would type the word [`Enter`](/tmux/latest/manual/send-keys/) instead.
 
 ```sh excerpt="send-command.sh" from="Enter"
 ```

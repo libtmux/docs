@@ -35,6 +35,19 @@ function exampleBytes(markdown: string): string[] {
 }
 
 describe('prose Markdown links', () => {
+  it('keeps fence ownership ahead of a selected build in shared HTML and Markdown', async () => {
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'lisp')
+    const processor = await createMarkdownProcessor({ rehypePlugins: [rehypeApiLinks], syntaxHighlight: false })
+    const python = '```python\nNone\n```\n\nRead `None`.'
+    const html = (await processor.render(python, { frontmatter: {} })).code
+    const markdown = linkProseMarkdown(python, 'lisp', undefined, { portSaid: false })
+    expect(html).toContain('https://docs.python.org/')
+    expect(urls(markdown).some((href) => href.startsWith('https://docs.python.org/'))).toBe(true)
+    const lisp = '```common-lisp\n(values)\n```\n\nCall `libtmux.query:compile-filter`.'
+    expect(urls(linkProseMarkdown(lisp, 'py', undefined, { portSaid: false })))
+      .toContain('/lisp/latest/reference/libtmux-query-compile-filter/')
+  })
+
   it('links native commands through prose HTML and Markdown without claiming prose aliases', async () => {
     const source = 'Call tmux resize-pane. Use `$ tmux -L local run -b true` and `display-message`. Keep tmux has many panes.\n\n[Keep `run-shell`](https://example.com/authored).\n\n<code><a href="https://example.com/native">run-shell</a></code>\n\n`tmux run-shell true && tmux display-message hello`\n\n```sh\ntmux run-shell true\n```'
     const processor = await createMarkdownProcessor({ rehypePlugins: [rehypeApiLinks], syntaxHighlight: false })

@@ -7282,6 +7282,27 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:active-p",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:attached-client",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:break-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:cancel",
    "page": "/lisp/latest/concepts/transport/",
    "title": "Transport and cleanup",
@@ -7293,6 +7314,48 @@
    "page": "/lisp/latest/examples/capture-pane-output/",
    "title": "Capture pane output",
    "section": "examples"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:capture-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:capture-pane",
+   "page": "/lisp/latest/guides/tutorial/",
+   "title": "REPL tutorial",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:capture-pane-bytes",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:capture-pane-bytes",
+   "page": "/lisp/latest/guides/tutorial/",
+   "title": "REPL tutorial",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:cleanup-failed",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:clear-history",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
   },
   {
    "port": "lisp",
@@ -7310,6 +7373,27 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:client-busy",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:client-busy",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:client-cleanup-failures",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:clients",
    "page": "/lisp/latest/concepts/captures/",
    "title": "Captures and identity",
@@ -7318,8 +7402,29 @@
   {
    "port": "lisp",
    "symbol": "libtmux:close-client",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:close-client",
    "page": "/lisp/latest/guides/operations/",
    "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:command-cancelled",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:command-cancelled",
+   "page": "/lisp/latest/guides/tutorial/",
+   "title": "REPL tutorial",
    "section": "guides"
   },
   {
@@ -7338,6 +7443,146 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:copy-mode",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:current-command",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:current-path",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:dead-p",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:delete-buffer",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:entity-data",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:entity-data",
+   "page": "/lisp/latest/guides/tutorial/",
+   "title": "REPL tutorial",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:error-actual-version",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:error-cause",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:error-cause",
+   "page": "/lisp/latest/topics/query-interchange/",
+   "title": "Query interchange",
+   "section": "topics"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:error-client",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:error-commands",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:error-feature",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:error-outcome",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:error-required-version",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:error-setting",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:fetch-clients",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:fetch-panes",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:fetch-sessions",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:fetch-snapshot",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:fetch-snapshot",
    "page": "/lisp/latest/examples/capture-pane-output/",
    "title": "Capture pane output",
@@ -7349,6 +7594,34 @@
    "page": "/lisp/latest/guides/attaching-to-tmux/",
    "title": "Attaching to tmux",
    "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:fetch-windows",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:field-unavailable",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:field-unavailable",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:field-value",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
   },
   {
    "port": "lisp",
@@ -7366,10 +7639,24 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:incomplete-snapshot",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:index",
    "page": "/lisp/latest/concepts/captures/",
    "title": "Captures and identity",
    "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:join-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
   },
   {
    "port": "lisp",
@@ -7429,6 +7716,62 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:last-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:last-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:link-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:list-buffers",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:load-buffer",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:make-cancellation-token",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:move-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:move-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:name",
    "page": "/lisp/latest/concepts/captures/",
    "title": "Captures and identity",
@@ -7450,10 +7793,143 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:new-session",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:new-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:next-layout",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:next-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:open-client",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:outcome-arguments",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:outcome-exit-code",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:outcome-observation-error",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:outcome-phase",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:outcome-reason",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:outcome-stderr",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:outcome-stdout",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:outcome-value",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:panes",
    "page": "/lisp/latest/concepts/captures/",
    "title": "Captures and identity",
    "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:paste-buffer",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:pipe-pane",
+   "page": "/lisp/latest/guides/capabilities/",
+   "title": "Capabilities and limits",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:pipe-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:pipe-pane",
+   "page": "/lisp/latest/guides/tutorial/",
+   "title": "REPL tutorial",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:previous-layout",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:previous-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
   },
   {
    "port": "lisp",
@@ -7471,6 +7947,62 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:rename-session",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:rename-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:resize-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:resize-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:respawn-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:respawn-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:rotate-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:run-command",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:run-command",
    "page": "/lisp/latest/examples/capture-pane-output/",
    "title": "Capture pane output",
@@ -7492,10 +8024,66 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:same-entity-p",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:save-buffer",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:select-layout",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:select-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:select-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:send-keys",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:send-prefix",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:send-text",
    "page": "/lisp/latest/examples/capture-pane-output/",
    "title": "Capture pane output",
    "section": "examples"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:send-text",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
   },
   {
    "port": "lisp",
@@ -7509,6 +8097,13 @@
    "symbol": "libtmux:sessions",
    "page": "/lisp/latest/guides/attaching-to-tmux/",
    "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:set-buffer",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
    "section": "guides"
   },
   {
@@ -7534,10 +8129,59 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:show-buffer",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:split-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:stale-target",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:stale-target",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:swap-panes",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:swap-windows",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:title",
    "page": "/lisp/latest/concepts/captures/",
    "title": "Captures and identity",
    "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:unlink-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
   },
   {
    "port": "lisp",
@@ -7562,7 +8206,42 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:unsupported-capability",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:unsupported-configuration",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:unsupported-tmux",
+   "page": "/lisp/latest/guides/verification/",
+   "title": "Verification evidence",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:width",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:window-link",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:window-links",
    "page": "/lisp/latest/concepts/captures/",
    "title": "Captures and identity",
    "section": "concepts"
@@ -7584,9 +8263,58 @@
   {
    "port": "lisp",
    "symbol": "libtmux:with-client",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:with-client",
    "page": "/lisp/latest/examples/capture-pane-output/",
    "title": "Capture pane output",
    "section": "examples"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.json:document-limit",
+   "page": "/lisp/latest/topics/query-interchange/",
+   "title": "Query interchange",
+   "section": "topics"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.json:document-path",
+   "page": "/lisp/latest/topics/query-interchange/",
+   "title": "Query interchange",
+   "section": "topics"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.json:filter-document-limit-exceeded",
+   "page": "/lisp/latest/topics/query-interchange/",
+   "title": "Query interchange",
+   "section": "topics"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.json:invalid-filter-document",
+   "page": "/lisp/latest/topics/query-interchange/",
+   "title": "Query interchange",
+   "section": "topics"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.json:read-filter",
+   "page": "/lisp/latest/topics/query-interchange/",
+   "title": "Query interchange",
+   "section": "topics"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.json:write-filter",
+   "page": "/lisp/latest/topics/query-interchange/",
+   "title": "Query interchange",
+   "section": "topics"
   },
   {
    "port": "lisp",
@@ -7604,6 +8332,20 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux.query:ambiguous-match",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:compile-filter",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux.query:fields",
    "page": "/lisp/latest/guides/queries/",
    "title": "Native queries",
@@ -7612,6 +8354,20 @@
   {
    "port": "lisp",
    "symbol": "libtmux.query:from",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:invalid-filter",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:invalid-query-target",
    "page": "/lisp/latest/guides/queries/",
    "title": "Native queries",
    "section": "guides"
@@ -7646,6 +8402,13 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux.query:no-match",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux.query:one",
    "page": "/lisp/latest/guides/queries/",
    "title": "Native queries",
@@ -7653,7 +8416,42 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux.query:one-or-none",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:order-by",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:query-limit-exceeded",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:required-relations",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux.query:where",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:where-if",
    "page": "/lisp/latest/guides/queries/",
    "title": "Native queries",
    "section": "guides"
@@ -7674,6 +8472,13 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux.workspace:plan-steps",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux.workspace:plan-workspace",
    "page": "/lisp/latest/workspace/source-guide/",
    "title": "Workspace guide",
@@ -7682,6 +8487,55 @@
   {
    "port": "lisp",
    "symbol": "libtmux.workspace:read-workspace",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:result-created-p",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:result-outcomes",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:result-snapshot",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:step-action",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:step-data",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:workspace-conflict",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace.cli:main",
    "page": "/lisp/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
@@ -15403,69 +16257,6 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "lisp",
-   "text": "LC_ALL=C.UTF-8",
-   "page": "/lisp/latest/concepts/transport/",
-   "line": 90,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "lisp",
-   "text": "Enter",
-   "page": "/lisp/latest/guides/operations/",
-   "line": 80,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "lisp",
-   "text": "#()",
-   "page": "/lisp/latest/guides/operations/",
-   "line": 174,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "lisp",
-   "text": "@[A-Za-z0-9_.-]+",
-   "page": "/lisp/latest/guides/operations/",
-   "line": 240,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "lisp",
-   "text": "fiveam:!!",
-   "page": "/lisp/latest/guides/testing/",
-   "line": 41,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "lisp",
-   "text": "fiveam:!!!",
-   "page": "/lisp/latest/guides/testing/",
-   "line": 41,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "lisp",
-   "text": "libtmux.lisp.filter/1",
-   "page": "/lisp/latest/guides/tutorial/",
-   "line": 275,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "lisp",
-   "text": "dist/libtmux-source.tar.gz",
-   "page": "/lisp/latest/guides/verification/",
-   "line": 38,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "lisp",
-   "text": "libtmux.lisp.filter/1",
-   "page": "/lisp/latest/topics/query-interchange/",
-   "line": 82,
-   "why": "not defined in the stated port"
-  },
-  {
    "port": "lua",
    "text": "err.partial.outcomes",
    "page": "/lua/latest/guides/commands/",
@@ -15536,7 +16327,7 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "scala",
+   "port": "java",
    "text": "libtmux.filter/1",
    "page": "/scala/latest/guides/query/",
    "line": 119,
@@ -15550,7 +16341,7 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "kotlin",
+   "port": "java",
    "text": "WatchPaneOutput",
    "page": "/kotlin/latest/examples/",
    "line": 15,

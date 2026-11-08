@@ -57,8 +57,37 @@ describe('the build\'s dangling report', () => {
     const before = state(build)
     await render()
     // A key sent by a link is not a reference to resolve, nor is a session target; the rest is read in the port's build.
-    expect(names(own).sort()).toEqual(['Nope.thing()', 'capture:0.0', 'tmux.conf'])
+    expect(names(own).sort()).toEqual(['Nope.thing()'])
     expect(state(build)).toEqual(before)
+  })
+
+  it('reports unknown core and dotted-package Lisp APIs as references, not configuration keys', async () => {
+    const own = join(directory, 'lisp.jsonl')
+    vi.stubEnv('LIBTMUX_DOCS_DANGLING_REPORT', own)
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'lisp')
+    await (await processor).render('Call `libtmux:missing-function` and `libtmux.query:missing-function`.', { frontmatter: { port: 'lisp' } })
+    expect(names(own)).toEqual(['libtmux:missing-function', 'libtmux.query:missing-function'])
+    await (await processor).render('Common Lisp calls `libtmux:missing-function`.', { frontmatter: { port: 'py' } })
+    expect(names(own)).toEqual(['libtmux:missing-function', 'libtmux.query:missing-function', 'libtmux:missing-function'])
+    vi.stubEnv('LIBTMUX_DOCS_PORT', '')
+    await (await processor).render('Common Lisp calls `libtmux:missing-function`.', { frontmatter: {} })
+    expect(names(own)).toHaveLength(4)
+    expect(JSON.parse(readFileSync(own, 'utf8').trim().split('\n').at(-1)!)).toMatchObject({ port: 'lisp', text: 'libtmux:missing-function' })
+  })
+
+  it('keeps the capture and terminal-input guides’ tmux key names out of the API report', async () => {
+    const own = join(directory, 'keys.jsonl')
+    vi.stubEnv('LIBTMUX_DOCS_DANGLING_REPORT', own)
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'lisp')
+    await (await processor).render([
+      'Without `-l`, `send-keys` reads `Enter` as the `Enter` key, so the shell runs the line.',
+      'Key names such as `Enter`, `C-c`, and `Up` work this way.',
+      'Tmux recognizes names such as `C-c` and `Enter`, and falls back to literal input.',
+      'Typing the word `Enter` and pressing Enter are separate operations.',
+      'This complete script types the word `Enter` into a pane running `cat`.',
+      'The screen contains `Enter`: the terminal echoes the input.',
+    ].join('\n\n'), { frontmatter: {} })
+    expect(names(own)).toEqual([])
   })
 
   it('is caught when a render adds to the file the check watches, so the check above can fail', async () => {
