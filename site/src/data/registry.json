@@ -122,6 +122,13 @@
       "release": "0.1.0",
       "tag": "v0.1.0"
     },
+    "clojure": {
+      "status": "unpublished",
+      "version": null,
+      "release": null,
+      "tag": null,
+      "maturity": "unreleased"
+    },
     "kotlin": {
       "status": "release",
       "version": "0.1.0",
@@ -157,13 +164,6 @@
       "version": "0.1.0",
       "release": "0.1.0",
       "tag": "0.1.0"
-    },
-    "clojure": {
-      "status": "unpublished",
-      "version": null,
-      "release": null,
-      "tag": null,
-      "maturity": "unreleased"
     }
   }
 }
