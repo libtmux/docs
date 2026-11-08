@@ -591,7 +591,7 @@ describe('the selector script', () => {
 describe('the quickstart code height', () => {
   it('is fixed wherever the quickstart is shown, so a toggle moves nothing', () => {
     const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8')
-    expect(read('../src/components/HomeExample.astro')).toMatch(/\[data-fixed\] \.home-example-view :global\(\.expressive-code pre\) \{ height: 34rem;/)
+    expect(read('../src/components/HomeExample.astro')).toMatch(/\[data-fixed\] \.home-example-view :global\(\.expressive-code pre\) \{ height: calc\(34rem - var\(--home-toolbar-row, 0rem\)\);/)
     // The landing and the Core home show the quickstart through the showcase, which fixes it.
     expect(read('../src/components/CoreShowcase.astro')).toMatch(/<HomeExample [^>]*\bfixed\b/)
     for (const path of ['../src/components/CoreHome.astro', '../src/components/PortLanding.astro']) {
