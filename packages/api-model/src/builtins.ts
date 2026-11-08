@@ -518,7 +518,7 @@ export const CURATED_BEFORE_INVENTORY: ReadonlySet<string> = new Set(['kotlin', 
  * "the Java ones" is about the project's wrappers of the Java API and not a switch to Java: its `Vector` is Scala's.
  * A sentence that names a language the port does not reach (a Python page on Rust's `Vec`) still decides the name.
  */
-export const PLATFORM_REACH: Readonly<Record<string, readonly string[]>> = { kotlin: ['java'], scala: ['java'] }
+export const PLATFORM_REACH: Readonly<Record<string, readonly string[]>> = { kotlin: ['java'], scala: ['java'], clojure: ['java'] }
 
 /**
  * Names the JDK's inventory holds that Kotlin and Scala prose means another library's by. A Scala sentence's "an Ox

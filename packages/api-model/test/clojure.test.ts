@@ -41,6 +41,23 @@ function artifact() {
 }
 
 describe('compiled Clojure artifact', () => {
+  it('keeps keywords literal when their names match callable declarations', () => {
+    const input = artifact()
+    input.symbols.push(callable('libtmux.core', 'timeout', [['value']]))
+    const model = extractClojure(input, revision)
+    const index = new SymbolIndex(model.symbols, (symbol) => `/${symbol.id}/`, 'clojure')
+    for (const text of [':timeout', '::timeout', ':libtmux.core/timeout', '{:timeout 100 :request/timeout 200}']) {
+      for (const parts of [index.linkType(text), index.linkLiteral(text)]) {
+        expect(parts.map((part) => part.text).join('')).toBe(text)
+        expect(parts.some((part) => part.link), text).toBe(false)
+      }
+      const spans = index.docSpans(`Use \`${text}\`.`)
+      expect(spans.some((span) => span.link || span.parts?.some((part) => part.link)), text).toBe(false)
+    }
+    expect(index.resolve('timeout')?.symbol?.id).toBe('libtmux.core/timeout')
+    expect(index.docSpans('See [[libtmux.core/close!]].')[1]?.link?.symbol?.id).toBe('libtmux.core/close!')
+  })
+
   it('keeps every arity, native call spelling, package, source and docstring link', () => {
     const model = extractClojure(artifact(), revision)
     expect(model.symbols.find((symbol) => symbol.name === 'matching')?.signatures.map((signature) => signature.raw))
