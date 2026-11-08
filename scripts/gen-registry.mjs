@@ -394,8 +394,17 @@ const committed = { ports: { ...seed.ports, ...baseline.ports } }
 const ports = {}
 const notes = []
 for (const port of PORTS) {
-  if (!opts.offline && typeof PROBES[port.slug] !== 'function') throw new Error(`${port.slug}: no registry probe`)
   const previous = committed.ports?.[port.slug]
+  if (!opts.offline && typeof PROBES[port.slug] !== 'function') {
+    // A source-only port declares no registry to query. Preserve its explicit
+    // unpublished state; any published package still requires a real adapter.
+    const sourceOnly = !port.registry && previous?.status === 'unpublished'
+      && Object.values(previous.packages ?? {}).every((entry) => entry.status === 'unpublished')
+    if (!sourceOnly) throw new Error(`${port.slug}: no registry probe`)
+    ports[port.slug] = previous
+    notes.push(`${port.slug}: no registry configured; kept source-only metadata`)
+    continue
+  }
   if (opts.offline) {
     if (!previous) throw new Error(`--offline needs a committed entry for ${port.slug}`)
     ports[port.slug] = previous
