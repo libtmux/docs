@@ -208,9 +208,10 @@ describe('Python layouts in the rendered declaration', () => {
     const type = await compile('../src/components/api/ApiType.astro', {
       './SymbolName.astro': name, './ApiKeyword.astro': keyword,
       '@libtmux/api-model': new URL('../../packages/api-model/src/index.ts', import.meta.url).href,
+      '@libtmux/api-model/reference': new URL('../../packages/api-model/src/reference.ts', import.meta.url).href,
       '../../lib/code-layout': new URL('../src/lib/code-layout.ts', import.meta.url).href,
     })
-    const parameters = await compile('../src/components/api/ApiSignatureParameters.astro', { '@libtmux/api-model': bridge, '../../lib/api-sections': bridge, './ApiType.astro': type })
+    const parameters = await compile('../src/components/api/ApiSignatureParameters.astro', { '@libtmux/api-model': bridge, '@libtmux/api-model/reference': bridge, '../../lib/api-sections': bridge, './ApiType.astro': type })
     const source = readFileSync(new URL('../src/components/api/ApiEntry.astro', import.meta.url), 'utf8')
     const start = source.indexOf('</span>) : <>\n') + '</span>) : <>\n'.length
     const end = source.indexOf('          </>}', start)

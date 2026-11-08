@@ -58,6 +58,7 @@ afterEach(async () => {
 async function components(stubs: Readonly<Record<string, string>> = {}) {
   const modules: Record<string, object> = {
     '@libtmux/api-model': model,
+    '@libtmux/api-model/reference': model,
     ...Object.fromEntries(Object.entries({
       'api-glossary': glossary, 'api-models': models, 'api-sections': sections, 'inventory-targets': inventory,
       'api-relationships': relationships, 'api-tmux-sections': tmuxSections, 'api-tree': tree, 'api-search': search, 'api-sidebar': apiSidebar,

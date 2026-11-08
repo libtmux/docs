@@ -20,6 +20,9 @@ export interface ExpectedDestinations {
 const github = (url: string, name: string): ExpectedLink => ({ url, label: `${name} on GitHub` })
 
 export const DESTINATIONS: Record<string, ExpectedDestinations> = {
+  perl: {
+    source: github('https://github.com/libtmux/libtmux-perl/tree/master/packages/core', 'libtmux-perl'),
+  },
   py: {
     source: github('https://github.com/tmux-python/libtmux', 'libtmux'),
     registry: { name: 'PyPI', url: 'https://pypi.org/project/libtmux/', icon: 'pypi', label: 'libtmux on PyPI' },

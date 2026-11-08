@@ -8388,6 +8388,13 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Pane::cursor_shape",
+   "page": "/perl/latest/concepts/fields/",
+   "title": "Entity fields",
+   "section": "concepts"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Server",
    "page": "/perl/latest/examples/orchestration/",
    "title": "Create sessions, windows, and panes",

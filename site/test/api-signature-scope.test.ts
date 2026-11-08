@@ -34,11 +34,11 @@ async function parameterComponent() {
     '../../lib/word-break': new URL('../src/lib/word-break.ts', import.meta.url).href,
   })
   const type = await compile('../src/components/api/ApiType.astro', {
-    '@libtmux/api-model': helpers, './SymbolName.astro': name, './ApiKeyword.astro': keyword,
+    '@libtmux/api-model': helpers, '@libtmux/api-model/reference': helpers, './SymbolName.astro': name, './ApiKeyword.astro': keyword,
     '../../lib/code-layout': new URL('../src/lib/code-layout.ts', import.meta.url).href,
   })
   const url = await compile('../src/components/api/ApiSignatureParameters.astro', {
-    '@libtmux/api-model': helpers, '../../lib/api-sections': helpers, './ApiType.astro': type,
+    '@libtmux/api-model': helpers, '@libtmux/api-model/reference': helpers, '../../lib/api-sections': helpers, './ApiType.astro': type,
   })
   return (await import(/* @vite-ignore */ url)).default
 }

@@ -2,13 +2,14 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createMarkdownProcessor } from '@astrojs/markdown-remark'
-import { SymbolIndex } from '@libtmux/api-model/reference'
+import { SymbolIndex, tokenizeDoc, type ApiSymbol } from '@libtmux/api-model/reference'
 import { Window } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
 import { API_MODELS } from '../src/lib/api-models'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
 import { tmuxCatalog } from '../src/lib/tmux-catalog'
 import { linkTmuxDoc } from '../src/lib/tmux-links'
+import { parseApiProse, type ProseItem } from '../src/lib/api-prose'
 
 /**
  * Multi-word catalog names written in prose and code across the guides and the
@@ -23,6 +24,28 @@ for (const model of catalogs) for (const entry of model.entries) {
   for (const name of [entry.name, ...(entry.aliases ?? [])]) if (/[-_]/.test(name)) kinds.set(name, entry.kind)
 }
 const TOKEN = /(?<![\w./:$%@#-])[a-z][a-z0-9]*(?:[-_][a-z0-9]+)+(?![\w/-]|\.[A-Za-z])/g
+
+function proseTexts(text: string): string[] {
+  const items = (values: ProseItem[]): string[] => values.flatMap((item) => [item.text, ...items(item.children)])
+  return parseApiProse(text).flatMap((block) => {
+    if (block.kind === 'p' || block.kind === 'rubric') return [block.text]
+    if (block.kind === 'ul' || block.kind === 'ol') return items(block.items)
+    if (block.kind === 'table') return [...block.head, ...block.rows.flat()]
+    return []
+  })
+}
+
+function apiSpans(text: string, port: string, index: SymbolIndex, symbol?: ApiSymbol) {
+  return proseTexts(text).flatMap((part) => {
+    if (port !== 'perl') return linkTmuxDoc(index.linkText(part, symbol))
+    // Strict unquoted named signatures describe API parameters. Standalone,
+    // quoted and #{...} format references remain eligible for the audit.
+    const spans = tokenizeDoc(part, port).filter((span) => !(span.kind === 'code'
+      && /^[A-Za-z_][\w:]*\([^()\n]*=>[^()\n]*\)$/.test(span.text)
+      && !/["']|#\{/.test(span.text)))
+    return linkTmuxDoc(index.linkDoc(spans, symbol))
+  })
+}
 
 type Where = 'catalog' | 'elsewhere' | 'plain'
 const tally = new Map<string, Record<Where, number>>()
@@ -47,6 +70,24 @@ const files = (directory: string): string[] => readdirSync(directory, { withFile
   entry.isDirectory() ? files(join(directory, entry.name)) : /\.mdx?$/.test(entry.name) ? [join(directory, entry.name)] : [])
 
 describe('tmux catalog coverage', () => {
+  it('counts format references while excluding programs and Perl signature placeholders', () => {
+    const index = new SymbolIndex([], () => '', 'perl')
+    for (const [source, expected] of [
+      ['`pane_id`', ['pane_id']],
+      ['`"pane_id"`', ['pane_id']],
+      ['`#{pane_id}`', ['pane_id']],
+      ['`capture_pane(pane => "pane_id")`', ['pane_id']],
+      ['`capture_pane(pane => pane_id)`', []],
+      ['```perl\n$server->set_hook("after-select-window[3]", "display-message ready");\n```', []],
+    ] as const) {
+      const names = apiSpans(source, 'perl', index).flatMap((span) => {
+        const text = span.kind === 'ref' ? span.label : 'text' in span ? span.text : ''
+        return [...text.matchAll(TOKEN)].map((match) => match[0]).filter((name) => kinds.has(name))
+      })
+      expect(names, source).toEqual(expected)
+    }
+  })
+
   it('links the names guides and topics mention', async () => {
     const renderer = await createMarkdownProcessor({ rehypePlugins: [rehypeApiLinks], syntaxHighlight: false })
     for (const file of files(docsRoot)) {
@@ -81,7 +122,7 @@ describe('tmux catalog coverage', () => {
         for (const signature of symbol.signatures) texts.push(signature.returnsDoc, ...signature.params.map((param) => param.doc))
         for (const text of texts) {
           if (!text) continue
-          for (const span of linkTmuxDoc(index.linkText(text, symbol))) {
+          for (const span of apiSpans(text, port, index, symbol)) {
             const label = span.kind === 'ref' ? span.label : 'text' in span ? span.text : ''
             const href = span.kind === 'link' ? span.href : span.kind === 'ref' && span.link ? span.link.href : undefined
             for (const match of label.matchAll(TOKEN)) count(match[0], href?.includes('/catalog/') ? 'catalog' : href ? 'elsewhere' : 'plain', `api ${span.kind === 'text' ? 'prose' : 'code'}`, `${symbol.id}: ${label.slice(Math.max(0, match.index! - 50), match.index! + 60)}`)
