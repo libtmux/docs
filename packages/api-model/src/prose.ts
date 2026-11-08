@@ -229,6 +229,7 @@ const NOT_API: { why: string; test: RegExp }[] = [
   { why: 'call with arguments', test: /\([^)]*[\s:][^)]*\)/ },
   // A YAML key or a doc marker: `environment:`, `docs:watching`.
   { why: 'configuration key', test: /:$|^[a-z]+:[a-z]/ },
+  { why: 'Cabal project file', test: /^cabal\.project$/ },
   // A fragment beginning with the separator — `.filter()`, `.gt(...)` — names
   // a method without its receiver, so there is nothing to resolve against.
   { why: 'method without a receiver', test: /^[.:]/ },

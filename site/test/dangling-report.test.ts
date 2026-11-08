@@ -68,6 +68,24 @@ describe('the build\'s dangling report', () => {
     await render()
     expect(state(watched)).not.toEqual(before)
   })
+
+  it('links Haskell standard types and tracked project files without reporting them as missing API', async () => {
+    const own = join(directory, 'haskell.jsonl')
+    vi.stubEnv('LIBTMUX_DOCS_DANGLING_REPORT', own)
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'haskell')
+    const { code } = await (await processor).render(
+      'Use `IO`, `Either` and `Integer`. Configure `cabal.project` and `libtmux-haskell.cabal`; read `src/LibTmux/Id.hs`. Call `Nope.thing()`.',
+      { frontmatter: {} },
+    )
+    expect(names(own)).toEqual(['Nope.thing()'])
+    for (const destination of [
+      'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/System-IO.html#t:IO',
+      'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Data-Either.html#t:Either',
+      'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Prelude.html#t:Integer',
+      ...['cabal.project', 'libtmux-haskell.cabal', 'src/LibTmux/Id.hs'].map((path) =>
+        `https://github.com/libtmux/libtmux-haskell/blob/eda8825caa1ffde21454bb2eb6954bf46d2939af/${path}`),
+    ]) expect(code).toContain(`href="${destination}"`)
+  })
 })
 
 /**
