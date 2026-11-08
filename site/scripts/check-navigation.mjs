@@ -7,6 +7,33 @@ import { checkPickerFilters } from './check-picker-filters.mjs'
 /** The version the dev build mounts a port's prose pages at: its default, as check-dev sets it. */
 const defaultVersion = (port) => JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')[port] ?? 'latest'
 
+/** A legacy guide reaches its article while external README badges remain pending. */
+export async function checkGuideRedirect(browser, base) {
+  const page = await browser.newPage({ reducedMotion: 'reduce' })
+  page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
+  let release
+  let requested = 0
+  const pending = new Promise((resolve) => { release = resolve })
+  await page.route('https://img.shields.io/**', async (route) => {
+    requested += 1
+    await pending
+    await route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>' })
+  })
+  try {
+    await page.goto(`${base}/ruby/latest/guides/overview/`, { waitUntil: 'domcontentloaded' })
+    await page.waitForURL(`${base}/ruby/latest/guides/getting-started/`, { waitUntil: 'domcontentloaded' })
+    assert.equal((await page.locator('main h1').textContent()).trim(), 'Getting started')
+    assert.equal(await page.title(), 'Getting started | libtmux-ruby')
+    assert(requested > 0, 'The real guide requested external badges')
+    assert.equal(await page.evaluate(() => document.readyState), 'interactive', 'The destination document is parsed before external badges complete')
+    console.log('Guide redirect: the legacy Ruby URL reaches its article with external badges still pending')
+  } finally {
+    release()
+    await page.unrouteAll({ behavior: 'wait' })
+    await page.close()
+  }
+}
+
 /** Optional scripts injected at the end of the body cannot gate navigation. */
 export async function checkNavigationBeforeAnalytics(browser, base) {
   const page = await browser.newPage({ viewport: { width: 390, height: 900 }, reducedMotion: 'reduce' })
@@ -297,8 +324,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
     await page.waitForURL(`${base}/fsharp/latest/reference/?from=bookmark`)
     assert.equal((await page.locator('main h1').textContent()).trim(), 'API reference')
     assert.equal(await page.title(), 'F# API reference | libtmux-fsharp')
-    await page.goto(`${base}/ruby/latest/guides/overview/`, { waitUntil: 'load' })
-    await page.waitForURL(`${base}/ruby/latest/guides/getting-started/`)
+    await checkGuideRedirect(browser, base)
     console.log(`Documentation surfaces: ${ports.length} ports retain real section links; Ruby/F# setup, cards and legacy links pass`)
   } finally {
     await page.close()
