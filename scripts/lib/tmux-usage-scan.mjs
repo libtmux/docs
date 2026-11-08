@@ -37,8 +37,8 @@ const NOT_LIBRARY = new RegExp([
   String.raw`(?:^|/)(?:test_[^/]*\.py|[^/]*_test\.(?:go|py|rb|lua)|[^/]*(?:Tests?|Spec)\.(?:cs|kt|java|scala|swift)|[^/]*\.(?:test|spec)\.ts|[^/]*_spec\.rb|tests?\.rs|[^/]*_tests?\.rs|[^/]*_(?:tests|SUITE)\.erl)$`,
 ].join('|'))
 
-export const isLibrarySource = (path, grammar) => EXTENSIONS[grammar].test(path) && !NOT_LIBRARY.test(path)
-  && (grammar !== 'haskell' || /^(?:src|internal)\//.test(path))
+export const isLibrarySource = (path, grammar) => EXTENSIONS[grammar].test(path)
+  && (grammar === 'haskell' ? /^(?:src|internal)\//.test(path) : !NOT_LIBRARY.test(path))
   && !(grammar === 'erlang' && /(?:^|\/)property(?:\/|$)/.test(path))
 
 const FUNCTIONS = {

@@ -31,6 +31,7 @@ import { homedir, tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { GRAMMARS, isLibrarySource, scanSource } from './lib/tmux-usage-scan.mjs'
+import { reachableHaskellSources } from './lib/tmux-usage-haskell.mjs'
 import { applyConditions, applyExclusions, conditionProblem, deriveUsage, partialProblems, ruleHolds, verifyClaims } from './lib/tmux-usage-derive.mjs'
 import { auditEvidence } from './lib/tmux-usage-audit.mjs'
 import { dispatcherProblems, guardProblems, preflightProblems } from './lib/tmux-usage-dispatch.mjs'
@@ -208,7 +209,10 @@ export async function scanPort({ port, model, commands, checkout, known, dispatc
   const functions = []
   const types = []
   const modules = []
-  const sources = librarySources(checkout, model.revision, grammar)
+  const available = librarySources(checkout, model.revision, grammar)
+  const sources = grammar === 'haskell'
+    ? await reachableHaskellSources(available, model.symbols.map((symbol) => symbol.source?.file).filter(Boolean))
+    : available
   const wanted = new Set(commands)
   const native = port === 'perl' ? readJson(join(checkout, 'docs/_build/api.json')) : undefined
   if (native && (native.nativeScan?.schema !== 'libtmux.perl-source/v1' || native.nativeScan.revision !== model.revision || native.nativeProvenance?.exporter?.working_tree !== false)) {
