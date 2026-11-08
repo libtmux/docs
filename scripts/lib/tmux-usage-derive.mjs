@@ -66,6 +66,11 @@ export function shapeFits(call, fn) {
  */
 export function callTargets(caller, callee, named, call) {
   if (!caller.calls.has(callee.name)) return false
+  // Erlang modules name a static destination even when no other helper shares its name.
+  if (caller.module !== undefined) {
+    const calls = call ? [call] : (caller.callList ?? []).filter((candidate) => candidate.name === callee.name)
+    return calls.some((one) => (one.receiver ?? caller.module) === callee.module)
+  }
   if (named.length <= 1) return true
   const calls = call ? [call] : (caller.callList ?? []).filter((candidate) => candidate.name === callee.name)
   // Overloads of one type are not always in one file: a Swift extension and a C# partial class add to the type from another.
@@ -86,6 +91,8 @@ function resolves(caller, receivers, callee, named) {
 
 /** `panes(where:)`, `Server.panes` and `Server#list_panes` all name their last identifier. */
 export function bareName(name) {
+  // Periods and colons inside a quoted Erlang atom belong to its native name.
+  if (/^(?:\p{Ll}[\p{L}\p{N}_@]*|'(?:\\.|[^'\\])*')\/[0-9]+$/u.test(name)) return name
   // Kotlin and Scala quote a name that is also a keyword: Buffers.`set`.
   return name.replace(/\(.*$/s, '').replace(/`/g, '').split(/[.:#\\]+/).filter(Boolean).at(-1) ?? name
 }
@@ -188,7 +195,11 @@ export function deriveUsage({ command, spec, functions, symbols, definitionOptio
     const own = definitions.get(fn)
     if (own) return own.map((symbol) => ({ symbol, trail, method: fn }))
     if (depth >= MAX_HOPS) return []
-    return callersOf(fn).flatMap((caller) => reach(caller, [...trail, `${caller.file}:${caller.calls.get(fn.name)}`], depth + 1))
+    return callersOf(fn).flatMap((caller) => {
+      const line = caller.module === undefined ? caller.calls.get(fn.name)
+        : caller.callList.find((call) => callTargets(caller, fn, byName.get(fn.name) ?? [], call))?.line
+      return reach(caller, [...trail, `${caller.file}:${line}`], depth + 1)
+    })
   }
 
   const entries = new Map()

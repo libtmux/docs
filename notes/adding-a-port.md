@@ -205,6 +205,14 @@ Erlang has no shared site routes or package destinations until the port's
 delivery checks are complete. The compiler fixture runs in the outer test loop; it
 requires OTP 29 and Rebar3 on CI and skips locally when that toolchain is absent.
 
+The tmux-usage reader also requires OTP 29. It uses `erl_scan` for literal
+decoding and canonical atom names, then attributes written calls by module
+and arity, including static imports. Deferred fun bodies do not establish
+that their enclosing function sends a command. Macro-generated declaration
+heads fail rather than disappear from the scan. Variable-carried commands,
+custom sigils and macro-expanded calls need reviewed usage claims. Native
+scanner checks belong to the outer loop.
+
 ### Wrapper libraries
 
 Kotlin and Scala share Java's repository and release version. F# shares
