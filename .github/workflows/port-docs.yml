@@ -497,6 +497,30 @@ jobs:
           mix deps.get --only prod
           mix run --no-start "$EXPORTER" _build/docs/api.json
 
+      - name: Install Common Lisp documentation toolchain
+        if: matrix.port == 'lisp'
+        uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+        with:
+          version: 2026.11.3
+          working_directory: port
+      - name: Restore locked Common Lisp dependencies
+        if: matrix.port == 'lisp'
+        id: lisp-qlot
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            port/.qlot
+            ~/.cache/qlot
+          key: qlot-docs-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('port/.tool-versions', 'port/mise.toml', 'port/qlfile', 'port/qlfile.lock') }}
+      - name: Install locked Common Lisp dependencies
+        if: matrix.port == 'lisp' && steps.lisp-qlot.outputs.cache-hit != 'true'
+        working-directory: port
+        run: mise run setup
+      - name: Export Common Lisp API from the selected source
+        if: matrix.port == 'lisp'
+        working-directory: port
+        run: mise run docs-artifact
+
       - if: matrix.port == 'ruby'
         uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
         with:
