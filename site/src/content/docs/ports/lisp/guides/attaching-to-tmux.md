@@ -21,8 +21,8 @@ covers interactive attachment and detaching.
 
 ## Connect to an existing server
 
-Save this program as `connect.lisp`. `LIBTMUX_SOCKET_PATH` selects the existing
-server; `LIBTMUX_SOURCE` points at the checked-out library source.
+Save this program under the filename shown below. `LIBTMUX_SOCKET_PATH` selects
+the existing server; `LIBTMUX_SOURCE` points at the checked-out library source.
 
 ```lisp title="connect.lisp"
 (require :asdf)
@@ -51,9 +51,9 @@ process resources; it does not terminate the tmux server.
 
 ## Run against an isolated server
 
-Use Linux, Git, SBCL 2.6.10 and tmux 3.3a or newer. Save this launcher as
-`run.sh`. It starts an isolated server, runs the Lisp program, proves the
-session still exists, and then removes only the server it created.
+Use Linux, Git, SBCL 2.6.10 and tmux 3.3a or newer. Save this launcher under
+the filename shown below. It starts an isolated server, runs the Lisp program,
+proves the session still exists, and then removes only the server it created.
 
 ```sh title="run.sh"
 #!/bin/sh

@@ -15375,20 +15375,6 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "lisp",
-   "text": "capture.lisp",
-   "page": "/lisp/latest/examples/capture-pane-output/",
-   "line": 138,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "lisp",
-   "text": "connect.lisp",
-   "page": "/lisp/latest/guides/attaching-to-tmux/",
-   "line": 24,
-   "why": "not defined in the stated port"
-  },
-  {
    "port": "py",
    "text": "libtmux._internal",
    "page": "/py/latest/concepts/transports/",

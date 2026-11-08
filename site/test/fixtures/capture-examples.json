@@ -572,6 +572,46 @@
           }
         ]
       }
+    },
+    {
+      "port": "lisp",
+      "language": "lisp",
+      "sourceRevision": "27075ae3e3898fa82f35009460d30fef1ea03826",
+      "sourceRepository": "libtmux/libtmux-lisp",
+      "files": [
+        {
+          "name": "capture.lisp",
+          "sha256": "2c3aab24d4d4d48781ccda8aba865ccaa4f7dec8c6341aeddab77e56fc6c061a"
+        },
+        {
+          "name": "run.sh",
+          "sha256": "1143b46ec156a364276d7def9041832205dc4df86de9dfccf9a7f92b9ac88327"
+        }
+      ],
+      "toolchain": [
+        "SBCL 2.6.10"
+      ],
+      "tmux": [
+        "3.8a"
+      ],
+      "page": "ports/lisp/examples/capture-pane-output",
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-lisp libtmux-source",
+        "git -C libtmux-source checkout 27075ae3e3898fa82f35009460d30fef1ea03826",
+        "cd libtmux-source && mise trust && mise install && cd .. && sh run.sh"
+      ],
+      "verification": {
+        "platform": "Linux",
+        "checks": [
+          {
+            "name": "positive-3.8a",
+            "tmux": "3.8a",
+            "exit": 0,
+            "seconds": 2.31,
+            "remainingSocketDirectories": 0
+          }
+        ]
+      }
     }
   ],
   "rootExample": {

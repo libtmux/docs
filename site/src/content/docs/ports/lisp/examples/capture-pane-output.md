@@ -53,7 +53,11 @@ line avoids accepting the shell's echoed command as output.
              (pane (aref (libtmux:panes snapshot) 0)))
         (libtmux:send-text
          client pane
-         "printf '\\nlibtmux capture ready\\n'; \"$LIBTMUX_PROGRAM\" -N -S \"$LIBTMUX_EXAMPLE_SOCKET\" wait-for -S capture-ready"
+         (concatenate
+          'string
+          "printf '\\nlibtmux capture ready\\n'; "
+          "\"$LIBTMUX_PROGRAM\" -N -S \"$LIBTMUX_EXAMPLE_SOCKET\" "
+          "wait-for -S capture-ready")
          :enter t)
         (let ((signal (libtmux:run-command
                        client '("wait-for" "capture-ready")
@@ -135,8 +139,8 @@ cleanup pattern for a server you merely attached to.
 
 ## Setup and run
 
-Use an empty directory and save `capture.lisp` and `run.sh` using the displayed
-names. Clone the exact library revision used to verify the program:
+Use an empty directory and save both displayed files under their shown names.
+Clone the exact library revision used to verify the program:
 
 ```console
 $ git clone https://github.com/libtmux/libtmux-lisp libtmux-source
