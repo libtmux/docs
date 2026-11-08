@@ -207,7 +207,7 @@ try {
     assert.equal(result.ok, false, `${port}: the edit was accepted`)
     assert.match(result.output, new RegExp(`${port}: no verified cache for `), result.output)
   }
-  refused('go', (data) => { first(data, 'go', (test) => test.via === 'cli').test.via = 'loader' })
+  refused('go', (data) => { first(data, 'go', (test) => test.via === 'loader').test.via = 'builder' })
   refused('rs', (data) => { first(data, 'rs', (test) => test.via === 'scheduled').test.via = 'cli' })
   console.log('ok   a hand-edited via is refused')
   refused('py', (data) => { data.ports.py.examples[0].tests[0].checks += ' Hand edited.' })
@@ -222,10 +222,10 @@ try {
   refused('julia', (data) => { delete data.ports.julia.examples.find((example) => example.note).note })
   refused('py', (data) => { data.ports.py.examples[0].note = 'Added by hand.' })
   console.log('ok   an edited, removed or added note is refused')
-  const quotedGo = (data) => data.ports.go.examples.find((example) => example.source.lines).source
-  assert.ok(quotedGo(committed).lines, 'the go example is a quoted document')
-  refused('go', (data) => { const source = quotedGo(data); source.lines = [source.lines[0], source.lines[1] + 1] })
-  refused('go', (data) => { delete quotedGo(data).lines })
+  const quotedJulia = (data) => data.ports.julia.examples.find((example) => example.source.lines).source
+  assert.ok(quotedJulia(committed).lines, 'the julia example is a quoted document')
+  refused('julia', (data) => { const source = quotedJulia(data); source.lines = [source.lines[0], source.lines[1] + 1] })
+  refused('julia', (data) => { delete quotedJulia(data).lines })
   refused('py', (data) => { data.ports.py.examples[0].source.lines = [1, 1] })
   console.log('ok   a source line range that does not span its text, or is missing or invented, is refused')
 } finally {

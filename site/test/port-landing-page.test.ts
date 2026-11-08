@@ -48,8 +48,16 @@ async function renderHtml(slug: string, modules: Record<string, Record<string, u
   return renderAstroTemplate(template, { props: { port: PORT_BY_SLUG[slug], version: 'latest' } })
 }
 
+// Each page is parsed into a window of its own; a landing page with a 22-preset picker is large,
+// so a window stays open only until its test ends.
+const opened: Window[] = []
+afterEach(async () => {
+  await Promise.all(opened.splice(0).map((window) => window.happyDOM.close()))
+})
+
 async function render(slug: string) {
   const window = new Window()
+  opened.push(window)
   window.document.body.innerHTML = await renderHtml(slug)
   return window.document as unknown as Document
 }
@@ -157,8 +165,9 @@ describe('the landing page markup', () => {
   const claimed = (slug: string, example: ReturnType<typeof landingExample>) => (citedTest(example).via === 'cli' ? loadCommand(slug)?.program : undefined)
 
   it('covers every port that has a showcase, as one file or as a picker', () => {
-    expect(SINGLE.sort()).toEqual(['csharp', 'go', 'julia', 'ruby'])
-    expect(PICKER.sort()).toEqual(['cxx', 'powershell', 'py', 'rs', 'ts'])
+    // Every port with a showcase now loads tmuxp's catalog, so none shows one file.
+    expect(SINGLE.sort()).toEqual([])
+    expect(PICKER.sort()).toEqual(['csharp', 'cxx', 'go', 'julia', 'powershell', 'py', 'rs', 'ruby', 'ts'])
   })
 
   it('shows a port with one tested workspace file as that file alone: the panes it builds, its command and its evidence', async () => {

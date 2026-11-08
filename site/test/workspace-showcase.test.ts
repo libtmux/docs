@@ -162,8 +162,8 @@ describe('the example a landing page opens on', () => {
       return showcase ? [[port, landingExample(showcase).topic]] : []
     }))
     expect(topics).toEqual({
-      py: 'main-horizontal', ts: 'three-pane', rs: 'three-pane', go: 'environment', cxx: 'two-pane',
-      csharp: 'two-pane', ruby: 'tiled', julia: 'shell-command-before', powershell: 'main-horizontal',
+      py: 'main-horizontal', ts: 'three-pane', rs: 'three-pane', go: 'environment', cxx: 'three-pane',
+      csharp: 'two-pane', ruby: 'tiled', julia: 'three-pane', powershell: 'main-horizontal',
     })
   })
 
@@ -276,11 +276,20 @@ describe('what each port supports of tmuxp\'s examples', () => {
   it('records the ports whose tests load tmuxp\'s own files', () => {
     const identical = (port: string) => Object.entries(data.ports[port]!.support.presets).filter(([, row]) => row.tested === 'identical').map(([name]) => name)
     expect(identical('rs')).toEqual(names.filter((name) => name !== 'plugin-system'))
-    expect(identical('powershell')).toEqual(['skip-send-pane-level', 'skip-send'])
+    // PowerShell's catalog files are the ones its curated examples do not already cover for a topic.
+    expect(identical('powershell')).toEqual(['2-pane-synchronized', '2-pane-vertical', '3-pane', '4-pane', 'main-pane-height-percentage', 'minimal', 'options', 'shorthands', 'skip-send-pane-level', 'skip-send', 'window-index'])
     expect(identical('py')).toEqual(['blank-panes'])
     // TypeScript's test loads every one of tmuxp's examples but the plugin one, which it asserts is refused.
     expect(identical('ts')).toEqual(names.filter((name) => name !== 'plugin-system'))
-    for (const port of ['java', 'go', 'cxx', 'csharp', 'ruby', 'julia', 'swift']) expect(identical(port), port).toEqual([])
+    // Go, C# and C++ keep a curated example for the topic where a test runs the command or builds on real tmux,
+    // so the catalog file for that topic stays out; C++ also leaves out `env-variables`, which its parser refuses.
+    expect(identical('go')).toEqual(names.filter((name) => !['plugin-system', 'session-environment'].includes(name)))
+    expect(identical('csharp')).toEqual(names.filter((name) => !['plugin-system', '2-pane-vertical'].includes(name)))
+    expect(identical('cxx')).toEqual(names.filter((name) => !['plugin-system', 'env-variables', '2-pane-vertical', 'main-pane-height'].includes(name)))
+    // Ruby shows the six the loader reads the way tmuxp does; three more load but are marked unsupported.
+    expect(identical('ruby')).toEqual(['2-pane-vertical', '3-pane', '4-pane', 'session-environment', 'shorthands', 'window-index'])
+    expect(identical('julia')).toEqual(names.filter((name) => ['2-pane-synchronized', '2-pane-vertical', '3-pane', '4-pane', 'blank-panes', 'env-variables', 'focus-window-and-panes', 'main-pane-height-percentage', 'main-pane-height', 'pane-shell', 'session-environment', 'shorthands', 'start-directory', 'suppress-history', 'window-index'].includes(name)))
+    for (const port of ['java', 'swift']) expect(identical(port), port).toEqual([])
     expect(Object.entries(data.ports.swift!.support.presets).filter(([, row]) => row.tested === 'library-only').map(([name]) => name))
       .toEqual(['2-pane-vertical', '3-pane', 'blank-panes', 'skip-send', 'sleep'])
   })
@@ -380,7 +389,7 @@ describe('the pane drawing', () => {
       for (const window of drawn) expect(window.svg.startsWith('<svg'), `${port} ${example.topic} ${window.index}`).toBe(true)
     }
     const cxx = previewWindows(parsed(workspaceShowcase('cxx')!.examples.find((example) => example.topic === 'shorthand')!), 'cxx')
-    expect(cxx.map((window) => [window.index, window.panes])).toEqual([[0, 0], [1, 4]])
+    expect(cxx.map((window) => [window.index, window.panes])).toEqual([[0, 3]])
   })
 
   it('names every drawing for a reader who cannot see it, with the window, its panes and its layout', () => {
@@ -497,7 +506,10 @@ describe('the showcase section', () => {
       expect(line).toContain('loaded by the library in a test; the command is not run')
       expect(line).not.toContain('a test runs the command')
     }
-    expect(lines(await section('go'))[0]).toContain('a test runs the command')
+    // Go's catalog is read by the library's parser and by the loader the load command calls.
+    const go = lines(await section('go'))
+    expect(go.find((line) => line.includes('TestEveryTmuxpExampleParses'))).toContain('parsed by the library in a test')
+    expect(go.find((line) => line.includes('TestEveryTmuxpExampleNormalizes'))).toContain('loaded by the library in a test')
     // The Rust parity script is a scheduled run, not a test that gates a pull request.
     const rs = lines(await section('rs'))
     expect(rs.filter((line) => line.includes('a scheduled parity run loads it')).length).toBeGreaterThan(0)
