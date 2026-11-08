@@ -129,6 +129,8 @@ it('advertises local native loaders while retaining their development status', (
       const authored = port.productDescriptions?.workspace
       if (authored) expect(productDescription(port, 'workspace')).toBe(authored)
       else expect(productDescription(port, 'workspace')).toContain('Build the CLI from source')
+      const cliPackage = port.packages?.find((pkg) => pkg.executable === port.workspaceCli!.split(/\s+/)[0])
+      if (cliPackage) expect(workspaceOverviewNotice(port)?.body).toContain(`\`${cliPackage.name}\` package supplies this command`)
     }
     if (native(port)) expect(workspaceOverviewNotice(port)?.body).toContain(`\`${port.workspaceCli!.split(/\s+/)[0]}\``)
     if (port.workspaceCliAvailability === 'published') {

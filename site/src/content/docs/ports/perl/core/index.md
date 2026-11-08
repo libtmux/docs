@@ -16,8 +16,11 @@ cards:
 ---
 
 The core uses stable Perl 5.44 features and standard-library runtime modules.
-The optional [LibTmux-Async distribution](../reference/) adds Future and IO::Async through a
-caller-owned loop. Linux x86_64 LP64 is qualified; other platforms and ABIs
-remain unsupported.
+The optional [LibTmux-Async distribution](../reference/libtmux-async-server/)
+returns Future values and requires a caller-owned
+[IO::Async::Loop::Ppoll](https://metacpan.org/pod/IO::Async::Loop::Ppoll)
+loop. Its [transport reference](../reference/libtmux-async-transport/) explains
+admission, cancellation, and cleanup. Linux x86_64 LP64 is qualified; other
+platforms and ABIs remain unsupported.
 
 The distributions are available from source and have no CPAN release.
