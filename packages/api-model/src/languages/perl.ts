@@ -50,8 +50,16 @@ export function extractPerlArtifact(input: unknown, revision?: string): ApiModel
         : `https://metacpan.org/pod/${module}`
       return `[${label}](${href}${section ? `#${encodeURIComponent(section)}` : ''})`
     }
-    const id = module === 'LibTmux::Transport' && section === 'RESULTS' ? 'LibTmux::CommandResult'
+    let id = module === 'LibTmux::Transport' && section === 'RESULTS' ? 'LibTmux::CommandResult'
       : section ? `${module}::${section}` : module
+    if (!ids.has(id) && section) {
+      // One POD file can document several declared packages, including error subclasses.
+      const owner = artifact.symbols.find((symbol) => symbol.id === module)
+      const methods = owner ? artifact.symbols.filter((symbol) => symbol.kind === 'method'
+        && !symbol.inheritedFrom && symbol.name === section && symbol.source.file === owner.source.file) : []
+      if (methods.length > 1) throw new Error(`Ambiguous authored Perl POD target: ${target}`)
+      if (methods.length === 1) id = methods[0].id
+    }
     if (!ids.has(id)) throw new Error(`Unresolved authored Perl POD target: ${target}`)
     return `:obj:\`${label.replace(/`/g, '')} <${id}>\``
   })
