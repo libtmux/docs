@@ -4,7 +4,7 @@ import { fromMarkdown } from 'mdast-util-from-markdown'
 import { describe, expect, it } from 'vitest'
 import config from '../ec.config.mjs'
 import { API_MODELS } from '../src/lib/api-models'
-import { parseApiProse } from '../src/lib/api-prose'
+import { parseApiProse } from '@libtmux/api-model/reference'
 import { codeLang } from '../src/lib/highlight'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 

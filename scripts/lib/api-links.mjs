@@ -98,6 +98,7 @@ export function languageOfUrl(url) {
     'ocaml.org': 'ocaml',
     'www.erlang.org': 'erlang',
     'www.haskell.org': 'haskell', 'downloads.haskell.org': 'haskell', 'cabal.readthedocs.io': 'haskell',
+    'perldoc.perl.org': 'perl', 'metacpan.org': 'perl',
     'modelcontextprotocol.io': 'any',
   }
   if (byHost[hostname]) return byHost[hostname]
@@ -109,7 +110,7 @@ export function languageOfUrl(url) {
 
 /** The languages each port's documentation legitimately reaches: its own, and what its platform shares. */
 export const PORT_LANGUAGES = {
-  py: ['python'], rs: ['rust'], go: ['go'], ts: ['typescript'], java: ['java'],
+  py: ['python'], perl: ['perl'], rs: ['rust'], go: ['go'], ts: ['typescript'], java: ['java'],
   kotlin: ['kotlin', 'java'], scala: ['scala', 'java'],
   csharp: ['csharp', 'dotnet'], fsharp: ['fsharp', 'dotnet'], powershell: ['powershell', 'dotnet'],
   cxx: ['cpp'], swift: ['swift'], julia: ['julia'], lua: ['lua'], elixir: ['elixir', 'erlang'], ruby: ['ruby'], ocaml: ['ocaml'],

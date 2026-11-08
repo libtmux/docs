@@ -54,7 +54,9 @@ products. Leave out private workspaces and development tools.
 Name a package page or API reference only where the host really serves one.
 A port installed from Git, or from its own registry, names no host page. Set
 an entry `planned` or `configured-unpublished` until its host serves it: only
-`published` entries produce links. List a page an ecosystem suggests and its
+`published` entries produce registry/API links. Set `sourceAvailable: true`
+only for a verified public source directory or file; that source can be linked
+while the distribution remains `configured-unpublished`. List a page an ecosystem suggests and its
 host does not serve as `unavailable`.
 
 Give a package that ships inside another distribution (a Go package, a
@@ -85,7 +87,7 @@ $ node scripts/verify-destinations.mjs
 ```
 
 The verifier refuses to run, with or without `--check`, if a port in `ports.ts`
-has no inventory entry with a published library: the header builds its links
+has no library with a published distribution or explicitly available source: the header builds its links
 from that entry, so a port without one would offer nothing. A host the
 inventory has not named before needs an identity rule in
 `scripts/lib/destination-verification.mjs` and its cases in

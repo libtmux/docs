@@ -305,7 +305,11 @@
   "haskell": {
     "title": "Typed tmux values for Haskell",
     "lead": "Parse tmux entity IDs, validate dimensions and indices, and check stable tmux releases with pure Haskell functions",
-    "modules": ["LibTmux.Id", "LibTmux.Value", "LibTmux.Version"],
+    "modules": [
+      "LibTmux.Id",
+      "LibTmux.Value",
+      "LibTmux.Version"
+    ],
     "capabilities": {}
   },
   "swift": {
@@ -353,6 +357,28 @@
       "argv": "Libtmux.Command",
       "version-gate": "Libtmux.Error.t.Unsupported_version",
       "async": "Libtmux_eio.Client.capture"
+    }
+  },
+  "perl": {
+    "objects": {
+      "server": "LibTmux::Server",
+      "session": "LibTmux::Session",
+      "window": "LibTmux::Window",
+      "pane": "LibTmux::Pane"
+    },
+    "association": "LibTmux::WindowLink",
+    "capabilities": {
+      "objects": "LibTmux::Pane",
+      "ids": "LibTmux::Pane::id",
+      "queries": "LibTmux::Selection::where",
+      "errors": "LibTmux::X::InvalidFilter",
+      "servers": "LibTmux::Server::new",
+      "traversal": "LibTmux::Server::snapshot",
+      "send-keys": "LibTmux::Server::send_keys",
+      "capture": "LibTmux::Server::capture_pane",
+      "argv": "LibTmux::Server::cmd",
+      "version-gate": "LibTmux::X::Unsupported",
+      "async": "LibTmux::Async"
     }
   }
 }

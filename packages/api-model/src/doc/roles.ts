@@ -280,6 +280,8 @@ function labelFor(raw: string): { target: string; label: string } {
  */
 const SYNTAX: Record<string, ReadonlySet<string>> = {
   py: new Set(['rest', 'citation']),
+  // Pod::Simple exports local POD targets as roles and external targets as Markdown links.
+  perl: new Set(['pod', 'markdown-link']),
   rs: new Set(['intra-doc']),
   go: new Set(['go-link']),
   java: new Set(['jsdoc']),
@@ -534,7 +536,7 @@ function tokenizeRun(text: string, lang?: string): DocSpan[] {
     }
   }
 
-  if (syntax.has('rest') || syntax.has('rest-role')) for (const m of text.matchAll(ROLE_RE)) {
+  if (syntax.has('rest') || syntax.has('rest-role''pod')) for (const m of text.matchAll(ROLE_RE)) {
     const role = m[1].replace(/^py:/, '')
     const { target, label } = labelFor(m[2])
     if (!ROLES.has(m[1])) {
@@ -619,7 +621,7 @@ function tokenizeRun(text: string, lang?: string): DocSpan[] {
     }
   } else {
     for (const code of markdownCode(text, masked.join(''))) {
-      const span: DocSpan = syntax.has('odoc') || syntax.has('literal-code') ? { kind: 'code', text: code.text }
+      const span: DocSpan = syntax.has('odoc') || syntax.has('literal-code') || syntax.has('pod') ? { kind: 'code', text: code.text }
         : code.ticks === 1
         ? { kind: 'ref', role: 'any', target: syntax.has('intra-doc') && RUST_CODE_PATH_RE.test(code.text) ? rustTarget(code.text) : code.text, label: code.text }
         : syntax.has('docc') && code.ticks === 2

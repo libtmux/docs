@@ -1,3 +1,5 @@
+import { codeLang } from './code-language'
+export { codeLang } from './code-language'
 import { createHighlighter, type Highlighter, type BundledLanguage } from 'shiki'
 import { createRenderer } from 'astro-expressive-code'
 import ecConfig from '../../ec.config.mjs'
@@ -24,7 +26,7 @@ let instance: Promise<Highlighter> | undefined
 
 /** Frequent languages load once; other supported grammars load on demand. */
 const LANGS = [
-  'python', 'ruby', 'lua', 'rust', 'ts', 'js', 'bash', 'console', 'json', 'yaml', 'text',
+  'perl', 'python', 'ruby', 'lua', 'rust', 'ts', 'js', 'bash', 'console', 'json', 'yaml', 'text',
   // The install widget's build-file panels: a Gradle script, a Maven POM
   // fragment, a Package.swift dependency and a CMakeLists block. Three of the
   // eight ports cannot be installed from a command line at all, so without
@@ -114,41 +116,6 @@ export async function highlight(code: string, lang: string): Promise<string | un
   } catch {
     return undefined
   }
-}
-
-/** Unsupported doc-comment labels retain a plain-text frame instead of failing builds. */
-const EC_LANGS = new Set([
-  'python', 'ruby', 'lua', 'rust', 'ts', 'tsx', 'js', 'jsx', 'java', 'kotlin', 'scala', 'fsharp', 'swift',
-  'csharp', 'cpp', 'c', 'go', 'bash', 'shell', 'console', 'json', 'yaml',
-  'toml', 'xml', 'diff', 'text', 'tmux-usage', 'tmux-shell', 'tmux-config', 'powershell', 'julia', 'elixir', 'properties', 'ini',
-  'cmake', 'ocaml', 'lisp''haskell',
-])
-
-const EC_ALIASES: Record<string, string> = {
-  typescript: 'ts',
-  javascript: 'js',
-  'c++': 'cpp',
-  cxx: 'cpp',
-  py: 'python',
-  rs: 'rust',
-  'c#': 'csharp',
-  cs: 'csharp',
-  dune: 'lisp',
-  ml: 'ocaml',
-  ex: 'elixir',
-  exs: 'elixir',
-  sh: 'bash',
-  zsh: 'bash',
-  shellsession: 'console',
-  tmux: 'tmux-config',
-  plaintext: 'text',
-  '': 'text',
-}
-
-export function codeLang(lang?: string): string {
-  const name = (lang ?? '').trim().toLowerCase()
-  const resolved = EC_ALIASES[name] ?? name
-  return EC_LANGS.has(resolved) ? resolved : 'text'
 }
 
 /** Inert themed tokens; browsers construct text nodes rather than parsing HTML. */

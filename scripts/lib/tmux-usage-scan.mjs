@@ -6,20 +6,21 @@
  * innermost named function around it and keeps the flag literals that travel
  * with the command, because the flags choose the scope tmux lists.
  */
+import { scanPerl } from './tmux-usage-perl.mjs'
 import { parserFor } from '../../packages/api-model/src/parser.ts'
 import { receiverOf, scanElixir, scanFSharp, scanJulia } from './tmux-usage-lexical.mjs'
 import { scanHaskell } from './tmux-usage-haskell.mjs'
 
 /** Port to the grammar that reads its source. PowerShell cmdlets are C#; Julia, F# and Elixir are read by their text. */
 export const GRAMMARS = {
-  py: 'python', ts: 'typescript', rs: 'rust', go: 'go', java: 'java', kotlin: 'kotlin', scala: 'scala',
+  perl: 'perl', py: 'python', ts: 'typescript', rs: 'rust', go: 'go', java: 'java', kotlin: 'kotlin', scala: 'scala',
   csharp: 'csharp', powershell: 'csharp', cxx: 'cpp', swift: 'swift', ruby: 'ruby', lua: 'lua', julia: 'julia', fsharp: 'fsharp', elixir: 'elixir', ocaml: 'ocaml',
   haskell: 'haskell',
 }
 
 /** Source extensions per grammar, minus declaration-only files. */
 export const EXTENSIONS = {
-  python: /\.py$/, typescript: /(?<!\.d)\.ts$/, rust: /\.rs$/, go: /\.go$/, java: /\.java$/, kotlin: /\.kt$/,
+  perl: /\.pm$/, python: /\.py$/, typescript: /(?<!\.d)\.ts$/, rust: /\.rs$/, go: /\.go$/, java: /\.java$/, kotlin: /\.kt$/,
   scala: /\.scala$/, csharp: /\.cs$/, cpp: /\.(?:cpp|cc|cxx|hpp|hh|h)$/, swift: /\.swift$/, ruby: /\.rb$/, lua: /\.lua$/, julia: /\.jl$/, fsharp: /\.fs$/, elixir: /\.ex$/, ocaml: /\.ml$/,
   haskell: /\.l?hs$/,
 }
@@ -590,14 +591,14 @@ export function withoutPrimaryConstructors(text) {
  * one; `dispatch: null`, with `why`, when it is a label, a comparison, a choice made by a condition or a value
  * that no call in the function sends.
  *
- * @param {{ grammar: string, text: string, commands: ReadonlySet<string>, known: ReadonlySet<string>, dispatch?: ReadonlySet<string>, builders?: ReadonlySet<string>, guards?: { name: string, owner?: string }[], labels?: ReadonlyMap<string, ReadonlySet<number>>, trace?: (site: object, context: object) => void }} input
+ * @param {{ grammar: string, text: string, commands: ReadonlySet<string>, known: ReadonlySet<string>, dispatch?: ReadonlySet<string>, builders?: ReadonlySet<string>, guards?: { name: string, owner?: string }[], labels?: ReadonlyMap<string, ReadonlySet<number>>, trace?: (site: object, context: object) => void, native?: import('./tmux-usage-perl.mjs').NativePerlInput }} input
  *   `commands` are the names to find; `known` are all tmux command names, so
  *   a list that holds a different command is not read as this command's flags.
  * @returns {Promise<{ functions: ScannedFunction[], types: { name?: string, start: number, end: number }[], orphans: Site[], modules?: { path: string, target?: string, include?: boolean, open?: boolean }[] }>}
  *   `types` are the declarations that own functions, so a claim can anchor to
  *   a class; `orphans` are the sites outside any named function.
  */
-export async function scanSource({ grammar, text, commands, known, dispatch, builders: declared = new Set(), guards = [], labels = new Map(), trace }) {
+export async function scanSource({ grammar, text, commands, known, dispatch, builders: declared = new Set(), guards = [], labels = new Map(), trace, native }) {
   // A guard wraps the command it is handed and hands it on, so it passes a command through as a builder does.
   const builders = new Set([...declared, ...guards.map((guard) => guard.name)])
   const isGuard = (fn) => guards.some((guard) => guard.name === fn?.name && (!guard.owner || guard.owner === fn.owner))
@@ -613,6 +614,7 @@ export async function scanSource({ grammar, text, commands, known, dispatch, bui
     }
     return false
   }
+  if (grammar === 'perl') return scanPerl(text, native, { commands, known })
   if (grammar === 'julia') return scanJulia(text, { commands, known, dispatch })
   if (grammar === 'elixir') return scanElixir(text, { commands, known, dispatch })
   if (grammar === 'fsharp') return scanFSharp(text)

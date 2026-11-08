@@ -14,7 +14,7 @@ import type { NativePageContext, NativeShellContext } from '../lib/native-shell'
 import { nativeToctreeNodes } from '../lib/native-shell'
 import ApiTree from '../components/api/ApiTree.astro'
 import { referencePageLinks } from '../lib/reference-page-links'
-import { PORTS, portHomeUrl } from '../lib/ports'
+import { PORT_BY_SLUG, PORTS, portHomeUrl } from '../lib/ports'
 import { defaultVersionFor } from '../lib/versions'
 import '../styles/native-sphinx.css'
 
@@ -64,7 +64,7 @@ const equivalents = { port, primary: page.signatures[0], symbols, indexes: page.
     <DocumentationContext port={port} version={version} locale={locale} sourcePath={page.sourcePath} reference>
       <DocumentationNavigationButtons slot="navigation" tableOfContents={page.hasTableOfContents} native api />
     </DocumentationContext>
-    <PrereleaseNotice />
+    <PrereleaseNotice port={PORT_BY_SLUG[port]} />
     <template data-native-boundary="header-end"></template>
     <template data-native-boundary="sidebar-start"></template>
     <ApiTree navigation={nativeToctreeNodes(context.toctree, page.url)}

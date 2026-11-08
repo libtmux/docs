@@ -6,7 +6,7 @@
  * API model was extracted from. A symbol appears only where the source shows
  * it sending the command, so a link here is a claim about the code.
  */
-import { qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model'
+import { qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model/reference'
 import { API_MODELS, PORT_NAME, referenceHref } from './api-models'
 import { PORTS } from './ports'
 import scopeTable from '../data/tmux-usage/scopes.json'
@@ -22,6 +22,7 @@ import kotlin from '../data/tmux-usage/kotlin.json'
 import lua from '../data/tmux-usage/lua.json'
 import ocaml from '../data/tmux-usage/ocaml.json'
 import powershell from '../data/tmux-usage/powershell.json'
+import perl from '../data/tmux-usage/perl.json'
 import py from '../data/tmux-usage/py.json'
 import rs from '../data/tmux-usage/rs.json'
 import ruby from '../data/tmux-usage/ruby.json'
@@ -69,7 +70,7 @@ export interface TmuxScope {
 }
 
 export const TMUX_USAGE: Record<string, UsageDocument> = {
-  csharp, cxx, elixir, fsharp, go, haskell, java, julia, kotlin, lua, ocaml, powershell, py, rs, ruby, scala, swift, ts,
+  csharp, cxx, elixir, fsharp, go, haskell, java, julia, kotlin, lua, ocaml, powershell, perl, py, rs, ruby, scala, swift, ts,
 } as unknown as Record<string, UsageDocument>
 
 const SCOPES = scopeTable.commands as Record<string, { scopes: TmuxScope[] }>

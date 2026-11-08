@@ -81,7 +81,7 @@ function drafts(entry: InventoryEntry, home: string): Draft[] {
   const terms = [entry.label, entry.coordinate, ...entry.aliases, entry.repo, repoName(entry.repo),
     INVENTORY_KIND_LABEL[entry.kind], ...KIND_TERMS[entry.kind], ...(entry.unit ? [entry.unit] : []), PICKER_GROUP_LABEL[entry.product]]
   const line = (...parts: (string | undefined)[]) => parts.filter(Boolean).join(' · ')
-  return entryDestinations(entry).map(({ kind, url, host }): Draft => {
+  return entryDestinations(entry).filter(({ kind }) => entry.status === 'published' || kind === 'source' && entry.sourceAvailable).map(({ kind, url, host }): Draft => {
     if (kind === 'source') {
       // A path in the port's own repository needs no repository name; one in another repository keeps it.
       const where = entry.path ? (entry.repo === home ? entry.path : `${repoName(entry.repo)}/${entry.path}`) : entry.repo
@@ -127,7 +127,7 @@ function indexRows(entries: readonly InventoryEntry[], home: string): HeaderRow[
 }
 
 export function portHeaderLinks(port: Port, inventory: Readonly<Record<string, readonly InventoryEntry[]>> = INVENTORY): PortHeaderLinks {
-  const entries = (inventory[port.slug] ?? []).filter((entry) => entry.status === 'published')
+  const entries = (inventory[port.slug] ?? []).filter((entry) => entry.status === 'published' || entry.sourceAvailable)
   const library = entries.find((entry) => entry.kind === 'library')
   if (!library) return { actions: [], rows: [], indexed: false }
   const { source } = portDestinations({ port })
@@ -135,8 +135,8 @@ export function portHeaderLinks(port: Port, inventory: Readonly<Record<string, r
     kind: 'source', label: 'GitHub', icon: 'github', url: source.url,
     name: `GitHub: ${source.repo}${source.path ? `/${source.path}` : ''}`,
   }]
-  const documented = library.api ? library : entries.find((entry) => entry.id === library.reference)
-  if (library.package) {
+  const documented = library.status === 'published' && library.api ? library : entries.find((entry) => entry.status === 'published' && entry.id === library.reference)
+  if (library.status === 'published' && library.package) {
     const host = PACKAGE_HOSTS[library.package.host]
     // A host that serves the package page as its reference is one destination, not two, so its one link says it is both.
     const also = documented?.api?.url === library.package.url ? ' and API reference' : ''

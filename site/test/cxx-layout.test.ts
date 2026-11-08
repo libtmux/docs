@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
+import { SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model/reference'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { apiSignatureLayouts, CODE_COLUMNS, codeWidthFailures, signatureSpans, type CodeLayout } from '../src/lib/code-layout'
 import { usesNativeSignatures } from '../src/lib/api-sections'

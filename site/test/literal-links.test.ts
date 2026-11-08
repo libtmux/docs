@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { describe, expect, it, vi } from 'vitest'
-import { proseTexts, SymbolIndex, type ApiSymbol } from '@libtmux/api-model'
+import { proseTexts, SymbolIndex, type ApiSymbol } from '@libtmux/api-model/reference'
 import { TYPE_KINDS } from '../../packages/api-model/src/link'
 import { API_MODELS } from '../src/lib/api-models'
 import { defaultVersionFor } from '../src/lib/versions'

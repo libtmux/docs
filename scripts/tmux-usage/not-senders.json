@@ -4806,6 +4806,168 @@
           ]
         }
       ]
+    },
+    {
+      "port": "perl",
+      "ownerSuffix": "Selection",
+      "names": [
+        "new"
+      ],
+      "kind": "values",
+      "why": "Concrete Selection constructors bless and validate native array membership. They create no session, window, pane, process, or transport.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Selection.pm:8",
+          "has": [
+            "my $self = bless \\@items, $class;"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Selection.pm:9",
+          "has": [
+            "$self->_validate;"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "owner": "Server",
+      "names": [
+        "close"
+      ],
+      "in": "packages/async/",
+      "commands": [
+        "kill-server"
+      ],
+      "kind": "no-send",
+      "why": "Async close cancels pending operations and closes its owned transport. It never requests daemon destruction.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:57",
+          "has": [
+            "$_->cancel for values $self->{operations}->%*;"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:58",
+          "has": [
+            "return $self->{transport}->close;"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "owner": "Server",
+      "names": [
+        "delete_buffer"
+      ],
+      "commands": [
+        "kill-server"
+      ],
+      "kind": "other-command",
+      "why": "The selected operation deletes one named buffer; it does not send kill-server.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:767",
+          "has": [
+            ": 'delete-buffer',"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1121",
+          "has": [
+            "$self->_run($self->operation('delete_buffer', %args));"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "owner": "Server",
+      "names": [
+        "set_buffer"
+      ],
+      "commands": [
+        "set-buffer"
+      ],
+      "kind": "other-command",
+      "why": "set_buffer uses load-buffer with stdin bytes. It does not use the distinct native set-buffer argument interface.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:765",
+          "has": [
+            "$name eq 'set_buffer'  ? 'load-buffer'"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:772",
+          "has": [
+            "$name eq 'set_buffer' ? (stdin => $args{data}) : ())->then("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "owner": "Session",
+      "names": [
+        "window_links"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "values",
+      "why": "This accessor reads captured graph membership locally; link_window on Server performs the separate tmux mutation.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Session.pm:10",
+          "has": [
+            "sub window_links ($self) { $self->_read('window_links') }"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "owner": "Snapshot",
+      "names": [
+        "window_links"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "values",
+      "why": "This accessor reads captured graph membership locally; link_window on Server performs the separate tmux mutation.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Snapshot.pm:207",
+          "has": [
+            "sub window_links  ($self)      { $self->_selection('window_link') }"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "owner": "Window",
+      "names": [
+        "links"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "values",
+      "why": "This accessor reads captured graph membership locally; link_window on Server performs the separate tmux mutation.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Window.pm:9",
+          "has": [
+            "sub links       ($self) { $self->_read('links') }"
+          ]
+        }
+      ]
     }
   ]
 }

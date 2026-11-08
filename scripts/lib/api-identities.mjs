@@ -325,6 +325,15 @@ export function doccIdentity(url, data) {
   return { via: 'docc', declared: kind ?? 'topic', kind: DOCC_KINDS[kind] ?? (kind ? 'other' : 'topic'), path, title: data.metadata?.title ?? '' }
 }
 
+/** Native POD names a module in its NAME paragraph, independently of its URL. */
+function pod(_url, page, fragment) {
+  if (fragment) return undefined
+  const paragraph = /<h[1-6]\b[^>]*\bid=["']NAME["'][^>]*>[\s\S]*?<\/h[1-6]>\s*<p>([\s\S]*?)<\/p>/i.exec(page.html)?.[1]
+  const name = paragraph && /^([A-Za-z]\w*(?:::\w+)*)\s+-\s+/.exec(strip(paragraph))?.[1]
+  if (!name) return undefined
+  return { via: 'pod', declared: 'module', kind: 'module', path: name.split('::'), title: page.title }
+}
+
 /**
  * The identity a page declares, or `undefined` when the host publishes none we
  * read (a handbook, a manual, a wiki): those links stand on the rules of
@@ -353,6 +362,7 @@ function parserFor(hostname, pathname, page) {
   if (hostname === 'learn.microsoft.com' && /\/(dotnet\/api|powershell\/module)\//i.test(pathname)) return learn
   if (hostname === 'docs.python.org') return cpython
   if (hostname === 'pkg.go.dev') return godoc
+  if (hostname === 'perldoc.perl.org' || hostname === 'metacpan.org') return pod
   if (hostname === 'docs.julialang.org') return documenter
   if (hostname === 'ocaml.org' && /^\/manual\/[^/]+\/api\//.test(pathname)) return ocamldoc
   if (hostname === 'developer.mozilla.org') return mdn

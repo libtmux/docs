@@ -133,6 +133,31 @@ function sourceGuide(port: string, product: ProductPage['product']) {
   return SOURCE_GUIDE_PORTS.includes(port)
     ? sourceGuidesFor(port).find((guide) => guide.product === product && guide.route === `${product}/source-guide`) : undefined
 }
+/** Authored metadata determines headings and which section roots really exist. */
+function productSource(port: string, product: ProductPage['product'], section: string): { title?: string; subtitle?: string; shared?: boolean } | undefined {
+  const key = `${port}/${product}/${section}`
+  if (productSources.has(key)) return productSources.get(key)
+  const route = [product, section].filter(Boolean).join('/')
+  const guide = SOURCE_GUIDE_PORTS.includes(port)
+    ? sourceGuidesFor(port).find((entry) => entry.route === route) : undefined
+  if (guide) {
+    const source = { title: guide.title }
+    productSources.set(key, source)
+    return source
+  }
+  const roots = [`docs/ports/${port}`, ...(product === 'workspace' && KNOWN_PORTS.has(port) ? ['_workspace-shared'] : [])]
+  for (const root of roots) for (const suffix of ['.md', '/index.md']) {
+    const file = new URL(`../src/content/${root}/${route}${suffix}`, import.meta.url)
+    if (!existsSync(file)) continue
+    const { frontmatter } = parseFrontmatter(readFileSync(file, 'utf8'))
+    const data = resolvePortData(frontmatter, port, product)
+    const source = { title: data.title as string, subtitle: data.subtitle as string | undefined, shared: root === '_workspace-shared' }
+    productSources.set(key, source)
+    return source
+  }
+  productSources.set(key, undefined)
+  return undefined
+}
 
 function counterpartRoutes(port: string, path: string): Map<string, readonly string[]> {
   const own = documentsFor(port).get(path)
@@ -199,6 +224,24 @@ it('keeps declared product overviews and their ownership required', () => {
       mislabelled.set(area.route, { ...overview, data: { ...overview.data, product: undefined } })
       expect(() => sectionsFor(port.slug, area.product!, mislabelled)).toThrow(`${port.slug}: ${area.product} overview ownership`)
     }
+  }
+})
+
+it('keeps declared product entry pages in the source-derived checks', () => {
+  for (const port of primaryPorts) for (const product of products) {
+    const sections = sectionsFor(port.slug, product)
+    if (port.productAvailability?.[product] === 'excluded') expect(sections).toEqual([])
+    else if (!productAvailable(port, product)) {
+      const source = productSource(port.slug, product, '')
+      if (source) {
+        expect(sections).toEqual([''])
+        expect(source.title, `${port.slug} ${product} overview`).toBeTruthy()
+      } else {
+        expect(sections).toEqual([])
+        expect(SOURCE_GUIDE_PORTS.includes(port.slug) && sourceGuidesFor(port.slug).some((guide) => guide.aliases.includes(product)),
+          `${port.slug} ${product} has a documented replacement`).toBe(true)
+      }
+    } else expect(sections, `${port.slug} ${product} entry pages`).toEqual(expect.arrayContaining(['', 'reference']))
   }
 })
 
@@ -739,7 +782,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           }
         }
       }
-      if (page.product === 'workspace' && sectionsFor(page.port, 'workspace').includes('internals') && productAvailable(port, 'workspace')) {
+      if (page.product === 'workspace' && sectionsFor(page.port, 'workspace').includes('internals') && productAvailable(.port, 'workspace').includes('internals')) {
         expect([...picker!.querySelectorAll('a[href]')].some((link) => link.getAttribute('href') === urlFor(`${page.port}/${page.version}/workspace/internals/`).pathname),
           `${page.path} Internals remains reachable in the picker`).toBe(true)
       }
@@ -887,6 +930,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           expect(unavailable?.textContent, `${page.path} unavailable ${port.name}`).toContain('No matching page')
           const home = unavailable?.querySelector('a[data-picker-home]')?.getAttribute('href')
           expect(home, `${page.path} ${port.name} home exit`).toBeDefined()
+          if (!productAvailable(port, page.product)) {
+            const version = port.slug === page.port ? page.version : defaults[port.slug]
+            expect(home, `${page.path} unavailable product uses core home`).toBe(urlFor(`${port.slug}/${version}/`).pathname)
+          }
           expect(resolves(home!, urlFor(page.path).href), `${page.path} ${port.name} home exists`).toBe(true)
         }
       }

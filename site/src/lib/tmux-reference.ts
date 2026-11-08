@@ -1,5 +1,5 @@
 /** tmux source data adapted to the shared API reference and navigation. */
-import { docSummaryText, navSidecarFor, pageSlug, sourceUrl, type ApiSymbol, type SourceApiModel, type SymbolIndex } from '@libtmux/api-model'
+import { docSummaryText, navSidecarFor, pageSlug, sourceUrl, type ApiSymbol, type SourceApiModel, type SymbolIndex } from '@libtmux/api-model/reference'
 import v32 from '../data/tmux/api/3.2a.json?raw'
 import v37 from '../data/tmux/api/3.7c.json?raw'
 import pins from '../data/tmux/versions.json'

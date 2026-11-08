@@ -1,7 +1,7 @@
 import type { ApiModel, ApiSymbol, Signature, SourceApiModel, SymbolIndex } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { toMarkdown } from 'mdast-util-to-markdown'
-import { aliasMembersTarget, aliasTarget, boundLabel, pageMembersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model'
+import { aliasMembersTarget, aliasTarget, boundLabel, pageMembersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model/reference'
 import mentions from '../data/mentions.json'
 import { PORT_NAME } from './api-models'
 import { apiTmuxSections, type ApiTmuxSection } from './api-tmux-sections'
@@ -104,6 +104,11 @@ function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, 
       if (htmlDepth) return
       const start = node.position!.start.offset!
       const end = node.position!.end.offset!
+      if (index.language === 'perl' && node.type === 'inlineCode' && markdown.slice(start - 5, start) === ':obj:') {
+        const span = index.docSpans(markdown.slice(start - 5, end), symbol).find((entry) => entry.kind === 'ref')
+        const linked = span?.kind === 'ref' && referenceMarkdown(span)
+        if (linked) { edits.push({ start: start - 5, end, text: linked }); return }
+      }
       const tmux = tmuxMentionMarkdown(node.value, node.type === 'inlineCode', undefined,
         { before: markdown.slice(Math.max(0, start - 48), start), after: markdown.slice(end, end + 48) })
       if (tmux && (node.type === 'inlineCode' || markdown.slice(start, end) === node.value)) {
@@ -205,7 +210,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const port = 'port' in model ? model.port : undefined
   const language = 'language' in model ? model.language : port
   const index = ctx.index ?? (port && 'port' in model ? productApiIndex(model, ctx.version ?? defaultVersionFor(port)) : undefined)
-  const prose = (text: string) => index ? proseMarkdown(text, index, symbol, ['powershell', 'scala', 'ts', 'ocaml''haskell'].includes(language ?? ''), language) : text
+  const prose = (text: string, context = symbol) => index ? proseMarkdown(text, index, context, ['perl', 'powershell', 'scala', 'ts', 'ocaml''haskell'].includes(language ?? ''), language) : text
   const id = qualifiedNameOf(symbol)
   const out: string[] = [`# ${id}`, '']
   const info = port ? PORT_BY_SLUG[port] : undefined
@@ -391,7 +396,9 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   }
   const appendMembers = (entries: ApiSymbol[]) => {
     for (const member of entries) {
-      out.push(`- ${ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)} (${symbol.variant && member.type ? inlineCode(member.type) : kindLabel(nativeKind(member, language))})${member.inheritedFrom ? `, inherited from ${inlineCode(member.inheritedFrom)}` : ''}${member.doc?.summary ? `: ${member.doc.summary}` : ''}`)
+      const summary = member.doc?.summary
+      const description = summary && language === 'perl' ? prose(summary, member) : summary
+      out.push(`- ${ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)} (${symbol.variant && member.type ? inlineCode(member.type) : kindLabel(nativeKind(member, language))})${member.inheritedFrom ? `, inherited from ${inlineCode(member.inheritedFrom)}` : ''}${description ? `: ${description}` : ''}`)
     }
     out.push('')
   }

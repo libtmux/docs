@@ -1,4 +1,4 @@
-import { Resolver, decideFilePath, decideMention, notASymbol, parentInventory, type ApiProduct, type InventoryEntry, type MentionContext, type MentionDecision } from '@libtmux/api-model'
+import { Resolver, decideFilePath, decideMention, notASymbol, parentInventory, type ApiProduct, type InventoryEntry, type MentionContext, type MentionDecision } from '@libtmux/api-model/reference'
 import { API_MODELS, PORT_NAME, referenceHref } from './api-models'
 import { productApiHref } from './product-api'
 import { PORTS, PORT_BY_SLUG, portPageUrl, referenceUrl } from './ports'

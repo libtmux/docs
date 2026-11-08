@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from 'node:child_process'
-import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { expect, it } from 'vitest'
@@ -12,7 +12,7 @@ const cachedRevision = 'a'.repeat(40)
 const files = ['scripts/stage-port-docs.mjs', 'scripts/lib/badges.mjs', 'site/src/lib/ports.ts',
   'site/src/lib/site-root.ts', 'site/src/lib/cooldown.ts', 'site/src/lib/port-documentation.ts',
   'site/src/lib/versions.ts']
-const stagedPorts = SOURCE_GUIDE_PORTS['ruby', 'lua', 'powershell', 'julia', 'elixir', 'haskell', 'kotlin', 'scala', 'fsharp']
+const stagedPorts = SOURCE_GUIDE_PORTS['ruby', 'lua', 'powershell', 'julia', 'elixir', 'haskell', 'kotlin', 'scala', 'fsharp', 'perl']
 
 function fixture(slug: 'ruby' | 'lua' | 'kotlin' | 'ocaml''haskell', run: (fixture: {
   directory: string; checkout: string; revision: string;
@@ -121,6 +121,11 @@ it.each(['ruby', 'lua', 'kotlin', 'ocaml''haskell'] as const)('stages other cach
     expect(readFileSync(rendered, 'utf8')).toContain(`fresh-${slug}`)
     expect(readFileSync(rendered, 'utf8')).toContain(revision)
     expect(JSON.parse(readFileSync(cache, 'utf8')).source.revision).toBe(revision)
+    const observed = new Date('2000-01-01T00:00:00Z')
+    utimesSync(rendered, observed, observed)
+    const repeated = invoke('--port', slug, ...(slug === 'kotlin' ? ['--from-source'] : []))
+    expect(repeated.status, repeated.stderr).toBe(0)
+    expect(statSync(rendered).mtimeMs).toBe(observed.getTime())
     const wrappers = invoke('--wrappers')
     expect(wrappers.status, wrappers.stderr).toBe(0)
     const renderedBytes = readFileSync(rendered, 'utf8')

@@ -220,6 +220,18 @@
       }
     }
   },
+  "perl": {
+    "workspace": {
+      "file": "examples/workspace.pl",
+      "lang": "perl",
+      "from": "my $workspace = LibTmux::Workspace->new(",
+      "to": "say 'workspace load and repeat: ok';",
+      "ci": {
+        "workflow": ".github/workflows/scaffold.yml",
+        "command": "perl scripts/run-examples.pl --installed \"$prefix\""
+      }
+    }
+  },
   "swift": {
     "mcp": {
       "file": "Examples/Sources/ExampleCode/MCPEmbedding.swift",

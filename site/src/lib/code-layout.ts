@@ -1,4 +1,6 @@
-import { parameterId, qualifiedNameOf, type ApiSymbol, type Signature, type SymbolIndex } from '@libtmux/api-model'
+import type { ApiSymbol, Signature, SymbolIndex } from '@libtmux/api-model'
+import { parameterId } from '@libtmux/api-model/link'
+import { qualifiedNameOf } from '@libtmux/api-model/modules'
 
 /** Documentation surface budgets, independent of a port's source formatter. */
 export const CODE_COLUMNS = { api: 60, example: 80 } as const
@@ -320,6 +322,13 @@ export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string):
       }
       const text = spans.map((span) => span.text).join('')
       return [signature, { text, nativeSpans: spans, limit: CODE_COLUMNS.api, failures: await codeWidthFailures(text, 'api') }] as const
+    })))
+  }
+  if (language === 'perl' && symbol.signatures.length) {
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) => {
+      if (!signature.raw) throw new Error(`Missing native Perl declaration: ${symbol.id}`)
+      return [signature, { text: signature.raw, limit: CODE_COLUMNS.api,
+        failures: await codeWidthFailures(signature.raw, 'api'), syntax: signature.nativeSyntax }] as const
     })))
   }
   if (language === 'rs' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length && !supportsRustSignatures(symbol, language)) {

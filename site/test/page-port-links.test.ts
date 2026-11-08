@@ -172,10 +172,18 @@ describe('shared product pages and the ports that lack the product', () => {
 })
 
 describe('matching pages in another port', () => {
+  it.each(['mcp', 'mcp/tools'])('keeps excluded Perl MCP out of %s destinations', (path) => {
+    expect(PORT_BY_SLUG.perl.productAvailability?.mcp).toBe('excluded')
+    const entry = pagePortLinks({ ...options, pagePath: path, portSlug: 'ts' })
+      .find((entry) => entry.port === 'perl')!
+    expect(entry.links).toEqual([])
+    expect(entry.home?.href).toBe('/pr-42/en/perl/latest/')
+  })
+
   it('links cmdlet switches to parameters and keeps Julia receiver names out of function links', async () => {
     const { referenceAlternatives, API_MODELS } = await import('../src/lib/api-models')
     const { productApiIndex } = await import('../src/lib/product-api')
-    const { parameterId } = await import('@libtmux/api-model')
+    const { parameterId } = await import('@libtmux/api-model/reference')
     const examples = [
       ['julia', 'LibTmux.snapshot', 'Depth'], ['cxx', 'libtmux::Session::windows', 'Session'],
       ['cxx', 'libtmux::Window::panes', 'Window'], ['cxx', 'libtmux::Server::sessions', 'Server'],

@@ -144,6 +144,14 @@
         "kind": "trunk",
         "supported": true
       }
+    ],
+    "perl": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
     ]
   },
   "defaultVersion": {
@@ -164,6 +172,7 @@
     "julia": "latest",
     "elixir": "latest",
     "ocaml": "latest",
-    "haskell": "latest"
+    "haskell": "latest",
+    "perl": "latest"
   }
 }

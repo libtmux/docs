@@ -103,6 +103,7 @@ export const DEFAULT_SCOPES = {
   py: ['', 'builtins'],
   julia: ['Base', 'Core'],
   elixir: [''],
+  perl: [''],
   cxx: ['', 'std'],
   lua: [''],
   powershell: [''],

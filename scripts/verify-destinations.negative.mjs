@@ -544,8 +544,8 @@ await verify('offline, a registered port with no inventory entry fails', without
   ...atRecord, expect: { code: 1, matches: [/elixir is registered in ports\.ts but has no inventory entry/], excludes: [/agrees with the inventory/] },
 })
 const unpublished = { ...INVENTORY, elixir: INVENTORY.elixir.map((item) => (item.kind === 'library' ? { ...item, status: 'planned', note: 'withheld' } : item)) }
-await verify('offline, a registered port whose library is not published fails', unpublished, {
-  ...atRecord, expect: { code: 1, matches: [/elixir has no published library entry/], excludes: [/agrees with the inventory/] },
+await verify('offline, a registered port with neither library source nor publication fails', unpublished, {
+  ...atRecord, expect: { code: 1, matches: [/elixir has no available library source or publication/], excludes: [/agrees with the inventory/] },
 })
 await verify('offline, an inventory entry for a port that is not registered fails', { ...INVENTORY, nope: INVENTORY.elixir }, {
   ...atRecord, expect: { code: 1, matches: [/nope has inventory entries but is not registered in ports\.ts/], excludes: [/agrees with the inventory/] },

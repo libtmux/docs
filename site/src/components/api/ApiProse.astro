@@ -1,7 +1,7 @@
 ---
 import type { ApiSymbol, SymbolIndex } from '@libtmux/api-model'
 import { Code } from 'astro-expressive-code/components'
-import { parseApiProse, type ProseItem } from '../../lib/api-prose'
+import { docSectionId, parseApiProse, type ProseItem } from '@libtmux/api-model/reference'
 import { groupDirectory, type DirectoryBlock } from '../../lib/api-directory'
 import { codeLang } from '../../lib/highlight'
 import ApiDoc from './ApiDoc.astro'
@@ -14,7 +14,10 @@ interface Props {
   context?: ApiSymbol
 }
 const { text, items, index, context } = Astro.props as Props
-const blocks: DirectoryBlock[] = items ? [{ kind: 'ul', items }] : groupDirectory(parseApiProse(text ?? ''), index.language)
+const parsed = parseApiProse(text ?? '')
+// Perl POD sections remain link targets even beside lists of references.
+const blocks: DirectoryBlock[] = items ? [{ kind: 'ul', items }]
+  : index.language === 'perl' ? parsed : groupDirectory(parsed, index.language)
 const { self: ApiProse } = Astro
 ---
 
@@ -56,7 +59,7 @@ const { self: ApiProse } = Astro
     return block.kind === 'code' ? (
       <div class="api-prose-code"><Code code={block.code} lang={codeLang(block.lang)} title="" /></div>
     ) : block.kind === 'rubric' ? (
-      <p class="rubric">{block.text}</p>
+      <p class="rubric" id={index.language === 'perl' && context ? docSectionId(context, block.text) : undefined}>{block.text}</p>
     ) : block.kind === 'p' ? (
       <p>
         <ApiDoc text={block.text} index={index} context={context} />

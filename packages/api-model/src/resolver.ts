@@ -76,6 +76,7 @@ export const DEFAULT_PRIMARY_MODULES: Record<string, string> = {
   powershell: 'LibTmux',
   julia: 'LibTmux',
   elixir: 'LibTmux',
+  perl: 'LibTmux',
 }
 
 export const DEFAULT_TEMPLATES: UrlTemplate[] = [

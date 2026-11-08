@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url'
 import { PORTS as PORT_DEFS } from '../site/src/lib/ports.ts'
 import { extractDoxygen } from '../packages/api-model/src/languages/doxygen.ts'
 import { extractLua } from '../packages/api-model/src/languages/lua.ts'
+import { extractPerlArtifact } from '../packages/api-model/src/languages/perl.ts'
 import { extractRuby } from '../packages/api-model/src/languages/ruby.ts'
 import { extractPowerShell } from '../packages/api-model/src/languages/powershell.ts'
 import { extractJulia } from '../packages/api-model/src/languages/julia.ts'
@@ -221,6 +222,10 @@ const PORTS = {
       inheritedMembers: true,
       excludePaths: [/(^|\.)_vendor\./, /(^|\.)_compat\./],
     },
+  },
+  perl: {
+    checkout: '~/work/libtmux/libtmux-perl-docs-site', root: '.', nativeArtifact: 'docs/_build/api.json',
+    repo: 'libtmux/libtmux-perl', options: {},
   },
   ruby: {
     checkout: '~/work/libtmux/libtmux-ruby-docs',
@@ -652,7 +657,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       process.exit(1)
     }
     const artifact = JSON.parse(readFileSync(artifactPath, 'utf8'))
-    const nativeExtractors = { ruby: extractRuby, lua: extractLua, powershell: extractPowerShell, julia: extractJulia, elixir: extractElixir, ocaml: extractOcamlArtifact, haskell: extractHaskellArtifact }
+    const nativeExtractors = { perl: extractPerlArtifact, ruby: extractRuby, lua: extractLua, powershell: extractPowerShell, julia: extractJulia, elixir: extractElixir, ocaml: extractOcamlArtifact, haskell: extractHaskellArtifact }
     model = nativeExtractors[port](artifact, head)
     if (port === 'haskell') {
       const verify = (root, sourceRevision, input) => {

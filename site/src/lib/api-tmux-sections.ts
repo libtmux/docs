@@ -4,7 +4,7 @@
  * One derivation feeds the HTML sections (`ApiTmuxSections.astro`), the "On this page" entries and the Markdown export,
  * so the three cannot list different rows. A section with nothing to say is not returned.
  */
-import { qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model'
+import { qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model/reference'
 import { API_MODELS, PORT_NAME, mentionsOf, referenceAlternatives } from './api-models'
 import { proseHref } from './docs-paths'
 import type { ApiRelationshipPath } from './api-relationships'

@@ -1,4 +1,5 @@
-import { qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model'
+import type { ApiSymbol } from '@libtmux/api-model'
+import { qualifiedNameOf } from '@libtmux/api-model/modules'
 
 /**
  * The name a programmer writes for a declaration, in the language's own spelling.

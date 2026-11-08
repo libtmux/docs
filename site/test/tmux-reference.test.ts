@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 vi.mock('astro:content', () => ({ getCollection: async () => [] }))
-import { readInventory, sourceUrl, writeInventory } from '@libtmux/api-model'
+import { readInventory, sourceUrl, writeInventory } from '@libtmux/api-model/reference'
 import { tmuxCommandSources, tmuxReferenceContext, tmuxReferenceIndex, tmuxReferencePaths, tmuxReferencePreview, tmuxReferenceTree, tmuxReferenceUrl, tmuxReferenceVersionUrl, tmuxSourceCommands, tmuxSourceModel } from '../src/lib/tmux-reference'
 import { tmuxManual, tmuxManualUrl } from '../src/lib/tmux-manual-data'
 import { referenceIndexSectionsFor } from '../src/lib/api-tree'

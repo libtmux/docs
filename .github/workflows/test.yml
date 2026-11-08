@@ -60,8 +60,9 @@ jobs:
             echo "julia=$(jq -r .revision site/src/data/api/julia.json)"
             echo "elixir=$(jq -r .revision site/src/data/api/elixir.json)"
             echo "ocaml=$(jq -r .revision site/src/data/api/ocaml.json)"
+            echo "haskell=$(jq -r .revision site/src/data/api/haskell.json)"
+            echo "perl=$(jq -r .revision site/src/data/api/perl.json)"
           } >> "$GITHUB_OUTPUT"
-          echo "haskell=$(jq -r .revision site/src/data/api/haskell.json)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v7
         with:
@@ -105,6 +106,12 @@ jobs:
           ref: ${{ steps.integrated-sources.outputs.haskell }}
           path: .port-sources/haskell
           persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: libtmux/libtmux-perl
+          ref: ${{ steps.integrated-sources.outputs.perl }}
+          path: .port-sources/perl
+          persist-credentials: false
 
       # The exporter tests compile a fixture with the package's own toolchain:
       # the exact pair the integrated Elixir source pins, read as port-docs.yml
@@ -130,6 +137,7 @@ jobs:
           LIBTMUX_DOCS_CHECKOUT_ELIXIR: ${{ github.workspace }}/.port-sources/elixir
           LIBTMUX_DOCS_CHECKOUT_OCAML: ${{ github.workspace }}/.port-sources/ocaml
           LIBTMUX_DOCS_CHECKOUT_HASKELL: ${{ github.workspace }}/.port-sources/haskell
+          LIBTMUX_DOCS_CHECKOUT_PERL: ${{ github.workspace }}/.port-sources/perl
         run: |
           node scripts/stage-port-docs.mjs --from-source
           node scripts/stage-port-docs.mjs --cached --check
@@ -150,14 +158,14 @@ jobs:
           LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby
           LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua
           LIBTMUX_DOCS_CHECKOUT_OCAML: ${{ github.workspace }}/.port-sources/ocaml
-          # PowerShell, Julia and Elixir paths stay scoped to guide staging
+          # PowerShell, Julia, Elixir, Haskell and Perl paths stay scoped to guide staging
           # above, which checks the cache used by ordinary builds. Native API
           # and MCP export freshness remain owning-port checks, not claims of
           # this root audit. Elixir's exporter tests run in the unit step; its
           # committed model is derived again by port-docs.yml at publication.
           # OCaml's checkout also feeds source-derived usage checks. Its
           # compiled API is qualified by the owning port's exporter job.
-          LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua,powershell,julia,elixir,ocaml
+          LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua,powershell,julia,elixir,ocaml,haskell,perl
 
       - name: Upload audited preview
         if: github.event_name == 'pull_request'

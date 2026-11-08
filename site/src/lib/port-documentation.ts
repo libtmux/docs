@@ -106,6 +106,26 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('docs/status.md', 'guides/status', 'core', { title: 'Implementation status', sidebar: { group: 'Guides', order: 5 } }),
     ],
   },
+  perl: {
+    domains: [
+      libraryDomain('Use explicit tmux commands and captured graph selections with stable Perl.'),
+      { id: 'async', label: 'Async', kind: 'companion-package', navGroup: 'Library', route: 'guides/async', package: 'async', description: 'Optional Future execution with a caller-owned IO::Async loop.' },
+      { id: 'workspace', label: 'Workspace Manager', kind: 'product', navGroup: 'Apps', route: 'workspace', package: 'workspace', product: 'workspace', description: 'Validate, plan, and load versioned JSON workspaces through public core APIs.' },
+    ],
+    sourceGuides: [
+      guide('README.md', 'guides/getting-started', 'core', { title: 'Getting started', sidebar: { group: 'Guides', order: 1 } }),
+      guide('docs/installation.md', 'guides/installation', 'core', { title: 'Installation', sidebar: { group: 'Guides', order: 2 } }),
+      guide('docs/filtering.md', 'guides/filtering', 'core', { title: 'Filtering' }),
+      guide('docs/orchestration.md', 'examples/orchestration', 'core', { title: 'Create sessions, windows, and panes', aliases: ['guides/orchestration'] }),
+      guide('docs/graph.md', 'concepts/graph', 'core', { title: 'Snapshot graph and identity', aliases: ['guides/graph'] }),
+      guide('docs/fields.md', 'concepts/fields', 'core', { title: 'Entity fields', aliases: ['guides/fields'] }),
+      guide('docs/query-planning.md', 'topics/query-planning', 'core', { title: 'Live query planning', aliases: ['guides/query-planning'] }),
+      guide('docs/errors.md', 'topics/errors', 'core', { title: 'Errors and recovery', aliases: ['guides/errors'] }),
+      guide('docs/compatibility.md', 'topics/compatibility', 'core', { title: 'Linux and tmux compatibility', aliases: ['guides/compatibility'] }),
+      guide('docs/async.md', 'guides/async', 'async', { package: 'async', title: 'Optional async execution' }),
+      guide('docs/workspace.md', 'workspace/source-guide', 'workspace', { package: 'workspace', product: 'workspace', title: 'Workspace loading', aliases: [] }),
+    ],
+  },
   powershell: {
     domains: [
       libraryDomain('Install LibTmux and use cmdlets to read and control tmux.'),

@@ -41,6 +41,15 @@ describe('Core Library home data', () => {
     for (const entry of Object.values(CORE_HOME)) for (const key of Object.keys(entry.capabilities)) expect(CAPABILITIES).toHaveProperty(key)
   })
 
+  it('keeps Perl physical windows separate from session-window associations', () => {
+    const home = resolveCoreHome('perl', 'latest')
+    expect(home.association?.id).toBe('LibTmux::WindowLink')
+    expect(home.objects.find((object) => object.role === 'window')?.wraps).toContain('physical')
+    expect(home.capabilities.cli.map((row) => row.key)).toContain('async')
+    expect(home.capabilities.cli.map((row) => row.key)).not.toContain('control-mode')
+    expect(coreHomeMarkdown('perl', 'latest', 'https://libtmux.org')).toContain('LibTmux::WindowLink')
+  })
+
   it('fails on a missing symbol, a missing type and an unknown capability', () => {
     const rs = graph('rs')
     expect(() => resolveCoreHome('rs', 'latest', { ...rs, objects: { ...rs.objects, pane: 'pane.NoSuchPane' } }))

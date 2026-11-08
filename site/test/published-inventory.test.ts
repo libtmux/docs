@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { gzipSync } from 'node:zlib'
 import { afterEach, describe, expect, it } from 'vitest'
-import { readInventory, targetKey, writeInventoryEntries } from '@libtmux/api-model'
+import { readInventory, targetKey, writeInventoryEntries } from '@libtmux/api-model/reference'
 
 const root = resolve(import.meta.dirname, '../..')
 const scratch: string[] = []

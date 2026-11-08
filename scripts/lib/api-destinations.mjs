@@ -23,7 +23,7 @@ import { fileURLToPath } from 'node:url'
 import { BUILTINS } from '../../packages/api-model/src/builtins.ts'
 import { Resolver, SymbolIndex, conceptNotes, decideMention, proseTexts, looksLikeApiMention, notASymbol, sourceUrl } from '../../packages/api-model/src/index.ts'
 import { fromMarkdown } from 'mdast-util-from-markdown'
-import { parseApiProse } from '../../site/src/lib/api-prose.ts'
+import { parseApiProse } from '../../packages/api-model/src/reference.ts'
 import { SOURCE_GUIDE_PORTS } from '../../site/src/lib/port-documentation.ts'
 import { stagedPortGuides } from '../stage-port-docs.mjs'
 import { powerShellCommonParameterHref, powerShellCommonParameterLabel } from '../../site/src/lib/powershell-common-parameters.ts'
@@ -63,6 +63,7 @@ export const API_HOSTS = new Set([
   'learn.microsoft.com', 'fsharp.github.io', 'en.cppreference.com', 'eel.is', 'developer.apple.com', 'docs.swift.org',
   'docs.ruby-lang.org', 'ruby-doc.org', 'www.lua.org', 'luals.github.io', 'docs.julialang.org', 'hexdocs.pm', 'www.erlang.org',
   'ocaml.org',
+  'perldoc.perl.org', 'metacpan.org',
   'gofastmcp.com', 'csharp.sdk.modelcontextprotocol.io', 'ts.sdk.modelcontextprotocol.io', 'modelcontextprotocol.io', 'cmake.org',
   'www.haskell.org', 'downloads.haskell.org', 'cabal.readthedocs.io',
 ])

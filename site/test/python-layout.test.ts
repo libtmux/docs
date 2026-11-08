@@ -5,7 +5,7 @@ import { experimental_AstroContainer } from 'astro/container'
 import { Window } from 'happy-dom'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { parameterId, qualifiedNameOf, SymbolIndex, type Param, type Signature } from '@libtmux/api-model'
+import { parameterId, qualifiedNameOf, SymbolIndex, type Param, type Signature } from '@libtmux/api-model/reference'
 import { API_MODELS } from '../src/lib/api-models'
 import { signatureParameterText } from '../src/lib/api-sections'
 import { apiSignatureLayouts, CODE_COLUMNS, codeWidthFailures } from '../src/lib/code-layout'
@@ -208,9 +208,10 @@ describe('Python layouts in the rendered declaration', () => {
     const type = await compile('../src/components/api/ApiType.astro', {
       './SymbolName.astro': name, './ApiKeyword.astro': keyword,
       '@libtmux/api-model': new URL('../../packages/api-model/src/index.ts', import.meta.url).href,
+      '@libtmux/api-model/reference': new URL('../../packages/api-model/src/reference.ts', import.meta.url).href,
       '../../lib/code-layout': new URL('../src/lib/code-layout.ts', import.meta.url).href,
     })
-    const parameters = await compile('../src/components/api/ApiSignatureParameters.astro', { '@libtmux/api-model': bridge, '../../lib/api-sections': bridge, './ApiType.astro': type })
+    const parameters = await compile('../src/components/api/ApiSignatureParameters.astro', { '@libtmux/api-model': bridge, '@libtmux/api-model/reference': bridge, '../../lib/api-sections': bridge, './ApiType.astro': type })
     const source = readFileSync(new URL('../src/components/api/ApiEntry.astro', import.meta.url), 'utf8')
     const start = source.indexOf('</span>) : <>\n') + '</span>) : <>\n'.length
     const end = source.indexOf('          </>}', start)

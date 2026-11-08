@@ -4,7 +4,7 @@ import { experimental_AstroContainer } from 'astro/container'
 import { createMarkdownProcessor } from '@astrojs/markdown-remark'
 import { fromHtml } from 'hast-util-from-html'
 import { select, selectAll } from 'astro-expressive-code/hast'
-import { SymbolIndex, type ApiSymbol } from '@libtmux/api-model'
+import { SymbolIndex, type ApiSymbol } from '@libtmux/api-model/reference'
 import { API_MODELS, indexFor } from '../src/lib/api-models'
 import { MCP_REFERENCE } from '../src/lib/mcp-catalog'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
@@ -59,6 +59,32 @@ function problems(root: Pick<DomElement, 'querySelectorAll'>): string[] {
 }
 
 describe('a doc comment cross-reference', () => {
+  it('retains Perl section anchors beside reference lists', async () => {
+    const titles = ['REPORT', 'SECOND', 'THIRD']
+    const body = titles.map((title) => `## ${title}\nGuidance.\n\n[Entry]`).join('\n\n')
+    const owner = { ...declare('LibTmux::Server'), doc: { summary: 'Server.', body } }
+    const from = new SymbolIndex([owner], () => '/perl/server/', 'perl')
+    const root = await renderProse(body, owner, from)
+    for (const title of titles) {
+      const link = from.resolve(`${owner.id}#${title}`, 'obj', owner)!
+      const id = decodeURIComponent(new URL(link.href, 'https://libtmux.org').hash.slice(1))
+      expect(root.getElementById(id)?.textContent).toBe(title)
+    }
+  })
+  it('lands authored Perl section links on exact rendered anchors', async () => {
+    for (const section of ['VERIFICATION REPORT', 'État 100% / #', 'REPORT )']) {
+      const owner = { ...declare('LibTmux::Server'), doc: { summary: 'Server.', body: `## ${section}\n\nReport fields.` } }
+      const caller = declare('LibTmux::X::QueryMismatch')
+      const from = new SymbolIndex([owner, caller], (symbol) => `/perl/${symbol.slug}/#declaration`, 'perl')
+      const target = from.resolve(`${owner.id}#${encodeURIComponent(section)}`, 'obj', caller)!
+      const root = await renderProse(owner.doc.body, owner, from)
+      const id = decodeURIComponent(new URL(target.href, 'https://libtmux.org').hash.slice(1))
+      expect(root.getElementById(id)?.textContent).toBe(section)
+      expect([...root.querySelectorAll('[id]')].filter((node) => node.id === id)).toHaveLength(1)
+      const prose = await render(`:obj:\`report <${owner.id}#${encodeURIComponent(section)}>\``, caller, from)
+      expect(prose.querySelector('a')?.getAttribute('href')).toBe(target.href)
+    }
+  })
   it('names its kind in the title, the data attribute and the accessible name, and draws no badge', async () => {
     const root = await render('`Pane` sits in a `Window`. Send keys to a `Pane` again.')
     const links = [...root.querySelectorAll<DomAnchor>('a.api-xref')]

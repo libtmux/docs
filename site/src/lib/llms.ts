@@ -3,7 +3,7 @@
  * API references are linked, rather than inlined into the full prose export.
  */
 import { getCollection } from 'astro:content'
-import { qualifiedNameOf } from '@libtmux/api-model'
+import { qualifiedNameOf } from '@libtmux/api-model/reference'
 import type { CollectionEntry } from 'astro:content'
 import { resolvePortCode } from '../plugins/remark-port-code.mjs'
 import { PORTS, PORT_BY_SLUG, hasReference, portPageUrl, productApiPath, productAvailable, productConceptNotice, referenceUrl, workspaceOverviewNotice } from './ports.ts'

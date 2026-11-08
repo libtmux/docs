@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { spawn } from 'node:child_process'
+import { existsSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
@@ -8,6 +9,13 @@ process.env.NODE_COMPILE_CACHE ??= fileURLToPath(new URL('../node_modules/.cache
 const loop = process.argv[2]
 const budget = { inner: 2, medium: 10, outer: 60 }[loop]
 if (!budget) throw new Error('Usage: test-loop.mjs inner|medium|outer')
+const tiers = JSON.parse(readFileSync(new URL('./test-tiers.json', import.meta.url), 'utf8'))
+const listed = Object.values(tiers).flatMap((groups) => groups.flatMap((group) => group.files))
+if (new Set(listed).size !== listed.length || listed.some((file) => !existsSync(new URL(`../${file}`, import.meta.url)))) {
+  throw new Error('test-tiers.json contains duplicate or missing suites')
+}
+const excluded = (tier, directory) => (tiers[tier] ?? []).flatMap((group) => group.files)
+  .filter((file) => file.startsWith(`${directory}/`)).map((file) => file.slice(directory.length + 1))
 const started = performance.now()
 const vitest = 'site/node_modules/vitest/vitest.mjs'
 const children = new Set()
@@ -32,6 +40,7 @@ for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, cancel)
 
 function run(command, args) {
   if (cancelled) throw new Error(`${loop} cancelled or exceeded ${budget}s`)
+  const taskStarted = performance.now()
   const promise = new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd: root, stdio: 'inherit', detached: true,
@@ -44,6 +53,7 @@ function run(command, args) {
     })
     child.on('close', (code, signal) => {
       children.delete(child)
+      if (process.env.LIBTMUX_DOCS_LOOP_TIMINGS) console.error(`loop timing ${(performance.now() - taskStarted).toFixed(0)}ms: ${command} ${args.join(' ')}`)
       if (code === 0) resolve()
       else reject(new Error(`${command} ${args.join(' ')}: ${signal ?? code}`))
     })
@@ -57,8 +67,10 @@ const pnpm = (...args) => {
   return /\.[cm]?js$/.test(entry) ? node(entry, ...args) : run(entry, args)
 }
 const tests = (directory, names = []) => node(vitest, 'run', '--root', directory,
-  '--maxWorkers', directory === 'site' ? '3' : '2', '--pool', 'threads', '--fsModuleCache',
-  ...(loop === 'medium' ? ['--exclude', '**/*.outer.test.ts'] : []),
+  '--maxWorkers', directory === 'site' ? '6' : directory === 'packages/api-model' ? '4' : '2', '--pool', 'threads', '--fsModuleCache',
+  ...((loop === 'medium' ? ['**/*.outer.test.ts', ...excluded('outer', directory)] : [])
+    .concat(['**/*.publication.test.ts', ...excluded('publication', directory)])
+    .flatMap((pattern) => ['--exclude', pattern])),
   ...names.map((name) => `test/${name}.test.ts`))
 
 try {
@@ -74,19 +86,20 @@ try {
     node('scripts/check-api-links.mjs'),
     node('scripts/check-nav.mjs'),
     node('scripts/check-example-blocks.mjs'),
-    node('scripts/check-example-blocks.negative.mjs'),
     node('scripts/gen-mentions.mjs', '--check'),
     node('scripts/gen-workspace-entities.mjs', '--check'),
     node('scripts/gen-workspace-showcase.mjs', '--check'),
-    node('scripts/gen-workspace-showcase.negative.mjs'),
     node('scripts/gen-product-copy.mjs', '--check'),
-    node('scripts/gen-product-copy.negative.mjs'),
     node('scripts/gen-tmux-catalog.mjs', '--check'),
     node('scripts/gen-tmux-usage.mjs', '--check'),
     node('scripts/gen-shell-ports.mjs', '--check'),
     node('scripts/gen-brand-css.mjs', '--check'),
   )
+  // Adversarial CLI fixtures spawn subprocesses and temporary Git repositories; keep them in outer.
   if (loop === 'outer') checks.push(
+    node('scripts/check-example-blocks.negative.mjs'),
+    node('scripts/gen-workspace-showcase.negative.mjs'),
+    node('scripts/gen-product-copy.negative.mjs'),
     node('scripts/gen-example-sources.mjs', '--check'),
     pnpm('run', '--recursive', 'type-check'),
     pnpm('run', 'type-check:python'),

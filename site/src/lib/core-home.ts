@@ -9,7 +9,8 @@
  * `test/core-home.test.ts`) instead of rendering a dead link or a claim
  * nothing backs. A capability a port lacks has no entry and is not listed.
  */
-import { docSummaryText, qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model'
+import { docSummaryText, type ApiSymbol } from '@libtmux/api-model'
+import { qualifiedNameOf } from '@libtmux/api-model/modules'
 import DATA from '../data/core-home.json'
 import { API_MODELS, referenceHref } from './api-models.ts'
 import { PORT_BY_SLUG } from './ports.ts'
@@ -59,7 +60,7 @@ const CAPABILITY_EVIDENCE: Record<CapabilityKey, { needs: string; test: (symbol:
   objects: { needs: 'a type or cmdlet', test: (symbol) => ['class', 'struct', 'interface', 'enum', 'trait', 'module', 'typealias', 'function'].includes(symbol.kind) },
   ids: { needs: 'an ID type or accessor', test: (symbol) => /\b(id|ID)\b|Id\b|ID\b/.test(symbol.name) },
   queries: { needs: 'a filter, query or selection', test: (symbol) => /filter|query|select|where|expr/i.test(symbol.name) },
-  errors: { needs: 'an error, exception or failure type', test: (symbol) => /error|exception|failure/i.test(symbol.name) },
+  errors: { needs: 'an error, exception or failure type', test: (symbol) => symbol.kind === 'exception' || /error|exception|failure/i.test(symbol.name) },
   traversal: { needs: 'a panes, windows, sessions or snapshot accessor', test: (symbol) => /panes|windows|sessions|snapshot/i.test(symbol.name) },
   argv: { needs: 'a command or run symbol', test: (symbol) => /cmd|command|run|exec|invoke/i.test(symbol.name) },
   'version-gate': { needs: 'a version or unsupported-feature error', test: (symbol) => /version|unsupported|capabilit/i.test(symbol.name) },
@@ -75,6 +76,8 @@ const CAPABILITY_EVIDENCE: Record<CapabilityKey, { needs: string; test: (symbol:
 }
 
 export interface CoreGraphHomeEntry {
+  /** A separately modeled session-window association, where the port exposes one. */
+  association?: string
   objects: Record<CoreRole, string>
   /** A native model may distinguish a connection or global window from contextual handles. */
   wraps?: Partial<Record<CoreRole, string>>
@@ -101,6 +104,7 @@ export interface CoreSymbolLink {
 }
 
 export interface CoreHome {
+  association?: CoreSymbolLink
   summary: string
   objects: (CoreSymbolLink & { role: CoreRole; wraps: string; tmuxId: string })[]
   modules: (CoreSymbolLink & { summary: string })[]
@@ -140,7 +144,7 @@ export function resolveCoreHome(port: string, version: string, entry: CoreHomeEn
   }
   const objects = entry.modules !== undefined ? [] : CORE_ROLES.map((role) => {
     if (!entry.objects[role]) throw new Error(`core-home: ${port} names no ${role} type`)
-    return { role, ...link(port, entry.objects[role], version, role), wraps: entry.wraps?.[role] ?? TMUX_OBJECTS[role].wraps, tmuxId: TMUX_OBJECTS[role].id }
+    return { role, ...link(port, entry.objects[role], version, role), wraps: entry.wraps?.[role] ??role === 'window' && entry.association ? 'A physical window linked into sessions' : TMUX_OBJECTS[role].wraps, tmuxId: TMUX_OBJECTS[role].id }
   })
   const capabilities: CoreHome['capabilities'] = { typed: [], cli: [] }
   for (const [key, id] of Object.entries(entry.capabilities)) {
@@ -150,7 +154,8 @@ export function resolveCoreHome(port: string, version: string, entry: CoreHomeEn
   }
   for (const group of Object.values(capabilities)) group.sort((a, b) =>
     Object.keys(CAPABILITIES).indexOf(a.key) - Object.keys(CAPABILITIES).indexOf(b.key))
-  return { summary: coreDescription(port, entry), objects, modules, capabilities }
+  return { summary: coreDescription(port, entry), objects, modules, capabilities,
+    ...(entry.association ? { association: link(port, entry.association, version, 'window association') } : {}) }
 }
 
 /** The page's facts as Markdown, for the `.md` twin and llms-full.txt. */
@@ -163,8 +168,10 @@ export function coreHomeMarkdown(port: string, version: string, origin: string):
     home.modules.length
       ? '| Module | Provides |\n| ------ | -------- |\n' + home.modules.map((module) =>
         `| [\`${module.name}\`](${at(module.href)}) | ${module.summary.replaceAll('|', '\\|').replaceAll('\n', ' ')} |`).join('\n')
-      : '| Type | Wraps |\n| ---- | ----- |\n' + home.objects.map((object) =>
-        `| [\`${object.name}\`](${at(object.href)}) | ${object.wraps}${object.tmuxId ? `, ID \`${object.tmuxId}n\`` : ''} |`).join('\n'),
+      : '| Type | Wraps |\n| ---- | ----- |\n' + [...home.objects.map((object) =>
+        `| [\`${object.name}\`](${at(object.href)}) | ${object.wraps}${object.tmuxId ? `, ID \`${object.tmuxId}n\`` : ''} |`),
+        ...(home.association ? [`| [\`${home.association.name}\`](${at(home.association.href)}) | A session-window association, with its index and active state |`] : []),
+      ].join('\n'),
     ...Object.entries(CAPABILITY_GROUPS).flatMap(([group, title]) => {
       const rows = home.capabilities[group as keyof typeof CAPABILITY_GROUPS]
       return rows.length ? [`## ${title}`, rows.map((row) => `- ${row.label}: [\`${row.name}\`](${at(row.href)})`).join('\n')] : []

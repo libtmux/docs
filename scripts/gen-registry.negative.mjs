@@ -87,8 +87,8 @@ for (const [name, mutate] of mutations) {
     copyFileSync(script, join(dir, 'scripts/gen-registry.mjs'))
     copyFileSync(join(here, '../site/src/lib/versions.ts'), join(dir, 'site/src/lib/versions.ts'))
     copyFileSync(real, join(dir, 'site/src/data/registry.json'))
-    const ports = PORTS.map(({ slug, repo, packageName, tagGrammar, tagPrefix }) => ({
-      slug, repo, packageName, tagGrammar, tagPrefix, checkout: join(dir, 'absent', slug),
+    const ports = PORTS.map(({ slug, repo, packageName, tagGrammar, tagPrefix, registry }) => ({
+      slug, repo, packageName, tagGrammar, tagPrefix, registry, checkout: join(dir, 'absent', slug),
     }))
     writeFileSync(join(dir, 'site/src/lib/ports.ts'), `export const PORTS = ${JSON.stringify(ports)}\n`)
     const seed = JSON.parse(readFileSync(real, 'utf8'))
@@ -155,6 +155,21 @@ for (const [name, mutate] of mutations) {
     const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
     let result = invoke(replies)
     check('an older published registry gains both ports', Object.keys(result.ports).length === PORTS.length, result.error)
+    check('source-only Perl keeps its unpublished package entries during online refresh',
+      same(result.ports.perl, seed.ports.perl), result.error)
+    writeFileSync(join(dir, 'published.json'), JSON.stringify({
+      ...baseline, ports: { ...baseline.ports, perl: { status: 'release', version: '1.0.0', release: '1.0.0', tag: 'v1.0.0' } },
+    }))
+    const unconfigured = invoke(replies)
+    check('a published Perl entry requires a registry probe', /perl: no registry probe/.test(unconfigured.error), unconfigured.error)
+    writeFileSync(join(dir, 'published.json'), JSON.stringify({
+      ...baseline, ports: { ...baseline.ports, perl: { ...seed.ports.perl, packages: {
+        ...seed.ports.perl.packages, 'LibTmux-Workspace': { status: 'release', version: '1.0.0', release: '1.0.0', tag: 'v1.0.0' },
+      } } },
+    }))
+    const companion = invoke(replies)
+    check('a published Perl companion also requires a registry probe', /perl: no registry probe/.test(companion.error), companion.error)
+    writeFileSync(join(dir, 'published.json'), JSON.stringify(baseline))
     check('Gallery pages refresh the core and workspace prereleases, excluding unlisted versions',
       result.ports.powershell?.version === '0.1.0-alpha3' && result.ports.powershell?.tag === 'v0.1.0-alpha3'
       && result.ports.powershell?.packages?.['LibTmux.Workspace']?.version === '0.1.0-alpha4', result.error)

@@ -41,7 +41,7 @@ describe('destination evidence', () => {
     expect(inventoryCoverage(without, registered)).toEqual([expect.stringMatching(/^elixir is registered in ports\.ts but has no inventory entry/)])
     // A library that is not published gives the header nothing to link.
     const withheld = { ...INVENTORY, elixir: INVENTORY.elixir!.map((entry) => (entry.kind === 'library' ? { ...entry, status: 'planned' as const } : entry)) }
-    expect(inventoryCoverage(withheld, registered)).toEqual([expect.stringMatching(/^elixir has no published library entry/)])
+    expect(inventoryCoverage(withheld, registered)).toEqual([expect.stringMatching(/^elixir has no available library source or publication/)])
     expect(inventoryCoverage({ ...INVENTORY, nope: INVENTORY.elixir! }, registered)).toEqual(['nope has inventory entries but is not registered in ports.ts'])
     expect(inventoryCoverage({ ...INVENTORY, elixir: [] }, registered)).toHaveLength(1)
   })
@@ -186,6 +186,7 @@ describe('destination evidence', () => {
     const sameDate = withEvidence(evidence.destinations.map((record) => ({ ...record, checkedAt: evidence.checkedAt })))
     // Boundary controls use one date; live records can be refreshed independently.
     const sameDay = { ...evidence, destinations: evidence.destinations.map((record) => ({ ...record, checkedAt: evidence.checkedAt })) }
+    const sameDate = withEvidence(evidence.destinations.map((record) => ({ ...record, checkedAt: evidence.checkedAt })))
 
     it('is measured, never judged, by the agreement check, so a change that touches none of this cannot fail for the passage of time', () => {
       const ancient = withEvidence(evidence.destinations.map((record) => ({ ...record, checkedAt: '2001-01-01' })))

@@ -1,4 +1,4 @@
-import { docSummaryText, tokenizeDoc } from '@libtmux/api-model'
+import { docSummaryText, tokenizeDoc } from '@libtmux/api-model/reference'
 import { MCP_SECTIONS, resolveMcpObject, type McpObject } from './mcp-catalog'
 import { previewRuns, type LinkPreview, type PreviewReference } from './link-preview'
 import { PORT_BY_SLUG, portPageUrl } from './ports'

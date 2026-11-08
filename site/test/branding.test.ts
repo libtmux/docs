@@ -20,7 +20,7 @@ const contrast = (a: string, b: string) => {
 describe('route branding', () => {
   it('titles each port home page by repository and language', () => {
     expect(Object.fromEntries(PORTS.map((port) => [port.slug, portHomeTitle(port)]))).toEqual({
-      py: 'libtmux: Python-based tmux client', ruby: 'libtmux-ruby: Ruby-based tmux client',
+      perl: 'libtmux-perl: Perl-based tmux client', py: 'libtmux: Python-based tmux client', ruby: 'libtmux-ruby: Ruby-based tmux client',
       lua: 'libtmux-lua: Lua-based tmux client', ts: 'libtmux-ts: TypeScript-based tmux client',
       powershell: 'libtmux-powershell: PowerShell-based tmux client', julia: 'libtmux-julia: Julia-based tmux client',
       elixir: 'libtmux-elixir: Elixir-based tmux client', rs: 'libtmux-rs: Rust-based tmux client',
@@ -43,7 +43,7 @@ describe('route branding', () => {
   })
   it('uses project titles independently of package names and shared source repositories', () => {
     const names = {
-      py: 'libtmux', ruby: 'libtmux-ruby', lua: 'libtmux-lua', ts: 'libtmux-ts',
+      perl: 'libtmux-perl', py: 'libtmux', ruby: 'libtmux-ruby', lua: 'libtmux-lua', ts: 'libtmux-ts',
       powershell: 'libtmux-powershell', julia: 'LibTmux.jl', elixir: 'libtmux-elixir',
       haskell: 'libtmux-haskell',
       rs: 'libtmux-rs', go: 'libtmux-go', java: 'libtmux-java', kotlin: 'libtmux-kotlin',
@@ -99,7 +99,7 @@ describe('route branding', () => {
       .toBe('/pr-42/ja/brand/rust/workspace/logo.svg')
   })
   it('ships raster and vector fallbacks for every palette and product', () => {
-    for (const language of Object.keys(palettes)) for (const product of ['library', 'mcp', 'workspace']) {
+    for (const language of Object.keys(palettes)) for (const product of (PORTS.find((port) => port.logoLanguage === language)?.productAvailability?.mcp === 'excluded' ? ['library', 'workspace'] : ['library', 'mcp', 'workspace'])) {
       const owners = PORTS.filter((port) => port.logoLanguage === language)
       if (product !== 'library' && owners.length && owners.every((port) => port.productAvailability?.[product as 'mcp' | 'workspace'] === 'excluded')) continue
       const brand = { asset: (file: string) => `/brand/${language}/${product}/${file}` }

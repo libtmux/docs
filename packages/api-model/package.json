@@ -5,7 +5,11 @@
   "type": "module",
   "description": "A shared API model for language ports, extracted from native documentation artifacts and source.",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./products": "./src/products.ts",
+    "./modules": "./src/modules.ts",
+    "./link": "./src/link.ts",
+    "./reference": "./src/reference.ts"
   },
   "scripts": {
     "test": "vitest run",

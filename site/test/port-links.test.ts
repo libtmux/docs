@@ -32,7 +32,8 @@ function cases(): Case[] {
     add(`${slug} latest @revision`, { port, version: 'latest', revision: REVISION })
   }
   for (const port of PORTS.filter((entry) => entry.packages?.some(({ id }) => id === 'mcp' || id === 'workspace'))) {
-    for (const product of ['mcp', 'workspace']) {
+    for (const product of ['mcp', 'workspace'] as const) {
+      if (port.productAvailability?.[product] === 'excluded') continue
       if (port.productAvailability?.[product as 'mcp' | 'workspace'] === 'excluded') continue
       add(`${port.slug} ${product}`, { port, product, version: 'latest' })
       add(`${port.slug} ${product} v1.2.3 @revision`, { port, product, version: 'v1.2.3', revision: REVISION })
@@ -63,7 +64,7 @@ describe('PortLinks destinations', () => {
     expect(cases().map(({ id }) => id)).toEqual(Object.keys(fixture))
   })
 
-  it.each(cases().map(({ id, props }) => [id, props] as const))('renders %s exactly as before', async (id, props) => {
+  it.each(cases().map(({ id, props }) => [id, props] as const))('renders the configured %s destinations', async (id, props) => {
     expect(await render(props)).toBe(fixture[id])
   })
 })

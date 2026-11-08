@@ -13,7 +13,7 @@ import { withPortRoot, withRoot } from '../src/lib/site-root'
 import { buildTarget } from '../src/lib/versions'
 import { renderedTargets } from '../src/lib/inventory-targets'
 import { tmuxInventoryVersion } from '../src/lib/inventory-links'
-import { targetKey } from '@libtmux/api-model'
+import { targetKey } from '@libtmux/api-model/reference'
 
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
 const noticeSource = readFileSync(new URL('../src/components/PrereleaseNotice.astro', import.meta.url), 'utf8')
@@ -153,6 +153,15 @@ describe('prerelease notice ownership', () => {
     const tagged = await render('/en/julia/latest/core/', 'core', 'julia')
     expect(tagged).toContain('libtmux is released')
     expect(tagged).not.toContain('has not been released')
+  })
+
+  it('labels unreleased native packages as unreleased', async () => {
+    for (const path of ['reference/libtmux-selection', 'workspace']) {
+      const html = await render(`/en/perl/latest/${path}/`, path, 'perl')
+      expect(html).toContain('>Unreleased</strong>')
+      expect(html).toContain('has not been released')
+      expect(html).not.toContain('libtmux is released')
+    }
   })
 
   it('stores dismissal under a key the alpha notice never wrote', () => {

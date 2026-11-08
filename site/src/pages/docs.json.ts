@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro'
-import { moduleOf, qualifiedNameOf } from '@libtmux/api-model'
+import { moduleOf, qualifiedNameOf } from '@libtmux/api-model/reference'
 import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE, localeRoot } from '../i18n/locales.ts'
 import { buildLocale, localeOf } from '../i18n/resolve.ts'

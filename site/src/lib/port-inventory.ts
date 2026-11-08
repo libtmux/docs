@@ -164,6 +164,8 @@ export interface InventoryEntry {
    */
   reference?: string
   status: PublicationStatus
+  /** Source exists publicly even when this distribution has no registry release. */
+  sourceAvailable?: boolean
   /** Why a configured or planned entry has no link. */
   note?: string
   /**
@@ -299,6 +301,13 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
       aliases: ['Libtmux_workspace'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'workspace', status: 'published' },
     { id: 'libtmux-workspace-cli', kind: 'cli', product: 'workspace', unit: 'opam package', label: 'libtmux-workspace-cli', coordinate: 'libtmux-workspace-cli',
       aliases: ['tmux-workspace'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'cli', status: 'published' },
+  ],
+  perl: [
+    { id: 'LibTmux', kind: 'library', product: 'core', label: 'LibTmux', coordinate: 'LibTmux', aliases: ["LibTmux::Server"], repo: 'libtmux/libtmux-perl', ref: 'master', path: 'packages/core', status: 'configured-unpublished', sourceAvailable: true, note: 'Install from verified source; no CPAN release is published.' },
+    { id: 'LibTmux-Async', kind: 'companion', product: 'core', label: 'LibTmux-Async', coordinate: 'LibTmux-Async', aliases: ["LibTmux::Async::Server"], repo: 'libtmux/libtmux-perl', ref: 'master', path: 'packages/async', status: 'configured-unpublished', sourceAvailable: true, note: 'Install from verified source; no CPAN release is published.' },
+    { id: 'LibTmux-Workspace', kind: 'companion', product: 'workspace', label: 'LibTmux-Workspace', coordinate: 'LibTmux-Workspace', aliases: ["LibTmux::Workspace"], repo: 'libtmux/libtmux-perl', ref: 'master', path: 'packages/workspace', status: 'configured-unpublished', sourceAvailable: true, note: 'Install from verified source; no CPAN release is published.' },
+    { id: 'repository', kind: 'source', product: 'core', label: 'libtmux-perl', coordinate: 'libtmux/libtmux-perl', aliases: [], repo: 'libtmux/libtmux-perl', ref: 'master', status: 'published' },
+    { id: 'libtmux-workspace', kind: 'cli', product: 'workspace', label: 'libtmux-workspace', coordinate: 'libtmux-workspace', aliases: ['libtmux-workspace'], within: 'LibTmux-Workspace', unit: 'command', repo: 'libtmux/libtmux-perl', ref: 'master', path: 'packages/workspace/bin/libtmux-workspace', file: true, status: 'configured-unpublished', sourceAvailable: true, note: 'Install from verified source; no CPAN release is published.' },
   ],
   py: [
     py({ id: 'libtmux', kind: 'library', product: 'core', label: 'libtmux', ...pypi('libtmux'), aliases: ['libtmux'] }),
