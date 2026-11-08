@@ -454,11 +454,11 @@ describe('the replay component', () => {
     expect(css, 'the replay draws no dotted line of its own').not.toMatch(/\.mcp-replay a[^{]*\{[^}]*dotted/)
   })
 
-  it('gives the track a row of its own on a narrow bar, after the rule that sizes it beside the buttons', () => {
+  it('gives the rail a row of its own on a narrow bar, after the rule that sizes it beside the buttons', () => {
     const css = readFileSync(new URL('../src/styles/mcp-replay.css', import.meta.url), 'utf8')
     expect(css).toMatch(/\.mcp-replay__controls \{[^}]*flex-wrap: wrap;[^}]*container-type: inline-size;/)
-    const base = css.search(/^\.mcp-replay__track \{/m)
-    const narrow = css.search(/@container \(max-width: 40rem\) \{\s*\.mcp-replay__track \{\s*flex: 1 0 100%;\s*order: -1;/)
+    const base = css.search(/^\.mcp-replay__rail \{/m)
+    const narrow = css.search(/@container \(max-width: 40rem\) \{\s*\.mcp-replay__rail \{\s*flex: 1 0 100%;\s*order: -1;/)
     expect(base).toBeGreaterThan(0)
     // Both rules have one class, so the later one wins: before the base rule, the narrow one would lose its flex.
     expect(narrow, 'the narrow rule comes after the base rule').toBeGreaterThan(base)

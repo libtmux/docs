@@ -188,7 +188,7 @@ const panelId = (product: string) => `landing-panel-${product}`
   /* An excerpt is short by construction, so it shows whole; a complete program scrolls past the homepage's height. */
   .landing-note { font-size: .875rem; color: var(--color-muted); }
   .landing-excerpt :global(.expressive-code pre) { overflow: auto; tab-size: 8; }
-  .landing-panel :global(.home-example .expressive-code pre) { max-height: 34rem; overflow: auto; tab-size: 8; scrollbar-gutter: stable; }
+  .landing-panel :global(.home-example .expressive-code pre) { max-height: calc(34rem - var(--home-toolbar-row, 0rem)); overflow: auto; tab-size: 8; scrollbar-gutter: stable; }
   .landing-source { margin-top: .8rem; font-size: .8125rem; color: var(--color-muted); }
   .landing-source a { color: var(--color-link); }
   /* A long command or path wraps instead of widening the page. */

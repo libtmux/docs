@@ -610,10 +610,10 @@ html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
   font-weight: 700;
 }
 
-/* A call's dot names the call and what it did to tmux, above the track. */
+/* A call's dot names the call and what it did to tmux, above the rail (its dots' line sits 9px below the rail's top). */
 .mcp-replay__tip {
   position: absolute;
-  bottom: calc(100% + 0.75rem);
+  bottom: calc(100% + 3px);
   z-index: 5;
   display: grid;
   gap: 0.125rem;
@@ -706,16 +706,106 @@ html:not([data-js]) .mcp-replay__controls {
   outline-offset: 2px;
 }
 
-/* The unplayed track is a muted tone with a slight inset; the played part is the accent with a soft glow. */
-.mcp-replay__track {
+/*
+ * The rail holds the track and a button at each end that pages it. The track
+ * scrolls sideways when its dots do not fit a comfortable pitch, with no
+ * scrollbar, a fade at each edge that has more dots, and a snap to a dot.
+ * The tooltip is the rail's, not the track's, so the scroll box does not clip it.
+ */
+.mcp-replay__rail {
   --mcp-accent: var(--color-link, currentColor);
   position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
   flex: 1;
-  height: 0.375rem;
+  min-width: 0;
   margin-inline: 0.5rem;
+}
+
+.mcp-replay__track {
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 1.5rem;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.mcp-replay__track::-webkit-scrollbar {
+  display: none;
+}
+
+.mcp-replay__rail[data-more='start'] .mcp-replay__track {
+  mask-image: linear-gradient(to right, transparent, black 1.5rem);
+}
+
+.mcp-replay__rail[data-more='end'] .mcp-replay__track {
+  mask-image: linear-gradient(to left, transparent, black 1.5rem);
+}
+
+.mcp-replay__rail[data-more='start end'] .mcp-replay__track {
+  mask-image: linear-gradient(to right, transparent, black 1.5rem, black calc(100% - 1.5rem), transparent);
+}
+
+/* The dots keep a pitch of 1.5rem or more: the strip is the track's width, or as wide as they need. */
+.mcp-replay__strip {
+  position: relative;
+  width: max(100%, calc(var(--mcp-count, 2) * 1.5rem));
+  height: 100%;
+}
+
+/* The unplayed line is a muted tone with a slight inset; the played part is the accent with a soft glow. */
+.mcp-replay__line {
+  position: absolute;
+  inset-inline: 0.75rem;
+  top: 50%;
+  height: 0.375rem;
+  transform: translateY(-50%);
   border-radius: 0.1875rem;
   background: color-mix(in srgb, var(--color-muted) 28%, transparent);
   box-shadow: inset 0 1px 2px color-mix(in srgb, black 25%, transparent);
+}
+
+.mcp-replay__page {
+  display: none;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0.375rem;
+  background: var(--color-surface-hover);
+  color: inherit;
+  cursor: pointer;
+}
+
+.mcp-replay__page:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.mcp-replay__page:focus-visible {
+  outline: 2px solid var(--focus-ring-color, currentColor);
+  outline-offset: 2px;
+}
+
+.mcp-icon--small {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+/* Buttons keep their columns from the first paint where dots can outrun the track; they only go quiet when everything fits. */
+.mcp-replay__rail[data-long] {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.mcp-replay__rail[data-long] .mcp-replay__page {
+  display: inline-grid;
+}
+
+.mcp-replay__rail[data-fits] .mcp-replay__page {
+  visibility: hidden;
 }
 
 .mcp-replay__fill {
@@ -729,6 +819,7 @@ html:not([data-js]) .mcp-replay__controls {
 .mcp-replay__mark {
   position: absolute;
   top: 50%;
+  scroll-snap-align: center;
   width: 0.75rem;
   height: 0.75rem;
   padding: 0;
@@ -776,10 +867,15 @@ html:not([data-js]) .mcp-replay__controls {
  * them, a program's dots would sit closer than a finger can tell apart.
  */
 @container (max-width: 40rem) {
-  .mcp-replay__track {
+  .mcp-replay__rail {
     flex: 1 0 100%;
     order: -1;
-    margin-block: 0.5rem 0.25rem;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    margin-block: 0;
+  }
+
+  .mcp-replay__page {
+    display: inline-grid;
   }
 }
 

@@ -233,10 +233,125 @@ describe('the player component', () => {
   it('fills HomeExample\'s stage: the program in every view, the tmux and the result beside it, the controls under both', async () => {
     const { document } = await mount()
     const stage = document.querySelector('.home-example-stage')!
-    expect([...stage.children].map((child) => child.getAttribute('data-home-view') ?? child.className)).toEqual(['concise', 'errors', 'cleanup', 'full', 'core-player__side'])
+    expect([...stage.children].map((child) => child.className)).toEqual(['home-example-code', 'core-player__side'])
+    expect([...stage.querySelector('.home-example-code')!.children].map((child) => child.getAttribute('data-home-view') ?? child.className)).toEqual(['concise', 'errors', 'cleanup', 'full', 'home-example-options home-example-toolbar'])
     expect(stage.getAttribute('tabindex')).toBe('0')
     expect(document.querySelector('.home-example-player')!.contains(document.querySelector('.mcp-replay__controls'))).toBe(true)
     expect(document.querySelector('.home-example-player')!.classList.contains('not-prose')).toBe(true)
+  })
+
+  it('keeps the Error handling and Cleanup toggles in the code panel, below the code and outside what scrolls', async () => {
+    const { document } = await mount()
+    const panel = document.querySelector('.home-example-code')!
+    const toolbar = document.querySelector('.home-example-toolbar')!
+    expect(toolbar.parentElement, 'the toolbar belongs to the code panel').toBe(panel)
+    expect(panel.lastElementChild, 'at the panel\'s bottom edge').toBe(toolbar)
+    for (const pre of document.querySelectorAll('pre')) expect(pre.contains(toolbar), 'not in the code\'s scroll container').toBe(false)
+    expect([...toolbar.querySelectorAll('label')].map((label) => label.textContent!.trim())).toEqual(['+ Error handling', '+ Cleanup'])
+    expect(toolbar.querySelector('legend')!.textContent).toBe('Example details')
+    expect(document.querySelector('.home-example-heading'), 'no row of its own above the panel').toBeNull()
+    expect(document.querySelector('.home-example-player')!.contains(toolbar)).toBe(true)
+  })
+
+  it('draws the toolbar as one row under the code that the code\'s height gives up, so the block is shorter and nothing moves when it toggles', () => {
+    const css = readFileSync(new URL('../src/styles/core-player.css', import.meta.url), 'utf8')
+    const example = readFileSync(new URL('../src/components/HomeExample.astro', import.meta.url), 'utf8')
+    expect(example).toMatch(/\.home-example-code \{[^}]*grid-template-rows: minmax\(0, 1fr\) auto;/)
+    expect(example).toMatch(/\.home-example-toolbar \{[^}]*grid-row: 2;[^}]*\}/)
+    expect(example).toMatch(/\.home-example-code:has\(> \.home-example-toolbar\) \{ --home-toolbar-row: 1\.5rem; \}/)
+    expect(css, 'the stacked code gives up the toolbar\'s row').toMatch(/height: calc\(17rem - var\(--home-toolbar-row, 0rem\)\);/)
+    for (const host of ['HomeIntro', 'PortLanding', 'CoreShowcase']) {
+      expect(readFileSync(new URL(`../src/components/${host}.astro`, import.meta.url), 'utf8'), host).toMatch(/calc\(34rem - var\(--home-toolbar-row, 0rem\)\)/)
+    }
+    expect(example, 'the toolbar is not placed over the code').not.toMatch(/\.home-example-(options|toolbar) \{[^}]*position: (absolute|fixed|sticky)/)
+    // The wide stage keeps its height; the code's row, not the stage, gives up the toolbar's.
+    expect(css).toMatch(/\.home-example-stage > \.home-example-code,[^{]*\{[^}]*height: 100%;/)
+    expect(css).toMatch(/@container core-player \(min-width: 44rem\) \{[\s\S]*grid-template-rows: minmax\(0, 1fr\);\s*height: 35rem;/)
+  })
+
+  it('draws the dots on a track that scrolls, with a button at each end, and keeps the tooltip outside the scroll box', async () => {
+    const { document } = await mount()
+    const rail = document.querySelector('.mcp-replay__rail')!
+    const track = rail.querySelector('.mcp-replay__track')!
+    expect([...rail.children].map((child) => child.className)).toEqual(['mcp-replay__page', 'mcp-replay__track', 'mcp-replay__page', 'mcp-replay__tip'])
+    const [earlier, later] = [...rail.querySelectorAll<HTMLButtonElement>('button[data-page]')]
+    expect([earlier!.getAttribute('aria-label'), later!.getAttribute('aria-label')]).toEqual(['Show earlier calls', 'Show later calls'])
+    expect([earlier!.type, earlier!.disabled, later!.disabled], 'drawn at the start of the track').toEqual(['button', true, false])
+    expect(track.querySelectorAll('[data-mark]').length).toBeGreaterThan(2)
+    expect(track.querySelector('[data-fill]'), 'the fill scrolls with the dots').not.toBeNull()
+    expect(track.querySelector('[data-tip]'), 'a tooltip in the scroll box would be clipped').toBeNull()
+    expect(track.getAttribute('style')).toMatch(/--mcp-count:\d+/)
+    expect(track.getAttribute('role')).toBe('group')
+  })
+
+  it('scrolls the track, from the sheet: no scrollbar, a snap to each dot, a fade where there is more, buttons whose room is kept', () => {
+    const css = readFileSync(new URL('../src/styles/mcp-replay.css', import.meta.url), 'utf8')
+    expect(css).toMatch(/\.mcp-replay__track \{[^}]*overflow-x: auto;[^}]*scroll-snap-type: x proximity;[^}]*scrollbar-width: none;/)
+    expect(css).toMatch(/\.mcp-replay__track::-webkit-scrollbar \{\s*display: none;/)
+    expect(css).toMatch(/\.mcp-replay__mark \{[^}]*scroll-snap-align: center;/)
+    expect(css).toMatch(/\.mcp-replay__strip \{[^}]*width: max\(100%, calc\(var\(--mcp-count, 2\) \* 1\.5rem\)\);/)
+    for (const edge of ['start', 'end', 'start end']) expect(css).toContain(`.mcp-replay__rail[data-more='${edge}'] .mcp-replay__track {`)
+    // The buttons take their columns from the first paint on a narrow bar, and on any bar for a long program.
+    expect(css).toMatch(/@container \(max-width: 40rem\) \{[^@]*\.mcp-replay__page \{\s*display: inline-grid;/)
+    expect(css).toMatch(/\.mcp-replay__rail\[data-long\] \.mcp-replay__page \{\s*display: inline-grid;/)
+    expect(css).toMatch(/\.mcp-replay__rail\[data-fits\] \.mcp-replay__page \{\s*visibility: hidden;/)
+    expect(readFileSync(new URL('../src/lib/replay-player.ts', import.meta.url), 'utf8'), 'the track scrolls, the page does not').not.toMatch(/scrollIntoView/)
+  })
+
+  it('keeps the shown dot in the track by scrolling the track, pages it with its buttons, and disables each at its end', async () => {
+    const { document, win, bind } = await mount()
+    const rail = document.querySelector<HTMLElement>('.mcp-replay__rail')!
+    const track = rail.querySelector<HTMLElement>('.mcp-replay__track')!
+    const marks = [...track.querySelectorAll<HTMLElement>('[data-mark]')]
+    const [earlier, later] = [...rail.querySelectorAll<HTMLButtonElement>('button[data-page]')]
+    // The track is 200px wide holding dots 24px apart; the happy-dom has no layout, so the metrics are the test's.
+    const width = 200
+    const holds = marks.length * 24 + 24
+    let left = 0
+    const metrics = (element: HTMLElement, props: Record<string, unknown>) => Object.entries(props).forEach(([key, value]) => Object.defineProperty(element, key, { configurable: true, get: () => (typeof value === 'function' ? value() : value), set: () => undefined }))
+    metrics(track, { clientWidth: width, scrollWidth: holds, scrollLeft: () => left })
+    track.getBoundingClientRect = () => ({ left: 0, right: width, width, top: 0, bottom: 24, height: 24, x: 0, y: 0 }) as DOMRect
+    marks.forEach((mark, index) => { mark.getBoundingClientRect = () => ({ left: 12 + index * 24 - left - 6, right: 12 + index * 24 - left + 6, width: 12, top: 0, bottom: 12, height: 12, x: 0, y: 0 }) as DOMRect })
+    const scrolled: ScrollToOptions[] = []
+    track.scrollTo = ((options: ScrollToOptions) => { scrolled.push(options); left = options.left ?? 0; track.dispatchEvent(new win.Event('scroll') as unknown as Event) }) as typeof track.scrollTo
+    const paged: ScrollToOptions[] = []
+    track.scrollBy = ((options: ScrollToOptions) => { paged.push(options) }) as typeof track.scrollBy
+    for (const mark of marks) (mark as unknown as { scrollIntoView: () => void }).scrollIntoView = () => { throw new Error('the page must not scroll') }
+
+    bind()
+    // A reader who asks for less motion starts at the end: the last dot is brought into the track, at once.
+    expect(scrolled).toHaveLength(1)
+    expect(scrolled[0]!.left).toBeGreaterThan(0)
+    expect(scrolled[0]!.behavior).toBe('auto')
+    expect([earlier!.disabled, later!.disabled, rail.dataset.more]).toEqual([false, true, 'start'])
+    expect(rail.hasAttribute('data-fits')).toBe(false)
+
+    click(win, earlier!)
+    expect(paged).toEqual([{ left: -width * 0.75, behavior: 'auto' }])
+    click(win, marks[0]!)
+    expect(scrolled.at(-1)!.left, 'the first dot is back in the track').toBe(0)
+    expect([earlier!.disabled, later!.disabled, rail.dataset.more]).toEqual([true, false, 'end'])
+    click(win, later!)
+    expect(paged.at(-1)).toEqual({ left: width * 0.75, behavior: 'auto' })
+    // A dot that is already in the track moves nothing.
+    const before = scrolled.length
+    click(win, marks[2]!)
+    expect(scrolled).toHaveLength(before)
+    // The fill and the dots share one line, so they stay aligned however far the track has scrolled.
+    expect(track.querySelector('.mcp-replay__line')!.contains(track.querySelector('[data-fill]'))).toBe(true)
+    expect(track.querySelector('.mcp-replay__line')!.contains(marks[2]!)).toBe(true)
+  })
+
+  it('says nothing needs paging when the dots fit: the buttons go quiet and keep their room', async () => {
+    const { document, bind } = await mount()
+    const rail = document.querySelector<HTMLElement>('.mcp-replay__rail')!
+    const track = rail.querySelector<HTMLElement>('.mcp-replay__track')!
+    for (const [key, value] of Object.entries({ clientWidth: 600, scrollWidth: 600, scrollLeft: 0 })) Object.defineProperty(track, key, { configurable: true, value })
+    track.scrollTo = (() => undefined) as typeof track.scrollTo
+    bind()
+    expect(rail.hasAttribute('data-fits')).toBe(true)
+    expect(rail.dataset.more).toBeUndefined()
+    expect([...rail.querySelectorAll<HTMLButtonElement>('button[data-page]')].map((button) => button.disabled)).toEqual([true, true])
   })
 
   it('draws one frame and one result for the state before the first call and each call, and shows the first', async () => {
@@ -653,5 +768,34 @@ describe('the drawing an attached client sees', () => {
     views.reset()
     expect(visible(root)).toEqual({ views: ['$0/@0'], windows: ['0:editor*', '1:logs'], sessions: ['[demo]'], others: ['build', 'scratch'] })
     expect(root.classList.contains('is-peeking')).toBe(false)
+  })
+})
+
+describe('the variant toggles of the other hosts of HomeExample', () => {
+  const template = loadAstroTemplate('components/HomeExample.astro', { modules: { 'astro-expressive-code/components': { Code } } })
+  const render = async (props: Record<string, unknown>) => {
+    const win = new Window({ url: 'https://libtmux.org/' })
+    win.document.body.innerHTML = await renderAstroTemplate(await template, { props: { port: 'go', language: 'Go', example, ...props } })
+    return win.document as unknown as Document
+  }
+
+  it('puts them under the code of the homepage example and of a fixed example, with the heading left to the title alone', async () => {
+    for (const props of [{}, { heading: false, fixed: true }]) {
+      const document = await render(props)
+      const panel = document.querySelector('.home-example-code')!
+      expect(panel.lastElementChild, JSON.stringify(props)).toBe(document.querySelector('.home-example-toolbar'))
+      expect(panel.querySelectorAll('.home-example-view')).toHaveLength(4)
+      expect(document.querySelector('.home-example-heading .home-example-options')).toBeNull()
+      expect(document.querySelector('pre')!.closest('.home-example-toolbar')).toBeNull()
+    }
+    const document = await render({ heading: false })
+    expect(document.querySelector('.home-example-heading'), 'a block with no title and no hint has no empty row above it').toBeNull()
+    expect((await render({})).querySelector('.home-example-heading h2')!.textContent).toBe('Start with Go')
+  })
+
+  it('draws no toolbar for a program with one view', async () => {
+    const document = await render({ options: false, views: ['concise'] })
+    expect(document.querySelector('.home-example-toolbar')).toBeNull()
+    expect(document.querySelector('[data-example-errors]')).toBeNull()
   })
 })

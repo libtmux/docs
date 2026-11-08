@@ -23,19 +23,17 @@ const { port, language, example, heading = true, fixed = false, options = true, 
 const player = Astro.slots.has('beside')
 const Frame = player ? 'div' : Fragment
 const Stage = player ? 'div' : Fragment
+// The title and the hint share a row; a block with neither has no row.
+const headingRow = heading || Astro.slots.has('hint')
 ---
 <div class="home-example" data-home-example={port} data-fixed={fixed ? '' : undefined} data-player={player ? '' : undefined}>
-  <div class="home-example-heading">
+  {headingRow && <div class="home-example-heading">
     {heading && <h2>Start with {language}</h2>}
-    {options && <fieldset class="home-example-options">
-      <legend class="sr-only">Example details</legend>
-      <label><input type="checkbox" data-example-errors /> + Error handling</label>
-      <label><input type="checkbox" data-example-cleanup /> + Cleanup</label>
-    </fieldset>}
     <slot name="hint" />
-  </div>
+  </div>}
   <Frame {...(player ? { class: 'home-example-player not-prose' } : {})}>
     <Stage {...(player ? { class: 'home-example-stage', 'data-body': '', tabindex: 0, role: 'group', 'aria-label': 'The program and the tmux it leaves' } : {})}>
+      <div class="home-example-code">
       {views.map((view) => {
         const code = homeProgram(example, view).replace(/\n$/, '')
         return <div
@@ -47,6 +45,12 @@ const Stage = player ? 'div' : Fragment
           <Code code={code} lang={example.lang} frame="none" />
         </div>
       })}
+      {options && <fieldset class="home-example-options home-example-toolbar">
+        <legend class="sr-only">Example details</legend>
+        <label><input type="checkbox" data-example-errors /> + Error handling</label>
+        <label><input type="checkbox" data-example-cleanup /> + Cleanup</label>
+      </fieldset>}
+      </div>
       <slot name="beside" />
     </Stage>
     <slot name="controls" />
@@ -145,11 +149,22 @@ const Stage = player ? 'div' : Fragment
 <style>
   .home-example-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem 1rem; margin-bottom: .85rem; }
   h2 { font-size: 1rem; font-weight: 600; }
-  .home-example-options { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem 1rem; margin: 0; padding: 0; border: 0; font-size: .8125rem; }
-  .home-example-options label { display: inline-flex; align-items: center; gap: .375rem; white-space: nowrap; cursor: pointer; }
+  /* The code panel: the code in the first row, the toggles in the second. The toolbar is a row of the panel, outside the scrolling pre, so it never covers code and the code's own scroll area is all the code. */
+  .home-example-code { display: grid; grid-template-rows: minmax(0, 1fr) auto; min-width: 0; }
+  /* The toolbar is a row of the panel, not extra height: every host takes it from the code's height, so the block is as tall as the code alone was. */
+  .home-example-code:has(> .home-example-toolbar) { --home-toolbar-row: 1.5rem; }
+  .home-example-code > .home-example-view { grid-row: 1; }
+  /* Alone on its page the panel is drawn as one box around the code and the toolbar; the player is already one. */
+  .home-example:not([data-player]) .home-example-code:has(> .home-example-toolbar) { --home-toolbar-row: calc(1.5rem + 2px); }
+  .home-example:not([data-player]) .home-example-code:has(> .home-example-toolbar) { border: 1px solid var(--color-edge); border-radius: .375rem; overflow: hidden; }
+  .home-example:not([data-player]) .home-example-code:has(> .home-example-toolbar) :global(.expressive-code), .home-example:not([data-player]) .home-example-code:has(> .home-example-toolbar) :global(.expressive-code .frame), .home-example:not([data-player]) .home-example-code:has(> .home-example-toolbar) :global(.expressive-code pre) { margin: 0; border: 0; border-radius: 0; }
+  .home-example-toolbar { grid-row: 2; display: flex; align-items: center; flex-wrap: wrap; gap: 0 1rem; box-sizing: border-box; min-width: 0; margin: 0; padding: 0 .75rem; border: 0; border-top: 1px solid var(--color-edge); background: var(--color-surface); font-size: .8125rem; }
+  /* The labels' padding makes the bar's height (one 13px line and 5px above and below, plus the border: 1.5rem), so the whole row is the target and the checkbox and text centre on one line. */
+  .home-example-toolbar label { display: inline-flex; align-items: center; gap: .375rem; padding-block: .3125rem; line-height: 1; white-space: nowrap; cursor: pointer; }
+  .home-example-toolbar input { margin: 0; }
   .home-example-options input { accent-color: var(--color-link); }
   .home-example-view { display: none; }
-  .home-example[data-fixed] .home-example-view :global(.expressive-code pre) { height: 34rem; max-height: none; overflow: auto; tab-size: 8; scrollbar-gutter: stable; }
+  .home-example[data-fixed] .home-example-view :global(.expressive-code pre) { height: calc(34rem - var(--home-toolbar-row, 0rem)); max-height: none; overflow: auto; tab-size: 8; scrollbar-gutter: stable; }
   .home-example:not(:has([data-example-errors]:checked)):not(:has([data-example-cleanup]:checked)) [data-home-view="concise"],
   .home-example:has([data-example-errors]:checked):not(:has([data-example-cleanup]:checked)) [data-home-view="errors"],
   .home-example:not(:has([data-example-errors]:checked)):has([data-example-cleanup]:checked) [data-home-view="cleanup"],

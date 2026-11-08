@@ -30,6 +30,22 @@ export async function checkHomeExampleOptions(browser, base) {
       await page.goto(`${base}/?port=rs&prompt=eval-sweep&from=a&from=b#program`)
       await page.waitForSelector('[data-task-enhanced]:not([hidden])')
       await check(false, false)
+      // The toggles are the code panel's own bottom row, outside the scrolling code, and toggling moves no edge of the panel.
+      const panel = async () => active.locator('[data-home-example] .home-example-code').evaluate((element) => {
+        const toolbar = element.querySelector('.home-example-toolbar')
+        const box = element.getBoundingClientRect()
+        const bar = toolbar.getBoundingClientRect()
+        const view = [...element.querySelectorAll('.home-example-view')].find((candidate) => candidate.getClientRects().length > 0)
+        return { inside: toolbar.parentElement === element, outsidePre: ![...element.querySelectorAll('pre')].some((pre) => pre.contains(toolbar)),
+          below: Math.abs(bar.bottom - box.bottom) <= 2 && view.getBoundingClientRect().bottom <= bar.top + 1, box: [box.x, box.y, box.width, box.height].map(Math.round) }
+      })
+      const resting = await panel()
+      assert.deepEqual([resting.inside, resting.outsidePre, resting.below], [true, true, true], 'The toggles are a row of the code panel, below the code and outside its scroll area')
+      await errors.check()
+      await cleanup.check()
+      assert.deepEqual((await panel()).box, resting.box, 'Toggling changes the code and moves no edge of the panel')
+      await cleanup.uncheck()
+      await errors.uncheck()
       await errors.check()
       await check(true, false)
       assert.equal(new URL(page.url()).searchParams.get('errors'), '1')
