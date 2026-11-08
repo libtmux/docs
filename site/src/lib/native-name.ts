@@ -23,6 +23,7 @@ import { qualifiedNameOf } from '@libtmux/api-model/modules'
  * and the member with a dot, so for Rust, C++, Ruby, Lua and PowerShell they differ from the card's header.
  * OCaml constructors and record fields use their module's namespace, while their stable ids retain the owning type.
  * Clojure headings keep the full namespace/var spelling.
+ * Common Lisp keeps its package colon in the page heading.
  *
  * This is for display. The public id, the anchors and the URLs stay as the model has them.
  */

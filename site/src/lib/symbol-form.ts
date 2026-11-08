@@ -8,16 +8,16 @@ import type { ApiSymbol } from '@libtmux/api-model'
  * `writtenForm` takes the label an author gave a link to a declaration and returns the visible text. The accessible
  * name is that same text.
  *
- * - A type is its name, with the language's qualifier between the parts of its path: `::` in Rust, C++ and Ruby, `.`
- *   elsewhere. It is never a call.
+ * - A type is its name, with the language's qualifier between the parts of its path: `::` in Rust, C++ and Ruby, `:`
+ *   in Common Lisp, and `.` elsewhere. It is never a call.
  * - A method or function is a call in Python, Java, C#, C++, TypeScript, Rust and Lua (`kill()`), and a bare name in
- *   Ruby, Go, Kotlin, Scala, F# and Julia. Swift writes the DocC full name, which carries its argument labels. A
+ *   Ruby, Go, Kotlin, Scala, F#, Julia and Common Lisp. Swift writes the DocC full name, which carries its argument labels. A
  *   Ruby instance method is `Server#list_sessions` and a class method `Server.find`; a Lua method is
  *   `server:list_sessions()` and a module function `libtmux.new()`.
  * - A property or field is never a call. A Java record accessor or getter is a method, so it keeps its parentheses.
  * - An enum member is written the way the language writes one: `Direction::Up`, `Direction.UP`, `Direction.Up`,
  *   `.up` on its owner's page in Swift and `Direction.up` elsewhere, `tmux.DirectionUp` in Go, `:up` in Ruby and
- *   Elixir, `"up"` in Lua and the instance `Up` in Julia.
+ *   Elixir and Common Lisp, `"up"` in Lua and the instance `Up` in Julia.
  * - An environment variable is a bare literal: `LIBTMUX_SOCKET`. A shell's `$` before the name of a real variable is
  *   dropped. The `$NAME` and `${NAME}` that docs use to explain expansion, and the sigils of other shells, are syntax.
  * - A command is never a call: `new-session`, `monitor-activity`, `tmuxp load`. So is an MCP tool, which a client names
@@ -31,7 +31,7 @@ const TYPES: ReadonlySet<string> = new Set(['class', 'interface', 'struct', 'uni
 
 interface Language {
   /** Between the parts of a type's path, and before a member that no rule of its own names. */
-  qualifier: '.' | '::'
+  qualifier: '.' | '::' | ':'
   /** A method or function reads as a call: `kill()`. */
   call: boolean
 }
@@ -55,6 +55,7 @@ export const FORMS: Record<string, Language | 'as-written'> = {
   haskell: { qualifier: '.', call: false },
   ruby: { qualifier: '::', call: false },
   lua: { qualifier: '.', call: true },
+  lisp: { qualifier: ':', call: false },
   elixir: 'as-written',
   clojure: 'as-written',
   powershell: 'as-written',
@@ -90,7 +91,7 @@ export interface FormInput {
 const AUTHORED: ReadonlySet<string> = new Set(['java', 'scala'])
 
 /** A name written as a path, with any language's joins. `args` is a call's parentheses, or a Swift full name's labels. */
-const PATH = /^([.#]?)([\w$]+(?:(?:::|\.|#|:|\/)[\w$]+)*[!?=]?)(\(.*\))?$/s
+const PATH = /^([.#]?)([\w$-]+(?:(?:::|\.|#|:|\/)[\w$-]+)*[!?=]?)(\(.*\))?$/s
 const JOIN = /(::|\.|#|:|\/)/
 
 /**
@@ -120,6 +121,14 @@ export function writtenForm({ lang, kind, symbol, owner, label, onOwnerPage = fa
   const parsed = PATH.exec(label)
   if (!parsed) return label
   const [, lead, body, args = ''] = parsed as unknown as [string, string, string, string | undefined]
+  if (lang === 'lisp' && kind !== 'enum-member') {
+    const name = body === symbol?.id ? body.replace(/\/(?:type|function)$/, '') : body
+    const split = name.lastIndexOf('.')
+    // A dot belongs to the package name once its colon is present. Modules are packages themselves.
+    const shown = name.includes(':') || symbol?.kind === 'module' || split < 0
+      ? name : `${name.slice(0, split)}:${name.slice(split + 1)}`
+    return `${lead}${shown}${args === '()' ? '' : args}`
+  }
   const pieces = body.split(JOIN)
   const names = pieces.filter((_, i) => i % 2 === 0)
   const joins = pieces.filter((_, i) => i % 2 === 1)
@@ -163,7 +172,7 @@ function enumMember({ lang, forms, names, args, symbol, owner, onOwnerPage, chip
   const name = names.at(-1)!
   switch (lang) {
     case 'ocaml': return names.join('.')
-    case 'ruby': case 'elixir': return `:${name}`
+    case 'ruby': case 'elixir': case 'lisp': return `:${name}`
     case 'lua': return `"${name}"`
     case 'julia': return name
     case 'swift': {

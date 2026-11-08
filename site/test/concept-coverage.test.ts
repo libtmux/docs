@@ -27,7 +27,7 @@ function coverage(concept: string) {
 describe('the ports that have a page for an operation', () => {
   it('lists every port for a server snapshot except those with no whole-server snapshot', () => {
     const { pages, reasons } = coverage('snapshot')
-    expect(pages.toSorted()).toEqual(['clojure', 'csharp', 'elixir', 'fsharp', 'go', 'java', 'julia', 'kotlin', 'lua', 'ocaml''perl', 'powershell', 'rs', 'ruby', 'scala', 'swift', 'ts'])
+    expect(pages.toSorted()).toEqual(['clojure', 'csharp', 'elixir', 'fsharp', 'go', 'java', 'julia', 'kotlin', 'lisp', 'lua', 'ocaml''perl', 'powershell', 'rs', 'ruby', 'scala', 'swift', 'ts'])
     // Haskell exposes scalar modules; Python and C++ have no whole-server snapshot.
     expect(reasons.toSorted()).toEqual(['cxx', 'haskell', 'py'])
     for (const port of ['py', 'cxx']) expect(CONCEPTS.snapshot!.absent![port], port).toMatch(/^no equivalent on `Server`/)
@@ -38,6 +38,7 @@ describe('the ports that have a page for an operation', () => {
     expect(CONCEPTS.snapshot!.symbols).toMatchObject({
       csharp: 'LibTmux.Server.CaptureSnapshotAsync',
       fsharp: 'LibTmux.FSharp.Server.capture',
+      lisp: 'libtmux:fetch-snapshot',
       rs: 'server.Server.hierarchy',
       swift: 'Server.snapshot()',
     })

@@ -45,6 +45,7 @@ export const CONCEPTS: Record<string, Concept> = {
       swift: 'WorkspaceBuilder.build(_:on:)',
       powershell: 'LibTmux.Workspace\\Invoke-TmuxWorkspace',
       julia: 'LibTmuxWorkspace.apply',
+      lisp: 'libtmux.workspace:apply-workspace',
     },
     notes: {
       powershell: 'Applies the exact reviewed `-Plan` after PowerShell confirmation. `-WhatIf` previews without applying it; application is detached.',
@@ -154,6 +155,7 @@ export const CONCEPTS: Record<string, Concept> = {
       csharp: 'LibTmux.Pane.SendKeysAsync',
       cxx: 'libtmux::Pane::send_text',
       swift: 'Server.sendKeys(_:to:literally:)',
+      lisp: 'libtmux:send-keys',
     },
     absent: {
       java: 'no direct equivalent; `Pane.paste` writes a buffer instead',
@@ -3938,6 +3940,28 @@ for (const [id, concept] of Object.entries(CONCEPTS)) {
     ?? 'No dedicated equivalent in the selected Perl surface. Explicit Server::cmd remains available for native tmux commands.'
 }
 
+// Common Lisp keeps captured relationships on ordinary generic functions.
+// FETCH-SNAPSHOT performs acquisition; SESSIONS, WINDOWS, PANES and CLIENTS
+// only traverse the retained observation.
+const LISP_CONCEPTS: Record<string, { symbol: string; note?: string }> = {
+  session: { symbol: 'libtmux:session/type', note: '`session` is an immutable captured entity. The same name also has a relation accessor with a distinct public identity.' },
+  window: { symbol: 'libtmux:window/type', note: '`window` is a physical captured window. `window-link` preserves each session placement.' },
+  pane: { symbol: 'libtmux:pane', note: '`pane` is an immutable captured physical pane.' },
+  snapshot: { symbol: 'libtmux:fetch-snapshot', note: '`fetch-snapshot` acquires a new interval observation. Retained snapshots never refresh in place.' },
+  'list-sessions': { symbol: 'libtmux:sessions', note: '`sessions` returns a fresh vector from a captured snapshot without contacting tmux.' },
+  'list-windows': { symbol: 'libtmux:windows', note: '`windows` traverses a captured session. Repeated links preserve their physical-window multiplicity.' },
+  'list-panes': { symbol: 'libtmux:panes', note: '`panes` traverses a captured window without contacting tmux.' },
+  'list-session-panes': { symbol: 'libtmux:panes', note: '`panes` traverses captured observations; applying it to a session returns panes reachable through its retained links.' },
+  'list-server-windows': { symbol: 'libtmux:windows', note: '`windows` on a snapshot returns captured physical windows once each.' },
+  'list-server-panes': { symbol: 'libtmux:panes', note: '`panes` on a snapshot returns captured physical panes once each.' },
+  'list-clients': { symbol: 'libtmux:clients', note: '`clients` returns fresh attached-client observations from a retained snapshot.' },
+}
+for (const [id, binding] of Object.entries(LISP_CONCEPTS)) {
+  const concept = CONCEPTS[id]
+  if (!concept) throw new Error(`concepts: Common Lisp maps unknown concept ${id}`)
+  concept.symbols.lisp = binding.symbol
+  if (binding.note) (concept.notes ??= {}).lisp = binding.note
+}
 CONCEPTS['list-session-panes']!.absent!.julia = 'Traverse `windows(session)` and `panes(window)` in the captured snapshot. `panes(snapshot)` has server-wide scope.'
 
 const OCAML_CONCEPTS: Record<string, { symbol: string; note?: string; variants?: string[] }> = {
@@ -4045,6 +4069,7 @@ for (const concept of Object.values(CONCEPTS)) {
   if (!concept.symbols.fsharp) concept.absent.fsharp = 'No source-verified F# equivalent is recorded for this operation.'
   if (!concept.symbols.ocaml) concept.absent.ocaml ??= 'No direct public OCaml equivalent is recorded for this operation.'
   if (!concept.symbols.clojure) concept.absent.clojure = 'No source-verified Clojure equivalent is recorded for this operation.'
+  if (!concept.symbols.lisp) concept.absent.lisp = 'No source-verified Common Lisp equivalent is recorded for this operation.'
 }
 
 /** Every concept naming this symbol, including concepts sharing an overload group. */

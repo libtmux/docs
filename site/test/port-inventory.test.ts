@@ -350,10 +350,12 @@ describe('port inventory', () => {
       const leaf = entry.path?.split('/').at(-1) ?? ''
       // Packaged executables may have no extension; their manifest reader records the file path.
       const commandFile = manifests[port]?.units.some((unit) => unit.unit === 'command' && unit.path === entry.path && unit.file === true)
-      expect(entry.file === true, `${port}:${entry.id} ${entry.path ?? ''}`).toBe(entry.path !== undefined && (/\.[a-z]+$/.test(leaf) || commandFile === true))
+      expect(entry.file === true, `${port}:${entry.id} ${entry.path ?? ''}`).toBe(entry.path !== undefined && (/\.[a-z]+$/.test(leaf) || commandFile === true || entry.unit === 'script'))
       if (entry.path) expect(sourceUrl(entry)).toContain(`/${entry.file ? 'blob' : 'tree'}/`)
     }
     expect(all.filter(({ entry }) => entry.file).map(({ port, entry }) => `${port}:${entry.id}`).sort())
-      .toEqual(['julia:LibTmux.Filters', 'julia:LibTmuxJSONExt', 'julia:LibTmuxTablesExt', 'perl:libtmux-workspace', 'py:pytest-plugin'])
+      .toEqual(['julia:LibTmux.Filters', 'julia:LibTmuxJSONExt', 'julia:LibTmuxTablesExt',
+        'lisp:libtmux/json', 'lisp:libtmux/query', 'lisp:libtmux/regex', 'lisp:libtmux/workspace',
+        'lisp:libtmux/workspace/cli', 'lisp:workspace-command', 'perl:libtmux-workspace', 'py:pytest-plugin'])
   })
 })

@@ -160,6 +160,14 @@
         "kind": "trunk",
         "supported": true
       }
+    ],
+    "lisp": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
     ]
   },
   "defaultVersion": {
@@ -182,6 +190,7 @@
     "ocaml": "latest",
     "haskell": "latest",
     "perl": "latest",
-    "clojure": "latest"
+    "clojure": "latest",
+    "lisp": "latest"
   }
 }

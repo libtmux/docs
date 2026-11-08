@@ -164,6 +164,17 @@ it('renders safe native glossary destinations without JavaScript', async () => {
   expect(win.document.querySelector('a[data-port="java"]')!.getAttribute('data-fragment-ids')?.split(' ')).toContain('method')
 })
 
+it('offers only the language home for an excluded MCP overview', async () => {
+  await renderPicker(pagePortLinks({ pagePath: 'mcp', portSlug: 'ts', version: 'v1.2.3', defaults: {}, docs: [] }), 'ts')
+  const row = win.document.querySelector('[data-picker-option][data-port="lisp"]')!
+  expect(row.tagName).toBe('DIV')
+  expect(row.textContent).toContain('No matching page')
+  const links = row.querySelectorAll('a')
+  expect(links).toHaveLength(1)
+  expect(links[0].getAttribute('href')).toBe('/lisp/latest/')
+  expect(links[0].getAttribute('aria-label')).toBe('Go to Common Lisp home')
+})
+
 it('keeps matching native glossary fragments and drops absent terms during keyboard activation', async () => {
   win.history.replaceState(null, '', '/en/scala/latest/reference/glossary/#method')
   const entries = pagePortLinks({ pagePath: 'reference/glossary', portSlug: 'scala', version: 'latest', defaults: {}, docs: [] })

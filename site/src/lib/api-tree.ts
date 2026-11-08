@@ -290,7 +290,10 @@ export function treeRowSymbol(model: ApiModelBase, symbol: ApiSymbol | undefined
 export function membersByTypeFor(scope: string, model: ApiModelBase): Map<string, TreeMember[]> {
   const out = new Map<string, TreeMember[]>()
   const signals = memberSignals(scope, mentions.mentions)
-  for (const owner of model.symbols.filter(isMemberOwner)) {
+  // Common Lisp packages are namespaces; their exports are already first-class
+  // rows in native task buckets, not a second lazy copy below the package.
+  for (const owner of model.symbols.filter((symbol) =>
+    isMemberOwner(symbol) && !(scope.split(':')[0] === 'lisp' && symbol.kind === 'module'))) {
     const listed = membersOf(model, owner, signals).filter((symbol) => !isTuplePayload(owner, symbol))
     // An enum lists its variants together, then its other members; ranking by use interleaves them. A Java constant, a
     // Swift case and some Rust variants carry no `variant` shape, so a constant counts as one.

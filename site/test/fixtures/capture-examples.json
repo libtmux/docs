@@ -572,6 +572,58 @@
           }
         ]
       }
+    },
+    {
+      "port": "lisp",
+      "language": "lisp",
+      "sourceRevision": "0f9da93add247569a184bbda7d1dd1ca986c2e0f",
+      "sourceRepository": "libtmux/libtmux-lisp",
+      "files": [
+        {
+          "name": "capture.lisp",
+          "sha256": "173357f6b001e818af53043a9d5a9e121699623c6325fbadbd6c0afc3806b00a"
+        }
+      ],
+      "toolchain": [
+        "SBCL 2.6.10"
+      ],
+      "tmux": [
+        "3.3a",
+        "3.8",
+        "3.8a"
+      ],
+      "page": "ports/lisp/examples/capture-pane-output",
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-lisp libtmux-source",
+        "git -C libtmux-source checkout 0f9da93add247569a184bbda7d1dd1ca986c2e0f",
+        "cd libtmux-source && mise trust && mise install && mise exec -- sbcl \\\n    --noinform \\\n    --no-sysinit \\\n    --no-userinit \\\n    --disable-debugger \\\n    --load \"$(mise where http:asdf-lisp)/asdf.lisp\" \\\n    --script ../capture.lisp"
+      ],
+      "verification": {
+        "platform": "Linux",
+        "checks": [
+          {
+            "name": "positive-3.3a",
+            "tmux": "3.3a",
+            "exit": 0,
+            "seconds": 1.32,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "positive-3.8",
+            "tmux": "3.8",
+            "exit": 0,
+            "seconds": 1.31,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "displayed-setup-3.8a",
+            "tmux": "3.8a",
+            "exit": 0,
+            "seconds": 22.28,
+            "remainingSocketDirectories": 0
+          }
+        ]
+      }
     }
   ],
   "rootExample": {

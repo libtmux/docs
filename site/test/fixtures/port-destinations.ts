@@ -56,6 +56,9 @@ export const DESTINATIONS: Record<string, ExpectedDestinations> = {
   haskell: {
     source: github('https://github.com/libtmux/libtmux-haskell/tree/master/src', 'libtmux-haskell/src'),
   },
+  lisp: {
+    source: github('https://github.com/libtmux/libtmux-lisp/tree/master/src', 'libtmux-lisp/src'),
+  },
   ts: {
     source: github('https://github.com/libtmux/libtmux-ts', 'libtmux-ts'),
     registry: { name: 'npm', url: 'https://www.npmjs.com/package/libtmux', icon: 'npm', label: 'libtmux on npm' },

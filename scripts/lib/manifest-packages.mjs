@@ -252,6 +252,18 @@ const READERS = {
     })
     return { distributions, units: [] }
   },
+
+  /** One source distribution exports the non-test ASDF systems and workspace script. */
+  lisp(repo) {
+    const manifest = 'libtmux.asd'
+    const text = repo.read(manifest)
+    const systems = [...text.matchAll(/\(defsystem\s+"(libtmux(?:\/[^"]+)?)"/g)].map((match) => match[1])
+      .filter((name) => !name.includes('/tests'))
+    const version = /:version\s+"([^"]+)"/.exec(text)?.[1]
+    const units = systems.filter((name) => name !== 'libtmux').map((name) => ({ unit: 'ASDF system', name }))
+    if (repo.has('bin/libtmux-workspace')) units.push({ unit: 'script', name: 'libtmux-workspace' })
+    return { distributions: [{ name: 'libtmux', version, manifest }], units }
+  },
 }
 
 /** Which reader a port uses: a wrapper port reads its parent's repository. */
@@ -259,6 +271,7 @@ const READER_FOR = {
   perl: 'perl', py: 'py', ruby: 'ruby', lua: 'lua', powershell: 'powershell', julia: 'julia', ts: 'ts', rs: 'rs', go: 'go',
   java: 'java', clojure: 'java', kotlin: 'java', scala: 'java', csharp: 'dotnet', fsharp: 'dotnet', cxx: 'cxx', swift: 'swift', elixir: 'elixir', ocaml: 'ocaml',
   haskell: 'haskell',
+  lisp: 'lisp',
 }
 
 /**

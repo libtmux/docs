@@ -577,6 +577,22 @@ jobs:
           perl scripts/export-api.pl --revision "$SOURCE_SHA" \
             --exporter-revision "$SOURCE_SHA" --output docs/_build/api.json
 
+      - name: Install Common Lisp documentation toolchain
+        if: matrix.port == 'lisp'
+        uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+        with:
+          version: 2026.11.3
+          working_directory: port
+          cache: false
+      - name: Install locked Common Lisp dependencies
+        if: matrix.port == 'lisp'
+        working-directory: port
+        run: mise run setup
+      - name: Export Common Lisp API from the selected source
+        if: matrix.port == 'lisp'
+        working-directory: port
+        run: mise run docs-artifact
+
       - if: matrix.port == 'ruby'
         uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
         with:

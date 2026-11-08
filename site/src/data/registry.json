@@ -207,6 +207,12 @@
           "maturity": "unreleased"
         }
       }
+    },
+    "lisp": {
+      "status": "unpublished",
+      "version": null,
+      "release": null,
+      "tag": null
     }
   }
 }

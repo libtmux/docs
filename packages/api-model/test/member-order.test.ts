@@ -87,11 +87,13 @@ d('member order', () => {
     const groups = symbols
       .filter((symbol) => ['Server', 'Session', 'Window', 'Pane', 'Client', 'Snapshot'].includes(symbol.name))
       .map((owner) => ({ id: owner.id, members: symbols.filter((symbol) => symbol.parent === owner.id) }))
-    // Cmdlets belong to their module; Julia's operations are free functions.
+    // Cmdlets and Common Lisp generic functions belong to their modules;
+    // Julia's operations are free functions.
     if (port === 'powershell') groups.push({ id: 'LibTmux', members: symbols.filter((symbol) => symbol.parent === 'LibTmux') })
     if (port === 'clojure') for (const id of ['libtmux.core', 'libtmux.data']) {
       groups.push({ id, members: symbols.filter((symbol) => symbol.parent === id) })
     }
+    if (port === 'lisp') groups.push({ id: 'libtmux', members: symbols.filter((symbol) => symbol.parent === 'libtmux') })
     if (port === 'julia') groups.push({
       id: 'LibTmux free functions',
       members: symbols.filter((symbol) => !symbol.parent && symbol.kind === 'function' && symbol.id.startsWith('LibTmux.')),
@@ -100,7 +102,7 @@ d('member order', () => {
     for (const { id, members } of groups) {
       const ordered = members.toSorted(compareMembers(signals))
       const routine = members.filter((symbol) => ['New-TmuxSession', 'New-TmuxWindow', 'Remove-TmuxServer', 'Disconnect-TmuxControl', 'Base.close'].includes(symbol.name) ||
-        /^(new_?session|new_?window|create_?session|create_?window|close|dispose|asjava|tostring|__enter__|kill_?server)$/.test(
+        /^(new[-_]?session|new[-_]?window|create[-_]?session|create[-_]?window|close|dispose|asjava|tostring|__enter__|kill[-_]?server)$/.test(
           symbol.name.replace(/\(.*$/, '').replace(/Async$/, '').replace(/[-!?]/g, '').toLowerCase()))
       const priority = members.filter((symbol) => symbol.doc?.deprecated === undefined && !symbol.modifiers?.includes('deprecated') && (
         listingIds.has(symbol.publicId ?? symbol.id) ||
@@ -172,7 +174,7 @@ d('member order', () => {
     // F#/PowerShell use .NET handles; Julia's and Elixir's relationships are
     // read from a captured snapshot, not through accessors on an entity.
     // Haskell currently exposes scalar values without a public entity graph.
-    expect(parents.length > 0).toBe(!['fsharp', 'powershell', 'julia', 'elixir', 'haskell', 'clojure'].includes(port))
+    expect(parents.length > 0).toBe(!['fsharp', 'powershell', 'julia', 'elixir', 'haskell', 'clojure', 'lisp'].includes(port))
     for (const parent of parents) {
       const siblings = symbols.filter((symbol) => symbol.parent === parent.parent).toSorted(compareMembers(signals))
       for (const sibling of siblings.filter((symbol) => memberTier(symbol, signals) !== 'parent')) {

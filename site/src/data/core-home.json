@@ -38,6 +38,25 @@
       "capture": "LibTmux::Pane#capture"
     }
   },
+  "lisp": {
+    "objects": {
+      "server": "libtmux:client",
+      "session": "libtmux:session/type",
+      "window": "libtmux:window/type",
+      "pane": "libtmux:pane"
+    },
+    "capabilities": {
+      "objects": "libtmux:snapshot",
+      "ids": "libtmux:id",
+      "queries": "libtmux.query:compile-filter",
+      "errors": "libtmux:libtmux-error",
+      "traversal": "libtmux:fetch-snapshot",
+      "argv": "libtmux:run-command",
+      "send-keys": "libtmux:send-keys",
+      "capture": "libtmux:capture-pane",
+      "version-gate": "libtmux:unsupported-capability"
+    }
+  },
   "lua": {
     "objects": {
       "server": "libtmux.Server",

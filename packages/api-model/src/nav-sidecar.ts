@@ -102,7 +102,7 @@ export function navSidecarFor(scope: string, model: ApiModelBase, nav: NavConfig
   const topLevel = model.symbols.filter((s) =>
     (!model.exportGroups || !s.apiScope || s.apiScope === 'exported') &&
     (!s.parent || (scope === 'ocaml' && roots.has(s.parent)) ||
-      ((model.exportGroups || ['powershell', 'julia'].includes(scope)) && moduleIds.has(s.parent))))
+      ((model.exportGroups || ['powershell', 'julia', 'lisp'].includes(scope)) && moduleIds.has(s.parent))))
   const conceptIds = Object.fromEntries(
     Object.entries(CONCEPTS)
       .map(([k, c]) => [k, c.symbols[scope]] as const)

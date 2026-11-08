@@ -36,6 +36,7 @@ const ROWS: Record<string, Row> = {
   haskell: { type: ['LibTmux::Id.PaneId', 'LibTmux.Id.PaneId'], function: ['LibTmux.Id.parsePaneId()', 'LibTmux.Id.parsePaneId', 'LibTmux.Id#v:parsePaneId', 'parsePaneId'], property: ['expectedPrefix', 'expectedPrefix', 'LibTmux.Id#v:expectedPrefix', 'expectedPrefix'] },
   ruby: { type: ['LibTmux.Server', 'LibTmux::Server'], method: ['Server.list_sessions', 'Server#list_sessions', 'LibTmux::Server#list_sessions'], function: ['LibTmux#version', 'LibTmux.version', 'LibTmux.version'], property: ['Server.socket_name', 'Server#socket_name', 'LibTmux::Server#socket_name'], member: ['Direction', 'up', 'LibTmux::Direction.up', ':up', ':up'] },
   lua: { type: ['libtmux::Server', 'libtmux.Server'], method: ['Server.list_sessions', 'Server:list_sessions()', 'libtmux.Server:list_sessions'], function: ['libtmux:new', 'libtmux.new()', 'libtmux.new'], property: ['Server:socket', 'Server.socket', 'libtmux.Server.socket'], member: ['Direction', 'up', 'libtmux.Direction.up', '"up"', '"up"'] },
+  lisp: { type: ['libtmux.snapshot', 'libtmux:snapshot'], method: ['libtmux.active-p', 'libtmux:active-p', 'libtmux:active-p'], function: ['fetch-snapshot', 'fetch-snapshot', 'libtmux:fetch-snapshot'], property: ['libtmux.outcome-status', 'libtmux:outcome-status', 'libtmux:outcome-status'], member: ['direction', 'horizontal', 'libtmux.direction.horizontal', ':horizontal', ':horizontal'] },
   elixir: { type: ['LibTmux.Format', 'LibTmux.Format'], method: ['LibTmux.Capture.fetch/2', 'LibTmux.Capture.fetch/2', 'LibTmux.Capture.fetch/2'], function: ['submit/3', 'submit/3', 'LibTmux.Control.submit/3'], property: ['LibTmux.Error.retryable', 'LibTmux.Error.retryable', 'LibTmux.Error.retryable'], member: ['Direction', 'up', 'LibTmux.Direction.up', ':up', ':up'] },
   powershell: { type: ['LibTmux.Server', 'LibTmux.Server'], method: ['Get-TmuxSession', 'Get-TmuxSession', 'LibTmux\\Get-TmuxSession'], function: ['Invoke-TmuxQuery', 'Invoke-TmuxQuery', 'LibTmux\\Invoke-TmuxQuery'], property: ['Server.Name', 'Server.Name', 'LibTmux.Server.Name'], member: ['Direction', 'Up', 'LibTmux.Direction.Up', 'Up', 'Up'] },
 }
@@ -44,6 +45,16 @@ const ROWS: Record<string, Row> = {
 const declared = (kind: FormSymbol['kind'], id: string, name = id.split(/::|[.#:\\]/).at(-1)!): FormSymbol => ({ id, kind, name })
 
 describe('how a language writes a linked symbol', () => {
+  it('preserves dotted Common Lisp package names and hides namespace disambiguators', () => {
+    for (const label of ['libtmux.workspace:apply-workspace', 'libtmux.query:error-operator']) {
+      expect(writtenForm({ lang: 'lisp', kind: 'function', label,
+        symbol: declared('function', label) })).toBe(label)
+    }
+    expect(writtenForm({ lang: 'lisp', kind: 'type', label: 'libtmux:window/type',
+      symbol: declared('class', 'libtmux:window/type', 'window') })).toBe('libtmux:window')
+    expect(writtenForm({ lang: 'lisp', kind: 'type', label: 'libtmux.workspace',
+      symbol: declared('module', 'libtmux.workspace', 'libtmux.workspace') })).toBe('libtmux.workspace')
+  })
   it('has a row for every port and an entry in the table for each', () => {
     expect(Object.keys(ROWS).sort()).toEqual(API_MODEL_PORTS.map((port) => port.slug).sort())
     expect(Object.keys(FORMS).sort()).toEqual(Object.keys(ROWS).sort())
@@ -99,9 +110,10 @@ describe('how a language writes a linked symbol', () => {
     expect(called.sort()).toEqual(['csharp', 'cxx', 'java', 'lua', 'py', 'rs', 'ts'])
   })
 
-  it('reads a method with no parentheses in Ruby, Go, Kotlin, Scala, F# and Julia, even when its author wrote them', () => {
-    for (const lang of ['ruby', 'go', 'kotlin', 'scala', 'fsharp', 'julia']) {
-      expect(writtenForm({ lang, kind: 'method', label: 'Server.run()', symbol: declared('method', 'a.Server#run') }), lang).toBe(lang === 'ruby' ? 'Server#run' : 'Server.run')
+  it('reads a method with no parentheses in Ruby, Go, Kotlin, Scala, F#, Julia and Common Lisp, even when its author wrote them', () => {
+    for (const lang of ['ruby', 'go', 'kotlin', 'scala', 'fsharp', 'julia', 'lisp']) {
+      const expected = lang === 'ruby' ? 'Server#run' : lang === 'lisp' ? 'Server:run' : 'Server.run'
+      expect(writtenForm({ lang, kind: 'method', label: 'Server.run()', symbol: declared('method', 'a.Server#run') }), lang).toBe(expected)
       expect(writtenForm({ lang, kind: 'function', label: 'run()', symbol: declared('function', 'a.run') }), lang).toBe('run')
     }
   })

@@ -1,7 +1,7 @@
 import { RUST_CRATE_PREFIX, tokenizeDoc, type DocSpan } from './doc/roles.ts'
 import { docSectionId, docSectionTitles } from './doc/prose-blocks.ts'
 import { symbolEntries, type InventoryEntry } from './inventory.ts'
-import type { ApiProduct, ApiSource, ApiSymbol, Signature, SymbolKind, TypeParameter } from './model.ts'
+import type { ApiProduct, ApiSource, ApiSymbol, Param, Signature, SymbolKind, TypeParameter } from './model.ts'
 import { cargoFeatureHref, documentedFeature } from './cargo-features.ts'
 import { builtinHref, CURATED_BEFORE_INVENTORY, ELIXIR_STDLIB_MODULES, elixirStdlibHref, NOT_THE_JDKS } from './builtins.ts'
 import { neverLinks } from './never-links.ts'
@@ -1414,6 +1414,38 @@ export class SymbolIndex {
     return [{ text: ident, ...(builtin ? { link: { href: builtin, external: true } } : {}) }]
   }
 
+  /** Lisp names include package colons and hyphens; only method specializers are type references in a lambda list. */
+  private lispType(annotation: string, context?: ApiSymbol, signature?: Signature): TypeSpan[] {
+    if (!annotation.trimStart().startsWith('(')) {
+      const text = annotation.trim()
+      const link = /^[^\s()"]+$/.test(text) ? this.resolveSymbol(text, 'class', context) : undefined
+      return [{ text: annotation, ...(link ? { link } : {}) }]
+    }
+    const frames: { atoms: number; parameter?: Param }[] = []
+    const out: TypeSpan[] = []
+    for (const match of annotation.matchAll(/"(?:\\[\s\S]|[^"\\])*"|[()]|[^\s()"]+|\s+/g)) {
+      const text = match[0]
+      if (text === '(') { frames.push({ atoms: 0 }); out.push({ text }); continue }
+      if (text === ')') { frames.pop(); out.push({ text }); continue }
+      const frame = frames.at(-1)
+      if (!frame || /^\s|^"/.test(text)) { out.push({ text }); continue }
+      const at = frame.atoms++
+      const parameter = signature?.params.find((param) => param.name === text)
+      if (frames.length === 1 && at === 0) {
+        out.push({ text, declaration: true })
+      } else if (parameter && (frames.length === 1 || frames.length === 2 && at === 0)) {
+        if (frames.length === 2) frame.parameter = parameter
+        out.push({ text, declaration: true })
+      } else if (frames.length === 2 && at === 1 && frame.parameter?.type === text &&
+          !frame.parameter.optional && !frame.parameter.variadic) {
+        out.push({ text, link: this.resolveSymbol(text, 'class', context) })
+      } else {
+        out.push({ text, ...(/^[:&]/.test(text) ? { keyword: true } : {}) })
+      }
+    }
+    return out
+  }
+
   /**
    * Split a type annotation into linked and literal spans.
    *
@@ -1425,6 +1457,7 @@ export class SymbolIndex {
    */
   linkType(annotation: string, context?: ApiSymbol, signature?: Signature): TypeSpan[] {
     if (neverLinks(annotation)) return [{ text: annotation }]
+    if (this.lang === 'lisp') return this.lispType(annotation, context, signature)
     const out: TypeSpan[] = []
     const rustPayload = this.lang === 'rs' && (context?.variant || (context?.parent && this.byDeclared.get(context.parent)?.variant))
     const variantDelimiters: string[] = []

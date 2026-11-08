@@ -257,6 +257,36 @@ require('node:fs').appendFileSync(process.env.EXPORT_INVOCATIONS, JSON.stringify
   })
 })
 
+describe('Common Lisp documentation producer', () => {
+  it('installs the selected source toolchain and exports before the shared build', () => {
+    const setup = workflow.indexOf('name: Install Common Lisp documentation toolchain')
+    const install = workflow.indexOf('name: Install locked Common Lisp dependencies')
+    const exportStep = workflow.indexOf('name: Export Common Lisp API from the selected source')
+    const build = workflow.indexOf("name: Build this port's tree")
+    expect(setup).toBeGreaterThan(workflow.indexOf('name: Snapshot source inputs before native generation'))
+    expect(setup).toBeLessThan(install)
+    expect(install).toBeLessThan(exportStep)
+    expect(exportStep).toBeLessThan(build)
+
+    const setupStep = workflow.slice(setup, install)
+    expect(setupStep).toContain("if: matrix.port == 'lisp'")
+    expect(setupStep).toMatch(/uses: jdx\/mise-action@[0-9a-f]{40} # v\d+\.\d+\.\d+\n/)
+    expect(setupStep).toContain('version: 2026.11.3')
+    expect(setupStep).toContain('working_directory: port')
+    expect(setupStep).toContain('cache: false')
+
+    const installStep = workflow.slice(install, exportStep)
+    expect(installStep).toContain("if: matrix.port == 'lisp'")
+    expect(installStep).toContain('working-directory: port')
+    expect(installStep).toContain('run: mise run setup')
+
+    const exportBlock = workflow.slice(exportStep, build)
+    expect(exportBlock).toContain("if: matrix.port == 'lisp'")
+    expect(exportBlock).toContain('working-directory: port')
+    expect(exportBlock).toContain('run: mise run docs-artifact')
+  })
+})
+
 describe('Elixir documentation producer', () => {
   it('reads the exact reference runtimes that .tool-versions release lines select', () => {
     const result = elixirToolchain({ '.tool-versions': tracking, 'priv/tmux/support.json': support({ otp: '29.1.2', elixir: '1.20.4' }) })

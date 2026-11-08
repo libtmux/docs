@@ -123,7 +123,7 @@ if (['--port', '--checkout', '--revision'].some((name) => process.argv.includes(
 }
 
 /** Ports whose example pages are built up from excerpts; add a port as its pages convert. */
-const BUILT_UP_PORTS = ['go']
+const BUILT_UP_PORTS = ['go', 'lisp']
 
 const pages = [
   ...markdownIn(join(CONTENT, 'examples')),

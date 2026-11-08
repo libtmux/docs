@@ -11,6 +11,25 @@ const element = (tagName: string, ...children: Element[]): Element => ({ type: '
 describe('API links in port sections', () => {
   afterEach(() => vi.unstubAllEnvs())
 
+  it('uses a shared paragraph’s Python fence before the selected Lisp build', () => {
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'lisp')
+    const fence = element('pre', element('code'))
+    fence.children![0].properties = { className: ['language-python'] }
+    const paragraph = element('p', element('code', text('None')))
+    rehypeApiLinks()({ type: 'root', children: [fence, paragraph] })
+    expect(paragraph.children?.[0].properties?.href).toContain('docs.python.org/')
+  })
+
+  it('links Common Lisp declarations and source files from their own inventory', () => {
+    const symbol = element('p', element('code', text('fetch-snapshot')))
+    const file = element('p', element('code', text('libtmux.asd')))
+    const qualified = element('p', element('code', text('libtmux.query:compile-filter')))
+    rehypeApiLinks()({ type: 'root', children: [element('h2', text('Common Lisp')), symbol, file, qualified] })
+    expect(symbol.children?.[0].properties?.href).toBe('/lisp/latest/reference/libtmux-fetch-snapshot/')
+    expect(file.children?.[0].properties?.href).toMatch(/github.com\/libtmux\/libtmux-lisp\/blob\/[a-f0-9]{40}\/libtmux.asd$/)
+    expect(qualified.children?.[0].properties?.href).toBe('/lisp/latest/reference/libtmux-query-compile-filter/')
+  })
+
   it('links authored product declarations under the port default in a root build', () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', '')
     vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"go":"v0.46.2"}')

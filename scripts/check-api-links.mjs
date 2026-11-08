@@ -19,7 +19,7 @@
 import { existsSync, globSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Resolver, parentInventory, decideFilePath, decideMention, isLikelyReference, looksLikeApiMention, notASymbol, notApiReason, proseMentions, readInventory } from '../packages/api-model/src/index.ts'
+import { Resolver, parentInventory, decideFilePath, decideMention, isLikelyReference, looksLikeApiMention, notASymbol, notApiReason, portFromSentence, proseMentions, readInventory } from '../packages/api-model/src/index.ts'
 import { decideMcpMention } from '../site/src/lib/mcp-catalog.ts'
 import { isTmuxProse } from '../site/src/lib/docs-paths.ts'
 
@@ -101,7 +101,7 @@ const EXCEPTIONS = new Map()
   }
 }
 
-const FILE_RE = /^[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|cpp|hpp|h|swift|jl|ex|exs|ps1|psm1|psd1|ml|mli|opam|md|toml|json|ya?ml|sh)$/
+const FILE_RE = /^[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|cpp|hpp|h|swift|jl|ex|exs|ps1|psm1|psd1|ml|mli|opam|lisp|asd|md|toml|json|ya?ml|sh)$/
 const PORT_BY_LABEL = Object.fromEntries(PORT_DEFS.map((port) => [port.name, port.slug]))
 PORT_BY_LABEL['C#'] = 'csharp'
 
@@ -198,7 +198,7 @@ for (const file of targets) {
     // exists to agree with the build; applying one fewer of them made it
     // report 124 where the build reported 61, which is the disagreement it
     // was written to prevent.
-    if (notASymbol(text) || !looksLikeApiMention(text)) { tally.notASymbol++; continue }
+    if (notASymbol(text, portFromSentence(before ?? '') ?? pagePort) || !looksLikeApiMention(text)) { tally.notASymbol++; continue }
 
 
     const decisions = (pagePort ? [pagePort] : PORTS)
@@ -208,7 +208,7 @@ for (const file of targets) {
     // `TMUX_TMPDIR` that happens to resolve is a link worth having; it simply
     // is not a dangling reference when it does not.
     if (decisions.some((decision) => decision.kind === 'link')) tally.willLink++
-    else if (decisions.some((decision) => decision.kind === 'skip') || !isLikelyReference(text) || notApiReason(text) || EXCEPTIONS.has(text)) tally.notASymbol++
+    else if (decisions.some((decision) => decision.kind === 'skip') || !isLikelyReference(text) || notApiReason(text, portFromSentence(before ?? '') ?? pagePort) || EXCEPTIONS.has(text)) tally.notASymbol++
     else { tally.unresolved++; unresolved.push({ file, line, text }) }
   }
 }

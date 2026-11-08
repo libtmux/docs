@@ -24,6 +24,7 @@ import { extractElixir } from '../packages/api-model/src/languages/elixir.ts'
 import { extractHaskellArtifact } from '../packages/api-model/src/languages/haskell.ts'
 import { extractClojure } from '../packages/api-model/src/languages/clojure.ts'
 import { attachCompleteClojureExamples } from '../packages/api-model/src/languages/clojure-examples.ts'
+import { extractCommonLisp } from '../packages/api-model/src/languages/lisp.ts'
 import { attachCompleteGoExamples, readCompleteGoExamples } from '../packages/api-model/src/languages/go-examples.ts'
 import { attachCompleteCSharpExamples } from '../packages/api-model/src/languages/csharp-examples.ts'
 import { attachCompleteOcamlExamples } from '../packages/api-model/src/languages/ocaml-examples.ts'
@@ -260,6 +261,11 @@ const PORTS = {
     checkout: '~/work/libtmux/libtmux-haskell-docs',
     root: '.', nativeArtifact: '.cache/docs/api.json',
     repo: 'libtmux/libtmux-haskell', options: {},
+  },
+  lisp: {
+    checkout: '~/work/libtmux/libtmux-lisp-docs-site',
+    root: '.', nativeArtifact: 'docs/_build/api.json',
+    repo: 'libtmux/libtmux-lisp', options: {},
   },
   lua: {
     checkout: '~/work/libtmux/libtmux-lua-docs',
@@ -677,7 +683,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       process.exit(1)
     }
     const artifact = JSON.parse(readFileSync(artifactPath, 'utf8'))
-    const nativeExtractors = { perl: extractPerlArtifact, ruby: extractRuby, lua: extractLua, powershell: extractPowerShell, julia: extractJulia, elixir: extractElixir, ocaml: extractOcamlArtifact, haskell: extractHaskellArtifact, clojure: extractClojure }
+    const nativeExtractors = { perl: extractPerlArtifact, ruby: extractRuby, lua: extractLua, powershell: extractPowerShell, julia: extractJulia, elixir: extractElixir, ocaml: extractOcamlArtifact, haskell: extractHaskellArtifact, clojure: extractClojure, lisp: extractCommonLisp }
     model = nativeExtractors[port](artifact, head)
     if (port === 'haskell') {
       const verify = (root, sourceRevision, input) => {

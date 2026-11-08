@@ -518,5 +518,57 @@
       "solid": "#632826",
       "onSolid": "#ffffff"
     }
+  },
+  "erlang": {
+    "name": "Erlang",
+    "color": "#B83998",
+    "light": {
+      "background": "#fafbfc",
+      "surface": "#f3f5f7",
+      "hover": "#e9edf1",
+      "border": "#d6dce3",
+      "text": "#202830",
+      "muted": "#53606d",
+      "link": "#531a44",
+      "solid": "#531a44",
+      "onSolid": "#ffffff"
+    },
+    "dark": {
+      "background": "#15191d",
+      "surface": "#1c2229",
+      "hover": "#29323d",
+      "border": "#3e4a57",
+      "text": "#e7edf3",
+      "muted": "#b7c1cd",
+      "link": "#eac4e0",
+      "solid": "#531a44",
+      "onSolid": "#ffffff"
+    }
+  },
+  "lisp": {
+    "name": "Common Lisp",
+    "color": "#3FB68B",
+    "light": {
+      "background": "#fafbfc",
+      "surface": "#f3f5f7",
+      "hover": "#e9edf1",
+      "border": "#d6dce3",
+      "text": "#202830",
+      "muted": "#53606d",
+      "link": "#1c523f",
+      "solid": "#1c523f",
+      "onSolid": "#ffffff"
+    },
+    "dark": {
+      "background": "#15191d",
+      "surface": "#1c2229",
+      "hover": "#29323d",
+      "border": "#3e4a57",
+      "text": "#e7edf3",
+      "muted": "#b7c1cd",
+      "link": "#c5e9dc",
+      "solid": "#1c523f",
+      "onSolid": "#ffffff"
+    }
   }
 }

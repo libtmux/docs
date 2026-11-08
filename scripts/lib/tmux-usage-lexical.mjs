@@ -108,6 +108,171 @@ const FLAG = /^-[A-Za-z]+$/
 const flagLetters = (tokens) => new Set(tokens.filter((token) => token.t === 'str').flatMap((token) =>
   token.v.split(/\s+/).filter((word) => FLAG.test(word)).flatMap((word) => word.slice(1).split(''))))
 
+/** Common Lisp tokens, preserving strings while dropping line and nested block comments. */
+export function tokenizeLisp(text) {
+  const tokens = []
+  let line = 1
+  let col = 0
+  let index = 0
+  const step = (count = 1) => {
+    for (let n = 0; n < count && index < text.length; n++) {
+      if (text[index] === '\n') { line++; col = 0 } else col++
+      index++
+    }
+  }
+  while (index < text.length) {
+    const start = { line, col }
+    if (text.startsWith('#|', index)) {
+      let depth = 1
+      step(2)
+      while (index < text.length && depth) {
+        if (text.startsWith('#|', index)) { depth++; step(2) }
+        else if (text.startsWith('|#', index)) { depth--; step(2) }
+        else step()
+      }
+      continue
+    }
+    if (text[index] === ';') {
+      while (index < text.length && text[index] !== '\n') step()
+      continue
+    }
+    if (text[index] === '"') {
+      step()
+      let value = ''
+      while (index < text.length && text[index] !== '"') {
+        if (text[index] === '\\' && index + 1 < text.length) {
+          value += text[index + 1]
+          step(2)
+        } else {
+          value += text[index]
+          step()
+        }
+      }
+      if (text[index] === '"') step()
+      tokens.push({ t: 'str', v: value, ...start })
+      continue
+    }
+    if (text.startsWith('#\\', index)) {
+      step(2)
+      while (index < text.length && !/[\s()]/.test(text[index])) step()
+      continue
+    }
+    if ('()'.includes(text[index])) {
+      tokens.push({ t: 'sym', v: text[index], ...start })
+      step()
+      continue
+    }
+    if (/\s/.test(text[index])) { step(); continue }
+    let end = index + 1
+    while (end < text.length && !/[\s()";]/.test(text[end]) && !text.startsWith('#|', end)) end++
+    const value = text.slice(index, end)
+    step(end - index)
+    tokens.push({ t: 'id', v: value.toLowerCase(), ...start })
+  }
+  return tokens
+}
+
+/** Read DEFUN forms and the command literals and calls nested inside them. */
+export function scanLisp(text, { commands, known, dispatch }) {
+  const tokens = tokenizeLisp(text)
+  const groups = bracketGroups(tokens)
+  const groupAt = new Map(groups.map((group) => [group.open, group]))
+  const definers = new Set(['defun', 'defmethod'])
+  const bare = (name) => name.replace(/^#'/, '').split(':').filter(Boolean).at(-1) ?? name
+  const functions = []
+  const lambdaLists = new Set()
+  for (const group of groups) {
+    const definer = tokens[group.open + 1]
+    const name = tokens[group.open + 2]
+    if (definer?.t !== 'id' || !definers.has(definer.v) || name?.t !== 'id') continue
+    const lambda = tokens[group.open + 3]?.v === '(' ? groupAt.get(group.open + 3) : undefined
+    if (lambda) lambdaLists.add(lambda.open)
+    const doc = lambda && tokens[lambda.close + 1]?.t === 'str' ? tokens[lambda.close + 1] : undefined
+    if (doc) doc.doc = true
+    functions.push({
+      name: name.v, start: definer.line, nameLine: name.line, end: tokens[group.close].line,
+      kind: definer.v, sites: [], calls: new Map(), receivers: new Map(), callList: [],
+    })
+  }
+  const owner = (line) => functions.filter((fn) => fn.nameLine <= line && line <= fn.end)
+    .sort((a, b) => (a.end - a.start) - (b.end - b.start))[0]
+  const isCommand = (token) => {
+    if (token?.t !== 'str' || token.doc) return undefined
+    const [head, next] = token.v.split(/\s+/)
+    return known.has(head) && (next === undefined || next.startsWith('-')) ? head : undefined
+  }
+  const enclosingGroups = (index) => groups.filter((group) => group.open < index && index < group.close)
+    .sort((a, b) => (a.close - a.open) - (b.close - b.open))
+  const flagsAround = (index, command) => {
+    let around = [tokens[index]]
+    for (const group of enclosingGroups(index)) {
+      const different = tokens.slice(group.open + 1, group.close).some((token) => {
+        const found = isCommand(token)
+        return found && found !== command
+      })
+      if (different) break
+      around = tokens.slice(group.open, group.close + 1)
+    }
+    return [...flagLetters(around.filter((token) => !token.doc))].sort().join('')
+  }
+  const callName = (group) => {
+    const head = tokens[group.open + 1]
+    if (head?.t !== 'id' || definers.has(head.v) || head.v.startsWith(':')) return undefined
+    if (['apply', 'funcall'].includes(head.v)) {
+      const target = tokens[group.open + 2]
+      return target?.t === 'id' ? bare(target.v) : undefined
+    }
+    return bare(head.v)
+  }
+  for (const group of groups) {
+    const fn = owner(tokens[group.open].line)
+    if (!fn || lambdaLists.has(group.open)) continue
+    const name = callName(group)
+    if (!name) continue
+    const line = tokens[group.open + 1].line
+    if (!fn.calls.has(name)) fn.calls.set(name, line)
+    fn.callList.push({ name, line, calleeLine: line })
+  }
+  const sending = new Set(dispatch ?? [])
+  for (let changed = true; changed;) {
+    changed = false
+    for (const fn of functions) {
+      if (!sending.has(fn.name) && [...fn.calls.keys()].some((name) => sending.has(name))) {
+        sending.add(fn.name)
+        changed = true
+      }
+    }
+  }
+  tokens.forEach((token, index) => {
+    const fn = owner(token.line)
+    const command = isCommand(token)
+    if (!fn || !command || !commands.has(command)) return
+    const call = enclosingGroups(index).find((group) => sending.has(callName(group)))
+    const site = { command, line: token.line, flags: flagsAround(index, command) }
+    if (dispatch) {
+      if (call) {
+        const name = callName(call)
+        site.dispatch = { line: tokens[call.open + 1].line, name }
+      } else {
+        site.dispatch = null
+        site.why = 'it reaches no call that sends'
+      }
+    }
+    fn.sites.push(site)
+  })
+  for (const fn of functions) {
+    if (!dispatch || dispatch.has(fn.name) || fn.sites.some((site) => site.dispatch !== null)) continue
+    const commandNames = new Set(fn.sites.map((site) => site.command))
+    const send = [...fn.calls].find(([name]) => sending.has(name))
+    if (commandNames.size !== 1 || !send) continue
+    for (const site of fn.sites) {
+      site.dispatch = { line: send[1], name: send[0] }
+      delete site.why
+    }
+  }
+  return { functions, types: [], orphans: [] }
+}
+
 /**
  * Julia: `function name(...)`, the `end` at its indent, short-form `name(...) = ...`, and the sends and calls inside.
  * @param {string} text

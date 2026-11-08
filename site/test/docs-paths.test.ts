@@ -75,9 +75,13 @@ describe('product document URLs', () => {
     expect(docsRoutePath({ id: 'meta/third-party-notices', data: {} })).toBe('meta/third-party-notices')
   })
 
-  it('retires source API overviews in root and selected-version builds''retires duplicate native API overviews in root and selected-version builds', () => {
+  it('retires source API overviews in root and selected-version builds''retires duplicate native API overviews in root and selected-version builds''retires duplicate Common Lisp, Julia and F# API overviews in root and selected-version builds', () => {
     expect(sourceGuideRedirects(undefined, { fsharp: 'v0.46.2' })).toEqual([
       { path: 'ocaml/latest/guides/api', target: 'ocaml/latest/reference' },
+      { path: 'lisp/latest/guides/api', target: 'lisp/latest/reference' },
+      { path: 'lisp/latest/guides/query-api', target: 'lisp/latest/reference' },
+      { path: 'lisp/latest/guides/json-api', target: 'lisp/latest/reference' },
+      { path: 'lisp/latest/workspace/api', target: 'lisp/latest/workspace/reference' },
       { path: 'julia/latest/guides/api-overview', target: 'julia/latest/reference' },
       { path: 'clojure/latest/guides/native-api', target: 'clojure/latest/reference' },
       { path: 'clojure/latest/guides/adapter-api', target: 'clojure/latest/reference/libtmux-core-async' },
@@ -91,6 +95,12 @@ describe('product document URLs', () => {
     ])
     expect(sourceGuideRedirects('ocaml')).toEqual([
       { path: 'guides/api', target: 'reference' },
+    ])
+    expect(sourceGuideRedirects('lisp')).toEqual([
+      { path: 'guides/api', target: 'reference' },
+      { path: 'guides/query-api', target: 'reference' },
+      { path: 'guides/json-api', target: 'reference' },
+      { path: 'workspace/api', target: 'workspace/reference' },
     ])
     expect(sourceGuideRedirects('py')).toEqual([])
   })

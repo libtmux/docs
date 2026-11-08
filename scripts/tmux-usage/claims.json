@@ -2,6 +2,210 @@
   "schemaVersion": 1,
   "claims": [
     {
+      "port": "lisp",
+      "symbol": "libtmux:fetch-snapshot",
+      "command": "list-panes",
+      "scope": "server",
+      "when": "the server has sessions",
+      "evidence": [
+        {
+          "at": "src/capture.lisp:30",
+          "has": [
+            "(execute-tmux client"
+          ]
+        },
+        {
+          "at": "src/records.lisp:17",
+          "has": [
+            "(:pane \"pane/1\" (\"list-panes\" \"-a\")"
+          ]
+        },
+        {
+          "at": "src/capture.lisp:86",
+          "has": [
+            "pane-rows (capture-command client :pane"
+          ]
+        },
+        {
+          "at": "src/capture.lisp:166",
+          "has": [
+            "(libtmux.internal::capture-with-retries client"
+          ],
+          "in": "libtmux:fetch-snapshot"
+        }
+      ]
+    },
+    {
+      "port": "lisp",
+      "symbol": "libtmux:fetch-sessions",
+      "command": "list-panes",
+      "scope": "server",
+      "when": "the server has sessions",
+      "evidence": [
+        {
+          "at": "src/capture.lisp:30",
+          "has": [
+            "(execute-tmux client"
+          ]
+        },
+        {
+          "at": "src/records.lisp:17",
+          "has": [
+            "(:pane \"pane/1\" (\"list-panes\" \"-a\")"
+          ]
+        },
+        {
+          "at": "src/capture.lisp:86",
+          "has": [
+            "pane-rows (capture-command client :pane"
+          ]
+        },
+        {
+          "at": "src/capture.lisp:170",
+          "has": [
+            "(sessions (apply #'fetch-snapshot client options))"
+          ],
+          "in": "libtmux:fetch-sessions"
+        }
+      ]
+    },
+    {
+      "port": "lisp",
+      "symbol": "libtmux:fetch-windows",
+      "command": "list-panes",
+      "scope": "server",
+      "when": "the server has sessions",
+      "evidence": [
+        {
+          "at": "src/capture.lisp:30",
+          "has": [
+            "(execute-tmux client"
+          ]
+        },
+        {
+          "at": "src/records.lisp:17",
+          "has": [
+            "(:pane \"pane/1\" (\"list-panes\" \"-a\")"
+          ]
+        },
+        {
+          "at": "src/capture.lisp:86",
+          "has": [
+            "pane-rows (capture-command client :pane"
+          ]
+        },
+        {
+          "at": "src/capture.lisp:173",
+          "has": [
+            "(windows (apply #'fetch-snapshot client options))"
+          ],
+          "in": "libtmux:fetch-windows"
+        }
+      ]
+    },
+    {
+      "port": "lisp",
+      "symbol": "libtmux:fetch-panes",
+      "command": "list-panes",
+      "scope": "server",
+      "when": "the server has sessions",
+      "evidence": [
+        {
+          "at": "src/capture.lisp:30",
+          "has": [
+            "(execute-tmux client"
+          ]
+        },
+        {
+          "at": "src/records.lisp:17",
+          "has": [
+            "(:pane \"pane/1\" (\"list-panes\" \"-a\")"
+          ]
+        },
+        {
+          "at": "src/capture.lisp:86",
+          "has": [
+            "pane-rows (capture-command client :pane"
+          ]
+        },
+        {
+          "at": "src/capture.lisp:176",
+          "has": [
+            "(panes (apply #'fetch-snapshot client options))"
+          ],
+          "in": "libtmux:fetch-panes"
+        }
+      ]
+    },
+    {
+      "port": "lisp",
+      "symbol": "libtmux:fetch-clients",
+      "command": "list-panes",
+      "scope": "server",
+      "when": "the server has sessions",
+      "evidence": [
+        {
+          "at": "src/capture.lisp:30",
+          "has": [
+            "(execute-tmux client"
+          ]
+        },
+        {
+          "at": "src/records.lisp:17",
+          "has": [
+            "(:pane \"pane/1\" (\"list-panes\" \"-a\")"
+          ]
+        },
+        {
+          "at": "src/capture.lisp:86",
+          "has": [
+            "pane-rows (capture-command client :pane"
+          ]
+        },
+        {
+          "at": "src/capture.lisp:179",
+          "has": [
+            "(clients (apply #'fetch-snapshot client options))"
+          ],
+          "in": "libtmux:fetch-clients"
+        }
+      ]
+    },
+    {
+      "port": "lisp",
+      "symbol": "libtmux:refresh",
+      "command": "list-panes",
+      "scope": "server",
+      "when": "the server has sessions",
+      "evidence": [
+        {
+          "at": "src/capture.lisp:30",
+          "has": [
+            "(execute-tmux client"
+          ]
+        },
+        {
+          "at": "src/records.lisp:17",
+          "has": [
+            "(:pane \"pane/1\" (\"list-panes\" \"-a\")"
+          ]
+        },
+        {
+          "at": "src/capture.lisp:86",
+          "has": [
+            "pane-rows (capture-command client :pane"
+          ]
+        },
+        {
+          "at": "src/capture.lisp:191",
+          "has": [
+            "(apply #'fetch-snapshot client options)"
+          ],
+          "in": "libtmux:refresh"
+        }
+      ]
+    },
+    {
       "port": "rs",
       "symbol": "server.Server.panes",
       "command": "list-panes",

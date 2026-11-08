@@ -95,11 +95,19 @@ export function productReferenceTree(model: ApiModel, product: DocProduct, versi
   if (existing) return existing
   const symbols = symbolsForProduct(model, product)
   const roots = productApiRoots(model, product)
+  const lispPackageMembers = model.port === 'lisp'
+    ? new Map(roots.filter((root) => root.kind === 'module').map((root) => [
+      root.id,
+      symbols.filter((symbol) => symbol.parent === root.id).map((symbol) => ({
+        id: symbol.id, name: symbol.name, slug: symbol.slug!,
+      })),
+    ]))
+    : undefined
   const entry = (symbol: ApiSymbol) => ({ id: symbol.publicId ?? symbol.id, name: symbol.name, kind: symbol.kind, slug: symbol.slug! })
   const buckets = productApiBuckets(model, product, entry) ?? [{
     id: product, label: 'API reference', collapsed: false, children: [], entries: roots.map(entry),
   }]
-  const tree = referenceTreeFor(`${model.port}:${product}`, { ...model, symbols }, buckets, { hrefs: Object.fromEntries(symbols.flatMap((symbol) => [
+  const tree = referenceTreeFor(`${model.port}:${product}`, { ...model, symbols }, buckets, { ...(lispPackageMembers ? { members: lispPackageMembers } : {}), hrefs: Object.fromEntries(symbols.flatMap((symbol) => [
     [symbol.id, productApiHref(model, symbol, version)], [symbol.publicId ?? symbol.id, productApiHref(model, symbol, version)],
   ])) })
   cache.set(key, tree)

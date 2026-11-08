@@ -13,6 +13,7 @@ import powershellGuides from '../src/data/port-guides/powershell.json'
 import juliaGuides from '../src/data/port-guides/julia.json'
 import haskellModel from '../src/data/api/haskell.json'
 import clojureGuides from '../src/data/port-guides/clojure.json'
+import lispGuides from '../src/data/port-guides/lisp.json'
 
 afterEach(() => vi.unstubAllEnvs())
 
@@ -95,6 +96,16 @@ describe('staged port guide links', () => {
     expect(() => stagedPortGuides('haskell', {
       source: { repository: 'libtmux/libtmux-haskell', revision: 'd'.repeat(40) }, guides,
     })).toThrow('guide source differs from the Haskell API model')
+  })
+  it('resolves native Lisp API anchors into core and workspace declaration pages', () => {
+    const pages = stagedPortGuides('lisp', lispGuides)
+    const operations = pages.get('lisp/guides/operations/index.md')!
+    const workspace = pages.get('lisp/workspace/source-guide/index.md')!
+    expect(operations).toContain('../../reference/libtmux-kill-pane/')
+    expect(operations).not.toContain('../../reference/#kill-pane-function')
+    expect(workspace).toContain('../reference/libtmux-workspace-read-workspace/')
+    expect(workspace).toContain('../../reference/libtmux-command-outcome/')
+    expect(workspace).not.toMatch(/reference\/#(?:read-workspace-function|command-outcome-type)/)
   })
   it('renders Julia raw HTML with revision-bound source links while preserving code examples', () => {
     const artifact = structuredClone(juliaGuides)

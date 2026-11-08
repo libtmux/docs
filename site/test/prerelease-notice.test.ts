@@ -37,6 +37,7 @@ beforeAll(async () => {
   const helpers = {
     buildLocale, localeSourcePath, CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, repoPath,
     markdownPath, pageBrand, PORT_BY_SLUG, portSourceUrl, releaseMaturity, registryFor, withPortRoot, withRoot, buildTarget, tmuxInventoryVersion,
+    releaseMaturity, registryFor,
   }
   vi.stubGlobal('__prereleaseHelpers', helpers)
   const helperModule = `data:text/javascript,export const {${Object.keys(helpers).join(',')}}=globalThis.__prereleaseHelpers`
@@ -162,6 +163,13 @@ describe('prerelease notice ownership', () => {
       expect(html).toContain('has not been released')
       expect(html).not.toContain('libtmux is released')
     }
+  })
+
+  it('identifies a source-only port as unreleased', async () => {
+    const html = await render('/en/lisp/latest/', '', 'lisp')
+    expect(html).toContain('Not released')
+    expect(html).toContain('Install this library from source; its APIs may change.')
+    expect(html).not.toContain('libtmux is released')
   })
 
   it('stores dismissal under a key the alpha notice never wrote', () => {

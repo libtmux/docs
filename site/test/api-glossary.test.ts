@@ -35,6 +35,7 @@ const nativeAuthorities: Record<string, RegExp> = {
   lua: /^https:\/\/(?:www\.lua\.org|luals\.github\.io)\//,
   swift: /^https:\/\/(?:docs\.swift\.org|www\.swift\.org)\//,
   haskell: /^https:\/\/(?:www\.haskell\.org|downloads\.haskell\.org|cabal\.readthedocs\.io)\//,
+  lisp: /^https:\/\/(?:www\.lispworks\.com\/documentation\/HyperSpec|asdf\.common-lisp\.dev)\//,
 }
 
 afterEach(async () => {

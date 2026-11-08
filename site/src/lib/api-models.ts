@@ -16,10 +16,12 @@ import powershellNav from '../data/api/powershell.nav.json'
 import juliaNav from '../data/api/julia.nav.json'
 import elixirNav from '../data/api/elixir.nav.json'
 import haskellNav from '../data/api/haskell.nav.json'
+import lispNav from '../data/api/lisp.nav.json'
 import powershellModel from '../data/api/powershell.json'
 import juliaModel from '../data/api/julia.json'
 import elixirModel from '../data/api/elixir.json'
 import haskellModel from '../data/api/haskell.json'
+import lispModel from '../data/api/lisp.json'
 import cxxNav from '../data/api/cxx.nav.json'
 import csharpNav from '../data/api/csharp.nav.json'
 import goNav from '../data/api/go.nav.json'
@@ -66,6 +68,7 @@ export const API_MODELS: Record<string, ApiModel> = {
   julia: juliaModel as unknown as ApiModel,
   elixir: elixirModel as unknown as ApiModel,
   haskell: haskellModel as unknown as ApiModel,
+  lisp: lispModel as unknown as ApiModel,
   py: pyModel as unknown as ApiModel,
   ruby: rubyModel as unknown as ApiModel,
   lua: luaModel as unknown as ApiModel,
@@ -133,6 +136,7 @@ export const API_NAV: Record<string, PortNavData> = {
   julia: juliaNav as unknown as PortNavData,
   elixir: elixirNav as unknown as PortNavData,
   haskell: haskellNav as unknown as PortNavData,
+  lisp: lispNav as unknown as PortNavData,
   py: pyNav as unknown as PortNavData,
   ruby: rubyNav as unknown as PortNavData,
   lua: luaNav as unknown as PortNavData,
@@ -158,6 +162,7 @@ export const PORT_NAME: Record<string, string> = {
   julia: 'Julia',
   elixir: 'Elixir',
   haskell: 'Haskell',
+  lisp: 'Common Lisp',
   py: 'Python',
   ruby: 'Ruby',
   lua: 'Lua',
@@ -201,7 +206,9 @@ export function ownersOf(model: ApiModelBase) {
 /** The types the port index lists: top-level only, so nesting reads as nesting. */
 export function topLevelTypesOf(model: ApiModelBase) {
   const owners = new Set(ownersOf(model).map((symbol) => symbol.id))
-  return model.symbols.filter((s) => !s.parent && OWNER_KINDS.has(s.kind)
+  const packages = new Set(model.symbols.filter((symbol) => symbol.kind === 'module').map((symbol) => symbol.id))
+  const lisp = 'port' in model && model.port === 'lisp'
+  return model.symbols.filter((s) => (!s.parent || (lisp && packages.has(s.parent))) && OWNER_KINDS.has(s.kind)
     && (s.kind !== 'typealias' || owners.has(s.id)))
 }
 

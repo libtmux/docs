@@ -144,6 +144,18 @@ export const LINKS: Record<string, ExpectedLinks> = {
       ['source', 'libtmux-haskell', 'libtmux/libtmux-haskell', 'https://github.com/libtmux/libtmux-haskell', ['repository']],
     ],
   },
+  lisp: {
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-lisp/src', 'https://github.com/libtmux/libtmux-lisp/tree/master/src']],
+    indexed: true,
+    rows: [
+      ['source', 'libtmux', 'source distribution · src', 'https://github.com/libtmux/libtmux-lisp/tree/master/src', ['libtmux']],
+      ['source', 'libtmux-lisp', 'libtmux/libtmux-lisp', 'https://github.com/libtmux/libtmux-lisp', ['repository']],
+      ['source', 'libtmux/query', 'ASDF system · libtmux.asd', 'https://github.com/libtmux/libtmux-lisp/blob/master/libtmux.asd', ['libtmux/query', 'libtmux/regex', 'libtmux/json']],
+      ['source', 'libtmux/workspace', 'ASDF system · src/workspace.lisp', 'https://github.com/libtmux/libtmux-lisp/blob/master/src/workspace.lisp', ['libtmux/workspace']],
+      ['source', 'libtmux/workspace/cli', 'ASDF system · src/workspace-cli.lisp', 'https://github.com/libtmux/libtmux-lisp/blob/master/src/workspace-cli.lisp', ['libtmux/workspace/cli']],
+      ['source', 'libtmux-workspace', 'script · bin/libtmux-workspace', 'https://github.com/libtmux/libtmux-lisp/blob/master/bin/libtmux-workspace', ['workspace-command']],
+    ],
+  },
   ts: {
     actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-ts', 'https://github.com/libtmux/libtmux-ts'],
       ['package', 'npm', 'npm: libtmux package', 'https://www.npmjs.com/package/libtmux']],

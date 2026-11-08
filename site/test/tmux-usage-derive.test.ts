@@ -1863,6 +1863,50 @@ describe('reading Elixir by its text', () => {
   })
 })
 
+describe('reading Common Lisp by its forms', () => {
+  it('finds defuns, command flags, dispatch calls, and ignores comments and docstrings', async () => {
+    const text = [
+      '(defun fetch-panes (client)',
+      '  "Runs list-panes -s for a complete capture."',
+      '  ; list-windows in a comment is not code.',
+      '  (libtmux.internal::perform-command client nil (list "list-panes" "-a" "-F" "#{pane_id}")))',
+      '',
+      '(defun describe-failure ()',
+      '  (error "list-windows"))',
+      '',
+      '(defun relay-command (client command)',
+      '  (apply #\'libtmux.internal::perform-command client nil (list command)))',
+      '',
+      '(defun through-helper (client)',
+      '  (relay-command client "list-sessions"))',
+      '',
+      '(defun wrapper (client)',
+      '  (fetch-panes client))',
+      '',
+    ].join('\n')
+    const { functions } = await scanSource({
+      grammar: 'commonlisp', text,
+      commands: new Set(['list-panes', 'list-windows', 'list-sessions']),
+      known: new Set(['list-panes', 'list-windows', 'list-sessions']),
+      dispatch: new Set(['perform-command']),
+    })
+    const byName = Object.fromEntries(functions.map((fn) => [fn.name, fn]))
+    expect(byName['fetch-panes']).toMatchObject({ start: 1, nameLine: 1, end: 4 })
+    expect(byName['fetch-panes'].sites).toEqual([{
+      command: 'list-panes', line: 4, flags: 'Fa',
+      dispatch: { line: 4, name: 'perform-command' },
+    }])
+    expect(byName['describe-failure'].sites[0]).toMatchObject({
+      command: 'list-windows', line: 7, dispatch: null,
+    })
+    expect(byName['through-helper'].sites).toEqual([{
+      command: 'list-sessions', line: 13, flags: '',
+      dispatch: { line: 13, name: 'relay-command' },
+    }])
+    expect([...byName.wrapper.calls.keys()]).toEqual(['fetch-panes'])
+  })
+})
+
 describe('the ports whose source is read', () => {
   const unread = (slugs: string[], grammars: Record<string, string>) => slugs.filter((slug) => !grammars[slug])
 

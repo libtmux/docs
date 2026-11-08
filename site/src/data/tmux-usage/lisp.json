@@ -1,0 +1,700 @@
+{
+  "commands": [
+    "attach-session",
+    "bind-key",
+    "break-pane",
+    "capture-pane",
+    "choose-buffer",
+    "choose-client",
+    "choose-tree",
+    "clear-history",
+    "clear-prompt-history",
+    "clock-mode",
+    "command-prompt",
+    "confirm-before",
+    "copy-mode",
+    "customize-mode",
+    "delete-buffer",
+    "detach-client",
+    "display-menu",
+    "display-message",
+    "display-panes",
+    "display-popup",
+    "find-window",
+    "has-session",
+    "if-shell",
+    "join-pane",
+    "kill-pane",
+    "kill-server",
+    "kill-session",
+    "kill-window",
+    "last-pane",
+    "last-window",
+    "link-window",
+    "list-buffers",
+    "list-clients",
+    "list-commands",
+    "list-keys",
+    "list-panes",
+    "list-sessions",
+    "list-windows",
+    "load-buffer",
+    "lock-client",
+    "lock-server",
+    "lock-session",
+    "move-pane",
+    "move-window",
+    "new-pane",
+    "new-session",
+    "new-window",
+    "next-layout",
+    "next-window",
+    "paste-buffer",
+    "pipe-pane",
+    "previous-layout",
+    "previous-window",
+    "refresh-client",
+    "rename-session",
+    "rename-window",
+    "resize-pane",
+    "resize-window",
+    "respawn-pane",
+    "respawn-window",
+    "rotate-window",
+    "run-shell",
+    "save-buffer",
+    "select-layout",
+    "select-pane",
+    "select-window",
+    "send-keys",
+    "send-prefix",
+    "server-access",
+    "set-buffer",
+    "set-environment",
+    "set-hook",
+    "set-option",
+    "set-window-option",
+    "show-buffer",
+    "show-environment",
+    "show-hooks",
+    "show-messages",
+    "show-options",
+    "show-prompt-history",
+    "show-window-options",
+    "source-file",
+    "split-window",
+    "start-server",
+    "suspend-client",
+    "swap-pane",
+    "swap-window",
+    "switch-client",
+    "unbind-key",
+    "unlink-window",
+    "wait-for"
+  ],
+  "port": "lisp",
+  "repo": "libtmux/libtmux-lisp",
+  "revision": "073d3d9cab12a1069c0463f76caca19d2d3f2ac2",
+  "schemaVersion": 1,
+  "symbols": {
+    "libtmux:break-pane": [
+      {
+        "command": "break-pane",
+        "evidence": [
+          "src/placement.lisp:123"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:capture-pane-bytes": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "src/operations.lisp:74"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:clear-history": [
+      {
+        "command": "clear-history",
+        "evidence": [
+          "src/terminal-operations.lisp:48"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:copy-mode": [
+      {
+        "command": "copy-mode",
+        "evidence": [
+          "src/terminal-operations.lisp:59"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:delete-buffer": [
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "src/buffers.lisp:153"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:fetch-clients": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/capture.lisp:30",
+          "src/records.lisp:17",
+          "src/capture.lisp:86",
+          "src/capture.lisp:179"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "the server has sessions"
+      }
+    ],
+    "libtmux:fetch-panes": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/capture.lisp:30",
+          "src/records.lisp:17",
+          "src/capture.lisp:86",
+          "src/capture.lisp:176"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "the server has sessions"
+      }
+    ],
+    "libtmux:fetch-sessions": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/capture.lisp:30",
+          "src/records.lisp:17",
+          "src/capture.lisp:86",
+          "src/capture.lisp:170"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "the server has sessions"
+      }
+    ],
+    "libtmux:fetch-snapshot": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/capture.lisp:30",
+          "src/records.lisp:17",
+          "src/capture.lisp:86",
+          "src/capture.lisp:166"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "the server has sessions"
+      }
+    ],
+    "libtmux:fetch-windows": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/capture.lisp:30",
+          "src/records.lisp:17",
+          "src/capture.lisp:86",
+          "src/capture.lisp:173"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "the server has sessions"
+      }
+    ],
+    "libtmux:join-pane": [
+      {
+        "command": "join-pane",
+        "evidence": [
+          "src/placement.lisp:106"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:kill-pane": [
+      {
+        "command": "kill-pane",
+        "evidence": [
+          "src/termination.lisp:126"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:kill-server": [
+      {
+        "command": "kill-server",
+        "evidence": [
+          "src/termination.lisp:108",
+          "src/termination.lisp:160"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:kill-session": [
+      {
+        "command": "kill-session",
+        "evidence": [
+          "src/termination.lisp:146"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:kill-window": [
+      {
+        "command": "kill-window",
+        "evidence": [
+          "src/termination.lisp:136"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:last-pane": [
+      {
+        "command": "last-pane",
+        "evidence": [
+          "src/selection.lisp:52"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:last-window": [
+      {
+        "command": "last-window",
+        "evidence": [
+          "src/selection.lisp:43"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:link-window": [
+      {
+        "command": "link-window",
+        "evidence": [
+          "src/placement.lisp:36"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:list-buffers": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "src/buffers.lisp:53"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:load-buffer": [
+      {
+        "command": "load-buffer",
+        "evidence": [
+          "src/buffers.lisp:106"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:move-pane": [
+      {
+        "command": "move-pane",
+        "evidence": [
+          "src/placement.lisp:96"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:move-window": [
+      {
+        "command": "move-window",
+        "evidence": [
+          "src/placement.lisp:47"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:new-session": [
+      {
+        "command": "new-session",
+        "evidence": [
+          "src/creation.lisp:73"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:new-window": [
+      {
+        "command": "new-window",
+        "evidence": [
+          "src/creation.lisp:34"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:next-layout": [
+      {
+        "command": "next-layout",
+        "evidence": [
+          "src/geometry.lisp:77"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:next-window": [
+      {
+        "command": "next-window",
+        "evidence": [
+          "src/selection.lisp:25"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:paste-buffer": [
+      {
+        "command": "paste-buffer",
+        "evidence": [
+          "src/buffers.lisp:137"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:pipe-pane": [
+      {
+        "command": "pipe-pane",
+        "evidence": [
+          "src/process-operations.lisp:64"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:previous-layout": [
+      {
+        "command": "previous-layout",
+        "evidence": [
+          "src/geometry.lisp:85"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:previous-window": [
+      {
+        "command": "previous-window",
+        "evidence": [
+          "src/selection.lisp:34"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:refresh": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "src/capture.lisp:30",
+          "src/records.lisp:17",
+          "src/capture.lisp:86",
+          "src/capture.lisp:191"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "the server has sessions"
+      }
+    ],
+    "libtmux:remove-environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "src/configuration-operations.lisp:154",
+          "src/configuration-operations.lisp:250"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:rename-session": [
+      {
+        "command": "rename-session",
+        "evidence": [
+          "src/operations.lisp:9",
+          "src/operations.lisp:33"
+        ],
+        "scope": null
+      },
+      {
+        "command": "rename-window",
+        "evidence": [
+          "src/operations.lisp:9",
+          "src/operations.lisp:33"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:rename-window": [
+      {
+        "command": "rename-session",
+        "evidence": [
+          "src/operations.lisp:9",
+          "src/operations.lisp:24"
+        ],
+        "scope": null
+      },
+      {
+        "command": "rename-window",
+        "evidence": [
+          "src/operations.lisp:9",
+          "src/operations.lisp:24"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:resize-pane": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "src/geometry.lisp:45"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:resize-window": [
+      {
+        "command": "resize-window",
+        "evidence": [
+          "src/geometry.lisp:58"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:respawn-pane": [
+      {
+        "command": "respawn-pane",
+        "evidence": [
+          "src/process-operations.lisp:5",
+          "src/process-operations.lisp:33"
+        ],
+        "scope": null
+      },
+      {
+        "command": "respawn-window",
+        "evidence": [
+          "src/process-operations.lisp:5",
+          "src/process-operations.lisp:33"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:respawn-window": [
+      {
+        "command": "respawn-pane",
+        "evidence": [
+          "src/process-operations.lisp:5",
+          "src/process-operations.lisp:46"
+        ],
+        "scope": null
+      },
+      {
+        "command": "respawn-window",
+        "evidence": [
+          "src/process-operations.lisp:5",
+          "src/process-operations.lisp:46"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:rotate-window": [
+      {
+        "command": "rotate-window",
+        "evidence": [
+          "src/placement.lisp:159"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:save-buffer": [
+      {
+        "command": "save-buffer",
+        "evidence": [
+          "src/buffers.lisp:118"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:select-layout": [
+      {
+        "command": "select-layout",
+        "evidence": [
+          "src/geometry.lisp:69"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:select-pane": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "src/operations.lisp:50"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:select-window": [
+      {
+        "command": "select-window",
+        "evidence": [
+          "src/operations.lisp:41"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:send-keys": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "src/terminal-operations.lisp:26"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:send-prefix": [
+      {
+        "command": "send-prefix",
+        "evidence": [
+          "src/terminal-operations.lisp:38"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:send-text": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "src/terminal-operations.lisp:11"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:set-buffer": [
+      {
+        "command": "load-buffer",
+        "evidence": [
+          "src/buffers.lisp:82"
+        ],
+        "scope": null
+      },
+      {
+        "command": "set-buffer",
+        "evidence": [
+          "src/buffers.lisp:75"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:set-environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "src/configuration-operations.lisp:154",
+          "src/configuration-operations.lisp:230"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:set-hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/configuration-operations.lisp:204"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:set-option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/configuration-operations.lisp:176"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:show-buffer": [
+      {
+        "command": "show-buffer",
+        "evidence": [
+          "src/buffers.lisp:94"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:split-pane": [
+      {
+        "command": "split-window",
+        "evidence": [
+          "src/creation.lisp:56"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:swap-panes": [
+      {
+        "command": "swap-pane",
+        "evidence": [
+          "src/placement.lisp:141"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:swap-windows": [
+      {
+        "command": "swap-window",
+        "evidence": [
+          "src/placement.lisp:72"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:unlink-window": [
+      {
+        "command": "unlink-window",
+        "evidence": [
+          "src/placement.lisp:56"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:unset-environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "src/configuration-operations.lisp:154",
+          "src/configuration-operations.lisp:240"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:unset-hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "src/configuration-operations.lisp:216"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:unset-option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "src/configuration-operations.lisp:188"
+        ],
+        "scope": null
+      }
+    ]
+  }
+}

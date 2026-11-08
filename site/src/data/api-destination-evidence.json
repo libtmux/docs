@@ -27876,6 +27876,37 @@
       "sources": [
         "prose"
       ]
+    },
+    {
+      "url": "https://docs.python.org/3/library/asyncio.html#module-asyncio",
+      "host": "docs.python.org",
+      "status": 200,
+      "via": "html",
+      "title": "asyncio — Asynchronous I/O — Python 3.15.2 documentation",
+      "identity": {
+        "via": "cpython",
+        "declared": "module",
+        "kind": "module",
+        "path": [
+          "asyncio"
+        ]
+      },
+      "fragment": "found",
+      "ok": true,
+      "terminal": [
+        {
+          "key": "py:asyncio",
+          "symbol": "asyncio",
+          "at": "identity"
+        }
+      ],
+      "checkedAt": "2026-11-08",
+      "names": [
+        "py:asyncio"
+      ],
+      "sources": [
+        "prose"
+      ]
     }
   ]
 }

@@ -34,7 +34,7 @@ intersphinx_mapping = {
 }
 ```
 
-`None` discovers `objects.inv` at the configured base URL. The port mapping
+Python's `None` discovers `objects.inv` at the configured base URL. The port mapping
 above selects the Python `latest` tree. Copy the base URL of another port
 or version to select its inventory.
 

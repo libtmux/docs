@@ -33,6 +33,7 @@ export const TRANSPORT = {
   swift: { pattern: /Subprocess\.run\(|Glibc\.write\(/, files: /Sources\/LibTmux\/(?:Transport|ControlMode|NonblockingLineWriter)\.swift$/ },
   elixir: { pattern: /\bsend_port\(/, files: /transport\/oneshot\.ex$/ },
   ocaml: { pattern: /Unix\.write_substring\b/, files: /unix\/runtime_io\.ml$/ },
+  lisp: { pattern: /uiop:launch-program/, files: /process-sbcl\.lisp$/ },
 }
 
 const CONSTRUCTOR = /^(?:__init__|constructor|init|new|initialize)$/

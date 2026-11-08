@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { ApiModel } from '../src/model.ts'
 import { LinkedOwners, pageMentions, proseMentions, type LinkedOwner } from '../src/mentions.ts'
-import { Resolver } from '../src/resolver.ts'
+import { Resolver, notASymbol } from '../src/resolver.ts'
 import { parentInventory } from '../src/parent-inventory.ts'
 import { isLikelyReference, notApiInContext, notApiReason } from '../src/prose.ts'
 
@@ -89,6 +89,17 @@ describe('prose mentions', () => {
 })
 
 describe('spans that are code but not API', () => {
+  it('recognizes filenames and explicit data syntax without hiding qualified API names', () => {
+    for (const text of ['tmux.conf', 'tmux.sock', 'llms.txt', 'dist/libtmux-source.tar.gz', 'libtmux.asd', 'src/query.lisp']) {
+      expect(notASymbol(text), text).toBe('a filename')
+    }
+    for (const text of ['capture:0.0', '=work:editor', 'LC_ALL=C.UTF-8', 'libtmux.lisp.filter/1', '#()', '@[A-Za-z0-9_.-]+']) {
+      expect(notASymbol(text, 'lisp'), text).toBeTruthy()
+    }
+    for (const text of ['Nope.thing()', 'libtmux:fetch-snapshot', 'libtmux.query:compile-filter']) {
+      expect(notASymbol(text, 'lisp'), text).toBeUndefined()
+    }
+  })
   it('names tmux releases and variable expressions, which otherwise read as references', () => {
     for (const text of ['3.3a', '3.8-rc2', '3.3a-rc', 'next-3.9', 'next-3.3a']) {
       expect(isLikelyReference(text), text).toBe(true)
@@ -142,6 +153,8 @@ describe('a span its sentence says is not API', () => {
 
   it('reports the same spellings when the sentence says nothing of the kind', () => {
     expect(dangling('Type `Enter` to continue.')).toEqual(['Enter'])
+    expect(dangling('Use `send-keys` through `MissingApi`.')).toEqual(['MissingApi'])
+    expect(dangling('The screen contains `MissingApi()`.')).toEqual(['MissingApi()'])
     expect(dangling('The refusal is in `error.message`.')).toEqual(['error.message'])
   })
 
