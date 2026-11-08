@@ -106,7 +106,8 @@ export function notASymbol(text: string): string | undefined {
   if (/^\w+(?:\.\w+)+:[\w.-]+(?::[\w.<>{}-]+)?$/.test(text)) return 'a dependency coordinate'
   // `objects.inv` is the published Sphinx inventory, named by the setup guides next to a Python fence.
   if (/\.(?:tsv|html|inv)$/.test(text)) return 'a filename'
-  if (/\.(py|ts|go|rs|java|kt|kts|scala|cs|fs|fsi|fsproj|properties|cpp|hpp|c|h|lua|rb|swift|jl|exs?|ps1|psm1|psd1|md|json|ya?ml|toml|sh)\b/.test(text)) return 'a filename'
+  if (/\.(py|ts|go|rs|java|kt|kts|scala|cs|fs|fsi|fsproj|properties|cpp|hpp|c|h|lua|rb|swift|jl|exs?|ps1|psm1|psd1|ml|mli|opam|md|json|ya?ml|toml|sh)\b/.test(text)) return 'a filename'
+  if (/^[A-Za-z_][\w-]*:\d+$/.test(text)) return 'a numeric label'
   if (/(^|\s)--?[A-Za-z]/.test(text)) return 'a command-line flag'
   if (/[=<>!]=|\s[=<>]\s/.test(text)) return 'an expression, not a reference'
   if (/^new\s/.test(text)) return 'a constructor call'

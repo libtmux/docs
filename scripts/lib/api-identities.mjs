@@ -287,15 +287,18 @@ function ocamldoc(_url, page, fragment) {
   if (!module) return undefined
   const base = { via: 'ocamldoc', declared: 'module', kind: 'module', path: dotted(module[1]), title: page.title }
   if (!fragment) return base
-  const type = /^TYPE([a-z_][\w']*)$/.exec(fragment)
+  const member = /^(TYPE|VAL)([a-z_][\w']*)$/.exec(fragment)
   const anchor = page.anchors.find((entry) => entry.id === fragment)
-  if (!type || !anchor) return undefined
+  if (!member || !anchor) return undefined
   const end = page.html.indexOf('</pre>', anchor.at)
   if (end < 0) return undefined
   const declaration = strip(page.html.slice(anchor.at, end))
-  const named = /^type\s+(?:(?:[+-]?'[\w']+|\([^)]*\))\s+)?([a-z_][\w']*)\b/.exec(declaration)
-  if (named?.[1] !== type[1]) return undefined
-  return { ...base, declared: 'type', kind: 'type', path: [...base.path, type[1]] }
+  const isType = member[1] === 'TYPE'
+  const named = (isType
+    ? /^type\s+(?:(?:[+-]?'[\w']+|\([^)]*\))\s+)?([a-z_][\w']*)(?![\w'])/
+    : /^val\s+([a-z_][\w']*)(?![\w'])/).exec(declaration)
+  if (named?.[1] !== member[2]) return undefined
+  return { ...base, declared: isType ? 'type' : 'val', kind: isType ? 'type' : 'member', path: [...base.path, member[2]] }
 }
 
 function mdn(url, page) {

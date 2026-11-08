@@ -54,7 +54,7 @@ export function addressOf(url) {
 
   if (host === 'ocaml.org' && /^\/manual\/[^/]+\/api\//.test(u.pathname)) {
     const path = dotted(stem)
-    const member = /^TYPE([a-z_][\w']*)$/.exec(fragment)
+    const member = /^(?:TYPE|VAL)([a-z_][\w']*)$/.exec(fragment)
     return { path: member ? [...path, member[1]] : path, exact: true, fragment: member ? 'member' : none, type: stem }
   }
 

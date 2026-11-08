@@ -62,7 +62,7 @@ export const GO_PACKAGES = {
  * is one whole name. The rest are read from the name by `kindOf`.
  */
 export const NAME_KINDS = {
-  ocaml: { Iarray: 'module', Seq: 'module', 'Iarray.t': 'type', 'Seq.t': 'type' },
+  ocaml: { Iarray: 'module', List: 'module', Seq: 'module', Unix: 'module', 'Iarray.t': 'type', 'Seq.t': 'type', 'Seq.filter': 'member' },
   kotlin: { Dispatchers: 'object', NonCancellable: 'object', Unit: 'object' },
   // `String` in Scala is the alias `Predef` declares, and its page is Predef's.
   scala: { Using: 'object', String: 'object' },
@@ -131,7 +131,7 @@ export const PRELUDE_MACROS = new Set(['std', 'core', 'alloc'])
 
 /** What each port means by a bare name it imports, as the owner the name's page is under. */
 export const BARE_OWNERS = Object.fromEntries(Object.entries({
-  ocaml: { '': ['Iarray', 'Seq'] },
+  ocaml: { '': ['Iarray', 'List', 'Seq', 'Unix'] },
   java: {
     'java.util': ['List', 'Set', 'Map', 'Optional', 'OptionalInt', 'OptionalLong', 'Collection', 'Iterator'],
     'java.util.function': ['Function', 'Supplier', 'Consumer', 'Predicate', 'LongSupplier'],

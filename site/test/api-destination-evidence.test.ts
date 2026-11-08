@@ -289,6 +289,40 @@ describe('what the verifier reads from a page', () => {
     expect(apiHostOf('https://github.com/libtmux/libtmux')).toBeUndefined()
     expect(API_HOSTS.has('docs.oracle.com')).toBe(true)
   })
+
+  it('checks OCaml value anchors against their declaration and owning module', () => {
+    const url = 'https://ocaml.org/manual/5.5/api/Seq.html#VALfilter'
+    const html = '<title>OCaml library : Seq</title><h1>Module <a>Seq</a></h1><pre><span id="VALfilter"><span>val</span> filter</span> : (\'a -&gt; bool) -&gt; \'a t -&gt; \'a t</pre>'
+    expect(addressOf(url)).toMatchObject({ path: ['Seq', 'filter'], exact: true, fragment: 'member' })
+    const identity = pageIdentity(url, readPage(html))
+    expect(identity).toMatchObject({ kind: 'member', path: ['Seq', 'filter'] })
+    expect(judge(sourceIdentity({ port: 'ocaml', name: 'Seq.filter', source: 'builtin' }), identity)).toBeUndefined()
+    expect(judge(sourceIdentity({ port: 'ocaml', name: 'List.filter', source: 'builtin' }), identity)).toMatchObject({ failure: 'owner' })
+    for (const forged of [html.replace('<span>val</span>', '<span>type</span>'), html.replace('> filter</span>', '> invented</span>')]) {
+      expect(pageIdentity(url, readPage(forged))).toMatchObject({ kind: 'other' })
+    }
+    for (const name of ['List', 'Unix']) {
+      const module = pageIdentity(`https://ocaml.org/manual/5.5/api/${name}.html`, readPage(`<title>OCaml library : ${name}</title><h1>Module <a>${name}</a></h1>`))
+      expect(judge(sourceIdentity({ port: 'ocaml', name, source: 'builtin' }), module), name).toBeUndefined()
+    }
+  })
+
+  it('matches complete OCaml identifiers including apostrophes in value and type declarations', () => {
+    const actual = []
+    const expected = []
+    for (const [prefix, keyword, base, kind] of [['VAL', 'val', 'filter', 'member'], ['TYPE', 'type', 't', 'type']]) {
+      for (const name of [base, `${base}'`, `${base}''`, `${base}'item`]) {
+        for (const declared of [name, `${name}'`, `${name}''`, `${name}_other`, `${name}2`]) {
+          const url = `https://ocaml.org/manual/5.5/api/Seq.html#${prefix}${name}`
+          const html = `<title>OCaml library : Seq</title><h1>Module <a>Seq</a></h1><pre><span id="${prefix}${name}">${keyword} ${keyword === 'type' ? "'a " : ''}${declared}</span>${keyword === 'type' ? ' = unit' : ' : unit'}</pre>`
+          const identity = pageIdentity(url, readPage(html))
+          actual.push([prefix, name, declared, identity.kind, identity.kind === 'other' ? [] : identity.path])
+          expected.push([prefix, name, declared, name === declared ? kind : 'other', name === declared ? ['Seq', name] : []])
+        }
+      }
+    }
+    expect(actual).toEqual(expected)
+  })
 })
 
 describe('what a name says it is', () => {
