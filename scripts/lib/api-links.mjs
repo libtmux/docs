@@ -96,6 +96,7 @@ export function languageOfUrl(url) {
     'www.lua.org': 'lua', 'luals.github.io': 'lua',
     'docs.julialang.org': 'julia',
     'www.erlang.org': 'erlang',
+    'www.haskell.org': 'haskell', 'downloads.haskell.org': 'haskell', 'cabal.readthedocs.io': 'haskell',
     'modelcontextprotocol.io': 'any',
   }
   if (byHost[hostname]) return byHost[hostname]
@@ -111,6 +112,7 @@ export const PORT_LANGUAGES = {
   kotlin: ['kotlin', 'java'], scala: ['scala', 'java'],
   csharp: ['csharp', 'dotnet'], fsharp: ['fsharp', 'dotnet'], powershell: ['powershell', 'dotnet'],
   cxx: ['cpp'], swift: ['swift'], julia: ['julia'], lua: ['lua'], elixir: ['elixir', 'erlang'], ruby: ['ruby'],
+  haskell: ['haskell'],
 }
 
 /**

@@ -12,6 +12,7 @@ import { MCP_REFERENCE, mcpObjects } from '../lib/mcp-catalog'
 import { mergeMentions, tmuxEntityAt, tmuxMentions, type Mention } from '../lib/tmux-links'
 import { isLibraryPage, workspaceNames } from '../lib/workspace-links'
 import { danglingReportPath } from '../lib/dangling-report-path'
+import { nativeKind } from '../lib/api-labels'
 
 /** Link inline API and source references using their prose ownership. */
 
@@ -182,7 +183,7 @@ function addKindBadge(anchor: El, port?: string, route?: string, first: First = 
     try { slug = decodeURIComponent(match[3]!) } catch { return }
     const symbol = symbolsByPage.get(`${match[1]}/${match[2] ? `${match[2]}/` : ''}${slug}`)
     if (!symbol || (fragment && fragment !== (symbol.publicId ?? symbol.id))) return
-    kind = symbol.kind
+    kind = nativeKind(symbol, match[1])
     title = symbol.command?.kind ?? kind
   } else if (protocol && PORT_BY_SLUG[protocol[1]!]) {
     let path: string

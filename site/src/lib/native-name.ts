@@ -17,8 +17,9 @@ import { qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model'
  *
  * `nativeShortName` is the short form a hover card uses for its header: the owner and the member in the language's
  * separator (`ControlSender::unmute_pane`, `Server#new_session`, `Buffer:reference`, `Capture.fetch/2`), and the bare name
- * for a declaration with no owner. The full name is the page's Qualified name row. The page heading still joins the owner
- * and the member with a dot in every port, so for Rust, C++, Ruby, Lua and PowerShell it differs from the card's header.
+ * for a declaration with no owner. Haskell uses the bare declaration name: documentation ownership by a data type is
+ * not source qualification. The full name is the page's Qualified name row. Other ports' page headings join the owner
+ * and the member with a dot, so for Rust, C++, Ruby, Lua and PowerShell they differ from the card's header.
  *
  * This is for display. The public id, the anchors and the URLs stay as the model has them.
  */
@@ -90,6 +91,8 @@ function typescriptName(model: { symbols: readonly ApiSymbol[] }, symbol: ApiSym
  * uses dots where the language writes `::`.
  */
 export function nativeShortName(model: { port?: string; symbols: readonly ApiSymbol[] } | undefined, symbol: ApiSymbol): string {
+  // A data type owns its documentation, but only a module qualifies a Haskell name.
+  if (model?.port === 'haskell') return symbol.name
   const owner = model && symbol.parent ? symbolTable(model.symbols).get(symbol.parent) : undefined
   if (!owner) return symbol.name
   if (model?.port === 'rs') return `${owner.name}${tupleField(symbol.name) ? '.' : '::'}${symbol.name}`

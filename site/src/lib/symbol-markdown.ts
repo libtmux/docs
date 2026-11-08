@@ -13,6 +13,7 @@ import { defaultVersionFor } from './versions'
 import { apiSignatureLayouts, signatureSpans, swiftBaseName, type CodeLayout } from './code-layout'
 import { apiCallSource, apiRelationshipSections, type ApiRelationshipPath } from './api-relationships'
 import { PORT_BY_SLUG, productConceptNotice } from './ports'
+import { kindLabel, nativeKind } from './api-labels'
 
 /**
  * A symbol's page as Markdown.
@@ -218,7 +219,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   if (mod) facts.push(`- **Module:** ${mod}`)
   if (ctx.packageName) facts.push(`- **Package:** ${ctx.packageName}`)
   facts.push(`- **Language:** ${(port ? PORT_NAME[port] ?? port : language?.toUpperCase())}`)
-  if (symbol.kind) facts.push(`- **Kind:** ${symbol.kind}`)
+  if (symbol.kind) facts.push(`- **Kind:** ${kindLabel(nativeKind(symbol, language))}`)
   if (ctx.source) facts.push(`- **Source:** ${ctx.source}`)
   if (symbol.exportedFrom) facts.push(`- **Exported from:** ${symbol.exportedFrom}`)
   if (symbol.inheritedFrom) facts.push(`- **Inherited from:** ${symbol.inheritedFrom}`)
@@ -388,7 +389,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   }
   const appendMembers = (entries: ApiSymbol[]) => {
     for (const member of entries) {
-      out.push(`- ${ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)} (${symbol.variant && member.type ? inlineCode(member.type) : member.kind})${member.inheritedFrom ? `, inherited from ${inlineCode(member.inheritedFrom)}` : ''}${member.doc?.summary ? `: ${member.doc.summary}` : ''}`)
+      out.push(`- ${ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)} (${symbol.variant && member.type ? inlineCode(member.type) : kindLabel(nativeKind(member, language))})${member.inheritedFrom ? `, inherited from ${inlineCode(member.inheritedFrom)}` : ''}${member.doc?.summary ? `: ${member.doc.summary}` : ''}`)
     }
     out.push('')
   }
@@ -456,7 +457,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     for (const target of section.items) {
       const callSource = section.id === 'api-calls' ? apiCallSource(model, symbol, target)
         : section.id === 'api-called-by' ? apiCallSource(model, target, symbol) : undefined
-      out.push(`- ${symbolLink(target)} (${target.kind})${callSource ? ` [Call site](${callSource})` : ''}`)
+      out.push(`- ${symbolLink(target)} (${kindLabel(nativeKind(target, language))})${callSource ? ` [Call site](${callSource})` : ''}`)
     }
     out.push('')
   }

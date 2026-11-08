@@ -563,6 +563,20 @@ describe('the reviewed link table', () => {
     expect(Object.keys(PORT_LANGUAGES).length).toBeGreaterThan(10)
   })
 
+  it('holds Haskell language, compiler and package guides to their own language', () => {
+    for (const url of [
+      'https://www.haskell.org/onlinereport/haskell2010/haskellch4.html#x10-680004.2',
+      'https://downloads.haskell.org/ghc/9.14.1/docs/users_guide/exts/field_selectors.html',
+      'https://cabal.readthedocs.io/en/3.18/cabal-package-description-file.html',
+    ]) {
+      expect(apiHostOf(url)).toBe(new URL(url).hostname)
+      expect(languageOfUrl(url)).toBe('haskell')
+      expect(languageProblem('haskell', url)).toBeUndefined()
+      expect(languageProblem('java', url)).toMatchObject({ failure: 'language' })
+    }
+    expect(languageProblem('haskell', 'https://go.dev/ref/spec')).toMatchObject({ failure: 'language' })
+  })
+
   it('gives each Microsoft Learn product its own language, and the platform only its API, runtime, standard library and NuGet pages', () => {
     const learn = (path: string) => languageOfUrl(`https://learn.microsoft.com/en-us/${path}`)
     expect(learn('dotnet/api/system.string')).toBe('dotnet')

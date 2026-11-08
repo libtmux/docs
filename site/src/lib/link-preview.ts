@@ -1,6 +1,7 @@
 import { docSummaryText, sourceUrl, type ApiModel, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
 import { productApiHref, productApiIndex } from './product-api'
 import { nativePackageName, nativeShortName } from './native-name'
+import { nativeKind } from './api-labels'
 import { PORT_BY_SLUG } from './ports'
 import { apiGlossary } from './api-glossary'
 import { codeLang, highlightTokens, type CodeHighlight } from './highlight'
@@ -74,7 +75,7 @@ function summaryParts(index: SymbolIndex, summary: string, context: ApiSymbol, d
   for (const span of index.linkText(summary, context)) {
     const text = span.kind === 'ref' || span.kind === 'citation' ? span.label : span.text
     const target = span.kind === 'ref' && span.link && !span.link.external ? span.link.symbol : undefined
-    if (target && target.id !== context.id) runs.reference({ text, href: span.link!.href, kind: target.command?.kind ?? target.kind })
+    if (target && target.id !== context.id) runs.reference({ text, href: span.link!.href, kind: target.command?.kind ?? nativeKind(target, index.language) })
     else runs.text(text)
   }
   return runs.finish(description)
@@ -91,7 +92,7 @@ export function symbolPreview(model: ApiModel, symbol: ApiSymbol, version: strin
   const description = summary ? docSummaryText(summary, model.port) : ''
   const footer = footerPlaces(nativePackageName(model, symbol) ?? PORT_BY_SLUG[model.port]?.packageName, ownerOf(model, symbol)?.name)
   return {
-    schema: 1, title: nativeShortName(model, symbol), kind: symbol.command?.kind ?? symbol.kind,
+    schema: 1, title: nativeShortName(model, symbol), kind: symbol.command?.kind ?? nativeKind(symbol, model.port),
     description,
     descriptionParts: summary ? summaryParts(productApiIndex(model, version), summary, symbol, description) : undefined,
     footer: footer.length ? footer : undefined,
@@ -130,7 +131,7 @@ export function glossaryPreview(href: string): LinkPreview {
   const glossary = apiGlossary(href)
   return { schema: 1, title: glossary.title, description: glossary.description, href: glossary.path,
     terms: Object.fromEntries(glossary.groups.flatMap((group) => group.terms.map((term) => [term.id, {
-      schema: 1, title: term.id, kind: term.id, description: term.definition, detail: term.detail,
+      schema: 1, title: term.label ?? term.id, kind: term.id, description: term.definition, detail: term.detail,
       href: `${glossary.path}#${term.id}`, footer: [glossary.title, group.title],
     } satisfies LinkPreview]))),
   }

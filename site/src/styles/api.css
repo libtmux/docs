@@ -1269,10 +1269,10 @@ html[data-api-sections-measured] .api-section-links {
   /* The ink for text on its own tint, deepened toward the page's text so a lit name keeps 4.5:1. */
   --api-kind-ink-lit: color-mix(in srgb, var(--api-kind-ink) 70%, var(--color-foreground-primary));
 }
-.api-doc-link:is([data-api-kind='class'], [data-api-kind='struct'], [data-api-kind='enum'], [data-api-kind='union'], [data-api-kind='typealias'], [data-api-kind='module']) { --api-kind-ink: var(--mark-types-ink); }
+.api-doc-link:is([data-api-kind='class'], [data-api-kind='struct'], [data-api-kind='enum'], [data-api-kind='union'], [data-api-kind='typealias'], [data-api-kind='data-type'], [data-api-kind='module']) { --api-kind-ink: var(--mark-types-ink); }
 .api-doc-link:is([data-api-kind='interface'], [data-api-kind='trait']) { --api-kind-ink: var(--mark-traits-ink); }
-.api-doc-link:is([data-api-kind='function'], [data-api-kind='method'], [data-api-kind='command']) { --api-kind-ink: var(--mark-callables-ink); }
-.api-doc-link:is([data-api-kind='property'], [data-api-kind='attribute'], [data-api-kind='constant'], [data-api-kind='key'], [data-api-kind='option']) { --api-kind-ink: var(--mark-members-ink); }
+.api-doc-link:is([data-api-kind='function'], [data-api-kind='method'], [data-api-kind='data-constructor'], [data-api-kind='command']) { --api-kind-ink: var(--mark-callables-ink); }
+.api-doc-link:is([data-api-kind='property'], [data-api-kind='attribute'], [data-api-kind='record-field'], [data-api-kind='constant'], [data-api-kind='key'], [data-api-kind='option']) { --api-kind-ink: var(--mark-members-ink); }
 .api-doc-link:is([data-api-kind='exception'], [data-api-kind='prompt'], [data-api-kind='resource-template'], [data-api-kind='format']) { --api-kind-ink: var(--mark-meta-ink); }
 .api-doc-link:is([data-api-kind='tool'], [data-api-kind='resource'], [data-api-kind='hook']) { --api-kind-ink: var(--mark-tools-ink); }
 
