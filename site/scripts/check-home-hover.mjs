@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { PORTS } from '../src/lib/ports.ts'
+import HOME_EXAMPLES from '../src/data/home-examples.json' with { type: 'json' }
 
 /** Real pointer events, with the clock advanced instead of sleeping per option. */
 export async function checkHomeHover(browser, base) {
@@ -40,7 +41,12 @@ export async function checkHomeHover(browser, base) {
       assert.equal(await language.locator('[aria-current]').getAttribute('data-port'), 'py', 'Only the committed menu option is checked')
       assert(await page.locator(`.home-examples > [data-home-language="${slug}"]`).isVisible())
       assert.equal(await page.locator('.lm-agent-prompt [data-select="topic"]').inputValue(), 'session-switcher')
-      assert.match(await page.locator(`.lm-agent-prompt__panel[data-port="${slug}"] [data-prompt-text]`).innerText(), /Then build a tmux session switcher/)
+      const promptText = await page.locator(`.lm-agent-prompt__panel[data-port="${slug}"] [data-prompt-text]`).innerText()
+      if (HOME_EXAMPLES[slug].execution === 'pure-values') {
+        assert.match(promptText, /Availability/)
+        assert.match(promptText, /Report this missing API boundary and stop/)
+        assert.doesNotMatch(promptText, /Then build a tmux session switcher/)
+      } else assert.match(promptText, /Then build a tmux session switcher/)
       await leave()
       assert.equal((await read()).port, 'py', 'Leaving restores the committed language')
     }
@@ -133,5 +139,5 @@ export async function checkHomeHover(browser, base) {
   } finally {
     await context.close()
   }
-  console.log('Homepage hover: all 13 languages, task sync, dwell, restore, commit, URL/storage, Auto/Light/Dark, reduced motion and documentation exclusion PASS')
+  console.log('Homepage hover: every language, task and availability sync, dwell, restore, commit, URL/storage, Auto/Light/Dark, reduced motion and documentation exclusion PASS')
 }
