@@ -7388,6 +7388,13 @@
   {
    "port": "lisp",
    "symbol": "libtmux:kill-server",
+   "page": "/lisp/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:kill-server",
    "page": "/lisp/latest/guides/getting-started/",
    "title": "Getting started",
    "section": "guides"
@@ -7436,6 +7443,13 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:new-session",
+   "page": "/lisp/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:panes",
    "page": "/lisp/latest/concepts/captures/",
    "title": "Captures and identity",
@@ -7461,6 +7475,13 @@
    "page": "/lisp/latest/examples/capture-pane-output/",
    "title": "Capture pane output",
    "section": "examples"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:run-command",
+   "page": "/lisp/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
   },
   {
    "port": "lisp",
