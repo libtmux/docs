@@ -113,7 +113,7 @@ export const LINKS: Record<string, ExpectedLinks> = {
       ['source', 'libtmux/query', 'ASDF system · libtmux.asd', 'https://github.com/libtmux/libtmux-lisp/blob/master/libtmux.asd', ['libtmux/query', 'libtmux/regex', 'libtmux/json']],
       ['source', 'libtmux/workspace', 'ASDF system · src/workspace.lisp', 'https://github.com/libtmux/libtmux-lisp/blob/master/src/workspace.lisp', ['libtmux/workspace']],
       ['source', 'libtmux/workspace/cli', 'ASDF system · src/workspace-cli.lisp', 'https://github.com/libtmux/libtmux-lisp/blob/master/src/workspace-cli.lisp', ['libtmux/workspace/cli']],
-      ['source', 'workspace', 'mise task · tools/workspace-cli.lisp', 'https://github.com/libtmux/libtmux-lisp/blob/master/tools/workspace-cli.lisp', ['workspace-command']],
+      ['source', 'libtmux-workspace', 'script · bin/libtmux-workspace', 'https://github.com/libtmux/libtmux-lisp/blob/master/bin/libtmux-workspace', ['workspace-command']],
     ],
   },
   ts: {
