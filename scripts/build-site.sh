@@ -303,7 +303,7 @@ if [ -n "${LIBTMUX_DOCS_PORT:-}" ] && { [ "$LIBTMUX_DOCS_PORT" = ruby ] || [ "$L
   node "$script_dir/gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT"
   node "$script_dir/stage-port-docs.mjs" --port "$LIBTMUX_DOCS_PORT"
 elif [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ] && { [ "$LIBTMUX_DOCS_PORT" = powershell ] || [ "$LIBTMUX_DOCS_PORT" = julia ] ||
-  [ "$LIBTMUX_DOCS_PORT" = elixir ]; }; then
+  [ "$LIBTMUX_DOCS_PORT" = elixir ] || [ "$LIBTMUX_DOCS_PORT" = lisp ]; }; then
   node "$script_dir/gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT"
   node "$script_dir/stage-port-docs.mjs" --port "$LIBTMUX_DOCS_PORT" --from-source
   node "$script_dir/gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT" --nav

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { OWNER_KINDS } from '../src/lib/api-models'
 import { searchApi } from '../src/lib/api-search'
 import { referenceNavigation, referenceTree } from '../src/lib/api-tree'
+import { CORE_HOME } from '../src/lib/core-home'
 import { API_MODEL_PORTS } from '../src/lib/ports'
 
 describe('reference symbol search', () => {
@@ -64,8 +65,11 @@ describe('reference symbol search', () => {
     }
     expect(searchApi(inventory, '', 'types').every((entry) => entry.category === 'types')).toBe(true)
     expect(searchApi(inventory, '', 'members').every((entry) => entry.category === 'members')).toBe(true)
-    const server = searchApi(inventory, 'Server')[0]
-    expect(server.category, `${port}: Server type precedes properties with the same name`).toBe('types')
-    expect(symbols.get(server.id)?.name).toBe('Server')
+    const primaryId = CORE_HOME[port].objects.server
+    const primary = symbols.get(primaryId)!
+    const server = searchApi(inventory, primaryId)[0]
+    expect(server.id, `${port}: native server role is searchable`).toBe(primaryId)
+    expect(server.kind).toBe(primary.kind)
+    expect(server.category).toBe(OWNER_KINDS.has(primary.kind) ? 'types' : 'members')
   })
 })

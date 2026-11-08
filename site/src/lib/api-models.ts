@@ -185,7 +185,9 @@ export function ownersOf(model: ApiModelBase) {
 /** The types the port index lists: top-level only, so nesting reads as nesting. */
 export function topLevelTypesOf(model: ApiModelBase) {
   const owners = new Set(ownersOf(model).map((symbol) => symbol.id))
-  return model.symbols.filter((s) => !s.parent && OWNER_KINDS.has(s.kind)
+  const packages = new Set(model.symbols.filter((symbol) => symbol.kind === 'module').map((symbol) => symbol.id))
+  const lisp = 'port' in model && model.port === 'lisp'
+  return model.symbols.filter((s) => (!s.parent || (lisp && packages.has(s.parent))) && OWNER_KINDS.has(s.kind)
     && (s.kind !== 'typealias' || owners.has(s.id)))
 }
 

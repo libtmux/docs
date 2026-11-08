@@ -6,6 +6,7 @@ import mentions from '../src/data/mentions.json'
 import { API_MODELS, API_NAV, OWNER_KINDS, topLevelTypesOf } from '../src/lib/api-models'
 import { bucketForSymbol, firstEntry, membersByType, navTree, referenceNavigation, referenceIndexSections } from '../src/lib/api-tree'
 import { API_MODEL_PORTS } from '../src/lib/ports'
+import { CORE_HOME } from '../src/lib/core-home'
 import type { ApiTreeBucket, ApiTreeJson } from '../src/lib/api-search'
 import { GET as referenceTreeRoute } from '../src/pages/reference/tree.json'
 import { versionsOf } from '../../scripts/reference-trees.mjs'
@@ -89,7 +90,7 @@ describe('shared reference index sections', () => {
     expect(sections[0].id).toBe('server')
     if (port === 'powershell') expect(sections[0].free.map((symbol) => symbol.name))
       .toEqual(expect.arrayContaining(['Connect-TmuxServer', 'Get-TmuxServer', 'New-TmuxServer']))
-    else expect(sections[0].types[0].name).toBe('Server')
+    else expect(sections[0].types[0].publicId ?? sections[0].types[0].id).toBe(CORE_HOME[port].objects.server)
     const ids = sections.flatMap((section) => [...section.types, ...section.free]).map((symbol) => symbol.id)
     expect(new Set(ids).size).toBe(ids.length)
     const available = new Set(sections.map((section) => section.id))
@@ -245,11 +246,12 @@ describe('major tmux object domains', () => {
     const model = API_MODELS[port]!
     const branches = membersByType(port)
     const compare = compareMembers(memberSignals(port, mentions.mentions))
+    const primaryNames = port === 'lisp' ? ['client', 'session', 'window', 'pane', 'snapshot'] : ['Server', 'Session', 'Window', 'Pane', 'Client', 'Snapshot']
     const owners = model.symbols.filter((symbol) => port === 'powershell'
       ? symbol.kind === 'module'
-      : OWNER_KINDS.has(symbol.kind) && ['Server', 'Session', 'Window', 'Pane', 'Client', 'Snapshot'].includes(symbol.name))
+      : OWNER_KINDS.has(symbol.kind) && primaryNames.includes(symbol.name))
     if (port === 'powershell') expect(owners.map((owner) => owner.name).sort()).toEqual(['LibTmux', 'LibTmux.Workspace'])
-    else expect(owners.some((owner) => owner.name === 'Server'), port).toBe(true)
+    else expect(owners.some((owner) => (owner.publicId ?? owner.id) === CORE_HOME[port].objects.server), port).toBe(true)
     for (const owner of owners) {
       const displayed = membersOf(model, owner, memberSignals(port, mentions.mentions)).sort(compare)
       expect(branches.get(owner.publicId ?? owner.id)?.map((member) => member.id) ?? [], `${port}:${owner.id}`)

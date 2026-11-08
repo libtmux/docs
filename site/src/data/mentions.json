@@ -7289,6 +7289,13 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:capture-pane",
+   "page": "/lisp/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:client",
    "page": "/lisp/latest/concepts/captures/",
    "title": "Captures and identity",
@@ -7296,10 +7303,31 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:client",
+   "page": "/lisp/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:clients",
    "page": "/lisp/latest/concepts/captures/",
    "title": "Captures and identity",
    "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:fetch-snapshot",
+   "page": "/lisp/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:fetch-snapshot",
+   "page": "/lisp/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
   },
   {
    "port": "lisp",
@@ -7345,10 +7373,31 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:run-command",
+   "page": "/lisp/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:send-text",
+   "page": "/lisp/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:sessions",
    "page": "/lisp/latest/concepts/captures/",
    "title": "Captures and identity",
    "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:sessions",
+   "page": "/lisp/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
   },
   {
    "port": "lisp",
@@ -7377,6 +7426,13 @@
    "page": "/lisp/latest/guides/tutorial/",
    "title": "REPL tutorial",
    "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:with-client",
+   "page": "/lisp/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
   },
   {
    "port": "lisp",
@@ -15316,6 +15372,20 @@
    "text": "WatchPaneOutput",
    "page": "/kotlin/latest/examples/",
    "line": 15,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "lisp",
+   "text": "capture.lisp",
+   "page": "/lisp/latest/examples/capture-pane-output/",
+   "line": 138,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "lisp",
+   "text": "connect.lisp",
+   "page": "/lisp/latest/guides/attaching-to-tmux/",
+   "line": 24,
    "why": "not defined in the stated port"
   },
   {

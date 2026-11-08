@@ -94,7 +94,7 @@
   ],
   "port": "lisp",
   "repo": "libtmux/libtmux-lisp",
-  "revision": "99874b44dbe29b3651597a5debbacccde235d96c",
+  "revision": "27075ae3e3898fa82f35009460d30fef1ea03826",
   "schemaVersion": 1,
   "symbols": {
     "libtmux:break-pane": [

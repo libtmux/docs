@@ -22,6 +22,7 @@ const luaManual = (section: string) => `https://www.lua.org/manual/5.4/manual.ht
 const luaAnnotation = (section: string) => `https://luals.github.io/wiki/annotations/#${section}`
 const elixirDocs = (page: string) => `https://elixir.hexdocs.pm/${page}`
 const swiftBook = (page: string) => `https://docs.swift.org/latest/documentation/the-swift-programming-language/${page}/`
+const clhs = (page: string) => `https://www.lispworks.com/documentation/HyperSpec/Body/${page}.htm`
 
 export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> = {
   scala: {
@@ -88,6 +89,15 @@ export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> =
     abstract: term('A Julia abstract type that can have subtypes but no direct instances.', 'Julia abstract types', `${juliaManual('types')}#man-abstract-types`),
     readonly: term('A Julia field whose containing immutable struct prevents field reassignment.', 'Julia immutable composite types', `${juliaManual('types')}#Composite-Types`, 'A referenced vector or other mutable value can still change internally.'),
     package: term('The Julia package supplying the module and its public bindings.', 'Julia code loading', juliaManual('code-loading'), 'Package loading and module namespaces are related but distinct; use the documented project environment.'),
+  },
+  lisp: {
+    module: term('A Common Lisp package that names and exports symbols.', 'Common Lisp packages', clhs('11_'), 'The package badge describes a namespace. ASDF systems are separate loadable units and may define one or more packages.'),
+    class: term('A CLOS class whose instances participate in generic-function dispatch.', 'Common Lisp classes', clhs('m_defcla'), 'The public readers and generic functions are the supported interface; private slots are not an additional API.'),
+    function: term('A Common Lisp function binding called with its native lambda list.', 'Common Lisp functions', clhs('m_defun'), 'A function can return multiple values. The displayed lambda list identifies required, optional and keyword arguments.'),
+    macro: term('A Common Lisp macro that transforms source forms before their surrounding code runs.', 'Common Lisp macros', clhs('m_defmac'), 'The displayed lambda list describes source syntax, not ordinary evaluated function arguments.'),
+    exception: term('A Common Lisp condition type that handlers can inspect and, where documented, recover from through restarts.', 'Common Lisp conditions', clhs('09_'), 'Signalling a condition and transferring control are distinct operations; read the function contract for the condition and restart protocol.'),
+    opaque: term('A public CLOS class whose representation is intentionally outside the supported API.', 'Common Lisp classes', clhs('m_defcla'), 'Construct, inspect and compare instances through exported functions rather than depending on private slot names.'),
+    package: term('The ASDF system supplying this API, distinct from the Common Lisp package that qualifies its symbols.', 'ASDF systems', 'https://asdf.common-lisp.dev/asdf.html#Defining-systems-with-defsystem'),
   },
   elixir: {
     module: term('An Elixir module, a named collection of functions, macros and types defined with defmodule.', 'Elixir modules and functions', elixirDocs('modules-and-functions.html'), 'Module names are atoms, and a nested name such as LibTmux.Control.Request is one flat module rather than a child of LibTmux.Control.'),

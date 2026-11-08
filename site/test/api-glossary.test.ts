@@ -30,6 +30,7 @@ const nativeAuthorities: Record<string, RegExp> = {
   ruby: /^https:\/\/(?:docs\.ruby-lang\.org|guides\.rubygems\.org|github\.com\/ruby\/rbs)\//,
   lua: /^https:\/\/(?:www\.lua\.org|luals\.github\.io)\//,
   swift: /^https:\/\/(?:docs\.swift\.org|www\.swift\.org)\//,
+  lisp: /^https:\/\/(?:www\.lispworks\.com\/documentation\/HyperSpec|asdf\.common-lisp\.dev)\//,
 }
 
 afterEach(async () => {

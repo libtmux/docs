@@ -10,6 +10,7 @@ import { linkProseMarkdown } from '../src/lib/prose-markdown'
 import { llmsPage, llmsPages, localeProse } from '../src/lib/llms'
 import { getSidebar, pageBreadcrumbs } from '../src/lib/sidebar'
 import { API_MODELS } from '../src/lib/api-models'
+import { CORE_HOME } from '../src/lib/core-home'
 import { productApiHref } from '../src/lib/product-api'
 import { CONCEPT_DESCRIPTION, PORT_BY_SLUG } from '../src/lib/ports'
 import { resolvePortCode, remarkPortCode } from '../src/plugins/remark-port-code.mjs'
@@ -362,9 +363,9 @@ describe('prose Markdown links', () => {
 
   it.each(Object.keys(PORT_BY_SLUG))('links a real %s declaration in its selected version', (port) => {
     const model = API_MODELS[port]
-    const name = port === 'powershell' ? 'New-TmuxServer' : 'Server'
-    const symbol = model.symbols.find((entry) => entry.name === name && (port === 'powershell' ? entry.command : !entry.parent))!
-    expect(symbol, `${port} ${name} declaration`).toBeDefined()
+    const primaryId = CORE_HOME[port].objects.server
+    const symbol = model.symbols.find((entry) => (entry.publicId ?? entry.id) === primaryId)!
+    expect(symbol, `${port} ${primaryId} declaration`).toBeDefined()
     vi.stubEnv('LIBTMUX_DOCS_PORT', port)
     vi.stubEnv('LIBTMUX_DOCS_VERSION', 'next')
     const text = symbol.publicId ?? symbol.id

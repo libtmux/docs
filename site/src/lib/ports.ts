@@ -708,6 +708,7 @@ const CORE_PORTS: readonly Port[] = [
     language: 'Common Lisp',
     packageName: 'libtmux',
     repo: 'libtmux/libtmux-lisp',
+    docsDispatch: { workflow: 'docs.yml' },
     checkout: '~/work/libtmux/libtmux-lisp',
     worktree: '~/work/libtmux/libtmux-lisp-docs-site',
     source: { path: 'src', ref: 'master' },

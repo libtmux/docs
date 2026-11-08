@@ -45,6 +45,7 @@ export const CONCEPTS: Record<string, Concept> = {
       swift: 'WorkspaceBuilder.build(_:on:)',
       powershell: 'LibTmux.Workspace\\Invoke-TmuxWorkspace',
       julia: 'LibTmuxWorkspace.apply',
+      lisp: 'libtmux.workspace:apply-workspace',
     },
     notes: {
       powershell: 'Applies the exact reviewed `-Plan` after PowerShell confirmation. `-WhatIf` previews without applying it; application is detached.',
@@ -154,6 +155,7 @@ export const CONCEPTS: Record<string, Concept> = {
       csharp: 'LibTmux.Pane.SendKeysAsync',
       cxx: 'libtmux::Pane::send_text',
       swift: 'Server.sendKeys(_:to:literally:)',
+      lisp: 'libtmux:send-keys',
     },
     absent: {
       java: 'no direct equivalent; `Pane.paste` writes a buffer instead',

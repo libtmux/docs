@@ -1,0 +1,19 @@
+{
+  "name": "Common Lisp",
+  "asset": "icon.svg",
+  "sourceUrl": "https://raw.githubusercontent.com/libtmux/assets/ef6c550b8d1120fe6873e610ddbe550f95016a46/assets/lisp/library/logo.svg",
+  "resolvedUrl": "https://raw.githubusercontent.com/libtmux/assets/ef6c550b8d1120fe6873e610ddbe550f95016a46/assets/lisp/library/logo.svg",
+  "sourcePage": "https://github.com/libtmux/assets/tree/ef6c550b8d1120fe6873e610ddbe550f95016a46/assets/lisp",
+  "retrievedAt": "2026-11-07T19:46:31-06:00",
+  "sha256": "6235af4b33af33c0895d103933f0f201c42620c2494f6ec95f356df83d2849ec",
+  "copyright": "The libtmux Common Lisp artwork is maintained by the libtmux project.",
+  "license": {
+    "name": "Project-owner artwork; no new license assigned",
+    "urls": [
+      "https://github.com/libtmux/assets/blob/ef6c550b8d1120fe6873e610ddbe550f95016a46/THIRD_PARTY.md#libtmux-and-tmuxp"
+    ],
+    "notes": "The source kit assigns no new license to the project owner's artwork or trademarks. Used to identify the Common Lisp port; no endorsement by a Common Lisp standards body is implied."
+  },
+  "modifications": "None. The reviewed library SVG bytes are preserved.",
+  "upstreamRevision": "ef6c550b8d1120fe6873e610ddbe550f95016a46"
+}

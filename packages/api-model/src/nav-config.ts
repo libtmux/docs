@@ -783,6 +783,7 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
     snapshots: ['LibTmux.Ref'],
   },
   lisp: {
+    server: ['libtmux:client'],
     session: ['libtmux:session/type'],
     window: ['libtmux:window/type', 'libtmux:window-link'],
     pane: ['libtmux:pane', 'libtmux:clear-history', 'libtmux:copy-mode', 'libtmux:current-path',

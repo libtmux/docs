@@ -2,7 +2,7 @@
 port: lisp
 route: core
 title: "tmux client library for Common Lisp"
-description: "Native Common Lisp tmux client with captured CLOS objects, local queries, explicit operations, and bounded subprocess transport."
+description: "tmux client library for Common Lisp. Control tmux, navigate sessions, windows, and panes, send keys, capture pane contents"
 cards:
   - label: Guides
     href: ../guides/
