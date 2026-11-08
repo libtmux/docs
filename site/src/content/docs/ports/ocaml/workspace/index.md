@@ -1,8 +1,21 @@
 ---
 port: ocaml
+product: workspace
 route: workspace
-title: OCaml workspace manager
+title: tmux workspace manager,
+subtitle: forged in OCaml.
+shortTitle: OCaml-based tmux workspace manager
 description: Validate, preview and apply JSON workspaces through the native OCaml library.
+sidebar:
+  label: Overview
+  order: 0
+cards:
+  - label: Workspace guide
+    href: ./source-guide/
+    body: Validate, plan and apply JSON configuration, then inspect its receipt.
+  - label: API reference
+    href: ./reference/
+    body: Browse pure validation and planning alongside explicit execution.
 ---
 
 Install `libtmux-workspace-cli` from the source checkout to run `tmux-workspace`.

@@ -119,6 +119,8 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
   && pagePath === 'workspace'
   && productIsAvailable
   && Boolean(port && hasPackageInstalls(PORT_BY_SLUG[port], 'workspace'))
+const hasWorkspaceGuide = isWorkspaceOverview && all.some((page) => page.data.port === port
+  && page.data.product === 'workspace' && docsPath(page) === 'workspace/source-guide')
 
 // Each overview shows what its port's own sources can show: workspace files
 // its tests load, or the tools its server advertises. The MCP worked example
@@ -299,7 +301,7 @@ const productIntro = isProductOverview && port && coreHome
   )}
   {!placeholderLocale && <Content />}
   {!placeholderLocale && workspaceExamples && !workspaceExampleLeads && <WorkspaceShowcase showcase={workspaceExamples} />}
-  {!placeholderLocale && isWorkspaceOverview && !workspaceExamples && (
+  {!placeholderLocale && isWorkspaceOverview && !workspaceExamples && !hasWorkspaceGuide && (
     <p class="mt-6 text-sm opacity-75" data-workspace-coming>Tested example workspace files for this port are coming.</p>
   )}
   {!placeholderLocale && mcpTools && <McpShowcase showcase={mcpTools} part="tools" />}
