@@ -2,13 +2,18 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
 import { API_MODELS, API_NAV } from '../src/lib/api-models'
 import { bucketAncestors, referenceBreadcrumbs, type TreeBucket } from '../src/lib/api-tree'
-import { pageBreadcrumbs, sidebarBreadcrumbs, withSidebarBreadcrumbs } from '../src/lib/sidebar'
+import { pageBreadcrumbs, portAreas, sidebarBreadcrumbs, withSidebarBreadcrumbs } from '../src/lib/sidebar'
 import { referenceUrl, PORT_BY_SLUG } from '../src/lib/ports'
 import { tmuxReferenceContext, tmuxSourceModel } from '../src/lib/tmux-reference'
 
 afterEach(() => vi.unstubAllEnvs())
 
 describe('sidebar-derived breadcrumbs', () => {
+  it('offers only the registered Haskell section overview', () => {
+    expect(portAreas('haskell', 'latest').items).toEqual([
+      { type: 'link', label: 'Guides', href: '/haskell/latest/guides/' },
+    ])
+  })
   it('retains Scala category and declaration ancestors with real index targets', async () => {
     const model = API_MODELS.scala
     const symbol = model.symbols.find((entry) => entry.id === 'io.github.libtmux.scaladsl.generated.PaneFields.active')!

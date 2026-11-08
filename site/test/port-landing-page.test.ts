@@ -34,7 +34,7 @@ const REAL = [
 ]
 const stubs = {
   'components/HomeExample.astro': '---\nconst { port, language } = Astro.props\n---\n<div data-home-example={port} data-language={language} />',
-  'components/CoreShowcase.astro': '---\nconst { port, links } = Astro.props\n---\n<div data-core-showcase={port} data-links={links.length} />',
+  'components/CoreShowcase.astro': '---\nconst { port, links } = Astro.props\n---\n<div data-core-showcase={port} data-links={links.length} data-link-targets={JSON.stringify(links)} />',
   'components/widgets/PackageInstall.astro': '---\nconst { ports, packageId = "core" } = Astro.props\n---\n<div data-package-install={ports.join()} data-package-id={packageId} />',
   'components/widgets/McpInstall.astro': '---\nconst { port } = Astro.props\n---\n<div data-mcp-install={port} />',
 }
@@ -375,7 +375,7 @@ describe('the version root of a port', () => {
     vi.stubEnv('LIBTMUX_DOCS_LOCALE', 'en')
     vi.stubEnv('LIBTMUX_DOCS_VERSION', 'latest')
     const page = await loadAstroTemplate('pages/index.astro', {
-      real: ['components/PortLanding.astro', ...REAL],
+      real: ['components/PortLanding.astro', 'components/DocCard.astro', ...REAL],
       stubs: { ...stubs, 'layouts/DocsLayout.astro': '---\n---\n<main><slot /></main>' },
       modules: {
         'astro-expressive-code/components': { Code },
@@ -388,6 +388,15 @@ describe('the version root of a port', () => {
     window.document.body.innerHTML = await renderAstroTemplate(page, { url: `https://libtmux.org/en/${slug}/latest/` })
     return window.document as unknown as Document
   }
+
+  it('keeps Haskell landing links within the registered public documentation', async () => {
+    const document = await renderRoot('haskell')
+    const targets = [...document.querySelectorAll<HTMLAnchorElement>('a[href]')].map((link) => link.getAttribute('href')!)
+    expect(targets.some((href) => /\/haskell\/latest\/guides\/$/.test(href))).toBe(true)
+    expect(targets.filter((href) => /\/haskell\/latest\/(examples|topics|concepts)\//.test(href))).toEqual([])
+    const links = JSON.parse(document.querySelector('[data-core-showcase]')!.getAttribute('data-link-targets')!) as { href: string }[]
+    expect(links.map((link) => link.href)).toEqual(['/haskell/latest/core/', '/haskell/latest/guides/'])
+  })
 
   it('offers the selector instead of one long install list', async () => {
     const document = await renderRoot('go')

@@ -12,7 +12,7 @@ const shell = readFileSync(new URL('../../.github/workflows/deploy-shell.yml', i
 const testWorkflow = readFileSync(new URL('../../.github/workflows/test.yml', import.meta.url), 'utf8')
 const publicationAudit = readFileSync(new URL('../../scripts/test-all.sh', import.meta.url), 'utf8')
 const publishRoot = readFileSync(new URL('../../scripts/publish-root.sh', import.meta.url), 'utf8')
-const sourceGuidePorts = ['ruby', 'lua', 'powershell', 'julia', 'elixir']
+const sourceGuidePorts = ['ruby', 'lua', 'powershell', 'julia', 'elixir', 'haskell']
 
 function sourceCheckoutContract(workflow: string): void {
   for (const port of sourceGuidePorts) {
@@ -410,7 +410,7 @@ describe('port publisher contract', () => {
     for (const port of ['ruby', 'lua']) {
       expect(audit).toContain(`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}: ` + '${{ github.workspace }}/.port-sources/' + port)
     }
-    expect(audit).not.toMatch(/LIBTMUX_DOCS_CHECKOUT_(POWERSHELL|JULIA|ELIXIR):/)
+    expect(audit).not.toMatch(/LIBTMUX_DOCS_CHECKOUT_(POWERSHELL|JULIA|ELIXIR|HASKELL):/)
     expect(testWorkflow).toContain('LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ' + sourceGuidePorts.join(','))
     expect(publicationAudit).toContain('LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS')
     expect(publicationAudit).toContain('--skip-native-model-ports')

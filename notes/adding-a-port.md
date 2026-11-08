@@ -163,6 +163,24 @@ export groups. The stored model retains those groups so sidebar regeneration
 needs no checkout or native toolchain. Additional module and declaration
 forms need native fixtures and qualification before the adapter accepts them.
 
+Haskell's reader guides use the routes in
+[`port-documentation.ts`](../site/src/lib/port-documentation.ts). Its section
+profile currently offers Guides; navigation and landing pages use that same
+profile. After regenerating the API model, refresh the committed guide cache:
+
+```console
+$ node scripts/stage-port-docs.mjs \
+    --port haskell \
+    --from-source \
+    --refresh-cache
+```
+
+The command reads committed guide bytes at the API model's revision. Public
+module links reach the shared reference; source fragments retain their pinned
+GitHub destinations. Add the pinned source checkout to `test.yml` when a port
+gains source-owned guides. Reading a guide checkout does not qualify native
+export freshness; the port's publisher runs its selected native toolchain.
+
 Haskell command usage is read from `src/` and `internal/` at the API model's
 revision by the [source reader](../scripts/lib/tmux-usage-haskell.mjs).
 The pinned WASM grammar is qualified against those inputs, not all GHC2024

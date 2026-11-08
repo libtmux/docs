@@ -9,7 +9,7 @@ import { fromMarkdown } from 'mdast-util-from-markdown'
 import { toMarkdown } from 'mdast-util-to-markdown'
 import { PORTS } from '../site/src/lib/ports.ts'
 import { defaultVersionFor, linkedVersionFor } from '../site/src/lib/versions.ts'
-import { sourceGuidesFor, sourceGuideRedirectsFor, stagedSectionsFor, SOURCE_GUIDE_PORTS } from '../site/src/lib/port-documentation.ts'
+import { sourceGuidesFor, sourceGuideRedirectsFor, stagedSectionsFor, stagedSectionDescription, SOURCE_GUIDE_PORTS } from '../site/src/lib/port-documentation.ts'
 import { SymbolIndex, parameterId } from '../packages/api-model/src/link.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -135,6 +135,16 @@ export function stagedPortGuides(port, artifact) {
   const linkRoutes = Object.fromEntries(Object.entries(routes).map(([sourcePath, guide]) => [sourcePath, [guide.route]]))
   const nativeReferenceFiles = new Set()
   for (const redirect of sourceGuideRedirectsFor(port)) linkRoutes[redirect.sourcePath] = [redirect.target]
+  if (port === 'haskell') {
+    const model = JSON.parse(readFileSync(join(root, 'site/src/data/api/haskell.json'), 'utf8'))
+    if (model.revision !== artifact.source.revision) throw new Error('haskell: guide source differs from the Haskell API model')
+    for (const symbol of model.symbols.filter((entry) => entry.kind === 'module' && entry.apiScope !== 'internal' && (entry.product ?? 'core') === 'core')) {
+      if (symbol.source?.file) {
+        linkRoutes[symbol.source.file] = [`reference/${symbol.slug}`]
+        nativeReferenceFiles.add(symbol.source.file)
+      }
+    }
+  }
   if (port === 'powershell') {
     const model = JSON.parse(readFileSync(join(root, 'site/src/data/api/powershell.json'), 'utf8'))
     const files = new Set(model.nativeProvenance.files.map((file) => file.path))
@@ -215,11 +225,7 @@ export function stagedPortGuides(port, artifact) {
         label: 'Capture pane output', href: '../examples/capture-pane-output/',
         body: 'Send a command, wait for its output, and clean up the private server.',
       })
-      writeIndex(section, section[0].toUpperCase() + section.slice(1),
-        { guides: 'Connect to tmux and work with its sessions, windows, and panes.',
-          examples: 'Run complete programs with their documented setup and cleanup.',
-          topics: 'Understand object ownership, state, and operation behavior.',
-          concepts: 'Understand captured queries, object identities, and operations.' }[section], cards)
+      writeIndex(section, section[0].toUpperCase() + section.slice(1), stagedSectionDescription(port, section), cards)
     }
     if (identity.referenceKind === 'guide' && identity.ecosystemHost) writeIndex('reference', `${identity.name} API reference`,
       `Use the [${identity.ecosystemHost.name} reference](${identity.ecosystemHost.url}) for published package versions.\n\nThe [source at this documentation revision](https://github.com/${source.repo}/tree/${source.ref}/${posix.dirname(source.path)}/src/main) contains the wrapper declarations and their documentation.\n\n${identity.name} and its ${identity.parentLibrary.runtime} core share a release version.`)
