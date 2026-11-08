@@ -8374,13 +8374,6 @@
   },
   {
    "port": "perl",
-   "symbol": "LibTmux",
-   "page": "/perl/latest/guides/getting-started/",
-   "title": "Getting started",
-   "section": "guides"
-  },
-  {
-   "port": "perl",
    "symbol": "LibTmux::Filter",
    "page": "/perl/latest/guides/filtering/",
    "title": "Filtering",
@@ -15071,34 +15064,6 @@
    "text": "Since",
    "page": "/lua/latest/topics/format-token-fields/",
    "line": 33,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "perl",
-   "text": "IO::Async::Loop",
-   "page": "/perl/latest/guides/async/",
-   "line": 14,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "perl",
-   "text": "libtmux.where/v1",
-   "page": "/perl/latest/guides/filtering/",
-   "line": 43,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "perl",
-   "text": "LibTmux-Async",
-   "page": "/perl/latest/guides/getting-started/",
-   "line": 34,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "perl",
-   "text": "LibTmux-Workspace",
-   "page": "/perl/latest/guides/getting-started/",
-   "line": 35,
    "why": "not defined in the stated port"
   },
   {
