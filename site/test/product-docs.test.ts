@@ -613,7 +613,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       expect(picker?.querySelector('.surface-current small')?.textContent, `${page.path} current section`).toBe(sectionLabel)
       const current = picker?.querySelectorAll('[aria-current="location"]')
       expect(current, `${page.path} one current section`).toHaveLength(1)
-      const sectionPath = `${page.port}/${page.version}/${page.product}/${page.section === 'source-guide' ? 'source-guide/' : section === 'home' ? '' : `${section}/`}`
+      const sourceGuideSection = page.section === 'source-guide' && !sectionsFor(page.port, page.product).includes('guides')
+      const sectionPath = `${page.port}/${page.version}/${page.product}/${sourceGuideSection ? 'source-guide/' : section === 'home' ? '' : `${section}/`}`
       expect(current![0].getAttribute('href'), `${page.path} current destination`).toBe(urlFor(sectionPath).pathname)
       expect(resolves(current![0].getAttribute('href')!), `${page.path} current destination exists`).toBe(true)
       // The API reference is the reference sidebar, one navigation for every viewport; the other sections share the section sidebar.
