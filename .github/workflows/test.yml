@@ -133,7 +133,7 @@ jobs:
           # Exact versions only: a loose match would resolve a moving release.
           version-type: strict
           install-hex: true
-          install-rebar: false
+          rebar3-version: '3.28.0'
 
       - name: Stage integrated source guides
         env:

@@ -1,0 +1,2 @@
+-doc "An included public type.".
+-type included_id() :: non_neg_integer().

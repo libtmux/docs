@@ -200,6 +200,32 @@ The current public scalar modules send no commands, so the generated usage
 document has no symbol entries. New public operations need source evidence
 and reader qualification before appearing on tmux command pages.
 
+### Erlang compiler artifact
+
+The Erlang exporter builds a clean source checkout with its selected Rebar3,
+then reads EEP-48 Markdown and abstract code from the compiled application.
+Use the source project's OTP 29 and Rebar3 toolchain on `PATH`. With the
+Erlang source checkout beside this docs worktree, export its core API:
+
+```console
+$ escript packages/api-model/scripts/export-erlang.escript \
+    ../libtmux-erlang \
+    libtmux_erlang \
+    ../libtmux-erlang/_build/docs/api.json
+```
+
+The artifact records the source commit, tracked input hashes and OTP version.
+It retains native module, function, type and callback documentation, typespecs,
+nominal types, supporting non-exported types and exported native records.
+Source locations follow included headers. Opaque declarations expose their
+name and parameters. Hidden modules and members stay out. Dirty sources,
+missing compiler chunks and ambiguous source paths fail the export.
+
+This artifact is preparation for an Erlang model adapter. Erlang has no shared
+site routes or package destinations until that adapter and the port's delivery
+checks are complete. The compiler fixture runs in the outer test loop; it
+requires OTP 29 and Rebar3 on CI and skips locally when that toolchain is absent.
+
 ### Wrapper libraries
 
 Kotlin and Scala share Java's repository and release version. F# shares
