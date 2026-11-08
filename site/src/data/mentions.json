@@ -15018,41 +15018,6 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "haskell",
-   "text": "cabal.project",
-   "page": "/haskell/latest/guides/installation/",
-   "line": 16,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "haskell",
-   "text": "IO",
-   "page": "/haskell/latest/guides/status/",
-   "line": 31,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "haskell",
-   "text": "IO",
-   "page": "/haskell/latest/guides/typed-values/",
-   "line": 25,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "haskell",
-   "text": "Either",
-   "page": "/haskell/latest/guides/typed-values/",
-   "line": 46,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "haskell",
-   "text": "Integer",
-   "page": "/haskell/latest/guides/typed-values/",
-   "line": 47,
-   "why": "not defined in the stated port"
-  },
-  {
    "port": "kotlin",
    "text": "@kotlin.Metadata",
    "page": "/kotlin/latest/guides/coroutines/",
