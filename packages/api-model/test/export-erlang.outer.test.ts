@@ -1,6 +1,6 @@
 import { execFileSync, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, relative } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -27,8 +27,8 @@ function checkout() {
   return { directory, git, revision: git('rev-parse', 'HEAD') }
 }
 
-const exportFrom = (directory: string, output = join(directory, '_build/api.json')) =>
-  spawnSync('escript', [script, directory, 'probe', output], { encoding: 'utf8', env })
+const exportFrom = (directory: string, output = join(directory, '_build/api.json'), environment = env) =>
+  spawnSync('escript', [script, directory, 'probe', output], { encoding: 'utf8', env: environment })
 
 // These cases compile a real OTP project; they belong outside the medium loop.
 describe.skipIf(!available)('Erlang compiler export', { timeout: 30_000 }, () => {
@@ -129,6 +129,117 @@ describe.skipIf(!available)('Erlang compiler export', { timeout: 30_000 }, () =>
         `-module(probe).\n-export_type([outsourced/0]).\n-include("${header}").`))
       git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qam', 'Include external type')
       const result = exportFrom(directory)
+      expect(result.status).not.toBe(0)
+      expect(result.stderr).toContain('public_types.hrl: source path is missing or ambiguous')
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+      rmSync(outside, { recursive: true, force: true })
+    }
+  })
+
+  it('captures compiler macros when identical headers have different source provenance', () => {
+    const { directory, git } = checkout()
+    const outside = mkdtempSync(join(tmpdir(), 'export-erlang-macro-'))
+    try {
+      const header = join(outside, 'public_types.hrl')
+      cpSync(join(directory, 'include/public_types.hrl'), header)
+      const source = join(directory, 'src/probe.erl')
+      writeFileSync(source, readFileSync(source, 'utf8').replace('-include("public_types.hrl").',
+        `-ifdef(USE_EXTERNAL).\n-include("${header}").\n-else.\n-include("public_types.hrl").\n-endif.`))
+      const config = join(directory, 'rebar.config')
+      writeFileSync(config, readFileSync(config, 'utf8').replace('deterministic,',
+        "deterministic, {d, 'USE_EXTERNAL'},"))
+      git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qam', 'Select identical external header')
+      const result = exportFrom(directory)
+      expect(result.status).not.toBe(0)
+      expect(result.stderr).toContain('public_types.hrl: source path is missing or ambiguous')
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+      rmSync(outside, { recursive: true, force: true })
+    }
+  })
+
+  it('rejects an external header that remaps itself to a tracked source', () => {
+    const { directory, git } = checkout()
+    const outside = mkdtempSync(join(tmpdir(), 'export-erlang-remap-'))
+    try {
+      const header = join(outside, 'public_types.hrl')
+      writeFileSync(header, '-file("include/public_types.hrl", 1).\n-type outsourced() :: binary().\n')
+      const source = join(directory, 'src/probe.erl')
+      writeFileSync(source, readFileSync(source, 'utf8').replace('-module(probe).',
+        `-module(probe).\n-export_type([outsourced/0]).\n-include("${header}").`))
+      git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qam', 'Remap external header')
+      const result = exportFrom(directory)
+      expect(result.status).not.toBe(0)
+      expect(result.stderr).toContain('explicit source remapping cannot be verified')
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+      rmSync(outside, { recursive: true, force: true })
+    }
+  })
+
+  it('rejects a tracked source symlink instead of citing its target bytes', () => {
+    const { directory, git } = checkout()
+    const outside = mkdtempSync(join(tmpdir(), 'export-erlang-link-'))
+    try {
+      const header = join(outside, 'public_types.hrl')
+      const tracked = join(directory, 'include/public_types.hrl')
+      cpSync(tracked, header)
+      rmSync(tracked)
+      symlinkSync(header, tracked)
+      git('add', '.')
+      git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'Link external source')
+      const result = exportFrom(directory)
+      expect(result.status).not.toBe(0)
+      expect(result.stderr).toContain('source input must be a regular file')
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+      rmSync(outside, { recursive: true, force: true })
+    }
+  })
+
+  it('binds the primary source to the compiler entry rather than a same-named tracked file', () => {
+    const { directory, git } = checkout()
+    const outside = mkdtempSync(join(tmpdir(), 'export-erlang-entry-'))
+    try {
+      const external = join(outside, 'probe.erl')
+      cpSync(join(directory, 'src/probe.erl'), external)
+      mkdirSync(join(directory, 'unused'))
+      git('mv', 'src/probe.erl', 'unused/probe.erl')
+      symlinkSync(external, join(directory, 'src/probe.erl'))
+      const ignore = join(directory, '.gitignore')
+      writeFileSync(ignore, `${readFileSync(ignore, 'utf8')}\nsrc/probe.erl\n`)
+      git('add', '.')
+      git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'Compile ignored external source')
+      const result = exportFrom(directory)
+      expect(result.status).not.toBe(0)
+      expect(result.stderr).toContain('probe.erl: source path is missing or ambiguous')
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+      rmSync(outside, { recursive: true, force: true })
+    }
+  })
+
+  it('resolves include_lib in the compiler VM instead of the exporter library path', () => {
+    const { directory, git } = checkout()
+    const outside = mkdtempSync(join(tmpdir(), 'export-erlang-library-'))
+    try {
+      const tracked = join(directory, 'vendor/aliaslib')
+      const external = join(outside, 'aliaslib')
+      for (const library of [tracked, external]) {
+        mkdirSync(join(library, 'include'), { recursive: true })
+        mkdirSync(join(library, 'ebin'))
+        writeFileSync(join(library, 'include/public_types.hrl'), '-type outsourced() :: binary().\n')
+        writeFileSync(join(library, 'ebin/aliaslib.app'), '{application, aliaslib, [{vsn, "0.1.0"}, {modules, []}]}.\n')
+      }
+      writeFileSync(join(directory, 'rebar.config.script'),
+        `true = code:add_patha(${JSON.stringify(join(external, 'ebin'))}), CONFIG.\n`)
+      const source = join(directory, 'src/probe.erl')
+      writeFileSync(source, readFileSync(source, 'utf8').replace('-module(probe).',
+        '-module(probe).\n-export_type([outsourced/0]).\n-include_lib("aliaslib/include/public_types.hrl").'))
+      git('add', '.')
+      git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'Select compiler library path')
+      const result = exportFrom(directory, undefined, { ...env, ERL_LIBS: join(directory, 'vendor') })
       expect(result.status).not.toBe(0)
       expect(result.stderr).toContain('public_types.hrl: source path is missing or ambiguous')
     } finally {
