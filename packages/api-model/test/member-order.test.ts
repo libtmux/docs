@@ -113,7 +113,11 @@ d('member order', () => {
         checked++
       }
     }
-    expect(checked, `${port} must exercise at least one real listing or query`).toBeGreaterThan(0)
+    if (port === 'haskell') {
+      // The current public modules contain scalar values, with no entity graph or listing API.
+      expect(groups).toEqual([])
+      expect([...listingIds].filter(Boolean)).toEqual([])
+    } else expect(checked, `${port} must exercise at least one real listing or query`).toBeGreaterThan(0)
   })
 
   it('leads a Lua Server, which has no sessions accessor, with its queries', () => {
@@ -164,7 +168,8 @@ d('member order', () => {
     const parents = symbols.filter((symbol) => memberTier(symbol, signals) === 'parent')
     // F#/PowerShell use .NET handles; Julia's and Elixir's relationships are
     // read from a captured snapshot, not through accessors on an entity.
-    expect(parents.length > 0).toBe(!['fsharp', 'powershell', 'julia', 'elixir'].includes(port))
+    // Haskell currently exposes scalar values without a public entity graph.
+    expect(parents.length > 0).toBe(!['fsharp', 'powershell', 'julia', 'elixir', 'haskell'].includes(port))
     for (const parent of parents) {
       const siblings = symbols.filter((symbol) => symbol.parent === parent.parent).toSorted(compareMembers(signals))
       for (const sibling of siblings.filter((symbol) => memberTier(symbol, signals) !== 'parent')) {
