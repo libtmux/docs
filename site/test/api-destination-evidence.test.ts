@@ -316,6 +316,7 @@ describe('what the verifier reads from a page', () => {
           const url = `https://ocaml.org/manual/5.5/api/Seq.html#${prefix}${name}`
           const html = `<title>OCaml library : Seq</title><h1>Module <a>Seq</a></h1><pre><span id="${prefix}${name}">${keyword} ${keyword === 'type' ? "'a " : ''}${declared}</span>${keyword === 'type' ? ' = unit' : ' : unit'}</pre>`
           const identity = pageIdentity(url, readPage(html))
+          if (!identity) throw new Error(`Missing OCaml page identity for ${prefix}${name}`)
           actual.push([prefix, name, declared, identity.kind, identity.kind === 'other' ? [] : identity.path])
           expected.push([prefix, name, declared, name === declared ? kind : 'other', name === declared ? ['Seq', name] : []])
         }
