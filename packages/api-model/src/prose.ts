@@ -32,6 +32,7 @@ export const PORT_NAME: Record<string, string> = {
   powershell: 'PowerShell',
   julia: 'Julia',
   elixir: 'Elixir',
+  haskell: 'Haskell',
 }
 
 /** Declarations that own a page of members. */

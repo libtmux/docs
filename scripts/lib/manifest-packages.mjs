@@ -14,6 +14,7 @@
  * Nothing here runs a build tool. The files are parsed as text.
  */
 import { execFileSync } from 'node:child_process'
+import { parseTag } from '../../site/src/lib/versions.ts'
 
 /** A read-only view of one repository at one revision. */
 export function repositoryAt(checkout, revision) {
@@ -68,6 +69,18 @@ function newestTag(tags, prefix) {
 }
 
 const READERS = {
+  /** Root and workspace Cabal packages; executable examples are independent consumers. */
+  haskell(repo) {
+    const distributions = repo.files().filter((path) => /^[^/]+\.cabal$/.test(path) || /^packages\/[^/]+\/[^/]+\.cabal$/.test(path)).map((manifest) => {
+      const text = repo.read(manifest)
+      const name = /^name:\s*([A-Za-z0-9-]+)\s*$/m.exec(text)?.[1]
+      const version = /^version:\s*(\S+)\s*$/m.exec(text)?.[1]
+      if (!name || !version || !parseTag(`v${version}`, 'cabal')) throw new Error(`Invalid Cabal package identity in ${manifest}`)
+      return { name, version, manifest }
+    })
+    if (!distributions.length) throw new Error('No Cabal packages in the Haskell repository')
+    return { distributions, units: [] }
+  },
   /** `[project] name` and `version`. */
   py(repo, { repository, manifest = 'pyproject.toml' }) {
     const project = section(repo.read(manifest), 'project')
@@ -225,6 +238,7 @@ const READERS = {
 const READER_FOR = {
   py: 'py', ruby: 'ruby', lua: 'lua', powershell: 'powershell', julia: 'julia', ts: 'ts', rs: 'rs', go: 'go',
   java: 'java', kotlin: 'java', scala: 'java', csharp: 'dotnet', fsharp: 'dotnet', cxx: 'cxx', swift: 'swift', elixir: 'elixir',
+  haskell: 'haskell',
 }
 
 /**

@@ -4,8 +4,44 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import registry from '../src/data/registry.json'
 import { SERVERS } from '../src/lib/install-matrix'
 import { installsFor } from '../src/lib/registry'
-import { PORT_BY_SLUG, PORTS, hasPackageInstalls, installCommand, portDestinations, portSourceUrl, productAvailable, type DocProduct } from '../src/lib/ports'
+import { INVENTORY } from '../src/lib/port-inventory'
+import { PORT_BY_SLUG, PORTS, hasPackageInstalls, installCommand, portDestinations, portSourceUrl, productAvailable, productDescription, productIsConcept, type DocProduct } from '../src/lib/ports'
 import { DESTINATIONS } from './fixtures/port-destinations'
+
+it('keeps explicitly excluded products out of installation and concept navigation', () => {
+  const port = { ...PORT_BY_SLUG.go!, productAvailability: { mcp: 'excluded' as const } }
+  expect(productAvailable(port, 'mcp')).toBe(false)
+  expect(productIsConcept(port, 'mcp')).toBe(false)
+  expect(productDescription(port, 'mcp')).toBe('MCP is excluded from this language port.')
+  expect(productAvailable(port, 'workspace')).toBe(true)
+})
+
+describe('Haskell port metadata', () => {
+  it('offers the actual core source and distinguishes planned workspace from excluded MCP', () => {
+    const haskell = PORT_BY_SLUG.haskell!
+    expect(haskell).toMatchObject({
+      slug: 'haskell', repo: 'libtmux/libtmux-haskell', packageName: 'libtmux-haskell',
+      tagGrammar: 'cabal', renderer: 'astro', source: { path: 'src', ref: 'master' },
+      productAvailability: { workspace: 'unpublished', mcp: 'excluded' },
+    })
+    expect(haskell.registry).toBeUndefined()
+    expect(haskell.ecosystemHost).toBeUndefined()
+    expect(haskell.packages!.map((entry) => entry.id)).toEqual(['core'])
+    expect(productAvailable(haskell, 'workspace')).toBe(false)
+    expect(productAvailable(haskell, 'mcp')).toBe(false)
+    expect(installsFor(haskell)[0]).toMatchObject({ filename: 'cabal.project', lang: 'text' })
+    expect(installsFor(haskell)[0].code).toContain('tag: "master"')
+    expect(installCommand(haskell, { status: 'unpublished', version: null, release: null, tag: null }).code)
+      .toContain('location: https://github.com/libtmux/libtmux-haskell')
+    expect(INVENTORY.haskell.map((entry) => [entry.id, entry.status])).toEqual([
+      ['libtmux-haskell', 'published'], ['repository', 'published'], ['libtmux-haskell-workspace', 'planned'],
+    ])
+    const workspace = INVENTORY.haskell[2]
+    expect(workspace.path).toBeUndefined()
+    expect(workspace.package).toBeUndefined()
+    expect(workspace.api).toBeUndefined()
+  })
+})
 
 describe('Ruby port metadata', () => {
   it('describes the core and companion packages independently', () => {

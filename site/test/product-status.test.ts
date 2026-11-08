@@ -15,6 +15,15 @@ const entry = (overrides: Partial<RegistryEntry>): RegistryEntry => ({ status: '
 const JULIA_FINAL_TAG: RegistryEntry = { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' }
 
 describe('release maturity', () => {
+  it('reads Cabal numeric releases only when that grammar is declared', () => {
+    for (const name of ['v0', 'v0.1', 'v0.1.0.0', '0.1.0.0', 'workspace/v0.1.0.0']) {
+      expect(releaseMaturity(entry({ status: 'unpublished', tag: name }), 'cabal')).toBe('0.x')
+    }
+    expect(releaseMaturity(entry({ version: 'v2' }), 'cabal')).toBe('2.x')
+    expect(() => releaseMaturity(entry({ version: '0.1.0.0' }))).toThrow(/no release stage/)
+    expect(() => releaseMaturity(entry({ version: '0.1.0.0-alpha.1' }), 'cabal')).toThrow(/Cabal/)
+    expect(() => releaseMaturity(entry({ status: 'release', version: '0.1.0.0-alpha.1', release: '0.1.0.0-alpha.1' }), 'cabal')).toThrow(/Cabal/)
+  })
   it.each([
     ['0.0.1-alpha.17', 'alpha'], ['v0.0.1-alpha.10', 'alpha'], ['0.1.0.alpha.2', 'alpha'], ['0.1.0alpha1-1', 'alpha'],
     ['0.1.0-alpha2', 'alpha'], ['0.1.0a22', 'alpha'], ['0.1.0b3', 'beta'], ['1.0.0-beta.2', 'beta'], ['1.0.0-rc.1', 'rc'], ['1.0.0rc1', 'rc'],
@@ -79,19 +88,22 @@ describe('release maturity', () => {
     expect(() => releaseMaturity(entry({ version: name }))).toThrow(`no release stage in "${name}"`)
   })
 
-  const PRERELEASE_TAG: Record<TagGrammar, string> = {
+  const PRERELEASE_TAG: Partial<Record<TagGrammar, string>> = {
     semver: 'v0.1.0-alpha.1', pep440: 'v0.1.0a1', rubygems: 'v0.1.0.alpha.1', luarocks: 'v0.1.0alpha1',
   }
 
   it.each(PORTS)('reads every tag $slug records, final or alpha, as its stage', (port) => {
     const prefix = port.tagPrefix ?? ''
-    const final = `${prefix}v0.1.0`
-    const alpha = `${prefix}${PRERELEASE_TAG[port.tagGrammar]}`
+    const final = `${prefix}${port.tagGrammar === 'cabal' ? 'v0.1.0.0' : 'v0.1.0'}`
     // The resolver stores a tag only when the port's own grammar accepts it.
     expect(releaseTag(final, port), final).not.toBeNull()
-    expect(releaseTag(alpha, port), alpha).not.toBeNull()
-    expect(releaseMaturity(entry({ status: 'unpublished', tag: final })), final).toBe('0.x')
-    expect(releaseMaturity(entry({ status: 'unpublished', tag: alpha })), alpha).toBe('alpha')
+    expect(releaseMaturity(entry({ status: 'unpublished', tag: final }), port.tagGrammar), final).toBe('0.x')
+    const prerelease = PRERELEASE_TAG[port.tagGrammar]
+    if (prerelease) {
+      const alpha = `${prefix}${prerelease}`
+      expect(releaseTag(alpha, port), alpha).not.toBeNull()
+      expect(releaseMaturity(entry({ status: 'unpublished', tag: alpha }), port.tagGrammar), alpha).toBe('alpha')
+    }
   })
 
   it('reads a stage for every package the registry records', () => {
