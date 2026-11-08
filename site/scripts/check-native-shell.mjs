@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { newCheckContext, newCheckPage } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 import { chromium } from 'playwright'
 import { checkNativeFirstPaint, checkNativeHeader } from './check-native-layout.mjs'
@@ -8,7 +9,7 @@ const version = process.argv.find((arg) => arg.startsWith('--version='))?.slice(
 const browser = await chromium.launch({ channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL })
 try {
   for (const javaScriptEnabled of [true, false]) {
-    const context = await browser.newContext({ javaScriptEnabled, reducedMotion: 'reduce', viewport: { width: 390, height: 900 } })
+    const context = await newCheckContext(browser, base, { javaScriptEnabled, reducedMotion: 'reduce', viewport: { width: 390, height: 900 } })
     try {
       const page = await context.newPage()
       const id = 'libtmux._internal.query_list.QueryList'
@@ -24,7 +25,7 @@ try {
       await context.close()
     }
   }
-  const page = await browser.newPage()
+  const page = await newCheckPage(browser, base)
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   const loaded = new Set()
   page.on('response', (response) => {

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 /** Browser coverage for the Ruby and Lua documentation surfaces. */
+import { newCheckContext } from './browser-context.mjs'
 import { chromium } from 'playwright'
 
 const BASE = (process.argv[2] ?? 'http://localhost:8080/en').replace(/\/$/, '')
@@ -33,7 +34,7 @@ const check = (condition, message) => {
 
 for (const scheme of ['light', 'dark']) {
   for (const [viewport, width, height] of VIEWPORTS) {
-    const context = await browser.newContext({
+    const context = await newCheckContext(browser, base, {
       viewport: { width, height },
       colorScheme: scheme,
     })

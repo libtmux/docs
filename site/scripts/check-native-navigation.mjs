@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { newCheckContext } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 import { chromium } from 'playwright'
 
@@ -103,7 +104,7 @@ async function checkMetadata(page) {
 
 try {
   for (const [width, colorScheme, reducedMotion] of [[1027, 'light', 'no-preference'], [390, 'dark', 'reduce']]) {
-    const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme, reducedMotion, permissions: ['clipboard-read', 'clipboard-write'] })
+    const context = await newCheckContext(browser, base, { viewport: { width, height: 900 }, colorScheme, reducedMotion, permissions: ['clipboard-read', 'clipboard-write'] })
     try {
       const page = await context.newPage()
       const errors = [], documents = []
@@ -159,7 +160,7 @@ try {
     } finally { await context.close() }
   }
   for (const width of [1027, 390]) {
-    const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce' })
+    const context = await newCheckContext(browser, base, { viewport: { width, height: 900 }, reducedMotion: 'reduce' })
     try {
       const page = await context.newPage()
       const current = 'internals/api/libtmux._internal.query_list/'
@@ -172,7 +173,7 @@ try {
     } finally { await context.close() }
   }
   for (const javaScriptEnabled of [false, true]) {
-    const context = await browser.newContext({ javaScriptEnabled, viewport: { width: 1027, height: 1450 }, reducedMotion: 'reduce' })
+    const context = await newCheckContext(browser, base, { javaScriptEnabled, viewport: { width: 1027, height: 1450 }, reducedMotion: 'reduce' })
     try {
       const page = await context.newPage()
       await page.goto(root)

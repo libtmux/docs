@@ -1,12 +1,13 @@
+import { newCheckContext } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 
 /** Compact cycling and wide radios share the same saved preference. */
 export async function checkColorScheme(browser, base) {
   for (const blocked of [false, true]) {
-    const context = await browser.newContext({ viewport: { width: 596, height: 777 }, colorScheme: 'light', reducedMotion: 'reduce' })
+    const context = await newCheckContext(browser, base, { viewport: { width: 596, height: 777 }, colorScheme: 'light', reducedMotion: 'reduce' })
     try {
       if (blocked) {
-        await context.route('**/astro/runtime/client/dev-toolbar/entrypoint.js', (route) => route.fulfill({ contentType: 'application/javascript', body: 'export {}' }))
+        await context.route('**/astro/runtime/client/dev-toolbar/entrypoint.js', (route) => new URL(route.request().url()).origin !== new URL(base).origin ? route.fallback() : route.fulfill({ contentType: 'application/javascript', body: 'export {}' }))
         await context.addInitScript(() => Object.defineProperty(window, 'localStorage', {
           get() { throw new DOMException('Storage blocked', 'SecurityError') },
         }))
@@ -58,7 +59,7 @@ export async function checkColorScheme(browser, base) {
       await context.close()
     }
   }
-  const reader = await browser.newContext({ viewport: { width: 1062, height: 789 }, colorScheme: 'light', reducedMotion: 'reduce' })
+  const reader = await newCheckContext(browser, base, { viewport: { width: 1062, height: 789 }, colorScheme: 'light', reducedMotion: 'reduce' })
   try {
     const page = await reader.newPage()
     await page.goto(`${base}/code-tabs-probe/`)
@@ -99,7 +100,7 @@ export async function checkColorScheme(browser, base) {
   } finally {
     await reader.close()
   }
-  const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 596, height: 777 } })
+  const context = await newCheckContext(browser, base, { javaScriptEnabled: false, viewport: { width: 596, height: 777 } })
   try {
     const page = await context.newPage()
     await page.goto(`${base}/`)

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { newCheckContext, newCheckPage } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -309,7 +310,7 @@ async function retryReload(check, page) {
 }
 
 async function checkSignatureLayouts(browser, base) {
-  const page = await browser.newPage({ javaScriptEnabled: false })
+  const page = await newCheckPage(browser, base, { javaScriptEnabled: false })
   try {
     await page.goto(`${base}/api-signature-probe/`, { waitUntil: 'load' })
     const entries = page.locator('[data-signature-port]')
@@ -450,7 +451,7 @@ async function checkSignatureLayouts(browser, base) {
 async function checkKeywordHelp(browser, base) {
   const fullMatrix = apiSignaturesOnly || keywordHelpOnly
   for (const javaScriptEnabled of [false, true]) {
-    const page = await browser.newPage({ javaScriptEnabled })
+    const page = await newCheckPage(browser, base, { javaScriptEnabled })
     const errors = []
     page.on('pageerror', (error) => errors.push(error.message))
     page.setDefaultTimeout(5000)
@@ -542,7 +543,7 @@ async function checkMemberBodies(browser, base) {
 }
 
 async function checkReferenceAndHeroes(browser, base) {
-  const page = await browser.newPage({ reducedMotion: 'reduce' })
+  const page = await newCheckPage(browser, base, { reducedMotion: 'reduce' })
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   try {
     await page.goto(`${base}/api-body-probe/`)
@@ -871,7 +872,7 @@ try {
   } else if (documentationNavigationOnly) {
     await retryReload(() => checkDocumentationNavigation(browser, base, true))
   } else if (apiNavigationOnly) {
-    const page = await browser.newPage({ reducedMotion: 'reduce' })
+    const page = await newCheckPage(browser, base, { reducedMotion: 'reduce' })
     page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     await retryReload(() => checkApiNavigation(page, base))
     await checkApiNavigationFail(browser, base)
@@ -917,15 +918,15 @@ try {
     // Cold API indexes occupy the same development server as the page walk.
     // Finish that initial compilation before starting timed browser navigation.
     await apiExamples
-    const page = await browser.newPage({ reducedMotion: 'reduce' })
+    const page = await newCheckPage(browser, base, { reducedMotion: 'reduce' })
     page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const manifest = await page.request.get(`${base}/page-links.json`)
     assert(manifest.ok(), `Native navigation manifest: HTTP ${manifest.status()}`)
     assert.equal((await manifest.json()).schema, 1)
-    const clipboardPage = await browser.newPage()
+    const clipboardPage = await newCheckPage(browser, base)
     clipboardPage.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const clipboard = schedule(() => checkClipboard(clipboardPage, base).finally(() => clipboardPage.close()))
-    const navigationPage = await browser.newPage({ reducedMotion: 'reduce' })
+    const navigationPage = await newCheckPage(browser, base, { reducedMotion: 'reduce' })
     navigationPage.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const navigation = schedule(() => retryReload(() => checkNavigation(navigationPage, base)).finally(() => navigationPage.close())
       .then(() => retryReload(() => checkMcpInstallRevisit(browser, base))))
@@ -943,7 +944,7 @@ try {
       .then(() => checkStatusBadgesFail(browser, base)))
     const homeLauncher = schedule(() => checkHomeLauncher(browser, base))
     const documentationNavigation = schedule(() => retryReload(() => checkDocumentationNavigation(browser, base)))
-    const apiNavigationPage = await browser.newPage({ reducedMotion: 'reduce' })
+    const apiNavigationPage = await newCheckPage(browser, base, { reducedMotion: 'reduce' })
     apiNavigationPage.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const apiNavigation = schedule(() => retryReload(() => checkApiNavigation(apiNavigationPage, base)).then(() => checkApiNavigationFail(browser, base)).finally(() => apiNavigationPage.close()))
     const apiAnchors = schedule(() => retryReload(() => checkApiAnchorArrival(browser, base)))
@@ -1201,7 +1202,7 @@ try {
       })
       assert.equal(toolbar.background, toolbar.page, `${colorScheme}: toolbar uses the page surface before theme initialization`)
       assert.equal(toolbar.icon, toolbar.text, `${colorScheme}: toolbar icons use the page text color`)
-      const context = await browser.newContext({ javaScriptEnabled: false, colorScheme, viewport: { width: 390, height: 844 } })
+      const context = await newCheckContext(browser, base, { javaScriptEnabled: false, colorScheme, viewport: { width: 390, height: 844 } })
       const noScript = await context.newPage()
       await noScript.goto(`${base}/tmux/concepts/server-session-window-pane/`, { waitUntil: 'load' })
       const checkContrast = async (scheme, selectors = ['h1', '.prose h2', '.prose p']) => {

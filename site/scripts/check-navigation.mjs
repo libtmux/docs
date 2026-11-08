@@ -1,3 +1,5 @@
+import { newCheckContext, newCheckPage } from './browser-context.mjs'
+import { checkBrowserNetwork } from './check-browser-network.mjs'
 import assert from 'node:assert/strict'
 import { PORTS, productAvailable, productStatus } from '../src/lib/ports.ts'
 import registry from '../src/data/registry.json' with { type: 'json' }
@@ -7,36 +9,28 @@ import { checkPickerFilters } from './check-picker-filters.mjs'
 /** The version the dev build mounts a port's prose pages at: its default, as check-dev sets it. */
 const defaultVersion = (port) => JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')[port] ?? 'latest'
 
-/** A legacy guide reaches its article while external README badges remain pending. */
+/** A legacy guide loads with third-party requests blocked by its context. */
 export async function checkGuideRedirect(browser, base) {
-  const page = await browser.newPage({ reducedMotion: 'reduce' })
+  await checkBrowserNetwork(browser)
+  const page = await newCheckPage(browser, base, { reducedMotion: 'reduce' })
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
-  let release
-  let requested = 0
-  const pending = new Promise((resolve) => { release = resolve })
-  await page.route('https://img.shields.io/**', async (route) => {
-    requested += 1
-    await pending
-    await route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>' })
-  })
   try {
-    await page.goto(`${base}/ruby/latest/guides/overview/`, { waitUntil: 'domcontentloaded' })
-    await page.waitForURL(`${base}/ruby/latest/guides/getting-started/`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`${base}/ruby/latest/guides/overview/`, { waitUntil: 'load' })
+    await page.waitForURL(`${base}/ruby/latest/guides/getting-started/`, { waitUntil: 'load' })
+    await page.locator('html[data-page-readiness="ready"]').waitFor({ state: 'attached' })
     assert.equal((await page.locator('main h1').textContent()).trim(), 'Getting started')
+    assert(await page.locator('main h1').isVisible(), 'The loaded guide is readable')
     assert.equal(await page.title(), 'Getting started | libtmux-ruby')
-    assert(requested > 0, 'The real guide requested external badges')
-    assert.equal(await page.evaluate(() => document.readyState), 'interactive', 'The destination document is parsed before external badges complete')
-    console.log('Guide redirect: the legacy Ruby URL reaches its article with external badges still pending')
+    assert.equal(await page.evaluate(() => document.readyState), 'complete')
+    console.log('Guide redirect: the legacy Ruby URL loads its article without third-party requests')
   } finally {
-    release()
-    await page.unrouteAll({ behavior: 'wait' })
     await page.close()
   }
 }
 
 /** Optional scripts injected at the end of the body cannot gate navigation. */
 export async function checkNavigationBeforeAnalytics(browser, base) {
-  const page = await browser.newPage({ viewport: { width: 390, height: 900 }, reducedMotion: 'reduce' })
+  const page = await newCheckPage(browser, base, { viewport: { width: 390, height: 900 }, reducedMotion: 'reduce' })
   page.setDefaultTimeout(5000)
   await page.clock.install({ time: 0 })
   await page.clock.pauseAt(1000)
@@ -205,7 +199,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
   await checkPickerFilters(browser, base, complete)
   await checkNavigationBeforeAnalytics(browser, base)
   const ports = complete ? PORTS : PORTS.filter((port) => ['fsharp', 'ruby'].includes(port.slug))
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' })
+  const page = await newCheckPage(browser, base, { viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' })
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   await observeInitialPageLoad(page)
   const desktopPicker = (reader) => reader.locator('[data-documentation-context] [data-surface-picker]')
@@ -333,7 +327,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
   if (!complete) return
   for (const javaScriptEnabled of [true, false]) {
     for (const colorScheme of ['light', 'dark']) {
-      const context = await browser.newContext({ javaScriptEnabled, colorScheme, reducedMotion: 'reduce' })
+      const context = await newCheckContext(browser, base, { javaScriptEnabled, colorScheme, reducedMotion: 'reduce' })
       const reader = await context.newPage()
       reader.setDefaultTimeout(process.env.CI ? 20000 : 10000)
       try {
@@ -566,7 +560,7 @@ export async function checkApiNavigation(page, base, { sabotage } = {}) {
     const nav = document.querySelector('.api-nav')
     sessionStorage.removeItem(`libtmux:api-tree:${nav.dataset.base}`)
   })
-  await page.route('**/tree.json', (route) => route.fulfill({ status: 503, body: 'Unavailable' }))
+  await page.route('**/tree.json', (route) => new URL(route.request().url()).origin !== new URL(base).origin ? route.fallback() : route.fulfill({ status: 503, body: 'Unavailable' }))
   await page.reload({ waitUntil: 'commit' })
   await page.waitForFunction(() => window.__docsPageLoaded)
   await page.locator('[data-api-nav-toggle]').click()
@@ -630,7 +624,7 @@ export async function checkApiNavigation(page, base, { sabotage } = {}) {
   await page.keyboard.press('Escape')
   assert.equal(await page.locator('.api-nav').evaluate((nav) => nav.inert), true, 'The CLI drawer dismisses with Escape')
   await page.setViewportSize({ width: 1440, height: 900 })
-  await page.route('**/tree.json', (route) => route.fulfill({ status: 503, body: 'Unavailable' }))
+  await page.route('**/tree.json', (route) => new URL(route.request().url()).origin !== new URL(base).origin ? route.fallback() : route.fulfill({ status: 503, body: 'Unavailable' }))
   await page.goto(`${base}/lua/latest/reference/`, { waitUntil: 'commit' })
   await page.waitForFunction(() => window.__docsPageLoaded)
   assert.equal(await page.locator('.api-nav__tree [role="treeitem"][tabindex="0"]').count(), 1, 'The server-rendered index remains keyboard reachable when its inventory cannot load')
@@ -641,7 +635,7 @@ export async function checkApiNavigation(page, base, { sabotage } = {}) {
 /** Public symbol fragments and earlier declaration links reach the same bar. */
 export async function checkApiAnchorArrival(browser, base) {
   const paths = new Set([`${base}/py/latest/reference/libtmux-_internal-query_list-querylist/`])
-  const catalog = await browser.newPage()
+  const catalog = await newCheckPage(browser, base)
   try {
     for (const port of PORTS) {
       await catalog.goto(`${base}/${port.slug}/latest/reference/`, { waitUntil: 'load' })
@@ -656,7 +650,7 @@ export async function checkApiAnchorArrival(browser, base) {
     [390, 'light', true], [1280, 'dark', true],
     [390, 'dark', false], [1280, 'light', false],
   ]) {
-    const context = await browser.newContext({ viewport: { width, height: 1000 }, colorScheme,
+    const context = await newCheckContext(browser, base, { viewport: { width, height: 1000 }, colorScheme,
       javaScriptEnabled, reducedMotion: 'reduce' })
     const page = await context.newPage()
     page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
@@ -714,7 +708,7 @@ export async function checkPermalinkReveal(browser, base, { only, sabotage } = {
       ['a parameter line', 'ul.api-parameters > li[id] > p > a.api-heading-link']]],
   ]
   const open = async (options) => {
-    const context = await browser.newContext({ reducedMotion: 'reduce', ...options })
+    const context = await newCheckContext(browser, base, { reducedMotion: 'reduce', ...options })
     if (sabotage?.css) await context.addInitScript((css) => document.addEventListener('DOMContentLoaded', () => {
       document.head.append(Object.assign(document.createElement('style'), { textContent: css }))
     }), sabotage.css)
@@ -947,7 +941,7 @@ export async function checkPermalinkRevealFail(browser, base) {
 
 /** The control for `checkApiNavigation`: a drawer whose close button does nothing must fail it. */
 export async function checkApiNavigationFail(browser, base) {
-  const page = await browser.newPage({ reducedMotion: 'reduce' })
+  const page = await newCheckPage(browser, base, { reducedMotion: 'reduce' })
   try {
     await assert.rejects(() => checkApiNavigation(page, base, { sabotage: () => {
       document.addEventListener('click', (event) => {
@@ -963,7 +957,7 @@ export async function checkApiNavigationFail(browser, base) {
  * style to the page, for the control below.
  */
 export async function checkReferenceSidebarBounds(browser, base, { sabotage } = {}) {
-  const page = await browser.newPage({ viewport: { width: 1233, height: 1220 }, reducedMotion: 'reduce', colorScheme: 'dark' })
+  const page = await newCheckPage(browser, base, { viewport: { width: 1233, height: 1220 }, reducedMotion: 'reduce', colorScheme: 'dark' })
   try {
     await page.goto(`${base}/tmux/latest/manual/#options`)
     await page.locator('html[data-page-readiness="ready"]').waitFor()
@@ -1024,7 +1018,7 @@ export async function checkApiStickyHeadings(browser, base, { only, sabotage } =
   const timeout = process.env.CI ? 20000 : 10000
   const wants = (scenario) => !only || only.includes(scenario)
   const open = async (viewport) => {
-    const context = await browser.newContext({ viewport })
+    const context = await newCheckContext(browser, base, { viewport })
     if (sabotage?.script) await context.addInitScript(sabotage.script)
     const page = await context.newPage()
     page.setDefaultTimeout(timeout)
@@ -1380,7 +1374,7 @@ export async function checkNavigation(page, base) {
   await page.goto(`${legacy}?from=legacy#where-this-comes-from`, { waitUntil: 'load' })
   await page.waitForURL(`${current}?from=legacy#where-this-comes-from`)
   assert.equal(await page.locator('#where-this-comes-from').count(), 1, 'Legacy section still exists')
-  const fallback = await page.context().browser().newContext({ javaScriptEnabled: false })
+  const fallback = await newCheckContext(page.context().browser(), base, { javaScriptEnabled: false })
   try {
     const reader = await fallback.newPage()
     await reader.goto(legacy, { waitUntil: 'load' })
@@ -1412,7 +1406,7 @@ export async function checkApiExampleOwnership(page, base, path = 'ts/latest/ref
  * attributes that snippet set on <html>, so the widget has to restore them.
  */
 export async function checkMcpInstallRevisit(browser, base) {
-  const page = await browser.newPage({ reducedMotion: 'reduce' })
+  const page = await newCheckPage(browser, base, { reducedMotion: 'reduce' })
   try {
     const shown = () => page.evaluate(() => [...document.querySelectorAll('.lm-mcp-install__panel')]
       .filter((panel) => panel.checkVisibility()).length)

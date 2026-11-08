@@ -1,3 +1,4 @@
+import { newCheckContext } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 import { PNG } from 'pngjs'
 
@@ -56,7 +57,7 @@ export function readPlate(buffer) {
 
 async function readIcon(browser, url, icon, { device, site, css, replacement, forced = false, read = readMark }) {
   // A null site is a visit without JavaScript: no saved choice, so the page follows the device.
-  const context = await browser.newContext({ colorScheme: device, forcedColors: forced ? 'active' : 'none', reducedMotion: 'reduce', javaScriptEnabled: site !== null, viewport: { width: 1280, height: 777 } })
+  const context = await newCheckContext(browser, url, { colorScheme: device, forcedColors: forced ? 'active' : 'none', reducedMotion: 'reduce', javaScriptEnabled: site !== null, viewport: { width: 1280, height: 777 } })
   try {
     if (site !== null) await context.addInitScript((choice) => localStorage.setItem('color-scheme', choice), site)
     // Added before the page parses, so an image is first drawn with it.
@@ -66,7 +67,7 @@ async function readIcon(browser, url, icon, { device, site, css, replacement, fo
       else new MutationObserver((_, observer) => { if (document.documentElement) { observer.disconnect(); add() } }).observe(document, { childList: true })
     }, css)
     const page = await context.newPage()
-    if (replacement) await page.route('**/brand/languages/rs/icon.svg', (route) => route.fulfill({ contentType: 'image/svg+xml', body: replacement }))
+    if (replacement) await page.route('**/brand/languages/rs/icon.svg', (route) => new URL(route.request().url()).origin !== new URL(url).origin ? route.fallback() : route.fulfill({ contentType: 'image/svg+xml', body: replacement }))
     await page.goto(url)
     const image = page.locator(icon)
     await image.waitFor({ state: 'visible' })

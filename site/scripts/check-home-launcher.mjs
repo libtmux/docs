@@ -1,3 +1,4 @@
+import { newCheckContext } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 import { PORTS } from '../src/lib/ports.ts'
 import HOME_PROOF from '../test/fixtures/home-examples.json' with { type: 'json' }
@@ -119,7 +120,7 @@ async function checkSolutionHome(page, solution, port) {
 
 /** Exercise the real homepage, including the prompt controlled by its picker. */
 export async function checkHomeLauncher(browser, base) {
-  const context = await browser.newContext({ reducedMotion: 'reduce' })
+  const context = await newCheckContext(browser, base, { reducedMotion: 'reduce' })
   const page = await context.newPage()
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   const errors = []
@@ -375,10 +376,10 @@ export async function checkHomeLauncher(browser, base) {
   } finally {
     await context.close()
   }
-  const blockedStorage = await browser.newContext()
+  const blockedStorage = await newCheckContext(browser, base)
   try {
     // Astro's development toolbar reads storage unguarded; it is absent from published pages.
-    await blockedStorage.route('**/astro/runtime/client/dev-toolbar/entrypoint.js', (route) => route.fulfill({ contentType: 'application/javascript', body: 'export {}' }))
+    await blockedStorage.route('**/astro/runtime/client/dev-toolbar/entrypoint.js', (route) => new URL(route.request().url()).origin !== new URL(base).origin ? route.fallback() : route.fulfill({ contentType: 'application/javascript', body: 'export {}' }))
     await blockedStorage.addInitScript(() => Object.defineProperty(window, 'localStorage', {
       get() { throw new DOMException('Storage blocked', 'SecurityError') },
     }))
@@ -399,7 +400,7 @@ export async function checkHomeLauncher(browser, base) {
   } finally {
     await blockedStorage.close()
   }
-  const noScript = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 777 } })
+  const noScript = await newCheckContext(browser, base, { javaScriptEnabled: false, viewport: { width: 390, height: 777 } })
   try {
     const page = await noScript.newPage()
     await page.goto(`${base}/`)

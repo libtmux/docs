@@ -1,3 +1,4 @@
+import { newCheckPage } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 
 /** Controls beside a signature may sit this far from the centre of its first line. */
@@ -198,7 +199,7 @@ const DECLARATION_SAMPLES = [
  * names, or the check would pass without measuring anything.
  */
 export async function checkDeclarationControlAlignment(browser, base, widths = [1440, 768, 500, 390]) {
-  const page = await browser.newPage({ javaScriptEnabled: false })
+  const page = await newCheckPage(browser, base, { javaScriptEnabled: false })
   const beside = new Map(widths.map((width) => [width, 0]))
   const measured = []
   try {
@@ -363,7 +364,8 @@ export async function checkNativeFirstPaint(page, url) {
   const delayedScript = new Promise((resolve) => { release = resolve })
   const pendingRoutes = []
   const routeScript = (route) => {
-    const pending = delayedScript.then(() => route.continue())
+    if (new URL(route.request().url()).origin !== new URL(url).origin) return route.fallback()
+    const pending = delayedScript.then(() => route.fallback())
     pendingRoutes.push(pending)
     return pending
   }
@@ -480,7 +482,7 @@ const MEMBER_BODY_PAGES = [
 /** A body's padding alone sets its inset: top and bottom match each other and the padding. */
 export async function checkMemberBodyInsets(browser, base) {
   const tolerance = 1
-  const page = await browser.newPage({ reducedMotion: 'reduce' })
+  const page = await newCheckPage(browser, base, { reducedMotion: 'reduce' })
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   const failures = []
   let measured = 0

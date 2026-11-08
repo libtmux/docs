@@ -1,3 +1,4 @@
+import { newCheckContext, newCheckPage } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 import pixelmatch from 'pixelmatch'
 import { PNG } from 'pngjs'
@@ -56,7 +57,7 @@ async function observeAppearance(context) {
 /** Optional policy and beacon requests cannot hold browser lifecycle events. */
 export async function checkWebAnalytics(browser, base) {
   for (const kind of ['beacon', 'policy', 'excluded']) {
-    const context = await browser.newContext({ viewport: { width: 390, height: 900 } })
+    const context = await newCheckContext(browser, base, { viewport: { width: 390, height: 900 } })
     await observeAppearance(context)
     const page = await context.newPage()
     const errors = []
@@ -65,6 +66,7 @@ export async function checkWebAnalytics(browser, base) {
     const held = new Promise((resolve) => { release = resolve })
     try {
       await page.route('**/_shell/web-analytics.json', async (route) => {
+        if (new URL(route.request().url()).origin !== new URL(base).origin) return route.fallback()
         if (kind === 'policy') {
           requested = true
           await held
@@ -123,13 +125,14 @@ export async function checkWebAnalytics(browser, base) {
 /** Reproduce a late beacon arriving between an Astro swap and script execution. */
 export async function checkWebAnalyticsTransitions(browser, base) {
   for (const markHandled of [true, false]) {
-    const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 390, height: 900 } })
+    const context = await newCheckContext(browser, base, { reducedMotion: 'reduce', viewport: { width: 390, height: 900 } })
     const page = await context.newPage()
     page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     let release, requested = false
     const held = new Promise((resolve) => { release = resolve })
     try {
       await page.route('**/_shell/web-analytics.json', async (route) => {
+        if (new URL(route.request().url()).origin !== new URL(base).origin) return route.fallback()
         const response = await route.fetch()
         await route.fulfill({ response, headers: { ...response.headers(), 'x-libtmux-analytics': 'allow' } })
       })
@@ -186,7 +189,7 @@ export async function checkRequiredAppearance(browser, base) {
     ['module', '/java/latest/reference/io-github-libtmux-buffers-buffers-delete/', 1280],
     ['effect', '/prompts/?port=ts', 390],
   ]) {
-    const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce' })
+    const context = await newCheckContext(browser, base, { viewport: { width, height: 900 }, reducedMotion: 'reduce' })
     await observeAppearance(context)
     const page = await context.newPage()
     page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
@@ -214,6 +217,7 @@ export async function checkRequiredAppearance(browser, base) {
           : request.url() === module
       const incoming = page.waitForRequest(required)
       await page.route('**/*', async (route) => {
+        if (new URL(route.request().url()).origin !== new URL(base).origin) return route.fallback()
         if (required(route.request())) { requested = true; await hold }
         if (kind === 'effect' && required(route.request())) {
           // Exercise insertion even when a new preview's actual manifest has
@@ -225,7 +229,7 @@ export async function checkRequiredAppearance(browser, base) {
           await route.fulfill({ json: { schema: 1, ports: { py: entries, ts: entries } } })
           return
         }
-        await route.continue()
+        await route.fallback()
       })
       await page.goto(`${base}${path}`, { waitUntil: 'commit' })
       await incoming
@@ -273,11 +277,11 @@ export async function checkRequiredAppearance(browser, base) {
     } finally { release(); await context.close() }
   }
 
-  const context = await browser.newContext({ reducedMotion: 'reduce' })
+  const context = await newCheckContext(browser, base, { reducedMotion: 'reduce' })
   const page = await context.newPage()
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   try {
-    await page.route('**/*', (route) => route.request().resourceType() === 'font' ? route.abort() : route.continue())
+    await page.route('**/*', (route) => route.request().resourceType() === 'font' ? route.abort() : route.fallback())
     await page.goto(`${base}/`, { waitUntil: 'commit' })
     await page.getByRole('alert').waitFor({ state: 'visible' })
     assert.equal(await page.locator('html').getAttribute('data-page-readiness'), 'failed')
@@ -288,7 +292,7 @@ export async function checkRequiredAppearance(browser, base) {
     await page.locator('html[data-page-readiness="ready"]').waitFor({ state: 'attached' })
     assert(await page.locator('main h1').isVisible(), 'Reload recovers after the required resource becomes available')
   } finally { await context.close() }
-  const legacy = await browser.newPage()
+  const legacy = await newCheckPage(browser, base)
   try {
     const probe = `${base}/legacy-shell-probe/`
     await legacy.route(probe, (route) => route.fulfill({ contentType: 'text/html', body:
@@ -461,7 +465,7 @@ async function addBadgeLinkFixtures(page) {
  * name's text, and leads it by about a quarter em.
  */
 export async function checkKindBadgeLinks(browser, base, { sample = false, entries = BADGE_LINKS } = {}) {
-  const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1600, height: 1000 } })
+  const context = await newCheckContext(browser, base, { reducedMotion: 'reduce', viewport: { width: 1600, height: 1000 } })
   const page = await context.newPage()
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   const failures = []
@@ -564,7 +568,7 @@ function dottedDecorations() {
  * line; only inline text runs carry the dotted underline.
  */
 export async function checkBlockLinksUndecorated(browser, base, { sample = false } = {}) {
-  const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1440, height: 1000 } })
+  const context = await newCheckContext(browser, base, { reducedMotion: 'reduce', viewport: { width: 1440, height: 1000 } })
   const page = await context.newPage()
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   const failures = []
@@ -676,7 +680,7 @@ async function functionLinkMarked(page) {
  * taken away, and a page that never had the section.
  */
 export async function checkTmuxReferencePreviewsFail(browser, base) {
-  const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1440, height: 1000 } })
+  const context = await newCheckContext(browser, base, { reducedMotion: 'reduce', viewport: { width: 1440, height: 1000 } })
   const page = await context.newPage()
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   try {
@@ -700,7 +704,7 @@ const TMUX_FUNCTION_LINK = 'section.api-tmux-section:has(> #api-tmux-command) .t
 const TMUX_METHOD_PAGE = '/cxx/latest/reference/libtmux-server-panes/'
 
 export async function checkTmuxReferencePreviews(browser, base, { served: build } = {}) {
-  const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1440, height: 1000 } })
+  const context = await newCheckContext(browser, base, { reducedMotion: 'reduce', viewport: { width: 1440, height: 1000 } })
   const page = await context.newPage()
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   const opened = () => page.evaluate(() => document.getElementById('reference-link-preview')?.matches(':popover-open') ?? false)

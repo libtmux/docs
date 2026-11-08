@@ -1,3 +1,4 @@
+import { newCheckContext } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 
 /**
@@ -252,7 +253,7 @@ export async function checkHeaderMenuSections(browser, base, options = {}) {
     kinds = KINDS, behavior = true, sabotage } = options
   let menus = 0
   for (const scheme of schemes) {
-    const context = await browser.newContext({ colorScheme: scheme, reducedMotion: 'reduce' })
+    const context = await newCheckContext(browser, base, { colorScheme: scheme, reducedMotion: 'reduce' })
     const page = await context.newPage()
     page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     // The first load of each port compiles its page in the development server.

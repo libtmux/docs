@@ -1,10 +1,11 @@
+import { newCheckContext } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 
 /** Exercise native disclosures and fragment navigation on a short API page. */
 export async function checkReferencePreferences(browser, base) {
   const path = '/java/latest/reference/io-github-libtmux-buffers-buffers-delete/'
   const key = 'libtmux-docs.api-source-details'
-  const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 784, height: 760 } })
+  const context = await newCheckContext(browser, base, { reducedMotion: 'reduce', viewport: { width: 784, height: 760 } })
   await context.addInitScript(() => {
     window.__sourceFrames = []
     const seen = new WeakSet()
@@ -82,7 +83,7 @@ export async function checkReferencePreferences(browser, base) {
   }
 
   for (const javaScriptEnabled of [false, true]) {
-    const fallback = await browser.newContext({ javaScriptEnabled, reducedMotion: 'reduce' })
+    const fallback = await newCheckContext(browser, base, { javaScriptEnabled, reducedMotion: 'reduce' })
     if (javaScriptEnabled) await fallback.addInitScript(() => {
       Object.defineProperty(window, 'localStorage', { get() { throw new Error('Storage blocked') } })
     })
@@ -208,7 +209,7 @@ export async function checkHeaderLinks(page, path, width, scripted) {
  */
 export async function checkHeaderLinksFail(browser, base) {
   const run = async ({ path = '/rs/latest/', width = 1440, css, script }) => {
-    const context = await browser.newContext({ javaScriptEnabled: true, reducedMotion: 'reduce' })
+    const context = await newCheckContext(browser, base, { javaScriptEnabled: true, reducedMotion: 'reduce' })
     const page = await context.newPage()
     page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     try {
@@ -277,7 +278,7 @@ export async function checkHeaderLinksRender(browser, base, { path = '/rs/latest
   if ((script || css) && javaScript.includes(false)) throw new Error('checkHeaderLinksRender: script and css apply only where JavaScript is on')
   for (const colorScheme of schemes) for (const width of widths) for (const javaScriptEnabled of javaScript) {
     const where = `${path} at ${width}px, ${colorScheme}, ${javaScriptEnabled ? 'with' : 'without'} JavaScript`
-    const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme, javaScriptEnabled, reducedMotion: 'reduce' })
+    const context = await newCheckContext(browser, base, { viewport: { width, height: 900 }, colorScheme, javaScriptEnabled, reducedMotion: 'reduce' })
     if (javaScriptEnabled) {
       await context.addInitScript(() => {
         window.__headerShift = 0
@@ -405,7 +406,7 @@ export async function checkHeaderLinksRenderFail(browser, base) {
 /** The global header has no repeated destination strip, including without JS. */
 export async function checkGlobalHeader(browser, base) {
   for (const javaScriptEnabled of [false, true]) {
-    const context = await browser.newContext({ javaScriptEnabled, reducedMotion: 'reduce' })
+    const context = await newCheckContext(browser, base, { javaScriptEnabled, reducedMotion: 'reduce' })
     const page = await context.newPage()
     const headerFrames = new Map()
     try {
@@ -464,7 +465,7 @@ export async function checkScrollbarStability(browser, base) {
   })
   try {
     for (const width of [280, 628, 1280]) for (const colorScheme of ['light', 'dark']) for (const javaScriptEnabled of [true, false]) {
-      const context = await classic.newContext({ viewport: { width, height: 900 }, colorScheme, javaScriptEnabled, reducedMotion: 'reduce' })
+      const context = await newCheckContext(classic, base, { viewport: { width, height: 900 }, colorScheme, javaScriptEnabled, reducedMotion: 'reduce' })
       const page = await context.newPage()
       const frame = () => page.evaluate(() => {
         const rect = (selector) => {
