@@ -275,6 +275,12 @@ export function supportsElixirSignatures(symbol: ApiSymbol, language?: string): 
     symbol.signatures.length > 0 && symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
 }
 
+/** Erlang declarations already carry compiler formatting and resolved reference ranges. */
+export function supportsErlangSignatures(symbol: ApiSymbol, language?: string): boolean {
+  return language === 'erlang' && ['function', 'typealias', 'struct'].includes(symbol.kind) &&
+    symbol.signatures.length > 0 && symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
+}
+
 export function supportsLuaSignatures(symbol: ApiSymbol, language?: string): boolean {
   return language === 'lua' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length > 0 &&
     symbol.signatures.every((signature) => Boolean(signature.raw?.trim()))
@@ -329,6 +335,13 @@ export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string):
       if (!signature.raw) throw new Error(`Missing native Perl declaration: ${symbol.id}`)
       return [signature, { text: signature.raw, limit: CODE_COLUMNS.api,
         failures: await codeWidthFailures(signature.raw, 'api'), syntax: signature.nativeSyntax }] as const
+    })))
+  }
+  if (supportsErlangSignatures(symbol, language)) {
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) => {
+      const text = signature.raw!
+      return [signature, { text, limit: CODE_COLUMNS.api,
+        failures: await codeWidthFailures(text, 'api') }] as const
     })))
   }
   if (language === 'rs' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length && !supportsRustSignatures(symbol, language)) {

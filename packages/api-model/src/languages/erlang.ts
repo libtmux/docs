@@ -1,8 +1,14 @@
 import { parseMarkdownDocFull } from '../doc/markdown.ts'
-import type { ApiModel, ApiSymbol, DocBlock, Modifier, Signature } from '../model.ts'
+import type { ApiModel, ApiSymbol, DocBlock, Modifier, Signature, TypeReference } from '../model.ts'
 
 interface Source { file: string; line: number }
-interface Spec { parameters: { name: string; type: string }[]; returns: string; text: string }
+interface Spec {
+  parameters: { name: string; type: string; references: TypeReference[] }[]
+  returns: string
+  returns_references: TypeReference[]
+  text: string
+  references: TypeReference[]
+}
 interface Member {
   name: string
   display_name: string
@@ -15,6 +21,7 @@ interface Member {
   exported: boolean
   signatures: string[]
   declarations: string[]
+  declaration_references: TypeReference[][]
   specs: Spec[]
   source: Source
 }
@@ -24,7 +31,7 @@ interface Module {
   doc: string | null
   source: Source
   members: Member[]
-  records: { name: string; display_name: string; declaration: string; source: Source }[]
+  records: { name: string; display_name: string; declaration: string; references: TypeReference[]; source: Source }[]
 }
 interface Artifact {
   schema: number
@@ -37,7 +44,7 @@ interface Artifact {
 
 function assertArtifact(input: unknown, expectedRevision?: string): Artifact {
   const artifact = input as Artifact
-  if (artifact?.schema !== 1 || artifact.port !== 'erlang' || artifact.exporter?.version !== 2 ||
+  if (artifact?.schema !== 1 || artifact.port !== 'erlang' || artifact.exporter?.version !== 3 ||
     artifact.exporter.columns !== 60 || !/^[a-f0-9]{64}$/.test(artifact.exporter.source_sha256 ?? '') ||
     !Array.isArray(artifact.modules) || !artifact.modules.length ||
     !/^[a-f0-9]{40}$/.test(artifact.source?.revision ?? '') ||
@@ -82,6 +89,12 @@ function assertArtifact(input: unknown, expectedRevision?: string): Artifact {
       if (member.visibility === 'opaque' && member.declarations.some(opaqueBody)) {
         throw new Error('Erlang artifact exposes an opaque type body')
       }
+      if (!Array.isArray(member.declaration_references) ||
+        member.declaration_references.length !== member.declarations.length ||
+        member.visibility === 'opaque' && member.declaration_references.some((refs) => refs.length)) {
+        throw new Error('Erlang artifact lost declaration references or exposes an opaque body')
+      }
+      member.declarations.forEach((text, index) => assertReferences(text, member.declaration_references[index]))
       if (member.kind !== 'type' && (!Array.isArray(member.signatures) ||
         !member.signatures.length || member.signatures.some((head) => typeof head !== 'string' || !head.trim()) ||
         !member.specs.length || member.specs.some((spec) => !spec ||
@@ -93,14 +106,49 @@ function assertArtifact(input: unknown, expectedRevision?: string): Artifact {
           typeof spec.text !== 'string' || !spec.text.trim()))) {
         throw new Error('Erlang artifact lost its native callable signature')
       }
+      for (const spec of member.specs) {
+        assertReferences(spec.text, spec.references)
+        assertReferences(spec.returns, spec.returns_references)
+        for (const parameter of spec.parameters) assertReferences(parameter.type, parameter.references)
+      }
     }
     for (const record of module.records) {
       if (!record.display_name || !record.declaration) throw new Error('Erlang artifact lost a native record declaration')
       unique(recordId(module, record.display_name))
       location(record.source)
+      assertReferences(record.declaration, record.references)
     }
   }
   return artifact
+}
+
+function assertReferences(text: string, references: TypeReference[] | undefined): void {
+  if (!Array.isArray(references)) throw new Error('Erlang artifact lost its compiler references')
+  let offset = 0
+  const boundary = (at: number) => !(at > 0 && at < text.length &&
+    /[\uD800-\uDBFF]/.test(text[at - 1]!) && /[\uDC00-\uDFFF]/.test(text[at]!))
+  for (const reference of references) {
+    if (!reference || !Number.isInteger(reference.start) || !Number.isInteger(reference.end) ||
+      reference.start < offset || reference.end <= reference.start || reference.end > text.length ||
+      !boundary(reference.start) || !boundary(reference.end) ||
+      typeof reference.target !== 'string' || !/^(?:t:.+\/\d+|#.+\{\})$/.test(reference.target)) {
+      throw new Error('Erlang artifact has invalid compiler reference ranges')
+    }
+    if (reference.external) {
+      let url: URL
+      try { url = new URL(reference.external.href) }
+      catch { throw new Error('Erlang artifact has an invalid OTP reference destination') }
+      const target = /^t:([a-z][A-Za-z0-9_]*):(.+)\/(\d+)$/.exec(reference.target)
+      if (!target || reference.external.project !== 'Erlang/OTP' ||
+        url.origin !== 'https://www.erlang.org' || url.username || url.password || url.search ||
+        !/^\/doc\/apps\/[a-z][a-z0-9_]*\/[a-z][A-Za-z0-9_]*\.html$/.test(url.pathname) ||
+        !url.pathname.endsWith(`/${target[1]}.html`) ||
+        decodeURIComponent(url.hash.slice(1)) !== `t:${target[2]}/${target[3]}`) {
+        throw new Error('Erlang artifact has an invalid OTP reference destination')
+      }
+    }
+    offset = reference.end
+  }
 }
 
 /** A body delimiter inside a compiler-quoted atom is part of its name. */
@@ -133,7 +181,8 @@ export function extractErlang(input: unknown, expectedRevision?: string): ApiMod
     ...location, repo: artifact.source.repository, revision: artifact.source.revision,
     extractedRevision: artifact.source.revision,
   })
-  const common = { package: artifact.package.name, product: 'core' as const }
+  const common = { package: artifact.package.name,
+    product: artifact.package.name === 'libtmux_erlang_workspace' ? 'workspace' as const : 'core' as const }
   const symbols: ApiSymbol[] = []
   for (const module of artifact.modules) {
     const owner = module.display_name
@@ -149,11 +198,14 @@ export function extractErlang(input: unknown, expectedRevision?: string): ApiMod
         ...(member.specs.length > 1 ? ['overload' as const] : []),
       ]
       const signatures: Signature[] = type
-        ? member.declarations.map((raw) => ({ raw, params: [] }))
-        : member.specs.map((spec) => ({
-          raw: member.kind === 'callback' ? spec.text : `${member.signatures[0]}\n${spec.text}`,
-          params: spec.parameters, returns: spec.returns,
-        }))
+        ? member.declarations.map((raw, index) => ({ raw, params: [], references: member.declaration_references[index] }))
+        : member.specs.map((spec) => {
+          const prefix = member.kind === 'callback' ? '' : `${member.signatures[0]}\n`
+          return { raw: prefix + spec.text,
+            references: spec.references.map((ref) => ({ ...ref, start: ref.start + prefix.length, end: ref.end + prefix.length })),
+            params: spec.parameters.map((param) => ({ name: param.name, type: param.type, typeReferences: param.references })),
+            returns: spec.returns, returnsReferences: spec.returns_references }
+        })
       const id = memberId(module, member)
       symbols.push({ id, publicId: id, qualifiedName: `${owner}:${member.display_name}/${member.arity}`,
         name: `${member.display_name}/${member.arity}`, namespace: owner, parent: owner,
@@ -165,7 +217,7 @@ export function extractErlang(input: unknown, expectedRevision?: string): ApiMod
       const id = recordId(module, record.display_name)
       symbols.push({ id, publicId: id, qualifiedName: id, name: `#${record.display_name}{}`,
         namespace: owner, parent: owner, kind: 'struct', modifiers: [],
-        signatures: [{ raw: record.declaration, params: [] }], ...common,
+        signatures: [{ raw: record.declaration, params: [], references: record.references }], ...common,
         apiScope: 'exported', source: source(record.source) })
     }
   }

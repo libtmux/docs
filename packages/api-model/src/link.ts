@@ -1434,6 +1434,29 @@ export class SymbolIndex {
     return [{ text: ident, ...(builtin ? { link: { href: builtin, external: true } } : {}) }]
   }
 
+  /** Consume exact compiler ranges; literal gaps never introduce a guessed type. */
+  private erlangTypeSpans(annotation: string, context?: ApiSymbol, signature?: Signature): TypeSpan[] {
+    const candidates = (signature ? [signature] : context?.signatures ?? []).flatMap((entry) => [
+      { text: entry.raw, references: entry.references },
+      { text: entry.returns, references: entry.returnsReferences },
+      ...entry.params.map((param) => ({ text: param.type, references: param.typeReferences })),
+    ])
+    const match = candidates.find((entry) => entry.text === annotation && entry.references !== undefined)
+    if (!match) return [{ text: annotation }]
+    const out: TypeSpan[] = []
+    let offset = 0
+    for (const reference of match.references!) {
+      if (reference.start > offset) out.push({ text: annotation.slice(offset, reference.start), nonReference: true })
+      const link = this.resolveErlang(reference.target, 'any', context) ??
+        (reference.external ? { ...reference.external, external: true } : undefined)
+      out.push({ text: annotation.slice(reference.start, reference.end), ...(link ? { link } : {}) })
+      offset = reference.end
+    }
+    if (offset < annotation.length) out.push({ text: annotation.slice(offset), nonReference: true })
+    return out
+  }
+
+
   /** Lisp names include package colons and hyphens; only method specializers are type references in a lambda list. */
   private lispType(annotation: string, context?: ApiSymbol, signature?: Signature): TypeSpan[] {
     if (!annotation.trimStart().startsWith('(')) {
@@ -1476,6 +1499,7 @@ export class SymbolIndex {
    * makes those all work without a grammar for type syntax.
    */
   linkType(annotation: string, context?: ApiSymbol, signature?: Signature): TypeSpan[] {
+    if (this.lang === 'erlang') return this.erlangTypeSpans(annotation, context, signature)
     if (neverLinks(annotation)) return [{ text: annotation }]
     if (this.lang === 'lisp') return this.lispType(annotation, context, signature)
     const out: TypeSpan[] = []

@@ -202,8 +202,8 @@ and reader qualification before appearing on tmux command pages.
 
 ### Erlang compiler artifact
 
-The Erlang exporter builds a clean source checkout with its selected Rebar3,
-then reads EEP-48 Markdown and abstract code from the compiled application.
+The Erlang exporter builds a clean source checkout with its selected Rebar3
+in a temporary build directory, then reads EEP-48 Markdown and abstract code.
 Use the source project's OTP 29 and Rebar3 toolchain on `PATH`. With the
 Erlang source checkout beside this docs worktree, export its core API:
 
@@ -214,18 +214,40 @@ $ escript packages/api-model/scripts/export-erlang.escript \
     ../libtmux-erlang/_build/docs/api.json
 ```
 
-The artifact records the source commit, tracked input hashes, OTP version and
-exporter source digest.
+The version-3 artifact records the source commit, tracked input hashes, OTP
+version and exporter source digest.
 It retains native module, function, type and callback documentation, typespecs,
 nominal types, supporting non-exported types and exported native records.
 Source locations follow included headers. Opaque declarations expose their
 name and parameters. Hidden modules and members stay out. Dirty sources,
 missing compiler chunks and ambiguous source paths fail the export.
 
+The exporter parses formatted declarations to identify type and native-record
+references, including their arities and UTF-16 ranges. It checks that formatting
+preserves the syntax tree. OTP destinations require a compiler-known builtin or
+an entry in that module's documentation; unknown types remain unresolved.
+The exporter observes compiler file calls inside the temporary Rebar VM and
+uses an identity parse transform to capture the actual compiler options before
+OTP's deterministic build removes preprocessing context. OTP's preprocessor recovers
+full paths in that same VM, preserving its library paths, environment and
+working directory. The resulting forms must match the compiled
+forms. This rejects external public headers even when their basenames and
+declarations match tracked headers. Private OTP headers may supply implementation
+records, but every documented declaration must resolve to a regular tracked
+source file. Tracked source symlinks are rejected; temporary Rebar build links
+back to those regular files are permitted.
+An unreproducible preprocessing context fails the export. Explicit `-file`
+source remapping is unsupported. Temporary compiler
+context and build output are removed on completion or an export error.
+
 `extractErlang` maps the artifact to the shared API model. The compiler supplies
 callable parameters, return types, overload clauses and quoted atom spellings.
 The model retains native arities, supporting types and distinct type/callback
 identities. Native `m:`, `t:` and `c:` references resolve within their module.
+API signatures and their Markdown copies retain Erlang syntax and use the
+compiler's reference ranges for links. The site checks the 60-column display
+limit after native formatting. The `libtmux_erlang_workspace` application maps
+to the workspace product; the core application maps to core.
 Erlang has no shared site routes or package destinations until the port's
 delivery checks are complete. The compiler fixture runs in the outer test loop; it
 requires OTP 29 and Rebar3 on CI and skips locally when that toolchain is absent.
