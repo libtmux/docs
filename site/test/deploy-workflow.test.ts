@@ -12,11 +12,29 @@ const shell = readFileSync(new URL('../../.github/workflows/deploy-shell.yml', i
 const testWorkflow = readFileSync(new URL('../../.github/workflows/test.yml', import.meta.url), 'utf8')
 const publicationAudit = readFileSync(new URL('../../scripts/test-all.sh', import.meta.url), 'utf8')
 const publishRoot = readFileSync(new URL('../../scripts/publish-root.sh', import.meta.url), 'utf8')
-const sourceGuidePorts = ['ruby', 'lua', 'powershell', 'julia', 'elixir']
+const sourceGuidePorts = ['ruby', 'lua', 'powershell', 'julia', 'elixir', 'perl']
 
 function sourceCheckoutContract(workflow: string): void {
+  const body = /- name: Resolve integrated guide sources\n\s+id: integrated-sources\n\s+run: \|\n((?: {10}[^\n]*\n|\n)*)/.exec(workflow)?.[1]?.replace(/^ {10}/gm, '')
+  expect(body).toBeDefined()
+  const checkout = mkdtempSync(join(tmpdir(), 'libtmux-guide-sources-'))
+  const revisions = sourceGuidePorts.map((_, index) => (index + 1).toString(16).repeat(40))
+  try {
+    mkdirSync(join(checkout, 'site/src/data/api'), { recursive: true })
+    for (const [index, port] of sourceGuidePorts.entries()) {
+      writeFileSync(join(checkout, `site/src/data/api/${port}.json`), JSON.stringify({ revision: revisions[index] }))
+    }
+    const output = join(checkout, 'outputs')
+    const result = spawnSync('bash', ['-euc', body!], {
+      cwd: checkout, encoding: 'utf8', env: { ...process.env, GITHUB_OUTPUT: output },
+    })
+    expect(result.error).toBeUndefined()
+    expect(result.status, result.stderr).toBe(0)
+    expect(readFileSync(output, 'utf8').trim().split('\n')).toEqual(sourceGuidePorts.map((port, index) => `${port}=${revisions[index]}`))
+  } finally {
+    rmSync(checkout, { recursive: true, force: true })
+  }
   for (const port of sourceGuidePorts) {
-    expect(workflow).toContain(`echo "${port}=$(jq -r .revision site/src/data/api/${port}.json)" >> "$GITHUB_OUTPUT"`)
     expect(workflow).toContain(`repository: libtmux/libtmux-${port}`)
     expect(workflow).toContain('ref: ${{ steps.integrated-sources.outputs.' + port + ' }}')
     expect(workflow).toContain(`path: .port-sources/${port}`)
@@ -410,7 +428,7 @@ describe('port publisher contract', () => {
     for (const port of ['ruby', 'lua']) {
       expect(audit).toContain(`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}: ` + '${{ github.workspace }}/.port-sources/' + port)
     }
-    expect(audit).not.toMatch(/LIBTMUX_DOCS_CHECKOUT_(POWERSHELL|JULIA|ELIXIR):/)
+    expect(audit).not.toMatch(/LIBTMUX_DOCS_CHECKOUT_(POWERSHELL|JULIA|ELIXIR|PERL):/)
     expect(testWorkflow).toContain('LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ' + sourceGuidePorts.join(','))
     expect(publicationAudit).toContain('LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS')
     expect(publicationAudit).toContain('--skip-native-model-ports')
