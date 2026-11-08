@@ -210,6 +210,7 @@ export async function scanPort({ port, model, commands, checkout, known, dispatc
   const sources = librarySources(checkout, model.revision, grammar)
   const wanted = new Set(commands)
   for (const [path, text] of sources) {
+    if (grammar === 'haskell' && path.endsWith('.lhs')) throw new Error(`Haskell source usage coverage: literate input is not qualified: ${path}`)
     const scanned = await scanSource({ grammar, text, commands: wanted, known, dispatch, builders, guards, labels, trace })
     for (const fn of scanned.functions) functions.push({ ...fn, file: path })
     for (const type of scanned.types) types.push({ ...type, file: path })

@@ -163,6 +163,23 @@ export groups. The stored model retains those groups so sidebar regeneration
 needs no checkout or native toolchain. Additional module and declaration
 forms need native fixtures and qualification before the adapter accepts them.
 
+Haskell command usage is read from `src/` and `internal/` at the API model's
+revision by the [source reader](../scripts/lib/tmux-usage-haskell.mjs).
+The pinned WASM grammar is qualified against those inputs, not all GHC2024
+syntax. The reader follows demanded same-file actions, lexical helpers and
+literal argument builders. Unused lazy actions are not sends. Unsupported
+command-bearing flows, including imported or higher-order helpers, CPP and
+Template Haskell, fail generation; literate inputs are not qualified.
+The initial argv profile accepts a separate command name and at most one
+single-letter option. Combined flags and ambiguous option operands need
+option-arity qualification. Custom `do` semantics, command-bearing pattern
+bindings, tmux command separators and sends beyond the shared helper-depth
+limit fail explicitly. Actual sends require a resolved scope and public
+attribution; ambiguous or widely shared helpers need further qualification.
+The current public scalar modules send no commands, so the generated usage
+document has no symbol entries. New public operations need source evidence
+and reader qualification before appearing on tmux command pages.
+
 ### Wrapper libraries
 
 Kotlin and Scala share Java's repository and release version. F# shares

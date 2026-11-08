@@ -59,13 +59,19 @@ export function shapeFits(call, fn) {
  *
  * Each call of the name is judged by its own receiver and arguments when the scan kept them; `call` names the one to judge.
  *
- * @param {{ calls: Map<string, number>, receivers: Map<string, Set<string>>, callList?: { name: string, receiver?: string, shape?: object }[], owner?: string }} caller
- * @param {{ name: string, owner?: string, file?: string, shape?: object }} callee
+ * An exact lexical binding overrides the name fallback; null means unresolved.
+ *
+ * @param {{ calls: Map<string, number>, receivers: Map<string, Set<string>>, callList?: { name: string, receiver?: string, shape?: object, bindingId?: string | null }[], owner?: string }} caller
+ * @param {{ name: string, owner?: string, file?: string, shape?: object, bindingId?: string }} callee
  * @param {{ owner?: string, file?: string }[]} named every function of the port that has the callee's name
- * @param {{ name: string, receiver?: string, shape?: object }} [call]
+ * @param {{ name: string, receiver?: string, shape?: object, bindingId?: string | null }} [call]
  */
 export function callTargets(caller, callee, named, call) {
   if (!caller.calls.has(callee.name)) return false
+  const exact = call ? [call] : (caller.callList ?? []).filter((candidate) => candidate.name === callee.name)
+  if (callee.bindingId !== undefined || exact.some((candidate) => Object.hasOwn(candidate, 'bindingId'))) {
+    return exact.some((candidate) => typeof candidate.bindingId === 'string' && candidate.bindingId === callee.bindingId)
+  }
   if (named.length <= 1) return true
   const calls = call ? [call] : (caller.callList ?? []).filter((candidate) => candidate.name === callee.name)
   // Overloads of one type are not always in one file: a Swift extension and a C# partial class add to the type from another.
@@ -154,7 +160,8 @@ export function builtSites(functions) {
       for (const builder of candidates) {
         const sites = builder.sites.filter((site) => site.builds)
         if (builder === caller || !sites.length) continue
-        const pseudo = { file: caller.file, calls: new Map([[call.name, call.line]]), receivers: new Map(call.receiver ? [[call.name, new Set([call.receiver])]] : []), owner: caller.owner }
+        const pseudo = { file: caller.file, calls: new Map([[call.name, call.line]]), receivers: new Map(call.receiver ? [[call.name, new Set([call.receiver])]] : []), owner: caller.owner,
+          ...(Object.hasOwn(call, 'bindingId') ? { callList: [call] } : {}) }
         if (!callTargets(pseudo, builder, candidates)) continue
         for (const site of sites) {
           const list = built.get(caller) ?? []
@@ -188,13 +195,22 @@ export function deriveUsage({ command, spec, functions, symbols, definitionOptio
     const own = definitions.get(fn)
     if (own) return own.map((symbol) => ({ symbol, trail, method: fn }))
     if (depth >= MAX_HOPS) return []
-    return callersOf(fn).flatMap((caller) => reach(caller, [...trail, `${caller.file}:${caller.calls.get(fn.name)}`], depth + 1))
+    return callersOf(fn).flatMap((caller) => {
+      const line = fn.bindingId === undefined ? caller.calls.get(fn.name)
+        : Math.min(...caller.callList.filter((call) => call.bindingId === fn.bindingId).map((call) => call.line))
+      return reach(caller, [...trail, `${caller.file}:${line}`], depth + 1)
+    })
   }
 
   const entries = new Map()
   /** The definitions of a symbol that send an entry's command, by entry: a symbol with several methods is not credited with one's send for all. */
   const senders = new Map()
   const unresolved = []
+  const unresolvedSend = (fn, site, reason) => {
+    // Exact lexical readers must qualify every actual send before emitting usage data.
+    if (fn.bindingId !== undefined) throw new Error(`Source usage coverage (${fn.file}:${site.line}): ${reason}`)
+    unresolved.push({ file: fn.file, line: site.line, function: fn.name, reason })
+  }
   for (const fn of functions) {
     const found = [...fn.sites, ...(built.get(fn) ?? [])].filter((site) => site.command === command)
     if (!found.length) continue
@@ -207,7 +223,7 @@ export function deriveUsage({ command, spec, functions, symbols, definitionOptio
     const scoped = sites.map((site) => ({ site, scope: classify(spec, site.flags) }))
     for (const { site, scope } of scoped) {
       if (scope === 'unknown') {
-        unresolved.push({ file: fn.file, line: site.line, function: fn.name, reason: 'no scope flag beside the command' })
+        unresolvedSend(fn, site, 'no scope flag beside the command')
       }
     }
     const known = scoped.filter(({ scope }) => scope !== 'unknown')
@@ -215,17 +231,17 @@ export function deriveUsage({ command, spec, functions, symbols, definitionOptio
     // A helper that lists at several scopes cannot say which one its caller wants.
     const ambiguous = !isPublic && new Set(known.map(({ scope }) => scope)).size > 1
     if (ambiguous) {
-      unresolved.push({ file: fn.file, line: known[0].site.line, function: fn.name, reason: 'a shared helper lists at several scopes' })
+      unresolvedSend(fn, known[0].site, 'a shared helper lists at several scopes')
       continue
     }
     for (const { site, scope } of known) {
       const reached = reach(fn, [], 0)
       if (!reached.length) {
-        unresolved.push({ file: fn.file, line: site.line, function: fn.name, reason: 'no public symbol reaches it' })
+        unresolvedSend(fn, site, 'no public symbol reaches it')
         continue
       }
       if (!isPublic && new Set(reached.map(({ symbol }) => symbol.id)).size > MAX_SHARED_BY) {
-        unresolved.push({ file: fn.file, line: site.line, function: fn.name, reason: `a helper shared by ${new Set(reached.map(({ symbol }) => symbol.id)).size} public symbols` })
+        unresolvedSend(fn, site, `a helper shared by ${new Set(reached.map(({ symbol }) => symbol.id)).size} public symbols`)
         continue
       }
       for (const { symbol, trail, method } of reached) {
