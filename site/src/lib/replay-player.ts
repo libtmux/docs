@@ -70,6 +70,33 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
   const reduced = window.matchMedia?.(REDUCED).matches ?? false
   const total = () => options.total()
 
+  const rail = root.querySelector<HTMLElement>('[data-rail]')
+  const track = rail?.querySelector<HTMLElement>('[data-track]')
+  const pages = [...(rail?.querySelectorAll<HTMLButtonElement>('[data-page]') ?? [])]
+  const behavior = (): ScrollBehavior => (reduced ? 'auto' : 'smooth')
+  // The dots outrun the track on a tight bar: it scrolls, its buttons page it, and the edges say which side has more.
+  const edges = () => {
+    if (!rail || !track) return
+    const room = track.scrollWidth - track.clientWidth
+    const more = [track.scrollLeft > 1 ? 'start' : '', track.scrollLeft < room - 1 ? 'end' : ''].filter(Boolean).join(' ')
+    if (more) rail.dataset.more = more
+    else delete rail.dataset.more
+    rail.toggleAttribute('data-fits', room <= 1)
+    pages.forEach((button) => { button.disabled = Number(button.dataset.page) < 0 ? track.scrollLeft <= 1 : track.scrollLeft >= room - 1 })
+  }
+  // The shown dot stays inside the track. The track's own scroll moves, never the page's.
+  const keepInView = (smooth: boolean) => {
+    const mark = marks.find((candidate) => candidate.getAttribute('aria-current') === 'step')
+    if (!track || !mark) return
+    const box = track.getBoundingClientRect()
+    const dot = mark.getBoundingClientRect()
+    const margin = 24 + dot.width
+    if (dot.left >= box.left + margin && dot.right <= box.right - margin) return
+    const left = track.scrollLeft + (dot.left + dot.width / 2) - (box.left + box.width / 2)
+    track.scrollTo({ left: Math.max(0, left), behavior: smooth ? behavior() : 'auto' })
+  }
+  let railStep = -1
+
   let step = total()
   let pinned: number | null = null
   let hover: number | null = null
@@ -95,6 +122,9 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
       else mark.removeAttribute('aria-current')
     })
     fill.style.width = `${(step / last) * 100}%`
+    track?.style.setProperty('--mcp-count', String(last + 1))
+    if (step !== railStep) { keepInView(railStep !== -1); railStep = step }
+    edges()
     count.textContent = `${step}/${last}`
     play.setAttribute('aria-label', step >= last && !playing ? 'Replay' : playing ? 'Pause' : 'Play')
     // The button draws its icon from this state (see mcp-replay.css).
@@ -141,6 +171,13 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
   root.querySelector('[data-action="back"]')!.addEventListener('click', () => go(step - 1))
   root.querySelector('[data-action="forward"]')!.addEventListener('click', () => go(step + 1))
   marks.forEach((mark) => mark.addEventListener('click', () => go(Number(mark.dataset.mark))))
+  if (track) {
+    track.addEventListener('scroll', edges, { passive: true })
+    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => { edges(); keepInView(false) }).observe(track)
+    pages.forEach((button) => button.addEventListener('click', () => {
+      track.scrollBy({ left: Number(button.dataset.page) * track.clientWidth * 0.75, behavior: behavior() })
+    }))
+  }
   const tip = root.querySelector<HTMLElement>('[data-tip]')
   if (tip && options.tip) {
     const describe = options.tip
@@ -155,10 +192,11 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
       text.textContent = content.text
       tip.replaceChildren(...(content.call ? [call] : []), ...(content.text ? [text] : []))
       tip.hidden = false
-      // Centred on the dot, and kept inside the track's ends so a dot at either end keeps its tooltip on the page.
+      // Centred on the dot, and kept inside the rail's ends so a dot at either end keeps its tooltip on the page.
       const half = tip.offsetWidth / 2
-      const width = tip.parentElement!.clientWidth
-      tip.style.left = `${Math.max(half - 8, Math.min(width - half + 8, mark.offsetLeft))}px`
+      const box = tip.parentElement!.getBoundingClientRect()
+      const dot = mark.getBoundingClientRect()
+      tip.style.left = `${Math.max(half - 8, Math.min(box.width - half + 8, dot.left + dot.width / 2 - box.left))}px`
     }
     const hide = () => { tip.hidden = true }
     marks.forEach((mark) => {
