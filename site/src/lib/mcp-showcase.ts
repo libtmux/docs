@@ -333,7 +333,7 @@ export async function mcpShowcase(port: string, version: string): Promise<McpSho
 
 /** The heading of the worked example, which opens the overview. */
 export function exampleHeadings(showcase: McpShowcase): { depth: number; slug: string; text: string }[] {
-  return showcase.example ? [{ depth: 2, slug: 'worked-example', text: 'Worked example' }] : []
+  return showcase.example ? [{ depth: 2, slug: 'tmux-through-mcp', text: 'tmux through MCP' }] : []
 }
 
 /** The headings of the tool grid, which follows the page's prose. */

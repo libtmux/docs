@@ -115,6 +115,3 @@ between those operations. Handle the creation error as well as the lookup.
 [Captured queries](../../concepts/queries/) explains local selection.
 [Capture from an owned server](../../examples/owned-capture/) is a complete
 program that creates and stops its own daemon.
-
-The [library source revision](https://github.com/libtmux/libtmux-julia/tree/6f62bd72cb8d99f3759ca5e2cc3591165a03c768)
-records the implementation used by this example.

@@ -31,10 +31,9 @@ afterEach(async () => {
 })
 
 /** The picker for a port, rendered by the real template and given its client code. */
-async function page(port: string, { url = 'https://libtmux.org/en/rs/latest/workspace/', storage, random }: { url?: string; storage?: Storage | 'throws'; random?: () => number } = {}) {
+async function page(port: string, { url = 'https://libtmux.org/en/rs/latest/workspace/', storage, random, showcase = workspaceShowcase(port) }: { url?: string; storage?: Storage | 'throws'; random?: () => number; showcase?: ReturnType<typeof workspaceShowcase> } = {}) {
   const win = new Window({ url })
   windows.push(win)
-  const showcase = workspaceShowcase(port)
   win.document.body.innerHTML = await renderAstroTemplate(await picker, { props: { showcase } })
   if (storage === 'throws') {
     Object.defineProperty(win, 'localStorage', { get() { throw new DOMException('denied', 'SecurityError') } })
@@ -212,8 +211,10 @@ describe('the picker as rendered', () => {
   })
 
   it('offers no picker at all when a port has one preset, so its file appears once', async () => {
-    const { document } = await page('go')
-    expect(offersPicker(workspaceShowcase('go')!)).toBe(false)
+    // Every port now has several, so this is a port's showcase cut to its first file.
+    const one = { ...workspaceShowcase('ruby')!, examples: workspaceShowcase('ruby')!.examples.slice(0, 1) }
+    const { document } = await page('ruby', { showcase: one })
+    expect(offersPicker(one)).toBe(false)
     expect(document.querySelector('[data-workspace-picker]')).toBeNull()
     expect(document.querySelector('[data-preset]')).toBeNull()
     expect(document.querySelector('[data-action="roll"]')).toBeNull()
@@ -283,7 +284,9 @@ describe('the picker as rendered', () => {
 
   it('heads the section with the id the table of contents lists, and stays out of search', async () => {
     const { document } = await page('rs')
-    expect(document.querySelector('h2')?.id).toBe('try-a-preset')
+    expect(document.querySelector('h2')?.id).toBe('explore-tmux-layout-workspace-possibilities')
+    expect(document.querySelector('h2')?.textContent).toBe('Explore tmux layout / workspace possibilities')
+    expect(document.querySelector('#try-a-preset')?.nextElementSibling, 'old links keep landing at the heading').toBe(document.querySelector('h2'))
     expect(document.querySelector('[data-workspace-picker]')?.getAttribute('data-pagefind-ignore')).toBe('all')
   })
 

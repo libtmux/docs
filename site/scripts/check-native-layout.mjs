@@ -452,20 +452,19 @@ export function measureMemberBodies(page) {
 }
 
 /**
- * Pages that give each port a member body of every common shape: a member listed on
- * a product page, whose last row is the collapsed "In other ports" disclosure (a page's own
- * symbol lists its equivalents as a section instead), parameters first, a description or example last, Methods, a type,
+ * Pages that give each port a member body of every common shape: a product page's own declaration (its members are
+ * linked rows and its equivalents a section), parameters first, a description or example last, Methods, a type,
  * a command and an MCP object. The second field names a direct child the page
  * must still render, so a content change cannot quietly retire the sample.
  */
 const MEMBER_BODY_PAGES = [
-  ['py/v0.46.2/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder/', 'details.api-elsewhere'],
-  ['java/latest/workspace/reference/io-github-libtmux-workspace-workspacebuilder-workspacebuilder/', 'details.api-elsewhere'],
+  ['py/v0.46.2/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder/', 'div.gp-sphinx-api-examples'],
+  ['java/latest/workspace/reference/io-github-libtmux-workspace-workspacebuilder-workspacebuilder/', 'div.gp-sphinx-api-description'],
   ['go/latest/reference/tmux-window-setotherpanewidth/', 'div.gp-sphinx-api-parameters'],
   ['julia/latest/reference/libtmux-snapshot-1gv6/', 'div.gp-sphinx-api-methods'],
   ['julia/latest/reference/libtmux-kill_window/', 'div.gp-sphinx-api-description'],
   ['ruby/latest/reference/libtmux-closederror-entity/', 'div.gp-sphinx-api-description'],
-  ['ruby/latest/workspace/reference/libtmux-workspace-configerror/', 'p.gp-sphinx-api-facts'],
+  ['ruby/latest/workspace/reference/libtmux-workspace-configerror/', 'div.gp-sphinx-api-facts.api-bases'],
   ['py/latest/reference/libtmux-server-new_session/', 'div.gp-sphinx-api-examples'],
   ['py/latest/reference/libtmux-common-has_lt_version/', 'div.gp-sphinx-api-parameters'],
   ['swift/latest/reference/server-loadbuffer(from-named-)/', 'div.gp-sphinx-api-parameters'],

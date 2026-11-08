@@ -11,7 +11,12 @@
  * Error handling and Cleanup choices are `HomeExample.astro`'s, so each choice
  * plays the steps its view of the program holds (`lib/core-player.ts`).
  *
- * Without script the program, the final tmux and every step's result show.
+ * The page is drawn at the step the script first shows, the state before the
+ * first call, so binding the script changes nothing on screen. Without script,
+ * and until the script binds for a reader who asked for less motion (whose
+ * player starts finished), the final tmux and every step's result show
+ * instead; `core-player.css` swaps the two.
+ *
  * The caller decides whether the recording may be played at all
  * (`playableCapability`); with none, it keeps `HomeExample` on its own.
  */
@@ -40,9 +45,8 @@ interface Props {
   /** Show the example's own "Run this example" section. */
   run?: boolean
 }
-const { port, language, example, recording, capability, capabilityId = 'typed-graph', options = true, run = true } = Astro.props as Props
+const { port, language, example, capability, capabilityId = 'typed-graph', options = true, run = true } = Astro.props as Props
 const shownViews = options ? HOME_VIEWS : (['concise'] as const)
-const revision = capability.revision ?? recording.revision
 const steps = capability.steps
 const total = steps.length
 const frames = coreFrames(capability)
@@ -67,7 +71,7 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
   <div slot="beside" class="core-player__side" data-core-plan={JSON.stringify(views)} data-core-tips={JSON.stringify(tips)}>
     <div class="core-player__tmux" data-tmux role="group" aria-label="tmux state after the call shown">
       {frames.map((frame) => (
-        <div class="mcp-frame" data-frame={frame.done} data-off={frame.done === total ? undefined : ''}>
+        <div class="mcp-frame" data-frame={frame.done} data-off={frame.done === 0 ? undefined : ''}>
           <TmuxScreen frame={frame} client marks={frame.done === 0 ? undefined : stepChanges(steps[frame.done - 1]!, before(frame.done - 1)).marks} idPrefix={`cp-${port}-${capabilityId}`} hadSessions={frames.some((earlier) => earlier.done < frame.done && earlier.sessions.length > 0)} />
           <p class="mcp-frame__note">{frame.done === 0 ? 'tmux before the first call: no server is running.' : (() => {
             const note = noteParts(frame.done - 1)
@@ -77,7 +81,7 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
       ))}
     </div>
     <div class="core-player__results" data-results>
-      <section class="core-result" data-result="0" data-off>
+      <section class="core-result" data-result="0">
         <h3 class="core-result__title">Before the first call</h3>
         <p class="core-result__plain">{beforeText}</p>
       </section>
@@ -85,7 +89,7 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
         const { commands, probes } = visibleCommands(step)
         const changes = commands.filter((command) => command.mutates).length
         return (
-          <section class="core-result" data-result={index + 1} data-off={index + 1 === total ? undefined : ''}>
+          <section class="core-result" data-result={index + 1} data-off>
             <h3 class="core-result__title">
               <span>{callLinks.get(step.label) ? <a href={callLinks.get(step.label)}><code>{step.label}</code></a> : <code>{step.label}</code>} returned <code>{typeText(port, step.type, links).map((part) => part.href ? <a href={part.href}>{part.text}</a> : part.text)}</code></span>
               <button type="button" class="core-result__pin" data-pin aria-pressed="false" hidden aria-label={`Pin the tmux state after ${step.label}`}><svg class="mcp-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2.5h6v11L8 11l-3 2.5z" /></svg></button>
@@ -120,21 +124,8 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
       })}
     </div>
   </div>
-  <ReplayControls slot="controls" start="Show tmux before the first call" marks={steps.map((step) => `Show the state after ${step.label}`)} info={`cp-${port}-${capabilityId}-recorded`}>
-    <div slot="info" class="not-prose mcp-provenance core-player__provenance" id={`cp-${port}-${capabilityId}-recorded`} popover>
-  Recorded by running this program against <a href={`https://github.com/${recording.repo}/tree/${revision}`}><code>{recording.repo}</code></a>
-  at <code>{revision.slice(0, 9)}</code> on a private {recording.sandbox.tmux} server.
-  {capability.stepMap === 'hand-written' && <>A person matched each call to its lines; the values, commands and tmux states are what the run produced.</>}
-  Commands appear without the library's <code>if-shell</code> guard, and the socket name and paths are set to fixed values.
-    </div>
-  </ReplayControls>
+  <ReplayControls slot="controls" start="Show tmux before the first call" playable={views.concise!.length} marks={steps.map((step) => `Show the state after ${step.label}`)} />
 </HomeExample>
-<noscript><p class="not-prose mcp-provenance core-player__provenance">
-  Recorded by running this program against <a href={`https://github.com/${recording.repo}/tree/${revision}`}><code>{recording.repo}</code></a>
-  at <code>{revision.slice(0, 9)}</code> on a private {recording.sandbox.tmux} server.
-  {capability.stepMap === 'hand-written' && <>A person matched each call to its lines; the values, commands and tmux states are what the run produced.</>}
-  Commands appear without the library's <code>if-shell</code> guard, and the socket name and paths are set to fixed values.
-</p></noscript>
 
 <script>
   import { bindClientViews, bindReplay } from '../../lib/replay-player'

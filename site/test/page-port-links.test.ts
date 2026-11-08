@@ -97,6 +97,47 @@ describe('reference picker exits', () => {
   })
 })
 
+describe('shared product pages and the ports that lack the product', () => {
+  const linkFor = (path: string, port: string) => pagePortLinks({ ...options, pagePath: path, portSlug: 'rs' }).find((entry) => entry.port === port)!
+
+  it.each(['mcp', 'mcp/tools'])('skips a port that excludes the product on %s, and links the rest', (path) => {
+    const synthetic = PORT_BY_SLUG.go
+    const product = path.split('/')[0] as 'mcp' | 'workspace'
+    const before = synthetic.productAvailability
+    try {
+      synthetic.productAvailability = { ...before, [product]: 'excluded' }
+      expect(linkFor(path, 'go').links).toEqual([])
+      expect(linkFor(path, 'go').home?.href).toBe('/pr-42/en/go/latest/')
+      expect(linkFor(path, 'ts').links.length).toBeGreaterThan(0)
+    } finally { synthetic.productAvailability = before }
+    // Without the exclusion the same port links, so the check above can fail.
+    expect(linkFor(path, 'go').links.length).toBeGreaterThan(0)
+  })
+
+  it('keeps the overview of a product that is unpublished, which has a page', () => {
+    expect(PORT_BY_SLUG.lua.productAvailability?.mcp).toBe('unpublished')
+    expect(productAvailable(PORT_BY_SLUG.lua, 'mcp')).toBe(false)
+    expect(linkFor('mcp', 'lua').links).toEqual([{ href: '/pr-42/en/lua/latest/mcp/' }])
+  })
+
+  it('keeps the overview of an unpublished workspace root, and drops an excluded one', () => {
+    // The shared workspace overview, which every port renders at its own root.
+    const overview = (slug: string) => pagePortLinks({ ...options, docs: [{ id: 'workspace', data: {} }], pagePath: 'workspace', portSlug: 'rs' })
+      .find((entry) => entry.port === slug)!
+    for (const slug of ['lua', 'elixir']) {
+      expect(PORT_BY_SLUG[slug].productAvailability?.workspace).toBe('unpublished')
+      expect(overview(slug).links.map((link) => link.href)).toEqual([expect.stringMatching(new RegExp(`/${slug}/[^/]+/workspace/$`))])
+    }
+    const synthetic = PORT_BY_SLUG.go
+    const before = synthetic.productAvailability
+    try {
+      synthetic.productAvailability = { ...before, workspace: 'excluded' }
+      expect(overview('go').links).toEqual([])
+    } finally { synthetic.productAvailability = before }
+    expect(overview('go').links.length).toBeGreaterThan(0)
+  })
+})
+
 describe('matching pages in another port', () => {
   it('links cmdlet switches to parameters and keeps Julia receiver names out of function links', async () => {
     const { referenceAlternatives, API_MODELS } = await import('../src/lib/api-models')

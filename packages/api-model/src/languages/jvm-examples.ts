@@ -96,7 +96,11 @@ export function attachCompleteJvmExamples(
     }
     ids.add(program.id)
     const files = manifest.variants[program.variant]?.files
-    if (!Array.isArray(files) || files.length !== 4 || new Set(files.map((file) => file.path)).size !== 4 ||
+    // A revision before libtmux-java#142 ships run.sh as a fourth setup file; later ones start their own server.
+    const launcher = Array.isArray(files) && files.some((file) => file.path === 'run.sh')
+    const setupCount = launcher ? 4 : 3
+    if (!Array.isArray(files) || files.length !== setupCount ||
+        new Set(files.map((file) => file.path)).size !== setupCount ||
         !files.every((file) => Object.hasOwn(setupLanguages, file.path))) {
       throw new Error(`Invalid JVM example setup: ${program.variant}`)
     }
@@ -120,12 +124,16 @@ export function attachCompleteJvmExamples(
     })
     blocks.push({
       lang: port,
-      intro: `Save this complete program as \`${program.path}\`. It opens an ordinary client for the launcher's server; closing the client releases its transport.`,
+      intro: launcher
+        ? `Save this complete program as \`${program.path}\`. It opens an ordinary client for the launcher's server; closing the client releases its transport.`
+        : `Save this complete program as \`${program.path}\`. It starts a private tmux server of its own and stops it when the program closes it.`,
       sourceUrl: urlFor(program.sourceFile), code: codeFor(program.sourceFile),
     }, {
       lang: 'console',
-      intro: 'Build the minimal consumer with Gradle and run the saved program with the private fixture. An operation or cleanup error makes the command exit unsuccessfully:',
-      code: `$ gradle --console=plain --quiet installDist -PexampleMain=${program.mainClass} && \\\n  sh run.sh build/install/api-example/bin/api-example\n`,
+      intro: launcher
+        ? 'Build the minimal consumer with Gradle and run the saved program with the private fixture. An operation or cleanup error makes the command exit unsuccessfully:'
+        : 'Build the minimal consumer with Gradle and run the saved program. An operation or cleanup error makes the command exit unsuccessfully:',
+      code: `$ gradle --console=plain --quiet installDist -PexampleMain=${program.mainClass}${' && \\\n  '}${launcher ? 'sh run.sh ' : ''}build/install/api-example/bin/api-example\n`,
     }, { lang: 'text', intro: 'Expected output:', code: program.expectedOutput })
     const targets = new Set<string>()
     for (const target of program.targets) {

@@ -1,0 +1,38 @@
+---
+import type { ApiSymbol, SymbolIndex } from '@libtmux/api-model'
+import ApiBadge from './ApiBadge.astro'
+import ApiDoc from './ApiDoc.astro'
+import ApiType from './ApiType.astro'
+import { apiGlossaryHref } from '../../lib/api-glossary'
+
+interface Props {
+  groups: { id: string; label: string; members: ApiSymbol[] }[]
+  /** Several groups get a bar each; one group is the plain list under the page's Members heading. */
+  showGroups: boolean
+  index: SymbolIndex
+  hrefFor: (symbol: ApiSymbol) => string
+  /** Ids a member's inline entry used to carry, kept as anchors where the list replaces that entry. */
+  anchorsFor?: (symbol: ApiSymbol) => string[]
+}
+const { groups, showGroups, index, hrefFor, anchorsFor } = Astro.props
+---
+{groups.map((group) => <section id={showGroups ? undefined : group.id} class:list={['api-member-group', !showGroups && 'api-member-group--single']} aria-labelledby={showGroups ? group.id : 'api-members'}>
+  {showGroups && <h3 id={group.id}>{group.label}<span class="api-section-count">{group.members.length}</span><a class="api-heading-link" href={`#${group.id}`} aria-label={`Link to ${group.label}`}>#</a></h3>}
+  <ul class="api-member-list mt-3">
+    {group.members.map((m) => (
+      <li>
+        {anchorsFor?.(m).map((id) => <span id={id} class="sr-only" />)}
+        <span><ApiBadge label={m.kind} variant="kind" value={m.kind} compact preview={false} /><a class="api-member-link" href={hrefFor(m)}>{m.name}</a>{m.type && <span class="api-member-type">: <ApiType type={m.type} index={index} context={m} /></span>}</span>
+        <span class="api-member-badges">
+          <ApiBadge label={m.kind} variant="kind" value={m.kind} plain />
+          {m.inheritedFrom && <a class="api-badge api-badge--mod" href={apiGlossaryHref('inherited', Astro.url.pathname)} title={`Inherited from ${m.inheritedFrom}`} aria-description={`Inherited from ${m.inheritedFrom}`} data-preview-context={`Inherited from ${m.inheritedFrom}.`}><span class="api-badge__label">inherited</span></a>}
+        </span>
+        {m.doc?.summary && (
+          <span class="api-member-summary">
+            <ApiDoc text={m.doc.summary} index={index} context={m} citations={false} />
+          </span>
+        )}
+      </li>
+    ))}
+  </ul>
+</section>)}

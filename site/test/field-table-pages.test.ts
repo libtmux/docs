@@ -23,7 +23,7 @@ afterEach(async () => { for (const win of windows.splice(0)) await win.happyDOM.
 
 describe('a type page with a table of fields', () => {
   // The table, the contents rail and the badges are the page's own; the type and prose cells draw plain text.
-  const PAGE = ['components/api/ApiPageContents.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiScalarMembers.astro']
+  const PAGE = ['components/api/ApiMemberList.astro', 'components/api/ApiPageContents.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiScalarMembers.astro']
   async function page(port: Port, id: string) {
     const template = await loadAstroTemplate('components/api/ApiReference.astro', {
       real: PAGE,
@@ -295,9 +295,9 @@ describe('the type names a product table repeats', () => {
 })
 
 describe('every repeated type name on a product page', () => {
-  // The real entry, table and type, as the page draws them; the shell around the page is not needed.
+  // The real table and type, as the page draws them, and the real entry a member's own page draws its type with.
   const load = () => loadAstroTemplate('components/api/ProductApiPage.astro', {
-    real: ['components/api/ApiEntry.astro', 'components/api/ApiScalarMembers.astro', 'components/api/ApiType.astro', 'components/api/SymbolName.astro', 'components/api/ApiBadge.astro'],
+    real: ['components/api/ApiEntry.astro', 'components/api/ApiScalarMembers.astro', 'components/api/ApiMemberList.astro', 'components/api/ApiType.astro', 'components/api/SymbolName.astro', 'components/api/ApiBadge.astro'],
     modules: {
       // An example in a doc comment renders through this component; an empty Astro component stands in.
       'astro-expressive-code/components': { Code: createComponent(() => renderTemplate``) },
@@ -322,52 +322,46 @@ describe('every repeated type name on a product page', () => {
     }))
     return win.document
   }
-  /**
-   * What the repeats on a page owe the gate that counts plain names: each is a name drawn a second time, so the page
-   * must draw it first somewhere else. The repeats of a text may not outnumber its originals outside the table.
-   */
-  function orphans(document: Window['document']): string[] {
-    const spans = (selector: string) => [...document.querySelectorAll(selector)].map((span) => span.textContent!.trim())
-    const repeats = spans('.api-field-table span.api-type-repeat')
-    const originals = spans('span.api-punct:not(.api-type-repeat)')
-    // Everything flagged lies in the table, whose cells are the only ones that carry the flag.
-    expect(document.querySelectorAll('span.api-type-repeat')).toHaveLength(repeats.length)
-    // The punctuation a payload writes around its types is syntax, which the gate does not count.
-    const tableOriginals = spans('.api-field-table span.api-punct:not(.api-type-repeat):not([data-api-role="syntax"])')
-    expect(tableOriginals, 'a table cell drawn without the flag counts the name a second time').toEqual([])
-    return [...new Set(repeats)].filter((text) => originals.filter((original) => original === text).length < repeats.filter((repeat) => repeat === text).length)
-  }
+  const texts = (document: Window['document'], selector: string) => [...document.querySelectorAll(selector)].map((span) => span.textContent!.trim())
+  /** The texts of `wanted` that `drawn` does not hold as many times, the way a repeat needs its original. */
+  const missing = (wanted: string[], drawn: string[]) => [...new Set(wanted)].filter((text) => drawn.filter((entry) => entry === text).length < wanted.filter((entry) => entry === text).length)
 
-  it('has its original drawn by the entry, so the gate counts the name once', async () => {
-    const document = await product('csharp', 'LibTmux.Workspace.WorkspaceAction')
-    const repeats = [...document.querySelectorAll('.api-field-table span.api-type-repeat')].map((span) => span.textContent!.trim())
-    // The name the model cannot resolve is among them, and so is the punctuation around resolved ones.
-    expect(repeats).toContain('TRequest')
-    expect(orphans(document)).toEqual([])
-  }, 120_000)
-
-  it.each(['rs', 'go', 'csharp'] as const)('has its original on every %s product page that draws a table', async (port) => {
-    const found = owners(port)
+  // The table is where a Rust or Go field's type is drawn on a product page, as on a core one; no member entry is on the page.
+  it.each(['rs', 'go'] as const)('draws the types of a %s fields table once, unflagged', async (port) => {
+    const found = owners(port).filter((owner) => memberTable(owner, API_MODELS[port].symbols.filter((entry) => entry.parent === owner.id), port)?.columns === 'fields')
     expect(found.length).toBeGreaterThan(0)
-    const problems: string[] = []
-    let repeated = 0
     for (const owner of found) {
       const document = await product(port, owner.id)
-      repeated += document.querySelectorAll('span.api-type-repeat').length
-      const lacking = orphans(document)
-      if (lacking.length) problems.push(`${owner.id}: ${lacking.join(', ')}`)
+      expect(document.querySelectorAll('span.api-type-repeat'), owner.id).toHaveLength(0)
+    }
+  }, 600_000)
+
+  // A C# property and a Rust variant have a page of its own, which draws what the row repeats.
+  async function repeatsOnOwnPages(port: Port, ids: string[], proves = true) {
+    const model = API_MODELS[port]
+    const byAnchor = new Map(model.symbols.map((symbol) => [symbol.publicId ?? symbol.id, symbol]))
+    const problems: string[] = []
+    let repeated = 0
+    for (const id of ids) {
+      const document = await product(port, id)
+      // Nothing in a cell is drawn without the flag, or the gate would count the name on both pages.
+      expect(texts(document, '.api-field-table span.api-punct:not(.api-type-repeat):not([data-api-role="syntax"])'), id).toEqual([])
+      const rows = [...document.querySelectorAll('.api-field-table tbody tr')].map((row) => ({ id: row.id.replace(/^member-/, ''), repeats: texts(row as never, 'span.api-type-repeat') })).filter((row) => row.repeats.length)
+      for (const row of rows) {
+        repeated += row.repeats.length
+        const lacking = missing(row.repeats, texts(await product(port, byAnchor.get(row.id)!.id), 'span.api-punct:not(.api-type-repeat)'))
+        if (lacking.length) problems.push(`${row.id}: ${lacking.join(', ')}`)
+      }
     }
     expect(problems).toEqual([])
     // A port whose types were all links or keywords would pass without proving anything.
-    expect(repeated).toBeGreaterThan(0)
-  }, 600_000)
+    if (proves) expect(repeated).toBeGreaterThan(0)
+  }
 
-  it('is found missing when the entry stops drawing the type (control)', async () => {
-    const document = await product('csharp', 'LibTmux.Workspace.WorkspaceAction')
-    // Take the entry's own drawing of the unresolved name away, as a change to ApiEntry would.
-    for (const span of document.querySelectorAll('.api-members span.api-punct:not(.api-type-repeat)')) if (span.textContent!.trim() === 'TRequest') span.remove()
-    expect(orphans(document)).toEqual(['TRequest'])
-  }, 120_000)
+  it('has each repeat of a C# properties table drawn in full on the property\'s own page', () => repeatsOnOwnPages('csharp', ['LibTmux.Workspace.WorkspaceAction']), 300_000)
+
+  it('has each repeat of a Rust variants table drawn in full on the variant\'s own page', () => repeatsOnOwnPages('rs',
+    owners('rs').filter((owner) => memberTable(owner, API_MODELS.rs.symbols.filter((entry) => entry.parent === owner.id), 'rs')?.columns === 'variants').map((owner) => owner.id), false), 600_000)
 })
 
 describe('every repeated type name in a C# properties table', () => {

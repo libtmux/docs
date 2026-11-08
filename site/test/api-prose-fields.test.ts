@@ -104,6 +104,7 @@ describe('the code that links prose', () => {
     'src/components/api/ApiDoc.astro': 'the renderer: docSpans, which the collector calls too',
     'src/components/api/ApiEntry.astro': 'passes the index to ApiDoc; resolves the type an entry inherits from, to a page of this site',
     'src/components/api/ApiProse.astro': 'passes the index to ApiDoc',
+    'src/components/api/ApiMemberList.astro': 'passes the index to ApiDoc',
     'src/components/api/ApiReference.astro': 'passes the index to ApiDoc',
     'src/components/api/ApiScalarMembers.astro': 'passes the index to ApiDoc',
     'src/components/api/ApiSignatureParameters.astro': 'passes the index to ApiType',

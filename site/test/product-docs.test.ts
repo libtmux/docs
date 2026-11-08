@@ -18,6 +18,7 @@ import { documentationAreas, SOURCE_GUIDE_PORTS, sourceGuidesFor } from '../src/
 import { KNOWN_PORTS, resolvePortData } from '../src/lib/workspace-shared-slots'
 import { DEFAULT_LOCALE, isLocale } from '../src/i18n/locales'
 import type { ApiTreeJson } from '../src/lib/api-search'
+import { PRODUCT_SECTIONS } from '../src/lib/product-api-sections'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
 interface Manifest {
@@ -291,9 +292,11 @@ function graph(document: Window['document']): StructuredEntry[] {
 /**
  * Read the rendered sidebar ancestry independently of the breadcrumb builder.
  *
- * The API reference is one tree whose only top-level row is the reference itself. The rows from there to the
- * page's declaration are returned, without the badge each row draws beside its name. The page's own link must
- * already be marked current in the served HTML, since nothing here runs a script.
+ * A flat API reference is one tree whose only top-level row is the reference itself; a sectioned product reference
+ * has its sections as top-level rows instead, and the breadcrumb keeps the section after "API reference". The rows
+ * below the reference row (a section included) to the page's declaration are returned, without the badge each row
+ * draws beside its name. The page's own link must already be marked current in the served HTML, since nothing here
+ * runs a script.
  */
 function referenceTrail(document: Window['document'], href: string) {
   const navigation = document.querySelector('.api-nav nav')!
@@ -309,9 +312,11 @@ function referenceTrail(document: Window['document'], href: string) {
     for (const decoration of copy.querySelectorAll('[aria-hidden="true"]')) decoration.remove()
     trail.unshift({ name: copy.textContent.trim(), url: (leaf ? row : label).getAttribute('href') })
   }
-  const [reference, ...declarations] = trail
-  expect(reference?.name, `${href} the tree's top row is the reference`).toBe('API reference')
-  return declarations
+  const [top, ...declarations] = trail
+  if (top?.name === 'API reference') return declarations
+  const sections = new Set(Object.values(PRODUCT_SECTIONS).flat().map((section) => section.label))
+  expect(sections.has(top?.name ?? ''), `${href} the tree's top row is the reference or one of its sections, not ${top?.name}`).toBe(true)
+  return trail
 }
 
 /** The first paint of the real reference sidebar, so the reader below follows the component's markup. */
@@ -626,12 +631,12 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       checked++
       // A workspace overview with several presets leads with the preset picker, which stands above the install.
       // An MCP overview with a worked example leads with it, then install: the reader sees the server work before choosing a client.
-      const presets = document.querySelector('article section.ws-picker h2#try-a-preset')
+      const presets = document.querySelector('article section.ws-picker h2#explore-tmux-layout-workspace-possibilities')
       // A workspace overview with one example has no picker, so that example leads, then install.
       const example = page.product === 'mcp'
-        ? document.querySelector('article h2#worked-example')
+        ? document.querySelector('article h2#tmux-through-mcp')
         : presets ? null : document.querySelector('article h2#example-workspaces')
-      const first = presets ? 'try-a-preset' : example ? example.id : 'install'
+      const first = presets ? 'explore-tmux-layout-workspace-possibilities' : example ? example.id : 'install'
       expect(document.querySelector('article h2')?.id, `${page.path} ${first} is the first section`).toBe(first)
       if (presets) expect(presets.compareDocumentPosition(install) & 4, `${page.path} install follows the preset picker`).toBeTruthy()
       if (example) expect(example.compareDocumentPosition(install) & 4, `${page.path} install follows the ${example.id}`).toBeTruthy()

@@ -17,8 +17,9 @@ import mentionIndex from '../src/data/mentions.json'
 import { apiCommandRelatedLinks } from '../src/lib/api-sections'
 import { productApiIndex } from '../src/lib/product-api'
 
+// A section group (it has no kind) links to the page of its first row, which the row lists itself.
 const navigationLinks = (items: SidebarItem[]): string[] => items.flatMap((item) => [
-  ...(item.href ? [item.href] : []), ...(item.type === 'group' ? navigationLinks(item.items) : []),
+  ...(item.href && (item.type === 'link' || item.kind) ? [item.href] : []), ...(item.type === 'group' ? navigationLinks(item.items) : []),
 ])
 
 describe('product declaration trees', () => {
@@ -81,7 +82,8 @@ describe('product declaration trees', () => {
   })
 
   it('groups Julia extension functions by their declaring module without inventing module pages', () => {
-    const tree = productApiNavigation(API_MODELS.julia, 'mcp', 'latest')
+    // The namespaces sit inside the section that holds them.
+    const tree = productApiNavigation(API_MODELS.julia, 'mcp', 'latest').flatMap((section) => section.type === 'group' ? section.items : [])
     for (const [name, functions] of [['Base', ['close', 'isopen', 'show', 'showerror']],
       ['ModelContextProtocol', ['close', 'is_connected', 'read_message', 'write_message']]] as const) {
       const group = tree.find((item) => item.label === name)

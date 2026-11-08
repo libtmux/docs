@@ -399,7 +399,7 @@ describe('the replay component', () => {
     return { win, document: win.document as unknown as Document, root }
   }
 
-  const visible = (document: Document, selector: string) => [...document.querySelectorAll<HTMLElement>(selector)].filter((element) => !element.hidden)
+  const visible = (document: Document, selector: string) => [...document.querySelectorAll<HTMLElement>(selector)].filter((element) => !element.hidden && !element.hasAttribute('data-off'))
   const turnsShown = (document: Document) => visible(document, 'article.mcp-turn, .mcp-turn--answer').length
   const frameShown = (document: Document) => visible(document, '[data-frame]').map((frame) => Number(frame.dataset.frame))
   const click = (win: Window, element: Element) => element.dispatchEvent(new win.MouseEvent('click', { bubbles: true }) as unknown as Event)
@@ -468,13 +468,13 @@ describe('the replay component', () => {
     for (const recorded of [true, false]) {
       const { document } = await mount('ts', { recorded })
       expect(document.querySelector('[data-mcp-replay]')!.classList.contains('not-prose'), `recorded ${recorded}`).toBe(true)
-      expect(document.querySelector('.mcp-provenance')!.classList.contains('not-prose')).toBe(true)
+      expect(document.querySelector('.mcp-provenance'), `recorded ${recorded}`).toBeNull()
     }
-    // The inline-code chip rule ignores not-prose, so the sheet must undo it for both the replay and its provenance line.
+    // The inline-code chip rule ignores not-prose, so the sheet must undo it for the replay.
     const css = readFileSync(new URL('../src/styles/mcp-replay.css', import.meta.url), 'utf8')
-    const reset = /\.mcp-replay code,\s*\.mcp-provenance code \{([^}]*)\}/.exec(css)![1]!
+    const reset = /\.mcp-replay code \{([^}]*)\}/.exec(css)![1]!
     for (const declaration of ['background: none', 'padding: 0', 'color: inherit', 'font-weight: inherit']) expect(reset).toContain(declaration)
-    expect(css).toMatch(/\.mcp-provenance code::after \{\s*content: none/)
+    expect(css).toMatch(/\.mcp-replay code::after \{\s*content: none/)
     const global = readFileSync(new URL('../src/styles/global.css', import.meta.url), 'utf8')
     expect(global, 'the rule being undone still exists; if it learns not-prose, drop the reset').toContain('.prose code:not(pre code)')
   })
@@ -490,12 +490,17 @@ describe('the replay component', () => {
 
   it('without script shows the whole chat, every result and the final state, and no controls', async () => {
     const { document } = await mount('rs')
-    expect(turnsShown(document)).toBe(CALLS.rs + 1)
+    // The markup is drawn at the start; the stylesheet shows every call and the last frame, and hides the bar, where there is no script.
+    expect(document.querySelectorAll('article.mcp-turn, .mcp-turn--answer')).toHaveLength(CALLS.rs + 1)
     expect(document.querySelectorAll('details.mcp-result[open]')).toHaveLength(CALLS.rs)
-    expect(frameShown(document)).toEqual([CALLS.rs])
     expect(document.querySelectorAll('[data-frame]')).toHaveLength(CALLS.rs + 1)
-    expect((document.querySelector('[data-controls]') as HTMLElement).hidden).toBe(true)
+    expect(document.querySelectorAll('[hidden]:not([data-pin], [data-tip])')).toHaveLength(0)
     expect(document.querySelector('[data-live]')).toBeNull()
+    const css = readFileSync(new URL('../src/styles/mcp-replay.css', import.meta.url), 'utf8')
+    expect(css).toMatch(/html:not\(\[data-js\]\) \.mcp-replay__controls/)
+    expect(css).toMatch(/html:not\(\[data-js\]\) \.mcp-replay__head/)
+    expect(css).toMatch(/html:not\(\[data-js\]\) \.mcp-replay \.mcp-frame:not\(:last-child\) \{\s*display: none;/)
+    expect(css).not.toMatch(/html:not\(\[data-js\]\)[^{]*\[data-off\]/)
   })
 
   it('draws the status line, the unsized list and the panes of each state from the results of a recording with no tmux state', async () => {
@@ -609,18 +614,16 @@ describe('the replay component', () => {
     expect(results.querySelector(`[data-frame="${at}"] .mcp-frame__note`)!.textContent).toBe('After split_window.')
   })
 
-  it('names the part of tmux a listing read, and the provenance says the preview is the recording\'s own tmux server', async () => {
+  it('names the part of tmux a listing read, and adds no note on how the preview was recorded', async () => {
     const { document } = await mount('go')
     const { steps: calls } = await stated('go')
     const listed = calls.findIndex((step) => step.tool === 'list_panes') + 1
     expect(document.querySelector(`[data-frame="${listed}"] .mcp-tmux__screen`)!.className).toContain('is-reading')
     expect(document.querySelector(`[data-frame="${listed}"] .mcp-frame__note`)!.textContent).toBe('tmux after list_panes: unchanged, the call only reads.')
-    const provenance = document.querySelector('.mcp-provenance')!.textContent!.replace(/\s+/g, ' ')
-    expect(provenance).toContain("The preview takes its layout and panes from the recording's own tmux server after each call, and a pane's output from the results of the calls.")
-    expect(provenance, 'it does not claim the whole preview is tmux\'s own').not.toContain("The preview shows the recording's own tmux server")
-    expect(provenance).not.toContain('draws only what those results state')
+    expect(document.querySelector('.mcp-provenance')).toBeNull()
+    expect(document.body.textContent).not.toMatch(/The preview (takes|draws)/)
     const { document: results } = await mount('go', { stateless: true })
-    expect(results.querySelector('.mcp-provenance')!.textContent!.replace(/\s+/g, ' ')).toContain('The preview draws only what those results state.')
+    expect(results.querySelector('.mcp-provenance')).toBeNull()
   })
 
   it('with a reduced-motion preference starts at the end and does not play', async () => {
@@ -629,7 +632,7 @@ describe('the replay component', () => {
     expect(turnsShown(document)).toBe(CALLS.ts + 1)
     expect(frameShown(document)).toEqual([CALLS.ts])
     expect(action(document, 'play').getAttribute('aria-label')).toBe('Replay')
-    expect(document.querySelectorAll('details.mcp-result[open]')).toHaveLength(0)
+    expect(document.querySelectorAll('details.mcp-result[open]'), 'a finished replay keeps its results open, as the page drew them').toHaveLength(CALLS.ts)
     expect((document.querySelector('[data-controls]') as HTMLElement).hidden).toBe(false)
   })
 
@@ -713,11 +716,29 @@ describe('the replay component', () => {
     expect(action(document, 'play').getAttribute('aria-label')).toBe('Play')
   })
 
-  it('shows the header and the controls only once script has run', async () => {
-    const before = await mount('ts')
-    expect((before.document.querySelector('[data-head]') as HTMLElement).hidden).toBe(true)
-    const after = await mount('ts', { run: true, reduced: true })
-    expect((after.document.querySelector('[data-head]') as HTMLElement).hidden).toBe(false)
+  it('is drawn at the state the script first shows, so binding the script changes nothing on screen', async () => {
+    const onScreen = (document: Document) => ({
+      turns: visible(document, 'article.mcp-turn, .mcp-turn--answer').map((turn) => turn.dataset.turn),
+      frames: frameShown(document),
+      count: document.querySelector('[data-count]')!.textContent,
+      head: (document.querySelector('[data-head]') as HTMLElement).hidden,
+      controls: (document.querySelector('[data-controls]') as HTMLElement).hidden,
+      done: [...document.querySelectorAll('[data-mark].is-done')].map((mark) => mark.getAttribute('data-mark')),
+      current: document.querySelector('[data-mark][aria-current="step"]')?.getAttribute('data-mark'),
+      open: document.querySelectorAll('details.mcp-result[open]').length > 0 && visible(document, 'article.mcp-turn').length > 0,
+    })
+    const drawn = onScreen((await mount('ts')).document)
+    const bound = onScreen((await mount('ts', { run: true, reduced: false, interval: 100000 })).document)
+    expect(drawn.turns, 'the prompt alone').toEqual([])
+    expect(drawn.frames).toEqual([0])
+    expect(drawn.count).toBe(`0/${CALLS.ts}`)
+    expect(bound).toEqual(drawn)
+  })
+
+  it('draws the header and the bar from the first paint, hiding them from a page with no script by its stylesheet', async () => {
+    const { document } = await mount('ts')
+    expect((document.querySelector('[data-head]') as HTMLElement).hidden).toBe(false)
+    expect((document.querySelector('[data-controls]') as HTMLElement).hidden).toBe(false)
   })
 
   it('does not pin when the click is on a link', async () => {

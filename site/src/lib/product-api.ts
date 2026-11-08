@@ -2,8 +2,9 @@ import { symbolsForProduct, type ApiModel, type ApiSymbol, type SymbolIndex } fr
 import { API_MODELS, createApiIndex, referenceAlternatives } from './api-models'
 import { PORT_BY_SLUG, portPageUrl, productApiPath, referenceUrl, type DocProduct } from './ports'
 import type { SidebarItem, SidebarGroupItem } from './sidebar'
-import { referenceTreeFor } from './api-tree'
+import { firstEntry, referenceTreeFor } from './api-tree'
 import type { ApiTreeJson } from './api-search'
+import { productApiBuckets, productApiSections } from './product-api-sections'
 
 /** Public product declarations have their own routes; internal declarations stay in core. */
 export function coreApiSymbols(model: ApiModel): ApiSymbol[] {
@@ -94,10 +95,11 @@ export function productReferenceTree(model: ApiModel, product: DocProduct, versi
   if (existing) return existing
   const symbols = symbolsForProduct(model, product)
   const roots = productApiRoots(model, product)
-  const tree = referenceTreeFor(`${model.port}:${product}`, { ...model, symbols }, [{
-    id: product, label: 'API reference', collapsed: false, children: [],
-    entries: roots.map((symbol) => ({ id: symbol.publicId ?? symbol.id, name: symbol.name, kind: symbol.kind, slug: symbol.slug! })),
-  }], { hrefs: Object.fromEntries(symbols.flatMap((symbol) => [
+  const entry = (symbol: ApiSymbol) => ({ id: symbol.publicId ?? symbol.id, name: symbol.name, kind: symbol.kind, slug: symbol.slug! })
+  const buckets = productApiBuckets(model, product, entry) ?? [{
+    id: product, label: 'API reference', collapsed: false, children: [], entries: roots.map(entry),
+  }]
+  const tree = referenceTreeFor(`${model.port}:${product}`, { ...model, symbols }, buckets, { hrefs: Object.fromEntries(symbols.flatMap((symbol) => [
     [symbol.id, productApiHref(model, symbol, version)], [symbol.publicId ?? symbol.id, productApiHref(model, symbol, version)],
   ])) })
   cache.set(key, tree)
@@ -119,25 +121,37 @@ export function productApiNavigation(model: ApiModel, product: DocProduct, versi
     return members.length ? { type: 'group', ...link, items: members.map((member) => entry(member)) }
       : { type: 'link', ...link }
   }
-  const rows: SidebarItem[] = []
-  const namespaces = new Map<string, SidebarGroupItem>()
-  for (const symbol of productApiRoots(model, product)) {
-    // Julia extends functions owned by other modules. Their qualified names
-    // identify a grouping, not a new local module declaration or page.
-    const qualified = model.port === 'julia' && symbol.kind === 'function' ? symbol.qualifiedName : undefined
-    const separator = qualified?.lastIndexOf('.') ?? -1
-    if (qualified && separator > 0) {
-      const label = qualified.slice(0, separator)
-      let group = namespaces.get(label)
-      if (!group) {
-        group = { type: 'group', label, kind: 'module', items: [] }
-        namespaces.set(label, group)
-        rows.push(group)
-      }
-      group.items.push(entry(symbol, qualified.slice(separator + 1)))
-    } else rows.push(entry(symbol))
+  const sections = productApiSections(model, product)
+  const build = (roots: ApiSymbol[]): SidebarItem[] => {
+    const rows: SidebarItem[] = []
+    const namespaces = new Map<string, SidebarGroupItem>()
+    for (const symbol of roots) {
+      // Julia extends functions owned by other modules. Their qualified names
+      // identify a grouping, not a new local module declaration or page.
+      const qualified = model.port === 'julia' && symbol.kind === 'function' ? symbol.qualifiedName : undefined
+      const separator = qualified?.lastIndexOf('.') ?? -1
+      if (qualified && separator > 0) {
+        const label = qualified.slice(0, separator)
+        let group = namespaces.get(label)
+        if (!group) {
+          group = { type: 'group', label, kind: 'module', items: [] }
+          namespaces.set(label, group)
+          rows.push(group)
+        }
+        group.items.push(entry(symbol, qualified.slice(separator + 1)))
+      } else rows.push(entry(symbol))
+    }
+    return rows
   }
-  return rows
+  // Sections come from the product's shared vocabulary; a short product stays one list.
+  if (!sections) return build(productApiRoots(model, product))
+  return sections.map(({ section, symbols }): SidebarItem => {
+    // The tree links a section row to the page its first entry names; a breadcrumb through the section links there too.
+    const target = firstEntry({ id: section.id, label: section.label, collapsed: false, children: [],
+      entries: symbols.map((symbol) => ({ id: symbol.publicId ?? symbol.id, name: symbol.name, kind: symbol.kind, slug: symbol.slug! })) })
+    const owner = symbols.find((symbol) => (symbol.publicId ?? symbol.id) === target?.id)
+    return { type: 'group', label: section.label, ...(owner ? { href: productApiHref(model, owner, version) } : {}), items: build(symbols) }
+  })
 }
 
 const indexes = new WeakMap<ApiModel, Map<string, SymbolIndex>>()

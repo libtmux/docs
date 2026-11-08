@@ -2,12 +2,12 @@
 /**
  * The replay's controls bar: play and pause, previous and next call, a track
  * with a dot for the state before the first call and one per call, a count
- * full screen and, when the player passes one, a note on how its run was
- * recorded, opened as a popover. A host that says what each dot shows
+ * full screen. A host that says what each dot shows
  * (`ReplayOptions.tip`) gets a tooltip over the dot a pointer or focus is on. The markup is what
  * `lib/replay-player.ts` binds, so the MCP replay and the Core API player
- * share both. It starts hidden: the player shows it once it can bind it, so a
- * page without script keeps no dead buttons.
+ * share both. It is drawn at the state before the first call, and takes its
+ * place from the first paint, so binding it moves nothing; a page without
+ * script (`html:not([data-js])`) hides it and keeps no dead buttons.
  */
 import '../../styles/mcp-replay.css'
 
@@ -16,26 +16,26 @@ interface Props {
   start: string
   /** One label per call, which names the state its dot shows. */
   marks: string[]
-  /** The id of the popover in the `info` slot that says how the run was recorded. */
-  info?: string
+  /** How many of the calls the page first plays when a choice of the reader's drops the last (the dots and the count are drawn for those); every call by default. */
+  playable?: number
 }
-const { start, marks, info } = Astro.props as Props
-const total = marks.length
+const { start, marks, playable = marks.length } = Astro.props as Props
+// The page is drawn at the state before the first call, where the player starts.
+const at = 0
+const total = playable
 ---
-<div class="mcp-replay__controls" data-controls hidden>
+<div class="mcp-replay__controls" data-controls>
   <button type="button" class="mcp-replay__button" data-action="play" data-state="play" aria-label="Play"><svg class="mcp-icon mcp-icon--play" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3.5v9l7-4.5z" /></svg><svg class="mcp-icon mcp-icon--pause" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 3.5v9M10.5 3.5v9" /></svg><svg class="mcp-icon mcp-icon--replay" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7M3 2.5v2.8h2.8" /></svg></button>
   <button type="button" class="mcp-replay__button" data-action="back" aria-label="Previous call"><svg class="mcp-icon " viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 3.5v9M12 3.5 6 8l6 4.5z" /></svg></button>
   <button type="button" class="mcp-replay__button" data-action="forward" aria-label="Next call"><svg class="mcp-icon " viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v9M4 3.5 10 8l-6 4.5z" /></svg></button>
   <div class="mcp-replay__track" role="group" aria-label="Calls">
-    <div class="mcp-replay__fill" data-fill></div>
+    <div class="mcp-replay__fill" data-fill style={`width:${(at / total) * 100}%`}></div>
     <div class="mcp-replay__tip" data-tip role="tooltip" hidden></div>
-    <button type="button" class="mcp-replay__mark" data-mark="0" aria-label={start} style="left:0%"></button>
+    <button type="button" class="mcp-replay__mark is-done" data-mark="0" aria-label={start} aria-current={at === 0 ? 'step' : undefined} style="left:0%"></button>
     {marks.map((label, index) => (
-      <button type="button" class="mcp-replay__mark" data-mark={index + 1} aria-label={label} style={`left:${((index + 1) / total) * 100}%`}></button>
+      <button type="button" class={`mcp-replay__mark${index + 1 <= at ? ' is-done' : ''}`} hidden={index + 1 > playable} data-mark={index + 1} aria-label={label} aria-current={index + 1 === at ? 'step' : undefined} style={`left:${((index + 1) / total) * 100}%`}></button>
     ))}
   </div>
-  <span class="mcp-replay__count" data-count aria-live="polite">{total}/{total}</span>
-  {info && <button type="button" class="mcp-replay__button" popovertarget={info} aria-label="How this was recorded"><svg class="mcp-icon " viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6" /><path d="M8 7.25v3.75M8 5h.01" /></svg></button>}
-  <slot name="info" />
+  <span class="mcp-replay__count" data-count aria-live="polite">{at}/{total}</span>
   <button type="button" class="mcp-replay__button" data-action="fullscreen" aria-label="Full screen"><svg class="mcp-icon " viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2.5H2.5V6M10 2.5h3.5V6M6 13.5H2.5V10M10 13.5h3.5V10" /></svg></button>
 </div>
