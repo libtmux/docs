@@ -824,7 +824,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
             {shown.length > 0 && (
               <div class="api-members mt-8">
                 <h2 class="api-section-heading text-lg font-semibold" id="api-members">{aliasedMembers ? <>Members of <a class="api-members-target" href={hrefFor(aliasedMembers)}><code>{aliasedMembers.name}</code></a></> : membersLabel}<span class="api-section-count">{shown.length}</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersLabel}`}>#</a></h2>
-                {tableColumns ? <ApiScalarMembers owner={owner} members={listed} index={index} hrefFor={hrefFor} columns={tableColumns} label={tableHeading} payloads={payloads} repeated={rowsRepeat(tableColumns)} /> : <ApiMemberList groups={memberGroups} showGroups={showMemberGroups} index={index} hrefFor={hrefFor} />}
+                {tableColumns ? <ApiScalarMembers owner={owner} members={listed} index={index} hrefFor={hrefFor} columns={tableColumns} label={tableHeading} payloads={payloads} repeated={rowsRepeat(tableColumns)} /> : <ApiMemberList groups={memberGroups} showGroups={showMemberGroups} index={index} hrefFor={hrefFor} language={language} />}
               </div>
             )}
 

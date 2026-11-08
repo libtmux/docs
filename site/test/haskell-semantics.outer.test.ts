@@ -124,6 +124,27 @@ describe('Haskell reference semantics', () => {
     }
   })
 
+  it('keeps native declaration words in the extracted member-list component', async () => {
+    const template = await loadAstroTemplate('components/api/ApiReference.astro', {
+      real: ['components/api/ApiMemberList.astro', 'components/api/ApiBadge.astro'],
+      modules: {
+        'astro-expressive-code/components': { Code: () => '' },
+        '../../lib/page-ports-for': { pagePortsFor: async () => [] },
+        '../../lib/sidebar': { pageBreadcrumbs: async () => [] },
+      },
+    })
+    const win = new Window()
+    windows.push(win)
+    win.document.body.innerHTML = await renderAstroTemplate(template, {
+      url: `https://libtmux.org/en/haskell/latest/reference/${named('IdError').slug}/`,
+      props: { model, owner: named('IdError') },
+    })
+    const row = [...win.document.querySelectorAll('.api-member-list li')]
+      .find((entry) => entry.querySelector('.api-member-link')?.textContent === 'InvalidId')
+    expect(row, 'IdError lists its data constructor').toBeDefined()
+    expect(row!.querySelector('.api-member-badges')?.textContent).toContain('data constructor')
+  })
+
   it('invalidates saved Haskell presentation while retaining the existing version for other ports', () => {
     expect(apiTreeVersion(model, [])).toMatch(/^3:/)
     expect(apiTreeVersion(API_MODELS.java, [])).toMatch(/^2:/)
