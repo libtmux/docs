@@ -75,7 +75,7 @@
       "file": "examples/workspace.lisp",
       "lang": "lisp",
       "from": "(defun apply-workspace-document",
-      "to": "(ws:apply-workspace client workspace))))",
+      "to": "(ws:apply-workspace client workspace",
       "ci": {
         "workflow": ".github/workflows/tests.yml",
         "command": "mise run package-examples"
