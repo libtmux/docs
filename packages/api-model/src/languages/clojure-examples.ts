@@ -29,9 +29,10 @@ export function attachCompleteClojureExamples(
   }
   const files = manifest.variants?.clojure?.files
   if (manifest.schemaVersion !== 1 || !Array.isArray(manifest.examples) || !manifest.examples.length ||
-      !Array.isArray(files) || files.length !== 2 ||
-      new Set(files.map((file) => file.path)).size !== 2 ||
-      !files.every((file) => ['deps.edn', 'run.sh'].includes(file.path))) {
+      !Array.isArray(files) || !files.length || files.length > 2 ||
+      new Set(files.map((file) => file.path)).size !== files.length ||
+      !files.every((file) => ['deps.edn', 'run.sh'].includes(file.path)) ||
+      !files.some((file) => file.path === 'deps.edn')) {
     throw new Error('Invalid Clojure example catalog or setup')
   }
   const codeFor = (path: string): string => {
@@ -42,6 +43,8 @@ export function attachCompleteClojureExamples(
     if (!code?.trim()) throw new Error(`Missing complete Clojure example file: ${path}`)
     return code
   }
+  // A revision before libtmux-java#142 ships run.sh beside deps.edn; later ones start their own server.
+  const launcher = files.some((file) => file.path === 'run.sh')
   const urlFor = (path: string) => `https://github.com/${source.repo}/blob/${source.revision}/${path}`
   const ids = new Set<string>()
   for (const program of manifest.examples) {
@@ -71,11 +74,12 @@ export function attachCompleteClojureExamples(
         : 'Dependencies resolve from the isolated m2 directory; the core.async dependency is only enabled by its alias.'}`,
       code: codeFor(file.sourceFile), sourceUrl: urlFor(file.sourceFile),
     })), {
-      lang: 'clojure', intro: `Save the complete program as \`${program.path}\`, creating its parent directories. Closing its client leaves the launcher's server running.`,
+      lang: 'clojure', intro: `Save the complete program as \`${program.path}\`, creating its parent directories. ${launcher ? "Closing its client leaves the launcher's server running." : 'It starts a private tmux server of its own and stops it when the program closes it.'}`,
       code: codeFor(program.sourceFile), sourceUrl: urlFor(program.sourceFile),
     }, {
-      lang: 'console', intro: 'Run it with the private fixture. Set TMUX_BIN to select another tmux binary:',
-      code: `$ sh run.sh clojure \\\n  -J-Dclojure.main.report=stderr \\\n  -M${adapter ? ':core-async' : ''} \\\n  -m ${program.mainNamespace}\n`,
+      lang: 'console',
+      intro: launcher ? 'Run it with the private fixture. Set TMUX_BIN to select another tmux binary:' : 'Run it. Put the tmux you want first on PATH:',
+      code: `$ ${launcher ? 'sh run.sh ' : ''}clojure \\\n  -J-Dclojure.main.report=stderr \\\n  -M${adapter ? ':core-async' : ''} \\\n  -m ${program.mainNamespace}\n`,
     }, {
       lang: 'text', intro: program.requiresControl ? 'Expected output on tmux 3.7 or newer:' : 'Expected output:',
       code: program.expectedOutput,
