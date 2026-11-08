@@ -121,6 +121,10 @@ export function scanErlang(text, { commands, known, dispatch, builders = new Set
         else if (tokens[at].t === 'sym' && tokens[at].v === ';' && callable(at + 1) && callName(at + 1) === fn.name) heads.add(at + 1)
       }
       const calls = []
+      const declaredName = (names, call) => {
+        const qualified = `${call.receiver ?? module}:${call.name}`
+        return names.has(qualified) ? qualified : names.has(call.name) ? call.name : undefined
+      }
       const deferred = [...pairs].filter(([open, close]) => tokens[open].v === 'fun' && open > formStart && close < end)
       const isDeferred = (at) => deferred.some(([open, close]) => open < at && at < close)
       for (let at = formStart; at < end; at++) {
@@ -130,7 +134,11 @@ export function scanErlang(text, { commands, known, dispatch, builders = new Set
         const receiver = qualified ? (tokens[at - 2]?.t === 'atom' ? tokens[at - 2].n : undefined) : imports.get(name)
         // A variable module or record field is not a statically resolved call.
         if (tokens[at - 1]?.v === '.' || (tokens[at - 1]?.v === ':' && !receiver)) continue
-        const call = { name, ...(receiver ? { receiver } : {}), line: tokens[at].line, calleeLine: tokens[at].line }
+        const tuple = at + 2
+        const portMode = name === 'open_port/2' && tokens[tuple]?.v === '{' && arity(tuple) === 2
+          && tokens[tuple + 1]?.t === 'atom' && tokens[tuple + 2]?.t === 'sym' && tokens[tuple + 2].v === ','
+          && tokens[pairs.get(tuple) + 1]?.t === 'sym' && tokens[pairs.get(tuple) + 1].v === ',' ? tokens[tuple + 1].n : undefined
+        const call = { name, ...(receiver ? { receiver } : {}), ...(portMode ? { portMode } : {}), line: tokens[at].line, calleeLine: tokens[at].line }
         if (isDeferred(at)) { fn.deferredCalls.push(call); continue }
         fn.calls.set(name, tokens[at].line)
         if (receiver) fn.receivers.set(name, new Set([...(fn.receivers.get(name) ?? []), receiver]))
@@ -150,30 +158,40 @@ export function scanErlang(text, { commands, known, dispatch, builders = new Set
         const site = { command, line: token.line, flags }
         if (dispatch) {
           const path = calls.filter((call) => call.open < at && at < call.close).sort((a, b) => (a.close - a.open) - (b.close - b.open))
-          const senderIndex = path.findIndex((call) => dispatch.has(call.name))
+          const senderIndex = path.findIndex((call) => declaredName(dispatch, call) !== undefined)
           const sender = path[senderIndex]
-          const blocked = path.slice(0, senderIndex).some((call) => !builders.has(call.name))
+          const blocked = path.slice(0, senderIndex).some((call) => declaredName(builders, call) === undefined)
           const computed = sender && enclosing.some(([open, close]) => {
             if (open < sender.open) return false
             if (tokens[open].v === '{') return true
             if (tokens[open].v === '<<' && (close !== open + 2 || tokens[open + 1].t !== 'str')) return true
             if (tokens[open].t === 'sym' && /^[a-z]/.test(tokens[open].v)) return true
-            for (let index = open + 1; index < close; index++) {
+            let from = open + 1
+            let to = close
+            for (let index = from; index < close; index++) {
+              if (pairs.has(index)) index = pairs.get(index)
+              else if (tokens[index].v === ',') {
+                if (index < at) from = index + 1
+                else { to = index; break }
+              }
+            }
+            for (let index = from; index < to; index++) {
               if (pairs.has(index)) index = pairs.get(index)
               else if (tokens[index].t === 'sym' && ['=:=', '=/=', '==', '/=', '<', '>', '=<', '>=', 'andalso', 'orelse', 'not', '++', '--'].includes(tokens[index].v)) return true
             }
             return false
           })
           const diagnostic = path.some((call) => {
-            if (!labels.has(call.name)) return false
+            const labelName = declaredName(labels, call)
+            if (labelName === undefined) return false
             let argument = 0
             for (let index = call.open + 1; index < at; index++) {
               if (pairs.has(index)) index = pairs.get(index)
               else if (tokens[index].t === 'sym' && tokens[index].v === ',') argument++
             }
-            return labels.get(call.name).has(argument)
+            return labels.get(labelName).has(argument)
           })
-          if (sender && !blocked && !computed && !diagnostic && !isDeferred(at)) site.dispatch = { line: sender.line, name: sender.name }
+          if (sender && !blocked && !computed && !diagnostic && !isDeferred(at)) site.dispatch = { line: sender.line, name: declaredName(dispatch, sender) }
           else { site.dispatch = null; site.why = isDeferred(at) ? 'it is inside a deferred fun body' : 'it reaches no declared dispatcher call' }
         }
         fn.sites.push(site)

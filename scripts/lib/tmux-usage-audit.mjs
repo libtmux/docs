@@ -37,7 +37,7 @@ export const BINDS_ONLY = /^(?:let|var|val|const)\b[^=]*=\s*(?:[\w.]+\()?\s*Comm
 /**
  * @typedef {{ symbol: string, command: string, scope: string | null, evidence: string[], reviewed?: boolean,
  *   via?: { port: string, symbol: string, revision: string, evidence: string[], reviewed?: boolean } }} Use
- * @typedef {{ read: (path: string) => string | undefined, functions: { file: string, name: string, owner?: string, start: number, end: number, sites: { command: string, line: number, dispatch?: { line: number } | null, why?: string }[], calls: Map<string, number>, receivers: Map<string, Set<string>> }[] }} Sources
+ * @typedef {{ read: (path: string) => string | undefined, functions: (import('./tmux-usage-scan.mjs').ScannedFunction & { file: string })[] }} Sources
  *
  * @param {{
  *   port: string,
@@ -131,7 +131,9 @@ export function auditEvidence({ port, revision, uses, claimFor, sourcesAt, spell
         const next = split(use.evidence[index])
         const caller = enclosing(sources, next.file, next.line)
         if (!callee) problems.push(`${label}: ${use.evidence[index - 1]} is in no function, so ${use.evidence[index]} calls nothing`)
-        else if (!caller || caller.calls.get(callee.name) !== next.line || !callTargets(caller, callee, named(callee.name))) {
+        else if (!caller || !(caller.callList
+          ? caller.callList.some((call) => call.line === next.line && callTargets(caller, callee, named(callee.name), call))
+          : caller.calls.get(callee.name) === next.line && callTargets(caller, callee, named(callee.name)))) {
           problems.push(`${label}: ${use.evidence[index]} is not a call of ${callee.owner ? `${callee.owner}.` : ''}${callee.name}, the function around ${use.evidence[index - 1]}: ${texts[index].trim().slice(0, 90)}`)
         }
       }

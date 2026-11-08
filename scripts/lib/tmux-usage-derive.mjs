@@ -66,6 +66,7 @@ export function shapeFits(call, fn) {
  */
 export function callTargets(caller, callee, named, call) {
   if (!caller.calls.has(callee.name)) return false
+  if (call && call.name !== callee.name) return false
   // Erlang modules name a static destination even when no other helper shares its name.
   if (caller.module !== undefined) {
     const calls = call ? [call] : (caller.callList ?? []).filter((candidate) => candidate.name === callee.name)

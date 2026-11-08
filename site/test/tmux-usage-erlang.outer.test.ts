@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { GRAMMARS, isLibrarySource, scanSource } from '../../scripts/lib/tmux-usage-scan.mjs'
 import { callTargets, definitionsOf, deriveUsage } from '../../scripts/lib/tmux-usage-derive.mjs'
+import { dispatcherProblems } from '../../scripts/lib/tmux-usage-dispatch.mjs'
+import { auditEvidence } from '../../scripts/lib/tmux-usage-audit.mjs'
 
 // Outer: runs the selected OTP 29 scanner in bounded subprocesses.
 
@@ -185,17 +187,98 @@ describe('Erlang tmux command source', () => {
   })
 
   it('cites the resolved local call rather than a later remote namesake', async () => {
-    const { functions } = await scan([
+    const text = [
       '-module(demo).',
       'read(S) ->',
       '    helper(S),',
       '    other:helper(S).',
       'helper(S) -> run(S, <<"kill-pane">>, []).',
-    ].join('\n'))
+    ].join('\n')
+    const { functions } = await scan(text)
+    const located = functions.map((fn) => ({ ...fn, file: 'demo.erl' }))
     const derived = deriveUsage({ command: 'kill-pane',
-      functions: functions.map((fn) => ({ ...fn, file: 'demo.erl' })),
+      functions: located,
       symbols: [{ id: 'read', name: 'read/1', file: 'demo.erl', line: 2 }],
     })
     expect(derived.entries[0].evidence).toEqual(['demo.erl:5', 'demo.erl:3'])
+    const audit = (evidence: string[]) => auditEvidence({
+      port: 'erlang', revision: 'fixture',
+      uses: [{ ...derived.entries[0], evidence }], claimFor: () => undefined,
+      sourcesAt: () => ({ read: () => text, functions: located }),
+      spellings: (command: string) => [command],
+    })
+    expect(audit(derived.entries[0].evidence)).toEqual([])
+    expect(audit(['demo.erl:5', 'demo.erl:4']).join('\n')).toMatch(/not a call/)
+  })
+
+  it('binds a declared dispatcher to its native module and arity', async () => {
+    const { functions } = await scanSource({ grammar: 'erlang', commands: known, known,
+      dispatch: new Set(['tmux_target:run/3']),
+      text: [
+        '-module(demo).',
+        'good(S)->tmux_target:run(S, <<"list-panes">>, []).',
+        'other(S)->not_tmux:run(S, <<"list-panes">>, []).',
+        'local(S)->run(S, <<"list-panes">>, []).',
+        'run(S, Name, Args)->{S,Name,Args}.',
+      ].join('\n'),
+    })
+    expect(functions.slice(0, 3).map((fn) => fn.sites[0].dispatch)).toEqual([
+      { line: 2, name: 'tmux_target:run/3' }, null, null,
+    ])
+  })
+
+  it('does not confuse differently named calls in the same static module', async () => {
+    const { functions } = await scan('-module(demo).\nread(S)->other:unrelated(S), other:helper(S).')
+    const target = (await scan('-module(other).\nhelper(S)->S.')).functions[0]
+    expect(callTargets(functions[0], target, [target], functions[0].callList![0])).toBe(false)
+    expect(callTargets(functions[0], target, [target], functions[0].callList![1])).toBe(true)
+  })
+
+  it('keeps a literal command when a different argument computes its options', async () => {
+    const { functions } = await scan('-module(demo).\nread(S, Args)->run(S, <<"kill-pane">>, Args ++ [<<"-t">>, <<"%1">>]).')
+    expect(functions[0].sites[0].dispatch).toEqual({ line: 2, name: 'run/3' })
+  })
+
+  it('proves qualified dispatcher definitions from native heads rather than text mentions', async () => {
+    const text = '-module(transport).\nraw(Name, Args) ->\n    {Name, Args}.\n'
+    const { functions } = await scan(text)
+    const input = {
+      port: 'erlang', readSource: () => text,
+      functions: functions.map((fn) => ({ ...fn, file: 'transport.erl' })),
+    }
+    const rule = { name: 'transport:raw/2', kind: 'builder', why: 'Builds a command value.' }
+    const check = (name: string, line: number, has: string[]) => dispatcherProblems({
+      ...input, dispatchers: [{ ...rule, name, evidence: [{ at: `transport.erl:${line}`, has }] }],
+    })
+    expect(check(rule.name, 2, ['raw(Name, Args)'])).toEqual([])
+    expect(check('other:raw/2', 2, ['raw(Name, Args)']).join('\n')).toMatch(/no cited line shows/)
+    expect(check(rule.name, 3, ['{Name, Args}']).join('\n')).toMatch(/no cited line shows/)
+    expect(dispatcherProblems({ ...input, functions: undefined, dispatchers: [{
+      ...rule, evidence: [{ at: 'transport.erl:2', has: [] }],
+    }] }).join('\n')).toMatch(/no cited line shows/)
+  })
+
+  it('requires an executable native port call rather than transport-looking text', async () => {
+    for (const [body, accepts] of [
+      ['open_port({spawn_executable, Name}, Args)', true],
+      ['erlang:open_port({spawn_executable, Name}, Args)', true],
+      ['{Name, Args, <<"open_port({spawn_executable,">>}', false],
+      ['fun()->open_port({spawn_executable, Name}, Args) end', false],
+      ['other:open_port({spawn_executable, Name}, Args)', false],
+      ['{open_port({spawn, Name}, Args), <<"open_port({spawn_executable,">>}', false],
+      ['{erlang:open_port({spawn_executable =:= spawn, Name}, Args), <<"open_port({spawn_executable,">>}', false],
+      ['open_port({spawn_executable, Name}, Args).\n-compile({no_auto_import,[open_port/2]}).\nopen_port(_,_) -> ok', false],
+    ] as const) {
+      const text = `-module(tmux_transport).\nraw(Name, Args) -> ${body}.\n`
+      const { functions } = await scan(text)
+      const file = 'apps/libtmux_erlang/src/tmux_transport.erl'
+      const problems = dispatcherProblems({
+        port: 'erlang', readSource: () => text,
+        functions: functions.map((fn) => ({ ...fn, file })),
+        dispatchers: [{ name: 'tmux_transport:raw/2', why: 'Starts the native process.',
+          evidence: [{ at: `${file}:2`, has: ['raw(Name, Args)'] }] }],
+      })
+      expect(problems.length === 0, body).toBe(accepts)
+    }
   })
 })

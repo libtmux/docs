@@ -840,6 +840,6 @@ export async function scanSource({ grammar, text, commands, known, dispatch, bui
 }
 
 /**
- * @typedef {{ name: string, owner?: string, module?: string, start: number, nameLine: number, end: number, kind: string, sites: Site[], calls: Map<string, number>, receivers: Map<string, Set<string>>, callList?: { name: string, receiver?: string, line: number, calleeLine?: number }[], callDepths?: Map<string, number>, namespace?: string }} ScannedFunction
+ * @typedef {{ name: string, owner?: string, module?: string, start: number, nameLine: number, end: number, kind: string, sites: Site[], calls: Map<string, number>, receivers: Map<string, Set<string>>, callList?: { name: string, receiver?: string, line: number, calleeLine?: number, portMode?: string }[], callDepths?: Map<string, number>, namespace?: string }} ScannedFunction
  * @typedef {{ command: string, line: number, flags: string, dispatch?: { line: number, name: string } | null, why?: string, builds?: boolean, depth?: number }} Site
  */
