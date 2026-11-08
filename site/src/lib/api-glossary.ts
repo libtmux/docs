@@ -5,8 +5,11 @@ import { markdownDocument } from './markdown-twins.ts'
 import { PORT_BY_SLUG, type DocProduct } from './ports.ts'
 import { buildTarget } from './versions.ts'
 import { NATIVE_API_GLOSSARIES } from './api-glossary-native.ts'
+import { NATIVE_KINDS } from './api-labels.ts'
 
 export interface Definition {
+  /** Native readable spelling when the stable term id is a machine token. */
+  label?: string
   definition: string
   detail?: string
   references: { title: string; url: string }[]
@@ -242,11 +245,12 @@ export const MCP_GLOSSARY_GROUPS: typeof API_GLOSSARY_GROUPS = [{
   ],
 }]
 export const ALL_GLOSSARY_GROUPS = [...API_GLOSSARY_GROUPS, ...MCP_GLOSSARY_GROUPS]
-const terms = new Map(ALL_GLOSSARY_GROUPS.flatMap((group) => group.terms.map((term) => [term.id, term] as const)))
 const nativeGroups = new Map(Object.entries(NATIVE_API_GLOSSARIES).map(([port, native]) => [port,
   API_GLOSSARY_GROUPS.map((group) => ({ ...group,
     description: group.id === 'symbol-kinds' ? `Kinds identify declarations in the ${PORT_BY_SLUG[port].name} API reference.` : group.description,
-    terms: group.terms.flatMap((term) => native[term.id] ? [{ id: term.id, ...native[term.id] }] : []),
+    terms: (group.id === 'symbol-kinds' && Object.keys(NATIVE_KINDS).some((id) => native[id])
+      ? Object.keys(native).filter((id) => Object.hasOwn(NATIVE_KINDS, id) || group.terms.some((term) => term.id === id))
+      : group.terms.map((term) => term.id)).flatMap((id) => native[id] ? [{ id, ...native[id] }] : []),
   })).filter((group) => group.terms.length),
 ]))
 
@@ -273,13 +277,12 @@ export function apiGlossary(contextPath?: string) {
 export function apiGlossaryHeadings(contextPath?: string) {
   return apiGlossary(contextPath).groups.flatMap((group) => [
     { depth: 2, slug: group.id, text: group.title },
-    ...group.terms.map((term) => ({ depth: 3, slug: term.id, text: term.id })),
+    ...group.terms.map((term) => ({ depth: 3, slug: term.id, text: term.label ?? term.id })),
   ])
 }
 
 /** Unknown labels remain plain text rather than linking to an absent definition. */
 export function apiGlossaryHref(term: string, contextPath?: string): string | undefined {
-  if (!terms.has(term)) return undefined
   const glossary = apiGlossary(contextPath)
   return glossary.groups.some((group) => group.terms.some((entry) => entry.id === term)) ? `${glossary.path}#${term}` : undefined
 }
@@ -290,7 +293,7 @@ export function apiGlossaryBody(contextPath?: string): string {
   return glossary.groups.flatMap((group) => [
     `## ${group.title}`, '', group.description, '',
     ...group.terms.flatMap((term) => [
-      `### ${term.id}`, '', term.definition, '',
+      `### ${term.label ?? term.id}`, '', term.definition, '',
       ...(term.detail ? [term.detail, ''] : []),
       `References: ${term.references.map((ref) => `[${ref.title}](${ref.url})`).join('; ')}.`, '',
     ]),

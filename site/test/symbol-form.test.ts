@@ -10,11 +10,11 @@ import { formKind, isEnvironmentVariable, FORMS, isWithin, writtenForm, type For
 type Declared = [label: string, shown: string, id: string, name?: string]
 interface Row {
   type: [label: string, shown: string]
-  method: Declared
+  method?: Declared
   function: Declared
   property: Declared
   /** The owner, the member's name and id, and what a page writes away from the owner's page and on it. */
-  member: [owner: string, name: string, id: string, away: string, home: string]
+  member?: [owner: string, name: string, id: string, away: string, home: string]
 }
 
 const ROWS: Record<string, Row> = {
@@ -30,6 +30,7 @@ const ROWS: Record<string, Row> = {
   scala: { type: ['direct.Server', 'direct.Server'], method: ['#layout()', '#layout', 'io.Window.layout'], function: ['using', 'using', 'io.using'], property: ['Session.server', 'Session.server', 'io.Session.server'], member: ['Direction', 'Up', 'io.Direction.Up', 'Direction.Up', 'Direction.Up'] },
   fsharp: { type: ['LibTmux::FSharp.Query', 'LibTmux.FSharp.Query'], method: ['Server.sessions()', 'Server.sessions', 'LibTmux.FSharp.Server.sessions'], function: ['Query.list', 'Query.list', 'LibTmux.FSharp.Query.list'], property: ['SplitSpec.Direction', 'SplitSpec.Direction', 'LibTmux.FSharp.SplitSpec.Direction'], member: ['Direction', 'Up', 'LibTmux.FSharp.Direction.Up', 'Direction.Up', 'Direction.Up'] },
   julia: { type: ['LibTmux::Snapshot', 'LibTmux.Snapshot'], method: ['Server.snapshot()', 'Server.snapshot', 'LibTmux.Server.snapshot'], function: ['cancel!', 'cancel!', 'LibTmux.cancel!'], property: ['Snapshot.acquired', 'Snapshot.acquired', 'LibTmux.Snapshot.acquired'], member: ['Direction', 'Up', 'LibTmux.Direction.Up', 'Up', 'Up'] },
+  haskell: { type: ['LibTmux::Id.PaneId', 'LibTmux.Id.PaneId'], function: ['LibTmux.Id.parsePaneId()', 'LibTmux.Id.parsePaneId', 'LibTmux.Id#v:parsePaneId', 'parsePaneId'], property: ['expectedPrefix', 'expectedPrefix', 'LibTmux.Id#v:expectedPrefix', 'expectedPrefix'] },
   ruby: { type: ['LibTmux.Server', 'LibTmux::Server'], method: ['Server.list_sessions', 'Server#list_sessions', 'LibTmux::Server#list_sessions'], function: ['LibTmux#version', 'LibTmux.version', 'LibTmux.version'], property: ['Server.socket_name', 'Server#socket_name', 'LibTmux::Server#socket_name'], member: ['Direction', 'up', 'LibTmux::Direction.up', ':up', ':up'] },
   lua: { type: ['libtmux::Server', 'libtmux.Server'], method: ['Server.list_sessions', 'Server:list_sessions()', 'libtmux.Server:list_sessions'], function: ['libtmux:new', 'libtmux.new()', 'libtmux.new'], property: ['Server:socket', 'Server.socket', 'libtmux.Server.socket'], member: ['Direction', 'up', 'libtmux.Direction.up', '"up"', '"up"'] },
   elixir: { type: ['LibTmux.Format', 'LibTmux.Format'], method: ['LibTmux.Capture.fetch/2', 'LibTmux.Capture.fetch/2', 'LibTmux.Capture.fetch/2'], function: ['submit/3', 'submit/3', 'LibTmux.Control.submit/3'], property: ['LibTmux.Error.retryable', 'LibTmux.Error.retryable', 'LibTmux.Error.retryable'], member: ['Direction', 'up', 'LibTmux.Direction.up', ':up', ':up'] },
@@ -50,8 +51,8 @@ describe('how a language writes a linked symbol', () => {
       expect(writtenForm({ lang, kind: 'type', label: row.type[0], symbol: declared('class', row.type[0]) })).toBe(row.type[1])
     })
 
-    it('writes a method as the language does', () => {
-      const [label, shown, id, name] = row.method
+    if (row.method) it('writes a method as the language does', () => {
+      const [label, shown, id, name] = row.method!
       expect(writtenForm({ lang, kind: 'method', label, symbol: declared('method', id, name) })).toBe(shown)
     })
 
@@ -68,8 +69,8 @@ describe('how a language writes a linked symbol', () => {
       }
     })
 
-    it('writes an enum member as the language does, away from its owner\'s page and on it', () => {
-      const [owner, name, id, away, home] = row.member
+    if (row.member) it('writes an enum member as the language does, away from its owner\'s page and on it', () => {
+      const [owner, name, id, away, home] = row.member!
       const input = { lang, kind: 'enum-member' as const, label: name, owner: { name: owner }, symbol: declared('constant', id, name) }
       expect(writtenForm({ ...input, onOwnerPage: false })).toBe(away)
       expect(writtenForm({ ...input, onOwnerPage: true })).toBe(home)

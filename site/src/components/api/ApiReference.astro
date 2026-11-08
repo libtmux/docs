@@ -28,7 +28,8 @@ import { withRoot } from '../../lib/site-root'
 import { API_MODELS, API_NAV, PORT_NAME, indexFor, isMemberOwner, ownersOf, pageSlug, referenceAlternatives, topLevelTypesOf } from '../../lib/api-models'
 import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
 import { productApiHref } from '../../lib/product-api'
-import { nativeQualifiedName } from '../../lib/native-name'
+import { nativeQualifiedName, nativeShortName } from '../../lib/native-name'
+import { nativeKind } from '../../lib/api-labels'
 import { plainMention } from '../../lib/mention-badge'
 import { symbolSource } from '../../lib/markdown-twins'
 import { localeSourcePath } from '../../i18n/locales'
@@ -203,7 +204,7 @@ const packageUrl = packageMeta?.registry ?? portMeta?.registry?.url ?? withRoot(
  * index actually has that anchor.
  */
 const declaringType = owner?.parent ? model?.symbols.find((s) => s.id === owner.parent) : undefined
-const declaringMention = declaringType ? plainMention(declaringType.kind, declaringType.name) : undefined
+const declaringMention = declaringType ? plainMention(nativeKind(declaringType, language), declaringType.name) : undefined
 const ownerModule = owner ? moduleOf(declaringType ?? owner) : undefined
 const moduleAnchors = new Set(model ? modulesIn(model).map((m) => m.name) : [])
 const moduleLabel = ['java', 'kotlin', 'scala', 'go'].includes(port ?? '') ? 'Package'
@@ -400,10 +401,13 @@ const title = glossary ? API_GLOSSARY_TITLE : owner
     ? source?.title ?? `${label} API reference`
     : 'API reference'
 const pageTitle = glossary ? API_GLOSSARY_TITLE : owner ? title : source?.title ?? 'API reference'
-const displayName = owner ? (declaringType ? `${declaringType.name}.${owner.name}` : owner.name) : pageTitle
+const displayName = owner ? (language === 'haskell' ? nativeShortName(model, owner)
+  : declaringType ? `${declaringType.name}.${owner.name}` : owner.name) : pageTitle
 const breadcrumbs = source?.breadcrumbs ?? await pageBreadcrumbs(displayName, glossary ? 'reference/glossary' : slug ? `reference/${slug}` : 'reference', version, port)
 const pagePath = glossary ? 'reference/glossary' : source?.pagePath ?? (slug ? `reference/${slug}` : 'reference')
-const description = glossary ? glossaryContext.description : source?.description ?? `Types, methods, and functions in libtmux for ${label}.`
+const description = glossary ? glossaryContext.description : source?.description ?? (language === 'haskell'
+  ? 'Modules, data types, constructors, record fields and functions in libtmux for Haskell.'
+  : `Types, methods, and functions in libtmux for ${label}.`)
 const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
 ---
 
@@ -476,7 +480,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
       <PageToolbar breadcrumbs={breadcrumbs} />
       <header id={owner ? 'api-overview' : undefined} class:list={[owner && 'api-reference-heading']}>
         {owner && <div class="api-reference-eyebrow">
-          <ApiBadge label={owner.command?.kind ?? owner.kind} variant="kind" value={owner.kind} />
+          <ApiBadge label={owner.command?.kind ?? nativeKind(owner, language)} variant="kind" value={nativeKind(owner, language)} />
           <span>{source?.model.project ?? portMeta?.projectName}</span>
           {owner.doc?.since && <span>Since {owner.doc.since}</span>}
           <span class="api-badge api-badge--mod api-reference-version"><span class="api-badge__label">{version}</span></span>
@@ -595,7 +599,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                   {[...mod.types, ...mod.free].map((o) => {
                     const count = model.symbols.filter((symbol) => symbol.parent === o.id).length
                     const kind = o.signatures.some((signature) => /\bannotation class\b/.test(signature.raw ?? ''))
-                      ? 'annotation' : o.command?.kind ?? o.kind
+                      ? 'annotation' : o.command?.kind ?? nativeKind(o, language)
                     const context = indexContext(o)
                     return (
                     <div id={mod.free.includes(o) ? o.publicId ?? o.id : undefined}
@@ -709,7 +713,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
               {owner?.source?.file && (
                 <span hidden data-pagefind-meta={`file:${owner.source.file}`} />
               )}
-              {owner?.kind && <span hidden data-pagefind-meta={`kind:${owner.kind}`} />}
+              {owner?.kind && <span hidden data-pagefind-meta={`kind:${nativeKind(owner, language)}`} />}
             <details class="api-source-details" data-pagefind-ignore="all" open>
               <script is:inline>
                 window.__initApiSourceDetails?.(document)
@@ -718,7 +722,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
               <dl class="api-definition">
               {/* The module, namespace or package this symbol is in, and its full name with a button to copy it; the page heading above carries neither. */}
               <dt>Qualified name</dt>
-              <dd><ApiQualifiedName name={nativeQualifiedName(model, owner)} kind={owner.kind} /></dd>
+              <dd><ApiQualifiedName name={nativeQualifiedName(model, owner)} kind={nativeKind(owner, language)} /></dd>
               {ownerModule && (
                 <>
                   <dt>{moduleLabel}</dt>
@@ -833,9 +837,9 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                 <ul class="api-member-list mt-4">
                   {otherInherited.map((m) => (
                     <li>
-                      <span><ApiBadge label={m.kind} variant="kind" value={m.kind} compact preview={false} /><a class="api-member-link" href={hrefFor(m)}>{m.name}</a></span>
+                      <span><ApiBadge label={nativeKind(m, language)} variant="kind" value={nativeKind(m, language)} compact preview={false} /><a class="api-member-link" href={hrefFor(m)}>{m.name}</a></span>
                       <span class="api-member-badges">
-                        <ApiBadge label={m.kind} variant="kind" value={m.kind} plain />
+                        <ApiBadge label={nativeKind(m, language)} variant="kind" value={nativeKind(m, language)} plain />
                         <a class="api-badge api-badge--mod" href={apiGlossaryHref('inherited', Astro.url.pathname)} title={`Inherited from ${m.inheritedFrom}`} aria-description={`Inherited from ${m.inheritedFrom}`} data-preview-context={`Inherited from ${m.inheritedFrom}.`}><span class="api-badge__label">inherited</span></a>
                       </span>
                       {m.doc?.summary && (

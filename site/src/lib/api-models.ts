@@ -9,6 +9,7 @@ import registryData from '../data/registry.json'
 import { PORT_BY_SLUG, referenceUrl, type DocProduct, type RegistryData } from './ports'
 import { buildTarget, defaultVersionFor, registryVersion } from './versions'
 import { mcpToolSymbols } from './mcp-catalog'
+import { nativeKind } from './api-labels'
 import powershellNav from '../data/api/powershell.nav.json'
 import juliaNav from '../data/api/julia.nav.json'
 import elixirNav from '../data/api/elixir.nav.json'
@@ -423,7 +424,7 @@ export function referenceAlternatives(port: string, publicId: string) {
         name,
         publicId: targetId,
         href,
-        kind: target?.command?.kind ?? target?.kind,
+        kind: target?.command?.kind ?? (target && nativeKind(target, targetPort)),
         note,
         absent: concept.absent?.[targetPort],
       }

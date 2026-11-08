@@ -2,6 +2,8 @@ interface SavedRow {
   label: string[]
   href?: string
   kind?: string
+  description?: string
+  palette?: string
   mark?: string
   lazy?: string
   count?: string
@@ -51,8 +53,11 @@ export function captureApiTree(nav: HTMLElement, tree: HTMLElement): ApiTreeStat
       }
       const link = row.matches('a') ? row : row.querySelector('a')
       const mark = row.querySelector<HTMLElement>('.api-nav__kind')
+      const description = entry.getAttribute('aria-description') ?? row.getAttribute('aria-description') ?? undefined
+      const kind = (entry as HTMLElement).dataset.apiKind ?? row.dataset.apiKind ?? description
       return { label: text, href: link?.getAttribute('href') ?? undefined,
-        kind: entry.getAttribute('aria-description') ?? row.getAttribute('aria-description') ?? undefined,
+        kind, ...(description !== kind ? { description } : {}),
+        palette: mark ? [...mark.classList].find((name) => name.startsWith('api-badge--kind-'))?.slice('api-badge--kind-'.length) : undefined,
         mark: mark?.textContent?.trim(), lazy: (entry as HTMLElement).dataset.lazy,
         count: row.querySelector('.api-nav__count')?.textContent?.trim(),
         ...(link?.hasAttribute('data-api-shortcut') ? { shortcut: true } : {}) }
@@ -120,10 +125,13 @@ export function initializeApiTree(nav: HTMLElement | null, restoreState = true):
         row.append(chevron)
       }
       if (entry.kind && /^[a-z]+(?:-[a-z]+)*$/.test(entry.kind)) {
-        item.setAttribute('aria-description', entry.kind)
+        const description = typeof entry.description === 'string' ? entry.description : entry.kind
+        item.setAttribute('aria-description', description)
+        item.dataset.apiKind = entry.kind
         if (entry.mark) {
-          const badge = element('span', `api-nav__kind api-badge--kind-${entry.kind}`)
-          badge.title = entry.kind
+          const palette = typeof entry.palette === 'string' && /^[a-z]+(?:-[a-z]+)*$/.test(entry.palette) ? entry.palette : entry.kind
+          const badge = element('span', `api-nav__kind api-badge--kind-${palette}`)
+          badge.title = description
           badge.setAttribute('aria-hidden', 'true')
           const label = element('span', 'api-badge__label')
           label.textContent = entry.mark

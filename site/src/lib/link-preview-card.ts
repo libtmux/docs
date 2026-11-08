@@ -1,6 +1,6 @@
 import type { CodeHighlight } from './highlight'
 import type { LinkPreview, PreviewReference } from './link-preview'
-import { abbreviateNamespace, kindMark, markClass } from './api-labels.ts'
+import { abbreviateNamespace, kindMark, kindPalette, markClass } from './api-labels.ts'
 import { limitPreviewSignature } from './preview-signature.ts'
 import { wordBreak } from './word-break.ts'
 
@@ -52,9 +52,6 @@ export function cardDom(document: Document, nodes: readonly CardNode[]): Node[] 
 
 const KIND_NAME = /^[a-z]+(?:-[a-z]+)*$/
 
-/** A cmdlet keeps its word and takes the function colours, as the heading badge does. */
-const kindPalette = (kind: string) => kind === 'cmdlet' ? 'function' : kind
-
 /** The kind as a reader says it. */
 const kindWord = (kind: string) => kind.replace(/-/g, ' ')
 
@@ -62,7 +59,7 @@ const kindWord = (kind: string) => kind.replace(/-/g, ' ')
 function markOf(kind: string | undefined): { palette: string; mark: string } | undefined {
   if (!kind || !KIND_NAME.test(kind)) return undefined
   const palette = kindPalette(kind)
-  const mark = kindMark(palette)
+  const mark = kindMark(kind)
   // A name that only an object's prototype knows, such as `constructor`, is not a kind.
   return typeof mark === 'string' ? { palette, mark } : undefined
 }

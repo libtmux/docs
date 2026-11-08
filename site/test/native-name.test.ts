@@ -196,12 +196,13 @@ describe('short names', () => {
     expect(nativeShortName(API_MODELS.swift, symbol)).toBe(`Server.${symbol.name}`)
   })
 
-  it('are the owner, a separator that the language writes, and the member, for every symbol of every port', { timeout: 30_000 }, () => {
+  it('follow native ownership and qualification for every symbol of every port', { timeout: 30_000 }, () => {
     const separators: Record<string, string[]> = { rs: ['::'], cxx: ['::'], ruby: ['::', '.', '#'], lua: ['.', ':'], powershell: ['\\'] }
     for (const [port, model] of Object.entries(API_MODELS)) {
       const owners = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
       for (const symbol of model.symbols) {
         const shown = nativeShortName(model, symbol)
+        if (port === 'haskell') { expect(shown, symbol.id).toBe(symbol.name); continue }
         const owner = symbol.parent ? owners.get(symbol.parent) : undefined
         if (!owner) { expect(shown, `${port} ${symbol.id}`).toBe(symbol.name); continue }
         expect(shown.startsWith(owner.name) && shown.endsWith(symbol.name), `${port} ${symbol.id}`).toBe(true)

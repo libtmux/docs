@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { commandFacts, memberTier, moduleOf, parameterBindingFacts, parameterBindingText, qualifiedNameOf, typeParametersOf, type ApiModelBase, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model'
 import { apiGlossaryHref } from './api-glossary'
-import { relatedLabels } from './api-labels'
+import { nativeKind, relatedLabels } from './api-labels'
 import { csharpParameters, supportsCSharpSignatures, supportsElixirSignatures, supportsGoSignatures, supportsJavaSignatures, supportsLuaSignatures, supportsRubySignatures, supportsRustSignatures, supportsTypeScriptSignatures, swiftBaseName } from './code-layout'
 
 export interface ApiSection {
@@ -498,7 +498,8 @@ export interface RelatedTypeLink {
   qualified: boolean
   /** The source-qualified name, for the link's title. */
   identity: string
-  kind: ApiSymbol['kind']
+  /** Native presentation kind; source categories remain on the symbol. */
+  kind: string
   href: string
   symbol: ApiSymbol
 }
@@ -534,7 +535,7 @@ export function relatedTypeLinks(
   })
   const labels = relatedLabels(inputs, new Set([owner.id, ...(owner.parent ? [owner.parent] : [])]), options.language)
   return symbols.map((symbol, i) => ({
-    name: labels[i]!, qualified: labels[i] !== inputs[i]!.label, identity: qualifiedNameOf(symbol), kind: symbol.kind, href: hrefFor(symbol), symbol,
+    name: labels[i]!, qualified: labels[i] !== inputs[i]!.label, identity: qualifiedNameOf(symbol), kind: nativeKind(symbol, options.language), href: hrefFor(symbol), symbol,
   }))
 }
 

@@ -23,6 +23,7 @@ import ApiCommandParameters from './ApiCommandParameters.astro'
 import ApiSignatureParameters from './ApiSignatureParameters.astro'
 import { apiSignatureLayouts } from '../../lib/code-layout'
 import { pythonSignatureLayout } from '../../lib/python-code-layout'
+import { nativeKind } from '../../lib/api-labels'
 
 /**
  * One documented symbol, in the shape gp-sphinx's stylesheet expects.
@@ -209,7 +210,7 @@ const catalogEntries = !linkRows ? [] : catalogLinks ?? (port && !manualLinks ? 
 const mentionSections = [...new Set(mentions.map((m) => m.section ?? 'docs'))].sort()
 
 const badges = [
-  { label: symbol.command?.kind ?? kind, variant: 'kind' as const, value: kind },
+  { label: symbol.command?.kind ?? nativeKind(symbol, language), variant: 'kind' as const, value: nativeKind(symbol, language) },
   ...(symbol.package ? [{ label: symbol.package, variant: 'mod' as const, value: 'package' }] : []),
   ...symbol.modifiers.map((m) => ({ label: m, variant: 'mod' as const, value: m })),
   ...(symbol.signatures.length > 1 && symbol.modifiers.includes('overload')
@@ -500,7 +501,7 @@ const hasBody =
         {apiCommandRelatedLinks(symbol, index).length > 0 && <div class="api-command-related">
           <span class="api-command-related__label">Related APIs</span>
           <ul>{apiCommandRelatedLinks(symbol, index).map((link) => <li><a href={link.href} class="api-xref">
-            {link.symbol ? <><ApiBadge label={link.symbol.command?.kind ?? link.symbol.kind} value={link.symbol.command?.kind ?? link.symbol.kind} variant="kind" compact /><code>{link.text}</code></> : link.text}
+            {link.symbol ? <><ApiBadge label={link.symbol.command?.kind ?? nativeKind(link.symbol, language)} value={link.symbol.command?.kind ?? nativeKind(link.symbol, language)} variant="kind" compact /><code>{link.text}</code></> : link.text}
           </a></li>)}</ul>
         </div>}
       </div>

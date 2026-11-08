@@ -13,6 +13,7 @@ import { createHash } from 'node:crypto'
 import { PORT_BY_SLUG, type ApiDependencyNavigation } from './ports'
 import type { BreadcrumbItem } from './sidebar'
 import { nativeQualifiedName, nativeShortName } from './native-name'
+import { nativeKind } from './api-labels'
 
 export interface TreeBucket {
   id: string
@@ -32,10 +33,10 @@ export interface TreeMember {
 
 const treeVersions = new WeakMap<ApiModelBase, string>()
 /** Invalidate saved rows when their schema, declarations, ordering or dependency URLs change. */
-export function apiTreeVersion(model: ApiModelBase, tree: TreeBucket[], hrefs?: Record<string, string>): string {
+export function apiTreeVersion(model: ApiModelBase & { port?: string }, tree: TreeBucket[], hrefs?: Record<string, string>): string {
   let version = treeVersions.get(model)
   if (!version) {
-    version = `2:${createHash('sha256').update(JSON.stringify([model, tree, hrefs, mentions])).digest('hex').slice(0, 20)}`
+    version = `${model.port === 'haskell' ? 3 : 2}:${createHash('sha256').update(JSON.stringify([model, tree, hrefs, mentions])).digest('hex').slice(0, 20)}`
     treeVersions.set(model, version)
   }
   return version
@@ -430,7 +431,8 @@ export function referenceTreeFor(scope: string, model: ApiModelBase, tree: TreeB
       shortName: symbols.get(t.id) ? nativeShortName(naming, symbols.get(t.id)!) : t.name,
       slug: t.slug, m: members.has(t.id) ? 1 : 0,
       ...(t.shortcut ? { shortcut: true } : {}),
-      kind: t.kind, category: category(t.kind), summary: symbols.get(t.id)?.doc?.summary ?? '' })),
+      kind: symbols.get(t.id) ? nativeKind(symbols.get(t.id)!, naming.port) : t.kind,
+      category: category(t.kind), summary: symbols.get(t.id)?.doc?.summary ?? '' })),
     children: b.children.map(bucket),
   })
   const relationships = Object.fromEntries(model.symbols.flatMap((symbol) => {
@@ -445,7 +447,7 @@ export function referenceTreeFor(scope: string, model: ApiModelBase, tree: TreeB
     members: Object.fromEntries([...members].map(([id, list]) => [id, list.map((m) => {
       const symbol = symbols.get(m.id)
       const kind = symbol?.kind ?? 'member'
-      return [m.name, m.slug, m.id, kind, category(kind), symbol?.doc?.summary ?? '',
+      return [m.name, m.slug, m.id, symbol ? nativeKind(symbol, naming.port) : kind, category(kind), symbol?.doc?.summary ?? '',
         symbol ? nativeQualifiedName(naming, symbol) : m.id, symbol ? nativeShortName(naming, symbol) : m.name]
     })])),
   }

@@ -50,6 +50,7 @@ export const FORMS: Record<string, Language | 'as-written'> = {
   scala: { qualifier: '.', call: false },
   fsharp: { qualifier: '.', call: false },
   julia: { qualifier: '.', call: false },
+  haskell: { qualifier: '.', call: false },
   ruby: { qualifier: '::', call: false },
   lua: { qualifier: '.', call: true },
   elixir: 'as-written',
