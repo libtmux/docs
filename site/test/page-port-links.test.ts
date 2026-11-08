@@ -300,6 +300,37 @@ describe('matching pages in another port', () => {
     expect(links.find((entry) => entry.port === 'ts')?.links[0].href).toBe('/pr-42/en/ts/latest/mcp/tools/')
   })
 
+  it('keeps excluded products out of every MCP page switcher', () => {
+    const excluded = PORTS.filter((port) => port.productAvailability?.mcp === 'excluded')
+    expect(excluded.map((port) => port.slug)).toContain('lisp')
+    for (const source of PORTS) {
+      for (const pagePath of ['mcp', 'mcp/', 'mcp/tools', 'mcp/tools/capture_pane', 'mcp/guides', 'mcp/reference/glossary']) {
+        const entries = pagePortLinks({ ...options, pagePath, portSlug: source.slug })
+        for (const port of excluded) {
+          const entry = entries.find((entry) => entry.port === port.slug)!
+          expect(entry.links, `${source.slug}:${pagePath}:${port.slug}`).toEqual([])
+          expect(entry.home?.href).toBe(`/pr-42/en/${port.slug}/${source.slug === port.slug ? options.version : 'latest'}/`)
+        }
+      }
+    }
+  })
+
+  it('keeps real unpublished product overviews reachable', () => {
+    for (const pagePath of ['mcp', 'mcp/']) {
+      const entries = pagePortLinks({ ...options, pagePath, portSlug: 'ts' })
+      for (const port of PORTS.filter((port) => !port.parentLibrary && port.productAvailability?.mcp === 'unpublished')) {
+        expect(entries.find((entry) => entry.port === port.slug)?.links).toEqual([
+          { href: `/pr-42/en/${port.slug}/latest/mcp/` },
+        ])
+      }
+    }
+    const workspace = { id: 'ports/lua/workspace', data: { port: 'lua', product: 'workspace' } }
+    const entries = pagePortLinks({ ...options, pagePath: 'workspace', portSlug: 'ts', docs: [workspace] })
+    expect(entries.find((entry) => entry.port === 'lua')?.links).toEqual([
+      { href: '/pr-42/en/lua/latest/workspace/' },
+    ])
+  })
+
   it('switches MCP tools using each port’s registered wire name', () => {
     const links = pagePortLinks({ ...options, pagePath: 'mcp/tools/capture_pane', portSlug: 'ts' })
     expect(links.find((entry) => entry.port === 'lua')?.links).toEqual([])
