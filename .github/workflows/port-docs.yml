@@ -316,6 +316,11 @@ jobs:
         if: matrix.port == 'elixir'
         run: python3 docs/scripts/read-elixir-toolchain.py port
 
+      - name: Read selected Haskell toolchain
+        id: haskell-runtime
+        if: matrix.port == 'haskell'
+        run: python3 docs/scripts/read-haskell-toolchain.py port
+
       - name: Install native system dependencies
         if: steps.mcp.outputs.required == 'true' || matrix.port == 'cxx'
         env:
@@ -482,6 +487,33 @@ jobs:
           version-type: strict
           install-hex: true
           install-rebar: false
+
+      - if: matrix.port == 'haskell'
+        uses: haskell-actions/setup@0f8e8c99d88aeb3fbfd523f1ef2c6f762d10d64d # v2.12.1
+        with:
+          ghc-version: ${{ steps.haskell-runtime.outputs.ghc-version }}
+          cabal-version: ${{ steps.haskell-runtime.outputs.cabal-version }}
+          enable-stack: false
+
+      - name: Provision selected Haskell documentation dependencies
+        if: matrix.port == 'haskell'
+        working-directory: port
+        run: |
+          set -euo pipefail
+          cabal update
+          cabal build lib:libtmux-haskell --only-dependencies --enable-documentation
+
+      - name: Export Haskell API from the selected source
+        if: matrix.port == 'haskell'
+        env:
+          PORT_CHECKOUT: ${{ github.workspace }}/port
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+          EXPORTER: ${{ github.workspace }}/docs/packages/api-model/scripts/export-haskell.py
+        run: |
+          set -euo pipefail
+          python3 "$EXPORTER" --checkout "$PORT_CHECKOUT" \
+            --source-revision "$SOURCE_SHA" \
+            --output "$PORT_CHECKOUT/.cache/docs/api.json"
 
       # The exporter is this repository's script, run in the selected source so
       # the build step finds _build/docs/api.json. Mix compiles the package and

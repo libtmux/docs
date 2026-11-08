@@ -316,7 +316,7 @@ describe('port publisher contract', () => {
     expect(result.environment).toBe(`PREFIX=en/${slug}/pr-42\n`)
   })
 
-  it.each(['powershell', 'julia', 'elixir'])('accepts %s latest while rejecting bare and cross-port prefixes', (slug) => {
+  it.each(['powershell', 'julia', 'elixir', 'haskell'])('accepts %s latest while rejecting bare and cross-port prefixes', (slug) => {
     const repo = `libtmux/libtmux-${slug}`
     const latest = validatePrefix(repo, slug, `${slug}/latest`, { VERSION_IN: 'latest', KIND_IN: 'trunk' })
     expect(latest.status, latest.stderr).toBe(0)
