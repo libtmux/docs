@@ -103,7 +103,50 @@ jobs:
           # Exact versions only: a loose match would resolve a moving release.
           version-type: strict
           install-hex: true
-          rebar3-version: '3.28.0'
+
+      - name: Cache pinned Rebar3
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/libtmux-docs-tools/rebar3/rebar3
+          key: rebar3-${{ runner.os }}-${{ runner.arch }}-3.28.0-5a28b1cca082d3b023ec0f5df9d9f9d52557036c6f2a21c1ffa11b93a984dd42
+
+      - name: Install pinned Rebar3
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rebar_dir="$RUNNER_TEMP/libtmux-docs-tools/rebar3"
+          rebar_file="$rebar_dir/rebar3"
+          rebar_sha=5a28b1cca082d3b023ec0f5df9d9f9d52557036c6f2a21c1ffa11b93a984dd42
+          rebar_download=''
+          rebar_install_dir=''
+          rebar_ready=false
+          cleanup_rebar() {
+            if [[ -n "$rebar_download" ]]; then
+              rm -f -- "$rebar_download"
+            fi
+            if [[ "$rebar_ready" != true && -n "$rebar_install_dir" ]]; then
+              rm -rf -- "$rebar_install_dir"
+            fi
+          }
+          trap cleanup_rebar EXIT
+          mkdir -p "$rebar_dir"
+          if [[ ! -f "$rebar_file" ]] || ! printf '%s  %s\n' "$rebar_sha" "$rebar_file" | sha256sum --check --status; then
+            rebar_download=$(mktemp "$rebar_dir/.rebar3.XXXXXXXX")
+            gh api -H 'Accept: application/octet-stream' \
+              repos/erlang/rebar3/releases/assets/664140441 > "$rebar_download"
+            printf '%s  %s\n' "$rebar_sha" "$rebar_download" | sha256sum --check --strict
+            mv "$rebar_download" "$rebar_file"
+          fi
+          rebar_install_dir=$(mktemp -d "$RUNNER_TEMP/libtmux-docs-rebar3.XXXXXXXX")
+          install -m 755 "$rebar_file" "$rebar_install_dir/rebar3"
+          printf '%s  %s\n' "$rebar_sha" "$rebar_install_dir/rebar3" | sha256sum --check --strict
+          rebar_version=$(REBAR_GLOBAL_CONFIG_DIR="$RUNNER_TEMP/rebar3-empty-config" \
+            REBAR_CONFIG="$RUNNER_TEMP/rebar3-empty.config" "$rebar_install_dir/rebar3" version)
+          printf '%s\n' "$rebar_version"
+          [[ "$rebar_version" == 'rebar 3.28.0 '* ]]
+          printf '%s\n' "$rebar_install_dir" >> "$GITHUB_PATH"
+          rebar_ready=true
 
       - name: Stage integrated source guides
         env:
