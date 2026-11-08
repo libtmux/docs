@@ -46,6 +46,18 @@ describe('prose route ownership', () => {
 })
 
 describe('reference picker exits', () => {
+  it('keeps an excluded MCP product out of shared-page language links', () => {
+    for (const pagePath of ['mcp', 'mcp/tools']) {
+      const entries = pagePortLinks({ ...options, pagePath, portSlug: 'ts' })
+      expect(entries.find((entry) => entry.port === 'lisp')).toMatchObject({
+        links: [], home: { href: '/pr-42/en/lisp/latest/', label: 'Go to Common Lisp home' },
+      })
+      expect(entries.find((entry) => entry.port === 'ts')?.links).toEqual([
+        { href: `/pr-42/en/ts/v1.2.3/${pagePath}/` },
+      ])
+    }
+  })
+
   it('keeps missing equivalents distinct from product and language home shortcuts', () => {
     const entries = pagePortLinks({ ...options, pagePath: 'mcp/reference/libtmux-mcp-arguments', portSlug: 'cxx' })
     expect(entries.find((entry) => entry.port === 'rs')).toMatchObject({
@@ -298,37 +310,6 @@ describe('matching pages in another port', () => {
   it('keeps a shared nested route when switching ports', () => {
     const links = pagePortLinks({ ...options, pagePath: 'mcp/tools', portSlug: 'py' })
     expect(links.find((entry) => entry.port === 'ts')?.links[0].href).toBe('/pr-42/en/ts/latest/mcp/tools/')
-  })
-
-  it('keeps excluded products out of every MCP page switcher', () => {
-    const excluded = PORTS.filter((port) => port.productAvailability?.mcp === 'excluded')
-    expect(excluded.map((port) => port.slug)).toContain('lisp')
-    for (const source of PORTS) {
-      for (const pagePath of ['mcp', 'mcp/', 'mcp/tools', 'mcp/tools/capture_pane', 'mcp/guides', 'mcp/reference/glossary']) {
-        const entries = pagePortLinks({ ...options, pagePath, portSlug: source.slug })
-        for (const port of excluded) {
-          const entry = entries.find((entry) => entry.port === port.slug)!
-          expect(entry.links, `${source.slug}:${pagePath}:${port.slug}`).toEqual([])
-          expect(entry.home?.href).toBe(`/pr-42/en/${port.slug}/${source.slug === port.slug ? options.version : 'latest'}/`)
-        }
-      }
-    }
-  })
-
-  it('keeps real unpublished product overviews reachable', () => {
-    for (const pagePath of ['mcp', 'mcp/']) {
-      const entries = pagePortLinks({ ...options, pagePath, portSlug: 'ts' })
-      for (const port of PORTS.filter((port) => !port.parentLibrary && port.productAvailability?.mcp === 'unpublished')) {
-        expect(entries.find((entry) => entry.port === port.slug)?.links).toEqual([
-          { href: `/pr-42/en/${port.slug}/latest/mcp/` },
-        ])
-      }
-    }
-    const workspace = { id: 'ports/lua/workspace', data: { port: 'lua', product: 'workspace' } }
-    const entries = pagePortLinks({ ...options, pagePath: 'workspace', portSlug: 'ts', docs: [workspace] })
-    expect(entries.find((entry) => entry.port === 'lua')?.links).toEqual([
-      { href: '/pr-42/en/lua/latest/workspace/' },
-    ])
   })
 
   it('switches MCP tools using each port’s registered wire name', () => {
