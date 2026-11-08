@@ -59,7 +59,7 @@ export async function checkHomeLanguageIcon(page, port = null) {
   assert(menuSources.length === PORTS.length && menuSources.every((src) => !src.includes('/brand/languages/')), 'Menu options keep their libtmux artwork')
 }
 
-/** Keep compact labels and example options inside their available row. */
+/** Keep compact labels inside their row and example options inside the code panel. */
 export async function checkHomeResponsiveLayout(page, width, port = null) {
   await page.setViewportSize({ width, height: 789 })
   await page.evaluate(async () => {
@@ -83,25 +83,23 @@ export async function checkHomeResponsiveLayout(page, width, port = null) {
     const launcher = document.querySelector('[data-home-launcher]')
     const language = bounds(launcher.querySelector('[data-page-port-switcher] > summary'))
     const solution = bounds(launcher.querySelector('.home-launcher-solution:not([hidden]) summary'))
-    const heading = document.querySelector('.home-examples > [data-home-language]:not([hidden]) .home-example-heading')
-    const title = bounds(heading.querySelector('h2'))
-    const options = bounds(heading.querySelector('fieldset'))
+    const example = document.querySelector('.home-examples > [data-home-language]:not([hidden]) [data-home-example]')
+    const title = bounds(example.querySelector('.home-example-heading h2'))
+    const panel = bounds(example.querySelector('.home-example-code'))
+    const options = bounds(example.querySelector('.home-example-toolbar'))
     return {
       overflow: document.documentElement.scrollWidth > innerWidth + 1,
       pickerRow: Math.abs(language.y - solution.y) < 1,
       pickerRight: solution.right,
       headerHeight: bounds(document.querySelector('.site-header__bar')).height,
-      available: heading.clientWidth,
-      required: title.width + options.width + parseFloat(getComputedStyle(heading).columnGap),
-      headingInline: Math.abs(title.y + title.height / 2 - options.y - options.height / 2) < 1,
+      optionsInPanel: options.left >= panel.left - 1 && options.right <= panel.right + 1 && options.bottom <= panel.bottom + 1,
+      optionsBelowTitle: options.top >= title.bottom,
     }
   })
   assert(!layout.overflow && layout.pickerRight <= width, `${width}: the header fits without page overflow`)
   assert(layout.pickerRow, `${width}: Port and Solution stay on the same row`)
   if (width >= 561) assert(layout.headerHeight <= 53, `${width}: the entire header fits on one row`)
-  if (layout.required <= layout.available) {
-    assert(layout.headingInline, `${width}: example title and options share a row when they fit`)
-  }
+  assert(layout.optionsInPanel && layout.optionsBelowTitle, `${width}: example options stay inside the code panel's bottom row`)
 }
 
 /** The chosen language's Home leads its solution menu, opens that language's page, and is not a product. */
