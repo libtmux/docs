@@ -14,7 +14,7 @@ const files = ['scripts/stage-port-docs.mjs', 'scripts/lib/badges.mjs', 'site/sr
   'site/src/lib/versions.ts']
 const stagedPorts = SOURCE_GUIDE_PORTS
 
-function fixture(slug: 'ruby' | 'lua' | 'kotlin' | 'ocaml', 'haskell', run: (fixture: {
+function fixture(slug: 'ruby' | 'lua' | 'kotlin' | 'ocaml' | 'haskell', run: (fixture: {
   directory: string; checkout: string; revision: string;
   write: (path: string, value: string) => void;
   artifact: (port: string, revision: string, label: string) => string;

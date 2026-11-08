@@ -75,7 +75,7 @@ describe('product document URLs', () => {
     expect(docsRoutePath({ id: 'meta/third-party-notices', data: {} })).toBe('meta/third-party-notices')
   })
 
-  it('retires source API overviews in root and selected-version builds''retires duplicate native API overviews in root and selected-version builds''retires duplicate Common Lisp, Julia and F# API overviews in root and selected-version builds', () => {
+  it('retires duplicate native API overviews in root and selected-version builds', () => {
     expect(sourceGuideRedirects(undefined, { fsharp: 'v0.46.2' })).toEqual([
       { path: 'ocaml/latest/guides/api', target: 'ocaml/latest/reference' },
       { path: 'lisp/latest/guides/api', target: 'lisp/latest/reference' },

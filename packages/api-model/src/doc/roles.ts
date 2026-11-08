@@ -542,7 +542,7 @@ function tokenizeRun(text: string, lang?: string): DocSpan[] {
     }
   }
 
-  if (syntax.has('rest') || syntax.has('rest-role''pod')) for (const m of text.matchAll(ROLE_RE)) {
+  if (syntax.has('rest') || syntax.has('rest-role') || syntax.has('pod')) for (const m of text.matchAll(ROLE_RE)) {
     const role = m[1].replace(/^py:/, '')
     const { target, label } = labelFor(m[2])
     if (!ROLES.has(m[1])) {

@@ -198,7 +198,7 @@ describe('short names', () => {
     expect(nativeShortName(API_MODELS.swift, symbol)).toBe(`Server.${symbol.name}`)
   })
 
-  it('use the native owner namespace and member separator across ports''follow native ownership and qualification for every symbol of every port', { timeout: 30_000 }, () => {
+  it('follow native ownership and qualification for every symbol of every port', { timeout: 30_000 }, () => {
     const separators: Record<string, string[]> = { perl: ['::'], rs: ['::'], cxx: ['::'], ruby: ['::', '.', '#'], lua: ['.', ':'], lisp: [':'], powershell: ['\\'], clojure: ['/'] }
     for (const [port, model] of Object.entries(API_MODELS)) {
       const owners = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
