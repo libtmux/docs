@@ -28,9 +28,10 @@ describe('the ports that have a page for an operation', () => {
   it('lists every port for a server snapshot except those with no whole-server snapshot', () => {
     const { pages, reasons } = coverage('snapshot')
     expect(pages.toSorted()).toEqual(['csharp', 'elixir', 'fsharp', 'go', 'java', 'julia', 'kotlin', 'lua', 'powershell', 'rs', 'ruby', 'scala', 'swift', 'ts'])
-    // Python's core and C++ have no snapshot of a whole server, and each says so.
-    expect(reasons.toSorted()).toEqual(['cxx', 'py'])
+    // Haskell exposes scalar modules; Python and C++ have no whole-server snapshot.
+    expect(reasons.toSorted()).toEqual(['cxx', 'haskell', 'py'])
     for (const port of ['py', 'cxx']) expect(CONCEPTS.snapshot!.absent![port], port).toMatch(/^no equivalent on `Server`/)
+    expect(CONCEPTS.snapshot!.absent!.haskell).toContain('current modules expose scalar values and version parsing')
   })
 
   it('names the declaration each port reaches for a server snapshot, wherever its name is not `snapshot`', () => {
