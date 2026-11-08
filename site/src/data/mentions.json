@@ -8409,6 +8409,13 @@
   },
   {
    "port": "ocaml",
+   "symbol": "Libtmux_unix.Cancellation.with_",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
    "symbol": "Libtmux_unix.Client",
    "page": "/ocaml/latest/guides/control/",
    "title": "Submit actions and retain their outcomes",
@@ -15225,90 +15232,6 @@
    "text": "Since",
    "page": "/lua/latest/topics/format-token-fields/",
    "line": 33,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "ocaml",
-   "text": "libtmux.filter/1",
-   "page": "/ocaml/latest/guides/compatibility/",
-   "line": 85,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "ocaml",
-   "text": "main.ml",
-   "page": "/ocaml/latest/guides/getting-started/",
-   "line": 40,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "ocaml",
-   "text": "List",
-   "page": "/ocaml/latest/guides/packages/",
-   "line": 16,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "ocaml",
-   "text": "Unix",
-   "page": "/ocaml/latest/guides/packages/",
-   "line": 23,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "ocaml",
-   "text": "libtmux.filter/1",
-   "page": "/ocaml/latest/guides/queries/",
-   "line": 87,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "ocaml",
-   "text": "Seq.filter",
-   "page": "/ocaml/latest/guides/queries/",
-   "line": 89,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "ocaml",
-   "text": "main.ml",
-   "page": "/ocaml/latest/guides/showcases/",
-   "line": 21,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "ocaml",
-   "text": "None",
-   "page": "/ocaml/latest/guides/streaming/",
-   "line": 46,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "ocaml",
-   "text": "Alcotest.testable",
-   "page": "/ocaml/latest/guides/testing/",
-   "line": 17,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "ocaml",
-   "text": "libtmux.workspace-receipt/1",
-   "page": "/ocaml/latest/workspace/source-guide/",
-   "line": 112,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "ocaml",
-   "text": "editor:2",
-   "page": "/ocaml/latest/workspace/source-guide/",
-   "line": 124,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "ocaml",
-   "text": "logs:1",
-   "page": "/ocaml/latest/workspace/source-guide/",
-   "line": 124,
    "why": "not defined in the stated port"
   },
   {
