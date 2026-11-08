@@ -1509,6 +1509,27 @@
       ]
     },
     {
+      "url": "https://github.com/libtmux/libtmux-lisp/blob/master/bin/libtmux-workspace",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-lisp/blob/master/bin/libtmux-workspace",
+      "identity": "libtmux/libtmux-lisp/bin/libtmux-workspace",
+      "versionChecks": [
+        {
+          "check": "unsupported",
+          "note": "a branch link names no release"
+        }
+      ],
+      "checkedAt": "2026-11-08",
+      "entries": [
+        "lisp:workspace-command"
+      ]
+    },
+    {
       "url": "https://github.com/libtmux/libtmux-lisp/blob/master/libtmux.asd",
       "kinds": [
         "source"
@@ -1571,27 +1592,6 @@
       "checkedAt": "2026-11-08",
       "entries": [
         "lisp:libtmux/workspace"
-      ]
-    },
-    {
-      "url": "https://github.com/libtmux/libtmux-lisp/blob/master/tools/workspace-cli.lisp",
-      "kinds": [
-        "source"
-      ],
-      "host": "github",
-      "ok": true,
-      "status": 200,
-      "requested": "https://github.com/libtmux/libtmux-lisp/blob/master/tools/workspace-cli.lisp",
-      "identity": "libtmux/libtmux-lisp/tools/workspace-cli.lisp",
-      "versionChecks": [
-        {
-          "check": "unsupported",
-          "note": "a branch link names no release"
-        }
-      ],
-      "checkedAt": "2026-11-08",
-      "entries": [
-        "lisp:workspace-command"
       ]
     },
     {

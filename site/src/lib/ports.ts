@@ -717,7 +717,7 @@ const CORE_PORTS: readonly Port[] = [
     renderer: 'astro',
     publishesOwnTree: true,
     generator: 'SBCL package introspection, docstrings and CLOS metadata',
-    workspaceCli: 'mise run workspace',
+    workspaceCli: 'mise exec -- tools/lisp.sh tools/workspace-cli.lisp',
     workspaceCliAvailability: 'local',
     productAvailability: { workspace: 'available', mcp: 'excluded' },
     productDescriptions: {
@@ -725,7 +725,7 @@ const CORE_PORTS: readonly Port[] = [
     },
     packages: [{
       id: 'workspace', name: 'libtmux/workspace', require: '(asdf:load-system "libtmux/workspace")',
-      executable: 'mise run workspace', source: { path: 'src', ref: 'master' },
+      executable: 'mise exec -- tools/lisp.sh tools/workspace-cli.lisp', source: { path: 'src', ref: 'master' },
       installs: [{
         label: 'Source checkout', lang: 'console',
         code: 'git clone https://github.com/libtmux/libtmux-lisp.git\ncd libtmux-lisp\nmise trust\nmise install\nmise run setup',

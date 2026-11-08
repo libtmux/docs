@@ -220,7 +220,7 @@ const READERS = {
     return { distributions, units: [] }
   },
 
-  /** One source distribution exports the non-test ASDF systems and a mise workspace command. */
+  /** One source distribution exports the non-test ASDF systems and workspace script. */
   lisp(repo) {
     const manifest = 'libtmux.asd'
     const text = repo.read(manifest)
@@ -228,7 +228,7 @@ const READERS = {
       .filter((name) => !name.includes('/tests'))
     const version = /:version\s+"([^"]+)"/.exec(text)?.[1]
     const units = systems.filter((name) => name !== 'libtmux').map((name) => ({ unit: 'ASDF system', name }))
-    if (/^\[tasks\.workspace\]$/m.test(repo.read('mise.toml'))) units.push({ unit: 'mise task', name: 'workspace' })
+    if (repo.has('bin/libtmux-workspace')) units.push({ unit: 'script', name: 'libtmux-workspace' })
     return { distributions: [{ name: 'libtmux', version, manifest }], units }
   },
 }

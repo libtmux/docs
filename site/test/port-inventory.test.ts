@@ -346,8 +346,9 @@ describe('port inventory', () => {
     const all = Object.entries(INVENTORY).flatMap(([port, list]) => list.map((entry) => ({ port, entry })))
     for (const { port, entry } of all) {
       const leaf = entry.path?.split('/').at(-1) ?? ''
-      // A file has an extension and is opened as a blob; none of the directories here do.
-      expect(entry.file === true, `${port}:${entry.id} ${entry.path ?? ''}`).toBe(entry.path !== undefined && /\.[a-z]+$/.test(leaf))
+      // Source scripts may be extensionless; directories here carry neither form.
+      expect(entry.file === true, `${port}:${entry.id} ${entry.path ?? ''}`)
+        .toBe(entry.path !== undefined && (/\.[a-z]+$/.test(leaf) || entry.unit === 'script'))
       if (entry.path) expect(sourceUrl(entry)).toContain(`/${entry.file ? 'blob' : 'tree'}/`)
     }
     expect(all.filter(({ entry }) => entry.file).map(({ port, entry }) => `${port}:${entry.id}`).sort())

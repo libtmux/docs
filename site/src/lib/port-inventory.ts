@@ -374,9 +374,9 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
       aliases: ['libtmux.workspace', '(asdf:load-system "libtmux/workspace")'] }),
     lisp({ id: 'libtmux/workspace/cli', kind: 'companion', product: 'workspace', unit: 'ASDF system', within: 'libtmux',
       label: 'libtmux/workspace/cli', path: 'src/workspace-cli.lisp', file: true, aliases: ['libtmux.workspace.cli'] }),
-    lisp({ id: 'workspace-command', kind: 'cli', product: 'workspace', unit: 'mise task', within: 'libtmux',
-      label: 'workspace', coordinate: 'mise run workspace', path: 'tools/workspace-cli.lisp', file: true,
-      aliases: ['mise run workspace'] }),
+    lisp({ id: 'workspace-command', kind: 'cli', product: 'workspace', unit: 'script', within: 'libtmux',
+      label: 'libtmux-workspace', coordinate: 'mise exec -- tools/lisp.sh tools/workspace-cli.lisp',
+      path: 'bin/libtmux-workspace', file: true, aliases: ['libtmux-workspace', 'tools/workspace-cli.lisp'] }),
   ],
   ts: [
     ts({ id: 'libtmux', kind: 'library', product: 'core', label: 'libtmux', ...npm('libtmux'), path: 'packages/libtmux',

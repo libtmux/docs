@@ -14,7 +14,7 @@ source checkout as the core library. It is not published as a separate system
 or executable. Build the pinned toolchain and run it through `mise`:
 
 ```console
-$ mise run workspace -- --help
+$ mise exec -- tools/lisp.sh tools/workspace-cli.lisp -h
 ```
 
 The command validates a bounded JSON document before it contacts tmux. Planning

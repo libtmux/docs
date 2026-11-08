@@ -94,7 +94,7 @@ it('advertises local native loaders while retaining their development status', (
   const native = (p: Port) => p.workspaceCliAvailability === 'local' || p.workspaceCliAvailability === 'published'
   for (const port of PORTS.filter((p) => p.slug === 'py' || native(p))) {
     const command = port.slug === 'julia' ? 'libtmux-workspace load'
-      : port.slug === 'lisp' ? 'mise run workspace'
+      : port.slug === 'lisp' ? 'mise exec -- tools/lisp.sh tools/workspace-cli.lisp'
         : native(port) ? 'tmux-workspace load' : 'tmuxp load'
     expect(port.workspaceCli).toBe(command)
     if (!native(port)) expect(port.workspaceCliAvailability).toBe('released')
