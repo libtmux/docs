@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { PORTS } from '../src/lib/ports.ts'
+import HOME_EXAMPLES from '../src/data/home-examples.json' with { type: 'json' }
 import { chooseHomeTask } from './check-home-task-reset.mjs'
 
 export async function checkHomeExampleOptions(browser, base) {
@@ -20,11 +21,19 @@ export async function checkHomeExampleOptions(browser, base) {
       const cleanup = active.locator('[data-example-cleanup]')
       const check = async (handling, cleaning) => {
         const actual = await page.locator('[data-home-example]').evaluateAll((examples) => examples.map((example) => ({
-          handling: example.querySelector('[data-example-errors]').checked,
-          cleaning: example.querySelector('[data-example-cleanup]').checked,
+          port: example.dataset.homeExample,
+          singleView: example.hasAttribute('data-single-view'),
+          handling: example.querySelector('[data-example-errors]')?.checked ?? null,
+          cleaning: example.querySelector('[data-example-cleanup]')?.checked ?? null,
         })))
-        assert.deepEqual(actual, PORTS.map(() => ({ handling, cleaning })), 'Every language shares both choices')
-        const view = handling ? (cleaning ? 'full' : 'errors') : (cleaning ? 'cleanup' : 'concise')
+        assert.deepEqual(actual, PORTS.map(({ slug }) => ({
+          port: slug, singleView: Boolean(HOME_EXAMPLES[slug].singleView),
+          handling: HOME_EXAMPLES[slug].singleView ? null : handling,
+          cleaning: HOME_EXAMPLES[slug].singleView ? null : cleaning,
+        })), 'Selectable examples share both choices; single-view examples have no toggles')
+        const port = await active.getAttribute('data-home-language')
+        const view = HOME_EXAMPLES[port].singleView ? 'full'
+          : handling ? (cleaning ? 'full' : 'errors') : (cleaning ? 'cleanup' : 'concise')
         assert.equal(await active.locator('[data-home-view]:visible').getAttribute('data-home-view'), view)
       }
       await page.goto(`${base}/?port=rs&prompt=eval-sweep&from=a&from=b#program`)
@@ -115,5 +124,5 @@ export async function checkHomeExampleOptions(browser, base) {
       await context.close()
     }
   }
-  console.log('Example options: shared across 13 ports, independent defaults, URL/storage/reload/history, explicit zero, uncheck removal, task and URL preservation, blocked storage PASS')
+  console.log('Example options: selectable and single-view programs, independent defaults, URL/storage/reload/history, explicit zero, uncheck removal, task and URL preservation, blocked storage PASS')
 }

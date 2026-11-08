@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { PORTS } from '../src/lib/ports.ts'
 import HOME_PROOF from '../test/fixtures/home-examples.json' with { type: 'json' }
+import HOME_EXAMPLES from '../src/data/home-examples.json' with { type: 'json' }
 import { createHash } from 'node:crypto'
 import { checkHomeHover } from './check-home-hover.mjs'
 import { checkWorkspaceHover } from './check-workspace-hover.mjs'
@@ -85,19 +86,25 @@ export async function checkHomeResponsiveLayout(page, width, port = null) {
     const solution = bounds(launcher.querySelector('.home-launcher-solution:not([hidden]) summary'))
     const heading = document.querySelector('.home-examples > [data-home-language]:not([hidden]) .home-example-heading')
     const title = bounds(heading.querySelector('h2'))
-    const options = bounds(heading.querySelector('fieldset'))
+    const fieldset = heading.querySelector('fieldset')
+    const options = fieldset ? bounds(fieldset) : null
     return {
+      singleView: heading.closest('[data-home-example]').hasAttribute('data-single-view'),
+      hasOptions: Boolean(options),
       overflow: document.documentElement.scrollWidth > innerWidth + 1,
       pickerRow: Math.abs(language.y - solution.y) < 1,
       pickerRight: solution.right,
       headerHeight: bounds(document.querySelector('.site-header__bar')).height,
       available: heading.clientWidth,
-      required: title.width + options.width + parseFloat(getComputedStyle(heading).columnGap),
-      headingInline: Math.abs(title.y + title.height / 2 - options.y - options.height / 2) < 1,
+      required: title.width + (options?.width ?? 0) + parseFloat(getComputedStyle(heading).columnGap),
+      headingInline: !options || Math.abs(title.y + title.height / 2 - options.y - options.height / 2) < 1,
     }
   })
   assert(!layout.overflow && layout.pickerRight <= width, `${width}: the header fits without page overflow`)
   assert(layout.pickerRow, `${width}: Port and Solution stay on the same row`)
+  const singleView = Boolean(HOME_EXAMPLES[port ?? PORTS[0].slug].singleView)
+  assert.equal(layout.singleView, singleView, `${port}: the example declares its available views`)
+  assert.equal(layout.hasOptions, !singleView, `${port}: only selectable examples offer detail toggles`)
   if (width >= 561) assert(layout.headerHeight <= 53, `${width}: the entire header fits on one row`)
   if (layout.required <= layout.available) {
     assert(layout.headingInline, `${width}: example title and options share a row when they fit`)
@@ -304,9 +311,14 @@ export async function checkHomeLauncher(browser, base) {
       }))
       const hash = (text) => createHash('sha256').update(text).digest('hex')
       assert.deepEqual(rendered.commands, proof.shellRecipe, `${proof.port}: exact setup and run copy payloads`)
-      for (const view of ['concise', 'errors', 'cleanup', 'full']) {
-        await panel.locator('[data-example-errors]').setChecked(view === 'errors' || view === 'full')
-        await panel.locator('[data-example-cleanup]').setChecked(view === 'cleanup' || view === 'full')
+      const singleView = Boolean(HOME_EXAMPLES[proof.port].singleView)
+      assert.equal(await panel.locator('[data-single-view]').count(), singleView ? 1 : 0)
+      if (singleView) assert.equal(await panel.locator('.home-example-options').count(), 0)
+      for (const view of singleView ? ['full'] : ['concise', 'errors', 'cleanup', 'full']) {
+        if (!singleView) {
+          await panel.locator('[data-example-errors]').setChecked(view === 'errors' || view === 'full')
+          await panel.locator('[data-example-cleanup]').setChecked(view === 'cleanup' || view === 'full')
+        }
         const selected = panel.locator(`[data-home-view="${view}"]`)
         assert.equal(await panel.locator('[data-home-view]:visible').count(), 1, `${proof.port}/${view}: exactly one complete program is shown`)
         assert(await selected.isVisible(), `${proof.port}/${view}: the selected program is shown`)
@@ -428,5 +440,5 @@ export async function checkHomeLauncher(browser, base) {
   await checkColorScheme(browser, base)
   await checkLanguageIconScheme(browser, base)
   await checkHomeExampleOptions(browser, base)
-  console.log('Homepage: 13 languages, 52 complete selectable programs/copy, owned solutions, shared URLs, reset, blocked storage, prompt tasks/copy, shared themes, container sizing, keyboard and no-JS PASS')
+  console.log('Homepage: every language, complete programs/copy, owned solutions, shared URLs, reset, blocked storage, prompt tasks/copy, shared themes, container sizing, keyboard and no-JS PASS')
 }
