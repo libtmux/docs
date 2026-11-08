@@ -34,6 +34,7 @@ const PRODUCTS: Record<string, LandingProduct[]> = {
   cxx: ['core', 'mcp', 'workspace'],
   swift: ['core', 'mcp', 'workspace'],
   kotlin: ['core'],
+  clojure: ['core'],
   scala: ['core'],
   fsharp: ['core'],
 }

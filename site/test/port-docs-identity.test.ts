@@ -159,8 +159,8 @@ describe('port docs workflow', () => {
     const entries = tag('v0.0.1-alpha.17').entries
     const matrix = publicationMatrix({ include: entries }, 'java', 'libtmux/libtmux-java', true)
     expect(matrix.include.map(({ port, version }) => `${port}/${version}`)).toEqual([
-      'java/v0.0.1-alpha.17', 'kotlin/v0.0.1-alpha.17', 'scala/v0.0.1-alpha.17',
-      'java/next', 'kotlin/next', 'scala/next',
+      'java/v0.0.1-alpha.17', 'clojure/v0.0.1-alpha.17', 'kotlin/v0.0.1-alpha.17', 'scala/v0.0.1-alpha.17',
+      'java/next', 'clojure/next', 'kotlin/next', 'scala/next',
     ])
     expect(publicationMatrix({ include: entries }, 'java', 'libtmux/libtmux-java').include).toHaveLength(2)
     expect(publicationMatrix({ include: entries }, 'fsharp', 'libtmux/libtmux-dotnet').include.every((entry) => entry.port === 'fsharp')).toBe(true)

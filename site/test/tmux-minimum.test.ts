@@ -46,6 +46,18 @@ export const PORT_FLOORS = [
  */
 export const OTHER_FLOORS = [
   {
+    path: 'site/src/content/docs/ports/clojure/examples.md',
+    version: '3.7',
+    near: /stream examples/,
+    why: 'the control stream examples use the Java engine\'s tmux 3.7 capability gate; core acquisition supports 3.3a',
+  },
+  {
+    path: 'packages/api-model/src/languages/clojure-examples.ts',
+    version: '3.7',
+    near: /requiresControl/,
+    why: 'the expected output conditional applies only to control programs; older supported tmux prints the documented refusal',
+  },
+  {
     path: 'site/src/content/_workspace-shared/workspace/guides/installation.md',
     version: '3.2a',
     near: /tmuxp/,

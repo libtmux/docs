@@ -64,8 +64,9 @@ describe('reference symbol search', () => {
     }
     expect(searchApi(inventory, '', 'types').every((entry) => entry.category === 'types')).toBe(true)
     expect(searchApi(inventory, '', 'members').every((entry) => entry.category === 'members')).toBe(true)
-    const server = searchApi(inventory, 'Server')[0]
-    expect(server.category, `${port}: Server type precedes properties with the same name`).toBe('types')
-    expect(symbols.get(server.id)?.name).toBe('Server')
+    const owner = port === 'clojure' ? 'libtmux.core' : 'Server'
+    const server = searchApi(inventory, owner)[0]
+    expect(server.category, `${port}: primary owner precedes its members`).toBe('types')
+    expect(symbols.get(server.id)?.name).toBe(owner)
   })
 })
