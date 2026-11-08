@@ -68,8 +68,16 @@ function listItems(value: string): string[] {
     const char = text[index]!
     if (escaped) { escaped = false; continue }
     if (char === '\\' && (string || escapedSymbol)) { escaped = true; continue }
-    if (char === '"' && !escapedSymbol) { string = !string; continue }
-    if (char === '|' && !string) { escapedSymbol = !escapedSymbol; continue }
+    if (char === '"' && !escapedSymbol) {
+      if (depth === 1 && start < 0) start = index
+      string = !string
+      continue
+    }
+    if (char === '|' && !string) {
+      if (depth === 1 && start < 0) start = index
+      escapedSymbol = !escapedSymbol
+      continue
+    }
     if (string || escapedSymbol) continue
     if (char === '(') {
       depth++
@@ -110,9 +118,10 @@ function parameters(signature: string): Param[] {
     if (marker === '&whole' || marker === '&environment') { skipNext = true; continue }
     if (skipNext) { skipNext = false; continue }
     const parts = item.startsWith('(') ? listItems(item) : []
-    const binding = parts[0]?.startsWith('(') ? listItems(parts[0])[1] : parts[0]
-    const name = binding ?? item
-    const defaultValue = parts[1]
+    const binding = parts[0] ?? item
+    const name = mode === 'required' ? item
+      : mode === 'key' && binding.startsWith('(') ? listItems(binding)[1] ?? binding : binding
+    const defaultValue = mode === 'optional' || mode === 'key' ? parts[1] : undefined
     params.push({
       name,
       ...(defaultValue ? { default: defaultValue } : {}),

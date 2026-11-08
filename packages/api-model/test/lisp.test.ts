@@ -78,6 +78,31 @@ describe('Common Lisp native API adapter', () => {
     ])
   })
 
+  it('preserves required macro destructuring without inventing defaults', () => {
+    const input = structuredClone(fixture)
+    const declaration = input.packages[0]!.symbols[0]!
+    declaration.signature = '(with-client (name &rest options) &body body)'
+    const params = () => extractCommonLisp(input, revision).symbols
+      .find((entry) => entry.id === declaration.id)!.signatures[0]!.params
+    expect(params()).toEqual([
+      { name: '(name &rest options)' },
+      { name: 'body', variadic: 'positional' },
+    ])
+  })
+
+  it('retains printed string defaults, including empty strings and escapes', () => {
+    const input = structuredClone(fixture)
+    const declaration = input.packages[0]!.symbols[0]!
+    declaration.signature = '(open-client &key (program "tmux") (label "") (name "a\\\"b"))'
+    const params = extractCommonLisp(input, revision).symbols
+      .find((entry) => entry.id === declaration.id)!.signatures[0]!.params
+    expect(params).toEqual([
+      { name: 'program', default: '"tmux"', optional: true, keywordOnly: true },
+      { name: 'label', default: '""', optional: true, keywordOnly: true },
+      { name: 'name', default: '"a\\\"b"', optional: true, keywordOnly: true },
+    ])
+  })
+
   it.each([
     ['a dirty source', (input: typeof fixture) => { input.source.dirty = true }],
     ['a dirty exporter', (input: typeof fixture) => { input.exporter.dirty = true }],
