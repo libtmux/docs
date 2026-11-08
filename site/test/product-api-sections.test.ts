@@ -88,7 +88,27 @@ describe('product API sections', () => {
     ].filter((label) => !label.endsWith(' 0')))
     expect(tree.buckets.reduce((sum, bucket) => sum + bucket.count, 0)).toBe(productApiRoots(model, 'mcp').length)
     const groups = productApiNavigation(model, 'mcp', 'v1.2.3')
-    expect(groups.every((item) => item.type === 'group' && !item.href)).toBe(true)
+    // A section links where the tree's section row does: the page of its first entry.
+    expect(groups.every((item) => item.type === 'group' && item.href?.startsWith('/rs/v1.2.3/mcp/reference/'))).toBe(true)
     expect(groups.map((item) => item.label)).toEqual(tree.buckets.map((bucket) => bucket.label))
+  })
+})
+
+describe('section destinations', () => {
+  it('link a section in the navigation where its tree row lands, for every grouped product', () => {
+    let checked = 0
+    for (const model of Object.values(API_MODELS)) for (const product of products) {
+      if (!productApiSections(model, product)) continue
+      const tree = productReferenceTree(model, product, 'v1.2.3')
+      const groups = productApiNavigation(model, product, 'v1.2.3')
+      expect(groups.map((group) => group.label), `${model.port} ${product}`).toEqual(tree.buckets.map((bucket) => bucket.label))
+      for (const [index, group] of groups.entries()) {
+        const bucket = tree.buckets[index]
+        const target = bucket.types[0]
+        expect(group.href, `${model.port} ${product} ${group.label}`).toBe(tree.hrefs?.[bucket.types.find((entry) => entry.slug === bucket.slug)?.id ?? target.id])
+        checked++
+      }
+    }
+    expect(checked).toBeGreaterThan(30)
   })
 })

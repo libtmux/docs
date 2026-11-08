@@ -17,8 +17,9 @@ import mentionIndex from '../src/data/mentions.json'
 import { apiCommandRelatedLinks } from '../src/lib/api-sections'
 import { productApiIndex } from '../src/lib/product-api'
 
+// A section group (it has no kind) links to the page of its first row, which the row lists itself.
 const navigationLinks = (items: SidebarItem[]): string[] => items.flatMap((item) => [
-  ...(item.href ? [item.href] : []), ...(item.type === 'group' ? navigationLinks(item.items) : []),
+  ...(item.href && (item.type === 'link' || item.kind) ? [item.href] : []), ...(item.type === 'group' ? navigationLinks(item.items) : []),
 ])
 
 describe('product declaration trees', () => {

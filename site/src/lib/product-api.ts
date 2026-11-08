@@ -2,7 +2,7 @@ import { symbolsForProduct, type ApiModel, type ApiSymbol, type SymbolIndex } fr
 import { API_MODELS, createApiIndex, referenceAlternatives } from './api-models'
 import { PORT_BY_SLUG, portPageUrl, productApiPath, referenceUrl, type DocProduct } from './ports'
 import type { SidebarItem, SidebarGroupItem } from './sidebar'
-import { referenceTreeFor } from './api-tree'
+import { firstEntry, referenceTreeFor } from './api-tree'
 import type { ApiTreeJson } from './api-search'
 import { productApiBuckets, productApiSections } from './product-api-sections'
 
@@ -144,8 +144,14 @@ export function productApiNavigation(model: ApiModel, product: DocProduct, versi
     return rows
   }
   // Sections come from the product's shared vocabulary; a short product stays one list.
-  return sections ? sections.map(({ section, symbols }): SidebarItem => ({ type: 'group', label: section.label, items: build(symbols) }))
-    : build(productApiRoots(model, product))
+  if (!sections) return build(productApiRoots(model, product))
+  return sections.map(({ section, symbols }): SidebarItem => {
+    // The tree links a section row to the page its first entry names; a breadcrumb through the section links there too.
+    const target = firstEntry({ id: section.id, label: section.label, collapsed: false, children: [],
+      entries: symbols.map((symbol) => ({ id: symbol.publicId ?? symbol.id, name: symbol.name, kind: symbol.kind, slug: symbol.slug! })) })
+    const owner = symbols.find((symbol) => (symbol.publicId ?? symbol.id) === target?.id)
+    return { type: 'group', label: section.label, ...(owner ? { href: productApiHref(model, owner, version) } : {}), items: build(symbols) }
+  })
 }
 
 const indexes = new WeakMap<ApiModel, Map<string, SymbolIndex>>()
