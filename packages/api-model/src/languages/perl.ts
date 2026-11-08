@@ -1,4 +1,5 @@
 import type { ApiModel, ApiSymbol, DocBlock } from '../model.ts'
+import { docSectionTitles } from '../doc/prose-blocks.ts'
 
 interface PerlArtifact extends ApiModel {
   schema: string
@@ -43,8 +44,15 @@ export function extractPerlArtifact(input: unknown, revision?: string): ApiModel
       throw new Error(`Invalid Perl native signature or source identity: ${symbol.id}`)
     }
   }
-  const resolvePod = (text: string): string => text.replace(/\[([^\]]+)\]\(pod:([^\s)]+)\)/g, (_all, label: string, target: string) => {
-    const [module, section] = target.split('/', 2)
+  const resolvePod = (text: string): string => text.replace(/\[([^\]]+)\]\(pod:([^\n)]+)\)/g, (_all, label: string, target: string) => {
+    const separator = target.indexOf('/')
+    const module = separator < 0 ? target : target.slice(0, separator)
+    const rawSection = separator < 0 ? undefined : target.slice(separator + 1)
+    let section: string | undefined
+    try {
+      // Earlier native artifacts wrote section titles containing spaces literally.
+      section = rawSection === undefined ? undefined : /\s/u.test(rawSection) ? rawSection : decodeURIComponent(rawSection)
+    } catch { throw new Error(`Malformed authored Perl POD target: ${target}`) }
     if (!module.startsWith('LibTmux')) {
       const href = module === 'JSON::PP' ? 'https://perldoc.perl.org/5.44.0/JSON::PP'
         : `https://metacpan.org/pod/${module}`
@@ -59,6 +67,11 @@ export function extractPerlArtifact(input: unknown, revision?: string): ApiModel
         && !symbol.inheritedFrom && symbol.name === section && symbol.source.file === owner.source.file) : []
       if (methods.length > 1) throw new Error(`Ambiguous authored Perl POD target: ${target}`)
       if (methods.length === 1) id = methods[0].id
+      else if (owner) {
+        const headings = docSectionTitles(owner).filter((title) => title === section)
+        if (headings.length > 1) throw new Error(`Ambiguous authored Perl POD target: ${target}`)
+        if (headings.length === 1) return `:obj:\`${label.replace(/`/g, '')} <${owner.id}#${encodeURIComponent(section)}>\``
+      }
     }
     if (!ids.has(id)) throw new Error(`Unresolved authored Perl POD target: ${target}`)
     return `:obj:\`${label.replace(/`/g, '')} <${id}>\``

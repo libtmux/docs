@@ -9,7 +9,7 @@ import { API_MODELS } from '../src/lib/api-models'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
 import { tmuxCatalog } from '../src/lib/tmux-catalog'
 import { linkTmuxDoc } from '../src/lib/tmux-links'
-import { parseApiProse, type ProseItem } from '../src/lib/api-prose'
+import { parseApiProse, type ProseItem } from '@libtmux/api-model/reference'
 
 /**
  * Multi-word catalog names written in prose and code across the guides and the

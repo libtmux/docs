@@ -738,28 +738,28 @@
     },
     "perl": {
       "repo": "libtmux/libtmux-perl",
-      "revision": "6902d8953c6179aab23e64c6dbb9cd43b6aafeda",
+      "revision": "64f4626744518bfd68d179ec8caae2a61a67c932",
       "distributions": [
         {
           "name": "LibTmux",
           "version": "0.001_001",
           "manifest": "packages/core/Makefile.PL",
           "repo": "libtmux/libtmux-perl",
-          "revision": "6902d8953c6179aab23e64c6dbb9cd43b6aafeda"
+          "revision": "64f4626744518bfd68d179ec8caae2a61a67c932"
         },
         {
           "name": "LibTmux-Async",
           "version": "0.001_001",
           "manifest": "packages/async/Makefile.PL",
           "repo": "libtmux/libtmux-perl",
-          "revision": "6902d8953c6179aab23e64c6dbb9cd43b6aafeda"
+          "revision": "64f4626744518bfd68d179ec8caae2a61a67c932"
         },
         {
           "name": "LibTmux-Workspace",
           "version": "0.001_001",
           "manifest": "packages/workspace/Makefile.PL",
           "repo": "libtmux/libtmux-perl",
-          "revision": "6902d8953c6179aab23e64c6dbb9cd43b6aafeda"
+          "revision": "64f4626744518bfd68d179ec8caae2a61a67c932"
         }
       ],
       "units": [

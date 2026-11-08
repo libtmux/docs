@@ -1,5 +1,6 @@
 /** Model, linking and navigation for readers; native extraction stays in the author entry. */
 export * from './model.ts'
+export * from './doc/prose-blocks.ts'
 export { sourceUrl, symbolsForProduct } from './products.ts'
 export { SymbolIndex, keywordArgument, parameterId, typeParameterId, type LinkTarget, type KeywordHelp, type TypeParameterBinding } from './link.ts'
 export { boundLabel, parseTypeParameter, parseTypeParameters, typeParameterList, typeParametersOf, withTypeParameterDocs } from './type-params.ts'

@@ -102,6 +102,11 @@ function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, 
       if (htmlDepth) return
       const start = node.position!.start.offset!
       const end = node.position!.end.offset!
+      if (index.language === 'perl' && node.type === 'inlineCode' && markdown.slice(start - 5, start) === ':obj:') {
+        const span = index.docSpans(markdown.slice(start - 5, end), symbol).find((entry) => entry.kind === 'ref')
+        const linked = span?.kind === 'ref' && referenceMarkdown(span)
+        if (linked) { edits.push({ start: start - 5, end, text: linked }); return }
+      }
       const tmux = tmuxMentionMarkdown(node.value, node.type === 'inlineCode', undefined,
         { before: markdown.slice(Math.max(0, start - 48), start), after: markdown.slice(end, end + 48) })
       if (tmux && (node.type === 'inlineCode' || markdown.slice(start, end) === node.value)) {
@@ -199,7 +204,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const port = 'port' in model ? model.port : undefined
   const language = 'language' in model ? model.language : port
   const index = ctx.index ?? (port && 'port' in model ? productApiIndex(model, ctx.version ?? defaultVersionFor(port)) : undefined)
-  const prose = (text: string) => index ? proseMarkdown(text, index, symbol, ['powershell', 'scala', 'ts'].includes(language ?? '')) : text
+  const prose = (text: string) => index ? proseMarkdown(text, index, symbol, ['perl', 'powershell', 'scala', 'ts'].includes(language ?? '')) : text
   const id = qualifiedNameOf(symbol)
   const out: string[] = [`# ${id}`, '']
   const info = port ? PORT_BY_SLUG[port] : undefined
