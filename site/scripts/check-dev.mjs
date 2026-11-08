@@ -56,6 +56,7 @@ assert(requestedBrowserPort === undefined || /^\d+$/.test(requestedBrowserPort)
   'LIBTMUX_DOCS_BROWSER_PORT must be an integer from 1 to 65535')
 const documentationNavigationOnly = process.argv.includes('--documentation-navigation')
 const guideRedirectOnly = process.argv.includes('--guide-redirect')
+const sidebarDemoOnly = process.argv.includes('--sidebar-demo')
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
 
 Object.assign(process.env, {
@@ -790,6 +791,7 @@ try {
   // Compile the initial pages during setup; navigation assertions measure
   // the running app. The outer loop still budgets this initial compilation.
   const firstPage = homeLauncherOnly || homeControlsOnly ? '/'
+    : sidebarDemoOnly ? '/demo/sidebar/'
     : guideRedirectOnly ? '/ruby/latest/guides/overview/'
     : keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
     : apiStickyOnly || permalinkRevealOnly ? '/swift/latest/reference/server/'
@@ -799,7 +801,7 @@ try {
     : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/'
     : typeParametersOnly ? '/ts/latest/reference/selection-selection-where/' : '/tmux/concepts/server-session-window-pane/'
   const fullRun = ![homeLauncherOnly, homeControlsOnly, keywordHelpOnly, apiSignaturesOnly, referenceLayoutOnly, globalHeaderOnly, headerMenuSectionsOnly, statusBadgesOnly, badgeCentringOnly, referencePreviewsOnly,
-    referencePreferencesOnly, documentationNavigationOnly, guideRedirectOnly, apiNavigationOnly, apiAnchorsOnly, typeParametersOnly, permalinkRevealOnly, requiredAppearanceOnly].some(Boolean)
+    referencePreferencesOnly, documentationNavigationOnly, guideRedirectOnly, sidebarDemoOnly, apiNavigationOnly, apiAnchorsOnly, typeParametersOnly, permalinkRevealOnly, requiredAppearanceOnly].some(Boolean)
   const setupPages = sampleOnly ? [firstPage, '/demo/widgets/pickers/', ...TMUX_KEY_PAGES]
     : [firstPage, ...(fullRun ? TMUX_KEY_PAGES : [])]
   const ready = Promise.all(setupPages.map(async (path) => {
@@ -871,6 +873,8 @@ try {
     await retryReload(() => checkGlobalHeader(browser, base))
   } else if (guideRedirectOnly) {
     await checkGuideRedirect(browser, base)
+  } else if (sidebarDemoOnly) {
+    await checkSidebarDemo(browser, `${base}/demo/sidebar/`)
   } else if (documentationNavigationOnly) {
     await retryReload(() => checkDocumentationNavigation(browser, base, true))
   } else if (apiNavigationOnly) {
