@@ -1,7 +1,7 @@
 /**
  * The source, package and API link each registered port should offer, with the
- * accessible name a header link carries. Julia and C++ have no registry, so
- * their repository is the destination; Go's reference host is its registry.
+ * accessible name a header link carries. Unregistered packages link to their
+ * source; Go's reference host is its registry.
  */
 export interface ExpectedLink {
   url: string
@@ -43,6 +43,9 @@ export const DESTINATIONS: Record<string, ExpectedDestinations> = {
     source: github('https://github.com/libtmux/libtmux-elixir/tree/main/lib', 'libtmux-elixir/lib'),
     registry: { name: 'Hex', url: 'https://hex.pm/packages/libtmux', icon: 'hex', label: 'libtmux on Hex' },
     api: { name: 'HexDocs', url: 'https://libtmux.hexdocs.pm/', label: 'libtmux API reference on HexDocs' },
+  },
+  haskell: {
+    source: github('https://github.com/libtmux/libtmux-haskell/tree/master/src', 'libtmux-haskell/src'),
   },
   ts: {
     source: github('https://github.com/libtmux/libtmux-ts', 'libtmux-ts'),

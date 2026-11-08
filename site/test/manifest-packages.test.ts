@@ -11,6 +11,18 @@ const repo = (files: Record<string, string>, tags: string[] = []) => ({
 const names = (result: { distributions: { name: string }[] }) => result.distributions.map((entry) => entry.name)
 
 describe('manifest packages', () => {
+  it('reads Cabal packages at the root and under packages, excluding example projects', () => {
+    const manifest = (name: string) => `cabal-version: 3.18\nname: ${name}\nversion: 0.1.0.0\n\nlibrary\n  default-language: GHC2024\n`
+    const result = readPort('haskell', repo({
+      'libtmux-haskell.cabal': manifest('libtmux-haskell'),
+      'packages/workspace/libtmux-haskell-workspace.cabal': manifest('libtmux-haskell-workspace'),
+      'examples/values/example.cabal': manifest('example'),
+    }))
+    expect(result).toEqual({ distributions: [
+      { name: 'libtmux-haskell', version: '0.1.0.0', manifest: 'libtmux-haskell.cabal' },
+      { name: 'libtmux-haskell-workspace', version: '0.1.0.0', manifest: 'packages/workspace/libtmux-haskell-workspace.cabal' },
+    ], units: [] })
+  })
   it('orders prereleases numerically and puts a release above its prereleases', () => {
     expect(['0.1.0-alpha.10', '0.1.0-alpha.9', '0.1.0', '0.0.9'].sort(compareSemver)).toEqual(['0.0.9', '0.1.0-alpha.9', '0.1.0-alpha.10', '0.1.0'])
     expect(compareSemver('v1.2.3', '1.2.3')).toBe(0)

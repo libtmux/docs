@@ -414,5 +414,31 @@
       "solid": "#54167b",
       "onSolid": "#ffffff"
     }
+  },
+  "haskell": {
+    "name": "Haskell",
+    "color": "#5E5086",
+    "light": {
+      "background": "#fafbfc",
+      "surface": "#f3f5f7",
+      "hover": "#e9edf1",
+      "border": "#d6dce3",
+      "text": "#202830",
+      "muted": "#53606d",
+      "link": "#2a243c",
+      "solid": "#2a243c",
+      "onSolid": "#ffffff"
+    },
+    "dark": {
+      "background": "#15191d",
+      "surface": "#1c2229",
+      "hover": "#29323d",
+      "border": "#3e4a57",
+      "text": "#e7edf3",
+      "muted": "#b7c1cd",
+      "link": "#cfcadb",
+      "solid": "#2a243c",
+      "onSolid": "#ffffff"
+    }
   }
 }
