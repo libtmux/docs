@@ -98,6 +98,7 @@ export const DEFAULT_TEMPLATES: UrlTemplate[] = [
  * makes a resolver look worse than it is and hides the failures that matter.
  */
 export function notASymbol(text: string): string | undefined {
+  if (/^libtmux\.docs\.(?:socket|binary)$/.test(text)) return 'an example fixture system property'
   if (/^[a-z][a-z0-9+.-]*:\/\//i.test(text)) return 'a protocol URI'
   if (/^(?:net|v)?\d+\.\d+(?:\.\d+)?(?:[a-z]|[-+][\w.-]+)?$/.test(text)) return 'a version'
   if (/^(?:net|v)?\d+(?:\.\d+)*\.[xXnN]$/.test(text)) return 'a version line'

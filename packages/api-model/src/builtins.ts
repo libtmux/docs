@@ -487,6 +487,11 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     byte: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-4.html#jls-4.2.1',
     void: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5',
   },
+  clojure: {
+    // The runtime declaration identifies the Java class; core.async names the library.
+    ExceptionInfo: 'https://github.com/clojure/clojure/blob/clojure-1.12.6/src/jvm/clojure/lang/ExceptionInfo.java',
+    'core.async': 'https://github.com/clojure/core.async',
+  },
   // Lua's eight value types share one section of the manual; `integer` is
   // the subtype 5.3 added and LuaLS spells separately. `any` is a LuaLS
   // annotation type, with no counterpart in the language. LuaLS's `unknown`

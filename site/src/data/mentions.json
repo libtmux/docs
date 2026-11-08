@@ -15039,55 +15039,6 @@
  ],
  "dangling": [
   {
-   "port": "clojure",
-   "text": "libtmux.docs.socket",
-   "page": "/clojure/latest/guides/captures-and-effects/",
-   "line": 33,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "clojure",
-   "text": "libtmux.docs.binary",
-   "page": "/clojure/latest/guides/captures-and-effects/",
-   "line": 33,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "clojure",
-   "text": "ExceptionInfo",
-   "page": "/clojure/latest/guides/captures-and-effects/",
-   "line": 44,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "clojure",
-   "text": "io.github.libtmux/libtmux-clojure-core-async",
-   "page": "/clojure/latest/guides/captures-and-effects/",
-   "line": 298,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "clojure",
-   "text": "libtmux.docs.socket",
-   "page": "/clojure/latest/guides/getting-started/",
-   "line": 37,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "clojure",
-   "text": "core.async",
-   "page": "/clojure/latest/guides/getting-started/",
-   "line": 97,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "clojure",
-   "text": "core.async",
-   "page": "/clojure/latest/guides/getting-started/",
-   "line": 117,
-   "why": "not defined in the stated port"
-  },
-  {
    "port": "fsharp",
    "text": "LibTmux.FSharp",
    "page": "/fsharp/latest/guides/getting-started/",
