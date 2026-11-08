@@ -258,7 +258,7 @@ const folds = (sig: { params: unknown[] }) => sig.params.length >= FOLD_THRESHOL
 const foldable = symbol.signatures.some(folds)
 
 const { params, returns, raises, typeParameters } = apiEntryFields(symbol, language)
-const methods = apiMethodDetails(symbol)
+const methods = apiMethodDetails(symbol, language)
 const overloadTargets = new Map(methods.map((method) => [method.overloadLabel, method.id]))
 /**
  * Parameters declared by an enclosing type that this symbol's signature uses.

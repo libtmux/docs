@@ -212,7 +212,7 @@ export function extractHaskellArtifact(input: unknown, expectedRevision?: string
         return `- ${instance.markdown} ([Source](${href}))${instance.doc ? `\n\n  ${instance.doc.replaceAll('\n', '\n  ')}` : ''}`
       })
       if (items.length) doc = { summary: doc?.summary ?? '',
-        body: [doc?.body, '```{rubric} Instances\n```', items.join('\n\n')].filter(Boolean).join('\n\n') }
+        body: [doc?.body, '## Instances', items.join('\n\n')].filter(Boolean).join('\n\n') }
     }
     return {
       id: native.id, publicId: native.publicId ?? native.id, name: native.name,

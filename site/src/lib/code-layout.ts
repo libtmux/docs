@@ -14,6 +14,8 @@ export interface CodeLayout {
   limit: number
   failures: CodeWidthFailure[]
   syntax?: CodeSyntax[]
+  /** Linked tokens retained from the native documentation tool. */
+  nativeSpans?: Signature['nativeSpans']
   /** The leading native owner fragment, when it distinguishes callable scope. */
   contextEnd?: number
 }
@@ -23,10 +25,23 @@ export type SignatureSpan = ReturnType<SymbolIndex['linkType']>[number] & {
   role?: 'delimiter' | 'attribute' | 'string'
 }
 /** The part of a layout that decides how text becomes spans. */
-export type SpanLayout = Pick<CodeLayout, 'text' | 'syntax' | 'contextEnd'>
+export type SpanLayout = Pick<CodeLayout, 'text' | 'syntax' | 'contextEnd' | 'nativeSpans'>
 
-/** Resolve references at render time; cached layouts contain grammar, never URLs. */
+/** Resolve native public identities at render time; preserve authored external destinations. */
 export function signatureSpans(layout: SpanLayout, index: SymbolIndex, symbol: ApiSymbol, signature?: Signature): SignatureSpan[] {
+  if (layout.nativeSpans) {
+    if (layout.nativeSpans.map((span) => span.text).join('') !== layout.text) throw new Error(`Inconsistent native signature spans: ${symbol.id}`)
+    return layout.nativeSpans.map((span) => {
+      const target = span.target ? index.resolve(span.target, 'any', symbol) : undefined
+      if (span.target && !target?.symbol) throw new Error(`Missing native signature target: ${span.target}`)
+      return { text: span.text,
+        ...(target ? { link: target } : span.href ? { link: { href: span.href, external: true } } : {}),
+        ...(span.declaration ? { declaration: true as const, declarationName: true as const } : {}),
+        ...(span.keyword ? { keyword: true as const } : {}),
+        ...(!span.href && !span.target && !span.declaration ? { nonReference: true as const } : {}),
+      }
+    })
+  }
   const spans: SignatureSpan[] = []
   // The callable's own bindings do not exist in its enclosing declaration.
   const ownerScope: Signature | undefined = signature && { params: [], enclosingTypeParamNames: signature.enclosingTypeParamNames, enclosingDeclaration: signature.enclosingDeclaration }
@@ -292,6 +307,21 @@ export function supportsCSignatures(symbol: ApiSymbol, language?: string): boole
 
 /** Prepare one layout per overload for both HTML and the Markdown twin. */
 export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string): Promise<Map<Signature, CodeLayout>> {
+  if (language === 'haskell') {
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) => {
+      if (!signature.raw || !signature.nativeSpans?.length || signature.nativeSpans.map((span) => span.text).join('') !== signature.raw) {
+        throw new Error(`Unavailable native Haskell header: ${symbol.id}`)
+      }
+      let spans = signature.nativeSpans
+      if ((await codeWidthFailures(signature.raw, 'api')).length) {
+        // The qualified profile needs only a continuation before the type separator.
+        const separator = spans.findIndex((span) => !span.href && !span.target && !span.declaration && span.text.includes(' :: '))
+        spans = spans.map((span, i) => i === separator ? { ...span, text: span.text.replace(' :: ', '\n  :: ') } : span)
+      }
+      const text = spans.map((span) => span.text).join('')
+      return [signature, { text, nativeSpans: spans, limit: CODE_COLUMNS.api, failures: await codeWidthFailures(text, 'api') }] as const
+    })))
+  }
   if (language === 'rs' && ['method', 'function'].includes(symbol.kind) && symbol.signatures.length && !supportsRustSignatures(symbol, language)) {
     throw new Error(`Unavailable native Rust callable header: ${symbol.id}`)
   }

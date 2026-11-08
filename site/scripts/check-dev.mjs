@@ -167,7 +167,9 @@ const entries = API_MODEL_PORTS.filter(({ slug }) => ${JSON.stringify(signatureP
   if (!symbol) {
     // Native method records can omit inferred return types, as Julia does.
     const native = model.symbols.filter((entry) => usesNativeSignatures(entry, port) &&
-      entry.signatures.some((signature) => signature.params.length > 0) &&
+      entry.signatures.some((signature) => signature.params.length > 0 ||
+        (port === 'haskell' && entry.kind === 'function' && !signature.methodKind &&
+          signature.raw?.includes(' :: ') && signature.raw.includes(' -> '))) &&
       entry.signatures.every((signature) => typeof signature.raw === 'string' && signature.raw.trim()))
     symbol = native.find((entry) => entry.kind === 'function' && /capture/i.test(entry.name)) ?? native[0]
   }
