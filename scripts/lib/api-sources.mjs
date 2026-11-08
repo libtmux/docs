@@ -89,6 +89,7 @@ export const ARITIES = {
 /** Owners a port's names have without an import: what the language provides, as page owners written with dots. */
 export const DEFAULT_SCOPES = {
   java: ['java.lang'],
+  clojure: ['java.lang'],
   kotlin: ['kotlin', 'kotlin.collections', 'kotlin.text', 'kotlin.io', 'kotlin.ranges', 'kotlin.sequences', 'kotlin.annotation', 'kotlin.comparisons', 'kotlin.jvm', 'java.lang'],
   // `scala`, `scala.Predef` and `java.lang` are imported as a whole. What the package object and Predef bind to a collection is per name (`DEFAULT_NAMES`).
   scala: ['scala', 'scala.Predef', 'java.lang'],
@@ -133,7 +134,7 @@ export const BARE_OWNERS = Object.fromEntries(Object.entries({
   java: {
     'java.util': ['List', 'Set', 'Map', 'Optional', 'OptionalInt', 'OptionalLong', 'Collection', 'Iterator'],
     'java.util.function': ['Function', 'Supplier', 'Consumer', 'Predicate', 'LongSupplier'],
-    'java.util.concurrent': ['Executor', 'TimeUnit'],
+    'java.util.concurrent': ['Executor', 'TimeUnit', 'CompletionStage'],
     'io.modelcontextprotocol.server': ['McpSyncServer'], 'io.modelcontextprotocol.spec': ['McpServerTransportProvider'],
     'java.util.regex': ['Pattern'],
     'java.nio.file': ['Path'], 'java.nio': ['ByteBuffer'], 'java.time': ['Duration', 'Instant'],
@@ -146,6 +147,10 @@ export const BARE_OWNERS = Object.fromEntries(Object.entries({
     'kotlinx.coroutines': ['CoroutineScope', 'CoroutineDispatcher', 'Dispatchers', 'NonCancellable', 'launch', 'coroutineScope', 'withContext', 'runInterruptible'],
     'kotlinx.coroutines.flow': ['Flow', 'FlowCollector', 'StateFlow', 'MutableStateFlow', 'collect'],
     'java.nio.file': ['Path'],
+  },
+  clojure: {
+    'java.time': ['Instant'],
+    'java.util.concurrent': ['CompletionStage'],
   },
   scala: {
     'cats.effect.kernel': ['Async', 'Deferred', 'Outcome', 'Resource', 'Fiber', 'Ref'],

@@ -135,6 +135,16 @@ export function stagedPortGuides(port, artifact) {
   const linkRoutes = Object.fromEntries(Object.entries(routes).map(([sourcePath, guide]) => [sourcePath, [guide.route]]))
   const nativeReferenceFiles = new Set()
   for (const redirect of sourceGuideRedirectsFor(port)) linkRoutes[redirect.sourcePath] = [redirect.target]
+  if (identity.sourceReferenceFiles) {
+    const { symbols } = JSON.parse(readFileSync(join(root, `site/src/data/api/${port}.json`), 'utf8'))
+    for (const { file, package: coordinate } of identity.sourceReferenceFiles) {
+      nativeReferenceFiles.add(file)
+      for (const symbol of symbols.filter((entry) => entry.package === coordinate)) {
+        const fragment = (symbol.publicId ?? symbol.id).toLowerCase().replace(/[^\w-]/g, '')
+        linkRoutes[`${file}#${fragment}`] = [`reference/${symbol.slug}`]
+      }
+    }
+  }
   if (port === 'powershell') {
     const model = JSON.parse(readFileSync(join(root, 'site/src/data/api/powershell.json'), 'utf8'))
     const files = new Set(model.nativeProvenance.files.map((file) => file.path))

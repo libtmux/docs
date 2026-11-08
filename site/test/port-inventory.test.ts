@@ -21,7 +21,7 @@ const manifests = manifestPackages.ports as Record<string, {
   distributions: { name: string; version: string }[]
   units: { unit: string; name: string }[]
 }>
-const distributions = (slug: string) => published(slug).filter((entry) => !entry.within && entry.kind !== 'source')
+const distributions = (slug: string) => entries(slug).filter((entry) => entry.status !== 'planned' && !entry.within && entry.kind !== 'source')
 const declared = (slug: string) => manifests[slug]!.distributions.map((entry) => entry.name)
 const GO = 'github.com/libtmux/libtmux-go'
 
@@ -35,7 +35,7 @@ describe('port inventory', () => {
     expect(new Set(ids).size, 'ids are unique').toBe(ids.length)
     expect(entries(slug).filter((entry) => entry.kind === 'library'), 'exactly one library').toHaveLength(1)
     expect(entries(slug)[0]!.kind).toBe('library')
-    expect(entries(slug)[0]!.status).toBe('published')
+    expect(['published', 'configured-unpublished']).toContain(entries(slug)[0]!.status)
     for (const entry of entries(slug)) {
       expect(entry.label.trim(), entry.id).not.toBe('')
       expect(entry.coordinate.trim(), entry.id).not.toBe('')
@@ -200,7 +200,7 @@ describe('port inventory', () => {
   it('agrees with every field of the port metadata the hero already shows', () => {
     for (const port of PORTS) {
       const [library] = entries(port.slug)
-      const list = published(port.slug)
+      const list = entries(port.slug).filter((entry) => entry.status !== 'planned')
       expect(library!.repo, `${port.slug} repo`).toBe(port.repo)
       // The vcpkg port is `libtmux`; the metadata's package name is the repository's.
       expect(library!.coordinate, `${port.slug} packageName`).toBe(port.slug === 'cxx' ? 'libtmux' : port.packageName)

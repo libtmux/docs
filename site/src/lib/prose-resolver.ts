@@ -137,7 +137,7 @@ const INVENTORIES: {
     data: jdkInv,
     project: 'Java SE',
     baseUrl: 'https://docs.oracle.com/en/java/javase/21/docs/api/',
-    langs: ['java', 'kotlin', 'scala'],
+    langs: ['java', 'kotlin', 'scala', 'clojure'],
   },
   { data: domInv, project: 'MDN', baseUrl: 'https://developer.mozilla.org/', langs: ['ts'] },
   { data: juliaInv, project: 'Julia', baseUrl: 'https://docs.julialang.org/en/v1/', langs: ['julia'] },

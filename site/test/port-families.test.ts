@@ -30,6 +30,7 @@ describe('port picker families', () => {
     const labels = PORT_FAMILIES.map((family) => family.label)
     expect(labels.slice(0, 2)).toEqual(['Scripting & web', 'Compiled & native'])
     expect(labels.slice(2)).toEqual(['JVM', '.NET', 'BEAM'])
+    expect(PORT_FAMILIES.find((family) => family.label === 'JVM')?.ports).toEqual(['java', 'kotlin', 'scala', 'clojure'])
   })
 
   it('leaves the catch-all family empty for the registered ports, and last', () => {

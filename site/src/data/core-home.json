@@ -322,5 +322,23 @@
       "control-mode": "ControlSession",
       "capture": "Server.capture(_:includingHistory:)"
     }
+  },
+  "clojure": {
+    "objects": {
+      "server": "libtmux.core/open!",
+      "session": "libtmux.core/sessions!",
+      "window": "libtmux.data/windows",
+      "pane": "libtmux.data/panes"
+    },
+    "capabilities": {
+      "objects": "libtmux.data",
+      "errors": "libtmux.core/error-summary",
+      "traversal": "libtmux.data/panes",
+      "servers": "libtmux.core/open!",
+      "send-keys": "libtmux.core/send-keys!",
+      "control-mode": "libtmux.control/subscribe!",
+      "capture": "libtmux.core/capture!",
+      "async": "libtmux.async"
+    }
   }
 }

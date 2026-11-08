@@ -25,6 +25,15 @@ export interface ExpectedLinks {
 }
 
 export const LINKS: Record<string, ExpectedLinks> = {
+  clojure: {
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-java/libtmux-clojure', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-clojure']],
+    indexed: true,
+    rows: [
+      ['source', 'libtmux-java', 'libtmux/libtmux-java', 'https://github.com/libtmux/libtmux-java', ['repository']],
+      ['source', 'libtmux-clojure', 'libtmux-clojure', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-clojure', ['core-source']],
+      ['source', 'libtmux-clojure-core-async', 'libtmux-clojure-core-async', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-clojure-core-async', ['adapter-source']],
+    ],
+  },
   py: {
     actions: [['source', 'GitHub', 'GitHub: tmux-python/libtmux', 'https://github.com/tmux-python/libtmux'],
       ['package', 'PyPI', 'PyPI: libtmux package', 'https://pypi.org/project/libtmux/']],
