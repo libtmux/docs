@@ -119,7 +119,7 @@ async function sweep(html: ApiSymbol[], markdown: ApiSymbol[] = html, only?: str
 }
 
 // The table, the contents rail and the badges are the page's own; types and summaries draw plain text.
-const PAGE = ['components/api/ApiPageContents.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiScalarMembers.astro']
+const PAGE = ['components/api/ApiMemberList.astro', 'components/api/ApiPageContents.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiScalarMembers.astro']
 let template: Promise<unknown> | undefined
 async function page(id: string) {
   template ??= loadAstroTemplate('components/api/ApiReference.astro', {
@@ -507,7 +507,7 @@ describe('the Markdown export of an enum', () => {
 
 describe('a product page of a Rust enum', () => {
   const load = () => loadAstroTemplate('components/api/ProductApiPage.astro', {
-    real: ['components/api/ApiScalarMembers.astro'],
+    real: ['components/api/ApiScalarMembers.astro', 'components/api/ApiMemberList.astro'],
     stubs: {
       'components/api/ApiEntry.astro': `---
 const { symbol, member } = Astro.props
@@ -528,7 +528,7 @@ const { symbol, member } = Astro.props
     return { symbol, document: win.document, members: symbolsForProduct(model, symbol.product as 'mcp').filter((entry) => entry.parent === id) }
   }
 
-  it.each(['mcp.cli.Stop', 'mcp.policy.Toolset', 'src.BuildError'])('%s opens on a Variants table above its member details', async (id) => {
+  it.each(['mcp.cli.Stop', 'mcp.policy.Toolset', 'src.BuildError'])('%s opens on a Variants table, with the variants listed once', async (id) => {
     const { document, members } = await render(id)
     const variants = members.filter((entry) => entry.kind === 'constant')
     const heading = document.querySelector('h2#api-variants')!
@@ -543,11 +543,11 @@ const { symbol, member } = Astro.props
     }
     // Each entry draws the payload types in full, so the table's drawings are the repeats.
     expect([...heading.parentElement!.querySelectorAll('[data-type]')].every((cell) => cell.getAttribute('data-repeated') === 'true')).toBe(true)
-    // Every member keeps its entry, so the lower heading counts them all and reads as their detail.
-    const details = document.querySelector('.api-members > h2#api-members')!
-    expect(details.firstChild?.textContent).toBe('Member details')
-    expect(details.querySelector('.api-section-count')?.textContent).toBe(String(members.length))
-    expect(document.querySelectorAll('.api-members > dl[data-entry]')).toHaveLength(members.length)
+    // The variants are the table's rows; only the other members are listed below, as rows, not entries.
+    const rest = members.filter((entry) => entry.kind !== 'constant')
+    expect(document.querySelectorAll('dl[data-member="true"]')).toHaveLength(0)
+    expect(document.querySelectorAll('.api-members .api-member-list > li')).toHaveLength(rest.length)
+    for (const variant of variants) expect(document.getElementById(variant.publicId ?? variant.id), variant.id).not.toBeNull()
     const ids = [...document.querySelectorAll('[id]')].map((element) => element.id)
     expect(new Set(ids).size, 'every id on the page is unique').toBe(ids.length)
   }, 60_000)
