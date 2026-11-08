@@ -54,7 +54,7 @@ describe('Core Library home data', () => {
       .toThrow(/not in its API model/)
   })
 
-  it('links the guides the page cards name, and only the ones that exist', () => {
+  it('links authored task guides and validates optional source-owned guide cards', () => {
     for (const port of PORTS) {
       const { frontmatter } = parseFrontmatter(readFileSync(page(port.slug), 'utf8'), { frontmatter: 'remove' })
       const hrefs = (frontmatter.cards as { href: string }[]).map((card) => card.href)
@@ -62,7 +62,9 @@ describe('Core Library home data', () => {
       expect(hrefs, port.slug).toContain('../reference/')
       for (const name of ['getting-started', 'testing-with-libtmux']) {
         const file = new URL(`../src/content/docs/ports/${port.slug}/guides/${name}.md`, import.meta.url)
-        expect(hrefs.includes(`../guides/${name}/`), `${port.slug} ${name}`).toBe(existsSync(file))
+        const href = `../guides/${name}/`
+        if (existsSync(file)) expect(hrefs, `${port.slug} ${name}`).toContain(href)
+        if (hrefs.includes(href)) expect(routesOf(port.slug).has(`guides/${name}`), `${port.slug} ${name}`).toBe(true)
       }
     }
   })

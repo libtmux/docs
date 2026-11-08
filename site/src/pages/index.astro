@@ -17,7 +17,7 @@ import { localesFor } from '../i18n/resolve'
 import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE } from '../i18n/locales'
 import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, repoPath } from '../i18n/contribute'
-import { documentationCards } from '../lib/port-documentation'
+import { documentationCards, documentationSectionsFor } from '../lib/port-documentation'
 
 /**
  * A port+version build mounts this route at /<port>/<version>/, so the site
@@ -37,11 +37,11 @@ const { version: buildVersion } = buildTarget(process.env)
 
 const versionSections = versionRootPort
   ? [
-      ...(!versionRootPort.parentLibrary ? [{ href: portPageUrl(versionRootPort, buildVersion, 'topics'), label: 'Topics', body: `Subject-by-subject, with ${versionRootPort.name} in every code block.` }] : []),
-      { href: portPageUrl(versionRootPort, buildVersion, 'guides'), label: 'Guides', body: `Task guides for ${versionRootPort.name}.` },
-      { href: portPageUrl(versionRootPort, buildVersion, 'examples'), label: 'Examples', body: 'Complete programs, sourced from the code each port tests.' },
-      { href: portPageUrl(versionRootPort, buildVersion, 'concepts'), label: 'Concepts', body: 'The domain model every port shares.' },
-    ]
+      { route: 'topics', href: portPageUrl(versionRootPort, buildVersion, 'topics'), label: 'Topics', body: `Subject-by-subject, with ${versionRootPort.name} in every code block.` },
+      { route: 'guides', href: portPageUrl(versionRootPort, buildVersion, 'guides'), label: 'Guides', body: `Task guides for ${versionRootPort.name}.` },
+      { route: 'examples', href: portPageUrl(versionRootPort, buildVersion, 'examples'), label: 'Examples', body: 'Complete programs, sourced from the code each port tests.' },
+      { route: 'concepts', href: portPageUrl(versionRootPort, buildVersion, 'concepts'), label: 'Concepts', body: 'The domain model every port shares.' },
+    ].filter((section) => documentationSectionsFor(versionRootPort.slug).includes(section.route))
   : []
 const versionDomains = versionRootPort ? documentationCards(versionRootPort.slug, buildVersion) : []
 
