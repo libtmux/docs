@@ -680,3 +680,29 @@ cleanup in separate work.
 
 Follow [WRITING.md](../WRITING.md#commits) for commit messages and
 [AGENTS.md](../AGENTS.md#repository-boundaries) for push and deployment limits.
+
+### Perl source-bound documentation checks
+
+The reusable port builder checks the selected Perl artifact after rendering.
+It runs the native model/POD/source/inventory suites and the shared Node type
+checks before uploading an artifact. These checks use the selected source
+revision and the builder workflow's own committed docs revision. They do not
+replace the development-loop timing gates or the full publication audit.
+
+```console
+$ node site/node_modules/vitest/vitest.mjs run \
+  --root packages/api-model \
+  test/perl.test.ts
+```
+
+```console
+$ node site/node_modules/vitest/vitest.mjs run \
+  --root site \
+  test/perl-pod-links.test.ts \
+  test/perl-source-usage.test.ts \
+  test/source-only-inventory.test.ts
+```
+
+```console
+$ pnpm run --recursive type-check
+```
