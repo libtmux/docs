@@ -104,6 +104,12 @@
       "release": null,
       "tag": null
     },
+    "lisp": {
+      "status": "unpublished",
+      "version": null,
+      "release": null,
+      "tag": null
+    },
     "ts": {
       "status": "release",
       "version": "0.1.0",
@@ -207,12 +213,6 @@
           "maturity": "unreleased"
         }
       }
-    },
-    "lisp": {
-      "status": "unpublished",
-      "version": null,
-      "release": null,
-      "tag": null
     }
   }
 }
