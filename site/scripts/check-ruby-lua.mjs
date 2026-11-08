@@ -34,7 +34,7 @@ const check = (condition, message) => {
 
 for (const scheme of ['light', 'dark']) {
   for (const [viewport, width, height] of VIEWPORTS) {
-    const context = await newCheckContext(browser, base, {
+    const context = await newCheckContext(browser, BASE, {
       viewport: { width, height },
       colorScheme: scheme,
     })

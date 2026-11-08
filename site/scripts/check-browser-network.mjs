@@ -1,13 +1,18 @@
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { once } from 'node:events'
 import { createServer } from 'node:http'
-import { pathToFileURL } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { chromium } from 'playwright'
 import { newCheckContext, newCheckPage } from './browser-context.mjs'
+import { checkSidebarDemo } from './check-sidebar-demo.mjs'
 
 /** A held image on another origin must never reach its server or delay load. */
 export async function checkBrowserNetwork(browser) {
+  execFileSync(fileURLToPath(new URL('../node_modules/.bin/oxlint', import.meta.url)),
+    ['--config', fileURLToPath(new URL('./browser-scope.json', import.meta.url)),
+      fileURLToPath(new URL('.', import.meta.url))], { stdio: 'inherit' })
   let result = Promise.withResolvers()
   let escaped = 0
   const foreign = createServer(() => {
@@ -63,6 +68,9 @@ export async function checkBrowserNetwork(browser) {
     local.listen(0, '127.0.0.1')
     await once(local, 'listening')
     const base = `http://127.0.0.1:${local.address().port}`
+    const sidebarAdmission = new Error('Sidebar context admitted')
+    await assert.rejects(checkSidebarDemo({ async newContext() { throw sidebarAdmission } }, base),
+      (error) => error === sidebarAdmission, 'The sidebar check passes its URL into the shared context factory')
     for (const factory of ['page', 'context', 'redirect', 'continued']) {
       const page = factory === 'page'
         ? await newCheckPage(browser, base, { viewport: { width: 640, height: 480 } })

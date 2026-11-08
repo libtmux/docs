@@ -11,7 +11,7 @@ import { chromium } from 'playwright'
 export async function checkSidebarDemo(browser, url, options = {}) {
   const values = { url, screenshots: options.screenshots, 'negative-control': options.negativeControl }
   const started = performance.now()
-  const context = await newCheckContext(browser, base, { viewport: { width: 1600, height: 1150 }, reducedMotion: 'reduce' })
+  const context = await newCheckContext(browser, url, { viewport: { width: 1600, height: 1150 }, reducedMotion: 'reduce' })
   const page = await context.newPage()
   page.setDefaultTimeout(1000)
   const navigationTimeout = process.env.CI ? 20000 : 10000
