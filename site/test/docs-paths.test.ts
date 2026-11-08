@@ -75,8 +75,12 @@ describe('product document URLs', () => {
     expect(docsRoutePath({ id: 'meta/third-party-notices', data: {} })).toBe('meta/third-party-notices')
   })
 
-  it('retires duplicate Julia and F# API overviews in root and selected-version builds', () => {
+  it('retires duplicate Common Lisp, Julia and F# API overviews in root and selected-version builds', () => {
     expect(sourceGuideRedirects(undefined, { fsharp: 'v0.46.2' })).toEqual([
+      { path: 'lisp/latest/guides/api', target: 'lisp/latest/reference' },
+      { path: 'lisp/latest/guides/query-api', target: 'lisp/latest/reference' },
+      { path: 'lisp/latest/guides/json-api', target: 'lisp/latest/reference' },
+      { path: 'lisp/latest/workspace/api', target: 'lisp/latest/reference' },
       { path: 'julia/latest/guides/api-overview', target: 'julia/latest/reference' },
       { path: 'fsharp/v0.46.2/guides/api-overview', target: 'fsharp/v0.46.2/reference' },
     ])
@@ -85,6 +89,12 @@ describe('product document URLs', () => {
     ])
     expect(sourceGuideRedirects('fsharp')).toEqual([
       { path: 'guides/api-overview', target: 'reference' },
+    ])
+    expect(sourceGuideRedirects('lisp')).toEqual([
+      { path: 'guides/api', target: 'reference' },
+      { path: 'guides/query-api', target: 'reference' },
+      { path: 'guides/json-api', target: 'reference' },
+      { path: 'workspace/api', target: 'reference' },
     ])
     expect(sourceGuideRedirects('py')).toEqual([])
   })

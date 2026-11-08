@@ -724,7 +724,7 @@ const CORE_PORTS: readonly Port[] = [
     },
     packages: [{
       id: 'workspace', name: 'libtmux/workspace', require: '(asdf:load-system "libtmux/workspace")',
-      executable: 'mise run workspace', source: { path: 'src/workspace.lisp', ref: 'master' },
+      executable: 'mise run workspace', source: { path: 'src', ref: 'master' },
       installs: [{
         label: 'Source checkout', lang: 'console',
         code: 'git clone https://github.com/libtmux/libtmux-lisp.git\ncd libtmux-lisp\nmise trust\nmise install\nmise run setup',

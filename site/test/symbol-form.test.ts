@@ -32,6 +32,7 @@ const ROWS: Record<string, Row> = {
   julia: { type: ['LibTmux::Snapshot', 'LibTmux.Snapshot'], method: ['Server.snapshot()', 'Server.snapshot', 'LibTmux.Server.snapshot'], function: ['cancel!', 'cancel!', 'LibTmux.cancel!'], property: ['Snapshot.acquired', 'Snapshot.acquired', 'LibTmux.Snapshot.acquired'], member: ['Direction', 'Up', 'LibTmux.Direction.Up', 'Up', 'Up'] },
   ruby: { type: ['LibTmux.Server', 'LibTmux::Server'], method: ['Server.list_sessions', 'Server#list_sessions', 'LibTmux::Server#list_sessions'], function: ['LibTmux#version', 'LibTmux.version', 'LibTmux.version'], property: ['Server.socket_name', 'Server#socket_name', 'LibTmux::Server#socket_name'], member: ['Direction', 'up', 'LibTmux::Direction.up', ':up', ':up'] },
   lua: { type: ['libtmux::Server', 'libtmux.Server'], method: ['Server.list_sessions', 'Server:list_sessions()', 'libtmux.Server:list_sessions'], function: ['libtmux:new', 'libtmux.new()', 'libtmux.new'], property: ['Server:socket', 'Server.socket', 'libtmux.Server.socket'], member: ['Direction', 'up', 'libtmux.Direction.up', '"up"', '"up"'] },
+  lisp: { type: ['libtmux.snapshot', 'libtmux:snapshot'], method: ['libtmux.active-p', 'libtmux:active-p', 'libtmux:active-p'], function: ['fetch-snapshot', 'fetch-snapshot', 'libtmux:fetch-snapshot'], property: ['libtmux.outcome-status', 'libtmux:outcome-status', 'libtmux:outcome-status'], member: ['direction', 'horizontal', 'libtmux.direction.horizontal', ':horizontal', ':horizontal'] },
   elixir: { type: ['LibTmux.Format', 'LibTmux.Format'], method: ['LibTmux.Capture.fetch/2', 'LibTmux.Capture.fetch/2', 'LibTmux.Capture.fetch/2'], function: ['submit/3', 'submit/3', 'LibTmux.Control.submit/3'], property: ['LibTmux.Error.retryable', 'LibTmux.Error.retryable', 'LibTmux.Error.retryable'], member: ['Direction', 'up', 'LibTmux.Direction.up', ':up', ':up'] },
   powershell: { type: ['LibTmux.Server', 'LibTmux.Server'], method: ['Get-TmuxSession', 'Get-TmuxSession', 'LibTmux\\Get-TmuxSession'], function: ['Invoke-TmuxQuery', 'Invoke-TmuxQuery', 'LibTmux\\Invoke-TmuxQuery'], property: ['Server.Name', 'Server.Name', 'LibTmux.Server.Name'], member: ['Direction', 'Up', 'LibTmux.Direction.Up', 'Up', 'Up'] },
 }
@@ -95,9 +96,10 @@ describe('how a language writes a linked symbol', () => {
     expect(called.sort()).toEqual(['csharp', 'cxx', 'java', 'lua', 'py', 'rs', 'ts'])
   })
 
-  it('reads a method with no parentheses in Ruby, Go, Kotlin, Scala, F# and Julia, even when its author wrote them', () => {
-    for (const lang of ['ruby', 'go', 'kotlin', 'scala', 'fsharp', 'julia']) {
-      expect(writtenForm({ lang, kind: 'method', label: 'Server.run()', symbol: declared('method', 'a.Server#run') }), lang).toBe(lang === 'ruby' ? 'Server#run' : 'Server.run')
+  it('reads a method with no parentheses in Ruby, Go, Kotlin, Scala, F#, Julia and Common Lisp, even when its author wrote them', () => {
+    for (const lang of ['ruby', 'go', 'kotlin', 'scala', 'fsharp', 'julia', 'lisp']) {
+      const expected = lang === 'ruby' ? 'Server#run' : lang === 'lisp' ? 'Server:run' : 'Server.run'
+      expect(writtenForm({ lang, kind: 'method', label: 'Server.run()', symbol: declared('method', 'a.Server#run') }), lang).toBe(expected)
       expect(writtenForm({ lang, kind: 'function', label: 'run()', symbol: declared('function', 'a.run') }), lang).toBe('run')
     }
   })

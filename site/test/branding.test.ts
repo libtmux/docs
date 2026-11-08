@@ -23,7 +23,8 @@ describe('route branding', () => {
       py: 'libtmux: Python-based tmux client', ruby: 'libtmux-ruby: Ruby-based tmux client',
       lua: 'libtmux-lua: Lua-based tmux client', ts: 'libtmux-ts: TypeScript-based tmux client',
       powershell: 'libtmux-powershell: PowerShell-based tmux client', julia: 'libtmux-julia: Julia-based tmux client',
-      elixir: 'libtmux-elixir: Elixir-based tmux client', rs: 'libtmux-rs: Rust-based tmux client',
+      elixir: 'libtmux-elixir: Elixir-based tmux client', lisp: 'libtmux-lisp: Common Lisp-based tmux client',
+      rs: 'libtmux-rs: Rust-based tmux client',
       go: 'libtmux-go: Go-based tmux client', java: 'libtmux-java: Java-based tmux client',
       kotlin: 'libtmux-kotlin: Kotlin-based tmux client', scala: 'libtmux-scala: Scala-based tmux client',
       csharp: 'libtmux-dotnet: C#-based tmux client', fsharp: 'libtmux-fsharp: F#-based tmux client',
@@ -42,7 +43,7 @@ describe('route branding', () => {
   it('uses project titles independently of package names and shared source repositories', () => {
     const names = {
       py: 'libtmux', ruby: 'libtmux-ruby', lua: 'libtmux-lua', ts: 'libtmux-ts',
-      powershell: 'libtmux-powershell', julia: 'LibTmux.jl', elixir: 'libtmux-elixir',
+      powershell: 'libtmux-powershell', julia: 'LibTmux.jl', elixir: 'libtmux-elixir', lisp: 'libtmux-lisp',
       rs: 'libtmux-rs', go: 'libtmux-go', java: 'libtmux-java', kotlin: 'libtmux-kotlin',
       scala: 'libtmux-scala', csharp: 'libtmux-dotnet', fsharp: 'libtmux-fsharp',
       cxx: 'libtmux-cxx', swift: 'libtmux-swift',

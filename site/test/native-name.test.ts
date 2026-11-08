@@ -136,7 +136,7 @@ describe('the other ports', () => {
 
   // Each family keeps the separator its language writes, which the id carries.
   it.each([
-    ['cxx', /::/, undefined], ['ruby', /::/, undefined], ['lua', /:/, undefined], ['elixir', /\//, undefined], ['powershell', /\\/, undefined],
+    ['cxx', /::/, undefined], ['ruby', /::/, undefined], ['lua', /:/, undefined], ['lisp', /:/, undefined], ['elixir', /\//, undefined], ['powershell', /\\/, undefined],
     ['py', /\./, /::/], ['go', /\./, /::/], ['swift', /\./, /::/], ['java', /\./, /::/], ['csharp', /\./, /::/], ['julia', /\./, /::/],
   ] as const)('%s keeps the separator its language writes', (port, wanted, unwanted) => {
     const shown = API_MODELS[port].symbols.map((symbol) => nativeQualifiedName(API_MODELS[port], symbol))
@@ -197,7 +197,7 @@ describe('short names', () => {
   })
 
   it('are the owner, a separator that the language writes, and the member, for every symbol of every port', { timeout: 30_000 }, () => {
-    const separators: Record<string, string[]> = { rs: ['::'], cxx: ['::'], ruby: ['::', '.', '#'], lua: ['.', ':'], powershell: ['\\'] }
+    const separators: Record<string, string[]> = { rs: ['::'], cxx: ['::'], ruby: ['::', '.', '#'], lua: ['.', ':'], lisp: [':'], powershell: ['\\'] }
     for (const [port, model] of Object.entries(API_MODELS)) {
       const owners = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
       for (const symbol of model.symbols) {

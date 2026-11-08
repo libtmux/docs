@@ -44,6 +44,9 @@ export const DESTINATIONS: Record<string, ExpectedDestinations> = {
     registry: { name: 'Hex', url: 'https://hex.pm/packages/libtmux', icon: 'hex', label: 'libtmux on Hex' },
     api: { name: 'HexDocs', url: 'https://libtmux.hexdocs.pm/', label: 'libtmux API reference on HexDocs' },
   },
+  lisp: {
+    source: github('https://github.com/libtmux/libtmux-lisp/tree/master/src', 'libtmux-lisp/src'),
+  },
   ts: {
     source: github('https://github.com/libtmux/libtmux-ts', 'libtmux-ts'),
     registry: { name: 'npm', url: 'https://www.npmjs.com/package/libtmux', icon: 'npm', label: 'libtmux on npm' },
