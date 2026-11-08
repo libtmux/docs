@@ -1,6 +1,8 @@
 ---
+import { PORT_BY_SLUG, productStatus } from '../lib/ports'
+import { REGISTRY } from '../lib/registry'
 /**
- * The bar that says the libraries are released but still change between releases.
+ * Release maturity notice for the selected port.
  *
  * Sits directly under the header and scrolls away with the page rather than
  * pinning: the header is `sticky top-0`, and a second sticky strip would take
@@ -24,17 +26,20 @@
 interface Props {
   /** Match the root landing page's centered content column. */
   centered?: boolean
+  port?: string
 }
-const { centered = false } = Astro.props
+const { centered = false, port } = Astro.props
+const info = port ? PORT_BY_SLUG[port] : undefined
+const unpublished = info && productStatus(info, 'core', REGISTRY) === 'unreleased'
 ---
 
 <div class:list={['prerelease-notice', { 'prerelease-notice--centered': centered }]} data-prerelease-notice>
   <div class="prerelease-notice__inner">
     <p class="prerelease-notice__text">
-      <strong class="prerelease-notice__badge">Early release</strong>
+      <strong class="prerelease-notice__badge">{unpublished ? 'Source preview' : 'Early release'}</strong>
       <span>
-        libtmux is released, and its APIs may still change between releases.
-        This site's structure and URLs may change too.
+        {unpublished ? "This library is not published yet. Install it from source. Its APIs and this site's structure and URLs may change."
+          : "libtmux is released, and its APIs may still change between releases. This site's structure and URLs may change too."}
       </span>
     </p>
     <button
