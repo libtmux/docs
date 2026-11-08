@@ -8,6 +8,59 @@ const expressions = (node) => node.childrenForFieldName('match').map((match) => 
 const unwrap = (node) => node?.type === 'parens' && node.namedChildren.length === 1 ? unwrap(node.namedChildren[0]) : node
 const values = new Set(['pure', 'return', 'error', 'fail'])
 
+/** Read the public modules and their local imports; unrelated hidden modules are not public command paths. */
+export async function reachableHaskellSources(sources, roots) {
+  const modules = new Map()
+  for (const path of sources.keys()) {
+    const module = path.replace(/^(?:src|internal)\//, '').replace(/\.l?hs$/, '').replaceAll('/', '.')
+    const paths = modules.get(module) ?? []
+    paths.push(path)
+    modules.set(module, paths)
+  }
+  const selected = new Map()
+  const pending = [...new Set(roots)]
+  if (!pending.length) throw new Error('Haskell source usage coverage: no public source roots')
+  // This profile requires the boot Prelude; a local one changes implicit imports.
+  if (modules.has('Prelude')) throw new Error('Haskell source usage coverage: same-package Prelude requires separate qualification')
+  const parser = await parserFor('haskell')
+  try {
+    while (pending.length) {
+      const path = pending.shift()
+      if (selected.has(path)) continue
+      const text = sources.get(path)
+      if (text === undefined) throw new Error(`Haskell source usage coverage: missing public or imported source ${path}`)
+      if (path.endsWith('.lhs')) throw new Error(`Haskell source usage coverage: literate input is not qualified: ${path}`)
+      const tree = parser.parse(text)
+      try {
+        const fail = (message) => { throw new Error(`Haskell source usage coverage (${path}): ${message}`) }
+        if (tree.rootNode.hasError) fail('source contains a parse error or missing node')
+        if (tree.rootNode.descendantsOfType('cpp').length) fail('conditional module dependencies are not qualified')
+        const module = field(tree.rootNode.namedChildren.find((node) => node.type === 'header'), 'module')?.text
+        if (!module || !modules.get(module)?.includes(path)) fail('module name differs from its Cabal source path')
+        for (const node of field(tree.rootNode, 'imports')?.namedChildren ?? []) {
+          const imported = field(node, 'module')?.text
+          if (!imported) {
+            if (!['comment', 'haddock'].includes(node.type)) fail('unsupported import declaration')
+            continue
+          }
+          const candidates = modules.get(imported) ?? []
+          if (candidates.length > 1) fail(`ambiguous local import ${imported}`)
+          if (candidates.length) {
+            if (field(node, 'package')) fail(`package-qualified local import ${imported} is not qualified`)
+            pending.push(candidates[0])
+          }
+        }
+      } finally {
+        tree.delete()
+      }
+      selected.set(path, text)
+    }
+    return selected
+  } finally {
+    parser.delete()
+  }
+}
+
 /** Parse the qualified source profile; unsupported command flow is a generation error. */
 export async function scanHaskell(text, { commands, known, dispatch = new Set() }) {
   const parser = await parserFor('haskell')
