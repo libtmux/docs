@@ -44,6 +44,7 @@ export interface PortSourceGuide {
 interface PortDocumentation {
   domains: readonly DocumentationDomain[]
   sourceGuides: readonly PortSourceGuide[]
+  stagedSections?: readonly string[]
   redirects?: readonly { sourcePath: string; path: string; target: string }[]
 }
 
@@ -65,6 +66,20 @@ const libraryDomain = (description: string): DocumentationDomain => ({
 })
 
 const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
+  ocaml: {
+    stagedSections: ['guides'],
+    domains: [
+      libraryDomain('Immutable OCaml observations, typed queries and explicit native transports.'),
+      { id: 'workspace', label: 'Workspace Manager', kind: 'product', navGroup: 'Apps', route: 'workspace', package: 'workspace', product: 'workspace',
+        description: 'Validate, preview and apply JSON workspaces with retained execution receipts.' },
+    ],
+    sourceGuides: [
+      ...['getting-started', 'graph', 'queries', 'query-interchange', 'control', 'recovery', 'streaming', 'showcases', 'packages', 'compatibility', 'testing', 'benchmarking', 'status'].map((name, index) =>
+        guide(`docs/${name}.md`, `guides/${name}`, 'core', { aliases: [], sidebar: { group: 'Guides', order: index + 1 } })),
+      guide('docs/workspaces.md', 'workspace/source-guide', 'workspace', { title: 'Workspace guide', product: 'workspace', package: 'workspace', aliases: [] }),
+    ],
+    redirects: [{ sourcePath: 'docs/api.md', path: 'guides/api', target: 'reference' }],
+  },
   powershell: {
     domains: [
       libraryDomain('Install LibTmux and use cmdlets to read and control tmux.'),
@@ -380,12 +395,15 @@ export function sourceGuidesFor(portSlug: string): readonly PortSourceGuide[] {
 /**
  * The section overviews staging writes for a port's source guides, unless the
  * port authors one itself: guides for every staged port, and examples, topics
- * and concepts too unless the port wraps another library's source.
+ * and concepts too unless the catalog selects its populated sections or the
+ * port wraps another library's source.
  * `scripts/stage-port-docs.mjs` writes them; the Core page cards are tested
  * against this list.
  */
 export function stagedSectionsFor(portSlug: string): readonly string[] {
-  if (!documentationFor(portSlug)) return []
+  const documentation = documentationFor(portSlug)
+  if (!documentation) return []
+  if (documentation.stagedSections) return documentation.stagedSections
   return PORT_BY_SLUG[portSlug]!.parentLibrary ? ['guides'] : ['guides', 'examples', 'topics', 'concepts']
 }
 

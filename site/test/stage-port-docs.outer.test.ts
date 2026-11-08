@@ -5,15 +5,16 @@ import { dirname, join } from 'node:path'
 import { expect, it } from 'vitest'
 import { stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
 import { PORTS } from '../src/lib/ports.ts'
+import { SOURCE_GUIDE_PORTS } from '../src/lib/port-documentation.ts'
 
 const root = new URL('../../', import.meta.url).pathname
 const cachedRevision = 'a'.repeat(40)
 const files = ['scripts/stage-port-docs.mjs', 'scripts/lib/badges.mjs', 'site/src/lib/ports.ts',
   'site/src/lib/site-root.ts', 'site/src/lib/cooldown.ts', 'site/src/lib/port-documentation.ts',
   'site/src/lib/versions.ts']
-const stagedPorts = ['ruby', 'lua', 'powershell', 'julia', 'elixir', 'kotlin', 'scala', 'fsharp']
+const stagedPorts = SOURCE_GUIDE_PORTS
 
-function fixture(slug: 'ruby' | 'lua' | 'kotlin', run: (fixture: {
+function fixture(slug: 'ruby' | 'lua' | 'kotlin' | 'ocaml', run: (fixture: {
   directory: string; checkout: string; revision: string;
   write: (path: string, value: string) => void;
   artifact: (port: string, revision: string, label: string) => string;
@@ -42,8 +43,8 @@ function fixture(slug: 'ruby' | 'lua' | 'kotlin', run: (fixture: {
       }))
     }
     let revision = 'b'.repeat(40)
-    if (slug === 'kotlin') {
-      for (const path of Object.keys(stagedRoutesFor(slug))) write(join(checkout, path), '# Guide\n\nfresh-kotlin\n')
+    if (['kotlin', 'ocaml'].includes(slug)) {
+      for (const path of Object.keys(stagedRoutesFor(slug))) write(join(checkout, path), `# Guide\n\nfresh-${slug}\n`)
       const git = (...args: string[]) => execFileSync('git', ['-C', checkout, ...args], { encoding: 'utf8', stdio: 'pipe' }).trim()
       git('init', '-q')
       git('add', '.')
@@ -85,7 +86,7 @@ it('leaves the preview mount to Markdown while selecting the parent API version'
   })
 })
 
-it.each(['ruby', 'lua', 'kotlin'] as const)('stages other caches before accepting only the selected %s source', (slug) => {
+it.each(['ruby', 'lua', 'kotlin', 'ocaml'] as const)('stages other caches before accepting only the selected %s source', (slug) => {
   fixture(slug, ({ directory, checkout, revision, write, artifact, invoke }) => {
     const staged = join(directory, 'site/src/content/docs/_staged')
     const cache = join(directory, `site/src/data/port-guides/${slug}.json`)
@@ -106,11 +107,13 @@ it.each(['ruby', 'lua', 'kotlin'] as const)('stages other caches before acceptin
     expect(explicit.stderr).toContain(`--cached cannot stage selected publication port ${slug}`)
     expect(readFileSync(cache, 'utf8')).toBe(cachedBytes)
 
-    if (slug !== 'kotlin') {
+    const fromSource = ['kotlin', 'ocaml'].includes(slug)
+    if (slug === 'ocaml') write(join(directory, `site/src/data/api/${slug}.json`), JSON.stringify({ revision }))
+    if (!fromSource) {
       write(join(directory, `site/src/data/api/${slug}.json`), JSON.stringify({ revision }))
       write(join(checkout, 'docs/_build/api.json'), artifact(slug, revision, 'fresh'))
     }
-    const fresh = invoke('--port', slug, ...(slug === 'kotlin' ? ['--from-source'] : []))
+    const fresh = invoke('--port', slug, ...(fromSource ? ['--from-source'] : []))
     expect(fresh.status, fresh.stderr).toBe(0)
     const route = Object.values(stagedRoutesFor(slug))[0].route
     const rendered = join(staged, slug, route, 'index.md')
@@ -127,14 +130,17 @@ it.each(['ruby', 'lua', 'kotlin'] as const)('stages other caches before acceptin
     }
 
     const wrong = 'c'.repeat(40)
-    if (slug === 'kotlin') {
+    if (fromSource) {
       execFileSync('git', ['-C', checkout, '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid',
         'commit', '--allow-empty', '-qm', 'Different source'], { stdio: 'pipe' })
+      if (slug === 'ocaml') write(join(directory, `site/src/data/api/${slug}.json`), JSON.stringify({
+        revision: execFileSync('git', ['-C', checkout, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+      }))
     } else {
       write(join(directory, `site/src/data/api/${slug}.json`), JSON.stringify({ revision: wrong }))
       write(join(checkout, 'docs/_build/api.json'), artifact(slug, wrong, 'wrong'))
     }
-    const rejected = invoke('--port', slug, ...(slug === 'kotlin' ? ['--from-source'] : []))
+    const rejected = invoke('--port', slug, ...(fromSource ? ['--from-source'] : []))
     expect(rejected.status).not.toBe(0)
     expect(rejected.stderr).toContain(`${slug}: expected source ${revision}, artifact records`)
     expect(readFileSync(rendered, 'utf8')).toBe(renderedBytes)

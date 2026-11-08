@@ -290,6 +290,25 @@ const PROBES = {
     const versions = body.split('\n').filter(Boolean)
     return versions.length > 0 ? versions : null
   },
+  async ocaml(port) {
+    // The central opam repository stores each release in a package.version directory.
+    const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN
+    const { missing, body } = await getJson(
+      `https://api.github.com/repos/ocaml/opam-repository/contents/packages/${encodeURIComponent(port.packageName)}`,
+      { accept: 'application/vnd.github+json', ...(token ? { authorization: `Bearer ${token}` } : {}) },
+    )
+    if (missing || !Array.isArray(body)) throw new Error('opam package index is unavailable')
+    const prefix = `${port.packageName}.`
+    const versions = body.flatMap((entry) => {
+      if (!entry || typeof entry.name !== 'string' || typeof entry.type !== 'string') throw new Error('invalid opam package index')
+      if (entry.type !== 'dir' || !entry.name.startsWith(prefix)) return []
+      const version = entry.name.slice(prefix.length)
+      if (!releaseTag(`v${version}`, port)) throw new Error('unrecognized opam package version')
+      return [version]
+    })
+    if (!versions.length) throw new Error('opam package index contains no recognized versions')
+    return versions
+  },
   async java(port) {
     const { missing, body } = await getText(
       `https://repo.maven.apache.org/maven2/${port.packageName.split(':')[0].replaceAll('.', '/')}/${port.packageName.split(':')[1]}/maven-metadata.xml`,

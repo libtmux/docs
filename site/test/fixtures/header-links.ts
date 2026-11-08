@@ -25,6 +25,18 @@ export interface ExpectedLinks {
 }
 
 export const LINKS: Record<string, ExpectedLinks> = {
+  ocaml: {
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-ocaml/lib', 'https://github.com/libtmux/libtmux-ocaml/tree/master/lib']],
+    indexed: true,
+    rows: [
+      ['source', 'libtmux', 'opam package · lib', 'https://github.com/libtmux/libtmux-ocaml/tree/master/lib', ['libtmux']],
+      ['source', 'libtmux-unix', 'opam package · unix', 'https://github.com/libtmux/libtmux-ocaml/tree/master/unix', ['libtmux-unix']],
+      ['source', 'libtmux-eio', 'opam package · eio', 'https://github.com/libtmux/libtmux-ocaml/tree/master/eio', ['libtmux-eio']],
+      ['source', 'libtmux-json', 'opam package · json', 'https://github.com/libtmux/libtmux-ocaml/tree/master/json', ['libtmux-json']],
+      ['source', 'libtmux-workspace', 'opam package · workspace', 'https://github.com/libtmux/libtmux-ocaml/tree/master/workspace', ['libtmux-workspace']],
+      ['source', 'libtmux-workspace-cli', 'opam package · cli', 'https://github.com/libtmux/libtmux-ocaml/tree/master/cli', ['libtmux-workspace-cli']],
+    ],
+  },
   py: {
     actions: [['source', 'GitHub', 'GitHub: tmux-python/libtmux', 'https://github.com/tmux-python/libtmux'],
       ['package', 'PyPI', 'PyPI: libtmux package', 'https://pypi.org/project/libtmux/']],

@@ -66,6 +66,7 @@ export function shapeFits(call, fn) {
  */
 export function callTargets(caller, callee, named, call) {
   if (!caller.calls.has(callee.name)) return false
+  if (caller.moduleCalls !== undefined) return (call?.targets ?? caller.moduleCalls.get(callee.name))?.has(`${callee.file}:${callee.start}:${callee.name}`) ?? false
   if (named.length <= 1) return true
   const calls = call ? [call] : (caller.callList ?? []).filter((candidate) => candidate.name === callee.name)
   // Overloads of one type are not always in one file: a Swift extension and a C# partial class add to the type from another.
@@ -110,6 +111,10 @@ export function definitionsOf(functions, symbols, { sharedOwner = false, freeFun
   const byName = Map.groupBy(functions, (fn) => fn.name)
   const definitions = new Map()
   for (const symbol of symbols) {
+    if (symbol.implementations !== undefined) {
+      for (const fn of symbol.implementations) definitions.set(fn, [...(definitions.get(fn) ?? []), symbol])
+      continue
+    }
     const name = bareName(symbol.name)
     const inFile = (byFile.get(symbol.file) ?? []).filter((fn) => fn.name === name)
     let hits = inFile.filter((fn) => symbol.line >= fn.start && symbol.line <= fn.nameLine)

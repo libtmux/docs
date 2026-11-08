@@ -4,7 +4,7 @@ import type { AddressInfo } from 'node:net'
 import { createComponent, renderTemplate } from 'astro/runtime/server/index.js'
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright'
 import ts from 'typescript'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { presetOptions, workspaceShowcase } from '../src/lib/workspace-showcase'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
@@ -86,11 +86,16 @@ const ADDRESS = 'http://workspace.test/en/rs/latest/workspace/'
 let browser: Browser
 let page: string
 
+// Each case owns a browser context; keep at most two cases active.
+vi.setConfig({ maxConcurrency: 2 })
+
 beforeAll(async () => {
   browser = await chromium.launch({ headless: true })
   page = await html()
 }, 60_000)
-afterAll(async () => { await browser?.close() })
+afterAll(async () => {
+  try { await browser?.close() } finally { vi.resetConfig() }
+})
 
 async function open(context: BrowserContext, path = '', body = page): Promise<Page> {
   await context.route('http://workspace.test/**', (route) => route.fulfill({ contentType: 'text/html', body }))
@@ -197,7 +202,7 @@ const strip = (tab: Page, preset: string) => tab.evaluate((id) => {
 }, preset)
 
 describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
-  it('has presets of different heights to reserve for', async () => {
+  it.concurrent('has presets of different heights to reserve for', async () => {
     const context = await browser.newContext()
     const tab = await open(context)
     const natural = await tab.evaluate(() => [...document.querySelectorAll<HTMLElement>('.ws-picker__panel')].map((panel) => panel.querySelector('pre')!.scrollHeight))
@@ -207,7 +212,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
   })
 
   for (const width of WIDTHS) {
-    it(`reserves the tallest preset's height at ${width} px, so no choice, window, search or roll shifts anything`, async () => {
+    it.concurrent(`reserves the tallest preset's height at ${width} px, so no choice, window, search or roll shifts anything`, async () => {
       const context = await browser.newContext({ viewport: { width, height: 900 } })
       await context.addInitScript(layoutShift)
       const tab = await open(context)
@@ -278,12 +283,12 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
       return total
     }
 
-    it('shifts nothing, because the picker shows once every preset is parsed', async () => {
+    it.concurrent('shifts nothing, because the picker shows once every preset is parsed', async () => {
       expect(page).toContain('ws-picker__end')
       expect(await loaded(page)).toBe(0)
     })
 
-    it('does shift when the picker shows as it is parsed, so the check can fail', async () => {
+    it.concurrent('does shift when the picker shows as it is parsed, so the check can fail', async () => {
       const shown = page.replace(/\.ws-picker:not\(:has\(\.ws-picker__end\)\)/g, '.ws-never')
       expect(shown).not.toBe(page)
       expect(await loaded(shown)).toBeGreaterThan(0)
@@ -291,7 +296,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
   })
 
   for (const width of [1440, 1024, 768]) {
-    it(`puts the configuration and the drawing side by side at equal height at ${width} px`, async () => {
+    it.concurrent(`puts the configuration and the drawing side by side at equal height at ${width} px`, async () => {
       const context = await browser.newContext({ viewport: { width, height: 900 } })
       const tab = await open(context)
       for (const preset of IDS) {
@@ -309,7 +314,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
     })
   }
 
-  it('stacks the configuration over the drawing on a phone', async () => {
+  it.concurrent('stacks the configuration over the drawing on a phone', async () => {
     const context = await browser.newContext({ viewport: { width: 390, height: 900 } })
     const tab = await open(context)
     const { config, layout, stage } = await measure(tab)
@@ -319,7 +324,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
     await context.close()
   })
 
-  it('keeps a long file inside its panel, where it scrolls', async () => {
+  it.concurrent('keeps a long file inside its panel, where it scrolls', async () => {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } })
     const tab = await open(context)
     await choose(tab, 'start-directory')
@@ -333,7 +338,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
   })
 
   for (const width of [320, 390, 480, 768, 1024, 1440]) {
-    it(`never scrolls the page sideways at ${width} px, whichever preset shows, with the menu shut or open`, async () => {
+    it.concurrent(`never scrolls the page sideways at ${width} px, whichever preset shows, with the menu shut or open`, async () => {
       const context = await browser.newContext({ viewport: { width, height: 800 } })
       const tab = await open(context)
       for (const preset of IDS) {
@@ -352,7 +357,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
   }
 
   for (const width of [320, 390, 480, 768, 1440]) {
-    it(`paints nothing of a preset that is not shown, and takes no pointer or focus from it, at ${width} px`, async () => {
+    it.concurrent(`paints nothing of a preset that is not shown, and takes no pointer or focus from it, at ${width} px`, async () => {
       const context = await browser.newContext({ viewport: { width, height: 800 } })
       const tab = await open(context)
       for (const preset of IDS) {
@@ -374,7 +379,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
     })
   }
 
-  it('catches a shown window that paints through a hidden preset, as the first stylesheet let it', async () => {
+  it.concurrent('catches a shown window that paints through a hidden preset, as the first stylesheet let it', async () => {
     const bad = STYLES.replace(/html\[data-js\] \.ws-layout__stack > \.ws-win:not\(\[data-active\]\) \{\s*visibility: hidden;\s*\}/, 'html[data-js] .ws-layout__stack > .ws-win { visibility: hidden; }\nhtml[data-js] .ws-layout__stack > .ws-win[data-active] { visibility: visible; }')
     expect(bad).not.toBe(STYLES)
     const context = await browser.newContext({ viewport: { width: 480, height: 800 } })
@@ -386,7 +391,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
   })
 
   for (const width of [320, 390, 480, 768, 1024, 1440]) {
-    it(`draws the window tabs above the drawing, never over it, with one caption, at ${width} px`, async () => {
+    it.concurrent(`draws the window tabs above the drawing, never over it, with one caption, at ${width} px`, async () => {
       const context = await browser.newContext({ viewport: { width, height: 800 } })
       const tab = await open(context)
       for (const preset of IDS) {
@@ -429,7 +434,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
     })
   }
 
-  it('scrolls the window tabs of a preset with many inside their strip on a phone, and brings the one chosen into view', async () => {
+  it.concurrent('scrolls the window tabs of a preset with many inside their strip on a phone, and brings the one chosen into view', async () => {
     const context = await browser.newContext({ viewport: { width: 390, height: 900 } })
     const tab = await open(context, '?preset=start-directory')
     const strip = await tab.evaluate(() => {
@@ -451,7 +456,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
   })
 
   for (const width of [320, 390, 480, 768, 1024, 1440]) {
-    it(`shows the scroll buttons and the slider only on a strip that overflows, with the right ones at each end, at ${width} px`, async () => {
+    it.concurrent(`shows the scroll buttons and the slider only on a strip that overflows, with the right ones at each end, at ${width} px`, async () => {
       const context = await browser.newContext({ viewport: { width, height: 800 }, reducedMotion: 'reduce' })
       const tab = await open(context)
       let overflowed = 0
@@ -490,7 +495,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
     })
   }
 
-  it('shows no controls on a strip whose tabs fit', async () => {
+  it.concurrent('shows no controls on a strip whose tabs fit', async () => {
     const context = await browser.newContext({ viewport: { width: 1440, height: 800 } })
     const tab = await open(context, '?preset=window-index')
     const now = await strip(tab, 'window-index')
@@ -501,7 +506,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
   })
 
   for (const width of [390, 768, 1440]) {
-    it(`scrolls about one tab with a click and keeps the slider in step, at ${width} px`, async () => {
+    it.concurrent(`scrolls about one tab with a click and keeps the slider in step, at ${width} px`, async () => {
       const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce' })
       await context.addInitScript(layoutShift)
       const tab = await open(context, '?preset=start-directory')
@@ -550,7 +555,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
     })
   }
 
-  it('drags the thumb to scroll the strip, and pages when the track beside it is pressed', async () => {
+  it.concurrent('drags the thumb to scroll the strip, and pages when the track beside it is pressed', async () => {
     const context = await browser.newContext({ viewport: { width: 390, height: 900 }, reducedMotion: 'reduce' })
     const tab = await open(context, '?preset=start-directory')
     await tab.locator('.ws-picker__panel[data-preset="start-directory"] .ws-layout').scrollIntoViewIfNeeded()
@@ -579,7 +584,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
   })
 
   for (const width of [320, 390, 480, 768, 1440]) {
-    it(`keeps the selected window's tab in view, clear of the buttons, as the arrow keys move along the tabs, at ${width} px`, async () => {
+    it.concurrent(`keeps the selected window's tab in view, clear of the buttons, as the arrow keys move along the tabs, at ${width} px`, async () => {
       const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce' })
       const tab = await open(context, '?preset=start-directory')
       await tab.focus('.ws-picker__panel[data-preset="start-directory"] [role="tab"][aria-selected="true"]')
@@ -617,7 +622,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
     })
   }
 
-  it('keeps the buttons focusable and labelled, and hands focus to the tab when the one that has it goes', async () => {
+  it.concurrent('keeps the buttons focusable and labelled, and hands focus to the tab when the one that has it goes', async () => {
     const context = await browser.newContext({ viewport: { width: 390, height: 900 }, reducedMotion: 'reduce' })
     const tab = await open(context, '?preset=start-directory')
     const end = '.ws-picker__panel[data-preset="start-directory"] .ws-layout__scroll--end'
@@ -636,7 +641,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
     await context.close()
   })
 
-  it('fades the strip with the colour of the card in both colour schemes', async () => {
+  it.concurrent('fades the strip with the colour of the card in both colour schemes', async () => {
     const context = await browser.newContext({ viewport: { width: 390, height: 900 } })
     const tab = await open(context, '?preset=start-directory')
     const surface = (scheme: 'light' | 'dark') => tab.evaluate((mode) => {
@@ -656,7 +661,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
     await context.close()
   })
 
-  it('shows the current preset on the menu, with the roll button beside it, as the front page does', async () => {
+  it.concurrent('shows the current preset on the menu, with the roll button beside it, as the front page does', async () => {
     for (const width of [1440, 390]) {
       const context = await browser.newContext({ viewport: { width, height: 900 } })
       const tab = await open(context)
@@ -671,7 +676,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
     }
   })
 
-  it('opens a searchable menu of every preset, each row a tile, a name and one line', async () => {
+  it.concurrent('opens a searchable menu of every preset, each row a tile, a name and one line', async () => {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } })
     const tab = await open(context)
     await tab.click('.ws-picker__menu > summary')
@@ -694,7 +699,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
     await context.close()
   })
 
-  it('filters the menu by name, summary and key, says when nothing matches, and closes with Escape', async () => {
+  it.concurrent('filters the menu by name, summary and key, says when nothing matches, and closes with Escape', async () => {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } })
     const tab = await open(context)
     const shownRows = () => tab.evaluate(() => [...document.querySelectorAll<HTMLElement>('[data-preset-option]')].filter((row) => !row.hidden).map((row) => row.dataset.presetOption))
@@ -717,7 +722,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
     await context.close()
   })
 
-  it('chooses from the menu by keyboard: search, arrow down, enter', async () => {
+  it.concurrent('chooses from the menu by keyboard: search, arrow down, enter', async () => {
     const context = await browser.newContext()
     const tab = await open(context)
     await tab.focus('.ws-picker__menu > summary')
@@ -742,7 +747,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
     await context.close()
   })
 
-  it('rolls to a different preset every time, with the front page\'s own button', async () => {
+  it.concurrent('rolls to a different preset every time, with the front page\'s own button', async () => {
     const context = await browser.newContext()
     const tab = await open(context)
     expect(await tab.locator('[data-action="roll"]').evaluate((button) => button.classList.contains('lm-reroll') && button.textContent!.includes('🎲'))).toBe(true)
@@ -761,7 +766,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
     await context.close()
   })
 
-  it('remembers the choice per port, writes it to the address and opens on it again', async () => {
+  it.concurrent('remembers the choice per port, writes it to the address and opens on it again', async () => {
     const context = await browser.newContext()
     const tab = await open(context)
     await choose(tab, 'environment')
@@ -775,7 +780,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
     await context.close()
   })
 
-  it('shows the remembered or named preset before the picker\'s own script runs, so nothing flashes', async () => {
+  it.concurrent('shows the remembered or named preset before the picker\'s own script runs, so nothing flashes', async () => {
     const context = await browser.newContext()
     const tab = await open(context)
     await choose(tab, 'environment')
@@ -799,7 +804,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
     await context.close()
   })
 
-  it('opens on the preset the address names in both colour schemes, with all of its windows', async () => {
+  it.concurrent('opens on the preset the address names in both colour schemes, with all of its windows', async () => {
     const context = await browser.newContext()
     const tab = await open(context)
     await choose(tab, 'environment')
@@ -816,7 +821,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
     await context.close()
   })
 
-  it('shows the first preset when storage is unavailable, and still swaps', async () => {
+  it.concurrent('shows the first preset when storage is unavailable, and still swaps', async () => {
     const context = await browser.newContext()
     await context.addInitScript(() => {
       Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('denied', 'SecurityError') } })
@@ -834,7 +839,7 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
     await context.close()
   })
 
-  it('without script shows the first preset alone and every example in full below it', async () => {
+  it.concurrent('without script shows the first preset alone and every example in full below it', async () => {
     const context = await browser.newContext({ javaScriptEnabled: false })
     const tab = await open(context)
     const panels = tab.locator('.ws-picker__panel')
@@ -897,7 +902,7 @@ describe('the workspace picker as a landing page tab in Chromium', { timeout: 60
   beforeAll(async () => { page = await landing() })
 
   for (const width of [1440, 768, 390]) {
-    it(`ends every preset's evidence where the stage ends, and moves nothing below, at ${width} px`, async () => {
+    it.concurrent(`ends every preset's evidence where the stage ends, and moves nothing below, at ${width} px`, async () => {
       const context = await browser.newContext({ viewport: { width, height: 900 } })
       await context.addInitScript(layoutShift)
       const tab = await open(context, '', page)
@@ -920,7 +925,7 @@ describe('the workspace picker as a landing page tab in Chromium', { timeout: 60
     })
   }
 
-  it('shows the opening preset, with its command and evidence, to a reader without script', async () => {
+  it.concurrent('shows the opening preset, with its command and evidence, to a reader without script', async () => {
     const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, javaScriptEnabled: false })
     const tab = await open(context, '', page)
     const panels = tab.locator('.ws-picker__panel')
@@ -937,7 +942,7 @@ describe('the workspace picker as a landing page tab in Chromium', { timeout: 60
     await context.close()
   })
 
-  it('leaves the evidence off the foot of the stage when the panel is not a column, so the check can fail', async () => {
+  it.concurrent('leaves the evidence off the foot of the stage when the panel is not a column, so the check can fail', async () => {
     const bad = STYLES.replace(/html\[data-js\] \.ws-picker--landing \.ws-picker__panel \{[^}]*\}/, '')
     expect(bad).not.toBe(STYLES)
     const context = await browser.newContext({ viewport: { width: 1280, height: 900 } })

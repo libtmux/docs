@@ -322,5 +322,31 @@
       "control-mode": "ControlSession",
       "capture": "Server.capture(_:includingHistory:)"
     }
+  },
+  "ocaml": {
+    "objects": {
+      "server": "Libtmux_unix.Client.t",
+      "session": "Libtmux.Session.t",
+      "window": "Libtmux.Window.t",
+      "pane": "Libtmux.Pane.t"
+    },
+    "wraps": {
+      "server": "A connection to one tmux server",
+      "window": "A shared tmux window"
+    },
+    "capabilities": {
+      "objects": "Libtmux.Pane",
+      "ids": "Libtmux.Pane.Id",
+      "queries": "Libtmux.Expr",
+      "errors": "Libtmux.Error",
+      "servers": "Libtmux_unix.Client.connect",
+      "traversal": "Libtmux.Snapshot.panes",
+      "send-keys": "Libtmux_unix.Client.send_keys",
+      "control-mode": "Libtmux_eio.Client.subscribe",
+      "capture": "Libtmux_unix.Client.capture_text",
+      "argv": "Libtmux.Command",
+      "version-gate": "Libtmux.Error.t.Unsupported_version",
+      "async": "Libtmux_eio.Client.capture"
+    }
   }
 }

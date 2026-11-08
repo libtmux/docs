@@ -33,6 +33,7 @@ function cases(): Case[] {
   }
   for (const port of PORTS.filter((entry) => entry.packages?.some(({ id }) => id === 'mcp' || id === 'workspace'))) {
     for (const product of ['mcp', 'workspace']) {
+      if (port.productAvailability?.[product as 'mcp' | 'workspace'] === 'excluded') continue
       add(`${port.slug} ${product}`, { port, product, version: 'latest' })
       add(`${port.slug} ${product} v1.2.3 @revision`, { port, product, version: 'v1.2.3', revision: REVISION })
     }

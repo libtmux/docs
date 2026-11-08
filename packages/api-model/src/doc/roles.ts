@@ -48,6 +48,8 @@ export type DocSpan =
       target: string
       /** What to show. `~` means "last segment only"; explicit titles win. */
       label: string
+      /** Custom odoc labels are prose rather than code. */
+      code?: boolean
     }
 
 /**
@@ -296,6 +298,7 @@ const SYNTAX: Record<string, ReadonlySet<string>> = {
   // ExDoc links a Markdown destination written as code: [the server](`LibTmux.Server`).
   elixir: new Set(['markdown-link', 'exdoc']),
   powershell: new Set(['markdown-link']),
+  ocaml: new Set(['odoc', 'markdown-link']),
 }
 
 /**
@@ -351,6 +354,21 @@ function tokenizeRun(text: string, lang?: string): DocSpan[] {
 
   type Hit = { start: number; end: number; span: DocSpan }
   const hits: Hit[] = []
+
+  if (syntax.has('odoc')) {
+    // The native exporter preserves references and converts odoc code and URL links to Markdown.
+    for (const match of text.matchAll(/\{\{!([^{}\s]+)\}([^{}]*)\}|\{!([^{}\s]+)\}/g)) {
+      let target = match[1] ?? match[3]!
+      const legacy = /^(type|val|module|module-type|class|class-type|exception|constructor|field):(.+)$/.exec(target)
+      const typed = /(?:^|\.)(module-type|class-type|type|val|value|module|class|exception|exn|constructor|const|field|recfield)-([^.]+)$/.exec(target)
+      const kind = legacy?.[1] ?? typed?.[1]
+      if (legacy) target = legacy[2]!
+      else if (typed) target = target.slice(0, typed.index) + (typed[0].startsWith('.') ? '.' : '') + typed[2]!
+      const label = match[1] ? match[2]! : target.replace(/(?:^|(?<=\.))(?:module-type|class-type|type|val|value|module|class|exception|exn|constructor|const|field|recfield)-/g, '')
+      hits.push({ start: match.index, end: match.index + match[0].length,
+        span: { kind: 'ref', role: `odoc:${kind ?? 'any'}`, target, label, ...(match[1] ? { code: false } : {}) } })
+    }
+  }
 
   if (syntax.has('documenter')) {
     // Documenter's named @ref destination contains spaces that Markdown URLs cannot.
@@ -599,7 +617,7 @@ function tokenizeRun(text: string, lang?: string): DocSpan[] {
     }
   } else {
     for (const code of markdownCode(text, masked.join(''))) {
-      const span: DocSpan = code.ticks === 1
+      const span: DocSpan = syntax.has('odoc') ? { kind: 'code', text: code.text } : code.ticks === 1
         ? { kind: 'ref', role: 'any', target: syntax.has('intra-doc') && RUST_CODE_PATH_RE.test(code.text) ? rustTarget(code.text) : code.text, label: code.text }
         : syntax.has('docc') && code.ticks === 2
           ? { kind: 'ref', role: 'any', target: doccTarget(code.text), label: code.text }

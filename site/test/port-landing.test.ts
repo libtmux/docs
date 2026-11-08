@@ -20,6 +20,7 @@ const read = (path: string) => JSON.parse(readFileSync(new URL(path, import.meta
 
 /** Every product a port ships, as the selector offers it. PowerShell serves MCP with the .NET tool. */
 const PRODUCTS: Record<string, LandingProduct[]> = {
+  ocaml: ['core', 'workspace'],
   py: ['core', 'mcp', 'workspace'],
   ruby: ['core', 'mcp', 'workspace'],
   lua: ['core'],
@@ -50,6 +51,7 @@ const GAPS: readonly string[] = ['julia/mcp']
  * is a reviewed change to this list, with the CI evidence that goes with it.
  */
 const EXCERPT_FILES: Record<string, string> = {
+  'ocaml/workspace': 'examples/showcase_graph.ml',
   'py/mcp': 'tests/test_window_tools.py',
   'py/workspace': 'src/tmuxp/workspace/builder/classic.py',
   'ruby/mcp': 'examples/mcp_protocol.rb',

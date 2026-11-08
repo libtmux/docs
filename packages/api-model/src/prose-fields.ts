@@ -73,6 +73,8 @@ export const STRUCTURAL_FIELDS: string[] = [
   '.doc.admonitions[].kind', '.doc.references[].name', '.doc.since',
   '.doc.examples[].code', '.doc.examples[].lang', '.doc.examples[].sourceUrl',
   // Extracted, and rendered by no component.
+  // OCaml's original odoc comments are provenance; `.doc` holds their rendered prose.
+  '.nativeDocumentation[]',
   '.doc.seeAlso[]', '.declarations[].*', '.declarations[].doc.*', '.declarations[].source.*',
 ]
 

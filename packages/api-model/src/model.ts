@@ -14,7 +14,7 @@
  */
 
 /** Language libraries, by the slug the site uses. */
-export type PortSlug = 'py' | 'ruby' | 'lua' | 'ts' | 'rs' | 'go' | 'java' | 'csharp' | 'cxx' | 'swift' | 'kotlin' | 'scala' | 'fsharp' | 'powershell' | 'julia' | 'elixir'
+export type PortSlug = 'py' | 'ruby' | 'lua' | 'ts' | 'rs' | 'go' | 'java' | 'csharp' | 'cxx' | 'swift' | 'kotlin' | 'scala' | 'fsharp' | 'powershell' | 'julia' | 'elixir' | 'ocaml'
 
 export type ApiProduct = 'core' | 'workspace' | 'mcp'
 
@@ -282,6 +282,8 @@ export interface ApiSymbol {
   variant?: 'unit' | 'tuple' | 'struct'
   /** Distinct native declarations sharing one public name, such as a TypeScript type/value pair. */
   declarations?: { kind: SymbolKind; text: string; source: ApiSymbol['source']; doc?: DocBlock }[]
+  /** Original native comments; doc holds their normalized rendered content. */
+  nativeDocumentation?: string[]
   /** Explicit source imports used to resolve aliases in native signatures. */
   imports?: Record<string, string>
   /** Relationships resolved by the native documentation producer. */

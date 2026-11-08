@@ -127,14 +127,23 @@ describe('staged port guide links', () => {
     expect(index).toContain('title: "Guides"')
     expect(index).toContain('"label":"Overview","order":1')
     const cards = JSON.parse(/^cards: (.+)$/m.exec(index)![1])
-    expect(cards[0].label).toBe('Getting started')
-    expect(cards[1].label).toBe('Attaching to tmux')
+    expect(cards[0].href).toMatch(/^\.\.\/guides\/(?:getting-started|overview)\/$/)
+    const setup = files.get(`${port}/${cards[0].href.slice(3)}index.md`)!
+    expect(cards[0].label).toBe(JSON.parse(/^title: (.+)$/m.exec(setup)![1]))
+    if (port !== 'ocaml') expect(cards[1].label).toBe('Attaching to tmux')
     for (const section of ['examples', 'topics']) {
       const page = files.get(`${port}/${section}/index.md`)
       if (!page) continue
       expect(page).toContain(`title: "${section[0].toUpperCase()}${section.slice(1)}"`)
       expect(JSON.parse(/^cards: (.+)$/m.exec(page)![1]).length).toBeGreaterThan(0)
     }
+  })
+  it('keeps the OCaml setup title and source examples', () => {
+    const artifact = JSON.parse(readFileSync(new URL('../src/data/port-guides/ocaml.json', import.meta.url), 'utf8'))
+    const setup = artifact.guides.find((guide: { path: string }) => guide.path === 'docs/getting-started.md')
+    const page = stagedPortGuides('ocaml', artifact).get('ocaml/guides/getting-started/index.md')!
+    expect(page).toContain('title: "Install and run your first capture"')
+    for (const [example] of setup.content.matchAll(/^```[^\n]*\n[\s\S]*?^```/gm)) expect(page).toContain(example)
   })
   const routes = {
     'docs/runtime.md': ['guides/source/runtime'],

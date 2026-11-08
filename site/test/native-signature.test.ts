@@ -70,6 +70,10 @@ const cases = [
   ['scala', 'io.github.libtmux.scaladsl.Server.sessions'],
   ['kotlin', 'io.github.libtmux.kotlin.Server.sessions'],
   ['fsharp', 'LibTmux.FSharp.Server.newSession'],
+  ['ocaml', 'Libtmux_unix.Client.capture'],
+  ['ocaml', 'Libtmux_unix.Client.t'],
+  ['ocaml', 'Libtmux.Snapshot.panes'],
+  ['ocaml', 'Libtmux.Command.view:type'],
   ['julia', 'LibTmux.Server'],
   ['powershell', 'LibTmux\\Connect-TmuxControl'],
 ] as const
@@ -625,7 +629,7 @@ describe('native signature emission', () => {
     const before = JSON.stringify(models.julia)
     const { entries } = await signatureProbe(models)
     expect([...new Set(entries.map(({ port }) => port))]).toEqual(API_MODEL_PORTS.map(({ slug }) => slug))
-    expect(new Set(entries.map(({ port }) => port)).size).toBe(16)
+    expect(new Set(entries.map(({ port }) => port)).size).toBe(API_MODEL_PORTS.length)
     for (const [port, model] of Object.entries(models)) {
       const callables = model.symbols.filter((symbol) => symbol.signatures.some((signature) => signature.params.length > 0 && signature.returns))
       const selected = callables.find((symbol) => /capture/i.test(symbol.name)) ?? callables[0]

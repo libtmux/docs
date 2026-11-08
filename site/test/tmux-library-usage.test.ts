@@ -31,6 +31,26 @@ const usage = tmuxUsage('list-panes')!
 const cell = (scope: string, port: string) => usage.groups.find((group) => group.scope?.id === scope)!.ports.find((entry) => entry.port === port)?.links.map((link) => link.label)
 
 describe('the recorded usage', () => {
+  it('records OCaml execution methods from its public interfaces and keeps pure builders off the table', () => {
+    for (const backend of ['unix', 'eio']) {
+      const client = `Libtmux_${backend}.Client`
+      expect(TMUX_USAGE.ocaml.symbols[`${client}.capture`].map((use) => [use.command, use.scope])).toEqual([
+        ['list-clients', null], ['list-panes', 'server'], ['list-sessions', null], ['list-windows', 'server'],
+      ])
+      expect(TMUX_USAGE.ocaml.symbols[`${client}.rename_window`]).toEqual([expect.objectContaining({ command: 'rename-window', reviewed: true })])
+      expect(TMUX_USAGE.ocaml.symbols[`${client}.capture_text`].find((use) => use.command === 'capture-pane')).toBeDefined()
+      expect(TMUX_USAGE.ocaml.symbols[`${client}.cycle_layout`].map((use) => [use.command, use.when])).toEqual([
+        ['next-layout', 'direction is `Next'], ['previous-layout', 'direction is `Previous'],
+      ])
+    }
+    const byId = new Map(API_MODELS.ocaml.symbols.map((symbol) => [symbol.publicId ?? symbol.id, symbol]))
+    for (const id of Object.keys(TMUX_USAGE.ocaml.symbols)) {
+      expect(byId.get(id)).toMatchObject({ kind: 'function', apiScope: 'exported' })
+      expect(byId.get(id)?.source?.file).toMatch(/\.mli$/)
+      expect(id).not.toMatch(/^Libtmux\.(?:Operations|Snapshot|Session|Window)\./)
+    }
+  })
+
   /** Every command either pinned manual documents. */
   const manualCommands = [...new Set(Object.values(TMUX_MANUALS).flatMap((manual) => manual.commands.map((command) => command.name)))].sort()
 

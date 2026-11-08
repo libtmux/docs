@@ -8,6 +8,7 @@ import { forwardUsage } from '../../scripts/lib/tmux-usage-forward.mjs'
 import { carriesCommand, memberWords, selects, settleCandidates, sweepCandidates } from '../../scripts/lib/tmux-usage-sweep.mjs'
 import { scanElixir, scanFSharp, scanJulia, tokenizeElixir } from '../../scripts/lib/tmux-usage-lexical.mjs'
 import { guardFlag, libraryScopes, scopeProblems } from '../../scripts/lib/tmux-usage-scopes.mjs'
+import { bindOcamlDefinitions } from '../../scripts/lib/tmux-usage-ocaml.mjs'
 
 type Forwarded = { symbol: string; command: string; scope: string | null; evidence: string[]; hops: number; via: { port: string; symbol: string; evidence: string[]; reviewed?: boolean } }
 type Scanned = { name: string; owner?: string; start: number; end: number; sites: { command: string; line: number; flags: string }[]; calls: Map<string, number>; receivers: Map<string, Set<string>> }
@@ -18,6 +19,66 @@ const scopes = readFileSync(new URL('../src/data/tmux-usage/scopes.json', import
 const spec = { scopes: libraryScopes(JSON.parse(scopes).commands['list-panes']) }
 
 describe('scanning a send site', () => {
+  it('reads OCaml curried dispatch calls without crediting comments, labels or local bindings', async () => {
+    const { functions } = await scanSource({
+      grammar: 'ocaml', known, commands: new Set(['list-panes']), dispatch: new Set(['metadata']),
+      text: [
+        'module Client = struct',
+        '  (* metadata client "list-panes" [ "-s" ] *)',
+        '  let capture client =',
+        '    let rows = metadata client "list-panes" [ "-a" ] in',
+        '    rows',
+        '  let label client = Error ("list-panes")',
+        'end',
+      ].join('\n'),
+    })
+    expect(functions.map((fn) => fn.name)).toEqual(['capture', 'label'])
+    expect(functions[0]).toMatchObject({ name: 'capture', owner: 'Client' })
+    expect(functions[0].sites).toEqual([{ command: 'list-panes', line: 4, flags: 'a', depth: 0, dispatch: { line: 4, name: 'metadata' } }])
+    expect(functions[1].sites).toEqual([])
+    expect(functions[0].calls.get('metadata')).toBe(4)
+  })
+
+  it('resolves OCaml public interfaces through aliases and functor includes without matching another module', async () => {
+    const sources = new Map([
+      ['lib/libtmux.ml', 'module Operations = Commands.Operations'],
+      ['lib/commands.ml', 'module Operations = struct let rename_window target = Command.Rename_window target end'],
+      ['unix/libtmux_unix.ml', 'module Client = struct\nlet capture c = Acquisition.snapshot c\ninclude Generated_operations.Make (struct let run x = x end)\nend'],
+      ['unix/acquisition.ml', 'open Connection\nlet snapshot c = metadata c "list-panes" [ "-a" ]'],
+      ['unix/connection.ml', 'let metadata c command flags = transport c command flags'],
+      ['unix/generated_operations.ml', 'module Make (Client : sig val run : unit -> unit end) = struct\nlet rename_window target = Client.run target\nend'],
+      ['eio/generated_operations.ml', 'module Make = struct let rename_window target = target end'],
+      ['unix/private.ml', 'let snapshot c = metadata c "list-panes" [ "-s" ]'],
+    ])
+    const functions: (Awaited<ReturnType<typeof scanSource>>['functions'][number] & { file: string })[] = []
+    const modules: { file: string; path: string; target?: string; include?: boolean; open?: boolean }[] = []
+    for (const [file, text] of sources) {
+      const scanned = await scanSource({ grammar: 'ocaml', text, commands: new Set(['list-panes']), known, dispatch: new Set(['metadata']) })
+      functions.push(...scanned.functions.map((fn) => ({ ...fn, file })))
+      modules.push(...(scanned.modules ?? []).map((module) => ({ ...module, file })))
+    }
+    const symbols = [
+      { id: 'Libtmux.Operations.rename_window', name: 'rename_window', file: 'lib/libtmux.mli', line: 100 },
+      { id: 'Libtmux_unix.Client.capture', name: 'capture', file: 'unix/libtmux_unix.mli', line: 100 },
+      { id: 'Libtmux_unix.Client.rename_window', name: 'rename_window', file: 'unix/libtmux_unix.mli', line: 200 },
+    ]
+    bindOcamlDefinitions({ symbols, functions, modules, sources })
+    const definitions = definitionsOf(functions, symbols)
+    expect([...definitions].map(([fn, own]) => [fn.file, fn.name, own[0].id])).toEqual([
+      ['lib/commands.ml', 'rename_window', 'Libtmux.Operations.rename_window'],
+      ['unix/libtmux_unix.ml', 'capture', 'Libtmux_unix.Client.capture'],
+      ['unix/generated_operations.ml', 'rename_window', 'Libtmux_unix.Client.rename_window'],
+    ])
+    const entries = deriveUsage({ command: 'list-panes', spec, functions, symbols }).entries
+    expect(entries.map((entry) => [entry.symbol, entry.scope])).toEqual([['Libtmux_unix.Client.capture', 'server']])
+    expect(entries[0].evidence).toEqual(['unix/acquisition.ml:2', 'unix/libtmux_unix.ml:2'])
+    expect(deriveUsage({ command: 'list-panes', spec, functions, symbols: [] }).entries).toEqual([])
+  })
+
+  it('refuses OCaml syntax errors instead of deriving an empty result', async () => {
+    await expect(scan('ocaml', 'module Client = struct let capture =')).rejects.toThrow(/could not parse/)
+  })
+
   it('reads the flags written beside the command and ignores a docstring and a default value', async () => {
     const { functions } = await scan('python', [
       'class Session:',

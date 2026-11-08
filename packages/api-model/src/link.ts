@@ -34,6 +34,16 @@ const ROLE_KINDS: Record<string, SymbolKind[]> = {
   any: [],
 }
 
+const ODOC_KINDS = new Map<string, readonly SymbolKind[]>([
+  ['type', ['typealias', 'enum', 'struct', 'union']],
+  ['val', ['function', 'constant']], ['value', ['function', 'constant']],
+  ['module', ['module']], ['module-type', ['interface']],
+  ['class', ['class']], ['class-type', ['interface']],
+  ['exception', ['exception']], ['exn', ['exception']],
+  ['constructor', ['constant']], ['const', ['constant']],
+  ['field', ['attribute']], ['recfield', ['attribute']],
+])
+
 /**
  * Names that belong to the language, not to us.
  *
@@ -89,6 +99,7 @@ const SIGNATURE_KEYWORDS: Record<string, Set<string>> = Object.fromEntries(Objec
   // Attributes that open a declaration, and the guard of a spec.
   elixir: 'spec type opaque callback macrocallback when',
   cxx: 'alignas alignof auto class concept const consteval constexpr constinit decltype default delete enum explicit extern final friend inline mutable namespace noexcept operator override register requires static struct template thread_local typedef typename union using virtual volatile',
+  ocaml: 'type val module sig end with and of private mutable exception include functor',
 }).map(([port, words]) => [port, new Set(words.split(' '))]))
 
 /** Language help stays separate from links to API declarations. */
@@ -317,6 +328,8 @@ function implSelfArguments(header: string): string[] | undefined {
 export class SymbolIndex {
   private readonly byPublic = new Map<string, ApiSymbol>()
   private readonly byQualified = new Map<string, ApiSymbol[]>()
+  /** Native qualified names and contextual constructor/field paths share this lookup. */
+  private readonly ocamlPaths = new Map<string, ApiSymbol[]>()
   // Keyed by declaration id. `parent` is a declaration id, so looking an owner
   // up in byPublic silently misses every time — which is why relative
   // references stayed at 0% until this map existed.
@@ -389,6 +402,12 @@ export class SymbolIndex {
       const aliases = this.byQualified.get(qualified) ?? []
       aliases.push(s)
       this.byQualified.set(qualified, aliases)
+
+      if (this.lang === 'ocaml') {
+        for (const path of new Set([qualified, s.id.replace(/:type(?=\.|$)/g, '')])) {
+          this.ocamlPaths.set(path, [...(this.ocamlPaths.get(path) ?? []), s])
+        }
+      }
 
       const suffixes = new Set([pub, qualified].flatMap((name) => {
         const parts = name.split('.')
@@ -706,6 +725,7 @@ export class SymbolIndex {
    * turned 59 dead references into links, most of the remaining gap.
    */
   resolve(target: string, role = 'any', context?: ApiSymbol): LinkTarget | undefined {
+    if (this.lang === 'ocaml' && role.startsWith('odoc:')) return this.resolveOdoc(target, role.slice(5), context)
     // A name the context binds as a type parameter is that parameter, never a
     // same-named global.
     if (context && TYPE_PARAMETER_ROLES.has(role) && /^[A-Za-z_$][\w$]*$/.test(target)) {
@@ -713,6 +733,61 @@ export class SymbolIndex {
       if (parameter) return parameter
     }
     return role === 'typeparam' ? undefined : this.resolveSymbol(target, role, context)
+  }
+
+  /** Resolve odoc's namespaces from the containing module outward, without a global suffix guess. */
+  private resolveOdoc(target: string, role: string, context?: ApiSymbol, aliases = new Set<string>()): LinkTarget | undefined {
+    const segments = target.split('.').map((part) => {
+      const typed = /^(module-type|class-type|type|val|value|module|class|exception|exn|constructor|const|field|recfield)-(.+)$/.exec(part)
+      return { name: typed?.[2] ?? part, role: typed?.[1] }
+    })
+    if (segments.some((part) => !part.name)) return undefined
+    const path = segments.map((part) => part.name).join('.')
+    const matches = (symbol: ApiSymbol, kind: string | undefined) => {
+      if (!kind || kind === 'any') return true
+      if (!ODOC_KINDS.get(kind)?.includes(symbol.kind)) return false
+      if (kind === 'constructor' || kind === 'const') return symbol.variant !== undefined
+      if (kind === 'val' || kind === 'value') return symbol.variant === undefined
+      return true
+    }
+    const scopes = new Set<string>()
+    for (let owner = context; owner; owner = this.parentOf(owner)) {
+      if (owner.kind === 'module' || owner.kind === 'interface') scopes.add(`${qualifiedNameOf(owner)}.`)
+    }
+    scopes.add('')
+    const parentsMatch = (symbol: ApiSymbol, last: number) => {
+      let ancestor = this.parentOf(symbol)
+      for (let i = last - 1; i >= 0; i--) {
+        // OCaml also exposes record labels and variant constructors directly in their module.
+        while (ancestor && ancestor.name !== segments[i]!.name && !['module', 'interface'].includes(ancestor.kind)) ancestor = this.parentOf(ancestor)
+        if (!ancestor || ancestor.name !== segments[i]!.name || !matches(ancestor, segments[i]!.role)) return false
+        ancestor = this.parentOf(ancestor)
+      }
+      return true
+    }
+    for (const scope of scopes) {
+      const candidates = (this.ocamlPaths.get(`${scope}${path}`) ?? [])
+        .filter((symbol) => matches(symbol, role) && parentsMatch(symbol, segments.length - 1))
+      if (candidates.length === 1) {
+        const symbol = candidates[0]!
+        return { href: this.hrefFor(symbol), external: false, symbol }
+      }
+      if (candidates.length > 1) return undefined
+      // A module alias keeps its own page; its members link to their public declarations.
+      for (let count = segments.length - 1; count > 0; count--) {
+        const prefix = `${scope}${segments.slice(0, count).map((part) => part.name).join('.')}`
+        const modules = (this.ocamlPaths.get(prefix) ?? []).filter((symbol) =>
+          symbol.kind === 'module' && symbol.exportedFrom &&
+          matches(symbol, segments[count - 1]!.role) && parentsMatch(symbol, count - 1))
+        if (modules.length > 1) return undefined
+        const alias = modules[0]
+        if (!alias) continue
+        if (aliases.has(alias.id)) return undefined
+        const suffix = target.split('.').slice(count).join('.')
+        return this.resolveOdoc(`${alias.exportedFrom}.${suffix}`, role, undefined, new Set([...aliases, alias.id]))
+      }
+    }
+    return undefined
   }
 
   private resolveSymbol(target: string, role: string, context?: ApiSymbol): LinkTarget | undefined {
@@ -1372,7 +1447,7 @@ export class SymbolIndex {
     // F# type variables start with an apostrophe but do not close like strings.
     const re = new RegExp(this.lang === 'cxx'
       ? String.raw`(?<literal>${cppLiteral}|\d(?:[eEpP][+-]|[\w.'])*)|(?<ident>\/\*[\s\S]*?\*\/|\/\/[^\n]*|${identifier})|(?<other>[^A-Za-z_0-9"'/]+|["'/])`
-      : this.lang === 'fsharp' ? pattern.replace('(?<ident>', String.raw`(?<ident>'[A-Za-z_][A-Za-z0-9_]*(?![A-Za-z0-9_'])|`)
+      : this.lang === 'fsharp' || this.lang === 'ocaml' ? pattern.replace('(?<ident>', String.raw`(?<ident>'[A-Za-z_][A-Za-z0-9_]*(?![A-Za-z0-9_'])|`)
       : pattern, 'g')
     for (const m of annotation.matchAll(re)) {
       const whole = m[0]
@@ -1534,7 +1609,15 @@ export class SymbolIndex {
       // renders unlinked in a signature is a builtin — `bool`, `Task`,
       // `Result`, `string` — which nothing here defines and no intersphinx
       // inventory covers for five of the eight ports.
-      const link = this.resolveSymbol(path, 'class', context)
+      let link = this.lang === 'ocaml'
+        ? /^[A-Z]/.test(path.split('.').at(-1)!)
+          ? this.resolveOdoc(path, 'module', context) ?? this.resolveOdoc(path, 'module-type', context)
+          : this.resolveOdoc(path, 'type', context)
+        : this.resolveSymbol(path, 'class', context)
+      if (!link && this.lang === 'ocaml') {
+        const href = builtinHref('ocaml', path)
+        if (href) link = { href, external: true }
+      }
       if (link || !['kotlin', 'scala'].includes(this.lang ?? '') || !ident.includes('.')) {
         out.push({ text: ident, link })
         continue

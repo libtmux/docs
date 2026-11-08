@@ -1,0 +1,1987 @@
+{
+  "commands": [
+    "attach-session",
+    "bind-key",
+    "break-pane",
+    "capture-pane",
+    "choose-buffer",
+    "choose-client",
+    "choose-tree",
+    "clear-history",
+    "clear-prompt-history",
+    "clock-mode",
+    "command-prompt",
+    "confirm-before",
+    "copy-mode",
+    "customize-mode",
+    "delete-buffer",
+    "detach-client",
+    "display-menu",
+    "display-message",
+    "display-panes",
+    "display-popup",
+    "find-window",
+    "has-session",
+    "if-shell",
+    "join-pane",
+    "kill-pane",
+    "kill-server",
+    "kill-session",
+    "kill-window",
+    "last-pane",
+    "last-window",
+    "link-window",
+    "list-buffers",
+    "list-clients",
+    "list-commands",
+    "list-keys",
+    "list-panes",
+    "list-sessions",
+    "list-windows",
+    "load-buffer",
+    "lock-client",
+    "lock-server",
+    "lock-session",
+    "move-pane",
+    "move-window",
+    "new-pane",
+    "new-session",
+    "new-window",
+    "next-layout",
+    "next-window",
+    "paste-buffer",
+    "pipe-pane",
+    "previous-layout",
+    "previous-window",
+    "refresh-client",
+    "rename-session",
+    "rename-window",
+    "resize-pane",
+    "resize-window",
+    "respawn-pane",
+    "respawn-window",
+    "rotate-window",
+    "run-shell",
+    "save-buffer",
+    "select-layout",
+    "select-pane",
+    "select-window",
+    "send-keys",
+    "send-prefix",
+    "server-access",
+    "set-buffer",
+    "set-environment",
+    "set-hook",
+    "set-option",
+    "set-window-option",
+    "show-buffer",
+    "show-environment",
+    "show-hooks",
+    "show-messages",
+    "show-options",
+    "show-prompt-history",
+    "show-window-options",
+    "source-file",
+    "split-window",
+    "start-server",
+    "suspend-client",
+    "swap-pane",
+    "swap-window",
+    "switch-client",
+    "unbind-key",
+    "unlink-window",
+    "wait-for"
+  ],
+  "port": "ocaml",
+  "repo": "libtmux/libtmux-ocaml",
+  "revision": "3c0c07a43d4b0930f3a7f9c8d0239588675bb54e",
+  "schemaVersion": 1,
+  "symbols": {
+    "Libtmux_eio.Client.break_pane": [
+      {
+        "command": "break-pane",
+        "evidence": [
+          "unix/engine.ml:288",
+          "eio/generated_operations.ml:103",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:317",
+          "lib/commands.ml:318",
+          "unix/command_encoding.ml:389",
+          "unix/command_encoding.ml:390"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.capture": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "unix/acquisition.ml:118",
+          "eio/libtmux_eio.ml:373",
+          "eio/libtmux_eio.ml:362",
+          "unix/engine.ml:294"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "unix/acquisition.ml:65",
+          "eio/libtmux_eio.ml:373",
+          "eio/libtmux_eio.ml:362",
+          "unix/engine.ml:294"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "unix/acquisition.ml:16",
+          "eio/libtmux_eio.ml:373",
+          "eio/libtmux_eio.ml:362",
+          "unix/engine.ml:294"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "unix/acquisition.ml:30",
+          "eio/libtmux_eio.ml:373",
+          "eio/libtmux_eio.ml:362",
+          "unix/engine.ml:294"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "Libtmux_eio.Client.capture_environment": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "unix/environment_io.ml:103",
+          "eio/generated_operations.ml:42",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:267",
+          "lib/commands.ml:268",
+          "unix/engine.ml:101",
+          "unix/engine.ml:103"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.capture_hooks": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "unix/options_io.ml:199",
+          "eio/generated_operations.ml:73",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:294",
+          "lib/commands.ml:294",
+          "unix/engine.ml:120",
+          "unix/engine.ml:126"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.capture_options": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "unix/options_io.ml:199",
+          "eio/generated_operations.ml:55",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:279",
+          "lib/commands.ml:280",
+          "unix/engine.ml:107",
+          "unix/engine.ml:110"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.capture_text": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "unix/rendered.ml:88",
+          "eio/libtmux_eio.ml:382",
+          "eio/libtmux_eio.ml:362",
+          "unix/engine.ml:311"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "unix/rendered.ml:81",
+          "eio/libtmux_eio.ml:382",
+          "eio/libtmux_eio.ml:362",
+          "unix/engine.ml:311"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null,
+        "when": "while the connection remains open"
+      },
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "unix/rendered.ml:100",
+          "eio/libtmux_eio.ml:382",
+          "eio/libtmux_eio.ml:362",
+          "unix/engine.ml:311"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "save-buffer",
+        "evidence": [
+          "unix/rendered.ml:125",
+          "eio/libtmux_eio.ml:382",
+          "eio/libtmux_eio.ml:362",
+          "unix/engine.ml:311"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "unix/rendered.ml:27",
+          "eio/libtmux_eio.ml:382",
+          "eio/libtmux_eio.ml:362",
+          "unix/engine.ml:311"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.clear_history": [
+      {
+        "command": "clear-history",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:168",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:364",
+          "lib/commands.ml:364",
+          "unix/command_encoding.ml:285",
+          "unix/command_encoding.ml:285"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.clear_option_array": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:70",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:291",
+          "lib/commands.ml:292",
+          "unix/command_encoding.ml:315",
+          "unix/command_encoding.ml:319"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.create_session": [
+      {
+        "command": "new-session",
+        "evidence": [
+          "unix/engine.ml:288",
+          "eio/generated_operations.ml:90",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:307",
+          "lib/commands.ml:309",
+          "unix/command_encoding.ml:356",
+          "unix/command_encoding.ml:360"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.create_window": [
+      {
+        "command": "new-window",
+        "evidence": [
+          "unix/engine.ml:288",
+          "eio/generated_operations.ml:95",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:311",
+          "lib/commands.ml:312",
+          "unix/command_encoding.ml:372",
+          "unix/command_encoding.ml:377"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.cycle_layout": [
+      {
+        "command": "next-layout",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:148",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:348",
+          "lib/commands.ml:349",
+          "unix/command_encoding.ml:263",
+          "unix/command_encoding.ml:265"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "direction is `Next"
+      },
+      {
+        "command": "previous-layout",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:148",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:348",
+          "lib/commands.ml:349",
+          "unix/command_encoding.ml:263",
+          "unix/command_encoding.ml:266"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "direction is `Previous"
+      }
+    ],
+    "Libtmux_eio.Client.kill_pane": [
+      {
+        "command": "kill-pane",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:113",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:322",
+          "lib/commands.ml:322",
+          "unix/command_encoding.ml:242",
+          "unix/command_encoding.ml:242"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.kill_session": [
+      {
+        "command": "kill-session",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:107",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:320",
+          "lib/commands.ml:320",
+          "unix/command_encoding.ml:240",
+          "unix/command_encoding.ml:240"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.kill_window": [
+      {
+        "command": "kill-window",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:110",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:321",
+          "lib/commands.ml:321",
+          "unix/command_encoding.ml:241",
+          "unix/command_encoding.ml:241"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.link_window": [
+      {
+        "command": "link-window",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:123",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:330",
+          "lib/commands.ml:331",
+          "unix/command_encoding.ml:248",
+          "unix/command_encoding.ml:249"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.move_pane": [
+      {
+        "command": "move-pane",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:151",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:351",
+          "lib/commands.ml:352",
+          "unix/command_encoding.ml:268",
+          "unix/command_encoding.ml:269"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.move_window_at": [
+      {
+        "command": "move-window",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:127",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:333",
+          "lib/commands.ml:334",
+          "unix/command_encoding.ml:250",
+          "unix/command_encoding.ml:251"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.read_hook": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "unix/options_io.ml:223",
+          "eio/generated_operations.ml:76",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:296",
+          "lib/commands.ml:297",
+          "unix/engine.ml:127",
+          "unix/engine.ml:131"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.read_option": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "unix/options_io.ml:223",
+          "eio/generated_operations.ml:59",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:282",
+          "lib/commands.ml:283",
+          "unix/engine.ml:113",
+          "unix/engine.ml:116"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.refresh_client_at": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:22",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:256",
+          "lib/commands.ml:257",
+          "unix/command_encoding.ml:229",
+          "unix/command_encoding.ml:230"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.remove_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:52",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:276",
+          "lib/commands.ml:277",
+          "unix/command_encoding.ml:295",
+          "unix/command_encoding.ml:297"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.remove_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:84",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:302",
+          "lib/commands.ml:303",
+          "unix/command_encoding.ml:329",
+          "unix/command_encoding.ml:331"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.rename_session": [
+      {
+        "command": "rename-session",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:12",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:248",
+          "lib/commands.ml:248",
+          "unix/engine.ml:154",
+          "unix/engine.ml:157"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.rename_window": [
+      {
+        "command": "rename-window",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:9",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:247",
+          "lib/commands.ml:247",
+          "unix/engine.ml:145",
+          "unix/engine.ml:148"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.request_detach_client_at": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:19",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:253",
+          "lib/commands.ml:254",
+          "unix/command_encoding.ml:227",
+          "unix/command_encoding.ml:228"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.resize_control_client_at": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:26",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:259",
+          "lib/commands.ml:260",
+          "unix/command_encoding.ml:232",
+          "unix/command_encoding.ml:233"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.resize_pane": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:138",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:339",
+          "lib/commands.ml:340",
+          "unix/command_encoding.ml:257",
+          "unix/command_encoding.ml:258"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.resize_window": [
+      {
+        "command": "resize-window",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:141",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:342",
+          "lib/commands.ml:343",
+          "unix/command_encoding.ml:259",
+          "unix/command_encoding.ml:260"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.respawn_pane": [
+      {
+        "command": "respawn-pane",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:164",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:361",
+          "lib/commands.ml:362",
+          "unix/command_encoding.ml:279",
+          "unix/command_encoding.ml:281"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.rotate_panes": [
+      {
+        "command": "rotate-window",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:158",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:356",
+          "lib/commands.ml:357",
+          "unix/command_encoding.ml:274",
+          "unix/command_encoding.ml:275"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.run_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:87",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:305",
+          "lib/commands.ml:305",
+          "unix/command_encoding.ml:333",
+          "unix/command_encoding.ml:345"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.select_layout": [
+      {
+        "command": "select-layout",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:145",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:345",
+          "lib/commands.ml:346",
+          "unix/command_encoding.ml:261",
+          "unix/command_encoding.ml:262"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.select_pane": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:132",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:336",
+          "lib/commands.ml:336",
+          "unix/command_encoding.ml:254",
+          "unix/command_encoding.ml:254"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.select_window_at": [
+      {
+        "command": "select-window",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:116",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:324",
+          "lib/commands.ml:325",
+          "unix/command_encoding.ml:243",
+          "unix/command_encoding.ml:244"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.send_keys": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:33",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:263",
+          "lib/commands.ml:263",
+          "unix/engine.ml:165",
+          "unix/engine.ml:174"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.send_text": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:30",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:262",
+          "lib/commands.ml:262",
+          "unix/engine.ml:163",
+          "unix/engine.ml:164"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.set_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:45",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:270",
+          "lib/commands.ml:271",
+          "unix/command_encoding.ml:286",
+          "unix/command_encoding.ml:288"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.set_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:80",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:299",
+          "lib/commands.ml:300",
+          "unix/command_encoding.ml:320",
+          "unix/command_encoding.ml:325"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.set_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:63",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:285",
+          "lib/commands.ml:286",
+          "unix/command_encoding.ml:298",
+          "unix/command_encoding.ml:307"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.set_pane_title": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:135",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:337",
+          "lib/commands.ml:337",
+          "unix/command_encoding.ml:255",
+          "unix/command_encoding.ml:256"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.signal": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:39",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:265",
+          "lib/commands.ml:265",
+          "unix/engine.ml:175",
+          "unix/engine.ml:183"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.split_pane": [
+      {
+        "command": "split-window",
+        "evidence": [
+          "unix/engine.ml:288",
+          "eio/generated_operations.ml:99",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:314",
+          "lib/commands.ml:315",
+          "unix/command_encoding.ml:381",
+          "unix/command_encoding.ml:384"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.subscribe": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "unix/streaming.ml:374",
+          "eio/libtmux_eio.ml:368"
+        ],
+        "scope": null
+      },
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "unix/streaming.ml:390",
+          "eio/libtmux_eio.ml:368"
+        ],
+        "scope": null,
+        "when": "when opening a new stream lane"
+      }
+    ],
+    "Libtmux_eio.Client.swap_panes": [
+      {
+        "command": "swap-pane",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:155",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:354",
+          "lib/commands.ml:354",
+          "unix/command_encoding.ml:272",
+          "unix/command_encoding.ml:273"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.switch_client_at": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:15",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:250",
+          "lib/commands.ml:251",
+          "unix/command_encoding.ml:223",
+          "unix/command_encoding.ml:224"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.unlink_window_at": [
+      {
+        "command": "unlink-window",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:119",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:327",
+          "lib/commands.ml:328",
+          "unix/command_encoding.ml:245",
+          "unix/command_encoding.ml:246"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.unset_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:49",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:273",
+          "lib/commands.ml:274",
+          "unix/command_encoding.ml:292",
+          "unix/command_encoding.ml:294"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.unset_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:67",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:288",
+          "lib/commands.ml:289",
+          "unix/command_encoding.ml:311",
+          "unix/command_encoding.ml:313"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.wait_for": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "unix/engine.ml:315",
+          "eio/generated_operations.ml:36",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:264",
+          "lib/commands.ml:264",
+          "unix/engine.ml:175",
+          "unix/engine.ml:183"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.zoom_pane": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "unix/engine.ml:283",
+          "eio/generated_operations.ml:161",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:362",
+          "lib/commands.ml:359",
+          "lib/commands.ml:359",
+          "unix/command_encoding.ml:278",
+          "unix/command_encoding.ml:278"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.break_pane": [
+      {
+        "command": "break-pane",
+        "evidence": [
+          "unix/engine.ml:288",
+          "unix/generated_operations.ml:117",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:317",
+          "lib/commands.ml:318",
+          "unix/command_encoding.ml:389",
+          "unix/command_encoding.ml:390"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.capture": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "unix/acquisition.ml:118",
+          "unix/libtmux_unix.ml:109",
+          "unix/libtmux_unix.ml:101",
+          "unix/engine.ml:294"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "unix/acquisition.ml:65",
+          "unix/libtmux_unix.ml:109",
+          "unix/libtmux_unix.ml:101",
+          "unix/engine.ml:294"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "unix/acquisition.ml:16",
+          "unix/libtmux_unix.ml:109",
+          "unix/libtmux_unix.ml:101",
+          "unix/engine.ml:294"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "unix/acquisition.ml:30",
+          "unix/libtmux_unix.ml:109",
+          "unix/libtmux_unix.ml:101",
+          "unix/engine.ml:294"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "Libtmux_unix.Client.capture_environment": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "unix/environment_io.ml:103",
+          "unix/generated_operations.ml:49",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:267",
+          "lib/commands.ml:268",
+          "unix/engine.ml:101",
+          "unix/engine.ml:103"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.capture_hooks": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "unix/options_io.ml:199",
+          "unix/generated_operations.ml:85",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:294",
+          "lib/commands.ml:294",
+          "unix/engine.ml:120",
+          "unix/engine.ml:126"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.capture_options": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "unix/options_io.ml:199",
+          "unix/generated_operations.ml:65",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:279",
+          "lib/commands.ml:280",
+          "unix/engine.ml:107",
+          "unix/engine.ml:110"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.capture_text": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "unix/rendered.ml:88",
+          "unix/libtmux_unix.ml:118",
+          "unix/libtmux_unix.ml:101",
+          "unix/engine.ml:311"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "unix/rendered.ml:81",
+          "unix/libtmux_unix.ml:118",
+          "unix/libtmux_unix.ml:101",
+          "unix/engine.ml:311"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null,
+        "when": "while the connection remains open"
+      },
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "unix/rendered.ml:100",
+          "unix/libtmux_unix.ml:118",
+          "unix/libtmux_unix.ml:101",
+          "unix/engine.ml:311"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "save-buffer",
+        "evidence": [
+          "unix/rendered.ml:125",
+          "unix/libtmux_unix.ml:118",
+          "unix/libtmux_unix.ml:101",
+          "unix/engine.ml:311"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "unix/rendered.ml:27",
+          "unix/libtmux_unix.ml:118",
+          "unix/libtmux_unix.ml:101",
+          "unix/engine.ml:311"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.clear_history": [
+      {
+        "command": "clear-history",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:189",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:364",
+          "lib/commands.ml:364",
+          "unix/command_encoding.ml:285",
+          "unix/command_encoding.ml:285"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.clear_option_array": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:81",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:291",
+          "lib/commands.ml:292",
+          "unix/command_encoding.ml:315",
+          "unix/command_encoding.ml:319"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.create_session": [
+      {
+        "command": "new-session",
+        "evidence": [
+          "unix/engine.ml:288",
+          "unix/generated_operations.ml:104",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:307",
+          "lib/commands.ml:309",
+          "unix/command_encoding.ml:356",
+          "unix/command_encoding.ml:360"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.create_window": [
+      {
+        "command": "new-window",
+        "evidence": [
+          "unix/engine.ml:288",
+          "unix/generated_operations.ml:109",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:311",
+          "lib/commands.ml:312",
+          "unix/command_encoding.ml:372",
+          "unix/command_encoding.ml:377"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.cycle_layout": [
+      {
+        "command": "next-layout",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:167",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:348",
+          "lib/commands.ml:349",
+          "unix/command_encoding.ml:263",
+          "unix/command_encoding.ml:265"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "direction is `Next"
+      },
+      {
+        "command": "previous-layout",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:167",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:348",
+          "lib/commands.ml:349",
+          "unix/command_encoding.ml:263",
+          "unix/command_encoding.ml:266"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "direction is `Previous"
+      }
+    ],
+    "Libtmux_unix.Client.kill_pane": [
+      {
+        "command": "kill-pane",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:127",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:322",
+          "lib/commands.ml:322",
+          "unix/command_encoding.ml:242",
+          "unix/command_encoding.ml:242"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.kill_session": [
+      {
+        "command": "kill-session",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:121",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:320",
+          "lib/commands.ml:320",
+          "unix/command_encoding.ml:240",
+          "unix/command_encoding.ml:240"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.kill_window": [
+      {
+        "command": "kill-window",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:124",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:321",
+          "lib/commands.ml:321",
+          "unix/command_encoding.ml:241",
+          "unix/command_encoding.ml:241"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.link_window": [
+      {
+        "command": "link-window",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:138",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:330",
+          "lib/commands.ml:331",
+          "unix/command_encoding.ml:248",
+          "unix/command_encoding.ml:249"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.move_pane": [
+      {
+        "command": "move-pane",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:171",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:351",
+          "lib/commands.ml:352",
+          "unix/command_encoding.ml:268",
+          "unix/command_encoding.ml:269"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.move_window_at": [
+      {
+        "command": "move-window",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:143",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:333",
+          "lib/commands.ml:334",
+          "unix/command_encoding.ml:250",
+          "unix/command_encoding.ml:251"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.read_hook": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "unix/options_io.ml:223",
+          "unix/generated_operations.ml:88",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:296",
+          "lib/commands.ml:297",
+          "unix/engine.ml:127",
+          "unix/engine.ml:131"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.read_option": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "unix/options_io.ml:223",
+          "unix/generated_operations.ml:69",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:282",
+          "lib/commands.ml:283",
+          "unix/engine.ml:113",
+          "unix/engine.ml:116"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.refresh_client_at": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:29",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:256",
+          "lib/commands.ml:257",
+          "unix/command_encoding.ml:229",
+          "unix/command_encoding.ml:230"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.remove_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:61",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:276",
+          "lib/commands.ml:277",
+          "unix/command_encoding.ml:295",
+          "unix/command_encoding.ml:297"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.remove_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:96",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:302",
+          "lib/commands.ml:303",
+          "unix/command_encoding.ml:329",
+          "unix/command_encoding.ml:331"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.rename_session": [
+      {
+        "command": "rename-session",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:17",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:248",
+          "lib/commands.ml:248",
+          "unix/engine.ml:154",
+          "unix/engine.ml:157"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.rename_window": [
+      {
+        "command": "rename-window",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:13",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:247",
+          "lib/commands.ml:247",
+          "unix/engine.ml:145",
+          "unix/engine.ml:148"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.request_detach_client_at": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:25",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:253",
+          "lib/commands.ml:254",
+          "unix/command_encoding.ml:227",
+          "unix/command_encoding.ml:228"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.resize_control_client_at": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:33",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:259",
+          "lib/commands.ml:260",
+          "unix/command_encoding.ml:232",
+          "unix/command_encoding.ml:233"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.resize_pane": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:155",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:339",
+          "lib/commands.ml:340",
+          "unix/command_encoding.ml:257",
+          "unix/command_encoding.ml:258"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.resize_window": [
+      {
+        "command": "resize-window",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:159",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:342",
+          "lib/commands.ml:343",
+          "unix/command_encoding.ml:259",
+          "unix/command_encoding.ml:260"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.respawn_pane": [
+      {
+        "command": "respawn-pane",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:185",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:361",
+          "lib/commands.ml:362",
+          "unix/command_encoding.ml:279",
+          "unix/command_encoding.ml:281"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.rotate_panes": [
+      {
+        "command": "rotate-window",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:178",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:356",
+          "lib/commands.ml:357",
+          "unix/command_encoding.ml:274",
+          "unix/command_encoding.ml:275"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.run_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:100",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:305",
+          "lib/commands.ml:305",
+          "unix/command_encoding.ml:333",
+          "unix/command_encoding.ml:345"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.select_layout": [
+      {
+        "command": "select-layout",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:163",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:345",
+          "lib/commands.ml:346",
+          "unix/command_encoding.ml:261",
+          "unix/command_encoding.ml:262"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.select_pane": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:148",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:336",
+          "lib/commands.ml:336",
+          "unix/command_encoding.ml:254",
+          "unix/command_encoding.ml:254"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.select_window_at": [
+      {
+        "command": "select-window",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:130",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:324",
+          "lib/commands.ml:325",
+          "unix/command_encoding.ml:243",
+          "unix/command_encoding.ml:244"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.send_keys": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:40",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:263",
+          "lib/commands.ml:263",
+          "unix/engine.ml:165",
+          "unix/engine.ml:174"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.send_text": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:37",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:262",
+          "lib/commands.ml:262",
+          "unix/engine.ml:163",
+          "unix/engine.ml:164"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.set_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:53",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:270",
+          "lib/commands.ml:271",
+          "unix/command_encoding.ml:286",
+          "unix/command_encoding.ml:288"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.set_hook": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:92",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:299",
+          "lib/commands.ml:300",
+          "unix/command_encoding.ml:320",
+          "unix/command_encoding.ml:325"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.set_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:73",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:285",
+          "lib/commands.ml:286",
+          "unix/command_encoding.ml:298",
+          "unix/command_encoding.ml:307"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.set_pane_title": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:151",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:337",
+          "lib/commands.ml:337",
+          "unix/command_encoding.ml:255",
+          "unix/command_encoding.ml:256"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.signal": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:46",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:265",
+          "lib/commands.ml:265",
+          "unix/engine.ml:175",
+          "unix/engine.ml:183"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.split_pane": [
+      {
+        "command": "split-window",
+        "evidence": [
+          "unix/engine.ml:288",
+          "unix/generated_operations.ml:113",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:314",
+          "lib/commands.ml:315",
+          "unix/command_encoding.ml:381",
+          "unix/command_encoding.ml:384"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.subscribe": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "unix/streaming.ml:374",
+          "unix/libtmux_unix.ml:106"
+        ],
+        "scope": null
+      },
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "unix/streaming.ml:390",
+          "unix/libtmux_unix.ml:106"
+        ],
+        "scope": null,
+        "when": "when opening a new stream lane"
+      }
+    ],
+    "Libtmux_unix.Client.swap_panes": [
+      {
+        "command": "swap-pane",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:175",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:354",
+          "lib/commands.ml:354",
+          "unix/command_encoding.ml:272",
+          "unix/command_encoding.ml:273"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.switch_client_at": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:21",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:250",
+          "lib/commands.ml:251",
+          "unix/command_encoding.ml:223",
+          "unix/command_encoding.ml:224"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.unlink_window_at": [
+      {
+        "command": "unlink-window",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:134",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:327",
+          "lib/commands.ml:328",
+          "unix/command_encoding.ml:245",
+          "unix/command_encoding.ml:246"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.unset_environment": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:57",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:273",
+          "lib/commands.ml:274",
+          "unix/command_encoding.ml:292",
+          "unix/command_encoding.ml:294"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.unset_option": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:77",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:288",
+          "lib/commands.ml:289",
+          "unix/command_encoding.ml:311",
+          "unix/command_encoding.ml:313"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.wait_for": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "unix/engine.ml:315",
+          "unix/generated_operations.ml:43",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:264",
+          "lib/commands.ml:264",
+          "unix/engine.ml:175",
+          "unix/engine.ml:183"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.zoom_pane": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "unix/engine.ml:283",
+          "unix/generated_operations.ml:182",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:359",
+          "lib/commands.ml:359",
+          "unix/command_encoding.ml:278",
+          "unix/command_encoding.ml:278"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ]
+  }
+}

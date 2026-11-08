@@ -94,6 +94,14 @@ d('resolver', () => {
     expect(notASymbol('pane.height')).toBeUndefined()
   })
 
+  it('keeps OCaml filenames and numeric output labels out of API references', () => {
+    for (const text of ['main.ml', 'json/libtmux_json.mli', 'libtmux.opam']) expect(notASymbol(text), text).toBe('a filename')
+    for (const text of ['editor:2', 'logs:1']) expect(notASymbol(text), text).toBe('a numeric label')
+    for (const text of ['Seq.filter', 'Enum.map/2', 'LibTmux.Session.new_window/1', 'Server:new_session']) {
+      expect(notASymbol(text), text).toBeUndefined()
+    }
+  })
+
   it('preserves an exact Swift selector instead of resolving its same-named property', () => {
     for (const id of ['Snapshot.panes(of:)', 'Snapshot.panes']) {
       const result = r.resolve('swift', id)

@@ -33,6 +33,7 @@ const GRAMMAR = {
   scala: 'scala',
   ruby: 'ruby',
   lua: 'lua',
+  ocaml: 'ocaml',
 } as const
 
 export type GrammarName = keyof typeof GRAMMAR
