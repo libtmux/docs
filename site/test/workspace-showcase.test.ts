@@ -163,7 +163,7 @@ describe('the example a landing page opens on', () => {
     }))
     expect(topics).toEqual({
       py: 'main-horizontal', ts: 'three-pane', rs: 'three-pane', go: 'three-pane', cxx: 'three-pane',
-      csharp: 'three-pane', ruby: 'tiled', julia: 'shell-command-before', powershell: 'main-horizontal',
+      csharp: 'three-pane', ruby: 'tiled', julia: 'three-pane', powershell: 'main-horizontal',
     })
   })
 
@@ -276,7 +276,8 @@ describe('what each port supports of tmuxp\'s examples', () => {
   it('records the ports whose tests load tmuxp\'s own files', () => {
     const identical = (port: string) => Object.entries(data.ports[port]!.support.presets).filter(([, row]) => row.tested === 'identical').map(([name]) => name)
     expect(identical('rs')).toEqual(names.filter((name) => name !== 'plugin-system'))
-    expect(identical('powershell')).toEqual(['skip-send-pane-level', 'skip-send'])
+    // PowerShell's catalog files are the ones its curated examples do not already cover for a topic.
+    expect(identical('powershell')).toEqual(['2-pane-synchronized', '2-pane-vertical', '3-pane', '4-pane', 'main-pane-height-percentage', 'minimal', 'options', 'shorthands', 'skip-send-pane-level', 'skip-send', 'window-index'])
     expect(identical('py')).toEqual(['blank-panes'])
     // TypeScript's test loads every one of tmuxp's examples but the plugin one, which it asserts is refused.
     expect(identical('ts')).toEqual(names.filter((name) => name !== 'plugin-system'))
@@ -284,7 +285,10 @@ describe('what each port supports of tmuxp\'s examples', () => {
     expect(identical('go')).toEqual(names.filter((name) => name !== 'plugin-system'))
     expect(identical('csharp')).toEqual(names.filter((name) => name !== 'plugin-system'))
     expect(identical('cxx')).toEqual(names.filter((name) => !['plugin-system', 'env-variables'].includes(name)))
-    for (const port of ['java', 'ruby', 'julia', 'swift']) expect(identical(port), port).toEqual([])
+    // Ruby shows the six the loader reads the way tmuxp does; three more load but are marked unsupported.
+    expect(identical('ruby')).toEqual(['2-pane-vertical', '3-pane', '4-pane', 'session-environment', 'shorthands', 'window-index'])
+    expect(identical('julia')).toEqual(names.filter((name) => ['2-pane-synchronized', '2-pane-vertical', '3-pane', '4-pane', 'blank-panes', 'env-variables', 'focus-window-and-panes', 'main-pane-height-percentage', 'main-pane-height', 'pane-shell', 'session-environment', 'shorthands', 'start-directory', 'suppress-history', 'window-index'].includes(name)))
+    for (const port of ['java', 'swift']) expect(identical(port), port).toEqual([])
     expect(Object.entries(data.ports.swift!.support.presets).filter(([, row]) => row.tested === 'library-only').map(([name]) => name))
       .toEqual(['2-pane-vertical', '3-pane', 'blank-panes', 'skip-send', 'sleep'])
   })

@@ -165,8 +165,9 @@ describe('the landing page markup', () => {
   const claimed = (slug: string, example: ReturnType<typeof landingExample>) => (citedTest(example).via === 'cli' ? loadCommand(slug)?.program : undefined)
 
   it('covers every port that has a showcase, as one file or as a picker', () => {
-    expect(SINGLE.sort()).toEqual(['julia', 'ruby'])
-    expect(PICKER.sort()).toEqual(['csharp', 'cxx', 'go', 'powershell', 'py', 'rs', 'ts'])
+    // Every port with a showcase now loads tmuxp's catalog, so none shows one file.
+    expect(SINGLE.sort()).toEqual([])
+    expect(PICKER.sort()).toEqual(['csharp', 'cxx', 'go', 'julia', 'powershell', 'py', 'rs', 'ruby', 'ts'])
   })
 
   it('shows a port with one tested workspace file as that file alone: the panes it builds, its command and its evidence', async () => {

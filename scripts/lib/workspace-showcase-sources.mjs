@@ -151,11 +151,15 @@ const TMUXP_CATALOG = [
 /**
  * The examples a port gets from tmuxp's catalog in `directory`. Each test
  * loads every file in it, so a test names the files its loader refuses in
- * `refuses` and the example does not cite it.
+ * `refuses` and the example does not cite it. `skip` names files a port keeps
+ * out: a loader that reads a file but builds it differently from tmuxp, which
+ * the support table marks unsupported, and a file whose topic the port already
+ * shows with a stronger test. `prefix` starts each file's name.
  */
-const tmuxpCatalog = (directory, tests) => TMUXP_CATALOG.flatMap(([name, topic, also]) => {
+const tmuxpCatalog = (directory, tests, { skip = [], prefix = '' } = {}) => TMUXP_CATALOG.flatMap(([name, topic, also]) => {
+  if (skip.includes(name)) return []
   const citing = tests.filter((test) => !test.refuses?.includes(name)).map(({ refuses, ...test }) => test)
-  return citing.length ? [{ topic, also, source: file(`${directory}/${name}.yaml`), tests: citing }] : []
+  return citing.length ? [{ topic, also, source: file(`${directory}/${prefix}${name}.yaml`), tests: citing }] : []
 })
 
 /** @type {Record<string, { checkout?: string, examples: object[] }>} */
@@ -377,7 +381,19 @@ export const SOURCES = {
   },
 
   ruby: {
-    examples: [{
+    revision: '9e1fbe1a938aab130f19939b7bcc0eeb6c438afc',
+    modelRevision: '0bf78344f8babf60a7b83e11a26f58b7946fcf8d',
+    examples: [...tmuxpCatalog('test/fixtures/tmuxp', [{
+      path: 'test/unit/workspace_test.rb', name: 'test_tmuxp_examples_load_through_workspace_load',
+      via: 'loader', checks: 'Loads the file with Workspace.load and checks its profile.',
+    }], {
+      // Every file the support table marks unsupported. Three of them load (`focus-window-and-panes`,
+      // `main-pane-height`, `start-directory`) but the loader reads their `~` paths and bare `pane`
+      // entries differently from tmuxp; the rest it refuses.
+      skip: ['2-pane-synchronized', 'blank-panes', 'env-variables', 'focus-window-and-panes', 'main-pane-height-percentage',
+        'main-pane-height', 'minimal', 'options', 'pane-shell', 'skip-send-pane-level', 'skip-send', 'sleep-pane-level',
+        'sleep-virtualenv', 'sleep', 'start-directory', 'suppress-history'],
+    }), {
       topic: 'tiled', also: ['two-pane', 'environment'],
       source: file('examples/workspace.yaml'),
       tests: [
@@ -395,10 +411,18 @@ export const SOURCES = {
   },
 
   julia: {
-    examples: [{
+    revision: 'dc6096bb0f58a44d17bb52a8c32a02bab71bb96b',
+    modelRevision: 'f3da513be1225d36d5854cd8db5972c01857578e',
+    examples: [...tmuxpCatalog('packages/LibTmuxWorkspace/test/fixtures/tmuxp', [{
+      path: 'packages/LibTmuxWorkspace/test/config.jl', name: 'tmuxp example catalog', via: 'loader',
+      checks: 'Reads and validates the file with read_config and validate.',
+    }], {
+      // The loader refuses each of these, as the support table says.
+      skip: ['minimal', 'options', 'skip-send', 'skip-send-pane-level', 'sleep', 'sleep-pane-level', 'sleep-virtualenv'],
+    }), {
       topic: 'shell-command-before', also: ['environment', 'start-directory', 'two-pane'],
       source: inside(
-        'packages/LibTmuxWorkspace/test/config.jl', 'document = parse_config(raw"""\n', '\n    """)',
+        'packages/LibTmuxWorkspace/test/config.jl', 'document = parse_config(raw"""\n', '\n        """)',
         { after: '@testset "explicit expansion and inheritance"' },
       ),
       note: '`${PROJECT}` and `${UNKNOWN}` are variables the loader expands. The test sets `PROJECT` and leaves `UNKNOWN` literal.',
@@ -410,7 +434,23 @@ export const SOURCES = {
   },
 
   powershell: {
+    revision: 'aaf857bb1e17840129687ab250fa245f996228c7',
+    modelRevision: '06233d3c99b40a5bce966c9e1d358f346ff4de55',
     examples: [
+      // The catalog's files, beside the curated ones below. A topic shows one file, and a curated
+      // file wins: its test runs the command against real tmux, where the catalog test only imports.
+      ...tmuxpCatalog('tests/fixtures/workspace', [{
+        path: 'tests/WorkspaceFiles.Tests.ps1', name: 'tmuxp example catalog', find: '$catalogLoaded = @(', via: 'loader',
+        checks: 'Imports the file with Import-TmuxWorkspace. Starts no tmux.',
+      }], {
+        prefix: 'tmuxp-v1.74.0-',
+        // main-horizontal, environment and start-directory have curated examples; the loader reads
+        // blank-panes, env-variables and focus-window-and-panes but the support table marks them
+        // unsupported; the rest it refuses; skip-send is curated too.
+        skip: ['main-pane-height', 'session-environment', 'start-directory', 'blank-panes', 'env-variables',
+          'focus-window-and-panes', 'pane-shell', 'skip-send', 'skip-send-pane-level', 'sleep', 'sleep-pane-level',
+          'sleep-virtualenv', 'suppress-history'],
+      }),
       {
         topic: 'main-horizontal', also: ['three-pane'],
         source: file('tests/fixtures/workspace/tmuxp-v1.74.0-window_options.yaml'),
