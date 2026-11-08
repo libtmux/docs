@@ -369,7 +369,8 @@ export function proseSources({ root = ROOT, meta = false } = {}) {
   }
   for (const port of SOURCE_GUIDE_PORTS) {
     const artifact = readJson(join(root, 'site', 'src', 'data', 'port-guides', `${port}.json`))
-    for (const [file, source] of stagedPortGuides(port, artifact)) pages.push(entry(`_staged/${file}`, source))
+    // Badge SVGs ride in the same map for the stager to publish; they are not pages.
+    for (const [file, source] of stagedPortGuides(port, artifact)) if (!file.startsWith('badges/')) pages.push(entry(`_staged/${file}`, source))
   }
   // A page a port writes for itself keeps its id; the shared source fills the ids no page claims.
   const claimed = new Set(pages.map((page) => page.id))

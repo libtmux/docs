@@ -44,7 +44,7 @@ function unescapeStatic(part) {
   return decodeURIComponent(part).split('--').map((piece) => piece.split('__').map((word) => word.replaceAll('_', ' ')).join('_')).join('-')
 }
 
-function registryVersion(registry, port, name) {
+function registryVersion(registry = readRegistry(), port, name) {
   const entry = registry.ports[port]
   const version = entry?.packages?.[name]?.version ?? (entry?.packages ? undefined : entry?.version)
   if (!version) throw new Error(`${port}: badge names package ${name}, which the registry data does not carry`)
@@ -102,7 +102,7 @@ export function readRegistry() {
  * files to publish, keyed by `badges/<hash>.svg`. Status badges are dropped
  * with their link: their value is a live CI result the build cannot know.
  */
-export function localizeBadges(content, port, registry = readRegistry()) {
+export function localizeBadges(content, port, registry) {
   const files = new Map()
   const edits = []
   const visit = (node, parent) => {
