@@ -6,6 +6,7 @@ import ApiEntry from '../../components/api/ApiEntry.astro'
 import ApiTmuxSections from './ApiTmuxSections.astro'
 import { apiTmuxSections } from '../../lib/api-tmux-sections'
 import ApiScalarMembers from './ApiScalarMembers.astro'
+import ApiMemberList from './ApiMemberList.astro'
 import ApiRelationships from './ApiRelationships.astro'
 import { apiRelationshipSections, type ApiRelationshipPath } from '../../lib/api-relationships'
 import ApiBadge from '../../components/api/ApiBadge.astro'
@@ -819,25 +820,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
             {shown.length > 0 && (
               <div class="api-members mt-8">
                 <h2 class="api-section-heading text-lg font-semibold" id="api-members">{aliasedMembers ? <>Members of <a class="api-members-target" href={hrefFor(aliasedMembers)}><code>{aliasedMembers.name}</code></a></> : membersLabel}<span class="api-section-count">{shown.length}</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersLabel}`}>#</a></h2>
-                {tableColumns ? <ApiScalarMembers owner={owner} members={listed} index={index} hrefFor={hrefFor} columns={tableColumns} label={tableHeading} payloads={payloads} repeated={rowsRepeat(tableColumns)} /> : memberGroups.map((group) => <section id={showMemberGroups ? undefined : group.id} class:list={['api-member-group', !showMemberGroups && 'api-member-group--single']} aria-labelledby={showMemberGroups ? group.id : 'api-members'}>
-                {showMemberGroups && <h3 id={group.id}>{group.label}<span class="api-section-count">{group.members.length}</span><a class="api-heading-link" href={`#${group.id}`} aria-label={`Link to ${group.label}`}>#</a></h3>}
-                <ul class="api-member-list mt-3">
-                  {group.members.map((m) => (
-                    <li>
-                      <span><ApiBadge label={m.kind} variant="kind" value={m.kind} compact preview={false} /><a class="api-member-link" href={hrefFor(m)}>{m.name}</a>{m.type && <span class="api-member-type">: <ApiType type={m.type} index={index} context={m} /></span>}</span>
-                      <span class="api-member-badges">
-                        <ApiBadge label={m.kind} variant="kind" value={m.kind} plain />
-                        {m.inheritedFrom && <a class="api-badge api-badge--mod" href={apiGlossaryHref('inherited', Astro.url.pathname)} title={`Inherited from ${m.inheritedFrom}`} aria-description={`Inherited from ${m.inheritedFrom}`} data-preview-context={`Inherited from ${m.inheritedFrom}.`}><span class="api-badge__label">inherited</span></a>}
-                      </span>
-                      {m.doc?.summary && (
-                        <span class="api-member-summary">
-                          <ApiDoc text={m.doc.summary} index={index} context={m} citations={false} />
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-                </section>)}
+                {tableColumns ? <ApiScalarMembers owner={owner} members={listed} index={index} hrefFor={hrefFor} columns={tableColumns} label={tableHeading} payloads={payloads} repeated={rowsRepeat(tableColumns)} /> : <ApiMemberList groups={memberGroups} showGroups={showMemberGroups} index={index} hrefFor={hrefFor} />}
               </div>
             )}
 
