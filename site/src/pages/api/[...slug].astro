@@ -3,7 +3,6 @@ import { getCollection, render } from 'astro:content'
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import NativeShell from '../../layouts/NativeShell.astro'
 import { nativeShellContext } from '../../lib/native-shell'
-import { PORT_BY_SLUG } from '../../lib/ports'
 import { isIndexSource } from '../../lib/markdown-twins'
 
 /**
@@ -29,7 +28,6 @@ export async function getStaticPaths() {
 const { entry, context, page } = Astro.props
 const rendered = entry ? await render(entry) : undefined
 const Content = rendered?.Content
-const port = entry ? PORT_BY_SLUG[entry.data.port] : undefined
 
 /**
  * The page's own path within this port+version, which is what Seo.astro
@@ -50,11 +48,4 @@ const pagePath = rest ? `api/${rest}` : 'api'
   markdownIndex={isIndexSource(entry.filePath)}
 >
   <Content />
-  {
-    entry.data.generator && (
-      <p class="mt-12 border-t border-slate-200 pt-4 text-sm text-slate-600 dark:border-slate-800 dark:text-slate-400">
-        Generated from the {port?.name ?? entry.data.port} source by {entry.data.generator}.
-      </p>
-    )
-  }
 </DocsLayout>}
