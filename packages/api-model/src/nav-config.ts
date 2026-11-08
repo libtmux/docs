@@ -597,6 +597,12 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
       'libtmux.Watch': 'watch handle shared by several tmux objects',
     },
   },
+  perl: {
+    unsettled: {
+      LibTmux: 'distribution namespace and version; concrete packages have their own placements',
+      'LibTmux::Entity': 'shared captured-handle base; concrete entity packages own the tmux objects',
+    },
+  },
   ruby: {
     unsettled: {
       'LibTmux::Entity': 'base of the tmux entity hierarchy; the concrete entity is the subclass',
@@ -744,6 +750,13 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
 
 /** Place language-specific public helpers with the task they support. */
 const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
+  perl: {
+    queries: ['Schema', 'Selection', 'Selection::Iterator', 'PaneSelection', 'WindowSelection',
+      'WindowLinkSelection', 'SessionSelection', 'ClientSelection'].map((name) => `LibTmux::${name}`),
+    commands: ['LibTmux::Operation'],
+    async: ['LibTmux::Async::Server', 'LibTmux::Async::Transport'],
+    errors: ['LibTmux::X', 'LibTmux::Async::X', 'LibTmux::Workspace::X'],
+  },
   powershell: {
     commands: ['LibTmux\\Invoke-TmuxChain'],
     pane: ['LibTmux\\Send-TmuxText'],
@@ -854,7 +867,7 @@ function languageBucket(bucket: Bucket, port: string, root = bucket.id): Bucket 
 }
 
 export const NAV: Record<string, PortNav> = Object.fromEntries(
-  ['powershell', 'julia', 'elixir', 'py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'kotlin', 'scala', 'fsharp', 'csharp', 'cxx', 'swift'].map((port) => [
+  ['perl', 'powershell', 'julia', 'elixir', 'py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'kotlin', 'scala', 'fsharp', 'csharp', 'cxx', 'swift'].map((port) => [
     port,
     {
       port,

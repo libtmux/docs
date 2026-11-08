@@ -68,6 +68,16 @@ function newestTag(tags, prefix) {
 }
 
 const READERS = {
+  /** Each MakeMaker declaration owns one native Perl distribution. */
+  perl(repo) {
+    const distributions = repo.files().filter((path) => /^packages\/(core|async|workspace)\/Makefile\.PL$/.test(path)).map((manifest) => {
+      const text = repo.read(manifest)
+      const name = /NAME\s*=>\s*'([^']+)'/.exec(text)?.[1]?.replaceAll('::', '-')
+      const version = /VERSION\s*=>\s*'([^']+)'/.exec(text)?.[1]
+      return { name, version, manifest }
+    })
+    return { distributions, units: [{ unit: 'command', name: 'libtmux-workspace', path: 'packages/workspace/bin/libtmux-workspace', file: true }] }
+  },
   /** `[project] name` and `version`. */
   py(repo, { repository, manifest = 'pyproject.toml' }) {
     const project = section(repo.read(manifest), 'project')
@@ -223,7 +233,7 @@ const READERS = {
 
 /** Which reader a port uses: a wrapper port reads its parent's repository. */
 const READER_FOR = {
-  py: 'py', ruby: 'ruby', lua: 'lua', powershell: 'powershell', julia: 'julia', ts: 'ts', rs: 'rs', go: 'go',
+  perl: 'perl', py: 'py', ruby: 'ruby', lua: 'lua', powershell: 'powershell', julia: 'julia', ts: 'ts', rs: 'rs', go: 'go',
   java: 'java', kotlin: 'java', scala: 'java', csharp: 'dotnet', fsharp: 'dotnet', cxx: 'cxx', swift: 'swift', elixir: 'elixir',
 }
 
@@ -232,7 +242,7 @@ const READER_FOR = {
  * @param {string} slug
  * @param {{ revision: string, files(): string[], read(path: string): string, has(path: string): boolean, tags(): string[] }} repo
  * @param {{ identity?: string, repository?: string, manifest?: string }} [options]
- * @returns {{ distributions: { name: string, version?: string, manifest: string }[], units: { unit: string, name: string, path?: string }[] }}
+ * @returns {{ distributions: { name: string, version?: string, manifest: string }[], units: { unit: string, name: string, path?: string, file?: boolean }[] }}
  */
 export function readPort(slug, repo, options = {}) {
   const reader = READERS[READER_FOR[slug]]

@@ -3,7 +3,7 @@ import { chromium, type Browser } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 // A reference page asks the content collection for its sidebar; the tables here are drawn without one.
 vi.mock('astro:content', () => ({ getCollection: async () => [] }))
-import { SymbolIndex } from '@libtmux/api-model'
+import { SymbolIndex } from '@libtmux/api-model/reference'
 import { API_MODELS } from '../src/lib/api-models'
 import { LONG_CELL_CHARACTERS, memberTable, scalarCellCharacters, variantPayloads } from '../src/lib/api-sections'
 import { wordBreak } from '../src/lib/word-break'

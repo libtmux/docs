@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
-import { sourceUrl } from '@libtmux/api-model'
+import { sourceUrl } from '@libtmux/api-model/reference'
 import { API_MODEL_PORTS } from '../src/lib/ports'
 
 const root = fileURLToPath(new URL('../../', import.meta.url))

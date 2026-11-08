@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { fromMarkdown } from 'mdast-util-from-markdown'
-import { SymbolIndex, typeParameterId, type ApiSymbol, type Signature } from '@libtmux/api-model'
+import { SymbolIndex, typeParameterId, type ApiSymbol, type Signature } from '@libtmux/api-model/reference'
 import { API_MODELS } from '../src/lib/api-models'
 import { apiEntryFields, apiEntrySections, nativeSignatureText } from '../src/lib/api-sections'
 import { apiSignatureLayouts, signatureSpans } from '../src/lib/code-layout'

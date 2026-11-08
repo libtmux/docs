@@ -33,6 +33,8 @@ const ROUTES = Object.fromEntries(SOURCE_GUIDE_PORTS.map((slug) => [slug, staged
 const expand = (value) => value.startsWith('~/') ? join(homedir(), value.slice(2)) : value
 
 function titleAndBody(content, sourcePath) {
+  // The shared catalog supplies page metadata; source frontmatter is not article prose.
+  content = content.replace(/^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/, '')
   content = content.replace(/<!-- libtmux-logo -->[\s\S]*?<!-- \/libtmux-logo -->\s*/g, '')
   // GitHub README headers may center the title and intro in a presentation
   // wrapper. The site supplies its own heading; later HTML stays intact.
@@ -288,10 +290,30 @@ export function artifactFromRevision(port, checkout, revision) {
   } catch (cause) {
     throw new Error(`${port.slug}: integrated guides need ${port.repo}@${revision} in ${checkout}. Set LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()} to a local checkout containing that commit; this check does not fetch.`, { cause })
   }
+  const paths = Object.keys(ROUTES[port.slug])
+  const blobs = execFileSync('git', ['-C', checkout, 'cat-file', '--batch'], {
+    input: paths.map((path) => `${revision}:${path}\n`).join(''), maxBuffer: 16 * 1024 * 1024,
+    stdio: ['pipe', 'pipe', 'pipe'],
+  })
+  const contents = new Map()
+  let offset = 0
+  for (const path of paths) {
+    const end = blobs.indexOf(10, offset)
+    const header = blobs.subarray(offset, end).toString('ascii')
+    const match = /^[a-f0-9]{40} blob (\d+)$/.exec(header)
+    const size = match && Number(match[1])
+    if (end < offset || size === null || !Number.isSafeInteger(size) || size < 0 ||
+        end + size + 1 >= blobs.length || blobs[end + size + 1] !== 10) {
+      throw new Error(`${port.slug}: missing or malformed integrated guide ${revision}:${path}`)
+    }
+    contents.set(path, blobs.subarray(end + 1, end + size + 1).toString('utf8'))
+    offset = end + size + 2
+  }
+  if (offset !== blobs.length) throw new Error(`${port.slug}: unexpected trailing Git blob data`)
+  const readSource = (file) => contents.get(file) ?? git('show', `${revision}:${file}`)
   return {
     source: { repository: port.repo, revision },
-    guides: Object.keys(ROUTES[port.slug]).map((path) => {
-      const readSource = (file) => git('show', `${revision}:${file}`)
+    guides: paths.map((path) => {
       const content = readSource(path)
       return { path, content: port.slug === 'julia' ? expandDocumenter(content, path, readSource) : content }
     }),
@@ -336,29 +358,32 @@ export function run() {
     }
     if (!check && (refreshCache || selectedSource)) {
       mkdirSync(cacheRoot, { recursive: true })
-      writeFileSync(cachePath, `${JSON.stringify(artifact, null, 2)}\n`)
+      const content = `${JSON.stringify(artifact, null, 2)}\n`
+      if (!existsSync(cachePath) || readFileSync(cachePath, 'utf8') !== content) writeFileSync(cachePath, content)
     }
     for (const [file, content] of stagedPortGuides(port.slug, artifact)) generated.set(file, content)
   }
 
-  if (check) {
-    const actual = new Map()
-    const walk = (directory, prefix = '') => {
-      if (!existsSync(directory)) return
-      for (const entry of readdirSync(directory, { withFileTypes: true })) {
-        const relative = posix.join(prefix, entry.name)
-        if (entry.isDirectory()) walk(join(directory, entry.name), relative)
-        else if (selected.some((port) => relative.startsWith(`${port.slug}/`))) actual.set(relative, readFileSync(join(directory, entry.name), 'utf8'))
+  const actual = new Map()
+  const allOutputs = !check && !selectedPort && !wrappersOnly
+  const walk = (directory, prefix = '') => {
+    if (!existsSync(directory)) return
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const relative = posix.join(prefix, entry.name)
+      if (entry.isDirectory()) walk(join(directory, entry.name), relative)
+      else if (allOutputs || selected.some((port) => relative.startsWith(`${port.slug}/`))) {
+        actual.set(relative, readFileSync(join(directory, entry.name), 'utf8'))
       }
     }
-    walk(output)
+  }
+  walk(output)
+  if (check) {
     const stale = generated.size !== actual.size || [...generated].some(([file, content]) => actual.get(file) !== content)
     if (stale) throw new Error('staged port guides are missing or stale; rerun without --check')
   } else {
-    if (selectedPort || wrappersOnly) {
-      for (const port of selected) rmSync(join(output, port.slug), { recursive: true, force: true })
-    } else rmSync(output, { recursive: true, force: true })
+    for (const file of actual.keys()) if (!generated.has(file)) rmSync(join(output, file), { force: true })
     for (const [file, content] of generated) {
+      if (actual.get(file) === content) continue
       const destination = join(output, file)
       mkdirSync(dirname(destination), { recursive: true })
       writeFileSync(destination, content)

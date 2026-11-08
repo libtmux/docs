@@ -79,7 +79,7 @@ const legacyWorkspaceTopics = new RegExp(`/(?:${portSlugs(PORTS.filter((port) =>
 const storageIdentity = new RegExp(`/ports/(?:${portSlugs()})/`)
 // Port documentation is not translated, so no port tree exists under a translated locale.
 const localizedPortTree = new RegExp(`^/ja/(?:${portSlugs()})/`)
-const nativeProductDocs = (port: string) => ['powershell', 'julia'].includes(port)
+const nativeProductDocs = (port: string) => ['powershell', 'julia', 'perl'].includes(port)
 const mcpClientSetupRoutes: Record<string, string[]> = {
   py: ['mcp/guides'], ruby: ['mcp/guides/connect-client', 'mcp/source-guide'],
   julia: ['mcp/source-guide'], ts: ['mcp/guides'], rs: ['mcp/guides/connect-client'],
@@ -93,10 +93,10 @@ it('advertises local native loaders while retaining their development status', (
   // py-vs-generic-local-CLI dichotomy this test covers.
   const native = (p: Port) => p.workspaceCliAvailability === 'local' || p.workspaceCliAvailability === 'published'
   for (const port of PORTS.filter((p) => p.slug === 'py' || native(p))) {
-    expect(port.workspaceCli).toBe(port.slug === 'julia' ? 'libtmux-workspace load' : native(port) ? 'tmux-workspace load' : 'tmuxp load')
+    expect(port.workspaceCli).toBe(['julia', 'perl'].includes(port.slug) ? 'libtmux-workspace load' : native(port) ? 'tmux-workspace load' : 'tmuxp load')
     if (!native(port)) expect(port.workspaceCliAvailability).toBe('released')
     expect(productInDevelopment(port, 'workspace')).toBe(native(port))
-    expect(productInDevelopment(port, 'mcp')).toBe(true)
+    expect(productInDevelopment(port, 'mcp')).toBe(productAvailable(port, 'mcp'))
     expect(productDescription(port, 'workspace')).not.toMatch(/worktree|checkpoint/)
     if (port.workspaceCliAvailability === 'local') {
       expect(productDescription(port, 'workspace')).toContain(port.slug === 'julia' ? 'LibTmuxWorkspace' : 'Build the CLI from source')
@@ -110,6 +110,8 @@ it('advertises local native loaders while retaining their development status', (
 })
 
 function sectionsFor(port: string, product: ProductPage['product']): string[] {
+  const registered = PORTS.find((entry) => entry.slug === port)!
+  if (registered.productAvailability?.[product] === 'excluded') return []
   if (port === 'powershell' && product === 'mcp') return []
   if (nativeProductDocs(port)) return ['', 'source-guide', 'reference']
   // A product with no published implementation has only the overview that says so.

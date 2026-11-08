@@ -55,6 +55,7 @@ export const STRUCTURAL_FIELDS: string[] = [
   '.typeParameters[].bound', '.typeParameters[].default', '.typeParameters[].kind', '.typeParameters[].modifier', '.typeParameters[].name',
   '.signatures[].enclosingDeclaration', '.signatures[].enclosingTypeParamNames[]', '.signatures[].extension',
   '.signatures[].identity', '.signatures[].label', '.signatures[].methodKind', '.signatures[].raw', '.signatures[].returns',
+  '.signatures[].nativeSyntax[].kind',
   '.signatures[].source.*', '.signatures[].typeParamNames[]', '.signatures[].typeParams[]',
   '.signatures[].typeParameters[].bound', '.signatures[].typeParameters[].default', '.signatures[].typeParameters[].kind',
   '.signatures[].typeParameters[].modifier', '.signatures[].typeParameters[].name',

@@ -14,7 +14,7 @@
  */
 
 /** Language libraries, by the slug the site uses. */
-export type PortSlug = 'py' | 'ruby' | 'lua' | 'ts' | 'rs' | 'go' | 'java' | 'csharp' | 'cxx' | 'swift' | 'kotlin' | 'scala' | 'fsharp' | 'powershell' | 'julia' | 'elixir'
+export type PortSlug = 'perl' | 'py' | 'ruby' | 'lua' | 'ts' | 'rs' | 'go' | 'java' | 'csharp' | 'cxx' | 'swift' | 'kotlin' | 'scala' | 'fsharp' | 'powershell' | 'julia' | 'elixir'
 
 export type ApiProduct = 'core' | 'workspace' | 'mcp'
 
@@ -169,6 +169,8 @@ export interface Signature {
   extension?: string
   /** Native signature text when its grammar carries more than the shared fields. */
   raw?: string
+  /** Native producer offsets into raw declaration text; no renderer reparsing. */
+  nativeSyntax?: ({ start: number; end: number; kind: 'name' } | { start: number; end: number; kind: 'parameter'; parameter: number })[]
   /** Native impl or trait header that owns this callable, without its body. */
   enclosingDeclaration?: string
   /** Lexical bindings from that impl or trait, separate from callable generics. */

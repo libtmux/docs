@@ -65,14 +65,17 @@ const rest = (group: keyof typeof CAPABILITY_GROUPS) => home.capabilities[group]
 </>}
 
 <h2 id="at-a-glance">At a glance</h2>
-<p><strong>Server → Session → Window → Pane.</strong> Each level of the tmux hierarchy has its own entry in the {info.name} API, with the tmux object it wraps.</p>
+<p><strong>Server → Session → {home.association && <><a href={home.association.href}>{home.association.name}</a> → </>}Window → Pane.</strong> Each level of the tmux hierarchy has its own entry in the {info.name} API, with the tmux object it wraps.</p>
 <div class="core-home__table" role="region" aria-label="Server, session, window, pane" tabindex="0">
   <table class="table not-prose" data-core-home-objects>
     <thead><tr><th>Type</th><th>Wraps</th></tr></thead>
     <tbody>{home.objects.map((object) => <tr data-role={object.role}>
       <td><a href={object.href}><code>{object.name}</code></a></td>
       <td>{object.wraps}{object.tmuxId && <>, ID <code>{object.tmuxId}n</code></>}</td>
-    </tr>)}</tbody>
+    </tr>)}{home.association && <tr data-role="window-link">
+      <td><a href={home.association.href}><code>{home.association.name}</code></a></td>
+      <td>A session-window association, with its index and active state</td>
+    </tr>}</tbody>
   </table>
 </div>
 

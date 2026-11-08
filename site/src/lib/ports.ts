@@ -1256,6 +1256,36 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
     installNote:
       'A target depends on the product, not the package: write .product(name: "LibTmux", package: "libtmux-swift"). The library is `LibTmux` while the package identity SwiftPM derives from the URL is `libtmux-swift`, which is neither the product name nor the `name:` in the package manifest.',
   },
+  {
+    slug: 'perl', projectName: 'libtmux-perl', logoLanguage: 'perl', shortName: 'Pl',
+    name: 'Perl', language: 'Perl', packageName: 'LibTmux',
+    repo: 'libtmux/libtmux-perl', checkout: '~/work/libtmux/libtmux-perl',
+    worktree: '~/work/libtmux/libtmux-perl-docs-site',
+    source: { path: 'packages/core', ref: 'master' }, versionedDocs: true,
+    tagGrammar: 'semver', publishesOwnTree: true,
+    renderer: 'astro', generator: 'Perl PPI signatures and native POD', referenceKind: 'model',
+    workspaceCli: 'libtmux-workspace load', workspaceCliAvailability: 'local',
+    productAvailability: { workspace: 'available', mcp: 'excluded' },
+    packages: [
+      { id: 'core', name: 'LibTmux', require: 'LibTmux::Server', source: { path: 'packages/core', ref: 'master' } },
+      { id: 'async', name: 'LibTmux-Async', require: 'LibTmux::Async::Server', source: { path: 'packages/async', ref: 'master' },
+        installs: [{ label: 'cpm (source)', lang: 'console', code: 'cpm install --global ./packages/async', note: 'From the source checkout after core installation; adds Future and IO::Async.' }] },
+      { id: 'workspace', name: 'LibTmux-Workspace', require: 'LibTmux::Workspace', executable: 'libtmux-workspace',
+        source: { path: 'packages/workspace', ref: 'master' },
+        installs: [{ label: 'cpm (source)', lang: 'console', code: 'cpm install --global ./packages/workspace', note: 'From the source checkout after core installation. No CPAN release.' }] },
+    ],
+    installs: [{ label: 'cpm (source)', lang: 'console',
+      code: 'git clone https://github.com/libtmux/libtmux-perl.git && \\\n  cd libtmux-perl && \\\n  cpm install --global ./packages/core',
+      note: 'Unpublished development distribution. Requires Perl 5.44.0, Linux x86_64 LP64, and tmux 3.3a or newer.' }],
+    initProject: { lang: 'text', code: 'Create a Perl program using LibTmux::Server; install from the source checkout.' },
+    installForms: {
+      release: { lang: 'console', code: 'cpm install --global ./packages/core' },
+      prerelease: { lang: 'console', code: 'cpm install --global ./packages/core' },
+      git: { lang: 'console', code: 'git clone https://github.com/libtmux/libtmux-perl.git && \\\n  cd libtmux-perl && \\\n  cpm install --global ./packages/core' },
+    },
+    installNote: 'Install core before workspace or optional async. These package names do not identify published CPAN releases.',
+  },
+
 ] as const
 
 type WrapperLibrary = Omit<Port, 'repo' | 'checkout' | 'worktree' | 'tagGrammar' | 'tagPrefix' | 'versionedDocs' | 'renderer' | 'generator'> & {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CONCEPTS, conceptsFor } from '@libtmux/api-model'
+import { CONCEPTS, conceptsFor } from '@libtmux/api-model/reference'
 import { API_MODELS, referenceAlternatives, referenceHref } from '../src/lib/api-models'
 import { API_MODEL_PORTS } from '../src/lib/ports'
 
@@ -27,7 +27,7 @@ function coverage(concept: string) {
 describe('the ports that have a page for an operation', () => {
   it('lists every port for a server snapshot except those with no whole-server snapshot', () => {
     const { pages, reasons } = coverage('snapshot')
-    expect(pages.toSorted()).toEqual(['csharp', 'elixir', 'fsharp', 'go', 'java', 'julia', 'kotlin', 'lua', 'powershell', 'rs', 'ruby', 'scala', 'swift', 'ts'])
+    expect(pages.toSorted()).toEqual(['csharp', 'elixir', 'fsharp', 'go', 'java', 'julia', 'kotlin', 'lua', 'perl', 'powershell', 'rs', 'ruby', 'scala', 'swift', 'ts'])
     // Python's core and C++ have no snapshot of a whole server, and each says so.
     expect(reasons.toSorted()).toEqual(['cxx', 'py'])
     for (const port of ['py', 'cxx']) expect(CONCEPTS.snapshot!.absent![port], port).toMatch(/^no equivalent on `Server`/)

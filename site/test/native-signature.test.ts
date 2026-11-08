@@ -7,7 +7,7 @@ import { runInNewContext } from 'node:vm'
 import { describe, expect, it } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window, type Element, type HTMLElement } from 'happy-dom'
-import { parameterId, parentInventory, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
+import { parameterId, parentInventory, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model/reference'
 import { apiEntryFields, nativeSignatureText, usesNativeSignatures } from '../src/lib/api-sections'
 import { API_MODEL_PORTS } from '../src/lib/ports'
 import { extractSourceWithSpec } from '../../packages/api-model/src/languages/spec'
@@ -59,6 +59,7 @@ function displayedSignature(element: Element): string {
 }
 
 const cases = [
+  ['perl', 'LibTmux::Server::capture_pane'],
   ['ts', 'server.Server.setHook'],
   ['ts', 'selection.Selection.filter'],
   ['ts', 'selection.Selection.[Symbol.iterator]'],
@@ -625,7 +626,7 @@ describe('native signature emission', () => {
     const before = JSON.stringify(models.julia)
     const { entries } = await signatureProbe(models)
     expect([...new Set(entries.map(({ port }) => port))]).toEqual(API_MODEL_PORTS.map(({ slug }) => slug))
-    expect(new Set(entries.map(({ port }) => port)).size).toBe(16)
+    expect(new Set(entries.map(({ port }) => port)).size).toBe(API_MODEL_PORTS.length)
     for (const [port, model] of Object.entries(models)) {
       const callables = model.symbols.filter((symbol) => symbol.signatures.some((signature) => signature.params.length > 0 && signature.returns))
       const selected = callables.find((symbol) => /capture/i.test(symbol.name)) ?? callables[0]

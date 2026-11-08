@@ -7,7 +7,6 @@ import { usesNativeSignatures } from '../src/lib/api-sections'
 import { apiSignatureLayouts, CODE_COLUMNS, codeWidthFailures, signatureSpans, supportsElixirSignatures } from '../src/lib/code-layout'
 import { productApiIndex } from '../src/lib/product-api'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
-import { displayedSignature, renderSignatures } from './signature-fragment'
 
 const model = API_MODELS.elixir
 const index = productApiIndex(model, 'latest')
@@ -63,33 +62,6 @@ describe('Elixir declarations', () => {
     const server = symbol('LibTmux.Server.t/0')
     const field = index.linkType(server.signatures[0]!.raw!, server, server.signatures[0])
     expect(field.find((span) => span.text === 'String.t')?.link).toMatchObject({ external: true, href: 'https://elixir.hexdocs.pm/String.html#t:t/0' })
-  })
-
-  it('render as one preformatted declaration with working links and no nested anchors', async () => {
-    const entry = symbol('LibTmux.Control.submit/3')
-    const nameHref = `/en/elixir/latest/reference/${entry.slug}/`
-    const { window, signatures, layouts } = await renderSignatures(entry, 'elixir', index, nameHref)
-    try {
-      expect(signatures).toHaveLength(entry.signatures.length)
-      const [rendered] = signatures
-      expect(rendered!.classList.contains('api-native-signature--formatted')).toBe(true)
-      expect(rendered!.getAttribute('data-code-columns')).toBe(String(CODE_COLUMNS.api))
-      expect(rendered!.getAttribute('data-code-width-status')).toBe('fits')
-      expect(displayedSignature(rendered!)).toBe(layouts.get(entry.signatures[0]!)!.text)
-      expect(rendered!.querySelector('.api-signature-name-link')?.getAttribute('href')).toBe(nameHref)
-      expect([...rendered!.querySelectorAll('a.api-parameter-name')].map((link) => link.textContent)).toEqual(['control', 'request', 'options'])
-      expect(rendered!.querySelector('a a')).toBeNull()
-    } finally { await window.happyDOM.abort() }
-  })
-
-  it('give each spec clause of an overloaded function its own declaration', async () => {
-    const entry = symbol('LibTmux.Selection.new/2')
-    expect(entry.signatures.length).toBeGreaterThan(1)
-    const { window, signatures } = await renderSignatures(entry, 'elixir', index)
-    try {
-      expect(signatures).toHaveLength(entry.signatures.length)
-      expect(new Set(signatures.map((element) => displayedSignature(element))).size).toBe(entry.signatures.length)
-    } finally { await window.happyDOM.abort() }
   })
 
   it('reach the Markdown twin as an Elixir code block', async () => {

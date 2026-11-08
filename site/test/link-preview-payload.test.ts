@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { docSummaryText } from '@libtmux/api-model'
+import { docSummaryText } from '@libtmux/api-model/reference'
 import { API_GLOSSARY_PATH } from '../src/lib/api-glossary'
 import { API_MODELS } from '../src/lib/api-models'
 import { nativeQualifiedName } from '../src/lib/native-name'

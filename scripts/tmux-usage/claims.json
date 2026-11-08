@@ -15193,6 +15193,5878 @@
           "in": "server.Server.kill"
         }
       ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::new_session",
+      "command": "new-session",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:967",
+          "has": [
+            "$self->_run($self->operation('new_session', %args));"
+          ],
+          "in": "LibTmux::Server::new_session"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:522",
+          "has": [
+            "'new-session', '-d', '-P', '-F', _creation_format('session'),"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::new_session",
+      "command": "list-sessions",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:967",
+          "has": [
+            "$self->_run($self->operation('new_session', %args));"
+          ],
+          "in": "LibTmux::Server::new_session"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "has": [
+            "session => ['list-sessions'],"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::new_session",
+      "command": "list-windows",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:967",
+          "has": [
+            "$self->_run($self->operation('new_session', %args));"
+          ],
+          "in": "LibTmux::Server::new_session"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "has": [
+            "window  => ['list-windows', '-a'],"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::new_session",
+      "command": "list-panes",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:967",
+          "has": [
+            "$self->_run($self->operation('new_session', %args));"
+          ],
+          "in": "LibTmux::Server::new_session"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "has": [
+            "pane    => ['list-panes',   '-a'],"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::new_session",
+      "command": "list-clients",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:967",
+          "has": [
+            "$self->_run($self->operation('new_session', %args));"
+          ],
+          "in": "LibTmux::Server::new_session"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "has": [
+            "client  => ['list-clients']"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::new_session",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:967",
+          "has": [
+            "$self->_run($self->operation('new_session', %args));"
+          ],
+          "in": "LibTmux::Server::new_session"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::new_window",
+      "command": "new-window",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:971",
+          "has": [
+            "$self->_run($self->operation('new_window', %args));"
+          ],
+          "in": "LibTmux::Server::new_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:547",
+          "has": [
+            "$split ? 'split-window' : 'new-window',"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::new_window",
+      "command": "list-sessions",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:971",
+          "has": [
+            "$self->_run($self->operation('new_window', %args));"
+          ],
+          "in": "LibTmux::Server::new_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "has": [
+            "session => ['list-sessions'],"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::new_window",
+      "command": "list-windows",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:971",
+          "has": [
+            "$self->_run($self->operation('new_window', %args));"
+          ],
+          "in": "LibTmux::Server::new_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "has": [
+            "window  => ['list-windows', '-a'],"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::new_window",
+      "command": "list-panes",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:971",
+          "has": [
+            "$self->_run($self->operation('new_window', %args));"
+          ],
+          "in": "LibTmux::Server::new_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "has": [
+            "pane    => ['list-panes',   '-a'],"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::new_window",
+      "command": "list-clients",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:971",
+          "has": [
+            "$self->_run($self->operation('new_window', %args));"
+          ],
+          "in": "LibTmux::Server::new_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "has": [
+            "client  => ['list-clients']"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::new_window",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:971",
+          "has": [
+            "$self->_run($self->operation('new_window', %args));"
+          ],
+          "in": "LibTmux::Server::new_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::split_pane",
+      "command": "split-window",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:975",
+          "has": [
+            "$self->_run($self->operation('split_pane', %args));"
+          ],
+          "in": "LibTmux::Server::split_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:547",
+          "has": [
+            "$split ? 'split-window' : 'new-window',"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::split_pane",
+      "command": "list-sessions",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:975",
+          "has": [
+            "$self->_run($self->operation('split_pane', %args));"
+          ],
+          "in": "LibTmux::Server::split_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "has": [
+            "session => ['list-sessions'],"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::split_pane",
+      "command": "list-windows",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:975",
+          "has": [
+            "$self->_run($self->operation('split_pane', %args));"
+          ],
+          "in": "LibTmux::Server::split_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "has": [
+            "window  => ['list-windows', '-a'],"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::split_pane",
+      "command": "list-panes",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:975",
+          "has": [
+            "$self->_run($self->operation('split_pane', %args));"
+          ],
+          "in": "LibTmux::Server::split_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "has": [
+            "pane    => ['list-panes',   '-a'],"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::split_pane",
+      "command": "list-clients",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:975",
+          "has": [
+            "$self->_run($self->operation('split_pane', %args));"
+          ],
+          "in": "LibTmux::Server::split_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "has": [
+            "client  => ['list-clients']"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::split_pane",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:975",
+          "has": [
+            "$self->_run($self->operation('split_pane', %args));"
+          ],
+          "in": "LibTmux::Server::split_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::rename_session",
+      "command": "rename-session",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:988",
+          "has": [
+            "$self->_run($self->operation('rename_session', %args));"
+          ],
+          "in": "LibTmux::Server::rename_session"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:604",
+          "has": [
+            "['session', 'session', 'rename-session', 'name', 'format'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::rename_session",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:988",
+          "has": [
+            "$self->_run($self->operation('rename_session', %args));"
+          ],
+          "in": "LibTmux::Server::rename_session"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::rename_window",
+      "command": "rename-window",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:992",
+          "has": [
+            "$self->_run($self->operation('rename_window', %args));"
+          ],
+          "in": "LibTmux::Server::rename_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:606",
+          "has": [
+            "['window', 'window', 'rename-window', 'name', 'format'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::rename_window",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:992",
+          "has": [
+            "$self->_run($self->operation('rename_window', %args));"
+          ],
+          "in": "LibTmux::Server::rename_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::link_window",
+      "command": "link-window",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:996",
+          "has": [
+            "$self->_run($self->operation('link_window', %args));"
+          ],
+          "in": "LibTmux::Server::link_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:577",
+          "has": [
+            "'link-window', '-s', $window->[0], '-t',"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::link_window",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:996",
+          "has": [
+            "$self->_run($self->operation('link_window', %args));"
+          ],
+          "in": "LibTmux::Server::link_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::unlink_window",
+      "command": "unlink-window",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1000",
+          "has": [
+            "$self->_run($self->operation('unlink_window', %args));"
+          ],
+          "in": "LibTmux::Server::unlink_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:607",
+          "has": [
+            "unlink_window => ['window_link', 'link',    'unlink-window'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::unlink_window",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1000",
+          "has": [
+            "$self->_run($self->operation('unlink_window', %args));"
+          ],
+          "in": "LibTmux::Server::unlink_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::move_window",
+      "command": "move-window",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1004",
+          "has": [
+            "$self->_run($self->operation('move_window', %args));"
+          ],
+          "in": "LibTmux::Server::move_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:593",
+          "has": [
+            "'move-window', '-s', $link->[0], '-t',"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::move_window",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1004",
+          "has": [
+            "$self->_run($self->operation('move_window', %args));"
+          ],
+          "in": "LibTmux::Server::move_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::select_window",
+      "command": "select-window",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1008",
+          "has": [
+            "$self->_run($self->operation('select_window', %args));"
+          ],
+          "in": "LibTmux::Server::select_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:608",
+          "has": [
+            "select_window => ['window_link', 'link',    'select-window'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::select_window",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1008",
+          "has": [
+            "$self->_run($self->operation('select_window', %args));"
+          ],
+          "in": "LibTmux::Server::select_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::select_pane",
+      "command": "select-pane",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1012",
+          "has": [
+            "$self->_run($self->operation('select_pane', %args));"
+          ],
+          "in": "LibTmux::Server::select_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:609",
+          "has": [
+            "select_pane   => ['pane',        'pane',    'select-pane'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::select_pane",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1012",
+          "has": [
+            "$self->_run($self->operation('select_pane', %args));"
+          ],
+          "in": "LibTmux::Server::select_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::select_layout",
+      "command": "select-layout",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1016",
+          "has": [
+            "$self->_run($self->operation('select_layout', %args));"
+          ],
+          "in": "LibTmux::Server::select_layout"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:610",
+          "has": [
+            "select_layout => ['window',      'window',  'select-layout', 'layout'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::select_layout",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1016",
+          "has": [
+            "$self->_run($self->operation('select_layout', %args));"
+          ],
+          "in": "LibTmux::Server::select_layout"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::resize_pane",
+      "command": "resize-pane",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1020",
+          "has": [
+            "$self->_run($self->operation('resize_pane', %args));"
+          ],
+          "in": "LibTmux::Server::resize_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:646",
+          "has": [
+            "@argv = ('resize-pane', '-t', $target->[0]);"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::resize_pane",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1020",
+          "has": [
+            "$self->_run($self->operation('resize_pane', %args));"
+          ],
+          "in": "LibTmux::Server::resize_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::set_title",
+      "command": "select-pane",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1024",
+          "has": [
+            "$self->_run($self->operation('set_title', %args));"
+          ],
+          "in": "LibTmux::Server::set_title"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:609",
+          "has": [
+            "select_pane   => ['pane',        'pane',    'select-pane'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::set_title",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1024",
+          "has": [
+            "$self->_run($self->operation('set_title', %args));"
+          ],
+          "in": "LibTmux::Server::set_title"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::send_keys",
+      "command": "send-keys",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1028",
+          "has": [
+            "$self->_run($self->operation('send_keys', %args));"
+          ],
+          "in": "LibTmux::Server::send_keys"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:661",
+          "has": [
+            "'send-keys', '-t', $target->[0], '--',"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::send_keys",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1028",
+          "has": [
+            "$self->_run($self->operation('send_keys', %args));"
+          ],
+          "in": "LibTmux::Server::send_keys"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::send_text",
+      "command": "send-keys",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1032",
+          "has": [
+            "$self->_run($self->operation('send_text', %args));"
+          ],
+          "in": "LibTmux::Server::send_text"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:661",
+          "has": [
+            "'send-keys', '-t', $target->[0], '--',"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::send_text",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1032",
+          "has": [
+            "$self->_run($self->operation('send_text', %args));"
+          ],
+          "in": "LibTmux::Server::send_text"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::capture_pane",
+      "command": "capture-pane",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1036",
+          "has": [
+            "$self->_run($self->operation('capture_pane', %args));"
+          ],
+          "in": "LibTmux::Server::capture_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:671",
+          "has": [
+            "@argv = ('capture-pane', '-p', '-t', $target->[0]);"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::capture_pane",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1036",
+          "has": [
+            "$self->_run($self->operation('capture_pane', %args));"
+          ],
+          "in": "LibTmux::Server::capture_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::kill_pane",
+      "command": "kill-pane",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1040",
+          "has": [
+            "$self->_run($self->operation('kill_pane', %args));"
+          ],
+          "in": "LibTmux::Server::kill_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:611",
+          "has": [
+            "kill_pane     => ['pane',        'pane',    'kill-pane'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::kill_pane",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1040",
+          "has": [
+            "$self->_run($self->operation('kill_pane', %args));"
+          ],
+          "in": "LibTmux::Server::kill_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::kill_window",
+      "command": "kill-window",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1044",
+          "has": [
+            "$self->_run($self->operation('kill_window', %args));"
+          ],
+          "in": "LibTmux::Server::kill_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:612",
+          "has": [
+            "kill_window   => ['window',      'window',  'kill-window'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::kill_window",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1044",
+          "has": [
+            "$self->_run($self->operation('kill_window', %args));"
+          ],
+          "in": "LibTmux::Server::kill_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::kill_session",
+      "command": "kill-session",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1048",
+          "has": [
+            "$self->_run($self->operation('kill_session', %args));"
+          ],
+          "in": "LibTmux::Server::kill_session"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:613",
+          "has": [
+            "kill_session  => ['session',     'session', 'kill-session'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::kill_session",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1048",
+          "has": [
+            "$self->_run($self->operation('kill_session', %args));"
+          ],
+          "in": "LibTmux::Server::kill_session"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::kill_server",
+      "command": "kill-server",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1052",
+          "has": [
+            "$self->_run($self->operation('kill_server', %args));"
+          ],
+          "in": "LibTmux::Server::kill_server"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:634",
+          "has": [
+            "return $self->_cmd_op(['kill-server'])->then(sub { undef });"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::detach_client",
+      "command": "detach-client",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1057",
+          "has": [
+            "$self->_run($self->operation('detach_client', %args));"
+          ],
+          "in": "LibTmux::Server::detach_client"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:614",
+          "has": [
+            "detach_client => ['client',      'client',  'detach-client'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::detach_client",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1057",
+          "has": [
+            "$self->_run($self->operation('detach_client', %args));"
+          ],
+          "in": "LibTmux::Server::detach_client"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::set_option",
+      "command": "set-option",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1061",
+          "has": [
+            "$self->_run($self->operation('set_option', %args));"
+          ],
+          "in": "LibTmux::Server::set_option"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:697",
+          "has": [
+            "my @argv = ($name eq 'get_option' ? 'show-options' : 'set-option');"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::get_option",
+      "command": "show-options",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1065",
+          "has": [
+            "$self->_run($self->operation('get_option', %args));"
+          ],
+          "in": "LibTmux::Server::get_option"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:697",
+          "has": [
+            "my @argv = ($name eq 'get_option' ? 'show-options' : 'set-option');"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::unset_option",
+      "command": "set-option",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1069",
+          "has": [
+            "$self->_run($self->operation('unset_option', %args));"
+          ],
+          "in": "LibTmux::Server::unset_option"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:697",
+          "has": [
+            "my @argv = ($name eq 'get_option' ? 'show-options' : 'set-option');"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::set_hook",
+      "command": "set-hook",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1071",
+          "has": [
+            "sub set_hook ($self, %args) { $self->_run($self->operation('set_hook', %args)) }"
+          ],
+          "in": "LibTmux::Server::set_hook"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:716",
+          "has": [
+            "my @argv = ($name eq 'set_hook' ? 'set-hook' : 'show-hooks');"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::show_hooks",
+      "command": "show-hooks",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1074",
+          "has": [
+            "$self->_run($self->operation('show_hooks', %args));"
+          ],
+          "in": "LibTmux::Server::show_hooks"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:716",
+          "has": [
+            "my @argv = ($name eq 'set_hook' ? 'set-hook' : 'show-hooks');"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::set_environment",
+      "command": "set-environment",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1078",
+          "has": [
+            "$self->_run($self->operation('set_environment', %args));"
+          ],
+          "in": "LibTmux::Server::set_environment"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:731",
+          "has": [
+            ": 'set-environment'"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::get_environment",
+      "command": "show-environment",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1082",
+          "has": [
+            "$self->_run($self->operation('get_environment', %args));"
+          ],
+          "in": "LibTmux::Server::get_environment"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:730",
+          "has": [
+            "? 'show-environment'"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::unset_environment",
+      "command": "set-environment",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1086",
+          "has": [
+            "$self->_run($self->operation('unset_environment', %args));"
+          ],
+          "in": "LibTmux::Server::unset_environment"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:731",
+          "has": [
+            ": 'set-environment'"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::set_buffer",
+      "command": "load-buffer",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1090",
+          "has": [
+            "$self->_run($self->operation('set_buffer', %args));"
+          ],
+          "in": "LibTmux::Server::set_buffer"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:755",
+          "has": [
+            "$name eq 'set_buffer'  ? 'load-buffer'"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::show_buffer",
+      "command": "show-buffer",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1094",
+          "has": [
+            "$self->_run($self->operation('show_buffer', %args));"
+          ],
+          "in": "LibTmux::Server::show_buffer"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:756",
+          "has": [
+            ": $name eq 'show_buffer' ? 'show-buffer'"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::delete_buffer",
+      "command": "delete-buffer",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1098",
+          "has": [
+            "$self->_run($self->operation('delete_buffer', %args));"
+          ],
+          "in": "LibTmux::Server::delete_buffer"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:757",
+          "has": [
+            ": 'delete-buffer',"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::snapshot",
+      "command": "list-sessions",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:977",
+          "has": [
+            "sub snapshot ($self, %args) { $self->_run($self->operation('snapshot', %args)) }"
+          ],
+          "in": "LibTmux::Server::snapshot"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "has": [
+            "session => ['list-sessions'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::snapshot",
+      "command": "list-windows",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:977",
+          "has": [
+            "sub snapshot ($self, %args) { $self->_run($self->operation('snapshot', %args)) }"
+          ],
+          "in": "LibTmux::Server::snapshot"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "has": [
+            "window  => ['list-windows', '-a'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::snapshot",
+      "command": "list-panes",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:977",
+          "has": [
+            "sub snapshot ($self, %args) { $self->_run($self->operation('snapshot', %args)) }"
+          ],
+          "in": "LibTmux::Server::snapshot"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "has": [
+            "pane    => ['list-panes',   '-a'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::snapshot",
+      "command": "list-clients",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:977",
+          "has": [
+            "sub snapshot ($self, %args) { $self->_run($self->operation('snapshot', %args)) }"
+          ],
+          "in": "LibTmux::Server::snapshot"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "has": [
+            "client  => ['list-clients']"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::snapshot",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:977",
+          "has": [
+            "sub snapshot ($self, %args) { $self->_run($self->operation('snapshot', %args)) }"
+          ],
+          "in": "LibTmux::Server::snapshot"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::clients",
+      "command": "list-sessions",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1054",
+          "has": [
+            "sub clients ($self, %args) { $self->_run($self->operation('clients', %args)) }"
+          ],
+          "in": "LibTmux::Server::clients"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "has": [
+            "session => ['list-sessions'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::clients",
+      "command": "list-windows",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1054",
+          "has": [
+            "sub clients ($self, %args) { $self->_run($self->operation('clients', %args)) }"
+          ],
+          "in": "LibTmux::Server::clients"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "has": [
+            "window  => ['list-windows', '-a'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::clients",
+      "command": "list-panes",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1054",
+          "has": [
+            "sub clients ($self, %args) { $self->_run($self->operation('clients', %args)) }"
+          ],
+          "in": "LibTmux::Server::clients"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "has": [
+            "pane    => ['list-panes',   '-a'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::clients",
+      "command": "list-clients",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1054",
+          "has": [
+            "sub clients ($self, %args) { $self->_run($self->operation('clients', %args)) }"
+          ],
+          "in": "LibTmux::Server::clients"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "has": [
+            "client  => ['list-clients']"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::clients",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1054",
+          "has": [
+            "sub clients ($self, %args) { $self->_run($self->operation('clients', %args)) }"
+          ],
+          "in": "LibTmux::Server::clients"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::query_panes",
+      "command": "list-sessions",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:980",
+          "has": [
+            "$self->_run($self->operation('query_panes', %args));"
+          ],
+          "in": "LibTmux::Server::query_panes"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "has": [
+            "session => ['list-sessions'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::query_panes",
+      "command": "list-windows",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:980",
+          "has": [
+            "$self->_run($self->operation('query_panes', %args));"
+          ],
+          "in": "LibTmux::Server::query_panes"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "has": [
+            "window  => ['list-windows', '-a'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::query_panes",
+      "command": "list-panes",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:980",
+          "has": [
+            "$self->_run($self->operation('query_panes', %args));"
+          ],
+          "in": "LibTmux::Server::query_panes"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "has": [
+            "pane    => ['list-panes',   '-a'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::query_panes",
+      "command": "list-clients",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:980",
+          "has": [
+            "$self->_run($self->operation('query_panes', %args));"
+          ],
+          "in": "LibTmux::Server::query_panes"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "has": [
+            "client  => ['list-clients']"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::query_panes",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:980",
+          "has": [
+            "$self->_run($self->operation('query_panes', %args));"
+          ],
+          "in": "LibTmux::Server::query_panes"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::listings",
+      "command": "list-sessions",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:948",
+          "has": [
+            "$self->_run($self->operation('listings', kind => $kind));"
+          ],
+          "in": "LibTmux::Server::listings"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "has": [
+            "session => ['list-sessions'],"
+          ]
+        }
+      ],
+      "when": "kind is session",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::listings",
+      "command": "list-windows",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:948",
+          "has": [
+            "$self->_run($self->operation('listings', kind => $kind));"
+          ],
+          "in": "LibTmux::Server::listings"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "has": [
+            "window  => ['list-windows', '-a'],"
+          ]
+        }
+      ],
+      "when": "kind is window",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::listings",
+      "command": "list-panes",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:948",
+          "has": [
+            "$self->_run($self->operation('listings', kind => $kind));"
+          ],
+          "in": "LibTmux::Server::listings"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "has": [
+            "pane    => ['list-panes',   '-a'],"
+          ]
+        }
+      ],
+      "when": "kind is pane",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::listings",
+      "command": "list-clients",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:948",
+          "has": [
+            "$self->_run($self->operation('listings', kind => $kind));"
+          ],
+          "in": "LibTmux::Server::listings"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "has": [
+            "client  => ['list-clients']"
+          ]
+        }
+      ],
+      "when": "kind is client",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Server::listings",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "has": [
+            "try { $done->(LibTmux::Transport->run(%$request)) }"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:948",
+          "has": [
+            "$self->_run($self->operation('listings', kind => $kind));"
+          ],
+          "in": "LibTmux::Server::listings"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::new_session",
+      "command": "new-session",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:64",
+          "has": [
+            "sub new_session     ($self, %args) { $self->_submit('new_session',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::new_session"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:522",
+          "has": [
+            "'new-session', '-d', '-P', '-F', _creation_format('session'),"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::new_session",
+      "command": "list-sessions",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:64",
+          "has": [
+            "sub new_session     ($self, %args) { $self->_submit('new_session',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::new_session"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "has": [
+            "session => ['list-sessions'],"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::new_session",
+      "command": "list-windows",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:64",
+          "has": [
+            "sub new_session     ($self, %args) { $self->_submit('new_session',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::new_session"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "has": [
+            "window  => ['list-windows', '-a'],"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::new_session",
+      "command": "list-panes",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:64",
+          "has": [
+            "sub new_session     ($self, %args) { $self->_submit('new_session',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::new_session"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "has": [
+            "pane    => ['list-panes',   '-a'],"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::new_session",
+      "command": "list-clients",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:64",
+          "has": [
+            "sub new_session     ($self, %args) { $self->_submit('new_session',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::new_session"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "has": [
+            "client  => ['list-clients']"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::new_session",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:64",
+          "has": [
+            "sub new_session     ($self, %args) { $self->_submit('new_session',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::new_session"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::new_window",
+      "command": "new-window",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:65",
+          "has": [
+            "sub new_window      ($self, %args) { $self->_submit('new_window',      %args) }"
+          ],
+          "in": "LibTmux::Async::Server::new_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:547",
+          "has": [
+            "$split ? 'split-window' : 'new-window',"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::new_window",
+      "command": "list-sessions",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:65",
+          "has": [
+            "sub new_window      ($self, %args) { $self->_submit('new_window',      %args) }"
+          ],
+          "in": "LibTmux::Async::Server::new_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "has": [
+            "session => ['list-sessions'],"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::new_window",
+      "command": "list-windows",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:65",
+          "has": [
+            "sub new_window      ($self, %args) { $self->_submit('new_window',      %args) }"
+          ],
+          "in": "LibTmux::Async::Server::new_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "has": [
+            "window  => ['list-windows', '-a'],"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::new_window",
+      "command": "list-panes",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:65",
+          "has": [
+            "sub new_window      ($self, %args) { $self->_submit('new_window',      %args) }"
+          ],
+          "in": "LibTmux::Async::Server::new_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "has": [
+            "pane    => ['list-panes',   '-a'],"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::new_window",
+      "command": "list-clients",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:65",
+          "has": [
+            "sub new_window      ($self, %args) { $self->_submit('new_window',      %args) }"
+          ],
+          "in": "LibTmux::Async::Server::new_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "has": [
+            "client  => ['list-clients']"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::new_window",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:65",
+          "has": [
+            "sub new_window      ($self, %args) { $self->_submit('new_window',      %args) }"
+          ],
+          "in": "LibTmux::Async::Server::new_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::split_pane",
+      "command": "split-window",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:66",
+          "has": [
+            "sub split_pane      ($self, %args) { $self->_submit('split_pane',      %args) }"
+          ],
+          "in": "LibTmux::Async::Server::split_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:547",
+          "has": [
+            "$split ? 'split-window' : 'new-window',"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::split_pane",
+      "command": "list-sessions",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:66",
+          "has": [
+            "sub split_pane      ($self, %args) { $self->_submit('split_pane',      %args) }"
+          ],
+          "in": "LibTmux::Async::Server::split_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "has": [
+            "session => ['list-sessions'],"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::split_pane",
+      "command": "list-windows",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:66",
+          "has": [
+            "sub split_pane      ($self, %args) { $self->_submit('split_pane',      %args) }"
+          ],
+          "in": "LibTmux::Async::Server::split_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "has": [
+            "window  => ['list-windows', '-a'],"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::split_pane",
+      "command": "list-panes",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:66",
+          "has": [
+            "sub split_pane      ($self, %args) { $self->_submit('split_pane',      %args) }"
+          ],
+          "in": "LibTmux::Async::Server::split_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "has": [
+            "pane    => ['list-panes',   '-a'],"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::split_pane",
+      "command": "list-clients",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:66",
+          "has": [
+            "sub split_pane      ($self, %args) { $self->_submit('split_pane',      %args) }"
+          ],
+          "in": "LibTmux::Async::Server::split_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "has": [
+            "client  => ['list-clients']"
+          ]
+        }
+      ],
+      "when": "after accepted creation",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::split_pane",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:66",
+          "has": [
+            "sub split_pane      ($self, %args) { $self->_submit('split_pane',      %args) }"
+          ],
+          "in": "LibTmux::Async::Server::split_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::rename_session",
+      "command": "rename-session",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:70",
+          "has": [
+            "sub rename_session  ($self, %args) { $self->_submit('rename_session',  %args) }"
+          ],
+          "in": "LibTmux::Async::Server::rename_session"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:604",
+          "has": [
+            "['session', 'session', 'rename-session', 'name', 'format'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::rename_session",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:70",
+          "has": [
+            "sub rename_session  ($self, %args) { $self->_submit('rename_session',  %args) }"
+          ],
+          "in": "LibTmux::Async::Server::rename_session"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::rename_window",
+      "command": "rename-window",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:71",
+          "has": [
+            "sub rename_window   ($self, %args) { $self->_submit('rename_window',   %args) }"
+          ],
+          "in": "LibTmux::Async::Server::rename_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:606",
+          "has": [
+            "['window', 'window', 'rename-window', 'name', 'format'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::rename_window",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:71",
+          "has": [
+            "sub rename_window   ($self, %args) { $self->_submit('rename_window',   %args) }"
+          ],
+          "in": "LibTmux::Async::Server::rename_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::link_window",
+      "command": "link-window",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:72",
+          "has": [
+            "sub link_window     ($self, %args) { $self->_submit('link_window',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::link_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:577",
+          "has": [
+            "'link-window', '-s', $window->[0], '-t',"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::link_window",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:72",
+          "has": [
+            "sub link_window     ($self, %args) { $self->_submit('link_window',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::link_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::unlink_window",
+      "command": "unlink-window",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:73",
+          "has": [
+            "sub unlink_window   ($self, %args) { $self->_submit('unlink_window',   %args) }"
+          ],
+          "in": "LibTmux::Async::Server::unlink_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:607",
+          "has": [
+            "unlink_window => ['window_link', 'link',    'unlink-window'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::unlink_window",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:73",
+          "has": [
+            "sub unlink_window   ($self, %args) { $self->_submit('unlink_window',   %args) }"
+          ],
+          "in": "LibTmux::Async::Server::unlink_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::move_window",
+      "command": "move-window",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:74",
+          "has": [
+            "sub move_window     ($self, %args) { $self->_submit('move_window',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::move_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:593",
+          "has": [
+            "'move-window', '-s', $link->[0], '-t',"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::move_window",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:74",
+          "has": [
+            "sub move_window     ($self, %args) { $self->_submit('move_window',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::move_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::select_window",
+      "command": "select-window",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:75",
+          "has": [
+            "sub select_window   ($self, %args) { $self->_submit('select_window',   %args) }"
+          ],
+          "in": "LibTmux::Async::Server::select_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:608",
+          "has": [
+            "select_window => ['window_link', 'link',    'select-window'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::select_window",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:75",
+          "has": [
+            "sub select_window   ($self, %args) { $self->_submit('select_window',   %args) }"
+          ],
+          "in": "LibTmux::Async::Server::select_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::select_pane",
+      "command": "select-pane",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:76",
+          "has": [
+            "sub select_pane     ($self, %args) { $self->_submit('select_pane',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::select_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:609",
+          "has": [
+            "select_pane   => ['pane',        'pane',    'select-pane'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::select_pane",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:76",
+          "has": [
+            "sub select_pane     ($self, %args) { $self->_submit('select_pane',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::select_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::select_layout",
+      "command": "select-layout",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:77",
+          "has": [
+            "sub select_layout   ($self, %args) { $self->_submit('select_layout',   %args) }"
+          ],
+          "in": "LibTmux::Async::Server::select_layout"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:610",
+          "has": [
+            "select_layout => ['window',      'window',  'select-layout', 'layout'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::select_layout",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:77",
+          "has": [
+            "sub select_layout   ($self, %args) { $self->_submit('select_layout',   %args) }"
+          ],
+          "in": "LibTmux::Async::Server::select_layout"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::resize_pane",
+      "command": "resize-pane",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:78",
+          "has": [
+            "sub resize_pane     ($self, %args) { $self->_submit('resize_pane',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::resize_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:646",
+          "has": [
+            "@argv = ('resize-pane', '-t', $target->[0]);"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::resize_pane",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:78",
+          "has": [
+            "sub resize_pane     ($self, %args) { $self->_submit('resize_pane',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::resize_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::set_title",
+      "command": "select-pane",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:79",
+          "has": [
+            "sub set_title       ($self, %args) { $self->_submit('set_title',       %args) }"
+          ],
+          "in": "LibTmux::Async::Server::set_title"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:609",
+          "has": [
+            "select_pane   => ['pane',        'pane',    'select-pane'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::set_title",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:79",
+          "has": [
+            "sub set_title       ($self, %args) { $self->_submit('set_title',       %args) }"
+          ],
+          "in": "LibTmux::Async::Server::set_title"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::send_keys",
+      "command": "send-keys",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:80",
+          "has": [
+            "sub send_keys       ($self, %args) { $self->_submit('send_keys',       %args) }"
+          ],
+          "in": "LibTmux::Async::Server::send_keys"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:661",
+          "has": [
+            "'send-keys', '-t', $target->[0], '--',"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::send_keys",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:80",
+          "has": [
+            "sub send_keys       ($self, %args) { $self->_submit('send_keys',       %args) }"
+          ],
+          "in": "LibTmux::Async::Server::send_keys"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::send_text",
+      "command": "send-keys",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:81",
+          "has": [
+            "sub send_text       ($self, %args) { $self->_submit('send_text',       %args) }"
+          ],
+          "in": "LibTmux::Async::Server::send_text"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:661",
+          "has": [
+            "'send-keys', '-t', $target->[0], '--',"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::send_text",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:81",
+          "has": [
+            "sub send_text       ($self, %args) { $self->_submit('send_text',       %args) }"
+          ],
+          "in": "LibTmux::Async::Server::send_text"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::capture_pane",
+      "command": "capture-pane",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:82",
+          "has": [
+            "sub capture_pane    ($self, %args) { $self->_submit('capture_pane',    %args) }"
+          ],
+          "in": "LibTmux::Async::Server::capture_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:671",
+          "has": [
+            "@argv = ('capture-pane', '-p', '-t', $target->[0]);"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::capture_pane",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:82",
+          "has": [
+            "sub capture_pane    ($self, %args) { $self->_submit('capture_pane',    %args) }"
+          ],
+          "in": "LibTmux::Async::Server::capture_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::kill_pane",
+      "command": "kill-pane",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:83",
+          "has": [
+            "sub kill_pane       ($self, %args) { $self->_submit('kill_pane',       %args) }"
+          ],
+          "in": "LibTmux::Async::Server::kill_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:611",
+          "has": [
+            "kill_pane     => ['pane',        'pane',    'kill-pane'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::kill_pane",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:83",
+          "has": [
+            "sub kill_pane       ($self, %args) { $self->_submit('kill_pane',       %args) }"
+          ],
+          "in": "LibTmux::Async::Server::kill_pane"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::kill_window",
+      "command": "kill-window",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:84",
+          "has": [
+            "sub kill_window     ($self, %args) { $self->_submit('kill_window',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::kill_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:612",
+          "has": [
+            "kill_window   => ['window',      'window',  'kill-window'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::kill_window",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:84",
+          "has": [
+            "sub kill_window     ($self, %args) { $self->_submit('kill_window',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::kill_window"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::kill_session",
+      "command": "kill-session",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:85",
+          "has": [
+            "sub kill_session    ($self, %args) { $self->_submit('kill_session',    %args) }"
+          ],
+          "in": "LibTmux::Async::Server::kill_session"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:613",
+          "has": [
+            "kill_session  => ['session',     'session', 'kill-session'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::kill_session",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:85",
+          "has": [
+            "sub kill_session    ($self, %args) { $self->_submit('kill_session',    %args) }"
+          ],
+          "in": "LibTmux::Async::Server::kill_session"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::kill_server",
+      "command": "kill-server",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:86",
+          "has": [
+            "sub kill_server     ($self, %args) { $self->_submit('kill_server',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::kill_server"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:634",
+          "has": [
+            "return $self->_cmd_op(['kill-server'])->then(sub { undef });"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::detach_client",
+      "command": "detach-client",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:89",
+          "has": [
+            "sub detach_client   ($self, %args) { $self->_submit('detach_client',   %args) }"
+          ],
+          "in": "LibTmux::Async::Server::detach_client"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:614",
+          "has": [
+            "detach_client => ['client',      'client',  'detach-client'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::detach_client",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:89",
+          "has": [
+            "sub detach_client   ($self, %args) { $self->_submit('detach_client',   %args) }"
+          ],
+          "in": "LibTmux::Async::Server::detach_client"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::set_option",
+      "command": "set-option",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:90",
+          "has": [
+            "sub set_option      ($self, %args) { $self->_submit('set_option',      %args) }"
+          ],
+          "in": "LibTmux::Async::Server::set_option"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:697",
+          "has": [
+            "my @argv = ($name eq 'get_option' ? 'show-options' : 'set-option');"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::get_option",
+      "command": "show-options",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:91",
+          "has": [
+            "sub get_option      ($self, %args) { $self->_submit('get_option',      %args) }"
+          ],
+          "in": "LibTmux::Async::Server::get_option"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:697",
+          "has": [
+            "my @argv = ($name eq 'get_option' ? 'show-options' : 'set-option');"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::unset_option",
+      "command": "set-option",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:92",
+          "has": [
+            "sub unset_option    ($self, %args) { $self->_submit('unset_option',    %args) }"
+          ],
+          "in": "LibTmux::Async::Server::unset_option"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:697",
+          "has": [
+            "my @argv = ($name eq 'get_option' ? 'show-options' : 'set-option');"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::set_hook",
+      "command": "set-hook",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:93",
+          "has": [
+            "sub set_hook        ($self, %args) { $self->_submit('set_hook',        %args) }"
+          ],
+          "in": "LibTmux::Async::Server::set_hook"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:716",
+          "has": [
+            "my @argv = ($name eq 'set_hook' ? 'set-hook' : 'show-hooks');"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::show_hooks",
+      "command": "show-hooks",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:94",
+          "has": [
+            "sub show_hooks      ($self, %args) { $self->_submit('show_hooks',      %args) }"
+          ],
+          "in": "LibTmux::Async::Server::show_hooks"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:716",
+          "has": [
+            "my @argv = ($name eq 'set_hook' ? 'set-hook' : 'show-hooks');"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::set_environment",
+      "command": "set-environment",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:95",
+          "has": [
+            "sub set_environment ($self, %args) { $self->_submit('set_environment', %args) }"
+          ],
+          "in": "LibTmux::Async::Server::set_environment"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:731",
+          "has": [
+            ": 'set-environment'"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::get_environment",
+      "command": "show-environment",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:96",
+          "has": [
+            "sub get_environment ($self, %args) { $self->_submit('get_environment', %args) }"
+          ],
+          "in": "LibTmux::Async::Server::get_environment"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:730",
+          "has": [
+            "? 'show-environment'"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::unset_environment",
+      "command": "set-environment",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:99",
+          "has": [
+            "$self->_submit('unset_environment', %args);"
+          ],
+          "in": "LibTmux::Async::Server::unset_environment"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:731",
+          "has": [
+            ": 'set-environment'"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::set_buffer",
+      "command": "load-buffer",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:101",
+          "has": [
+            "sub set_buffer    ($self, %args) { $self->_submit('set_buffer',    %args) }"
+          ],
+          "in": "LibTmux::Async::Server::set_buffer"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:755",
+          "has": [
+            "$name eq 'set_buffer'  ? 'load-buffer'"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::show_buffer",
+      "command": "show-buffer",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:102",
+          "has": [
+            "sub show_buffer   ($self, %args) { $self->_submit('show_buffer',   %args) }"
+          ],
+          "in": "LibTmux::Async::Server::show_buffer"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:756",
+          "has": [
+            ": $name eq 'show_buffer' ? 'show-buffer'"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::delete_buffer",
+      "command": "delete-buffer",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:103",
+          "has": [
+            "sub delete_buffer ($self, %args) { $self->_submit('delete_buffer', %args) }"
+          ],
+          "in": "LibTmux::Async::Server::delete_buffer"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:757",
+          "has": [
+            ": 'delete-buffer',"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::snapshot",
+      "command": "list-sessions",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:67",
+          "has": [
+            "sub snapshot        ($self, %args) { $self->_submit('snapshot',        %args) }"
+          ],
+          "in": "LibTmux::Async::Server::snapshot"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "has": [
+            "session => ['list-sessions'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::snapshot",
+      "command": "list-windows",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:67",
+          "has": [
+            "sub snapshot        ($self, %args) { $self->_submit('snapshot',        %args) }"
+          ],
+          "in": "LibTmux::Async::Server::snapshot"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "has": [
+            "window  => ['list-windows', '-a'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::snapshot",
+      "command": "list-panes",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:67",
+          "has": [
+            "sub snapshot        ($self, %args) { $self->_submit('snapshot',        %args) }"
+          ],
+          "in": "LibTmux::Async::Server::snapshot"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "has": [
+            "pane    => ['list-panes',   '-a'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::snapshot",
+      "command": "list-clients",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:67",
+          "has": [
+            "sub snapshot        ($self, %args) { $self->_submit('snapshot',        %args) }"
+          ],
+          "in": "LibTmux::Async::Server::snapshot"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "has": [
+            "client  => ['list-clients']"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::snapshot",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:67",
+          "has": [
+            "sub snapshot        ($self, %args) { $self->_submit('snapshot',        %args) }"
+          ],
+          "in": "LibTmux::Async::Server::snapshot"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::clients",
+      "command": "list-sessions",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:87",
+          "has": [
+            "sub clients         ($self, %args) { $self->_submit('clients',         %args) }"
+          ],
+          "in": "LibTmux::Async::Server::clients"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "has": [
+            "session => ['list-sessions'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::clients",
+      "command": "list-windows",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:87",
+          "has": [
+            "sub clients         ($self, %args) { $self->_submit('clients',         %args) }"
+          ],
+          "in": "LibTmux::Async::Server::clients"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "has": [
+            "window  => ['list-windows', '-a'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::clients",
+      "command": "list-panes",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:87",
+          "has": [
+            "sub clients         ($self, %args) { $self->_submit('clients',         %args) }"
+          ],
+          "in": "LibTmux::Async::Server::clients"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "has": [
+            "pane    => ['list-panes',   '-a'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::clients",
+      "command": "list-clients",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:87",
+          "has": [
+            "sub clients         ($self, %args) { $self->_submit('clients',         %args) }"
+          ],
+          "in": "LibTmux::Async::Server::clients"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "has": [
+            "client  => ['list-clients']"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::clients",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:87",
+          "has": [
+            "sub clients         ($self, %args) { $self->_submit('clients',         %args) }"
+          ],
+          "in": "LibTmux::Async::Server::clients"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::query_panes",
+      "command": "list-sessions",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:68",
+          "has": [
+            "sub query_panes     ($self, %args) { $self->_submit('query_panes',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::query_panes"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "has": [
+            "session => ['list-sessions'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::query_panes",
+      "command": "list-windows",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:68",
+          "has": [
+            "sub query_panes     ($self, %args) { $self->_submit('query_panes',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::query_panes"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "has": [
+            "window  => ['list-windows', '-a'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::query_panes",
+      "command": "list-panes",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:68",
+          "has": [
+            "sub query_panes     ($self, %args) { $self->_submit('query_panes',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::query_panes"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "has": [
+            "pane    => ['list-panes',   '-a'],"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::query_panes",
+      "command": "list-clients",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:68",
+          "has": [
+            "sub query_panes     ($self, %args) { $self->_submit('query_panes',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::query_panes"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "has": [
+            "client  => ['list-clients']"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::query_panes",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:68",
+          "has": [
+            "sub query_panes     ($self, %args) { $self->_submit('query_panes',     %args) }"
+          ],
+          "in": "LibTmux::Async::Server::query_panes"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::listings",
+      "command": "list-sessions",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:61",
+          "has": [
+            "sub listings ($self, $kind)  { $self->_submit('listings', kind => $kind) }"
+          ],
+          "in": "LibTmux::Async::Server::listings"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "has": [
+            "session => ['list-sessions'],"
+          ]
+        }
+      ],
+      "when": "kind is session",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::listings",
+      "command": "list-windows",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:61",
+          "has": [
+            "sub listings ($self, $kind)  { $self->_submit('listings', kind => $kind) }"
+          ],
+          "in": "LibTmux::Async::Server::listings"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "has": [
+            "window  => ['list-windows', '-a'],"
+          ]
+        }
+      ],
+      "when": "kind is window",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::listings",
+      "command": "list-panes",
+      "scope": "server",
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:61",
+          "has": [
+            "sub listings ($self, $kind)  { $self->_submit('listings', kind => $kind) }"
+          ],
+          "in": "LibTmux::Async::Server::listings"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "has": [
+            "pane    => ['list-panes',   '-a'],"
+          ]
+        }
+      ],
+      "when": "kind is pane",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::listings",
+      "command": "list-clients",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:61",
+          "has": [
+            "sub listings ($self, $kind)  { $self->_submit('listings', kind => $kind) }"
+          ],
+          "in": "LibTmux::Async::Server::listings"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "has": [
+            "client  => ['list-clients']"
+          ]
+        }
+      ],
+      "when": "kind is client",
+      "conditional": true
+    },
+    {
+      "port": "perl",
+      "symbol": "LibTmux::Async::Server::listings",
+      "command": "display-message",
+      "scope": null,
+      "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:42",
+          "has": [
+            "my $request_future = $self->{transport}->execute(%$request);"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "has": [
+            "my $operation = $self->_prepare($name, %args);"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:61",
+          "has": [
+            "sub listings ($self, $kind)  { $self->_submit('listings', kind => $kind) }"
+          ],
+          "in": "LibTmux::Async::Server::listings"
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "has": [
+            "return $self->_cmd_op(['display-message', '-p', $format])->then("
+          ]
+        }
+      ],
+      "when": "daemon identity or target preflight",
+      "conditional": true
     }
   ]
 }

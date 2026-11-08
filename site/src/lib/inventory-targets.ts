@@ -1,6 +1,6 @@
 import { fromHtml } from 'hast-util-from-html'
 import { parse } from 'parse5'
-import { inventoryType, qualifiedNameOf, targetKey, type ApiSymbol, type InventoryTarget, type SymbolKind } from '@libtmux/api-model'
+import { inventoryType, qualifiedNameOf, targetKey, type ApiSymbol, type InventoryTarget, type SymbolKind } from '@libtmux/api-model/reference'
 
 export interface InventoryPage {
   scope: string

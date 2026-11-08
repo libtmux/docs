@@ -1,3 +1,4 @@
+export { extractPerlArtifact } from './languages/perl.ts'
 export * from './model.ts'
 export { sourceUrl, symbolsForProduct } from './products.ts'
 export { loadLanguage, parserFor, type GrammarName } from './parser.ts'

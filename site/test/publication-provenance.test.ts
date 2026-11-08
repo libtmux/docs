@@ -183,7 +183,7 @@ describe('deterministic build provenance', () => {
     ])
   })
 
-  it.each(['ruby', 'lua', 'powershell', 'julia'])('records %s source and native exporter as separate clean inputs', (port) => {
+  it.each(['ruby', 'lua', 'powershell', 'julia', 'perl'])('records %s source and native exporter as separate clean inputs', (port) => {
     const docs = repository('libtmux/docs')
     const name = `libtmux/libtmux-${port}`
     const source = repository(name)
@@ -204,7 +204,7 @@ describe('deterministic build provenance', () => {
     expect(snapshot(docs.directory, { ...env, LIBTMUX_DOCS_GENERATOR_CHECKOUT: source.directory }).nativeGenerator?.sha).toBe(source.sha)
   })
 
-  it.each(['ruby', 'lua', 'powershell', 'julia'].flatMap((port) =>
+  it.each(['ruby', 'lua', 'powershell', 'julia', 'perl'].flatMap((port) =>
     ['missing', 'repository', 'sha', 'dirty', 'missing-dirty'].map((mutation) => [port, mutation]),
   ))('rejects %s native exporter metadata with %s', (port, mutation) => {
     const root = tree()
@@ -226,7 +226,7 @@ describe('deterministic build provenance', () => {
     expect(() => verifyBuild(root, expected())).toThrow('unexpected native generator')
   })
 
-  it.each(['ruby', 'lua', 'powershell', 'julia'])('rechecks the %s exporter HEAD when consuming the captured inputs', (port) => {
+  it.each(['ruby', 'lua', 'powershell', 'julia', 'perl'])('rechecks the %s exporter HEAD when consuming the captured inputs', (port) => {
     const docs = repository('libtmux/docs')
     const source = repository(`libtmux/libtmux-${port}`)
     const generator = repository(`libtmux/libtmux-${port}`, 'separate native exporter')
@@ -242,7 +242,7 @@ describe('deterministic build provenance', () => {
     expect(() => snapshot(docs.directory, { ...env, LIBTMUX_DOCS_GENERATOR_CHECKOUT: docs.directory })).toThrow('native generator repository')
   })
 
-  it.each(['ruby', 'lua', 'powershell', 'julia'])('can build an explicitly selected %s fork but rejects its publication', (port) => {
+  it.each(['ruby', 'lua', 'powershell', 'julia', 'perl'])('can build an explicitly selected %s fork but rejects its publication', (port) => {
     const docs = repository('libtmux/docs')
     const source = repository(`contributor/libtmux-${port}`)
     const generator = repository(`libtmux/libtmux-${port}`)

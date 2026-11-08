@@ -1,5 +1,5 @@
 import { fromHtml } from 'hast-util-from-html'
-import { parsePythonDoc } from '@libtmux/api-model'
+import { parsePythonDoc } from '@libtmux/api-model/reference'
 import { MCP_REFERENCE, mcpObjects, toolSummary, type McpObject } from '../src/lib/mcp-reference'
 import { tmuxMentions } from '../src/lib/tmux-links'
 

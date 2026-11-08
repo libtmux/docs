@@ -18,6 +18,7 @@ interface Row {
 }
 
 const ROWS: Record<string, Row> = {
+  perl: { type: ['LibTmux::Server', 'LibTmux::Server'], method: ['LibTmux::Server/snapshot', 'LibTmux::Server/snapshot', 'LibTmux::Server::snapshot'], function: ['grep', 'grep', 'LibTmux::Selection::grep'], property: ['Pane/width', 'Pane/width', 'LibTmux::Pane::width'], member: ['Mode', 'active', 'LibTmux::Mode::active', 'active', 'active'] },
   py: { type: ['libtmux::Server', 'libtmux.Server'], method: ['Server.list_sessions', 'Server.list_sessions()', 'libtmux.Server.list_sessions'], function: ['get_version', 'get_version()', 'libtmux.get_version'], property: ['Server.socket_name', 'Server.socket_name', 'libtmux.Server.socket_name'], member: ['Direction', 'UP', 'libtmux.Direction.UP', 'Direction.UP', 'Direction.UP'] },
   ts: { type: ['server.Server', 'server.Server'], method: ['Server.listSessions', 'Server.listSessions()', 'server.Server.listSessions'], function: ['parseWorkspace', 'parseWorkspace()', 'config.parseWorkspace'], property: ['Pane.id', 'Pane.id', 'pane.Pane.id'], member: ['Direction', 'Up', 'constants.Direction.Up', 'Direction.Up', 'Direction.Up'] },
   rs: { type: ['crate.Server', 'crate::Server'], method: ['Server.list_sessions', 'Server::list_sessions()', 'server.Server.list_sessions'], function: ['retry_until', 'retry_until()', 'test.retry_until'], property: ['Pane::id', 'Pane::id', 'pane.Pane.id'], member: ['Direction', 'Up', 'pane.Direction.Up', 'Direction::Up', 'Direction::Up'] },

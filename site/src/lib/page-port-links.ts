@@ -1,4 +1,4 @@
-import { symbolsForProduct, type ApiSymbol } from '@libtmux/api-model'
+import { symbolsForProduct, type ApiSymbol } from '@libtmux/api-model/reference'
 import { headingTitle } from './branding'
 import { API_MODELS, pageSlug, referenceAlternatives, referenceHref } from './api-models'
 import { DOC_PRODUCTS, PORT_BY_SLUG, PORTS, portHomeUrl, portPageUrl, productAvailable, productExcluded, referenceUrl } from './ports'

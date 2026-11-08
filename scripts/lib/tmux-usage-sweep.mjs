@@ -24,6 +24,7 @@ export const OPTION_SPELLINGS = new Set(['set-window-option', 'show-window-optio
 
 /** Where the library itself lives in each port, so a consumer package or a test helper is not swept. */
 export const LIBRARY_ROOTS = {
+  perl: ['packages/core/lib/', 'packages/async/lib/'],
   py: ['src/libtmux/'],
   ruby: ['gems/libtmux/', 'gems/libtmux-async/'],
   lua: ['lua/libtmux/'],

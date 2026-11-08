@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { commandFacts, memberTier, moduleOf, parameterBindingFacts, parameterBindingText, qualifiedNameOf, typeParametersOf, type ApiModelBase, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model'
+import { commandFacts, memberTier, moduleOf, parameterBindingFacts, parameterBindingText, qualifiedNameOf, typeParametersOf, type ApiModelBase, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model/reference'
 import { apiGlossaryHref } from './api-glossary'
 import { relatedLabels } from './api-labels'
 import { csharpParameters, supportsCSharpSignatures, supportsElixirSignatures, supportsGoSignatures, supportsJavaSignatures, supportsLuaSignatures, supportsRubySignatures, supportsRustSignatures, supportsTypeScriptSignatures, swiftBaseName } from './code-layout'
@@ -228,7 +228,7 @@ export function aliasDeclaration(symbol: ApiSymbol, language?: string): { name: 
 
 /** Keep native declaration syntax consistent in HTML and copied Markdown. */
 export function usesNativeSignatures(symbol: ApiSymbol, port?: string): boolean {
-  return (port === 'rs' && Boolean(symbol.variant)) || supportsRustSignatures(symbol, port) || supportsTypeScriptSignatures(symbol, port) || supportsGoSignatures(symbol, port) || supportsJavaSignatures(symbol, port) || supportsCSharpSignatures(symbol, port) || supportsRubySignatures(symbol, port) || supportsLuaSignatures(symbol, port) || supportsElixirSignatures(symbol, port) || ['kotlin', 'scala', 'fsharp', 'c', 'powershell', 'julia'].includes(port ?? '') ||
+  return (port === 'rs' && Boolean(symbol.variant)) || supportsRustSignatures(symbol, port) || supportsTypeScriptSignatures(symbol, port) || supportsGoSignatures(symbol, port) || supportsJavaSignatures(symbol, port) || supportsCSharpSignatures(symbol, port) || supportsRubySignatures(symbol, port) || supportsLuaSignatures(symbol, port) || supportsElixirSignatures(symbol, port) || ['perl', 'kotlin', 'scala', 'fsharp', 'c', 'powershell', 'julia'].includes(port ?? '') ||
     (port === 'cxx' && symbol.signatures.length > 0 && symbol.signatures.every((signature) => Boolean(signature.raw)))
 }
 
@@ -416,7 +416,7 @@ export function apiMethodDetails(symbol: ApiSymbol) {
   const labels = signatureLabels(symbol)
   return symbol.signatures.flatMap((signature, i) => signature.methodKind ? [{
     signature,
-    id: `${symbol.publicId ?? symbol.id}.method-${createHash('sha256').update(signature.identity!).digest('hex').slice(0, 16)}`,
+    id: `${symbol.publicId ?? symbol.id}.method-${createHash('sha256').update(apiOverloadIdentity(signature)).digest('hex').slice(0, 16)}`,
     label: signature.raw ?? signature.label ?? symbol.name,
     overloadLabel: labels[i],
   }] : [])

@@ -1,5 +1,5 @@
 import type { ApiModelBase, ApiSymbol } from '@libtmux/api-model'
-import { sourceUrl } from '@libtmux/api-model'
+import { sourceUrl } from '@libtmux/api-model/products'
 
 type Reference = NonNullable<ApiSymbol['references']>[number]
 export interface ApiRelationship {

@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro'
-import { sourceUrl } from '@libtmux/api-model'
+import { sourceUrl } from '@libtmux/api-model/reference'
 import { symbolMarkdownWithLayout } from '../../../../lib/symbol-markdown'
 import { tmuxCatalogLinksForSource } from '../../../../lib/tmux-catalog'
 import { tmuxReferenceContext, tmuxReferenceIndex, tmuxReferencePaths, tmuxReferenceRoutes, tmuxReferenceUrl, tmuxSourceCommands, tmuxSourceModel } from '../../../../lib/tmux-reference'

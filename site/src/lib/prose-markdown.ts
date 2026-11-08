@@ -1,6 +1,6 @@
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { SKIP, visit } from 'unist-util-visit'
-import { proseMentions, type ApiProduct } from '@libtmux/api-model'
+import { proseMentions, type ApiProduct } from '@libtmux/api-model/reference'
 import { resolvePortContent } from './workspace-shared-slots'
 import { createProseLinker, PORT_BY_LABEL, protocolRunMentions } from './prose-resolver'
 import { PORT_BY_SLUG } from './ports'

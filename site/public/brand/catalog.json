@@ -99,6 +99,11 @@
       "id": "elixir",
       "label": "Elixir",
       "githubColor": "#8847B9"
+    },
+    {
+      "id": "perl",
+      "label": "Perl",
+      "githubColor": "#0298C3"
     }
   ],
   "variants": [
@@ -523,7 +528,7 @@
       "label": "Python",
       "variant": "workspace",
       "githubColor": "#3572A5",
-      "alt": "libtmux for Python — workspace CLI",
+      "alt": "libtmux for Python \u2014 workspace CLI",
       "files": [
         {
           "file": "python/workspace/logo.svg",
@@ -934,7 +939,7 @@
       "label": "Python",
       "variant": "mcp",
       "githubColor": "#3572A5",
-      "alt": "libtmux for Python — MCP",
+      "alt": "libtmux for Python \u2014 MCP",
       "files": [
         {
           "file": "python/mcp/logo.svg",
@@ -1756,7 +1761,7 @@
       "label": "TypeScript",
       "variant": "workspace",
       "githubColor": "#3178C6",
-      "alt": "libtmux for TypeScript — workspace CLI",
+      "alt": "libtmux for TypeScript \u2014 workspace CLI",
       "files": [
         {
           "file": "typescript/workspace/logo.svg",
@@ -2167,7 +2172,7 @@
       "label": "TypeScript",
       "variant": "mcp",
       "githubColor": "#3178C6",
-      "alt": "libtmux for TypeScript — MCP",
+      "alt": "libtmux for TypeScript \u2014 MCP",
       "files": [
         {
           "file": "typescript/mcp/logo.svg",
@@ -2989,7 +2994,7 @@
       "label": "Rust",
       "variant": "workspace",
       "githubColor": "#DEA584",
-      "alt": "libtmux for Rust — workspace CLI",
+      "alt": "libtmux for Rust \u2014 workspace CLI",
       "files": [
         {
           "file": "rust/workspace/logo.svg",
@@ -3400,7 +3405,7 @@
       "label": "Rust",
       "variant": "mcp",
       "githubColor": "#DEA584",
-      "alt": "libtmux for Rust — MCP",
+      "alt": "libtmux for Rust \u2014 MCP",
       "files": [
         {
           "file": "rust/mcp/logo.svg",
@@ -4222,7 +4227,7 @@
       "label": "Go",
       "variant": "workspace",
       "githubColor": "#00ADD8",
-      "alt": "libtmux for Go — workspace CLI",
+      "alt": "libtmux for Go \u2014 workspace CLI",
       "files": [
         {
           "file": "go/workspace/logo.svg",
@@ -4633,7 +4638,7 @@
       "label": "Go",
       "variant": "mcp",
       "githubColor": "#00ADD8",
-      "alt": "libtmux for Go — MCP",
+      "alt": "libtmux for Go \u2014 MCP",
       "files": [
         {
           "file": "go/mcp/logo.svg",
@@ -5455,7 +5460,7 @@
       "label": "Java",
       "variant": "workspace",
       "githubColor": "#B07219",
-      "alt": "libtmux for Java — workspace CLI",
+      "alt": "libtmux for Java \u2014 workspace CLI",
       "files": [
         {
           "file": "java/workspace/logo.svg",
@@ -5866,7 +5871,7 @@
       "label": "Java",
       "variant": "mcp",
       "githubColor": "#B07219",
-      "alt": "libtmux for Java — MCP",
+      "alt": "libtmux for Java \u2014 MCP",
       "files": [
         {
           "file": "java/mcp/logo.svg",
@@ -6688,7 +6693,7 @@
       "label": "C# / .NET",
       "variant": "workspace",
       "githubColor": "#7355DD",
-      "alt": "libtmux for C# / .NET — workspace CLI",
+      "alt": "libtmux for C# / .NET \u2014 workspace CLI",
       "files": [
         {
           "file": "csharp/workspace/logo.svg",
@@ -7099,7 +7104,7 @@
       "label": "C# / .NET",
       "variant": "mcp",
       "githubColor": "#7355DD",
-      "alt": "libtmux for C# / .NET — MCP",
+      "alt": "libtmux for C# / .NET \u2014 MCP",
       "files": [
         {
           "file": "csharp/mcp/logo.svg",
@@ -7921,7 +7926,7 @@
       "label": "C++",
       "variant": "workspace",
       "githubColor": "#F34B7D",
-      "alt": "libtmux for C++ — workspace CLI",
+      "alt": "libtmux for C++ \u2014 workspace CLI",
       "files": [
         {
           "file": "cpp/workspace/logo.svg",
@@ -8332,7 +8337,7 @@
       "label": "C++",
       "variant": "mcp",
       "githubColor": "#F34B7D",
-      "alt": "libtmux for C++ — MCP",
+      "alt": "libtmux for C++ \u2014 MCP",
       "files": [
         {
           "file": "cpp/mcp/logo.svg",
@@ -9154,7 +9159,7 @@
       "label": "Swift",
       "variant": "workspace",
       "githubColor": "#F05138",
-      "alt": "libtmux for Swift — workspace CLI",
+      "alt": "libtmux for Swift \u2014 workspace CLI",
       "files": [
         {
           "file": "swift/workspace/logo.svg",
@@ -9565,7 +9570,7 @@
       "label": "Swift",
       "variant": "mcp",
       "githubColor": "#F05138",
-      "alt": "libtmux for Swift — MCP",
+      "alt": "libtmux for Swift \u2014 MCP",
       "files": [
         {
           "file": "swift/mcp/logo.svg",
@@ -10387,7 +10392,7 @@
       "label": "Julia",
       "variant": "workspace",
       "githubColor": "#A270BA",
-      "alt": "libtmux for Julia — workspace CLI",
+      "alt": "libtmux for Julia \u2014 workspace CLI",
       "files": [
         {
           "file": "julia/workspace/logo.svg",
@@ -10798,7 +10803,7 @@
       "label": "Julia",
       "variant": "mcp",
       "githubColor": "#A270BA",
-      "alt": "libtmux for Julia — MCP",
+      "alt": "libtmux for Julia \u2014 MCP",
       "files": [
         {
           "file": "julia/mcp/logo.svg",
@@ -11620,7 +11625,7 @@
       "label": "Ruby",
       "variant": "workspace",
       "githubColor": "#701516",
-      "alt": "libtmux for Ruby — workspace CLI",
+      "alt": "libtmux for Ruby \u2014 workspace CLI",
       "files": [
         {
           "file": "ruby/workspace/logo.svg",
@@ -12031,7 +12036,7 @@
       "label": "Ruby",
       "variant": "mcp",
       "githubColor": "#701516",
-      "alt": "libtmux for Ruby — MCP",
+      "alt": "libtmux for Ruby \u2014 MCP",
       "files": [
         {
           "file": "ruby/mcp/logo.svg",
@@ -12853,7 +12858,7 @@
       "label": "Lua",
       "variant": "workspace",
       "githubColor": "#000080",
-      "alt": "libtmux for Lua — workspace CLI",
+      "alt": "libtmux for Lua \u2014 workspace CLI",
       "files": [
         {
           "file": "lua/workspace/logo.svg",
@@ -13264,7 +13269,7 @@
       "label": "Lua",
       "variant": "mcp",
       "githubColor": "#000080",
-      "alt": "libtmux for Lua — MCP",
+      "alt": "libtmux for Lua \u2014 MCP",
       "files": [
         {
           "file": "lua/mcp/logo.svg",
@@ -14086,7 +14091,7 @@
       "label": "PowerShell",
       "variant": "workspace",
       "githubColor": "#012456",
-      "alt": "libtmux for PowerShell — workspace CLI",
+      "alt": "libtmux for PowerShell \u2014 workspace CLI",
       "files": [
         {
           "file": "powershell/workspace/logo.svg",
@@ -14497,7 +14502,7 @@
       "label": "PowerShell",
       "variant": "mcp",
       "githubColor": "#012456",
-      "alt": "libtmux for PowerShell — MCP",
+      "alt": "libtmux for PowerShell \u2014 MCP",
       "files": [
         {
           "file": "powershell/mcp/logo.svg",
@@ -15319,7 +15324,7 @@
       "label": "F#",
       "variant": "workspace",
       "githubColor": "#B845FC",
-      "alt": "libtmux for F# — workspace CLI",
+      "alt": "libtmux for F# \u2014 workspace CLI",
       "files": [
         {
           "file": "fsharp/workspace/logo.svg",
@@ -15730,7 +15735,7 @@
       "label": "F#",
       "variant": "mcp",
       "githubColor": "#B845FC",
-      "alt": "libtmux for F# — MCP",
+      "alt": "libtmux for F# \u2014 MCP",
       "files": [
         {
           "file": "fsharp/mcp/logo.svg",
@@ -16552,7 +16557,7 @@
       "label": "Scala",
       "variant": "workspace",
       "githubColor": "#C22D40",
-      "alt": "libtmux for Scala — workspace CLI",
+      "alt": "libtmux for Scala \u2014 workspace CLI",
       "files": [
         {
           "file": "scala/workspace/logo.svg",
@@ -16963,7 +16968,7 @@
       "label": "Scala",
       "variant": "mcp",
       "githubColor": "#C22D40",
-      "alt": "libtmux for Scala — MCP",
+      "alt": "libtmux for Scala \u2014 MCP",
       "files": [
         {
           "file": "scala/mcp/logo.svg",
@@ -17785,7 +17790,7 @@
       "label": "Kotlin",
       "variant": "workspace",
       "githubColor": "#A97BFF",
-      "alt": "libtmux for Kotlin — workspace CLI",
+      "alt": "libtmux for Kotlin \u2014 workspace CLI",
       "files": [
         {
           "file": "kotlin/workspace/logo.svg",
@@ -18196,7 +18201,7 @@
       "label": "Kotlin",
       "variant": "mcp",
       "githubColor": "#A97BFF",
-      "alt": "libtmux for Kotlin — MCP",
+      "alt": "libtmux for Kotlin \u2014 MCP",
       "files": [
         {
           "file": "kotlin/mcp/logo.svg",
@@ -19018,7 +19023,7 @@
       "label": "Elixir",
       "variant": "workspace",
       "githubColor": "#8847B9",
-      "alt": "libtmux for Elixir — workspace CLI",
+      "alt": "libtmux for Elixir \u2014 workspace CLI",
       "files": [
         {
           "file": "elixir/workspace/logo.svg",
@@ -19429,7 +19434,7 @@
       "label": "Elixir",
       "variant": "mcp",
       "githubColor": "#8847B9",
-      "alt": "libtmux for Elixir — MCP",
+      "alt": "libtmux for Elixir \u2014 MCP",
       "files": [
         {
           "file": "elixir/mcp/logo.svg",
@@ -19834,7 +19839,869 @@
           "format": "xml"
         }
       ]
+    },
+    {
+      "language": "perl",
+      "label": "Perl",
+      "variant": "library",
+      "githubColor": "#0298C3",
+      "alt": "libtmux for Perl",
+      "files": [
+        {
+          "file": "perl/library/logo.svg",
+          "bytes": 5879,
+          "sha256": "fb883566770f75fb14d24c7ff8d5191ead3eadc5ba33dbcd619ad09dd8cda066",
+          "format": "svg",
+          "width": 512,
+          "height": 512,
+          "transparent": true
+        },
+        {
+          "file": "perl/library/logo-16.png",
+          "bytes": 588,
+          "sha256": "e90c65b8399355ad7fdf1461e5d11d2d354404478e32e9facdc8fe684f721e52",
+          "format": "png",
+          "width": 16,
+          "height": 16,
+          "transparent": true
+        },
+        {
+          "file": "perl/library/logo-24.png",
+          "bytes": 778,
+          "sha256": "c28e22e7351e2c9cad303c71dfcd77f8daaa16a16b8263c12bda15cf1cccf019",
+          "format": "png",
+          "width": 24,
+          "height": 24,
+          "transparent": true
+        },
+        {
+          "file": "perl/library/logo-32.png",
+          "bytes": 1038,
+          "sha256": "d3cf952eb9b610fbc8beea36acb5484463695a9199847f36c7f5eef61ea18c92",
+          "format": "png",
+          "width": 32,
+          "height": 32,
+          "transparent": true
+        },
+        {
+          "file": "perl/library/logo-48.png",
+          "bytes": 1493,
+          "sha256": "53d122937e065f0efe3b693088314c30dd2e5ae2ed59af33067a3e8e5d42c1b7",
+          "format": "png",
+          "width": 48,
+          "height": 48,
+          "transparent": true
+        },
+        {
+          "file": "perl/library/logo-64.png",
+          "bytes": 1920,
+          "sha256": "db53345f46e63e02ed400e7c72570039c83222014069ecd16b15236c62ef555a",
+          "format": "png",
+          "width": 64,
+          "height": 64,
+          "transparent": true
+        },
+        {
+          "file": "perl/library/logo-96.png",
+          "bytes": 2761,
+          "sha256": "0d9ee12fec0255e16b40842724286cb4b20151fff01580fadc946aed0f478649",
+          "format": "png",
+          "width": 96,
+          "height": 96,
+          "transparent": true
+        },
+        {
+          "file": "perl/library/logo-128.png",
+          "bytes": 3699,
+          "sha256": "7a298092387fdfdffaf8ebc8d745c616236bed2ea38db378d078c89f993f9fde",
+          "format": "png",
+          "width": 128,
+          "height": 128,
+          "transparent": true
+        },
+        {
+          "file": "perl/library/logo-144.png",
+          "bytes": 4159,
+          "sha256": "e0a960300950f7ad49ca2b41d5775c336500b745c1d800f48b349da8057bb6b2",
+          "format": "png",
+          "width": 144,
+          "height": 144,
+          "transparent": true
+        },
+        {
+          "file": "perl/library/logo-152.png",
+          "bytes": 4303,
+          "sha256": "dd7dfdf9421f4f7f47a378490bca2a1ba76523ab72dcf7e763668a868fbf60ae",
+          "format": "png",
+          "width": 152,
+          "height": 152,
+          "transparent": true
+        },
+        {
+          "file": "perl/library/logo-167.png",
+          "bytes": 4768,
+          "sha256": "20cd9d3f63cb1b410b5369211e6d4c660349f173ff50f61706ed3811c268449e",
+          "format": "png",
+          "width": 167,
+          "height": 167,
+          "transparent": true
+        },
+        {
+          "file": "perl/library/logo-180.png",
+          "bytes": 5248,
+          "sha256": "49e3f35520c0a06b36bb90809b00363557f0d27bc2ef945a2dbf92a7baeccdd8",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": true
+        },
+        {
+          "file": "perl/library/logo-192.png",
+          "bytes": 5586,
+          "sha256": "cda62e18fb6bdb29ec317c97f60116790f7ca4ea0ac183837fd2a6c511f1f016",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": true
+        },
+        {
+          "file": "perl/library/logo-256.png",
+          "bytes": 7501,
+          "sha256": "f7e52a0e4c02ca4556b0cbbfd59d2aa765e9c0250def8562c018d8ab4d14a4b5",
+          "format": "png",
+          "width": 256,
+          "height": 256,
+          "transparent": true
+        },
+        {
+          "file": "perl/library/logo-384.png",
+          "bytes": 11621,
+          "sha256": "0d87ce5d39fe72817625458fdffc63f2b536a7ca3aa9a10cbe7f4be8a19b1e1a",
+          "format": "png",
+          "width": 384,
+          "height": 384,
+          "transparent": true
+        },
+        {
+          "file": "perl/library/logo-512.png",
+          "bytes": 16073,
+          "sha256": "76b608882d9995577a0a89f8fe3ad61dd8f9e51d0cec2d9fdacbd410fa2cefe0",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": true
+        },
+        {
+          "file": "perl/library/logo-1024.png",
+          "bytes": 36411,
+          "sha256": "80f6a175f6a6178a08a7a6ca8f2720d5f26359a81394ad682abab8e0050819f7",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": true
+        },
+        {
+          "file": "perl/library/favicon.ico",
+          "bytes": 22603,
+          "sha256": "be83a0dd64de77acc187d04d2f5c511bd641a526673ae083fa3680f14d1fbda9",
+          "format": "ico",
+          "sizes": [
+            16,
+            32,
+            48,
+            256
+          ]
+        },
+        {
+          "file": "perl/library/safari-pinned-tab.svg",
+          "bytes": 5879,
+          "sha256": "5d5de4a41ea955c85eaf2585d88f45c337a9120afd7c82f9258c6078fc026a42",
+          "format": "svg",
+          "width": 512,
+          "height": 512,
+          "monochrome": true
+        },
+        {
+          "file": "perl/library/apple-touch-icon-light.png",
+          "bytes": 3823,
+          "sha256": "581a51fcc2767aaaebe9944490c253961b3e41dd457466cde98e3ce052e66bb0",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": false,
+          "purpose": "apple-touch"
+        },
+        {
+          "file": "perl/library/app-icon-1024-light.png",
+          "bytes": 28089,
+          "sha256": "2fffddee1e9a25f89725170a00ab7aa437733de215aefd63007367a9487dd42f",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": false,
+          "purpose": "app-icon"
+        },
+        {
+          "file": "perl/library/maskable-192-light.png",
+          "bytes": 3076,
+          "sha256": "0eee0737a3d52a24948f242d9f35a3e2642921467c1398764d66c91e037f850a",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "perl/library/maskable-512-light.png",
+          "bytes": 9235,
+          "sha256": "b88aa8eea641cc77f40236fb24121e670553041bedef6d7250cecbad50724313",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "perl/library/mstile-150-light.png",
+          "bytes": 2992,
+          "sha256": "95559f1e1c3eb967682b1c7f9cfaa6b031790ae0b3be8a08e31ff05faf5afaa5",
+          "format": "png",
+          "width": 150,
+          "height": 150,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "perl/library/mstile-310-light.png",
+          "bytes": 6457,
+          "sha256": "19e814f0c662e6f1f54214e8574e8ee68f1663a4d89ee7a0e918d4d2c3cf27f2",
+          "format": "png",
+          "width": 310,
+          "height": 310,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "perl/library/opengraph-light.png",
+          "bytes": 38308,
+          "sha256": "2da2bd99c2aefd2b3a83dec31cdda8a670123fa83ef3bc95bf18958440a0f9c0",
+          "format": "png",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph"
+        },
+        {
+          "file": "perl/library/opengraph-light.jpg",
+          "bytes": 64251,
+          "sha256": "68961262cdbb8dd29cb3ceb6bf76a51830a5c24449ab159d6b4fcccc53d0c05a",
+          "format": "jpeg",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph-fallback"
+        },
+        {
+          "file": "perl/library/twitter-light.png",
+          "bytes": 38109,
+          "sha256": "09167b7a0c3e98e7970ed38854c93406c225e8adf16d9a379320633387aa61aa",
+          "format": "png",
+          "width": 1200,
+          "height": 600,
+          "transparent": false,
+          "purpose": "twitter"
+        },
+        {
+          "file": "perl/library/social-square-light.png",
+          "bytes": 43918,
+          "sha256": "f0706eb421a8c66177c29eba6254601ea445935bc3ec2366878a9ab2cf64aafe",
+          "format": "png",
+          "width": 1080,
+          "height": 1080,
+          "transparent": false,
+          "purpose": "social-square"
+        },
+        {
+          "file": "perl/library/github-social-light.png",
+          "bytes": 37946,
+          "sha256": "af21a0cb5c5065f8ab977cbb2cbe46b68cb82d145f457a174b889877b8d4c54d",
+          "format": "png",
+          "width": 1280,
+          "height": 640,
+          "transparent": false,
+          "purpose": "github-social"
+        },
+        {
+          "file": "perl/library/site.webmanifest",
+          "bytes": 716,
+          "sha256": "c8bfc76b7161e94069489037b035122a3daa2b6685c2edc3206c7f8ff9a8cfb1",
+          "format": "webmanifest"
+        },
+        {
+          "file": "perl/library/browserconfig.xml",
+          "bytes": 238,
+          "sha256": "02c90c38c5d78bbcf7c8006d3c8ed22fddc040a1a2e3b43b50064f940d8964d3",
+          "format": "xml"
+        },
+        {
+          "file": "perl/library/apple-touch-icon-dark.png",
+          "bytes": 3853,
+          "sha256": "955a48a3a216fef71a45a72fa3b8ebdad054f5fedb6a339cad89d3191f896d9b",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": false,
+          "purpose": "apple-touch"
+        },
+        {
+          "file": "perl/library/app-icon-1024-dark.png",
+          "bytes": 28398,
+          "sha256": "531a90595b7097fed0ccd443b4271437e548ca384af3aa79b7a07c9fd0581fe2",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": false,
+          "purpose": "app-icon"
+        },
+        {
+          "file": "perl/library/maskable-192-dark.png",
+          "bytes": 3101,
+          "sha256": "54cc47a05b3470b0902660f21b0e5ac9f142f5bf38ef5acedc76beded94e490f",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "perl/library/maskable-512-dark.png",
+          "bytes": 9321,
+          "sha256": "b36355f3b9a18d5cc1c18077b8c39d2b27dbfc0ae6ef0805a0a9db29c8dfdca4",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "perl/library/mstile-150-dark.png",
+          "bytes": 3020,
+          "sha256": "c6a03537f7c391d70d7a34ab9f199edea2a28dcac155f936003e0673f35716a8",
+          "format": "png",
+          "width": 150,
+          "height": 150,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "perl/library/mstile-310-dark.png",
+          "bytes": 6514,
+          "sha256": "51a2aba8cb16f8c8658a8b083188187cc12dd0067c8b6a514178b89a9124db72",
+          "format": "png",
+          "width": 310,
+          "height": 310,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "perl/library/opengraph-dark.png",
+          "bytes": 38701,
+          "sha256": "a4985cfd140c6a37a65148e6596fe69d3fae17cd9dab1a0c8d2a7e5fe617a509",
+          "format": "png",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph"
+        },
+        {
+          "file": "perl/library/opengraph-dark.jpg",
+          "bytes": 60448,
+          "sha256": "68f38dddbb026c27762b238b0741028c8c054df5b09f2c73508b8a8b42f92a89",
+          "format": "jpeg",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph-fallback"
+        },
+        {
+          "file": "perl/library/twitter-dark.png",
+          "bytes": 38505,
+          "sha256": "20f9c5a19f863a7b5921a065f2f799c6656467137b77b6dff29f563bb2565e7f",
+          "format": "png",
+          "width": 1200,
+          "height": 600,
+          "transparent": false,
+          "purpose": "twitter"
+        },
+        {
+          "file": "perl/library/social-square-dark.png",
+          "bytes": 44221,
+          "sha256": "d2bda1fb90f4ee86e9faa31af04c694d5ef0c6983a8a812ccb8670abc4f9ff95",
+          "format": "png",
+          "width": 1080,
+          "height": 1080,
+          "transparent": false,
+          "purpose": "social-square"
+        },
+        {
+          "file": "perl/library/github-social-dark.png",
+          "bytes": 38324,
+          "sha256": "73de7e034a800769dd94a5d5027e0ebc4bce794f95324da143424e5a3131de23",
+          "format": "png",
+          "width": 1280,
+          "height": 640,
+          "transparent": false,
+          "purpose": "github-social"
+        },
+        {
+          "file": "perl/library/site-dark.webmanifest",
+          "bytes": 714,
+          "sha256": "389db0780843aa7fa63163b3952b8d91b9df8c247358c6e04a0b1ccdbeaca269",
+          "format": "webmanifest"
+        },
+        {
+          "file": "perl/library/browserconfig-dark.xml",
+          "bytes": 236,
+          "sha256": "cec79db2f0bb97ab0d01d38ff8a33ce1ae29f4a17241fd3ef877fb7f26227047",
+          "format": "xml"
+        }
+      ]
+    },
+    {
+      "language": "perl",
+      "label": "Perl",
+      "variant": "workspace",
+      "githubColor": "#0298C3",
+      "alt": "libtmux for Perl \u2014 workspace CLI",
+      "files": [
+        {
+          "file": "perl/workspace/logo.svg",
+          "bytes": 2402,
+          "sha256": "afa5d2f90be083a47108fa6bcbd125a8a59dca4bd7bcaa379e1a4d9fb039f12f",
+          "format": "svg",
+          "width": 512,
+          "height": 512,
+          "transparent": true
+        },
+        {
+          "file": "perl/workspace/logo-16.png",
+          "bytes": 291,
+          "sha256": "351d85c923da736be1bbd54d7d4023f7f57a06c3792fc7fa57f1b5fc1d531e6d",
+          "format": "png",
+          "width": 16,
+          "height": 16,
+          "transparent": true
+        },
+        {
+          "file": "perl/workspace/logo-24.png",
+          "bytes": 324,
+          "sha256": "57561ca2175b118b0ecf85bd7512f45c2a9e9fde4eb08149e9ff3474a591851b",
+          "format": "png",
+          "width": 24,
+          "height": 24,
+          "transparent": true
+        },
+        {
+          "file": "perl/workspace/logo-32.png",
+          "bytes": 415,
+          "sha256": "b99a991661a081b19b13668480a87aa0932606dce3a44ac57c8a44ce6d6ec2d1",
+          "format": "png",
+          "width": 32,
+          "height": 32,
+          "transparent": true
+        },
+        {
+          "file": "perl/workspace/logo-48.png",
+          "bytes": 544,
+          "sha256": "69b06d03259d1fdc4fc2b2916410d6531a98ca8a45c87b0a705e610efe3369f3",
+          "format": "png",
+          "width": 48,
+          "height": 48,
+          "transparent": true
+        },
+        {
+          "file": "perl/workspace/logo-64.png",
+          "bytes": 644,
+          "sha256": "1417687560faca8157c81db2dc6823d55ae16f568425d1dddf2745358c4a6a1b",
+          "format": "png",
+          "width": 64,
+          "height": 64,
+          "transparent": true
+        },
+        {
+          "file": "perl/workspace/logo-96.png",
+          "bytes": 856,
+          "sha256": "4e7411400556e2d3d11ef48ae4d4c36172724fbdccdc40b0ad60896bb21c0728",
+          "format": "png",
+          "width": 96,
+          "height": 96,
+          "transparent": true
+        },
+        {
+          "file": "perl/workspace/logo-128.png",
+          "bytes": 1143,
+          "sha256": "357944c345556c8f3fdb2fe62b95dca6bf09334f4d5202562ec92b0cd311b4b8",
+          "format": "png",
+          "width": 128,
+          "height": 128,
+          "transparent": true
+        },
+        {
+          "file": "perl/workspace/logo-144.png",
+          "bytes": 1296,
+          "sha256": "d32d9e5df7299d66dc1b6eee8f55d455befaa663ffa0fa5411e2b83a718a08e7",
+          "format": "png",
+          "width": 144,
+          "height": 144,
+          "transparent": true
+        },
+        {
+          "file": "perl/workspace/logo-152.png",
+          "bytes": 1327,
+          "sha256": "a0b28f7ba46d220b905bf8815f878dae7af6f5891bd5a65b2bd429d10e9ed4e0",
+          "format": "png",
+          "width": 152,
+          "height": 152,
+          "transparent": true
+        },
+        {
+          "file": "perl/workspace/logo-167.png",
+          "bytes": 1504,
+          "sha256": "e408bc1dd1c93d50ecc7d2bf826f681096f71d8de16b7ebebae75e31c38fc254",
+          "format": "png",
+          "width": 167,
+          "height": 167,
+          "transparent": true
+        },
+        {
+          "file": "perl/workspace/logo-180.png",
+          "bytes": 1629,
+          "sha256": "db3a057cbcb786785f597683215a99afd38a3f210677e1c82e44b785290a9b98",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": true
+        },
+        {
+          "file": "perl/workspace/logo-192.png",
+          "bytes": 1743,
+          "sha256": "a125aed5545969265056ba609542aab4b913ce6044855ffb8465e1496ae2b92c",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": true
+        },
+        {
+          "file": "perl/workspace/logo-256.png",
+          "bytes": 2455,
+          "sha256": "128b7771c2d86d65b1a62eca898e84d0f8f8bfeb1566264b084d9d2057c6937f",
+          "format": "png",
+          "width": 256,
+          "height": 256,
+          "transparent": true
+        },
+        {
+          "file": "perl/workspace/logo-384.png",
+          "bytes": 3781,
+          "sha256": "1b6d12ab0bdcc631ed3220241a5799f1295aaa17d5797a405cbc1dfaa102ecda",
+          "format": "png",
+          "width": 384,
+          "height": 384,
+          "transparent": true
+        },
+        {
+          "file": "perl/workspace/logo-512.png",
+          "bytes": 5396,
+          "sha256": "9849bf69cd73c12805c4a5682420eba8efab87e45e3fc22269172c020c163996",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": true
+        },
+        {
+          "file": "perl/workspace/logo-1024.png",
+          "bytes": 13757,
+          "sha256": "917c6609f28ea1109a47b9c0b58486a491427fccad746ce957e8316893d13142",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": true
+        },
+        {
+          "file": "perl/workspace/favicon.ico",
+          "bytes": 17557,
+          "sha256": "077962c7ae9c06d2e2b92cbd00650b71971963689adf97c89fe9f5601e663177",
+          "format": "ico",
+          "sizes": [
+            16,
+            32,
+            48,
+            256
+          ]
+        },
+        {
+          "file": "perl/workspace/safari-pinned-tab.svg",
+          "bytes": 2402,
+          "sha256": "af04a311aca571482448a2a87ef8feb694b88bf938ceafed6f5da5227581c498",
+          "format": "svg",
+          "width": 512,
+          "height": 512,
+          "monochrome": true
+        },
+        {
+          "file": "perl/workspace/apple-touch-icon-light.png",
+          "bytes": 1310,
+          "sha256": "cbb8a5bda92e0afe0ef6f04c507398f082498657ae094e1db2dc5a2f28d315ad",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": false,
+          "purpose": "apple-touch"
+        },
+        {
+          "file": "perl/workspace/app-icon-1024-light.png",
+          "bytes": 11495,
+          "sha256": "33dfa8db735483d2fc702340fee9688c3a1ae9bdde9380e45d3d20533a271fa0",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": false,
+          "purpose": "app-icon"
+        },
+        {
+          "file": "perl/workspace/maskable-192-light.png",
+          "bytes": 1137,
+          "sha256": "17a68e7a1a6187de9fab108a58139132546137c639c4153e9bd8464730c33d99",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "perl/workspace/maskable-512-light.png",
+          "bytes": 3815,
+          "sha256": "3beb8fb175770274f5bae76d16160b6871cb7435d6e99c9e9c5cb0d9f44a0096",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "perl/workspace/mstile-150-light.png",
+          "bytes": 988,
+          "sha256": "c60c3238bdb6d8d39690d41511dcadcc86e413ae1aa9d5dac9fc19cecc5f5ed4",
+          "format": "png",
+          "width": 150,
+          "height": 150,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "perl/workspace/mstile-310-light.png",
+          "bytes": 2228,
+          "sha256": "a838968067aec3f7ec59483e4ee45db9af430f89d92487c4f82c2c9185e62b82",
+          "format": "png",
+          "width": 310,
+          "height": 310,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "perl/workspace/opengraph-light.png",
+          "bytes": 22570,
+          "sha256": "40f2389a44e88daef178544c74cdb1ae1e5746bd0942618cc3e893bb12e6bef0",
+          "format": "png",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph"
+        },
+        {
+          "file": "perl/workspace/opengraph-light.jpg",
+          "bytes": 43736,
+          "sha256": "9567ec65b895b45a0d6f4220ab75cd0808a6d3ea86a0d579f8bf456bec220f00",
+          "format": "jpeg",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph-fallback"
+        },
+        {
+          "file": "perl/workspace/twitter-light.png",
+          "bytes": 22424,
+          "sha256": "ddba10518d5c265c59b33cce25bbac8da2d5b8b4758fb5f9a1d65b0b0a83feb6",
+          "format": "png",
+          "width": 1200,
+          "height": 600,
+          "transparent": false,
+          "purpose": "twitter"
+        },
+        {
+          "file": "perl/workspace/social-square-light.png",
+          "bytes": 25292,
+          "sha256": "06c1d550d8b9bf5039cf496eb118673fbda119f51282df171abeaa32a247aaf9",
+          "format": "png",
+          "width": 1080,
+          "height": 1080,
+          "transparent": false,
+          "purpose": "social-square"
+        },
+        {
+          "file": "perl/workspace/github-social-light.png",
+          "bytes": 22840,
+          "sha256": "686b3879f5fa3ebb626400f795375a542ff25408d3c0f46e0b3cbcd6628f0dbc",
+          "format": "png",
+          "width": 1280,
+          "height": 640,
+          "transparent": false,
+          "purpose": "github-social"
+        },
+        {
+          "file": "perl/workspace/site.webmanifest",
+          "bytes": 734,
+          "sha256": "7702f7480f9f4428f1dd2888345786fb30994b6d582641476f17212aae8cc5fc",
+          "format": "webmanifest"
+        },
+        {
+          "file": "perl/workspace/browserconfig.xml",
+          "bytes": 238,
+          "sha256": "02c90c38c5d78bbcf7c8006d3c8ed22fddc040a1a2e3b43b50064f940d8964d3",
+          "format": "xml"
+        },
+        {
+          "file": "perl/workspace/apple-touch-icon-dark.png",
+          "bytes": 1285,
+          "sha256": "11542afad338f2df4a2653ec500b48e0abfefdba49c9c3fe636373542869316c",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": false,
+          "purpose": "apple-touch"
+        },
+        {
+          "file": "perl/workspace/app-icon-1024-dark.png",
+          "bytes": 11359,
+          "sha256": "2b518209191b7a13928874d8199c53fccc071a9ff85bbc65fdda36d34b3c6cc7",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": false,
+          "purpose": "app-icon"
+        },
+        {
+          "file": "perl/workspace/maskable-192-dark.png",
+          "bytes": 1122,
+          "sha256": "5c3a82918066e5801a2ff9b85a462da91f7a009cea2e46b0fd15dfd72a007739",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "perl/workspace/maskable-512-dark.png",
+          "bytes": 3776,
+          "sha256": "1e2e85d141e8548509746c8d81badea9afa47f56d20855485d7cdfc40a975b1a",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "perl/workspace/mstile-150-dark.png",
+          "bytes": 976,
+          "sha256": "02d2eebd8081a664ff565e823e54fbad0df05d06c61dcfc62a1a8c05495b951d",
+          "format": "png",
+          "width": 150,
+          "height": 150,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "perl/workspace/mstile-310-dark.png",
+          "bytes": 2180,
+          "sha256": "96bce44c4ed378fbc84773042aed91eb96d656113a978866e16eba51a23e309b",
+          "format": "png",
+          "width": 310,
+          "height": 310,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "perl/workspace/opengraph-dark.png",
+          "bytes": 22680,
+          "sha256": "ac664f292a1a811c5dd00b8b6a1487bdbfceb91f043bc4c0199466b382a2c55a",
+          "format": "png",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph"
+        },
+        {
+          "file": "perl/workspace/opengraph-dark.jpg",
+          "bytes": 41101,
+          "sha256": "e450a2d141bb4c80089d91f9ded4c8261feecaf8fa0c41e5b99a6bdcca4317ea",
+          "format": "jpeg",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph-fallback"
+        },
+        {
+          "file": "perl/workspace/twitter-dark.png",
+          "bytes": 22533,
+          "sha256": "afd27fef68ab9ab2fa363269b94ac485556981ee54958db1db6d20ba24a5fd59",
+          "format": "png",
+          "width": 1200,
+          "height": 600,
+          "transparent": false,
+          "purpose": "twitter"
+        },
+        {
+          "file": "perl/workspace/social-square-dark.png",
+          "bytes": 25379,
+          "sha256": "2c080e2560394fd5e9836bdb9eecda4a40c035c8b440d35fdf450a1b575a6cbe",
+          "format": "png",
+          "width": 1080,
+          "height": 1080,
+          "transparent": false,
+          "purpose": "social-square"
+        },
+        {
+          "file": "perl/workspace/github-social-dark.png",
+          "bytes": 22972,
+          "sha256": "fe670a178af2d1750132d552ab91f67fbde4b71b2a586f674250514f69f20cfa",
+          "format": "png",
+          "width": 1280,
+          "height": 640,
+          "transparent": false,
+          "purpose": "github-social"
+        },
+        {
+          "file": "perl/workspace/site-dark.webmanifest",
+          "bytes": 732,
+          "sha256": "cf54e6f78e7e30152e6fe277a24628514aa798055e4a64d4467ac5644445a53e",
+          "format": "webmanifest"
+        },
+        {
+          "file": "perl/workspace/browserconfig-dark.xml",
+          "bytes": 236,
+          "sha256": "cec79db2f0bb97ab0d01d38ff8a33ce1ae29f4a17241fd3ef877fb7f26227047",
+          "format": "xml"
+        }
+      ]
     }
   ],
-  "fileCount": 2064
+  "fileCount": 2154
 }
