@@ -1,4 +1,10 @@
+import { execFileSync } from 'node:child_process'
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { scanPort } from '../../scripts/gen-tmux-usage.mjs'
+import { reachableHaskellSources } from '../../scripts/lib/tmux-usage-haskell.mjs'
 import { GRAMMARS, isLibrarySource, scanSource } from '../../scripts/lib/tmux-usage-scan.mjs'
 import { builtSites, callTargets, definitionsOf, deriveUsage } from '../../scripts/lib/tmux-usage-derive.mjs'
 import { libraryScopes } from '../../scripts/lib/tmux-usage-scopes.mjs'
@@ -11,10 +17,61 @@ const sent = (scanned: Awaited<ReturnType<typeof scan>>) => scanned.functions.fl
   fn.sites.filter((site) => site.dispatch && !site.builds).map((site) => ({ function: fn.name, command: site.command, flags: site.flags })))
 
 describe('Haskell source usage', () => {
+  it('excludes unreachable private modules from public command attribution', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'haskell-public-usage-'))
+    try {
+      for (const name of ['src', 'internal']) mkdirSync(join(directory, name))
+      mkdirSync(join(directory, 'internal/LibTmux/Tests'), { recursive: true })
+      writeFileSync(join(directory, 'src/Scalar.hs'), 'module Scalar where\nimport Data.Word (Word32)\n-- | A pure scalar.\nvalue :: Word32\nvalue = 1\n')
+      writeFileSync(join(directory, 'internal/LibTmux/Tests/Hidden.hs'), 'module LibTmux.Tests.Hidden where\nimport Control.Exception\nhidden = mask_ $ send ["list-panes"]\n')
+      writeFileSync(join(directory, 'internal/Relay.hs'), 'module Relay where\nimport LibTmux.Tests.Hidden\nrelay = hidden\n')
+      execFileSync('git', ['init', '--quiet', directory])
+      execFileSync('git', ['-C', directory, 'add', '.'])
+      execFileSync('git', ['-C', directory, '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '--quiet', '-m', 'Source fixture'])
+      const revision = execFileSync('git', ['-C', directory, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+      const model = { port: 'haskell', repo: 'fixture', revision, symbols: [
+        { id: 'Scalar.value', name: 'value', kind: 'property', source: { file: 'src/Scalar.hs', line: 4 } },
+      ] }
+      const options = { port: 'haskell', model, commands, checkout: directory, known: commands,
+        dispatch: new Set<string>(), builders: undefined, guards: undefined, labels: undefined, trace: undefined }
+      const scanned = await scanPort(options)
+      expect(scanned.functions.map((fn) => fn.file)).toEqual(['src/Scalar.hs'])
+      writeFileSync(join(directory, 'src/Scalar.hs'), 'module Scalar where\nimport Relay\nvalue = relay\n')
+      execFileSync('git', ['-C', directory, 'add', '.'])
+      execFileSync('git', ['-C', directory, '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '--quiet', '-m', 'Import private dependency'])
+      model.revision = execFileSync('git', ['-C', directory, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+      model.symbols[0]!.source.line = 3
+      await expect(scanPort(options))
+        .rejects.toThrow(/unresolved or higher-order action mask_/)
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
+
+  it.each([
+    'module Scalar where\nvalue = action\n',
+    '{-# LANGUAGE PackageImports #-}\nmodule Scalar where\nimport "base" Prelude\nvalue = action\n',
+  ])('rejects unqualified same-package Prelude resolution: %s', async (source) => {
+    const sources = new Map([
+      ['src/Scalar.hs', source],
+      ['internal/Prelude.hs', 'module Prelude where\naction = send ["list-panes"]\n'],
+    ])
+    await expect(reachableHaskellSources(sources, ['src/Scalar.hs'])).rejects.toThrow(/same-package Prelude/)
+  })
+
+  it('rejects an external package import colliding with a local module', async () => {
+    const sources = new Map([
+      ['src/Scalar.hs', '{-# LANGUAGE PackageImports #-}\nmodule Scalar where\nimport "external" Hidden\nvalue = action\n'],
+      ['internal/Hidden.hs', 'module Hidden where\naction = send ["list-panes"]\n'],
+    ])
+    await expect(reachableHaskellSources(sources, ['src/Scalar.hs'])).rejects.toThrow(/package-qualified local import/)
+  })
+
   it('registers a reader and limits library inputs to the Cabal source roots', () => {
     expect(GRAMMARS.haskell).toBe('haskell')
     expect(isLibrarySource('src/LibTmux/Id.hs', 'haskell')).toBe(true)
     expect(isLibrarySource('internal/LibTmux/Internal/Process.hs', 'haskell')).toBe(true)
+    expect(isLibrarySource('internal/LibTmux/Tests/Hidden.hs', 'haskell')).toBe(true)
     expect(isLibrarySource('test-support/Fixture.hs', 'haskell')).toBe(false)
     expect(isLibrarySource('examples/typed-values/Main.hs', 'haskell')).toBe(false)
   })

@@ -32,6 +32,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { extractProject } from '../packages/api-model/src/project.ts'
 import { GRAMMARS, isLibrarySource, scanSource } from './lib/tmux-usage-scan.mjs'
+import { reachableHaskellSources } from './lib/tmux-usage-haskell.mjs'
 import { applyConditions, applyExclusions, conditionProblem, deriveUsage, partialProblems, ruleHolds, verifyClaims } from './lib/tmux-usage-derive.mjs'
 import { auditEvidence } from './lib/tmux-usage-audit.mjs'
 import { dispatcherProblems, guardProblems, preflightProblems } from './lib/tmux-usage-dispatch.mjs'
@@ -207,7 +208,10 @@ export async function scanPort({ port, model, commands, checkout, known, dispatc
   const symbols = publicSymbols(model)
   const functions = []
   const types = []
-  const sources = librarySources(checkout, model.revision, grammar)
+  const available = librarySources(checkout, model.revision, grammar)
+  const sources = grammar === 'haskell'
+    ? await reachableHaskellSources(available, model.symbols.map((symbol) => symbol.source?.file).filter(Boolean))
+    : available
   const wanted = new Set(commands)
   for (const [path, text] of sources) {
     if (grammar === 'haskell' && path.endsWith('.lhs')) throw new Error(`Haskell source usage coverage: literate input is not qualified: ${path}`)
