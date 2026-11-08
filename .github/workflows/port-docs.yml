@@ -503,6 +503,7 @@ jobs:
         with:
           version: 2026.11.3
           working_directory: port
+          cache: false
       - name: Install locked Common Lisp dependencies
         if: matrix.port == 'lisp'
         working-directory: port

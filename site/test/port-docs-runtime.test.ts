@@ -193,6 +193,7 @@ describe('Common Lisp documentation producer', () => {
     expect(setupStep).toMatch(/uses: jdx\/mise-action@[0-9a-f]{40} # v\d+\.\d+\.\d+\n/)
     expect(setupStep).toContain('version: 2026.11.3')
     expect(setupStep).toContain('working_directory: port')
+    expect(setupStep).toContain('cache: false')
 
     const installStep = workflow.slice(install, exportStep)
     expect(installStep).toContain("if: matrix.port == 'lisp'")
