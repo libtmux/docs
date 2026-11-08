@@ -12,16 +12,37 @@ const shell = readFileSync(new URL('../../.github/workflows/deploy-shell.yml', i
 const testWorkflow = readFileSync(new URL('../../.github/workflows/test.yml', import.meta.url), 'utf8')
 const publicationAudit = readFileSync(new URL('../../scripts/test-all.sh', import.meta.url), 'utf8')
 const publishRoot = readFileSync(new URL('../../scripts/publish-root.sh', import.meta.url), 'utf8')
-const sourceGuidePorts = ['ruby', 'lua', 'powershell', 'julia', 'elixir']
+const sourceGuidePorts = ['ruby', 'lua', 'powershell', 'julia', 'elixir', 'ocaml']
 
 function sourceCheckoutContract(workflow: string): void {
   for (const port of sourceGuidePorts) {
-    expect(workflow).toContain(`echo "${port}=$(jq -r .revision site/src/data/api/${port}.json)" >> "$GITHUB_OUTPUT"`)
     expect(workflow).toContain(`repository: libtmux/libtmux-${port}`)
     expect(workflow).toContain('ref: ${{ steps.integrated-sources.outputs.' + port + ' }}')
     expect(workflow).toContain(`path: .port-sources/${port}`)
   }
   expect(workflow).toContain('persist-credentials: false')
+
+  const body = /^ {8}id: integrated-sources\n {8}run: \|\n((?: {10}[^\n]*\n|\n)*)/m.exec(workflow)?.[1]
+  expect(body, 'the integrated-sources step has an executable run block').toBeDefined()
+  const directory = mkdtempSync(join(tmpdir(), 'libtmux-source-outputs-'))
+  try {
+    const models = join(directory, 'site/src/data/api')
+    mkdirSync(models, { recursive: true })
+    const revisions = Object.fromEntries(sourceGuidePorts.map((port, index) => [port, String(index + 1).repeat(40)]))
+    for (const [port, revision] of Object.entries(revisions)) writeFileSync(join(models, `${port}.json`), JSON.stringify({ revision }))
+    const output = join(directory, 'github-output')
+    writeFileSync(output, '')
+    const result = spawnSync('bash', ['-e', '-c', body!.replace(/^ {10}/gm, '')], {
+      cwd: directory, encoding: 'utf8', timeout: 1000, env: { PATH: process.env.PATH, GITHUB_OUTPUT: output },
+    })
+    expect(result.error, result.stderr).toBeUndefined()
+    expect(result.status, result.stderr).toBe(0)
+    const emitted = Object.fromEntries(readFileSync(output, 'utf8').split('\n').filter(Boolean).map((line) => {
+      const separator = line.indexOf('=')
+      return [line.slice(0, separator), line.slice(separator + 1)]
+    }))
+    expect(emitted, 'source revisions emitted to GITHUB_OUTPUT').toEqual(revisions)
+  } finally { rmSync(directory, { recursive: true, force: true }) }
 }
 
 interface ManifestResponse {
@@ -397,6 +418,15 @@ describe('port publisher contract', () => {
     expect(merge).not.toMatch(/\|\| true|2>\/dev\/null/)
   })
 
+  it.each([
+    ['missing output', testWorkflow.replace('} >> "$GITHUB_OUTPUT"', '}')],
+    ['the wrong revision field', testWorkflow.replace('jq -r .revision', 'jq -r .missing')],
+    ['an extra equals sign in the revision', testWorkflow.replace('ruby.json)"', 'ruby.json)=unexpected"')],
+    ['trailing whitespace in the revision', testWorkflow.replace('ocaml.json)"', 'ocaml.json) "')],
+  ])('rejects source revisions with %s', (_name, workflow) => {
+    expect(() => sourceCheckoutContract(workflow)).toThrow(/source revisions emitted to GITHUB_OUTPUT/)
+  })
+
   it('stages every source-bound native guide before the publication audit checks backlinks', () => {
     sourceCheckoutContract(testWorkflow)
     expect(testWorkflow).toContain('node scripts/stage-port-docs.mjs --from-source')
@@ -407,7 +437,7 @@ describe('port publisher contract', () => {
     }
     expect(stage).toContain('node scripts/stage-port-docs.mjs --cached --check')
     expect(stage.indexOf('--cached --check')).toBeGreaterThan(stage.indexOf('--from-source'))
-    for (const port of ['ruby', 'lua']) {
+    for (const port of ['ruby', 'lua', 'ocaml']) {
       expect(audit).toContain(`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}: ` + '${{ github.workspace }}/.port-sources/' + port)
     }
     expect(audit).not.toMatch(/LIBTMUX_DOCS_CHECKOUT_(POWERSHELL|JULIA|ELIXIR):/)
