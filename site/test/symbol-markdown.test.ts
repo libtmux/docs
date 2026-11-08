@@ -391,7 +391,7 @@ describe('API Markdown content parity', () => {
       const expected = [...members.filter((member) => !member.inheritedFrom), ...members.filter((member) => member.inheritedFrom)]
         .map((member) => member.name)
       const memberText = text.slice(text.search(/^## (?:Members|Inherited members)$/m))
-      const names = [...memberText.matchAll(/^- `([^`]+)` \([a-z]+\)/gm)].map((match) => match[1])
+      const names = [...memberText.matchAll(/^- `([^`]+)` \([a-z ]+\)/gm)].map((match) => match[1])
       expect(names).toEqual(expected)
       if (members.some((member) => member.inheritedFrom)) expect(text).toContain('## Inherited members')
     })
