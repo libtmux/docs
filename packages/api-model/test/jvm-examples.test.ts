@@ -4,7 +4,7 @@ import type { ApiSymbol } from '../src/model.ts'
 
 const source = { repo: 'libtmux/libtmux-java', revision: 'a'.repeat(40), releaseTag: 'v0.0.1-alpha.18' }
 const variants = ['java', 'kotlin', 'scala-direct', 'scala-cats'] as const
-const fixture = () => {
+const fixture = (launcher = true) => {
   const files = new Map<string, string>()
   const examples = variants.map((variant) => {
     const language = variant.startsWith('scala') ? 'scala' : variant as 'java' | 'kotlin'
@@ -19,7 +19,7 @@ const fixture = () => {
   const manifest = {
     schemaVersion: 1, examples,
     variants: Object.fromEntries(variants.map((variant) => [variant, { files:
-      ['settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'run.sh'].map((path) => {
+      ['settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', ...(launcher ? ['run.sh'] : [])].map((path) => {
         const sourceFile = `examples/api/${variant}/${path}`
         files.set(sourceFile, path === 'settings.gradle.kts'
           ? 'rootProject.name = "api-example"\n\nincludeBuild("libtmux-source")\n'
@@ -74,6 +74,34 @@ describe('complete JVM API programs', () => {
     }
   })
 
+  it.each(['java', 'kotlin', 'scala'] as const)('shows %s programs that start their own server without a launcher', (port) => {
+    const { manifest, symbols, files, read } = fixture(false)
+    attachCompleteJvmExamples(symbols, port, read, source)
+    for (const [i, program] of manifest.examples.entries()) {
+      const blocks = symbols[i].doc?.examples
+      if (program.language !== port) { expect(blocks).toBeUndefined(); continue }
+      expect(blocks).toHaveLength(6)
+      const [, , properties, code, command, output] = blocks!
+      expect(manifest.variants[program.variant].files.map((file) => file.path))
+        .toEqual(['settings.gradle.kts', 'build.gradle.kts', 'gradle.properties'])
+      expect(properties.code).toBe(files.get(manifest.variants[program.variant].files[2].sourceFile))
+      expect(code.lang).toBe(port)
+      expect(code.code).toBe(files.get(program.sourceFile))
+      expect(command.code).toBe(`$ gradle --console=plain --quiet installDist -PexampleMain=${program.mainClass} && \\\n  build/install/api-example/bin/api-example\n`)
+      expect(output).toEqual({ lang: 'text', intro: 'Expected output:', code: program.expectedOutput })
+      const prose = blocks!.map((block) => `${block.intro ?? ''}\n${block.code}`).join('\n')
+      expect(prose).not.toMatch(/run\.sh|launcher|fixture/)
+    }
+  })
+
+  it('still says launcher where the revision ships one', () => {
+    const { symbols, read } = fixture()
+    attachCompleteJvmExamples(symbols, 'java', read, source)
+    const blocks = symbols[0].doc!.examples!
+    expect(blocks[4].intro).toContain("launcher's server")
+    expect(blocks[5].code).toContain('sh run.sh build/install/api-example/bin/api-example')
+  })
+
   it('keeps older source revisions without a manifest unchanged', () => {
     const { symbols } = fixture()
     const before = structuredClone(symbols)
@@ -118,9 +146,11 @@ describe('complete JVM API programs', () => {
   })
 
   it('rejects incomplete setup, missing source bytes and unsafe commands or paths', () => {
-    const setup = fixture()
-    setup.manifest.variants.java.files.pop()
-    expect(() => attachCompleteJvmExamples(setup.symbols, 'java', setup.read, source)).toThrow('Invalid JVM example setup')
+    for (const launcher of [true, false]) {
+      const setup = fixture(launcher)
+      setup.manifest.variants.java.files.shift()
+      expect(() => attachCompleteJvmExamples(setup.symbols, 'java', setup.read, source)).toThrow('Invalid JVM example setup')
+    }
     const missing = fixture()
     missing.files.delete(missing.manifest.examples[0].sourceFile)
     expect(() => attachCompleteJvmExamples(missing.symbols, 'java', missing.read, source)).toThrow('Missing complete JVM example file')

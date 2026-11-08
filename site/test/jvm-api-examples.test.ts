@@ -40,7 +40,9 @@ describe('verified complete Java-family API programs', () => {
     const exported = fromMarkdown(markdown).children.filter((node) => node.type === 'code')
     expect(symbol.source.revision).toBe(example.sourceRevision)
     expect(example.page).toBe(`ports/${example.port}/reference/${symbol.slug}`)
-    expect(example.files).toHaveLength(5)
+    // Four setup files and the program until libtmux-java#142 removed run.sh, three after it.
+    expect([4, 5]).toContain(example.files.length)
+    const programFile = example.files.length - 1
     for (const file of example.files) {
       // settings and build are the port's files rewritten for the Maven Central release, so they cite no source.
       const rewritten = file.name === 'settings.gradle.kts' || file.name === 'build.gradle.kts'
@@ -74,11 +76,11 @@ describe('verified complete Java-family API programs', () => {
       expect(blocks[index].lang).toBe('console')
       expect(exported.some((entry) => entry.value + '\n' === blocks[index].code)).toBe(true)
     }
-    const program = blocks[example.files[4].block]
+    const program = blocks[example.files[programFile].block]
     expect(program.lang).toBe(example.port)
     if (example.sourceProgramId.startsWith('scala-cats-')) expect(program.code).toContain('extends IOApp')
     if (example.sourceProgramId.startsWith('scala-direct-')) expect(program.code).toContain('Using.resource')
-    if (example.port === 'java') expect(program.code).toContain('try (Server server = Server.open(')
-    if (example.port === 'kotlin') expect(program.code).toContain('withServer(')
+    if (example.port === 'java') expect(program.code).toMatch(/try \(Server server = Server\.(?:open|start)\(/)
+    if (example.port === 'kotlin') expect(program.code).toMatch(/with(?:Private)?Server\b/)
   })
 })
