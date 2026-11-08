@@ -399,7 +399,7 @@ describe('the replay component', () => {
     return { win, document: win.document as unknown as Document, root }
   }
 
-  const visible = (document: Document, selector: string) => [...document.querySelectorAll<HTMLElement>(selector)].filter((element) => !element.hidden)
+  const visible = (document: Document, selector: string) => [...document.querySelectorAll<HTMLElement>(selector)].filter((element) => !element.hidden && !element.hasAttribute('data-off'))
   const turnsShown = (document: Document) => visible(document, 'article.mcp-turn, .mcp-turn--answer').length
   const frameShown = (document: Document) => visible(document, '[data-frame]').map((frame) => Number(frame.dataset.frame))
   const click = (win: Window, element: Element) => element.dispatchEvent(new win.MouseEvent('click', { bubbles: true }) as unknown as Event)
@@ -490,13 +490,17 @@ describe('the replay component', () => {
 
   it('without script shows the whole chat, every result and the final state, and no controls', async () => {
     const { document } = await mount('rs')
-    expect(turnsShown(document)).toBe(CALLS.rs + 1)
+    // The markup is drawn at the start; the stylesheet shows every call and the last frame, and hides the bar, where there is no script.
+    expect(document.querySelectorAll('article.mcp-turn, .mcp-turn--answer')).toHaveLength(CALLS.rs + 1)
     expect(document.querySelectorAll('details.mcp-result[open]')).toHaveLength(CALLS.rs)
-    expect(frameShown(document)).toEqual([CALLS.rs])
     expect(document.querySelectorAll('[data-frame]')).toHaveLength(CALLS.rs + 1)
-    // The bar is in the markup so binding it moves nothing; the stylesheet hides it from a page with no script.
-    expect(document.querySelector('[data-count]')!.textContent).toBe(`${CALLS.rs}/${CALLS.rs}`)
+    expect(document.querySelectorAll('[hidden]:not([data-pin], [data-tip])')).toHaveLength(0)
     expect(document.querySelector('[data-live]')).toBeNull()
+    const css = readFileSync(new URL('../src/styles/mcp-replay.css', import.meta.url), 'utf8')
+    expect(css).toMatch(/html:not\(\[data-js\]\) \.mcp-replay__controls/)
+    expect(css).toMatch(/html:not\(\[data-js\]\) \.mcp-replay__head/)
+    expect(css).toMatch(/html:not\(\[data-js\]\) \.mcp-replay \.mcp-frame:not\(:last-child\) \{\s*display: none;/)
+    expect(css).not.toMatch(/html:not\(\[data-js\]\)[^{]*\[data-off\]/)
   })
 
   it('draws the status line, the unsized list and the panes of each state from the results of a recording with no tmux state', async () => {
@@ -630,7 +634,7 @@ describe('the replay component', () => {
     expect(turnsShown(document)).toBe(CALLS.ts + 1)
     expect(frameShown(document)).toEqual([CALLS.ts])
     expect(action(document, 'play').getAttribute('aria-label')).toBe('Replay')
-    expect(document.querySelectorAll('details.mcp-result[open]')).toHaveLength(0)
+    expect(document.querySelectorAll('details.mcp-result[open]'), 'a finished replay keeps its results open, as the page drew them').toHaveLength(CALLS.ts)
     expect((document.querySelector('[data-controls]') as HTMLElement).hidden).toBe(false)
   })
 
@@ -714,11 +718,29 @@ describe('the replay component', () => {
     expect(action(document, 'play').getAttribute('aria-label')).toBe('Play')
   })
 
-  it('shows the header and the controls only once script has run', async () => {
-    const before = await mount('ts')
-    expect((before.document.querySelector('[data-head]') as HTMLElement).hidden).toBe(true)
-    const after = await mount('ts', { run: true, reduced: true })
-    expect((after.document.querySelector('[data-head]') as HTMLElement).hidden).toBe(false)
+  it('is drawn at the state the script first shows, so binding the script changes nothing on screen', async () => {
+    const onScreen = (document: Document) => ({
+      turns: visible(document, 'article.mcp-turn, .mcp-turn--answer').map((turn) => turn.dataset.turn),
+      frames: frameShown(document),
+      count: document.querySelector('[data-count]')!.textContent,
+      head: (document.querySelector('[data-head]') as HTMLElement).hidden,
+      controls: (document.querySelector('[data-controls]') as HTMLElement).hidden,
+      done: [...document.querySelectorAll('[data-mark].is-done')].map((mark) => mark.getAttribute('data-mark')),
+      current: document.querySelector('[data-mark][aria-current="step"]')?.getAttribute('data-mark'),
+      open: document.querySelectorAll('details.mcp-result[open]').length > 0 && visible(document, 'article.mcp-turn').length > 0,
+    })
+    const drawn = onScreen((await mount('ts')).document)
+    const bound = onScreen((await mount('ts', { run: true, reduced: false, interval: 100000 })).document)
+    expect(drawn.turns, 'the prompt alone').toEqual([])
+    expect(drawn.frames).toEqual([0])
+    expect(drawn.count).toBe(`0/${CALLS.ts}`)
+    expect(bound).toEqual(drawn)
+  })
+
+  it('draws the header and the bar from the first paint, hiding them from a page with no script by its stylesheet', async () => {
+    const { document } = await mount('ts')
+    expect((document.querySelector('[data-head]') as HTMLElement).hidden).toBe(false)
+    expect((document.querySelector('[data-controls]') as HTMLElement).hidden).toBe(false)
   })
 
   it('does not pin when the click is on a link', async () => {

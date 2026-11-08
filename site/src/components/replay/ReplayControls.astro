@@ -6,7 +6,7 @@
  * recorded, opened as a popover. A host that says what each dot shows
  * (`ReplayOptions.tip`) gets a tooltip over the dot a pointer or focus is on. The markup is what
  * `lib/replay-player.ts` binds, so the MCP replay and the Core API player
- * share both. It is drawn at the step the host first shows, and takes its
+ * share both. It is drawn at the state before the first call, and takes its
  * place from the first paint, so binding it moves nothing; a page without
  * script (`html:not([data-js])`) hides it and keeps no dead buttons.
  */
@@ -19,12 +19,12 @@ interface Props {
   marks: string[]
   /** The id of the popover in the `info` slot that says how the run was recorded. */
   info?: string
-  /** The step the page is drawn at before the script binds: 0 for a player that starts from the first, the last for one drawn finished. */
-  at?: number
   /** How many of the calls the page first plays when a choice of the reader's drops the last (the dots and the count are drawn for those); every call by default. */
   playable?: number
 }
-const { start, marks, info, at = 0, playable = marks.length } = Astro.props as Props
+const { start, marks, info, playable = marks.length } = Astro.props as Props
+// The page is drawn at the state before the first call, where the player starts.
+const at = 0
 const total = playable
 ---
 <div class="mcp-replay__controls" data-controls>
