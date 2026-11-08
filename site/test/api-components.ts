@@ -35,12 +35,13 @@ export async function apiComponents() {
   const type = await compile('../src/components/api/ApiType.astro', {
     './SymbolName.astro': name, './ApiKeyword.astro': keyword,
     '@libtmux/api-model': new URL('../../packages/api-model/src/index.ts', import.meta.url).href,
+    '@libtmux/api-model/reference': new URL('../../packages/api-model/src/reference.ts', import.meta.url).href,
     '../../lib/code-layout': bridge,
   })
   const doc = await compile('../src/components/api/ApiDoc.astro', { '../../lib/tmux-links': bridge, '../../lib/mention-badge': new URL('../src/lib/mention-badge.ts', import.meta.url).href, '../../lib/symbol-form': new URL('../src/lib/symbol-form.ts', import.meta.url).href })
   const overloads = await compile('../src/components/api/ApiFieldOverloads.astro')
   const commands = await compile('../src/components/api/ApiCommandParameters.astro', {
-    '@libtmux/api-model': bridge, '../../lib/api-sections': bridge, './ApiType.astro': type, './ApiDoc.astro': doc, './ApiFieldOverloads.astro': overloads,
+    '@libtmux/api-model': bridge, '@libtmux/api-model/reference': bridge, '../../lib/api-sections': bridge, './ApiType.astro': type, './ApiDoc.astro': doc, './ApiFieldOverloads.astro': overloads,
   })
   const members = await compile('../src/components/api/ApiScalarMembers.astro', { '../../lib/api-sections': bridge, './ApiDoc.astro': doc, './ApiType.astro': type })
   const load = async (url: string) => (await import(/* @vite-ignore */ url)).default

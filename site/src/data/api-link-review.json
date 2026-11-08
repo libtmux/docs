@@ -1,5 +1,11 @@
 {
   "links": [
+    {"label":"Perl modules and packages","url":"https://perldoc.perl.org/5.44.0/perlmod","heading":"perlmod"},
+    {"label":"Perl objects and classes","url":"https://perldoc.perl.org/5.44.0/perlobj","heading":"perlobj"},
+    {"label":"Perl method invocation","url":"https://perldoc.perl.org/5.44.0/perlobj#Method-Invocation","heading":"# Method Invocation"},
+    {"label":"Perl exceptions","url":"https://perldoc.perl.org/5.44.0/functions/die","heading":"die - Perldoc Browser"},
+    {"label":"Perl inheritance","url":"https://perldoc.perl.org/5.44.0/perlobj#Inheritance","heading":"# Inheritance"},
+    {"label":"Preparing Perl distributions","url":"https://perldoc.perl.org/5.44.0/perlnewmod","heading":"perlnewmod"},
     {"label":"CMake packages","url":"https://cmake.org/cmake/help/latest/manual/cmake-packages.7.html","heading":"cmake-packages(7)"},
     {"label":"Cargo packages and targets","url":"https://doc.rust-lang.org/cargo/reference/cargo-targets.html","heading":"Cargo Targets"},
     {"label":"orphan rules","url":"https://doc.rust-lang.org/error_codes/E0117.html","heading":"Error code E0117"},

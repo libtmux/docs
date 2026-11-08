@@ -24,6 +24,19 @@ const elixirDocs = (page: string) => `https://elixir.hexdocs.pm/${page}`
 const swiftBook = (page: string) => `https://docs.swift.org/latest/documentation/the-swift-programming-language/${page}/`
 
 export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> = {
+  perl: {
+    module: term('A loadable Perl source unit, normally a .pm file loaded with use or require.', 'Perl modules and packages', 'https://perldoc.perl.org/5.44.0/perlmod', 'Namespace names use ::; source paths use directories, such as LibTmux/Selection.pm. One distribution can provide many modules.'),
+    class: term('A Perl package used as the class of a blessed reference.', 'Perl objects and classes', 'https://perldoc.perl.org/5.44.0/perlobj', 'LibTmux uses ordinary packages and bless. Selection objects retain native array-reference behavior; their documented methods provide validation and filtering.'),
+    method: term('A Perl subroutine invoked through a class name or object reference with ->.', 'Perl method invocation', 'https://perldoc.perl.org/5.44.0/perlobj#Method-Invocation', 'The invocant is the first positional argument. Read the signature and method documentation for the remaining arguments, return value and I/O behavior.'),
+    exception: term('A typed Perl value thrown with die and caught by an exception handler.', 'Perl exceptions', 'https://perldoc.perl.org/5.44.0/functions/die', 'LibTmux throws blessed error objects with diagnostic fields and readable stringification. Acquisition failures remain errors rather than empty results.'),
+    inherited: term('A method found through Perl package inheritance.', 'Perl inheritance', 'https://perldoc.perl.org/5.44.0/perlobj#Inheritance', 'The reference names its declaring package. The inherited method keeps that package’s documented return, ownership and I/O contract.'),
+    async: {
+      definition: 'An operation returning a Future through the optional LibTmux-Async distribution.',
+      detail: 'Drive completion with the caller-owned IO::Async loop. Cancelling a Future and completing resource cleanup are separate outcomes; successful close completion proves cleanup.',
+      references: [{ title: 'Future', url: 'https://metacpan.org/pod/Future' }, { title: 'IO::Async::Loop', url: 'https://metacpan.org/pod/IO::Async::Loop' }],
+    },
+    package: term('The installable Perl distribution supplying this API.', 'Preparing Perl distributions', 'https://perldoc.perl.org/5.44.0/perlnewmod', 'The package badge names a distribution such as LibTmux-Async. A Perl package declaration introduces a namespace; one distribution can contain several namespaces.'),
+  },
   scala: {
     module: term('A singleton object that groups Scala declarations.', 'Scala singleton objects', scalaTour('singleton-objects'), 'The module badge represents object declarations here. Its members belong to that object; the label does not identify a separately installed artifact.'),
     class: term('A Scala class that defines instances, constructors and members.', 'Scala classes', scalaTour('classes'), 'Traits and case classes have their own declaration syntax; read the displayed signature for those distinctions.'),

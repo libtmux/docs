@@ -36,6 +36,7 @@ async function signatureComponent() {
   const type = await compile('../src/components/api/ApiType.astro', {
     './SymbolName.astro': name, './ApiKeyword.astro': keyword,
     '@libtmux/api-model': new URL('../../packages/api-model/src/index.ts', import.meta.url).href,
+    '@libtmux/api-model/reference': new URL('../../packages/api-model/src/reference.ts', import.meta.url).href,
     '../../lib/code-layout': new URL('../src/lib/code-layout.ts', import.meta.url).href,
   })
   const source = readFileSync(new URL('../src/components/api/ApiEntry.astro', import.meta.url), 'utf8')
