@@ -94,7 +94,7 @@
   ],
   "port": "ocaml",
   "repo": "libtmux/libtmux-ocaml",
-  "revision": "ade2f9787024a5426710cec06f864648c217263c",
+  "revision": "a111168bceee2085f0cee5efe784d8f446011ba1",
   "schemaVersion": 1,
   "symbols": {
     "Libtmux_eio.Client.break_pane": [
