@@ -1,4 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { createMarkdownProcessor } from '@astrojs/markdown-remark'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -109,5 +110,28 @@ describe('stage --check compares badge files', () => {
     writeFileSync(join(directory, 'abc123abc123.svg'), '<svg>a</svg>')
     writeFileSync(join(directory, 'other-port.svg'), '<svg>b</svg>')
     expect(badgesStale(new Map([...files, ['ruby/index.md', '# x']]), directory)).toBe(false)
+  })
+})
+
+describe('badge URLs in a rendered guide', () => {
+  afterEach(() => vi.unstubAllEnvs())
+
+  const render = async (port: string) => {
+    vi.stubEnv('LIBTMUX_DOCS_PORT', port)
+    vi.stubEnv('LIBTMUX_DOCS_VERSION', 'latest')
+    vi.stubEnv('LIBTMUX_DOCS_ROOT', '')
+    vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '')
+    vi.resetModules()
+    const { rehypeSiteRoot } = await import('../src/plugins/rehype-site-root.mjs')
+    const processor = await createMarkdownProcessor({ rehypePlugins: [rehypeSiteRoot], syntaxHighlight: false })
+    return (await processor.render('![x](/badges/abc.svg)', { frontmatter: { port: 'ruby' } })).code
+  }
+
+  it('serves a port build\'s badges from its own mount', async () => {
+    expect(await render('ruby')).toContain('src="/ruby/latest/badges/abc.svg"')
+  })
+
+  it('serves badges from the root when no port is being built', async () => {
+    expect(await render('')).toContain('src="/badges/abc.svg"')
   })
 })
