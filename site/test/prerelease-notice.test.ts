@@ -12,7 +12,7 @@ import { withPortRoot, withRoot } from '../src/lib/site-root'
 import { buildTarget } from '../src/lib/versions'
 import { renderedTargets } from '../src/lib/inventory-targets'
 import { tmuxInventoryVersion } from '../src/lib/inventory-links'
-import { targetKey } from '@libtmux/api-model'
+import { targetKey } from '@libtmux/api-model/reference'
 
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
 const noticeSource = readFileSync(new URL('../src/components/PrereleaseNotice.astro', import.meta.url), 'utf8')

@@ -2,7 +2,7 @@ import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { readInventory, targetEntries, targetKey } from '@libtmux/api-model'
+import { readInventory, targetEntries, targetKey } from '@libtmux/api-model/reference'
 import { apiInventoryIdentity, installFragmentAlias, mergeTargets, renderedTargets, type InventoryPage } from '../src/lib/inventory-targets'
 import type { ApiSymbol } from '@libtmux/api-model'
 import { collectInventoryTargets, publishAssembledInventories } from '../src/lib/inventory-publisher'

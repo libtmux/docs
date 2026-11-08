@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { isMemberOwner as sharedMemberOwner, OWNER_KINDS as sharedOwnerKinds, ownersOf as proseOwnersOf, membersOf, navSidecarFor, SymbolIndex, type ApiModel, type ApiSymbol } from '@libtmux/api-model'
+import { isMemberOwner as sharedMemberOwner, OWNER_KINDS as sharedOwnerKinds, ownersOf as proseOwnersOf, membersOf, navSidecarFor, SymbolIndex, type ApiModel, type ApiSymbol } from '@libtmux/api-model/reference'
 import { API_MODELS, API_NAV, isMemberOwner, OWNER_KINDS, ownersOf } from '../src/lib/api-models'
 import { membersByTypeFor, navTreeFor, referenceTreeFor } from '../src/lib/api-tree'
 import { searchApi } from '../src/lib/api-search'

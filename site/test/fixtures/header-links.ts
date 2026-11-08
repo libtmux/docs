@@ -25,6 +25,17 @@ export interface ExpectedLinks {
 }
 
 export const LINKS: Record<string, ExpectedLinks> = {
+  perl: {
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-perl/packages/core', 'https://github.com/libtmux/libtmux-perl/tree/master/packages/core']],
+    indexed: true,
+    rows: [
+      ['source', 'LibTmux', 'packages/core', 'https://github.com/libtmux/libtmux-perl/tree/master/packages/core', ['LibTmux']],
+      ['source', 'LibTmux-Async', 'packages/async', 'https://github.com/libtmux/libtmux-perl/tree/master/packages/async', ['LibTmux-Async']],
+      ['source', 'libtmux-perl', 'libtmux/libtmux-perl', 'https://github.com/libtmux/libtmux-perl', ['repository']],
+      ['source', 'LibTmux-Workspace', 'packages/workspace', 'https://github.com/libtmux/libtmux-perl/tree/master/packages/workspace', ['LibTmux-Workspace']],
+      ['source', 'libtmux-workspace', 'command · packages/workspace/bin/libtmux-workspace', 'https://github.com/libtmux/libtmux-perl/blob/master/packages/workspace/bin/libtmux-workspace', ['libtmux-workspace']],
+    ],
+  },
   py: {
     actions: [['source', 'GitHub', 'GitHub: tmux-python/libtmux', 'https://github.com/tmux-python/libtmux'],
       ['package', 'PyPI', 'PyPI: libtmux package', 'https://pypi.org/project/libtmux/']],

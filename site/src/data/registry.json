@@ -157,6 +157,36 @@
       "version": "0.1.0",
       "release": "0.1.0",
       "tag": "0.1.0"
+    },
+    "perl": {
+      "status": "unpublished",
+      "version": null,
+      "release": null,
+      "tag": null,
+      "maturity": "unreleased",
+      "packages": {
+        "LibTmux": {
+          "status": "unpublished",
+          "version": null,
+          "release": null,
+          "tag": null,
+          "maturity": "unreleased"
+        },
+        "LibTmux-Async": {
+          "status": "unpublished",
+          "version": null,
+          "release": null,
+          "tag": null,
+          "maturity": "unreleased"
+        },
+        "LibTmux-Workspace": {
+          "status": "unpublished",
+          "version": null,
+          "release": null,
+          "tag": null,
+          "maturity": "unreleased"
+        }
+      }
     }
   }
 }

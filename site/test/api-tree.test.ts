@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { Window } from 'happy-dom'
 import { describe, expect, it, vi } from 'vitest'
-import { compareMembers, membersOf, memberSignals } from '@libtmux/api-model'
+import { compareMembers, membersOf, memberSignals } from '@libtmux/api-model/reference'
 import mentions from '../src/data/mentions.json'
 import { API_MODELS, API_NAV, OWNER_KINDS, topLevelTypesOf } from '../src/lib/api-models'
 import { bucketForSymbol, firstEntry, membersByType, navTree, referenceNavigation, referenceIndexSections } from '../src/lib/api-tree'

@@ -11,7 +11,7 @@ import { PORT_BY_SLUG } from '../site/src/lib/ports.ts'
 export const RECORD = 'build-provenance.json'
 const SHA = /^[0-9a-f]{40}$/
 const DIGEST = /^[0-9a-f]{64}$/
-const NATIVE_GENERATOR_PORTS = new Set(['ruby', 'lua', 'powershell', 'julia'])
+const NATIVE_GENERATOR_PORTS = new Set(['ruby', 'lua', 'powershell', 'julia', 'perl'])
 const segment = /^[a-zA-Z0-9][a-zA-Z0-9._-]*$/
 const fail = (message) => { throw new Error(`publication-provenance: ${message}`) }
 const check = (condition, message) => { if (!condition) fail(message) }

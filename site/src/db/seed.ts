@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite'
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { CONCEPTS } from '@libtmux/api-model'
+import { CONCEPTS } from '@libtmux/api-model/reference'
 import { DB_PATH, MODEL_DIR, SCHEMA_PATH, SITE_ROOT } from './paths'
 import { PORTS } from '../lib/ports'
 

@@ -22,9 +22,11 @@ describe('integrated guide inputs', () => {
     const git = (...args: string[]) => execFileSync('git', ['-C', checkout, ...args], { encoding: 'utf8', stdio: 'pipe' }).trim()
     try {
       git('init', '-q')
-      for (const path of Object.keys(stagedRoutesFor('lua'))) {
+      const paths = Object.keys(stagedRoutesFor('lua'))
+      const contents = new Map(paths.map((path, index) => [path, `# Integrated guide ${index}\n\nUTF-8: café λ\nblob 0\n\0\n`]))
+      for (const path of paths) {
         mkdirSync(dirname(join(checkout, path)), { recursive: true })
-        writeFileSync(join(checkout, path), '# Integrated guide\n')
+        writeFileSync(join(checkout, path), contents.get(path)!)
       }
       git('add', '.')
       git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'integrated')
@@ -36,7 +38,7 @@ describe('integrated guide inputs', () => {
       const artifact = artifactFromRevision(port, checkout, revision)
       expect(artifact.source).toEqual({ repository: port.repo, revision })
       expect(artifact.guides.length).toBe(Object.keys(stagedRoutesFor('lua')).length)
-      expect(artifact.guides.every((guide: { content: string }) => guide.content === '# Integrated guide\n')).toBe(true)
+      for (const guide of artifact.guides) expect(guide.content).toBe(contents.get(guide.path))
     } finally {
       rmSync(checkout, { recursive: true, force: true })
     }
@@ -128,7 +130,12 @@ describe('staged port guide links', () => {
     expect(index).toContain('"label":"Overview","order":1')
     const cards = JSON.parse(/^cards: (.+)$/m.exec(index)![1])
     expect(cards[0].label).toBe('Getting started')
-    expect(cards[1].label).toBe('Attaching to tmux')
+    expect(cards[1].label).toBe(port === 'perl' ? 'Installation' : 'Attaching to tmux')
+    if (port === 'perl') {
+      const example = files.get('perl/examples/orchestration/index.md')!
+      const body = /^---\n[\s\S]*?\n---\n\n([\s\S]*)$/.exec(example)![1]
+      expect(body).toMatch(/^Constructing `LibTmux::Server`/)
+    }
     for (const section of ['examples', 'topics']) {
       const page = files.get(`${port}/${section}/index.md`)
       if (!page) continue

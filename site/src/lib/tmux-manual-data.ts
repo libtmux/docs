@@ -1,5 +1,5 @@
 /** Versioned tmux command syntax and manual text, extracted together. */
-import { CONCEPTS, conceptsFor } from '@libtmux/api-model'
+import { CONCEPTS, conceptsFor } from '@libtmux/api-model/reference'
 import { fromHtml } from 'hast-util-from-html'
 import { select, selectAll, type Element, type Nodes } from 'astro-expressive-code/hast'
 import pins from '../data/tmux/versions.json'

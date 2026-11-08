@@ -1,5 +1,5 @@
 /** The glossary pages served beside each available API reference. */
-import { symbolsForProduct } from '@libtmux/api-model'
+import { symbolsForProduct } from '@libtmux/api-model/reference'
 import { API_MODELS } from './api-models.ts'
 import { apiGlossary, API_GLOSSARY_PATH } from './api-glossary.ts'
 import { buildLocale, DEFAULT_LOCALE } from '../i18n/locales.ts'

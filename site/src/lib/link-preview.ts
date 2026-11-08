@@ -1,9 +1,10 @@
-import { docSummaryText, sourceUrl, type ApiModel, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
+import { docSummaryText, sourceUrl, type ApiModel, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model/reference'
 import { productApiHref, productApiIndex } from './product-api'
 import { nativePackageName, nativeShortName } from './native-name'
 import { PORT_BY_SLUG } from './ports'
 import { apiGlossary } from './api-glossary'
-import { codeLang, highlightTokens, type CodeHighlight } from './highlight'
+import { codeLang } from './code-language'
+import type { CodeHighlight } from './highlight'
 import { linkPreviewTarget } from './link-preview-paint'
 import { tmuxEntityHref } from './tmux-links'
 import { tmuxManual, tmuxManualEntities, tmuxManualEntityHref, tmuxManualUrl, type TmuxManualEntity } from './tmux-manual-data'
@@ -105,6 +106,7 @@ export function symbolPreview(model: ApiModel, symbol: ApiSymbol, version: strin
 /** Highlight at endpoint generation without putting a highlighter in the browser. */
 export async function highlightedPreview(preview: LinkPreview): Promise<LinkPreview> {
   if (!preview.signature) return preview
+  const { highlightTokens } = await import('./highlight')
   return { ...preview, signatureHighlight: await highlightTokens(preview.signature, preview.signatureLanguage ?? 'text') }
 }
 

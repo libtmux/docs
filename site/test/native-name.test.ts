@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model'
+import { qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model/reference'
 import { API_MODELS } from '../src/lib/api-models'
 import { symbolPreview } from '../src/lib/link-preview'
 import { nativePackageName, nativeQualifiedName, nativeShortName } from '../src/lib/native-name'
@@ -197,7 +197,7 @@ describe('short names', () => {
   })
 
   it('are the owner, a separator that the language writes, and the member, for every symbol of every port', { timeout: 30_000 }, () => {
-    const separators: Record<string, string[]> = { rs: ['::'], cxx: ['::'], ruby: ['::', '.', '#'], lua: ['.', ':'], powershell: ['\\'] }
+    const separators: Record<string, string[]> = { perl: ['::'], rs: ['::'], cxx: ['::'], ruby: ['::', '.', '#'], lua: ['.', ':'], powershell: ['\\'] }
     for (const [port, model] of Object.entries(API_MODELS)) {
       const owners = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
       for (const symbol of model.symbols) {

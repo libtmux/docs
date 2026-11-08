@@ -1,6 +1,6 @@
 /** tmux options, hooks and format variables, extracted for each pinned release. */
 import { createHash } from 'node:crypto'
-import { CONCEPTS, conceptsFor, type ApiSymbol } from '@libtmux/api-model'
+import { CONCEPTS, conceptsFor, type ApiSymbol } from '@libtmux/api-model/reference'
 import { API_MODELS } from './api-models'
 import pins from '../data/tmux/versions.json'
 import v32 from '../data/tmux/catalog/3.2a.json'

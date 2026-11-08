@@ -7,7 +7,7 @@ import { resolvePortBody, resolvePortContent } from '../src/lib/workspace-shared
 import { remarkPortCode, resolvePortCode } from '../src/plugins/remark-port-code.mjs'
 import { rehypeSiteRoot } from '../src/plugins/rehype-site-root.mjs'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
-import { proseMentions } from '@libtmux/api-model'
+import { proseMentions } from '@libtmux/api-model/reference'
 import { proseHref } from '../src/lib/docs-paths'
 import { docsEntriesAvailable, docsEntryAvailable } from '../src/lib/page-port-links'
 import { PORT_BY_SLUG } from '../src/lib/ports'

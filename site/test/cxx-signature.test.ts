@@ -4,7 +4,7 @@ import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window, type Element } from 'happy-dom'
-import { SymbolIndex, type ApiModel, type ApiSymbol } from '@libtmux/api-model'
+import { SymbolIndex, type ApiModel, type ApiSymbol } from '@libtmux/api-model/reference'
 import { nativeSignatureText } from '../src/lib/api-sections'
 import { apiSignatureLayouts } from '../src/lib/code-layout'
 

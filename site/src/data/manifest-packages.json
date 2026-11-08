@@ -142,14 +142,14 @@
     },
     "elixir": {
       "repo": "libtmux/libtmux-elixir",
-      "revision": "149565c9f04e043836191c8a7ff32a8ac39572ab",
+      "revision": "6e6e88e886bdd9267fcd8be66f561dc5d5462476",
       "distributions": [
         {
           "name": "libtmux",
           "version": "0.0.1-alpha.1",
           "manifest": "mix.exs",
           "repo": "libtmux/libtmux-elixir",
-          "revision": "149565c9f04e043836191c8a7ff32a8ac39572ab"
+          "revision": "6e6e88e886bdd9267fcd8be66f561dc5d5462476"
         }
       ],
       "units": []
@@ -733,6 +733,41 @@
         {
           "unit": "target",
           "name": "TmuxWorkspace"
+        }
+      ]
+    },
+    "perl": {
+      "repo": "libtmux/libtmux-perl",
+      "revision": "fa3df0ceb4320442064ef738c2ea37df187af582",
+      "distributions": [
+        {
+          "name": "LibTmux",
+          "version": "0.001_001",
+          "manifest": "packages/core/Makefile.PL",
+          "repo": "libtmux/libtmux-perl",
+          "revision": "fa3df0ceb4320442064ef738c2ea37df187af582"
+        },
+        {
+          "name": "LibTmux-Async",
+          "version": "0.001_001",
+          "manifest": "packages/async/Makefile.PL",
+          "repo": "libtmux/libtmux-perl",
+          "revision": "fa3df0ceb4320442064ef738c2ea37df187af582"
+        },
+        {
+          "name": "LibTmux-Workspace",
+          "version": "0.001_001",
+          "manifest": "packages/workspace/Makefile.PL",
+          "repo": "libtmux/libtmux-perl",
+          "revision": "fa3df0ceb4320442064ef738c2ea37df187af582"
+        }
+      ],
+      "units": [
+        {
+          "unit": "command",
+          "name": "libtmux-workspace",
+          "path": "packages/workspace/bin/libtmux-workspace",
+          "file": true
         }
       ]
     }

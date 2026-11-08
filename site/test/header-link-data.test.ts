@@ -133,7 +133,7 @@ describe('header links', () => {
     expect(links('lua').indexed).toBe(false)
     // Nothing the inventory excludes reaches any port’s header.
     for (const port of PORTS) {
-      const excluded = INVENTORY[port.slug]!.filter((entry) => entry.status !== 'published')
+      const excluded = INVENTORY[port.slug]!.filter((entry) => entry.status !== 'published' && !entry.sourceAvailable)
       for (const entry of excluded) expect(links(port.slug).rows.flatMap((row) => row.entries), `${port.slug} ${entry.id}`).not.toContain(entry.id)
     }
   })

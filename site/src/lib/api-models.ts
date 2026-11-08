@@ -1,4 +1,6 @@
-import { conceptsFor, isMemberOwner, OWNER_KINDS, parameterId, parentInventory, sourceUrl, SymbolIndex, type ApiModel, type ApiModelBase, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model'
+import perlModel from '../data/api/perl.json'
+import perlNav from '../data/api/perl.nav.json'
+import { conceptsFor, isMemberOwner, OWNER_KINDS, parameterId, parentInventory, sourceUrl, SymbolIndex, type ApiModel, type ApiModelBase, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model/reference'
 import mentionIndex from '../data/mentions.json'
 import domInv from '../data/inventories/dom.entries.json'
 import jdkInv from '../data/inventories/jdk.entries.json'
@@ -52,6 +54,7 @@ import fsharpNav from '../data/api/fsharp.nav.json'
  * passed. Imports are visible to both.
  */
 export const API_MODELS: Record<string, ApiModel> = {
+  perl: perlModel as unknown as ApiModel,
   powershell: powershellModel as unknown as ApiModel,
   julia: juliaModel as unknown as ApiModel,
   elixir: elixirModel as unknown as ApiModel,
@@ -115,6 +118,7 @@ export interface PortNavData {
  * what a page renders cannot disagree.
  */
 export const API_NAV: Record<string, PortNavData> = {
+  perl: perlNav as unknown as PortNavData,
   powershell: powershellNav as unknown as PortNavData,
   julia: juliaNav as unknown as PortNavData,
   elixir: elixirNav as unknown as PortNavData,
@@ -133,9 +137,10 @@ export const API_NAV: Record<string, PortNavData> = {
   fsharp: fsharpNav as unknown as PortNavData,
 }
 
-export { isMemberOwner, OWNER_KINDS } from '@libtmux/api-model'
+export { isMemberOwner, OWNER_KINDS } from '@libtmux/api-model/reference'
 
 export const PORT_NAME: Record<string, string> = {
+  perl: 'Perl',
   powershell: 'PowerShell',
   julia: 'Julia',
   elixir: 'Elixir',

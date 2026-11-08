@@ -1,7 +1,7 @@
 import { appendFileSync, mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { visit } from 'unist-util-visit'
-import { isLikelyReference, modulesIn, notApiReason, type ApiProduct } from '@libtmux/api-model'
+import { isLikelyReference, modulesIn, notApiReason, type ApiProduct } from '@libtmux/api-model/reference'
 import { createProseLinker, PORT_BY_LABEL, protocolRunMentions } from '../lib/prose-resolver'
 import { PORT_BY_SLUG } from '../lib/ports'
 import { API_MODELS, pageSlug } from '../lib/api-models'

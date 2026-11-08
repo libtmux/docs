@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { Window } from 'happy-dom'
-import { SymbolIndex, membersOf, pageMembersOf } from '@libtmux/api-model'
+import { SymbolIndex, membersOf, pageMembersOf } from '@libtmux/api-model/reference'
 import { API_MODELS } from '../src/lib/api-models'
 import { referenceTree } from '../src/lib/api-tree'
 import { sidebarCatalog } from '../src/lib/api-sidebar'

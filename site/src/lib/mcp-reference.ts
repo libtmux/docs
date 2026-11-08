@@ -1,6 +1,6 @@
 import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects, resolveMcpObject, type McpRegistration, type McpObject, type McpSection } from './mcp-catalog'
 import { createMarkdownProcessor } from '@astrojs/markdown-remark'
-import { docSummaryText } from '@libtmux/api-model'
+import { docSummaryText } from '@libtmux/api-model/reference'
 import { PORT_BY_SLUG, portPageUrl } from './ports'
 import { restToMarkdown } from './mcp-rest'
 import { rehypeApiLinks } from '../plugins/rehype-api-links'

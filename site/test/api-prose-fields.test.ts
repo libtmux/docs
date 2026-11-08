@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   BUILTINS, PROSE_FIELDS, RENDERED_TEXTS, STRUCTURAL_FIELDS, commandFacts, isStructuralField, parameterBindingFacts, parameterBindingText, proseTexts, unclassifiedFields,
   type ApiSymbol, type SymbolIndex,
-} from '@libtmux/api-model'
+} from '@libtmux/api-model/reference'
 import { apiHostOf, apiIndexes, collectApiDestinations } from '../../scripts/lib/api-destinations.mjs'
 import { normalizeAddress } from '../../scripts/lib/api-markdown-links.mjs'
 import { languageOfUrl } from '../../scripts/lib/api-links.mjs'

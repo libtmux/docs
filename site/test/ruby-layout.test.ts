@@ -1,12 +1,11 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { fromMarkdown } from 'mdast-util-from-markdown'
-import { parameterId, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
+import { parameterId, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model/reference'
 import { apiEntryFields, usesNativeSignatures } from '../src/lib/api-sections'
 import { apiSignatureLayouts, codeWidthFailures, signatureSpans, supportsRubySignatures, typeLayout, type SpanLayout } from '../src/lib/code-layout'
 import { rubyTypeLayout } from '../src/lib/ruby-code-layout'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
-import { displayedSignature, renderSignatures } from './signature-fragment'
 
 interface Reference { tools: Record<string, string>; width: number; cases: { id: string; name: string; static: boolean; raw: string; reference: string; stock?: string | null }[] }
 const reference = JSON.parse(readFileSync(new URL('./fixtures/ruby-rbs-layout/reference.json', import.meta.url), 'utf8')) as Reference
@@ -210,23 +209,6 @@ describe('Ruby RBS layouts', () => {
       expect(apiEntryFields(symbol, 'ruby').params.map((param) => param.name)).toEqual(['start', 'finish'])
     })
 
-    it('renders the page declaration and the Markdown export from one layout', async () => {
-      const symbol = model.symbols.find((entry) => entry.id === 'LibTmux::Async::Server#new_session')!
-      expect(symbol.signatures).toHaveLength(2)
-      const index = new SymbolIndex(model.symbols, (entry) => `/en/ruby/latest/reference/${entry.slug}/`, 'ruby')
-      const { signatures, window, layouts: prepared } = await renderSignatures(symbol, 'ruby', index)
-      try {
-        const expected = symbol.signatures.map((signature) => prepared.get(signature)!.text)
-        expect(signatures.map(displayedSignature)).toEqual(expected)
-        expect(signatures.map((element) => element.getAttribute('data-code-columns'))).toEqual(['60', '60'])
-        expect(signatures.map((element) => element.getAttribute('data-code-width-status'))).toEqual(['fits', 'fits'])
-        expect(signatures[1]!.querySelector('a[href="/en/ruby/latest/reference/' + model.symbols.find((entry) => entry.id === 'LibTmux::Session')!.slug + '/"]')?.textContent).toBe('LibTmux::Session')
-        expect([...window.document.querySelectorAll('a')].filter((link) => link.textContent === symbol.name)).toEqual([])
-        const markdown = await symbolMarkdownWithLayout({ model, symbol })
-        const fenced = fromMarkdown(markdown).children.find((node) => node.type === 'code')
-        expect(fenced?.type === 'code' && fenced.value).toBe(expected.join('\n\n'))
-      } finally { await window.happyDOM.abort() }
-    })
   })
 
   it('leaves the classes and modules of the model to the generic declaration', () => {

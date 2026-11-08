@@ -1465,6 +1465,98 @@
           "excerptSha256": "315b120fc40982d69ab2945b84a0b2c6df5faf8d63d75bf940739cd6e23b68af"
         }
       }
+    },
+    {
+      "port": "perl",
+      "page": "home",
+      "sourceRepository": "libtmux/libtmux-perl",
+      "sourceRevision": "36b978c5eb6aa33873229046037e7d26136ca2cf",
+      "sourceTree": "269782d0ba1403af082abe05736ade4e31b5aa53",
+      "files": [
+        {
+          "name": "examples/quickstart.pl",
+          "sha256": "ba9f650b81972f6b11556c4babd22b19d868335d9701980069e5d37748ce3cf2",
+          "clipboardSha256": "a6e4fe17a24b02610dd71a460c9316e7349ef5c2764033e919203d0a06fa8cfd"
+        },
+        {
+          "name": "scripts/lib/LibTmuxFixture.pm",
+          "sha256": "6b17d71a3bb2251d7512d5872bc60791fb0f4b1c0557a6d47e6799aaeabed94e",
+          "clipboardSha256": "50c57a617a04dfe553cbbcfd726f1f6a24e8e8cb77ca171aec86cd0f534f3667"
+        }
+      ],
+      "shellRecipe": [
+        "perl examples/quickstart.pl"
+      ],
+      "expectedOutputs": [
+        [
+          "session demo",
+          "  window 0:editor: %0 %1",
+          "  window 1:logs: %2",
+          "%1 is in window editor"
+        ]
+      ],
+      "excerptSha256": "a6e4fe17a24b02610dd71a460c9316e7349ef5c2764033e919203d0a06fa8cfd",
+      "tmuxVersions": [
+        "3.3a",
+        "3.4",
+        "3.5",
+        "3.5a",
+        "3.6",
+        "3.6a",
+        "3.6b",
+        "3.7",
+        "3.7a",
+        "3.7b",
+        "3.7c",
+        "3.8"
+      ],
+      "variants": {
+        "concise": {
+          "files": [
+            {
+              "name": "examples/quickstart.pl",
+              "sha256": "229dc9ad4a3802b98c05c8014f999ae708622380ea9c33de86d8a64ddaa976d7",
+              "clipboardSha256": "0f56b6c69c9f65059b161e876346d5c164fd2463371f00fb5cf1df23de43936e"
+            },
+            {
+              "name": "scripts/lib/LibTmuxFixture.pm",
+              "sha256": "6b17d71a3bb2251d7512d5872bc60791fb0f4b1c0557a6d47e6799aaeabed94e",
+              "clipboardSha256": "50c57a617a04dfe553cbbcfd726f1f6a24e8e8cb77ca171aec86cd0f534f3667"
+            }
+          ],
+          "excerptSha256": "0f56b6c69c9f65059b161e876346d5c164fd2463371f00fb5cf1df23de43936e"
+        },
+        "errors": {
+          "files": [
+            {
+              "name": "examples/quickstart.pl",
+              "sha256": "c87d40c67b319ab6921271be902dbfc0c4be706fe28ea08d1910e98aeae1de77",
+              "clipboardSha256": "1b06fe564ac4ab43baac37aeb5473fe3a5434c1d3bc78c4c5e9570910b463fc6"
+            },
+            {
+              "name": "scripts/lib/LibTmuxFixture.pm",
+              "sha256": "6b17d71a3bb2251d7512d5872bc60791fb0f4b1c0557a6d47e6799aaeabed94e",
+              "clipboardSha256": "50c57a617a04dfe553cbbcfd726f1f6a24e8e8cb77ca171aec86cd0f534f3667"
+            }
+          ],
+          "excerptSha256": "1b06fe564ac4ab43baac37aeb5473fe3a5434c1d3bc78c4c5e9570910b463fc6"
+        },
+        "cleanup": {
+          "files": [
+            {
+              "name": "examples/quickstart.pl",
+              "sha256": "d4ba09045ef72f61fd8f3d97bf4ffa3700af0d7b397b179700e8e35895a796f9",
+              "clipboardSha256": "29d2e40a82a47781c8673f3de385a9d106e598dac819a35202c10b1b4205a7dd"
+            },
+            {
+              "name": "scripts/lib/LibTmuxFixture.pm",
+              "sha256": "6b17d71a3bb2251d7512d5872bc60791fb0f4b1c0557a6d47e6799aaeabed94e",
+              "clipboardSha256": "50c57a617a04dfe553cbbcfd726f1f6a24e8e8cb77ca171aec86cd0f534f3667"
+            }
+          ],
+          "excerptSha256": "29d2e40a82a47781c8673f3de385a9d106e598dac819a35202c10b1b4205a7dd"
+        }
+      }
     }
   ]
 }

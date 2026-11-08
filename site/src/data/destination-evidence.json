@@ -1509,6 +1509,111 @@
       ]
     },
     {
+      "url": "https://github.com/libtmux/libtmux-perl",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-perl",
+      "identity": "libtmux/libtmux-perl",
+      "versionChecks": [
+        {
+          "check": "unsupported",
+          "note": "a branch link names no release"
+        }
+      ],
+      "checkedAt": "2026-11-07",
+      "entries": [
+        "perl:repository"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-perl/blob/master/packages/workspace/bin/libtmux-workspace",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-perl/blob/master/packages/workspace/bin/libtmux-workspace",
+      "identity": "libtmux/libtmux-perl/packages/workspace/bin/libtmux-workspace",
+      "versionChecks": [
+        {
+          "check": "unsupported",
+          "note": "a branch link names no release"
+        }
+      ],
+      "checkedAt": "2026-11-07",
+      "entries": [
+        "perl:libtmux-workspace"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-perl/tree/master/packages/async",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-perl/tree/master/packages/async",
+      "identity": "libtmux/libtmux-perl/packages/async",
+      "versionChecks": [
+        {
+          "check": "unsupported",
+          "note": "a branch link names no release"
+        }
+      ],
+      "checkedAt": "2026-11-07",
+      "entries": [
+        "perl:LibTmux-Async"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-perl/tree/master/packages/core",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-perl/tree/master/packages/core",
+      "identity": "libtmux/libtmux-perl/packages/core",
+      "versionChecks": [
+        {
+          "check": "unsupported",
+          "note": "a branch link names no release"
+        }
+      ],
+      "checkedAt": "2026-11-07",
+      "entries": [
+        "perl:LibTmux"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-perl/tree/master/packages/workspace",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-perl/tree/master/packages/workspace",
+      "identity": "libtmux/libtmux-perl/packages/workspace",
+      "versionChecks": [
+        {
+          "check": "unsupported",
+          "note": "a branch link names no release"
+        }
+      ],
+      "checkedAt": "2026-11-07",
+      "entries": [
+        "perl:LibTmux-Workspace"
+      ]
+    },
+    {
       "url": "https://github.com/libtmux/libtmux-powershell",
       "kinds": [
         "source"

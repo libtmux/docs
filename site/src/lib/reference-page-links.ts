@@ -1,4 +1,4 @@
-import { CONCEPTS } from '@libtmux/api-model'
+import { CONCEPTS } from '@libtmux/api-model/reference'
 import { referenceAlternatives } from './api-models'
 import { PORTS, referenceUrl } from './ports'
 import { defaultVersionFor } from './versions'

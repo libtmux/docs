@@ -8373,6 +8373,76 @@
    "section": "guides"
   },
   {
+   "port": "perl",
+   "symbol": "LibTmux",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Filter",
+   "page": "/perl/latest/guides/filtering/",
+   "title": "Filtering",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server",
+   "page": "/perl/latest/examples/orchestration/",
+   "title": "Create sessions, windows, and panes",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Snapshot::windows",
+   "page": "/perl/latest/concepts/graph/",
+   "title": "Snapshot graph and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::WindowLink",
+   "page": "/perl/latest/concepts/graph/",
+   "title": "Snapshot graph and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::X",
+   "page": "/perl/latest/topics/errors/",
+   "title": "Errors and recovery",
+   "section": "topics"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::X::Creation",
+   "page": "/perl/latest/topics/errors/",
+   "title": "Errors and recovery",
+   "section": "topics"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::X::Creation::cause",
+   "page": "/perl/latest/topics/errors/",
+   "title": "Errors and recovery",
+   "section": "topics"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::X::InvalidSelection",
+   "page": "/perl/latest/concepts/graph/",
+   "title": "Snapshot graph and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::X::Unloaded",
+   "page": "/perl/latest/topics/errors/",
+   "title": "Errors and recovery",
+   "section": "topics"
+  },
+  {
    "port": "powershell",
    "symbol": "LibTmux",
    "page": "/powershell/latest/guides/commands/",
@@ -14994,6 +15064,34 @@
    "text": "Since",
    "page": "/lua/latest/topics/format-token-fields/",
    "line": 33,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "perl",
+   "text": "IO::Async::Loop",
+   "page": "/perl/latest/guides/async/",
+   "line": 14,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "perl",
+   "text": "libtmux.where/v1",
+   "page": "/perl/latest/guides/filtering/",
+   "line": 43,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "perl",
+   "text": "LibTmux-Async",
+   "page": "/perl/latest/guides/getting-started/",
+   "line": 34,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "perl",
+   "text": "LibTmux-Workspace",
+   "page": "/perl/latest/guides/getting-started/",
+   "line": 35,
    "why": "not defined in the stated port"
   },
   {

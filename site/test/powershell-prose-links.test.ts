@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { fromMarkdown } from 'mdast-util-from-markdown'
-import { builtinHref, tokenizeDoc, type ApiSymbol } from '@libtmux/api-model'
+import { builtinHref, tokenizeDoc, type ApiSymbol } from '@libtmux/api-model/reference'
 import { API_MODELS, createApiIndex } from '../src/lib/api-models'
 import { apiCommandFacts, parameterBindingFacts, parameterBindingText } from '../src/lib/api-sections'
 import { apiGlossaryHref } from '../src/lib/api-glossary'

@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window, type Document } from 'happy-dom'
-import { membersOf, memberSignals, moduleOf, qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model'
+import { membersOf, memberSignals, moduleOf, qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model/reference'
 import mentionsData from '../src/data/mentions.json'
 import { API_MODELS, indexFor, pageSlug, topLevelTypesOf } from '../src/lib/api-models'
 import { ownerQualifiedName, relatedLabels, type RelatedLabelInput } from '../src/lib/api-labels'

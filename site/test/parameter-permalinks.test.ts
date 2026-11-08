@@ -4,7 +4,7 @@ import { pathToFileURL } from 'node:url'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window, type Element } from 'happy-dom'
 import { afterEach, expect, it, vi } from 'vitest'
-import { parameterId, SymbolIndex, type ApiSymbol, type Param } from '@libtmux/api-model'
+import { parameterId, SymbolIndex, type ApiSymbol, type Param } from '@libtmux/api-model/reference'
 import { apiEntryFields, parameterBindingFacts, POWER_SHELL_COMMON_HELP, POWER_SHELL_COMMON_HELP_TITLE, powerShellCommonParameterHref, powerShellCommonParameterLabel } from '../src/lib/api-sections'
 import { linkTmuxDoc } from '../src/lib/tmux-links'
 import { signatureSpans, typeLayout } from '../src/lib/code-layout'
@@ -53,7 +53,7 @@ async function parameterComponents() {
   expect(start).toBeGreaterThan(0)
   expect(end).toBeGreaterThan(start)
   const wrapper = `---
-import { parameterId } from '@libtmux/api-model'
+import { parameterId } from '@libtmux/api-model/reference'
 import ApiType from './ApiType.astro'
 import ApiDoc from './ApiDoc.astro'
 import ApiFieldOverloads from './ApiFieldOverloads.astro'

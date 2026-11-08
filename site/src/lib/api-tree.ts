@@ -5,7 +5,7 @@
  * Buckets and their contents are decided once per port in
  * `scripts/gen-api-model.mjs`; this only shapes them for a tree.
  */
-import { membersOf, memberSignals, symbolsForProduct, type ApiModel, type ApiModelBase, type ApiSymbol } from '@libtmux/api-model'
+import { membersOf, memberSignals, symbolsForProduct, type ApiModel, type ApiModelBase, type ApiSymbol } from '@libtmux/api-model/reference'
 import mentions from '../data/mentions.json'
 import { API_MODELS, API_NAV, OWNER_KINDS, isMemberOwner, pageSlug, referenceHref, topLevelTypesOf, type NavEntry, type PortNavData, type NavBucket } from './api-models'
 import type { ApiTreeBucket, ApiTreeJson } from './api-search'

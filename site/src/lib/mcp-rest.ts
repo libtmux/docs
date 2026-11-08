@@ -1,4 +1,4 @@
-import { tokenizeDoc } from '@libtmux/api-model'
+import { tokenizeDoc } from '@libtmux/api-model/reference'
 import { API_MODELS } from './api-models'
 import { asideFor, asideMarkdown } from './aside'
 import { resolveMcpObject } from './mcp-catalog'

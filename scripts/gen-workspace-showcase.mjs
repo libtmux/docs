@@ -36,19 +36,27 @@ const { parseFrontmatter } = createRequire(join(root, 'site', 'package.json'))('
 
 const digest = (text) => createHash('sha256').update(text).digest('hex')
 const lineOf = (text, index) => text.slice(0, index).split('\n').length
+// Committed inputs are immutable within this read-only generator invocation.
+const committedFiles = new Map()
+const availableRevisions = new Set()
 
 /** Committed bytes of `path` at `revision`. */
 export function readAt({ checkout, revision, path }) {
   if (!/^[a-f0-9]{40}$/.test(revision)) throw new Error(`Invalid revision: ${revision}`)
-  return execFileSync('git', ['-C', checkout, 'show', `${revision}:${path}`],
-    { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] })
+  const key = JSON.stringify([resolve(checkout), revision, path])
+  if (!committedFiles.has(key)) committedFiles.set(key, execFileSync('git', ['-C', checkout, 'show', `${revision}:${path}`],
+    { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] }))
+  return committedFiles.get(key)
 }
 
 /** Whether the checkout has the revision's objects. */
 export function hasRevision({ checkout, revision }) {
   if (!checkout || !existsSync(join(checkout, '.git'))) return false
+  const key = JSON.stringify([resolve(checkout), revision])
+  if (availableRevisions.has(key)) return true
   try {
     execFileSync('git', ['-C', checkout, 'cat-file', '-e', `${revision}^{commit}`], { stdio: 'ignore' })
+    availableRevisions.add(key)
     return true
   } catch { return false }
 }

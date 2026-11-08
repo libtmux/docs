@@ -1,6 +1,6 @@
 import { Window, type Element as DomElement } from 'happy-dom'
 import { afterAll, describe, expect, it } from 'vitest'
-import { qualifiedNameOf } from '@libtmux/api-model'
+import { qualifiedNameOf } from '@libtmux/api-model/reference'
 import { API_MODELS } from '../src/lib/api-models'
 import { productApiRoots } from '../src/lib/product-api'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'

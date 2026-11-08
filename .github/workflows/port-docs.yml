@@ -100,7 +100,7 @@ jobs:
             echo "::error::GitHub Cloud job.workflow_repository/job.workflow_sha are required" >&2
             exit 1
           }
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ job.workflow_repository }}
           ref: ${{ job.workflow_sha }}
@@ -108,7 +108,7 @@ jobs:
             scripts
             site/src/lib
           persist-credentials: false
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: '26'
       - id: identity
@@ -160,7 +160,7 @@ jobs:
             echo "::error::GitHub Cloud job.workflow_repository/job.workflow_sha are required" >&2
             exit 1
           }
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.identity.outputs.source-ref }}
           fetch-depth: 0
@@ -183,7 +183,7 @@ jobs:
           }
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ job.workflow_repository }}
           ref: ${{ job.workflow_sha }}
@@ -194,7 +194,7 @@ jobs:
       # Record both checkouts before either native exporter produces files.
       - name: Check out native documentation tooling
         if: matrix.port == 'powershell' || matrix.port == 'julia'
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
           path: docs-generator
@@ -234,14 +234,14 @@ jobs:
             echo "$product=$ref" >> "$GITHUB_OUTPUT"
           done
       - if: inputs.port == 'py'
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: tmux-python/tmuxp
           ref: ${{ steps.python-products.outputs.workspace }}
           path: python-workspace
           persist-credentials: false
       - if: inputs.port == 'py'
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: tmux-python/libtmux-mcp
           ref: ${{ steps.python-products.outputs.mcp }}
@@ -251,10 +251,10 @@ jobs:
       # No dependency cache: this job checks out whichever ref it was asked
       # to publish, and a cache it saved could be restored by a later
       # default-branch run.
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
         with:
           package_json_file: docs/package.json
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: '26'
       - run: pnpm install --frozen-lockfile
@@ -497,6 +497,38 @@ jobs:
           mix deps.get --only prod
           mix run --no-start "$EXPORTER" _build/docs/api.json
 
+      - name: Read the selected Perl documentation runtime
+        if: matrix.port == 'perl'
+        id: perl-runtime
+        working-directory: port
+        run: |
+          python3 - <<'PYCODE'
+          import os, pathlib, re
+          rows = [line.split() for line in pathlib.Path('.tool-versions').read_text().splitlines()]
+          versions = [row[1] for row in rows if len(row) == 2 and row[0] == 'perl']
+          if len(versions) != 1 or not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', versions[0]):
+              raise ValueError('Perl documentation requires an exact native runtime pin')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={versions[0]}\n')
+          PYCODE
+      - name: Install the selected Perl and documentation dependencies
+        if: matrix.port == 'perl'
+        uses: shogo82148/actions-setup-perl@eebc5c886de14ebbfcd2493d49a12007d2c30477 # v1.44.5
+        with:
+          perl-version: ${{ steps.perl-runtime.outputs.version }}
+          working-directory: port
+          install-modules-with: cpm
+          install-modules-args: --top-level-phase configure,runtime,develop
+          enable-modules-cache: false
+      - name: Export the selected Perl declarations and native POD
+        if: matrix.port == 'perl'
+        working-directory: port
+        env:
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+        run: |
+          perl scripts/export-api.pl --revision "$SOURCE_SHA" \
+            --exporter-revision "$SOURCE_SHA" --output docs/_build/api.json
+
       - if: matrix.port == 'ruby'
         uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
         with:
@@ -510,7 +542,7 @@ jobs:
         run: bundle install
 
       - if: inputs.port == 'py'
-        uses: astral-sh/setup-uv@v10.2.0
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
           python-version: '3.14'

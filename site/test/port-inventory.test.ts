@@ -19,9 +19,10 @@ const coordinates = (slug: string, kinds?: InventoryEntry['kind'][]) =>
 const manifests = manifestPackages.ports as Record<string, {
   wrapper?: string
   distributions: { name: string; version: string }[]
-  units: { unit: string; name: string }[]
+  units: { unit: string; name: string; path?: string; file?: boolean }[]
 }>
-const distributions = (slug: string) => published(slug).filter((entry) => !entry.within && entry.kind !== 'source')
+const available = (slug: string) => entries(slug).filter((entry) => entry.status === 'published' || entry.sourceAvailable)
+const distributions = (slug: string) => available(slug).filter((entry) => !entry.within && entry.kind !== 'source')
 const declared = (slug: string) => manifests[slug]!.distributions.map((entry) => entry.name)
 const GO = 'github.com/libtmux/libtmux-go'
 
@@ -35,7 +36,7 @@ describe('port inventory', () => {
     expect(new Set(ids).size, 'ids are unique').toBe(ids.length)
     expect(entries(slug).filter((entry) => entry.kind === 'library'), 'exactly one library').toHaveLength(1)
     expect(entries(slug)[0]!.kind).toBe('library')
-    expect(entries(slug)[0]!.status).toBe('published')
+    expect(entries(slug)[0]!.status === 'published' || entries(slug)[0]!.sourceAvailable).toBe(true)
     for (const entry of entries(slug)) {
       expect(entry.label.trim(), entry.id).not.toBe('')
       expect(entry.coordinate.trim(), entry.id).not.toBe('')
@@ -62,7 +63,7 @@ describe('port inventory', () => {
 
   it.each(PORTS.map(({ slug }) => slug).filter((slug) => manifests[slug]!.units.length > 0))('lists exactly the %s units its manifests declare', (slug) => {
     const types = new Set(manifests[slug]!.units.map((unit) => unit.unit))
-    const found = published(slug).filter((entry) => entry.within && entry.unit && types.has(entry.unit))
+    const found = available(slug).filter((entry) => entry.within && entry.unit && types.has(entry.unit))
     const pair = (unit: string | undefined, name: string) => `${unit}: ${name}`
     expect(found.map((entry) => pair(entry.unit, entry.label)).sort((a, b) => a.localeCompare(b)))
       .toEqual(manifests[slug]!.units.map((unit) => pair(unit.unit, unit.name)).sort((a, b) => a.localeCompare(b)))
@@ -151,6 +152,7 @@ describe('port inventory', () => {
     const commands = Object.entries(INVENTORY).flatMap(([slug, list]) => list.filter((entry) => /^(?:command|executable|executable product)$/.test(entry.unit ?? ''))
       .map((entry) => [slug, entry.id, entry.kind]))
     expect(commands).toEqual([
+      ['perl', 'libtmux-workspace', 'cli'],
       ['go', 'libtmux-mcp', 'cli'], ['go', 'tmux-workspace', 'cli'], ['cxx', 'libtmux-mcp-server', 'cli'], ['cxx', 'tmux-workspace', 'cli'],
       ['swift', 'product:libtmux-mcp', 'cli'], ['swift', 'product:tmux-workspace', 'cli'],
     ])
@@ -200,7 +202,7 @@ describe('port inventory', () => {
   it('agrees with every field of the port metadata the hero already shows', () => {
     for (const port of PORTS) {
       const [library] = entries(port.slug)
-      const list = published(port.slug)
+      const list = available(port.slug)
       expect(library!.repo, `${port.slug} repo`).toBe(port.repo)
       // The vcpkg port is `libtmux`; the metadata's package name is the repository's.
       expect(library!.coordinate, `${port.slug} packageName`).toBe(port.slug === 'cxx' ? 'libtmux' : port.packageName)
@@ -346,11 +348,12 @@ describe('port inventory', () => {
     const all = Object.entries(INVENTORY).flatMap(([port, list]) => list.map((entry) => ({ port, entry })))
     for (const { port, entry } of all) {
       const leaf = entry.path?.split('/').at(-1) ?? ''
-      // A file has an extension and is opened as a blob; none of the directories here do.
-      expect(entry.file === true, `${port}:${entry.id} ${entry.path ?? ''}`).toBe(entry.path !== undefined && /\.[a-z]+$/.test(leaf))
+      // Packaged executables may have no extension; their manifest reader records the file path.
+      const commandFile = manifests[port]?.units.some((unit) => unit.unit === 'command' && unit.path === entry.path && unit.file === true)
+      expect(entry.file === true, `${port}:${entry.id} ${entry.path ?? ''}`).toBe(entry.path !== undefined && (/\.[a-z]+$/.test(leaf) || commandFile === true))
       if (entry.path) expect(sourceUrl(entry)).toContain(`/${entry.file ? 'blob' : 'tree'}/`)
     }
     expect(all.filter(({ entry }) => entry.file).map(({ port, entry }) => `${port}:${entry.id}`).sort())
-      .toEqual(['julia:LibTmux.Filters', 'julia:LibTmuxJSONExt', 'julia:LibTmuxTablesExt', 'py:pytest-plugin'])
+      .toEqual(['julia:LibTmux.Filters', 'julia:LibTmuxJSONExt', 'julia:LibTmuxTablesExt', 'perl:libtmux-workspace', 'py:pytest-plugin'])
   })
 })

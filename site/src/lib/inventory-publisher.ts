@@ -1,6 +1,6 @@
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { compatibilityEntries, targetEntries, targetKey, writeInventoryEntries } from '@libtmux/api-model'
+import { compatibilityEntries, targetEntries, targetKey, writeInventoryEntries } from '@libtmux/api-model/reference'
 import { installFragmentAlias, mergeTargets, renderedTargets, type InventoryAlias, type RenderedTarget } from './inventory-targets.ts'
 import type { VersionManifest } from './versions.ts'
 
