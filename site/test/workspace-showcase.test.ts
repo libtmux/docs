@@ -162,8 +162,8 @@ describe('the example a landing page opens on', () => {
       return showcase ? [[port, landingExample(showcase).topic]] : []
     }))
     expect(topics).toEqual({
-      py: 'main-horizontal', ts: 'three-pane', rs: 'three-pane', go: 'three-pane', cxx: 'three-pane',
-      csharp: 'three-pane', ruby: 'tiled', julia: 'three-pane', powershell: 'main-horizontal',
+      py: 'main-horizontal', ts: 'three-pane', rs: 'three-pane', go: 'environment', cxx: 'three-pane',
+      csharp: 'two-pane', ruby: 'tiled', julia: 'three-pane', powershell: 'main-horizontal',
     })
   })
 
@@ -281,10 +281,11 @@ describe('what each port supports of tmuxp\'s examples', () => {
     expect(identical('py')).toEqual(['blank-panes'])
     // TypeScript's test loads every one of tmuxp's examples but the plugin one, which it asserts is refused.
     expect(identical('ts')).toEqual(names.filter((name) => name !== 'plugin-system'))
-    // Go and C# load every one of them but the plugin one; C++ also leaves out `env-variables`, which its parser refuses.
-    expect(identical('go')).toEqual(names.filter((name) => name !== 'plugin-system'))
-    expect(identical('csharp')).toEqual(names.filter((name) => name !== 'plugin-system'))
-    expect(identical('cxx')).toEqual(names.filter((name) => !['plugin-system', 'env-variables'].includes(name)))
+    // Go, C# and C++ keep a curated example for the topic where a test runs the command or builds on real tmux,
+    // so the catalog file for that topic stays out; C++ also leaves out `env-variables`, which its parser refuses.
+    expect(identical('go')).toEqual(names.filter((name) => !['plugin-system', 'session-environment'].includes(name)))
+    expect(identical('csharp')).toEqual(names.filter((name) => !['plugin-system', '2-pane-vertical'].includes(name)))
+    expect(identical('cxx')).toEqual(names.filter((name) => !['plugin-system', 'env-variables', '2-pane-vertical', 'main-pane-height'].includes(name)))
     // Ruby shows the six the loader reads the way tmuxp does; three more load but are marked unsupported.
     expect(identical('ruby')).toEqual(['2-pane-vertical', '3-pane', '4-pane', 'session-environment', 'shorthands', 'window-index'])
     expect(identical('julia')).toEqual(names.filter((name) => ['2-pane-synchronized', '2-pane-vertical', '3-pane', '4-pane', 'blank-panes', 'env-variables', 'focus-window-and-panes', 'main-pane-height-percentage', 'main-pane-height', 'pane-shell', 'session-environment', 'shorthands', 'start-directory', 'suppress-history', 'window-index'].includes(name)))

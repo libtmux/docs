@@ -1954,7 +1954,7 @@
           },
           "session-environment": {
             "supported": "yes",
-            "tested": "identical"
+            "tested": "other"
           },
           "shorthands": {
             "supported": "yes",
@@ -2146,28 +2146,27 @@
         },
         {
           "topic": "environment",
-          "also": [],
-          "tmuxp": "session-environment",
+          "also": [
+            "two-pane",
+            "start-directory"
+          ],
           "source": {
-            "path": "workspace/testdata/tmuxp/session-environment.yaml"
+            "path": "workspace/internal/integration/cli_test.go",
+            "lines": [
+              455,
+              471
+            ]
           },
-          "yaml": "session_name: Environment variables test\nenvironment:\n  EDITOR: /usr/bin/vim\n  DJANGO_SETTINGS_MODULE: my_app.settings.local\n  SERVER_PORT: \"8009\"\nwindows:\n  - window_name: Django project\n    panes:\n      - ./manage.py runserver 0.0.0.0:${SERVER_PORT}\n  - window_name: Another Django project\n    environment:\n      DJANGO_SETTINGS_MODULE: my_app.settings.local\n      SERVER_PORT: \"8010\"\n    panes:\n      - ./manage.py runserver 0.0.0.0:${SERVER_PORT}\n      - environment:\n          DJANGO_SETTINGS_MODULE: my_app.settings.local-testing\n          SERVER_PORT: \"8011\"\n        shell_command: ./manage.py runserver 0.0.0.0:${SERVER_PORT}",
-          "sha256": "049667c802bc6ba3dc8e5cd80370ae599eca29112d820b572379b2385327371b",
-          "json": "{\n  \"session_name\": \"Environment variables test\",\n  \"environment\": {\n    \"EDITOR\": \"/usr/bin/vim\",\n    \"DJANGO_SETTINGS_MODULE\": \"my_app.settings.local\",\n    \"SERVER_PORT\": \"8009\"\n  },\n  \"windows\": [\n    {\n      \"window_name\": \"Django project\",\n      \"panes\": [\n        \"./manage.py runserver 0.0.0.0:${SERVER_PORT}\"\n      ]\n    },\n    {\n      \"window_name\": \"Another Django project\",\n      \"environment\": {\n        \"DJANGO_SETTINGS_MODULE\": \"my_app.settings.local\",\n        \"SERVER_PORT\": \"8010\"\n      },\n      \"panes\": [\n        \"./manage.py runserver 0.0.0.0:${SERVER_PORT}\",\n        {\n          \"environment\": {\n            \"DJANGO_SETTINGS_MODULE\": \"my_app.settings.local-testing\",\n            \"SERVER_PORT\": \"8011\"\n          },\n          \"shell_command\": \"./manage.py runserver 0.0.0.0:${SERVER_PORT}\"\n        }\n      ]\n    }\n  ]\n}",
+          "yaml": "session_name: native\nstart_directory: .\nenvironment: {SESSION_VALUE: session}\nwindows:\n- window_name: development\n  window_index: 3\n  layout: even-horizontal\n  environment: {WINDOW_VALUE: window}\n  panes:\n  - start_directory: one\n    shell_command: 'printf \"%s:%s:%s\" \"$SESSION_VALUE\" \"$WINDOW_VALUE\" \"$PANE_VALUE\" > result'\n  - start_directory: two\n    environment: {PANE_VALUE: pane}\n    shell_command: 'printf \"%s:%s:%s\" \"$SESSION_VALUE\" \"$WINDOW_VALUE\" \"$PANE_VALUE\" > result'\n- window_name: second\n  focus: true\n  panes: [blank]",
+          "sha256": "b9ab3564c998f3e609eb31992cfcb2d0de1427caf31700c91aace381f95367c1",
+          "json": "{\n  \"session_name\": \"native\",\n  \"start_directory\": \".\",\n  \"environment\": {\n    \"SESSION_VALUE\": \"session\"\n  },\n  \"windows\": [\n    {\n      \"window_name\": \"development\",\n      \"window_index\": 3,\n      \"layout\": \"even-horizontal\",\n      \"environment\": {\n        \"WINDOW_VALUE\": \"window\"\n      },\n      \"panes\": [\n        {\n          \"start_directory\": \"one\",\n          \"shell_command\": \"printf \\\"%s:%s:%s\\\" \\\"$SESSION_VALUE\\\" \\\"$WINDOW_VALUE\\\" \\\"$PANE_VALUE\\\" > result\"\n        },\n        {\n          \"start_directory\": \"two\",\n          \"environment\": {\n            \"PANE_VALUE\": \"pane\"\n          },\n          \"shell_command\": \"printf \\\"%s:%s:%s\\\" \\\"$SESSION_VALUE\\\" \\\"$WINDOW_VALUE\\\" \\\"$PANE_VALUE\\\" > result\"\n        }\n      ]\n    },\n    {\n      \"window_name\": \"second\",\n      \"focus\": true,\n      \"panes\": [\n        \"blank\"\n      ]\n    }\n  ]\n}",
           "tests": [
             {
-              "path": "workspace/workspace_test.go",
-              "name": "TestEveryTmuxpExampleParses",
-              "line": 1399,
-              "via": "library",
-              "checks": "Parses every fixture in the directory with workspace.Parse."
-            },
-            {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
-              "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "path": "workspace/internal/integration/cli_test.go",
+              "name": "TestLoadFreezeReloadAppendAndEnvironment",
+              "line": 444,
+              "via": "cli",
+              "checks": "Runs load on a real tmux server and reads the files the panes write, which show the layered environment and each pane's directory."
             }
           ]
         },
@@ -2618,7 +2617,7 @@
           },
           "2-pane-vertical": {
             "supported": "yes",
-            "tested": "identical"
+            "tested": "other"
           },
           "3-pane": {
             "supported": "yes",
@@ -2647,7 +2646,7 @@
           },
           "main-pane-height": {
             "supported": "yes",
-            "tested": "identical"
+            "tested": "other"
           },
           "minimal": {
             "supported": "yes",
@@ -2736,21 +2735,33 @@
         },
         {
           "topic": "two-pane",
-          "also": [],
-          "tmuxp": "2-pane-vertical",
+          "also": [
+            "start-directory"
+          ],
           "source": {
-            "path": "examples/workspace/tests/fixtures/tmuxp/2-pane-vertical.yaml"
+            "path": "examples/workspace/tests/tmuxp_test.cpp",
+            "lines": [
+              35,
+              49
+            ]
           },
-          "yaml": "session_name: 2-pane-vertical\nwindows:\n  - window_name: my test window\n    panes:\n      - echo hello\n      - echo hello",
-          "sha256": "6662b24e292831a8ceb423d095a93c3b6362f9055822f23f7b261056e6812a88",
-          "json": "{\n  \"session_name\": \"2-pane-vertical\",\n  \"windows\": [\n    {\n      \"window_name\": \"my test window\",\n      \"panes\": [\n        \"echo hello\",\n        \"echo hello\"\n      ]\n    }\n  ]\n}",
+          "yaml": "session_name: work\nstart_directory: /tmp\nwindows:\n  - window_name: editor\n    layout: main-vertical\n    panes:\n      - shell_command:\n          - echo first\n          - echo second\n      - echo lone\n  - window_name: logs\n    root: /\n    panes:\n      - shell_command: echo tail\n      -",
+          "sha256": "296b1e0623a689fb33efa943fb7926697c29e113f5e0577a5665a0a8aa6f3d57",
+          "json": "{\n  \"session_name\": \"work\",\n  \"start_directory\": \"/tmp\",\n  \"windows\": [\n    {\n      \"window_name\": \"editor\",\n      \"layout\": \"main-vertical\",\n      \"panes\": [\n        {\n          \"shell_command\": [\n            \"echo first\",\n            \"echo second\"\n          ]\n        },\n        \"echo lone\"\n      ]\n    },\n    {\n      \"window_name\": \"logs\",\n      \"root\": \"/\",\n      \"panes\": [\n        {\n          \"shell_command\": \"echo tail\"\n        },\n        null\n      ]\n    }\n  ]\n}",
           "tests": [
             {
               "path": "examples/workspace/tests/tmuxp_test.cpp",
-              "name": "EveryTmuxpExampleParses",
-              "line": 317,
+              "name": "ADocumentBecomesAWorkspace",
+              "line": 64,
               "via": "loader",
-              "checks": "Parses every fixture in the directory with parse_tmuxp, which the load command calls."
+              "checks": "Parses the document with parse_tmuxp and checks the names, layout, commands and start directory."
+            },
+            {
+              "path": "examples/workspace/tests/tmuxp_test.cpp",
+              "name": "AParsedDocumentBuildsOnARealServer",
+              "line": 117,
+              "via": "loader",
+              "checks": "Builds the document on a real tmux server and checks the window count, the pane count and each pane's directory."
             }
           ]
         },
@@ -2801,22 +2812,33 @@
         {
           "topic": "main-horizontal",
           "also": [
-            "three-pane"
+            "shell-command-before",
+            "start-directory"
           ],
-          "tmuxp": "main-pane-height",
           "source": {
-            "path": "examples/workspace/tests/fixtures/tmuxp/main-pane-height.yaml"
+            "path": "examples/workspace/tests/tmuxp_test.cpp",
+            "lines": [
+              151,
+              167
+            ]
           },
-          "yaml": "session_name: main-pane-height\nstart_directory: \"~\"\nwindows:\n  - layout: main-horizontal\n    options:\n      main-pane-height: 30\n    panes:\n      - shell_command:\n          - top\n        start_directory: \"~\"\n      - shell_command:\n          - echo \"hey\"\n      - shell_command:\n          - echo \"moo\"\n    window_name: my window name",
-          "sha256": "2459e4ba0b9ff7232a4a3fd48b7ff5942d7aa52ee349a038763596eba6c9e42e",
-          "json": "{\n  \"session_name\": \"main-pane-height\",\n  \"start_directory\": \"~\",\n  \"windows\": [\n    {\n      \"layout\": \"main-horizontal\",\n      \"options\": {\n        \"main-pane-height\": 30\n      },\n      \"panes\": [\n        {\n          \"shell_command\": [\n            \"top\"\n          ],\n          \"start_directory\": \"~\"\n        },\n        {\n          \"shell_command\": [\n            \"echo \\\"hey\\\"\"\n          ]\n        },\n        {\n          \"shell_command\": [\n            \"echo \\\"moo\\\"\"\n          ]\n        }\n      ],\n      \"window_name\": \"my window name\"\n    }\n  ]\n}",
+          "yaml": "session_name: libtmux\nstart_directory: /tmp\nshell_command_before:\n  - echo setup\nwindows:\n  - window_name: work\n    focus: True\n    layout: main-horizontal\n    options:\n      main-pane-height: 60%\n    panes:\n      - focus: true\n      - echo second\n  - window_name: docs\n    shell_command_before: echo docs-setup\n    panes:\n      - echo only",
+          "sha256": "f74949e8b5937ff7c91153db70de5c676d40b5ac6d2df427aecb68964fc97574",
+          "json": "{\n  \"session_name\": \"libtmux\",\n  \"start_directory\": \"/tmp\",\n  \"shell_command_before\": [\n    \"echo setup\"\n  ],\n  \"windows\": [\n    {\n      \"window_name\": \"work\",\n      \"focus\": true,\n      \"layout\": \"main-horizontal\",\n      \"options\": {\n        \"main-pane-height\": \"60%\"\n      },\n      \"panes\": [\n        {\n          \"focus\": true\n        },\n        \"echo second\"\n      ]\n    },\n    {\n      \"window_name\": \"docs\",\n      \"shell_command_before\": \"echo docs-setup\",\n      \"panes\": [\n        \"echo only\"\n      ]\n    }\n  ]\n}",
           "tests": [
             {
               "path": "examples/workspace/tests/tmuxp_test.cpp",
-              "name": "EveryTmuxpExampleParses",
-              "line": 317,
+              "name": "EveryKeyTheDocumentCarriesReachesTheWorkspace",
+              "line": 170,
               "via": "loader",
-              "checks": "Parses every fixture in the directory with parse_tmuxp, which the load command calls."
+              "checks": "Parses the document and checks the setup commands, focus and the main-pane-height option."
+            },
+            {
+              "path": "examples/workspace/tests/tmuxp_test.cpp",
+              "name": "FocusAndOptionsLandOnTheBuiltSession",
+              "line": 428,
+              "via": "loader",
+              "checks": "Builds the document on a real tmux server and checks the active window, the main-pane-height option and the pane count."
             }
           ]
         },
@@ -3167,7 +3189,7 @@
           },
           "2-pane-vertical": {
             "supported": "yes",
-            "tested": "identical"
+            "tested": "other"
           },
           "3-pane": {
             "supported": "yes",
@@ -3327,28 +3349,26 @@
         },
         {
           "topic": "two-pane",
-          "also": [],
-          "tmuxp": "2-pane-vertical",
+          "also": [
+            "start-directory"
+          ],
           "source": {
-            "path": "tests/Fixtures/tmuxp/2-pane-vertical.yaml"
+            "path": "src/LibTmux.Workspace.Cli/README.md",
+            "lines": [
+              45,
+              55
+            ]
           },
-          "yaml": "session_name: 2-pane-vertical\nwindows:\n  - window_name: my test window\n    panes:\n      - echo hello\n      - echo hello",
-          "sha256": "6662b24e292831a8ceb423d095a93c3b6362f9055822f23f7b261056e6812a88",
-          "json": "{\n  \"session_name\": \"2-pane-vertical\",\n  \"windows\": [\n    {\n      \"window_name\": \"my test window\",\n      \"panes\": [\n        \"echo hello\",\n        \"echo hello\"\n      ]\n    }\n  ]\n}",
+          "yaml": "session_name: myproject\nstart_directory: ~/code/myproject\nwindows:\n  - window_name: editor\n    layout: main-vertical\n    panes:\n      - vim\n      - git status\n  - window_name: server\n    panes:\n      - npm run dev",
+          "sha256": "fda930bb7c65b04dc56e4b352d758db9d4c85134ac042a0a99259b2f4229200c",
+          "json": "{\n  \"session_name\": \"myproject\",\n  \"start_directory\": \"~/code/myproject\",\n  \"windows\": [\n    {\n      \"window_name\": \"editor\",\n      \"layout\": \"main-vertical\",\n      \"panes\": [\n        \"vim\",\n        \"git status\"\n      ]\n    },\n    {\n      \"window_name\": \"server\",\n      \"panes\": [\n        \"npm run dev\"\n      ]\n    }\n  ]\n}",
           "tests": [
             {
-              "path": "tests/LibTmux.IntegrationTests/Workspace/WorkspaceFileTests.cs",
-              "name": "Every_tmuxp_example_parses",
-              "line": 34,
-              "via": "library",
-              "checks": "Parses every fixture in the directory with WorkspaceFile.Parse."
-            },
-            {
-              "path": "tests/LibTmux.Workspace.Cli.Tests/ContractTests.cs",
-              "name": "Every_tmuxp_example_loads_through_the_commands_own_loader",
-              "line": 452,
-              "via": "loader",
-              "checks": "Parses every fixture in the directory with the loader the load command calls."
+              "path": "tests/LibTmux.Workspace.Cli.Tests/ReadmeCommandTests.cs",
+              "name": "The_quickstart_workspace_builds_what_the_readme_describes",
+              "line": 94,
+              "via": "cli",
+              "checks": "Reads this block from the README, runs tmux-workspace load on it and checks the windows and their pane counts."
             }
           ]
         },

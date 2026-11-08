@@ -337,7 +337,7 @@ export const SOURCES = {
   go: {
     revision: 'a0592f87f33974f502aafd1e6c1eb2dde839d356',
     modelRevision: '2de249b600d65218ee8b8fdc07c6b2b919242151',
-    examples: tmuxpCatalog('workspace/testdata/tmuxp', [
+    examples: [...tmuxpCatalog('workspace/testdata/tmuxp', [
       {
         path: 'workspace/workspace_test.go', name: 'TestEveryTmuxpExampleParses', find: 'func TestEveryTmuxpExampleParses',
         needles: ['testdata'], via: 'library', refuses: ['env-variables', 'pane-shell'],
@@ -348,25 +348,67 @@ export const SOURCES = {
         needles: ['testdata'], via: 'loader',
         checks: 'Reads every fixture in the directory with the loader the load command calls.',
       },
-    ]),
+    ], {
+      // `environment` keeps the curated example below, which runs load on a real tmux server.
+      skip: ['session-environment'],
+    }), {
+      topic: 'environment', also: ['two-pane', 'start-directory'],
+      source: inside(
+        'workspace/internal/integration/cli_test.go', '"workspace.yaml", `', '`)',
+        { after: 'func TestLoadFreezeReloadAppendAndEnvironment' },
+      ),
+      tests: [{
+        path: 'workspace/internal/integration/cli_test.go', name: 'TestLoadFreezeReloadAppendAndEnvironment', via: 'cli',
+        checks: 'Runs load on a real tmux server and reads the files the panes write, which show the layered environment and each pane\'s directory.',
+      }],
+    }],
   },
 
   cxx: {
     revision: '51d209f5ea9c59c8f77b2089eab9b90c2f59ce3a',
     modelRevision: '3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f',
-    examples: tmuxpCatalog('examples/workspace/tests/fixtures/tmuxp', [
+    examples: [...tmuxpCatalog('examples/workspace/tests/fixtures/tmuxp', [
       {
         path: 'examples/workspace/tests/tmuxp_test.cpp', name: 'EveryTmuxpExampleParses', find: 'TEST(Tmuxp, EveryTmuxpExampleParses)',
         needles: ['LIBTMUX_TMUXP_FIXTURES'], via: 'loader', refuses: ['env-variables'],
         checks: 'Parses every fixture in the directory with parse_tmuxp, which the load command calls.',
       },
-    ]),
+    ], {
+      // `two-pane` and `main-horizontal` keep the curated examples below, whose tests build on a real tmux server.
+      skip: ['2-pane-vertical', 'main-pane-height'],
+    }), {
+      topic: 'two-pane', also: ['start-directory'],
+      source: inside('examples/workspace/tests/tmuxp_test.cpp', 'kDocument = R"(\n', ')";'),
+      tests: [
+        {
+          path: 'examples/workspace/tests/tmuxp_test.cpp', name: 'ADocumentBecomesAWorkspace', via: 'loader',
+          checks: 'Parses the document with parse_tmuxp and checks the names, layout, commands and start directory.',
+        },
+        {
+          path: 'examples/workspace/tests/tmuxp_test.cpp', name: 'AParsedDocumentBuildsOnARealServer', via: 'loader',
+          checks: 'Builds the document on a real tmux server and checks the window count, the pane count and each pane\'s directory.',
+        },
+      ],
+    }, {
+      topic: 'main-horizontal', also: ['shell-command-before', 'start-directory'],
+      source: inside('examples/workspace/tests/tmuxp_test.cpp', 'kFullDocument = R"(\n', ')";'),
+      tests: [
+        {
+          path: 'examples/workspace/tests/tmuxp_test.cpp', name: 'EveryKeyTheDocumentCarriesReachesTheWorkspace', via: 'loader',
+          checks: 'Parses the document and checks the setup commands, focus and the main-pane-height option.',
+        },
+        {
+          path: 'examples/workspace/tests/tmuxp_test.cpp', name: 'FocusAndOptionsLandOnTheBuiltSession', via: 'loader',
+          checks: 'Builds the document on a real tmux server and checks the active window, the main-pane-height option and the pane count.',
+        },
+      ],
+    }],
   },
 
   csharp: {
     revision: '4d6bd67188a8b5acba5ac7da1dfd849c4c104770',
     modelRevision: '8d47af7d89638ad267528ac56897cec67df597f7',
-    examples: tmuxpCatalog('tests/Fixtures/tmuxp', [
+    examples: [...tmuxpCatalog('tests/Fixtures/tmuxp', [
       {
         path: 'tests/LibTmux.IntegrationTests/Workspace/WorkspaceFileTests.cs', name: 'Every_tmuxp_example_parses',
         needles: ['Fixtures'], via: 'library', refuses: ['pane-shell', 'sleep', 'sleep-pane-level', 'sleep-virtualenv', 'suppress-history'],
@@ -377,7 +419,18 @@ export const SOURCES = {
         needles: ['Fixtures'], via: 'loader',
         checks: 'Parses every fixture in the directory with the loader the load command calls.',
       },
-    ]),
+    ], {
+      // `two-pane` keeps the curated README example below, which runs the load command.
+      skip: ['2-pane-vertical'],
+    }), {
+      topic: 'two-pane', also: ['start-directory'],
+      source: inside('src/LibTmux.Workspace.Cli/README.md', '```yaml\n', '```'),
+      tests: [{
+        path: 'tests/LibTmux.Workspace.Cli.Tests/ReadmeCommandTests.cs', name: 'The_quickstart_workspace_builds_what_the_readme_describes',
+        needles: ['YamlFence'], via: 'cli',
+        checks: 'Reads this block from the README, runs tmux-workspace load on it and checks the windows and their pane counts.',
+      }],
+    }],
   },
 
   ruby: {
