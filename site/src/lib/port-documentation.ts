@@ -74,7 +74,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
         description: 'Validate, preview and apply JSON workspaces with retained execution receipts.' },
     ],
     sourceGuides: [
-      ...['getting-started', 'graph', 'queries', 'query-interchange', 'control', 'recovery', 'streaming', 'showcases', 'packages', 'compatibility', 'testing', 'benchmarking', 'status'].map((name, index) =>
+      ...['getting-started', 'bootstrap', 'graph', 'queries', 'query-interchange', 'control', 'recovery', 'streaming', 'showcases', 'packages', 'compatibility', 'testing', 'benchmarking', 'status'].map((name, index) =>
         guide(`docs/${name}.md`, `guides/${name}`, 'core', { aliases: [], sidebar: { group: 'Guides', order: index + 1 } })),
       guide('docs/workspaces.md', 'workspace/source-guide', 'workspace', { title: 'Workspace guide', product: 'workspace', package: 'workspace', aliases: [] }),
     ],

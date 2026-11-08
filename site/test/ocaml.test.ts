@@ -47,3 +47,15 @@ it('places live server connections under Server and captured tmux clients under 
   expect(nav.placement['Libtmux_eio.Client']).toBe('server')
   expect(nav.placement['Libtmux.Client_observation']).toBe('client')
 })
+
+it('attaches the tested bootstrap program to its workspace operations', () => {
+  const model = API_MODELS.ocaml!
+  const sourceUrl = `https://github.com/libtmux/libtmux-ocaml/blob/${model.revision}/examples/showcase_bootstrap.ml`
+  const targets = ['Libtmux_unix.Workspace.submit_bootstrap',
+    'Libtmux_unix.Workspace.await', 'Libtmux_unix.Workspace.client']
+  for (const id of targets) {
+    const symbol = model.symbols.find((entry) => entry.id === id)!
+    const example = symbol.doc?.examples?.find((entry) => entry.lang === 'ocaml' && entry.sourceUrl === sourceUrl)
+    expect(example, id).toBeDefined()
+  }
+})
