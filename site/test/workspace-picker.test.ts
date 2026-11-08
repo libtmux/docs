@@ -283,7 +283,9 @@ describe('the picker as rendered', () => {
 
   it('heads the section with the id the table of contents lists, and stays out of search', async () => {
     const { document } = await page('rs')
-    expect(document.querySelector('h2')?.id).toBe('try-a-preset')
+    expect(document.querySelector('h2')?.id).toBe('explore-tmux-layout-workspace-possibilities')
+    expect(document.querySelector('h2')?.textContent).toBe('Explore tmux layout / workspace possibilities')
+    expect(document.querySelector('#try-a-preset')?.nextElementSibling, 'old links keep landing at the heading').toBe(document.querySelector('h2'))
     expect(document.querySelector('[data-workspace-picker]')?.getAttribute('data-pagefind-ignore')).toBe('all')
   })
 

@@ -156,7 +156,7 @@ const productIntro = isProductOverview && port && coreHome
   product={entry.data.product}
   version={version}
   headings={placeholderLocale ? [] : [
-    ...(workspaceExamples && offersPicker(workspaceExamples) ? [{ depth: 2, slug: 'try-a-preset', text: 'Try a preset' }] : []),
+    ...(workspaceExamples && offersPicker(workspaceExamples) ? [{ depth: 2, slug: 'explore-tmux-layout-workspace-possibilities', text: 'Explore tmux layout / workspace possibilities' }] : []),
     ...(workspaceExamples && workspaceExampleLeads ? workspaceHeadings(workspaceExamples) : []),
     ...(mcpTools ? mcpExampleHeadings(mcpTools) : []),
     ...(isMcpOverview || isWorkspaceOverview ? [{ depth: 2, slug: 'install', text: 'Install' }] : []),

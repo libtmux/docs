@@ -198,6 +198,7 @@ describe('the landing page markup', () => {
         .toEqual(showcase.examples.map((example) => example.topic).sort())
       expect(body.querySelector('h2'), `${slug} the page's heading names the section`).toBeNull()
       expect(document.getElementById('try-a-preset'), slug).toBeNull()
+      expect(document.getElementById('explore-tmux-layout-workspace-possibilities'), slug).toBeNull()
       // The overview's examples carry the files in full; the landing page shows each file once.
       expect(body.querySelector('[data-workspace-showcase], .ws-example'), slug).toBeNull()
       expect(body.querySelectorAll('.ws-config__panel--yaml'), `${slug} one copy of each file`).toHaveLength(showcase.examples.length)

@@ -43,7 +43,11 @@ const example = (id: string) => showcase.examples.find((item) => item.topic === 
 ---
 {first && (
   <section class:list={['ws-picker', { 'ws-picker--landing': landing }]} data-workspace-picker data-pagefind-ignore="all">
-    {!landing && <h2 id="try-a-preset">Try a preset</h2>}
+    {!landing && <>
+      {/* The heading was "Try a preset"; links to that anchor still land here. */}
+      <span id="try-a-preset"></span>
+      <h2 id="explore-tmux-layout-workspace-possibilities">Explore tmux layout / workspace possibilities</h2>
+    </>}
     <style is:inline set:html={selectionRules(ids)}></style>
     <libtmux-workspace-picker data-port={showcase.port}>
       <script is:inline set:html={paintScript(showcase.port, ids)}></script>
