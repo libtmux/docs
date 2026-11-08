@@ -18,6 +18,7 @@ const modelSource = ts.createSourceFile(modelPath.pathname, readFileSync(modelPa
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
 const windows: Window[] = []
 const nativeAuthorities: Record<string, RegExp> = {
+  clojure: /^https:\/\/clojure\.org\//,
   scala: /^https:\/\/docs\.scala-lang\.org\//, java: /^https:\/\/docs\.oracle\.com\//,
   kotlin: /^https:\/\/kotlinlang\.org\//, julia: /^https:\/\/docs\.julialang\.org\//,
   py: /^https:\/\/(?:docs\.python\.org|peps\.python\.org|packaging\.python\.org)\//,

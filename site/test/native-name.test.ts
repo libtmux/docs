@@ -9,7 +9,7 @@ import { productApiHref } from '../src/lib/product-api'
  * The page's Qualified name row says a declaration the way the language writes it, in full: Rust spells a path with `::`
  * from its crate and TypeScript names a member by its owner, and every other port already keeps its own spelling in the
  * public id, which must stay as it was. A card's header says it in short: the owner and the member in the language's
- * separator. The page heading still joins them with a dot in every port.
+ * separator. Clojure headings keep the namespace/var spelling.
  */
 const symbolNamed = (port: string, id: string) => {
   const symbol = API_MODELS[port].symbols.find((entry) => (entry.publicId ?? entry.id) === id)
@@ -183,6 +183,7 @@ describe('short names', () => {
     ['py', 'libtmux.Server.new_session', 'Server.new_session'],
     ['py', 'libtmux._internal.env.resolve_env', 'resolve_env'],
     ['java', 'io.github.libtmux.Server.Server.newSession', 'Server.newSession'],
+    ['clojure', 'libtmux.core/open!', 'libtmux.core/open!'],
     ['kotlin', 'io.github.libtmux.kotlin.Server.newSession', 'Server.newSession'],
     ['csharp', 'LibTmux.TmuxBuffers.SetAsync', 'TmuxBuffers.SetAsync'],
     ['julia', 'LibTmux.BatchResult.operations', 'BatchResult.operations'],
@@ -197,7 +198,7 @@ describe('short names', () => {
   })
 
   it('are the owner, a separator that the language writes, and the member, for every symbol of every port', { timeout: 30_000 }, () => {
-    const separators: Record<string, string[]> = { rs: ['::'], cxx: ['::'], ruby: ['::', '.', '#'], lua: ['.', ':'], powershell: ['\\'] }
+    const separators: Record<string, string[]> = { rs: ['::'], cxx: ['::'], ruby: ['::', '.', '#'], lua: ['.', ':'], powershell: ['\\'], clojure: ['/'] }
     for (const [port, model] of Object.entries(API_MODELS)) {
       const owners = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
       for (const symbol of model.symbols) {

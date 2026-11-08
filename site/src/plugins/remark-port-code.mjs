@@ -36,6 +36,7 @@ export const LANG_TO_PORT = {
   golang: 'go',
   java: 'java',
   kotlin: 'kotlin',
+  clojure: 'clojure',
   scala: 'scala',
   fsharp: 'fsharp',
   fs: 'fsharp',

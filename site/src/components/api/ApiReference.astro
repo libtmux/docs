@@ -399,7 +399,8 @@ const title = glossary ? API_GLOSSARY_TITLE : owner
     ? source?.title ?? `${label} API reference`
     : 'API reference'
 const pageTitle = glossary ? API_GLOSSARY_TITLE : owner ? title : source?.title ?? 'API reference'
-const displayName = owner ? (declaringType ? `${declaringType.name}.${owner.name}` : owner.name) : pageTitle
+const displayName = owner ? (port === 'clojure' ? nativeQualifiedName(model, owner)
+  : declaringType ? `${declaringType.name}.${owner.name}` : owner.name) : pageTitle
 const breadcrumbs = source?.breadcrumbs ?? await pageBreadcrumbs(displayName, glossary ? 'reference/glossary' : slug ? `reference/${slug}` : 'reference', version, port)
 const pagePath = glossary ? 'reference/glossary' : source?.pagePath ?? (slug ? `reference/${slug}` : 'reference')
 const description = glossary ? glossaryContext.description : source?.description ?? `Types, methods, and functions in libtmux for ${label}.`

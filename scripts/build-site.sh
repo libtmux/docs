@@ -322,6 +322,9 @@ elif [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ]; then
 fi
 node "$script_dir/stage-port-docs.mjs" --wrappers
 if [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ]; then
+  if [ "$LIBTMUX_DOCS_PORT" = clojure ]; then
+    node "$script_dir/gen-tmux-usage.mjs" --ports clojure
+  fi
   # The selected API and wire contracts must come from the same product source.
   # Python's MCP product has its own checkout and revision.
   node "$script_dir/gen-mcp-protocol.mjs" --port "$LIBTMUX_DOCS_PORT" --source-bound

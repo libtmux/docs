@@ -11,10 +11,19 @@ import fsharpGuides from '../src/data/port-guides/fsharp.json'
 import csharpModel from '../src/data/api/csharp.json'
 import powershellGuides from '../src/data/port-guides/powershell.json'
 import juliaGuides from '../src/data/port-guides/julia.json'
+import clojureGuides from '../src/data/port-guides/clojure.json'
 
 afterEach(() => vi.unstubAllEnvs())
 
 describe('integrated guide inputs', () => {
+  it('routes native Clojure namespace anchors to their actual API pages', () => {
+    const staged = stagedPortGuides('clojure', clojureGuides)
+    const readme = staged.get('clojure/guides/getting-started/index.md')!
+    expect(readme).toContain('../../reference/libtmux-core/')
+    expect(readme).toContain('../../reference/libtmux-data/')
+    expect(readme).not.toContain('reference/#libtmux')
+  })
+
   const port = PORTS.find((entry) => entry.slug === 'lua')!
 
   it('reads the integrated commit regardless of newer HEAD or dirty files', () => {
@@ -128,7 +137,7 @@ describe('staged port guide links', () => {
     expect(index).toContain('"label":"Overview","order":1')
     const cards = JSON.parse(/^cards: (.+)$/m.exec(index)![1])
     expect(cards[0].label).toBe('Getting started')
-    expect(cards[1].label).toBe('Attaching to tmux')
+    expect(cards[1].label).toBe(port === 'clojure' ? 'Captures, effects and streams' : 'Attaching to tmux')
     for (const section of ['examples', 'topics']) {
       const page = files.get(`${port}/${section}/index.md`)
       if (!page) continue

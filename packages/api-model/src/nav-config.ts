@@ -778,6 +778,11 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
     commands: ['MessageLog', 'PrintedText', 'Prompt', 'Shell'].map((name) => `io.github.libtmux.${name}.${name}`),
     server: ['io.github.libtmux.IncarnationFence.IncarnationFence'],
   },
+  clojure: {
+    server: ['libtmux.core'],
+    snapshots: ['libtmux.data'],
+    async: ['libtmux.async', 'libtmux.core-async'],
+  },
   kotlin: {
     commands: ['Batch', 'ExecutionPolicy', 'MessageLog', 'Prompt', 'Shell', 'retryIfSafe'].map((name) => `io.github.libtmux.kotlin.${name}`),
     server: ['io.github.libtmux.kotlin.LibTmuxDsl'],
@@ -854,7 +859,7 @@ function languageBucket(bucket: Bucket, port: string, root = bucket.id): Bucket 
 }
 
 export const NAV: Record<string, PortNav> = Object.fromEntries(
-  ['powershell', 'julia', 'elixir', 'py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'kotlin', 'scala', 'fsharp', 'csharp', 'cxx', 'swift'].map((port) => [
+  ['powershell', 'julia', 'elixir', 'py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'clojure', 'kotlin', 'scala', 'fsharp', 'csharp', 'cxx', 'swift'].map((port) => [
     port,
     {
       port,

@@ -88,6 +88,7 @@ export interface CoreSymbolLink {
 
 export interface CoreHome {
   summary: string
+  objectLabel: 'Type' | 'Function'
   objects: (CoreSymbolLink & { role: CoreRole; wraps: string; tmuxId: string })[]
   capabilities: Record<keyof typeof CAPABILITY_GROUPS, (CoreSymbolLink & { key: CapabilityKey; label: string })[]>
 }
@@ -124,7 +125,9 @@ export function resolveCoreHome(port: string, version: string, entry: CoreHomeEn
   }
   for (const group of Object.values(capabilities)) group.sort((a, b) =>
     Object.keys(CAPABILITIES).indexOf(a.key) - Object.keys(CAPABILITIES).indexOf(b.key))
-  return { summary: coreDescription(port, entry), objects, capabilities }
+  const objectLabel = objects.every((object) => API_MODELS[port]!.symbols
+    .find((symbol) => (symbol.publicId ?? symbol.id) === object.id)?.kind === 'function') ? 'Function' : 'Type'
+  return { summary: coreDescription(port, entry), objectLabel, objects, capabilities }
 }
 
 /** The page's facts as Markdown, for the `.md` twin and llms-full.txt. */
@@ -134,7 +137,7 @@ export function coreHomeMarkdown(port: string, version: string, origin: string):
   return [
     coreLead(port),
     '## At a glance',
-    '| Type | Wraps |\n| ---- | ----- |\n' + home.objects.map((object) =>
+    `| ${home.objectLabel} | Wraps |\n| ---- | ----- |\n` + home.objects.map((object) =>
       `| [\`${object.name}\`](${at(object.href)}) | ${object.wraps}${object.tmuxId ? `, ID \`${object.tmuxId}n\`` : ''} |`).join('\n'),
     ...Object.entries(CAPABILITY_GROUPS).flatMap(([group, title]) => {
       const rows = home.capabilities[group as keyof typeof CAPABILITY_GROUPS]

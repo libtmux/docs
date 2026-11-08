@@ -16,7 +16,7 @@
  * says it could not.
  */
 
-import { entryCandidates, entryDestinations } from '../../site/src/lib/port-inventory.ts'
+import { documentedLibrary, entryCandidates, entryDestinations } from '../../site/src/lib/port-inventory.ts'
 
 export const USER_AGENT = 'libtmux-docs destination check (+https://libtmux.org)'
 
@@ -577,15 +577,17 @@ export function staleWarnings(stale, maxAgeDays = EVIDENCE_MAX_AGE_DAYS) {
  *
  * A registered port the inventory omits gets no header links and no
  * verification, and nothing else notices: the header just offers nothing. So
- * each registered port must have an entry whose library is published, which is
- * what the header builds its links from, and each entry must belong to a
- * registered port.
+ * Each port needs a published library or an unpublished library with a public
+ * source installation. An unknown port cannot acquire inventory entries.
  */
 export function inventoryCoverage(inventory, registered) {
   const missing = registered.filter((slug) => !inventory[slug]?.length)
     .map((slug) => `${slug} is registered in ports.ts but has no inventory entry, so its header offers nothing`)
-  const unlinked = registered.filter((slug) => inventory[slug]?.length && !inventory[slug].some((entry) => entry.kind === 'library' && entry.status === 'published'))
-    .map((slug) => `${slug} has no published library entry, so its header offers nothing`)
+  const unlinked = registered.filter((slug) => {
+    const entries = inventory[slug]
+    if (!entries?.length) return false
+    return !documentedLibrary(entries)
+  }).map((slug) => `${slug} has no published library entry or documented public source installation`)
   const orphaned = Object.keys(inventory).filter((slug) => !registered.includes(slug))
     .map((slug) => `${slug} has inventory entries but is not registered in ports.ts`)
   return [...missing, ...unlinked, ...orphaned]
