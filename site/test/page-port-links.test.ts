@@ -108,9 +108,21 @@ describe('shared product pages and the ports that lack the product', () => {
     expect(linkFor('mcp', 'lua').links).toEqual([{ href: '/pr-42/en/lua/latest/mcp/' }])
   })
 
-  it('treats the bare product route as a product page', () => {
-    expect(linkFor('mcp', 'rs').home?.href).toBe('/pr-42/en/rs/v1.2.3/mcp/')
-    expect(linkFor('workspace', 'ts').home?.label).toBe('Go to TypeScript Workspace Manager home')
+  it('keeps the overview of an unpublished workspace root, and drops an excluded one', () => {
+    // The shared workspace overview, which every port renders at its own root.
+    const overview = (slug: string) => pagePortLinks({ ...options, docs: [{ id: 'workspace', data: {} }], pagePath: 'workspace', portSlug: 'rs' })
+      .find((entry) => entry.port === slug)!
+    for (const slug of ['lua', 'elixir']) {
+      expect(PORT_BY_SLUG[slug].productAvailability?.workspace).toBe('unpublished')
+      expect(overview(slug).links.map((link) => link.href)).toEqual([expect.stringMatching(new RegExp(`/${slug}/[^/]+/workspace/$`))])
+    }
+    const synthetic = PORT_BY_SLUG.go
+    const before = synthetic.productAvailability
+    try {
+      synthetic.productAvailability = { ...before, workspace: 'excluded' }
+      expect(overview('go').links).toEqual([])
+    } finally { synthetic.productAvailability = before }
+    expect(overview('go').links.length).toBeGreaterThan(0)
   })
 })
 
