@@ -61,6 +61,45 @@ describe('the build\'s dangling report', () => {
     expect(state(build)).toEqual(before)
   })
 
+  it('resolves Clojure dependencies and leaves fixture settings literal without concealing a missing var', async () => {
+    const own = join(directory, 'clojure.jsonl')
+    vi.stubEnv('LIBTMUX_DOCS_DANGLING_REPORT', own)
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'clojure')
+    const text = 'The fixture supplies `libtmux.docs.socket` and `libtmux.docs.binary`. Failures throw `ExceptionInfo`. Add `io.github.libtmux/libtmux-clojure-core-async` for `core.async`; use `libtmux.core/snapshot!`.'
+    const rendered = await (await processor).render(text, { frontmatter: { port: 'clojure' } })
+    expect(names(own)).toEqual([])
+    expect(rendered.code).toContain('https://github.com/clojure/clojure/blob/clojure-1.12.6/src/jvm/clojure/lang/ExceptionInfo.java')
+    expect(rendered.code).toContain('https://github.com/clojure/core.async')
+    expect(rendered.code).toContain('/clojure/latest/reference/libtmux-core-snapshot/')
+    await (await processor).render('Use `libtmux.core/missing!`, `io.github.libtmux/missing-package` and `libtmux.docs.unknown`.', { frontmatter: { port: 'clojure' } })
+    expect(names(own)).toEqual(['libtmux.core/missing!', 'io.github.libtmux/missing-package', 'libtmux.docs.unknown'])
+  })
+
+  it('keeps shared tmux prose out of a selected Clojure build report', async () => {
+    const own = join(directory, 'clojure-native.jsonl')
+    vi.stubEnv('LIBTMUX_DOCS_DANGLING_REPORT', own)
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'clojure')
+    const rendered = await (await processor).render('Write `tmux.conf`; capture `=work:editor`.', {
+      fileURL: new URL('../src/content/docs/topics/interaction.md', import.meta.url), frontmatter: {},
+    })
+    expect(names(own)).toEqual([])
+    expect(rendered.code).not.toContain('api-mention')
+    await (await processor).render('Use `libtmux.core/missing!`.', { frontmatter: { port: 'clojure' } })
+    expect(names(own)).toEqual(['libtmux.core/missing!'])
+  })
+
+  it('requires a language claim before assigning shared site prose to a facade', async () => {
+    const own = join(directory, 'clojure-shared.jsonl')
+    vi.stubEnv('LIBTMUX_DOCS_DANGLING_REPORT', own)
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'clojure')
+    await (await processor).render('Read `llms.txt` and `sphinx.ext.intersphinx`.', {
+      fileURL: new URL('../src/content/docs/meta/exports.md', import.meta.url), frontmatter: {},
+    })
+    expect(names(own)).toEqual([])
+    await (await processor).render('```clojure\n(require libtmux.core)\n```\n\nUse `libtmux.core/missing!`.', { frontmatter: {} })
+    expect(names(own)).toEqual(['libtmux.core/missing!'])
+  })
+
   it('is caught when a render adds to the file the check watches, so the check above can fail', async () => {
     const watched = join(directory, 'watched.jsonl')
     vi.stubEnv('LIBTMUX_DOCS_DANGLING_REPORT', watched)

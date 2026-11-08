@@ -306,6 +306,10 @@ export function decideMention(
   if (!looksLikeApiMention(text)) return { kind: 'skip', why: 'not a mention' }
   const never = neverLinks(text)
   if (never) return { kind: 'skip', why: never }
+  // Tools.deps names a package with a slash; only registered coordinates are packages, not vars.
+  if (ctx.pagePort === 'clojure' && models.clojure?.sources?.some((source) => source.package.replace(':', '/') === text)) {
+    return { kind: 'skip', why: 'a dependency coordinate' }
+  }
 
   const link = (port: string, res: ReturnType<Resolver['resolve']>): MentionDecision | undefined => {
     if (res.how === 'federated') {
