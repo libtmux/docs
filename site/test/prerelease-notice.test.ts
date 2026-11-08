@@ -7,7 +7,8 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import { buildLocale, localeSourcePath } from '../src/i18n/locales'
 import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, repoPath } from '../src/i18n/contribute'
 import { markdownPath } from '../src/lib/markdown-twins'
-import { pageBrand, PORT_BY_SLUG, PORTS, portSourceUrl } from '../src/lib/ports'
+import { pageBrand, PORT_BY_SLUG, PORTS, portSourceUrl, releaseMaturity } from '../src/lib/ports'
+import { registryFor } from '../src/lib/registry'
 import { withPortRoot, withRoot } from '../src/lib/site-root'
 import { buildTarget } from '../src/lib/versions'
 import { renderedTargets } from '../src/lib/inventory-targets'
@@ -35,7 +36,7 @@ beforeAll(async () => {
   vi.stubGlobal('__prereleaseChild', (await import(/* @vite-ignore */ stub)).default)
   const helpers = {
     buildLocale, localeSourcePath, CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, repoPath,
-    markdownPath, pageBrand, PORT_BY_SLUG, portSourceUrl, withPortRoot, withRoot, buildTarget, tmuxInventoryVersion,
+    markdownPath, pageBrand, PORT_BY_SLUG, portSourceUrl, releaseMaturity, registryFor, withPortRoot, withRoot, buildTarget, tmuxInventoryVersion,
   }
   vi.stubGlobal('__prereleaseHelpers', helpers)
   const helperModule = `data:text/javascript,export const {${Object.keys(helpers).join(',')}}=globalThis.__prereleaseHelpers`
@@ -44,7 +45,9 @@ beforeAll(async () => {
   const imports = Object.fromEntries([...source.matchAll(/from '([^']+)'/g)].map(([, name]) => [name!, helperModule]))
   for (const name of Object.keys(imports)) if (name.endsWith('.astro')) imports[name] = stub
   imports['astro:transitions'] = 'data:text/javascript,export const ClientRouter=globalThis.__prereleaseChild'
-  imports['../components/PrereleaseNotice.astro'] = await compile(noticeSource, 'PrereleaseNotice.astro')
+  imports['../components/PrereleaseNotice.astro'] = await compile(noticeSource, 'PrereleaseNotice.astro', {
+    '../lib/ports': helperModule, '../lib/registry': helperModule,
+  })
   imports['../components/SiteFooter.astro'] = await compile('<footer data-compact={String(Boolean(Astro.props.compact))} data-github={Astro.props.githubUrl} />', 'SiteFooterProbe.astro')
   // Only unrelated child components are stubbed; ownership and notice markup run unchanged.
   layout = (await import(/* @vite-ignore */ await compile(source, file.pathname, imports))).default
@@ -140,6 +143,16 @@ describe('prerelease notice ownership', () => {
     expect(html).toContain('libtmux is released, and its APIs may still change between releases.')
     expect(html).toContain('structure and URLs may change too')
     expect(html).not.toMatch(/alpha/i)
+  })
+
+  it('identifies an unreleased port without calling its package released', async () => {
+    const html = await render('/en/haskell/latest/core/', 'core', 'haskell')
+    expect(html).toContain('libtmux-haskell has not been released. Its API may change during development.')
+    expect(html).toContain('>Unreleased</strong>')
+    expect(html).not.toContain('libtmux is released')
+    const tagged = await render('/en/julia/latest/core/', 'core', 'julia')
+    expect(tagged).toContain('libtmux is released')
+    expect(tagged).not.toContain('has not been released')
   })
 
   it('stores dismissal under a key the alpha notice never wrote', () => {
