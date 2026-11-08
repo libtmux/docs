@@ -5195,6 +5195,27 @@
    "section": "ports"
   },
   {
+   "port": "haskell",
+   "symbol": "LibTmux.Id",
+   "page": "/haskell/latest/core/",
+   "title": "Typed tmux values for Haskell",
+   "section": "core"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Value",
+   "page": "/haskell/latest/core/",
+   "title": "Typed tmux values for Haskell",
+   "section": "core"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Version",
+   "page": "/haskell/latest/core/",
+   "title": "Typed tmux values for Haskell",
+   "section": "core"
+  },
+  {
    "port": "java",
    "symbol": "io.github.libtmux.batch.Batch.Batch",
    "page": "/java/latest/concepts/transports/",
