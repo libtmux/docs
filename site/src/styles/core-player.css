@@ -158,6 +158,32 @@
   display: none;
 }
 
+/*
+ * The markup is drawn at the state before the first call, which is where the
+ * script starts a reader who has not asked for less motion. A page without
+ * script, and a reduced-motion reader's page until the script binds (it starts
+ * finished), show the final frame and result instead.
+ */
+html:not([data-js]) .core-player__tmux > .mcp-frame:first-child {
+  display: none;
+}
+
+html:not([data-js]) .core-player__tmux > .mcp-frame[data-off]:last-child {
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-js] .home-example-player:not([data-live]) .core-player__tmux > .mcp-frame:first-child,
+  html[data-js] .home-example-player:not([data-live]) .core-player__results > .core-result:first-child {
+    visibility: hidden;
+  }
+
+  html[data-js] .home-example-player:not([data-live]) .core-player__tmux > .mcp-frame:last-child,
+  html[data-js] .home-example-player:not([data-live]) .core-player__results > .core-result:last-child {
+    visibility: visible;
+  }
+}
+
 html:not([data-js]) .core-result + .core-result {
   margin-top: 0.5rem;
   padding-top: 0.5rem;

@@ -625,7 +625,8 @@
   container-type: inline-size;
 }
 
-.mcp-replay__controls[hidden] {
+.mcp-replay__controls[hidden],
+html:not([data-js]) .mcp-replay__controls {
   display: none;
 }
 

@@ -212,13 +212,15 @@ describe('the player component', () => {
     windows.push(win)
     win.document.body.innerHTML = await renderAstroTemplate(await template, { props: { port: 'go', language: 'Go', example, recording, capability } })
     const document = win.document as unknown as Document
-    if (run) {
+    // Binding is the page's script running after the markup has been drawn.
+    const bind = () => {
       const target = win as unknown as { matchMedia: (query: string) => { matches: boolean }; IntersectionObserver?: unknown; requestAnimationFrame: (callback: () => void) => void }
       target.matchMedia = (query: string) => ({ matches: /reduced-motion/.test(query) ? reduced : true })
       target.IntersectionObserver = undefined
       win.eval(`(function() {\n${script}\n})()`)
     }
-    return { win, document, capability }
+    if (run) bind()
+    return { win, document, capability, bind }
   }
 
   const shown = (document: Document, selector: string) => [...document.querySelectorAll<HTMLElement>(selector)].filter((element) => !element.hidden && !element.hasAttribute('data-off'))
@@ -237,12 +239,12 @@ describe('the player component', () => {
     expect(document.querySelector('.home-example-player')!.classList.contains('not-prose')).toBe(true)
   })
 
-  it('draws one frame and one result for the state before the first call and each call, and shows the last', async () => {
+  it('draws one frame and one result for the state before the first call and each call, and shows the first', async () => {
     const { document } = await mount()
     const { capability } = await recorded()
     const frames = ['0', ...capability.steps.map((_, index) => String(index + 1))]
     expect([...document.querySelectorAll('.core-player__tmux [data-frame]')].map((frame) => frame.getAttribute('data-frame'))).toEqual(frames)
-    expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual([frames.at(-1)])
+    expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual(['0'])
     expect(document.querySelectorAll('.core-player__tmux .mcp-tmux')).toHaveLength(frames.length)
     expect([...document.querySelectorAll('.core-result')].map((result) => result.getAttribute('data-result'))).toEqual(frames)
     // The drawings are the replay's own, so their SVG ids must not collide with another player's on the page.
@@ -291,9 +293,37 @@ describe('the player component', () => {
     expect(button.getAttribute('aria-label')).toBe('How this was recorded')
   })
 
-  it('hides what it has not bound: the controls and the pin buttons wait for the script', async () => {
+  it('is drawn at the state the script first shows, so binding the script changes nothing on screen', async () => {
+    const { document, bind } = await mount({ reduced: false })
+    const onScreen = () => ({
+      frames: shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame),
+      results: shown(document, '.core-result').map((result) => result.dataset.result),
+      count: count(document),
+      current: document.querySelector('[data-mark][aria-current="step"]')?.getAttribute('data-mark'),
+      filled: document.querySelector<HTMLElement>('[data-fill]')!.style.width,
+      controls: document.querySelector<HTMLElement>('[data-controls]')!.hidden,
+      done: [...document.querySelectorAll('[data-mark].is-done')].map((mark) => mark.getAttribute('data-mark')),
+    })
+    const drawn = onScreen()
+    bind()
+    expect(onScreen()).toEqual(drawn)
+    expect(drawn.frames).toEqual(['0'])
+    expect(drawn.results).toEqual(['0'])
+    expect(drawn.count).toMatch(/^0\//)
+  })
+
+  it('keeps the finished state for a page with no script, and for a reader who asks for less motion until the script binds', () => {
+    const css = readFileSync(new URL('../src/styles/core-player.css', import.meta.url), 'utf8')
+    const controls = readFileSync(new URL('../src/styles/mcp-replay.css', import.meta.url), 'utf8')
+    expect(css).toMatch(/html:not\(\[data-js\]\) \.core-player__tmux > \.mcp-frame:first-child \{\s*display: none;/)
+    expect(css).toMatch(/html:not\(\[data-js\]\) \.core-player__tmux > \.mcp-frame\[data-off\]:last-child \{\s*display: block;/)
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{[^@]*:not\(\[data-live\]\) \.core-player__tmux > \.mcp-frame:last-child,[^@]*visibility: visible;/)
+    expect(controls).toMatch(/html:not\(\[data-js\]\) \.mcp-replay__controls \{\s*display: none;/)
+  })
+
+  it('hides what it has not bound: the pin buttons wait for the script, and the controls take their place from the first paint', async () => {
     const { document } = await mount()
-    expect(document.querySelector<HTMLElement>('[data-controls]')!.hidden).toBe(true)
+    expect(document.querySelector<HTMLElement>('[data-controls]')!.hidden).toBe(false)
     expect([...document.querySelectorAll<HTMLElement>('[data-pin]')].every((pin) => pin.hidden)).toBe(true)
     // A dot for tmux before the first call, then one per call.
     expect(document.querySelectorAll('[data-mark]')).toHaveLength((await recorded()).capability.steps.length + 1)

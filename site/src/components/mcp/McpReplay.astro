@@ -99,7 +99,7 @@ const note = (frame: Frame) => {
       )}
     </div>
   </div>
-  {recording && <ReplayControls start="Show tmux before the first call" marks={example.steps.map((step) => `Show the state after ${step.tool.name}`)} />}
+  {recording && <ReplayControls at={total} start="Show tmux before the first call" marks={example.steps.map((step) => `Show the state after ${step.tool.name}`)} />}
 </section>
 {recording ? (
   <p class="not-prose mcp-provenance">

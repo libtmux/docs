@@ -494,7 +494,8 @@ describe('the replay component', () => {
     expect(document.querySelectorAll('details.mcp-result[open]')).toHaveLength(CALLS.rs)
     expect(frameShown(document)).toEqual([CALLS.rs])
     expect(document.querySelectorAll('[data-frame]')).toHaveLength(CALLS.rs + 1)
-    expect((document.querySelector('[data-controls]') as HTMLElement).hidden).toBe(true)
+    // The bar is in the markup so binding it moves nothing; the stylesheet hides it from a page with no script.
+    expect(document.querySelector('[data-count]')!.textContent).toBe(`${CALLS.rs}/${CALLS.rs}`)
     expect(document.querySelector('[data-live]')).toBeNull()
   })
 
