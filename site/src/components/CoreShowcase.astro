@@ -34,14 +34,14 @@ interface Props {
 const { port, links = [] } = Astro.props as Props
 const programs = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>)
 const quickstart = QUICKSTARTS[port]?.complete
+const quickstartCapability = CAPABILITIES.find((item) => item.id === (quickstart?.capability ?? 'typed-graph'))
+if (!quickstartCapability) throw new Error(`CoreShowcase: ${port} names an unknown quickstart capability`)
 const quickstartCode = quickstart ? homeProgram(quickstart, 'full') : ''
 // A recording of this program, run for real, makes the first capability a player; without one the program stands alone.
-const player = quickstart ? await playableCapability(port, 'typed-graph', quickstartCode) : undefined
-// The first capability is the port's homepage quickstart, which already walks server, session, window and pane.
-// So does each other capability whose recording is of the program its panel shows.
+const player = quickstart ? await playableCapability(port, quickstartCapability.id, quickstartCode) : undefined
 const capabilityPlayers = new Map(await Promise.all(programs.map(async (item) => [item.id, await playableCapability(port, item.id, item.code)] as const)))
 const shown = [
-  ...(quickstart ? [{ id: 'typed-graph', label: CAPABILITIES[0].label, quickstart: true as const, tmux: undefined as string | undefined }] : []),
+  ...(quickstart ? [{ ...quickstartCapability, quickstart: true as const, tmux: undefined as string | undefined }] : []),
   ...programs.map((item) => ({ ...item, quickstart: false as const })),
 ]
 const cachedSource = (id: CapabilityId) => {
@@ -72,26 +72,26 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
       {player
         ? <CorePlayer port={port} language={PORT_BY_SLUG[port]!.name} example={quickstart!} recording={player.recording} capability={player.capability} />
         : <HomeExample port={port} language={PORT_BY_SLUG[port]!.name} example={quickstart!} heading={false} fixed />}
-      <div class="core-showcase__apis" data-core-apis>
+      {apis.get(item.id)!.shown.length > 0 && <div class="core-showcase__apis" data-core-apis>
         <p class="core-showcase__apis-title">APIs used</p>
         <ul class="core-showcase__apilist" data-apis-for={item.id} aria-label={`APIs used: ${item.label}`}>
           {apis.get(item.id)!.shown.map((api) => <li><a href={api.href}><code>{api.label}</code></a></li>)}
           {apis.get(item.id)!.more > 0 && <li><a href={apis.get(item.id)!.moreHref}>+{apis.get(item.id)!.more} more</a></li>}
         </ul>
-      </div>
+      </div>}
     </section> : <section class="core-showcase__panel" data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}
       style={`--home-code-columns: ${homeCodeColumns(item.code)}`}>
       {capabilityPlayers.get(item.id)
         ? <CorePlayer port={port} language={PORT_BY_SLUG[port]!.name} example={capabilityExample({ ...item, ...cachedSource(item.id) })} recording={capabilityPlayers.get(item.id)!.recording}
           capability={capabilityPlayers.get(item.id)!.capability} capabilityId={item.id} options={false} run={false} />
         : <Code code={item.code} lang={item.lang} title={item.file} frame="code" />}
-      <div class="core-showcase__apis" data-core-apis>
+      {apis.get(item.id)!.shown.length > 0 && <div class="core-showcase__apis" data-core-apis>
         <p class="core-showcase__apis-title">APIs used</p>
         <ul class="core-showcase__apilist" data-apis-for={item.id} aria-label={`APIs used: ${item.label}`}>
           {apis.get(item.id)!.shown.map((api) => <li><a href={api.href}><code>{api.label}</code></a></li>)}
           {apis.get(item.id)!.more > 0 && <li><a href={apis.get(item.id)!.moreHref}>+{apis.get(item.id)!.more} more</a></li>}
         </ul>
-      </div>
+      </div>}
       <p class="core-showcase__source">
         {item.tmux && <small class="core-showcase__tmux">tmux {item.tmux}</small>}
         The whole program, <a href={item.sourceUrl}><code>{item.file}</code></a>. The port's CI runs it in <code>{item.ci.workflow}</code>{(item.ci.where ?? item.ci.directory) && <> from <code>{item.ci.where ?? item.ci.directory}/</code></>}: <code>{item.ci.command}</code>.
