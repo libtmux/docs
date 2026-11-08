@@ -4,7 +4,7 @@ import { Window } from 'happy-dom'
 import { afterEach, describe, expect, it } from 'vitest'
 import { parameterId, symbolsForProduct, type ApiSymbol, type Param } from '@libtmux/api-model'
 import { API_MODELS } from '../src/lib/api-models'
-import { splitFieldMembers } from '../src/lib/api-sections'
+import { fieldsRepeated, splitFieldMembers } from '../src/lib/api-sections'
 import { productApiHref, productApiRoots } from '../src/lib/product-api'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { productAvailable, PORTS, type DocProduct } from '../src/lib/ports'
@@ -428,7 +428,7 @@ describe('product reference pages', () => {
   describe('with the owner renderer', () => {
     // Each entry and the table's cells draw only what the assertions read: which symbol, as a member, linked where.
     const load = () => loadAstroTemplate('components/api/ProductApiPage.astro', {
-      real: ['components/api/ApiScalarMembers.astro'],
+      real: ['components/api/ApiScalarMembers.astro', 'components/api/ApiMemberList.astro'],
       stubs: {
         'components/api/ApiEntry.astro': `---
 const { symbol, member, nameHref } = Astro.props
@@ -457,7 +457,7 @@ const { symbol, member, nameHref } = Astro.props
     it.each([
       ['rs', 'config.Workspace', 'Fields'], ['go', 'workspace.Workspace', 'Fields'],
       ['csharp', 'LibTmux.Workspace.WorkspaceAction', 'Properties'], ['csharp', 'LibTmux.Workspace.WorkspaceActionOutcome', 'Properties'],
-    ])('%s %s lists its typed fields as %s in a counted table ahead of its member details', async (port, id, word) => {
+    ])('%s %s lists its typed fields as %s in a counted table ahead of the other members', async (port, id, word) => {
       const { model, members, document, symbol } = await render(port, id)
       const fields = members.filter(isField)
       expect(fields.length).toBeGreaterThan(0)
@@ -478,10 +478,10 @@ const { symbol, member, nameHref } = Astro.props
       expect([...block.querySelectorAll('thead th')].map((cell) => cell.textContent)).toEqual(['Name', 'Type', 'Description'])
       // The article is prose, whose table rule makes a table a block that stops short of its box; `table` restores the grid.
       expect(block.querySelector('table.api-scalar-members')?.classList.contains('table')).toBe(true)
-      // Each entry below draws the type again in full, so the table's drawing is the repeat and the entry's the count.
+      // As on a core page, a field's type is a repeat only where the field's own page draws it in full: C# properties.
       const drawn = [...block.querySelectorAll('[data-type]')]
       expect(drawn).toHaveLength(fields.length)
-      expect(drawn.every((cell) => cell.getAttribute('data-repeated') === 'true')).toBe(true)
+      expect(drawn.every((cell) => cell.getAttribute('data-repeated') === String(fieldsRepeated(port)))).toBe(true)
       // The box a container query measures, so a narrow page stacks the rows.
       expect(block.querySelector(':scope > .api-scalar-box > table.api-scalar-members')).not.toBeNull()
       expect(block.querySelector('caption')?.textContent).toContain(` ${word.toLowerCase()}`)
@@ -503,33 +503,37 @@ const { symbol, member, nameHref } = Astro.props
         .map((line) => /\]\(([^)]*)\)/.exec(line)![1])
       expect(exported.toSorted()).toEqual(rows.map((row) => row.querySelector('th a')!.getAttribute('href')!).toSorted())
 
-      // The entries keep every member, fields included, so under the table they are its detail; the count is theirs.
-      const membersHeading = document.querySelector('.api-members > h2#api-members')!
-      expect(membersHeading.firstChild?.textContent).toBe('Member details')
-      expect(membersHeading.querySelector('a.api-heading-link')?.getAttribute('aria-label')).toBe('Link to Member details')
-      expect(membersHeading.querySelector('.api-section-count')?.textContent).toBe(String(members.length))
-      expect(heading.compareDocumentPosition(membersHeading) & 4, 'Fields come before Members').toBeGreaterThan(0)
+      // The fields are listed once, in the table; the members that are not fields follow as the core page lists them.
+      const rest = members.filter((member) => !isField(member))
+      expect(document.querySelectorAll('dl[data-member="true"]'), 'no member is drawn as a full entry').toHaveLength(0)
+      const membersHeading = document.querySelector('.api-members > h2#api-members')
+      if (rest.length > 0) {
+        expect(membersHeading!.firstChild?.textContent).toBe('Other members')
+        expect(membersHeading!.querySelector('.api-section-count')?.textContent).toBe(String(rest.length))
+        expect(heading.compareDocumentPosition(membersHeading!) & 4, 'Fields come before Members').toBeGreaterThan(0)
+      } else expect(membersHeading).toBeNull()
       const ids = [...document.querySelectorAll('[id]')].map((element) => element.id)
       expect(new Set(ids).size, 'every id on the page is unique').toBe(ids.length)
     }, 60_000)
 
-    it('keeps one entry per member, in order, under the Members heading', async () => {
+    it('lists each member that is not a field once, in order, linked to its own page', async () => {
       const { model, members, document } = await render('rs', 'config.Workspace')
-      const entries = [...document.querySelectorAll('.api-members > dl[data-entry]')]
-      expect(entries.map((entry) => entry.getAttribute('data-entry'))).toEqual(members.map((member) => member.id))
-      expect(entries.every((entry) => entry.getAttribute('data-member') === 'true')).toBe(true)
-      expect(entries.map((entry) => entry.getAttribute('data-name-href'))).toEqual(members.map((member) => productApiHref(model, member, 'latest')))
+      const rest = members.filter((member) => !isField(member))
+      expect(rest.length).toBeGreaterThan(0)
+      const links = [...document.querySelectorAll('.api-members .api-member-list a.api-member-link')]
+      expect(links.map((link) => link.getAttribute('href')).toSorted()).toEqual(rest.map((member) => productApiHref(model, member, 'latest')).toSorted())
       // The page's own declaration stays above both blocks.
       expect(document.querySelector('.api-reference-content > dl[data-entry="config.Workspace"]')).not.toBeNull()
     }, 60_000)
 
-    it('leaves a port without a field table with the counted Members and its entries alone', async () => {
+    it('leaves a port without a field table with the counted Members and its rows alone', async () => {
       const { members, document } = await render('swift', 'CallerIdentity')
       expect(members.filter(isField).length).toBeGreaterThan(0)
       expect(document.querySelector('#api-fields, .api-field-table, table')).toBeNull()
       expect(document.querySelector('.api-members > h2#api-members')?.firstChild?.textContent).toBe('Members')
       expect(document.querySelector('.api-members > h2#api-members .api-section-count')?.textContent).toBe(String(members.length))
-      expect(document.querySelectorAll('.api-members > dl[data-entry]')).toHaveLength(members.length)
+      expect(document.querySelectorAll('.api-members .api-member-list > li')).toHaveLength(members.length)
+      expect(document.querySelectorAll('dl[data-member="true"]')).toHaveLength(0)
     }, 60_000)
   })
 })

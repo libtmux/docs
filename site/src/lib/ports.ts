@@ -60,7 +60,8 @@ export interface PortPackage {
   installs?: readonly InstallCommand[]
 }
 
-export type ProductAvailability = 'available' | 'unpublished'
+/** An `unpublished` product has pages that are not released yet; an `excluded` one has no pages at all. */
+export type ProductAvailability = 'available' | 'unpublished' | 'excluded'
 
 /**
  * One way to add a port's package to a project.
@@ -1457,7 +1458,12 @@ export const PICKER_GROUP_SUMMARY: Readonly<Record<PickerGroup, string>> = {
 
 /** Whether a companion product has a published implementation for a port. */
 export function productAvailable(port: Port, product: DocProduct): boolean {
-  return !port.parentLibrary && port.productAvailability?.[product] !== 'unpublished'
+  return !port.parentLibrary && port.productAvailability?.[product] !== 'unpublished' && !productExcluded(port, product)
+}
+
+/** Whether a port has no page for a companion product, as opposed to one that is only unpublished. */
+export function productExcluded(port: Port, product: DocProduct): boolean {
+  return port.productAvailability?.[product] === 'excluded'
 }
 
 /** Non-Python companions dogfood their core library as concept examples. */

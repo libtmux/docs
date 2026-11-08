@@ -1,7 +1,7 @@
 import { symbolsForProduct, type ApiSymbol } from '@libtmux/api-model'
 import { headingTitle } from './branding'
 import { API_MODELS, pageSlug, referenceAlternatives, referenceHref } from './api-models'
-import { DOC_PRODUCTS, PORT_BY_SLUG, PORTS, portHomeUrl, portPageUrl, productAvailable, referenceUrl } from './ports'
+import { DOC_PRODUCTS, PORT_BY_SLUG, PORTS, portHomeUrl, portPageUrl, productAvailable, productExcluded, referenceUrl } from './ports'
 import { docsPath, docsRoutePath, type DocsPage } from './docs-paths'
 import { productApiHref } from './product-api'
 import { MCP_REFERENCE, equivalentMcpObject, mcpObjectAt, type McpSection } from './mcp-reference'
@@ -93,6 +93,8 @@ export function pagePortLinks({
     ? docs.filter((entry) => entry.data.equivalence === own.data.equivalence && entry.data.product === own.data.product)
     : paths.flatMap((candidate) => docs.filter((entry) => docsPath(entry) === candidate || entry.data.aliases?.includes(candidate)))
   const product = /^(mcp|workspace)\//.exec(path)?.[1] as 'mcp' | 'workspace' | undefined
+  // The bare product root counts too when a port excludes the product; an unpublished root still has its overview page.
+  const productRoot = /^(mcp|workspace)(?:\/|$)/.exec(path)?.[1] as 'mcp' | 'workspace' | undefined
   const protocol = /^mcp\/(tools|prompts|resources)(?:\/(.+))?$/.exec(path)
   const object = protocol && portSlug ? mcpObjectAt(portSlug, protocol[1] as McpSection, protocol[2]) : undefined
 
@@ -173,6 +175,8 @@ export function pagePortLinks({
         }]
       }
     }
+    // A port that excludes the product has no page to link; an unpublished one still has its overview.
+    if (productRoot && productExcluded(port, productRoot)) links = []
     const homeProduct = product && productAvailable(port, product) ? product : undefined
     const home = {
       href: homeProduct ? portPageUrl(port, targetVersion, homeProduct) : portHomeUrl(port, targetVersion),

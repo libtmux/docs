@@ -12,6 +12,7 @@ import { mcpObjectGroup } from '../src/lib/mcp-reference'
 import { mentionBadge, mentionBadgeHtml } from '../src/lib/mention-badge'
 import { mcpTitle, workspaceSubtitle, workspaceTitle } from '../src/lib/product-copy'
 import type { ApiTreeJson } from '../src/lib/api-search'
+import { PRODUCT_SECTIONS } from '../src/lib/product-api-sections'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
 interface Manifest {
@@ -214,9 +215,11 @@ function graph(document: Window['document']): StructuredEntry[] {
 /**
  * Read the rendered sidebar ancestry independently of the breadcrumb builder.
  *
- * The API reference is one tree whose only top-level row is the reference itself. The rows from there to the
- * page's declaration are returned, without the badge each row draws beside its name. The page's own link must
- * already be marked current in the served HTML, since nothing here runs a script.
+ * A flat API reference is one tree whose only top-level row is the reference itself; a sectioned product reference
+ * has its sections as top-level rows instead, and the breadcrumb keeps the section after "API reference". The rows
+ * below the reference row (a section included) to the page's declaration are returned, without the badge each row
+ * draws beside its name. The page's own link must already be marked current in the served HTML, since nothing here
+ * runs a script.
  */
 function referenceTrail(document: Window['document'], href: string) {
   const navigation = document.querySelector('.api-nav nav')!
@@ -232,9 +235,11 @@ function referenceTrail(document: Window['document'], href: string) {
     for (const decoration of copy.querySelectorAll('[aria-hidden="true"]')) decoration.remove()
     trail.unshift({ name: copy.textContent.trim(), url: (leaf ? row : label).getAttribute('href') })
   }
-  const [reference, ...declarations] = trail
-  expect(reference?.name, `${href} the tree's top row is the reference`).toBe('API reference')
-  return declarations
+  const [top, ...declarations] = trail
+  if (top?.name === 'API reference') return declarations
+  const sections = new Set(Object.values(PRODUCT_SECTIONS).flat().map((section) => section.label))
+  expect(sections.has(top?.name ?? ''), `${href} the tree's top row is the reference or one of its sections, not ${top?.name}`).toBe(true)
+  return trail
 }
 
 /** The first paint of the real reference sidebar, so the reader below follows the component's markup. */

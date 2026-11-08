@@ -2,15 +2,17 @@
 import { qualifiedNameOf, docSummaryText } from '@libtmux/api-model'
 import { API_MODELS } from '../../lib/api-models'
 import { productApiHref, productApiRoots } from '../../lib/product-api'
+import { productApiSections } from '../../lib/product-api-sections'
 import { mentionBadge, mentionBadgeHtml } from '../../lib/mention-badge'
 import type { DocProduct } from '../../lib/ports'
 interface Props { port: string; product: DocProduct; version: string }
 const { port, product, version } = Astro.props
 const model = API_MODELS[port]
 const symbols = productApiRoots(model, product)
-const groups = [
-  { title: 'Exports', symbols: symbols.filter((symbol) => symbol.apiScope !== 'supporting') },
-  { title: 'Types used in signatures', symbols: symbols.filter((symbol) => symbol.apiScope === 'supporting') },
+const sections = productApiSections(model, product)
+const groups = sections ? sections.map(({ section, symbols }) => ({ title: section.label, id: section.id, symbols })) : [
+  { title: 'Exports', id: 'exports', symbols: symbols.filter((symbol) => symbol.apiScope !== 'supporting') },
+  { title: 'Types used in signatures', id: 'supporting', symbols: symbols.filter((symbol) => symbol.apiScope === 'supporting') },
 ]
 ---
 
@@ -18,8 +20,8 @@ const groups = [
   <h2 id="generated-api">API declarations</h2>
   <p>Follow a declaration for its signature, members, documentation, and source.</p>
   {groups.filter((group) => group.symbols.length).map((group) => <section>
-    <h3>{group.title}</h3>
-    {group.title === 'Types used in signatures' && <p>These types describe returned values or parameters; they are not package entry points.</p>}
+    <h3 id={sections ? `api-section-${group.id}` : undefined}>{group.title}</h3>
+    {group.id === 'supporting' && <p>These types describe returned values or parameters; they are not package entry points.</p>}
     <dl>{group.symbols.map((symbol) => {
       // Each declaration is listed once, so each leads with its kind: the list mixes classes, functions and constants.
       const badge = mentionBadge(symbol.kind, symbol.command?.kind ?? symbol.kind)

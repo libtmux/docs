@@ -98,6 +98,14 @@ interface Props {
    * renders would be a second.
    */
   bare?: boolean
+  /**
+   * The page's body is API reference markup, not prose.
+   *
+   * The title and notice keep the reading column; the slot sits outside
+   * `.prose`, whose `h2 { font-size: 2em }` outranks the reference's own
+   * heading sizes and which `not-prose` does not stop.
+   */
+  reference?: boolean
   navigation?: SidebarItem[]
   /** False keeps the sidebar's own text out of search, as the API tree does; a protocol reference lists every object in it. */
   indexNavigation?: boolean
@@ -135,6 +143,7 @@ const {
   editHref,
   editLabel,
   bare = false,
+  reference = false,
   navigation,
   indexNavigation = true,
   apiNavigation: requestedApiNavigation,
@@ -280,7 +289,8 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
     <main class="min-w-0 flex-1">
       {(!port || pagePath) && !(bare && breadcrumbs.length === 0) && <PageToolbar breadcrumbs={breadcrumbs} pagePorts={hasContext ? [] : pagePorts} port={port} editHref={editHref} editLabel={editLabel} />}
       {bare ? <slot /> : (
-      <article class="prose max-w-none dark:prose-invert">
+      <article class:list={[!reference && 'prose max-w-none dark:prose-invert']}>
+        <div class:list={[reference && 'prose max-w-none dark:prose-invert']}>
         {productBrand ? (
           <div class="product-hero">
             <img src={withRoot(productBrand.asset('logo.svg'))} width="88" height="88" alt="" class="not-prose" />
@@ -293,6 +303,7 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
           ? <code class="not-prose symbol-title"><SymbolName name={title} /></code>
           : title}{subtitle && <span class="page-subtitle">{' '}{subtitle}</span>}</h1>}
         {product && port && <ProductNotice port={port} product={product} overview={pagePath === product} />}
+        </div>
         <slot />
       </article>
       )}

@@ -26,8 +26,43 @@
   background: var(--color-background-primary, var(--color-surface));
 }
 
-.mcp-replay__head[hidden] {
+.mcp-replay__head[hidden],
+html:not([data-js]) .mcp-replay__head {
   display: none;
+}
+
+/*
+ * The markup is drawn at the state before the first call, which is where the
+ * script starts a reader who has not asked for less motion: the prompt alone,
+ * and the empty tmux. A page with no script shows the whole chat and the final
+ * tmux, and so does one for a reader who asked for less motion until the
+ * script binds (the player starts finished). A call or frame out of view is
+ * data-off, not [hidden]: Tailwind's preflight hides [hidden] with !important
+ * from a layer, which no rule here can undo.
+ */
+html[data-js] .mcp-replay[data-live] :is(.mcp-turn, .mcp-frame)[data-off] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html[data-js] .mcp-replay:not([data-live]) :is(.mcp-turn, .mcp-frame)[data-off] {
+    display: none;
+  }
+}
+
+html:not([data-js]) .mcp-replay .mcp-frame:not(:last-child) {
+  display: none;
+}
+
+/* The bar is drawn at the start, which a finished replay is not: it keeps its place and shows once the script has set it. */
+@media (prefers-reduced-motion: reduce) {
+  html[data-js] .mcp-replay:not([data-live]) .mcp-frame:not(:last-child) {
+    display: none;
+  }
+
+  :is(.mcp-replay, .home-example-player):not([data-live]) .mcp-replay__controls {
+    visibility: hidden;
+  }
 }
 
 .mcp-replay__head {
@@ -133,8 +168,12 @@
   margin: 0;
 }
 
-.mcp-replay[data-live] .mcp-turn[data-turn]:not([data-turn='prompt']) {
+/* The pin button's room is there from the first paint, so binding the script does not rewrap a call. */
+html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
   padding-inline-end: 2.25rem;
+}
+
+.mcp-replay[data-live] .mcp-turn[data-turn]:not([data-turn='prompt']) {
   cursor: pointer;
 }
 
@@ -267,9 +306,6 @@
 }
 
 /* tmux preview */
-.mcp-frame[hidden] {
-  display: none;
-}
 
 .mcp-tmux {
   display: flex;
@@ -625,7 +661,8 @@
   container-type: inline-size;
 }
 
-.mcp-replay__controls[hidden] {
+.mcp-replay__controls[hidden],
+html:not([data-js]) .mcp-replay__controls {
   display: none;
 }
 

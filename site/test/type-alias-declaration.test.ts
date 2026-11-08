@@ -14,7 +14,7 @@ const hrefFor = (symbol: (typeof model.symbols)[number]) => `/en/ts/latest/refer
 const index = new SymbolIndex(model.symbols, hrefFor, 'ts')
 const symbolOf = (id: string) => model.symbols.find((symbol) => symbol.id === id)!
 const options = {
-  real: ['components/api/ApiType.astro', 'components/api/SymbolName.astro', 'components/api/ApiBadge.astro'],
+  real: ['components/api/ApiMemberList.astro', 'components/api/ApiType.astro', 'components/api/SymbolName.astro', 'components/api/ApiBadge.astro'],
   modules: {
     'astro-expressive-code/components': { Code: () => '' },
     '../../lib/page-ports-for': { pagePortsFor: async () => [] },

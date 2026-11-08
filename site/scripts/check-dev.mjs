@@ -1102,15 +1102,15 @@ try {
     }, page)
     for (const path of [
       'py/latest/reference/libtmux-server',
-      'py/v0.46.2/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder',
-      'java/latest/workspace/reference/io-github-libtmux-workspace-workspacebuilder-workspacebuilder',
+      'py/v0.46.2/workspace/reference/tmuxp-workspace-freezer-freeze',
+      'java/latest/workspace/reference/io-github-libtmux-workspace-workspacebuilder-workspacebuilder-build',
     ]) await retryReload(async () => {
       const response = await page.goto(`${base}/${path}/`, { waitUntil: 'load' })
       assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
       await page.evaluate(() => document.fonts.ready)
-      // A product page's members keep the collapsed disclosure; the page's own equivalents are a table that is always open.
+      // A product page's own equivalents are a table that is always open; its members are linked rows with none.
       await page.locator('.api-elsewhere').evaluateAll((entries) => entries.forEach((entry) => { entry.open = true }))
-      assert(await page.locator('.api-elsewhere, section:has(> #api-other-ports) .tmux-usage table').count() > 0, `${path}: no equivalents were open to measure`)
+      assert(await page.locator('section:has(> #api-other-ports) .tmux-usage table').count() > 0, `${path}: no equivalents were open to measure`)
       for (const width of [1440, 768, 390]) {
         await page.setViewportSize({ width, height: 1000 })
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)

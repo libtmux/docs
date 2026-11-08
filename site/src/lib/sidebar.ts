@@ -68,11 +68,12 @@ export function sidebarBreadcrumbs(items: SidebarItem[], currentUrl: string): Br
   for (const item of items) {
     if (item.type === 'link' && (item.disabled || item.external)) continue
     const crumb = { name: item.label, url: item.href, ...(item.kind ? { symbol: true } : {}) }
-    if (item.href && matches(item.href)) return [crumb]
+    // A group may link to the page of one of its own rows, as a sectioned reference does; the row is the deeper match.
     if (item.type === 'group') {
       const children = sidebarBreadcrumbs(item.items, currentUrl)
       if (children.length) return [crumb, ...children]
     }
+    if (item.href && matches(item.href)) return [crumb]
   }
   return []
 }
