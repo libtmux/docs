@@ -134,8 +134,9 @@ describeIfAssembled('published exports', () => {
         template.innerHTML = readPublished(join(root, 'index.html'))
         const actual = [...template.content.querySelectorAll('.api-index-summary[id]')].map((node) => node.id)
         expect(reference.headings.map((heading: { id: string }) => heading.id)).toEqual(actual)
-        expect(actual[0]).toBe('section-server')
-        if (port.slug === 'powershell') expect(reference.symbols.slice(0, 3).map((symbol: { name: string }) => symbol.name))
+        expect(actual[0]).toBe(port.slug === 'haskell' ? 'section-exports:LibTmux.Id' : 'section-server')
+        if (port.slug === 'haskell') expect(reference.symbols[0]).toMatchObject({ name: 'LibTmux.Id', kind: 'module' })
+        else if (port.slug === 'powershell') expect(reference.symbols.slice(0, 3).map((symbol: { name: string }) => symbol.name))
           .toEqual(['New-TmuxServer', 'Get-TmuxServer', 'Connect-TmuxServer'])
         else expect(reference.symbols[0].name).toBe('Server')
         for (const symbol of reference.symbols) {
