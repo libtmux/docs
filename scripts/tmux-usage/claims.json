@@ -15202,26 +15202,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:967",
+          "at": "packages/core/lib/LibTmux/Server.pm:990",
           "has": [
             "$self->_run($self->operation('new_session', %args));"
           ],
           "in": "LibTmux::Server::new_session"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:522",
+          "at": "packages/core/lib/LibTmux/Server.pm:524",
           "has": [
             "'new-session', '-d', '-P', '-F', _creation_format('session'),"
           ]
@@ -15236,26 +15236,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:967",
+          "at": "packages/core/lib/LibTmux/Server.pm:990",
           "has": [
             "$self->_run($self->operation('new_session', %args));"
           ],
           "in": "LibTmux::Server::new_session"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
           "has": [
             "session => ['list-sessions'],"
           ]
@@ -15272,26 +15272,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:967",
+          "at": "packages/core/lib/LibTmux/Server.pm:990",
           "has": [
             "$self->_run($self->operation('new_session', %args));"
           ],
           "in": "LibTmux::Server::new_session"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
           "has": [
             "window  => ['list-windows', '-a'],"
           ]
@@ -15308,26 +15308,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:967",
+          "at": "packages/core/lib/LibTmux/Server.pm:990",
           "has": [
             "$self->_run($self->operation('new_session', %args));"
           ],
           "in": "LibTmux::Server::new_session"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "at": "packages/core/lib/LibTmux/Server.pm:158",
           "has": [
             "pane    => ['list-panes',   '-a'],"
           ]
@@ -15344,26 +15344,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:967",
+          "at": "packages/core/lib/LibTmux/Server.pm:990",
           "has": [
             "$self->_run($self->operation('new_session', %args));"
           ],
           "in": "LibTmux::Server::new_session"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "at": "packages/core/lib/LibTmux/Server.pm:159",
           "has": [
             "client  => ['list-clients']"
           ]
@@ -15380,26 +15380,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:967",
+          "at": "packages/core/lib/LibTmux/Server.pm:990",
           "has": [
             "$self->_run($self->operation('new_session', %args));"
           ],
           "in": "LibTmux::Server::new_session"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -15416,26 +15416,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:971",
+          "at": "packages/core/lib/LibTmux/Server.pm:994",
           "has": [
             "$self->_run($self->operation('new_window', %args));"
           ],
           "in": "LibTmux::Server::new_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:547",
+          "at": "packages/core/lib/LibTmux/Server.pm:549",
           "has": [
             "$split ? 'split-window' : 'new-window',"
           ]
@@ -15450,26 +15450,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:971",
+          "at": "packages/core/lib/LibTmux/Server.pm:994",
           "has": [
             "$self->_run($self->operation('new_window', %args));"
           ],
           "in": "LibTmux::Server::new_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
           "has": [
             "session => ['list-sessions'],"
           ]
@@ -15486,26 +15486,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:971",
+          "at": "packages/core/lib/LibTmux/Server.pm:994",
           "has": [
             "$self->_run($self->operation('new_window', %args));"
           ],
           "in": "LibTmux::Server::new_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
           "has": [
             "window  => ['list-windows', '-a'],"
           ]
@@ -15522,26 +15522,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:971",
+          "at": "packages/core/lib/LibTmux/Server.pm:994",
           "has": [
             "$self->_run($self->operation('new_window', %args));"
           ],
           "in": "LibTmux::Server::new_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "at": "packages/core/lib/LibTmux/Server.pm:158",
           "has": [
             "pane    => ['list-panes',   '-a'],"
           ]
@@ -15558,26 +15558,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:971",
+          "at": "packages/core/lib/LibTmux/Server.pm:994",
           "has": [
             "$self->_run($self->operation('new_window', %args));"
           ],
           "in": "LibTmux::Server::new_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "at": "packages/core/lib/LibTmux/Server.pm:159",
           "has": [
             "client  => ['list-clients']"
           ]
@@ -15594,26 +15594,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:971",
+          "at": "packages/core/lib/LibTmux/Server.pm:994",
           "has": [
             "$self->_run($self->operation('new_window', %args));"
           ],
           "in": "LibTmux::Server::new_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -15630,26 +15630,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:975",
+          "at": "packages/core/lib/LibTmux/Server.pm:998",
           "has": [
             "$self->_run($self->operation('split_pane', %args));"
           ],
           "in": "LibTmux::Server::split_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:547",
+          "at": "packages/core/lib/LibTmux/Server.pm:549",
           "has": [
             "$split ? 'split-window' : 'new-window',"
           ]
@@ -15664,26 +15664,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:975",
+          "at": "packages/core/lib/LibTmux/Server.pm:998",
           "has": [
             "$self->_run($self->operation('split_pane', %args));"
           ],
           "in": "LibTmux::Server::split_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
           "has": [
             "session => ['list-sessions'],"
           ]
@@ -15700,26 +15700,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:975",
+          "at": "packages/core/lib/LibTmux/Server.pm:998",
           "has": [
             "$self->_run($self->operation('split_pane', %args));"
           ],
           "in": "LibTmux::Server::split_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
           "has": [
             "window  => ['list-windows', '-a'],"
           ]
@@ -15736,26 +15736,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:975",
+          "at": "packages/core/lib/LibTmux/Server.pm:998",
           "has": [
             "$self->_run($self->operation('split_pane', %args));"
           ],
           "in": "LibTmux::Server::split_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "at": "packages/core/lib/LibTmux/Server.pm:158",
           "has": [
             "pane    => ['list-panes',   '-a'],"
           ]
@@ -15772,26 +15772,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:975",
+          "at": "packages/core/lib/LibTmux/Server.pm:998",
           "has": [
             "$self->_run($self->operation('split_pane', %args));"
           ],
           "in": "LibTmux::Server::split_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "at": "packages/core/lib/LibTmux/Server.pm:159",
           "has": [
             "client  => ['list-clients']"
           ]
@@ -15808,26 +15808,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:975",
+          "at": "packages/core/lib/LibTmux/Server.pm:998",
           "has": [
             "$self->_run($self->operation('split_pane', %args));"
           ],
           "in": "LibTmux::Server::split_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -15844,26 +15844,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:988",
+          "at": "packages/core/lib/LibTmux/Server.pm:1011",
           "has": [
             "$self->_run($self->operation('rename_session', %args));"
           ],
           "in": "LibTmux::Server::rename_session"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:604",
+          "at": "packages/core/lib/LibTmux/Server.pm:606",
           "has": [
             "['session', 'session', 'rename-session', 'name', 'format'],"
           ]
@@ -15878,26 +15878,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:988",
+          "at": "packages/core/lib/LibTmux/Server.pm:1011",
           "has": [
             "$self->_run($self->operation('rename_session', %args));"
           ],
           "in": "LibTmux::Server::rename_session"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -15914,26 +15914,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:992",
+          "at": "packages/core/lib/LibTmux/Server.pm:1015",
           "has": [
             "$self->_run($self->operation('rename_window', %args));"
           ],
           "in": "LibTmux::Server::rename_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:606",
+          "at": "packages/core/lib/LibTmux/Server.pm:608",
           "has": [
             "['window', 'window', 'rename-window', 'name', 'format'],"
           ]
@@ -15948,26 +15948,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:992",
+          "at": "packages/core/lib/LibTmux/Server.pm:1015",
           "has": [
             "$self->_run($self->operation('rename_window', %args));"
           ],
           "in": "LibTmux::Server::rename_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -15984,26 +15984,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:996",
+          "at": "packages/core/lib/LibTmux/Server.pm:1019",
           "has": [
             "$self->_run($self->operation('link_window', %args));"
           ],
           "in": "LibTmux::Server::link_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:577",
+          "at": "packages/core/lib/LibTmux/Server.pm:579",
           "has": [
             "'link-window', '-s', $window->[0], '-t',"
           ]
@@ -16018,26 +16018,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:996",
+          "at": "packages/core/lib/LibTmux/Server.pm:1019",
           "has": [
             "$self->_run($self->operation('link_window', %args));"
           ],
           "in": "LibTmux::Server::link_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -16054,26 +16054,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1000",
+          "at": "packages/core/lib/LibTmux/Server.pm:1023",
           "has": [
             "$self->_run($self->operation('unlink_window', %args));"
           ],
           "in": "LibTmux::Server::unlink_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:607",
+          "at": "packages/core/lib/LibTmux/Server.pm:609",
           "has": [
             "unlink_window => ['window_link', 'link',    'unlink-window'],"
           ]
@@ -16088,26 +16088,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1000",
+          "at": "packages/core/lib/LibTmux/Server.pm:1023",
           "has": [
             "$self->_run($self->operation('unlink_window', %args));"
           ],
           "in": "LibTmux::Server::unlink_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -16124,26 +16124,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1004",
+          "at": "packages/core/lib/LibTmux/Server.pm:1027",
           "has": [
             "$self->_run($self->operation('move_window', %args));"
           ],
           "in": "LibTmux::Server::move_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:593",
+          "at": "packages/core/lib/LibTmux/Server.pm:595",
           "has": [
             "'move-window', '-s', $link->[0], '-t',"
           ]
@@ -16158,26 +16158,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1004",
+          "at": "packages/core/lib/LibTmux/Server.pm:1027",
           "has": [
             "$self->_run($self->operation('move_window', %args));"
           ],
           "in": "LibTmux::Server::move_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -16194,26 +16194,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1008",
+          "at": "packages/core/lib/LibTmux/Server.pm:1031",
           "has": [
             "$self->_run($self->operation('select_window', %args));"
           ],
           "in": "LibTmux::Server::select_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:608",
+          "at": "packages/core/lib/LibTmux/Server.pm:610",
           "has": [
             "select_window => ['window_link', 'link',    'select-window'],"
           ]
@@ -16228,26 +16228,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1008",
+          "at": "packages/core/lib/LibTmux/Server.pm:1031",
           "has": [
             "$self->_run($self->operation('select_window', %args));"
           ],
           "in": "LibTmux::Server::select_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -16264,26 +16264,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1012",
+          "at": "packages/core/lib/LibTmux/Server.pm:1035",
           "has": [
             "$self->_run($self->operation('select_pane', %args));"
           ],
           "in": "LibTmux::Server::select_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:609",
+          "at": "packages/core/lib/LibTmux/Server.pm:611",
           "has": [
             "select_pane   => ['pane',        'pane',    'select-pane'],"
           ]
@@ -16298,26 +16298,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1012",
+          "at": "packages/core/lib/LibTmux/Server.pm:1035",
           "has": [
             "$self->_run($self->operation('select_pane', %args));"
           ],
           "in": "LibTmux::Server::select_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -16334,26 +16334,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1016",
+          "at": "packages/core/lib/LibTmux/Server.pm:1039",
           "has": [
             "$self->_run($self->operation('select_layout', %args));"
           ],
           "in": "LibTmux::Server::select_layout"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:610",
+          "at": "packages/core/lib/LibTmux/Server.pm:612",
           "has": [
             "select_layout => ['window',      'window',  'select-layout', 'layout'],"
           ]
@@ -16368,26 +16368,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1016",
+          "at": "packages/core/lib/LibTmux/Server.pm:1039",
           "has": [
             "$self->_run($self->operation('select_layout', %args));"
           ],
           "in": "LibTmux::Server::select_layout"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -16404,26 +16404,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1020",
+          "at": "packages/core/lib/LibTmux/Server.pm:1043",
           "has": [
             "$self->_run($self->operation('resize_pane', %args));"
           ],
           "in": "LibTmux::Server::resize_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:646",
+          "at": "packages/core/lib/LibTmux/Server.pm:648",
           "has": [
             "@argv = ('resize-pane', '-t', $target->[0]);"
           ]
@@ -16438,26 +16438,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1020",
+          "at": "packages/core/lib/LibTmux/Server.pm:1043",
           "has": [
             "$self->_run($self->operation('resize_pane', %args));"
           ],
           "in": "LibTmux::Server::resize_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -16474,26 +16474,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1024",
+          "at": "packages/core/lib/LibTmux/Server.pm:1047",
           "has": [
             "$self->_run($self->operation('set_title', %args));"
           ],
           "in": "LibTmux::Server::set_title"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:609",
+          "at": "packages/core/lib/LibTmux/Server.pm:611",
           "has": [
             "select_pane   => ['pane',        'pane',    'select-pane'],"
           ]
@@ -16508,26 +16508,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1024",
+          "at": "packages/core/lib/LibTmux/Server.pm:1047",
           "has": [
             "$self->_run($self->operation('set_title', %args));"
           ],
           "in": "LibTmux::Server::set_title"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -16544,26 +16544,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1028",
+          "at": "packages/core/lib/LibTmux/Server.pm:1051",
           "has": [
             "$self->_run($self->operation('send_keys', %args));"
           ],
           "in": "LibTmux::Server::send_keys"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:661",
+          "at": "packages/core/lib/LibTmux/Server.pm:663",
           "has": [
             "'send-keys', '-t', $target->[0], '--',"
           ]
@@ -16578,26 +16578,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1028",
+          "at": "packages/core/lib/LibTmux/Server.pm:1051",
           "has": [
             "$self->_run($self->operation('send_keys', %args));"
           ],
           "in": "LibTmux::Server::send_keys"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -16614,26 +16614,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1032",
+          "at": "packages/core/lib/LibTmux/Server.pm:1055",
           "has": [
             "$self->_run($self->operation('send_text', %args));"
           ],
           "in": "LibTmux::Server::send_text"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:661",
+          "at": "packages/core/lib/LibTmux/Server.pm:663",
           "has": [
             "'send-keys', '-t', $target->[0], '--',"
           ]
@@ -16648,26 +16648,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1032",
+          "at": "packages/core/lib/LibTmux/Server.pm:1055",
           "has": [
             "$self->_run($self->operation('send_text', %args));"
           ],
           "in": "LibTmux::Server::send_text"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -16684,26 +16684,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1036",
+          "at": "packages/core/lib/LibTmux/Server.pm:1059",
           "has": [
             "$self->_run($self->operation('capture_pane', %args));"
           ],
           "in": "LibTmux::Server::capture_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:671",
+          "at": "packages/core/lib/LibTmux/Server.pm:673",
           "has": [
             "@argv = ('capture-pane', '-p', '-t', $target->[0]);"
           ]
@@ -16718,26 +16718,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1036",
+          "at": "packages/core/lib/LibTmux/Server.pm:1059",
           "has": [
             "$self->_run($self->operation('capture_pane', %args));"
           ],
           "in": "LibTmux::Server::capture_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -16754,26 +16754,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1040",
+          "at": "packages/core/lib/LibTmux/Server.pm:1063",
           "has": [
             "$self->_run($self->operation('kill_pane', %args));"
           ],
           "in": "LibTmux::Server::kill_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:611",
+          "at": "packages/core/lib/LibTmux/Server.pm:613",
           "has": [
             "kill_pane     => ['pane',        'pane',    'kill-pane'],"
           ]
@@ -16788,26 +16788,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1040",
+          "at": "packages/core/lib/LibTmux/Server.pm:1063",
           "has": [
             "$self->_run($self->operation('kill_pane', %args));"
           ],
           "in": "LibTmux::Server::kill_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -16824,26 +16824,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1044",
+          "at": "packages/core/lib/LibTmux/Server.pm:1067",
           "has": [
             "$self->_run($self->operation('kill_window', %args));"
           ],
           "in": "LibTmux::Server::kill_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:612",
+          "at": "packages/core/lib/LibTmux/Server.pm:614",
           "has": [
             "kill_window   => ['window',      'window',  'kill-window'],"
           ]
@@ -16858,26 +16858,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1044",
+          "at": "packages/core/lib/LibTmux/Server.pm:1067",
           "has": [
             "$self->_run($self->operation('kill_window', %args));"
           ],
           "in": "LibTmux::Server::kill_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -16894,26 +16894,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1048",
+          "at": "packages/core/lib/LibTmux/Server.pm:1071",
           "has": [
             "$self->_run($self->operation('kill_session', %args));"
           ],
           "in": "LibTmux::Server::kill_session"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:613",
+          "at": "packages/core/lib/LibTmux/Server.pm:615",
           "has": [
             "kill_session  => ['session',     'session', 'kill-session'],"
           ]
@@ -16928,26 +16928,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1048",
+          "at": "packages/core/lib/LibTmux/Server.pm:1071",
           "has": [
             "$self->_run($self->operation('kill_session', %args));"
           ],
           "in": "LibTmux::Server::kill_session"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -16964,26 +16964,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1052",
+          "at": "packages/core/lib/LibTmux/Server.pm:1075",
           "has": [
             "$self->_run($self->operation('kill_server', %args));"
           ],
           "in": "LibTmux::Server::kill_server"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:634",
+          "at": "packages/core/lib/LibTmux/Server.pm:636",
           "has": [
             "return $self->_cmd_op(['kill-server'])->then(sub { undef });"
           ]
@@ -16998,26 +16998,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1057",
+          "at": "packages/core/lib/LibTmux/Server.pm:1080",
           "has": [
             "$self->_run($self->operation('detach_client', %args));"
           ],
           "in": "LibTmux::Server::detach_client"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:614",
+          "at": "packages/core/lib/LibTmux/Server.pm:616",
           "has": [
             "detach_client => ['client',      'client',  'detach-client'],"
           ]
@@ -17032,26 +17032,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1057",
+          "at": "packages/core/lib/LibTmux/Server.pm:1080",
           "has": [
             "$self->_run($self->operation('detach_client', %args));"
           ],
           "in": "LibTmux::Server::detach_client"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -17068,26 +17068,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1061",
+          "at": "packages/core/lib/LibTmux/Server.pm:1084",
           "has": [
             "$self->_run($self->operation('set_option', %args));"
           ],
           "in": "LibTmux::Server::set_option"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:697",
+          "at": "packages/core/lib/LibTmux/Server.pm:699",
           "has": [
             "my @argv = ($name eq 'get_option' ? 'show-options' : 'set-option');"
           ]
@@ -17102,26 +17102,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1065",
+          "at": "packages/core/lib/LibTmux/Server.pm:1088",
           "has": [
             "$self->_run($self->operation('get_option', %args));"
           ],
           "in": "LibTmux::Server::get_option"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:697",
+          "at": "packages/core/lib/LibTmux/Server.pm:699",
           "has": [
             "my @argv = ($name eq 'get_option' ? 'show-options' : 'set-option');"
           ]
@@ -17136,26 +17136,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1069",
+          "at": "packages/core/lib/LibTmux/Server.pm:1092",
           "has": [
             "$self->_run($self->operation('unset_option', %args));"
           ],
           "in": "LibTmux::Server::unset_option"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:697",
+          "at": "packages/core/lib/LibTmux/Server.pm:699",
           "has": [
             "my @argv = ($name eq 'get_option' ? 'show-options' : 'set-option');"
           ]
@@ -17170,19 +17170,19 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1071",
+          "at": "packages/core/lib/LibTmux/Server.pm:1094",
           "has": [
             "sub set_hook ($self, %args) { $self->_run($self->operation('set_hook', %args)) }"
           ],
@@ -17204,19 +17204,19 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1074",
+          "at": "packages/core/lib/LibTmux/Server.pm:1097",
           "has": [
             "$self->_run($self->operation('show_hooks', %args));"
           ],
@@ -17238,26 +17238,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1078",
+          "at": "packages/core/lib/LibTmux/Server.pm:1101",
           "has": [
             "$self->_run($self->operation('set_environment', %args));"
           ],
           "in": "LibTmux::Server::set_environment"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:731",
+          "at": "packages/core/lib/LibTmux/Server.pm:737",
           "has": [
             ": 'set-environment'"
           ]
@@ -17272,26 +17272,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1082",
+          "at": "packages/core/lib/LibTmux/Server.pm:1105",
           "has": [
             "$self->_run($self->operation('get_environment', %args));"
           ],
           "in": "LibTmux::Server::get_environment"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:730",
+          "at": "packages/core/lib/LibTmux/Server.pm:736",
           "has": [
             "? 'show-environment'"
           ]
@@ -17306,26 +17306,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1086",
+          "at": "packages/core/lib/LibTmux/Server.pm:1109",
           "has": [
             "$self->_run($self->operation('unset_environment', %args));"
           ],
           "in": "LibTmux::Server::unset_environment"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:731",
+          "at": "packages/core/lib/LibTmux/Server.pm:737",
           "has": [
             ": 'set-environment'"
           ]
@@ -17340,26 +17340,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1090",
+          "at": "packages/core/lib/LibTmux/Server.pm:1113",
           "has": [
             "$self->_run($self->operation('set_buffer', %args));"
           ],
           "in": "LibTmux::Server::set_buffer"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:755",
+          "at": "packages/core/lib/LibTmux/Server.pm:765",
           "has": [
             "$name eq 'set_buffer'  ? 'load-buffer'"
           ]
@@ -17374,26 +17374,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1094",
+          "at": "packages/core/lib/LibTmux/Server.pm:1117",
           "has": [
             "$self->_run($self->operation('show_buffer', %args));"
           ],
           "in": "LibTmux::Server::show_buffer"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:756",
+          "at": "packages/core/lib/LibTmux/Server.pm:766",
           "has": [
             ": $name eq 'show_buffer' ? 'show-buffer'"
           ]
@@ -17408,26 +17408,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1098",
+          "at": "packages/core/lib/LibTmux/Server.pm:1121",
           "has": [
             "$self->_run($self->operation('delete_buffer', %args));"
           ],
           "in": "LibTmux::Server::delete_buffer"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:757",
+          "at": "packages/core/lib/LibTmux/Server.pm:767",
           "has": [
             ": 'delete-buffer',"
           ]
@@ -17442,26 +17442,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:977",
+          "at": "packages/core/lib/LibTmux/Server.pm:1000",
           "has": [
             "sub snapshot ($self, %args) { $self->_run($self->operation('snapshot', %args)) }"
           ],
           "in": "LibTmux::Server::snapshot"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
           "has": [
             "session => ['list-sessions'],"
           ]
@@ -17476,26 +17476,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:977",
+          "at": "packages/core/lib/LibTmux/Server.pm:1000",
           "has": [
             "sub snapshot ($self, %args) { $self->_run($self->operation('snapshot', %args)) }"
           ],
           "in": "LibTmux::Server::snapshot"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
           "has": [
             "window  => ['list-windows', '-a'],"
           ]
@@ -17510,26 +17510,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:977",
+          "at": "packages/core/lib/LibTmux/Server.pm:1000",
           "has": [
             "sub snapshot ($self, %args) { $self->_run($self->operation('snapshot', %args)) }"
           ],
           "in": "LibTmux::Server::snapshot"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "at": "packages/core/lib/LibTmux/Server.pm:158",
           "has": [
             "pane    => ['list-panes',   '-a'],"
           ]
@@ -17544,26 +17544,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:977",
+          "at": "packages/core/lib/LibTmux/Server.pm:1000",
           "has": [
             "sub snapshot ($self, %args) { $self->_run($self->operation('snapshot', %args)) }"
           ],
           "in": "LibTmux::Server::snapshot"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "at": "packages/core/lib/LibTmux/Server.pm:159",
           "has": [
             "client  => ['list-clients']"
           ]
@@ -17578,26 +17578,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:977",
+          "at": "packages/core/lib/LibTmux/Server.pm:1000",
           "has": [
             "sub snapshot ($self, %args) { $self->_run($self->operation('snapshot', %args)) }"
           ],
           "in": "LibTmux::Server::snapshot"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -17614,26 +17614,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1054",
+          "at": "packages/core/lib/LibTmux/Server.pm:1077",
           "has": [
             "sub clients ($self, %args) { $self->_run($self->operation('clients', %args)) }"
           ],
           "in": "LibTmux::Server::clients"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
           "has": [
             "session => ['list-sessions'],"
           ]
@@ -17648,26 +17648,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1054",
+          "at": "packages/core/lib/LibTmux/Server.pm:1077",
           "has": [
             "sub clients ($self, %args) { $self->_run($self->operation('clients', %args)) }"
           ],
           "in": "LibTmux::Server::clients"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
           "has": [
             "window  => ['list-windows', '-a'],"
           ]
@@ -17682,26 +17682,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1054",
+          "at": "packages/core/lib/LibTmux/Server.pm:1077",
           "has": [
             "sub clients ($self, %args) { $self->_run($self->operation('clients', %args)) }"
           ],
           "in": "LibTmux::Server::clients"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "at": "packages/core/lib/LibTmux/Server.pm:158",
           "has": [
             "pane    => ['list-panes',   '-a'],"
           ]
@@ -17716,26 +17716,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1054",
+          "at": "packages/core/lib/LibTmux/Server.pm:1077",
           "has": [
             "sub clients ($self, %args) { $self->_run($self->operation('clients', %args)) }"
           ],
           "in": "LibTmux::Server::clients"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "at": "packages/core/lib/LibTmux/Server.pm:159",
           "has": [
             "client  => ['list-clients']"
           ]
@@ -17750,26 +17750,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1054",
+          "at": "packages/core/lib/LibTmux/Server.pm:1077",
           "has": [
             "sub clients ($self, %args) { $self->_run($self->operation('clients', %args)) }"
           ],
           "in": "LibTmux::Server::clients"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -17786,26 +17786,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:980",
+          "at": "packages/core/lib/LibTmux/Server.pm:1003",
           "has": [
             "$self->_run($self->operation('query_panes', %args));"
           ],
           "in": "LibTmux::Server::query_panes"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
           "has": [
             "session => ['list-sessions'],"
           ]
@@ -17820,26 +17820,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:980",
+          "at": "packages/core/lib/LibTmux/Server.pm:1003",
           "has": [
             "$self->_run($self->operation('query_panes', %args));"
           ],
           "in": "LibTmux::Server::query_panes"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
           "has": [
             "window  => ['list-windows', '-a'],"
           ]
@@ -17854,26 +17854,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:980",
+          "at": "packages/core/lib/LibTmux/Server.pm:1003",
           "has": [
             "$self->_run($self->operation('query_panes', %args));"
           ],
           "in": "LibTmux::Server::query_panes"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "at": "packages/core/lib/LibTmux/Server.pm:158",
           "has": [
             "pane    => ['list-panes',   '-a'],"
           ]
@@ -17888,26 +17888,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:980",
+          "at": "packages/core/lib/LibTmux/Server.pm:1003",
           "has": [
             "$self->_run($self->operation('query_panes', %args));"
           ],
           "in": "LibTmux::Server::query_panes"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "at": "packages/core/lib/LibTmux/Server.pm:159",
           "has": [
             "client  => ['list-clients']"
           ]
@@ -17922,26 +17922,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:980",
+          "at": "packages/core/lib/LibTmux/Server.pm:1003",
           "has": [
             "$self->_run($self->operation('query_panes', %args));"
           ],
           "in": "LibTmux::Server::query_panes"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -17958,26 +17958,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:948",
+          "at": "packages/core/lib/LibTmux/Server.pm:971",
           "has": [
             "$self->_run($self->operation('listings', kind => $kind));"
           ],
           "in": "LibTmux::Server::listings"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
           "has": [
             "session => ['list-sessions'],"
           ]
@@ -17994,26 +17994,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:948",
+          "at": "packages/core/lib/LibTmux/Server.pm:971",
           "has": [
             "$self->_run($self->operation('listings', kind => $kind));"
           ],
           "in": "LibTmux::Server::listings"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
           "has": [
             "window  => ['list-windows', '-a'],"
           ]
@@ -18030,26 +18030,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:948",
+          "at": "packages/core/lib/LibTmux/Server.pm:971",
           "has": [
             "$self->_run($self->operation('listings', kind => $kind));"
           ],
           "in": "LibTmux::Server::listings"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "at": "packages/core/lib/LibTmux/Server.pm:158",
           "has": [
             "pane    => ['list-panes',   '-a'],"
           ]
@@ -18066,26 +18066,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:948",
+          "at": "packages/core/lib/LibTmux/Server.pm:971",
           "has": [
             "$self->_run($self->operation('listings', kind => $kind));"
           ],
           "in": "LibTmux::Server::listings"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "at": "packages/core/lib/LibTmux/Server.pm:159",
           "has": [
             "client  => ['list-clients']"
           ]
@@ -18102,26 +18102,26 @@
       "why": "Reviewed dynamic Operation preparation and the facade executor; the command literal is not treated as dispatch by itself.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:932",
+          "at": "packages/core/lib/LibTmux/Server.pm:955",
           "has": [
             "try { $done->(LibTmux::Transport->run(%$request)) }"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:948",
+          "at": "packages/core/lib/LibTmux/Server.pm:971",
           "has": [
             "$self->_run($self->operation('listings', kind => $kind));"
           ],
           "in": "LibTmux::Server::listings"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -18144,7 +18144,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18157,7 +18157,7 @@
           "in": "LibTmux::Async::Server::new_session"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:522",
+          "at": "packages/core/lib/LibTmux/Server.pm:524",
           "has": [
             "'new-session', '-d', '-P', '-F', _creation_format('session'),"
           ]
@@ -18178,7 +18178,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18191,7 +18191,7 @@
           "in": "LibTmux::Async::Server::new_session"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
           "has": [
             "session => ['list-sessions'],"
           ]
@@ -18214,7 +18214,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18227,7 +18227,7 @@
           "in": "LibTmux::Async::Server::new_session"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
           "has": [
             "window  => ['list-windows', '-a'],"
           ]
@@ -18250,7 +18250,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18263,7 +18263,7 @@
           "in": "LibTmux::Async::Server::new_session"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "at": "packages/core/lib/LibTmux/Server.pm:158",
           "has": [
             "pane    => ['list-panes',   '-a'],"
           ]
@@ -18286,7 +18286,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18299,7 +18299,7 @@
           "in": "LibTmux::Async::Server::new_session"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "at": "packages/core/lib/LibTmux/Server.pm:159",
           "has": [
             "client  => ['list-clients']"
           ]
@@ -18322,7 +18322,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18335,7 +18335,7 @@
           "in": "LibTmux::Async::Server::new_session"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -18358,7 +18358,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18371,7 +18371,7 @@
           "in": "LibTmux::Async::Server::new_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:547",
+          "at": "packages/core/lib/LibTmux/Server.pm:549",
           "has": [
             "$split ? 'split-window' : 'new-window',"
           ]
@@ -18392,7 +18392,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18405,7 +18405,7 @@
           "in": "LibTmux::Async::Server::new_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
           "has": [
             "session => ['list-sessions'],"
           ]
@@ -18428,7 +18428,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18441,7 +18441,7 @@
           "in": "LibTmux::Async::Server::new_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
           "has": [
             "window  => ['list-windows', '-a'],"
           ]
@@ -18464,7 +18464,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18477,7 +18477,7 @@
           "in": "LibTmux::Async::Server::new_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "at": "packages/core/lib/LibTmux/Server.pm:158",
           "has": [
             "pane    => ['list-panes',   '-a'],"
           ]
@@ -18500,7 +18500,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18513,7 +18513,7 @@
           "in": "LibTmux::Async::Server::new_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "at": "packages/core/lib/LibTmux/Server.pm:159",
           "has": [
             "client  => ['list-clients']"
           ]
@@ -18536,7 +18536,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18549,7 +18549,7 @@
           "in": "LibTmux::Async::Server::new_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -18572,7 +18572,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18585,7 +18585,7 @@
           "in": "LibTmux::Async::Server::split_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:547",
+          "at": "packages/core/lib/LibTmux/Server.pm:549",
           "has": [
             "$split ? 'split-window' : 'new-window',"
           ]
@@ -18606,7 +18606,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18619,7 +18619,7 @@
           "in": "LibTmux::Async::Server::split_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
           "has": [
             "session => ['list-sessions'],"
           ]
@@ -18642,7 +18642,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18655,7 +18655,7 @@
           "in": "LibTmux::Async::Server::split_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
           "has": [
             "window  => ['list-windows', '-a'],"
           ]
@@ -18678,7 +18678,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18691,7 +18691,7 @@
           "in": "LibTmux::Async::Server::split_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "at": "packages/core/lib/LibTmux/Server.pm:158",
           "has": [
             "pane    => ['list-panes',   '-a'],"
           ]
@@ -18714,7 +18714,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18727,7 +18727,7 @@
           "in": "LibTmux::Async::Server::split_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "at": "packages/core/lib/LibTmux/Server.pm:159",
           "has": [
             "client  => ['list-clients']"
           ]
@@ -18750,7 +18750,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18763,7 +18763,7 @@
           "in": "LibTmux::Async::Server::split_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -18786,7 +18786,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18799,7 +18799,7 @@
           "in": "LibTmux::Async::Server::rename_session"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:604",
+          "at": "packages/core/lib/LibTmux/Server.pm:606",
           "has": [
             "['session', 'session', 'rename-session', 'name', 'format'],"
           ]
@@ -18820,7 +18820,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18833,7 +18833,7 @@
           "in": "LibTmux::Async::Server::rename_session"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -18856,7 +18856,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18869,7 +18869,7 @@
           "in": "LibTmux::Async::Server::rename_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:606",
+          "at": "packages/core/lib/LibTmux/Server.pm:608",
           "has": [
             "['window', 'window', 'rename-window', 'name', 'format'],"
           ]
@@ -18890,7 +18890,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18903,7 +18903,7 @@
           "in": "LibTmux::Async::Server::rename_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -18926,7 +18926,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18939,7 +18939,7 @@
           "in": "LibTmux::Async::Server::link_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:577",
+          "at": "packages/core/lib/LibTmux/Server.pm:579",
           "has": [
             "'link-window', '-s', $window->[0], '-t',"
           ]
@@ -18960,7 +18960,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -18973,7 +18973,7 @@
           "in": "LibTmux::Async::Server::link_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -18996,7 +18996,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19009,7 +19009,7 @@
           "in": "LibTmux::Async::Server::unlink_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:607",
+          "at": "packages/core/lib/LibTmux/Server.pm:609",
           "has": [
             "unlink_window => ['window_link', 'link',    'unlink-window'],"
           ]
@@ -19030,7 +19030,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19043,7 +19043,7 @@
           "in": "LibTmux::Async::Server::unlink_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -19066,7 +19066,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19079,7 +19079,7 @@
           "in": "LibTmux::Async::Server::move_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:593",
+          "at": "packages/core/lib/LibTmux/Server.pm:595",
           "has": [
             "'move-window', '-s', $link->[0], '-t',"
           ]
@@ -19100,7 +19100,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19113,7 +19113,7 @@
           "in": "LibTmux::Async::Server::move_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -19136,7 +19136,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19149,7 +19149,7 @@
           "in": "LibTmux::Async::Server::select_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:608",
+          "at": "packages/core/lib/LibTmux/Server.pm:610",
           "has": [
             "select_window => ['window_link', 'link',    'select-window'],"
           ]
@@ -19170,7 +19170,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19183,7 +19183,7 @@
           "in": "LibTmux::Async::Server::select_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -19206,7 +19206,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19219,7 +19219,7 @@
           "in": "LibTmux::Async::Server::select_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:609",
+          "at": "packages/core/lib/LibTmux/Server.pm:611",
           "has": [
             "select_pane   => ['pane',        'pane',    'select-pane'],"
           ]
@@ -19240,7 +19240,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19253,7 +19253,7 @@
           "in": "LibTmux::Async::Server::select_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -19276,7 +19276,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19289,7 +19289,7 @@
           "in": "LibTmux::Async::Server::select_layout"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:610",
+          "at": "packages/core/lib/LibTmux/Server.pm:612",
           "has": [
             "select_layout => ['window',      'window',  'select-layout', 'layout'],"
           ]
@@ -19310,7 +19310,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19323,7 +19323,7 @@
           "in": "LibTmux::Async::Server::select_layout"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -19346,7 +19346,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19359,7 +19359,7 @@
           "in": "LibTmux::Async::Server::resize_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:646",
+          "at": "packages/core/lib/LibTmux/Server.pm:648",
           "has": [
             "@argv = ('resize-pane', '-t', $target->[0]);"
           ]
@@ -19380,7 +19380,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19393,7 +19393,7 @@
           "in": "LibTmux::Async::Server::resize_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -19416,7 +19416,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19429,7 +19429,7 @@
           "in": "LibTmux::Async::Server::set_title"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:609",
+          "at": "packages/core/lib/LibTmux/Server.pm:611",
           "has": [
             "select_pane   => ['pane',        'pane',    'select-pane'],"
           ]
@@ -19450,7 +19450,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19463,7 +19463,7 @@
           "in": "LibTmux::Async::Server::set_title"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -19486,7 +19486,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19499,7 +19499,7 @@
           "in": "LibTmux::Async::Server::send_keys"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:661",
+          "at": "packages/core/lib/LibTmux/Server.pm:663",
           "has": [
             "'send-keys', '-t', $target->[0], '--',"
           ]
@@ -19520,7 +19520,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19533,7 +19533,7 @@
           "in": "LibTmux::Async::Server::send_keys"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -19556,7 +19556,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19569,7 +19569,7 @@
           "in": "LibTmux::Async::Server::send_text"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:661",
+          "at": "packages/core/lib/LibTmux/Server.pm:663",
           "has": [
             "'send-keys', '-t', $target->[0], '--',"
           ]
@@ -19590,7 +19590,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19603,7 +19603,7 @@
           "in": "LibTmux::Async::Server::send_text"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -19626,7 +19626,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19639,7 +19639,7 @@
           "in": "LibTmux::Async::Server::capture_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:671",
+          "at": "packages/core/lib/LibTmux/Server.pm:673",
           "has": [
             "@argv = ('capture-pane', '-p', '-t', $target->[0]);"
           ]
@@ -19660,7 +19660,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19673,7 +19673,7 @@
           "in": "LibTmux::Async::Server::capture_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -19696,7 +19696,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19709,7 +19709,7 @@
           "in": "LibTmux::Async::Server::kill_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:611",
+          "at": "packages/core/lib/LibTmux/Server.pm:613",
           "has": [
             "kill_pane     => ['pane',        'pane',    'kill-pane'],"
           ]
@@ -19730,7 +19730,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19743,7 +19743,7 @@
           "in": "LibTmux::Async::Server::kill_pane"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -19766,7 +19766,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19779,7 +19779,7 @@
           "in": "LibTmux::Async::Server::kill_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:612",
+          "at": "packages/core/lib/LibTmux/Server.pm:614",
           "has": [
             "kill_window   => ['window',      'window',  'kill-window'],"
           ]
@@ -19800,7 +19800,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19813,7 +19813,7 @@
           "in": "LibTmux::Async::Server::kill_window"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -19836,7 +19836,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19849,7 +19849,7 @@
           "in": "LibTmux::Async::Server::kill_session"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:613",
+          "at": "packages/core/lib/LibTmux/Server.pm:615",
           "has": [
             "kill_session  => ['session',     'session', 'kill-session'],"
           ]
@@ -19870,7 +19870,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19883,7 +19883,7 @@
           "in": "LibTmux::Async::Server::kill_session"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -19906,7 +19906,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19919,7 +19919,7 @@
           "in": "LibTmux::Async::Server::kill_server"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:634",
+          "at": "packages/core/lib/LibTmux/Server.pm:636",
           "has": [
             "return $self->_cmd_op(['kill-server'])->then(sub { undef });"
           ]
@@ -19940,7 +19940,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19953,7 +19953,7 @@
           "in": "LibTmux::Async::Server::detach_client"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:614",
+          "at": "packages/core/lib/LibTmux/Server.pm:616",
           "has": [
             "detach_client => ['client',      'client',  'detach-client'],"
           ]
@@ -19974,7 +19974,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -19987,7 +19987,7 @@
           "in": "LibTmux::Async::Server::detach_client"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -20010,7 +20010,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20023,7 +20023,7 @@
           "in": "LibTmux::Async::Server::set_option"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:697",
+          "at": "packages/core/lib/LibTmux/Server.pm:699",
           "has": [
             "my @argv = ($name eq 'get_option' ? 'show-options' : 'set-option');"
           ]
@@ -20044,7 +20044,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20057,7 +20057,7 @@
           "in": "LibTmux::Async::Server::get_option"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:697",
+          "at": "packages/core/lib/LibTmux/Server.pm:699",
           "has": [
             "my @argv = ($name eq 'get_option' ? 'show-options' : 'set-option');"
           ]
@@ -20078,7 +20078,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20091,7 +20091,7 @@
           "in": "LibTmux::Async::Server::unset_option"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:697",
+          "at": "packages/core/lib/LibTmux/Server.pm:699",
           "has": [
             "my @argv = ($name eq 'get_option' ? 'show-options' : 'set-option');"
           ]
@@ -20112,7 +20112,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20146,7 +20146,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20180,7 +20180,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20193,7 +20193,7 @@
           "in": "LibTmux::Async::Server::set_environment"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:731",
+          "at": "packages/core/lib/LibTmux/Server.pm:737",
           "has": [
             ": 'set-environment'"
           ]
@@ -20214,7 +20214,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20227,7 +20227,7 @@
           "in": "LibTmux::Async::Server::get_environment"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:730",
+          "at": "packages/core/lib/LibTmux/Server.pm:736",
           "has": [
             "? 'show-environment'"
           ]
@@ -20248,7 +20248,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20261,7 +20261,7 @@
           "in": "LibTmux::Async::Server::unset_environment"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:731",
+          "at": "packages/core/lib/LibTmux/Server.pm:737",
           "has": [
             ": 'set-environment'"
           ]
@@ -20282,7 +20282,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20295,7 +20295,7 @@
           "in": "LibTmux::Async::Server::set_buffer"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:755",
+          "at": "packages/core/lib/LibTmux/Server.pm:765",
           "has": [
             "$name eq 'set_buffer'  ? 'load-buffer'"
           ]
@@ -20316,7 +20316,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20329,7 +20329,7 @@
           "in": "LibTmux::Async::Server::show_buffer"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:756",
+          "at": "packages/core/lib/LibTmux/Server.pm:766",
           "has": [
             ": $name eq 'show_buffer' ? 'show-buffer'"
           ]
@@ -20350,7 +20350,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20363,7 +20363,7 @@
           "in": "LibTmux::Async::Server::delete_buffer"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:757",
+          "at": "packages/core/lib/LibTmux/Server.pm:767",
           "has": [
             ": 'delete-buffer',"
           ]
@@ -20384,7 +20384,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20397,7 +20397,7 @@
           "in": "LibTmux::Async::Server::snapshot"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
           "has": [
             "session => ['list-sessions'],"
           ]
@@ -20418,7 +20418,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20431,7 +20431,7 @@
           "in": "LibTmux::Async::Server::snapshot"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
           "has": [
             "window  => ['list-windows', '-a'],"
           ]
@@ -20452,7 +20452,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20465,7 +20465,7 @@
           "in": "LibTmux::Async::Server::snapshot"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "at": "packages/core/lib/LibTmux/Server.pm:158",
           "has": [
             "pane    => ['list-panes',   '-a'],"
           ]
@@ -20486,7 +20486,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20499,7 +20499,7 @@
           "in": "LibTmux::Async::Server::snapshot"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "at": "packages/core/lib/LibTmux/Server.pm:159",
           "has": [
             "client  => ['list-clients']"
           ]
@@ -20520,7 +20520,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20533,7 +20533,7 @@
           "in": "LibTmux::Async::Server::snapshot"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -20556,7 +20556,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20569,7 +20569,7 @@
           "in": "LibTmux::Async::Server::clients"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
           "has": [
             "session => ['list-sessions'],"
           ]
@@ -20590,7 +20590,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20603,7 +20603,7 @@
           "in": "LibTmux::Async::Server::clients"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
           "has": [
             "window  => ['list-windows', '-a'],"
           ]
@@ -20624,7 +20624,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20637,7 +20637,7 @@
           "in": "LibTmux::Async::Server::clients"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "at": "packages/core/lib/LibTmux/Server.pm:158",
           "has": [
             "pane    => ['list-panes',   '-a'],"
           ]
@@ -20658,7 +20658,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20671,7 +20671,7 @@
           "in": "LibTmux::Async::Server::clients"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "at": "packages/core/lib/LibTmux/Server.pm:159",
           "has": [
             "client  => ['list-clients']"
           ]
@@ -20692,7 +20692,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20705,7 +20705,7 @@
           "in": "LibTmux::Async::Server::clients"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -20728,7 +20728,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20741,7 +20741,7 @@
           "in": "LibTmux::Async::Server::query_panes"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
           "has": [
             "session => ['list-sessions'],"
           ]
@@ -20762,7 +20762,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20775,7 +20775,7 @@
           "in": "LibTmux::Async::Server::query_panes"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
           "has": [
             "window  => ['list-windows', '-a'],"
           ]
@@ -20796,7 +20796,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20809,7 +20809,7 @@
           "in": "LibTmux::Async::Server::query_panes"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "at": "packages/core/lib/LibTmux/Server.pm:158",
           "has": [
             "pane    => ['list-panes',   '-a'],"
           ]
@@ -20830,7 +20830,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20843,7 +20843,7 @@
           "in": "LibTmux::Async::Server::query_panes"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "at": "packages/core/lib/LibTmux/Server.pm:159",
           "has": [
             "client  => ['list-clients']"
           ]
@@ -20864,7 +20864,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20877,7 +20877,7 @@
           "in": "LibTmux::Async::Server::query_panes"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]
@@ -20900,7 +20900,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20913,7 +20913,7 @@
           "in": "LibTmux::Async::Server::listings"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:154",
+          "at": "packages/core/lib/LibTmux/Server.pm:156",
           "has": [
             "session => ['list-sessions'],"
           ]
@@ -20936,7 +20936,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20949,7 +20949,7 @@
           "in": "LibTmux::Async::Server::listings"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:155",
+          "at": "packages/core/lib/LibTmux/Server.pm:157",
           "has": [
             "window  => ['list-windows', '-a'],"
           ]
@@ -20972,7 +20972,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -20985,7 +20985,7 @@
           "in": "LibTmux::Async::Server::listings"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:156",
+          "at": "packages/core/lib/LibTmux/Server.pm:158",
           "has": [
             "pane    => ['list-panes',   '-a'],"
           ]
@@ -21008,7 +21008,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -21021,7 +21021,7 @@
           "in": "LibTmux::Async::Server::listings"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:157",
+          "at": "packages/core/lib/LibTmux/Server.pm:159",
           "has": [
             "client  => ['list-clients']"
           ]
@@ -21044,7 +21044,7 @@
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:845",
+          "at": "packages/core/lib/LibTmux/Server.pm:867",
           "has": [
             "my $operation = $self->_prepare($name, %args);"
           ]
@@ -21057,7 +21057,7 @@
           "in": "LibTmux::Async::Server::listings"
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:130",
+          "at": "packages/core/lib/LibTmux/Server.pm:132",
           "has": [
             "return $self->_cmd_op(['display-message', '-p', $format])->then("
           ]

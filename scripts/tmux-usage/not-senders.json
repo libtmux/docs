@@ -4621,13 +4621,13 @@
       "why": "The selected operation deletes one named buffer; it does not send kill-server.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:757",
+          "at": "packages/core/lib/LibTmux/Server.pm:767",
           "has": [
             ": 'delete-buffer',"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1098",
+          "at": "packages/core/lib/LibTmux/Server.pm:1121",
           "has": [
             "$self->_run($self->operation('delete_buffer', %args));"
           ]
@@ -4647,13 +4647,13 @@
       "why": "set_buffer uses load-buffer with stdin bytes. It does not use the distinct native set-buffer argument interface.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:755",
+          "at": "packages/core/lib/LibTmux/Server.pm:765",
           "has": [
             "$name eq 'set_buffer'  ? 'load-buffer'"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:762",
+          "at": "packages/core/lib/LibTmux/Server.pm:772",
           "has": [
             "$name eq 'set_buffer' ? (stdin => $args{data}) : ())->then("
           ]

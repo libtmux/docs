@@ -8409,6 +8409,27 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Workspace::X::Load::cause",
+   "page": "/perl/latest/workspace/source-guide/",
+   "title": "Workspace loading",
+   "section": "workspace"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Workspace::X::Load::report",
+   "page": "/perl/latest/workspace/source-guide/",
+   "title": "Workspace loading",
+   "section": "workspace"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Workspace::X::Load::report_data",
+   "page": "/perl/latest/workspace/source-guide/",
+   "title": "Workspace loading",
+   "section": "workspace"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::X",
    "page": "/perl/latest/topics/errors/",
    "title": "Errors and recovery",
@@ -8430,10 +8451,24 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::X::details",
+   "page": "/perl/latest/topics/query-planning/",
+   "title": "Live query planning",
+   "section": "topics"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::X::InvalidSelection",
    "page": "/perl/latest/concepts/graph/",
    "title": "Snapshot graph and identity",
    "section": "concepts"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::X::QueryMismatch",
+   "page": "/perl/latest/topics/query-planning/",
+   "title": "Live query planning",
+   "section": "topics"
   },
   {
    "port": "perl",
