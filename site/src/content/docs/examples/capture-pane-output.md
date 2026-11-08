@@ -180,7 +180,8 @@ Complete programs with imports, setup, and cleanup:
 [C++](/cxx/latest/examples/capture-pane-output/) ·
 [Swift](/swift/latest/examples/capture-pane-output/) ·
 [Ruby](/ruby/latest/examples/capture-pane-output/) ·
-[Lua](/lua/latest/examples/capture-pane-output/)
+[Lua](/lua/latest/examples/capture-pane-output/) ·
+[Common Lisp](/lisp/latest/examples/capture-pane-output/)
 
 <a id="source-inclusion"></a>
 <a id="where-this-comes-from"></a>

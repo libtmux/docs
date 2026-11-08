@@ -503,17 +503,8 @@ jobs:
         with:
           version: 2026.11.3
           working_directory: port
-      - name: Restore locked Common Lisp dependencies
-        if: matrix.port == 'lisp'
-        id: lisp-qlot
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: |
-            port/.qlot
-            ~/.cache/qlot
-          key: qlot-docs-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('port/.tool-versions', 'port/mise.toml', 'port/qlfile', 'port/qlfile.lock') }}
       - name: Install locked Common Lisp dependencies
-        if: matrix.port == 'lisp' && steps.lisp-qlot.outputs.cache-hit != 'true'
+        if: matrix.port == 'lisp'
         working-directory: port
         run: mise run setup
       - name: Export Common Lisp API from the selected source

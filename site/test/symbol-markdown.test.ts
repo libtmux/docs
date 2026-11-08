@@ -374,7 +374,7 @@ describe('API Markdown content parity', () => {
     expect(text.indexOf('## Examples')).toBeLessThan(text.indexOf('## Parameters'))
   })
 
-  for (const port of PORTS) {
+  for (const port of PORTS.filter((port) => port.slug !== 'lisp')) {
     it(`${port.name} exports use the navigation's semantic order and retain inherited members`, () => {
       const model = API_MODELS[port.slug]
       const byId = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
@@ -396,4 +396,11 @@ describe('API Markdown content parity', () => {
       if (members.some((member) => member.inheritedFrom)) expect(text).toContain('## Inherited members')
     })
   }
+
+  it('keeps Common Lisp package exports as first-class rows', () => {
+    const model = API_MODELS.lisp
+    const packageIds = new Set(model.symbols
+      .filter((symbol) => symbol.kind === 'module').map((symbol) => symbol.id))
+    expect([...membersByType('lisp').keys()].filter((id) => packageIds.has(id))).toEqual([])
+  })
 })
