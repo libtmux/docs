@@ -709,10 +709,12 @@ const CORE_PORTS: readonly Port[] = [
     source: { path: 'src', ref: 'master' },
     checkout: '~/work/libtmux/libtmux-haskell',
     worktree: '~/work/libtmux/libtmux-haskell-docs',
+    docsDispatch: { workflow: 'docs.yml', ref: 'master' },
     versionedDocs: true,
     tagGrammar: 'cabal',
     renderer: 'astro',
     generator: 'Configured Haddock public interfaces',
+    publishesOwnTree: true,
     productAvailability: { workspace: 'unpublished', mcp: 'excluded' },
     packages: [{ id: 'core', name: 'libtmux-haskell', source: { path: 'src', ref: 'master' }, require: 'LibTmux.Id' }],
     installs: [{
