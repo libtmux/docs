@@ -36,8 +36,8 @@ describe('header links', () => {
     for (const action of actions) expect(links(slug).rows.map((row) => row.url), `${slug} ${action.label}`).toContain(action.url)
   })
 
-  it('shows Julia and C++ only their repository, because neither names a package host or reference', () => {
-    for (const slug of ['julia', 'cxx']) {
+  it('shows Julia, C++ and Haskell only source links, because none names a package host or reference', () => {
+    for (const slug of ['julia', 'cxx', 'haskell']) {
       expect(links(slug).actions.map((action) => action.kind), slug).toEqual(['source'])
       expect(links(slug).rows.map((row) => row.kind), slug).toEqual(Array(links(slug).rows.length).fill('source'))
     }
