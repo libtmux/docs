@@ -31,6 +31,23 @@ describe('native Perl POD and signatures', () => {
     expect(spans).toContainEqual(expect.objectContaining({ kind: 'link', text: 'Future', href: 'https://metacpan.org/pod/Future' }))
     expect(spans).toContainEqual(expect.objectContaining({ kind: 'ref', link: expect.objectContaining({ href: '/LibTmux::Selection/' }) }))
   })
+  it('resolves a shared POD section to its unique declared method owner', () => {
+    const input = artifact()
+    const owner = { ...input.symbols[0], id: 'LibTmux::Selection::Child', publicId: 'LibTmux::Selection::Child', name: 'Child' }
+    const method = { ...input.symbols[1], id: `${owner.id}::cause`, publicId: `${owner.id}::cause`, name: 'cause', parent: owner.id }
+    input.symbols.push(owner, method)
+    input.symbols[1].doc = { summary: 'Retain the [cause](pod:LibTmux::Selection/cause).' }
+    expect(extractPerlArtifact(input).symbols[1].doc?.summary).toContain(`:obj:\`cause <${method.id}>\``)
+
+    const secondOwner = { ...owner, id: 'LibTmux::Selection::Second', publicId: 'LibTmux::Selection::Second', name: 'Second' }
+    input.symbols.push(secondOwner, { ...method, id: `${secondOwner.id}::cause`, publicId: `${secondOwner.id}::cause`, parent: secondOwner.id })
+    expect(() => extractPerlArtifact(input)).toThrow(/Ambiguous authored Perl POD target/)
+    input.symbols.pop()
+    input.symbols.pop()
+    method.source = { ...source, file: 'packages/core/lib/LibTmux/Other.pm' }
+    input.nativeProvenance.files.push({ path: method.source.file, sha256: 'd'.repeat(64) })
+    expect(() => extractPerlArtifact(input)).toThrow(/Unresolved authored Perl POD target/)
+  })
   it('keeps public codec exceptions while excluding the private codec module', () => {
     const input = artifact()
     input.symbols.push({ ...input.symbols[0], id: 'LibTmux::X::Codec', publicId: 'LibTmux::X::Codec', name: 'Codec', kind: 'exception' })
