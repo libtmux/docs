@@ -2,8 +2,7 @@
 /**
  * The replay's controls bar: play and pause, previous and next call, a track
  * with a dot for the state before the first call and one per call, a count
- * full screen and, when the player passes one, a note on how its run was
- * recorded, opened as a popover. A host that says what each dot shows
+ * full screen. A host that says what each dot shows
  * (`ReplayOptions.tip`) gets a tooltip over the dot a pointer or focus is on. The markup is what
  * `lib/replay-player.ts` binds, so the MCP replay and the Core API player
  * share both. It is drawn at the state before the first call, and takes its
@@ -17,12 +16,10 @@ interface Props {
   start: string
   /** One label per call, which names the state its dot shows. */
   marks: string[]
-  /** The id of the popover in the `info` slot that says how the run was recorded. */
-  info?: string
   /** How many of the calls the page first plays when a choice of the reader's drops the last (the dots and the count are drawn for those); every call by default. */
   playable?: number
 }
-const { start, marks, info, playable = marks.length } = Astro.props as Props
+const { start, marks, playable = marks.length } = Astro.props as Props
 // The page is drawn at the state before the first call, where the player starts.
 const at = 0
 const total = playable
@@ -40,7 +37,5 @@ const total = playable
     ))}
   </div>
   <span class="mcp-replay__count" data-count aria-live="polite">{at}/{total}</span>
-  {info && <button type="button" class="mcp-replay__button" popovertarget={info} aria-label="How this was recorded"><svg class="mcp-icon " viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6" /><path d="M8 7.25v3.75M8 5h.01" /></svg></button>}
-  <slot name="info" />
   <button type="button" class="mcp-replay__button" data-action="fullscreen" aria-label="Full screen"><svg class="mcp-icon " viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2.5H2.5V6M10 2.5h3.5V6M6 13.5H2.5V10M10 13.5h3.5V10" /></svg></button>
 </div>

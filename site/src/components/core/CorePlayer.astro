@@ -45,9 +45,8 @@ interface Props {
   /** Show the example's own "Run this example" section. */
   run?: boolean
 }
-const { port, language, example, recording, capability, capabilityId = 'typed-graph', options = true, run = true } = Astro.props as Props
+const { port, language, example, capability, capabilityId = 'typed-graph', options = true, run = true } = Astro.props as Props
 const shownViews = options ? HOME_VIEWS : (['concise'] as const)
-const revision = capability.revision ?? recording.revision
 const steps = capability.steps
 const total = steps.length
 const frames = coreFrames(capability)
@@ -125,21 +124,8 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
       })}
     </div>
   </div>
-  <ReplayControls slot="controls" start="Show tmux before the first call" playable={views.concise!.length} marks={steps.map((step) => `Show the state after ${step.label}`)} info={`cp-${port}-${capabilityId}-recorded`}>
-    <div slot="info" class="not-prose mcp-provenance core-player__provenance" id={`cp-${port}-${capabilityId}-recorded`} popover>
-  Recorded by running this program against <a href={`https://github.com/${recording.repo}/tree/${revision}`}><code>{recording.repo}</code></a>
-  at <code>{revision.slice(0, 9)}</code> on a private {recording.sandbox.tmux} server.
-  {capability.stepMap === 'hand-written' && <>A person matched each call to its lines; the values, commands and tmux states are what the run produced.</>}
-  Commands appear without the library's <code>if-shell</code> guard, and the socket name and paths are set to fixed values.
-    </div>
-  </ReplayControls>
+  <ReplayControls slot="controls" start="Show tmux before the first call" playable={views.concise!.length} marks={steps.map((step) => `Show the state after ${step.label}`)} />
 </HomeExample>
-<noscript><p class="not-prose mcp-provenance core-player__provenance">
-  Recorded by running this program against <a href={`https://github.com/${recording.repo}/tree/${revision}`}><code>{recording.repo}</code></a>
-  at <code>{revision.slice(0, 9)}</code> on a private {recording.sandbox.tmux} server.
-  {capability.stepMap === 'hand-written' && <>A person matched each call to its lines; the values, commands and tmux states are what the run produced.</>}
-  Commands appear without the library's <code>if-shell</code> guard, and the socket name and paths are set to fixed values.
-</p></noscript>
 
 <script>
   import { bindClientViews, bindReplay } from '../../lib/replay-player'

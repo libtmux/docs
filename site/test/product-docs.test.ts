@@ -566,7 +566,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       const presets = document.querySelector('article section.ws-picker h2#try-a-preset')
       // A workspace overview with one example has no picker, so that example leads, then install.
       const example = page.product === 'mcp'
-        ? document.querySelector('article h2#worked-example')
+        ? document.querySelector('article h2#tmux-through-mcp')
         : presets ? null : document.querySelector('article h2#example-workspaces')
       const first = presets ? 'try-a-preset' : example ? example.id : 'install'
       expect(document.querySelector('article h2')?.id, `${page.path} ${first} is the first section`).toBe(first)
