@@ -118,6 +118,46 @@ const RS_PARSES = {
   checks: 'Parses every fixture in the directory.',
 }
 
+/**
+ * tmuxp's examples as a port keeps them: each file's topic, and the other
+ * classics it shows. `plugin-system` is absent, as for Rust, because a plugin
+ * runs through a Python bridge.
+ */
+const TMUXP_CATALOG = [
+  ['shorthands', 'shorthand', []],
+  ['2-pane-vertical', 'two-pane', []],
+  ['3-pane', 'three-pane', ['shell-command-before']],
+  ['4-pane', 'four-pane', ['tiled']],
+  ['main-pane-height', 'main-horizontal', ['three-pane']],
+  ['session-environment', 'environment', []],
+  ['2-pane-synchronized', '2-pane-synchronized', []],
+  ['blank-panes', 'blank-panes', ['start-directory']],
+  ['env-variables', 'env-variables', ['start-directory']],
+  ['focus-window-and-panes', 'focus-window-and-panes', ['shell-command-before']],
+  ['main-pane-height-percentage', 'main-pane-height-percentage', ['three-pane', 'main-horizontal', 'start-directory']],
+  ['minimal', 'minimal', []],
+  ['options', 'options', ['main-horizontal', 'three-pane', 'start-directory']],
+  ['pane-shell', 'pane-shell', []],
+  ['skip-send', 'skip-send', []],
+  ['skip-send-pane-level', 'skip-send-pane-level', []],
+  ['sleep', 'sleep', []],
+  ['sleep-pane-level', 'sleep-pane-level', []],
+  ['sleep-virtualenv', 'sleep-virtualenv', ['shell-command-before']],
+  ['start-directory', 'start-directory', []],
+  ['suppress-history', 'suppress-history', []],
+  ['window-index', 'window-index', []],
+]
+
+/**
+ * The examples a port gets from tmuxp's catalog in `directory`. Each test
+ * loads every file in it, so a test names the files its loader refuses in
+ * `refuses` and the example does not cite it.
+ */
+const tmuxpCatalog = (directory, tests) => TMUXP_CATALOG.flatMap(([name, topic, also]) => {
+  const citing = tests.filter((test) => !test.refuses?.includes(name)).map(({ refuses, ...test }) => test)
+  return citing.length ? [{ topic, also, source: file(`${directory}/${name}.yaml`), tests: citing }] : []
+})
+
 /** @type {Record<string, { checkout?: string, examples: object[] }>} */
 export const SOURCES = {
   py: {
@@ -288,74 +328,52 @@ export const SOURCES = {
     ],
   },
 
+  // The revision a pin names carries the catalog; `modelRevision` is the API
+  // model's revision it was chosen against. Remove the pin when the model catches up.
   go: {
-    examples: [{
-      topic: 'environment', also: ['two-pane', 'start-directory'],
-      source: inside(
-        'workspace/internal/integration/cli_test.go', '"workspace.yaml", `', '`)',
-        { after: 'func TestLoadFreezeReloadAppendAndEnvironment' },
-      ),
-      tests: [{
-        path: 'workspace/internal/integration/cli_test.go', name: 'TestLoadFreezeReloadAppendAndEnvironment', via: 'cli',
-        checks: 'Runs load on a real tmux server and reads the files the panes write, which show the layered environment and each pane\'s directory.',
-      }],
-    }],
+    revision: 'a0592f87f33974f502aafd1e6c1eb2dde839d356',
+    modelRevision: '2de249b600d65218ee8b8fdc07c6b2b919242151',
+    examples: tmuxpCatalog('workspace/testdata/tmuxp', [
+      {
+        path: 'workspace/workspace_test.go', name: 'TestEveryTmuxpExampleParses', find: 'func TestEveryTmuxpExampleParses',
+        needles: ['testdata'], via: 'library', refuses: ['env-variables', 'pane-shell'],
+        checks: 'Parses every fixture in the directory with workspace.Parse.',
+      },
+      {
+        path: 'workspace/internal/cli/document_test.go', name: 'TestEveryTmuxpExampleNormalizes', find: 'func TestEveryTmuxpExampleNormalizes',
+        needles: ['testdata'], via: 'loader',
+        checks: 'Reads every fixture in the directory with the loader the load command calls.',
+      },
+    ]),
   },
 
   cxx: {
-    examples: [
+    revision: '51d209f5ea9c59c8f77b2089eab9b90c2f59ce3a',
+    modelRevision: '3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f',
+    examples: tmuxpCatalog('examples/workspace/tests/fixtures/tmuxp', [
       {
-        topic: 'shorthand', also: ['shell-command-before'],
-        source: inside(
-          'examples/workspace/tests/tmuxp_test.cpp', 'parse_tmuxp(R"(\n', ')");',
-          { after: 'TEST(Tmuxp, ShorthandAndInheritedCommandsKeepPaneDefaults)' },
-        ),
-        tests: [{
-          path: 'examples/workspace/tests/tmuxp_test.cpp', name: 'ShorthandAndInheritedCommandsKeepPaneDefaults', via: 'loader',
-          checks: 'Parses the document with parse_tmuxp, which the load command calls, and checks the commands each pane inherits.',
-        }],
+        path: 'examples/workspace/tests/tmuxp_test.cpp', name: 'EveryTmuxpExampleParses', find: 'TEST(Tmuxp, EveryTmuxpExampleParses)',
+        needles: ['LIBTMUX_TMUXP_FIXTURES'], via: 'loader', refuses: ['env-variables'],
+        checks: 'Parses every fixture in the directory with parse_tmuxp, which the load command calls.',
       },
-      {
-        topic: 'two-pane', also: ['start-directory'],
-        source: inside('examples/workspace/tests/tmuxp_test.cpp', 'kDocument = R"(\n', ')";'),
-        tests: [
-          {
-            path: 'examples/workspace/tests/tmuxp_test.cpp', name: 'ADocumentBecomesAWorkspace', via: 'loader',
-            checks: 'Parses the document with parse_tmuxp and checks the names, layout, commands and start directory.',
-          },
-          {
-            path: 'examples/workspace/tests/tmuxp_test.cpp', name: 'AParsedDocumentBuildsOnARealServer', via: 'loader',
-            checks: 'Builds the document on a real tmux server and checks the window count, the pane count and each pane\'s directory.',
-          },
-        ],
-      },
-      {
-        topic: 'main-horizontal', also: ['shell-command-before', 'start-directory'],
-        source: inside('examples/workspace/tests/tmuxp_test.cpp', 'kFullDocument = R"(\n', ')";'),
-        tests: [
-          {
-            path: 'examples/workspace/tests/tmuxp_test.cpp', name: 'EveryKeyTheDocumentCarriesReachesTheWorkspace', via: 'loader',
-            checks: 'Parses the document and checks the setup commands, focus and the main-pane-height option.',
-          },
-          {
-            path: 'examples/workspace/tests/tmuxp_test.cpp', name: 'FocusAndOptionsLandOnTheBuiltSession', via: 'loader',
-            checks: 'Builds the document on a real tmux server and checks the active window, the main-pane-height option and the pane count.',
-          },
-        ],
-      },
-    ],
+    ]),
   },
 
   csharp: {
-    examples: [{
-      topic: 'two-pane', also: ['start-directory'],
-      source: inside('src/LibTmux.Workspace.Cli/README.md', '```yaml\n', '```'),
-      tests: [{
-        path: 'tests/LibTmux.Workspace.Cli.Tests/ReadmeCommandTests.cs', name: 'The_quickstart_workspace_builds_what_the_readme_describes',
-        needles: ['YamlFence'], via: 'cli',
-        checks: 'Reads this block from the README, runs tmux-workspace load on it and checks the windows and their pane counts.',
-      }],
-    }],
+    revision: '4d6bd67188a8b5acba5ac7da1dfd849c4c104770',
+    modelRevision: '8d47af7d89638ad267528ac56897cec67df597f7',
+    examples: tmuxpCatalog('tests/Fixtures/tmuxp', [
+      {
+        path: 'tests/LibTmux.IntegrationTests/Workspace/WorkspaceFileTests.cs', name: 'Every_tmuxp_example_parses',
+        needles: ['Fixtures'], via: 'library', refuses: ['pane-shell', 'sleep', 'sleep-pane-level', 'sleep-virtualenv', 'suppress-history'],
+        checks: 'Parses every fixture in the directory with WorkspaceFile.Parse.',
+      },
+      {
+        path: 'tests/LibTmux.Workspace.Cli.Tests/ContractTests.cs', name: 'Every_tmuxp_example_loads_through_the_commands_own_loader',
+        needles: ['Fixtures'], via: 'loader',
+        checks: 'Parses every fixture in the directory with the loader the load command calls.',
+      },
+    ]),
   },
 
   ruby: {
@@ -514,7 +532,6 @@ export const SUPPORT = {
       options: { reason: 'A window option listed under the session\'s `options` applies to every window.' },
       'plugin-system': { reason: 'A `plugins` key runs through a tmuxp Python bridge.', cite: cite('workspace/internal/cli/document.go', 'Bridge') },
     },
-    libraryOnly: ['shorthands'],
     defaultLayout: { layout: 'tiled', cite: cite('workspace/CLI.md', 'A window naming no `layout` tiles') },
   },
   ts: {
@@ -534,7 +551,12 @@ export const SUPPORT = {
   csharp: {
     caveats: {
       'blank-panes': { reason: 'An empty-string pane sends no Enter.', cite: cite('src/LibTmux.Workspace.Cli/WorkspacePlan.cs', 'commandText is "" or "blank" or "pane"') },
+      'pane-shell': { reason: 'The load command takes `window_shell`; `WorkspaceFile.Parse`, the library decoder, refuses it.', cite: cite('src/LibTmux.Workspace/WorkspaceYamlParser.cs', 'private static readonly string[] WindowKeys') },
       'plugin-system': { reason: 'Only a detached load can hand off to tmuxp.', cite: cite('src/LibTmux.Workspace.Cli/ExecutionCommands.cs', 'Python extension handoff is not yet supported') },
+      sleep: { reason: 'The load command takes `sleep_before` and `sleep_after`; `WorkspaceFile.Parse`, the library decoder, refuses them.', cite: cite('src/LibTmux.Workspace/WorkspaceYamlParser.cs', 'private static readonly string[] PaneKeys') },
+      'sleep-pane-level': { reason: 'The load command takes `sleep_before` and `sleep_after`; `WorkspaceFile.Parse`, the library decoder, refuses them.', cite: cite('src/LibTmux.Workspace/WorkspaceYamlParser.cs', 'private static readonly string[] PaneKeys') },
+      'sleep-virtualenv': { reason: 'The load command takes `sleep_before` and `sleep_after`; `WorkspaceFile.Parse`, the library decoder, refuses them.', cite: cite('src/LibTmux.Workspace/WorkspaceYamlParser.cs', 'private static readonly string[] PaneKeys') },
+      'suppress-history': { reason: 'The load command takes `suppress_history`; `WorkspaceFile.Parse`, the library decoder, refuses it.', cite: cite('src/LibTmux.Workspace/WorkspaceYamlParser.cs', 'private static readonly string[] RootKeys') },
     },
   },
   cxx: {

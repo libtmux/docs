@@ -212,8 +212,8 @@ describe('the picker as rendered', () => {
   })
 
   it('offers no picker at all when a port has one preset, so its file appears once', async () => {
-    const { document } = await page('go')
-    expect(offersPicker(workspaceShowcase('go')!)).toBe(false)
+    const { document } = await page('ruby')
+    expect(offersPicker(workspaceShowcase('ruby')!)).toBe(false)
     expect(document.querySelector('[data-workspace-picker]')).toBeNull()
     expect(document.querySelector('[data-preset]')).toBeNull()
     expect(document.querySelector('[data-action="roll"]')).toBeNull()
