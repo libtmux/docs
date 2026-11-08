@@ -218,9 +218,10 @@ export async function checkClipboard(page, base) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const browser = await chromium.launch()
   try {
+    const base = (process.argv[2] ?? 'http://localhost:8080/en').replace(/\/$/, '')
     const page = await newCheckPage(browser, base)
     page.setDefaultTimeout(1000)
-    await checkClipboard(page, (process.argv[2] ?? 'http://localhost:8080/en').replace(/\/$/, ''))
+    await checkClipboard(page, base)
   } finally {
     await browser.close()
   }
