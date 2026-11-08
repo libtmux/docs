@@ -135,6 +135,24 @@ export function stagedPortGuides(port, artifact) {
   const linkRoutes = Object.fromEntries(Object.entries(routes).map(([sourcePath, guide]) => [sourcePath, [guide.route]]))
   const nativeReferenceFiles = new Set()
   for (const redirect of sourceGuideRedirectsFor(port)) linkRoutes[redirect.sourcePath] = [redirect.target]
+  if (port === 'lisp') {
+    const { symbols } = JSON.parse(readFileSync(join(root, 'site/src/data/api/lisp.json'), 'utf8'))
+    const referenceFiles = {
+      libtmux: 'docs/api.md', 'libtmux.query': 'docs/query-api.md',
+      'libtmux.json': 'docs/json-api.md',
+      'libtmux.workspace': 'docs/workspace-api.md',
+      'libtmux.workspace.cli': 'docs/workspace-api.md',
+    }
+    for (const symbol of symbols.filter((entry) => entry.kind !== 'module')) {
+      const file = referenceFiles[symbol.namespace]
+      if (!file) throw new Error(`Common Lisp declaration has no native reference: ${symbol.id}`)
+      const anchor = `${symbol.name}-${symbol.kind === 'function' ? 'function' : 'type'}`
+      linkRoutes[`${file}#${anchor}`] = [
+        `${symbol.product === 'workspace' ? 'workspace/' : ''}reference/${symbol.slug}`,
+      ]
+      nativeReferenceFiles.add(file)
+    }
+  }
   if (port === 'powershell') {
     const model = JSON.parse(readFileSync(join(root, 'site/src/data/api/powershell.json'), 'utf8'))
     const files = new Set(model.nativeProvenance.files.map((file) => file.path))

@@ -23,6 +23,11 @@ const navigationLinks = (items: SidebarItem[]): string[] => items.flatMap((item)
 ])
 
 describe('product declaration trees', () => {
+  it('provides the Lisp workspace reference landing route', () => {
+    const page = readFileSync(new URL('../src/content/docs/ports/lisp/workspace/reference.md', import.meta.url), 'utf8')
+    expect(page).toMatch(/^port: lisp$/m)
+    expect(page).toMatch(/^product: workspace$/m)
+  })
   it('keeps public product pages out of core without dropping internal declarations', () => {
     const model = API_MODELS.go
     const workspace = model.symbols.find((symbol) => symbol.id === 'workspace.Workspace.InitialSessionRequest')!

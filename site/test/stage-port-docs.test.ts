@@ -11,6 +11,7 @@ import fsharpGuides from '../src/data/port-guides/fsharp.json'
 import csharpModel from '../src/data/api/csharp.json'
 import powershellGuides from '../src/data/port-guides/powershell.json'
 import juliaGuides from '../src/data/port-guides/julia.json'
+import lispGuides from '../src/data/port-guides/lisp.json'
 
 afterEach(() => vi.unstubAllEnvs())
 
@@ -56,6 +57,16 @@ describe('integrated guide inputs', () => {
 })
 
 describe('staged port guide links', () => {
+  it('resolves native Lisp API anchors into core and workspace declaration pages', () => {
+    const pages = stagedPortGuides('lisp', lispGuides)
+    const operations = pages.get('lisp/guides/operations/index.md')!
+    const workspace = pages.get('lisp/workspace/source-guide/index.md')!
+    expect(operations).toContain('../../reference/libtmux-kill-pane/')
+    expect(operations).not.toContain('../../reference/#kill-pane-function')
+    expect(workspace).toContain('../reference/libtmux-workspace-read-workspace/')
+    expect(workspace).toContain('../../reference/libtmux-command-outcome/')
+    expect(workspace).not.toMatch(/reference\/#(?:read-workspace-function|command-outcome-type)/)
+  })
   it('renders Julia raw HTML with revision-bound source links while preserving code examples', () => {
     const artifact = structuredClone(juliaGuides)
     const guide = artifact.guides.find((entry) => entry.path === 'docs/src/queries.md')!

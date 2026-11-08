@@ -88,7 +88,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       { sourcePath: 'docs/api.md', path: 'guides/api', target: 'reference' },
       { sourcePath: 'docs/query-api.md', path: 'guides/query-api', target: 'reference' },
       { sourcePath: 'docs/json-api.md', path: 'guides/json-api', target: 'reference' },
-      { sourcePath: 'docs/workspace-api.md', path: 'workspace/api', target: 'reference' },
+      { sourcePath: 'docs/workspace-api.md', path: 'workspace/api', target: 'workspace/reference' },
     ],
   },
   powershell: {
