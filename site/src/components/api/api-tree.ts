@@ -10,6 +10,7 @@
  * holds the tree's Tab stop.
  */
 import { waitForAppearance, layoutBeforeAppearance } from '../../lib/page-readiness'
+import { onViewportChange, stableViewportHeight } from '../../lib/stable-viewport'
 import { wordBreak } from '../../lib/word-break'
 import { kindMark, markClass } from '../../lib/api-labels'
 import { apiTreeHref, searchApi, type ApiTreeBucket as JsonBucket, type ApiTreeJson as TreeJson } from '../../lib/api-search'
@@ -690,7 +691,7 @@ function fitSidebar(nav: HTMLElement, signal: AbortSignal) {
     const stickyHeader = header && ['sticky', 'fixed'].includes(getComputedStyle(header).position)
     const top = stickyHeader ? Math.max(0, header.getBoundingClientRect().bottom) : 0
     const bounds = column.getBoundingClientRect()
-    const height = Math.max(0, Math.min(window.innerHeight, bounds.bottom) - Math.max(top, bounds.top))
+    const height = Math.max(0, Math.min(stableViewportHeight(), bounds.bottom) - Math.max(top, bounds.top))
     column.style.setProperty('--api-nav-top', `${top}px`)
     nav.style.setProperty('--api-nav-height', `${height}px`)
   }
@@ -699,7 +700,7 @@ function fitSidebar(nav: HTMLElement, signal: AbortSignal) {
   observer.observe(column)
   if (header) observer.observe(header)
   window.addEventListener('scroll', schedule, { passive: true, signal })
-  window.addEventListener('resize', schedule, { signal })
+  onViewportChange(schedule, signal)
   desktop.addEventListener('change', schedule, { signal })
   signal.addEventListener('abort', () => { observer.disconnect(); window.cancelAnimationFrame(frame) }, { once: true })
   layoutBeforeAppearance(update)
