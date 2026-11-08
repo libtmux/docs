@@ -80,7 +80,7 @@ describe('product document URLs', () => {
       { path: 'lisp/latest/guides/api', target: 'lisp/latest/reference' },
       { path: 'lisp/latest/guides/query-api', target: 'lisp/latest/reference' },
       { path: 'lisp/latest/guides/json-api', target: 'lisp/latest/reference' },
-      { path: 'lisp/latest/workspace/api', target: 'lisp/latest/reference' },
+      { path: 'lisp/latest/workspace/api', target: 'lisp/latest/workspace/reference' },
       { path: 'julia/latest/guides/api-overview', target: 'julia/latest/reference' },
       { path: 'fsharp/v0.46.2/guides/api-overview', target: 'fsharp/v0.46.2/reference' },
     ])
@@ -94,7 +94,7 @@ describe('product document URLs', () => {
       { path: 'guides/api', target: 'reference' },
       { path: 'guides/query-api', target: 'reference' },
       { path: 'guides/json-api', target: 'reference' },
-      { path: 'workspace/api', target: 'reference' },
+      { path: 'workspace/api', target: 'workspace/reference' },
     ])
     expect(sourceGuideRedirects('py')).toEqual([])
   })
