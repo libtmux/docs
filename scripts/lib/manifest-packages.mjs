@@ -13,7 +13,8 @@
  *
  * Nothing here runs a build tool. The files are parsed as text.
  */
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawnSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 
 /** A read-only view of one repository at one revision. */
 export function repositoryAt(checkout, revision) {
@@ -68,6 +69,18 @@ function newestTag(tags, prefix) {
 }
 
 const READERS = {
+  /** OTP application terms are data, parsed natively without evaluating code. */
+  erlang(repo) {
+    const manifests = repo.files().filter((path) => /^(?:apps\/[^/]+\/)?src\/[^/]+\.app\.src$/.test(path))
+    if (!manifests.length) return { distributions: [], units: [] }
+    const input = JSON.stringify(manifests.map((manifest) => ({ manifest, text: repo.read(manifest) })))
+    if (Buffer.byteLength(input) > 1048576) throw new Error('Invalid Erlang application manifest: input exceeds 1 MiB')
+    const result = spawnSync('escript', [fileURLToPath(new URL('./read-erlang-apps.escript', import.meta.url))], {
+      input, encoding: 'utf8', timeout: 5000, maxBuffer: 1048576,
+    })
+    if (result.error || result.status !== 0) throw new Error(`Invalid Erlang application manifest: ${result.error?.message ?? result.stderr}`)
+    return { distributions: JSON.parse(result.stdout), units: [] }
+  },
   /** `[project] name` and `version`. */
   py(repo, { repository, manifest = 'pyproject.toml' }) {
     const project = section(repo.read(manifest), 'project')
@@ -224,7 +237,7 @@ const READERS = {
 /** Which reader a port uses: a wrapper port reads its parent's repository. */
 const READER_FOR = {
   py: 'py', ruby: 'ruby', lua: 'lua', powershell: 'powershell', julia: 'julia', ts: 'ts', rs: 'rs', go: 'go',
-  java: 'java', kotlin: 'java', scala: 'java', csharp: 'dotnet', fsharp: 'dotnet', cxx: 'cxx', swift: 'swift', elixir: 'elixir',
+  java: 'java', kotlin: 'java', scala: 'java', csharp: 'dotnet', fsharp: 'dotnet', cxx: 'cxx', swift: 'swift', elixir: 'elixir', erlang: 'erlang',
 }
 
 /**
