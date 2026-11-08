@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { Window } from 'happy-dom'
 import { API_MODEL_PORTS, PORTS } from '../src/lib/ports'
+import { referenceIndexSections } from '../src/lib/api-tree'
 import { SITE_BUILT, SITE_PREFIX, PREVIEW_PREFIX, productionPath, publishedHas, publishedPath, sitePath } from './site-root'
 
 /**
@@ -133,12 +134,12 @@ describeIfAssembled('published exports', () => {
         const template = window.document.createElement('template')
         template.innerHTML = readPublished(join(root, 'index.html'))
         const actual = [...template.content.querySelectorAll('.api-index-summary[id]')].map((node) => node.id)
-        expect(reference.headings.map((heading: { id: string }) => heading.id)).toEqual(actual)
-        expect(actual[0]).toBe(port.slug === 'haskell' ? 'section-exports:LibTmux.Id' : 'section-server')
-        if (port.slug === 'haskell') expect(reference.symbols[0]).toMatchObject({ name: 'LibTmux.Id', kind: 'module' })
-        else if (port.slug === 'powershell') expect(reference.symbols.slice(0, 3).map((symbol: { name: string }) => symbol.name))
-          .toEqual(['New-TmuxServer', 'Get-TmuxServer', 'Connect-TmuxServer'])
-        else expect(reference.symbols[0].name).toBe('Server')
+        const sections = referenceIndexSections(port.slug)
+        expect(sections.length, `${port.slug} has native reference sections`).toBeGreaterThan(0)
+        expect(actual).toEqual(sections.map((section) => `section-${section.id}`))
+        expect(reference.headings).toEqual(sections.map((section) => ({ id: `section-${section.id}`, level: 2, text: section.name })))
+        expect(reference.symbols).toEqual(sections.flatMap((section) => [...section.types, ...section.free])
+          .map((symbol) => expect.objectContaining({ id: symbol.publicId ?? symbol.id, name: symbol.name, kind: symbol.kind })))
         for (const symbol of reference.symbols) {
           const target = new URL(symbol.url).pathname.replace(/^\//, '')
           expect(has(join(target, 'index.html')), symbol.url).toBe(true)
