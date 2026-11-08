@@ -127,6 +127,22 @@ describe('shared product pages and the ports that lack the product', () => {
 })
 
 describe('matching pages in another port', () => {
+  it.each(['mcp', 'workspace'] as const)('offers %s home pages only for supported products', (product) => {
+    const entries = PORTS.filter((port) => !port.parentLibrary).map((port) => ({
+      id: `ports/${port.slug}/${product}`, data: { port: port.slug, product },
+    }))
+    const links = pagePortLinks({ ...options, pagePath: product, portSlug: 'ts', docs: entries })
+    for (const port of PORTS.filter((port) => port.productAvailability?.[product] === 'excluded')) {
+      expect(links.find((entry) => entry.port === port.slug)?.links, port.slug).toEqual([])
+    }
+    for (const entry of links) {
+      const version = entry.port === 'ts' ? 'v1.2.3' : entry.port === 'py' ? 'v0.46.2' : 'latest'
+      const available = productAvailable(PORT_BY_SLUG[entry.port], product)
+      expect(entry.links, entry.port).toEqual(available ? [{ href: `/pr-42/en/${entry.port}/${version}/${product}/` }] : [])
+      expect(entry.home?.href, entry.port).toBe(`/pr-42/en/${entry.port}/${version}/${available ? `${product}/` : ''}`)
+    }
+  })
+
   it('links cmdlet switches to parameters and keeps Julia receiver names out of function links', async () => {
     const { referenceAlternatives, API_MODELS } = await import('../src/lib/api-models')
     const { productApiIndex } = await import('../src/lib/product-api')
