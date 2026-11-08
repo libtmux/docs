@@ -89,6 +89,10 @@ export interface PortParts {
   notes: Readonly<Record<string, string>>
   /** Topic ids this port cannot implement without inventing a product. */
   unavailable: Readonly<Record<string, string>>
+  /** Opening for a port whose public API does not support the shared setup. */
+  opening?: string
+  /** Availability boundary shared by every non-setup task for this port. */
+  unavailableTask?: string
 }
 
 const SETUP_ID = 'setup'
@@ -384,7 +388,7 @@ function installStep(port: Port, released: boolean, install: InstallForm, wordin
   // run `implementation("...")` in a shell gets exactly that.
   lines.push(install.code.split('\n').map((line) => `       ${line}`).join('\n'))
   const check =
-    released
+    released || port.slug === 'haskell'
       ? `Check ${(port.registry?.url ?? `https://github.com/${port.repo}`)} if you need a different version.`
       : `Check ${(port.registry?.url ?? `https://github.com/${port.repo}`)} for a newer version, and prefer a final release over this prerelease if there now is one.`
   lines.push(wrap(check, 76, '   '))
@@ -438,6 +442,7 @@ export function portParts(args: {
   ctx: PromptContext
 }): PortParts {
   const { port, released, install, wording, ctx } = args
+  const pureValues = port.slug === 'haskell'
 
   const reading: (readonly [string, string])[] = [
     [portUrl(ctx, port, 'llms.txt'), `every page for ${port.name}, as a list`],
@@ -447,10 +452,16 @@ export function portParts(args: {
   if (port.ecosystemHost) {
     reading.push([port.ecosystemHost.url, `${port.name} reference on ${port.ecosystemHost.name}`])
   }
+  if (pureValues) reading.push([portUrl(ctx, port, 'core/'), 'the complete public values example and Cabal files'])
 
   const setup = [
-    'libtmux drives a real tmux server from code. It gives you objects for the',
-    'server, its sessions, windows and panes. Documentation for every language',
+    ...(pureValues ? [
+      'The public Haskell package provides pure typed IDs, checked scalar values',
+      'and tmux-version parsing. Documentation for every language',
+    ] : [
+      'libtmux drives a real tmux server from code. It gives you objects for the',
+      'server, its sessions, windows and panes. Documentation for every language',
+    ]),
     `is at ${ctx.docsBase}/.`,
     '',
     `Language:   ${port.language}`,
@@ -463,8 +474,13 @@ export function portParts(args: {
     'and examples instead, or ask me to paste those pages in.',
     '',
     'Set up first:',
-    '1. Report the tmux version with `tmux -V`. libtmux drives a real tmux, so',
-    '   nothing below works without one. Stop and tell me if it is missing.',
+    ...(pureValues ? [
+      '1. Select GHC 9.14.1 and Cabal 3.18.2.0. Report both tool versions.',
+      '   The public values example does not require a tmux installation.',
+    ] : [
+      '1. Report the tmux version with `tmux -V`. libtmux drives a real tmux, so',
+      '   nothing below works without one. Stop and tell me if it is missing.',
+    ]),
     ...(port.initProject.lang === 'text'
       ? [wrap(`2. If this directory is not a ${port.language} project yet, ${port.initProject.code}`, 76, '').replace(/\n/g, '\n   ')]
       : [
@@ -473,11 +489,17 @@ export function portParts(args: {
         ]),
     '   Skip this in a project that already exists, and match what is here.',
     installStep(port, released, install, wording),
-    '4. Write the smallest program that proves the install works: connect to a',
-    '   tmux server, create a session, confirm it is there, then kill it. Give',
-    '   that server a socket of its own rather than using the default one, so',
-    '   this never touches a tmux I am already running. Run it, and show me the',
-    '   output and the files you added.',
+    ...(pureValues ? [
+      '4. Run the complete values example linked above. Use parseWindowId and',
+      '   renderWindowId to check the ID round trip, handle parse errors, and',
+      '   verify the expected output. Show the output and the files you added.',
+    ] : [
+      '4. Write the smallest program that proves the install works: connect to a',
+      '   tmux server, create a session, confirm it is there, then kill it. Give',
+      '   that server a socket of its own rather than using the default one, so',
+      '   this never touches a tmux I am already running. Run it, and show me the',
+      '   output and the files you added.',
+    ]),
     '',
     'Rules for everything below:',
     '- Use the reference above rather than guessing names. The ten libtmux',
@@ -508,7 +530,13 @@ export function portParts(args: {
     unavailable['session-supervisor'] = 'Lua has no published workspace product or reconciliation API. Document the missing product and stop; do not advertise scaffold modules as usable.'
   }
 
-  return { setup, notes, unavailable }
+  return {
+    setup, notes, unavailable,
+    ...(pureValues ? {
+      opening: 'Set up libtmux in this repository and verify its pure values API.',
+      unavailableTask: 'Client, command, streaming and workspace APIs are not exposed by the public Haskell package. Report this missing API boundary and stop; do not invent operations or use internal modules.',
+    } : {}),
+  }
 }
 
 /** A readable label for a doc path, for the right-hand column of a link list. */
@@ -526,16 +554,16 @@ function pageTitle(path: string): string {
  * downloading seventy-two finished prompts.
  */
 export function composeFromParts(shared: SharedParts, port: PortParts, topicId: string): string {
-  const opening = shared.openings[topicId]
-  if (!opening) throw new Error(`composeFromParts: no topic "${topicId}"`)
+  const sharedOpening = shared.openings[topicId]
+  if (!sharedOpening) throw new Error(`composeFromParts: no topic "${topicId}"`)
   const section = shared.sections[topicId]
   const note = port.notes[topicId]
-  const unavailable = port.unavailable[topicId]
+  const unavailable = port.unavailable[topicId] ?? (topicId !== SETUP_ID ? port.unavailableTask : undefined)
   return [
-    wrap(opening),
+    wrap(port.opening ?? sharedOpening),
     '',
     port.setup,
-    ...(unavailable ? ['', 'Availability', '', wrap(unavailable)] : section ? ['', section] : []),
+    ...(unavailable ? ['', ...(port.unavailableTask && section ? [section.split('\n')[0]!, ''] : []), 'Availability', '', wrap(unavailable)] : section ? ['', section] : []),
     ...(note ? ['', note] : []),
   ].join('\n')
 }
