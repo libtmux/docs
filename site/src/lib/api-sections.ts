@@ -229,7 +229,7 @@ export function aliasDeclaration(symbol: ApiSymbol, language?: string): { name: 
 /** Keep native declaration syntax consistent in HTML and copied Markdown. */
 export function usesNativeSignatures(symbol: ApiSymbol, port?: string): boolean {
   return (port === 'rs' && Boolean(symbol.variant)) || supportsRustSignatures(symbol, port) || supportsTypeScriptSignatures(symbol, port) || supportsGoSignatures(symbol, port) || supportsJavaSignatures(symbol, port) || supportsCSharpSignatures(symbol, port) || supportsRubySignatures(symbol, port) || supportsLuaSignatures(symbol, port) || supportsElixirSignatures(symbol, port) || ['kotlin', 'scala', 'fsharp', 'c', 'powershell', 'julia'].includes(port ?? '') ||
-    (port === 'cxx' && symbol.signatures.length > 0 && symbol.signatures.every((signature) => Boolean(signature.raw)))
+    (port === 'haskell' && symbol.signatures.length > 0) || (port === 'cxx' && symbol.signatures.length > 0 && symbol.signatures.every((signature) => Boolean(signature.raw)))
 }
 
 /** Break only the outer argument list; Julia types and defaults can contain commas. */
@@ -313,7 +313,7 @@ export function nativeSignatureText(symbol: ApiSymbol, signature: Signature, lan
 function signatureLabels(symbol: ApiSymbol, port?: string): string[] {
   const name = port === 'swift' ? swiftBaseName(symbol.name) : symbol.name
   const labels = symbol.signatures.map((signature) =>
-    signature.label ?? `${name}(${signature.params.map((param) => param.name).join(', ')})`)
+    signature.label ?? (port === 'haskell' ? signature.raw ?? name : `${name}(${signature.params.map((param) => param.name).join(', ')})`))
   return labels.map((label, i) => labels.filter((entry) => entry === label).length > 1
     ? `${label} [overload ${i + 1}]` : label)
 }
@@ -380,7 +380,7 @@ export function apiEntrySections(symbol: ApiSymbol, port?: string, index?: Symbo
   const sections: ApiSection[] = []
   if (symbol.doc?.body) sections.push({ id: `${anchor}.description`, label: 'Description' })
   if (symbol.command) sections.push({ id: `${anchor}.command`, label: 'Command details' })
-  if (apiMethodDetails(symbol).length) sections.push({ id: `${anchor}.methods`, label: 'Methods' })
+  if (apiMethodDetails(symbol, port).length) sections.push({ id: `${anchor}.methods`, label: 'Methods' })
   if (symbol.doc?.examples?.length) sections.push({ id: `${anchor}.examples`, label: 'Examples' })
   if (symbol.doc?.references?.length) sections.push({ id: `${anchor}.references`, label: 'References' })
   if (fields.typeParameters.length || apiInheritedTypeParameters(symbol, index).length) {
@@ -412,7 +412,9 @@ export function apiOverloadId(symbol: ApiSymbol, signature: Signature): string {
 }
 
 /** Dispatch methods retain their own documentation and stable fragment identities. */
-export function apiMethodDetails(symbol: ApiSymbol) {
+export function apiMethodDetails(symbol: ApiSymbol, port?: string) {
+  // Haskell constructors are exported data declarations, not dispatch methods.
+  if (port === 'haskell') return []
   const labels = signatureLabels(symbol)
   return symbol.signatures.flatMap((signature, i) => signature.methodKind ? [{
     signature,

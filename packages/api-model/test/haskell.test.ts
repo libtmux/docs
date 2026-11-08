@@ -48,7 +48,7 @@ describe('Haddock shared-model adapter', () => {
     const module = model.symbols.find((symbol) => symbol.id === 'LibTmux.Id')!
     expect(module.doc).toEqual(artifact.symbols.find((symbol: { id: string }) => symbol.id === module.id).doc)
     const session = model.symbols.find((symbol) => symbol.id === 'LibTmux.Id#t:SessionId')!
-    expect(session.doc!.body).toContain('```{rubric} Instances\n```')
+    expect(session.doc!.body).toContain('## Instances\n\n')
     expect(session.doc!.body).toContain('instance [Eq](https://hackage.haskell.org/package/base-4.22.0.0/docs/Data-Eq.html#t:Eq)')
     expect(session.doc!.body).toContain(':obj:`SessionId <LibTmux.Id#t:SessionId>`')
     expect(session.doc!.body).toContain(`[Source](https://github.com/${artifact.repo}/blob/${artifact.revision}/src/LibTmux/Id.hs#L46)`)

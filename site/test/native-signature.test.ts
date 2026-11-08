@@ -393,7 +393,10 @@ async function checkHostedDeclarations(port: string) {
     await check()
     const text = displayedSignature(win.document.body)
     await expect(check(text.replace(entry.symbol.name, 'missingCallable'))).rejects.toThrow('native declaration survives')
-    await expect(check(text.replace(entry.symbol.signatures[0].params[0].name, 'missingParameter'))).rejects.toThrow('native declaration survives')
+    const operand = entry.symbol.signatures[0].params[0]?.name ??
+      entry.symbol.signatures[0].nativeSpans?.find((span) => span.href)?.text
+    expect(operand).toBeTruthy()
+    await expect(check(text.replace(operand!, 'missingParameter'))).rejects.toThrow('native declaration survives')
     await expect(check(text, { ...entry.attributes, 'data-signature-native': '[]' })).rejects.toThrow()
     for (const value of ['null', '[""]', '[null]']) {
       await expect(check(text, { ...entry.attributes, 'data-signature-native': value })).rejects.toThrow('prepared native declarations are bound')
@@ -619,13 +622,14 @@ describe('native signature emission', () => {
 
   it('checks the hosted signature fixture against rendered Julia declarations without return annotations', () => checkHostedDeclarations('julia'))
 
+  it('checks the hosted signature fixture against curried native Haskell declarations', () => checkHostedDeclarations('haskell'))
+
   it('selects fixtures for every API port and retains existing typed-return choices', async () => {
     const models = Object.fromEntries(API_MODEL_PORTS.map(({ slug }) => [slug,
       JSON.parse(readFileSync(new URL(`../src/data/api/${slug}.json`, import.meta.url), 'utf8')) as ApiModel]))
     const before = JSON.stringify(models.julia)
     const { entries } = await signatureProbe(models)
     expect([...new Set(entries.map(({ port }) => port))]).toEqual(API_MODEL_PORTS.map(({ slug }) => slug))
-    expect(new Set(entries.map(({ port }) => port)).size).toBe(16)
     for (const [port, model] of Object.entries(models)) {
       const callables = model.symbols.filter((symbol) => symbol.signatures.some((signature) => signature.params.length > 0 && signature.returns))
       const selected = callables.find((symbol) => /capture/i.test(symbol.name)) ?? callables[0]
