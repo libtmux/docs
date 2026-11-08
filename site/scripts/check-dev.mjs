@@ -24,6 +24,7 @@ import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkKindBadgeLinksFai
 import { checkTypeParameters } from './check-type-parameters.mjs'
 import { checkTmuxKeys, TMUX_KEY_PAGES } from './check-tmux-keys.mjs'
 import { checkSidebarDemo } from './check-sidebar-demo.mjs'
+import { checkGuideRedirect } from './check-navigation.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiAnchorsOnly = process.argv.includes('--api-anchors')
@@ -53,6 +54,7 @@ assert(requestedBrowserPort === undefined || /^\d+$/.test(requestedBrowserPort)
   && Number(requestedBrowserPort) >= 1 && Number(requestedBrowserPort) <= 65535,
   'LIBTMUX_DOCS_BROWSER_PORT must be an integer from 1 to 65535')
 const documentationNavigationOnly = process.argv.includes('--documentation-navigation')
+const guideRedirectOnly = process.argv.includes('--guide-redirect')
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
 
 Object.assign(process.env, {
@@ -785,6 +787,7 @@ try {
   // Compile the initial pages during setup; navigation assertions measure
   // the running app. The outer loop still budgets this initial compilation.
   const firstPage = homeLauncherOnly || homeControlsOnly ? '/'
+    : guideRedirectOnly ? '/ruby/latest/guides/overview/'
     : keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
     : apiStickyOnly || permalinkRevealOnly ? '/swift/latest/reference/server/'
     : badgeCentringOnly ? '/py/v0.46.2/guides/attaching-to-tmux/'
@@ -793,7 +796,7 @@ try {
     : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/'
     : typeParametersOnly ? '/ts/latest/reference/selection-selection-where/' : '/tmux/concepts/server-session-window-pane/'
   const fullRun = ![homeLauncherOnly, homeControlsOnly, keywordHelpOnly, apiSignaturesOnly, referenceLayoutOnly, globalHeaderOnly, headerMenuSectionsOnly, statusBadgesOnly, badgeCentringOnly, referencePreviewsOnly,
-    referencePreferencesOnly, documentationNavigationOnly, apiNavigationOnly, apiAnchorsOnly, typeParametersOnly, permalinkRevealOnly, requiredAppearanceOnly].some(Boolean)
+    referencePreferencesOnly, documentationNavigationOnly, guideRedirectOnly, apiNavigationOnly, apiAnchorsOnly, typeParametersOnly, permalinkRevealOnly, requiredAppearanceOnly].some(Boolean)
   const setupPages = sampleOnly ? [firstPage, '/demo/widgets/pickers/', ...TMUX_KEY_PAGES]
     : [firstPage, ...(fullRun ? TMUX_KEY_PAGES : [])]
   const ready = Promise.all(setupPages.map(async (path) => {
@@ -863,6 +866,8 @@ try {
   } else if (referencePreferencesOnly) {
     await retryReload(() => checkReferencePreferences(browser, base))
     await retryReload(() => checkGlobalHeader(browser, base))
+  } else if (guideRedirectOnly) {
+    await checkGuideRedirect(browser, base)
   } else if (documentationNavigationOnly) {
     await retryReload(() => checkDocumentationNavigation(browser, base, true))
   } else if (apiNavigationOnly) {
