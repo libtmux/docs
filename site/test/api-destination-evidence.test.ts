@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { API_HOSTS, PAGE_EXCEPTIONS, addressSegments, apiHostOf, arityOf, linksIn, qualified, terminalSymbol, urlsIn } from '../../scripts/lib/api-destinations.mjs'
 import { addressOf, mismatch } from '../../scripts/lib/api-addresses.mjs'
