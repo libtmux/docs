@@ -1470,15 +1470,15 @@
       "port": "haskell",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-haskell",
-      "sourceRevision": "eda8825caa1ffde21454bb2eb6954bf46d2939af",
-      "sourceTree": "a1519b0889f55d987039bd4de1b2cc1a64244f41",
-      "libraryRevision": "f910d69f92a156df3390956470a1a3cd8a69e0fe",
+      "sourceRevision": "581f0ee45016ffb2283366bb1edc1658df26c5ed",
+      "sourceTree": "d11969975cbcd0f194a35e81f1e10fc3aec1b017",
+      "libraryRevision": "581f0ee45016ffb2283366bb1edc1658df26c5ed",
       "execution": "pure-values",
       "files": [
         {
           "name": "Main.hs",
-          "sha256": "a80ac1e85076c0e44b67fed23b9f17928caa149b768eeac971edef6b0f42e6ad",
-          "clipboardSha256": "e280539aeca9017a7a2efc5b07ba5214d25fe34ec802d295e3c243e36548a21e"
+          "sha256": "451e2d429dc1ab4c417651806e4f0332525762a0a9a28d42579df78c67c8bbbf",
+          "clipboardSha256": "11472b743a9a2417415169ca6fbd80d804259972f07d24e64e9d7dab6d8b4f5a"
         },
         {
           "name": "libtmux-typed-values.cabal",
@@ -1487,8 +1487,8 @@
         },
         {
           "name": "cabal.project",
-          "sha256": "895de0373af5b9e1400666e31ca5f1ae9c075437004fde3a8b75ccc19de42310",
-          "clipboardSha256": "ef4d3338a9d3a91d1ac6e59fcaae5fde8ffeb61c3823a59eac31c329f4017e13"
+          "sha256": "275dff397a14d3394086e2921fa5e17566025842ff86f290ba145af517b31af3",
+          "clipboardSha256": "27b689897a625972f3c2e03ad9318424753f331ba944664af2c0c2855d6b07e8"
         }
       ],
       "shellRecipe": [
@@ -1498,17 +1498,17 @@
       "expectedOutputs": [
         [],
         [
-          "(\"3.3\",\"@17\",120)"
+          "(\"3.3a\",\"@17\",120)"
         ]
       ],
-      "excerptSha256": "e280539aeca9017a7a2efc5b07ba5214d25fe34ec802d295e3c243e36548a21e",
+      "excerptSha256": "11472b743a9a2417415169ca6fbd80d804259972f07d24e64e9d7dab6d8b4f5a",
       "variants": {
         "concise": {
           "files": [
             {
               "name": "Main.hs",
-              "sha256": "a80ac1e85076c0e44b67fed23b9f17928caa149b768eeac971edef6b0f42e6ad",
-              "clipboardSha256": "e280539aeca9017a7a2efc5b07ba5214d25fe34ec802d295e3c243e36548a21e"
+              "sha256": "451e2d429dc1ab4c417651806e4f0332525762a0a9a28d42579df78c67c8bbbf",
+              "clipboardSha256": "11472b743a9a2417415169ca6fbd80d804259972f07d24e64e9d7dab6d8b4f5a"
             },
             {
               "name": "libtmux-typed-values.cabal",
@@ -1517,20 +1517,20 @@
             },
             {
               "name": "cabal.project",
-              "sha256": "895de0373af5b9e1400666e31ca5f1ae9c075437004fde3a8b75ccc19de42310",
-              "clipboardSha256": "ef4d3338a9d3a91d1ac6e59fcaae5fde8ffeb61c3823a59eac31c329f4017e13"
+              "sha256": "275dff397a14d3394086e2921fa5e17566025842ff86f290ba145af517b31af3",
+              "clipboardSha256": "27b689897a625972f3c2e03ad9318424753f331ba944664af2c0c2855d6b07e8"
             }
           ],
-          "excerptSha256": "e280539aeca9017a7a2efc5b07ba5214d25fe34ec802d295e3c243e36548a21e",
+          "excerptSha256": "11472b743a9a2417415169ca6fbd80d804259972f07d24e64e9d7dab6d8b4f5a",
           "execution": "pure-values",
-          "libraryRevision": "f910d69f92a156df3390956470a1a3cd8a69e0fe"
+          "libraryRevision": "581f0ee45016ffb2283366bb1edc1658df26c5ed"
         },
         "errors": {
           "files": [
             {
               "name": "Main.hs",
-              "sha256": "a80ac1e85076c0e44b67fed23b9f17928caa149b768eeac971edef6b0f42e6ad",
-              "clipboardSha256": "e280539aeca9017a7a2efc5b07ba5214d25fe34ec802d295e3c243e36548a21e"
+              "sha256": "451e2d429dc1ab4c417651806e4f0332525762a0a9a28d42579df78c67c8bbbf",
+              "clipboardSha256": "11472b743a9a2417415169ca6fbd80d804259972f07d24e64e9d7dab6d8b4f5a"
             },
             {
               "name": "libtmux-typed-values.cabal",
@@ -1539,20 +1539,20 @@
             },
             {
               "name": "cabal.project",
-              "sha256": "895de0373af5b9e1400666e31ca5f1ae9c075437004fde3a8b75ccc19de42310",
-              "clipboardSha256": "ef4d3338a9d3a91d1ac6e59fcaae5fde8ffeb61c3823a59eac31c329f4017e13"
+              "sha256": "275dff397a14d3394086e2921fa5e17566025842ff86f290ba145af517b31af3",
+              "clipboardSha256": "27b689897a625972f3c2e03ad9318424753f331ba944664af2c0c2855d6b07e8"
             }
           ],
-          "excerptSha256": "e280539aeca9017a7a2efc5b07ba5214d25fe34ec802d295e3c243e36548a21e",
+          "excerptSha256": "11472b743a9a2417415169ca6fbd80d804259972f07d24e64e9d7dab6d8b4f5a",
           "execution": "pure-values",
-          "libraryRevision": "f910d69f92a156df3390956470a1a3cd8a69e0fe"
+          "libraryRevision": "581f0ee45016ffb2283366bb1edc1658df26c5ed"
         },
         "cleanup": {
           "files": [
             {
               "name": "Main.hs",
-              "sha256": "a80ac1e85076c0e44b67fed23b9f17928caa149b768eeac971edef6b0f42e6ad",
-              "clipboardSha256": "e280539aeca9017a7a2efc5b07ba5214d25fe34ec802d295e3c243e36548a21e"
+              "sha256": "451e2d429dc1ab4c417651806e4f0332525762a0a9a28d42579df78c67c8bbbf",
+              "clipboardSha256": "11472b743a9a2417415169ca6fbd80d804259972f07d24e64e9d7dab6d8b4f5a"
             },
             {
               "name": "libtmux-typed-values.cabal",
@@ -1561,13 +1561,13 @@
             },
             {
               "name": "cabal.project",
-              "sha256": "895de0373af5b9e1400666e31ca5f1ae9c075437004fde3a8b75ccc19de42310",
-              "clipboardSha256": "ef4d3338a9d3a91d1ac6e59fcaae5fde8ffeb61c3823a59eac31c329f4017e13"
+              "sha256": "275dff397a14d3394086e2921fa5e17566025842ff86f290ba145af517b31af3",
+              "clipboardSha256": "27b689897a625972f3c2e03ad9318424753f331ba944664af2c0c2855d6b07e8"
             }
           ],
-          "excerptSha256": "e280539aeca9017a7a2efc5b07ba5214d25fe34ec802d295e3c243e36548a21e",
+          "excerptSha256": "11472b743a9a2417415169ca6fbd80d804259972f07d24e64e9d7dab6d8b4f5a",
           "execution": "pure-values",
-          "libraryRevision": "f910d69f92a156df3390956470a1a3cd8a69e0fe"
+          "libraryRevision": "581f0ee45016ffb2283366bb1edc1658df26c5ed"
         }
       }
     }

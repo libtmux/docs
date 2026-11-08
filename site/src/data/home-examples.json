@@ -603,9 +603,9 @@
   "haskell": {
     "lang": "haskell",
     "sourceRepository": "libtmux/libtmux-haskell",
-    "sourceRevision": "eda8825caa1ffde21454bb2eb6954bf46d2939af",
-    "sourceTree": "a1519b0889f55d987039bd4de1b2cc1a64244f41",
-    "libraryRevision": "f910d69f92a156df3390956470a1a3cd8a69e0fe",
+    "sourceRevision": "581f0ee45016ffb2283366bb1edc1658df26c5ed",
+    "sourceTree": "d11969975cbcd0f194a35e81f1e10fc3aec1b017",
+    "libraryRevision": "581f0ee45016ffb2283366bb1edc1658df26c5ed",
     "execution": "pure-values",
     "capability": "typed-values",
     "singleView": "This program validates supplied values and prints the result. It does not start tmux or create resources requiring cleanup.",
@@ -620,7 +620,7 @@
       {
         "name": "Main.hs",
         "lang": "haskell",
-        "code": "{-# LANGUAGE OverloadedStrings #-}\n\n-- | Construct tmux domain values without starting a process\n-- or contacting a server.\nmodule Main (main) where\n\nimport LibTmux.Id (parseWindowId, renderWindowId)\nimport LibTmux.Value (dimensionValue, mkDimension)\nimport LibTmux.Version (parseVersion, renderVersion, requireSupported)\n\nmain :: IO ()\nmain = do\n  version <- either (fail . show) pure $\n    parseVersion \"tmux 3.3\\n\" >>= requireSupported\n  window <- either (fail . show) pure (parseWindowId \"@17\")\n  width <- either (fail . show) pure (mkDimension 120)\n  print (renderVersion version, renderWindowId window, dimensionValue width)\n"
+        "code": "{-# LANGUAGE OverloadedStrings #-}\n\n-- | Construct tmux domain values without starting a process\n-- or contacting a server.\nmodule Main (main) where\n\nimport LibTmux.Id (parseWindowId, renderWindowId)\nimport LibTmux.Value (dimensionValue, mkDimension)\nimport LibTmux.Version (parseVersion, renderVersion, requireSupported)\n\nmain :: IO ()\nmain = do\n  version <- either (fail . show) pure $\n    parseVersion \"tmux 3.3a\\n\" >>= requireSupported\n  window <- either (fail . show) pure (parseWindowId \"@17\")\n  width <- either (fail . show) pure (mkDimension 120)\n  print (renderVersion version, renderWindowId window, dimensionValue width)\n"
       },
       {
         "name": "libtmux-typed-values.cabal",
@@ -630,7 +630,7 @@
       {
         "name": "cabal.project",
         "lang": "text",
-        "code": "packages: .\nindex-state: 2026-11-06T00:00:00Z\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: f910d69f92a156df3390956470a1a3cd8a69e0fe\n"
+        "code": "packages: .\nindex-state: 2026-11-06T00:00:00Z\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: 581f0ee45016ffb2283366bb1edc1658df26c5ed\n"
       }
     ],
     "prerequisites": "Linux x86_64, GHC 9.14.1, Cabal 3.18.2.0, Git, a C11 compiler, and network access to GitHub and Hackage for source dependencies. No running tmux server is required.",
@@ -638,11 +638,11 @@
       "cabal update",
       "cabal run --verbose=0 typed-values"
     ],
-    "expectedOutput": "(\"3.3\",\"@17\",120)\n",
+    "expectedOutput": "(\"3.3a\",\"@17\",120)\n",
     "variants": {
-      "concise": "{-# LANGUAGE OverloadedStrings #-}\n\n-- | Construct tmux domain values without starting a process\n-- or contacting a server.\nmodule Main (main) where\n\nimport LibTmux.Id (parseWindowId, renderWindowId)\nimport LibTmux.Value (dimensionValue, mkDimension)\nimport LibTmux.Version (parseVersion, renderVersion, requireSupported)\n\nmain :: IO ()\nmain = do\n  version <- either (fail . show) pure $\n    parseVersion \"tmux 3.3\\n\" >>= requireSupported\n  window <- either (fail . show) pure (parseWindowId \"@17\")\n  width <- either (fail . show) pure (mkDimension 120)\n  print (renderVersion version, renderWindowId window, dimensionValue width)\n",
-      "errors": "{-# LANGUAGE OverloadedStrings #-}\n\n-- | Construct tmux domain values without starting a process\n-- or contacting a server.\nmodule Main (main) where\n\nimport LibTmux.Id (parseWindowId, renderWindowId)\nimport LibTmux.Value (dimensionValue, mkDimension)\nimport LibTmux.Version (parseVersion, renderVersion, requireSupported)\n\nmain :: IO ()\nmain = do\n  version <- either (fail . show) pure $\n    parseVersion \"tmux 3.3\\n\" >>= requireSupported\n  window <- either (fail . show) pure (parseWindowId \"@17\")\n  width <- either (fail . show) pure (mkDimension 120)\n  print (renderVersion version, renderWindowId window, dimensionValue width)\n",
-      "cleanup": "{-# LANGUAGE OverloadedStrings #-}\n\n-- | Construct tmux domain values without starting a process\n-- or contacting a server.\nmodule Main (main) where\n\nimport LibTmux.Id (parseWindowId, renderWindowId)\nimport LibTmux.Value (dimensionValue, mkDimension)\nimport LibTmux.Version (parseVersion, renderVersion, requireSupported)\n\nmain :: IO ()\nmain = do\n  version <- either (fail . show) pure $\n    parseVersion \"tmux 3.3\\n\" >>= requireSupported\n  window <- either (fail . show) pure (parseWindowId \"@17\")\n  width <- either (fail . show) pure (mkDimension 120)\n  print (renderVersion version, renderWindowId window, dimensionValue width)\n"
+      "concise": "{-# LANGUAGE OverloadedStrings #-}\n\n-- | Construct tmux domain values without starting a process\n-- or contacting a server.\nmodule Main (main) where\n\nimport LibTmux.Id (parseWindowId, renderWindowId)\nimport LibTmux.Value (dimensionValue, mkDimension)\nimport LibTmux.Version (parseVersion, renderVersion, requireSupported)\n\nmain :: IO ()\nmain = do\n  version <- either (fail . show) pure $\n    parseVersion \"tmux 3.3a\\n\" >>= requireSupported\n  window <- either (fail . show) pure (parseWindowId \"@17\")\n  width <- either (fail . show) pure (mkDimension 120)\n  print (renderVersion version, renderWindowId window, dimensionValue width)\n",
+      "errors": "{-# LANGUAGE OverloadedStrings #-}\n\n-- | Construct tmux domain values without starting a process\n-- or contacting a server.\nmodule Main (main) where\n\nimport LibTmux.Id (parseWindowId, renderWindowId)\nimport LibTmux.Value (dimensionValue, mkDimension)\nimport LibTmux.Version (parseVersion, renderVersion, requireSupported)\n\nmain :: IO ()\nmain = do\n  version <- either (fail . show) pure $\n    parseVersion \"tmux 3.3a\\n\" >>= requireSupported\n  window <- either (fail . show) pure (parseWindowId \"@17\")\n  width <- either (fail . show) pure (mkDimension 120)\n  print (renderVersion version, renderWindowId window, dimensionValue width)\n",
+      "cleanup": "{-# LANGUAGE OverloadedStrings #-}\n\n-- | Construct tmux domain values without starting a process\n-- or contacting a server.\nmodule Main (main) where\n\nimport LibTmux.Id (parseWindowId, renderWindowId)\nimport LibTmux.Value (dimensionValue, mkDimension)\nimport LibTmux.Version (parseVersion, renderVersion, requireSupported)\n\nmain :: IO ()\nmain = do\n  version <- either (fail . show) pure $\n    parseVersion \"tmux 3.3a\\n\" >>= requireSupported\n  window <- either (fail . show) pure (parseWindowId \"@17\")\n  width <- either (fail . show) pure (mkDimension 120)\n  print (renderVersion version, renderWindowId window, dimensionValue width)\n"
     }
   }
 }

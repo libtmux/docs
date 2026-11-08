@@ -299,6 +299,27 @@ bytes are a no-op and different bytes fail before upload.
 
 ## Checklist summary
 
+After assembling the complete site, record the new port's resolved API
+cross-references. The publication audit requires an entry for every port:
+
+```console
+$ node scripts/check-xrefs.mjs _site/en --update
+```
+
+Review `scripts/xref-floor.json`: the new port needs a positive measured count,
+and existing floors must remain intact. A selected-port build measures only
+that port; use its count without replacing other ports' entries.
+
+Record the unresolved type-name count as well, including an explicit zero:
+
+```console
+$ node scripts/check-type-links.mjs _site/en --update
+```
+
+Review `scripts/type-links-ceiling.json` and retain every other port's entry.
+If the new count is positive, inspect it with `--list` before recording it;
+`--force` permits a deliberate nonzero initial ceiling.
+
 - [ ] `ports.ts`: new `Port` entry, renderer and product availability decided
 - [ ] `port-inventory.ts`: entries from the manifests, verified, with evidence committed
 - [ ] Worktree added on branch `docs-site`, `checkout`/`worktree` paths match
@@ -306,6 +327,8 @@ bytes are a no-op and different bytes fail before upload.
 - [ ] Source-owned prose/examples stage from the selected revision
 - [ ] Registry, version grammar, installs, prompts, and product routes agree
 - [ ] Source-bound trunk, branch, PR, tag, and alias builds are checked
+- [ ] Measured cross-reference floor added without lowering existing floors
+- [ ] Measured type-link ceiling added without changing other ports' ceilings
 - [ ] CI caller and exact preview cleanup are committed on `docs-site`
 - [ ] Port and reusable-workflow pins use the same public full site SHA
 - [ ] Maintainer opens the port PR and coordinates publication and shell search
