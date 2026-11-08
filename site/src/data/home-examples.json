@@ -629,7 +629,7 @@
         "code": "(executable\n (name showcase_graph)\n (libraries libtmux libtmux-workspace libtmux-unix unix))\n"
       }
     ],
-    "prerequisites": "OCaml 5.5.2, Dune 3.24.2, Linux and tmux 3.3 or newer. Install libtmux, libtmux-workspace and libtmux-unix in the active opam switch, then save these files at their shown paths.",
+    "prerequisites": "OCaml 5.5.2, Dune 3.24.2, Linux and tmux 3.3a through 3.8. Install libtmux, libtmux-workspace and libtmux-unix in the active opam switch, then save these files at their shown paths.",
     "commands": [
       "opam exec -- dune exec examples/showcase_graph.exe"
     ],

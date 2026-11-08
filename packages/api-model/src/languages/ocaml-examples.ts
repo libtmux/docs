@@ -25,7 +25,7 @@ export function attachCompleteOcamlExamples(symbols: ApiSymbol[], read: (path: s
   const manifest = JSON.parse(read('examples/showcase.json')) as {
     schema: string; tmux_floor: string; ci: { workflow: string; job: string; runner: string }; examples: Showcase[]
   }
-  if (manifest.schema !== 'libtmux.showcase/1' || manifest.tmux_floor !== '3.3' ||
+  if (manifest.schema !== 'libtmux.showcase/1' || manifest.tmux_floor !== '3.3a' ||
       manifest.ci.workflow !== '.github/workflows/ocaml.yml' || manifest.ci.job !== 'native' ||
       manifest.ci.runner !== 'test/showcase_test.py' || !Array.isArray(manifest.examples)) {
     throw new Error('Invalid OCaml CI showcase manifest')
@@ -46,7 +46,7 @@ export function attachCompleteOcamlExamples(symbols: ApiSymbol[], read: (path: s
       const symbol = matches[0]!
       symbol.doc = { summary: '', ...symbol.doc, examples: [...(symbol.doc?.examples ?? []),
         { lang: 'ocaml', code, sourceUrl,
-          intro: `${example.title}. This complete program creates a private daemon, checks its result and closes its clients. Use OCaml 5.5.2 on Linux with tmux 3.3 or newer. Run it from the source checkout after following the installation guide.` },
+          intro: `${example.title}. This complete program creates a private daemon, checks its result and closes its clients. Use OCaml 5.5.2 on Linux with tmux 3.3a through 3.8. Run it from the source checkout after following the installation guide.` },
         { lang: 'console', code: `$ ${example.command.join(' ')}\n`, intro: 'Run the recorded entry point:' },
         { lang: 'text', code: example.expected_stdout_line + '\n', intro: 'Expected outcome line, after the temporary socket path:' },
       ] }

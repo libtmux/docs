@@ -1273,7 +1273,7 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
         note: 'Build the CLI from source, then use tmux-workspace apply with a validated JSON workspace.' }] }],
     installs: [{ label: 'opam (source)', lang: 'console',
       code: 'git clone https://github.com/libtmux/libtmux-ocaml.git && \\\n  cd libtmux-ocaml && \\\n  opam install .',
-      note: 'Source installation; no registry release. Requires OCaml 5.5.2, Linux and tmux 3.3 or newer.' }],
+      note: 'Source installation; no registry release. Requires OCaml 5.5.2, Linux and tmux 3.3a through 3.8.' }],
     initProject: { lang: 'console', code: 'dune init project my_tmux_app' },
     installForms: {
       release: { lang: 'console', code: 'opam install .' },

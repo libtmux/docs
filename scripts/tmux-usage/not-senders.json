@@ -4768,7 +4768,7 @@
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:376",
+          "at": "eio/libtmux_eio.ml:386",
           "has": [
             "Observation_wait.rendered"
           ]

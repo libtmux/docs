@@ -8381,6 +8381,20 @@
   },
   {
    "port": "ocaml",
+   "symbol": "Libtmux_eio.Client.await",
+   "page": "/ocaml/latest/guides/benchmarking/",
+   "title": "Measure capture, concurrency and output delivery",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_eio.Client.submit",
+   "page": "/ocaml/latest/guides/benchmarking/",
+   "title": "Measure capture, concurrency and output delivery",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
    "symbol": "Libtmux_eio.Workspace",
    "page": "/ocaml/latest/guides/packages/",
    "title": "Choose the packages your application needs",
@@ -8584,6 +8598,20 @@
   },
   {
    "port": "ocaml",
+   "symbol": "Libtmux.Error.t.Closed",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Error.t.Disconnected",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
    "symbol": "Libtmux.Expr.compile",
    "page": "/ocaml/latest/guides/queries/",
    "title": "Query captured data",
@@ -8615,6 +8643,13 @@
    "symbol": "Libtmux.Model.pane",
    "page": "/ocaml/latest/guides/query-interchange/",
    "title": "Share a scalar pane query",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Operations.set_option",
+   "page": "/ocaml/latest/guides/benchmarking/",
+   "title": "Measure capture, concurrency and output delivery",
    "section": "guides"
   },
   {
