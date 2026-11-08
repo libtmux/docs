@@ -88,6 +88,7 @@ export interface CoreGraphHomeEntry {
 export interface CoreModuleHomeEntry {
   modules: readonly string[]
   objects?: never
+  association?: never
   title: string
   lead: string
   capabilities: Record<string, never>
@@ -145,7 +146,7 @@ export function resolveCoreHome(port: string, version: string, entry: CoreHomeEn
   }
   const objects = entry.modules !== undefined ? [] : CORE_ROLES.map((role) => {
     if (!entry.objects[role]) throw new Error(`core-home: ${port} names no ${role} type`)
-    return { role, ...link(port, entry.objects[role], version, role), wraps: entry.wraps?.[role] ??role === 'window' && entry.association ? 'A physical window linked into sessions' : TMUX_OBJECTS[role].wraps, tmuxId: TMUX_OBJECTS[role].id }
+    return { role, ...link(port, entry.objects[role], version, role), wraps: entry.wraps?.[role] ?? (role === 'window' && entry.association ? 'A physical window linked into sessions' : TMUX_OBJECTS[role].wraps), tmuxId: TMUX_OBJECTS[role].id }
   })
   const capabilities: CoreHome['capabilities'] = { typed: [], cli: [] }
   for (const [key, id] of Object.entries(entry.capabilities)) {

@@ -389,9 +389,11 @@ describe('prose Markdown links', () => {
 
   it.each(Object.keys(PORT_BY_SLUG))('links a real %s declaration in its selected version', (port) => {
     const model = API_MODELS[port]
-    const primaryId = CORE_HOME[port].objects.server
-    const symbol = model.symbols.find((entry) => (entry.publicId ?? entry.id) === primaryId)!
-    expect(symbol, `${port} ${primaryId} declaration`).toBeDefined()
+    const primaryId = port === 'haskell' ? undefined : CORE_HOME[port].objects?.server
+    const symbol = port === 'haskell'
+      ? model.symbols.find((entry) => entry.name === 'PaneId' && entry.parent === 'LibTmux.Id')!
+      : model.symbols.find((entry) => (entry.publicId ?? entry.id) === primaryId)!
+    expect(symbol, `${port} primary declaration`).toBeDefined()
     vi.stubEnv('LIBTMUX_DOCS_PORT', port)
     vi.stubEnv('LIBTMUX_DOCS_VERSION', 'next')
     const text = symbol.publicId ?? symbol.id

@@ -16,7 +16,7 @@
  * says it could not.
  */
 
-import { documentedLibrary, entryCandidates, entryDestinations } from '../../site/src/lib/port-inventory.ts'
+import { entryCandidates, entryDestinations } from '../../site/src/lib/port-inventory.ts'
 
 export const USER_AGENT = 'libtmux-docs destination check (+https://libtmux.org)'
 

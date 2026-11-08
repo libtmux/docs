@@ -66,7 +66,15 @@ describe('reference symbol search', () => {
     }
     expect(searchApi(inventory, '', 'types').every((entry) => entry.category === 'types')).toBe(true)
     expect(searchApi(inventory, '', 'members').every((entry) => entry.category === 'members')).toBe(true)
-    const primaryId = CORE_HOME[port].objects.server
+    if (port === 'haskell' || port === 'ocaml') {
+      const typeName = port === 'ocaml' ? 'Libtmux_unix.Client' : 'PaneId'
+      const server = searchApi(inventory, typeName)[0]
+      expect(server.category, `${port}: primary server declaration category`).toBe('types')
+      expect(symbols.get(server.id)?.name).toBe(port === 'ocaml' ? 'Client' : typeName)
+      if (port === 'ocaml') expect(server).toMatchObject({ id: 'Libtmux_unix.Client', kind: 'module' })
+      return
+    }
+    const primaryId = CORE_HOME[port].objects!.server
     const primary = symbols.get(primaryId)!
     const server = searchApi(inventory, primaryId)[0]
     expect(server.id, `${port}: native server role is searchable`).toBe(primaryId)

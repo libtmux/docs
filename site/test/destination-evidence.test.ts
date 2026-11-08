@@ -182,12 +182,9 @@ describe('destination evidence', () => {
 
   describe('age', () => {
     const checked = new Date(`${evidence.checkedAt}T12:00:00Z`)
-    const sameDay = withEvidence(evidence.destinations.map((record) => ({ ...record, checkedAt: evidence.checkedAt })))
     const later = (days: number) => new Date(checked.getTime() + days * DAY)
     const sameDate = withEvidence(evidence.destinations.map((record) => ({ ...record, checkedAt: evidence.checkedAt })))
     // Boundary controls use one date; live records can be refreshed independently.
-    const sameDay = { ...evidence, destinations: evidence.destinations.map((record) => ({ ...record, checkedAt: evidence.checkedAt })) }
-    const sameDate = withEvidence(evidence.destinations.map((record) => ({ ...record, checkedAt: evidence.checkedAt })))
 
     it('is measured, never judged, by the agreement check, so a change that touches none of this cannot fail for the passage of time', () => {
       const ancient = withEvidence(evidence.destinations.map((record) => ({ ...record, checkedAt: '2001-01-01' })))
@@ -202,7 +199,7 @@ describe('destination evidence', () => {
       expect(stale).toHaveLength(evidence.destinations.length)
       expect(stale[0]).toMatchObject({ checkedAt: evidence.checkedAt, days: EVIDENCE_MAX_AGE_DAYS + 2 })
       const old = new Date(checked.getTime() - (EVIDENCE_MAX_AGE_DAYS + 5) * DAY).toISOString().slice(0, 10)
-      const [first, ...rest] = sameDay.destinations
+      const [first, ...rest] = sameDate.destinations
       expect(staleRecords(withEvidence([{ ...first, checkedAt: old }, ...rest]), { today: checked }))
         .toEqual([{ url: first!.url, checkedAt: old, days: EVIDENCE_MAX_AGE_DAYS + 5 }])
     })

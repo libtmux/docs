@@ -5,7 +5,7 @@ import { fromMarkdown } from 'mdast-util-from-markdown'
 import { SymbolIndex, type ApiModel } from '@libtmux/api-model'
 import { apiEntrySections, apiMethodDetails, usesNativeSignatures } from '../src/lib/api-sections'
 import { apiSignatureLayouts, signatureSpans } from '../src/lib/code-layout'
-import { parseApiProse } from '../src/lib/api-prose'
+import { parseApiProse } from '@libtmux/api-model/reference'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
 import { displayedSignature, renderSignatures } from './signature-fragment'
 

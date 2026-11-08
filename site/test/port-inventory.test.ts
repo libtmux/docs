@@ -36,7 +36,7 @@ describe('port inventory', () => {
     expect(new Set(ids).size, 'ids are unique').toBe(ids.length)
     expect(entries(slug).filter((entry) => entry.kind === 'library'), 'exactly one library').toHaveLength(1)
     expect(entries(slug)[0]!.kind).toBe('library')
-    expect(['published', 'configured-unpublished']).toContain(entries(slug)[0]!.status === 'published' || entries(slug)[0]!.sourceAvailable).toBe(true)
+    expect(entries(slug)[0]!.status === 'published' || entries(slug)[0]!.sourceAvailable).toBe(true)
     for (const entry of entries(slug)) {
       expect(entry.label.trim(), entry.id).not.toBe('')
       expect(entry.coordinate.trim(), entry.id).not.toBe('')

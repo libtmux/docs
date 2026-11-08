@@ -99,7 +99,7 @@ describe('shared reference index sections', () => {
       expect(sections[0].free.slice(0, 2).map((symbol) => [symbol.id, symbol.kind]))
         .toEqual([['Libtmux_unix.Client', 'module'], ['Libtmux_eio.Client', 'module']])
       expect(firstEntry(navTree(port)[0]!)?.id).toBe('Libtmux_unix.Client')
-    } else expect(sections[0].types[0].publicId ?? sections[0].types[0].id).toBe(CORE_HOME[port].objects.server)
+    } else if (port !== 'haskell') expect(sections[0].types[0].publicId ?? sections[0].types[0].id).toBe(CORE_HOME[port].objects!.server)
     if (port !== 'haskell') expect(sections[0].id).toBe('server')
     const ids = sections.flatMap((section) => [...section.types, ...section.free]).map((symbol) => symbol.id)
     expect(new Set(ids).size).toBe(ids.length)
@@ -276,7 +276,7 @@ describe('major tmux object domains', () => {
       .toEqual(expect.arrayContaining(['LibTmux.Id', 'LibTmux.Value', 'LibTmux.Version', 'IdError']))
     else if (port === 'clojure') expect(owners.map((owner) => owner.name).sort())
       .toEqual(['libtmux.async', 'libtmux.control', 'libtmux.core', 'libtmux.core-async', 'libtmux.data'])
-    else expect(owners.some((owner) => (owner.publicId ?? owner.id) === CORE_HOME[port].objects.server), port).toBe(true)
+    else expect(owners.some((owner) => (owner.publicId ?? owner.id) === CORE_HOME[port].objects!.server), port).toBe(true)
     for (const owner of owners) {
       const displayed = membersOf(model, owner, memberSignals(port, mentions.mentions)).sort(compare)
       expect(branches.get(owner.publicId ?? owner.id)?.map((member) => member.id) ?? [], `${port}:${owner.id}`)

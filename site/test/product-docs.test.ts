@@ -5,9 +5,6 @@ import { parseFrontmatter } from '@astrojs/markdown-remark'
 import { Window, type Element as DomElement } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
 import { CONCEPT_DESCRIPTION, PORTS, productAvailable, productDescription, productIsConcept, productInDevelopment, productStatus, workspaceOverviewNotice, type Port } from '../src/lib/ports'
-import { headingTitle } from '../src/lib/branding'
-import { docsPath, type DocsPage } from '../src/lib/docs-paths'
-import { docsEntriesAvailable } from '../src/lib/page-port-links'
 import { proseSources } from '../../scripts/lib/api-destinations.mjs'
 import { REGISTRY } from '../src/lib/registry'
 import { LANG_TO_PORT } from '../src/plugins/remark-port-code.mjs'
@@ -105,6 +102,7 @@ const storageIdentity = new RegExp(`/ports/(?:${portSlugs()})/`)
 // Port documentation is not translated, so no port tree exists under a translated locale.
 const localizedPortTree = new RegExp(`^/ja/(?:${portSlugs()})/`)
 
+const productSources = new Map<string, { title?: string; subtitle?: string; shared?: boolean } | undefined>()
 type SourcePage = DocsPage & { data: DocsPage['data'] & { title: string } }
 const sourceByPort = new Map<string, Map<string, SourcePage>>()
 let sourceEntries: SourcePage[] | undefined
@@ -644,7 +642,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   })
 
   it.each(PORTS.filter((port) => !port.parentLibrary && products.some((product) => port.productAvailability?.[product] === 'unpublished')))
-    ('$name distinguishes unpublished overviews from excluded products''$name builds and lists only permitted unavailable-product pages', (port) => {
+    ('$name builds and lists only permitted unavailable-product pages', (port) => {
     const version = manifest().defaultVersion[port.slug]!
     const docs = JSON.parse(read(`${port.slug}/${version}/docs.json`)) as DocsManifest
     for (const product of products.filter((entry) => port.productAvailability?.[entry] === 'unpublished')) {
@@ -801,7 +799,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           }
         }
       }
-      if (page.product === 'workspace' && sectionsFor(page.port, 'workspace').includes('internals') && productAvailable(.port, 'workspace').includes('internals')) {
+      if (page.product === 'workspace' && sectionsFor(page.port, 'workspace').includes('internals')) {
         expect([...picker!.querySelectorAll('a[href]')].some((link) => link.getAttribute('href') === urlFor(`${page.port}/${page.version}/workspace/internals/`).pathname),
           `${page.path} Internals remains reachable in the picker`).toBe(true)
       }

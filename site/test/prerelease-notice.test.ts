@@ -37,7 +37,6 @@ beforeAll(async () => {
   const helpers = {
     buildLocale, localeSourcePath, CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, repoPath,
     markdownPath, pageBrand, PORT_BY_SLUG, portSourceUrl, releaseMaturity, registryFor, withPortRoot, withRoot, buildTarget, tmuxInventoryVersion,
-    releaseMaturity, registryFor,
   }
   vi.stubGlobal('__prereleaseHelpers', helpers)
   const helperModule = `data:text/javascript,export const {${Object.keys(helpers).join(',')}}=globalThis.__prereleaseHelpers`
