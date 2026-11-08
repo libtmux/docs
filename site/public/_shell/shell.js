@@ -15,6 +15,7 @@
     {"slug":"rs","name":"Rust","shortName":"Rs","logoLanguage":"rust","versionedDocs":true,"mcp":true},
     {"slug":"go","name":"Go","shortName":"Go","logoLanguage":"go","versionedDocs":true,"mcp":true},
     {"slug":"java","name":"Java","shortName":"Java","logoLanguage":"java","versionedDocs":true,"mcp":true},
+    {"slug":"clojure","name":"Clojure","shortName":"Clj","logoLanguage":"clojure","versionedDocs":true,"mcp":false},
     {"slug":"kotlin","name":"Kotlin","shortName":"Kt","logoLanguage":"kotlin","versionedDocs":true,"mcp":false},
     {"slug":"scala","name":"Scala","shortName":"Sc","logoLanguage":"scala","versionedDocs":true,"mcp":false},
     {"slug":"csharp","name":"C#","shortName":"C#","logoLanguage":"csharp","versionedDocs":true,"mcp":true},

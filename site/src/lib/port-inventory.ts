@@ -281,6 +281,13 @@ export function entryDestinations(entry: InventoryEntry): Destination[] {
   ]
 }
 
+/** A released package, or an unpublished package available from public source. */
+export function documentedLibrary(entries: readonly InventoryEntry[]): InventoryEntry | undefined {
+  return entries.find((entry) => entry.kind === 'library' && (entry.status === 'published' ||
+    entry.status === 'configured-unpublished' && !entry.package && !entry.api &&
+    entries.some((source) => source.kind === 'source' && source.status === 'published' && source.repo === entry.repo)))
+}
+
 const GO = 'github.com/libtmux/libtmux-go'
 
 /**
@@ -464,6 +471,21 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
       ...central('libtmux-workspace-cli'), path: 'libtmux-workspace-cli', aliases: ['tmux-workspace'],
       unavailable: [{ kind: 'api', host: 'javadoc-io', url: 'https://javadoc.io/doc/io.github.libtmux/libtmux-workspace-cli',
         reason: 'javadoc.io lists versions and has no documentation for this artifact' }] }),
+  ],
+  clojure: [
+    jvm({ id: 'libtmux-clojure', kind: 'library', product: 'core', label: 'libtmux-clojure',
+      coordinate: 'io.github.libtmux:libtmux-clojure', path: 'libtmux-clojure', ref: 'master',
+      status: 'configured-unpublished', sourceAvailable: true, note: 'No registry release; install the source checkout with Gradle.',
+      aliases: ['libtmux.core', 'libtmux.data', 'libtmux.async', 'libtmux.control'] }),
+    jvm({ id: 'libtmux-clojure-core-async', kind: 'companion', product: 'core', label: 'libtmux-clojure-core-async',
+      coordinate: 'io.github.libtmux:libtmux-clojure-core-async', path: 'libtmux-clojure-core-async', ref: 'master',
+      status: 'configured-unpublished', sourceAvailable: true, note: 'No registry release; install this optional adapter from the source checkout.',
+      aliases: ['libtmux.core-async'] }),
+    jvm({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-java', coordinate: 'libtmux/libtmux-java' }),
+    jvm({ id: 'core-source', kind: 'source', product: 'core', label: 'libtmux-clojure', path: 'libtmux-clojure', ref: 'master',
+      aliases: ['libtmux.core', 'libtmux.data', 'libtmux.async', 'libtmux.control'] }),
+    jvm({ id: 'adapter-source', kind: 'source', product: 'core', label: 'libtmux-clojure-core-async',
+      path: 'libtmux-clojure-core-async', ref: 'master', aliases: ['libtmux.core-async'] }),
   ],
   kotlin: [
     jvm({ id: 'libtmux-kotlin', kind: 'library', product: 'core', label: 'libtmux-kotlin', ...central('libtmux-kotlin'),

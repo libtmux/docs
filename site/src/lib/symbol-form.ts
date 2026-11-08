@@ -56,6 +56,7 @@ export const FORMS: Record<string, Language | 'as-written'> = {
   ruby: { qualifier: '::', call: false },
   lua: { qualifier: '.', call: true },
   elixir: 'as-written',
+  clojure: 'as-written',
   powershell: 'as-written',
 }
 

@@ -12,7 +12,7 @@
  * working tree do not matter.
  *
  * Usage:
- *   node scripts/gen-manifest-packages.mjs [--out <path>] [--check]
+ *   node scripts/gen-manifest-packages.mjs [--out <path>] [--port <slug>] [--check]
  *
  *   --out <path>  Write there (default: site/src/data/manifest-packages.json).
  *   --check       Write nothing; exit 1 if the file is out of date. A port whose
@@ -35,16 +35,18 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const DEFAULT_OUT = join(root, 'site', 'src', 'data', 'manifest-packages.json')
 const expand = (path) => (path.startsWith('~/') ? join(homedir(), path.slice(2)) : path)
 
-const opts = { out: DEFAULT_OUT, check: false }
+const opts = { out: DEFAULT_OUT, check: false, port: undefined }
 const argv = process.argv.slice(2)
 for (let i = 0; i < argv.length; i += 1) {
   if (argv[i] === '--out') opts.out = argv[++i]
+  else if (argv[i] === '--port') opts.port = argv[++i]
   else if (argv[i] === '--check') opts.check = true
   else if (argv[i] === '-h' || argv[i] === '--help') {
     console.log(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('*/')[0])
     process.exit(0)
   } else throw new Error(`unrecognised argument: ${argv[i]}`)
 }
+if (opts.port && !PORTS.some((port) => port.slug === opts.port)) throw new Error(`unknown port: ${opts.port}`)
 
 /** The Python companions are pinned beside the library, in the API model's sources. */
 const COMPANIONS = [
@@ -56,6 +58,7 @@ const COMPANIONS = [
 const skipped = []
 const ports = {}
 for (const port of PORTS) {
+  if (opts.port && port.slug !== opts.port) continue
   const model = JSON.parse(readFileSync(join(root, 'site', 'src', 'data', 'api', `${port.slug}.json`), 'utf8'))
   const checkout = expand(process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] ?? port.checkout)
   const open = (path, revision) => {
@@ -96,6 +99,7 @@ if (opts.check) {
   const committed = JSON.parse(readFileSync(opts.out, 'utf8'))
   const drift = []
   for (const slug of PORTS.map((port) => port.slug)) {
+    if (opts.port && slug !== opts.port) continue
     if (!committed.ports?.[slug]) drift.push(`${slug}: missing from the file`)
     else if (ports[slug] && JSON.stringify(ports[slug]) !== JSON.stringify(committed.ports[slug])) drift.push(`${slug}: differs from its manifests`)
   }
@@ -109,6 +113,9 @@ if (opts.check) {
   console.log(`${opts.out} is current for ${checked} of ${PORTS.length} ports${skipped.length > 0 ? `; not checked: ${[...new Set(skipped.map(({ slug }) => slug))].join(', ')}` : ''}`)
 } else {
   if (skipped.length > 0) throw new Error('refusing to write a partial file; provide the missing checkouts')
-  writeFileSync(opts.out, text)
+  if (opts.port) {
+    const previous = JSON.parse(readFileSync(opts.out, 'utf8'))
+    writeFileSync(opts.out, `${JSON.stringify({ ...previous, ports: { ...previous.ports, ...ports } }, null, 2)}\n`)
+  } else writeFileSync(opts.out, text)
   console.log(`wrote ${opts.out}`)
 }

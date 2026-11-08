@@ -12,7 +12,7 @@ const cachedRevision = 'a'.repeat(40)
 const files = ['scripts/stage-port-docs.mjs', 'scripts/lib/badges.mjs', 'site/src/lib/ports.ts',
   'site/src/lib/site-root.ts', 'site/src/lib/cooldown.ts', 'site/src/lib/port-documentation.ts',
   'site/src/lib/versions.ts']
-const stagedPorts = SOURCE_GUIDE_PORTS['ruby', 'lua', 'powershell', 'julia', 'elixir', 'haskell', 'kotlin', 'scala', 'fsharp', 'perl']
+const stagedPorts = SOURCE_GUIDE_PORTS['ruby', 'lua', 'powershell', 'julia', 'elixir', 'haskell''clojure', 'kotlin', 'scala', 'fsharp', 'perl']
 
 function fixture(slug: 'ruby' | 'lua' | 'kotlin' | 'ocaml''haskell', run: (fixture: {
   directory: string; checkout: string; revision: string;

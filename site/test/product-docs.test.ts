@@ -5,9 +5,13 @@ import { parseFrontmatter } from '@astrojs/markdown-remark'
 import { Window, type Element as DomElement } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
 import { CONCEPT_DESCRIPTION, PORTS, productAvailable, productDescription, productIsConcept, productInDevelopment, productStatus, workspaceOverviewNotice, type Port } from '../src/lib/ports'
+import { headingTitle } from '../src/lib/branding'
+import { docsPath, type DocsPage } from '../src/lib/docs-paths'
+import { docsEntriesAvailable } from '../src/lib/page-port-links'
+import { proseSources } from '../../scripts/lib/api-destinations.mjs'
 import { REGISTRY } from '../src/lib/registry'
 import { LANG_TO_PORT } from '../src/plugins/remark-port-code.mjs'
-import { SITE_BUILT, SITE_PREFIX, PREVIEW_PREFIX, productionPath, publishedPath, sitePath } from './site-root'
+import { SITE_BUILT, SITE_PREFIX, PREVIEW_PREFIX, REPO_ROOT, productionPath, publishedPath, sitePath } from './site-root'
 import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects } from '../src/lib/mcp-catalog'
 import { mcpObjectGroup } from '../src/lib/mcp-reference'
 import { mentionBadge, mentionBadgeHtml } from '../src/lib/mention-badge'
@@ -52,6 +56,15 @@ interface DocsManifest {
 
 const products = ['mcp', 'workspace'] as const
 const primaryPorts = PORTS.filter((port) => !port.parentLibrary)
+// Read authored and staged routes only when the assembled-output checks run.
+let sourcePages: Map<string, DocsPage[]> | undefined
+function portPages(port: string): DocsPage[] {
+  if (!sourcePages) {
+    const entries = proseSources({ root: REPO_ROOT })
+    sourcePages = new Map(PORTS.map((owner) => [owner.slug, docsEntriesAvailable(entries, owner.slug)]))
+  }
+  return sourcePages.get(port)!
+}
 /** A regular-expression alternation over the registered ports, so a new port is covered without editing a list. */
 const portSlugs = (ports: readonly Port[] = PORTS) => ports.map((port) => port.slug).join('|')
 const read = (path: string) => readFileSync(sitePath(path), 'utf8')
@@ -631,14 +644,19 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   })
 
   it.each(PORTS.filter((port) => !port.parentLibrary && products.some((product) => port.productAvailability?.[product] === 'unpublished')))
-    ('$name distinguishes unpublished overviews from excluded products', (port) => {
+    ('$name distinguishes unpublished overviews from excluded products''$name builds and lists only permitted unavailable-product pages', (port) => {
     const version = manifest().defaultVersion[port.slug]!
     const docs = JSON.parse(read(`${port.slug}/${version}/docs.json`)) as DocsManifest
     for (const product of products.filter((entry) => port.productAvailability?.[entry] === 'unpublished')) {
       // Whatever the product's other pages would be called, none is built or listed.
       const directory = sitePath(`${port.slug}/${version}/${product}`)
       const built = existsSync(directory) ? readdirSync(directory, { recursive: true }).map(String) : []
-      expect(built.filter((file) => file.endsWith('.html') && file !== 'index.html'), `${port.slug} ${product} pages built beyond the overview`).toEqual([])
+      const availability = port.productAvailability?.[product] ?? 'available'
+      const overview = availability === 'unpublished'
+      expect(built.filter((file) => file.endsWith('.html') && (!overview || file !== 'index.html')),
+        `${port.slug} ${product} pages built outside its availability`).toEqual([])
+      if (!overview) expect(docs.pages.some((entry) => new URL(entry.url).pathname
+        === urlFor(`${port.slug}/${version}/${product}/`).pathname), `${port.slug} ${product} excluded overview`).toBe(false)
       expect(pagesBeyondOverview(docs.pages, urlFor(`${port.slug}/${version}/${product}/`).pathname),
         `${port.slug} ${product} pages listed beyond the overview`).toEqual([])
       const advertised = docs.ports.find((entry) => entry.slug === port.slug)!.products.find((entry) => entry.slug === product)!
@@ -735,7 +753,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       expect(picker?.querySelector('.surface-current small')?.textContent, `${page.path} current section`).toBe(sectionLabel)
       const current = picker?.querySelectorAll('[aria-current="location"]')
       expect(current, `${page.path} one current section`).toHaveLength(1)
-      const sectionPath = `${page.port}/${page.version}/${page.product}/${page.section === 'source-guide' ? 'source-guide/' : section === 'home' ? '' : `${section}/`}`
+      const sourceGuideSection = page.section === 'source-guide' && !sectionsFor(page.port, page.product).includes('guides')
+      const sectionPath = `${page.port}/${page.version}/${page.product}/${sourceGuideSection ? 'source-guide/' : section === 'home' ? '' : `${section}/`}`
       expect(current![0].getAttribute('href'), `${page.path} current destination`).toBe(urlFor(sectionPath).pathname)
       expect(resolves(current![0].getAttribute('href')!), `${page.path} current destination exists`).toBe(true)
       // The API reference is the reference sidebar, one navigation for every viewport; the other sections share the section sidebar.

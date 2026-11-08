@@ -22,6 +22,7 @@ import { qualifiedNameOf } from '@libtmux/api-model/modules'
  * not source qualification. The full name is the page's Qualified name row. Other ports' page headings join the owner
  * and the member with a dot, so for Rust, C++, Ruby, Lua and PowerShell they differ from the card's header.
  * OCaml constructors and record fields use their module's namespace, while their stable ids retain the owning type.
+ * Clojure headings keep the full namespace/var spelling.
  *
  * This is for display. The public id, the anchors and the URLs stay as the model has them.
  */

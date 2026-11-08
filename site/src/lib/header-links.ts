@@ -8,7 +8,7 @@
  * where an unpublished entry yields nothing.
  */
 import {
-  API_HOSTS, INVENTORY, INVENTORY_KIND_LABEL, KIND_TERMS, PACKAGE_HOSTS, entryDestinations,
+  API_HOSTS, INVENTORY, INVENTORY_KIND_LABEL, KIND_TERMS, PACKAGE_HOSTS, documentedLibrary, entryDestinations,
   type DestinationKind, type HostIcon, type InventoryEntry, type InventoryProduct,
 } from './port-inventory'
 import { PICKER_GROUP_LABEL, portDestinations, type Port } from './ports'

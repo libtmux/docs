@@ -12,7 +12,7 @@ export interface PortFamily {
 export const PORT_FAMILIES: readonly PortFamily[] = [
   { label: 'Scripting & web', ports: ['py', 'ruby', 'lua', 'julia', 'ts', 'perl'] },
   { label: 'Compiled & native', ports: ['rs', 'go', 'cxx', 'swift', 'ocaml''haskell'] },
-  { label: 'JVM', ports: ['java', 'kotlin', 'scala'] },
+  { label: 'JVM', ports: ['java', 'kotlin', 'scala', 'clojure'] },
   { label: '.NET', ports: ['csharp', 'fsharp', 'powershell'] },
   { label: 'BEAM', ports: ['elixir'] },
 ]

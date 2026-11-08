@@ -26,6 +26,9 @@ export const DESTINATIONS: Record<string, ExpectedDestinations> = {
   perl: {
     source: github('https://github.com/libtmux/libtmux-perl/tree/master/packages/core', 'libtmux-perl'),
   },
+  clojure: {
+    source: github('https://github.com/libtmux/libtmux-java/tree/master/libtmux-clojure', 'libtmux-java/libtmux-clojure'),
+  },
   py: {
     source: github('https://github.com/tmux-python/libtmux', 'libtmux'),
     registry: { name: 'PyPI', url: 'https://pypi.org/project/libtmux/', icon: 'pypi', label: 'libtmux on PyPI' },

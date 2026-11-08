@@ -60,6 +60,12 @@ export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> =
     },
     package: term('The installable Perl distribution supplying this API.', 'Preparing Perl distributions', 'https://perldoc.perl.org/5.44.0/perlnewmod', 'The package badge names a distribution such as LibTmux-Async. A Perl package declaration introduces a namespace; one distribution can contain several namespaces.'),
   },
+  clojure: {
+    module: term('A Clojure namespace containing public vars.', 'Clojure namespaces', 'https://clojure.org/reference/namespaces', 'Require the namespace with an alias, then call a var as alias/name. A namespace and an installable artifact are different boundaries.'),
+    function: term('A function stored in a public Clojure var.', 'Clojure vars', 'https://clojure.org/reference/vars', 'The signature lists argument vectors. A trailing ! marks external I/O in this library; captured data operations remain local.'),
+    overload: term('Alternative argument counts accepted by one Clojure function.', 'Clojure function arities', 'https://clojure.org/reference/special_forms#fn', 'Each argument vector is an arity. Selection uses the number of arguments; it does not dispatch on Java parameter types.'),
+    package: term('The Maven artifact supplying this namespace.', 'Clojure namespaces', 'https://clojure.org/reference/namespaces', 'Use the installation instructions for artifact coordinates. The optional core.async adapter is a separate artifact.'),
+  },
   scala: {
     module: term('A singleton object that groups Scala declarations.', 'Scala singleton objects', scalaTour('singleton-objects'), 'The module badge represents object declarations here. Its members belong to that object; the label does not identify a separately installed artifact.'),
     class: term('A Scala class that defines instances, constructors and members.', 'Scala classes', scalaTour('classes'), 'Traits and case classes have their own declaration syntax; read the displayed signature for those distinctions.'),

@@ -61,11 +61,12 @@ export function abbreviateNamespace(namespace: string): string {
 
 /**
  * A qualified name as its path and the declaration's own name: `libtmux::pane::Pane::send_keys` is
- * `libtmux::pane::Pane::` and `send_keys`. The separators are the ports': `::`, `.`, `#`, `:` and `\`.
+ * `libtmux::pane::Pane::` and `send_keys`. Clojure separates a namespace and var with `/`;
+ * Elixir's trailing `/arity` belongs to the declaration's own name.
  * A Swift name ends in argument labels, `send(keys:)`, which belong to the name, so the search stops at the first `(`.
  */
 export function splitQualifiedName(name: string): [path: string, leaf: string] {
-  const last = [...name.split('(')[0]!.matchAll(/::|[.#:\\]/g)].at(-1)
+  const last = [...name.split('(')[0]!.matchAll(/::|[.#:\\]|\/(?!\d+$)/g)].at(-1)
   const cut = last ? last.index + last[0].length : 0
   return cut < name.length ? [name.slice(0, cut), name.slice(cut)] : ['', name]
 }

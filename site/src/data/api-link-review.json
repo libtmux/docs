@@ -1159,6 +1159,26 @@
       "label": "Perl method invocation",
       "url": "https://perldoc.perl.org/5.44.0/perlobj#Method-Invocation",
       "heading": "# Method Invocation"
+    },
+    {
+      "label": "core.async",
+      "url": "https://clojure.github.io/core.async/clojure.core.async.html",
+      "heading": "clojure.core.async"
+    },
+    {
+      "label": "Clojure namespaces",
+      "url": "https://clojure.org/reference/namespaces",
+      "heading": "Namespaces"
+    },
+    {
+      "label": "Clojure function arities",
+      "url": "https://clojure.org/reference/special_forms#fn",
+      "heading": "( fn name ? [ params * ] expr *)"
+    },
+    {
+      "label": "Clojure vars",
+      "url": "https://clojure.org/reference/vars",
+      "heading": "Vars and the Global Environment"
     }
   ]
 }

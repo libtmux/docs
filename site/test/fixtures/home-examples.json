@@ -1763,6 +1763,90 @@
           "excerptSha256": "29d2e40a82a47781c8673f3de385a9d106e598dac819a35202c10b1b4205a7dd"
         }
       }
+    },
+    {
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "941f2162062b6d118c68b7d1c23417e0d2cea124",
+      "sourceTree": "7d2f3dc40377daae080643b19333d173036331fb",
+      "port": "clojure",
+      "page": "home",
+      "files": [
+        {
+          "name": "quickstart.clj",
+          "sha256": "e6c1299de8b54f2189e481a975a9467a1506a4bffe4e0c6155c097e4d2ad739b",
+          "clipboardSha256": "30ab6a33a95e189e069d17be4ce49a0ca49f453469c751b0a11cf1815fd3744b"
+        },
+        {
+          "name": "deps.edn",
+          "sha256": "8b9c0e2fa9afa6ba871f05a16550ddfe6c5dbc7c7bb5febedf4308761011c622",
+          "clipboardSha256": "f0a15a944d1e676c6b9a2bab935942d075c465cdedbbc3e3b9a61a106bfcf7e2"
+        }
+      ],
+      "shellRecipe": [
+        "git clone \\\n  --branch master \\\n  --single-branch \\\n  https://github.com/libtmux/libtmux-java libtmux-source && \\\n  git -C libtmux-source checkout --detach 941f2162062b6d118c68b7d1c23417e0d2cea124 && \\\n  (cd libtmux-source && ./gradlew \\\n    :libtmux:publishToMavenLocal \\\n    :libtmux-clojure:publishToMavenLocal \\\n    --max-workers=1 \\\n    --console=plain \\\n    \"-Dmaven.repo.local=$PWD/../m2\")",
+        "clojure -J-Dclojure.main.report=stderr -M quickstart.clj"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "session demo",
+          "  window editor: 2 panes",
+          "  window logs: 1 panes",
+          "output=hello from Clojure"
+        ]
+      ],
+      "excerptSha256": "30ab6a33a95e189e069d17be4ce49a0ca49f453469c751b0a11cf1815fd3744b",
+      "tmuxVersions": [
+        "3.3a",
+        "3.7c"
+      ],
+      "variants": {
+        "concise": {
+          "files": [
+            {
+              "name": "quickstart.clj",
+              "sha256": "85502d7ea6d866726129b372b862910f26822af326a2482feb6204dc4dbe150f",
+              "clipboardSha256": "0158405c9367161b84375ff3c6ea609b9805e3fef72122aaaeb30d8590b93011"
+            },
+            {
+              "name": "deps.edn",
+              "sha256": "8b9c0e2fa9afa6ba871f05a16550ddfe6c5dbc7c7bb5febedf4308761011c622",
+              "clipboardSha256": "f0a15a944d1e676c6b9a2bab935942d075c465cdedbbc3e3b9a61a106bfcf7e2"
+            }
+          ],
+          "excerptSha256": "0158405c9367161b84375ff3c6ea609b9805e3fef72122aaaeb30d8590b93011"
+        },
+        "errors": {
+          "files": [
+            {
+              "name": "quickstart.clj",
+              "sha256": "3a3f02af406240e0f1b62c933996e8b11d27fbad0545744735bc8a350fe2cd42",
+              "clipboardSha256": "f3aaa228820edbe7bccde05f3d77a2cf3d654925db58ec9b08fcce6dbf98273a"
+            },
+            {
+              "name": "deps.edn",
+              "sha256": "8b9c0e2fa9afa6ba871f05a16550ddfe6c5dbc7c7bb5febedf4308761011c622",
+              "clipboardSha256": "f0a15a944d1e676c6b9a2bab935942d075c465cdedbbc3e3b9a61a106bfcf7e2"
+            }
+          ],
+          "excerptSha256": "f3aaa228820edbe7bccde05f3d77a2cf3d654925db58ec9b08fcce6dbf98273a"
+        },
+        "cleanup": {
+          "files": [
+            {
+              "name": "quickstart.clj",
+              "sha256": "743d862a878f64fd99c109bd840a7950dcafae538686d2c997a86923de631349",
+              "clipboardSha256": "f87dd0796a9958b621780e439f8d4f75348c9672c7c7ce38a70ecd35fce373e2"
+            },
+            {
+              "name": "deps.edn",
+              "sha256": "8b9c0e2fa9afa6ba871f05a16550ddfe6c5dbc7c7bb5febedf4308761011c622",
+              "clipboardSha256": "f0a15a944d1e676c6b9a2bab935942d075c465cdedbbc3e3b9a61a106bfcf7e2"
+            }
+          ],
+          "excerptSha256": "f87dd0796a9958b621780e439f8d4f75348c9672c7c7ce38a70ecd35fce373e2"
+        }
+      }
     }
   ]
 }

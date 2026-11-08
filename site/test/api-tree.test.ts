@@ -98,7 +98,7 @@ describe('shared reference index sections', () => {
       expect(sections[0].free.slice(0, 2).map((symbol) => [symbol.id, symbol.kind]))
         .toEqual([['Libtmux_unix.Client', 'module'], ['Libtmux_eio.Client', 'module']])
       expect(firstEntry(navTree(port)[0]!)?.id).toBe('Libtmux_unix.Client')
-    } else expect(sections[0].types[0].name).toBe('Server')
+    } else expect(sections[0].types[0].name).toBe(port === 'clojure' ? 'libtmux.core' : 'Server')
     if (port !== 'haskell') expect(sections[0].id).toBe('server')
     const ids = sections.flatMap((section) => [...section.types, ...section.free]).map((symbol) => symbol.id)
     expect(new Set(ids).size).toBe(ids.length)
@@ -263,7 +263,7 @@ describe('major tmux object domains', () => {
     const model = API_MODELS[port]!
     const branches = membersByType(port)
     const compare = compareMembers(memberSignals(port, mentions.mentions))
-    const owners = model.symbols.filter((symbol) => port === 'powershell'
+    const owners = model.symbols.filter((symbol) => ['powershell', 'clojure'].includes(port)
       ? symbol.kind === 'module'
       : port === 'haskell' ? OWNER_KINDS.has(symbol.kind)
       : OWNER_KINDS.has(symbol.kind) && ['Server', 'Session', 'Window', 'Pane', 'Client', 'Snapshot', ...(port === 'ocaml' ? ['Client_observation', 'Window_link'] : [])].includes(symbol.name))
@@ -272,6 +272,8 @@ describe('major tmux object domains', () => {
       .toEqual(['Libtmux_eio.Client', 'Libtmux_unix.Client'])
     else if (port === 'haskell') expect(owners.map((owner) => owner.name))
       .toEqual(expect.arrayContaining(['LibTmux.Id', 'LibTmux.Value', 'LibTmux.Version', 'IdError']))
+    else if (port === 'clojure') expect(owners.map((owner) => owner.name).sort())
+      .toEqual(['libtmux.async', 'libtmux.control', 'libtmux.core', 'libtmux.core-async', 'libtmux.data'])
     else expect(owners.some((owner) => owner.name === 'Server'), port).toBe(true)
     for (const owner of owners) {
       const displayed = membersOf(model, owner, memberSignals(port, mentions.mentions)).sort(compare)

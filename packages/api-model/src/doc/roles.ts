@@ -50,6 +50,8 @@ export type DocSpan =
       label: string
       /** Custom odoc labels are prose rather than code. */
       code?: boolean
+      /** An authored symbol link, rather than inline code offered for resolution. */
+      explicit?: boolean
     }
 
 /**
@@ -296,6 +298,7 @@ const SYNTAX: Record<string, ReadonlySet<string>> = {
   cxx: new Set([]),
   kotlin: new Set(['kdoc', 'jsdoc']),
   scala: new Set(['scaladoc', 'jsdoc']),
+  clojure: new Set(['cljdoc', 'markdown-link']),
   julia: new Set(['markdown-link', 'documenter']),
   // ExDoc links a Markdown destination written as code: [the server](`LibTmux.Server`).
   elixir: new Set(['markdown-link', 'exdoc']),
@@ -417,22 +420,24 @@ function tokenizeRun(text: string, lang?: string): DocSpan[] {
     hits.push({ start: match.index, end: match.index + match[0].length, span: { kind: 'kbd', text: match[1] } })
   }
 
-  if (syntax.has('kdoc') || syntax.has('scaladoc')) {
+  if (syntax.has('kdoc') || syntax.has('scaladoc') || syntax.has('cljdoc')) {
     const prose = text.split('')
     for (const pattern of [LITERAL_RE, BACKTICK_RE]) {
       for (const match of text.matchAll(pattern)) {
         for (let i = match.index; i < match.index + match[0].length; i++) prose[i] = ' '
       }
     }
-    const links = syntax.has('scaladoc')
+    const wiki = syntax.has('scaladoc') || syntax.has('cljdoc')
+    const links = wiki
       ? /\[\[([^\]\s]+)(?:\s+([^\]]+))?\]\]/g
       : /(?<!\[)\[([^\]\n]+)\](?:\[([\w.]+)\])?(?![\](])/g
     for (const match of prose.join('').matchAll(links)) {
-      const target = syntax.has('scaladoc') ? match[1] : (match[2] ?? match[1])
-      const label = syntax.has('scaladoc') ? (match[2] ?? match[1]) : match[1]
-      if (!/^[\w.#]+$/.test(target)) continue
+      const target = wiki ? match[1] : (match[2] ?? match[1])
+      const label = wiki ? (match[2] ?? match[1]) : match[1]
+      if (!(syntax.has('cljdoc') ? /^[\w.*+!?<>=&$%/-]+$/ : /^[\w.#]+$/).test(target)) continue
       hits.push({ start: match.index, end: match.index + match[0].length,
-        span: { kind: 'ref', role: 'any', target, label } })
+        span: { kind: 'ref', role: 'any', target, label,
+          ...(syntax.has('cljdoc') ? { explicit: true } : {}) } })
     }
   }
 

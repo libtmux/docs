@@ -182,6 +182,7 @@ describe('destination evidence', () => {
 
   describe('age', () => {
     const checked = new Date(`${evidence.checkedAt}T12:00:00Z`)
+    const sameDay = withEvidence(evidence.destinations.map((record) => ({ ...record, checkedAt: evidence.checkedAt })))
     const later = (days: number) => new Date(checked.getTime() + days * DAY)
     const sameDate = withEvidence(evidence.destinations.map((record) => ({ ...record, checkedAt: evidence.checkedAt })))
     // Boundary controls use one date; live records can be refreshed independently.

@@ -47,7 +47,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
  */
 export const EXTERNAL_INVENTORIES = [
   { file: 'python', project: 'Python', baseUrl: 'https://docs.python.org/3/', langs: ['py'] },
-  { file: 'jdk', project: 'Java SE', baseUrl: 'https://docs.oracle.com/en/java/javase/21/docs/api/', langs: ['java', 'kotlin', 'scala'] },
+  { file: 'jdk', project: 'Java SE', baseUrl: 'https://docs.oracle.com/en/java/javase/21/docs/api/', langs: ['java', 'kotlin', 'scala', 'clojure'] },
   { file: 'dom', project: 'MDN Web Docs', baseUrl: 'https://developer.mozilla.org/', langs: ['ts'] },
   { file: 'julia', project: 'Julia', baseUrl: 'https://docs.julialang.org/en/v1/', langs: ['julia'] },
 ]
@@ -64,6 +64,7 @@ export const API_HOSTS = new Set([
   'docs.ruby-lang.org', 'ruby-doc.org', 'www.lua.org', 'luals.github.io', 'docs.julialang.org', 'hexdocs.pm', 'www.erlang.org',
   'ocaml.org',
   'perldoc.perl.org', 'metacpan.org',
+  'clojure.org', 'clojure.github.io',
   'gofastmcp.com', 'csharp.sdk.modelcontextprotocol.io', 'ts.sdk.modelcontextprotocol.io', 'modelcontextprotocol.io', 'cmake.org',
   'www.haskell.org', 'downloads.haskell.org', 'cabal.readthedocs.io',
 ])

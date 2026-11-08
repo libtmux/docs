@@ -226,15 +226,16 @@ function addKindBadge(anchor: El, port?: string, route?: string, first: First = 
 export function rehypeApiLinks() {
   return (tree: unknown, file?: { path?: string; data?: { astro?: { frontmatter?: { port?: string; product?: ApiProduct; route?: string; symbols?: boolean; sidebar?: { group?: string } } } } }) => {
     const frontmatter = file?.data?.astro?.frontmatter
-    const buildPort = frontmatter?.port ?? (process.env.LIBTMUX_DOCS_PORT || undefined)
+    const selectedPort = process.env.LIBTMUX_DOCS_PORT || undefined
     // A page shared by every port is rendered once for each: the port of the build is where it is read, not what it is about.
     const ownPort = frontmatter?.port ?? file?.path?.replaceAll('\\', '/').match(/\/content\/docs\/(?:ja\/)?ports\/([^/]+)\//)?.[1]
+    const buildPort = ownPort ?? (selectedPort && !PORT_BY_SLUG[selectedPort]?.parentLibrary ? selectedPort : undefined)
     const source = file?.path?.replaceAll('\\', '/').match(/\/content\/(docs|_workspace-shared)\/(.+)\.mdx?$/)
     const id = source ? `${source[1] === '_workspace-shared' ? `ports/${buildPort}/` : ''}${source[2]}`.replace(/(?:^|\/)index$/, '') : undefined
     const route = frontmatter?.route ?? (id !== undefined ? docsPath({ id, data: { ...frontmatter, port: buildPort } }) : undefined)
     // Native tmux prose and wrapper references own their names; a library's
     // similarly named symbol is not evidence for a link from those pages.
-    const nativeTmux = isTmuxProse({ id: id ?? '', data: { ...frontmatter, port: buildPort } })
+    const nativeTmux = isTmuxProse({ id: id ?? '', data: { ...frontmatter, port: ownPort } }, buildPort)
     // `symbols: false` is for generated text whose names are arguments, not library symbols.
     const resolveMentions = !nativeTmux && frontmatter?.symbols !== false && (!buildPort || PORT_BY_SLUG[buildPort]?.referenceKind !== 'guide')
     begin()
@@ -395,6 +396,7 @@ const LANG_TO_PORT: Record<string, string> = {
   python: 'py', py: 'py', typescript: 'ts', ts: 'ts', javascript: 'ts', js: 'ts',
   rust: 'rs', rs: 'rs', go: 'go', java: 'java', csharp: 'csharp', cs: 'csharp',
   cpp: 'cxx', 'c++': 'cxx', swift: 'swift',
+  clojure: 'clojure', clj: 'clojure',
   powershell: 'powershell', pwsh: 'powershell', ps1: 'powershell', julia: 'julia',
   elixir: 'elixir', ex: 'elixir', exs: 'elixir',
 }

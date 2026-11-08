@@ -106,6 +106,7 @@ export interface CoreSymbolLink {
 export interface CoreHome {
   association?: CoreSymbolLink
   summary: string
+  objectLabel: 'Type' | 'Function'
   objects: (CoreSymbolLink & { role: CoreRole; wraps: string; tmuxId: string })[]
   modules: (CoreSymbolLink & { summary: string })[]
   capabilities: Record<keyof typeof CAPABILITY_GROUPS, (CoreSymbolLink & { key: CapabilityKey; label: string })[]>
@@ -154,7 +155,9 @@ export function resolveCoreHome(port: string, version: string, entry: CoreHomeEn
   }
   for (const group of Object.values(capabilities)) group.sort((a, b) =>
     Object.keys(CAPABILITIES).indexOf(a.key) - Object.keys(CAPABILITIES).indexOf(b.key))
-  return { summary: coreDescription(port, entry), objects, modules, capabilities,
+  const objectLabel = objects.every((object) => API_MODELS[port]!.symbols
+    .find((symbol) => (symbol.publicId ?? symbol.id) === object.id)?.kind === 'function') ? 'Function' : 'Type'
+  return { summary: coreDescription(port, entry), objectLabel, objects, modules, capabilities,
     ...(entry.association ? { association: link(port, entry.association, version, 'window association') } : {}) }
 }
 
@@ -168,7 +171,7 @@ export function coreHomeMarkdown(port: string, version: string, origin: string):
     home.modules.length
       ? '| Module | Provides |\n| ------ | -------- |\n' + home.modules.map((module) =>
         `| [\`${module.name}\`](${at(module.href)}) | ${module.summary.replaceAll('|', '\\|').replaceAll('\n', ' ')} |`).join('\n')
-      : '| Type | Wraps |\n| ---- | ----- |\n' + [...home.objects.map((object) =>
+      : `| ${home.objectLabel} | Wraps |\n| ---- | ----- |\n` + [...home.objects.map((object) =>
         `| [\`${object.name}\`](${at(object.href)}) | ${object.wraps}${object.tmuxId ? `, ID \`${object.tmuxId}n\`` : ''} |`),
         ...(home.association ? [`| [\`${home.association.name}\`](${at(home.association.href)}) | A session-window association, with its index and active state |`] : []),
       ].join('\n'),

@@ -501,6 +501,11 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     byte: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-4.html#jls-4.2.1',
     void: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5',
   },
+  clojure: {
+    // The runtime declaration identifies the Java class; core.async names the library.
+    ExceptionInfo: 'https://github.com/clojure/clojure/blob/clojure-1.12.6/src/jvm/clojure/lang/ExceptionInfo.java',
+    'core.async': 'https://github.com/clojure/core.async',
+  },
   // Lua's eight value types share one section of the manual; `integer` is
   // the subtype 5.3 added and LuaLS spells separately. `any` is a LuaLS
   // annotation type, with no counterpart in the language. LuaLS's `unknown`
@@ -532,7 +537,7 @@ export const CURATED_BEFORE_INVENTORY: ReadonlySet<string> = new Set(['kotlin', 
  * "the Java ones" is about the project's wrappers of the Java API and not a switch to Java: its `Vector` is Scala's.
  * A sentence that names a language the port does not reach (a Python page on Rust's `Vec`) still decides the name.
  */
-export const PLATFORM_REACH: Readonly<Record<string, readonly string[]>> = { kotlin: ['java'], scala: ['java'] }
+export const PLATFORM_REACH: Readonly<Record<string, readonly string[]>> = { kotlin: ['java'], scala: ['java'], clojure: ['java'] }
 
 /**
  * Names the JDK's inventory holds that Kotlin and Scala prose means another library's by. A Scala sentence's "an Ox

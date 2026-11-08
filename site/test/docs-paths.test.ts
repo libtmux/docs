@@ -75,10 +75,12 @@ describe('product document URLs', () => {
     expect(docsRoutePath({ id: 'meta/third-party-notices', data: {} })).toBe('meta/third-party-notices')
   })
 
-  it('retires source API overviews in root and selected-version builds', () => {
+  it('retires source API overviews in root and selected-version builds''retires duplicate native API overviews in root and selected-version builds', () => {
     expect(sourceGuideRedirects(undefined, { fsharp: 'v0.46.2' })).toEqual([
       { path: 'ocaml/latest/guides/api', target: 'ocaml/latest/reference' },
       { path: 'julia/latest/guides/api-overview', target: 'julia/latest/reference' },
+      { path: 'clojure/latest/guides/native-api', target: 'clojure/latest/reference' },
+      { path: 'clojure/latest/guides/adapter-api', target: 'clojure/latest/reference/libtmux-core-async' },
       { path: 'fsharp/v0.46.2/guides/api-overview', target: 'fsharp/v0.46.2/reference' },
     ])
     expect(sourceGuideRedirects('julia')).toEqual([

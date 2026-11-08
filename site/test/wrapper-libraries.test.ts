@@ -24,7 +24,7 @@ describe('wrapper library identities', () => {
 
   it('keeps wrappers beside their parent with distinct packages and artwork', () => {
     const slugs = PORTS.map((port) => port.slug)
-    expect(slugs.slice(slugs.indexOf('java'), slugs.indexOf('java') + 3)).toEqual(['java', 'kotlin', 'scala'])
+    expect(slugs.slice(slugs.indexOf('java'), slugs.indexOf('java') + 4)).toEqual(['java', 'clojure', 'kotlin', 'scala'])
     expect(slugs.slice(slugs.indexOf('csharp'), slugs.indexOf('csharp') + 2)).toEqual(['csharp', 'fsharp'])
     for (const { slug, parent, runtime, packageName } of wrappers) {
       const port = PORT_BY_SLUG[slug]

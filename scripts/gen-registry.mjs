@@ -332,6 +332,7 @@ const PROBES = {
     return [...body.matchAll(/<version>([^<]+)<\/version>/g)].map((m) => m[1])
   },
   async kotlin(port) { return PROBES.java(port) },
+  async clojure(port) { return PROBES.java(port) },
   async scala(port) { return PROBES.java(port) },
   async fsharp(port) { return PROBES.csharp(port) },
   async csharp(port) {

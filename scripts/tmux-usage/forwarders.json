@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
   "forwarders": {
+    "clojure": { "parent": "java" },
     "kotlin": {
       "parent": "java",
       "generated": {

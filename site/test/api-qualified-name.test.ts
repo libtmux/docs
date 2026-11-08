@@ -133,6 +133,8 @@ describe('a qualified name as a path to one declaration', () => {
     ['Lua method', 'libtmux.Buffer:reference', 'libtmux.Buffer:', 'reference'],
     ['PowerShell cmdlet', 'LibTmux.Workspace\\ConvertTo-TmuxWorkspace', 'LibTmux.Workspace\\', 'ConvertTo-TmuxWorkspace'],
     ['Elixir function', 'LibTmux.Capture.fetch/2', 'LibTmux.Capture.', 'fetch/2'],
+    ['Clojure var', 'libtmux.data/matching', 'libtmux.data/', 'matching'],
+    ['Clojure effect', 'libtmux.core/open!', 'libtmux.core/', 'open!'],
     // A Swift name ends in its argument labels, which are part of the name: their colons are not a separator.
     ['Swift method', 'Window.filterFieldType(_:)', 'Window.', 'filterFieldType(_:)'],
     ['Swift operator', 'Client.!=(_:_:)', 'Client.', '!=(_:_:)'],

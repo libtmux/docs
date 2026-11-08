@@ -152,6 +152,14 @@
         "kind": "trunk",
         "supported": true
       }
+    ],
+    "clojure": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
     ]
   },
   "defaultVersion": {
@@ -173,6 +181,7 @@
     "elixir": "latest",
     "ocaml": "latest",
     "haskell": "latest",
-    "perl": "latest"
+    "perl": "latest",
+    "clojure": "latest"
   }
 }

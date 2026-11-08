@@ -827,6 +827,105 @@
           "file": true
         }
       ]
+    },
+    "clojure": {
+      "repo": "libtmux/libtmux-java",
+      "revision": "ccbcabf22e2605ba24d4fde33860423eceed32c7",
+      "wrapper": "java",
+      "distributions": [
+        {
+          "name": "io.github.libtmux:libtmux",
+          "version": "0.1.2",
+          "manifest": "libtmux/build.gradle.kts",
+          "repo": "libtmux/libtmux-java",
+          "revision": "ccbcabf22e2605ba24d4fde33860423eceed32c7"
+        },
+        {
+          "name": "io.github.libtmux:libtmux-bom",
+          "version": "0.1.2",
+          "manifest": "libtmux-bom/build.gradle.kts",
+          "repo": "libtmux/libtmux-java",
+          "revision": "ccbcabf22e2605ba24d4fde33860423eceed32c7"
+        },
+        {
+          "name": "io.github.libtmux:libtmux-clojure",
+          "version": "0.1.2",
+          "manifest": "libtmux-clojure/build.gradle.kts",
+          "repo": "libtmux/libtmux-java",
+          "revision": "ccbcabf22e2605ba24d4fde33860423eceed32c7"
+        },
+        {
+          "name": "io.github.libtmux:libtmux-clojure-core-async",
+          "version": "0.1.2",
+          "manifest": "libtmux-clojure-core-async/build.gradle.kts",
+          "repo": "libtmux/libtmux-java",
+          "revision": "ccbcabf22e2605ba24d4fde33860423eceed32c7"
+        },
+        {
+          "name": "io.github.libtmux:libtmux-jackson",
+          "version": "0.1.2",
+          "manifest": "libtmux-jackson/build.gradle.kts",
+          "repo": "libtmux/libtmux-java",
+          "revision": "ccbcabf22e2605ba24d4fde33860423eceed32c7"
+        },
+        {
+          "name": "io.github.libtmux:libtmux-junit5",
+          "version": "0.1.2",
+          "manifest": "libtmux-junit5/build.gradle.kts",
+          "repo": "libtmux/libtmux-java",
+          "revision": "ccbcabf22e2605ba24d4fde33860423eceed32c7"
+        },
+        {
+          "name": "io.github.libtmux:libtmux-kotlin",
+          "version": "0.1.2",
+          "manifest": "libtmux-kotlin/build.gradle.kts",
+          "repo": "libtmux/libtmux-java",
+          "revision": "ccbcabf22e2605ba24d4fde33860423eceed32c7"
+        },
+        {
+          "name": "io.github.libtmux:libtmux-mcp",
+          "version": "0.1.2",
+          "manifest": "libtmux-mcp/build.gradle.kts",
+          "repo": "libtmux/libtmux-java",
+          "revision": "ccbcabf22e2605ba24d4fde33860423eceed32c7"
+        },
+        {
+          "name": "io.github.libtmux:libtmux-scala_3",
+          "version": "0.1.2",
+          "manifest": "libtmux-scala/build.gradle.kts",
+          "repo": "libtmux/libtmux-java",
+          "revision": "ccbcabf22e2605ba24d4fde33860423eceed32c7"
+        },
+        {
+          "name": "io.github.libtmux:libtmux-scala-cats_3",
+          "version": "0.1.2",
+          "manifest": "libtmux-scala-cats/build.gradle.kts",
+          "repo": "libtmux/libtmux-java",
+          "revision": "ccbcabf22e2605ba24d4fde33860423eceed32c7"
+        },
+        {
+          "name": "io.github.libtmux:libtmux-scala-ox_3",
+          "version": "0.1.2",
+          "manifest": "libtmux-scala-ox/build.gradle.kts",
+          "repo": "libtmux/libtmux-java",
+          "revision": "ccbcabf22e2605ba24d4fde33860423eceed32c7"
+        },
+        {
+          "name": "io.github.libtmux:libtmux-workspace",
+          "version": "0.1.2",
+          "manifest": "libtmux-workspace/build.gradle.kts",
+          "repo": "libtmux/libtmux-java",
+          "revision": "ccbcabf22e2605ba24d4fde33860423eceed32c7"
+        },
+        {
+          "name": "io.github.libtmux:libtmux-workspace-cli",
+          "version": "0.1.2",
+          "manifest": "libtmux-workspace-cli/build.gradle.kts",
+          "repo": "libtmux/libtmux-java",
+          "revision": "ccbcabf22e2605ba24d4fde33860423eceed32c7"
+        }
+      ],
+      "units": []
     }
   }
 }

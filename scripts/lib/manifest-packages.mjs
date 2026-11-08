@@ -200,7 +200,7 @@ const READERS = {
       if (!repo.has(manifest)) return []
       const build = repo.read(manifest)
       const scala = build.includes('libtmux.published-scala-library')
-      if (!scala && !/libtmux\.(?:published-library|publication)\b/.test(build)) return []
+      if (!scala && !/libtmux\.(?:published-library|publication|clojure-library)\b/.test(build)) return []
       return [{ name: `io.github.libtmux:${directory}${scala ? '_3' : ''}`, version, manifest }]
     })
     return { distributions, units: [] }
@@ -257,7 +257,7 @@ const READERS = {
 /** Which reader a port uses: a wrapper port reads its parent's repository. */
 const READER_FOR = {
   perl: 'perl', py: 'py', ruby: 'ruby', lua: 'lua', powershell: 'powershell', julia: 'julia', ts: 'ts', rs: 'rs', go: 'go',
-  java: 'java', kotlin: 'java', scala: 'java', csharp: 'dotnet', fsharp: 'dotnet', cxx: 'cxx', swift: 'swift', elixir: 'elixir', ocaml: 'ocaml',
+  java: 'java', clojure: 'java', kotlin: 'java', scala: 'java', csharp: 'dotnet', fsharp: 'dotnet', cxx: 'cxx', swift: 'swift', elixir: 'elixir', ocaml: 'ocaml',
   haskell: 'haskell',
 }
 

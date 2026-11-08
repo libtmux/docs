@@ -65,7 +65,7 @@ describe('reference symbol search', () => {
     }
     expect(searchApi(inventory, '', 'types').every((entry) => entry.category === 'types')).toBe(true)
     expect(searchApi(inventory, '', 'members').every((entry) => entry.category === 'members')).toBe(true)
-    const typeName = port === 'ocaml' ? 'Libtmux_unix.Client' : port === 'haskell' ? 'PaneId' : 'Server'
+    const typeName = port === 'ocaml' ? 'Libtmux_unix.Client' : port === 'haskell' ? 'PaneId' : port === 'clojure' ? 'libtmux.core' : 'Server'
     const server = searchApi(inventory, typeName)[0]
     expect(server.category, `${port}: primary server declaration category`).toBe('types')
     expect(symbols.get(server.id)?.name).toBe(port === 'ocaml' ? 'Client' : typeName)

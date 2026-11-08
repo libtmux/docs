@@ -1444,6 +1444,7 @@ export class SymbolIndex {
       ? String.raw`[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*!?`
       // A number is matched whole, so `1_000` is not a literal followed by a name.
       : this.lang === 'elixir' ? String.raw`\d[\d_]*(?:\.\d+)?(?:[eE][+-]?\d+)?|[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*[!?]?`
+      : this.lang === 'clojure' ? String.raw`::?[^\s,()[\]{}"';]+|[A-Za-z_][A-Za-z0-9_.]*(?:::[A-Za-z_][A-Za-z0-9_.]*)*`
       : this.lang === 'powershell' ? String.raw`(?:[A-Za-z_][A-Za-z0-9_.]*\\)?[A-Za-z_][A-Za-z0-9_.-]*`
       : this.lang === 'ts' ? String.raw`[A-Za-z_$][A-Za-z0-9_$.]*`
       : this.lang === 'rs' ? String.raw`(?:r#)?[A-Za-z_][A-Za-z0-9_.]*(?:::(?:r#)?[A-Za-z_][A-Za-z0-9_.]*)*`
@@ -1451,8 +1452,8 @@ export class SymbolIndex {
     // C++ prefixes, escaped quotes, raw delimiters and suffixes belong to the
     // literal token. Its contents cannot introduce an attribute or type link.
     const cppLiteral = String.raw`(?:(?:u8|u|U|L)?R"(?<delimiter>[^ ()\\\t\v\f\r\n]{0,16})\([\s\S]*?\)\k<delimiter>"|(?:u8|u|U|L)?(?:"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'))(?:[A-Za-z_]\w*)?`
-    const initial = this.lang === 'ts' ? 'A-Za-z_$' : this.lang === 'elixir' ? 'A-Za-z_0-9' : 'A-Za-z_'
-    const pattern = String.raw`(?<ident>\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|${identifier})|(?<other>[^${initial}"'/]+|["'/])`
+    const initial = this.lang === 'ts' ? 'A-Za-z_$' : this.lang === 'elixir' ? 'A-Za-z_0-9' : this.lang === 'clojure' ? 'A-Za-z_:' : 'A-Za-z_'
+    const pattern = String.raw`(?<ident>\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|${identifier})|(?<other>[^${initial}"'/]+|["'/${this.lang === 'clojure' ? ':' : ''}])`
     // F# type variables start with an apostrophe but do not close like strings.
     const re = new RegExp(this.lang === 'cxx'
       ? String.raw`(?<literal>${cppLiteral}|\d(?:[eEpP][+-]|[\w.'])*)|(?<ident>\/\*[\s\S]*?\*\/|\/\/[^\n]*|${identifier})|(?<other>[^A-Za-z_0-9"'/]+|["'/])`
@@ -1469,6 +1470,11 @@ export class SymbolIndex {
           }
         }
         out.push({ text: whole })
+        continue
+      }
+      // Keywords are values, including a namespaced key inside a map.
+      if (this.lang === 'clojure' && ident.startsWith(':')) {
+        out.push({ text: ident, nonReference: true })
         continue
       }
       if (/^(?:["']|\/[/*])/.test(ident)) {

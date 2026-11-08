@@ -212,11 +212,12 @@ const mentionSections = [...new Set(mentions.map((m) => m.section ?? 'docs'))].s
 const badges = [
   { label: symbol.command?.kind ?? nativeKind(symbol, language), variant: 'kind' as const, value: nativeKind(symbol, language) },
   ...(symbol.package ? [{ label: symbol.package, variant: 'mod' as const, value: 'package' }] : []),
-  ...symbol.modifiers.map((m) => ({ label: m, variant: 'mod' as const, value: m })),
+  ...symbol.modifiers.filter((m) => port !== 'clojure' || m !== 'overload')
+    .map((m) => ({ label: m, variant: 'mod' as const, value: m })),
   ...(symbol.signatures.length > 1 && symbol.modifiers.includes('overload')
     ? [
         {
-          label: `${symbol.signatures.length} overloads`,
+          label: `${symbol.signatures.length} ${port === 'clojure' ? 'arities' : 'overloads'}`,
           variant: 'mod' as const,
           value: 'overload',
         },
@@ -342,7 +343,7 @@ const hasBody =
               {...signatureTargets[i]}
               tabindex={signatureLayouts.has(sig) ? '0' : undefined}
               role={signatureLayouts.has(sig) ? 'region' : undefined}
-              aria-label={signatureLayouts.has(sig) ? `Signature for ${symbol.name}${symbol.signatures.length > 1 ? `, overload ${symbol.signatures.indexOf(sig) + 1} of ${symbol.signatures.length}` : ''}` : undefined}
+              aria-label={signatureLayouts.has(sig) ? `Signature for ${symbol.name}${symbol.signatures.length > 1 ? `, ${port === 'clojure' ? 'arity' : 'overload'} ${symbol.signatures.indexOf(sig) + 1} of ${symbol.signatures.length}` : ''}` : undefined}
               data-code-columns={signatureLayouts.get(sig)?.limit} data-code-width-status={signatureLayouts.has(sig) ? (signatureLayouts.get(sig)!.failures.length ? 'unresolved' : 'fits') : undefined} data-code-width-failures={signatureLayouts.get(sig)?.failures.length ? JSON.stringify(signatureLayouts.get(sig)!.failures) : undefined}>{sig.label && sig.label !== '__AllParameterSets' && <span class="api-native-signature-label">{sig.label}{sig.isDefault ? ' (default)' : ''}: </span>}<ApiType type={nativeSignatureText(symbol, sig, language)} index={index} context={symbol} signature={sig} nameHref={nameHref} layout={signatureLayouts.get(sig)} /></span>
           )) : <span class="api-native-signature">{language === 'ocaml' && ['module', 'interface'].includes(symbol.kind) ? `${symbol.kind === 'interface' ? 'module type' : 'module'} ${symbol.name}` : anonymousDeclarationLabel(symbol)}</span>) : <>
           {keyword && <em class="property"><span class="pre">{keyword}</span> </em>}

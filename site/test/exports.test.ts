@@ -128,6 +128,9 @@ describeIfAssembled('published exports', () => {
       expect(reference).toBeDefined()
       expect(reference.title).toBe('API reference')
       const root = new URL(reference.url).pathname.replace(/^\//, '')
+      const sections = referenceIndexSections(port.slug)
+      expect(sections.length, `${port.slug} model reference sections`).toBeGreaterThan(0)
+      const declarations = sections.flatMap((section) => [...section.types, ...section.free])
       const window = new Window()
       try {
         // Keep scripts and preload links inert while inspecting the rendered anchors.

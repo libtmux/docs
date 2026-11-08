@@ -15294,6 +15294,251 @@
       "page": "/perl/latest/topics/errors/",
       "title": "Errors and recovery",
       "section": "topics"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.async",
+      "page": "/clojure/latest/guides/getting-started/",
+      "title": "Getting started",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.async/cancel!",
+      "page": "/clojure/latest/guides/captures-and-effects/",
+      "title": "Captures, effects and streams",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.async/runtime!",
+      "page": "/clojure/latest/guides/captures-and-effects/",
+      "title": "Captures, effects and streams",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.async/then!",
+      "page": "/clojure/latest/guides/captures-and-effects/",
+      "title": "Captures, effects and streams",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.control",
+      "page": "/clojure/latest/guides/getting-started/",
+      "title": "Getting started",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.control/attach!",
+      "page": "/clojure/latest/guides/captures-and-effects/",
+      "title": "Captures, effects and streams",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core",
+      "page": "/clojure/latest/guides/captures-and-effects/",
+      "title": "Captures, effects and streams",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core",
+      "page": "/clojure/latest/guides/getting-started/",
+      "title": "Getting started",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core-async",
+      "page": "/clojure/latest/guides/captures-and-effects/",
+      "title": "Captures, effects and streams",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core-async/observe!",
+      "page": "/clojure/latest/guides/core-async/",
+      "title": "core.async adapter",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/batch!",
+      "page": "/clojure/latest/guides/captures-and-effects/",
+      "title": "Captures, effects and streams",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/capture!",
+      "page": "/clojure/latest/guides/captures-and-effects/",
+      "title": "Captures, effects and streams",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/chain!",
+      "page": "/clojure/latest/guides/captures-and-effects/",
+      "title": "Captures, effects and streams",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/clients!",
+      "page": "/clojure/latest/guides/captures-and-effects/",
+      "title": "Captures, effects and streams",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/open!",
+      "page": "/clojure/latest/concepts/server-session-window-pane/",
+      "title": "Server, session, window, pane",
+      "section": "concepts"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/open!",
+      "page": "/clojure/latest/guides/getting-started/",
+      "title": "Getting started",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/panes!",
+      "page": "/clojure/latest/guides/captures-and-effects/",
+      "title": "Captures, effects and streams",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/refresh!",
+      "page": "/clojure/latest/concepts/server-session-window-pane/",
+      "title": "Server, session, window, pane",
+      "section": "concepts"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/refresh!",
+      "page": "/clojure/latest/guides/captures-and-effects/",
+      "title": "Captures, effects and streams",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/rename!",
+      "page": "/clojure/latest/concepts/server-session-window-pane/",
+      "title": "Server, session, window, pane",
+      "section": "concepts"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/rename!",
+      "page": "/clojure/latest/guides/captures-and-effects/",
+      "title": "Captures, effects and streams",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/sessions!",
+      "page": "/clojure/latest/guides/captures-and-effects/",
+      "title": "Captures, effects and streams",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/snapshot!",
+      "page": "/clojure/latest/concepts/server-session-window-pane/",
+      "title": "Server, session, window, pane",
+      "section": "concepts"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/snapshot!",
+      "page": "/clojure/latest/guides/captured-values/",
+      "title": "Captured values",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/snapshot!",
+      "page": "/clojure/latest/guides/getting-started/",
+      "title": "Getting started",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/windows!",
+      "page": "/clojure/latest/guides/captures-and-effects/",
+      "title": "Captures, effects and streams",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.data",
+      "page": "/clojure/latest/guides/getting-started/",
+      "title": "Getting started",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.data/data",
+      "page": "/clojure/latest/concepts/server-session-window-pane/",
+      "title": "Server, session, window, pane",
+      "section": "concepts"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.data/exactly-one",
+      "page": "/clojure/latest/concepts/server-session-window-pane/",
+      "title": "Server, session, window, pane",
+      "section": "concepts"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.data/from-capture",
+      "page": "/clojure/latest/guides/captured-values/",
+      "title": "Captured values",
+      "section": "guides"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.data/matching",
+      "page": "/clojure/latest/concepts/server-session-window-pane/",
+      "title": "Server, session, window, pane",
+      "section": "concepts"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.data/panes",
+      "page": "/clojure/latest/concepts/server-session-window-pane/",
+      "title": "Server, session, window, pane",
+      "section": "concepts"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.data/same-entity?",
+      "page": "/clojure/latest/concepts/server-session-window-pane/",
+      "title": "Server, session, window, pane",
+      "section": "concepts"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.data/same-link?",
+      "page": "/clojure/latest/concepts/server-session-window-pane/",
+      "title": "Server, session, window, pane",
+      "section": "concepts"
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.data/windows",
+      "page": "/clojure/latest/concepts/server-session-window-pane/",
+      "title": "Server, session, window, pane",
+      "section": "concepts"
     }
   ],
   "dangling": [

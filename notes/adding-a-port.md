@@ -86,9 +86,9 @@ and records what it found:
 $ node scripts/verify-destinations.mjs
 ```
 
-The verifier refuses to run, with or without `--check`, if a port in `ports.ts`
-has no library with a published distribution or explicitly available source: the header builds its links
-from that entry, so a port without one would offer nothing. A host the
+The verifier requires a published library, or a configured but unpublished
+has no library with a public distribution or explicitly available source:source repository and source installation instructions.
+The latter names no registry or API host until those pages exist. A host the
 inventory has not named before needs an identity rule in
 `scripts/lib/destination-verification.mjs` and its cases in
 `scripts/verify-destinations.negative.mjs`; without a rule its destinations are

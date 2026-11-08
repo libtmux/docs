@@ -11,6 +11,7 @@ import { API_MODELS, PORT_NAME, referenceHref } from './api-models'
 import { PORTS } from './ports'
 import scopeTable from '../data/tmux-usage/scopes.json'
 import csharp from '../data/tmux-usage/csharp.json'
+import clojure from '../data/tmux-usage/clojure.json'
 import cxx from '../data/tmux-usage/cxx.json'
 import elixir from '../data/tmux-usage/elixir.json'
 import fsharp from '../data/tmux-usage/fsharp.json'
@@ -70,7 +71,7 @@ export interface TmuxScope {
 }
 
 export const TMUX_USAGE: Record<string, UsageDocument> = {
-  csharp, cxx, elixir, fsharp, go, haskell, java, julia, kotlin, lua, ocaml, powershell, perl, py, rs, ruby, scala, swift, ts,
+  csharp, clojure, cxx, elixir, fsharp, go, haskell, java, julia, kotlin, lua, ocaml, powershell, perl, py, rs, ruby, scala, swift, ts,
 } as unknown as Record<string, UsageDocument>
 
 const SCOPES = scopeTable.commands as Record<string, { scopes: TmuxScope[] }>
@@ -120,7 +121,7 @@ export function namesCommand(command: string, member: string): boolean {
 }
 
 /** The member a symbol id ends with, without the owners before it or the argument labels after it: `Server.capture(_:includingHistory:)` gives `capture`. */
-const memberName = (id: string): string => id.replace(/\(.*$/s, '').split(/[.#:\\]+/).at(-1) ?? id
+const memberName = (id: string): string => id.replace(/\(.*$/s, '').split(/[.#:\\/]+/).at(-1) ?? id
 
 /**
  * Whether a use belongs on the command's own pages, and not only on the method's.

@@ -48,6 +48,8 @@ import fsharpModel from '../data/api/fsharp.json'
 import kotlinNav from '../data/api/kotlin.nav.json'
 import scalaNav from '../data/api/scala.nav.json'
 import fsharpNav from '../data/api/fsharp.nav.json'
+import clojureModel from '../data/api/clojure.json'
+import clojureNav from '../data/api/clojure.nav.json'
 
 /**
  * The extracted models, in one module rather than in the route.
@@ -78,6 +80,7 @@ export const API_MODELS: Record<string, ApiModel> = {
   scala: scalaModel as unknown as ApiModel,
   ocaml: ocamlModel as unknown as ApiModel,
   fsharp: fsharpModel as unknown as ApiModel,
+  clojure: clojureModel as unknown as ApiModel,
 }
 
 /** One entry in a curated sidebar bucket, carrying just enough to link it. */
@@ -144,6 +147,7 @@ export const API_NAV: Record<string, PortNavData> = {
   scala: scalaNav as unknown as PortNavData,
   ocaml: ocamlNav as unknown as PortNavData,
   fsharp: fsharpNav as unknown as PortNavData,
+  clojure: clojureNav as unknown as PortNavData,
 }
 
 export { isMemberOwner, OWNER_KINDS } from '@libtmux/api-model/reference'
@@ -168,6 +172,7 @@ export const PORT_NAME: Record<string, string> = {
   scala: 'Scala',
   fsharp: 'F#',
   ocaml: 'OCaml',
+  clojure: 'Clojure',
 }
 
 /**
@@ -253,7 +258,7 @@ const INVENTORIES: {
   {
     data: jdkInv,
     baseUrl: 'https://docs.oracle.com/en/java/javase/21/docs/api/',
-    langs: ['java', 'kotlin', 'scala'],
+    langs: ['java', 'kotlin', 'scala', 'clojure'],
     project: 'Java SE',
   },
   {

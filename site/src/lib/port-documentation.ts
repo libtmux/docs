@@ -164,6 +164,32 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
     ],
     redirects: [{ sourcePath: 'docs/src/api.md', path: 'guides/api-overview', target: 'reference' }],
   },
+  clojure: {
+    domains: [
+      libraryDomain('Captured persistent values, explicit effects and bounded JVM tasks over libtmux-java.'),
+      { id: 'async', label: 'core.async adapter', kind: 'companion-package', navGroup: 'Library',
+        route: 'guides/core-async', package: 'async',
+        description: 'Use the optional, separately installable adapter for bounded event channels and explicit shutdown.' },
+    ],
+    sourceGuides: [
+      guide('libtmux-clojure/README.md', 'guides/getting-started', 'core', {
+        title: 'Getting started', sidebar: { group: 'Guides', order: 2 },
+      }),
+      guide('docs/guide/clojure.md', 'guides/captures-and-effects', 'core', {
+        title: 'Captures, effects and streams', sidebar: { group: 'Guides', order: 3 },
+      }),
+      guide('docs/guide/clojure-reference.md', 'guides/captured-values', 'core', {
+        title: 'Captured values', sidebar: { group: 'Guides', order: 4 },
+      }),
+      guide('libtmux-clojure-core-async/README.md', 'guides/core-async', 'async', {
+        title: 'core.async adapter', sidebar: { group: 'Guides', order: 5 },
+      }),
+    ],
+    redirects: [
+      { sourcePath: 'docs/guide/clojure-api.md', path: 'guides/native-api', target: 'reference' },
+      { sourcePath: 'docs/guide/clojure-core-async-api.md', path: 'guides/adapter-api', target: 'reference/libtmux-core-async' },
+    ],
+  },
   kotlin: {
     domains: [libraryDomain('Kotlin coroutine handles, builders and flows over the Java/JVM library.')],
     sourceGuides: [

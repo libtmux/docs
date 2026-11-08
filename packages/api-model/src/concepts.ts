@@ -4007,6 +4007,31 @@ for (const [id, reason] of Object.entries({
   'kill-server': 'Client.close releases transport resources. The public client API does not terminate a borrowed tmux daemon.',
   'server-from-env': 'Endpoint selection is explicit. Construct a named socket or socket path; the library does not infer an ambient server.',
 })) (CONCEPTS[id]!.absent ??= {}).ocaml = reason
+const CLOJURE_CONCEPTS: Record<string, { symbol: string; note?: string }> = {
+  server: { symbol: 'libtmux.core/open!', note: 'Opens a closeable Java server client for an explicit endpoint. Acquisitions return persistent maps with explicit Java references for effects.' },
+  session: { symbol: 'libtmux.core/sessions!', note: 'Acquires a vector of captured session maps. The session value is a map, not a wrapper class.' },
+  window: { symbol: 'libtmux.data/windows', note: 'Traverses captured window-placement maps without I/O; the window value is a map with an explicit Java reference for effects.' },
+  pane: { symbol: 'libtmux.data/panes', note: 'Traverses captured pane maps without I/O. Use keyword lookup for scalar observations and the preserved :tmux/ref for effects.' },
+  'capture-pane': { symbol: 'libtmux.core/capture!' },
+  'send-keys': { symbol: 'libtmux.core/send-keys!' },
+  'split-pane': { symbol: 'libtmux.core/split-pane!' },
+  'new-session': { symbol: 'libtmux.core/new-session!' },
+  'new-window': { symbol: 'libtmux.core/new-window!' },
+  'kill-server': { symbol: 'libtmux.core/kill-server!' },
+  'list-sessions': { symbol: 'libtmux.core/sessions!', note: 'Acquires a new captured graph and returns its session maps; acquisition failure throws.' },
+  'list-windows': { symbol: 'libtmux.data/windows', note: 'Traverses one capture locally. It does not issue a list-windows command.' },
+  'list-panes': { symbol: 'libtmux.data/panes', note: 'Traverses one capture locally. It does not issue a list-panes command.' },
+  'list-server-windows': { symbol: 'libtmux.core/windows!', note: 'Acquires a new graph and returns its window placements without deduplicating linked windows.' },
+  'list-server-panes': { symbol: 'libtmux.core/panes!', note: 'Acquires a new graph and returns its pane occurrences.' },
+  'list-clients': { symbol: 'libtmux.core/clients!' },
+  snapshot: { symbol: 'libtmux.core/snapshot!', note: 'Acquires a captured graph of persistent values. Retained values do not refresh after mutation or close.' },
+}
+for (const [id, binding] of Object.entries(CLOJURE_CONCEPTS)) {
+  const concept = CONCEPTS[id]
+  if (!concept) throw new Error(`concepts: Clojure maps unknown concept ${id}`)
+  concept.symbols.clojure = binding.symbol
+  if (binding.note) (concept.notes ??= {}).clojure = binding.note
+}
 for (const concept of Object.values(CONCEPTS)) {
   concept.absent ??= {}
   if (!concept.symbols.powershell) concept.absent.powershell ??= 'No source-verified PowerShell equivalent is recorded for this operation.'
@@ -4019,6 +4044,7 @@ for (const concept of Object.values(CONCEPTS)) {
   if (!concept.symbols.scala) concept.absent.scala = 'No source-verified Scala equivalent is recorded for this operation.'
   if (!concept.symbols.fsharp) concept.absent.fsharp = 'No source-verified F# equivalent is recorded for this operation.'
   if (!concept.symbols.ocaml) concept.absent.ocaml ??= 'No direct public OCaml equivalent is recorded for this operation.'
+  if (!concept.symbols.clojure) concept.absent.clojure = 'No source-verified Clojure equivalent is recorded for this operation.'
 }
 
 /** Every concept naming this symbol, including concepts sharing an overload group. */

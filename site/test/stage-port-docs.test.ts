@@ -12,10 +12,19 @@ import csharpModel from '../src/data/api/csharp.json'
 import powershellGuides from '../src/data/port-guides/powershell.json'
 import juliaGuides from '../src/data/port-guides/julia.json'
 import haskellModel from '../src/data/api/haskell.json'
+import clojureGuides from '../src/data/port-guides/clojure.json'
 
 afterEach(() => vi.unstubAllEnvs())
 
 describe('integrated guide inputs', () => {
+  it('routes native Clojure namespace anchors to their actual API pages', () => {
+    const staged = stagedPortGuides('clojure', clojureGuides)
+    const readme = staged.get('clojure/guides/getting-started/index.md')!
+    expect(readme).toContain('../../reference/libtmux-core/')
+    expect(readme).toContain('../../reference/libtmux-data/')
+    expect(readme).not.toContain('reference/#libtmux')
+  })
+
   const port = PORTS.find((entry) => entry.slug === 'lua')!
 
   it('reads the integrated commit regardless of newer HEAD or dirty files', () => {
@@ -164,6 +173,7 @@ describe('staged port guide links', () => {
     if (port === 'haskell') expect(cards.map((card: { label: string }) => card.label)).toEqual([
       'Getting started', 'Installation', 'Typed values', 'API documentation', 'Implementation status',
     ])
+    else if (port === 'clojure') expect(cards[1].label).toBe('Captures, effects and streams')
     else if (port === 'perl') expect(cards[1].label).toBe('Installation')
     else if (port !== 'ocaml') expect(cards[1].label).toBe('Attaching to tmux')
     if (port === 'perl') {

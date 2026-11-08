@@ -1,0 +1,57 @@
+import groovy.json.JsonOutput
+import org.gradle.api.tasks.JavaExec
+
+gradle.projectsEvaluated {
+    def root = gradle.rootProject
+    def modules = root.allprojects.findAll { it.plugins.hasPlugin('libtmux.clojure-library') }
+        .sort { it.path }
+    if (!modules) return
+    def scriptPath = root.findProperty('libtmuxClojureExporter')
+    if (!scriptPath) throw new GradleException('Set libtmuxClojureExporter to export-clojure.clj')
+    def manifest = modules.collect { module ->
+        def declared = module.tasks.named('clojureNamespaceLoad', JavaExec).get()
+            .systemProperties['libtmux.clojure.main-namespaces']
+        if (!declared) throw new GradleException("Missing public namespaces for ${module.path}")
+        [path: root.relativePath(module.projectDir), artifact: module.name,
+            package: "${module.group}:${module.name}", version: module.version.toString(),
+            namespaces: declared.toString().split(',').toList()]
+    }
+    def launcher = modules.first().tasks.named('clojureNamespaceLoad', JavaExec).get().javaLauncher.get()
+    root.tasks.register('exportClojureApi', JavaExec) {
+        group = 'documentation'
+        description = 'Exports public Clojure metadata for the shared documentation model.'
+        dependsOn(modules.collect { it.tasks.named('classes') })
+        javaLauncher.set(launcher)
+        mainClass.set('clojure.main')
+        classpath = root.files(modules.collect { it.sourceSets.main.runtimeClasspath },
+            root.project(':libtmux-jackson').configurations.runtimeClasspath)
+        workingDir(root.projectDir)
+        def destination = root.file(root.findProperty('libtmuxClojureApiOutput') ?: 'build/docs/clojure-api.json')
+        def revision = root.findProperty('libtmuxDocsSourceRevision')
+        if (!(revision ==~ /[a-f0-9]{40}/)) throw new GradleException('Set libtmuxDocsSourceRevision to the selected Git revision')
+        systemProperty('libtmux.docs.clojure.modules', JsonOutput.toJson(manifest))
+        jvmArgs('-Xmx384m', '-XX:ActiveProcessorCount=2', '-Dclojure.main.report=stderr')
+        args(scriptPath, root.projectDir.path, destination.path, revision)
+        inputs.files(new File(scriptPath), new File(new File(scriptPath).parentFile, 'export-clojure.gradle'))
+        inputs.property('sourceRevision', revision)
+        inputs.property('publicModules', JsonOutput.toJson(manifest))
+        modules.each { inputs.dir(it.file('src/main/clojure')) }
+        outputs.file(destination)
+        def errors = new ByteArrayOutputStream()
+        errorOutput = errors
+        ignoreExitValue = true
+        doLast {
+            def diagnostic = errors.toString('UTF-8')
+            System.err.print(diagnostic)
+            def result = executionResult.get()
+            if (result.exitValue != 0) {
+                destination.delete()
+                result.assertNormalExitValue()
+            }
+            if (diagnostic =~ /(?m)^(Reflection warning|Performance warning|Boxed math warning)/) {
+                destination.delete()
+                throw new GradleException('Clojure API export emitted compiler warnings')
+            }
+        }
+    }
+}
