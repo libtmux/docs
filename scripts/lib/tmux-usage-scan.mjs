@@ -11,13 +11,15 @@ import { parserFor } from '../../packages/api-model/src/parser.ts'
 import { receiverOf, scanElixir, scanFSharp, scanJulia, scanLisp } from './tmux-usage-lexical.mjs'
 import { scanHaskell } from './tmux-usage-haskell.mjs'
 import { scanClojure } from './tmux-usage-clojure.mjs'
+import { scanErlang } from './tmux-usage-erlang.mjs'
 
-/** Port to the grammar that reads its source. PowerShell cmdlets are C#; Julia, F# and Elixir are read by their text. */
+/** Port to its source reader. PowerShell cmdlets are C#; Julia, F#, Elixir and Erlang use lexical readers. */
 export const GRAMMARS = {
   perl: 'perl', py: 'python', ts: 'typescript', rs: 'rust', go: 'go', java: 'java', clojure: 'clojure', kotlin: 'kotlin', scala: 'scala',
   csharp: 'csharp', powershell: 'csharp', cxx: 'cpp', swift: 'swift', ruby: 'ruby', lua: 'lua', julia: 'julia', fsharp: 'fsharp', elixir: 'elixir', ocaml: 'ocaml',
   haskell: 'haskell',
   lisp: 'commonlisp',
+  erlang: 'erlang',
 }
 
 /** Source extensions per grammar, minus declaration-only files. */
@@ -26,16 +28,18 @@ export const EXTENSIONS = {
   scala: /\.scala$/, csharp: /\.cs$/, cpp: /\.(?:cpp|cc|cxx|hpp|hh|h)$/, swift: /\.swift$/, ruby: /\.rb$/, lua: /\.lua$/, julia: /\.jl$/, fsharp: /\.fs$/, elixir: /\.ex$/, ocaml: /\.ml$/,
   haskell: /\.l?hs$/,
   commonlisp: /\.(?:lisp|cl)$/,
+  erlang: /\.erl$/,
 }
 
 /** Directories and names that hold tests, examples, tooling and build output rather than the library. */
 const NOT_LIBRARY = new RegExp([
-  String.raw`(?:^|/)(?:tests?|__tests__|specs?|testing|fixtures?|examples?|benchmarks?|bench|docs?|samples?|scripts?|tools?|eng|build|dist|target|node_modules|vendor|generated|Tests?|UnitTests|IntegrationTests)(?:/|$)`,
-  String.raw`(?:^|/)(?:test_[^/]*\.py|[^/]*_test\.(?:go|py|rb|lua)|[^/]*(?:Tests?|Spec)\.(?:cs|kt|java|scala|swift)|[^/]*\.(?:test|spec)\.ts|[^/]*_spec\.rb|tests?\.rs|[^/]*_tests?\.rs)$`,
+  String.raw`(?:^|/)(?:tests?|__tests__|specs?|testing|fixtures?|examples?|benchmarks?|bench|docs?|samples?|scripts?|tools?|eng|_build|build|dist|target|node_modules|vendor|generated|Tests?|UnitTests|IntegrationTests)(?:/|$)`,
+  String.raw`(?:^|/)(?:test_[^/]*\.py|[^/]*_test\.(?:go|py|rb|lua)|[^/]*(?:Tests?|Spec)\.(?:cs|kt|java|scala|swift)|[^/]*\.(?:test|spec)\.ts|[^/]*_spec\.rb|tests?\.rs|[^/]*_tests?\.rs|[^/]*_(?:tests|SUITE)\.erl)$`,
 ].join('|'))
 
 export const isLibrarySource = (path, grammar) => EXTENSIONS[grammar].test(path) && !NOT_LIBRARY.test(path)
   && (grammar !== 'haskell' || /^(?:src|internal)\//.test(path))
+  && !(grammar === 'erlang' && /(?:^|\/)property(?:\/|$)/.test(path))
 
 const FUNCTIONS = {
   python: ['function_definition'],
@@ -620,12 +624,13 @@ export async function scanSource({ grammar, text, commands, known, dispatch, bui
   if (grammar === 'perl') return scanPerl(text, native, { commands, known })
   if (grammar === 'julia') return scanJulia(text, { commands, known, dispatch })
   if (grammar === 'elixir') return scanElixir(text, { commands, known, dispatch })
+  if (grammar === 'erlang') return scanErlang(text, { commands, known, dispatch, builders, labels })
   if (grammar === 'fsharp') return scanFSharp(text)
   if (grammar === 'haskell') return scanHaskell(text, { commands, known, dispatch })
   if (grammar === 'clojure') return scanClojure(text, { commands, dispatch })
   if (grammar === 'commonlisp') return scanLisp(text, { commands, known, dispatch })
   // A grammar that no reader above or below handles would reach the loader as a file that does not exist.
-  if (!(grammar in FUNCTIONS)) throw new Error(`no reader for the grammar ${JSON.stringify(grammar)}: scanSource reads ${[...Object.keys(FUNCTIONS), 'julia', 'fsharp', 'elixir', 'commonlisp'].join(', ')}`)
+  if (!(grammar in FUNCTIONS)) throw new Error(`no reader for the grammar ${JSON.stringify(grammar)}: scanSource reads ${[...Object.keys(FUNCTIONS), 'julia', 'fsharp', 'elixir', 'commonlisp', 'erlang'].join(', ')}`)
   const parser = await parserFor(grammar)
   // The Swift grammar predates typed throws; blanking the type keeps every line and column.
   const tree = parser.parse(grammar === 'swift' ? withoutNewSwift(text) : grammar === 'csharp' ? withoutPrimaryConstructors(text) : text)
@@ -884,6 +889,6 @@ function inModuleArgument(node) {
 }
 
 /**
- * @typedef {{ name: string, owner?: string, start: number, nameLine: number, end: number, kind: string, sites: Site[], calls: Map<string, number>, receivers: Map<string, Set<string>>, callDepths?: Map<string, number>, namespace?: string, bindingId?: string }} ScannedFunction
+ * @typedef {{ name: string, owner?: string, module?: string, start: number, nameLine: number, end: number, kind: string, sites: Site[], calls: Map<string, number>, receivers: Map<string, Set<string>>, callDepths?: Map<string, number>, namespace?: string, bindingId?: string }} ScannedFunction
  * @typedef {{ command: string, line: number, flags: string, dispatch?: { line: number, name: string } | null, why?: string, builds?: boolean, depth?: number }} Site
  */

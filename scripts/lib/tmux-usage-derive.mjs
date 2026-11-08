@@ -69,6 +69,12 @@ export function shapeFits(call, fn) {
 export function callTargets(caller, callee, named, call) {
   if (!caller.calls.has(callee.name)) return false
   if (caller.moduleCalls !== undefined) return (call?.targets ?? caller.moduleCalls.get(callee.name))?.has(`${callee.file}:${callee.start}:${callee.name}`) ?? false
+  if (call && call.name !== callee.name) return false
+  // Erlang modules name a static destination even when no other helper shares its name.
+  if (caller.module !== undefined) {
+    const calls = call ? [call] : (caller.callList ?? []).filter((candidate) => candidate.name === callee.name)
+    return calls.some((one) => (one.receiver ?? caller.module) === callee.module)
+  }
   const exact = call ? [call] : (caller.callList ?? []).filter((candidate) => candidate.name === callee.name)
   if (callee.bindingId !== undefined || exact.some((candidate) => Object.hasOwn(candidate, 'bindingId'))) {
     return exact.some((candidate) => typeof candidate.bindingId === 'string' && candidate.bindingId === callee.bindingId)
@@ -93,6 +99,8 @@ function resolves(caller, receivers, callee, named) {
 
 /** `panes(where:)`, `Server.panes` and `Server#list_panes` all name their last identifier. */
 export function bareName(name) {
+  // Periods and colons inside a quoted Erlang atom belong to its native name.
+  if (/^(?:\p{Ll}[\p{L}\p{N}_@]*|'(?:\\.|[^'\\])*')\/[0-9]+$/u.test(name)) return name
   // Kotlin and Scala quote a name that is also a keyword: Buffers.`set`.
   return name.replace(/\(.*$/s, '').replace(/`/g, '').split(/[.:#\\]+/).filter(Boolean).at(-1) ?? name
 }
@@ -201,8 +209,10 @@ export function deriveUsage({ command, spec, functions, symbols, definitionOptio
     if (own) return own.map((symbol) => ({ symbol, trail, method: fn }))
     if (depth >= MAX_HOPS) return []
     return callersOf(fn).flatMap((caller) => {
-      const line = fn.bindingId === undefined ? caller.calls.get(fn.name)
-        : Math.min(...caller.callList.filter((call) => call.bindingId === fn.bindingId).map((call) => call.line))
+      const line = caller.module !== undefined
+        ? caller.callList.find((call) => callTargets(caller, fn, byName.get(fn.name) ?? [], call))?.line
+        : fn.bindingId === undefined ? caller.calls.get(fn.name)
+          : Math.min(...caller.callList.filter((call) => call.bindingId === fn.bindingId).map((call) => call.line))
       return reach(caller, [...trail, `${caller.file}:${line}`], depth + 1)
     })
   }
