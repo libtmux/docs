@@ -413,6 +413,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   min-width: 0;
   overflow-wrap: anywhere;
 }
+.api-definition dd code { font-size: inherit; }
 .api-command-facts { row-gap: 0.55rem; margin-bottom: 1rem; }
 .api-command-facts dt { font-weight: 600; opacity: 1; }
 .api-command-related { display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem 1rem; margin-block: .75rem; }

@@ -15193,6 +15193,456 @@
           "in": "server.Server.kill"
         }
       ]
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/snapshot!",
+      "command": "list-sessions",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:161",
+          "has": [
+            "\"list-sessions\""
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1087",
+          "has": [
+            "snapshot()"
+          ]
+        },
+        {
+          "at": "libtmux-clojure/src/main/clojure/libtmux/core.clj:151",
+          "has": [
+            "(.captureServer server)"
+          ],
+          "in": "libtmux.core/snapshot!"
+        }
+      ]
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/snapshot!",
+      "command": "list-windows",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:162",
+          "has": [
+            "\"list-windows\""
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1087",
+          "has": [
+            "snapshot()"
+          ]
+        },
+        {
+          "at": "libtmux-clojure/src/main/clojure/libtmux/core.clj:151",
+          "has": [
+            "(.captureServer server)"
+          ],
+          "in": "libtmux.core/snapshot!"
+        }
+      ]
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/snapshot!",
+      "command": "list-panes",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:163",
+          "has": [
+            "\"list-panes\""
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1087",
+          "has": [
+            "snapshot()"
+          ]
+        },
+        {
+          "at": "libtmux-clojure/src/main/clojure/libtmux/core.clj:151",
+          "has": [
+            "(.captureServer server)"
+          ],
+          "in": "libtmux.core/snapshot!"
+        }
+      ]
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/snapshot!",
+      "command": "list-clients",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:164",
+          "has": [
+            "\"list-clients\""
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1087",
+          "has": [
+            "snapshot()"
+          ]
+        },
+        {
+          "at": "libtmux-clojure/src/main/clojure/libtmux/core.clj:151",
+          "has": [
+            "(.captureServer server)"
+          ],
+          "in": "libtmux.core/snapshot!"
+        }
+      ]
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/new-session!",
+      "command": "new-session",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/SessionSpec.java:119",
+          "has": [
+            "argv.add(\"new-session\")"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:255",
+          "has": [
+            "run(spec.argv("
+          ]
+        },
+        {
+          "at": "libtmux-clojure/src/main/clojure/libtmux/core.clj:252",
+          "has": [
+            "(.newSession server spec)"
+          ],
+          "in": "libtmux.core/new-session!"
+        }
+      ]
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/new-window!",
+      "command": "new-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/WindowSpec.java:117",
+          "has": [
+            "argv.add(\"new-window\")"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Session.java:260",
+          "has": [
+            "server.run(snapshot, spec.argv("
+          ]
+        },
+        {
+          "at": "libtmux-clojure/src/main/clojure/libtmux/core.clj:263",
+          "has": [
+            "(.newWindow session spec)"
+          ],
+          "in": "libtmux.core/new-window!"
+        }
+      ]
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/find-session!",
+      "command": "list-sessions",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:161",
+          "has": [
+            "listings.add(listing(SESSIONS, \"list-sessions\"))"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:165",
+          "has": [
+            "listings.run()"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1087",
+          "has": [
+            "new CapturedServer(this, snapshot())"
+          ]
+        },
+        {
+          "at": "libtmux-clojure/src/main/clojure/libtmux/core.clj:169",
+          "has": [
+            "(sessions! server)"
+          ],
+          "in": "libtmux.core/find-session!"
+        }
+      ]
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/append-hook!",
+      "command": "set-hook",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Hooks.java:97",
+          "has": [
+            "run(argv(\"set-hook\""
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Hooks.java:84",
+          "has": [
+            "append(event, words(command))"
+          ]
+        },
+        {
+          "at": "libtmux-clojure/src/main/clojure/libtmux/core.clj:473",
+          "has": [
+            "(.append (hooks-reference reference)"
+          ],
+          "in": "libtmux.core/append-hook!"
+        }
+      ]
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/set-hook!",
+      "command": "set-hook",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Hooks.java:66",
+          "has": [
+            "run(argv(\"set-hook\""
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Hooks.java:78",
+          "has": [
+            "set(event, words(command))"
+          ]
+        },
+        {
+          "at": "libtmux-clojure/src/main/clojure/libtmux/core.clj:468",
+          "has": [
+            "(.set (hooks-reference reference)"
+          ],
+          "in": "libtmux.core/set-hook!"
+        }
+      ]
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/unset-hook!",
+      "command": "set-hook",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Hooks.java:103",
+          "has": [
+            "run(argv(\"set-hook\""
+          ]
+        },
+        {
+          "at": "libtmux-clojure/src/main/clojure/libtmux/core.clj:478",
+          "has": [
+            "(.unset (hooks-reference reference)"
+          ],
+          "in": "libtmux.core/unset-hook!"
+        }
+      ]
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/delete-buffer!",
+      "command": "delete-buffer",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Buffers.java:96",
+          "has": [
+            "server.cmd(List.of(\"delete-buffer\""
+          ]
+        },
+        {
+          "at": "libtmux-clojure/src/main/clojure/libtmux/core.clj:494",
+          "has": [
+            "(.delete (.buffers server)"
+          ],
+          "in": "libtmux.core/delete-buffer!"
+        }
+      ]
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/show-buffer!",
+      "command": "show-buffer",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Buffers.java:76",
+          "has": [
+            "server.cmd(List.of(\"show-buffer\""
+          ]
+        },
+        {
+          "at": "libtmux-clojure/src/main/clojure/libtmux/core.clj:489",
+          "has": [
+            "(.show (.buffers server)"
+          ],
+          "in": "libtmux.core/show-buffer!"
+        }
+      ]
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/set-buffer!",
+      "command": "set-buffer",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Buffers.java:60",
+          "has": [
+            "server.run(List.of(\"set-buffer\""
+          ]
+        },
+        {
+          "at": "libtmux-clojure/src/main/clojure/libtmux/core.clj:484",
+          "has": [
+            "(.set (.buffers server)"
+          ],
+          "in": "libtmux.core/set-buffer!"
+        }
+      ]
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/set-option!",
+      "command": "set-option",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Options.java:325",
+          "has": [
+            "run(argv(\"set-option\""
+          ]
+        },
+        {
+          "at": "libtmux-clojure/src/main/clojure/libtmux/core.clj:425",
+          "has": [
+            "(.set (options-reference reference)"
+          ],
+          "in": "libtmux.core/set-option!"
+        }
+      ]
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/unset-option!",
+      "command": "set-option",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Options.java:370",
+          "has": [
+            "run(argv(\"set-option\""
+          ]
+        },
+        {
+          "at": "libtmux-clojure/src/main/clojure/libtmux/core.clj:430",
+          "has": [
+            "(.unset (options-reference reference)"
+          ],
+          "in": "libtmux.core/unset-option!"
+        }
+      ]
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/set-environment!",
+      "command": "set-environment",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Environment.java:353",
+          "has": [
+            "command(\"set-environment\", tail)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Environment.java:156",
+          "has": [
+            "run(argv(List.of("
+          ]
+        },
+        {
+          "at": "libtmux-clojure/src/main/clojure/libtmux/core.clj:447",
+          "has": [
+            "(.set (environment-reference reference)"
+          ],
+          "in": "libtmux.core/set-environment!"
+        }
+      ]
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/unset-environment!",
+      "command": "set-environment",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Environment.java:353",
+          "has": [
+            "command(\"set-environment\", tail)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Environment.java:168",
+          "has": [
+            "run(argv(List.of("
+          ]
+        },
+        {
+          "at": "libtmux-clojure/src/main/clojure/libtmux/core.clj:452",
+          "has": [
+            "(.unset (environment-reference reference)"
+          ],
+          "in": "libtmux.core/unset-environment!"
+        }
+      ]
+    },
+    {
+      "port": "clojure",
+      "symbol": "libtmux.core/run-shell!",
+      "command": "run-shell",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Shell.java:29",
+          "has": [
+            "server.run(List.of(\"run-shell\""
+          ]
+        },
+        {
+          "at": "libtmux-clojure/src/main/clojure/libtmux/core.clj:382",
+          "has": [
+            "(.run (.shell server)"
+          ],
+          "in": "libtmux.core/run-shell!"
+        }
+      ]
     }
   ]
 }

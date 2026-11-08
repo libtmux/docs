@@ -19,6 +19,8 @@ import { extractRuby } from '../packages/api-model/src/languages/ruby.ts'
 import { extractPowerShell } from '../packages/api-model/src/languages/powershell.ts'
 import { extractJulia } from '../packages/api-model/src/languages/julia.ts'
 import { extractElixir } from '../packages/api-model/src/languages/elixir.ts'
+import { extractClojure } from '../packages/api-model/src/languages/clojure.ts'
+import { attachCompleteClojureExamples } from '../packages/api-model/src/languages/clojure-examples.ts'
 import { attachCompleteGoExamples, readCompleteGoExamples } from '../packages/api-model/src/languages/go-examples.ts'
 import { attachCompleteCSharpExamples } from '../packages/api-model/src/languages/csharp-examples.ts'
 import { attachCompleteFSharpExamples } from '../packages/api-model/src/languages/fsharp-examples.ts'
@@ -97,7 +99,7 @@ function packageVersion(checkout, port, product) {
     return /^version\s*=\s*"([^"]+)"/m.exec(read(`crates/${crate}/Cargo.toml`))?.[1]
       ?? /^version\s*=\s*"([^"]+)"/m.exec(read('Cargo.toml'))?.[1]
   }
-  if (['java', 'kotlin', 'scala'].includes(port)) return /^libtmuxVersion=(.+)$/m.exec(read('gradle.properties'))?.[1]
+  if (['java', 'kotlin', 'scala', 'clojure'].includes(port)) return /^libtmuxVersion=(.+)$/m.exec(read('gradle.properties'))?.[1]
   if (['csharp', 'fsharp'].includes(port)) {
     const props = read('Directory.Build.props')
     const prefix = /<VersionPrefix>([^<]+)</.exec(props)?.[1]
@@ -127,7 +129,7 @@ function packageVersion(checkout, port, product) {
  * Falls back to `head` loudly. A dead link is worse than a live one, but a
  * silently missing source link is worse than both.
  */
-function publicRevision(checkout, head, port, repo) {
+function publicRevision(checkout, head, port, repo, publicRef) {
   if (!head) return undefined
 
   // The blob URL and the merge-base have to name the same repository;
@@ -138,7 +140,10 @@ function publicRevision(checkout, head, port, repo) {
     process.exit(1)
   }
 
-  const ref =
+  if (publicRef && !git(checkout, 'rev-parse', '--verify', '--quiet', publicRef)) {
+    throw new Error(`gen-api-model: ${port} has no authenticated public source ref ${publicRef}`)
+  }
+  const ref = publicRef ??
     git(checkout, 'symbolic-ref', 'refs/remotes/origin/HEAD') ??
     ['refs/remotes/origin/master', 'refs/remotes/origin/main'].find((r) =>
       git(checkout, 'rev-parse', '--verify', '--quiet', r),
@@ -302,6 +307,20 @@ const PORTS = {
     generate: [':libtmux-scala:generateScalaSources', ':libtmux-scala-cats:generateScalaSources'],
     pathRoots: ['libtmux-scala/', 'libtmux-scala-cats/', 'libtmux-scala-ox/',
       'docs/guide/scala/', 'examples/src/main/scala/'],
+    repo: 'libtmux/libtmux-java', options: {},
+  },
+  clojure: {
+    checkout: '~/work/libtmux/libtmux-java-clojure',
+    root: '.', nativeArtifact: 'build/docs/clojure-api.json',
+    publicRef: 'refs/remotes/origin/master',
+    pathRoots: ['libtmux-clojure/', 'libtmux-clojure-core-async/', 'docs/guide/clojure', 'examples/src/main/clojure/'],
+    generate: ({ head }) => [
+      '--init-script', join(repoRoot, 'packages/api-model/scripts/export-clojure.gradle'),
+      'exportClojureApi',
+      `-PlibtmuxClojureExporter=${join(repoRoot, 'packages/api-model/scripts/export-clojure.clj')}`,
+      `-PlibtmuxDocsSourceRevision=${head}`,
+      '--max-workers=1',
+    ],
     repo: 'libtmux/libtmux-java', options: {},
   },
   fsharp: {
@@ -587,12 +606,13 @@ for (const [port, cfg] of Object.entries(PORTS)) {
   }
   // The commit a reader can actually open, which is not always the one the
   // model is generated from. See `publicRevision`.
-  const revision = selectedSource ?? publicRevision(checkout, head, port, cfg.repo)
+  const revision = selectedSource ?? publicRevision(checkout, head, port, cfg.repo, cfg.publicRef)
 
   if (cfg.generate && (!cfg.generateWhen || existsSync(join(checkout, cfg.generateWhen)))) {
     // Gradle owns dependency tracking; stale generated methods must never be
     // accepted simply because their output directory already exists.
-    execFileSync(join(checkout, 'gradlew'), [...cfg.generate, '--console=plain'], {
+    const generation = typeof cfg.generate === 'function' ? cfg.generate({ head }) : cfg.generate
+    execFileSync(join(checkout, 'gradlew'), [...generation, '--console=plain'], {
       cwd: checkout, stdio: 'inherit',
     })
   }
@@ -639,8 +659,22 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       process.exit(1)
     }
     const artifact = JSON.parse(readFileSync(artifactPath, 'utf8'))
-    const nativeExtractors = { ruby: extractRuby, lua: extractLua, powershell: extractPowerShell, julia: extractJulia, elixir: extractElixir }
+    const nativeExtractors = { ruby: extractRuby, lua: extractLua, powershell: extractPowerShell, julia: extractJulia, elixir: extractElixir, clojure: extractClojure }
     model = nativeExtractors[port](artifact, head)
+    if (model.nativeProvenance) {
+      for (const input of model.nativeProvenance.files) {
+        const bytes = execFileSync('git', ['-C', checkout, 'show', `${head}:${input.path}`], { maxBuffer: 1 << 26 })
+        if (createHash('sha256').update(bytes).digest('hex') !== input.sha256) {
+          throw new Error(`gen-api-model: ${port} native artifact source differs from ${head}: ${input.path}`)
+        }
+      }
+      for (const input of model.nativeProvenance.exporter.files ?? []) {
+        const bytes = readFileSync(join(repoRoot, input.path))
+        if (createHash('sha256').update(bytes).digest('hex') !== input.sha256) {
+          throw new Error(`gen-api-model: ${port} native artifact exporter is stale: ${input.path}`)
+        }
+      }
+    }
   } else {
     model = await extractProject({
       port,
@@ -667,6 +701,18 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     if (examples.length) attachCompleteGoExamples(model.symbols, examples, {
       repo: cfg.repo, revision, goVersion,
     })
+  }
+
+  if (port === 'clojure') {
+    attachCompleteClojureExamples(model.symbols, (file) => {
+      try {
+        return execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], {
+          encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'],
+        })
+      } catch {
+        return undefined
+      }
+    }, { repo: cfg.repo, revision })
   }
 
   if (['java', 'kotlin', 'scala'].includes(port)) {

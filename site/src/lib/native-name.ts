@@ -17,8 +17,8 @@ import { qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model'
  *
  * `nativeShortName` is the short form a hover card uses for its header: the owner and the member in the language's
  * separator (`ControlSender::unmute_pane`, `Server#new_session`, `Buffer:reference`, `Capture.fetch/2`), and the bare name
- * for a declaration with no owner. The full name is the page's Qualified name row. The page heading still joins the owner
- * and the member with a dot in every port, so for Rust, C++, Ruby, Lua and PowerShell it differs from the card's header.
+ * for a declaration with no owner. The full name is the page's Qualified name row. Clojure headings keep the full
+ * namespace/var spelling; other ports join the owner and member with a dot in the page heading.
  *
  * This is for display. The public id, the anchors and the URLs stay as the model has them.
  */

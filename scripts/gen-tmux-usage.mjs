@@ -257,7 +257,10 @@ function derivePort({ port, scanned, commands, scopes, claims, report, sends }) 
  * Where a core library keeps the source its public symbols come from, for reading it at another revision than its model.
  * Only a core that a wrapper shares a repository with, and is pinned apart from, needs this.
  */
-const CORE_EXTRACTION = { csharp: { roots: ['src/LibTmux'], options: { inheritedMembers: true } } }
+const CORE_EXTRACTION = {
+  csharp: { roots: ['src/LibTmux'], options: { inheritedMembers: true } },
+  java: { roots: ['libtmux/src/main/java'] },
+}
 
 /** The public symbols of a core library as they were at a revision, extracted from that revision's own files. */
 async function modelAtRevision({ port, checkout, revision }) {

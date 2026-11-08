@@ -71,6 +71,18 @@ const support = (reference: unknown) => JSON.stringify({ schema_version: 1, refe
 const tracking = 'erlang 29\nelixir 1.20\n'
 
 describe('native documentation producers', () => {
+  it('prepares the JVM toolchain for every member of the Java library family', () => {
+    const family = Object.values(PORT_BY_SLUG)
+      .filter((port) => port.slug === 'java' || port.parentLibrary?.slug === 'java')
+      .map((port) => port.slug).sort()
+    for (const action of ['actions/setup-java', 'gradle/actions/setup-gradle']) {
+      const condition = workflow.match(new RegExp(`      - if: ([^\\n]+)\\n        uses: ${action}@`))?.[1]
+      expect(condition, action).toBeDefined()
+      const selected = Array.from(condition!.matchAll(/matrix\.port == '([^']+)'/g), (match) => match[1]).sort()
+      expect(selected, action).toEqual(family)
+    }
+  })
+
   it.each([0, 23])('uses Julia tooling to build its tmux floor and stops on build failure %s', (exitCode) => {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-julia-tmux-'))
     const tooling = join(directory, 'export tooling')

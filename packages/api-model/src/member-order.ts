@@ -182,6 +182,7 @@ const bareName = (s: ApiSymbol) =>
     .replace(/\(.*$/, '')
     .replace(/\/\d+$/, '')
     .replace(/Async$/, '')
+    .replace(/[!?]$/, '')
     .toLowerCase()
 
 export function memberTier(s: ApiSymbol, signals: MemberSignals): MemberTier {

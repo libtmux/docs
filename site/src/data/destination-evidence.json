@@ -1096,8 +1096,9 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-11-03",
+      "checkedAt": "2026-11-08",
       "entries": [
+        "clojure:repository",
         "java:repository",
         "kotlin:repository",
         "scala:repository"
@@ -1145,6 +1146,48 @@
       "checkedAt": "2026-11-03",
       "entries": [
         "java:libtmux-bom"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-clojure",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-clojure",
+      "identity": "libtmux/libtmux-java/libtmux-clojure",
+      "versionChecks": [
+        {
+          "check": "unsupported",
+          "note": "a branch link names no release"
+        }
+      ],
+      "checkedAt": "2026-11-08",
+      "entries": [
+        "clojure:core-source"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-clojure-core-async",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-java/tree/master/libtmux-clojure-core-async",
+      "identity": "libtmux/libtmux-java/libtmux-clojure-core-async",
+      "versionChecks": [
+        {
+          "check": "unsupported",
+          "note": "a branch link names no release"
+        }
+      ],
+      "checkedAt": "2026-11-08",
+      "entries": [
+        "clojure:adapter-source"
       ]
     },
     {

@@ -21,6 +21,7 @@ describe('route branding', () => {
   it('titles each port home page by repository and language', () => {
     expect(Object.fromEntries(PORTS.map((port) => [port.slug, portHomeTitle(port)]))).toEqual({
       py: 'libtmux: Python-based tmux client', ruby: 'libtmux-ruby: Ruby-based tmux client',
+      clojure: 'libtmux-clojure: Clojure-based tmux client',
       lua: 'libtmux-lua: Lua-based tmux client', ts: 'libtmux-ts: TypeScript-based tmux client',
       powershell: 'libtmux-powershell: PowerShell-based tmux client', julia: 'libtmux-julia: Julia-based tmux client',
       elixir: 'libtmux-elixir: Elixir-based tmux client', rs: 'libtmux-rs: Rust-based tmux client',
@@ -45,7 +46,7 @@ describe('route branding', () => {
       powershell: 'libtmux-powershell', julia: 'LibTmux.jl', elixir: 'libtmux-elixir',
       rs: 'libtmux-rs', go: 'libtmux-go', java: 'libtmux-java', kotlin: 'libtmux-kotlin',
       scala: 'libtmux-scala', csharp: 'libtmux-dotnet', fsharp: 'libtmux-fsharp',
-      cxx: 'libtmux-cxx', swift: 'libtmux-swift',
+      cxx: 'libtmux-cxx', swift: 'libtmux-swift', clojure: 'libtmux-clojure',
     }
     expect(Object.fromEntries(PORTS.map((port) => [port.slug, branding(port.slug).projectName]))).toEqual(names)
     expect(branding('java', 'reference/libtmux-scala-cats').projectName).toBe('libtmux-scala')

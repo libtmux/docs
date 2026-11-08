@@ -32,6 +32,7 @@ export const LIBRARY_ROOTS = {
   rs: ['crates/libtmux/'],
   go: ['tmux/'],
   java: ['libtmux/src/'],
+  clojure: ['libtmux-clojure/', 'libtmux-clojure-core-async/'],
   kotlin: ['libtmux-kotlin/'],
   scala: ['libtmux-scala/', 'libtmux-scala-cats/'],
   csharp: ['src/LibTmux/'],

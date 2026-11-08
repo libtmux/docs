@@ -286,6 +286,8 @@ export interface Port {
   referenceKind?: 'model' | 'guide'
   /** Generated Markdown reference with type pages and named member anchors. */
   sourceReferenceDirectory?: string
+  /** Native single-file references, grouped by their owning package. */
+  sourceReferenceFiles?: readonly { file: string; package: string }[]
   renderer: Renderer
   /**
    * Whether this port's own documentation pipeline publishes
@@ -1260,9 +1262,34 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
 
 type WrapperLibrary = Omit<Port, 'repo' | 'checkout' | 'worktree' | 'tagGrammar' | 'tagPrefix' | 'versionedDocs' | 'renderer' | 'generator'> & {
   parentLibrary: { slug: string; runtime: string }
+  worktree?: string
 }
 
 const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
+  {
+    slug: 'clojure', logoLanguage: 'clojure', shortName: 'Clj', name: 'Clojure', language: 'Clojure',
+    projectName: 'libtmux-clojure',
+    parentLibrary: { slug: 'java', runtime: 'JVM' },
+    source: { path: 'libtmux-clojure', ref: 'master' },
+    sourceReferenceFiles: [
+      { file: 'docs/guide/clojure-api.md', package: 'io.github.libtmux:libtmux-clojure' },
+      { file: 'docs/guide/clojure-core-async-api.md', package: 'io.github.libtmux:libtmux-clojure-core-async' },
+    ],
+    worktree: '~/work/libtmux/libtmux-java-clojure',
+    packageName: 'io.github.libtmux:libtmux-clojure',
+    packages: [{ id: 'async', name: 'libtmux-clojure-core-async',
+      coordinate: 'io.github.libtmux:libtmux-clojure-core-async',
+      source: { path: 'libtmux-clojure-core-async', ref: 'master' }, require: 'libtmux.core-async' }],
+    installs: [{ label: 'Tools.deps', lang: 'clojure', filename: 'deps.edn',
+      code: '{:deps {io.github.libtmux/libtmux-clojure {:mvn/version "{version}"}}}',
+      note: 'Build and install the source checkout first; this module has no published registry release.' }],
+    initProject: { code: 'mkdir clojure-tmux && cd clojure-tmux', lang: 'console' },
+    installForms: {
+      release: { code: '{:deps {io.github.libtmux/libtmux-clojure {:mvn/version "{version}"}}}', lang: 'clojure' },
+      prerelease: { code: '{:deps {io.github.libtmux/libtmux-clojure {:mvn/version "{version}"}}}', lang: 'clojure' },
+      git: { code: 'git clone --branch master https://github.com/libtmux/libtmux-java && (cd libtmux-java && ./gradlew :libtmux:publishToMavenLocal :libtmux-clojure:publishToMavenLocal)', lang: 'console' },
+    },
+  },
   {
     slug: 'kotlin', logoLanguage: 'kotlin', shortName: 'Kt', name: 'Kotlin', language: 'Kotlin',
     projectName: 'libtmux-kotlin',

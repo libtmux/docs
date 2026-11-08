@@ -1,0 +1,581 @@
+{
+  "commands": [
+    "attach-session",
+    "bind-key",
+    "break-pane",
+    "capture-pane",
+    "choose-buffer",
+    "choose-client",
+    "choose-tree",
+    "clear-history",
+    "clear-prompt-history",
+    "clock-mode",
+    "command-prompt",
+    "confirm-before",
+    "copy-mode",
+    "customize-mode",
+    "delete-buffer",
+    "detach-client",
+    "display-menu",
+    "display-message",
+    "display-panes",
+    "display-popup",
+    "find-window",
+    "has-session",
+    "if-shell",
+    "join-pane",
+    "kill-pane",
+    "kill-server",
+    "kill-session",
+    "kill-window",
+    "last-pane",
+    "last-window",
+    "link-window",
+    "list-buffers",
+    "list-clients",
+    "list-commands",
+    "list-keys",
+    "list-panes",
+    "list-sessions",
+    "list-windows",
+    "load-buffer",
+    "lock-client",
+    "lock-server",
+    "lock-session",
+    "move-pane",
+    "move-window",
+    "new-pane",
+    "new-session",
+    "new-window",
+    "next-layout",
+    "next-window",
+    "paste-buffer",
+    "pipe-pane",
+    "previous-layout",
+    "previous-window",
+    "refresh-client",
+    "rename-session",
+    "rename-window",
+    "resize-pane",
+    "resize-window",
+    "respawn-pane",
+    "respawn-window",
+    "rotate-window",
+    "run-shell",
+    "save-buffer",
+    "select-layout",
+    "select-pane",
+    "select-window",
+    "send-keys",
+    "send-prefix",
+    "server-access",
+    "set-buffer",
+    "set-environment",
+    "set-hook",
+    "set-option",
+    "set-window-option",
+    "show-buffer",
+    "show-environment",
+    "show-hooks",
+    "show-messages",
+    "show-options",
+    "show-prompt-history",
+    "show-window-options",
+    "source-file",
+    "split-window",
+    "start-server",
+    "suspend-client",
+    "swap-pane",
+    "swap-window",
+    "switch-client",
+    "unbind-key",
+    "unlink-window",
+    "wait-for"
+  ],
+  "port": "clojure",
+  "repo": "libtmux/libtmux-java",
+  "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124",
+  "schemaVersion": 1,
+  "symbols": {
+    "libtmux.core/append-hook!": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Hooks.java:97",
+          "libtmux/src/main/java/io/github/libtmux/Hooks.java:84",
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:473"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "libtmux.core/apply-layout!": [
+      {
+        "command": "select-layout",
+        "evidence": [
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:337"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Window.java:374"
+          ],
+          "port": "java",
+          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124",
+          "symbol": "io.github.libtmux.Window.Window.applyLayout"
+        }
+      }
+    ],
+    "libtmux.core/delete-buffer!": [
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Buffers.java:96",
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:494"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "libtmux.core/detach-client!": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:398"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Client.java:48"
+          ],
+          "port": "java",
+          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124",
+          "symbol": "io.github.libtmux.Client.Client.detach"
+        }
+      }
+    ],
+    "libtmux.core/environment!": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:441"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Environment.java:205",
+            "libtmux/src/main/java/io/github/libtmux/Environment.java:205",
+            "libtmux/src/main/java/io/github/libtmux/Environment.java:357",
+            "libtmux/src/main/java/io/github/libtmux/Environment.java:104"
+          ],
+          "port": "java",
+          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124",
+          "symbol": "io.github.libtmux.Environment.Environment.all"
+        }
+      }
+    ],
+    "libtmux.core/find-session!": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:161",
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:165",
+          "libtmux/src/main/java/io/github/libtmux/Server.java:1087",
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:169"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "libtmux.core/join-pane!": [
+      {
+        "command": "join-pane",
+        "evidence": [
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:327"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:1093"
+          ],
+          "port": "java",
+          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124",
+          "symbol": "io.github.libtmux.Pane.Pane.joinTo"
+        }
+      }
+    ],
+    "libtmux.core/kill-server!": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:299"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Server.java:418"
+          ],
+          "port": "java",
+          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124",
+          "symbol": "io.github.libtmux.Server.Server.killServer"
+        }
+      },
+      {
+        "command": "kill-server",
+        "evidence": [
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:299"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Server.java:418"
+          ],
+          "port": "java",
+          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124",
+          "symbol": "io.github.libtmux.Server.Server.killServer"
+        }
+      }
+    ],
+    "libtmux.core/link-window!": [
+      {
+        "command": "link-window",
+        "evidence": [
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:313"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Window.java:234"
+          ],
+          "port": "java",
+          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124",
+          "symbol": "io.github.libtmux.Window.Window.linkTo"
+        }
+      }
+    ],
+    "libtmux.core/move-window!": [
+      {
+        "command": "move-window",
+        "evidence": [
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:323"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Window.java:254"
+          ],
+          "port": "java",
+          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124",
+          "symbol": "io.github.libtmux.Window.Window.moveTo"
+        }
+      }
+    ],
+    "libtmux.core/new-session!": [
+      {
+        "command": "new-session",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SessionSpec.java:119",
+          "libtmux/src/main/java/io/github/libtmux/Server.java:255",
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:252"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "libtmux.core/new-window!": [
+      {
+        "command": "new-window",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/WindowSpec.java:117",
+          "libtmux/src/main/java/io/github/libtmux/Session.java:260",
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:263"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "libtmux.core/options!": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:420"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Options.java:153",
+            "libtmux/src/main/java/io/github/libtmux/Options.java:140"
+          ],
+          "port": "java",
+          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124",
+          "symbol": "io.github.libtmux.Options.Options.all"
+        }
+      }
+    ],
+    "libtmux.core/paste-buffer!": [
+      {
+        "command": "paste-buffer",
+        "evidence": [
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:499"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:956"
+          ],
+          "port": "java",
+          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124",
+          "symbol": "io.github.libtmux.Pane.Pane.pasteBuffer"
+        }
+      }
+    ],
+    "libtmux.core/run-shell!": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Shell.java:29",
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:382"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "libtmux.core/send-keys!": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:348"
+        ],
+        "scope": "window",
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:693",
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:603"
+          ],
+          "port": "java",
+          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124",
+          "symbol": "io.github.libtmux.Pane.Pane.sendKeys"
+        }
+      },
+      {
+        "command": "send-keys",
+        "evidence": [
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:348"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:609",
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:602",
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:665"
+          ],
+          "port": "java",
+          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124",
+          "symbol": "io.github.libtmux.Pane.Pane.sendKeys"
+        }
+      }
+    ],
+    "libtmux.core/send-literal!": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:343"
+        ],
+        "scope": "window",
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:693",
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:645"
+          ],
+          "port": "java",
+          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124",
+          "symbol": "io.github.libtmux.Pane.Pane.sendLiteral"
+        }
+      },
+      {
+        "command": "send-keys",
+        "evidence": [
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:343"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:651",
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:643",
+            "libtmux/src/main/java/io/github/libtmux/Pane.java:665"
+          ],
+          "port": "java",
+          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124",
+          "symbol": "io.github.libtmux.Pane.Pane.sendLiteral"
+        }
+      }
+    ],
+    "libtmux.core/set-buffer!": [
+      {
+        "command": "set-buffer",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Buffers.java:60",
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:484"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "libtmux.core/set-environment!": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:353",
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:156",
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:447"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "libtmux.core/set-hook!": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Hooks.java:66",
+          "libtmux/src/main/java/io/github/libtmux/Hooks.java:78",
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:468"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "libtmux.core/set-option!": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Options.java:325",
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:425"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "libtmux.core/show-buffer!": [
+      {
+        "command": "show-buffer",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Buffers.java:76",
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:489"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "libtmux.core/snapshot!": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:164",
+          "libtmux/src/main/java/io/github/libtmux/Server.java:1087",
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:151"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:163",
+          "libtmux/src/main/java/io/github/libtmux/Server.java:1087",
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:151"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:161",
+          "libtmux/src/main/java/io/github/libtmux/Server.java:1087",
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:151"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:162",
+          "libtmux/src/main/java/io/github/libtmux/Server.java:1087",
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:151"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "libtmux.core/switch-client!": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:402"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Client.java:67"
+          ],
+          "port": "java",
+          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124",
+          "symbol": "io.github.libtmux.Client.Client.switchTo"
+        }
+      }
+    ],
+    "libtmux.core/unlink-window!": [
+      {
+        "command": "unlink-window",
+        "evidence": [
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:317"
+        ],
+        "scope": null,
+        "via": {
+          "evidence": [
+            "libtmux/src/main/java/io/github/libtmux/Window.java:246"
+          ],
+          "port": "java",
+          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124",
+          "symbol": "io.github.libtmux.Window.Window.unlink"
+        }
+      }
+    ],
+    "libtmux.core/unset-environment!": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:353",
+          "libtmux/src/main/java/io/github/libtmux/Environment.java:168",
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:452"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "libtmux.core/unset-hook!": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Hooks.java:103",
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:478"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "libtmux.core/unset-option!": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "libtmux/src/main/java/io/github/libtmux/Options.java:370",
+          "libtmux-clojure/src/main/clojure/libtmux/core.clj:430"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ]
+  }
+}

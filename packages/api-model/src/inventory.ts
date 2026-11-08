@@ -43,6 +43,7 @@ const DOMAIN: Record<PortSlug, string> = {
   rs: 'std',
   go: 'std',
   java: 'std',
+  clojure: 'std',
   kotlin: 'std',
   scala: 'std',
   fsharp: 'std',

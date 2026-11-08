@@ -18,6 +18,28 @@ const scopes = readFileSync(new URL('../src/data/tmux-usage/scopes.json', import
 const spec = { scopes: libraryScopes(JSON.parse(scopes).commands['list-panes']) }
 
 describe('scanning a send site', () => {
+  it('reads Clojure interop calls without treating docstrings or discarded forms as sends', async () => {
+    const text = [
+      '(ns libtmux.core)',
+      '; (.ignored server)',
+      '(defn ^Server acquire!',
+      '  "Captures a server; (.ignored server)."',
+      '  [server]',
+      '  #_(.ignored server)',
+      '  (comment (.ignored server))',
+      '  (let [snapshot (.captureServer server)]',
+      '    (.newSession server spec)))',
+      '(defn send! [server] (run server ["list-panes" "-s" "-t" "%0"]))',
+    ].join('\n')
+    const { functions } = await scanSource({ grammar: 'clojure', text,
+      commands: new Set(['list-panes']), known, dispatch: new Set(['run']) })
+    expect(functions.map((fn) => [fn.name, fn.start, fn.end])).toEqual([['acquire!', 3, 9], ['send!', 10, 10]])
+    expect([...functions[0]!.calls.keys()]).toEqual(['let', 'captureServer', 'newSession'])
+    expect([...functions[0]!.receivers.get('newSession')!]).toEqual(['server'])
+    expect(functions[0]!.sites).toEqual([])
+    expect(functions[1]!.sites).toEqual([{ command: 'list-panes', line: 10, flags: 'st', dispatch: { name: 'run', line: 10 } }])
+  })
+
   it('reads the flags written beside the command and ignores a docstring and a default value', async () => {
     const { functions } = await scan('python', [
       'class Session:',

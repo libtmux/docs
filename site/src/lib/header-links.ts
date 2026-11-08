@@ -8,7 +8,7 @@
  * where an unpublished entry yields nothing.
  */
 import {
-  API_HOSTS, INVENTORY, INVENTORY_KIND_LABEL, KIND_TERMS, PACKAGE_HOSTS, entryDestinations,
+  API_HOSTS, INVENTORY, INVENTORY_KIND_LABEL, KIND_TERMS, PACKAGE_HOSTS, documentedLibrary, entryDestinations,
   type DestinationKind, type HostIcon, type InventoryEntry, type InventoryProduct,
 } from './port-inventory'
 import { PICKER_GROUP_LABEL, portDestinations, type Port } from './ports'
@@ -127,8 +127,9 @@ function indexRows(entries: readonly InventoryEntry[], home: string): HeaderRow[
 }
 
 export function portHeaderLinks(port: Port, inventory: Readonly<Record<string, readonly InventoryEntry[]>> = INVENTORY): PortHeaderLinks {
-  const entries = (inventory[port.slug] ?? []).filter((entry) => entry.status === 'published')
-  const library = entries.find((entry) => entry.kind === 'library')
+  const all = inventory[port.slug] ?? []
+  const entries = all.filter((entry) => entry.status === 'published')
+  const library = documentedLibrary(all)
   if (!library) return { actions: [], rows: [], indexed: false }
   const { source } = portDestinations({ port })
   const actions: HeaderAction[] = [{
