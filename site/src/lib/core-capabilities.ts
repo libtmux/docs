@@ -23,6 +23,7 @@ export const CAPABILITIES = [
   { id: 'create-windows', label: 'Create windows' },
   { id: 'move-windows', label: 'Move windows' },
   { id: 'set-layouts', label: 'Set layouts' },
+  { id: 'typed-values', label: 'Validate tmux IDs, dimensions and releases' },
 ] as const
 export type CapabilityId = (typeof CAPABILITIES)[number]['id']
 

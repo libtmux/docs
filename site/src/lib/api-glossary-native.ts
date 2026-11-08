@@ -1,5 +1,6 @@
 /** Native meanings of the shared reference labels, keyed by language. */
 import type { Definition } from './api-glossary.ts'
+import { kindLabel } from './api-labels.ts'
 
 const term = (definition: string, title: string, url: string, detail?: string): Definition => ({
   definition, ...(detail ? { detail } : {}), references: [{ title, url }],
@@ -36,6 +37,15 @@ export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> =
     function: term('An OCaml value with a function type. Arguments are curried and can carry labels or be optional.', 'OCaml expressions', 'https://ocaml.org/manual/5.5/expr.html#s:value-expr'),
     attribute: term('A field of an OCaml record. Its module supplies the qualified name; the reference groups it under its declaring type.', 'OCaml type and exception definitions', 'https://ocaml.org/manual/5.5/typedecl.html#s:tydef'),
     exception: term('An OCaml exception constructor.', 'OCaml type and exception definitions', 'https://ocaml.org/manual/5.5/typedecl.html#s:tydef'),
+  },
+  haskell: {
+    module: term('A named Haskell module that imports and exports declarations.', 'Haskell modules', 'https://www.haskell.org/onlinereport/haskell2010/haskellch5.html', 'A module qualifies names such as LibTmux.Id.parsePaneId. Documentation ownership by a data type does not add that type to the source name.'),
+    'data-type': { ...term('A distinct Haskell type introduced by a data or newtype declaration.', 'Haskell datatype declarations', 'https://www.haskell.org/onlinereport/haskell2010/haskellch4.html#x10-680004.2', 'An opaque Haddock data header exposes the type name without revealing whether its implementation uses data or newtype.'), label: kindLabel('data-type') },
+    'data-constructor': { ...term('A Haskell value constructor that builds one form of a data type.', 'Haskell algebraic datatypes', 'https://www.haskell.org/onlinereport/haskell2010/haskellch4.html#x10-690004.2.1', 'Constructors can carry fields and appear in patterns. A qualified constructor takes its module name, not its data type name.'), label: kindLabel('data-constructor') },
+    'record-field': { ...term('A Haskell record label used in construction, update and pattern matching.', 'GHC field selectors', 'https://downloads.haskell.org/ghc/9.14.1/docs/users_guide/exts/field_selectors.html', 'The qualified modules use NoFieldSelectors. Their exported record labels do not generate top-level selector functions.'), label: kindLabel('record-field') },
+    function: term('A Haskell binding with a function type, applied to arguments by juxtaposition.', 'Haskell function bindings', 'https://www.haskell.org/onlinereport/haskell2010/haskellch4.html#x10-830004.4.3', 'Arguments are curried. Acquisition and mutation require an explicit effect such as IO in the signature.'),
+    opaque: term('A Haskell type exported without its data constructors.', 'Haskell abstract datatypes', 'https://www.haskell.org/onlinereport/haskell2010/haskellch5.html#x11-1150005.8', 'Callers use exported operations rather than hidden constructors or representation. This does not establish whether the implementation uses data or newtype.'),
+    package: term('The Cabal package supplying these exposed Haskell modules.', 'Cabal package descriptions', 'https://cabal.readthedocs.io/en/3.18/cabal-package-description-file.html', 'A package name and a module name are different identities. Availability from source does not imply publication on Hackage.'),
   },
   scala: {
     module: term('A singleton object that groups Scala declarations.', 'Scala singleton objects', scalaTour('singleton-objects'), 'The module badge represents object declarations here. Its members belong to that object; the label does not identify a separately installed artifact.'),

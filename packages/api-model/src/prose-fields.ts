@@ -50,11 +50,13 @@ export const STRUCTURAL_FIELDS: string[] = [
   '.apiScope', '.exportedFrom', '.extends[]', '.id', '.inheritedFrom', '.kind', '.modifiers[]', '.name', '.namespace',
   '.namespaceImports[]', '.package', '.parent', '.product', '.publicId', '.publicOwner', '.qualifiedName', '.slug',
   '.value', '.variant', '.type', '.imports.*', '.source.*',
+  '.references[].kind', '.references[].target',
   // Types and signatures, which are linked as types.
   '.typeParamNames[]', '.typeParams[]',
   '.typeParameters[].bound', '.typeParameters[].default', '.typeParameters[].kind', '.typeParameters[].modifier', '.typeParameters[].name',
   '.signatures[].enclosingDeclaration', '.signatures[].enclosingTypeParamNames[]', '.signatures[].extension',
   '.signatures[].identity', '.signatures[].label', '.signatures[].methodKind', '.signatures[].raw', '.signatures[].returns',
+  '.signatures[].nativeSpans[].text', '.signatures[].nativeSpans[].href', '.signatures[].nativeSpans[].target',
   '.signatures[].source.*', '.signatures[].typeParamNames[]', '.signatures[].typeParams[]',
   '.signatures[].typeParameters[].bound', '.signatures[].typeParameters[].default', '.signatures[].typeParameters[].kind',
   '.signatures[].typeParameters[].modifier', '.signatures[].typeParameters[].name',

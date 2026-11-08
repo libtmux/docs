@@ -70,6 +70,74 @@ function elixirToolchain(files: Record<string, string | undefined>) {
 const support = (reference: unknown) => JSON.stringify({ schema_version: 1, reference })
 const tracking = 'erlang 29\nelixir 1.20\n'
 
+describe('Haskell documentation producer', () => {
+  function toolchain(pins: string) {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-haskell-toolchain-'))
+    const output = join(directory, 'output')
+    try {
+      writeFileSync(join(directory, '.tool-versions'), pins)
+      writeFileSync(output, '')
+      const result = spawnSync('python3', ['-I', join(root, 'scripts/read-haskell-toolchain.py'), directory], {
+        encoding: 'utf8', timeout: 5000, env: { ...process.env, GITHUB_OUTPUT: output },
+      })
+      return { ...result, output: readFileSync(output, 'utf8') }
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  }
+
+  it('reads exact compiler and Cabal pins from the selected source', () => {
+    const result = toolchain('ghc 9.14.1\ncabal 3.18.2.0\n')
+    expect(result.status, result.stderr).toBe(0)
+    expect(result.output).toBe('ghc-version=9.14.1\ncabal-version=3.18.2.0\n')
+  })
+
+  it.each([
+    'ghc latest\ncabal 3.18.2.0\n',
+    'ghc 9.14\ncabal 3.18.2.0\n',
+    'ghc 9.14.1\ncabal 3.18\n',
+    'ghc 9.14.1\n',
+    'ghc 9.14.1\nghc 9.12.2\ncabal 3.18.2.0\n',
+    'ghc 9.14.1 injected\ncabal 3.18.2.0\n',
+  ])('rejects missing, moving or ambiguous pins without writing outputs: %j', (pins) => {
+    const result = toolchain(pins)
+    expect(result.status).not.toBe(0)
+    expect(result.stderr).toContain('selected source must pin an exact, unique')
+    expect(result.output).toBe('')
+  })
+
+  it('exports the selected source with the same committed docs checkout that builds the site', () => {
+    const body = script('Export Haskell API from the selected source')
+    expect(body).toContain('"$PORT_CHECKOUT"')
+    expect(body).toContain('--source-revision "$SOURCE_SHA"')
+    expect(body).toContain('--output "$PORT_CHECKOUT/.cache/docs/api.json"')
+    expect(workflow).toContain('run: python3 docs/scripts/read-haskell-toolchain.py port')
+    expect(workflow).toContain('ghc-version: ${{ steps.haskell-runtime.outputs.ghc-version }}')
+    expect(workflow).toContain('cabal-version: ${{ steps.haskell-runtime.outputs.cabal-version }}')
+    expect(workflow).toContain('EXPORTER: ${{ github.workspace }}/docs/packages/api-model/scripts/export-haskell.py')
+  })
+
+  it.each([0, 23])('passes selected source arguments intact and propagates exporter exit %s', (exitCode) => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-haskell-export-'))
+    try {
+      const exporter = join(directory, 'export tooling.py')
+      const selected = join(directory, 'selected source')
+      const trace = join(directory, 'arguments.json')
+      writeFileSync(exporter, `import json, pathlib, sys
+pathlib.Path(${JSON.stringify(trace)}).write_text(json.dumps(sys.argv[1:]))
+raise SystemExit(${exitCode})
+`)
+      const sha = 'a'.repeat(40)
+      const result = spawnSync('bash', ['-e', '-c', script('Export Haskell API from the selected source')], {
+        encoding: 'utf8', timeout: 5000,
+        env: { ...process.env, EXPORTER: exporter, PORT_CHECKOUT: selected, SOURCE_SHA: sha },
+      })
+      expect(result.status, result.stderr).toBe(exitCode)
+      expect(JSON.parse(readFileSync(trace, 'utf8'))).toEqual([
+        '--checkout', selected, '--source-revision', sha, '--output', `${selected}/.cache/docs/api.json`,
+      ])
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+})
+
 describe('native documentation producers', () => {
   it.each([0, 23])('uses Julia tooling to build its tmux floor and stops on build failure %s', (exitCode) => {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-julia-tmux-'))

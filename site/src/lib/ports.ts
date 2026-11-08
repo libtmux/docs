@@ -3,7 +3,7 @@
 // build-site.sh imports this module with bare Node; local imports need `.ts`.
 import { withPortRoot } from './site-root.ts'
 import { COOLDOWN_SLOTS } from './cooldown.ts'
-import type { TagGrammar } from './versions.ts'
+import { parseTag, type TagGrammar } from './versions.ts'
 
 /**
  * Which renderer produces a self-hosted reference.
@@ -262,9 +262,7 @@ export interface Port {
    */
   workspaceCliAvailability?: 'local' | 'published' | 'released'
   /**
-   * How this port writes its version tags. Python follows PEP 440, which
-   * attaches a suffix with no separator and has post-releases; the rest
-   * follow SemVer. Reading one with the other's grammar drops the tag.
+   * The ecosystem's source-tag grammar, including Cabal's numeric components.
    */
   tagGrammar: TagGrammar
   /**
@@ -698,6 +696,39 @@ const CORE_PORTS: readonly Port[] = [
     },
     installNote:
       'Add the tuple to the deps list in mix.exs and run mix deps.get. Requires Elixir 1.20.4 or newer, Erlang/OTP 29.1.2 or a newer 29.x release, and tmux 3.3 or newer (the planned floor); Linux builds need a C11 compiler.',
+  },
+  {
+    slug: 'haskell',
+    projectName: 'libtmux-haskell',
+    logoLanguage: 'haskell',
+    shortName: 'Hs',
+    name: 'Haskell',
+    language: 'Haskell',
+    packageName: 'libtmux-haskell',
+    repo: 'libtmux/libtmux-haskell',
+    source: { path: 'src', ref: 'master' },
+    checkout: '~/work/libtmux/libtmux-haskell',
+    worktree: '~/work/libtmux/libtmux-haskell-docs',
+    docsDispatch: { workflow: 'docs.yml', ref: 'master' },
+    versionedDocs: true,
+    tagGrammar: 'cabal',
+    renderer: 'astro',
+    generator: 'Configured Haddock public interfaces',
+    publishesOwnTree: true,
+    productAvailability: { workspace: 'unpublished', mcp: 'excluded' },
+    packages: [{ id: 'core', name: 'libtmux-haskell', source: { path: 'src', ref: 'master' }, require: 'LibTmux.Id' }],
+    installs: [{
+      label: 'Cabal', lang: 'text', filename: 'cabal.project',
+      code: 'packages: .\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: {revision}',
+      note: 'Save as cabal.project and add libtmux-haskell ^>=0.1.0.0 to your component\'s build-depends. Requires Linux x86_64, GHC 9.14.1 and Cabal 3.18.2.0. The core package is available from source; it is not published on Hackage.',
+    }],
+    initProject: { lang: 'console', code: 'cabal init --non-interactive --exe --language=GHC2024 --dependency="base >=4.22 && <4.23, libtmux-haskell ^>=0.1.0.0"' },
+    installForms: {
+      release: { lang: 'text', code: 'build-depends: libtmux-haskell ^>={version}' },
+      prerelease: { lang: 'text', code: 'build-depends: libtmux-haskell =={version}' },
+      git: { lang: 'text', code: 'packages: .\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: master' },
+    },
+    installNote: 'The public API currently provides pure typed IDs, checked values and tmux-version admission. Client and command APIs are under development. Workspace is planned; MCP is excluded.',
   },
   {
     slug: 'ts',
@@ -1542,6 +1573,7 @@ export function workspaceOverviewNotice(port: Port): { title: string; body: stri
 }
 
 export function productDescription(port: Port, product: DocProduct): string {
+  if (port.productAvailability?.[product] === 'excluded') return `${DOC_PRODUCTS[product].label} is excluded from this language port.`
   if (!productAvailable(port, product)) return 'Not available for this language port.'
   if (port.productDescriptions?.[product]) return port.productDescriptions[product]!
   if (product === 'workspace') {
@@ -1675,7 +1707,7 @@ export interface RegistryData {
 const FINAL_RELEASE = /^(?:[A-Za-z][\w.-]*[@/])?v?(?:0|[1-9]\d*)(?:\.(?:0|[1-9]\d*)){2}$/
 
 /** A final release's major number, label and `v` allowed, as in `libtmux@v0.1.0` or `0.1.0-1`. */
-const MAJOR = /^(?:[A-Za-z][\w.-]*[@/])?v?(\d+)\./
+const MAJOR = /^(?:[A-Za-z][\w.-]*[@/])?v?(\d+)(?:\.|$)/
 
 /** The series a final release belongs to, `0.x` for `0.1.0`. */
 const releaseSeries = (name: string | null): ReleaseSeries => `${Number(MAJOR.exec(name ?? '')?.[1] ?? 0)}.x`
@@ -1690,11 +1722,19 @@ export const isReleaseSeries = (maturity: Maturity): maturity is ReleaseSeries =
  * release and no tag is unreleased. Throws on a name whose marker is neither a
  * stage nor absent, so a new spelling fails a test rather than a reader's badge.
  */
-export function releaseMaturity(entry: RegistryEntry): Maturity {
+export function releaseMaturity(entry: RegistryEntry, grammar?: TagGrammar): Maturity {
+  if (grammar === 'cabal') {
+    for (const name of [entry.version, entry.release, entry.tag]) {
+      if (name === null) continue
+      const version = name.replace(/^(?:[A-Za-z][\w.-]*[@/])?v?/, 'v')
+      if (!parseTag(version, grammar)) throw new Error(`releaseMaturity: invalid Cabal version "${name}"`)
+    }
+  }
   if (entry.maturity) return entry.maturity
   if (entry.status === 'release') return releaseSeries(entry.release ?? entry.version ?? entry.tag)
   const name = entry.version ?? entry.tag
   if (!name) return 'unreleased'
+  if (grammar === 'cabal') return releaseSeries(name)
   // Before the stage search, so a stage word in a package label is not the release's stage.
   if (FINAL_RELEASE.test(name)) return releaseSeries(name)
   const stage = /alpha|beta|rc(?=[\d.-]|$)|(?<=\d)[ab](?=\d)/i.exec(name)?.[0].toLowerCase()
@@ -1741,7 +1781,7 @@ export function productStatus(port: Port, product: 'core' | DocProduct, registry
   if (product !== 'core' && productIsConcept(port, product)) return 'concept'
   const entry = registry.ports[port.slug]
   const found = product === 'core' ? entry : entry?.packages?.[port.packages?.find((item) => item.id === product)?.name ?? '']
-  return found ? releaseMaturity(found) : undefined
+  return found ? releaseMaturity(found, port.tagGrammar) : undefined
 }
 
 /**

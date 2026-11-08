@@ -184,11 +184,11 @@ export const GET: APIRoute = async ({ site }) => {
       ...(p.parentLibrary ? { parentLibrary: p.parentLibrary } : {}),
       products: Object.entries(p.parentLibrary ? {} : DOC_PRODUCTS).map(([slug, product]) => ({
         slug, name: product.label,
-        availability: productAvailable(p, slug as DocProduct) ? 'available' : 'unpublished',
+        availability: p.productAvailability?.[slug as DocProduct] ?? 'available',
         inDevelopment: productInDevelopment(p, slug as DocProduct),
         ...(productIsConcept(p, slug as DocProduct) ? { support: 'concept', supportDescription: CONCEPT_DESCRIPTION } : {}),
         ...(slug === 'workspace' ? { cli: p.workspaceCli ?? null, cliAvailability: p.workspaceCliAvailability ?? null } : {}),
-        url: portPageUrl(p, versionFor(p.slug), slug),
+        url: p.productAvailability?.[slug as DocProduct] === 'excluded' ? null : portPageUrl(p, versionFor(p.slug), slug),
         reference: productAvailable(p, slug as DocProduct)
           ? portPageUrl(p, versionFor(p.slug), productApiPath(slug as DocProduct)) : null,
         ...(slug === 'mcp' ? { protocol: productAvailable(p, 'mcp')
@@ -202,7 +202,7 @@ export const GET: APIRoute = async ({ site }) => {
             inventory: `${refBase}${p.slug}/${versionFor(p.slug)}/objects.inv`,
           }
         : null,
-      documentation: documentationAreas(p.slug).map((area) => ({
+      documentation: documentationAreas(p.slug).filter((area) => !area.product || p.productAvailability?.[area.product] !== 'excluded').map((area) => ({
         id: area.id,
         name: area.label,
         kind: area.kind,

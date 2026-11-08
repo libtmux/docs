@@ -299,6 +299,8 @@ const SYNTAX: Record<string, ReadonlySet<string>> = {
   elixir: new Set(['markdown-link', 'exdoc']),
   powershell: new Set(['markdown-link']),
   ocaml: new Set(['odoc', 'markdown-link']),
+  // Haddock's producer resolves public links into roles and preserves external Markdown links.
+  haskell: new Set(['rest-role', 'markdown-link', 'literal-code']),
 }
 
 /**
@@ -532,7 +534,7 @@ function tokenizeRun(text: string, lang?: string): DocSpan[] {
     }
   }
 
-  if (syntax.has('rest')) for (const m of text.matchAll(ROLE_RE)) {
+  if (syntax.has('rest') || syntax.has('rest-role')) for (const m of text.matchAll(ROLE_RE)) {
     const role = m[1].replace(/^py:/, '')
     const { target, label } = labelFor(m[2])
     if (!ROLES.has(m[1])) {
@@ -617,7 +619,8 @@ function tokenizeRun(text: string, lang?: string): DocSpan[] {
     }
   } else {
     for (const code of markdownCode(text, masked.join(''))) {
-      const span: DocSpan = syntax.has('odoc') ? { kind: 'code', text: code.text } : code.ticks === 1
+      const span: DocSpan = syntax.has('odoc') || syntax.has('literal-code') ? { kind: 'code', text: code.text }
+        : code.ticks === 1
         ? { kind: 'ref', role: 'any', target: syntax.has('intra-doc') && RUST_CODE_PATH_RE.test(code.text) ? rustTarget(code.text) : code.text, label: code.text }
         : syntax.has('docc') && code.ticks === 2
           ? { kind: 'ref', role: 'any', target: doccTarget(code.text), label: code.text }

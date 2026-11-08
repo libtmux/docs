@@ -136,6 +136,14 @@
         "kind": "trunk",
         "supported": true
       }
+    ],
+    "haskell": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
     ]
   },
   "defaultVersion": {
@@ -155,6 +163,7 @@
     "powershell": "latest",
     "julia": "latest",
     "elixir": "latest",
-    "ocaml": "latest"
+    "ocaml": "latest",
+    "haskell": "latest"
   }
 }

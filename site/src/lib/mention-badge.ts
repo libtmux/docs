@@ -1,4 +1,4 @@
-import { kindMark, markClass, type MarkClass } from './api-labels.ts'
+import { kindMark, kindPalette, markClass, type MarkClass } from './api-labels.ts'
 import { cardDom, cardHtml, type CardElement } from './link-preview-card.ts'
 
 /** tmux kinds read as words in the badge's tooltip; the glyph stays in `kindMark`. */
@@ -26,7 +26,7 @@ export interface MentionBadge {
 export function mentionBadge(kind: string, title?: string): MentionBadge | undefined {
   const mark = kindMark(kind)
   if (!mark) return undefined
-  return { kind, mark, markClass: markClass(mark), classes: ['api-link-kind', 'api-nav__kind', `api-badge--kind-${kind}`], title }
+  return { kind, mark, markClass: markClass(mark), classes: ['api-link-kind', 'api-nav__kind', `api-badge--kind-${kindPalette(kind)}`], title: title === kind ? kindWord(kind) : title }
 }
 
 /**
@@ -51,7 +51,7 @@ export const mentionBadgeNode = (document: Document, badge: MentionBadge): HTMLE
  */
 export function plainMention(kind: string, text: string, title?: string) {
   const word = kindWord(kind)
-  return { title: title ?? word, dataApiKind: kind, ariaLabel: `${word}: ${text.trim()}` }
+  return { title: title === kind ? word : title ?? word, dataApiKind: kind, ariaLabel: `${word}: ${text.trim()}` }
 }
 
 /** Mark the first mention of a name in a section; every later one stays a plain code link. */

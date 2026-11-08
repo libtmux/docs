@@ -9,7 +9,7 @@ const root = new URL('../../', import.meta.url).pathname
 const files = [
   'scripts/gen-mcp-protocol.mjs', 'scripts/gen-mcp-tools.mjs', 'scripts/lib/mcp-protocol.mjs',
   'packages/api-model/src/source-lines.ts', 'site/src/lib/ports.ts',
-  'site/src/lib/site-root.ts', 'site/src/lib/cooldown.ts',
+  'site/src/lib/site-root.ts', 'site/src/lib/cooldown.ts', 'site/src/lib/versions.ts',
 ]
 const tool = { name: 'list_sessions', description: 'Selected source contract', inputSchema: {
   type: 'object', properties: { label: { type: 'string', description: 'Selected source argument' } },

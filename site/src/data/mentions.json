@@ -5195,6 +5195,69 @@
    "section": "ports"
   },
   {
+   "port": "haskell",
+   "symbol": "LibTmux.Id",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Id",
+   "page": "/haskell/latest/guides/typed-values/",
+   "title": "Typed values",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Id#t:IdError",
+   "page": "/haskell/latest/guides/api-documentation/",
+   "title": "API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Value",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Value",
+   "page": "/haskell/latest/guides/typed-values/",
+   "title": "Typed values",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Value#t:ValueError",
+   "page": "/haskell/latest/guides/api-documentation/",
+   "title": "API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Version",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Version",
+   "page": "/haskell/latest/guides/typed-values/",
+   "title": "Typed values",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Version#t:VersionError",
+   "page": "/haskell/latest/guides/api-documentation/",
+   "title": "API documentation",
+   "section": "guides"
+  },
+  {
    "port": "java",
    "symbol": "io.github.libtmux.batch.Batch.Batch",
    "page": "/java/latest/concepts/transports/",

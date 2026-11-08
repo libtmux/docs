@@ -96,6 +96,7 @@ for (const [name, mutate] of mutations) {
     delete baseline.ports.powershell
     delete baseline.ports.julia
     baseline.ports.csharp = { status: 'release', version: '1.2.3', release: '1.2.3', tag: 'v1.2.3' }
+    baseline.ports.haskell = { status: 'release', version: '0.1.0.0', release: '0.1.0.0', tag: 'v0.1.0.0' }
     writeFileSync(join(dir, 'published.json'), JSON.stringify(baseline))
     writeFileSync(join(dir, 'fetch.mjs'), `
       import { readFileSync } from 'node:fs'
@@ -109,6 +110,7 @@ for (const [name, mutate] of mutations) {
     const gallery = (name) => `https://www.powershellgallery.com/api/v2/FindPackagesById()?id=%27${name}%27`
     const general = 'https://raw.githubusercontent.com/JuliaRegistries/General/master/L/LibTmux/Versions.toml'
     const hex = 'https://hex.pm/api/packages/libtmux'
+    const hackage = 'https://hackage.haskell.org/package/libtmux-haskell.json'
     const core = gallery('LibTmux')
     const workspace = gallery('LibTmux.Workspace')
     const next = `${core}&$skip=1`
@@ -116,6 +118,10 @@ for (const [name, mutate] of mutations) {
       `<entry><m:properties><d:Id>${name}</d:Id><d:Version>${version}</d:Version><d:Published m:type="Edm.DateTime">${published}</d:Published></m:properties></entry>`
     const feed = (entries, more = '') => `<feed xmlns="http://www.w3.org/2005/Atom" xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata">${entries}${more}</feed>`
     const replies = {
+      'https://api.github.com/repos/libtmux/libtmux-haskell/tags?per_page=100': {
+        body: JSON.stringify(['v0.1.0.0', 'v0.1.0.2', 'v0.1.0.10'].map((name) => ({ name }))),
+      },
+      [hackage]: { body: JSON.stringify({ '0.1.0.0': 'normal', '0.1.0.2': 'normal', '0.1.0.10': 'normal' }) },
       'https://api.github.com/repos/libtmux/libtmux-powershell/tags?per_page=100': {
         body: JSON.stringify(['v0.1.0-alpha2', 'v0.1.0-alpha3', 'v0.1.0-alpha4', 'v1.0.0'].map((name) => ({ name }))),
       },
@@ -157,6 +163,17 @@ for (const [name, mutate] of mutations) {
     check('Hex excludes retired releases and their tags',
       result.ports.elixir?.status === 'prerelease' && result.ports.elixir?.version === '0.0.1-alpha.1'
       && result.ports.elixir?.tag === 'v0.0.1-alpha.1', `${JSON.stringify(result.ports.elixir)} ${result.error}`)
+    check('Hackage preserves every numeric component and selects the newest matching tag',
+      result.ports.haskell?.version === '0.1.0.10' && result.ports.haskell?.tag === 'v0.1.0.10', `${JSON.stringify(result.ports.haskell)} ${result.error}`)
+    const emptyHackage = invoke({ ...replies, [hackage]: { body: '{}' } })
+    check('an empty Hackage response preserves the last known state',
+      same(emptyHackage.ports.haskell, baseline.ports.haskell), `${JSON.stringify(emptyHackage.ports.haskell)} ${emptyHackage.error}`)
+    const forbiddenHackage = invoke({ ...replies, [hackage]: { status: 403, body: 'Forbidden' } })
+    check('Hackage access failure preserves the last known state',
+      same(forbiddenHackage.ports.haskell, baseline.ports.haskell), `${JSON.stringify(forbiddenHackage.ports.haskell)} ${forbiddenHackage.error}`)
+    const absentHackage = invoke({ ...replies, [hackage]: { status: 404, body: 'Not found' } })
+    check('Hackage 404 is explicit package absence',
+      absentHackage.ports.haskell?.status === 'unpublished' && absentHackage.ports.haskell?.version === null, `${JSON.stringify(absentHackage.ports.haskell)} ${absentHackage.error}`)
     const unlisted = invoke({ ...replies, [hex]: { status: 404, body: '{"status":404,"message":"Resource not found"}' } })
     check('a package Hex does not carry is unpublished',
       unlisted.ports.elixir?.status === 'unpublished' && unlisted.ports.elixir?.version === null, `${JSON.stringify(unlisted.ports.elixir)} ${unlisted.error}`)
@@ -195,7 +212,7 @@ for (const [name, mutate] of mutations) {
         ...['core', 'mcp', 'workspace'].filter((product) => product === 'core' || productAvailable(port, product))
           .map((product) => [`${port.slug} ${product}`, () => productStatus(port, product, registry)]),
         ...Object.entries(registry.ports[port.slug].packages ?? {})
-          .map(([name, item]) => [`${port.slug} ${name}`, () => releaseMaturity(item)]),
+          .map(([name, item]) => [`${port.slug} ${name}`, () => releaseMaturity(item, port.tagGrammar)]),
       ].flatMap(([label, read]) => {
         try {
           read()

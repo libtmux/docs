@@ -20,6 +20,7 @@ import { extractPowerShell } from '../packages/api-model/src/languages/powershel
 import { extractJulia } from '../packages/api-model/src/languages/julia.ts'
 import { extractOcamlArtifact } from '../packages/api-model/src/languages/ocaml.ts'
 import { extractElixir } from '../packages/api-model/src/languages/elixir.ts'
+import { extractHaskellArtifact } from '../packages/api-model/src/languages/haskell.ts'
 import { attachCompleteGoExamples, readCompleteGoExamples } from '../packages/api-model/src/languages/go-examples.ts'
 import { attachCompleteCSharpExamples } from '../packages/api-model/src/languages/csharp-examples.ts'
 import { attachCompleteOcamlExamples } from '../packages/api-model/src/languages/ocaml-examples.ts'
@@ -244,6 +245,11 @@ const PORTS = {
     checkout: '~/work/libtmux/libtmux-elixir-docs-site',
     root: '.', nativeArtifact: '_build/docs/api.json',
     repo: 'libtmux/libtmux-elixir', options: {},
+  },
+  haskell: {
+    checkout: '~/work/libtmux/libtmux-haskell-docs',
+    root: '.', nativeArtifact: '.cache/docs/api.json',
+    repo: 'libtmux/libtmux-haskell', options: {},
   },
   lua: {
     checkout: '~/work/libtmux/libtmux-lua-docs',
@@ -646,8 +652,24 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       process.exit(1)
     }
     const artifact = JSON.parse(readFileSync(artifactPath, 'utf8'))
-    const nativeExtractors = { ruby: extractRuby, lua: extractLua, powershell: extractPowerShell, julia: extractJulia, elixir: extractElixir, ocaml: extractOcamlArtifact }
+    const nativeExtractors = { ruby: extractRuby, lua: extractLua, powershell: extractPowerShell, julia: extractJulia, elixir: extractElixir, ocaml: extractOcamlArtifact, haskell: extractHaskellArtifact }
     model = nativeExtractors[port](artifact, head)
+    if (port === 'haskell') {
+      const verify = (root, sourceRevision, input) => {
+        const bytes = execFileSync('git', ['-C', root, 'show', `${sourceRevision}:${input.path}`], {
+          maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'pipe'],
+        })
+        if (createHash('sha256').update(bytes).digest('hex') !== input.sha256) {
+          throw new Error(`Haskell native input differs from its committed source: ${input.path}`)
+        }
+      }
+      for (const input of model.nativeProvenance.files) verify(checkout, head, input)
+      const exporter = model.nativeProvenance.exporter
+      verify(repoRoot, exporter.revision, exporter)
+      if (createHash('sha256').update(readFileSync(join(repoRoot, exporter.path))).digest('hex') !== exporter.sha256) {
+        throw new Error('Haskell native artifact uses different exporter bytes')
+      }
+    }
   } else {
     model = await extractProject({
       port,
@@ -967,18 +989,19 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     // A port moving is not staleness of this file's content: every revision
     // and extracted revision moves with it, on the model and on each symbol.
     // Compare everything else, and the two sidecars built from the same pass.
-    const strip = (t) => t.replace(/"(?:revision|extractedRevision)":"[0-9a-f]*",?/g, '')
+    const strip = (t) => port === 'haskell' ? t : t.replace(/"(?:revision|extractedRevision)":"[0-9a-f]*",?/g, '')
     const read = (file) => {
       const path = join(repoRoot, 'site/src/data/api', file)
       return existsSync(path) ? readFileSync(path, 'utf8') : ''
     }
     const tree = git(checkout, 'ls-tree', '-r', '--name-only', head ?? 'HEAD')
     const committedPaths = read(`${port}.paths.json`)
+    const expectedPathRecord = `${JSON.stringify({ port, repo: cfg.repo, revision, paths: tree ? repositoryPaths(tree, cfg) : [] })}\n`
     const nav = navSidecar(port, model)
     const stalePaths = [
       strip(read(`${port}.json`)) !== strip(text) && `${port}.json`,
-      tree && JSON.stringify(committedPaths && JSON.parse(committedPaths).paths) !==
-        JSON.stringify(repositoryPaths(tree, cfg)) && `${port}.paths.json`,
+      tree && (port === 'haskell' ? committedPaths !== expectedPathRecord : JSON.stringify(committedPaths && JSON.parse(committedPaths).paths) !==
+        JSON.stringify(repositoryPaths(tree, cfg))) && `${port}.paths.json`,
       nav && read(`${port}.nav.json`) !== `${JSON.stringify(nav)}\n` && `${port}.nav.json`,
     ].filter(Boolean)
     if (stalePaths.length) {

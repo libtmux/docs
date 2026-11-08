@@ -353,6 +353,25 @@ describe('compareTags across grammars', () => {
   })
 })
 
+describe('Cabal version grammar', () => {
+  it.each(['0', '0.1', '0.1.0', '0.1.0.0', '2.0.1.0.10'])('keeps every numeric component of %s', (version) => {
+    expect(parseTag(`v${version}`, 'cabal')).toEqual({ nums: version.split('.').map(Number), pre: null })
+    expect(releaseTag(`v${version}`, { tagGrammar: 'cabal' })).toBe(`v${version}`)
+    expect(packageVersionIsPrerelease(version, 'cabal')).toBe(false)
+  })
+
+  it.each(['v', 'v01.0', 'v0.01', 'v0..1', 'v0.1.', 'v0.1-alpha.1', 'v0.1+build', 'v1000000000', 'v0.1 '])('rejects noncanonical or unsupported Cabal tag %s', (tag) => {
+    expect(parseTag(tag, 'cabal')).toBeNull()
+  })
+
+  it('uses Cabal component ordering, including prefix length and numeric tails', () => {
+    const versions = ['v0.1', 'v0.1.0', 'v0.1.0.0', 'v0.1.0.2', 'v0.1.0.10', 'v0.2']
+    expect([...versions].sort((a, b) => compareTags(a, b, 'cabal'))).toEqual([...versions].reverse())
+    expect(comparePackageVersions('0.1.0.10', '0.1.0.2', 'cabal')).toBeLessThan(0)
+    expect(newestPublishedTag(['v0.1.0.2', 'v0.1.0.10'], { tagGrammar: 'cabal' }, ['0.1.0.2'])).toBe('v0.1.0.2')
+  })
+})
+
 describe('package registry versions', () => {
   it('orders LuaRocks revisions without treating them as source tags', () => {
     expect(comparePackageVersions('0.1.0alpha1-10', '0.1.0alpha1-2', 'luarocks')).toBeLessThan(0)

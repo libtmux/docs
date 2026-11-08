@@ -626,8 +626,8 @@ describe.each(['3.7c', '3.2a'])('the C pages of tmux %s', (version) => {
     const picker = (name: string) => pagesOf(name).pagePorts.filter((entry) => entry.links.length).map((entry) => entry.port)
     expect(picker('cmd_list_panes_session')).not.toContain('ts')
     expect(picker('cmd_list_panes_session')).toContain('py')
-    // The command's own pages still land every language somewhere.
-    expect(picker('cmd_list_panes_exec')).toEqual(PORTS.map((port) => port.slug))
+    // Haskell's public value types do not send commands; existing senders still land somewhere.
+    expect(picker('cmd_list_panes_exec')).toEqual(PORTS.filter((port) => port.slug !== 'haskell').map((port) => port.slug))
   })
 
   it('links the command to every function that lists panes', () => {
@@ -700,10 +700,10 @@ describe('the rendered lists', () => {
       ['server', 'session', 'window'].map((scope) => `/tmux/latest/reference/c-function-cmd-list-panes-c-cmd_list_panes_${scope}/`))
   })
 
-  it('shows one row per language, in site order, with a kind mark and a link in each filled cell', async () => {
+  it('shows one row per sending language, in site order, with a kind mark and a link in each filled cell', async () => {
     const document = await render({ usage: tmuxResolvedUsage('latest', 'list-panes') })
     const rows = [...document.querySelectorAll('tbody tr')]
-    const order = PORTS.map((port) => port.slug)
+    const order = PORTS.filter((port) => port.slug !== 'haskell').map((port) => port.slug)
     const slugs = rows.map((row) => row.getAttribute('data-port')!)
     expect(slugs).toEqual(order)
     const swift = rows.find((row) => row.getAttribute('data-port') === 'swift')!
@@ -715,10 +715,11 @@ describe('the rendered lists', () => {
   })
 
   it('names the languages that have no method of their own to list', async () => {
-    // Every language has one somewhere for list-panes, so the table has no such line.
-    expect((await render({ usage: tmuxResolvedUsage('latest', 'list-panes') })).querySelector('.tmux-usage__absent')).toBeNull()
+    // Haskell currently exports pure value types, with no public command operation.
+    expect((await render({ usage: tmuxResolvedUsage('latest', 'list-panes') })).querySelector('.tmux-usage__absent')!.textContent)
+      .toBe('No method in Haskell sends this command itself.')
     const windowPage = await render({ usage: tmuxResolvedUsage('latest', 'list-panes', 'window') })
-    expect(windowPage.querySelector('.tmux-usage__absent')!.textContent).toMatch(/^No method in Lua, Elixir, TypeScript, .*sends this command at this scope itself\.$/)
+    expect(windowPage.querySelector('.tmux-usage__absent')!.textContent).toMatch(/^No method in Lua, Elixir, Haskell, TypeScript, .*sends this command at this scope itself\.$/)
     // A command a few languages send names the rest, in the order the site lists them.
     const choose = await render({ usage: tmuxResolvedUsage('latest', 'choose-tree') })
     const named = choose.querySelector('.tmux-usage__absent')!.textContent!

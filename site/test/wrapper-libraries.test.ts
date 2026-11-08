@@ -114,6 +114,7 @@ describe('quickstart display formatting', () => {
   // error handling to add declares so, and then Error handling changes
   // nothing: `errors` repeats `concise` and `cleanup` repeats `full`.
   const repeatedViews = (example: HomeExample) => {
+    if (example.singleView) return HOME_VIEWS.filter((view) => homeProgram(example, view) !== homeProgram(example, 'full'))
     const absent = example.withoutErrorHandling !== undefined
     const mirror = (view: string) => absent && view === 'errors' ? homeProgram(example, 'concise')
       : absent && view === 'cleanup' ? homeProgram(example, 'full') : undefined
@@ -177,6 +178,9 @@ describe('quickstart display formatting', () => {
     expect(repeatedViews({ ...declared, withoutErrorHandling: undefined })).toEqual(['cleanup'])
     expect(repeatedViews({ ...declared, variants: { ...declared.variants, errors: python.variants.errors } })).toEqual(['errors'])
     expect(repeatedViews({ ...python, variants: { ...python.variants, errors: homeProgram(python, 'full') } })).toEqual(['errors'])
+    const single = { ...python, singleView: 'No lifecycle variants.', variants: Object.fromEntries(['concise', 'errors', 'cleanup'].map((view) => [view, homeProgram(python, 'full')])) as HomeExample['variants'] }
+    expect(repeatedViews(single)).toEqual([])
+    expect(repeatedViews({ ...single, variants: { ...single.variants, concise: python.variants.concise } })).toEqual(['concise'])
   })
 
   it('counts tab stops rather than treating tabs as one character', () => {

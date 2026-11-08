@@ -71,6 +71,35 @@ print(json.dumps(runner.api_command_blocks(blocks, {})))`)).toEqual(['setup'])
 })
 
 describe('homepage native verification ownership', () => {
+  it('requires owned endpoints by default and forbids tmux in an explicit pure profile', () => {
+    expect(python(`
+import os, sys, tempfile, subprocess
+from unittest.mock import patch
+sys.path.insert(0, str(pathlib.Path('scripts').resolve()))
+from example_tmux_sandbox import ExampleTmuxSandbox
+for pure, invoke in [(False, False), (True, False), (True, True)]:
+    with tempfile.TemporaryDirectory(prefix='home-profile-test-') as directory:
+        output = pathlib.Path(directory)
+        with patch('example_tmux_sandbox.shutil.which', return_value='/bin/true'):
+            sandbox = ExampleTmuxSandbox(output, dict(os.environ), forbid_tmux=pure)
+        if invoke:
+            result = subprocess.run(['tmux', 'new-session', '-d'], env=sandbox.env, capture_output=True)
+            assert result.returncode == 125
+        report = sandbox.finish(True)
+        assert report['passed'] == (pure and not invoke)
+        assert not report['endpoints']
+home = dict(sourceRevision='a' * 40, execution='pure-values')
+assert runner.homepage_execution(home, home) == 'pure-values'
+for proof in [dict(home, execution='owned-tmux'), dict(home, execution='unknown'),
+              dict(home, libraryRevision='b' * 40)]:
+    try:
+        runner.homepage_execution(home, proof)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError(proof)
+print(json.dumps(True))`)).toBe(true)
+  })
   it('preserves an existing parent when a probed socket was never created', () => {
     expect(python(`
 import os, sys, tempfile

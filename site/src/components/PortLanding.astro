@@ -13,6 +13,7 @@ import { mcpShowcase, toolHeadings } from '../lib/mcp-showcase'
 import { loadCommand } from '../lib/workspace-links'
 import { landingExample, offersPicker, previewWindows, TOPICS, workspaceShowcase } from '../lib/workspace-showcase'
 import { QUICKSTARTS, homeCodeColumns } from '../lib/quickstarts'
+import { documentationSectionsFor } from '../lib/port-documentation'
 import LANDING from '../data/landing-examples.json'
 import SOURCES from '../data/example-sources.json'
 
@@ -51,9 +52,10 @@ const workspaceWindows = workspace && workspaceExample && !offersPicker(workspac
 const workspaceProgram = loadCommand(port.slug)
 const complete = QUICKSTARTS[port.slug]?.complete
 if (!complete) throw new Error(`PortLanding: ${port.slug} has no complete homepage example; add it to home-examples.json`)
+const moreExamples = documentationSectionsFor(port.slug).includes('examples')
 const coreLinks = [
   { href: portPageUrl(port, version, 'core'), label: 'Core Library documentation →' },
-  { href: portPageUrl(port, version, 'examples'), label: `More ${port.name} examples →` },
+  { href: portPageUrl(port, version, moreExamples ? 'examples' : 'guides'), label: moreExamples ? `More ${port.name} examples →` : `${port.name} guides →` },
 ]
 const panelId = (product: string) => `landing-panel-${product}`
 ---

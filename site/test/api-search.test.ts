@@ -3,6 +3,7 @@ import { OWNER_KINDS } from '../src/lib/api-models'
 import { searchApi } from '../src/lib/api-search'
 import { referenceNavigation, referenceTree } from '../src/lib/api-tree'
 import { API_MODEL_PORTS } from '../src/lib/ports'
+import { nativeKind } from '../src/lib/api-labels'
 
 describe('reference symbol search', () => {
   it('finds Java source-qualified names while retaining stable result identities and URLs', () => {
@@ -59,14 +60,15 @@ describe('reference symbol search', () => {
     for (const result of results) {
       const symbol = symbols.get(result.id)
       expect(symbol, result.id).toBeDefined()
-      expect(result.kind, result.id).toBe(symbol!.kind)
+      expect(result.kind, result.id).toBe(nativeKind(symbol!, port))
       expect(result.category, result.id).toBe(OWNER_KINDS.has(symbol!.kind) ? 'types' : 'members')
     }
     expect(searchApi(inventory, '', 'types').every((entry) => entry.category === 'types')).toBe(true)
     expect(searchApi(inventory, '', 'members').every((entry) => entry.category === 'members')).toBe(true)
-    const server = searchApi(inventory, port === 'ocaml' ? 'Libtmux_unix.Client' : 'Server')[0]
+    const typeName = port === 'ocaml' ? 'Libtmux_unix.Client' : port === 'haskell' ? 'PaneId' : 'Server'
+    const server = searchApi(inventory, typeName)[0]
     expect(server.category, `${port}: primary server declaration category`).toBe('types')
-    expect(symbols.get(server.id)?.name).toBe(port === 'ocaml' ? 'Client' : 'Server')
+    expect(symbols.get(server.id)?.name).toBe(port === 'ocaml' ? 'Client' : typeName)
     if (port === 'ocaml') expect(server).toMatchObject({ id: 'Libtmux_unix.Client', kind: 'module' })
   })
 })

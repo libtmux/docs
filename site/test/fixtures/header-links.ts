@@ -10,7 +10,7 @@
  * `entries` names every inventory entry that stands for it, so an entry that
  * gains or loses a destination changes a row here.
  *
- * Julia and C++ publish no package, so each has only the repository link.
+ * Julia, C++ and Haskell publish no package, so each has only a source link.
  * Only Rust, Elixir, Java, Kotlin, Scala and Swift link an API reference of
  * their own; Go's package page is its reference.
  */
@@ -114,6 +114,14 @@ export const LINKS: Record<string, ExpectedLinks> = {
       ['source', 'libtmux-elixir', 'libtmux/libtmux-elixir', 'https://github.com/libtmux/libtmux-elixir', ['repository']],
       ['package', 'libtmux', 'Hex', 'https://hex.pm/packages/libtmux', ['libtmux']],
       ['api', 'libtmux', 'HexDocs', 'https://libtmux.hexdocs.pm/', ['libtmux']],
+    ],
+  },
+  haskell: {
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-haskell/src', 'https://github.com/libtmux/libtmux-haskell/tree/master/src']],
+    indexed: true,
+    rows: [
+      ['source', 'libtmux-haskell', 'Cabal package · src', 'https://github.com/libtmux/libtmux-haskell/tree/master/src', ['libtmux-haskell']],
+      ['source', 'libtmux-haskell', 'libtmux/libtmux-haskell', 'https://github.com/libtmux/libtmux-haskell', ['repository']],
     ],
   },
   ts: {

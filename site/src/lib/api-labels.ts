@@ -1,4 +1,23 @@
-import type { SymbolKind } from '@libtmux/api-model'
+import type { ApiSymbol, SymbolKind } from '@libtmux/api-model'
+
+/** Native declaration words reuse the shared palette without changing source-model kinds. */
+export const NATIVE_KINDS = {
+  'data-type': { label: 'data type', plural: 'Data types', mark: 'T', palette: 'typealias' },
+  'data-constructor': { label: 'data constructor', plural: 'Data constructors', mark: 'c', palette: 'function' },
+  'record-field': { label: 'record field', plural: 'Record fields', mark: 'r', palette: 'property' },
+} as const
+
+const nativeKindInfo = (kind: string) => Object.hasOwn(NATIVE_KINDS, kind) ? NATIVE_KINDS[kind as keyof typeof NATIVE_KINDS] : undefined
+export const kindLabel = (kind: string) => nativeKindInfo(kind)?.label ?? kind
+export const kindPalette = (kind: string) => nativeKindInfo(kind)?.palette ?? (kind === 'cmdlet' ? 'function' : kind)
+
+/** Presentation of the qualified native declaration; identity and ownership remain in the model. */
+export function nativeKind(symbol: Pick<ApiSymbol, 'kind' | 'signatures'>, language?: string): string {
+  if (language !== 'haskell') return symbol.kind
+  if (symbol.kind === 'typealias' && symbol.signatures.some((signature) => /^(?:data|newtype)\b/.test(signature.raw ?? ''))) return 'data-type'
+  if (symbol.kind === 'function' && symbol.signatures.some((signature) => signature.methodKind === 'constructor')) return 'data-constructor'
+  return symbol.kind === 'property' ? 'record-field' : symbol.kind
+}
 
 /** Compact marks retain the documented kind, including module versus method. */
 const KIND_MARKS: Record<SymbolKind, string> = {
@@ -11,7 +30,7 @@ const PROTOCOL_MARKS: Record<string, string> = { tool: 't', prompt: 'P', resourc
 // tmux names borrow the sigils people already type: a shell prompt for commands, `#` for formats.
 // A workspace command and option take the tmux marks; a configuration key takes the colon that follows it in YAML.
 const TMUX_MARKS: Record<string, string> = { command: '$', option: 'o', hook: 'h', format: '#', key: ':', section: '§' }
-export const kindMark = (kind: string) => KIND_MARKS[kind as SymbolKind] ?? PROTOCOL_MARKS[kind] ?? TMUX_MARKS[kind]
+export const kindMark = (kind: string) => nativeKindInfo(kind)?.mark ?? KIND_MARKS[kindPalette(kind) as SymbolKind] ?? PROTOCOL_MARKS[kind] ?? TMUX_MARKS[kind]
 
 /** Marks drawn at x-height; the rest stand at cap height. A badge lifts these to centre their ink. */
 export const markHeight = (mark: string): 'x' | undefined => /^[acemnorsuvwxz:]$|^p$/.test(mark) ? 'x' : undefined

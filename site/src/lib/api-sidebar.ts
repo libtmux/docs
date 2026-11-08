@@ -1,4 +1,5 @@
 import { apiTreeHref, searchApi, type ApiSearchResult, type ApiTreeBucket, type ApiTreeJson } from './api-search'
+import { NATIVE_KINDS } from './api-labels'
 
 export const SIDEBAR_PRESENTATIONS = ['outline', 'focus', 'grouped'] as const
 export type SidebarPresentation = typeof SIDEBAR_PRESENTATIONS[number]
@@ -145,7 +146,7 @@ export const SIDEBAR_WINDOW = 40
 /** A hidden run shorter than this is shown instead: a row to open it would save nothing. */
 export const SIDEBAR_MIN_GAP = 8
 
-const groupName = (kind: string) => ({ property: 'Properties', method: 'Methods', class: 'Classes', object: 'Objects',
+const groupName = (kind: string) => Object.hasOwn(NATIVE_KINDS, kind) ? NATIVE_KINDS[kind as keyof typeof NATIVE_KINDS].plural : ({ property: 'Properties', method: 'Methods', class: 'Classes', object: 'Objects',
   constructor: 'Constructors', field: 'Fields', event: 'Events', function: 'Functions', interface: 'Interfaces',
   enum: 'Enums', 'enum-member': 'Enum members', typealias: 'Type aliases' }[kind] ?? `${kind[0]?.toUpperCase()}${kind.slice(1)}s`)
 
@@ -233,7 +234,9 @@ export function sidebarNodes(source: ApiTreeJson, base: string, mode: SidebarPre
     })
     const names = new Map<string, number>()
     for (const entry of entries) names.set(entry.name, (names.get(entry.name) ?? 0) + 1)
-    return windowed(`bucket:${bucket.id}`, level, [...entries.map((entry) => symbol({ ...entry, name: rootName(entry, entries, names) }, level, entry.shortcut)),
+    // Curated exports already have their own rows; keep module ownership for Focus and Up.
+    const expands = (entry: ApiSearchResult) => entry.kind !== 'module' || !catalog.membersOf(entry.id).every((member) => placements.has(member.id))
+    return windowed(`bucket:${bucket.id}`, level, [...entries.map((entry) => symbol({ ...entry, name: rootName(entry, entries, names) }, level, entry.shortcut, expands(entry))),
       ...bucket.children.map((child) => bucketNode(child, level))])
   }
   const bucketNode = (bucket: ApiTreeBucket, level: number): SidebarNode => ({

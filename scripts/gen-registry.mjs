@@ -58,7 +58,7 @@ const siteLib = join(repoRoot, 'site', 'src', 'lib')
 const DEFAULT_OUT = join(repoRoot, 'site', 'src', 'data', 'registry.json')
 
 const { PORTS } = await import(`file://${join(siteLib, 'ports.ts')}`)
-const { comparePackageVersions, newestPublishedTag, packageVersionIsPrerelease, releaseTag } = await import(
+const { comparePackageVersions, newestPublishedTag, packageVersionIsPrerelease, parseTag, releaseTag } = await import(
   `file://${join(siteLib, 'versions.ts')}`
 )
 
@@ -210,6 +210,21 @@ function generalVersions(body, port) {
  * caller as "keep whatever the committed file said".
  */
 const PROBES = {
+  async haskell(port) {
+    const response = await fetch(`https://hackage.haskell.org/package/${port.packageName}.json`, {
+      headers: { 'user-agent': 'libtmux-docs gen-registry.mjs', accept: 'application/json' },
+      signal: AbortSignal.timeout(20_000),
+    })
+    if (response.status === 404) return null
+    if (!response.ok) throw new Error(`Hackage ${port.packageName}: HTTP ${response.status}`)
+    const body = await response.json()
+    if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error('Invalid Hackage version response')
+    const entries = Object.entries(body)
+    if (!entries.length || entries.some(([version, state]) => !parseTag(`v${version}`, 'cabal') || !['normal', 'unpreferred', 'deprecated'].includes(state))) {
+      throw new Error('Unsupported Hackage version or preference')
+    }
+    return entries.map(([version]) => version)
+  },
   async py() {
     // The MCP server and tmuxp are separate PyPI projects with their own stage.
     const packages = {}

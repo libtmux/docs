@@ -64,6 +64,7 @@ export const API_HOSTS = new Set([
   'docs.ruby-lang.org', 'ruby-doc.org', 'www.lua.org', 'luals.github.io', 'docs.julialang.org', 'hexdocs.pm', 'www.erlang.org',
   'ocaml.org',
   'gofastmcp.com', 'csharp.sdk.modelcontextprotocol.io', 'ts.sdk.modelcontextprotocol.io', 'modelcontextprotocol.io', 'cmake.org',
+  'www.haskell.org', 'downloads.haskell.org', 'cabal.readthedocs.io',
 ])
 
 export const apiHostOf = (url) => {

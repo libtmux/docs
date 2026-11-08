@@ -221,7 +221,7 @@ function placement(source: string): string[] {
   if (/ApiQualifiedName|api-qualified-name/.test(header)) problems.push('the heading still carries the qualified name')
   const panel = source.slice(source.indexOf('<details class="api-source-details"'), source.indexOf('</details>', source.indexOf('<details class="api-source-details"')))
   if (!/<dt>Qualified name<\/dt>\s*<dd><ApiQualifiedName name=\{nativeQualifiedName\(model, owner\)\}[^>]*\/><\/dd>/.test(panel)) problems.push('the disclosure has no qualified name row')
-  else if (!/<ApiQualifiedName [^>]*\bkind=\{owner\.kind\}/.test(panel)) problems.push('the qualified name is drawn without the declaration\'s kind')
+  else if (!/<ApiQualifiedName [^>]*\bkind=\{nativeKind\(owner, language\)\}/.test(panel)) problems.push('the qualified name is drawn without the declaration\'s kind')
   if (!/<dt>\{moduleLabel\}<\/dt>/.test(panel)) problems.push('the disclosure does not label its module row for the port')
   return problems
 }
@@ -243,7 +243,7 @@ describe('where the qualified name lives', () => {
       expect(placement(regressed)).toContain('the heading still carries the qualified name')
     })
     it('notices a qualified name drawn without the declaration\'s kind', () => {
-      expect(placement(reference.replace(' kind={owner.kind}', ''))).toEqual(['the qualified name is drawn without the declaration\'s kind'])
+      expect(placement(reference.replace(' kind={nativeKind(owner, language)}', ''))).toEqual(['the qualified name is drawn without the declaration\'s kind'])
     })
     it('notices a disclosure with no qualified name', () => {
       expect(placement(reference.replace('<dt>Qualified name</dt>', '<dt>Name</dt>'))).toContain('the disclosure has no qualified name row')

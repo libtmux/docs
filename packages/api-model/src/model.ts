@@ -14,7 +14,7 @@
  */
 
 /** Language libraries, by the slug the site uses. */
-export type PortSlug = 'py' | 'ruby' | 'lua' | 'ts' | 'rs' | 'go' | 'java' | 'csharp' | 'cxx' | 'swift' | 'kotlin' | 'scala' | 'fsharp' | 'powershell' | 'julia' | 'elixir' | 'ocaml'
+export type PortSlug = 'py' | 'ruby' | 'lua' | 'ts' | 'rs' | 'go' | 'java' | 'csharp' | 'cxx' | 'swift' | 'kotlin' | 'scala' | 'fsharp' | 'powershell' | 'julia' | 'elixir' | 'ocaml''haskell'
 
 export type ApiProduct = 'core' | 'workspace' | 'mcp'
 
@@ -169,6 +169,16 @@ export interface Signature {
   extension?: string
   /** Native signature text when its grammar carries more than the shared fields. */
   raw?: string
+  /** Native header text and links, in order. Their text concatenates exactly to `raw`. */
+  nativeSpans?: {
+    text: string
+    /** Original native destination, retained even when a public target is remapped. */
+    href?: string
+    /** Public identity resolved by the native producer. */
+    target?: string
+    declaration?: boolean
+    keyword?: boolean
+  }[]
   /** Native impl or trait header that owns this callable, without its body. */
   enclosingDeclaration?: string
   /** Lexical bindings from that impl or trait, separate from callable generics. */
@@ -352,6 +362,8 @@ export interface ApiSymbol {
 /** Everything extracted from one port's source tree. */
 /** Declarations and provenance shared by library and source references. */
 export interface ApiModelBase {
+  /** Native module export groups, in authored order, with exact public identities. */
+  exportGroups?: { owner: string; title: string; members: string[] }[]
   /** Native producer and inputs retained alongside the normalized surface. */
   nativeProvenance?: {
     files: { path: string; sha256: string }[]

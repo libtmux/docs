@@ -66,6 +66,22 @@ def stop_process_group(process):
     process.wait()
 
 
+def homepage_execution(home, example):
+    """Require agreement on the explicit native example execution profile."""
+    profile = home.get("execution", "owned-tmux")
+    if profile not in ("owned-tmux", "pure-values") or profile != example.get(
+        "execution", "owned-tmux"
+    ):
+        msg = "Homepage execution profile differs from the verification record"
+        raise ValueError(msg)
+    if home.get("libraryRevision", home["sourceRevision"]) != example.get(
+        "libraryRevision", example["sourceRevision"]
+    ):
+        msg = "Homepage library revision differs from the verification record"
+        raise ValueError(msg)
+    return profile
+
+
 def main():
     """Verify and execute one displayed program with its recorded setup."""
     repo = Path(__file__).resolve().parent.parent
@@ -114,6 +130,7 @@ def main():
         )
     example = examples[0]
     view = args.view or "full"
+    execution = "owned-tmux"
     if args.example == "home" and view != "full":
         example = dict(example, **example["variants"][view])
     if args.api_model and args.example != "api":
@@ -127,6 +144,7 @@ def main():
     content = page.read_text()
     if args.example == "home":
         home = json.loads(content)[args.port]
+        execution = homepage_execution(home, example)
         if (home["sourceRevision"], home["sourceTree"]) != (
             example["sourceRevision"],
             example["sourceTree"],
@@ -210,7 +228,7 @@ def main():
     if args.example in ("home", "program"):
         from example_tmux_sandbox import ExampleTmuxSandbox
 
-        sandbox = ExampleTmuxSandbox(output, env)
+        sandbox = ExampleTmuxSandbox(output, env, forbid_tmux=execution == "pure-values")
     if sandbox:
         env = sandbox.env
     results = []
@@ -256,7 +274,9 @@ def main():
         "port": example["port"],
         "page": example["page"],
         "sourceRevision": example["sourceRevision"],
-        "tmuxVersion": subprocess.check_output(["tmux", "-V"], text=True).strip(),
+        "tmuxVersion": subprocess.check_output(["tmux", "-V"], text=True).strip()
+        if execution != "pure-values"
+        else None,
         "pageSha256": hashlib.sha256(page.read_bytes()).hexdigest(),
         "files": example["files"],
         "runs": results,
@@ -266,6 +286,9 @@ def main():
     if example.get("sourceProgramId"):
         report["sourceProgramId"] = example["sourceProgramId"]
     if sandbox is not None and cleanup is not None:
+        report["execution"] = execution
+        if args.example == "home":
+            report["libraryRevision"] = home.get("libraryRevision", home["sourceRevision"])
         report["view"] = view
         report["cleanup"] = cleanup
         report["passed"] = passed = passed and cleanup["passed"]

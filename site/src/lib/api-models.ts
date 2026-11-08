@@ -9,12 +9,15 @@ import registryData from '../data/registry.json'
 import { PORT_BY_SLUG, referenceUrl, type DocProduct, type RegistryData } from './ports'
 import { buildTarget, defaultVersionFor, registryVersion } from './versions'
 import { mcpToolSymbols } from './mcp-catalog'
+import { nativeKind } from './api-labels'
 import powershellNav from '../data/api/powershell.nav.json'
 import juliaNav from '../data/api/julia.nav.json'
 import elixirNav from '../data/api/elixir.nav.json'
+import haskellNav from '../data/api/haskell.nav.json'
 import powershellModel from '../data/api/powershell.json'
 import juliaModel from '../data/api/julia.json'
 import elixirModel from '../data/api/elixir.json'
+import haskellModel from '../data/api/haskell.json'
 import cxxNav from '../data/api/cxx.nav.json'
 import csharpNav from '../data/api/csharp.nav.json'
 import goNav from '../data/api/go.nav.json'
@@ -57,6 +60,7 @@ export const API_MODELS: Record<string, ApiModel> = {
   powershell: powershellModel as unknown as ApiModel,
   julia: juliaModel as unknown as ApiModel,
   elixir: elixirModel as unknown as ApiModel,
+  haskell: haskellModel as unknown as ApiModel,
   py: pyModel as unknown as ApiModel,
   ruby: rubyModel as unknown as ApiModel,
   lua: luaModel as unknown as ApiModel,
@@ -121,6 +125,7 @@ export const API_NAV: Record<string, PortNavData> = {
   powershell: powershellNav as unknown as PortNavData,
   julia: juliaNav as unknown as PortNavData,
   elixir: elixirNav as unknown as PortNavData,
+  haskell: haskellNav as unknown as PortNavData,
   py: pyNav as unknown as PortNavData,
   ruby: rubyNav as unknown as PortNavData,
   lua: luaNav as unknown as PortNavData,
@@ -143,6 +148,7 @@ export const PORT_NAME: Record<string, string> = {
   powershell: 'PowerShell',
   julia: 'Julia',
   elixir: 'Elixir',
+  haskell: 'Haskell',
   py: 'Python',
   ruby: 'Ruby',
   lua: 'Lua',
@@ -423,7 +429,7 @@ export function referenceAlternatives(port: string, publicId: string) {
         name,
         publicId: targetId,
         href,
-        kind: target?.command?.kind ?? target?.kind,
+        kind: target?.command?.kind ?? (target && nativeKind(target, targetPort)),
         note,
         absent: concept.absent?.[targetPort],
       }

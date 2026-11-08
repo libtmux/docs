@@ -134,13 +134,12 @@ describeIfAssembled('published exports', () => {
         const template = window.document.createElement('template')
         template.innerHTML = readPublished(join(root, 'index.html'))
         const actual = [...template.content.querySelectorAll('.api-index-summary[id]')].map((node) => node.id)
-        expect(reference.headings.map((heading: { id: string }) => heading.id)).toEqual(actual)
         const sections = referenceIndexSections(port.slug)
-        expect(sections.length, `${port.slug} model reference sections`).toBeGreaterThan(0)
+        expect(sections.length, `${port.slug} has native reference sections`).toBeGreaterThan(0)
         expect(actual).toEqual(sections.map((section) => `section-${section.id}`))
-        expect(reference.symbols.map((symbol: { id: string }) => symbol.id)).toEqual(
-          sections.flatMap((section) => [...section.types, ...section.free]).map((symbol) => symbol.publicId ?? symbol.id),
-        )
+        expect(reference.headings).toEqual(sections.map((section) => ({ id: `section-${section.id}`, level: 2, text: section.name })))
+        expect(reference.symbols).toEqual(sections.flatMap((section) => [...section.types, ...section.free])
+          .map((symbol) => expect.objectContaining({ id: symbol.publicId ?? symbol.id, name: symbol.name, kind: symbol.kind })))
         for (const symbol of reference.symbols) {
           const target = new URL(symbol.url).pathname.replace(/^\//, '')
           expect(has(join(target, 'index.html')), symbol.url).toBe(true)

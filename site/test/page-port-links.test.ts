@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
+import { Window } from 'happy-dom'
+import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
 vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '/pr-42/en')
 vi.stubEnv('LIBTMUX_DOCS_LOCALES_ROOT', '/pr-42')
 const { docsEntryAvailable, docsEntriesAvailable, pagePortLinks } = await import('../src/lib/page-port-links')
-const { PORTS, PORT_BY_SLUG, productAvailable } = await import('../src/lib/ports')
+const { PORTS, PORT_BY_SLUG, productAvailable, productExcluded } = await import('../src/lib/ports')
 const { referencePageLinks } = await import('../src/lib/reference-page-links')
 const { localePageHref, localeSourcePath } = await import('../src/i18n/locales')
 
@@ -55,6 +57,37 @@ describe('reference picker exits', () => {
       expect(entries.find((entry) => entry.port === 'ts')?.links).toEqual([
         { href: `/pr-42/en/ts/v1.2.3/${pagePath}/` },
       ])
+    }
+  })
+
+  it('excludes absent products and keeps unpublished overviews and language homes', async () => {
+    const picker = await loadAstroTemplate('components/PagePortSwitcher.astro')
+    const productDocs = [{ id: 'workspace', data: {} }]
+    for (const product of ['mcp', 'workspace'] as const) {
+      for (const pagePath of [product, `/${product}/`]) {
+        const entries = pagePortLinks({ ...options, docs: productDocs, portSlug: 'ts', pagePath })
+        for (const entry of entries) {
+          const port = PORT_BY_SLUG[entry.port]
+          const overview = !port.parentLibrary && !productExcluded(port, product)
+          const version = entry.port === 'ts' ? 'v1.2.3' : options.defaults[entry.port as keyof typeof options.defaults] ?? 'latest'
+          expect(entry.links, `${entry.port}/${pagePath}`).toEqual(overview
+            ? [{ href: `/pr-42/en/${entry.port}/${version}/${product}/` }] : [])
+          expect(entry.home?.href, `${entry.port}/${pagePath} home`).toBe(`/pr-42/en/${entry.port}/${version}/`)
+        }
+        const window = new Window()
+        try {
+          window.document.body.innerHTML = await renderAstroTemplate(picker, { props: { entries, portSlug: 'ts' } })
+          const haskell = window.document.querySelector('[data-port="haskell"]')!
+          if (product === 'mcp') {
+            expect(haskell.textContent).toContain('No matching page')
+            expect([...haskell.querySelectorAll('a')].map((link) => link.getAttribute('href')))
+              .toEqual(['/pr-42/en/haskell/latest/'])
+          } else {
+            expect(haskell.tagName).toBe('A')
+            expect(haskell.getAttribute('href')).toBe('/pr-42/en/haskell/latest/workspace/')
+          }
+        } finally { await window.happyDOM.abort() }
+      }
     }
   })
 

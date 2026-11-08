@@ -19,6 +19,7 @@ interface Props {
   views?: readonly (typeof HOME_VIEWS)[number][]
 }
 const { port, language, example, heading = true, fixed = false, options = true, run = true, views = HOME_VIEWS } = Astro.props
+const shownViews = example.singleView ? ['full'] as const : views
 // A host that plays the program (`core/CorePlayer.astro`) fills `beside`, which sits next to the code, and `controls`, under both.
 const player = Astro.slots.has('beside')
 const Frame = player ? 'div' : Fragment
@@ -26,7 +27,7 @@ const Stage = player ? 'div' : Fragment
 // The title and the hint share a row; a block with neither has no row.
 const headingRow = heading || Astro.slots.has('hint')
 ---
-<div class="home-example" data-home-example={port} data-fixed={fixed ? '' : undefined} data-player={player ? '' : undefined}>
+<div class="home-example" data-home-example={port} data-fixed={fixed ? '' : undefined} data-player={player ? '' : undefined} data-single-view={example.singleView ? '' : undefined}>
   {headingRow && <div class="home-example-heading">
     {heading && <h2>Start with {language}</h2>}
     <slot name="hint" />
@@ -34,7 +35,7 @@ const headingRow = heading || Astro.slots.has('hint')
   <Frame {...(player ? { class: 'home-example-player not-prose' } : {})}>
     <Stage {...(player ? { class: 'home-example-stage', 'data-body': '', tabindex: 0, role: 'group', 'aria-label': 'The program and the tmux it leaves' } : {})}>
       <div class="home-example-code">
-      {views.map((view) => {
+      {shownViews.map((view) => {
         const code = homeProgram(example, view).replace(/\n$/, '')
         return <div
           class="home-example-view"
@@ -45,7 +46,7 @@ const headingRow = heading || Astro.slots.has('hint')
           <Code code={code} lang={example.lang} frame="none" />
         </div>
       })}
-      {options && <fieldset class="home-example-options home-example-toolbar">
+      {options && !example.singleView && <fieldset class="home-example-options home-example-toolbar">
         <legend class="sr-only">Example details</legend>
         <label><input type="checkbox" data-example-errors /> + Error handling</label>
         <label><input type="checkbox" data-example-cleanup /> + Cleanup</label>
@@ -60,9 +61,11 @@ const headingRow = heading || Astro.slots.has('hint')
     <p>{example.prerequisites}</p>
     <p>Save the program above as <code>{example.program}</code> in a new directory, along with the files below.</p>
     <p class="home-example-lifetime">
+      {example.singleView ? example.singleView : <>
       <span data-without-cleanup>{example.automaticCleanup ?? 'Cleanup is omitted; the private tmux server and its temporary files may remain. Select Cleanup to remove them when the program finishes.'}</span>
       <span data-with-cleanup>The program stops its private tmux server and removes any temporary files it created when it finishes.</span>
       {' '}{example.withoutErrorHandling ?? 'Error handling adds diagnostics; every version checks required results and deadlines.'}
+      </>}
     </p>
     {example.files.filter((file) => file.name !== example.program).map((file) =>
       <details class="home-example-file" data-home-file={file.name}>
@@ -164,6 +167,7 @@ const headingRow = heading || Astro.slots.has('hint')
   .home-example-toolbar input { margin: 0; }
   .home-example-options input { accent-color: var(--color-link); }
   .home-example-view { display: none; }
+  .home-example[data-single-view] [data-home-view="full"] { display: block; }
   .home-example[data-fixed] .home-example-view :global(.expressive-code pre) { height: calc(34rem - var(--home-toolbar-row, 0rem)); max-height: none; overflow: auto; tab-size: 8; scrollbar-gutter: stable; }
   .home-example:not(:has([data-example-errors]:checked)):not(:has([data-example-cleanup]:checked)) [data-home-view="concise"],
   .home-example:has([data-example-errors]:checked):not(:has([data-example-cleanup]:checked)) [data-home-view="errors"],

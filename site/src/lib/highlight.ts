@@ -29,7 +29,7 @@ const LANGS = [
   // fragment, a Package.swift dependency and a CMakeLists block. Three of the
   // eight ports cannot be installed from a command line at all, so without
   // these their only install instructions render as flat grey.
-  'kotlin', 'scala', 'fsharp', 'csharp', 'xml', 'swift', 'cmake', 'toml', 'nix', 'powershell', 'julia', 'elixir', 'ini',
+  'kotlin', 'scala', 'fsharp', 'csharp', 'xml', 'swift', 'cmake', 'toml', 'nix', 'powershell', 'julia', 'elixir', 'haskell', 'ini',
 ] as const
 
 /**
@@ -121,7 +121,7 @@ const EC_LANGS = new Set([
   'python', 'ruby', 'lua', 'rust', 'ts', 'tsx', 'js', 'jsx', 'java', 'kotlin', 'scala', 'fsharp', 'swift',
   'csharp', 'cpp', 'c', 'go', 'bash', 'shell', 'console', 'json', 'yaml',
   'toml', 'xml', 'diff', 'text', 'tmux-usage', 'tmux-shell', 'tmux-config', 'powershell', 'julia', 'elixir', 'properties', 'ini',
-  'cmake', 'ocaml', 'lisp',
+  'cmake', 'ocaml', 'lisp''haskell',
 ])
 
 const EC_ALIASES: Record<string, string> = {

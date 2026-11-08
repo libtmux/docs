@@ -3897,6 +3897,7 @@ for (const concept of Object.values(CONCEPTS)) {
   if (!concept.symbols.powershell) concept.absent.powershell ??= 'No source-verified PowerShell equivalent is recorded for this operation.'
   if (!concept.symbols.julia) concept.absent.julia ??= 'No source-verified Julia equivalent is recorded for this operation.'
   if (!concept.symbols.elixir) concept.absent.elixir = 'No source-verified Elixir equivalent is recorded for this operation.'
+  if (!concept.symbols.haskell) concept.absent.haskell = 'No public Haskell equivalent is implemented; the current modules expose scalar values and version parsing.'
   if (!concept.symbols.ruby) concept.absent.ruby = 'No source-verified Ruby equivalent is recorded for this operation.'
   if (!concept.symbols.lua) concept.absent.lua = 'No source-verified Lua equivalent is recorded for this operation.'
   if (!concept.symbols.kotlin) concept.absent.kotlin = 'No source-verified Kotlin equivalent is recorded for this operation.'

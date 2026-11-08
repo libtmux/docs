@@ -12,7 +12,7 @@
 import { waitForAppearance, layoutBeforeAppearance } from '../../lib/page-readiness'
 import { onViewportChange, stableViewportHeight } from '../../lib/stable-viewport'
 import { wordBreak } from '../../lib/word-break'
-import { kindMark, markClass } from '../../lib/api-labels'
+import { kindLabel, kindMark, kindPalette, markClass } from '../../lib/api-labels'
 import { apiTreeHref, searchApi, type ApiTreeBucket as JsonBucket, type ApiTreeJson as TreeJson } from '../../lib/api-search'
 import { apiTreePath, captureApiTree, initializeApiTree, type ApiTreeSelection, type ApiTreeState } from './api-tree-state'
 import { SIDEBAR_PRESENTATIONS, SIDEBAR_PREFERENCE_KEY, sidebarCatalog, sidebarInventory, sidebarName, sidebarNodes, type SidebarNode, type SidebarPresentation } from '../../lib/api-sidebar'
@@ -157,7 +157,7 @@ function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
         word.className = 'api-kind-word'
         word.textContent = record.kind.replace(/-/g, ' ')
         name.append(word)
-        link.setAttribute('aria-description', record.kind)
+        link.setAttribute('aria-description', kindLabel(record.kind))
         const path = document.createElement('small')
         path.textContent = nav.dataset.presentation ? sidebarName(record.qualifiedName, json.port) : record.qualifiedName
         link.append(name, path)
@@ -277,8 +277,8 @@ function kindBadge(kind?: string): HTMLSpanElement | undefined {
   const mark = kind && kindMark(kind)
   if (!mark) return undefined
   const badge = document.createElement('span')
-  badge.className = `api-nav__kind api-badge--kind-${kind}`
-  badge.title = kind!
+  badge.className = `api-nav__kind api-badge--kind-${kindPalette(kind!)}`
+  badge.title = kindLabel(kind!)
   badge.setAttribute('aria-hidden', 'true')
   const label = document.createElement('span')
   label.className = 'api-badge__label'
@@ -298,7 +298,7 @@ function leaf(name: string, href: string, level: number, kind?: string, shortcut
   a.tabIndex = -1
   a.style.setProperty('--level', String(level))
   a.setAttribute('aria-level', String(level))
-  if (kind) a.setAttribute('aria-description', kind)
+  if (kind) { a.setAttribute('aria-description', kindLabel(kind)); a.dataset.apiKind = kind }
   if (shortcut) a.setAttribute('data-api-shortcut', '')
   if (!shortcut && new URL(href, location.href).pathname === location.pathname) a.setAttribute('aria-current', 'page')
   const mark = kindBadge(kind)
@@ -316,7 +316,7 @@ function branch(name: string, href: string | undefined, level: number, lazy: str
   li.tabIndex = -1
   li.dataset.lazy = lazy
   li.setAttribute('aria-level', String(level))
-  if (kind) li.setAttribute('aria-description', kind)
+  if (kind) { li.setAttribute('aria-description', kindLabel(kind)); li.dataset.apiKind = kind }
   li.setAttribute('aria-expanded', 'false')
   li.setAttribute('aria-labelledby', count === undefined ? id : `${id} ${id}-count`)
   const row = document.createElement('div')
@@ -511,7 +511,7 @@ export async function setApiSidebar(nav: HTMLElement, mode: SidebarPresentation,
         name.append(qualified)
         const kind = document.createElement('span')
         kind.className = 'api-kind-word'
-        kind.textContent = record.kind
+        kind.textContent = kindLabel(record.kind)
         option.append(...(mark ? [mark] : []), name, kind)
         return option
       }))

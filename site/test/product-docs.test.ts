@@ -17,6 +17,7 @@ import { docsEntriesAvailable } from '../src/lib/page-port-links'
 import { documentationAreas, SOURCE_GUIDE_PORTS, sourceGuidesFor } from '../src/lib/port-documentation'
 import { KNOWN_PORTS, resolvePortData } from '../src/lib/workspace-shared-slots'
 import { DEFAULT_LOCALE, isLocale } from '../src/i18n/locales'
+import { documentationSectionsFor } from '../src/lib/port-documentation'
 import type { ApiTreeJson } from '../src/lib/api-search'
 import { PRODUCT_SECTIONS } from '../src/lib/product-api-sections'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
@@ -44,7 +45,7 @@ interface DocsManifest {
   pages: { url: string; markdownUrl: string }[]
   ports: {
     slug: string
-    products: { slug: string; availability: string; inDevelopment: boolean; support?: string; supportDescription?: string; cli?: string | null; cliAvailability?: string | null; reference: string | null; protocol?: string | null }[]
+    products: { slug: string; availability: string; url: string | null; inDevelopment: boolean; support?: string; supportDescription?: string; cli?: string | null; cliAvailability?: string | null; reference: string | null; protocol?: string | null }[]
     documentation: { id: string; name: string; kind: string; availability: string; url: string; package?: string }[]
   }[]
 }
@@ -587,7 +588,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   })
 
   it.each(PORTS.filter((port) => !port.parentLibrary && products.some((product) => port.productAvailability?.[product] === 'unpublished')))
-    ('$name builds, lists and links only the overview of a product it has not published', (port) => {
+    ('$name distinguishes unpublished overviews from excluded products', (port) => {
     const version = manifest().defaultVersion[port.slug]!
     const docs = JSON.parse(read(`${port.slug}/${version}/docs.json`)) as DocsManifest
     for (const product of products.filter((entry) => port.productAvailability?.[entry] === 'unpublished')) {
@@ -598,8 +599,16 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       expect(pagesBeyondOverview(docs.pages, urlFor(`${port.slug}/${version}/${product}/`).pathname),
         `${port.slug} ${product} pages listed beyond the overview`).toEqual([])
       const advertised = docs.ports.find((entry) => entry.slug === port.slug)!.products.find((entry) => entry.slug === product)!
-      expect(advertised.availability, `${port.slug} ${product}`).toBe('unpublished')
       expect(advertised.reference, `${port.slug} ${product} reference`).toBeNull()
+      if (port.productAvailability?.[product] === 'excluded') {
+        expect(built, `${port.slug} ${product} has no pages`).toEqual([])
+        expect(advertised.availability).toBe('excluded')
+        expect(advertised.url).toBeNull()
+        expect(docs.pages.some((entry) => new URL(entry.url).pathname.replace(/\/$/, '') === urlFor(`${port.slug}/${version}/${product}`).pathname)).toBe(false)
+      } else {
+        expect(built, `${port.slug} ${product} overview exists`).toContain('index.html')
+        expect(advertised.availability, `${port.slug} ${product}`).toBe('unpublished')
+      }
     }
   })
 
@@ -1017,7 +1026,9 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         }
         for (const product of products) {
           const metadata = advertised.products.find((entry) => entry.slug === product)!
-          expect(metadata.availability, `${root}${port.slug} ${product} availability`).toBe(productAvailable(port, product) ? 'available' : 'unpublished')
+          expect(metadata.availability, `${root}${port.slug} ${product} availability`).toBe(port.productAvailability?.[product] ?? 'available')
+          if (port.productAvailability?.[product] === 'excluded') expect(metadata.url).toBeNull()
+          else expect(resolves(metadata.url!, urlFor(root).href), `${root}${port.slug} ${product} overview`).toBe(true)
           expect(metadata.inDevelopment, `${root}${port.slug} ${product} development status`).toBe(productInDevelopment(port, product))
           if (productIsConcept(port, product)) {
             expect(metadata.support).toBe('concept')

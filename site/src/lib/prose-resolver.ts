@@ -27,6 +27,7 @@ import powershellPaths from '../data/api/powershell.paths.json'
 import juliaPaths from '../data/api/julia.paths.json'
 import elixirPaths from '../data/api/elixir.paths.json'
 import ocamlPaths from '../data/api/ocaml.paths.json'
+import haskellPaths from '../data/api/haskell.paths.json'
 
 /** Language labels used by shared prose headings and comparison rows. */
 export const PORT_BY_LABEL: Record<string, string> = Object.fromEntries(
@@ -39,10 +40,10 @@ const PATHS: Record<string, { repo: string; revision: string; paths: string[] }>
   py: pyPaths, ruby: rubyPaths, lua: luaPaths, ts: tsPaths, rs: rsPaths,
   go: goPaths, java: javaPaths, csharp: csharpPaths, cxx: cxxPaths,
   swift: swiftPaths, kotlin: kotlinPaths, scala: scalaPaths, fsharp: fsharpPaths,
-  powershell: powershellPaths, julia: juliaPaths, elixir: elixirPaths, ocaml: ocamlPaths,
+  powershell: powershellPaths, julia: juliaPaths, elixir: elixirPaths, ocaml: ocamlPaths, haskell: haskellPaths,
 }
 const TREES = Object.fromEntries(Object.entries(PATHS).map(([port, data]) => [port, new Set(data.paths)]))
-const FILE_RE = /^[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|cpp|hpp|h|swift|jl|ex|exs|ps1|psm1|psd1|ml|mli|opam|md|toml|json|ya?ml|sh)$/
+const FILE_RE = /^(?:cabal\.project|[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|cpp|hpp|h|swift|jl|ex|exs|hs|cabal|ps1|psm1|psd1|ml|mli|opam|md|toml|json|ya?ml|sh))$/
 
 type ProseDecision = MentionDecision & { file?: boolean }
 

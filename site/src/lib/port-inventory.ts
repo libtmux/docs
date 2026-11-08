@@ -242,6 +242,7 @@ const lua = family('libtmux/libtmux-lua')
 const powershell = family('libtmux/libtmux-powershell')
 const julia = family('libtmux/libtmux-julia')
 const elixir = family('libtmux/libtmux-elixir', 'main')
+const haskell = family('libtmux/libtmux-haskell')
 const ts = family('libtmux/libtmux-ts')
 const rs = family('libtmux/libtmux-rs')
 const go = family('libtmux/libtmux-go')
@@ -371,6 +372,14 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
     elixir({ id: 'libtmux_workspace', kind: 'companion', product: 'workspace', label: 'libtmux_workspace', coordinate: 'libtmux_workspace', path: 'packages/workspace',
       aliases: ['LibTmuxWorkspace'], status: 'planned', note: 'Its mix.exs carries a -dev version and the release workflow publishes only the root project.',
       unavailable: [{ kind: 'package', host: 'hex', url: 'https://hex.pm/packages/libtmux_workspace', reason: 'not published' }] }),
+  ],
+  haskell: [
+    haskell({ id: 'libtmux-haskell', kind: 'library', product: 'core', unit: 'Cabal package', label: 'libtmux-haskell', path: 'src',
+      aliases: ['LibTmux.Id', 'LibTmux.Value', 'LibTmux.Version'], note: 'Available from source; not published on Hackage.',
+      unavailable: [{ kind: 'package', host: 'Hackage', url: 'https://hackage.haskell.org/package/libtmux-haskell', reason: 'not published' }] }),
+    haskell({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-haskell', coordinate: 'libtmux/libtmux-haskell' }),
+    haskell({ id: 'libtmux-haskell-workspace', kind: 'companion', product: 'workspace', label: 'libtmux-haskell-workspace', status: 'planned',
+      note: 'Planned workspace library and CLI; no package or executable is implemented.' }),
   ],
   ts: [
     ts({ id: 'libtmux', kind: 'library', product: 'core', label: 'libtmux', ...npm('libtmux'), path: 'packages/libtmux',

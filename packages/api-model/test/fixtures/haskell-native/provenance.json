@@ -1,0 +1,17 @@
+{
+  "library_revision": "9fb506c96772affa6ea23bee41218cd41a931d51",
+  "ghc": "9.14.1",
+  "haddock": "2.33.0",
+  "modules": [
+    "LibTmux.Id",
+    "LibTmux.Value",
+    "LibTmux.Version"
+  ],
+  "native_html_sha256": {
+    "LibTmux-Id.html": "cf7102eba62a0e9b02e7ea7acefb85d1822a4d192a1fceb680246ed42bd10d45",
+    "LibTmux-Value.html": "4160151534c27a8c787c9ab36fa6dcbf740fc193a7a3553935172be72111ff1d",
+    "LibTmux-Version.html": "7894f9afe9260e6d2d429aaf0b3f246428980b76756bba8d7a3ccc0637b22a6a"
+  },
+  "installed_json_sha256": "268e9e69b454d362ffc8eeeabdb6a384d86e327e0d9487cba7b567f136e91fab",
+  "source_anchor_fixture": "Only native id/line markers retained; no implementation text."
+}

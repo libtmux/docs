@@ -28,6 +28,7 @@ export const LIBRARY_ROOTS = {
   ruby: ['gems/libtmux/', 'gems/libtmux-async/'],
   lua: ['lua/libtmux/'],
   julia: ['src/'],
+  haskell: ['src/'],
   ts: ['packages/libtmux/'],
   rs: ['crates/libtmux/'],
   go: ['tmux/'],

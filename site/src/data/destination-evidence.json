@@ -1081,6 +1081,48 @@
       ]
     },
     {
+      "url": "https://github.com/libtmux/libtmux-haskell",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-haskell",
+      "identity": "libtmux/libtmux-haskell",
+      "versionChecks": [
+        {
+          "check": "unsupported",
+          "note": "a branch link names no release"
+        }
+      ],
+      "checkedAt": "2026-11-08",
+      "entries": [
+        "haskell:repository"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-haskell/tree/master/src",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-haskell/tree/master/src",
+      "identity": "libtmux/libtmux-haskell/src",
+      "versionChecks": [
+        {
+          "check": "unsupported",
+          "note": "a branch link names no release"
+        }
+      ],
+      "checkedAt": "2026-11-08",
+      "entries": [
+        "haskell:libtmux-haskell"
+      ]
+    },
+    {
       "url": "https://github.com/libtmux/libtmux-java",
       "kinds": [
         "source"
@@ -2311,6 +2353,22 @@
       "checkedAt": "2026-11-03",
       "entries": [
         "py:tmuxp"
+      ]
+    },
+    {
+      "url": "https://hackage.haskell.org/package/libtmux-haskell",
+      "kinds": [
+        "package"
+      ],
+      "host": "Hackage",
+      "ok": false,
+      "failure": "status",
+      "detail": "https://hackage.haskell.org/package/libtmux-haskell answered 404",
+      "status": 404,
+      "requested": "https://hackage.haskell.org/package/libtmux-haskell",
+      "checkedAt": "2026-11-08",
+      "entries": [
+        "haskell:libtmux-haskell"
       ]
     },
     {

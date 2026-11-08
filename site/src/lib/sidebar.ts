@@ -18,6 +18,7 @@ import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import { localeOf, sourceIdOf } from '../i18n/resolve'
 import { docsPath, docsRoutePath } from './docs-paths'
 import { docsEntriesAvailable } from './page-port-links'
+import { documentationSectionsFor } from './port-documentation'
 import { API_MODELS, API_NAV } from './api-models'
 import { navTree, referenceBreadcrumbs } from './api-tree'
 import { productApiHref } from './product-api'
@@ -227,7 +228,7 @@ export function portAreas(port: string, version: string): SidebarGroupItem {
   return {
     type: 'group',
     label: 'Documentation',
-    items: (p.parentLibrary ? ['guides', 'examples', 'concepts'] : ['topics', 'guides', 'examples', 'concepts']).map((area) => ({
+    items: documentationSectionsFor(port).map((area) => ({
       type: 'link',
       label: `${area[0]!.toUpperCase()}${area.slice(1)}`,
       href: portPageUrl(p, version, area),

@@ -61,6 +61,7 @@ jobs:
             echo "elixir=$(jq -r .revision site/src/data/api/elixir.json)"
             echo "ocaml=$(jq -r .revision site/src/data/api/ocaml.json)"
           } >> "$GITHUB_OUTPUT"
+          echo "haskell=$(jq -r .revision site/src/data/api/haskell.json)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v7
         with:
@@ -98,6 +99,12 @@ jobs:
           ref: ${{ steps.integrated-sources.outputs.ocaml }}
           path: .port-sources/ocaml
           persist-credentials: false
+      - uses: actions/checkout@v7
+        with:
+          repository: libtmux/libtmux-haskell
+          ref: ${{ steps.integrated-sources.outputs.haskell }}
+          path: .port-sources/haskell
+          persist-credentials: false
 
       # The exporter tests compile a fixture with the package's own toolchain:
       # the exact pair the integrated Elixir source pins, read as port-docs.yml
@@ -122,6 +129,7 @@ jobs:
           LIBTMUX_DOCS_CHECKOUT_JULIA: ${{ github.workspace }}/.port-sources/julia
           LIBTMUX_DOCS_CHECKOUT_ELIXIR: ${{ github.workspace }}/.port-sources/elixir
           LIBTMUX_DOCS_CHECKOUT_OCAML: ${{ github.workspace }}/.port-sources/ocaml
+          LIBTMUX_DOCS_CHECKOUT_HASKELL: ${{ github.workspace }}/.port-sources/haskell
         run: |
           node scripts/stage-port-docs.mjs --from-source
           node scripts/stage-port-docs.mjs --cached --check

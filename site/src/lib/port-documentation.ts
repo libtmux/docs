@@ -46,6 +46,15 @@ interface PortDocumentation {
   sourceGuides: readonly PortSourceGuide[]
   stagedSections?: readonly string[]
   redirects?: readonly { sourcePath: string; path: string; target: string }[]
+  /** Section overviews to stage and offer when the shared operational sections do not apply. */
+  sections?: Readonly<Record<string, string>>
+}
+
+const SECTION_DESCRIPTIONS: Readonly<Record<string, string>> = {
+  guides: 'Connect to tmux and work with its sessions, windows, and panes.',
+  examples: 'Run complete programs with their documented setup and cleanup.',
+  topics: 'Understand object ownership, state, and operation behavior.',
+  concepts: 'Understand captured queries, object identities, and operations.',
 }
 
 const guide = (
@@ -79,6 +88,23 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('docs/workspaces.md', 'workspace/source-guide', 'workspace', { title: 'Workspace guide', product: 'workspace', package: 'workspace', aliases: [] }),
     ],
     redirects: [{ sourcePath: 'docs/api.md', path: 'guides/api', target: 'reference' }],
+  },
+  haskell: {
+    domains: [
+      libraryDomain('Parse tmux IDs, validate values and check stable releases with pure Haskell functions.'),
+      { id: 'workspace', label: 'Workspace Manager', kind: 'unavailable', navGroup: 'Availability', route: 'workspace', product: 'workspace',
+        description: 'The workspace library and CLI are planned as a separate Cabal package using the core.' },
+      { id: 'mcp', label: 'MCP', kind: 'unavailable', navGroup: 'Availability', route: 'mcp', product: 'mcp',
+        description: 'MCP is excluded from this port.' },
+    ],
+    sections: { guides: 'Install the source package, run the public values example, and understand the available API.' },
+    sourceGuides: [
+      guide('docs/README.md', 'guides/getting-started', 'core', { title: 'Getting started', sidebar: { group: 'Guides', order: 1 } }),
+      guide('docs/installation.md', 'guides/installation', 'core', { title: 'Installation', sidebar: { group: 'Guides', order: 2 } }),
+      guide('docs/values.md', 'guides/typed-values', 'core', { title: 'Typed values', sidebar: { group: 'Guides', order: 3 } }),
+      guide('docs/api.md', 'guides/api-documentation', 'core', { title: 'API documentation', sidebar: { group: 'Guides', order: 4 } }),
+      guide('docs/status.md', 'guides/status', 'core', { title: 'Implementation status', sidebar: { group: 'Guides', order: 5 } }),
+    ],
   },
   powershell: {
     domains: [
@@ -335,6 +361,9 @@ function assertDistinct(label: string, values: readonly string[]): void {
 /** Fail closed if port metadata and reader-facing configuration disagree. */
 function validate(portSlug: string, config: PortDocumentation): void {
   const port = PORT_BY_SLUG[portSlug]
+  for (const [section, description] of Object.entries(config.sections ?? {})) {
+    if (!Object.hasOwn(SECTION_DESCRIPTIONS, section) || !description.trim()) throw new Error(`port-documentation: invalid section ${portSlug}/${section}`)
+  }
   assertDistinct(`${portSlug} domain id`, config.domains.map((domain) => domain.id))
   assertDistinct(`${portSlug} domain route`, config.domains.map((domain) => domain.route))
   const domainById = new Map(config.domains.map((domain) => [domain.id, domain]))
@@ -392,6 +421,14 @@ export function sourceGuidesFor(portSlug: string): readonly PortSourceGuide[] {
   return config.sourceGuides
 }
 
+/** Section indexes offered by the landing page and documentation menu. */
+export function documentationSectionsFor(portSlug: string): readonly string[] {
+  const config = documentationFor(portSlug)
+  if (config) validate(portSlug, config)
+  if (config?.sections) return Object.keys(config.sections)
+  return PORT_BY_SLUG[portSlug]!.parentLibrary ? ['guides', 'examples', 'concepts'] : ['topics', 'guides', 'examples', 'concepts']
+}
+
 /**
  * The section overviews staging writes for a port's source guides, unless the
  * port authors one itself: guides for every staged port, and examples, topics
@@ -403,8 +440,18 @@ export function sourceGuidesFor(portSlug: string): readonly PortSourceGuide[] {
 export function stagedSectionsFor(portSlug: string): readonly string[] {
   const documentation = documentationFor(portSlug)
   if (!documentation) return []
+  validate(portSlug, documentation)
   if (documentation.stagedSections) return documentation.stagedSections
+  if (documentation.sections) return Object.keys(documentation.sections)
   return PORT_BY_SLUG[portSlug]!.parentLibrary ? ['guides'] : ['guides', 'examples', 'topics', 'concepts']
+}
+
+/** Reader-facing introduction for a section that staging actually writes. */
+export function stagedSectionDescription(portSlug: string, section: string): string {
+  if (!stagedSectionsFor(portSlug).includes(section)) throw new Error(`port-documentation: no staged section ${portSlug}/${section}`)
+  const description = documentationFor(portSlug)?.sections?.[section] ?? SECTION_DESCRIPTIONS[section]
+  if (!description?.trim()) throw new Error(`port-documentation: no description for ${portSlug}/${section}`)
+  return description
 }
 
 /** Retired source pages point to the reference that now owns their content. */

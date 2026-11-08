@@ -16,6 +16,7 @@
     "mdast-util-from-markdown": "2.1.0",
     "mdast-util-to-markdown": "2.2.0",
     "smol-toml": "1.9.1",
+    "tree-sitter-haskell": "0.23.1",
     "tree-sitter-scala": "0.24.0",
     "tree-sitter-wasms": "catalog:",
     "web-tree-sitter": "catalog:"

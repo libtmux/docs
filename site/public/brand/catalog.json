@@ -104,6 +104,11 @@
       "id": "ocaml",
       "label": "OCaml",
       "githubColor": "#EF7A08"
+    },
+    {
+      "id": "haskell",
+      "label": "Haskell",
+      "githubColor": "#5E5086"
     }
   ],
   "variants": [
@@ -20661,7 +20666,1240 @@
           "format": "xml"
         }
       ]
+    },
+    {
+      "language": "haskell",
+      "label": "Haskell",
+      "variant": "library",
+      "githubColor": "#5E5086",
+      "alt": "libtmux for Haskell",
+      "files": [
+        {
+          "file": "haskell/library/logo.svg",
+          "bytes": 5888,
+          "sha256": "f5b205be2f647603f33947515bde00487fc13a4aaee987132d943ebb5fc20966",
+          "format": "svg",
+          "width": 512,
+          "height": 512,
+          "transparent": true
+        },
+        {
+          "file": "haskell/library/logo-16.png",
+          "bytes": 588,
+          "sha256": "44afb7fadffeb84b27990fda3e306bf62d68c5415f0525c7b7cd40f6925b3195",
+          "format": "png",
+          "width": 16,
+          "height": 16,
+          "transparent": true
+        },
+        {
+          "file": "haskell/library/logo-24.png",
+          "bytes": 778,
+          "sha256": "e180677fdcfb14712021ed27d6e189caf4148f590b470f9e56e30c2b18be80e3",
+          "format": "png",
+          "width": 24,
+          "height": 24,
+          "transparent": true
+        },
+        {
+          "file": "haskell/library/logo-32.png",
+          "bytes": 1038,
+          "sha256": "a4b9a5e5448006645d1af5f39d49f47ee40d0c82a563ad848707fb38bb51422e",
+          "format": "png",
+          "width": 32,
+          "height": 32,
+          "transparent": true
+        },
+        {
+          "file": "haskell/library/logo-48.png",
+          "bytes": 1467,
+          "sha256": "1a097239dc78b77e47069873bacf15ae8d2f7cf1aedcebfc91f4b4cd80baa802",
+          "format": "png",
+          "width": 48,
+          "height": 48,
+          "transparent": true
+        },
+        {
+          "file": "haskell/library/logo-64.png",
+          "bytes": 1916,
+          "sha256": "c607513e94c80cc125ad65a8a35ed41bd63d556ac72e7ce775276f442d2cf32b",
+          "format": "png",
+          "width": 64,
+          "height": 64,
+          "transparent": true
+        },
+        {
+          "file": "haskell/library/logo-96.png",
+          "bytes": 2716,
+          "sha256": "ca7298651c5ac2b8542a5f58302ce5d2d3d630080fcc761907274d8e205abe59",
+          "format": "png",
+          "width": 96,
+          "height": 96,
+          "transparent": true
+        },
+        {
+          "file": "haskell/library/logo-128.png",
+          "bytes": 3644,
+          "sha256": "6eb825e6f9a160bf1074c94eb095939111297e443fa3b8c480c06ebf29c33106",
+          "format": "png",
+          "width": 128,
+          "height": 128,
+          "transparent": true
+        },
+        {
+          "file": "haskell/library/logo-144.png",
+          "bytes": 4075,
+          "sha256": "92c11466d0260f2429a6948275eab4f4a4eca3dae925d4b349e270808bf65ad7",
+          "format": "png",
+          "width": 144,
+          "height": 144,
+          "transparent": true
+        },
+        {
+          "file": "haskell/library/logo-152.png",
+          "bytes": 4234,
+          "sha256": "47f382b57459e8e66e7753f1e1fcc24c05628fc967aab7cf6001c7e2c25a23ec",
+          "format": "png",
+          "width": 152,
+          "height": 152,
+          "transparent": true
+        },
+        {
+          "file": "haskell/library/logo-167.png",
+          "bytes": 4724,
+          "sha256": "3f4eb0b6864e8e70b527c05b2fdf6de7d1f183d5f9c994fc5261721739fe06d6",
+          "format": "png",
+          "width": 167,
+          "height": 167,
+          "transparent": true
+        },
+        {
+          "file": "haskell/library/logo-180.png",
+          "bytes": 5144,
+          "sha256": "eb574e4d7f89e42c0c6497de927b3fc646a8c2c655e6e28ed2c1cd0d04d487ee",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": true
+        },
+        {
+          "file": "haskell/library/logo-192.png",
+          "bytes": 5510,
+          "sha256": "759d474cb9e2746e8b04cde46bc773628e95ecb714d61aecf6547d0367ac8244",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": true
+        },
+        {
+          "file": "haskell/library/logo-256.png",
+          "bytes": 7411,
+          "sha256": "7dbc4a8229dff96b754480e53ba4015d786b1a471b7005e57b3c19034399610d",
+          "format": "png",
+          "width": 256,
+          "height": 256,
+          "transparent": true
+        },
+        {
+          "file": "haskell/library/logo-384.png",
+          "bytes": 11506,
+          "sha256": "8f723dfcf173fd5bb7bf4d7319a705c47b2c7aa3a43f5908698399df70bfccf5",
+          "format": "png",
+          "width": 384,
+          "height": 384,
+          "transparent": true
+        },
+        {
+          "file": "haskell/library/logo-512.png",
+          "bytes": 16007,
+          "sha256": "4af6becfbad5b5a4f58c949fa17a9d9d9a9def20731335dafb208c45241c45f2",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": true
+        },
+        {
+          "file": "haskell/library/logo-1024.png",
+          "bytes": 36408,
+          "sha256": "fbda449114f19158fdb32e7acb4e4d79d6b56b522b3331eb7130ebcc928bce3b",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": true
+        },
+        {
+          "file": "haskell/library/favicon.ico",
+          "bytes": 22513,
+          "sha256": "d265364019e8d04a4af5cf32d556fe38e48c19d4cd53e55dc1c82c8e9bd105ac",
+          "format": "ico",
+          "sizes": [
+            16,
+            32,
+            48,
+            256
+          ]
+        },
+        {
+          "file": "haskell/library/safari-pinned-tab.svg",
+          "bytes": 5888,
+          "sha256": "18c22cb01537a4ed640c3c1de3641e5ca19c8c3945ba9fecc7943af1f9bb855b",
+          "format": "svg",
+          "width": 512,
+          "height": 512,
+          "monochrome": true
+        },
+        {
+          "file": "haskell/library/apple-touch-icon-light.png",
+          "bytes": 3761,
+          "sha256": "8a9bf146c01954d6d246a11f7147affbe5c59a740a768423913e2a5128fce06c",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": false,
+          "purpose": "apple-touch"
+        },
+        {
+          "file": "haskell/library/app-icon-1024-light.png",
+          "bytes": 27914,
+          "sha256": "3c205c96b0e52b0dc68e9cf92e8b331cbd2e76db00381ea9d00ae0b312764cf6",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": false,
+          "purpose": "app-icon"
+        },
+        {
+          "file": "haskell/library/maskable-192-light.png",
+          "bytes": 3018,
+          "sha256": "57357191b76dd9ba889bf2463738db123bd2036f32b57f4d3d1db360f7856992",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "haskell/library/maskable-512-light.png",
+          "bytes": 9175,
+          "sha256": "70e496752ba5a5b32651716e0fb8283a5fed190c45c92340e7001b1c1d2a596b",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "haskell/library/mstile-150-light.png",
+          "bytes": 2945,
+          "sha256": "de252574b8dba7cc05ca7442dbb88ca9a26cf680806b691b8bb67debd04f3bf9",
+          "format": "png",
+          "width": 150,
+          "height": 150,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "haskell/library/mstile-310-light.png",
+          "bytes": 6387,
+          "sha256": "38535ab11d0d9a2b8770df0e5c5e4f6635373c1747ac0afbdade5f6d12e5ad62",
+          "format": "png",
+          "width": 310,
+          "height": 310,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "haskell/library/opengraph-light.png",
+          "bytes": 59466,
+          "sha256": "3f8e33f61a1768d957e458d51e24ef2c4e38cfc3df93870c8c24b454d0db2524",
+          "format": "png",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph"
+        },
+        {
+          "file": "haskell/library/opengraph-light.jpg",
+          "bytes": 101779,
+          "sha256": "cbc2822d62b183c9cf5fbf6b4592d077918d1e5e1f29a40f94c491c415869a89",
+          "format": "jpeg",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph-fallback"
+        },
+        {
+          "file": "haskell/library/twitter-light.png",
+          "bytes": 59246,
+          "sha256": "069e49ce52ef819e6a5e8084310db81751ab31cf8451b0608bdd723d789e2149",
+          "format": "png",
+          "width": 1200,
+          "height": 600,
+          "transparent": false,
+          "purpose": "twitter"
+        },
+        {
+          "file": "haskell/library/social-square-light.png",
+          "bytes": 68395,
+          "sha256": "50be55b65927eeb09ac65b2a3236fe729d1f443fce8b2fd45121f587e3b889d2",
+          "format": "png",
+          "width": 1080,
+          "height": 1080,
+          "transparent": false,
+          "purpose": "social-square"
+        },
+        {
+          "file": "haskell/library/site.webmanifest",
+          "bytes": 732,
+          "sha256": "62d794cde362082612ad86a9a59eda91bfadb503f71ba24bc71bcd28ad6914fd",
+          "format": "webmanifest"
+        },
+        {
+          "file": "haskell/library/browserconfig.xml",
+          "bytes": 238,
+          "sha256": "f94a55b1843505bc1ca40cfa766b96fa0cf395e93006905f2b40c76f8325ceec",
+          "format": "xml"
+        },
+        {
+          "file": "haskell/library/apple-touch-icon-dark.png",
+          "bytes": 3791,
+          "sha256": "545a75a0d8b47f379b41faf035c88322c8506eeb7ea9255b590ba6e0dc26ad07",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": false,
+          "purpose": "apple-touch"
+        },
+        {
+          "file": "haskell/library/app-icon-1024-dark.png",
+          "bytes": 28220,
+          "sha256": "261336061e7f6a8564b19505f3953984f4fb9399c75371e0aaa3c780090c0c72",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": false,
+          "purpose": "app-icon"
+        },
+        {
+          "file": "haskell/library/maskable-192-dark.png",
+          "bytes": 3061,
+          "sha256": "f90b38ceb2df2bb2b4dc7ed2c40ffc4f6f97453fb2ddb94a0ab0d0172cb3b58e",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "haskell/library/maskable-512-dark.png",
+          "bytes": 9249,
+          "sha256": "01f24ade6fa92876a122f18d51278cfe5fc23f711577335660f73c5b7cda27dc",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "haskell/library/mstile-150-dark.png",
+          "bytes": 2976,
+          "sha256": "de275be7b14bd9de3dd58fc180bfb3ce1937cc90209826c6ca1901f8af6412b4",
+          "format": "png",
+          "width": 150,
+          "height": 150,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "haskell/library/mstile-310-dark.png",
+          "bytes": 6448,
+          "sha256": "ab18370f9326d938d106994d9f568a9fc85ffa05502f633db02ed131f5e6d95c",
+          "format": "png",
+          "width": 310,
+          "height": 310,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "haskell/library/opengraph-dark.png",
+          "bytes": 59660,
+          "sha256": "28512b20ef8871ca587b58a8ac3c5f05d37fe9b026cf1c6d03a5af1533c87317",
+          "format": "png",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph"
+        },
+        {
+          "file": "haskell/library/opengraph-dark.jpg",
+          "bytes": 94942,
+          "sha256": "e9bbfd2c0f852f15b23a0ba41ab3f28b4be497cb89e099cef376315e42b78dca",
+          "format": "jpeg",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph-fallback"
+        },
+        {
+          "file": "haskell/library/twitter-dark.png",
+          "bytes": 59455,
+          "sha256": "6cf0f233d739a8d5e05309c2036005811a0b3e9109c60b2ff03da0ec916241b5",
+          "format": "png",
+          "width": 1200,
+          "height": 600,
+          "transparent": false,
+          "purpose": "twitter"
+        },
+        {
+          "file": "haskell/library/social-square-dark.png",
+          "bytes": 68354,
+          "sha256": "c54000adfb52628fe4b70792a1849750a440f5477958c1e22fff78edef713df3",
+          "format": "png",
+          "width": 1080,
+          "height": 1080,
+          "transparent": false,
+          "purpose": "social-square"
+        },
+        {
+          "file": "haskell/library/site-dark.webmanifest",
+          "bytes": 730,
+          "sha256": "db84624a32e3b3344632579b408b66d45e5e95346278248291ae11925768539c",
+          "format": "webmanifest"
+        },
+        {
+          "file": "haskell/library/browserconfig-dark.xml",
+          "bytes": 236,
+          "sha256": "b52d86d88fb9f1d37265420434844d34bdada39106001033260bc169ae2bec95",
+          "format": "xml"
+        }
+      ]
+    },
+    {
+      "language": "haskell",
+      "label": "Haskell",
+      "variant": "workspace",
+      "githubColor": "#5E5086",
+      "alt": "libtmux for Haskell — workspace CLI",
+      "files": [
+        {
+          "file": "haskell/workspace/logo.svg",
+          "bytes": 2411,
+          "sha256": "7885a755b959f948c752eff45d64fc81d6a1a052b0fd957efe269b91676cead4",
+          "format": "svg",
+          "width": 512,
+          "height": 512,
+          "transparent": true
+        },
+        {
+          "file": "haskell/workspace/logo-16.png",
+          "bytes": 289,
+          "sha256": "b085401df8c2b66f058ad253a233896317570902534e7e702a5bc55219311aa4",
+          "format": "png",
+          "width": 16,
+          "height": 16,
+          "transparent": true
+        },
+        {
+          "file": "haskell/workspace/logo-24.png",
+          "bytes": 326,
+          "sha256": "dde8289ca89e3dc5601eeebbb8ac9e3b81e392be29c8dedd0bff876be52d453a",
+          "format": "png",
+          "width": 24,
+          "height": 24,
+          "transparent": true
+        },
+        {
+          "file": "haskell/workspace/logo-32.png",
+          "bytes": 418,
+          "sha256": "ff637b85c25f85b8963fb0bcccdfcca2bacc72656a62dbbb436eff7dfceb76cb",
+          "format": "png",
+          "width": 32,
+          "height": 32,
+          "transparent": true
+        },
+        {
+          "file": "haskell/workspace/logo-48.png",
+          "bytes": 540,
+          "sha256": "41ec2d590f214b83913b365e671316d88cc28008688c2c15ff36aae8649b03a2",
+          "format": "png",
+          "width": 48,
+          "height": 48,
+          "transparent": true
+        },
+        {
+          "file": "haskell/workspace/logo-64.png",
+          "bytes": 641,
+          "sha256": "905c030cb4fa25e841f24dbef8b110f4fb94820190b361a589999162a7d79e27",
+          "format": "png",
+          "width": 64,
+          "height": 64,
+          "transparent": true
+        },
+        {
+          "file": "haskell/workspace/logo-96.png",
+          "bytes": 852,
+          "sha256": "65b3a3ab7ebb339f0a8f7d403bc2e1686020df828b455fbfcba7974dc15515a7",
+          "format": "png",
+          "width": 96,
+          "height": 96,
+          "transparent": true
+        },
+        {
+          "file": "haskell/workspace/logo-128.png",
+          "bytes": 1156,
+          "sha256": "ef8698b45b98fabdce17c1ea6eab726b3c484453c5c75af978de55c81de94222",
+          "format": "png",
+          "width": 128,
+          "height": 128,
+          "transparent": true
+        },
+        {
+          "file": "haskell/workspace/logo-144.png",
+          "bytes": 1282,
+          "sha256": "8ef26ff49a1fa523dc1ba7e20205aa4e9ae53017d66e54ec910a2906201e0872",
+          "format": "png",
+          "width": 144,
+          "height": 144,
+          "transparent": true
+        },
+        {
+          "file": "haskell/workspace/logo-152.png",
+          "bytes": 1335,
+          "sha256": "12036c30d993c2a9f739584d0fdb8e871ae94ecd6cbdb7e26dd8eb4189f695e5",
+          "format": "png",
+          "width": 152,
+          "height": 152,
+          "transparent": true
+        },
+        {
+          "file": "haskell/workspace/logo-167.png",
+          "bytes": 1522,
+          "sha256": "2d9abc532d88adf262c571fae166df528bddda5e166c0e5169105b2eb5f0bbdc",
+          "format": "png",
+          "width": 167,
+          "height": 167,
+          "transparent": true
+        },
+        {
+          "file": "haskell/workspace/logo-180.png",
+          "bytes": 1624,
+          "sha256": "b2af086a3ea469480f929bc87f779811c944e45f6df251f1e73d9a60d9dfc27b",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": true
+        },
+        {
+          "file": "haskell/workspace/logo-192.png",
+          "bytes": 1741,
+          "sha256": "4bfc6de57fafd9ba9c00a5d804be2ac199e56b7dda96ac557456c65768fdf16b",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": true
+        },
+        {
+          "file": "haskell/workspace/logo-256.png",
+          "bytes": 2454,
+          "sha256": "db9cb1077a57c22c55e8535ce79d1a9d98f37a867a3739025370aeb24cf4ae3e",
+          "format": "png",
+          "width": 256,
+          "height": 256,
+          "transparent": true
+        },
+        {
+          "file": "haskell/workspace/logo-384.png",
+          "bytes": 3753,
+          "sha256": "82d75f31854e4e7a864a342ab197de9d3db4643b70286bd57d6e11a2dd249b4e",
+          "format": "png",
+          "width": 384,
+          "height": 384,
+          "transparent": true
+        },
+        {
+          "file": "haskell/workspace/logo-512.png",
+          "bytes": 5396,
+          "sha256": "dcfb4e33620d061679925e0de43166ec76c123cbdb12ede7d79f0adeb1a56d19",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": true
+        },
+        {
+          "file": "haskell/workspace/logo-1024.png",
+          "bytes": 13828,
+          "sha256": "3dac106f1524021089c122a5a14877b701ba877061062c2f34b79e2238a930cf",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": true
+        },
+        {
+          "file": "haskell/workspace/favicon.ico",
+          "bytes": 17556,
+          "sha256": "a7d417e1c6d8945ceeeadadc2f2b94d28b3db81c06315ab6dc99099f7994825c",
+          "format": "ico",
+          "sizes": [
+            16,
+            32,
+            48,
+            256
+          ]
+        },
+        {
+          "file": "haskell/workspace/safari-pinned-tab.svg",
+          "bytes": 2411,
+          "sha256": "074d6e8304ef7cf79bfff140d93d8db2a789e8eceddbc40bd428cddb1ccdebf9",
+          "format": "svg",
+          "width": 512,
+          "height": 512,
+          "monochrome": true
+        },
+        {
+          "file": "haskell/workspace/apple-touch-icon-light.png",
+          "bytes": 1301,
+          "sha256": "e81b702bb5c29fc05d1518d56cf43ebf25f93c723933348df8580dfa4ea234b4",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": false,
+          "purpose": "apple-touch"
+        },
+        {
+          "file": "haskell/workspace/app-icon-1024-light.png",
+          "bytes": 11463,
+          "sha256": "690017305c7919788db61bd6b839d6b68e4abc0bf169d7fe58874bcf3422c6ef",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": false,
+          "purpose": "app-icon"
+        },
+        {
+          "file": "haskell/workspace/maskable-192-light.png",
+          "bytes": 1113,
+          "sha256": "0a24c223da2d1e61b957a5c52001e973b049d98fdffac3f29c04eb1141e015ec",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "haskell/workspace/maskable-512-light.png",
+          "bytes": 3794,
+          "sha256": "c17d99e444eb07c2724e9c2201c0e41c733f0f95c24879d53de494dbeb5aa016",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "haskell/workspace/mstile-150-light.png",
+          "bytes": 976,
+          "sha256": "6a974a854e36a433d014228dac8f442763de2fe870486a2b7e90cf2a81569969",
+          "format": "png",
+          "width": 150,
+          "height": 150,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "haskell/workspace/mstile-310-light.png",
+          "bytes": 2215,
+          "sha256": "2831e6b2417f66d08f145ccc6ab721a225b90bb9c779bbcbc2ec4229e675cc49",
+          "format": "png",
+          "width": 310,
+          "height": 310,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "haskell/workspace/opengraph-light.png",
+          "bytes": 23152,
+          "sha256": "19a473b21b1c7f36b8584b0e48bb032a46ed01da61dec6f06d595f2f2040a810",
+          "format": "png",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph"
+        },
+        {
+          "file": "haskell/workspace/opengraph-light.jpg",
+          "bytes": 42972,
+          "sha256": "5554d93d5be8c63cd6a62fc85c7721473e92ff946c5a94b46571b9c93c630cfb",
+          "format": "jpeg",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph-fallback"
+        },
+        {
+          "file": "haskell/workspace/twitter-light.png",
+          "bytes": 23006,
+          "sha256": "45690dd539df64d9a1af33e26d7625df2710410e92387579c21bb3afbb8bde19",
+          "format": "png",
+          "width": 1200,
+          "height": 600,
+          "transparent": false,
+          "purpose": "twitter"
+        },
+        {
+          "file": "haskell/workspace/social-square-light.png",
+          "bytes": 26074,
+          "sha256": "8c329e151312eff5182430d8428aea7b900713da5a356300f4d8127ea1c649cc",
+          "format": "png",
+          "width": 1080,
+          "height": 1080,
+          "transparent": false,
+          "purpose": "social-square"
+        },
+        {
+          "file": "haskell/workspace/site.webmanifest",
+          "bytes": 753,
+          "sha256": "7f33f0bc7242cc9694a7414e2cd22dc187d52307af6af687d8f9686c8fa6918f",
+          "format": "webmanifest"
+        },
+        {
+          "file": "haskell/workspace/browserconfig.xml",
+          "bytes": 238,
+          "sha256": "f94a55b1843505bc1ca40cfa766b96fa0cf395e93006905f2b40c76f8325ceec",
+          "format": "xml"
+        },
+        {
+          "file": "haskell/workspace/apple-touch-icon-dark.png",
+          "bytes": 1240,
+          "sha256": "fa27fae37b05b0f83c683d83f514ee4a87922db019fa465270788b859fa15731",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": false,
+          "purpose": "apple-touch"
+        },
+        {
+          "file": "haskell/workspace/app-icon-1024-dark.png",
+          "bytes": 11210,
+          "sha256": "8ebd9d19360a0a2795de96f749703cd4beca329edb114b858c2cac7bf3b9f3be",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": false,
+          "purpose": "app-icon"
+        },
+        {
+          "file": "haskell/workspace/maskable-192-dark.png",
+          "bytes": 1085,
+          "sha256": "604ba3edf54b9825eb2b72e7a46e0d9795b160b9a72bfd6a4ced33eaeda51e3f",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "haskell/workspace/maskable-512-dark.png",
+          "bytes": 3716,
+          "sha256": "2882e79c0c31a132cb83336d2e6970dc732ebbc2d5c5c90043b6aed94b76b24d",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "haskell/workspace/mstile-150-dark.png",
+          "bytes": 947,
+          "sha256": "448c1128566ad1a0ed15dd0b30dabaa1027c5d46bee9d0f5ec0d3397437ea6fc",
+          "format": "png",
+          "width": 150,
+          "height": 150,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "haskell/workspace/mstile-310-dark.png",
+          "bytes": 2135,
+          "sha256": "6c4df8c29a0b52da14f3bec5c0c65dcad29771d81dad7ed146cf20010ca90240",
+          "format": "png",
+          "width": 310,
+          "height": 310,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "haskell/workspace/opengraph-dark.png",
+          "bytes": 23221,
+          "sha256": "bd7f1ee7eb5e6107dec202fa9df236fe03db80cc6681ad531bda5474fc0ce077",
+          "format": "png",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph"
+        },
+        {
+          "file": "haskell/workspace/opengraph-dark.jpg",
+          "bytes": 40263,
+          "sha256": "4f3ea8ece66afda52abf752ea37e523a266b71171040143774c5289627080bb5",
+          "format": "jpeg",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph-fallback"
+        },
+        {
+          "file": "haskell/workspace/twitter-dark.png",
+          "bytes": 23074,
+          "sha256": "7d2e3843f74b75ab7a76a6038e6d5fc7a51ad2e513a1cfe4160d3e0f767bfb6b",
+          "format": "png",
+          "width": 1200,
+          "height": 600,
+          "transparent": false,
+          "purpose": "twitter"
+        },
+        {
+          "file": "haskell/workspace/social-square-dark.png",
+          "bytes": 26119,
+          "sha256": "d1b5d49f19f5f07abdfd407979a62c1e51d5dd7e25d882f5648b75444345bc26",
+          "format": "png",
+          "width": 1080,
+          "height": 1080,
+          "transparent": false,
+          "purpose": "social-square"
+        },
+        {
+          "file": "haskell/workspace/site-dark.webmanifest",
+          "bytes": 751,
+          "sha256": "7dedffddded5e07d323125fba9b5cf45f3ae1c924fd148057c3286026c8cae42",
+          "format": "webmanifest"
+        },
+        {
+          "file": "haskell/workspace/browserconfig-dark.xml",
+          "bytes": 236,
+          "sha256": "b52d86d88fb9f1d37265420434844d34bdada39106001033260bc169ae2bec95",
+          "format": "xml"
+        }
+      ]
+    },
+    {
+      "language": "haskell",
+      "label": "Haskell",
+      "variant": "mcp",
+      "githubColor": "#5E5086",
+      "alt": "libtmux for Haskell — MCP",
+      "files": [
+        {
+          "file": "haskell/mcp/logo.svg",
+          "bytes": 4059,
+          "sha256": "196d71a590f388949216d41fad859ce2552f6ab8d0f7e86d7c54c9dd149303c4",
+          "format": "svg",
+          "width": 512,
+          "height": 512,
+          "transparent": true
+        },
+        {
+          "file": "haskell/mcp/logo-16.png",
+          "bytes": 596,
+          "sha256": "57f93c16ca4f498068e5f8dbb162ca9382c37a14f740dacee7ef7b99f8a366b1",
+          "format": "png",
+          "width": 16,
+          "height": 16,
+          "transparent": true
+        },
+        {
+          "file": "haskell/mcp/logo-24.png",
+          "bytes": 867,
+          "sha256": "2c5b6830e95857f8e8566f42febc7de61907a16030f7789951e6f2438460e6c6",
+          "format": "png",
+          "width": 24,
+          "height": 24,
+          "transparent": true
+        },
+        {
+          "file": "haskell/mcp/logo-32.png",
+          "bytes": 1188,
+          "sha256": "40281a741db284f65dfb0629deec5ae7d62251d4dcefcb72ca77fa6173f1dc03",
+          "format": "png",
+          "width": 32,
+          "height": 32,
+          "transparent": true
+        },
+        {
+          "file": "haskell/mcp/logo-48.png",
+          "bytes": 1740,
+          "sha256": "931b5380d24f61c9a8cb2c6fb42f10b891559ef5bc02d3d839257f022c70c2cc",
+          "format": "png",
+          "width": 48,
+          "height": 48,
+          "transparent": true
+        },
+        {
+          "file": "haskell/mcp/logo-64.png",
+          "bytes": 2183,
+          "sha256": "b4506b0ea1173ceb02f0d6af02c8e3d5465e49e89a1bb6f4c08a392571d768ba",
+          "format": "png",
+          "width": 64,
+          "height": 64,
+          "transparent": true
+        },
+        {
+          "file": "haskell/mcp/logo-96.png",
+          "bytes": 3142,
+          "sha256": "2654854be14f1fe330b11a056243d21e089d7bbbcba3afd2c537d71b786bcd29",
+          "format": "png",
+          "width": 96,
+          "height": 96,
+          "transparent": true
+        },
+        {
+          "file": "haskell/mcp/logo-128.png",
+          "bytes": 4102,
+          "sha256": "ef49f0a8a026477531a3b15d522d6f7512e6c816af5fdd0cff009adc15470a96",
+          "format": "png",
+          "width": 128,
+          "height": 128,
+          "transparent": true
+        },
+        {
+          "file": "haskell/mcp/logo-144.png",
+          "bytes": 4521,
+          "sha256": "f2ec13deec051222a74e9e42d64ee0aaabf3abf1396d743d8dc69a19524f7db3",
+          "format": "png",
+          "width": 144,
+          "height": 144,
+          "transparent": true
+        },
+        {
+          "file": "haskell/mcp/logo-152.png",
+          "bytes": 4677,
+          "sha256": "0d46f873fdc1c5aee4dc59ab11df793be8e62a156b3dd8a3909db7757110a8d6",
+          "format": "png",
+          "width": 152,
+          "height": 152,
+          "transparent": true
+        },
+        {
+          "file": "haskell/mcp/logo-167.png",
+          "bytes": 5028,
+          "sha256": "0799ed787981431c2f7475231cecd93b266511c2535199e10eca8ef0fd80c28c",
+          "format": "png",
+          "width": 167,
+          "height": 167,
+          "transparent": true
+        },
+        {
+          "file": "haskell/mcp/logo-180.png",
+          "bytes": 5478,
+          "sha256": "0374d40948db0b56a0eece912c999c4de60b4e611451a5112462dfb5f3efe2d7",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": true
+        },
+        {
+          "file": "haskell/mcp/logo-192.png",
+          "bytes": 5891,
+          "sha256": "354b89fe8f8066792a92bfb2a925e9b310b8dbe780af2ae5fe3e19132f01c2dd",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": true
+        },
+        {
+          "file": "haskell/mcp/logo-256.png",
+          "bytes": 7932,
+          "sha256": "26d574216216f530ad37421ba24f7c08ce02e7be81182345404e76e229174172",
+          "format": "png",
+          "width": 256,
+          "height": 256,
+          "transparent": true
+        },
+        {
+          "file": "haskell/mcp/logo-384.png",
+          "bytes": 12153,
+          "sha256": "4d479486affa03d492a877df466d9c6f10a66e017eddd3954dbb620215a94432",
+          "format": "png",
+          "width": 384,
+          "height": 384,
+          "transparent": true
+        },
+        {
+          "file": "haskell/mcp/logo-512.png",
+          "bytes": 16678,
+          "sha256": "5ff63fb225b55dc193336e36176aa3ba3d19f0cff4eccd0860a1ae5dc9031590",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": true
+        },
+        {
+          "file": "haskell/mcp/logo-1024.png",
+          "bytes": 37827,
+          "sha256": "1a18610b7f2ca8b804527a8fec87859e88f5014890c6117747bec5ef89e4a59e",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": true
+        },
+        {
+          "file": "haskell/mcp/favicon.ico",
+          "bytes": 23034,
+          "sha256": "f7351fd370ea942ddcaad3747099415b2ba2df4be9eab152ff5512d7cbcabd6e",
+          "format": "ico",
+          "sizes": [
+            16,
+            32,
+            48,
+            256
+          ]
+        },
+        {
+          "file": "haskell/mcp/safari-pinned-tab.svg",
+          "bytes": 4059,
+          "sha256": "31a6ec3d2d566f6ecea930510265a2ca2723793ad146f6047e946ac2942422c8",
+          "format": "svg",
+          "width": 512,
+          "height": 512,
+          "monochrome": true
+        },
+        {
+          "file": "haskell/mcp/apple-touch-icon-light.png",
+          "bytes": 4200,
+          "sha256": "0957cb52d927e7b959df712d97aabd3bf957c5369ffac163372e78735d16afdf",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": false,
+          "purpose": "apple-touch"
+        },
+        {
+          "file": "haskell/mcp/app-icon-1024-light.png",
+          "bytes": 27944,
+          "sha256": "1a4e227b64445f097aeffe2b319adf7983877f10e717552f22fedf565fa8bb83",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": false,
+          "purpose": "app-icon"
+        },
+        {
+          "file": "haskell/mcp/maskable-192-light.png",
+          "bytes": 3157,
+          "sha256": "0b87bbf866cbcda1b5d9bc1ad28200e674f84354e277472a66423b755f13de0c",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "haskell/mcp/maskable-512-light.png",
+          "bytes": 9561,
+          "sha256": "969c73b9d79f65892cf845d96c0bc88024db4cfc2113059a965c49ace85e0680",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "haskell/mcp/mstile-150-light.png",
+          "bytes": 3240,
+          "sha256": "11e16a2681643b1f5ffa92b7b42aac34534ba4ab73a88a177f01698b6253b528",
+          "format": "png",
+          "width": 150,
+          "height": 150,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "haskell/mcp/mstile-310-light.png",
+          "bytes": 6645,
+          "sha256": "6842a9bb973b626e3f5859233a561aadad607e381a645014eaea56810e17876b",
+          "format": "png",
+          "width": 310,
+          "height": 310,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "haskell/mcp/opengraph-light.png",
+          "bytes": 26692,
+          "sha256": "4e7ec0c4529947915a24e3e361ad69d41b4c786d8193504d89c39aab75a52fcb",
+          "format": "png",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph"
+        },
+        {
+          "file": "haskell/mcp/opengraph-light.jpg",
+          "bytes": 48423,
+          "sha256": "ead4a983a8c6dc879dadf541a0259482db94b734bf11fd1e4e18685a5a2f73f0",
+          "format": "jpeg",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph-fallback"
+        },
+        {
+          "file": "haskell/mcp/twitter-light.png",
+          "bytes": 26507,
+          "sha256": "032d48118ea6847ec7b49cb7373278fa1cdc8a4d842b771f9ca215242a05eab9",
+          "format": "png",
+          "width": 1200,
+          "height": 600,
+          "transparent": false,
+          "purpose": "twitter"
+        },
+        {
+          "file": "haskell/mcp/social-square-light.png",
+          "bytes": 30585,
+          "sha256": "17231d6d0864a7d53b4937760162ae0f88c7c6e193e1b7dd460ae71e839d2705",
+          "format": "png",
+          "width": 1080,
+          "height": 1080,
+          "transparent": false,
+          "purpose": "social-square"
+        },
+        {
+          "file": "haskell/mcp/site.webmanifest",
+          "bytes": 743,
+          "sha256": "b688287f841b1e86ec5c99f0e62337d640df43c7013d29f6c0a0c90535fcde2a",
+          "format": "webmanifest"
+        },
+        {
+          "file": "haskell/mcp/browserconfig.xml",
+          "bytes": 238,
+          "sha256": "f94a55b1843505bc1ca40cfa766b96fa0cf395e93006905f2b40c76f8325ceec",
+          "format": "xml"
+        },
+        {
+          "file": "haskell/mcp/apple-touch-icon-dark.png",
+          "bytes": 4240,
+          "sha256": "da77c629877dbc66cbbf1237d227a3feb8b4b7c84ca6852b50146d0c2692ceea",
+          "format": "png",
+          "width": 180,
+          "height": 180,
+          "transparent": false,
+          "purpose": "apple-touch"
+        },
+        {
+          "file": "haskell/mcp/app-icon-1024-dark.png",
+          "bytes": 28221,
+          "sha256": "baf724ecd6ee72ed4043ad980642ee131c1ec0a183468a7600791d42585f8b06",
+          "format": "png",
+          "width": 1024,
+          "height": 1024,
+          "transparent": false,
+          "purpose": "app-icon"
+        },
+        {
+          "file": "haskell/mcp/maskable-192-dark.png",
+          "bytes": 3235,
+          "sha256": "6a2f03cff9335a2b08f6f13dff6783e1a023af9e6742f8a197ccc32368e0be26",
+          "format": "png",
+          "width": 192,
+          "height": 192,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "haskell/mcp/maskable-512-dark.png",
+          "bytes": 9623,
+          "sha256": "83fce3c65735a48c4cc9667096ea5556871b26df723ca2c90da6fc2d45edd407",
+          "format": "png",
+          "width": 512,
+          "height": 512,
+          "transparent": false,
+          "purpose": "maskable",
+          "contentFraction": 0.52
+        },
+        {
+          "file": "haskell/mcp/mstile-150-dark.png",
+          "bytes": 3308,
+          "sha256": "cacd760458775e235c11b20b783c534eaf44d93c86d9fbe85eb1d12df7b2bd0c",
+          "format": "png",
+          "width": 150,
+          "height": 150,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "haskell/mcp/mstile-310-dark.png",
+          "bytes": 6709,
+          "sha256": "729a1c94eebaca14bfd62bd4ddd7d3ba68b90ba7d09c680afe2318094f04dd01",
+          "format": "png",
+          "width": 310,
+          "height": 310,
+          "transparent": false,
+          "purpose": "windows-tile"
+        },
+        {
+          "file": "haskell/mcp/opengraph-dark.png",
+          "bytes": 26899,
+          "sha256": "6f894144a2d77d0990eaf434f52a1eced54ff9155f26dfd8825c1c575181a425",
+          "format": "png",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph"
+        },
+        {
+          "file": "haskell/mcp/opengraph-dark.jpg",
+          "bytes": 46546,
+          "sha256": "d9afb51ecfc9c4484539556b0d5c63583b2459135a3375a62bfd35d38264fc53",
+          "format": "jpeg",
+          "width": 1200,
+          "height": 630,
+          "transparent": false,
+          "purpose": "opengraph-fallback"
+        },
+        {
+          "file": "haskell/mcp/twitter-dark.png",
+          "bytes": 26710,
+          "sha256": "866445457091f5dbbfd5449a495df2685bd4095e559b24505fdbd162cd57fc6e",
+          "format": "png",
+          "width": 1200,
+          "height": 600,
+          "transparent": false,
+          "purpose": "twitter"
+        },
+        {
+          "file": "haskell/mcp/social-square-dark.png",
+          "bytes": 30839,
+          "sha256": "f0393f6579e09075610171c35ac478bc001ca94f7534e469dc7c2183ba0578d0",
+          "format": "png",
+          "width": 1080,
+          "height": 1080,
+          "transparent": false,
+          "purpose": "social-square"
+        },
+        {
+          "file": "haskell/mcp/site-dark.webmanifest",
+          "bytes": 741,
+          "sha256": "21b1bc1b5ad91e65d56ddd7c3cfcd905e8705528ab4bc4f9f8a14fe49bf15c34",
+          "format": "webmanifest"
+        },
+        {
+          "file": "haskell/mcp/browserconfig-dark.xml",
+          "bytes": 236,
+          "sha256": "b52d86d88fb9f1d37265420434844d34bdada39106001033260bc169ae2bec95",
+          "format": "xml"
+        }
+      ]
     }
   ],
-  "fileCount": 2150
+  "fileCount": 2279
 }
