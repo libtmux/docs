@@ -11,6 +11,7 @@ import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects } from '../src/lib/mcp-catalog'
 import { mcpObjectGroup } from '../src/lib/mcp-reference'
 import { mentionBadge, mentionBadgeHtml } from '../src/lib/mention-badge'
 import { mcpTitle, workspaceSubtitle, workspaceTitle } from '../src/lib/product-copy'
+import { documentationSectionsFor } from '../src/lib/port-documentation'
 import type { ApiTreeJson } from '../src/lib/api-search'
 import { PRODUCT_SECTIONS } from '../src/lib/product-api-sections'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
@@ -380,8 +381,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   })
 
   it.each(PORTS.filter((port) => !port.parentLibrary).map((port) => port.slug))('%s exposes supported products from latest homes and core navigation', async (port) => {
-    // Haskell currently ships installation and ID guides, without a Topics section.
-    for (const section of port === 'haskell' ? ['', 'guides/'] : ['', 'guides/', 'topics/']) {
+    const sections = ['guides', 'topics'].filter((section) => documentationSectionsFor(port).includes(section))
+    for (const section of ['', ...sections.map((section) => `${section}/`)]) {
       const path = `${port}/latest/${section}`
       await inspect(path, (document) => {
         const navigation = document.querySelectorAll(section ? '[data-surface-picker]' : 'main')
