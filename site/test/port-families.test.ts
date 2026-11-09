@@ -19,10 +19,10 @@ describe('port picker families', () => {
     expect(PORT_FAMILIES.filter((family) => family.ports.length === 0)).toEqual([])
   })
 
-  it('puts Elixir in the BEAM family and in no other', () => {
-    expect(familiesOf('elixir')).toEqual(['BEAM'])
+  it.each(['erlang', 'elixir'])('puts %s in the BEAM family and in no other', (port) => {
+    expect(familiesOf(port)).toEqual(['BEAM'])
     for (const family of portFamilies(slugs)) {
-      expect(family.ports.includes('elixir'), family.label).toBe(family.label === 'BEAM')
+      expect(family.ports.includes(port), family.label).toBe(family.label === 'BEAM')
     }
   })
 

@@ -37,6 +37,7 @@ describe('the ports that have a page for an operation', () => {
   it('names the declaration each port reaches for a server snapshot, wherever its name is not `snapshot`', () => {
     expect(CONCEPTS.snapshot!.symbols).toMatchObject({
       csharp: 'LibTmux.Server.CaptureSnapshotAsync',
+      erlang: 'tmux_server:snapshot/1',
       fsharp: 'LibTmux.FSharp.Server.capture',
       lisp: 'libtmux:fetch-snapshot',
       rs: 'server.Server.hierarchy',
@@ -88,6 +89,7 @@ describe('the ports that have a page for an operation', () => {
     expect(links.rs).toMatchObject({ publicId: 'server.Server.hierarchy', href: expect.stringMatching(/\/rs\/.*\/reference\/server-server-hierarchy[^/]*\/$/), note: CONCEPTS.snapshot!.notes!.rs })
     expect(links.swift).toMatchObject({ publicId: 'Server.snapshot()', href: expect.stringContaining('/swift/') })
     expect(links.csharp).toMatchObject({ publicId: 'LibTmux.Server.CaptureSnapshotAsync' })
+    expect(links.erlang).toMatchObject({ publicId: 'tmux_server:snapshot/1', href: expect.stringContaining('/erlang/') })
     expect(links.fsharp).toMatchObject({ publicId: 'LibTmux.FSharp.Server.capture' })
     expect(links.py).toMatchObject({ href: undefined, absent: 'no equivalent on `Server`' })
     expect(links.cxx).toMatchObject({ href: undefined, absent: CONCEPTS.snapshot!.absent!.cxx })

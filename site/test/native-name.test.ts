@@ -137,7 +137,7 @@ describe('the other ports', () => {
 
   // Each family keeps the separator its language writes, which the id carries.
   it.each([
-    ['cxx', /::/, undefined], ['ruby', /::/, undefined], ['lua', /:/, undefined], ['lisp', /:/, undefined], ['elixir', /\//, undefined], ['powershell', /\\/, undefined],
+    ['cxx', /::/, undefined], ['ruby', /::/, undefined], ['lua', /:/, undefined], ['lisp', /:/, undefined], ['elixir', /\//, undefined], ['erlang', /:/, /::/], ['powershell', /\\/, undefined],
     ['py', /\./, /::/], ['go', /\./, /::/], ['swift', /\./, /::/], ['java', /\./, /::/], ['csharp', /\./, /::/], ['julia', /\./, /::/],
   ] as const)('%s keeps the separator its language writes', (port, wanted, unwanted) => {
     const shown = API_MODELS[port].symbols.map((symbol) => nativeQualifiedName(API_MODELS[port], symbol))
@@ -180,6 +180,9 @@ describe('short names', () => {
     ['lua', 'libtmux.BreakPaneOptions.name', 'BreakPaneOptions.name'],
     ['go', 'tmux.Server.NewSession', 'Server.NewSession'],
     ['elixir', 'LibTmux.Capture.fetch/2', 'Capture.fetch/2'],
+    ['erlang', 'tmux_server:snapshot/1', 'tmux_server:snapshot/1'],
+    ['erlang', 't:tmux_model:pane/0', 'tmux_model:pane/0'],
+    ['erlang', '#tmux_model:pane{}', '#tmux_model:pane{}'],
     ['powershell', 'LibTmux\\Connect-TmuxControl', 'LibTmux\\Connect-TmuxControl'],
     ['py', 'libtmux.Server.new_session', 'Server.new_session'],
     ['py', 'libtmux._internal.env.resolve_env', 'resolve_env'],
@@ -209,6 +212,10 @@ describe('short names', () => {
         if (!owner) { expect(shown, `${port} ${symbol.id}`).toBe(symbol.name); continue }
         // OCaml types group constructors and fields without qualifying their names.
         if (port === 'ocaml' && owner.kind !== 'module') continue
+        if (port === 'erlang' && symbol.kind === 'struct') {
+          expect(shown, symbol.id).toBe(`#${owner.name}:${symbol.name.slice(1)}`)
+          continue
+        }
         expect(shown.startsWith(owner.name) && shown.endsWith(symbol.name), `${port} ${symbol.id}`).toBe(true)
         const separator = shown.slice(owner.name.length, shown.length - symbol.name.length)
         // A Rust tuple field follows its owner with a dot, as rustdoc writes it; every other Rust member with `::`.

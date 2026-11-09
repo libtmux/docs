@@ -100,7 +100,7 @@ describe('shared reference index sections', () => {
         .toEqual([['Libtmux_unix.Client', 'module'], ['Libtmux_eio.Client', 'module']])
       expect(firstEntry(navTree(port)[0]!)?.id).toBe('Libtmux_unix.Client')
     } else if (port === 'clojure') expect(sections[0].types[0].name).toBe('libtmux.core')
-    else if (port === 'erlang') expect(sections[0].types[0].name).toBe('tmux_server')
+    else if (port === 'erlang') expect(sections[0].types[0]).toMatchObject({ name: 'tmux_server', kind: 'module' })
     else if (port !== 'haskell') expect(sections[0].types[0].publicId ?? sections[0].types[0].id).toBe(CORE_HOME[port].objects!.server)
     if (port !== 'haskell') expect(sections[0].id).toBe('server')
     const ids = sections.flatMap((section) => [...section.types, ...section.free]).map((symbol) => symbol.id)
@@ -278,7 +278,7 @@ describe('major tmux object domains', () => {
       .toEqual(expect.arrayContaining(['LibTmux.Id', 'LibTmux.Value', 'LibTmux.Version', 'IdError']))
     else if (port === 'clojure') expect(owners.map((owner) => owner.name).sort())
       .toEqual(['libtmux.async', 'libtmux.control', 'libtmux.core', 'libtmux.core-async', 'libtmux.data'])
-    else if (port === 'erlang') expect(owners.some((owner) => owner.name === 'tmux_server'), port).toBe(true)
+    else if (port === 'erlang') expect(owners.map((owner) => owner.name)).toEqual(expect.arrayContaining(['tmux_server', 'tmux_snapshot']))
     else expect(owners.some((owner) => (owner.publicId ?? owner.id) === CORE_HOME[port].objects!.server), port).toBe(true)
     for (const owner of owners) {
       const displayed = membersOf(model, owner, memberSignals(port, mentions.mentions)).sort(compare)

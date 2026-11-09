@@ -100,6 +100,8 @@ export function nativeShortName(model: { port?: string; symbols: readonly ApiSym
   const owner = model && symbol.parent ? symbolTable(model.symbols).get(symbol.parent) : undefined
   if (!owner) return symbol.name
   if (model?.port === 'rs') return `${owner.name}${tupleField(symbol.name) ? '.' : '::'}${symbol.name}`
+  // Erlang places the record marker before the module: #tmux_model:pane{}.
+  if (model?.port === 'erlang' && symbol.kind === 'struct') return qualifiedNameOf(symbol)
   const id = qualifiedNameOf(symbol), ownerId = qualifiedNameOf(owner)
   // OCaml constructors and record fields live in their module's namespace, not their type's.
   if (model?.port === 'ocaml') return id.split('.').slice(-2).join('.')

@@ -3,7 +3,7 @@
     {
       "label": "Cabal package descriptions",
       "url": "https://cabal.readthedocs.io/en/3.18/cabal-package-description-file.html",
-      "heading": "1. Package Description — <package>.cabal File "
+      "heading": "1. Package Description \u2014 <package>.cabal File \uf0c1"
     },
     {
       "label": "core.async",
@@ -1069,36 +1069,6 @@
       "label": "OTP application boundaries and dependencies",
       "url": "https://www.erlang.org/doc/system/applications.html",
       "heading": "Applications"
-    },
-    {
-      "label": "OTP applications",
-      "url": "https://www.erlang.org/doc/system/applications.html",
-      "heading": "Applications"
-    },
-    {
-      "label": "Erlang behaviours",
-      "url": "https://www.erlang.org/doc/system/design_principles.html",
-      "heading": "Overview"
-    },
-    {
-      "label": "Erlang modules",
-      "url": "https://www.erlang.org/doc/system/modules.html",
-      "heading": "Modules"
-    },
-    {
-      "label": "Erlang functions",
-      "url": "https://www.erlang.org/doc/system/ref_man_functions.html",
-      "heading": "Functions"
-    },
-    {
-      "label": "Erlang records",
-      "url": "https://www.erlang.org/doc/system/ref_man_records.html",
-      "heading": "Records"
-    },
-    {
-      "label": "Erlang types and function specifications",
-      "url": "https://www.erlang.org/doc/system/typespec.html",
-      "heading": "Types and Function Specifications"
     },
     {
       "label": "Haskell datatype declarations",

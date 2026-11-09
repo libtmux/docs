@@ -31,7 +31,7 @@ const LANGS = [
   // fragment, a Package.swift dependency and a CMakeLists block. Three of the
   // eight ports cannot be installed from a command line at all, so without
   // these their only install instructions render as flat grey.
-  'kotlin', 'scala', 'fsharp', 'csharp', 'xml', 'swift', 'cmake', 'toml', 'nix', 'powershell', 'julia', 'elixir', 'haskell', 'ini',
+  'kotlin', 'scala', 'fsharp', 'csharp', 'xml', 'swift', 'cmake', 'toml', 'nix', 'powershell', 'julia', 'elixir', 'erlang', 'haskell', 'ini',
 ] as const
 
 /**

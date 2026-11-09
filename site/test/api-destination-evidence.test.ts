@@ -7,7 +7,11 @@ import { PORT_LANGUAGES, languageOfUrl, languageProblem, loadReviewedLinks, docc
 import { BARE_OWNERS, DEFAULT_NAMES, bareOwners, hintOwners } from '../../scripts/lib/api-sources.mjs'
 import { pageHeading } from '../../scripts/lib/api-html.mjs'
 import { dataLinks, markdownLinks, normalizeAddress, occurrencesIn } from '../../scripts/lib/api-markdown-links.mjs'
-import { MAX_UNVERIFIABLE_SHARE, expectationsOf, expectedSymbols, mentions, readPage, recordProblems, sameAddress, sectionAt, slugSymbol } from '../../scripts/lib/api-destination-verification.mjs'
+import {
+  INVENTORY_SOURCES, MAX_UNVERIFIABLE_SHARE, UNVERIFIABLE_REASONS, checkApiEvidence, expectationsOf, expectedSymbols, inventoryDigest, mentions, needsCheck, readPage, recordProblems, sameAddress, sectionAt, slugSymbol,
+} from '../../scripts/lib/api-destination-verification.mjs'
+import evidence from '../src/data/api-destination-evidence.json'
+import { API_MODEL_PORTS } from '../src/lib/ports'
 
 const root = new URL('../../', import.meta.url).pathname
 
@@ -400,6 +404,38 @@ describe('what a page says it is', () => {
     expect(pageIdentity('https://doc.rust-lang.org/std/io/struct.Error.html#method.kind', page)).toMatchObject({ kind: 'member', path: ['std', 'io', 'Error', 'kind'] })
   })
 
+  it('reads Erlang module names, type and callback roles, and arities from OTP ExDoc', () => {
+    const url = 'https://www.erlang.org/doc/apps/erts/erlang.html#t:map/0'
+    const html = '<h1><span translate="no">erlang</span><small>(erts v17.1.1)</small></h1><section class="detail" id="t:map/0"><a aria-label="Link to this type"></a></section>'
+    const page = read(url, html)
+    expect(page).toMatchObject({ via: 'erlang', kind: 'type', path: ['erlang', 'map'], arity: 0 })
+    expect(addressOf(url)).toMatchObject({ path: ['erlang', 'map'], fragment: 'member', arity: '0' })
+    expect(addressSegments('erlang', 't:erlang:map/0')).toEqual(['erlang', 'map'])
+    expect(terminalSymbol('erlang', 't:erlang:map/0')).toBe('map')
+    const source = (name: string, extra = {}) => sourceIdentity({ port: 'erlang', name, source: 'type', ...extra })
+    expect(judge(source('t:erlang:map/0'), page)).toBeUndefined()
+    expect(judge(source('erlang:map'), page)).toBeUndefined()
+    expect(judge(source('map'), page)).toBeUndefined()
+    expect(judge(source('map()'), page)).toBeUndefined()
+    expect(judge(source('erlang:map()'), { ...page, arity: 1 })).toMatchObject({ failure: 'arity' })
+    expect(judge(source('t:erlang:map(Type)'), page)).toMatchObject({ failure: 'arity' })
+    expect(judge(source('t:other:map/0'), page)).toMatchObject({ failure: 'owner' })
+    expect(judge(source('c:erlang:map/0'), page)).toMatchObject({ failure: 'kind' })
+    expect(judge(source('t:erlang:map/1'), page)).toMatchObject({ failure: 'arity' })
+    expect(judgeLabel('`erlang:map()`', page)).toBeUndefined()
+    expect(judgeLabel('`other:map()`', page)).toMatchObject({ failure: 'label' })
+    expect(judgeLabel('`map()`', { ...page, path: ['other', 'map'] })).toMatchObject({ failure: 'label' })
+    for (const name of ['erlang', 'binary']) {
+      const module = read(`https://www.erlang.org/doc/apps/erts/${name}.html`, `<h1><span translate="no">${name}</span></h1>`)
+      const use = { port: 'erlang', source: 'doc', role: 'mod' }
+      expect(judge(sourceIdentity({ ...use, name: `m:${name}` }), module)).toBeUndefined()
+      expect(judge(sourceIdentity({ ...use, name }), module)).toBeUndefined()
+      expect(judge(sourceIdentity({ ...use, name: `other:${name}` }), module)).toMatchObject({ failure: 'owner' })
+      expect(judgeLabel(name, module)).toBeUndefined()
+      expect(judgeLabel(name, { ...module, path: ['other', name] })).toMatchObject({ failure: 'label' })
+    }
+  })
+
   it('reads javadoc\'s package line and the parameters a member\'s anchor spells', () => {
     const page = readPage('<html><head><title>Process</title></head><body><div class="sub-title"><span class="package-label-in-type">Package</span>&nbsp;<a href="x">java.lang</a></div><h1>Class Process</h1><section id="method-detail"><section class="detail" id="waitFor(long,java.util.concurrent.TimeUnit)"></section></section></body></html>')
     const url = 'https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Process.html'
@@ -515,9 +551,11 @@ describe('the reviewed link table', () => {
     expect(languageProblem('scala', 'https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html')).toBeUndefined()
     expect(languageProblem('powershell', 'https://learn.microsoft.com/dotnet/api/system.string')).toBeUndefined()
     expect(languageProblem('fsharp', 'https://learn.microsoft.com/dotnet/api/system.string')).toBeUndefined()
+    expect(languageProblem('erlang', 'https://www.erlang.org/doc/apps/erts/erlang.html#t:map/0')).toBeUndefined()
+    expect(languageProblem('erlang', 'https://go.dev/ref/spec#Constants')).toMatchObject({ failure: 'language' })
     expect(languageProblem('py', 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html')).toMatchObject({ failure: 'language' })
     expect(languageProblem('fsharp', 'https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/static')).toMatchObject({ failure: 'language' })
-    expect(Object.keys(PORT_LANGUAGES).length).toBeGreaterThan(10)
+    expect(Object.keys(PORT_LANGUAGES).sort()).toEqual(API_MODEL_PORTS.map((port) => port.slug).sort())
   })
 
   it('holds Haskell language, compiler and package guides to their own language', () => {
