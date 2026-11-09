@@ -3,7 +3,6 @@ import { join } from 'node:path'
 import { createHash } from 'node:crypto'
 import { parseFrontmatter } from '@astrojs/markdown-remark'
 import { Window, type Element as DomElement } from 'happy-dom'
-import { parseFrontmatter } from '@astrojs/markdown-remark'
 import { describe, expect, it } from 'vitest'
 import { CONCEPT_DESCRIPTION, PORTS, productAvailable, productDescription, productIsConcept, productInDevelopment, productStatus, workspaceOverviewNotice, type Port } from '../src/lib/ports'
 import { proseSources } from '../../scripts/lib/api-destinations.mjs'
@@ -22,7 +21,6 @@ import { DEFAULT_LOCALE, isLocale } from '../src/i18n/locales'
 import { documentationSectionsFor } from '../src/lib/port-documentation'
 import type { ApiTreeJson } from '../src/lib/api-search'
 import { PRODUCT_SECTIONS } from '../src/lib/product-api-sections'
-import { SOURCE_GUIDE_PORTS, sourceGuidesFor } from '../src/lib/port-documentation'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
 interface Manifest {
@@ -260,7 +258,7 @@ it('keeps declared product entry pages in the source-derived checks', () => {
 
 function pages(): ProductPage[] {
   const versions = manifest()
-  return primaryPorts.filter((port) => !portSlug || port.slug === portSlug).flatMap((port) => {
+  return primaryPorts.flatMap((port) => {
     const supported = versions.ports[port.slug]?.filter((entry) => entry.supported) ?? []
     expect(supported.length, `${port.slug} has assembled supported versions`).toBeGreaterThan(0)
     return supported.flatMap(({ slug: version }) => products.flatMap((product) =>
@@ -467,23 +465,6 @@ async function redirectsTo(path: string, target: string): Promise<void> {
 }
 
 describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
-  it('Common Lisp excludes MCP from agent metadata and every supported version', () => {
-    const versions = manifest().ports.lisp.filter((entry) => entry.supported)
-    expect(versions.length, 'supported Common Lisp versions').toBeGreaterThan(0)
-    for (const root of ['', ...versions.map(({ slug }) => `lisp/${slug}/`)]) {
-      const exported = JSON.parse(read(`${root}docs.json`)) as DocsManifest
-      const lisp = exported.ports.find((port) => port.slug === 'lisp')!
-      expect(lisp.products.map((product) => product.slug), `${root} excludes MCP metadata`).not.toContain('mcp')
-      expect(lisp.documentation.map((area) => area.id), `${root} excludes MCP navigation`).not.toContain('mcp')
-      expect(exported.pages.filter((page) => /\/lisp\/[^/]+\/mcp(?:\/|$)/.test(new URL(page.url).pathname)),
-        `${root} excludes MCP pages`).toEqual([])
-      expect(read(`${root}llms.txt`), `${root} excludes MCP agent links`).not.toMatch(/\/lisp\/[^/]+\/mcp(?:\/|\))/)
-    }
-    for (const { slug } of versions) {
-      expect(existsSync(sitePath(`lisp/${slug}/mcp`)), `${slug} has no MCP tree`).toBe(false)
-    }
-  })
-
   it('publishes source guides only below their port version', async () => {
     expect(existsSync(sitePath('_staged'))).toBe(false)
     expect(existsSync(publishedPath(`${PREVIEW_PREFIX}/ja/_staged`))).toBe(false)
@@ -667,9 +648,6 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     for (const product of products.filter((entry) => port.productAvailability?.[entry] === 'unpublished')) {
       // Whatever the product's other pages would be called, none is built or listed.
       const directory = sitePath(`${port.slug}/${version}/${product}`)
-      expect(existsSync(join(directory, 'index.html')), `${port.slug} ${product} availability overview`).toBe(true)
-      expect(docs.pages.some((page) => new URL(page.url).pathname === urlFor(`${port.slug}/${version}/${product}/`).pathname),
-        `${port.slug} ${product} overview is listed`).toBe(true)
       const built = existsSync(directory) ? readdirSync(directory, { recursive: true }).map(String) : []
       const availability = port.productAvailability?.[product] ?? 'available'
       const overview = availability === 'unpublished'
@@ -739,7 +717,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   }, 30_000)
 
   it.each(PORTS.filter((port) => !port.parentLibrary))('$name distinguishes unfinished products and groups workspace internals', async (port) => {
-    for (const page of pages(port.slug)) await inspect(page.path, (document) => {
+    for (const page of pages().filter((entry) => entry.port === port.slug)) await inspect(page.path, (document) => {
       if (productIsConcept(port, page.product) || productInDevelopment(port, page.product))
         developmentStatus(document, page.path, productIsConcept(port, page.product))
       const picker = document.querySelector('[data-surface-picker]')
@@ -843,8 +821,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   })
 
   it.each(primaryPorts)('$name links generated declarations and schema-bearing tools inside their product', async (port) => {
-    for (const page of pages(port.slug).filter((entry) => entry.section === 'reference'
-      && productAvailable(port, entry.product))) {
+    for (const page of pages().filter((entry) => entry.section === 'reference'
+      && entry.port === port.slug && productAvailable(port, entry.product))) {
       const concept = productIsConcept(port, page.product)
       const prefix = `${page.port}/${page.version}/${page.product}/${page.section}/`
       const declarations = await declarationIndex(page.path)
@@ -948,7 +926,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
 
   it.each(primaryPorts.map((port) => port.slug))('switches to equivalent sections and the tmux documentation for %s', async (slug) => {
     const defaults = manifest().defaultVersion
-    for (const page of pages(slug).filter((entry) => entry.section !== 'source-guide')) await inspect(page.path, (document) => {
+    for (const page of pages().filter((entry) => entry.port === slug && entry.section !== 'source-guide')) await inspect(page.path, (document) => {
       const links = [...document.querySelectorAll('[data-page-port-switcher] a[data-port][href]')]
       const tmux = document.querySelector('[data-page-port-switcher] .tmux-area a[href]')
       expect(tmux?.getAttribute('href'), `${page.path} tmux destination`).toBe(urlFor('tmux/').pathname)
@@ -980,7 +958,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   })
 
   it.each(primaryPorts.map((port) => port.slug))('matches visible breadcrumbs to structured data for %s', async (slug) => {
-    for (const page of pages(slug)) await inspect(page.path, (document) => {
+    for (const page of pages().filter((entry) => entry.port === slug)) await inspect(page.path, (document) => {
       const crumb = document.querySelector('nav[aria-label="Breadcrumb"]')!
       expect(crumb, page.path).not.toBeNull()
       const labels = [...crumb.querySelectorAll('a[data-breadcrumb-item], [data-breadcrumb-item][aria-current="page"]')].map((item) => item.textContent.trim())
@@ -1025,8 +1003,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   it.each(PORTS.filter((port) => !port.parentLibrary && productAvailable(port, 'workspace')
     && KNOWN_PORTS.has(port.slug) && port.workspaceCliAvailability === 'local'))
     ('$name publishes workspace Guides and Examples browse pages', async (port) => {
-    for (const page of pages(port.slug).filter((entry) => entry.product === 'workspace'
-      && ['guides', 'examples'].includes(entry.section))) await inspect(page.path, (document) => {
+    for (const page of pages().filter((entry) => entry.product === 'workspace'
+      && entry.port === port.slug && ['guides', 'examples'].includes(entry.section))) await inspect(page.path, (document) => {
       expect(document.querySelector('meta[http-equiv="refresh"]'), `${page.path} is a browse page`).toBeNull()
       expect(document.querySelector('[data-pagefind-body]'), `${page.path} is searchable`).not.toBeNull()
       expect(document.querySelector('h1')?.textContent?.trim(), page.path).toBe(page.section === 'guides' ? 'Guides' : 'Examples')

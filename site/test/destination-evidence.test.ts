@@ -201,7 +201,7 @@ describe('destination evidence', () => {
       const old = new Date(checked.getTime() - (EVIDENCE_MAX_AGE_DAYS + 5) * DAY).toISOString().slice(0, 10)
       const [first, ...rest] = sameDate.destinations
       expect(staleRecords(withEvidence([{ ...first, checkedAt: old }, ...rest]), { today: checked }))
-        .toEqual([{ url: first!.url, checkedAt: old, days: EVIDENCE_MAX_AGE_DAYS + 5 }])
+        .toEqual([{ url: (first as { url: string }).url, checkedAt: old, days: EVIDENCE_MAX_AGE_DAYS + 5 }])
     })
 
     it('words a warning with the date and the command that clears it', () => {
