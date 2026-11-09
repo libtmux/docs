@@ -18,7 +18,6 @@ import { docsEntriesAvailable } from '../src/lib/page-port-links'
 import { documentationAreas, SOURCE_GUIDE_PORTS, sourceGuidesFor } from '../src/lib/port-documentation'
 import { KNOWN_PORTS, resolvePortData } from '../src/lib/workspace-shared-slots'
 import { DEFAULT_LOCALE, isLocale } from '../src/i18n/locales'
-import { documentationSectionsFor } from '../src/lib/port-documentation'
 import type { ApiTreeJson } from '../src/lib/api-search'
 import { PRODUCT_SECTIONS } from '../src/lib/product-api-sections'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
@@ -1090,9 +1089,23 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         }
         for (const product of products) {
           const metadata = advertised.products.find((entry) => entry.slug === product)!
+          if (port.productAvailability?.[product] === 'excluded') {
+            expect(metadata, `${root}${port.slug} ${product} excluded metadata`).toBeUndefined()
+            expect(advertised.documentation.map((area) => area.id), `${root}${port.slug} ${product} excluded navigation`).not.toContain(product)
+            const path = `${port.slug}/${rootVersion || defaults[port.slug]}/${product}/`
+            const prefix = urlFor(path).pathname
+            expect(existsSync(sitePath(path)), `${root}${port.slug} ${product} excluded tree`).toBe(false)
+            expect(exported.pages.filter((entry) => {
+              const pathname = new URL(entry.url).pathname
+              return pathname === prefix.slice(0, -1) || pathname.startsWith(prefix)
+            }), `${root}${port.slug} ${product} excluded pages`).toEqual([])
+            expect(read(`${root}llms.txt`), `${root}${port.slug} ${product} excluded agent links`)
+              .not.toMatch(new RegExp(`/${port.slug}/[^/]+/${product}(?:/|\\))`))
+            continue
+          }
+          expect(metadata, `${root}${port.slug} ${product} metadata`).toBeDefined()
           expect(metadata.availability, `${root}${port.slug} ${product} availability`).toBe(port.productAvailability?.[product] ?? 'available')
-          if (port.productAvailability?.[product] === 'excluded') expect(metadata.url).toBeNull()
-          else expect(resolves(metadata.url!, urlFor(root).href), `${root}${port.slug} ${product} overview`).toBe(true)
+          expect(resolves(metadata.url!, urlFor(root).href), `${root}${port.slug} ${product} overview`).toBe(true)
           expect(metadata.inDevelopment, `${root}${port.slug} ${product} development status`).toBe(productInDevelopment(port, product))
           if (productIsConcept(port, product)) {
             expect(metadata.support).toBe('concept')
