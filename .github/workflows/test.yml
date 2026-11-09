@@ -245,12 +245,13 @@ jobs:
           set -euo pipefail
           PATH="$PWD/bin:$PATH" bash publish-default-versions.sh
 
-  # Forks are audited but never enter an AWS environment or receive secrets.
+  # Forks and no-preview PRs keep the audit and dry-run without AWS publication.
   publish-preview:
     needs: [test, check-publish-preview]
     if: |
       github.event_name == 'pull_request' &&
-      github.event.pull_request.head.repo.full_name == github.repository
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      !contains(github.event.pull_request.labels.*.name, 'no-preview')
     permissions:
       contents: read
       id-token: write

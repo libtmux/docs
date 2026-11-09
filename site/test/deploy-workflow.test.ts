@@ -456,6 +456,8 @@ describe('port publisher contract', () => {
     expect(publish).toContain('needs: [test, check-publish-preview]')
     expect(publish).toContain('artifact-id: ${{ needs.test.outputs.preview-artifact-id }}')
     expect(publish).toContain('github.event.pull_request.head.repo.full_name == github.repository')
+    expect(publish).toMatch(/github\.event\.pull_request\.head\.repo\.full_name == github\.repository &&\s+!contains\(github\.event\.pull_request\.labels\.\*\.name, 'no-preview'\)/)
+    expect(audit + check).not.toContain('labels.*.name')
     expect(publish).toContain('environment: docs-preview')
     expect(testWorkflow).toContain("format('deploy-shell-pr-{0}', github.event.pull_request.number)")
     expect((audit + check).replace(/^\s*#.*$/gm, '')).not.toMatch(/id-token:|secrets\.|continue-on-error|always\(\)|run-id:|github-token:/)
