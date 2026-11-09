@@ -100,6 +100,7 @@ export function languageOfUrl(url) {
     'www.erlang.org': 'erlang',
     'www.haskell.org': 'haskell', 'downloads.haskell.org': 'haskell', 'cabal.readthedocs.io': 'haskell',
     'perldoc.perl.org': 'perl', 'metacpan.org': 'perl',
+    'www.lispworks.com': 'lisp', 'asdf.common-lisp.dev': 'lisp',
     'modelcontextprotocol.io': 'any',
   }
   if (byHost[hostname]) return byHost[hostname]
@@ -115,7 +116,7 @@ export const PORT_LANGUAGES = {
   kotlin: ['kotlin', 'java'], scala: ['scala', 'java'], clojure: ['clojure', 'java'],
   csharp: ['csharp', 'dotnet'], fsharp: ['fsharp', 'dotnet'], powershell: ['powershell', 'dotnet'],
   cxx: ['cpp'], swift: ['swift'], julia: ['julia'], lua: ['lua'], elixir: ['elixir', 'erlang'], ruby: ['ruby'], ocaml: ['ocaml'],
-  haskell: ['haskell'], erlang: ['erlang'],
+  haskell: ['haskell'], erlang: ['erlang'], lisp: ['lisp'],
 }
 
 /**
