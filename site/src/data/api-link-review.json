@@ -491,6 +491,11 @@
       "heading": "6.5.6. Field selectors"
     },
     {
+      "label": "`OverloadedRecordDot`",
+      "url": "https://downloads.haskell.org/ghc/9.14.1/docs/users_guide/exts/overloaded_record_dot.html",
+      "heading": "6.5.10. Overloaded record dot"
+    },
+    {
       "label": "C++ abstract classes",
       "url": "https://eel.is/c++draft/class.abstract",
       "heading": "11.7.4 Abstract classes [class.abstract]"
