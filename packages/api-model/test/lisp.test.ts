@@ -66,6 +66,23 @@ describe('Common Lisp native API adapter', () => {
       .toEqual(['libtmux.workspace:result-outcomes'])
   })
 
+  it('extracts the optional public control package alongside existing systems', () => {
+    const input = structuredClone(fixture)
+    input.source.files.push({ path: 'src/control.lisp', sha256: '1'.repeat(64) })
+    input.packages.splice(1, 0, {
+      name: 'libtmux.control', system: 'libtmux/control', product: 'core',
+      documentation: documentation('Scoped control connections.'), source: source('src/control.lisp', 1),
+      symbols: [functionSymbol('libtmux.control:open-connection', 'open-connection', 'src/control.lisp')],
+    })
+    const model = extractCommonLisp(input, revision)
+    expect(model.sources).toHaveLength(6)
+    expect(model.symbols.find((entry) => entry.id === 'libtmux.control:open-connection')).toMatchObject({
+      qualifiedName: 'libtmux.control:open-connection', parent: 'libtmux.control', product: 'core',
+    })
+    input.packages[1]!.system = 'libtmux'
+    expect(() => extractCommonLisp(input, revision)).toThrow('public package inventory differs')
+  })
+
   it('reads Common Lisp lambda-list roles without evaluating defaults', () => {
     const input = structuredClone(fixture)
     input.packages[0]!.symbols[0]!.signature = '(session required &optional (limit 10) &rest values &key ((:raw raw-p) nil))'
