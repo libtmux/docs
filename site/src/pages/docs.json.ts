@@ -182,7 +182,9 @@ export const GET: APIRoute = async ({ site }) => {
       package: p.packageName,
       reference: hasReference(p) ? referenceUrl(p, versionFor(p.slug)) : null,
       ...(p.parentLibrary ? { parentLibrary: p.parentLibrary } : {}),
-      products: Object.entries(p.parentLibrary ? {} : DOC_PRODUCTS).map(([slug, product]) => ({
+      products: Object.entries(p.parentLibrary ? {} : DOC_PRODUCTS)
+        .filter(([slug]) => p.productAvailability?.[slug as DocProduct] !== 'excluded')
+        .map(([slug, product]) => ({
         slug, name: product.label,
         availability: productAvailable(p, slug as DocProduct) ? 'available' : 'unpublished',
         inDevelopment: productInDevelopment(p, slug as DocProduct),

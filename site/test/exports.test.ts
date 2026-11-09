@@ -137,6 +137,9 @@ describeIfAssembled('published exports', () => {
         expect(actual[0]).toBe('section-server')
         if (port.slug === 'powershell') expect(reference.symbols.slice(0, 3).map((symbol: { name: string }) => symbol.name))
           .toEqual(['New-TmuxServer', 'Get-TmuxServer', 'Connect-TmuxServer'])
+        else if (port.slug === 'lisp') expect(reference.symbols[0]).toMatchObject({
+          id: 'libtmux:client', name: 'client', kind: 'class', qualifiedName: 'libtmux:client', namespace: 'libtmux',
+        })
         else expect(reference.symbols[0].name).toBe('Server')
         for (const symbol of reference.symbols) {
           const target = new URL(symbol.url).pathname.replace(/^\//, '')
