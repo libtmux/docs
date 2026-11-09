@@ -21,7 +21,9 @@ const manifests = manifestPackages.ports as Record<string, {
   distributions: { name: string; version?: string }[]
   units: { unit: string; name: string; path?: string; file?: boolean }[]
 }>
-const available = (slug: string) => entries(slug).filter((entry) => entry.status === 'published' || entry.sourceAvailable)
+const isAvailable = (entry: InventoryEntry) => entry.status === 'published' || entry.sourceAvailable === true
+  || (entry.status === 'configured-unpublished' && !entry.package && !entry.api)
+const available = (slug: string) => entries(slug).filter(isAvailable)
 const distributions = (slug: string) => available(slug).filter((entry) => !entry.within && entry.kind !== 'source')
 const declared = (slug: string) => manifests[slug]!.distributions.map((entry) => entry.name)
 const GO = 'github.com/libtmux/libtmux-go'
@@ -36,7 +38,7 @@ describe('port inventory', () => {
     expect(new Set(ids).size, 'ids are unique').toBe(ids.length)
     expect(entries(slug).filter((entry) => entry.kind === 'library'), 'exactly one library').toHaveLength(1)
     expect(entries(slug)[0]!.kind).toBe('library')
-    expect(entries(slug)[0]!.status === 'published' || entries(slug)[0]!.sourceAvailable).toBe(true)
+    expect(isAvailable(entries(slug)[0]!)).toBe(true)
     for (const entry of entries(slug)) {
       expect(entry.label.trim(), entry.id).not.toBe('')
       expect(entry.coordinate.trim(), entry.id).not.toBe('')

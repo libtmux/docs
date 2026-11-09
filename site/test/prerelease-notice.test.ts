@@ -166,8 +166,8 @@ describe('prerelease notice ownership', () => {
 
   it('identifies a source-only port as unreleased', async () => {
     const html = await render('/en/lisp/latest/', '', 'lisp')
-    expect(html).toContain('Not released')
-    expect(html).toContain('Install this library from source; its APIs may change.')
+    expect(html).toContain('>Unreleased</strong>')
+    expect(html).toContain('has not been released')
     expect(html).not.toContain('libtmux is released')
   })
 

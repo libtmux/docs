@@ -127,8 +127,9 @@ function indexRows(entries: readonly InventoryEntry[], home: string): HeaderRow[
 }
 
 export function portHeaderLinks(port: Port, inventory: Readonly<Record<string, readonly InventoryEntry[]>> = INVENTORY): PortHeaderLinks {
-  const entries = (inventory[port.slug] ?? []).filter((entry) => entry.status === 'published' || entry.sourceAvailable)
-  const library = entries.find((entry) => entry.kind === 'library')
+  const all = inventory[port.slug] ?? []
+  const entries = all.filter((entry) => entry.status === 'published' || entry.sourceAvailable)
+  const library = documentedLibrary(all) ?? entries.find((entry) => entry.kind === 'library')
   if (!library) return { actions: [], rows: [], indexed: false }
   const { source } = portDestinations({ port })
   const actions: HeaderAction[] = [{

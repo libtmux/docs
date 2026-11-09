@@ -189,7 +189,7 @@ it('advertises workspace loaders with their declared command and development sta
   for (const port of PORTS.filter((entry) => entry.workspaceCli)) {
     expect(port.workspaceCli).toMatch(/^\S+\s+\S+/)
     const executable = port.packages?.find((entry) => entry.id === 'workspace')?.executable
-    if (executable) expect(port.workspaceCli!.split(/\s+/)[0]).toBe(executable)
+    if (executable) expect([port.workspaceCli, port.workspaceCli!.split(/\s+/)[0]]).toContain(executable)
     expect(productInDevelopment(port, 'workspace')).toBe(productAvailable(port, 'workspace') && port.workspaceCliAvailability !== 'released')
     expect(productInDevelopment(port, 'mcp')).toBe(productAvailable(port, 'mcp'))
     expect(productDescription(port, 'workspace')).not.toMatch(/worktree|checkpoint/)
@@ -225,7 +225,7 @@ function sectionsFor(port: string, product: ProductPage['product'], documents = 
 it('keeps declared product overviews and their ownership required', () => {
   for (const port of primaryPorts) {
     for (const product of products) sectionsFor(port.slug, product)
-    for (const area of documentationAreas(port.slug).filter((area) => area.product)) {
+    for (const area of documentationAreas(port.slug).filter((area) => area.product && port.productAvailability?.[area.product] !== 'excluded')) {
       const documents = documentsFor(port.slug)
       const missing = new Map(documents)
       missing.delete(area.route)

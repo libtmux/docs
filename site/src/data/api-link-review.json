@@ -6,6 +6,26 @@
       "heading": "1. Package Description — <package>.cabal File "
     },
     {
+      "label": "core.async",
+      "url": "https://clojure.github.io/core.async/clojure.core.async.html",
+      "heading": "clojure.core.async"
+    },
+    {
+      "label": "Clojure namespaces",
+      "url": "https://clojure.org/reference/namespaces",
+      "heading": "Namespaces"
+    },
+    {
+      "label": "Clojure function arities",
+      "url": "https://clojure.org/reference/special_forms#fn",
+      "heading": "( fn name ? [ params * ] expr *)"
+    },
+    {
+      "label": "Clojure vars",
+      "url": "https://clojure.org/reference/vars",
+      "heading": "Vars and the Global Environment"
+    },
+    {
       "label": "CMake packages",
       "url": "https://cmake.org/cmake/help/latest/manual/cmake-packages.7.html",
       "heading": "cmake-packages(7)"
@@ -976,6 +996,36 @@
       "heading": "8 Type and exception definitions"
     },
     {
+      "label": "Perl exceptions",
+      "url": "https://perldoc.perl.org/5.44.0/functions/die",
+      "heading": "die - Perldoc Browser"
+    },
+    {
+      "label": "Perl modules and packages",
+      "url": "https://perldoc.perl.org/5.44.0/perlmod",
+      "heading": "perlmod"
+    },
+    {
+      "label": "Preparing Perl distributions",
+      "url": "https://perldoc.perl.org/5.44.0/perlnewmod",
+      "heading": "perlnewmod"
+    },
+    {
+      "label": "Perl objects and classes",
+      "url": "https://perldoc.perl.org/5.44.0/perlobj",
+      "heading": "perlobj"
+    },
+    {
+      "label": "Perl inheritance",
+      "url": "https://perldoc.perl.org/5.44.0/perlobj#Inheritance",
+      "heading": "# Inheritance"
+    },
+    {
+      "label": "Perl method invocation",
+      "url": "https://perldoc.perl.org/5.44.0/perlobj#Method-Invocation",
+      "heading": "# Method Invocation"
+    },
+    {
       "label": "package reference",
       "url": "https://pkg.go.dev/github.com/libtmux/libtmux-go/mcp",
       "heading": "github.com/libtmux/libtmux-go/mcp"
@@ -1129,56 +1179,6 @@
       "label": "TypeScript async/await in ES6 targets",
       "url": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-1-7.html#asyncawait-support-in-es6-targets-node-v4",
       "heading": "async / await support in ES6 targets (Node v4+)"
-    },
-    {
-      "label": "Perl exceptions",
-      "url": "https://perldoc.perl.org/5.44.0/functions/die",
-      "heading": "die - Perldoc Browser"
-    },
-    {
-      "label": "Perl modules and packages",
-      "url": "https://perldoc.perl.org/5.44.0/perlmod",
-      "heading": "perlmod"
-    },
-    {
-      "label": "Preparing Perl distributions",
-      "url": "https://perldoc.perl.org/5.44.0/perlnewmod",
-      "heading": "perlnewmod"
-    },
-    {
-      "label": "Perl objects and classes",
-      "url": "https://perldoc.perl.org/5.44.0/perlobj",
-      "heading": "perlobj"
-    },
-    {
-      "label": "Perl inheritance",
-      "url": "https://perldoc.perl.org/5.44.0/perlobj#Inheritance",
-      "heading": "# Inheritance"
-    },
-    {
-      "label": "Perl method invocation",
-      "url": "https://perldoc.perl.org/5.44.0/perlobj#Method-Invocation",
-      "heading": "# Method Invocation"
-    },
-    {
-      "label": "core.async",
-      "url": "https://clojure.github.io/core.async/clojure.core.async.html",
-      "heading": "clojure.core.async"
-    },
-    {
-      "label": "Clojure namespaces",
-      "url": "https://clojure.org/reference/namespaces",
-      "heading": "Namespaces"
-    },
-    {
-      "label": "Clojure function arities",
-      "url": "https://clojure.org/reference/special_forms#fn",
-      "heading": "( fn name ? [ params * ] expr *)"
-    },
-    {
-      "label": "Clojure vars",
-      "url": "https://clojure.org/reference/vars",
-      "heading": "Vars and the Global Environment"
     }
   ]
 }

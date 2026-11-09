@@ -495,11 +495,11 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
   clojure: [
     jvm({ id: 'libtmux-clojure', kind: 'library', product: 'core', label: 'libtmux-clojure',
       coordinate: 'io.github.libtmux:libtmux-clojure', path: 'libtmux-clojure', ref: 'master',
-      status: 'configured-unpublished', sourceAvailable: true, note: 'No registry release; install the source checkout with Gradle.',
+      status: 'configured-unpublished', note: 'No registry release; install the source checkout with Gradle.',
       aliases: ['libtmux.core', 'libtmux.data', 'libtmux.async', 'libtmux.control'] }),
     jvm({ id: 'libtmux-clojure-core-async', kind: 'companion', product: 'core', label: 'libtmux-clojure-core-async',
       coordinate: 'io.github.libtmux:libtmux-clojure-core-async', path: 'libtmux-clojure-core-async', ref: 'master',
-      status: 'configured-unpublished', sourceAvailable: true, note: 'No registry release; install this optional adapter from the source checkout.',
+      status: 'configured-unpublished', note: 'No registry release; install this optional adapter from the source checkout.',
       aliases: ['libtmux.core-async'] }),
     jvm({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-java', coordinate: 'libtmux/libtmux-java' }),
     jvm({ id: 'core-source', kind: 'source', product: 'core', label: 'libtmux-clojure', path: 'libtmux-clojure', ref: 'master',

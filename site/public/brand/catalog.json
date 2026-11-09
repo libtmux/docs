@@ -20150,8 +20150,8 @@
         },
         {
           "file": "ocaml/library/site.webmanifest",
-          "bytes": 1447,
-          "sha256": "9ecdc0daa5a22a1bfc04d72238e82e60ae302acfc9816a76ccf5f56111734e78",
+          "bytes": 717,
+          "sha256": "817517c6916b3f0164c516796ca9abd29bd0185b2b0a91702110d13ff8fbf249",
           "format": "webmanifest"
         },
         {
@@ -20264,8 +20264,8 @@
         },
         {
           "file": "ocaml/library/site-dark.webmanifest",
-          "bytes": 1443,
-          "sha256": "10e04cebb003a2c77d6dd090ada6c7000a2d3fb21432609b3f34fed6b43340db",
+          "bytes": 715,
+          "sha256": "ffe75367898385544c801df2e4b8c67f0d8b3e79b346823c0c003daeac80cd15",
           "format": "webmanifest"
         },
         {
@@ -20963,8 +20963,8 @@
         },
         {
           "file": "ocaml/workspace/site.webmanifest",
-          "bytes": 1486,
-          "sha256": "ae164456d4bf2ee72e76d3f7d2c09b434b4772923b22e64b922526a89eb7d8a7",
+          "bytes": 735,
+          "sha256": "fa5ac439d36980454dcc48ff494221e89d00cb4e2c3a4211c5aa0d710c0e60ef",
           "format": "webmanifest"
         },
         {
@@ -21077,8 +21077,8 @@
         },
         {
           "file": "ocaml/workspace/site-dark.webmanifest",
-          "bytes": 1482,
-          "sha256": "63a1c1e6fc961d32a51e546722e9a963fcab5def07e0b08c691b12706b533865",
+          "bytes": 733,
+          "sha256": "d3c1278072ccb8d7326dd3b757d6ac3be07e9d6dede2508fcb58849a18ae6a33",
           "format": "webmanifest"
         },
         {
@@ -23823,8 +23823,8 @@
         },
         {
           "file": "perl/library/site.webmanifest",
-          "bytes": 1445,
-          "sha256": "b258edc4fb98f7501199c161400f227147eacd791d587405f78d82d16bdfbb53",
+          "bytes": 716,
+          "sha256": "c8bfc76b7161e94069489037b035122a3daa2b6685c2edc3206c7f8ff9a8cfb1",
           "format": "webmanifest"
         },
         {
@@ -23947,8 +23947,8 @@
         },
         {
           "file": "perl/library/site-dark.webmanifest",
-          "bytes": 1441,
-          "sha256": "61b168b158ae14a8e9cb7fea329bea0b7bc9cbc746b9921604ea913ee687404a",
+          "bytes": 714,
+          "sha256": "389db0780843aa7fa63163b3952b8d91b9df8c247358c6e04a0b1ccdbeaca269",
           "format": "webmanifest"
         },
         {
@@ -24656,8 +24656,8 @@
         },
         {
           "file": "perl/workspace/site.webmanifest",
-          "bytes": 1484,
-          "sha256": "98a4463bbe03817aaff4ec2ddc6d2d1cf5bd00a1d2035147c0ca3b4638f1c915",
+          "bytes": 734,
+          "sha256": "7702f7480f9f4428f1dd2888345786fb30994b6d582641476f17212aae8cc5fc",
           "format": "webmanifest"
         },
         {
@@ -24780,8 +24780,8 @@
         },
         {
           "file": "perl/workspace/site-dark.webmanifest",
-          "bytes": 1480,
-          "sha256": "2f876607280f3fed374f1f9860d091ccf33df0a3ca038f937ab0ebc90bdf0a60",
+          "bytes": 732,
+          "sha256": "cf54e6f78e7e30152e6fe277a24628514aa798055e4a64d4467ac5644445a53e",
           "format": "webmanifest"
         },
         {
