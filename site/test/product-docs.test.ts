@@ -140,9 +140,10 @@ function counterpartRoutes(port: string, path: string): Map<string, readonly str
   return new Map(PORTS.filter((candidate) => !candidate.parentLibrary && candidate.productAvailability?.[product] !== 'excluded')
     .map((candidate) => {
       if (own?.data.equivalence && candidate.slug === port) return [port, [path]] as const
-      const matches = [...documentsFor(candidate.slug).values()].filter((entry) => own?.data.equivalence
-        ? entry.data.equivalence === own.data.equivalence && entry.data.product === own.data.product
-        : paths.some((route) => docsPath(entry) === route || entry.data.aliases?.includes(route)))
+      const documents = [...documentsFor(candidate.slug).values()]
+      const matches = own?.data.equivalence
+        ? documents.filter((entry) => entry.data.equivalence === own.data.equivalence && entry.data.product === own.data.product)
+        : paths.flatMap((route) => documents.filter((entry) => docsPath(entry) === route || entry.data.aliases?.includes(route))).slice(0, 1)
       // A product overview may be an alias of a core integration guide.
       return [candidate.slug, [...new Set(matches.map((entry) => path === product && entry.data.aliases?.includes(path) ? path : docsPath(entry)))]] as const
     }).filter(([, routes]) => routes.length))
@@ -683,7 +684,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       expect(picker?.querySelector('.surface-current small')?.textContent, `${page.path} current section`).toBe(sectionLabel)
       const current = picker?.querySelectorAll('[aria-current="location"]')
       expect(current, `${page.path} one current section`).toHaveLength(1)
-      const sectionPath = `${page.port}/${page.version}/${page.product}/${page.section === 'source-guide' ? 'source-guide/' : section === 'home' ? '' : `${section}/`}`
+      const sourceIsOverview = page.section === 'source-guide' && !documentsFor(page.port).has(`${page.product}/guides`)
+      const sectionPath = `${page.port}/${page.version}/${page.product}/${sourceIsOverview ? 'source-guide/' : section === 'home' ? '' : `${section}/`}`
       expect(current![0].getAttribute('href'), `${page.path} current destination`).toBe(urlFor(sectionPath).pathname)
       expect(resolves(current![0].getAttribute('href')!), `${page.path} current destination exists`).toBe(true)
       // The API reference is the reference sidebar, one navigation for every viewport; the other sections share the section sidebar.
