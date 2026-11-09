@@ -111,6 +111,9 @@ export function notASymbol(text: string, port?: string): string | undefined {
   if (/\.(?:tsv|html|inv|lisp|asd|conf|sock|txt|gz)$/.test(text)) return 'a filename'
   if (/\.(py|ts|go|rs|java|kt|kts|scala|cs|fs|fsi|fsproj|properties|cpp|hpp|c|h|lua|rb|swift|jl|exs?|ps1|psm1|psd1|ml|mli|opam|md|json|ya?ml|toml|sh)\b/.test(text)) return 'a filename'
   if (/^[A-Za-z_][\w-]*:\d+$/.test(text)) return 'a numeric label'
+  // Erlang's rebar files and sources, and the getopt strings of the command capability tables: atoms and modules are lowercase.
+  if (port === 'erlang' && /\.(?:erl|hrl|config|lock)$/.test(text)) return 'a filename'
+  if (port === 'erlang' && /^[A-Za-z:]*[A-Z][A-Za-z:]*$/.test(text)) return 'a command option string'
   if (/(^|\s)--?[A-Za-z]/.test(text)) return 'a command-line flag'
   if (/^[A-Z_][A-Z0-9_]*=/.test(text)) return 'an environment assignment'
   if (/^(?:=[^:\s]+:[^\s]+|[\w-]+:\d+\.\d+)$/.test(text)) return 'a tmux target'

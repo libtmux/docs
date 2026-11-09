@@ -153,6 +153,9 @@ const ELIXIR_BUILTIN_TYPES = [
 ]
 
 export const BUILTINS: Record<string, Record<string, string>> = {
+  erlang: {
+    'erl_error:format_exception/3': 'https://www.erlang.org/doc/apps/stdlib/erl_error.html#format_exception/3',
+  },
   ocaml: {
     Iarray: 'https://ocaml.org/manual/5.5/api/Iarray.html',
     'Iarray.t': 'https://ocaml.org/manual/5.5/api/Iarray.html#TYPEt',
