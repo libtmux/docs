@@ -94,14 +94,23 @@
   ],
   "port": "lisp",
   "repo": "libtmux/libtmux-lisp",
-  "revision": "073d3d9cab12a1069c0463f76caca19d2d3f2ac2",
+  "revision": "37c85da8d14efe97c921cb69061b67ee8e5b0c86",
   "schemaVersion": 1,
   "symbols": {
+    "libtmux:bind-key": [
+      {
+        "command": "bind-key",
+        "evidence": [
+          "src/key-bindings.lisp:86"
+        ],
+        "scope": null
+      }
+    ],
     "libtmux:break-pane": [
       {
         "command": "break-pane",
         "evidence": [
-          "src/placement.lisp:123"
+          "src/placement.lisp:142"
         ],
         "scope": null
       }
@@ -110,7 +119,7 @@
       {
         "command": "capture-pane",
         "evidence": [
-          "src/operations.lisp:74"
+          "src/operations.lisp:69"
         ],
         "scope": null
       }
@@ -142,14 +151,36 @@
         "scope": null
       }
     ],
+    "libtmux:detach-client": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "src/client-operations.lisp:74"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:display-message": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "src/server-operations.lisp:82"
+        ],
+        "scope": null
+      }
+    ],
     "libtmux:fetch-clients": [
       {
         "command": "list-panes",
         "evidence": [
           "src/capture.lisp:30",
           "src/records.lisp:17",
-          "src/capture.lisp:86",
-          "src/capture.lisp:179"
+          "src/records.lisp:65",
+          "src/capture.lisp:61",
+          "src/capture.lisp:100",
+          "src/capture.lisp:124",
+          "src/capture.lisp:183",
+          "src/capture.lisp:196"
         ],
         "reviewed": true,
         "scope": "server",
@@ -162,8 +193,12 @@
         "evidence": [
           "src/capture.lisp:30",
           "src/records.lisp:17",
-          "src/capture.lisp:86",
-          "src/capture.lisp:176"
+          "src/records.lisp:65",
+          "src/capture.lisp:61",
+          "src/capture.lisp:100",
+          "src/capture.lisp:124",
+          "src/capture.lisp:183",
+          "src/capture.lisp:193"
         ],
         "reviewed": true,
         "scope": "server",
@@ -176,8 +211,12 @@
         "evidence": [
           "src/capture.lisp:30",
           "src/records.lisp:17",
-          "src/capture.lisp:86",
-          "src/capture.lisp:170"
+          "src/records.lisp:65",
+          "src/capture.lisp:61",
+          "src/capture.lisp:100",
+          "src/capture.lisp:124",
+          "src/capture.lisp:183",
+          "src/capture.lisp:187"
         ],
         "reviewed": true,
         "scope": "server",
@@ -190,8 +229,11 @@
         "evidence": [
           "src/capture.lisp:30",
           "src/records.lisp:17",
-          "src/capture.lisp:86",
-          "src/capture.lisp:166"
+          "src/records.lisp:65",
+          "src/capture.lisp:61",
+          "src/capture.lisp:100",
+          "src/capture.lisp:124",
+          "src/capture.lisp:183"
         ],
         "reviewed": true,
         "scope": "server",
@@ -204,8 +246,12 @@
         "evidence": [
           "src/capture.lisp:30",
           "src/records.lisp:17",
-          "src/capture.lisp:86",
-          "src/capture.lisp:173"
+          "src/records.lisp:65",
+          "src/capture.lisp:61",
+          "src/capture.lisp:100",
+          "src/capture.lisp:124",
+          "src/capture.lisp:183",
+          "src/capture.lisp:190"
         ],
         "reviewed": true,
         "scope": "server",
@@ -216,7 +262,7 @@
       {
         "command": "join-pane",
         "evidence": [
-          "src/placement.lisp:106"
+          "src/placement.lisp:119"
         ],
         "scope": null
       }
@@ -280,7 +326,7 @@
       {
         "command": "link-window",
         "evidence": [
-          "src/placement.lisp:36"
+          "src/placement.lisp:49"
         ],
         "scope": null
       }
@@ -303,11 +349,38 @@
         "scope": null
       }
     ],
+    "libtmux:lock-client": [
+      {
+        "command": "lock-client",
+        "evidence": [
+          "src/client-operations.lisp:115"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:lock-server": [
+      {
+        "command": "lock-server",
+        "evidence": [
+          "src/server-operations.lisp:125"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:lock-session": [
+      {
+        "command": "lock-session",
+        "evidence": [
+          "src/server-operations.lisp:109"
+        ],
+        "scope": null
+      }
+    ],
     "libtmux:move-pane": [
       {
         "command": "move-pane",
         "evidence": [
-          "src/placement.lisp:96"
+          "src/placement.lisp:109"
         ],
         "scope": null
       }
@@ -316,7 +389,7 @@
       {
         "command": "move-window",
         "evidence": [
-          "src/placement.lisp:47"
+          "src/placement.lisp:60"
         ],
         "scope": null
       }
@@ -370,7 +443,7 @@
       {
         "command": "pipe-pane",
         "evidence": [
-          "src/process-operations.lisp:64"
+          "src/process-operations.lisp:55"
         ],
         "scope": null
       }
@@ -399,20 +472,33 @@
         "evidence": [
           "src/capture.lisp:30",
           "src/records.lisp:17",
-          "src/capture.lisp:86",
-          "src/capture.lisp:191"
+          "src/records.lisp:65",
+          "src/capture.lisp:61",
+          "src/capture.lisp:100",
+          "src/capture.lisp:124",
+          "src/capture.lisp:183",
+          "src/capture.lisp:208"
         ],
         "reviewed": true,
         "scope": "server",
         "when": "the server has sessions"
       }
     ],
+    "libtmux:refresh-client": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "src/client-operations.lisp:88"
+        ],
+        "scope": null
+      }
+    ],
     "libtmux:remove-environment": [
       {
         "command": "set-environment",
         "evidence": [
-          "src/configuration-operations.lisp:154",
-          "src/configuration-operations.lisp:250"
+          "src/configuration-operations.lisp:157",
+          "src/configuration-operations.lisp:259"
         ],
         "scope": null
       }
@@ -421,16 +507,16 @@
       {
         "command": "rename-session",
         "evidence": [
-          "src/operations.lisp:9",
-          "src/operations.lisp:33"
+          "src/operations.lisp:4",
+          "src/operations.lisp:28"
         ],
         "scope": null
       },
       {
         "command": "rename-window",
         "evidence": [
-          "src/operations.lisp:9",
-          "src/operations.lisp:33"
+          "src/operations.lisp:4",
+          "src/operations.lisp:28"
         ],
         "scope": null
       }
@@ -439,16 +525,16 @@
       {
         "command": "rename-session",
         "evidence": [
-          "src/operations.lisp:9",
-          "src/operations.lisp:24"
+          "src/operations.lisp:4",
+          "src/operations.lisp:19"
         ],
         "scope": null
       },
       {
         "command": "rename-window",
         "evidence": [
-          "src/operations.lisp:9",
-          "src/operations.lisp:24"
+          "src/operations.lisp:4",
+          "src/operations.lisp:19"
         ],
         "scope": null
       }
@@ -476,7 +562,7 @@
         "command": "respawn-pane",
         "evidence": [
           "src/process-operations.lisp:5",
-          "src/process-operations.lisp:33"
+          "src/process-operations.lisp:24"
         ],
         "scope": null
       },
@@ -484,7 +570,7 @@
         "command": "respawn-window",
         "evidence": [
           "src/process-operations.lisp:5",
-          "src/process-operations.lisp:33"
+          "src/process-operations.lisp:24"
         ],
         "scope": null
       }
@@ -494,7 +580,7 @@
         "command": "respawn-pane",
         "evidence": [
           "src/process-operations.lisp:5",
-          "src/process-operations.lisp:46"
+          "src/process-operations.lisp:37"
         ],
         "scope": null
       },
@@ -502,7 +588,7 @@
         "command": "respawn-window",
         "evidence": [
           "src/process-operations.lisp:5",
-          "src/process-operations.lisp:46"
+          "src/process-operations.lisp:37"
         ],
         "scope": null
       }
@@ -511,7 +597,7 @@
       {
         "command": "rotate-window",
         "evidence": [
-          "src/placement.lisp:159"
+          "src/placement.lisp:179"
         ],
         "scope": null
       }
@@ -538,7 +624,7 @@
       {
         "command": "select-pane",
         "evidence": [
-          "src/operations.lisp:50"
+          "src/operations.lisp:45"
         ],
         "scope": null
       }
@@ -547,7 +633,7 @@
       {
         "command": "select-window",
         "evidence": [
-          "src/operations.lisp:41"
+          "src/operations.lisp:36"
         ],
         "scope": null
       }
@@ -579,6 +665,15 @@
         "scope": null
       }
     ],
+    "libtmux:server-access": [
+      {
+        "command": "server-access",
+        "evidence": [
+          "src/server-operations.lisp:32"
+        ],
+        "scope": null
+      }
+    ],
     "libtmux:set-buffer": [
       {
         "command": "load-buffer",
@@ -599,8 +694,8 @@
       {
         "command": "set-environment",
         "evidence": [
-          "src/configuration-operations.lisp:154",
-          "src/configuration-operations.lisp:230"
+          "src/configuration-operations.lisp:157",
+          "src/configuration-operations.lisp:239"
         ],
         "scope": null
       }
@@ -609,7 +704,7 @@
       {
         "command": "set-hook",
         "evidence": [
-          "src/configuration-operations.lisp:204"
+          "src/configuration-operations.lisp:213"
         ],
         "scope": null
       }
@@ -618,7 +713,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "src/configuration-operations.lisp:176"
+          "src/configuration-operations.lisp:184"
         ],
         "scope": null
       }
@@ -641,11 +736,20 @@
         "scope": null
       }
     ],
+    "libtmux:suspend-client": [
+      {
+        "command": "suspend-client",
+        "evidence": [
+          "src/client-operations.lisp:101"
+        ],
+        "scope": null
+      }
+    ],
     "libtmux:swap-panes": [
       {
         "command": "swap-pane",
         "evidence": [
-          "src/placement.lisp:141"
+          "src/placement.lisp:161"
         ],
         "scope": null
       }
@@ -654,7 +758,25 @@
       {
         "command": "swap-window",
         "evidence": [
-          "src/placement.lisp:72"
+          "src/placement.lisp:85"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:switch-client": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "src/client-operations.lisp:59"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:unbind-key": [
+      {
+        "command": "unbind-key",
+        "evidence": [
+          "src/key-bindings.lisp:104"
         ],
         "scope": null
       }
@@ -663,7 +785,7 @@
       {
         "command": "unlink-window",
         "evidence": [
-          "src/placement.lisp:56"
+          "src/placement.lisp:69"
         ],
         "scope": null
       }
@@ -672,8 +794,8 @@
       {
         "command": "set-environment",
         "evidence": [
-          "src/configuration-operations.lisp:154",
-          "src/configuration-operations.lisp:240"
+          "src/configuration-operations.lisp:157",
+          "src/configuration-operations.lisp:249"
         ],
         "scope": null
       }
@@ -682,7 +804,7 @@
       {
         "command": "set-hook",
         "evidence": [
-          "src/configuration-operations.lisp:216"
+          "src/configuration-operations.lisp:225"
         ],
         "scope": null
       }
@@ -691,7 +813,16 @@
       {
         "command": "set-option",
         "evidence": [
-          "src/configuration-operations.lisp:188"
+          "src/configuration-operations.lisp:197"
+        ],
+        "scope": null
+      }
+    ],
+    "libtmux:wait-for": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "src/server-operations.lisp:157"
         ],
         "scope": null
       }

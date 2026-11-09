@@ -825,7 +825,7 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
     snapshots: ['LibTmux.Ref'],
   },
   lisp: {
-    server: ['libtmux:client'],
+    server: ['libtmux:client', 'libtmux:daemon'],
     session: ['libtmux:session/type'],
     window: ['libtmux:window/type', 'libtmux:window-link'],
     pane: ['libtmux:pane', 'libtmux:clear-history', 'libtmux:copy-mode', 'libtmux:current-path',
@@ -833,7 +833,8 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
     client: ['libtmux:attached-client'],
     keys: ['libtmux:send-prefix', 'libtmux:send-text'],
     layout: ['libtmux:height', 'libtmux:width'],
-    formats: ['libtmux.json:document-limit', 'libtmux.json:document-path'],
+    formats: ['libtmux.json:document-limit', 'libtmux.json:document-path', 'libtmux:display-message'],
+    control: ['libtmux:wait-for'],
     snapshots: ['libtmux:active-p', 'libtmux:entity', 'libtmux:entity-data', 'libtmux:entity-model',
       'libtmux:id', 'libtmux:index', 'libtmux:name', 'libtmux:provenance', 'libtmux:refresh',
       'libtmux:same-entity-p', 'libtmux:snapshot', 'libtmux:title'],
