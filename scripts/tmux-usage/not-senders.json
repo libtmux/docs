@@ -5102,7 +5102,7 @@
       "why": "Selects already captured membership values without tmux I/O.",
       "evidence": [
         {
-          "at": "apps/libtmux_erlang/src/tmux_select.erl:70",
+          "at": "apps/libtmux_erlang/src/tmux_select.erl:76",
           "has": [
             "window_links(Snapshot) -> from_snapshot(window_link, Snapshot)."
           ]

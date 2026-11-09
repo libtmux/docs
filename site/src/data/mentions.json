@@ -3775,6 +3775,13 @@
   },
   {
    "port": "erlang",
+   "symbol": "tmux_snapshot:related/3",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "title": "Object graph",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
    "symbol": "tmux_version",
    "page": "/erlang/latest/guides/api-documentation/",
    "title": "Native API documentation",
