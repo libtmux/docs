@@ -10999,6 +10999,13 @@
   },
   {
    "port": "ocaml",
+   "symbol": "Libtmux_workspace.Config.make",
+   "page": "/ocaml/latest/guides/bootstrap/",
+   "title": "Start a private tmux server from OCaml",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
    "symbol": "Libtmux_workspace.Config.pane:type.startup",
    "page": "/ocaml/latest/workspace/source-guide/",
    "title": "Workspace guide",
@@ -11017,6 +11024,13 @@
    "page": "/ocaml/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_workspace.Plan.make",
+   "page": "/ocaml/latest/guides/bootstrap/",
+   "title": "Start a private tmux server from OCaml",
+   "section": "guides"
   },
   {
    "port": "ocaml",
@@ -11065,6 +11079,13 @@
    "symbol": "Libtmux.Error.t",
    "page": "/ocaml/latest/guides/control/",
    "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Error.t.Capacity",
+   "page": "/ocaml/latest/guides/streaming/",
+   "title": "Observe output and wait for rendered text",
    "section": "guides"
   },
   {

@@ -11,6 +11,7 @@ interface Showcase {
 }
 
 const targets: Readonly<Record<string, readonly string[]>> = {
+  bootstrap: ['Libtmux_unix.Workspace.submit_bootstrap', 'Libtmux_unix.Workspace.await', 'Libtmux_unix.Workspace.client'],
   graph: ['Libtmux.Snapshot.sessions', 'Libtmux.Session.window_links', 'Libtmux.Window.panes', 'Libtmux_unix.Client.capture'],
   watch: ['Libtmux_eio.Client.subscribe', 'Libtmux_eio.Subscription.wait_for_bytes'],
   'send-keys': ['Libtmux_unix.Client.send_text', 'Libtmux_unix.Client.send_keys'],
