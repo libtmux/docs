@@ -191,8 +191,11 @@ $ node scripts/stage-port-docs.mjs \
 ```
 
 The command reads committed guide bytes at the API model's revision. Public
-module links reach the shared reference; source fragments retain their pinned
-GitHub destinations. Add the pinned source checkout to `test.yml` when a port
+module links reach the shared reference. An inline link labelled with a unique
+public declaration opens that declaration; a shared type/constructor name
+opens the data head. Ambiguous record labels stay at the module. Source
+fragments retain their pinned GitHub destinations. Add the pinned source
+checkout to `test.yml` when a port
 gains source-owned guides. Reading a guide checkout does not qualify native
 export freshness; the port's publisher runs its selected native toolchain.
 

@@ -74,7 +74,7 @@ describe('staged port guide links', () => {
     const program = '```console\n$ cabal run --verbose=0 typed-values\n```'
     const guides = sourceGuidesFor('haskell').map(({ sourcePath }) => ({
       path: sourcePath,
-      content: `# ${sourcePath}\n\n[Install](installation.md) [Program](../examples/typed-values/Main.hs)\n\n[LibTmux.Id](../src/LibTmux/Id.hs) [LibTmux.Server](../src/LibTmux/Server.hs)\n\n[Source line](../src/LibTmux/Id.hs#L20) [Unknown anchor](../src/LibTmux/Id.hs#unknown)\n\n${program}\n`,
+      content: `# ${sourcePath}\n\n[Install](installation.md) [Program](../examples/typed-values/Main.hs)\n\n[LibTmux.Id](../src/LibTmux/Id.hs) [LibTmux.Server](../src/LibTmux/Server.hs)\n\n[withServer](../src/LibTmux/Server.hs) [capture](../src/LibTmux/Server.hs) [Snapshot](../src/LibTmux/Snapshot.hs) [Pane](../src/LibTmux/Snapshot.hs) [width](../src/LibTmux/Snapshot.hs)\n\n[withServer](../src/LibTmux/Server.hs#L93) [Source line](../src/LibTmux/Id.hs#L20) [Unknown anchor](../src/LibTmux/Id.hs#unknown)\n\n${program}\n`,
     }))
     const files = stagedPortGuides('haskell', { source: { repository: 'libtmux/libtmux-haskell', revision }, guides })
     const index = files.get('haskell/guides/index.md')!
@@ -92,6 +92,12 @@ describe('staged port guide links', () => {
     expect(page).toContain(program)
     expect(page).toContain('[LibTmux.Id](../../reference/libtmux-id/)')
     expect(page).toContain('[LibTmux.Server](../../reference/libtmux-server/)')
+    expect(page).toContain('[withServer](../../reference/libtmux-server-v-withserver/)')
+    expect(page).toContain('[capture](../../reference/libtmux-server-v-capture/)')
+    expect(page).toContain('[Snapshot](../../reference/libtmux-snapshot-t-snapshot/)')
+    expect(page).toContain('[Pane](../../reference/libtmux-snapshot-t-pane/)')
+    expect(page).toContain('[width](../../reference/libtmux-snapshot/)')
+    expect(page).toContain(`[withServer](https://github.com/libtmux/libtmux-haskell/blob/${revision}/src/LibTmux/Server.hs#L93)`)
     expect(page).toContain(`https://github.com/libtmux/libtmux-haskell/blob/${revision}/src/LibTmux/Id.hs#L20`)
     expect(page).toContain(`https://github.com/libtmux/libtmux-haskell/blob/${revision}/src/LibTmux/Id.hs#unknown`)
     expect(page).not.toContain('reference/libtmux-id/#')

@@ -6295,13 +6295,6 @@
   },
   {
    "port": "haskell",
-   "symbol": "LibTmux.Id",
-   "page": "/haskell/latest/guides/typed-values/",
-   "title": "Typed values",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
    "symbol": "LibTmux.Id#t:IdError",
    "page": "/haskell/latest/guides/api-documentation/",
    "title": "API documentation",
@@ -6309,9 +6302,23 @@
   },
   {
    "port": "haskell",
-   "symbol": "LibTmux.Server",
-   "page": "/haskell/latest/guides/capture/",
-   "title": "Capture and navigate",
+   "symbol": "LibTmux.Id#t:PaneId",
+   "page": "/haskell/latest/guides/typed-values/",
+   "title": "Typed values",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Id#t:SessionId",
+   "page": "/haskell/latest/guides/typed-values/",
+   "title": "Typed values",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Id#t:WindowId",
+   "page": "/haskell/latest/guides/typed-values/",
+   "title": "Typed values",
    "section": "guides"
   },
   {
@@ -6331,6 +6338,13 @@
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#t:TmuxException",
+   "page": "/haskell/latest/guides/capture/",
+   "title": "Capture and navigate",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:capture",
    "page": "/haskell/latest/guides/capture/",
    "title": "Capture and navigate",
    "section": "guides"
@@ -6373,13 +6387,6 @@
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:withServer",
-   "page": "/haskell/latest/guides/capture/",
-   "title": "Capture and navigate",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Snapshot",
    "page": "/haskell/latest/guides/capture/",
    "title": "Capture and navigate",
    "section": "guides"
@@ -6435,6 +6442,13 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Snapshot#t:Snapshot",
+   "page": "/haskell/latest/guides/capture/",
+   "title": "Capture and navigate",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Snapshot#t:SnapshotOrigin",
    "page": "/haskell/latest/guides/offline-fixtures/",
    "title": "Offline fixtures",
@@ -6484,7 +6498,7 @@
   },
   {
    "port": "haskell",
-   "symbol": "LibTmux.Value",
+   "symbol": "LibTmux.Value#t:PaneIndex",
    "page": "/haskell/latest/guides/typed-values/",
    "title": "Typed values",
    "section": "guides"
@@ -6498,6 +6512,20 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Value#t:WindowIndex",
+   "page": "/haskell/latest/guides/typed-values/",
+   "title": "Typed values",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Value#v:mkDimension",
+   "page": "/haskell/latest/guides/typed-values/",
+   "title": "Typed values",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Version",
    "page": "/haskell/latest/guides/status/",
    "title": "Implementation status",
@@ -6505,16 +6533,23 @@
   },
   {
    "port": "haskell",
-   "symbol": "LibTmux.Version",
+   "symbol": "LibTmux.Version#t:VersionError",
+   "page": "/haskell/latest/guides/api-documentation/",
+   "title": "API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Version#v:parseVersion",
    "page": "/haskell/latest/guides/typed-values/",
    "title": "Typed values",
    "section": "guides"
   },
   {
    "port": "haskell",
-   "symbol": "LibTmux.Version#t:VersionError",
-   "page": "/haskell/latest/guides/api-documentation/",
-   "title": "API documentation",
+   "symbol": "LibTmux.Version#v:requireSupported",
+   "page": "/haskell/latest/guides/typed-values/",
+   "title": "Typed values",
    "section": "guides"
   },
   {
