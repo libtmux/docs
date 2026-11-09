@@ -42,6 +42,7 @@ const SHA1 = /^[0-9a-f]{40}$/
 const SHA256 = /^[0-9a-f]{64}$/
 const PACKAGE_CONTRACT = [
   ['libtmux', 'libtmux', 'core'],
+  ['libtmux.control', 'libtmux/control', 'core'],
   ['libtmux.json', 'libtmux/json', 'core'],
   ['libtmux.query', 'libtmux/query', 'core'],
   ['libtmux.workspace', 'libtmux/workspace', 'workspace'],
@@ -174,9 +175,11 @@ function assertArtifact(input: unknown, revision?: string): CommonLispArtifact {
       !filePaths.includes('tools/documentation.lisp')) {
     throw new Error('Common Lisp artifact source provenance is incomplete')
   }
-  if (!Array.isArray(artifact.packages) || artifact.packages.length !== PACKAGE_CONTRACT.length ||
+  const hasControl = Array.isArray(artifact.packages) && artifact.packages.some((pkg) => pkg.name === 'libtmux.control')
+  const packageContract = PACKAGE_CONTRACT.filter(([name]) => name !== 'libtmux.control' || hasControl)
+  if (!Array.isArray(artifact.packages) || artifact.packages.length !== packageContract.length ||
       artifact.packages.some((pkg, index) => {
-        const expected = PACKAGE_CONTRACT[index]!
+        const expected = packageContract[index]!
         return pkg.name !== expected[0] || pkg.system !== expected[1] || pkg.product !== expected[2]
       })) {
     throw new Error('Common Lisp public package inventory differs')
