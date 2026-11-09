@@ -136,14 +136,14 @@ async function renderPicker(entries: PagePortLink[], portSlug = 'julia') {
   win.document.body.innerHTML = await container.renderToString(await pickerComponent, { props: { entries, portSlug } })
 }
 
-it('draws each port once, under its family, with Elixir under BEAM', async () => {
+it('draws each port once, under its family, with Erlang and Elixir under BEAM', async () => {
   await renderPicker(pagePortLinks({ pagePath: 'reference/glossary', portSlug: 'elixir', version: 'latest', defaults: {}, docs: [] }), 'elixir')
   const drawn = Array.from(win.document.querySelectorAll('.port-family')).map((section) => ({
     label: section.querySelector('h3')!.textContent,
     ports: [...new Set(Array.from(section.querySelectorAll('[data-port]')).map((row) => row.getAttribute('data-port')))],
   }))
   expect(drawn.map((family) => family.label)).toEqual(PORT_FAMILIES.map((family) => family.label))
-  expect(drawn.find((family) => family.label === 'BEAM')?.ports).toEqual(['elixir'])
+  expect(drawn.find((family) => family.label === 'BEAM')?.ports).toEqual(['erlang', 'elixir'])
   expect(drawn.filter((family) => family.ports.includes('elixir'))).toHaveLength(1)
   expect(drawn.flatMap((family) => family.ports).sort()).toEqual(PORTS.map((port) => port.slug).sort())
 })
@@ -162,6 +162,17 @@ it('renders safe native glossary destinations without JavaScript', async () => {
   }
   expect(win.document.querySelector('a[data-port="powershell"]')!.getAttribute('data-fragment-ids')?.split(' ')).not.toContain('method')
   expect(win.document.querySelector('a[data-port="java"]')!.getAttribute('data-fragment-ids')?.split(' ')).toContain('method')
+})
+
+it('offers only the language home for an excluded MCP overview', async () => {
+  await renderPicker(pagePortLinks({ pagePath: 'mcp', portSlug: 'ts', version: 'v1.2.3', defaults: {}, docs: [] }), 'ts')
+  const row = win.document.querySelector('[data-picker-option][data-port="lisp"]')!
+  expect(row.tagName).toBe('DIV')
+  expect(row.textContent).toContain('No matching page')
+  const links = row.querySelectorAll('a')
+  expect(links).toHaveLength(1)
+  expect(links[0].getAttribute('href')).toBe('/lisp/latest/')
+  expect(links[0].getAttribute('aria-label')).toBe('Go to Common Lisp home')
 })
 
 it('keeps matching native glossary fragments and drops absent terms during keyboard activation', async () => {

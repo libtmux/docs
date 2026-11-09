@@ -4557,6 +4557,725 @@
           ]
         }
       ]
+    },
+    {
+      "port": "ocaml",
+      "owner": "Operations",
+      "in": "lib/",
+      "kind": "builds",
+      "names": [
+        "break_pane",
+        "clear_history",
+        "create_session",
+        "create_window",
+        "kill_pane",
+        "kill_session",
+        "kill_window",
+        "link_window",
+        "move_pane",
+        "move_window_at",
+        "read_hook",
+        "read_option",
+        "refresh_client_at",
+        "rename_session",
+        "rename_window",
+        "request_detach_client_at",
+        "resize_pane",
+        "resize_window",
+        "respawn_pane",
+        "select_layout",
+        "select_pane",
+        "select_window_at",
+        "send_keys",
+        "set_environment",
+        "set_hook",
+        "set_option",
+        "swap_panes",
+        "switch_client_at",
+        "unlink_window_at",
+        "unset_environment",
+        "unset_option",
+        "wait_for"
+      ],
+      "why": "These core functions construct typed command descriptions. Only a backend client executes them.",
+      "evidence": [
+        {
+          "at": "lib/libtmux.mli:1071",
+          "has": [
+            "Construction performs no I/O"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:247",
+          "has": [
+            "Command.Rename_window"
+          ]
+        },
+        {
+          "at": "lib/commands.ml:320",
+          "has": [
+            "Command.Mutate (Kill_session"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "owner": "Session",
+      "names": [
+        "window_links"
+      ],
+      "kind": "values",
+      "why": "Reads window links from the captured arena without issuing link-window.",
+      "evidence": [
+        {
+          "at": "lib/graph.ml:212",
+          "has": [
+            "value.arena.session_links"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "owner": "Snapshot",
+      "names": [
+        "find_pane",
+        "find_session",
+        "find_window",
+        "window_links"
+      ],
+      "kind": "values",
+      "why": "Searches the immutable captured graph and returns existing rows without tmux I/O.",
+      "evidence": [
+        {
+          "at": "lib/graph.ml:396",
+          "has": [
+            "value.link_rows"
+          ]
+        },
+        {
+          "at": "lib/graph.ml:405",
+          "has": [
+            "value.session_index"
+          ]
+        },
+        {
+          "at": "lib/graph.ml:409",
+          "has": [
+            "value.window_index"
+          ]
+        },
+        {
+          "at": "lib/graph.ml:413",
+          "has": [
+            "value.pane_index"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "owner": "Window",
+      "names": [
+        "links"
+      ],
+      "kind": "values",
+      "why": "Reads links of the captured window without issuing link-window.",
+      "evidence": [
+        {
+          "at": "lib/graph.ml:268",
+          "has": [
+            "value.arena.window_links"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "owner": "Client",
+      "names": [
+        "clear_history"
+      ],
+      "commands": [
+        "clear-prompt-history"
+      ],
+      "kind": "other-command",
+      "why": "Clears the target pane history with clear-history. It does not clear command-prompt history.",
+      "evidence": [
+        {
+          "at": "lib/commands.ml:364",
+          "has": [
+            "Command.Mutate (Clear_history"
+          ]
+        },
+        {
+          "at": "unix/command_encoding.ml:285",
+          "has": [
+            "\"clear-history\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "owner": "Client",
+      "names": [
+        "read_hook"
+      ],
+      "commands": [
+        "show-hooks"
+      ],
+      "kind": "other-command",
+      "why": "Reads a single hook through show-options, including named user hooks, rather than listing hooks with show-hooks.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml:307",
+          "has": [
+            "Read_hook"
+          ]
+        },
+        {
+          "at": "unix/engine.ml:309",
+          "has": [
+            "Options_io.read"
+          ]
+        },
+        {
+          "at": "unix/options_io.ml:223",
+          "has": [
+            "\"show-options\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "owner": "Client",
+      "names": [
+        "wait_for_text"
+      ],
+      "commands": [
+        "wait-for"
+      ],
+      "kind": "no-send",
+      "why": "Observes rendered text and stream notifications. It does not use a tmux wait-for channel.",
+      "evidence": [
+        {
+          "at": "unix/libtmux_unix.ml:123",
+          "has": [
+            "Observation_wait.rendered"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:386",
+          "has": [
+            "Observation_wait.rendered"
+          ]
+        },
+        {
+          "at": "unix/observation_wait.ml:49",
+          "has": [
+            "capture_text !current"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "owner": "Subscription",
+      "names": [
+        "wait_for_bytes"
+      ],
+      "commands": [
+        "wait-for"
+      ],
+      "kind": "no-send",
+      "why": "Matches a byte pattern against streamed output. It does not use a tmux wait-for channel.",
+      "evidence": [
+        {
+          "at": "unix/libtmux_unix.ml:49",
+          "has": [
+            "Streaming.wait_for_bytes"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml:122",
+          "has": [
+            "Streaming.wait_for_bytes"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "ownerSuffix": "Selection",
+      "names": [
+        "new"
+      ],
+      "kind": "values",
+      "why": "Concrete Selection constructors bless and validate native array membership. They create no session, window, pane, process, or transport.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Selection.pm:8",
+          "has": [
+            "my $self = bless \\@items, $class;"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Selection.pm:9",
+          "has": [
+            "$self->_validate;"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "owner": "Server",
+      "names": [
+        "close"
+      ],
+      "in": "packages/async/",
+      "commands": [
+        "kill-server"
+      ],
+      "kind": "no-send",
+      "why": "Async close cancels pending operations and closes its owned transport. It never requests daemon destruction.",
+      "evidence": [
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:57",
+          "has": [
+            "$_->cancel for values $self->{operations}->%*;"
+          ]
+        },
+        {
+          "at": "packages/async/lib/LibTmux/Async/Server.pm:58",
+          "has": [
+            "return $self->{transport}->close;"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "owner": "Server",
+      "names": [
+        "delete_buffer"
+      ],
+      "commands": [
+        "kill-server"
+      ],
+      "kind": "other-command",
+      "why": "The selected operation deletes one named buffer; it does not send kill-server.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:767",
+          "has": [
+            ": 'delete-buffer',"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:1121",
+          "has": [
+            "$self->_run($self->operation('delete_buffer', %args));"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "owner": "Server",
+      "names": [
+        "set_buffer"
+      ],
+      "commands": [
+        "set-buffer"
+      ],
+      "kind": "other-command",
+      "why": "set_buffer uses load-buffer with stdin bytes. It does not use the distinct native set-buffer argument interface.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:765",
+          "has": [
+            "$name eq 'set_buffer'  ? 'load-buffer'"
+          ]
+        },
+        {
+          "at": "packages/core/lib/LibTmux/Server.pm:772",
+          "has": [
+            "$name eq 'set_buffer' ? (stdin => $args{data}) : ())->then("
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "owner": "Session",
+      "names": [
+        "window_links"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "values",
+      "why": "This accessor reads captured graph membership locally; link_window on Server performs the separate tmux mutation.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Session.pm:10",
+          "has": [
+            "sub window_links ($self) { $self->_read('window_links') }"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "owner": "Snapshot",
+      "names": [
+        "window_links"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "values",
+      "why": "This accessor reads captured graph membership locally; link_window on Server performs the separate tmux mutation.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Snapshot.pm:207",
+          "has": [
+            "sub window_links  ($self)      { $self->_selection('window_link') }"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "perl",
+      "owner": "Window",
+      "names": [
+        "links"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "values",
+      "why": "This accessor reads captured graph membership locally; link_window on Server performs the separate tmux mutation.",
+      "evidence": [
+        {
+          "at": "packages/core/lib/LibTmux/Window.pm:9",
+          "has": [
+            "sub links       ($self) { $self->_read('links') }"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_command",
+      "names": [
+        "source_file/2"
+      ],
+      "commands": [
+        "source-file"
+      ],
+      "kind": "builds",
+      "why": "Returns a validated command value; execution requires an explicit endpoint operation.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_command.erl:179",
+          "has": [
+            "raw(<<\"source-file\">>"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_command",
+      "names": [
+        "wait_for/2"
+      ],
+      "commands": [
+        "wait-for"
+      ],
+      "kind": "builds",
+      "why": "Returns a validated command value; execution requires an explicit endpoint operation.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_command.erl:144",
+          "has": [
+            "raw(<<\"wait-for\">>"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_session",
+      "names": [
+        "rename_command/2"
+      ],
+      "commands": [
+        "rename-session"
+      ],
+      "kind": "builds",
+      "why": "Returns a validated command value; execution requires an explicit endpoint operation.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_session.erl:97",
+          "has": [
+            "tmux_command:generated(session_rename,"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_pane",
+      "names": [
+        "resize_command/2"
+      ],
+      "commands": [
+        "resize-pane"
+      ],
+      "kind": "builds",
+      "why": "Returns a validated command value; execution requires an explicit endpoint operation.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_pane.erl:341",
+          "has": [
+            "tmux_command:generated(pane_resize,"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_model",
+      "names": [
+        "window_link/1"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "values",
+      "why": "Constructs a detached membership record without tmux I/O.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_model.erl:208",
+          "has": [
+            "window_link(Fields) -> new(window_link, Fields)."
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_snapshot",
+      "names": [
+        "window_links/1"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "values",
+      "why": "Reads already captured membership values without tmux I/O.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_snapshot.erl:105",
+          "has": [
+            "window_links(Snapshot) -> rows(window_link, Snapshot)."
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_select",
+      "names": [
+        "window_links/1"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "values",
+      "why": "Selects already captured membership values without tmux I/O.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_select.erl:76",
+          "has": [
+            "window_links(Snapshot) -> from_snapshot(window_link, Snapshot)."
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_query",
+      "names": [
+        "window_links/1"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "builds",
+      "why": "Builds a future observation; fetching reads memberships and never links a window.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_query.erl:139",
+          "has": [
+            "window_links(Server) -> #query{server = Server, entity = window_link}."
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_pane",
+      "names": [
+        "get/2"
+      ],
+      "commands": [
+        "list-panes"
+      ],
+      "kind": "other-command",
+      "why": "Observes fields of one explicit stable ID with display-message rather than listing the collection.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_pane.erl:127",
+          "has": [
+            "get(Server, Id) -> tmux_observe:get(Server, pane, Id)."
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:13",
+          "has": [
+            "?= read_row(Entity, Id, Target, State)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:243",
+          "has": [
+            "?= command(<<\"display-message\">>"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_session",
+      "names": [
+        "get/2"
+      ],
+      "commands": [
+        "list-sessions"
+      ],
+      "kind": "other-command",
+      "why": "Observes fields of one explicit stable ID with display-message rather than listing the collection.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_session.erl:64",
+          "has": [
+            "get(Server, Id) -> tmux_observe:get(Server, session, Id)."
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:13",
+          "has": [
+            "?= read_row(Entity, Id, Target, State)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:243",
+          "has": [
+            "?= command(<<\"display-message\">>"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_window",
+      "names": [
+        "get/2"
+      ],
+      "commands": [
+        "list-windows"
+      ],
+      "kind": "other-command",
+      "why": "Observes fields of one explicit stable ID with display-message rather than listing the collection.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_window.erl:56",
+          "has": [
+            "get(Server, Id) -> tmux_observe:get(Server, window, Id)."
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:13",
+          "has": [
+            "?= read_row(Entity, Id, Target, State)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:243",
+          "has": [
+            "?= command(<<\"display-message\">>"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_hook",
+      "names": [
+        "get/3"
+      ],
+      "commands": [
+        "show-hooks"
+      ],
+      "kind": "other-command",
+      "why": "Reads typed hook values with show-options -H, preserving indexed metadata.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_hook.erl:72",
+          "has": [
+            "?= tmux_target:run(Server, <<\"show-options\">>"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_hook.erl:73",
+          "has": [
+            "ScopeArgs ++ Flags ++ [<<\"-H\">>"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_server",
+      "names": [
+        "close/1"
+      ],
+      "commands": [
+        "kill-server"
+      ],
+      "kind": "no-send",
+      "why": "Closes the library endpoint and its operations while preserving the daemon; owned shutdown requires the ownership token.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_server.erl:267",
+          "has": [
+            "close(Server) -> server_request(Server, close, 1000)."
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_server.erl:132",
+          "has": [
+            "`close/1` only closes the endpoint and preserves the daemon."
+          ]
+        }
+      ]
     }
   ]
 }

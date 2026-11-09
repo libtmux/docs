@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro'
 import { getCollection, type CollectionEntry } from 'astro:content'
-import { sourceUrl } from '@libtmux/api-model'
+import { sourceUrl } from '@libtmux/api-model/reference'
 import { API_MODELS } from '../lib/api-models'
 import { productApiAlternatives, productApiHref, productApiRedirects, productApiRoutes } from '../lib/product-api'
 import { symbolMarkdownWithLayout } from '../lib/symbol-markdown'

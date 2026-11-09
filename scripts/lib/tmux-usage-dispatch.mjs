@@ -32,6 +32,9 @@ export const TRANSPORT = {
   cxx: { pattern: /::posix_spawnp?\(|::write\(/, files: /(?:posix_child|connection|process)\.cpp$/ },
   swift: { pattern: /Subprocess\.run\(|Glibc\.write\(/, files: /Sources\/LibTmux\/(?:Transport|ControlMode|NonblockingLineWriter)\.swift$/ },
   elixir: { pattern: /\bsend_port\(/, files: /transport\/oneshot\.ex$/ },
+  ocaml: { pattern: /Unix\.write_substring\b/, files: /unix\/runtime_io\.ml$/ },
+  lisp: { pattern: /uiop:launch-program/, files: /process-sbcl\.lisp$/ },
+  erlang: { pattern: /open_port\(\{spawn_executable,/, files: /^apps\/libtmux_erlang\/src\/tmux_transport\.erl$/ },
 }
 
 const CONSTRUCTOR = /^(?:__init__|constructor|init|new|initialize)$/
@@ -85,7 +88,7 @@ function callProblems({ where, hop, current, reached, functions, line }) {
 
 /**
  * @param {{ port: string, rule: { name: string }, item: { at: string, has?: string[], reaches?: { at: string, has?: string[], calls?: string, leads?: string }[] },
- *   functions: { file: string, name: string, owner?: string, start: number, end: number, calls: Map<string, number> }[],
+ *   functions: (import('./tmux-usage-scan.mjs').ScannedFunction & { file: string })[],
  *   readSource: (path: string) => string | undefined }} input
  * @returns {string[]}
  */
@@ -97,8 +100,12 @@ export function chainProblems({ port, rule, item, functions, readSource }) {
     return readSource(file)?.split('\n')[line - 1]
   }
   const reachesTransport = (cite) => {
-    const { file } = split(cite)
-    return transport && transport.files.test(file) && transport.pattern.test(textAt(cite) ?? '')
+    const { file, line } = split(cite)
+    if (!transport || !transport.files.test(file) || !transport.pattern.test(textAt(cite) ?? '')) return false
+    if (port !== 'erlang') return true
+    const fn = functionAt(functions, file, line)
+    return fn?.callList?.some((call) => call.line === line && call.name === 'open_port/2' && call.portMode === 'spawn_executable'
+      && (call.receiver === 'erlang' || (!call.receiver && !functions.some((local) => local.module === fn.module && local.name === 'open_port/2')))) ?? false
   }
   // A definition that starts the process itself, `subprocess.check_call(`, needs no chain.
   if (reachesTransport(item.at)) return []
@@ -109,7 +116,9 @@ export function chainProblems({ port, rule, item, functions, readSource }) {
   const problems = []
   const head = split(item.at)
   let current = functionAt(functions, head.file, head.line)
-  if (!current || current.name !== bareName(rule.name)) return [`${label}: is not a line of a function named ${bareName(rule.name)}`]
+  const matches = current && (current.module === undefined ? current.name === bareName(rule.name)
+    : rule.name === current.name || rule.name === `${current.module}:${current.name}`)
+  if (!matches) return [`${label}: is not a line of a function named ${bareName(rule.name)}`]
   for (const [index, hop] of chain.entries()) {
     const at = split(hop.at)
     const where = `${label}: hop ${hop.at}`
@@ -147,7 +156,7 @@ export function chainProblems({ port, rule, item, functions, readSource }) {
  *
  * @param {{ port: string, dispatchers: { name: string, why?: string, kind?: string, evidence?: { at: string, has?: string[], reaches?: unknown[] }[],
  *   labels?: { at: number, name: string }[] }[], readSource: (path: string) => string | undefined,
- *   functions?: { file: string, name: string, owner?: string, start: number, end: number, calls: Map<string, number> }[] }} input
+ *   functions?: (import('./tmux-usage-scan.mjs').ScannedFunction & { file: string })[] }} input
  * @returns {string[]}
  */
 export function dispatcherProblems({ port, dispatchers, readSource, functions }) {
@@ -162,7 +171,12 @@ export function dispatcherProblems({ port, dispatchers, readSource, functions })
       const line = readSource(item.at.slice(0, cut))?.split('\n')[Number(item.at.slice(cut + 1)) - 1]
       if (line === undefined) { problems.push(`${label}: ${item.at} is not a line of the pinned source`); continue }
       for (const needle of item.has ?? []) if (!line.includes(needle)) problems.push(`${label}: ${item.at} does not contain ${JSON.stringify(needle)}`)
-      if ((item.has ?? []).some((needle) => needle.includes(rule.name))) defined = true
+      if (port === 'erlang') {
+        const at = split(item.at)
+        const fn = functions && functionAt(functions, at.file, at.line)
+        if (fn?.nameLine === at.line && `${fn.module}:${fn.name}` === rule.name) defined = true
+      }
+      else if ((item.has ?? []).some((needle) => needle.includes(rule.name))) defined = true
       if (rule.kind !== 'builder' && functions) problems.push(...chainProblems({ port, rule, item, functions, readSource }))
     }
     if (!defined) problems.push(`${label}: no cited line shows ${rule.name} defined`)

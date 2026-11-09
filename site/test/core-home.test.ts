@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { parseFrontmatter } from '@astrojs/markdown-remark'
 import { REGISTRY } from '../src/lib/registry'
 import { CAPABILITIES, CORE_HOME, CORE_ROLES, coreDescription, coreLead, coreHomeHeadings, coreTitle, coreHomeMarkdown, resolveCoreHome } from '../src/lib/core-home'
@@ -9,6 +9,11 @@ import { cardRoute, routesOf } from './core-routes'
 import { stagedSectionsFor } from '../src/lib/port-documentation'
 
 const page = (port: string) => new URL(`../src/content/docs/ports/${port}/core/index.md`, import.meta.url)
+const graph = (port: string) => {
+  const entry = CORE_HOME[port]!
+  if (!entry.objects) throw new Error(`${port} has no object graph`)
+  return entry
+}
 
 describe('Core Library home data', () => {
   it('has an entry and a page for every port', () => {
@@ -18,10 +23,10 @@ describe('Core Library home data', () => {
 
   it.each(PORTS.map((port) => port.slug))('resolves every %s symbol to a reference page', (slug) => {
     const home = resolveCoreHome(slug, 'latest')
-    expect(home.objects.map((object) => object.role)).toEqual([...CORE_ROLES])
+    expect(home.objects.map((object) => object.role)).toEqual(slug === 'haskell' ? [] : [...CORE_ROLES])
     const slugs = new Set(API_MODELS[slug].symbols.map((symbol) => symbol.slug))
     const prefix = `/${slug}/latest/reference/`
-    for (const row of [...home.objects, ...Object.values(home.capabilities).flat()]) {
+    for (const row of [...home.objects, ...home.modules, ...Object.values(home.capabilities).flat()]) {
       expect(row.href, row.id).toContain(prefix)
       expect(slugs.has(row.href.slice(row.href.indexOf(prefix) + prefix.length).replace(/\/$/, '')), row.id).toBe(true)
     }
@@ -36,8 +41,17 @@ describe('Core Library home data', () => {
     for (const entry of Object.values(CORE_HOME)) for (const key of Object.keys(entry.capabilities)) expect(CAPABILITIES).toHaveProperty(key)
   })
 
+  it('keeps Perl physical windows separate from session-window associations', () => {
+    const home = resolveCoreHome('perl', 'latest')
+    expect(home.association?.id).toBe('LibTmux::WindowLink')
+    expect(home.objects.find((object) => object.role === 'window')?.wraps).toContain('physical')
+    expect(home.capabilities.cli.map((row) => row.key)).toContain('async')
+    expect(home.capabilities.cli.map((row) => row.key)).not.toContain('control-mode')
+    expect(coreHomeMarkdown('perl', 'latest', 'https://libtmux.org')).toContain('LibTmux::WindowLink')
+  })
+
   it('fails on a missing symbol, a missing type and an unknown capability', () => {
-    const rs = CORE_HOME.rs!
+    const rs = graph('rs')
     expect(() => resolveCoreHome('rs', 'latest', { ...rs, objects: { ...rs.objects, pane: 'pane.NoSuchPane' } }))
       .toThrow(/pane.NoSuchPane, which is not in its API model/)
     expect(() => resolveCoreHome('rs', 'latest', { ...rs, objects: { ...rs.objects, window: '' } })).toThrow(/names no window type/)
@@ -49,7 +63,7 @@ describe('Core Library home data', () => {
       .toThrow(/not in its API model/)
   })
 
-  it('links the guides the page cards name, and only the ones that exist', () => {
+  it('links authored task guides and validates optional source-owned guide cards', () => {
     for (const port of PORTS) {
       const { frontmatter } = parseFrontmatter(readFileSync(page(port.slug), 'utf8'), { frontmatter: 'remove' })
       const hrefs = (frontmatter.cards as { href: string }[]).map((card) => card.href)
@@ -57,13 +71,44 @@ describe('Core Library home data', () => {
       expect(hrefs, port.slug).toContain('../reference/')
       for (const name of ['getting-started', 'testing-with-libtmux']) {
         const file = new URL(`../src/content/docs/ports/${port.slug}/guides/${name}.md`, import.meta.url)
-        expect(hrefs.includes(`../guides/${name}/`), `${port.slug} ${name}`).toBe(existsSync(file))
+        const href = `../guides/${name}/`
+        if (existsSync(file)) expect(hrefs, `${port.slug} ${name}`).toContain(href)
+        if (hrefs.includes(href)) expect(routesOf(port.slug).has(`guides/${name}`), `${port.slug} ${name}`).toBe(true)
       }
     }
   })
 })
 
 describe('Core Library home page', () => {
+  it('shows the Haskell public modules without claiming an operational object graph', async () => {
+    const { Window } = await import('happy-dom')
+    const { createComponent, renderTemplate } = await import('astro/runtime/server/index.js')
+    const { loadAstroTemplate, renderAstroTemplate } = await import('./astro-templates')
+    const Code = createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre>${props.code}</pre>`)
+    const template = await loadAstroTemplate('components/CoreHome.astro', {
+      modules: { 'astro-expressive-code/components': { Code } },
+    })
+    const window = new Window()
+    const sourceSha = API_MODELS.haskell.revision!
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'haskell')
+    vi.stubEnv('LIBTMUX_DOCS_SOURCE_SHA', sourceSha)
+    try {
+      window.document.body.innerHTML = await renderAstroTemplate(template, {
+        props: { port: 'haskell', version: 'latest', cards: [] },
+      })
+      const rows = [...window.document.querySelectorAll('[data-core-home-modules] tbody a')]
+      expect(rows.map((row) => row.textContent)).toEqual(['LibTmux.Id', 'LibTmux.Value', 'LibTmux.Version'])
+      const markdown = coreHomeMarkdown('haskell', 'latest', 'https://libtmux.org')
+      for (const row of rows) expect(markdown).toContain(`https://libtmux.org${row.getAttribute('href')}`)
+      expect(window.document.querySelector('[data-core-home-objects]')).toBeNull()
+      expect(window.document.body.textContent).toContain('not published on Hackage')
+      expect(window.document.body.textContent).toContain(`tag: "${sourceSha}"`)
+      expect(window.document.body.textContent).not.toMatch(/Control tmux|Server →|connect to|Traversal from/)
+      expect(markdown).not.toMatch(/\| Type \| Wraps|Control tmux|navigate sessions/)
+      expect([...window.document.querySelectorAll('h2')].map((heading) => heading.id))
+        .toEqual(coreHomeHeadings('haskell', 'latest').map((heading) => heading.slug))
+    } finally { await window.happyDOM.abort(); vi.unstubAllEnvs() }
+  })
   it.each(['rs', 'py', 'kotlin'])('renders the %s page in the Python front page order', async (slug) => {
     const { Window } = await import('happy-dom')
     const { createComponent, renderTemplate } = await import('astro/runtime/server/index.js')
@@ -109,17 +154,20 @@ describe('Core Library home page', () => {
 
 describe('the one-sentence definition', () => {
   it('opens like the maintainer wrote it and lists only what the port backs', () => {
+    const haskell = CORE_HOME.haskell!
+    if (haskell.modules === undefined) throw new Error('Expected Haskell module home')
+    expect(coreLead('haskell', { ...haskell, title: 'Another title' })).toBe(`${haskell.lead}.`)
     expect(coreDescription('cxx')).toMatch(/^tmux client library for C\+\+\. Control tmux, connect to and create servers, navigate sessions, windows, and panes, send keys, watch for changes via control mode, capture pane contents$/)
     for (const port of PORTS) {
       const entry = CORE_HOME[port.slug]!
       const sentence = coreDescription(port.slug)
-      expect(sentence.startsWith(`${coreTitle(port.slug)}. Control tmux, `), port.slug).toBe(true)
+      expect(sentence.startsWith(`${coreTitle(port.slug)}. ${port.slug === 'haskell' ? 'Parse tmux entity IDs' : 'Control tmux, '}`), port.slug).toBe(true)
       expect(sentence.includes('connect to and create servers'), `${port.slug} servers`).toBe('servers' in entry.capabilities)
       expect(sentence.includes('send keys'), `${port.slug} send keys`).toBe('send-keys' in entry.capabilities)
       expect(sentence.includes('via control mode'), `${port.slug} control mode`).toBe('control-mode' in entry.capabilities)
       expect(sentence.includes('capture pane contents'), `${port.slug} capture`).toBe('capture' in entry.capabilities)
     }
-    const rs = CORE_HOME.rs!
+    const rs = graph('rs')
     const { servers: _a, 'control-mode': _b, ...rest } = rs.capabilities
     const trimmed = coreDescription('rs', { ...rs, capabilities: rest })
     expect(trimmed).not.toMatch(/servers\b.*navigate|control mode/)
@@ -128,19 +176,27 @@ describe('the one-sentence definition', () => {
 })
 
 describe('capability evidence', () => {
+  it('rejects missing, non-module, duplicate, empty or mixed module entries', () => {
+    const entry = CORE_HOME.haskell!
+    for (const modules of [[], ['Missing'], ['LibTmux.Id#t:PaneId'], ['LibTmux.Id', 'LibTmux.Id']]) {
+      expect(() => resolveCoreHome('haskell', 'latest', { ...entry, modules } as never)).toThrow(/module/)
+    }
+    expect(() => resolveCoreHome('haskell', 'latest', { ...entry, objects: graph('rs').objects } as never)).toThrow(/mix/)
+    expect(() => resolveCoreHome('haskell', 'latest', { ...entry, capabilities: { capture: 'LibTmux.Id' } } as never)).toThrow(/capabilit/)
+  })
   it('rejects a real symbol that does not back the capability', () => {
-    const rs = CORE_HOME.rs!
+    const rs = graph('rs')
     const wrong = (key: string, id: string) => resolveCoreHome('rs', 'latest', { ...rs, capabilities: { ...rs.capabilities, [key]: id } as never })
     expect(() => wrong('ids', 'server.Server.panes')).toThrow(/not an ID type or accessor/)
     expect(() => wrong('version-gate', 'server.Server.panes')).toThrow(/not a version or unsupported-feature error/)
     expect(() => wrong('current-pane', 'server.Server.panes')).toThrow(/not an environment constructor/)
-    expect(() => wrong('async', 'target.PaneId')).toThrow(/not an async, suspend, Promise or Task signature/)
+    expect(() => wrong('async', 'target.PaneId')).toThrow(/not an async signature, a documented Eio capture operation or an operation lifecycle/)
     expect(() => wrong('errors', 'pane.Pane')).toThrow(/not an error, exception or failure type/)
     expect(() => wrong('objects', 'server.Server.panes')).toThrow(/not a type or cmdlet/)
     expect(() => wrong('queries', 'pane.Pane')).toThrow(/not a filter, query or selection/)
     expect(() => wrong('traversal', 'pane.Pane')).toThrow(/not a panes, windows, sessions or snapshot accessor/)
     expect(() => wrong('argv', 'pane.Pane')).toThrow(/not a command or run symbol/)
-    expect(() => wrong('test-fixtures', 'pane.Pane')).toThrow(/not a test or fixture symbol/)
+    expect(() => wrong('test-fixtures', 'pane.Pane')).toThrow(/not a fixture or owned-server lifecycle/)
   })
 })
 

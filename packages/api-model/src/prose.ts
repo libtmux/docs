@@ -16,11 +16,14 @@ import { neverLinks } from './never-links.ts'
  */
 
 export const PORT_NAME: Record<string, string> = {
+  ocaml: 'OCaml',
   py: 'Python',
+  perl: 'Perl',
   ts: 'TypeScript',
   rs: 'Rust',
   go: 'Go',
   java: 'Java',
+  clojure: 'Clojure',
   csharp: 'C#',
   cxx: 'C++',
   swift: 'Swift',
@@ -32,6 +35,8 @@ export const PORT_NAME: Record<string, string> = {
   powershell: 'PowerShell',
   julia: 'Julia',
   elixir: 'Elixir',
+  haskell: 'Haskell',
+  lisp: 'Common Lisp',
 }
 
 /** Declarations that own a page of members. */
@@ -137,7 +142,7 @@ export function looksLikeApiMention(text: string): boolean {
   if (/^(?:[\w.]+\\)?[A-Z][A-Za-z]+-[A-Za-z][\w]*$/.test(t)) return true
   // `wait_for`, `capture_pane`, `activeWindow`: an identifier, admitted as a
   // candidate for the resolver to accept or reject.
-  return /^@?[a-z_][A-Za-z0-9_]*!?$/.test(t)
+  return /^@?[a-z_][A-Za-z0-9_-]*!?$/.test(t)
 }
 
 /**
@@ -228,6 +233,7 @@ const NOT_API: { why: string; test: RegExp }[] = [
   { why: 'call with arguments', test: /\([^)]*[\s:][^)]*\)/ },
   // A YAML key or a doc marker: `environment:`, `docs:watching`.
   { why: 'configuration key', test: /:$|^[a-z]+:[a-z]/ },
+  { why: 'Cabal project file', test: /^cabal\.project$/ },
   // A fragment beginning with the separator — `.filter()`, `.gt(...)` — names
   // a method without its receiver, so there is nothing to resolve against.
   { why: 'method without a receiver', test: /^[.:]/ },
@@ -238,9 +244,12 @@ const NOT_API: { why: string; test: RegExp }[] = [
 ]
 
 /** Why this span is not an API reference, or undefined if it might be. */
-export function notApiReason(text: string): string | undefined {
+export function notApiReason(text: string, port?: string): string | undefined {
   const t = text.trim()
-  for (const { why, test } of NOT_API) if (test.test(t)) return why
+  for (const { why, test } of NOT_API) {
+    if (port === 'lisp' && why === 'configuration key' && /^libtmux(?:\.[\w-]+)*:[\w-]+$/.test(t)) continue
+    if (test.test(t)) return why
+  }
   return undefined
 }
 
@@ -254,7 +263,9 @@ export function notApiReason(text: string): string | undefined {
 export function notApiInContext(text: string, before: string | undefined): string | undefined {
   const t = text.trim()
   const sentence = (before ?? '').split(/(?<=[.!?])\s+(?=[A-Z])/).pop() ?? ''
-  if (/^[A-Z][A-Za-z0-9]*$/.test(t) && /\bkey\s+names?\s+(?:such as|like|including)\b/i.test(sentence)) return 'tmux key name'
+  const keyNames = /\b(?:key\s+names?\s+(?:such as|like|including)|tmux\s+recognizes\s+names?\s+such as)\b/i.test(sentence)
+  if (/^[A-Z][A-Za-z0-9]*$/.test(t) && (keyNames || (t === 'Enter' && /\bsend-keys\b/.test(sentence)))) return 'tmux key name'
+  if (/^[A-Z][A-Za-z0-9]*$/.test(t) && /\b(?:typ(?:e|es|ing)\s+the\s+word|(?:screen|output)\s+contains)\s*$/i.test(sentence)) return 'literal text'
   if (/^[a-z_]\w*(?:\.[a-z_]\w*)+$/.test(t) && /\bjson\b/i.test(sentence)) return 'field of JSON output'
   return undefined
 }
@@ -305,6 +316,10 @@ export function decideMention(
   if (!looksLikeApiMention(text)) return { kind: 'skip', why: 'not a mention' }
   const never = neverLinks(text)
   if (never) return { kind: 'skip', why: never }
+  // Tools.deps names a package with a slash; only registered coordinates are packages, not vars.
+  if (ctx.pagePort === 'clojure' && models.clojure?.sources?.some((source) => source.package.replace(':', '/') === text)) {
+    return { kind: 'skip', why: 'a dependency coordinate' }
+  }
 
   const link = (port: string, res: ReturnType<Resolver['resolve']>): MentionDecision | undefined => {
     if (res.how === 'federated') {

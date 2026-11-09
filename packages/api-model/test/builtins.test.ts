@@ -92,6 +92,16 @@ describe('C++ standard references', () => {
 })
 
 describe('standard types in product signatures', () => {
+  it('links the OCaml modules and sequence function used in native guides', () => {
+    const index = new SymbolIndex([], () => '#', 'ocaml')
+    for (const [name, page] of [['List', 'List.html'], ['Unix', 'Unix.html'], ['Seq.filter', 'Seq.html#VALfilter']]) {
+      expect(builtinHref('ocaml', name), name).toBe(`https://ocaml.org/manual/5.5/api/${page}`)
+      expect(index.resolve(name), name).toMatchObject({ href: `https://ocaml.org/manual/5.5/api/${page}`, external: true })
+      expect(builtinHref('ts', name), name).toBeUndefined()
+    }
+    expect(index.resolve('Seq.invented')).toBeUndefined()
+  })
+
   it('links Scala Using.resource without losing the callee owner or expression', () => {
     const model = JSON.parse(readFileSync(new URL('../../../site/src/data/api/scala.json', import.meta.url), 'utf8')) as ApiModel
     const context = model.symbols.find((symbol) => symbol.id === 'io.github.libtmux.scaladsl.Server')!

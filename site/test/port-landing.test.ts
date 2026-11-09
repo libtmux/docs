@@ -20,12 +20,17 @@ const read = (path: string) => JSON.parse(readFileSync(new URL(path, import.meta
 
 /** Every product a port ships, as the selector offers it. PowerShell serves MCP with the .NET tool. */
 const PRODUCTS: Record<string, LandingProduct[]> = {
+  ocaml: ['core', 'workspace'],
+  perl: ['core', 'workspace'],
   py: ['core', 'mcp', 'workspace'],
   ruby: ['core', 'mcp', 'workspace'],
   lua: ['core'],
   powershell: ['core', 'mcp', 'workspace'],
   julia: ['core', 'mcp', 'workspace'],
   elixir: ['core'],
+  haskell: ['core'],
+  lisp: ['core', 'workspace'],
+  erlang: ['core'],
   ts: ['core', 'mcp', 'workspace'],
   rs: ['core', 'mcp', 'workspace'],
   go: ['core', 'mcp', 'workspace'],
@@ -34,6 +39,7 @@ const PRODUCTS: Record<string, LandingProduct[]> = {
   cxx: ['core', 'mcp', 'workspace'],
   swift: ['core', 'mcp', 'workspace'],
   kotlin: ['core'],
+  clojure: ['core'],
   scala: ['core'],
   fsharp: ['core'],
 }
@@ -50,12 +56,15 @@ const GAPS: readonly string[] = ['julia/mcp']
  * is a reviewed change to this list, with the CI evidence that goes with it.
  */
 const EXCERPT_FILES: Record<string, string> = {
+  'ocaml/workspace': 'examples/showcase_graph.ml',
+  'perl/workspace': 'examples/workspace.pl',
   'py/mcp': 'tests/test_window_tools.py',
   'py/workspace': 'src/tmuxp/workspace/builder/classic.py',
   'ruby/mcp': 'examples/mcp_protocol.rb',
   'ruby/workspace': 'examples/workspace_apply.rb',
   'powershell/workspace': 'examples/Guides.ps1',
   'julia/workspace': 'packages/LibTmuxWorkspace/examples/owned_load.jl',
+  'lisp/workspace': 'examples/workspace.lisp',
   'ts/mcp': 'examples/mcp-agent/mcp-agent.ts',
   'ts/workspace': 'examples/workspace/workspace.ts',
   'rs/mcp': 'crates/tmux-mcp/examples/readonly.rs',
@@ -95,8 +104,8 @@ describe('the products a port landing page offers', () => {
     expect(MCP_SERVED_BY).toEqual({ powershell: 'csharp' })
   })
 
-  it('offers neither product for Lua, Elixir or a wrapper library', () => {
-    for (const slug of ['lua', 'elixir', 'kotlin', 'scala', 'fsharp']) expect(products(slug), slug).toEqual([])
+  it('offers neither product for Lua, Elixir, Haskell, Erlang or a wrapper library', () => {
+    for (const slug of ['lua', 'elixir', 'haskell', 'erlang', 'kotlin', 'scala', 'fsharp']) expect(products(slug), slug).toEqual([])
   })
 })
 

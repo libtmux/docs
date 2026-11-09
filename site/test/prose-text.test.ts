@@ -14,14 +14,16 @@ const TARGETS: Record<string, string> = {
   'java.lang.AutoCloseable': 'https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/AutoCloseable.html',
   Server: '/reference/server/',
   'C#': '/reference/c-sharp/',
+  'libtmux.query:compile-filter': '/lisp/latest/reference/libtmux-query-compile-filter/',
 }
 const decideMention = (text: string) => TARGETS[text]
   ? { kind: 'link', port: 'java', href: TARGETS[text], title: `${text}: Java`, external: text.startsWith('java.') }
   : { kind: 'skip', why: 'not a mention' }
 
 async function render(text: string, linkColour = '#6f1a24') {
-  const { decideMention: _real, ...api } = await import('@libtmux/api-model')
-  const template = await loadAstroTemplate('components/ProseText.astro', { modules: { '@libtmux/api-model': { ...api, decideMention } } })
+  const { decideMention: _real, ...api } = await import('@libtmux/api-model/reference')
+  const bindings = { ...api, decideMention }
+  const template = await loadAstroTemplate('components/ProseText.astro', { modules: { '@libtmux/api-model': bindings, '@libtmux/api-model/reference': bindings } })
   const win = new Window({ url: 'https://libtmux.org/en/' })
   windows.push(win)
   win.document.head.innerHTML = `<style>:root { --color-link: ${linkColour}; --color-foreground-primary: #202830; --color-background-border: #d6dce3; }${apiCss}</style>`
@@ -30,6 +32,12 @@ async function render(text: string, linkColour = '#6f1a24') {
 }
 
 describe('a member reference in a sentence', () => {
+  it('keeps a Lisp package reference when a foreign page names Common Lisp', async () => {
+    const win = await render('Common Lisp uses `libtmux.query:compile-filter`.')
+    expect(win.document.querySelector('a.api-mention')?.getAttribute('href'))
+      .toBe(TARGETS['libtmux.query:compile-filter'])
+  })
+
   it('reads a member reference as ApiDoc does, so a hash is marked the same way in both', () => {
     const doc = readFileSync(new URL('../src/components/api/ApiDoc.astro', import.meta.url), 'utf8')
     expect(doc).toContain(`const memberReference = ${memberReference.toString()}`)

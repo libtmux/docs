@@ -10,6 +10,7 @@ import { linkProseMarkdown } from '../src/lib/prose-markdown'
 import { llmsPage, llmsPages, localeProse } from '../src/lib/llms'
 import { getSidebar, pageBreadcrumbs } from '../src/lib/sidebar'
 import { API_MODELS } from '../src/lib/api-models'
+import { CORE_HOME } from '../src/lib/core-home'
 import { productApiHref } from '../src/lib/product-api'
 import { CONCEPT_DESCRIPTION, PORT_BY_SLUG } from '../src/lib/ports'
 import { resolvePortCode, remarkPortCode } from '../src/plugins/remark-port-code.mjs'
@@ -34,6 +35,32 @@ function exampleBytes(markdown: string): string[] {
 }
 
 describe('prose Markdown links', () => {
+  it('keeps OCaml local filenames and output labels plain while linking source and Stdlib references', async () => {
+    const source = 'Save the example as `main.ml`. Save the interface as `main.mli`. Save the package as `example.opam`. Output: `editor:2`, `logs:1`. Read `json/libtmux_json.mli`, `List`, `Unix` and `Seq.filter`.'
+    const processor = await createMarkdownProcessor({ rehypePlugins: [rehypeApiLinks], syntaxHighlight: false })
+    const html = (await processor.render(source, { frontmatter: { port: 'ocaml' } })).code
+    const markdown = linkProseMarkdown(source, 'ocaml')
+    const sourcePath = JSON.parse(readFileSync(new URL('../src/data/api/ocaml.paths.json', import.meta.url), 'utf8'))
+    const expected = [`https://github.com/${sourcePath.repo}/blob/${sourcePath.revision}/json/libtmux_json.mli`,
+      'https://ocaml.org/manual/5.5/api/List.html', 'https://ocaml.org/manual/5.5/api/Unix.html', 'https://ocaml.org/manual/5.5/api/Seq.html#VALfilter']
+    expect(urls(markdown)).toEqual(expected)
+    for (const href of expected) expect(html).toContain(`href="${href}"`)
+    for (const literal of ['main.ml', 'main.mli', 'example.opam', 'editor:2', 'logs:1']) expect(html).toContain(`<code>${literal}</code>`)
+  })
+
+  it('keeps fence ownership ahead of a selected build in shared HTML and Markdown', async () => {
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'lisp')
+    const processor = await createMarkdownProcessor({ rehypePlugins: [rehypeApiLinks], syntaxHighlight: false })
+    const python = '```python\nNone\n```\n\nRead `None`.'
+    const html = (await processor.render(python, { frontmatter: {} })).code
+    const markdown = linkProseMarkdown(python, 'lisp', undefined, { portSaid: false })
+    expect(html).toContain('https://docs.python.org/')
+    expect(urls(markdown).some((href) => href.startsWith('https://docs.python.org/'))).toBe(true)
+    const lisp = '```common-lisp\n(values)\n```\n\nCall `libtmux.query:compile-filter`.'
+    expect(urls(linkProseMarkdown(lisp, 'py', undefined, { portSaid: false })))
+      .toContain('/lisp/latest/reference/libtmux-query-compile-filter/')
+  })
+
   it('links native commands through prose HTML and Markdown without claiming prose aliases', async () => {
     const source = 'Call tmux resize-pane. Use `$ tmux -L local run -b true` and `display-message`. Keep tmux has many panes.\n\n[Keep `run-shell`](https://example.com/authored).\n\n<code><a href="https://example.com/native">run-shell</a></code>\n\n`tmux run-shell true && tmux display-message hello`\n\n```sh\ntmux run-shell true\n```'
     const processor = await createMarkdownProcessor({ rehypePlugins: [rehypeApiLinks], syntaxHighlight: false })
@@ -362,9 +389,11 @@ describe('prose Markdown links', () => {
 
   it.each(Object.keys(PORT_BY_SLUG))('links a real %s declaration in its selected version', (port) => {
     const model = API_MODELS[port]
-    const name = port === 'powershell' ? 'New-TmuxServer' : 'Server'
-    const symbol = model.symbols.find((entry) => entry.name === name && (port === 'powershell' ? entry.command : !entry.parent))!
-    expect(symbol, `${port} ${name} declaration`).toBeDefined()
+    const primaryId = port === 'haskell' ? undefined : CORE_HOME[port].objects?.server
+    const symbol = port === 'haskell'
+      ? model.symbols.find((entry) => entry.name === 'PaneId' && entry.parent === 'LibTmux.Id')!
+      : model.symbols.find((entry) => (entry.publicId ?? entry.id) === primaryId)!
+    expect(symbol, `${port} primary declaration`).toBeDefined()
     vi.stubEnv('LIBTMUX_DOCS_PORT', port)
     vi.stubEnv('LIBTMUX_DOCS_VERSION', 'next')
     const text = symbol.publicId ?? symbol.id

@@ -1,5 +1,6 @@
 /** Native meanings of the shared reference labels, keyed by language. */
 import type { Definition } from './api-glossary.ts'
+import { kindLabel } from './api-labels.ts'
 
 const term = (definition: string, title: string, url: string, detail?: string): Definition => ({
   definition, ...(detail ? { detail } : {}), references: [{ title, url }],
@@ -21,9 +22,52 @@ const rubySyntax = (page: string) => `https://docs.ruby-lang.org/en/3.4/syntax/$
 const luaManual = (section: string) => `https://www.lua.org/manual/5.4/manual.html#${section}`
 const luaAnnotation = (section: string) => `https://luals.github.io/wiki/annotations/#${section}`
 const elixirDocs = (page: string) => `https://elixir.hexdocs.pm/${page}`
+const erlangReference = (page: string) => `https://github.com/erlang/otp/blob/OTP-29.1.2/system/doc/reference_manual/${page}.md`
 const swiftBook = (page: string) => `https://docs.swift.org/latest/documentation/the-swift-programming-language/${page}/`
+const clhs = (page: string) => `https://www.lispworks.com/documentation/HyperSpec/Body/${page}.htm`
 
 export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> = {
+  ocaml: {
+    package: term('An installable OCaml library package. Its public modules supply the declarations in this reference.', 'OCaml libraries with Dune', 'https://ocaml.org/docs/libraries-dune', 'A package name and an OCaml module path are distinct: libtmux-unix provides Libtmux_unix.'),
+    module: term('An OCaml module exposing values, types and nested modules through a signature.', 'OCaml module types', 'https://ocaml.org/manual/5.5/modtypes.html#s:modtypes'),
+    interface: term('An OCaml module type specifying the declarations a module must provide.', 'OCaml module types', 'https://ocaml.org/manual/5.5/modtypes.html#s:modtypes'),
+    typealias: term('An OCaml type declaration. A declaration without an equation or representation is abstract.', 'OCaml type and exception definitions', 'https://ocaml.org/manual/5.5/typedecl.html#s:tydef'),
+    opaque: term('An abstract OCaml type whose representation is hidden by its public signature.', 'OCaml module types', 'https://ocaml.org/manual/5.5/modtypes.html#s:modtypes'),
+    enum: term('An OCaml variant type with named constructors, which can carry values.', 'OCaml type and exception definitions', 'https://ocaml.org/manual/5.5/typedecl.html#s:tydef'),
+    struct: term('An OCaml record type with named fields.', 'OCaml type and exception definitions', 'https://ocaml.org/manual/5.5/typedecl.html#s:tydef'),
+    constant: term('A named OCaml value or variant constructor. The signature does not promise a compile-time constant.', 'OCaml module types', 'https://ocaml.org/manual/5.5/modtypes.html#s:modtypes'),
+    function: term('An OCaml value with a function type. Arguments are curried and can carry labels or be optional.', 'OCaml expressions', 'https://ocaml.org/manual/5.5/expr.html#s:value-expr'),
+    attribute: term('A field of an OCaml record. Its module supplies the qualified name; the reference groups it under its declaring type.', 'OCaml type and exception definitions', 'https://ocaml.org/manual/5.5/typedecl.html#s:tydef'),
+    exception: term('An OCaml exception constructor.', 'OCaml type and exception definitions', 'https://ocaml.org/manual/5.5/typedecl.html#s:tydef'),
+  },
+  haskell: {
+    module: term('A named Haskell module that imports and exports declarations.', 'Haskell modules', 'https://www.haskell.org/onlinereport/haskell2010/haskellch5.html', 'A module qualifies names such as LibTmux.Id.parsePaneId. Documentation ownership by a data type does not add that type to the source name.'),
+    'data-type': { ...term('A distinct Haskell type introduced by a data or newtype declaration.', 'Haskell datatype declarations', 'https://www.haskell.org/onlinereport/haskell2010/haskellch4.html#x10-680004.2', 'An opaque Haddock data header exposes the type name without revealing whether its implementation uses data or newtype.'), label: kindLabel('data-type') },
+    'data-constructor': { ...term('A Haskell value constructor that builds one form of a data type.', 'Haskell algebraic datatypes', 'https://www.haskell.org/onlinereport/haskell2010/haskellch4.html#x10-690004.2.1', 'Constructors can carry fields and appear in patterns. A qualified constructor takes its module name, not its data type name.'), label: kindLabel('data-constructor') },
+    'record-field': { ...term('A Haskell record label used in construction, update and pattern matching.', 'GHC field selectors', 'https://downloads.haskell.org/ghc/9.14.1/docs/users_guide/exts/field_selectors.html', 'The qualified modules use NoFieldSelectors. Their exported record labels do not generate top-level selector functions.'), label: kindLabel('record-field') },
+    function: term('A Haskell binding with a function type, applied to arguments by juxtaposition.', 'Haskell function bindings', 'https://www.haskell.org/onlinereport/haskell2010/haskellch4.html#x10-830004.4.3', 'Arguments are curried. Acquisition and mutation require an explicit effect such as IO in the signature.'),
+    opaque: term('A Haskell type exported without its data constructors.', 'Haskell abstract datatypes', 'https://www.haskell.org/onlinereport/haskell2010/haskellch5.html#x11-1150005.8', 'Callers use exported operations rather than hidden constructors or representation. This does not establish whether the implementation uses data or newtype.'),
+    package: term('The Cabal package supplying these exposed Haskell modules.', 'Cabal package descriptions', 'https://cabal.readthedocs.io/en/3.18/cabal-package-description-file.html', 'A package name and a module name are different identities. Availability from source does not imply publication on Hackage.'),
+  },
+  perl: {
+    module: term('A loadable Perl source unit, normally a .pm file loaded with use or require.', 'Perl modules and packages', 'https://perldoc.perl.org/5.44.0/perlmod', 'Namespace names use ::; source paths use directories, such as LibTmux/Selection.pm. One distribution can provide many modules.'),
+    class: term('A Perl package used as the class of a blessed reference.', 'Perl objects and classes', 'https://perldoc.perl.org/5.44.0/perlobj', 'LibTmux uses ordinary packages and bless. Selection objects retain native array-reference behavior; their documented methods provide validation and filtering.'),
+    method: term('A Perl subroutine invoked through a class name or object reference with ->.', 'Perl method invocation', 'https://perldoc.perl.org/5.44.0/perlobj#Method-Invocation', 'The invocant is the first positional argument. Read the signature and method documentation for the remaining arguments, return value and I/O behavior.'),
+    exception: term('A typed Perl value thrown with die and caught by an exception handler.', 'Perl exceptions', 'https://perldoc.perl.org/5.44.0/functions/die', 'LibTmux throws blessed error objects with diagnostic fields and readable stringification. Acquisition failures remain errors rather than empty results.'),
+    inherited: term('A method found through Perl package inheritance.', 'Perl inheritance', 'https://perldoc.perl.org/5.44.0/perlobj#Inheritance', 'The reference names its declaring package. The inherited method keeps that package’s documented return, ownership and I/O contract.'),
+    async: {
+      definition: 'An operation returning a Future through the optional LibTmux-Async distribution.',
+      detail: 'Drive completion with the caller-owned IO::Async loop. Cancelling a Future and completing resource cleanup are separate outcomes; successful close completion proves cleanup.',
+      references: [{ title: 'Future', url: 'https://metacpan.org/pod/Future' }, { title: 'IO::Async::Loop', url: 'https://metacpan.org/pod/IO::Async::Loop' }],
+    },
+    package: term('The installable Perl distribution supplying this API.', 'Preparing Perl distributions', 'https://perldoc.perl.org/5.44.0/perlnewmod', 'The package badge names a distribution such as LibTmux-Async. A Perl package declaration introduces a namespace; one distribution can contain several namespaces.'),
+  },
+  clojure: {
+    module: term('A Clojure namespace containing public vars.', 'Clojure namespaces', 'https://clojure.org/reference/namespaces', 'Require the namespace with an alias, then call a var as alias/name. A namespace and an installable artifact are different boundaries.'),
+    function: term('A function stored in a public Clojure var.', 'Clojure vars', 'https://clojure.org/reference/vars', 'The signature lists argument vectors. A trailing ! marks external I/O in this library; captured data operations remain local.'),
+    overload: term('Alternative argument counts accepted by one Clojure function.', 'Clojure function arities', 'https://clojure.org/reference/special_forms#fn', 'Each argument vector is an arity. Selection uses the number of arguments; it does not dispatch on Java parameter types.'),
+    package: term('The Maven artifact supplying this namespace.', 'Clojure namespaces', 'https://clojure.org/reference/namespaces', 'Use the installation instructions for artifact coordinates. The optional core.async adapter is a separate artifact.'),
+  },
   scala: {
     module: term('A singleton object that groups Scala declarations.', 'Scala singleton objects', scalaTour('singleton-objects'), 'The module badge represents object declarations here. Its members belong to that object; the label does not identify a separately installed artifact.'),
     class: term('A Scala class that defines instances, constructors and members.', 'Scala classes', scalaTour('classes'), 'Traits and case classes have their own declaration syntax; read the displayed signature for those distinctions.'),
@@ -88,6 +132,24 @@ export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> =
     abstract: term('A Julia abstract type that can have subtypes but no direct instances.', 'Julia abstract types', `${juliaManual('types')}#man-abstract-types`),
     readonly: term('A Julia field whose containing immutable struct prevents field reassignment.', 'Julia immutable composite types', `${juliaManual('types')}#Composite-Types`, 'A referenced vector or other mutable value can still change internally.'),
     package: term('The Julia package supplying the module and its public bindings.', 'Julia code loading', juliaManual('code-loading'), 'Package loading and module namespaces are related but distinct; use the documented project environment.'),
+  },
+  lisp: {
+    module: term('A Common Lisp package that names and exports symbols.', 'Common Lisp packages', clhs('11_'), 'The package badge describes a namespace. ASDF systems are separate loadable units and may define one or more packages.'),
+    class: term('A CLOS class whose instances participate in generic-function dispatch.', 'Common Lisp classes', clhs('m_defcla'), 'The public readers and generic functions are the supported interface; private slots are not an additional API.'),
+    function: term('A Common Lisp function binding called with its native lambda list.', 'Common Lisp functions', clhs('m_defun'), 'A function can return multiple values. The displayed lambda list identifies required, optional and keyword arguments.'),
+    macro: term('A Common Lisp macro that transforms source forms before their surrounding code runs.', 'Common Lisp macros', clhs('m_defmac'), 'The displayed lambda list describes source syntax, not ordinary evaluated function arguments.'),
+    exception: term('A Common Lisp condition type that handlers can inspect and, where documented, recover from through restarts.', 'Common Lisp conditions', clhs('09_'), 'Signalling a condition and transferring control are distinct operations; read the function contract for the condition and restart protocol.'),
+    opaque: term('A public CLOS class whose representation is intentionally outside the supported API.', 'Common Lisp classes', clhs('m_defcla'), 'Construct, inspect and compare instances through exported functions rather than depending on private slot names.'),
+    package: term('The ASDF system supplying this API, distinct from the Common Lisp package that qualifies its symbols.', 'ASDF systems', 'https://asdf.common-lisp.dev/asdf.html#Defining-systems-with-defsystem'),
+  },
+  erlang: {
+    module: term('An Erlang module grouping function, type and record declarations under an atom name.', 'Erlang modules', erlangReference('modules'), 'Exports identify which functions, types and native records callers can use. Maps, lists and records are values passed explicitly to module functions.'),
+    struct: term('An exported Erlang native record with a fixed set of named fields, owned by its defining module.', 'Erlang native records', erlangReference('ref_man_native_records'), 'Session, window, window-link and pane rows use native records. Import an exported definition with -import_record(tmux_model, [pane]). Native records remain experimental in OTP 29.1.2; their internals are not a wire format.'),
+    function: term('An Erlang function identified by its module, name and arity, the number of arguments.', 'Erlang functions', erlangReference('ref_man_functions'), 'Functions sharing a name with different arities are distinct. Multiple clauses belong to one function; patterns and guards select the clause to execute.'),
+    typealias: term('An Erlang type declaration written with -type, -opaque or -nominal, identified by module, name and arity.', 'Erlang user-defined types', `${erlangReference('typespec')}#type-declarations-of-user-defined-types`, 'The shared typealias badge includes nominal IDs: Dialyzer distinguishes their declared names even when each is represented by a binary. Typespecs support analysis and documentation; runtime input validation remains necessary.'),
+    abstract: term('An Erlang behaviour callback declared with -callback, whose implementation belongs to a callback module.', 'Erlang behaviour callbacks', `${erlangReference('modules')}#behaviour-module-attribute`, 'The declaration describes the callback contract; it does not provide a function body to call on the behaviour module.'),
+    opaque: term('An Erlang type declared with -opaque, whose representation callers must not depend on.', 'Erlang opaque types', `${erlangReference('typespec')}#type-declarations-of-user-defined-types`, 'Selections and queries are opaque values. Use tmux_select:to_list/1 to obtain rows for lists functions, and tmux_query:fetch/1 to execute a query. Ordinary selection reads and query construction perform no tmux I/O.'),
+    package: term('The OTP application supplying these Erlang modules, described by an application resource file.', 'OTP applications', 'https://github.com/erlang/otp/blob/OTP-29.1.2/system/doc/design_principles/applications.md', 'The core application is libtmux_erlang. Its application name and the names of its modules serve different roles; use the documented source dependency to install it.'),
   },
   elixir: {
     module: term('An Elixir module, a named collection of functions, macros and types defined with defmodule.', 'Elixir modules and functions', elixirDocs('modules-and-functions.html'), 'Module names are atoms, and a nested name such as LibTmux.Control.Request is one flat module rather than a child of LibTmux.Control.'),

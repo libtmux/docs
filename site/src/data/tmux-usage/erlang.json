@@ -1,0 +1,791 @@
+{
+  "commands": [
+    "attach-session",
+    "bind-key",
+    "break-pane",
+    "capture-pane",
+    "choose-buffer",
+    "choose-client",
+    "choose-tree",
+    "clear-history",
+    "clear-prompt-history",
+    "clock-mode",
+    "command-prompt",
+    "confirm-before",
+    "copy-mode",
+    "customize-mode",
+    "delete-buffer",
+    "detach-client",
+    "display-menu",
+    "display-message",
+    "display-panes",
+    "display-popup",
+    "find-window",
+    "has-session",
+    "if-shell",
+    "join-pane",
+    "kill-pane",
+    "kill-server",
+    "kill-session",
+    "kill-window",
+    "last-pane",
+    "last-window",
+    "link-window",
+    "list-buffers",
+    "list-clients",
+    "list-commands",
+    "list-keys",
+    "list-panes",
+    "list-sessions",
+    "list-windows",
+    "load-buffer",
+    "lock-client",
+    "lock-server",
+    "lock-session",
+    "move-pane",
+    "move-window",
+    "new-pane",
+    "new-session",
+    "new-window",
+    "next-layout",
+    "next-window",
+    "paste-buffer",
+    "pipe-pane",
+    "previous-layout",
+    "previous-window",
+    "refresh-client",
+    "rename-session",
+    "rename-window",
+    "resize-pane",
+    "resize-window",
+    "respawn-pane",
+    "respawn-window",
+    "rotate-window",
+    "run-shell",
+    "save-buffer",
+    "select-layout",
+    "select-pane",
+    "select-window",
+    "send-keys",
+    "send-prefix",
+    "server-access",
+    "set-buffer",
+    "set-environment",
+    "set-hook",
+    "set-option",
+    "set-window-option",
+    "show-buffer",
+    "show-environment",
+    "show-hooks",
+    "show-messages",
+    "show-options",
+    "show-prompt-history",
+    "show-window-options",
+    "source-file",
+    "split-window",
+    "start-server",
+    "suspend-client",
+    "swap-pane",
+    "swap-window",
+    "switch-client",
+    "unbind-key",
+    "unlink-window",
+    "wait-for"
+  ],
+  "port": "erlang",
+  "repo": "libtmux/libtmux-erlang",
+  "revision": "6fc546e1407b3257bce4699a564e2fbe32ea70a2",
+  "schemaVersion": 1,
+  "symbols": {
+    "tmux_buffer:delete/2": [
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_buffer.erl:130"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_buffer:list/1": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_buffer.erl:109"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_buffer:load/3": [
+      {
+        "command": "load-buffer",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_buffer.erl:76"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_buffer:paste/3": [
+      {
+        "command": "paste-buffer",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_buffer.erl:180"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_buffer:rename/3": [
+      {
+        "command": "set-buffer",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_buffer.erl:151"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_buffer:show/2": [
+      {
+        "command": "show-buffer",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_buffer.erl:94",
+          "apps/libtmux_erlang/src/tmux_buffer.erl:81"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux_buffer:show/3": [
+      {
+        "command": "show-buffer",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_buffer.erl:94"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_hook:append/3": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_hook.erl:186",
+          "apps/libtmux_erlang/src/tmux_hook.erl:122"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_hook:clear/2": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_hook.erl:186",
+          "apps/libtmux_erlang/src/tmux_hook.erl:137"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_hook:get/3": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_hook.erl:72"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_hook:run/2": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_hook.erl:179"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_hook:set/3": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_hook.erl:186",
+          "apps/libtmux_erlang/src/tmux_hook.erl:104"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_hook:unset/2": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_hook.erl:153"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_key:bind/3": [
+      {
+        "command": "bind-key",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_key.erl:77",
+          "apps/libtmux_erlang/src/tmux_key.erl:53"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux_key:bind/4": [
+      {
+        "command": "bind-key",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_key.erl:77"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_key:clear_table/2": [
+      {
+        "command": "unbind-key",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_key.erl:117"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_key:listing/2": [
+      {
+        "command": "list-keys",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_key.erl:148"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_key:unbind/2": [
+      {
+        "command": "unbind-key",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_key.erl:102",
+          "apps/libtmux_erlang/src/tmux_key.erl:83"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux_key:unbind/3": [
+      {
+        "command": "unbind-key",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_key.erl:102"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_option:get/3": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_option.erl:109"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_option:set/3": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_option.erl:142",
+          "apps/libtmux_erlang/src/tmux_option.erl:121"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux_option:set/4": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_option.erl:142"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_option:unset/2": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_option.erl:159"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_pane:break/4": [
+      {
+        "command": "break-pane",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_pane.erl:219"
+        ],
+        "scope": null
+      },
+      {
+        "command": "display-message",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_target.erl:107",
+          "apps/libtmux_erlang/src/tmux_pane.erl:216"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_pane:capture/2": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_pane.erl:422"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_pane:join/3": [
+      {
+        "command": "join-pane",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_pane.erl:274",
+          "apps/libtmux_erlang/src/tmux_pane.erl:236"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux_pane:kill/1": [
+      {
+        "command": "kill-pane",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_pane.erl:134"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_pane:move/3": [
+      {
+        "command": "move-pane",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_pane.erl:274",
+          "apps/libtmux_erlang/src/tmux_pane.erl:245"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux_pane:pipe/3": [
+      {
+        "command": "pipe-pane",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_pane.erl:173"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_pane:resize/2": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_pane.erl:320",
+          "apps/libtmux_erlang/src/tmux_pane.erl:341",
+          "apps/libtmux_erlang/src/tmux_command.erl:215",
+          "apps/libtmux_erlang/src/tmux_target.erl:59",
+          "apps/libtmux_erlang/src/tmux_pane.erl:317"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux_pane:respawn/2": [
+      {
+        "command": "respawn-pane",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_pane.erl:377"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_pane:send_keys/2": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_pane.erl:430",
+          "apps/libtmux_erlang/src/tmux_pane.erl:404"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_pane:send_text/2": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_pane.erl:430",
+          "apps/libtmux_erlang/src/tmux_pane.erl:390"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_pane:split/2": [
+      {
+        "command": "split-window",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_pane.erl:115"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_pane:stop_pipe/1": [
+      {
+        "command": "pipe-pane",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_pane.erl:188"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_pane:swap/3": [
+      {
+        "command": "swap-pane",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_pane.erl:263"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_query:fetch/1": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "apps/libtmux_erlang/src/tmux_query.erl:246",
+          "apps/libtmux_erlang/src/tmux_observe.erl:120",
+          "apps/libtmux_erlang/src/tmux_observe.erl:121",
+          "apps/libtmux_erlang/src/tmux_query.erl:215"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "the server has a session"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "apps/libtmux_erlang/src/tmux_query.erl:246",
+          "apps/libtmux_erlang/src/tmux_observe.erl:112",
+          "apps/libtmux_erlang/src/tmux_query.erl:215"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "apps/libtmux_erlang/src/tmux_query.erl:246",
+          "apps/libtmux_erlang/src/tmux_observe.erl:115",
+          "apps/libtmux_erlang/src/tmux_observe.erl:116",
+          "apps/libtmux_erlang/src/tmux_query.erl:215"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "the server has a session"
+      }
+    ],
+    "tmux_query:fetch/2": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "apps/libtmux_erlang/src/tmux_query.erl:246",
+          "apps/libtmux_erlang/src/tmux_observe.erl:120",
+          "apps/libtmux_erlang/src/tmux_observe.erl:121",
+          "apps/libtmux_erlang/src/tmux_query.erl:231"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "the server has a session"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "apps/libtmux_erlang/src/tmux_query.erl:246",
+          "apps/libtmux_erlang/src/tmux_observe.erl:112",
+          "apps/libtmux_erlang/src/tmux_query.erl:231"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "apps/libtmux_erlang/src/tmux_query.erl:246",
+          "apps/libtmux_erlang/src/tmux_observe.erl:115",
+          "apps/libtmux_erlang/src/tmux_observe.erl:116",
+          "apps/libtmux_erlang/src/tmux_query.erl:231"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "the server has a session"
+      }
+    ],
+    "tmux_server:snapshot/1": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "apps/libtmux_erlang/src/tmux_observe.erl:21",
+          "apps/libtmux_erlang/src/tmux_observe.erl:120",
+          "apps/libtmux_erlang/src/tmux_observe.erl:121",
+          "apps/libtmux_erlang/src/tmux_server.erl:297"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "the server has a session"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "apps/libtmux_erlang/src/tmux_observe.erl:21",
+          "apps/libtmux_erlang/src/tmux_observe.erl:112",
+          "apps/libtmux_erlang/src/tmux_server.erl:297"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "apps/libtmux_erlang/src/tmux_observe.erl:21",
+          "apps/libtmux_erlang/src/tmux_observe.erl:115",
+          "apps/libtmux_erlang/src/tmux_observe.erl:116",
+          "apps/libtmux_erlang/src/tmux_server.erl:297"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "the server has a session"
+      }
+    ],
+    "tmux_server:snapshot/2": [
+      {
+        "command": "list-panes",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "apps/libtmux_erlang/src/tmux_observe.erl:21",
+          "apps/libtmux_erlang/src/tmux_observe.erl:120",
+          "apps/libtmux_erlang/src/tmux_observe.erl:121",
+          "apps/libtmux_erlang/src/tmux_server.erl:325"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "the server has a session"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "apps/libtmux_erlang/src/tmux_observe.erl:21",
+          "apps/libtmux_erlang/src/tmux_observe.erl:112",
+          "apps/libtmux_erlang/src/tmux_server.erl:325"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "apps/libtmux_erlang/src/tmux_observe.erl:21",
+          "apps/libtmux_erlang/src/tmux_observe.erl:115",
+          "apps/libtmux_erlang/src/tmux_observe.erl:116",
+          "apps/libtmux_erlang/src/tmux_server.erl:325"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "the server has a session"
+      }
+    ],
+    "tmux_server:start_owned/1": [
+      {
+        "command": "start-server",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_owned_server.erl:200",
+          "apps/libtmux_erlang/src/tmux_owned_server.erl:197",
+          "apps/libtmux_erlang/src/tmux_server.erl:142"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux_session:create/2": [
+      {
+        "command": "new-session",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_session.erl:53"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_session:kill/1": [
+      {
+        "command": "kill-session",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_session.erl:170"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_session:rename/2": [
+      {
+        "command": "rename-session",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_session.erl:75",
+          "apps/libtmux_erlang/src/tmux_session.erl:97",
+          "apps/libtmux_erlang/src/tmux_command.erl:214",
+          "apps/libtmux_erlang/src/tmux_target.erl:59",
+          "apps/libtmux_erlang/src/tmux_session.erl:72"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux_session:select/3": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_session.erl:147"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_window_link:get/3": [
+      {
+        "command": "list-windows",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_window_link.erl:55"
+        ],
+        "scope": "session"
+      }
+    ],
+    "tmux_window_link:link/3": [
+      {
+        "command": "link-window",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_window_link.erl:143",
+          "apps/libtmux_erlang/src/tmux_window_link.erl:87"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux_window_link:move/3": [
+      {
+        "command": "move-window",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_window_link.erl:143",
+          "apps/libtmux_erlang/src/tmux_window_link.erl:98"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "tmux_window_link:select/1": [
+      {
+        "command": "select-window",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_window_link.erl:74"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_window_link:swap/3": [
+      {
+        "command": "swap-window",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_window_link.erl:115"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_window_link:unlink/2": [
+      {
+        "command": "unlink-window",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_window_link.erl:133"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_window:create/2": [
+      {
+        "command": "new-window",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_window.erl:45"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_window:kill/1": [
+      {
+        "command": "kill-window",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_window.erl:74"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_window:rename/2": [
+      {
+        "command": "rename-window",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_window.erl:66"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_window:respawn/2": [
+      {
+        "command": "respawn-window",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_window.erl:100"
+        ],
+        "scope": null
+      }
+    ],
+    "tmux_window:select_layout/2": [
+      {
+        "command": "select-layout",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_window.erl:136"
+        ],
+        "scope": null
+      }
+    ]
+  }
+}

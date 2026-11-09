@@ -2,7 +2,7 @@ import { readFileSync, realpathSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { experimental_AstroContainer } from 'astro/container'
-import { SymbolIndex } from '@libtmux/api-model'
+import { SymbolIndex } from '@libtmux/api-model/reference'
 import { Window, type Element as DomElement } from 'happy-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { API_MODELS, indexFor } from '../src/lib/api-models'
@@ -33,6 +33,7 @@ async function docComponent() {
     .replaceAll('"../../lib/tmux-links"', JSON.stringify(linker))
     .replaceAll('"../../lib/mention-badge"', JSON.stringify(new URL('../src/lib/mention-badge.ts', import.meta.url).href))
     .replaceAll('"../../lib/symbol-form"', JSON.stringify(new URL('../src/lib/symbol-form.ts', import.meta.url).href))
+    .replaceAll('"../../lib/api-labels"', JSON.stringify(new URL('../src/lib/api-labels.ts', import.meta.url).href))
   return (await import(/* @vite-ignore */ `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`)).default
 }
 

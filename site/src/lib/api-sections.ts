@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto'
-import { commandFacts, memberTier, moduleOf, parameterBindingFacts, parameterBindingText, qualifiedNameOf, typeParametersOf, type ApiModelBase, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model'
+import { commandFacts, memberTier, moduleOf, parameterBindingFacts, parameterBindingText, qualifiedNameOf, typeParametersOf, type ApiModelBase, type ApiSymbol, type MemberSignals, type Param, type Signature, type SymbolIndex } from '@libtmux/api-model/reference'
 import { apiGlossaryHref } from './api-glossary'
-import { relatedLabels } from './api-labels'
-import { csharpParameters, supportsCSharpSignatures, supportsElixirSignatures, supportsGoSignatures, supportsJavaSignatures, supportsLuaSignatures, supportsRubySignatures, supportsRustSignatures, supportsTypeScriptSignatures, swiftBaseName } from './code-layout'
+import { nativeKind, relatedLabels } from './api-labels'
+import { csharpParameters, supportsCSharpSignatures, supportsElixirSignatures, supportsErlangSignatures, supportsGoSignatures, supportsJavaSignatures, supportsLuaSignatures, supportsRubySignatures, supportsRustSignatures, supportsTypeScriptSignatures, swiftBaseName } from './code-layout'
 
 export interface ApiSection {
   id: string
@@ -228,8 +228,8 @@ export function aliasDeclaration(symbol: ApiSymbol, language?: string): { name: 
 
 /** Keep native declaration syntax consistent in HTML and copied Markdown. */
 export function usesNativeSignatures(symbol: ApiSymbol, port?: string): boolean {
-  return (port === 'rs' && Boolean(symbol.variant)) || supportsRustSignatures(symbol, port) || supportsTypeScriptSignatures(symbol, port) || supportsGoSignatures(symbol, port) || supportsJavaSignatures(symbol, port) || supportsCSharpSignatures(symbol, port) || supportsRubySignatures(symbol, port) || supportsLuaSignatures(symbol, port) || supportsElixirSignatures(symbol, port) || ['kotlin', 'scala', 'fsharp', 'c', 'powershell', 'julia'].includes(port ?? '') ||
-    (port === 'cxx' && symbol.signatures.length > 0 && symbol.signatures.every((signature) => Boolean(signature.raw)))
+  return (port === 'rs' && Boolean(symbol.variant)) || supportsRustSignatures(symbol, port) || supportsTypeScriptSignatures(symbol, port) || supportsGoSignatures(symbol, port) || supportsJavaSignatures(symbol, port) || supportsCSharpSignatures(symbol, port) || supportsRubySignatures(symbol, port) || supportsLuaSignatures(symbol, port) || supportsElixirSignatures(symbol, port) || supportsErlangSignatures(symbol, port) || ['perl', 'kotlin', 'scala', 'fsharp', 'ocaml', 'c', 'powershell', 'julia', 'clojure', 'lisp'].includes(port ?? '') ||
+    (port === 'haskell' && symbol.signatures.length > 0) || (port === 'cxx' && symbol.signatures.length > 0 && symbol.signatures.every((signature) => Boolean(signature.raw)))
 }
 
 /** Break only the outer argument list; Julia types and defaults can contain commas. */
@@ -313,7 +313,7 @@ export function nativeSignatureText(symbol: ApiSymbol, signature: Signature, lan
 function signatureLabels(symbol: ApiSymbol, port?: string): string[] {
   const name = port === 'swift' ? swiftBaseName(symbol.name) : symbol.name
   const labels = symbol.signatures.map((signature) =>
-    signature.label ?? `${name}(${signature.params.map((param) => param.name).join(', ')})`)
+    signature.label ?? (port === 'haskell' ? signature.raw ?? name : `${name}(${signature.params.map((param) => param.name).join(', ')})`))
   return labels.map((label, i) => labels.filter((entry) => entry === label).length > 1
     ? `${label} [overload ${i + 1}]` : label)
 }
@@ -380,7 +380,7 @@ export function apiEntrySections(symbol: ApiSymbol, port?: string, index?: Symbo
   const sections: ApiSection[] = []
   if (symbol.doc?.body) sections.push({ id: `${anchor}.description`, label: 'Description' })
   if (symbol.command) sections.push({ id: `${anchor}.command`, label: 'Command details' })
-  if (apiMethodDetails(symbol).length) sections.push({ id: `${anchor}.methods`, label: 'Methods' })
+  if (apiMethodDetails(symbol, port).length) sections.push({ id: `${anchor}.methods`, label: 'Methods' })
   if (symbol.doc?.examples?.length) sections.push({ id: `${anchor}.examples`, label: 'Examples' })
   if (symbol.doc?.references?.length) sections.push({ id: `${anchor}.references`, label: 'References' })
   if (fields.typeParameters.length || apiInheritedTypeParameters(symbol, index).length) {
@@ -412,11 +412,13 @@ export function apiOverloadId(symbol: ApiSymbol, signature: Signature): string {
 }
 
 /** Dispatch methods retain their own documentation and stable fragment identities. */
-export function apiMethodDetails(symbol: ApiSymbol) {
+export function apiMethodDetails(symbol: ApiSymbol, port?: string) {
+  // Haskell constructors are exported data declarations, not dispatch methods.
+  if (port === 'haskell') return []
   const labels = signatureLabels(symbol)
   return symbol.signatures.flatMap((signature, i) => signature.methodKind ? [{
     signature,
-    id: `${symbol.publicId ?? symbol.id}.method-${createHash('sha256').update(signature.identity!).digest('hex').slice(0, 16)}`,
+    id: `${symbol.publicId ?? symbol.id}.method-${createHash('sha256').update(apiOverloadIdentity(signature)).digest('hex').slice(0, 16)}`,
     label: signature.raw ?? signature.label ?? symbol.name,
     overloadLabel: labels[i],
   }] : [])
@@ -496,7 +498,8 @@ export interface RelatedTypeLink {
   qualified: boolean
   /** The source-qualified name, for the link's title. */
   identity: string
-  kind: ApiSymbol['kind']
+  /** Native presentation kind; source categories remain on the symbol. */
+  kind: string
   href: string
   symbol: ApiSymbol
 }
@@ -532,7 +535,7 @@ export function relatedTypeLinks(
   })
   const labels = relatedLabels(inputs, new Set([owner.id, ...(owner.parent ? [owner.parent] : [])]), options.language)
   return symbols.map((symbol, i) => ({
-    name: labels[i]!, qualified: labels[i] !== inputs[i]!.label, identity: qualifiedNameOf(symbol), kind: symbol.kind, href: hrefFor(symbol), symbol,
+    name: labels[i]!, qualified: labels[i] !== inputs[i]!.label, identity: qualifiedNameOf(symbol), kind: nativeKind(symbol, options.language), href: hrefFor(symbol), symbol,
   }))
 }
 

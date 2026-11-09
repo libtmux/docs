@@ -153,6 +153,23 @@ const ELIXIR_BUILTIN_TYPES = [
 ]
 
 export const BUILTINS: Record<string, Record<string, string>> = {
+  erlang: {
+    'erl_error:format_exception/3': 'https://www.erlang.org/doc/apps/stdlib/erl_error.html#format_exception/3',
+  },
+  ocaml: {
+    Iarray: 'https://ocaml.org/manual/5.5/api/Iarray.html',
+    'Iarray.t': 'https://ocaml.org/manual/5.5/api/Iarray.html#TYPEt',
+    List: 'https://ocaml.org/manual/5.5/api/List.html',
+    Seq: 'https://ocaml.org/manual/5.5/api/Seq.html',
+    'Seq.t': 'https://ocaml.org/manual/5.5/api/Seq.html#TYPEt',
+    'Seq.filter': 'https://ocaml.org/manual/5.5/api/Seq.html#VALfilter',
+    Unix: 'https://ocaml.org/manual/5.5/api/Unix.html',
+  },
+  haskell: {
+    IO: 'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/System-IO.html#t:IO',
+    Either: 'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Data-Either.html#t:Either',
+    Integer: 'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Prelude.html#t:Integer',
+  },
   elixir: {
     ...Object.fromEntries(ELIXIR_BASIC_TYPES.map((name) => [name, elixirDocs('typespecs.html#basic-types')])),
     ...Object.fromEntries(ELIXIR_BUILTIN_TYPES.map((name) => [name, elixirDocs('typespecs.html#built-in-types')])),
@@ -487,6 +504,11 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     byte: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-4.html#jls-4.2.1',
     void: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5',
   },
+  clojure: {
+    // The runtime declaration identifies the Java class; core.async names the library.
+    ExceptionInfo: 'https://github.com/clojure/clojure/blob/clojure-1.12.6/src/jvm/clojure/lang/ExceptionInfo.java',
+    'core.async': 'https://github.com/clojure/core.async',
+  },
   // Lua's eight value types share one section of the manual; `integer` is
   // the subtype 5.3 added and LuaLS spells separately. `any` is a LuaLS
   // annotation type, with no counterpart in the language. LuaLS's `unknown`
@@ -518,7 +540,7 @@ export const CURATED_BEFORE_INVENTORY: ReadonlySet<string> = new Set(['kotlin', 
  * "the Java ones" is about the project's wrappers of the Java API and not a switch to Java: its `Vector` is Scala's.
  * A sentence that names a language the port does not reach (a Python page on Rust's `Vec`) still decides the name.
  */
-export const PLATFORM_REACH: Readonly<Record<string, readonly string[]>> = { kotlin: ['java'], scala: ['java'] }
+export const PLATFORM_REACH: Readonly<Record<string, readonly string[]>> = { kotlin: ['java'], scala: ['java'], clojure: ['java'] }
 
 /**
  * Names the JDK's inventory holds that Kotlin and Scala prose means another library's by. A Scala sentence's "an Ox

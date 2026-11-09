@@ -52,6 +52,12 @@ export function addressOf(url) {
   const host = u.hostname
   const none = fragment ? 'heading' : 'none'
 
+  if (host === 'ocaml.org' && /^\/manual\/[^/]+\/api\//.test(u.pathname)) {
+    const path = dotted(stem)
+    const member = /^(?:TYPE|VAL)([a-z_][\w']*)$/.exec(fragment)
+    return { path: member ? [...path, member[1]] : path, exact: true, fragment: member ? 'member' : none, type: stem }
+  }
+
   if (host === 'doc.rust-lang.org' || host === 'docs.rs') {
     const item = RUST_ITEM.exec(stem)
     const type = item ? item[1] : stem === 'index' || !file ? undefined : stem
@@ -83,7 +89,7 @@ export function addressOf(url) {
     return DOTTED.test(entry) ? { path: dotted(entry), exact: true, fragment: 'member' } : { path: dotted(stem), exact: true, fragment: 'heading' }
   }
 
-  if (host.endsWith('hexdocs.pm')) {
+  if (host.endsWith('hexdocs.pm') || (host === 'www.erlang.org' && /^\/doc\/apps\/[^/]+\/[^/]+\.html$/.test(u.pathname))) {
     const type = stem
     if (!file) return undefined
     const path = dotted(type)

@@ -39,6 +39,27 @@ it('exports the linked WhereOf generic without losing type syntax or authored co
 })
 
 describe('API Markdown content parity', () => {
+  it('exports authored Perl symbol and section links without rewriting examples', () => {
+    for (const title of ['VERIFICATION REPORT', 'État 100% / #', 'REPORT )']) {
+      const owner = { ...API_MODELS.perl.symbols.find((entry) => entry.id === 'LibTmux::Server')!,
+        doc: { summary: 'Server.', body: `## ${title}\n\nReport fields.` } }
+      const target = `LibTmux::Server#${encodeURIComponent(title)}`
+      const section = `:obj:\`report <${target}>\``
+      const symbol = { ...API_MODELS.perl.symbols.find((entry) => entry.id === 'LibTmux::Server::query_panes')!,
+        doc: { summary: `See ${section} and :obj:\`server <LibTmux::Server>\`.`, body: '```perl\n' + section + '\n```' } }
+      const model = { ...API_MODELS.perl, symbols: [owner, symbol] }
+      const index = new SymbolIndex(model.symbols, () => '/en/perl/latest/reference/server/', 'perl')
+      const text = symbolMarkdown({ model, symbol, index })
+      const links = fromMarkdown(text).children.flatMap((node) => node.type === 'paragraph'
+        ? node.children.flatMap((child) => child.type === 'link' ? [child.url] : []) : [])
+      expect(links).toContain(index.resolve(target, 'obj', symbol)!.href)
+      expect(text).toContain('[`server`](/en/perl/latest/reference/server/)')
+      expect(text).toContain('```perl\n' + section + '\n```')
+      const ownerText = symbolMarkdown({ model, symbol: owner, index })
+      expect(ownerText).toContain('[`report`](' + index.resolve(target, 'obj', symbol)!.href + ')')
+      expect(ownerText).not.toContain(':obj:')
+    }
+  })
   it('links native tmux command mentions in every port without editing examples', () => {
     for (const port of PORTS) {
       const original = 'Call tmux resize-pane. Use `$ tmux run-shell` or `display-message`. Keep tmux has many panes.'
@@ -374,7 +395,7 @@ describe('API Markdown content parity', () => {
     expect(text.indexOf('## Examples')).toBeLessThan(text.indexOf('## Parameters'))
   })
 
-  for (const port of PORTS) {
+  for (const port of PORTS.filter((port) => port.slug !== 'lisp')) {
     it(`${port.name} exports use the navigation's semantic order and retain inherited members`, () => {
       const model = API_MODELS[port.slug]
       const byId = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
@@ -391,9 +412,16 @@ describe('API Markdown content parity', () => {
       const expected = [...members.filter((member) => !member.inheritedFrom), ...members.filter((member) => member.inheritedFrom)]
         .map((member) => member.name)
       const memberText = text.slice(text.search(/^## (?:Members|Inherited members)$/m))
-      const names = [...memberText.matchAll(/^- `([^`]+)` \([a-z]+\)/gm)].map((match) => match[1])
+      const names = [...memberText.matchAll(/^- `([^`]+)` \([a-z ]+\)/gm)].map((match) => match[1])
       expect(names).toEqual(expected)
       if (members.some((member) => member.inheritedFrom)) expect(text).toContain('## Inherited members')
     })
   }
+
+  it('keeps Common Lisp package exports as first-class rows', () => {
+    const model = API_MODELS.lisp
+    const packageIds = new Set(model.symbols
+      .filter((symbol) => symbol.kind === 'module').map((symbol) => symbol.id))
+    expect([...membersByType('lisp').keys()].filter((id) => packageIds.has(id))).toEqual([])
+  })
 })

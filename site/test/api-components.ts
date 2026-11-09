@@ -2,7 +2,7 @@ import { readFileSync, realpathSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { expect, vi } from 'vitest'
-import { parameterId } from '@libtmux/api-model'
+import { parameterId } from '@libtmux/api-model/reference'
 import { parameterBindingFacts, POWER_SHELL_COMMON_HELP, POWER_SHELL_COMMON_HELP_TITLE, powerShellCommonParameterHref, powerShellCommonParameterLabel, scalarCellsAreLong } from '../src/lib/api-sections'
 import { signatureSpans, typeLayout } from '../src/lib/code-layout'
 import { linkTmuxDoc } from '../src/lib/tmux-links'
@@ -35,12 +35,16 @@ export async function apiComponents() {
   const type = await compile('../src/components/api/ApiType.astro', {
     './SymbolName.astro': name, './ApiKeyword.astro': keyword,
     '@libtmux/api-model': new URL('../../packages/api-model/src/index.ts', import.meta.url).href,
+    '@libtmux/api-model/reference': new URL('../../packages/api-model/src/reference.ts', import.meta.url).href,
     '../../lib/code-layout': bridge,
   })
-  const doc = await compile('../src/components/api/ApiDoc.astro', { '../../lib/tmux-links': bridge, '../../lib/mention-badge': new URL('../src/lib/mention-badge.ts', import.meta.url).href, '../../lib/symbol-form': new URL('../src/lib/symbol-form.ts', import.meta.url).href })
+  const doc = await compile('../src/components/api/ApiDoc.astro', { '../../lib/tmux-links': bridge,
+    '../../lib/mention-badge': new URL('../src/lib/mention-badge.ts', import.meta.url).href,
+    '../../lib/symbol-form': new URL('../src/lib/symbol-form.ts', import.meta.url).href,
+    '../../lib/api-labels': new URL('../src/lib/api-labels.ts', import.meta.url).href })
   const overloads = await compile('../src/components/api/ApiFieldOverloads.astro')
   const commands = await compile('../src/components/api/ApiCommandParameters.astro', {
-    '@libtmux/api-model': bridge, '../../lib/api-sections': bridge, './ApiType.astro': type, './ApiDoc.astro': doc, './ApiFieldOverloads.astro': overloads,
+    '@libtmux/api-model': bridge, '@libtmux/api-model/reference': bridge, '../../lib/api-sections': bridge, './ApiType.astro': type, './ApiDoc.astro': doc, './ApiFieldOverloads.astro': overloads,
   })
   const members = await compile('../src/components/api/ApiScalarMembers.astro', { '../../lib/api-sections': bridge, './ApiDoc.astro': doc, './ApiType.astro': type })
   const load = async (url: string) => (await import(/* @vite-ignore */ url)).default

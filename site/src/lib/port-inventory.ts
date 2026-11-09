@@ -164,6 +164,8 @@ export interface InventoryEntry {
    */
   reference?: string
   status: PublicationStatus
+  /** Source exists publicly even when this distribution has no registry release. */
+  sourceAvailable?: boolean
   /** Why a configured or planned entry has no link. */
   note?: string
   /**
@@ -242,6 +244,9 @@ const lua = family('libtmux/libtmux-lua')
 const powershell = family('libtmux/libtmux-powershell')
 const julia = family('libtmux/libtmux-julia')
 const elixir = family('libtmux/libtmux-elixir', 'main')
+const haskell = family('libtmux/libtmux-haskell')
+const lisp = family('libtmux/libtmux-lisp')
+const erlang = family('libtmux/libtmux-erlang')
 const ts = family('libtmux/libtmux-ts')
 const rs = family('libtmux/libtmux-rs')
 const go = family('libtmux/libtmux-go')
@@ -278,6 +283,13 @@ export function entryDestinations(entry: InventoryEntry): Destination[] {
   ]
 }
 
+/** A released package, or an unpublished package available from public source. */
+export function documentedLibrary(entries: readonly InventoryEntry[]): InventoryEntry | undefined {
+  return entries.find((entry) => entry.kind === 'library' && (entry.status === 'published' ||
+    entry.status === 'configured-unpublished' && !entry.package && !entry.api &&
+    entries.some((source) => source.kind === 'source' && source.status === 'published' && source.repo === entry.repo)))
+}
+
 const GO = 'github.com/libtmux/libtmux-go'
 
 /**
@@ -285,6 +297,27 @@ const GO = 'github.com/libtmux/libtmux-go'
  * testing products in the order a reader reaches for them.
  */
 export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
+  ocaml: [
+    { id: 'libtmux', kind: 'library', product: 'core', unit: 'opam package', label: 'libtmux', coordinate: 'libtmux',
+      aliases: ['Libtmux'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'lib', status: 'published' },
+    { id: 'libtmux-unix', kind: 'companion', product: 'core', unit: 'opam package', label: 'libtmux-unix', coordinate: 'libtmux-unix',
+      aliases: ['Libtmux_unix'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'unix', status: 'published' },
+    { id: 'libtmux-eio', kind: 'companion', product: 'core', unit: 'opam package', label: 'libtmux-eio', coordinate: 'libtmux-eio',
+      aliases: ['Libtmux_eio'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'eio', status: 'published' },
+    { id: 'libtmux-json', kind: 'companion', product: 'core', unit: 'opam package', label: 'libtmux-json', coordinate: 'libtmux-json',
+      aliases: ['Libtmux_json'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'json', status: 'published' },
+    { id: 'libtmux-workspace', kind: 'companion', product: 'workspace', unit: 'opam package', label: 'libtmux-workspace', coordinate: 'libtmux-workspace',
+      aliases: ['Libtmux_workspace'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'workspace', status: 'published' },
+    { id: 'libtmux-workspace-cli', kind: 'cli', product: 'workspace', unit: 'opam package', label: 'libtmux-workspace-cli', coordinate: 'libtmux-workspace-cli',
+      aliases: ['tmux-workspace'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'cli', status: 'published' },
+  ],
+  perl: [
+    { id: 'LibTmux', kind: 'library', product: 'core', label: 'LibTmux', coordinate: 'LibTmux', aliases: ["LibTmux::Server"], repo: 'libtmux/libtmux-perl', ref: 'master', path: 'packages/core', status: 'configured-unpublished', sourceAvailable: true, note: 'Install from verified source; no CPAN release is published.' },
+    { id: 'LibTmux-Async', kind: 'companion', product: 'core', label: 'LibTmux-Async', coordinate: 'LibTmux-Async', aliases: ["LibTmux::Async::Server"], repo: 'libtmux/libtmux-perl', ref: 'master', path: 'packages/async', status: 'configured-unpublished', sourceAvailable: true, note: 'Install from verified source; no CPAN release is published.' },
+    { id: 'LibTmux-Workspace', kind: 'companion', product: 'workspace', label: 'LibTmux-Workspace', coordinate: 'LibTmux-Workspace', aliases: ["LibTmux::Workspace"], repo: 'libtmux/libtmux-perl', ref: 'master', path: 'packages/workspace', status: 'configured-unpublished', sourceAvailable: true, note: 'Install from verified source; no CPAN release is published.' },
+    { id: 'repository', kind: 'source', product: 'core', label: 'libtmux-perl', coordinate: 'libtmux/libtmux-perl', aliases: [], repo: 'libtmux/libtmux-perl', ref: 'master', status: 'published' },
+    { id: 'libtmux-workspace', kind: 'cli', product: 'workspace', label: 'libtmux-workspace', coordinate: 'libtmux-workspace', aliases: ['libtmux-workspace'], within: 'LibTmux-Workspace', unit: 'command', repo: 'libtmux/libtmux-perl', ref: 'master', path: 'packages/workspace/bin/libtmux-workspace', file: true, status: 'configured-unpublished', sourceAvailable: true, note: 'Install from verified source; no CPAN release is published.' },
+  ],
   py: [
     py({ id: 'libtmux', kind: 'library', product: 'core', label: 'libtmux', ...pypi('libtmux'), aliases: ['libtmux'] }),
     // The pytest plugin is an entry point of the libtmux distribution, not a package of its own.
@@ -346,6 +379,13 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
     julia({ id: 'LibTmuxWorkspace', kind: 'companion', product: 'workspace', unit: 'package', label: 'LibTmuxWorkspace',
       path: 'packages/LibTmuxWorkspace', aliases: ['using LibTmuxWorkspace', 'libtmux-workspace'] }),
   ],
+  erlang: [
+    erlang({ id: 'libtmux_erlang', kind: 'library', product: 'core', label: 'libtmux_erlang', path: 'apps/libtmux_erlang',
+      aliases: ['Erlang/OTP', 'Rebar3'], note: 'Installs from Git with Rebar3 git_subdir; no Hex release.' }),
+    erlang({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-erlang', coordinate: 'libtmux/libtmux-erlang' }),
+    erlang({ id: 'libtmux_erlang_workspace', kind: 'companion', product: 'workspace', label: 'libtmux_erlang_workspace', path: 'apps/libtmux_erlang_workspace',
+      note: 'Source application for validated JSON desired state. Plan/apply and its CLI are unfinished.' }),
+  ],
   elixir: [
     elixir({ id: 'libtmux', kind: 'library', product: 'core', label: 'libtmux', ...hexPackage('libtmux'), path: 'lib', aliases: ['LibTmux'] }),
     elixir({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-elixir', coordinate: 'libtmux/libtmux-elixir' }),
@@ -357,6 +397,33 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
     elixir({ id: 'libtmux_workspace', kind: 'companion', product: 'workspace', label: 'libtmux_workspace', coordinate: 'libtmux_workspace', path: 'packages/workspace',
       aliases: ['LibTmuxWorkspace'], status: 'planned', note: 'Its mix.exs carries a -dev version and the release workflow publishes only the root project.',
       unavailable: [{ kind: 'package', host: 'hex', url: 'https://hex.pm/packages/libtmux_workspace', reason: 'not published' }] }),
+  ],
+  haskell: [
+    haskell({ id: 'libtmux-haskell', kind: 'library', product: 'core', unit: 'Cabal package', label: 'libtmux-haskell', path: 'src',
+      aliases: ['LibTmux.Id', 'LibTmux.Value', 'LibTmux.Version'], note: 'Available from source; not published on Hackage.',
+      unavailable: [{ kind: 'package', host: 'Hackage', url: 'https://hackage.haskell.org/package/libtmux-haskell', reason: 'not published' }] }),
+    haskell({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-haskell', coordinate: 'libtmux/libtmux-haskell' }),
+    haskell({ id: 'libtmux-haskell-workspace', kind: 'companion', product: 'workspace', label: 'libtmux-haskell-workspace', status: 'planned',
+      note: 'Planned workspace library and CLI; no package or executable is implemented.' }),
+  ],
+  lisp: [
+    lisp({ id: 'libtmux', kind: 'library', product: 'core', unit: 'source distribution', label: 'libtmux',
+      path: 'src', aliases: ['libtmux'], note: 'The 0.1.0 ASDF systems are source-installed and unreleased.' }),
+    lisp({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-lisp', coordinate: 'libtmux/libtmux-lisp' }),
+    lisp({ id: 'libtmux/query', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
+      label: 'libtmux/query', path: 'libtmux.asd', file: true, aliases: ['libtmux.query'] }),
+    lisp({ id: 'libtmux/regex', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
+      label: 'libtmux/regex', path: 'libtmux.asd', file: true, aliases: ['libtmux.regex'] }),
+    lisp({ id: 'libtmux/json', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
+      label: 'libtmux/json', path: 'libtmux.asd', file: true, aliases: ['libtmux.json'] }),
+    lisp({ id: 'libtmux/workspace', kind: 'companion', product: 'workspace', unit: 'ASDF system', within: 'libtmux',
+      label: 'libtmux/workspace', path: 'src/workspace.lisp', file: true,
+      aliases: ['libtmux.workspace', '(asdf:load-system "libtmux/workspace")'] }),
+    lisp({ id: 'libtmux/workspace/cli', kind: 'companion', product: 'workspace', unit: 'ASDF system', within: 'libtmux',
+      label: 'libtmux/workspace/cli', path: 'src/workspace-cli.lisp', file: true, aliases: ['libtmux.workspace.cli'] }),
+    lisp({ id: 'workspace-command', kind: 'cli', product: 'workspace', unit: 'script', within: 'libtmux',
+      label: 'libtmux-workspace', coordinate: 'mise exec -- tools/lisp.sh tools/workspace-cli.lisp',
+      path: 'bin/libtmux-workspace', file: true, aliases: ['libtmux-workspace', 'tools/workspace-cli.lisp'] }),
   ],
   ts: [
     ts({ id: 'libtmux', kind: 'library', product: 'core', label: 'libtmux', ...npm('libtmux'), path: 'packages/libtmux',
@@ -432,6 +499,21 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
       ...central('libtmux-workspace-cli'), path: 'libtmux-workspace-cli', aliases: ['tmux-workspace'],
       unavailable: [{ kind: 'api', host: 'javadoc-io', url: 'https://javadoc.io/doc/io.github.libtmux/libtmux-workspace-cli',
         reason: 'javadoc.io lists versions and has no documentation for this artifact' }] }),
+  ],
+  clojure: [
+    jvm({ id: 'libtmux-clojure', kind: 'library', product: 'core', label: 'libtmux-clojure',
+      coordinate: 'io.github.libtmux:libtmux-clojure', path: 'libtmux-clojure', ref: 'master',
+      status: 'configured-unpublished', note: 'No registry release; install the source checkout with Gradle.',
+      aliases: ['libtmux.core', 'libtmux.data', 'libtmux.async', 'libtmux.control'] }),
+    jvm({ id: 'libtmux-clojure-core-async', kind: 'companion', product: 'core', label: 'libtmux-clojure-core-async',
+      coordinate: 'io.github.libtmux:libtmux-clojure-core-async', path: 'libtmux-clojure-core-async', ref: 'master',
+      status: 'configured-unpublished', note: 'No registry release; install this optional adapter from the source checkout.',
+      aliases: ['libtmux.core-async'] }),
+    jvm({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-java', coordinate: 'libtmux/libtmux-java' }),
+    jvm({ id: 'core-source', kind: 'source', product: 'core', label: 'libtmux-clojure', path: 'libtmux-clojure', ref: 'master',
+      aliases: ['libtmux.core', 'libtmux.data', 'libtmux.async', 'libtmux.control'] }),
+    jvm({ id: 'adapter-source', kind: 'source', product: 'core', label: 'libtmux-clojure-core-async',
+      path: 'libtmux-clojure-core-async', ref: 'master', aliases: ['libtmux.core-async'] }),
   ],
   kotlin: [
     jvm({ id: 'libtmux-kotlin', kind: 'library', product: 'core', label: 'libtmux-kotlin', ...central('libtmux-kotlin'),

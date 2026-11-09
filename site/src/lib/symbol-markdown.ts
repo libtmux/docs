@@ -1,7 +1,7 @@
 import type { ApiModel, ApiSymbol, Signature, SourceApiModel, SymbolIndex } from '@libtmux/api-model'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { toMarkdown } from 'mdast-util-to-markdown'
-import { aliasMembersTarget, aliasTarget, boundLabel, pageMembersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model'
+import { aliasMembersTarget, aliasTarget, boundLabel, pageMembersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf, typeParameterList, type TypeParameter } from '@libtmux/api-model/reference'
 import mentions from '../data/mentions.json'
 import { PORT_NAME } from './api-models'
 import { apiTmuxSections, type ApiTmuxSection } from './api-tmux-sections'
@@ -10,9 +10,10 @@ import type { ResolvedUsage } from './tmux-reference'
 import { tmuxCommandMentions, tmuxMentionMarkdown } from './tmux-links'
 import { productApiIndex } from './product-api'
 import { defaultVersionFor } from './versions'
-import { apiSignatureLayouts, swiftBaseName, type CodeLayout } from './code-layout'
+import { apiSignatureLayouts, signatureSpans, swiftBaseName, type CodeLayout } from './code-layout'
 import { apiCallSource, apiRelationshipSections, type ApiRelationshipPath } from './api-relationships'
 import { PORT_BY_SLUG, productConceptNotice } from './ports'
+import { kindLabel, nativeKind } from './api-labels'
 
 /**
  * A symbol's page as Markdown.
@@ -71,8 +72,9 @@ function inlineCode(code: string): string {
 }
 
 /** A reference as Markdown, linked as the page links it: whole when it resolves, by the names in its literal when it does not. */
-function referenceMarkdown(span: { label: string; link?: { href: string }; parts?: { text: string; link?: { href: string } }[] }): string | undefined {
-  if (span.link) return `[${inlineCode(span.label)}](${span.link.href})`
+function referenceMarkdown(span: { label: string; code?: boolean; link?: { href: string }; parts?: { text: string; link?: { href: string } }[] }): string | undefined {
+  const label = span.code === false ? span.label.replace(/[\\[\]]/g, '\\$&') : inlineCode(span.label)
+  if (span.link) return `[${label}](${span.link.href})`
   if (!span.parts?.some((part) => part.link)) return undefined
   let plain = ''
   let linked = ''
@@ -85,7 +87,7 @@ function referenceMarkdown(span: { label: string; link?: { href: string }; parts
   return linked
 }
 
-function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, linkApi: boolean): string {
+function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, linkApi: boolean, language?: string): string {
   if (!linkApi && !/\btmux\s|[-_]/.test(markdown)) return markdown
   // Use the HTML resolver for prose exports too. Never rewrite runnable code
   // blocks or the contents of an author-supplied link.
@@ -102,6 +104,11 @@ function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, 
       if (htmlDepth) return
       const start = node.position!.start.offset!
       const end = node.position!.end.offset!
+      if (index.language === 'perl' && node.type === 'inlineCode' && markdown.slice(start - 5, start) === ':obj:') {
+        const span = index.docSpans(markdown.slice(start - 5, end), symbol).find((entry) => entry.kind === 'ref')
+        const linked = span?.kind === 'ref' && referenceMarkdown(span)
+        if (linked) { edits.push({ start: start - 5, end, text: linked }); return }
+      }
       const tmux = tmuxMentionMarkdown(node.value, node.type === 'inlineCode', undefined,
         { before: markdown.slice(Math.max(0, start - 48), start), after: markdown.slice(end, end + 48) })
       if (tmux && (node.type === 'inlineCode' || markdown.slice(start, end) === node.value)) {
@@ -115,15 +122,19 @@ function proseMarkdown(markdown: string, index: SymbolIndex, symbol: ApiSymbol, 
       }
       if (!linkApi) return
       if (node.type === 'inlineCode') {
+        // A normalized Haddock role spans a text prefix and its backticked payload.
+        const role = language === 'haskell' && /^`[^`]*`$/.test(markdown.slice(start, end))
+          ? /(?<![\\:]):obj:$/.exec(markdown.slice(0, start)) : undefined
+        const referenceStart = role ? start - role[0].length : start
         // The span the page links: `docSpans` is what `ApiDoc` renders, so a name the page leaves plain stays plain here.
-        const reference = index.docSpans(markdown.slice(start, end), symbol).find((span) => span.kind === 'ref')
+        const reference = index.docSpans(markdown.slice(referenceStart, end), symbol).find((span) => span.kind === 'ref')
         const linked = reference?.kind === 'ref' ? referenceMarkdown(reference) : undefined
-        if (linked) edits.push({ start, end, text: linked })
+        if (linked) edits.push({ start: referenceStart, end, text: linked })
       } else if (markdown.slice(start, end) === node.value) {
         const spans = index.docSpans(node.value, symbol)
         const linked = spans.map((span) => (span.kind === 'ref' ? referenceMarkdown(span) : undefined))
-        if (linked.some(Boolean)) edits.push({ start, end,
-          text: spans.map((span, i) => linked[i] ?? ('text' in span ? span.text : span.label)).join('') })
+        if (linked.some(Boolean) || (index.language === 'ocaml' && spans.some((span) => span.kind === 'ref'))) edits.push({ start, end,
+          text: spans.map((span, i) => linked[i] ?? ('text' in span ? span.text : span.kind === 'citation' || span.code === false ? span.label : inlineCode(span.label))).join('') })
       }
     } else if ('children' in node) for (const child of node.children) visit(child as Parameters<typeof visit>[0])
   }
@@ -199,7 +210,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const port = 'port' in model ? model.port : undefined
   const language = 'language' in model ? model.language : port
   const index = ctx.index ?? (port && 'port' in model ? productApiIndex(model, ctx.version ?? defaultVersionFor(port)) : undefined)
-  const prose = (text: string) => index ? proseMarkdown(text, index, symbol, ['powershell', 'scala', 'ts'].includes(language ?? '')) : text
+  const prose = (text: string, context = symbol) => index ? proseMarkdown(text, index, context, ['perl', 'powershell', 'scala', 'ts', 'ocaml', 'haskell'].includes(language ?? ''), language) : text
   const id = qualifiedNameOf(symbol)
   const out: string[] = [`# ${id}`, '']
   const info = port ? PORT_BY_SLUG[port] : undefined
@@ -214,7 +225,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   if (mod) facts.push(`- **Module:** ${mod}`)
   if (ctx.packageName) facts.push(`- **Package:** ${ctx.packageName}`)
   facts.push(`- **Language:** ${(port ? PORT_NAME[port] ?? port : language?.toUpperCase())}`)
-  if (symbol.kind) facts.push(`- **Kind:** ${symbol.kind}`)
+  if (symbol.kind) facts.push(`- **Kind:** ${kindLabel(nativeKind(symbol, language))}`)
   if (ctx.source) facts.push(`- **Source:** ${ctx.source}`)
   if (symbol.exportedFrom) facts.push(`- **Exported from:** ${symbol.exportedFrom}`)
   if (symbol.inheritedFrom) facts.push(`- **Inherited from:** ${symbol.inheritedFrom}`)
@@ -257,10 +268,23 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     return layout !== undefined ? `${setLabel(entry)}${layout}` : native && entry.raw
       ? `${setLabel(entry)}${nativeSignatureText(symbol, entry, language)}` : signatureLine(symbol, entry, language)
   }).join('\n\n')
-  if (sig) out.push(fencedCode(sig, language === 'c' ? 'c' : ''), '')
+  if (sig) out.push(fencedCode(sig, language === 'c' || language === 'haskell' ? language : ''), '')
   else if (parent?.variant && symbol.type) out.push(fencedCode(`${symbol.name}: ${symbol.type}`, language), '')
   else if (symbol.value !== undefined) out.push(fencedCode(`${qualifiedNameOf(symbol)}${symbol.type ? `: ${symbol.type}` : ''} = ${symbol.value}`, language ?? ''), '')
   else if (language === 'c') out.push(`${anonymousDeclarationLabel(symbol)}.`, '')
+  else if (language === 'ocaml' && ['module', 'interface'].includes(symbol.kind)) out.push(fencedCode(`${symbol.kind === 'interface' ? 'module type' : 'module'} ${symbol.name}`, 'ocaml'), '')
+
+  if (language === 'haskell' && index) {
+    const links = new Map<string, { text: string; href: string }>()
+    for (const signature of signatures) {
+      const layout = ctx.signatureLayouts?.get(signature)
+      if (!layout) continue
+      for (const span of signatureSpans(layout, index, symbol, signature)) {
+        if (span.link) links.set(`${span.text}\0${span.link.href}`, { text: span.text, href: span.link.href })
+      }
+    }
+    if (links.size) out.push(`Signature types: ${[...links.values()].map((link) => `[${inlineCode(link.text)}](${link.href})`).join(', ')}.`, '')
+  }
 
   if (symbol.doc?.summary) out.push(prose(symbol.doc.summary), '')
   if (symbol.doc?.body) out.push(prose(symbol.doc.body), '')
@@ -272,7 +296,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     if (related.length) out.push('Related APIs:', '', ...related.map((link) => `- [${link.symbol ? inlineCode(link.text) : link.text}](${link.href})`), '')
   }
 
-  const methods = apiMethodDetails(symbol)
+  const methods = apiMethodDetails(symbol, language)
   if (methods.length) {
     out.push('## Methods', '')
     for (const [methodIndex, method] of methods.entries()) {
@@ -372,7 +396,9 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   }
   const appendMembers = (entries: ApiSymbol[]) => {
     for (const member of entries) {
-      out.push(`- ${ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)} (${symbol.variant && member.type ? inlineCode(member.type) : member.kind})${member.inheritedFrom ? `, inherited from ${inlineCode(member.inheritedFrom)}` : ''}${member.doc?.summary ? `: ${member.doc.summary}` : ''}`)
+      const summary = member.doc?.summary
+      const description = summary && language === 'perl' ? prose(summary, member) : summary
+      out.push(`- ${ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)} (${symbol.variant && member.type ? inlineCode(member.type) : kindLabel(nativeKind(member, language))})${member.inheritedFrom ? `, inherited from ${inlineCode(member.inheritedFrom)}` : ''}${description ? `: ${description}` : ''}`)
     }
     out.push('')
   }
@@ -440,7 +466,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     for (const target of section.items) {
       const callSource = section.id === 'api-calls' ? apiCallSource(model, symbol, target)
         : section.id === 'api-called-by' ? apiCallSource(model, target, symbol) : undefined
-      out.push(`- ${symbolLink(target)} (${target.kind})${callSource ? ` [Call site](${callSource})` : ''}`)
+      out.push(`- ${symbolLink(target)} (${kindLabel(nativeKind(target, language))})${callSource ? ` [Call site](${callSource})` : ''}`)
     }
     out.push('')
   }

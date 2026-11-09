@@ -1,6 +1,6 @@
 {
   "page": "guides/attaching-to-tmux",
-  "scope": "Complete existing-server consumers with their displayed setup and isolated shell launcher.",
+  "scope": "Complete existing-server consumers with their displayed setup and owned fixtures.",
   "examples": [
     {
       "port": "py",
@@ -520,6 +520,60 @@
           "sha256": "06102da59a219f3ade2c03eb92eda1056107bce3f4e0056580d72f76324f3b82"
         }
       ]
+    },
+    {
+      "port": "lisp",
+      "language": "lisp",
+      "sourceRevision": "0f9da93add247569a184bbda7d1dd1ca986c2e0f",
+      "sourceRepository": "libtmux/libtmux-lisp",
+      "toolchain": [
+        "SBCL 2.6.10",
+        "ASDF 3.3.7"
+      ],
+      "page": "ports/lisp/guides/attaching-to-tmux",
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-lisp libtmux-source",
+        "git -C libtmux-source checkout 0f9da93add247569a184bbda7d1dd1ca986c2e0f",
+        "cd libtmux-source && mise trust && mise install && \\\n    env -u LIBTMUX_SOCKET_PATH mise exec -- sbcl \\\n    --noinform \\\n    --no-sysinit \\\n    --no-userinit \\\n    --disable-debugger \\\n    --load \"$(mise where http:asdf-lisp)/asdf.lisp\" \\\n    --script ../connect.lisp"
+      ],
+      "expectedOutput": "work",
+      "files": [
+        {
+          "name": "connect.lisp",
+          "sha256": "1ad3dc3f52dad664ce06f44add5033545065c14f8e36836fbd1169c07a4b5506"
+        }
+      ],
+      "tmux": [
+        "3.3a",
+        "3.8",
+        "3.8a"
+      ],
+      "verification": {
+        "platform": "Linux",
+        "checks": [
+          {
+            "name": "positive-3.3a",
+            "tmux": "3.3a",
+            "exit": 0,
+            "seconds": 1.48,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "positive-3.8",
+            "tmux": "3.8",
+            "exit": 0,
+            "seconds": 1.46,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "displayed-isolated-setup-3.8a",
+            "tmux": "3.8a",
+            "exit": 0,
+            "seconds": 18.39,
+            "remainingSocketDirectories": 0
+          }
+        ]
+      }
     }
   ],
   "rootExample": {

@@ -1,6 +1,7 @@
 import { RUST_CRATE_PREFIX, tokenizeDoc, type DocSpan } from './doc/roles.ts'
+import { docSectionId, docSectionTitles } from './doc/prose-blocks.ts'
 import { symbolEntries, type InventoryEntry } from './inventory.ts'
-import type { ApiProduct, ApiSource, ApiSymbol, Signature, SymbolKind, TypeParameter } from './model.ts'
+import type { ApiProduct, ApiSource, ApiSymbol, Param, Signature, SymbolKind, TypeParameter } from './model.ts'
 import { cargoFeatureHref, documentedFeature } from './cargo-features.ts'
 import { builtinHref, CURATED_BEFORE_INVENTORY, ELIXIR_STDLIB_MODULES, elixirStdlibHref, NOT_THE_JDKS } from './builtins.ts'
 import { neverLinks } from './never-links.ts'
@@ -33,6 +34,16 @@ const ROLE_KINDS: Record<string, SymbolKind[]> = {
   obj: [],
   any: [],
 }
+
+const ODOC_KINDS = new Map<string, readonly SymbolKind[]>([
+  ['type', ['typealias', 'enum', 'struct', 'union']],
+  ['val', ['function', 'constant']], ['value', ['function', 'constant']],
+  ['module', ['module']], ['module-type', ['interface']],
+  ['class', ['class']], ['class-type', ['interface']],
+  ['exception', ['exception']], ['exn', ['exception']],
+  ['constructor', ['constant']], ['const', ['constant']],
+  ['field', ['attribute']], ['recfield', ['attribute']],
+])
 
 /**
  * Names that belong to the language, not to us.
@@ -89,6 +100,7 @@ const SIGNATURE_KEYWORDS: Record<string, Set<string>> = Object.fromEntries(Objec
   // Attributes that open a declaration, and the guard of a spec.
   elixir: 'spec type opaque callback macrocallback when',
   cxx: 'alignas alignof auto class concept const consteval constexpr constinit decltype default delete enum explicit extern final friend inline mutable namespace noexcept operator override register requires static struct template thread_local typedef typename union using virtual volatile',
+  ocaml: 'type val module sig end with and of private mutable exception include functor',
 }).map(([port, words]) => [port, new Set(words.split(' '))]))
 
 /** Language help stays separate from links to API declarations. */
@@ -317,6 +329,8 @@ function implSelfArguments(header: string): string[] | undefined {
 export class SymbolIndex {
   private readonly byPublic = new Map<string, ApiSymbol>()
   private readonly byQualified = new Map<string, ApiSymbol[]>()
+  /** Native qualified names and contextual constructor/field paths share this lookup. */
+  private readonly ocamlPaths = new Map<string, ApiSymbol[]>()
   // Keyed by declaration id. `parent` is a declaration id, so looking an owner
   // up in byPublic silently misses every time — which is why relative
   // references stayed at 0% until this map existed.
@@ -364,6 +378,7 @@ export class SymbolIndex {
    * forgets to say produces fewer links, not wrong ones.
    */
   private readonly lang: string | undefined
+  private readonly docHref: ((href: string) => string) | undefined
 
   /** The port this index describes, which decides how a page writes a symbol. */
   get language(): string | undefined {
@@ -375,9 +390,10 @@ export class SymbolIndex {
     return symbol.parent ? this.byDeclared.get(symbol.parent) : undefined
   }
 
-  constructor(symbols: ApiSymbol[], hrefFor: (symbol: ApiSymbol) => string, lang?: string) {
+  constructor(symbols: ApiSymbol[], hrefFor: (symbol: ApiSymbol) => string, lang?: string, docHref?: (href: string) => string) {
     this.lang = lang
     this.hrefFor = hrefFor
+    this.docHref = docHref
     for (const s of symbols) {
       if (!this.byDeclared.has(s.id) || !s.inheritedFrom) this.byDeclared.set(s.id, s)
       const pub = s.publicId ?? s.id
@@ -389,6 +405,12 @@ export class SymbolIndex {
       const aliases = this.byQualified.get(qualified) ?? []
       aliases.push(s)
       this.byQualified.set(qualified, aliases)
+
+      if (this.lang === 'ocaml') {
+        for (const path of new Set([qualified, s.id.replace(/:type(?=\.|$)/g, '')])) {
+          this.ocamlPaths.set(path, [...(this.ocamlPaths.get(path) ?? []), s])
+        }
+      }
 
       const suffixes = new Set([pub, qualified].flatMap((name) => {
         const parts = name.split('.')
@@ -706,6 +728,7 @@ export class SymbolIndex {
    * turned 59 dead references into links, most of the remaining gap.
    */
   resolve(target: string, role = 'any', context?: ApiSymbol): LinkTarget | undefined {
+    if (this.lang === 'ocaml' && role.startsWith('odoc:')) return this.resolveOdoc(target, role.slice(5), context)
     // A name the context binds as a type parameter is that parameter, never a
     // same-named global.
     if (context && TYPE_PARAMETER_ROLES.has(role) && /^[A-Za-z_$][\w$]*$/.test(target)) {
@@ -715,7 +738,71 @@ export class SymbolIndex {
     return role === 'typeparam' ? undefined : this.resolveSymbol(target, role, context)
   }
 
+  /** Resolve odoc's namespaces from the containing module outward, without a global suffix guess. */
+  private resolveOdoc(target: string, role: string, context?: ApiSymbol, aliases = new Set<string>()): LinkTarget | undefined {
+    const segments = target.split('.').map((part) => {
+      const typed = /^(module-type|class-type|type|val|value|module|class|exception|exn|constructor|const|field|recfield)-(.+)$/.exec(part)
+      return { name: typed?.[2] ?? part, role: typed?.[1] }
+    })
+    if (segments.some((part) => !part.name)) return undefined
+    const path = segments.map((part) => part.name).join('.')
+    const matches = (symbol: ApiSymbol, kind: string | undefined) => {
+      if (!kind || kind === 'any') return true
+      if (!ODOC_KINDS.get(kind)?.includes(symbol.kind)) return false
+      if (kind === 'constructor' || kind === 'const') return symbol.variant !== undefined
+      if (kind === 'val' || kind === 'value') return symbol.variant === undefined
+      return true
+    }
+    const scopes = new Set<string>()
+    for (let owner = context; owner; owner = this.parentOf(owner)) {
+      if (owner.kind === 'module' || owner.kind === 'interface') scopes.add(`${qualifiedNameOf(owner)}.`)
+    }
+    scopes.add('')
+    const parentsMatch = (symbol: ApiSymbol, last: number) => {
+      let ancestor = this.parentOf(symbol)
+      for (let i = last - 1; i >= 0; i--) {
+        // OCaml also exposes record labels and variant constructors directly in their module.
+        while (ancestor && ancestor.name !== segments[i]!.name && !['module', 'interface'].includes(ancestor.kind)) ancestor = this.parentOf(ancestor)
+        if (!ancestor || ancestor.name !== segments[i]!.name || !matches(ancestor, segments[i]!.role)) return false
+        ancestor = this.parentOf(ancestor)
+      }
+      return true
+    }
+    for (const scope of scopes) {
+      const candidates = (this.ocamlPaths.get(`${scope}${path}`) ?? [])
+        .filter((symbol) => matches(symbol, role) && parentsMatch(symbol, segments.length - 1))
+      if (candidates.length === 1) {
+        const symbol = candidates[0]!
+        return { href: this.hrefFor(symbol), external: false, symbol }
+      }
+      if (candidates.length > 1) return undefined
+      // A module alias keeps its own page; its members link to their public declarations.
+      for (let count = segments.length - 1; count > 0; count--) {
+        const prefix = `${scope}${segments.slice(0, count).map((part) => part.name).join('.')}`
+        const modules = (this.ocamlPaths.get(prefix) ?? []).filter((symbol) =>
+          symbol.kind === 'module' && symbol.exportedFrom &&
+          matches(symbol, segments[count - 1]!.role) && parentsMatch(symbol, count - 1))
+        if (modules.length > 1) return undefined
+        const alias = modules[0]
+        if (!alias) continue
+        if (aliases.has(alias.id)) return undefined
+        const suffix = target.split('.').slice(count).join('.')
+        return this.resolveOdoc(`${alias.exportedFrom}.${suffix}`, role, undefined, new Set([...aliases, alias.id]))
+      }
+    }
+    return undefined
+  }
+
   private resolveSymbol(target: string, role: string, context?: ApiSymbol): LinkTarget | undefined {
+    if (this.lang === 'perl' && target.includes('#')) {
+      const separator = target.indexOf('#')
+      const owner = this.byDeclared.get(target.slice(0, separator))
+      let section: string
+      try { section = decodeURIComponent(target.slice(separator + 1)) } catch { return undefined }
+      if (!owner || docSectionTitles(owner).filter((title) => title === section).length !== 1) return undefined
+      return { href: `${this.hrefFor(owner).split('#')[0]}#${encodeURIComponent(docSectionId(owner, section))}`, external: false, symbol: owner }
+    }
+    if (this.lang === 'erlang') return this.resolveErlang(target, role, context)
     const relative = target.startsWith('.')
     const goType = this.lang === 'go' && role === 'class'
     if (this.lang === 'ruby') {
@@ -948,6 +1035,25 @@ export class SymbolIndex {
     return undefined
   }
 
+  /** Resolve compiler-qualified Erlang identities within the native namespace. */
+  private resolveErlang(target: string, role: string, context?: ApiSymbol): LinkTarget | undefined {
+    const prefix = /^(?:([mtc]):)?/.exec(target)![1]
+    const body = prefix ? target.slice(2) : target
+    const wanted = prefix === 'm' ? body : target
+    const kinds = ROLE_KINDS[role] ?? []
+    const matches = (symbol: ApiSymbol | undefined) => symbol &&
+      (!kinds.length || kinds.includes(symbol.kind)) &&
+      (prefix === 'm' ? symbol.kind === 'module' : prefix === 't' ? symbol.kind === 'typealias'
+        : prefix === 'c' ? symbol.modifiers.includes('abstract') : !symbol.id.startsWith('t:') && !symbol.id.startsWith('c:'))
+    let hit = this.byDeclared.get(wanted)
+    if (!matches(hit) && prefix !== 'm') {
+      let owner = context
+      while (owner?.parent) owner = this.byDeclared.get(owner.parent)
+      if (owner?.kind === 'module') hit = this.byDeclared.get(`${prefix ? `${prefix}:` : ''}${owner.id}:${body}`)
+    }
+    return matches(hit) ? { href: this.hrefFor(hit!), external: false, symbol: hit } : undefined
+  }
+
   /** The module a declaration belongs to: itself, or its parent. */
   private elixirOwner(context?: ApiSymbol): ApiSymbol | undefined {
     return context?.parent ? this.byDeclared.get(context.parent) : context
@@ -1083,6 +1189,7 @@ export class SymbolIndex {
 
   linkDoc(spans: DocSpan[], context?: ApiSymbol): (DocSpan & { link?: LinkTarget })[] {
     return spans.map((span) => {
+      if (span.kind === 'link' && this.docHref) return { ...span, href: this.docHref(span.href) }
       if (span.kind !== 'ref') return span
       const resolved = this.resolve(span.target, span.role, context)
       const lone = /^([A-Za-z_$][\w$]*)(\(.*\))?$/s.exec(span.target)
@@ -1330,6 +1437,61 @@ export class SymbolIndex {
     return [{ text: ident, ...(builtin ? { link: { href: builtin, external: true } } : {}) }]
   }
 
+  /** Consume exact compiler ranges; literal gaps never introduce a guessed type. */
+  private erlangTypeSpans(annotation: string, context?: ApiSymbol, signature?: Signature): TypeSpan[] {
+    const candidates = (signature ? [signature] : context?.signatures ?? []).flatMap((entry) => [
+      { text: entry.raw, references: entry.references },
+      { text: entry.returns, references: entry.returnsReferences },
+      ...entry.params.map((param) => ({ text: param.type, references: param.typeReferences })),
+    ])
+    const match = candidates.find((entry) => entry.text === annotation && entry.references !== undefined)
+    if (!match) return [{ text: annotation }]
+    const out: TypeSpan[] = []
+    let offset = 0
+    for (const reference of match.references!) {
+      if (reference.start > offset) out.push({ text: annotation.slice(offset, reference.start), nonReference: true })
+      const link = this.resolveErlang(reference.target, 'any', context) ??
+        (reference.external ? { ...reference.external, external: true } : undefined)
+      out.push({ text: annotation.slice(reference.start, reference.end), ...(link ? { link } : {}) })
+      offset = reference.end
+    }
+    if (offset < annotation.length) out.push({ text: annotation.slice(offset), nonReference: true })
+    return out
+  }
+
+
+  /** Lisp names include package colons and hyphens; only method specializers are type references in a lambda list. */
+  private lispType(annotation: string, context?: ApiSymbol, signature?: Signature): TypeSpan[] {
+    if (!annotation.trimStart().startsWith('(')) {
+      const text = annotation.trim()
+      const link = /^[^\s()"]+$/.test(text) ? this.resolveSymbol(text, 'class', context) : undefined
+      return [{ text: annotation, ...(link ? { link } : {}) }]
+    }
+    const frames: { atoms: number; parameter?: Param }[] = []
+    const out: TypeSpan[] = []
+    for (const match of annotation.matchAll(/"(?:\\[\s\S]|[^"\\])*"|[()]|[^\s()"]+|\s+/g)) {
+      const text = match[0]
+      if (text === '(') { frames.push({ atoms: 0 }); out.push({ text }); continue }
+      if (text === ')') { frames.pop(); out.push({ text }); continue }
+      const frame = frames.at(-1)
+      if (!frame || /^\s|^"/.test(text)) { out.push({ text }); continue }
+      const at = frame.atoms++
+      const parameter = signature?.params.find((param) => param.name === text)
+      if (frames.length === 1 && at === 0) {
+        out.push({ text, declaration: true })
+      } else if (parameter && (frames.length === 1 || frames.length === 2 && at === 0)) {
+        if (frames.length === 2) frame.parameter = parameter
+        out.push({ text, declaration: true })
+      } else if (frames.length === 2 && at === 1 && frame.parameter?.type === text &&
+          !frame.parameter.optional && !frame.parameter.variadic) {
+        out.push({ text, link: this.resolveSymbol(text, 'class', context) })
+      } else {
+        out.push({ text, ...(/^[:&]/.test(text) ? { keyword: true } : {}) })
+      }
+    }
+    return out
+  }
+
   /**
    * Split a type annotation into linked and literal spans.
    *
@@ -1340,7 +1502,9 @@ export class SymbolIndex {
    * makes those all work without a grammar for type syntax.
    */
   linkType(annotation: string, context?: ApiSymbol, signature?: Signature): TypeSpan[] {
+    if (this.lang === 'erlang') return this.erlangTypeSpans(annotation, context, signature)
     if (neverLinks(annotation)) return [{ text: annotation }]
+    if (this.lang === 'lisp') return this.lispType(annotation, context, signature)
     const out: TypeSpan[] = []
     const rustPayload = this.lang === 'rs' && (context?.variant || (context?.parent && this.byDeclared.get(context.parent)?.variant))
     const variantDelimiters: string[] = []
@@ -1360,6 +1524,7 @@ export class SymbolIndex {
       ? String.raw`[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*!?`
       // A number is matched whole, so `1_000` is not a literal followed by a name.
       : this.lang === 'elixir' ? String.raw`\d[\d_]*(?:\.\d+)?(?:[eE][+-]?\d+)?|[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*[!?]?`
+      : this.lang === 'clojure' ? String.raw`::?[^\s,()[\]{}"';]+|[A-Za-z_][A-Za-z0-9_.]*(?:::[A-Za-z_][A-Za-z0-9_.]*)*`
       : this.lang === 'powershell' ? String.raw`(?:[A-Za-z_][A-Za-z0-9_.]*\\)?[A-Za-z_][A-Za-z0-9_.-]*`
       : this.lang === 'ts' ? String.raw`[A-Za-z_$][A-Za-z0-9_$.]*`
       : this.lang === 'rs' ? String.raw`(?:r#)?[A-Za-z_][A-Za-z0-9_.]*(?:::(?:r#)?[A-Za-z_][A-Za-z0-9_.]*)*`
@@ -1367,12 +1532,12 @@ export class SymbolIndex {
     // C++ prefixes, escaped quotes, raw delimiters and suffixes belong to the
     // literal token. Its contents cannot introduce an attribute or type link.
     const cppLiteral = String.raw`(?:(?:u8|u|U|L)?R"(?<delimiter>[^ ()\\\t\v\f\r\n]{0,16})\([\s\S]*?\)\k<delimiter>"|(?:u8|u|U|L)?(?:"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'))(?:[A-Za-z_]\w*)?`
-    const initial = this.lang === 'ts' ? 'A-Za-z_$' : this.lang === 'elixir' ? 'A-Za-z_0-9' : 'A-Za-z_'
-    const pattern = String.raw`(?<ident>\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|${identifier})|(?<other>[^${initial}"'/]+|["'/])`
+    const initial = this.lang === 'ts' ? 'A-Za-z_$' : this.lang === 'elixir' ? 'A-Za-z_0-9' : this.lang === 'clojure' ? 'A-Za-z_:' : 'A-Za-z_'
+    const pattern = String.raw`(?<ident>\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|${identifier})|(?<other>[^${initial}"'/]+|["'/${this.lang === 'clojure' ? ':' : ''}])`
     // F# type variables start with an apostrophe but do not close like strings.
     const re = new RegExp(this.lang === 'cxx'
       ? String.raw`(?<literal>${cppLiteral}|\d(?:[eEpP][+-]|[\w.'])*)|(?<ident>\/\*[\s\S]*?\*\/|\/\/[^\n]*|${identifier})|(?<other>[^A-Za-z_0-9"'/]+|["'/])`
-      : this.lang === 'fsharp' ? pattern.replace('(?<ident>', String.raw`(?<ident>'[A-Za-z_][A-Za-z0-9_]*(?![A-Za-z0-9_'])|`)
+      : this.lang === 'fsharp' || this.lang === 'ocaml' ? pattern.replace('(?<ident>', String.raw`(?<ident>'[A-Za-z_][A-Za-z0-9_]*(?![A-Za-z0-9_'])|`)
       : pattern, 'g')
     for (const m of annotation.matchAll(re)) {
       const whole = m[0]
@@ -1385,6 +1550,11 @@ export class SymbolIndex {
           }
         }
         out.push({ text: whole })
+        continue
+      }
+      // Keywords are values, including a namespaced key inside a map.
+      if (this.lang === 'clojure' && ident.startsWith(':')) {
+        out.push({ text: ident, nonReference: true })
         continue
       }
       if (/^(?:["']|\/[/*])/.test(ident)) {
@@ -1534,7 +1704,15 @@ export class SymbolIndex {
       // renders unlinked in a signature is a builtin — `bool`, `Task`,
       // `Result`, `string` — which nothing here defines and no intersphinx
       // inventory covers for five of the eight ports.
-      const link = this.resolveSymbol(path, 'class', context)
+      let link = this.lang === 'ocaml'
+        ? /^[A-Z]/.test(path.split('.').at(-1)!)
+          ? this.resolveOdoc(path, 'module', context) ?? this.resolveOdoc(path, 'module-type', context)
+          : this.resolveOdoc(path, 'type', context)
+        : this.resolveSymbol(path, 'class', context)
+      if (!link && this.lang === 'ocaml') {
+        const href = builtinHref('ocaml', path)
+        if (href) link = { href, external: true }
+      }
       if (link || !['kotlin', 'scala'].includes(this.lang ?? '') || !ident.includes('.')) {
         out.push({ text: ident, link })
         continue

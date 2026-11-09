@@ -10,14 +10,17 @@ import { formKind, isEnvironmentVariable, FORMS, isWithin, writtenForm, type For
 type Declared = [label: string, shown: string, id: string, name?: string]
 interface Row {
   type: [label: string, shown: string]
-  method: Declared
+  method?: Declared
   function: Declared
   property: Declared
   /** The owner, the member's name and id, and what a page writes away from the owner's page and on it. */
-  member: [owner: string, name: string, id: string, away: string, home: string]
+  member?: [owner: string, name: string, id: string, away: string, home: string]
 }
 
 const ROWS: Record<string, Row> = {
+  ocaml: { type: ['Libtmux::Snapshot.t', 'Libtmux.Snapshot.t'], method: ['Client.capture', 'Client.capture', 'Libtmux_unix.Client.capture'], function: ['Query.matching', 'Query.matching', 'Libtmux.Query.matching'], property: ['Generation.value', 'Generation.value', 'Libtmux.Generation.t.value'], member: ['error', 'No_match', 'Libtmux.Cardinality.error.No_match', 'No_match', 'No_match'] },
+  perl: { type: ['LibTmux::Server', 'LibTmux::Server'], method: ['LibTmux::Server/snapshot', 'LibTmux::Server/snapshot', 'LibTmux::Server::snapshot'], function: ['grep', 'grep', 'LibTmux::Selection::grep'], property: ['Pane/width', 'Pane/width', 'LibTmux::Pane::width'], member: ['Mode', 'active', 'LibTmux::Mode::active', 'active', 'active'] },
+  clojure: { type: ['libtmux.core', 'libtmux.core'], method: ['libtmux.core/open!', 'libtmux.core/open!', 'libtmux.core/open!'], function: ['active?', 'active?', 'libtmux.core/active?'], property: [':pane/id', ':pane/id', 'pane/id'], member: ['Direction', ':right', ':right', ':right', ':right'] },
   py: { type: ['libtmux::Server', 'libtmux.Server'], method: ['Server.list_sessions', 'Server.list_sessions()', 'libtmux.Server.list_sessions'], function: ['get_version', 'get_version()', 'libtmux.get_version'], property: ['Server.socket_name', 'Server.socket_name', 'libtmux.Server.socket_name'], member: ['Direction', 'UP', 'libtmux.Direction.UP', 'Direction.UP', 'Direction.UP'] },
   ts: { type: ['server.Server', 'server.Server'], method: ['Server.listSessions', 'Server.listSessions()', 'server.Server.listSessions'], function: ['parseWorkspace', 'parseWorkspace()', 'config.parseWorkspace'], property: ['Pane.id', 'Pane.id', 'pane.Pane.id'], member: ['Direction', 'Up', 'constants.Direction.Up', 'Direction.Up', 'Direction.Up'] },
   rs: { type: ['crate.Server', 'crate::Server'], method: ['Server.list_sessions', 'Server::list_sessions()', 'server.Server.list_sessions'], function: ['retry_until', 'retry_until()', 'test.retry_until'], property: ['Pane::id', 'Pane::id', 'pane.Pane.id'], member: ['Direction', 'Up', 'pane.Direction.Up', 'Direction::Up', 'Direction::Up'] },
@@ -30,9 +33,12 @@ const ROWS: Record<string, Row> = {
   scala: { type: ['direct.Server', 'direct.Server'], method: ['#layout()', '#layout', 'io.Window.layout'], function: ['using', 'using', 'io.using'], property: ['Session.server', 'Session.server', 'io.Session.server'], member: ['Direction', 'Up', 'io.Direction.Up', 'Direction.Up', 'Direction.Up'] },
   fsharp: { type: ['LibTmux::FSharp.Query', 'LibTmux.FSharp.Query'], method: ['Server.sessions()', 'Server.sessions', 'LibTmux.FSharp.Server.sessions'], function: ['Query.list', 'Query.list', 'LibTmux.FSharp.Query.list'], property: ['SplitSpec.Direction', 'SplitSpec.Direction', 'LibTmux.FSharp.SplitSpec.Direction'], member: ['Direction', 'Up', 'LibTmux.FSharp.Direction.Up', 'Direction.Up', 'Direction.Up'] },
   julia: { type: ['LibTmux::Snapshot', 'LibTmux.Snapshot'], method: ['Server.snapshot()', 'Server.snapshot', 'LibTmux.Server.snapshot'], function: ['cancel!', 'cancel!', 'LibTmux.cancel!'], property: ['Snapshot.acquired', 'Snapshot.acquired', 'LibTmux.Snapshot.acquired'], member: ['Direction', 'Up', 'LibTmux.Direction.Up', 'Up', 'Up'] },
+  haskell: { type: ['LibTmux::Id.PaneId', 'LibTmux.Id.PaneId'], function: ['LibTmux.Id.parsePaneId()', 'LibTmux.Id.parsePaneId', 'LibTmux.Id#v:parsePaneId', 'parsePaneId'], property: ['expectedPrefix', 'expectedPrefix', 'LibTmux.Id#v:expectedPrefix', 'expectedPrefix'] },
   ruby: { type: ['LibTmux.Server', 'LibTmux::Server'], method: ['Server.list_sessions', 'Server#list_sessions', 'LibTmux::Server#list_sessions'], function: ['LibTmux#version', 'LibTmux.version', 'LibTmux.version'], property: ['Server.socket_name', 'Server#socket_name', 'LibTmux::Server#socket_name'], member: ['Direction', 'up', 'LibTmux::Direction.up', ':up', ':up'] },
   lua: { type: ['libtmux::Server', 'libtmux.Server'], method: ['Server.list_sessions', 'Server:list_sessions()', 'libtmux.Server:list_sessions'], function: ['libtmux:new', 'libtmux.new()', 'libtmux.new'], property: ['Server:socket', 'Server.socket', 'libtmux.Server.socket'], member: ['Direction', 'up', 'libtmux.Direction.up', '"up"', '"up"'] },
+  lisp: { type: ['libtmux.snapshot', 'libtmux:snapshot'], method: ['libtmux.active-p', 'libtmux:active-p', 'libtmux:active-p'], function: ['fetch-snapshot', 'fetch-snapshot', 'libtmux:fetch-snapshot'], property: ['libtmux.outcome-status', 'libtmux:outcome-status', 'libtmux:outcome-status'], member: ['direction', 'horizontal', 'libtmux.direction.horizontal', ':horizontal', ':horizontal'] },
   elixir: { type: ['LibTmux.Format', 'LibTmux.Format'], method: ['LibTmux.Capture.fetch/2', 'LibTmux.Capture.fetch/2', 'LibTmux.Capture.fetch/2'], function: ['submit/3', 'submit/3', 'LibTmux.Control.submit/3'], property: ['LibTmux.Error.retryable', 'LibTmux.Error.retryable', 'LibTmux.Error.retryable'], member: ['Direction', 'up', 'LibTmux.Direction.up', ':up', ':up'] },
+  erlang: { type: ['tmux_model:pane/0', 'tmux_model:pane/0'], method: ['tmux_server:snapshot/1', 'tmux_server:snapshot/1', 'tmux_server:snapshot/1'], function: ['tmux_workspace:load/1', 'tmux_workspace:load/1', 'tmux_workspace:load/1'], property: ['width', 'width', 'pane.width'], member: ['layout', 'tiled', 'layout.tiled', 'tiled', 'tiled'] },
   powershell: { type: ['LibTmux.Server', 'LibTmux.Server'], method: ['Get-TmuxSession', 'Get-TmuxSession', 'LibTmux\\Get-TmuxSession'], function: ['Invoke-TmuxQuery', 'Invoke-TmuxQuery', 'LibTmux\\Invoke-TmuxQuery'], property: ['Server.Name', 'Server.Name', 'LibTmux.Server.Name'], member: ['Direction', 'Up', 'LibTmux.Direction.Up', 'Up', 'Up'] },
 }
 
@@ -40,6 +46,16 @@ const ROWS: Record<string, Row> = {
 const declared = (kind: FormSymbol['kind'], id: string, name = id.split(/::|[.#:\\]/).at(-1)!): FormSymbol => ({ id, kind, name })
 
 describe('how a language writes a linked symbol', () => {
+  it('preserves dotted Common Lisp package names and hides namespace disambiguators', () => {
+    for (const label of ['libtmux.workspace:apply-workspace', 'libtmux.query:error-operator']) {
+      expect(writtenForm({ lang: 'lisp', kind: 'function', label,
+        symbol: declared('function', label) })).toBe(label)
+    }
+    expect(writtenForm({ lang: 'lisp', kind: 'type', label: 'libtmux:window/type',
+      symbol: declared('class', 'libtmux:window/type', 'window') })).toBe('libtmux:window')
+    expect(writtenForm({ lang: 'lisp', kind: 'type', label: 'libtmux.workspace',
+      symbol: declared('module', 'libtmux.workspace', 'libtmux.workspace') })).toBe('libtmux.workspace')
+  })
   it('has a row for every port and an entry in the table for each', () => {
     expect(Object.keys(ROWS).sort()).toEqual(API_MODEL_PORTS.map((port) => port.slug).sort())
     expect(Object.keys(FORMS).sort()).toEqual(Object.keys(ROWS).sort())
@@ -50,8 +66,8 @@ describe('how a language writes a linked symbol', () => {
       expect(writtenForm({ lang, kind: 'type', label: row.type[0], symbol: declared('class', row.type[0]) })).toBe(row.type[1])
     })
 
-    it('writes a method as the language does', () => {
-      const [label, shown, id, name] = row.method
+    if (row.method) it('writes a method as the language does', () => {
+      const [label, shown, id, name] = row.method!
       expect(writtenForm({ lang, kind: 'method', label, symbol: declared('method', id, name) })).toBe(shown)
     })
 
@@ -68,8 +84,8 @@ describe('how a language writes a linked symbol', () => {
       }
     })
 
-    it('writes an enum member as the language does, away from its owner\'s page and on it', () => {
-      const [owner, name, id, away, home] = row.member
+    if (row.member) it('writes an enum member as the language does, away from its owner\'s page and on it', () => {
+      const [owner, name, id, away, home] = row.member!
       const input = { lang, kind: 'enum-member' as const, label: name, owner: { name: owner }, symbol: declared('constant', id, name) }
       expect(writtenForm({ ...input, onOwnerPage: false })).toBe(away)
       expect(writtenForm({ ...input, onOwnerPage: true })).toBe(home)
@@ -95,9 +111,10 @@ describe('how a language writes a linked symbol', () => {
     expect(called.sort()).toEqual(['csharp', 'cxx', 'java', 'lua', 'py', 'rs', 'ts'])
   })
 
-  it('reads a method with no parentheses in Ruby, Go, Kotlin, Scala, F# and Julia, even when its author wrote them', () => {
-    for (const lang of ['ruby', 'go', 'kotlin', 'scala', 'fsharp', 'julia']) {
-      expect(writtenForm({ lang, kind: 'method', label: 'Server.run()', symbol: declared('method', 'a.Server#run') }), lang).toBe(lang === 'ruby' ? 'Server#run' : 'Server.run')
+  it('reads a method with no parentheses in Ruby, Go, Kotlin, Scala, F#, Julia and Common Lisp, even when its author wrote them', () => {
+    for (const lang of ['ruby', 'go', 'kotlin', 'scala', 'fsharp', 'julia', 'lisp']) {
+      const expected = lang === 'ruby' ? 'Server#run' : lang === 'lisp' ? 'Server:run' : 'Server.run'
+      expect(writtenForm({ lang, kind: 'method', label: 'Server.run()', symbol: declared('method', 'a.Server#run') }), lang).toBe(expected)
       expect(writtenForm({ lang, kind: 'function', label: 'run()', symbol: declared('function', 'a.run') }), lang).toBe('run')
     }
   })

@@ -45,9 +45,15 @@ function violations(compare: Compare): string[] {
     for (const concept of LISTINGS) {
       const listing = byId.get(CONCEPTS[concept]!.symbols[port] ?? '')
       if (!listing?.parent) continue
-      const rank = [...children.get(listing.parent)!].sort(cmp)
-        .filter((member) => memberTier(member, signals) !== 'parent').indexOf(listing)
-      if (rank >= TOP) found.push(`${port}: ${concept} is #${rank + 1} on ${listing.parent}`)
+      const ordered = [...children.get(listing.parent)!].sort(cmp)
+        .filter((member) => memberTier(member, signals) !== 'parent')
+      // Erlang's snapshot module has three physical listings and one shared
+      // relationship traversal for both session windows and window panes.
+      const top = port === 'erlang'
+        ? Math.max(TOP, ordered.filter((member) => memberTier(member, signals) === 'listing').length)
+        : TOP
+      const rank = ordered.indexOf(listing)
+      if (rank >= top) found.push(`${port}: ${concept} is #${rank + 1} on ${listing.parent}`)
     }
     for (const [owner, members] of children) {
       const sorted = [...members].sort(cmp)
@@ -78,6 +84,7 @@ d('member order', () => {
     const found = violations(alphabetical)
     expect(found.some((v) => /^py: list-sessions is #\d+ on libtmux\.server\.Server$/.test(v))).toBe(true)
     expect(found.some((v) => /^py: __\w+__ ranks above public members/.test(v))).toBe(true)
+    expect(found.some((v) => /^erlang: list-(sessions|windows|panes) is #/.test(v))).toBe(true)
   })
 
   it.each(PORTS)('puts %s listings and queries before creation and utility methods', (port) => {
@@ -87,8 +94,16 @@ d('member order', () => {
     const groups = symbols
       .filter((symbol) => ['Server', 'Session', 'Window', 'Pane', 'Client', 'Snapshot'].includes(symbol.name))
       .map((owner) => ({ id: owner.id, members: symbols.filter((symbol) => symbol.parent === owner.id) }))
-    // Cmdlets belong to their module; Julia's operations are free functions.
+    // Cmdlets and Common Lisp generic functions belong to their modules;
+    // Julia's operations are free functions.
+    // Erlang functions belong to native modules, not entity classes.
+    if (port === 'erlang') groups.push(...symbols.filter((owner) => owner.kind === 'module')
+      .map((owner) => ({ id: owner.id, members: symbols.filter((symbol) => symbol.parent === owner.id) })))
     if (port === 'powershell') groups.push({ id: 'LibTmux', members: symbols.filter((symbol) => symbol.parent === 'LibTmux') })
+    if (port === 'clojure') for (const id of ['libtmux.core', 'libtmux.data']) {
+      groups.push({ id, members: symbols.filter((symbol) => symbol.parent === id) })
+    }
+    if (port === 'lisp') groups.push({ id: 'libtmux', members: symbols.filter((symbol) => symbol.parent === 'libtmux') })
     if (port === 'julia') groups.push({
       id: 'LibTmux free functions',
       members: symbols.filter((symbol) => !symbol.parent && symbol.kind === 'function' && symbol.id.startsWith('LibTmux.')),
@@ -97,11 +112,11 @@ d('member order', () => {
     for (const { id, members } of groups) {
       const ordered = members.toSorted(compareMembers(signals))
       const routine = members.filter((symbol) => ['New-TmuxSession', 'New-TmuxWindow', 'Remove-TmuxServer', 'Disconnect-TmuxControl', 'Base.close'].includes(symbol.name) ||
-        /^(new_?session|new_?window|create_?session|create_?window|close|dispose|asjava|tostring|__enter__|kill_?server)$/.test(
-          symbol.name.replace(/\(.*$/, '').replace(/Async$/, '').toLowerCase()))
+        /^(new[-_]?session|new[-_]?window|create[-_]?session|create[-_]?window|close|dispose|asjava|tostring|__enter__|kill[-_]?server)$/.test(
+          symbol.name.replace(/\(.*$/, '').replace(/\/\d+$/, '').replace(/Async$/, '').replace(/[-!?]/g, '').toLowerCase()))
       const priority = members.filter((symbol) => symbol.doc?.deprecated === undefined && !symbol.modifiers?.includes('deprecated') && (
         listingIds.has(symbol.publicId ?? symbol.id) ||
-        /^(?:list_?|get)?(?:sessions|windows|panes|clients|buffers)$/.test(symbol.name.replace(/\(.*$/, '').replace(/Async$/, '').toLowerCase()) ||
+        /^(?:list_?|get)?(?:sessions|windows|panes|clients|buffers)$/.test(symbol.name.replace(/\(.*$/, '').replace(/\/\d+$/, '').replace(/Async$/, '').replace(/[!?]$/, '').toLowerCase()) ||
         /^(search-|snapshot$)/.test(signals.conceptIds.get(symbol.publicId ?? symbol.id) ?? '')))
       for (const listing of priority) for (const helper of routine) {
         expect(ordered.indexOf(listing), `${id}: ${listing.name} before ${helper.name}`).toBeLessThan(ordered.indexOf(helper))
@@ -113,7 +128,11 @@ d('member order', () => {
         checked++
       }
     }
-    expect(checked, `${port} must exercise at least one real listing or query`).toBeGreaterThan(0)
+    if (port === 'haskell') {
+      // The current public modules contain scalar values, with no entity graph or listing API.
+      expect(groups).toEqual([])
+      expect([...listingIds].filter(Boolean)).toEqual([])
+    } else expect(checked, `${port} must exercise at least one real listing or query`).toBeGreaterThan(0)
   })
 
   it('leads a Lua Server, which has no sessions accessor, with its queries', () => {
@@ -164,7 +183,8 @@ d('member order', () => {
     const parents = symbols.filter((symbol) => memberTier(symbol, signals) === 'parent')
     // F#/PowerShell use .NET handles; Julia's and Elixir's relationships are
     // read from a captured snapshot, not through accessors on an entity.
-    expect(parents.length > 0).toBe(!['fsharp', 'powershell', 'julia', 'elixir'].includes(port))
+    // Haskell currently exposes scalar values without a public entity graph.
+    expect(parents.length > 0).toBe(!['fsharp', 'powershell', 'julia', 'elixir', 'erlang', 'haskell', 'clojure', 'lisp'].includes(port))
     for (const parent of parents) {
       const siblings = symbols.filter((symbol) => symbol.parent === parent.parent).toSorted(compareMembers(signals))
       for (const sibling of siblings.filter((symbol) => memberTier(symbol, signals) !== 'parent')) {
@@ -228,6 +248,18 @@ d('member order', () => {
         expect(owner, type).toBeDefined()
         expect(membersOf(api, owner).some((entry) => entry.id === symbol.id)).toBe(false)
       }
+    }
+  })
+
+  it('leads the Erlang snapshot module with its physical listings and relationship traversal', () => {
+    const api = model('erlang')
+    const owner = api.symbols.find((symbol) => symbol.id === 'tmux_snapshot')!
+    expect(owner.kind).toBe('module')
+    const first = membersOf(api, owner).slice(0, 4)
+    expect(first.map((symbol) => symbol.name)).toEqual(['sessions/1', 'windows/1', 'panes/1', 'related/3'])
+    for (const symbol of first) {
+      expect(symbol.kind).toBe('function')
+      expect(symbol.parent).toBe(owner.id)
     }
   })
 

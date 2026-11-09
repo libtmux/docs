@@ -76,6 +76,8 @@ export const DEFAULT_PRIMARY_MODULES: Record<string, string> = {
   powershell: 'LibTmux',
   julia: 'LibTmux',
   elixir: 'LibTmux',
+  perl: 'LibTmux',
+  lisp: 'libtmux',
 }
 
 export const DEFAULT_TEMPLATES: UrlTemplate[] = [
@@ -97,17 +99,27 @@ export const DEFAULT_TEMPLATES: UrlTemplate[] = [
  * spikes gained zero. A denominator full of things that can never resolve
  * makes a resolver look worse than it is and hides the failures that matter.
  */
-export function notASymbol(text: string): string | undefined {
+export function notASymbol(text: string, port?: string): string | undefined {
+  if (/^libtmux\.docs\.(?:socket|binary)$/.test(text)) return 'an example fixture system property'
   if (/^[a-z][a-z0-9+.-]*:\/\//i.test(text)) return 'a protocol URI'
   if (/^(?:net|v)?\d+\.\d+(?:\.\d+)?(?:[a-z]|[-+][\w.-]+)?$/.test(text)) return 'a version'
   if (/^(?:net|v)?\d+(?:\.\d+)*\.[xXnN]$/.test(text)) return 'a version line'
   // `X.Y` stands for a release number and `X.Y-rcN` for one of its candidates.
   if (/^v?[XYZ](?:\.[XYZ])+(?:-[a-z]+N)?$/.test(text)) return 'a version placeholder'
-  if (/^\w+(?:\.\w+)+:[\w.-]+(?::[\w.<>{}-]+)?$/.test(text)) return 'a dependency coordinate'
+  if (port !== 'lisp' && /^\w+(?:\.\w+)+:[\w.-]+(?::[\w.<>{}-]+)?$/.test(text)) return 'a dependency coordinate'
   // `objects.inv` is the published Sphinx inventory, named by the setup guides next to a Python fence.
-  if (/\.(?:tsv|html|inv)$/.test(text)) return 'a filename'
-  if (/\.(py|ts|go|rs|java|kt|kts|scala|cs|fs|fsi|fsproj|properties|cpp|hpp|c|h|lua|rb|swift|jl|exs?|ps1|psm1|psd1|md|json|ya?ml|toml|sh)\b/.test(text)) return 'a filename'
+  if (/\.(?:tsv|html|inv|lisp|asd|conf|sock|txt|gz)$/.test(text)) return 'a filename'
+  if (/\.(py|ts|go|rs|java|kt|kts|scala|cs|fs|fsi|fsproj|properties|cpp|hpp|c|h|lua|rb|swift|jl|exs?|ps1|psm1|psd1|ml|mli|opam|md|json|ya?ml|toml|sh)\b/.test(text)) return 'a filename'
+  if (/^[A-Za-z_][\w-]*:\d+$/.test(text)) return 'a numeric label'
+  // Erlang's rebar files and sources, and the getopt strings of the command capability tables: atoms and modules are lowercase.
+  if (port === 'erlang' && /\.(?:erl|hrl|config|lock)$/.test(text)) return 'a filename'
+  if (port === 'erlang' && /^[A-Za-z:]*[A-Z][A-Za-z:]*$/.test(text)) return 'a command option string'
   if (/(^|\s)--?[A-Za-z]/.test(text)) return 'a command-line flag'
+  if (/^[A-Z_][A-Z0-9_]*=/.test(text)) return 'an environment assignment'
+  if (/^(?:=[^:\s]+:[^\s]+|[\w-]+:\d+\.\d+)$/.test(text)) return 'a tmux target'
+  if (port === 'lisp' && /^[a-z][\w-]*(?:\.[\w-]+)+\/\d+$/.test(text)) return 'a versioned schema identifier'
+  if (text.startsWith('#(')) return 'a Lisp vector literal'
+  if (/^@\[[^\]]+\][+*?]?$/.test(text)) return 'a regular expression'
   if (/[=<>!]=|\s[=<>]\s/.test(text)) return 'an expression, not a reference'
   if (/^new\s/.test(text)) return 'a constructor call'
   if (/^\.{3}/.test(text)) return 'an ellipsis'
@@ -274,7 +286,7 @@ export class Resolver {
 
   /** Resolve one mention within one port. */
   resolve(port: string, text: string, product?: ApiProduct): Resolution {
-    const why = notASymbol(text)
+    const why = notASymbol(text, port)
     if (why) return { how: 'not-a-symbol', why }
 
     // Selector labels distinguish Swift methods from same-named properties.

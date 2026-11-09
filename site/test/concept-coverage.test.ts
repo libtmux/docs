@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CONCEPTS, conceptsFor } from '@libtmux/api-model'
+import { CONCEPTS, conceptsFor } from '@libtmux/api-model/reference'
 import { API_MODELS, referenceAlternatives, referenceHref } from '../src/lib/api-models'
 import { API_MODEL_PORTS } from '../src/lib/ports'
 
@@ -27,16 +27,19 @@ function coverage(concept: string) {
 describe('the ports that have a page for an operation', () => {
   it('lists every port for a server snapshot except those with no whole-server snapshot', () => {
     const { pages, reasons } = coverage('snapshot')
-    expect(pages.toSorted()).toEqual(['csharp', 'elixir', 'fsharp', 'go', 'java', 'julia', 'kotlin', 'lua', 'powershell', 'rs', 'ruby', 'scala', 'swift', 'ts'])
-    // Python's core and C++ have no snapshot of a whole server, and each says so.
-    expect(reasons.toSorted()).toEqual(['cxx', 'py'])
+    expect(pages.toSorted()).toEqual(['clojure', 'csharp', 'elixir', 'erlang', 'fsharp', 'go', 'java', 'julia', 'kotlin', 'lisp', 'lua', 'ocaml', 'perl', 'powershell', 'rs', 'ruby', 'scala', 'swift', 'ts'])
+    // Haskell exposes scalar modules; Python and C++ have no whole-server snapshot.
+    expect(reasons.toSorted()).toEqual(['cxx', 'haskell', 'py'])
     for (const port of ['py', 'cxx']) expect(CONCEPTS.snapshot!.absent![port], port).toMatch(/^no equivalent on `Server`/)
+    expect(CONCEPTS.snapshot!.absent!.haskell).toContain('current modules expose scalar values and version parsing')
   })
 
   it('names the declaration each port reaches for a server snapshot, wherever its name is not `snapshot`', () => {
     expect(CONCEPTS.snapshot!.symbols).toMatchObject({
       csharp: 'LibTmux.Server.CaptureSnapshotAsync',
+      erlang: 'tmux_server:snapshot/1',
       fsharp: 'LibTmux.FSharp.Server.capture',
+      lisp: 'libtmux:fetch-snapshot',
       rs: 'server.Server.hierarchy',
       swift: 'Server.snapshot()',
     })
@@ -86,6 +89,7 @@ describe('the ports that have a page for an operation', () => {
     expect(links.rs).toMatchObject({ publicId: 'server.Server.hierarchy', href: expect.stringMatching(/\/rs\/.*\/reference\/server-server-hierarchy[^/]*\/$/), note: CONCEPTS.snapshot!.notes!.rs })
     expect(links.swift).toMatchObject({ publicId: 'Server.snapshot()', href: expect.stringContaining('/swift/') })
     expect(links.csharp).toMatchObject({ publicId: 'LibTmux.Server.CaptureSnapshotAsync' })
+    expect(links.erlang).toMatchObject({ publicId: 'tmux_server:snapshot/1', href: expect.stringContaining('/erlang/') })
     expect(links.fsharp).toMatchObject({ publicId: 'LibTmux.FSharp.Server.capture' })
     expect(links.py).toMatchObject({ href: undefined, absent: 'no equivalent on `Server`' })
     expect(links.cxx).toMatchObject({ href: undefined, absent: CONCEPTS.snapshot!.absent!.cxx })

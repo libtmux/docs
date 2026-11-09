@@ -100,7 +100,7 @@ jobs:
             echo "::error::GitHub Cloud job.workflow_repository/job.workflow_sha are required" >&2
             exit 1
           }
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ job.workflow_repository }}
           ref: ${{ job.workflow_sha }}
@@ -108,7 +108,7 @@ jobs:
             scripts
             site/src/lib
           persist-credentials: false
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: '26'
       - id: identity
@@ -160,7 +160,7 @@ jobs:
             echo "::error::GitHub Cloud job.workflow_repository/job.workflow_sha are required" >&2
             exit 1
           }
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.identity.outputs.source-ref }}
           fetch-depth: 0
@@ -183,7 +183,7 @@ jobs:
           }
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ job.workflow_repository }}
           ref: ${{ job.workflow_sha }}
@@ -194,7 +194,7 @@ jobs:
       # Record both checkouts before either native exporter produces files.
       - name: Check out native documentation tooling
         if: matrix.port == 'powershell' || matrix.port == 'julia'
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
           path: docs-generator
@@ -234,14 +234,14 @@ jobs:
             echo "$product=$ref" >> "$GITHUB_OUTPUT"
           done
       - if: inputs.port == 'py'
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: tmux-python/tmuxp
           ref: ${{ steps.python-products.outputs.workspace }}
           path: python-workspace
           persist-credentials: false
       - if: inputs.port == 'py'
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: tmux-python/libtmux-mcp
           ref: ${{ steps.python-products.outputs.mcp }}
@@ -251,10 +251,10 @@ jobs:
       # No dependency cache: this job checks out whichever ref it was asked
       # to publish, and a cache it saved could be restored by a later
       # default-branch run.
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
         with:
           package_json_file: docs/package.json
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: '26'
       - run: pnpm install --frozen-lockfile
@@ -316,8 +316,32 @@ jobs:
         if: matrix.port == 'elixir'
         run: python3 docs/scripts/read-elixir-toolchain.py port
 
+      - name: Read selected Haskell toolchain
+        id: haskell-runtime
+        if: matrix.port == 'haskell'
+        run: python3 docs/scripts/read-haskell-toolchain.py port
+
+      - name: Read selected Erlang toolchain
+        id: erlang-runtime
+        if: matrix.port == 'erlang'
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, re
+          entries = [line.split() for line in pathlib.Path('port/.tool-versions').read_text().splitlines()]
+          versions = {}
+          for tool, supported in [('erlang', '29.1.2'), ('rebar', '3.28.0')]:
+              selected = [entry for entry in entries if entry and entry[0] == tool]
+              if len(selected) != 1 or len(selected[0]) != 2 or not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', selected[0][1]):
+                  raise ValueError(f'Erlang documentation requires one exact {tool} version')
+              if selected[0][1] != supported:
+                  raise ValueError(f'Unsupported Erlang documentation {tool} version: {selected[0][1]}')
+              versions[tool] = selected[0][1]
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f"otp-version={versions['erlang']}\nrebar3-version={versions['rebar']}\n")
+          PY
+
       - name: Install native system dependencies
-        if: steps.mcp.outputs.required == 'true' || matrix.port == 'cxx'
+        if: steps.mcp.outputs.required == 'true' || matrix.port == 'cxx' || matrix.port == 'erlang'
         env:
           PORT: ${{ matrix.port }}
         run: |
@@ -325,6 +349,9 @@ jobs:
           packages=(tmux)
           if [[ "$PORT" == julia ]]; then
             packages=(build-essential pkg-config libevent-dev libncurses-dev bison)
+          fi
+          if [[ "$PORT" == erlang ]]; then
+            packages=(build-essential)
           fi
           if [[ "$PORT" == cxx ]]; then
             packages+=(clang-18 libc++-18-dev libc++abi-18-dev ninja-build)
@@ -341,7 +368,7 @@ jobs:
             bin="$stage/tmux/3.7c/bin"
             "$bin/tmux" -V
             printf '%s\n' "$bin" >> "$GITHUB_PATH"
-          else
+          elif [[ "$PORT" != erlang ]]; then
             tmux -V
           fi
 
@@ -380,13 +407,13 @@ jobs:
         if: matrix.port == 'ts'
         working-directory: port
         run: bun install --frozen-lockfile
-      - if: matrix.port == 'java' || matrix.port == 'kotlin' || matrix.port == 'scala'
+      - if: matrix.port == 'java' || matrix.port == 'kotlin' || matrix.port == 'scala' || matrix.port == 'clojure'
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
         with:
           distribution: temurin
           # The repository's Gradle conventions compile and run on JDK 25.
           java-version: '25'
-      - if: matrix.port == 'java' || matrix.port == 'kotlin' || matrix.port == 'scala'
+      - if: matrix.port == 'java' || matrix.port == 'kotlin' || matrix.port == 'scala' || matrix.port == 'clojure'
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
           validate-wrappers: true
@@ -483,6 +510,33 @@ jobs:
           install-hex: true
           install-rebar: false
 
+      - if: matrix.port == 'haskell'
+        uses: haskell-actions/setup@0f8e8c99d88aeb3fbfd523f1ef2c6f762d10d64d # v2.12.1
+        with:
+          ghc-version: ${{ steps.haskell-runtime.outputs.ghc-version }}
+          cabal-version: ${{ steps.haskell-runtime.outputs.cabal-version }}
+          enable-stack: false
+
+      - name: Provision selected Haskell documentation dependencies
+        if: matrix.port == 'haskell'
+        working-directory: port
+        run: |
+          set -euo pipefail
+          cabal update
+          cabal build lib:libtmux-haskell --only-dependencies --enable-documentation
+
+      - name: Export Haskell API from the selected source
+        if: matrix.port == 'haskell'
+        env:
+          PORT_CHECKOUT: ${{ github.workspace }}/port
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+          EXPORTER: ${{ github.workspace }}/docs/packages/api-model/scripts/export-haskell.py
+        run: |
+          set -euo pipefail
+          python3 "$EXPORTER" --checkout "$PORT_CHECKOUT" \
+            --source-revision "$SOURCE_SHA" \
+            --output "$PORT_CHECKOUT/.cache/docs/api.json"
+
       # The exporter is this repository's script, run in the selected source so
       # the build step finds _build/docs/api.json. Mix compiles the package and
       # its C helper before the exporter reads the documentation chunks.
@@ -497,6 +551,130 @@ jobs:
           mix deps.get --only prod
           mix run --no-start "$EXPORTER" _build/docs/api.json
 
+      - if: matrix.port == 'ocaml'
+        uses: ocaml/setup-ocaml@ff66428f72b64472e749b22e0ad4dded4b2ddca6 # v3.9.1
+        with:
+          ocaml-compiler: ocaml-base-compiler.5.5.2
+          opam-local-packages: port/*.opam
+      - name: Export OCaml API from the selected source
+        if: matrix.port == 'ocaml'
+        working-directory: port
+        env:
+          LIBTMUX_API_EXPORT: '1'
+        run: |
+          set -euo pipefail
+          opam install . --deps-only --with-doc --yes
+          opam exec -- dune build @install tools/api_export.exe
+          opam exec -- python3 tools/export_api.py --output _build/docs/ocaml.json
+
+      - name: Verify OCaml producer input ownership
+        if: matrix.port == 'ocaml'
+        working-directory: docs
+        run: node scripts/gen-api-model-ocaml.negative.mjs --checkout "$GITHUB_WORKSPACE/port"
+
+      - name: Read the selected Perl documentation runtime
+        if: matrix.port == 'perl'
+        id: perl-runtime
+        working-directory: port
+        run: |
+          python3 - <<'PYCODE'
+          import os, pathlib, re
+          rows = [line.split() for line in pathlib.Path('.tool-versions').read_text().splitlines()]
+          versions = [row[1] for row in rows if len(row) == 2 and row[0] == 'perl']
+          if len(versions) != 1 or not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', versions[0]):
+              raise ValueError('Perl documentation requires an exact native runtime pin')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={versions[0]}\n')
+          PYCODE
+      - name: Install the selected Perl and documentation dependencies
+        if: matrix.port == 'perl'
+        uses: shogo82148/actions-setup-perl@eebc5c886de14ebbfcd2493d49a12007d2c30477 # v1.44.5
+        with:
+          perl-version: ${{ steps.perl-runtime.outputs.version }}
+          working-directory: port
+          install-modules-with: cpm
+          install-modules-args: --top-level-phase configure,runtime,develop
+          enable-modules-cache: false
+      - name: Export the selected Perl declarations and native POD
+        if: matrix.port == 'perl'
+        working-directory: port
+        env:
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+        run: |
+          perl scripts/export-api.pl --revision "$SOURCE_SHA" \
+            --exporter-revision "$SOURCE_SHA" --output docs/_build/api.json
+
+      - name: Install Common Lisp documentation toolchain
+        if: matrix.port == 'lisp'
+        uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+        with:
+          version: 2026.11.3
+          working_directory: port
+          cache: false
+      - name: Install locked Common Lisp dependencies
+        if: matrix.port == 'lisp'
+        working-directory: port
+        run: mise run setup
+      - name: Export Common Lisp API from the selected source
+        if: matrix.port == 'lisp'
+        working-directory: port
+        run: mise run docs-artifact
+
+      - name: Install selected Erlang runtime
+        if: matrix.port == 'erlang'
+        uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
+        with:
+          otp-version: ${{ steps.erlang-runtime.outputs.otp-version }}
+          version-type: strict
+          install-hex: false
+          install-rebar: false
+
+      - name: Install pinned Erlang Rebar3
+        if: matrix.port == 'erlang'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REBAR3_VERSION: ${{ steps.erlang-runtime.outputs.rebar3-version }}
+        run: |
+          set -euo pipefail
+          case "$REBAR3_VERSION" in
+            3.28.0)
+              rebar_asset=664140441
+              rebar_sha=5a28b1cca082d3b023ec0f5df9d9f9d52557036c6f2a21c1ffa11b93a984dd42
+              ;;
+            *) echo "::error::Unsupported pinned Rebar3 version: $REBAR3_VERSION" >&2; exit 1 ;;
+          esac
+          rebar_dir=$(mktemp -d "$RUNNER_TEMP/libtmux-erlang-rebar3.XXXXXXXX")
+          rebar_ready=false
+          cleanup_rebar() {
+            if [[ "$rebar_ready" != true ]]; then
+              rm -rf -- "$rebar_dir"
+            fi
+          }
+          trap cleanup_rebar EXIT
+          gh api -H 'Accept: application/octet-stream' \
+            "repos/erlang/rebar3/releases/assets/$rebar_asset" > "$rebar_dir/rebar3"
+          printf '%s  %s\n' "$rebar_sha" "$rebar_dir/rebar3" | sha256sum --check --strict
+          chmod 755 "$rebar_dir/rebar3"
+          rebar_version=$(REBAR_GLOBAL_CONFIG_DIR="$RUNNER_TEMP/rebar3-empty-config" \
+            REBAR_CONFIG="$RUNNER_TEMP/rebar3-empty.config" "$rebar_dir/rebar3" version)
+          printf '%s\n' "$rebar_version"
+          [[ "$rebar_version" == "rebar $REBAR3_VERSION "* ]] || {
+            echo "::error::Expected Rebar3 $REBAR3_VERSION, got $rebar_version" >&2
+            exit 1
+          }
+          printf '%s\n' "$rebar_dir" >> "$GITHUB_PATH"
+          rebar_ready=true
+
+      - name: Export Erlang API from the selected source
+        if: matrix.port == 'erlang'
+        working-directory: port
+        env:
+          EXPORTER: ${{ github.workspace }}/docs/packages/api-model/scripts/export-erlang.escript
+        run: |
+          set -euo pipefail
+          escript "$EXPORTER" . libtmux_erlang _build/docs/api.json
+
       - if: matrix.port == 'ruby'
         uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
         with:
@@ -510,7 +688,7 @@ jobs:
         run: bundle install
 
       - if: inputs.port == 'py'
-        uses: astral-sh/setup-uv@v10.2.0
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
           python-version: '3.14'
@@ -609,6 +787,21 @@ jobs:
             test -s "_site/en/py/$LIBTMUX_DOCS_VERSION/api/objects.inv"
             test -s "_site/en/py/$LIBTMUX_DOCS_VERSION/api/api/index.html"
           fi
+
+      - name: Check Perl native model and authored POD links
+        if: matrix.port == 'perl'
+        working-directory: docs
+        env:
+          LIBTMUX_DOCS_TEST_SOURCE_ONLY: '1'
+        run: |
+          time node site/node_modules/vitest/vitest.mjs run --root packages/api-model test/perl.test.ts
+          time node site/node_modules/vitest/vitest.mjs run --root site \
+            test/perl-pod-links.test.ts test/perl-source-usage.test.ts test/source-only-inventory.test.ts
+
+      - name: Check shared TypeScript and Astro types for Perl
+        if: matrix.port == 'perl'
+        working-directory: docs
+        run: time pnpm run --recursive type-check
 
       # The version directory itself: its contents become
       # <locale>/<port>/<version>.

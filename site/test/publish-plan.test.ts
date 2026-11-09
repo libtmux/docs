@@ -138,6 +138,7 @@ describe('publish plan', () => {
   it('selects each parent and wrapper once through its owning repository', () => {
     const family = [
       { slug: 'java', repo: 'libtmux/libtmux-java', tagGrammar: 'semver', docsDispatch: { workflow: 'docs.yml', language: 'java' } },
+      { slug: 'clojure', repo: 'libtmux/libtmux-java', tagGrammar: 'semver', parentLibrary: { slug: 'java' }, docsDispatch: { workflow: 'docs.yml', language: 'clojure' } },
       { slug: 'kotlin', repo: 'libtmux/libtmux-java', tagGrammar: 'semver', parentLibrary: { slug: 'java' }, docsDispatch: { workflow: 'docs.yml', language: 'kotlin' } },
       { slug: 'scala', repo: 'libtmux/libtmux-java', tagGrammar: 'semver', parentLibrary: { slug: 'java' }, docsDispatch: { workflow: 'docs.yml', language: 'scala' } },
       { slug: 'csharp', repo: 'libtmux/libtmux-dotnet', tagGrammar: 'semver', docsDispatch: { workflow: 'docs.yml', language: 'csharp' } },
@@ -152,7 +153,7 @@ describe('publish plan', () => {
     expect(new Set(lookups).size).toBe(6)
     expect(entries.map((entry) => [entry.port, entry.language])).toEqual([
       ['py', ''], ['rs', ''], ['go', ''], ['swift', ''],
-      ['java', 'java'], ['kotlin', 'kotlin'], ['scala', 'scala'], ['csharp', 'csharp'], ['fsharp', 'fsharp'],
+      ['java', 'java'], ['clojure', 'clojure'], ['kotlin', 'kotlin'], ['scala', 'scala'], ['csharp', 'csharp'], ['fsharp', 'fsharp'],
     ])
     expect(plan({ ports: 'kotlin,fsharp', ref: 'latest' }, family, lookup, versions)).toMatchObject([
       { port: 'kotlin', repo: 'libtmux/libtmux-java', language: 'kotlin' },
@@ -196,7 +197,7 @@ describe('publish plan', () => {
       .toThrow('unconfigured has no dispatchable docs workflow')
   })
 
-  it.each(['powershell', 'julia', 'elixir'])('dispatches %s through its owning repository while keeping source selection separate', (slug) => {
+  it.each(['powershell', 'julia', 'elixir', 'haskell', 'erlang'])('dispatches %s through its owning repository while keeping source selection separate', (slug) => {
     expect(plan({ ports: slug, ref: 'reviewed-native-source', version: 'latest', versionKind: 'trunk' }, PORTS, lookup, versions))
       .toMatchObject([{
         port: slug, repo: `libtmux/libtmux-${slug}`, workflow: 'docs.yml',

@@ -1,7 +1,7 @@
 /**
  * The source, package and API link each registered port should offer, with the
- * accessible name a header link carries. Julia and C++ have no registry, so
- * their repository is the destination; Go's reference host is its registry.
+ * accessible name a header link carries. Unregistered packages link to their
+ * source; Go's reference host is its registry.
  */
 export interface ExpectedLink {
   url: string
@@ -20,6 +20,15 @@ export interface ExpectedDestinations {
 const github = (url: string, name: string): ExpectedLink => ({ url, label: `${name} on GitHub` })
 
 export const DESTINATIONS: Record<string, ExpectedDestinations> = {
+  ocaml: {
+    source: github('https://github.com/libtmux/libtmux-ocaml/tree/master/lib', 'libtmux-ocaml/lib'),
+  },
+  perl: {
+    source: github('https://github.com/libtmux/libtmux-perl/tree/master/packages/core', 'libtmux-perl'),
+  },
+  clojure: {
+    source: github('https://github.com/libtmux/libtmux-java/tree/master/libtmux-clojure', 'libtmux-java/libtmux-clojure'),
+  },
   py: {
     source: github('https://github.com/tmux-python/libtmux', 'libtmux'),
     registry: { name: 'PyPI', url: 'https://pypi.org/project/libtmux/', icon: 'pypi', label: 'libtmux on PyPI' },
@@ -39,10 +48,19 @@ export const DESTINATIONS: Record<string, ExpectedDestinations> = {
   julia: {
     source: github('https://github.com/libtmux/libtmux-julia/tree/master/src', 'libtmux-julia/src'),
   },
+  erlang: {
+    source: github('https://github.com/libtmux/libtmux-erlang/tree/master/apps/libtmux_erlang', 'libtmux-erlang/apps/libtmux_erlang'),
+  },
   elixir: {
     source: github('https://github.com/libtmux/libtmux-elixir/tree/main/lib', 'libtmux-elixir/lib'),
     registry: { name: 'Hex', url: 'https://hex.pm/packages/libtmux', icon: 'hex', label: 'libtmux on Hex' },
     api: { name: 'HexDocs', url: 'https://libtmux.hexdocs.pm/', label: 'libtmux API reference on HexDocs' },
+  },
+  haskell: {
+    source: github('https://github.com/libtmux/libtmux-haskell/tree/master/src', 'libtmux-haskell/src'),
+  },
+  lisp: {
+    source: github('https://github.com/libtmux/libtmux-lisp/tree/master/src', 'libtmux-lisp/src'),
   },
   ts: {
     source: github('https://github.com/libtmux/libtmux-ts', 'libtmux-ts'),

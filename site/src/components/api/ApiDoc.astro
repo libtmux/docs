@@ -3,6 +3,7 @@ import type { ApiSymbol, SymbolIndex, LinkTarget } from '@libtmux/api-model'
 import { linkTmuxDoc } from '../../lib/tmux-links'
 import { plainMention, TMUX_KIND_TITLES } from '../../lib/mention-badge'
 import { formKind, isEnvironmentVariable, isWithin, writtenForm } from '../../lib/symbol-form'
+import { nativeKind } from '../../lib/api-labels'
 
 /**
  * Doc-comment prose with its cross-references resolved.
@@ -77,25 +78,26 @@ function mentionOf(link: LinkTarget | undefined, kind: string | undefined, title
     // A symbol is written the way its language's own documentation writes it: `kill()` in Python, `Server#kill` in Ruby.
     const owner = symbol && index.parentOf(symbol)
     // A tool is named on the wire, as a command is, and is not called by that name.
-    const label = symbol ? writtenForm({
+    const label = symbol && span.code !== false ? writtenForm({
       lang: index.language, kind: index.isMcpTool(symbol) ? 'command' : formKind(index.language, symbol, owner), symbol, owner, label: bare, chip,
       onOwnerPage: isWithin(context, owner, (scope) => index.parentOf(scope)),
     }) : bare
     const qualified = !chip && memberReference.test(label) && Boolean(span.link || parts.some((part) => part.link))
     // The accessible name is the text a reader sees.
-    const mention = mentionOf(span.link, symbol?.kind, symbol?.command?.kind ?? symbol?.kind, label)
-    const name = <code class="api-literal api-literal--link">{labelParts(label, qualified).map((text) => qualified && text === '#' ? <span class="api-reference-separator">{text}</span> : text)}</code>
+    const kind = symbol && nativeKind(symbol, index.language)
+    const mention = mentionOf(span.link, kind, symbol?.command?.kind ?? kind, label)
+    const name = span.code === false ? label : <code class="api-literal api-literal--link">{labelParts(label, qualified).map((text) => qualified && text === '#' ? <span class="api-reference-separator">{text}</span> : text)}</code>
     if (span.link && mention) return (
       <a class:list={['api-xref api-mention api-doc-link', { 'api-mention--chip': chip }]} href={span.link.href} title={mention.title} data-api-kind={mention.dataApiKind} aria-label={mention.ariaLabel}>{name}</a>
     )
     return span.link ? (
       <a class="api-xref" href={span.link.href} rel={span.link.external ? 'nofollow noopener' : undefined}>{name}</a>
-    ) : (
+    ) : span.code === false ? <span>{label}</span> : (
       <code class="api-literal">{parts.map((part) => {
         const separated = labelParts(part.text, qualified).map((text) => qualified && text === '#' ? <span class="api-reference-separator">{text}</span> : text)
         if (!part.link) return separated
         // A name linked inside a longer literal is a mention like any other: its kind is its ink, and the literal keeps its frame.
-        const kind = part.link.symbol?.kind
+        const kind = part.link.symbol && nativeKind(part.link.symbol, index.language)
         const inside = mentionOf(part.link, kind, part.link.symbol?.command?.kind ?? kind, part.text)
         return <a class:list={['api-xref api-literal--link', inside && 'api-mention api-doc-link']} href={part.link.href} title={inside?.title} data-api-kind={inside?.dataApiKind} aria-label={inside?.ariaLabel}>{separated}</a>
       })}</code>

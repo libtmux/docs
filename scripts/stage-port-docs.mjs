@@ -9,11 +9,14 @@ import { fromMarkdown } from 'mdast-util-from-markdown'
 import { toMarkdown } from 'mdast-util-to-markdown'
 import { PORTS } from '../site/src/lib/ports.ts'
 import { defaultVersionFor, linkedVersionFor } from '../site/src/lib/versions.ts'
-import { sourceGuidesFor, sourceGuideRedirectsFor, stagedSectionsFor, SOURCE_GUIDE_PORTS } from '../site/src/lib/port-documentation.ts'
+import { sourceGuidesFor, sourceGuideRedirectsFor, stagedSectionsFor, stagedSectionDescription, SOURCE_GUIDE_PORTS } from '../site/src/lib/port-documentation.ts'
 import { SymbolIndex, parameterId } from '../packages/api-model/src/link.ts'
+import { BADGE_DIRECTORY, badgesStale, localizeBadges } from './lib/badges.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const output = join(root, 'site/src/content/docs/_staged')
+// Badge SVGs are content-hashed, so every build publishes the same bytes at the same path.
+const badgeOutput = join(root, 'site/public', BADGE_DIRECTORY)
 const selectedPort = process.argv.includes('--port') ? process.argv[process.argv.indexOf('--port') + 1] : undefined
 const check = process.argv.includes('--check')
 const fromSource = process.argv.includes('--from-source')
@@ -33,6 +36,8 @@ const ROUTES = Object.fromEntries(SOURCE_GUIDE_PORTS.map((slug) => [slug, staged
 const expand = (value) => value.startsWith('~/') ? join(homedir(), value.slice(2)) : value
 
 function titleAndBody(content, sourcePath) {
+  // The shared catalog supplies page metadata; source frontmatter is not article prose.
+  content = content.replace(/^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/, '')
   content = content.replace(/<!-- libtmux-logo -->[\s\S]*?<!-- \/libtmux-logo -->\s*/g, '')
   // GitHub README headers may center the title and intro in a presentation
   // wrapper. The site supplies its own heading; later HTML stays intact.
@@ -135,6 +140,44 @@ export function stagedPortGuides(port, artifact) {
   const linkRoutes = Object.fromEntries(Object.entries(routes).map(([sourcePath, guide]) => [sourcePath, [guide.route]]))
   const nativeReferenceFiles = new Set()
   for (const redirect of sourceGuideRedirectsFor(port)) linkRoutes[redirect.sourcePath] = [redirect.target]
+  if (port === 'haskell') {
+    const model = JSON.parse(readFileSync(join(root, 'site/src/data/api/haskell.json'), 'utf8'))
+    if (model.revision !== artifact.source.revision) throw new Error('haskell: guide source differs from the Haskell API model')
+    for (const symbol of model.symbols.filter((entry) => entry.kind === 'module' && entry.apiScope !== 'internal' && (entry.product ?? 'core') === 'core')) {
+      if (symbol.source?.file) {
+        linkRoutes[symbol.source.file] = [`reference/${symbol.slug}`]
+        nativeReferenceFiles.add(symbol.source.file)
+      }
+    }
+  }
+  if (identity.sourceReferenceFiles) {
+    const { symbols } = JSON.parse(readFileSync(join(root, `site/src/data/api/${port}.json`), 'utf8'))
+    for (const { file, package: coordinate } of identity.sourceReferenceFiles) {
+      nativeReferenceFiles.add(file)
+      for (const symbol of symbols.filter((entry) => entry.package === coordinate)) {
+        const fragment = (symbol.publicId ?? symbol.id).toLowerCase().replace(/[^\w-]/g, '')
+        linkRoutes[`${file}#${fragment}`] = [`reference/${symbol.slug}`]
+      }
+    }
+  }
+  if (port === 'lisp') {
+    const { symbols } = JSON.parse(readFileSync(join(root, 'site/src/data/api/lisp.json'), 'utf8'))
+    const referenceFiles = {
+      libtmux: 'docs/api.md', 'libtmux.query': 'docs/query-api.md',
+      'libtmux.json': 'docs/json-api.md',
+      'libtmux.workspace': 'docs/workspace-api.md',
+      'libtmux.workspace.cli': 'docs/workspace-api.md',
+    }
+    for (const symbol of symbols.filter((entry) => entry.kind !== 'module')) {
+      const file = referenceFiles[symbol.namespace]
+      if (!file) throw new Error(`Common Lisp declaration has no native reference: ${symbol.id}`)
+      const anchor = `${symbol.name}-${symbol.kind === 'function' ? 'function' : 'type'}`
+      linkRoutes[`${file}#${anchor}`] = [
+        `${symbol.product === 'workspace' ? 'workspace/' : ''}reference/${symbol.slug}`,
+      ]
+      nativeReferenceFiles.add(file)
+    }
+  }
   if (port === 'powershell') {
     const model = JSON.parse(readFileSync(join(root, 'site/src/data/api/powershell.json'), 'utf8'))
     const files = new Set(model.nativeProvenance.files.map((file) => file.path))
@@ -172,7 +215,9 @@ export function stagedPortGuides(port, artifact) {
     const linked = port === 'fsharp' && sourcePath === 'docs/fsharp/supported-query-fields.md'
       ? linkSnapshotDepths(body) : body
     const nativeLinked = port === 'julia' ? linkDocumenter(linked, artifact.source) : linked
-    const rewritten = rewriteLinks(nativeLinked, sourcePath, route, linkRoutes, artifact.source.repository, artifact.source.revision, nativeReferenceFiles)
+    const { content: badged, files: badgeFiles } = localizeBadges(nativeLinked, port)
+    for (const [name, svg] of badgeFiles) files.set(name, svg)
+    const rewritten = rewriteLinks(badged, sourcePath, route, linkRoutes, artifact.source.repository, artifact.source.revision, nativeReferenceFiles)
     const data = {
       title,
       description: guide.description ?? `${title}: ${identity.packageName} documentation.`,
@@ -215,11 +260,7 @@ export function stagedPortGuides(port, artifact) {
         label: 'Capture pane output', href: '../examples/capture-pane-output/',
         body: 'Send a command, wait for its output, and clean up the private server.',
       })
-      writeIndex(section, section[0].toUpperCase() + section.slice(1),
-        { guides: 'Connect to tmux and work with its sessions, windows, and panes.',
-          examples: 'Run complete programs with their documented setup and cleanup.',
-          topics: 'Understand object ownership, state, and operation behavior.',
-          concepts: 'Understand captured queries, object identities, and operations.' }[section], cards)
+      writeIndex(section, section[0].toUpperCase() + section.slice(1), stagedSectionDescription(port, section), cards)
     }
     if (identity.referenceKind === 'guide' && identity.ecosystemHost) writeIndex('reference', `${identity.name} API reference`,
       `Use the [${identity.ecosystemHost.name} reference](${identity.ecosystemHost.url}) for published package versions.\n\nThe [source at this documentation revision](https://github.com/${source.repo}/tree/${source.ref}/${posix.dirname(source.path)}/src/main) contains the wrapper declarations and their documentation.\n\n${identity.name} and its ${identity.parentLibrary.runtime} core share a release version.`)
@@ -288,10 +329,30 @@ export function artifactFromRevision(port, checkout, revision) {
   } catch (cause) {
     throw new Error(`${port.slug}: integrated guides need ${port.repo}@${revision} in ${checkout}. Set LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()} to a local checkout containing that commit; this check does not fetch.`, { cause })
   }
+  const paths = Object.keys(ROUTES[port.slug])
+  const blobs = execFileSync('git', ['-C', checkout, 'cat-file', '--batch'], {
+    input: paths.map((path) => `${revision}:${path}\n`).join(''), maxBuffer: 16 * 1024 * 1024,
+    stdio: ['pipe', 'pipe', 'pipe'],
+  })
+  const contents = new Map()
+  let offset = 0
+  for (const path of paths) {
+    const end = blobs.indexOf(10, offset)
+    const header = blobs.subarray(offset, end).toString('ascii')
+    const match = /^[a-f0-9]{40} blob (\d+)$/.exec(header)
+    const size = match && Number(match[1])
+    if (end < offset || size === null || !Number.isSafeInteger(size) || size < 0 ||
+        end + size + 1 >= blobs.length || blobs[end + size + 1] !== 10) {
+      throw new Error(`${port.slug}: missing or malformed integrated guide ${revision}:${path}`)
+    }
+    contents.set(path, blobs.subarray(end + 1, end + size + 1).toString('utf8'))
+    offset = end + size + 2
+  }
+  if (offset !== blobs.length) throw new Error(`${port.slug}: unexpected trailing Git blob data`)
+  const readSource = (file) => contents.get(file) ?? git('show', `${revision}:${file}`)
   return {
     source: { repository: port.repo, revision },
-    guides: Object.keys(ROUTES[port.slug]).map((path) => {
-      const readSource = (file) => git('show', `${revision}:${file}`)
+    guides: paths.map((path) => {
       const content = readSource(path)
       return { path, content: port.slug === 'julia' ? expandDocumenter(content, path, readSource) : content }
     }),
@@ -336,36 +397,43 @@ export function run() {
     }
     if (!check && (refreshCache || selectedSource)) {
       mkdirSync(cacheRoot, { recursive: true })
-      writeFileSync(cachePath, `${JSON.stringify(artifact, null, 2)}\n`)
+      const content = `${JSON.stringify(artifact, null, 2)}\n`
+      if (!existsSync(cachePath) || readFileSync(cachePath, 'utf8') !== content) writeFileSync(cachePath, content)
     }
     for (const [file, content] of stagedPortGuides(port.slug, artifact)) generated.set(file, content)
   }
 
-  if (check) {
-    const actual = new Map()
-    const walk = (directory, prefix = '') => {
-      if (!existsSync(directory)) return
-      for (const entry of readdirSync(directory, { withFileTypes: true })) {
-        const relative = posix.join(prefix, entry.name)
-        if (entry.isDirectory()) walk(join(directory, entry.name), relative)
-        else if (selected.some((port) => relative.startsWith(`${port.slug}/`))) actual.set(relative, readFileSync(join(directory, entry.name), 'utf8'))
+  const actual = new Map()
+  const allOutputs = !check && !selectedPort && !wrappersOnly
+  const walk = (directory, prefix = '') => {
+    if (!existsSync(directory)) return
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const relative = posix.join(prefix, entry.name)
+      if (entry.isDirectory()) walk(join(directory, entry.name), relative)
+      else if (allOutputs || selected.some((port) => relative.startsWith(`${port.slug}/`))) {
+        actual.set(relative, readFileSync(join(directory, entry.name), 'utf8'))
       }
     }
-    walk(output)
-    const stale = generated.size !== actual.size || [...generated].some(([file, content]) => actual.get(file) !== content)
+  }
+  walk(output)
+  if (check) {
+    const isBadge = (file) => file.startsWith(`${BADGE_DIRECTORY}/`)
+    const guides = [...generated].filter(([file]) => !isBadge(file))
+    const badgeStale = badgesStale(generated, badgeOutput)
+    const stale = badgeStale || guides.length !== actual.size || guides.some(([file, content]) => actual.get(file) !== content)
     if (stale) throw new Error('staged port guides are missing or stale; rerun without --check')
   } else {
-    if (selectedPort || wrappersOnly) {
-      for (const port of selected) rmSync(join(output, port.slug), { recursive: true, force: true })
-    } else rmSync(output, { recursive: true, force: true })
+    for (const file of actual.keys()) if (!generated.has(file)) rmSync(join(output, file), { force: true })
+    if (allOutputs) rmSync(badgeOutput, { recursive: true, force: true })
     for (const [file, content] of generated) {
-      const destination = join(output, file)
+      if (actual.get(file) === content) continue
+      const destination = file.startsWith(`${BADGE_DIRECTORY}/`) ? join(badgeOutput, posix.basename(file)) : join(output, file)
       mkdirSync(dirname(destination), { recursive: true })
       writeFileSync(destination, content)
     }
   }
 
-  console.log(`stage-port-docs: ${generated.size} guides from ${selected.map((port) => port.slug).join(',')}`)
+  console.log(`stage-port-docs: ${[...generated.keys()].filter((file) => !file.startsWith(`${BADGE_DIRECTORY}/`)).length} guides from ${selected.map((port) => port.slug).join(',')}`)
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) run()

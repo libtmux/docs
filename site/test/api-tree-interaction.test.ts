@@ -103,6 +103,43 @@ it('restores cached expanded rows synchronously before the module or tree reques
   expect(n.fetch).not.toHaveBeenCalled()
 })
 
+it('preserves native Haskell kinds, readable descriptions and palette aliases through lazy loading and restoration', async () => {
+  const kinds = [
+    ['PaneId', 'data-type', 'data type', 'T', 'typealias'],
+    ['InvalidId', 'data-constructor', 'data constructor', 'c', 'function'],
+    ['expectedPrefix', 'record-field', 'record field', 'r', 'property'],
+  ] as const
+  const json: ApiTreeJson = { port: 'haskell', members: {}, buckets: [{
+    id: 'args', label: 'Declarations', slug: null, count: kinds.length, children: [],
+    types: kinds.map(([name, kind]) => ({ id: name, name, slug: name.toLowerCase(), kind, m: 0 })),
+  }] }
+  const n = await navigation({ base: '/en/haskell/latest/reference/', json })
+  win.document.querySelector<HTMLElement>('.api-nav')!.dataset.version = '3:haskell-test'
+  const markup = win.document.body.innerHTML
+  const check = (tree: HTMLElement) => {
+    const rows = [...tree.querySelectorAll<HTMLElement>('[data-api-kind]')]
+    expect(rows).toHaveLength(kinds.length)
+    for (const [i, [, kind, word, mark, palette]] of kinds.entries()) {
+      const row = rows[i]!
+      expect(row.dataset.apiKind).toBe(kind)
+      expect(row.getAttribute('aria-description')).toBe(word)
+      const badge = row.querySelector<HTMLElement>('.api-nav__kind')!
+      expect(badge.title).toBe(word)
+      expect(badge.classList.contains(`api-badge--kind-${palette}`)).toBe(true)
+      expect(badge.textContent).toBe(mark)
+      expect(badge.querySelector<HTMLElement>('.api-badge__label')!.dataset.mark).toBe(markClass(mark))
+    }
+  }
+  await n.key(n.bucket, 'ArrowRight')
+  check(n.tree)
+  n.saveApiTreeState()
+  n.fetch.mockClear()
+  win.document.body.innerHTML = markup
+  win.eval(`(${initializeApiTree.toString()})(document.querySelector('.api-nav'))`)
+  check(win.document.querySelector<HTMLElement>('[role="tree"]')!)
+  expect(n.fetch).not.toHaveBeenCalled()
+})
+
 it('discards stale cached rows and treats cached labels as text', async () => {
   await navigation()
   const nav = win.document.querySelector<HTMLElement>('.api-nav')!

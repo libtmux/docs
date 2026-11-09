@@ -50,17 +50,23 @@ export const STRUCTURAL_FIELDS: string[] = [
   '.apiScope', '.exportedFrom', '.extends[]', '.id', '.inheritedFrom', '.kind', '.modifiers[]', '.name', '.namespace',
   '.namespaceImports[]', '.package', '.parent', '.product', '.publicId', '.publicOwner', '.qualifiedName', '.slug',
   '.value', '.variant', '.type', '.imports.*', '.source.*',
+  '.references[].kind', '.references[].target',
   // Types and signatures, which are linked as types.
   '.typeParamNames[]', '.typeParams[]',
   '.typeParameters[].bound', '.typeParameters[].default', '.typeParameters[].kind', '.typeParameters[].modifier', '.typeParameters[].name',
   '.signatures[].enclosingDeclaration', '.signatures[].enclosingTypeParamNames[]', '.signatures[].extension',
   '.signatures[].identity', '.signatures[].label', '.signatures[].methodKind', '.signatures[].raw', '.signatures[].returns',
+  '.signatures[].nativeSpans[].text', '.signatures[].nativeSpans[].href', '.signatures[].nativeSpans[].target',
+  '.signatures[].nativeSyntax[].kind',
   '.signatures[].source.*', '.signatures[].typeParamNames[]', '.signatures[].typeParams[]',
   '.signatures[].typeParameters[].bound', '.signatures[].typeParameters[].default', '.signatures[].typeParameters[].kind',
   '.signatures[].typeParameters[].modifier', '.signatures[].typeParameters[].name',
   '.signatures[].receiver.*', '.signatures[].raises[].type',
   '.signatures[].params[].name', '.signatures[].params[].type', '.signatures[].params[].default', '.signatures[].params[].variadic',
   '.signatures[].params[].since', '.signatures[].params[].deprecated',
+  '.signatures[].references[].target', '.signatures[].references[].external.*',
+  '.signatures[].returnsReferences[].target', '.signatures[].returnsReferences[].external.*',
+  '.signatures[].params[].typeReferences[].target', '.signatures[].params[].typeReferences[].external.*',
   // A command's facts and a parameter's binding are written into prose by `commandFacts` and `parameterBindingText`.
   '.command.confirmImpact', '.command.defaultParameterSet', '.command.kind', '.command.outputTypes[]',
   '.command.inputTypes[].type', '.command.inputTypes[].description', '.command.relatedLinks[].*',
@@ -73,6 +79,8 @@ export const STRUCTURAL_FIELDS: string[] = [
   '.doc.admonitions[].kind', '.doc.references[].name', '.doc.since',
   '.doc.examples[].code', '.doc.examples[].lang', '.doc.examples[].sourceUrl',
   // Extracted, and rendered by no component.
+  // OCaml's original odoc comments are provenance; `.doc` holds their rendered prose.
+  '.nativeDocumentation[]',
   '.doc.seeAlso[]', '.declarations[].*', '.declarations[].doc.*', '.declarations[].source.*',
 ]
 

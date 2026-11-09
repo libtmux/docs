@@ -118,8 +118,8 @@ workflow shown above.
 ## Connect from a language library
 
 Use the port menu to open this guide with a complete program, imports, build
-files, and a private-server launcher. Each program connects to an existing
-socket and leaves that server running:
+files, and an owned test fixture. Each connection inspects an explicit socket
+and leaves its borrowed server running:
 
 [Python](/py/latest/guides/attaching-to-tmux/) ·
 [TypeScript](/ts/latest/guides/attaching-to-tmux/) ·
@@ -136,7 +136,8 @@ socket and leaves that server running:
 [Lua](/lua/latest/guides/attaching-to-tmux/) ·
 [PowerShell](/powershell/latest/guides/attaching-to-tmux/) ·
 [Julia](/julia/latest/guides/attaching-to-tmux/) ·
-[Elixir](/elixir/latest/guides/attaching-to-tmux/)
+[Elixir](/elixir/latest/guides/attaching-to-tmux/) ·
+[Common Lisp](/lisp/latest/guides/attaching-to-tmux/)
 
 ## Where to go next
 

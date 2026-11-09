@@ -8,7 +8,7 @@ import { Language, Parser } from 'web-tree-sitter'
  * prebuilt WASM in `tree-sitter-wasms` is ABI 13-14; runtime 0.26 and 0.27
  * both reject it, and 0.27 does so by throwing a bare `Error` with no message
  * from inside `getDylinkMetadata` — which reads like a corrupt file rather
- * than a version mismatch. 0.25.10 loads all eight. The dependency is pinned
+ * than a version mismatch. 0.25.10 loads the pinned grammars. The dependency is pinned
  * exactly, not caret-ranged, for that reason.
  *
  * Prebuilt WASM rather than building grammars here: `tree-sitter build --wasm`
@@ -33,6 +33,8 @@ const GRAMMAR = {
   scala: 'scala',
   ruby: 'ruby',
   lua: 'lua',
+  ocaml: 'ocaml',
+  haskell: 'haskell',
 } as const
 
 export type GrammarName = keyof typeof GRAMMAR
@@ -49,6 +51,7 @@ export async function loadLanguage(name: GrammarName): Promise<Language> {
   // The older bundle predates Scala 3 opaque types, givens, and extensions.
   const wasm = require.resolve(name === 'scala'
     ? 'tree-sitter-scala/tree-sitter-scala.wasm'
+    : name === 'haskell' ? 'tree-sitter-haskell/tree-sitter-haskell.wasm'
     : `tree-sitter-wasms/out/tree-sitter-${GRAMMAR[name]}.wasm`)
   const lang = await Language.load(wasm)
   cache.set(name, lang)

@@ -58,7 +58,7 @@ const siteLib = join(repoRoot, 'site', 'src', 'lib')
 const DEFAULT_OUT = join(repoRoot, 'site', 'src', 'data', 'registry.json')
 
 const { PORTS } = await import(`file://${join(siteLib, 'ports.ts')}`)
-const { comparePackageVersions, newestPublishedTag, packageVersionIsPrerelease, releaseTag } = await import(
+const { comparePackageVersions, newestPublishedTag, packageVersionIsPrerelease, parseTag, releaseTag } = await import(
   `file://${join(siteLib, 'versions.ts')}`
 )
 
@@ -112,8 +112,8 @@ async function getJson(url, headers = {}) {
     headers: { 'user-agent': 'libtmux-docs gen-registry.mjs', ...headers },
     signal: AbortSignal.timeout(20_000),
   })
-  if (!res.ok) return { missing: res.status === 404 || res.status === 403, body: null }
-  return { missing: false, body: await res.json() }
+  if (!res.ok) return { missing: res.status === 404 || res.status === 403, status: res.status, body: null }
+  return { missing: false, status: res.status, body: await res.json() }
 }
 
 /**
@@ -210,6 +210,21 @@ function generalVersions(body, port) {
  * caller as "keep whatever the committed file said".
  */
 const PROBES = {
+  async haskell(port) {
+    const response = await fetch(`https://hackage.haskell.org/package/${port.packageName}.json`, {
+      headers: { 'user-agent': 'libtmux-docs gen-registry.mjs', accept: 'application/json' },
+      signal: AbortSignal.timeout(20_000),
+    })
+    if (response.status === 404) return null
+    if (!response.ok) throw new Error(`Hackage ${port.packageName}: HTTP ${response.status}`)
+    const body = await response.json()
+    if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error('Invalid Hackage version response')
+    const entries = Object.entries(body)
+    if (!entries.length || entries.some(([version, state]) => !parseTag(`v${version}`, 'cabal') || !['normal', 'unpreferred', 'deprecated'].includes(state))) {
+      throw new Error('Unsupported Hackage version or preference')
+    }
+    return entries.map(([version]) => version)
+  },
   async py() {
     // The MCP server and tmuxp are separate PyPI projects with their own stage.
     const packages = {}
@@ -261,6 +276,20 @@ const PROBES = {
     if (body === null) throw new Error(`General: HTTP ${status}`)
     return generalVersions(body, port)
   },
+  async erlang() {
+    const packages = {}
+    for (const name of ['libtmux_erlang', 'libtmux_erlang_workspace']) {
+      const { status, body } = await getJson(`https://hex.pm/api/packages/${name}`)
+      if (status === 404) { packages[name] = null; continue }
+      if (status !== 200) throw new Error(`Hex ${name}: HTTP ${status}`)
+      if (!Array.isArray(body?.releases) || body.releases.some((release) => typeof release.version !== 'string')) {
+        throw new Error(`Hex ${name}: invalid releases`)
+      }
+      const retired = new Set(Object.keys(body?.retirements ?? {}))
+      packages[name] = body.releases.map((release) => release.version).filter((version) => !retired.has(version))
+    }
+    return { versions: packages.libtmux_erlang, packages }
+  },
   async elixir() {
     // Hex lists every release and the retirements beside them. A retired
     // release stays installable, but no reader should be sent to one.
@@ -268,6 +297,11 @@ const PROBES = {
     if (missing || !body || body.status === 404) return null
     const retired = new Set(Object.keys(body.retirements ?? {}))
     return (body.releases ?? []).map((release) => release.version).filter((version) => !retired.has(version))
+  },
+  async lisp() {
+    // This port is source-installed through ASDF and Qlot. It deliberately
+    // has no central package-registry entry to probe.
+    return null
   },
   async ts() {
     // `libtmux`, not the scoped `@libtmux/libtmux` this probe used to ask for.
@@ -290,6 +324,25 @@ const PROBES = {
     const versions = body.split('\n').filter(Boolean)
     return versions.length > 0 ? versions : null
   },
+  async ocaml(port) {
+    // The central opam repository stores each release in a package.version directory.
+    const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN
+    const { missing, body } = await getJson(
+      `https://api.github.com/repos/ocaml/opam-repository/contents/packages/${encodeURIComponent(port.packageName)}`,
+      { accept: 'application/vnd.github+json', ...(token ? { authorization: `Bearer ${token}` } : {}) },
+    )
+    if (missing || !Array.isArray(body)) throw new Error('opam package index is unavailable')
+    const prefix = `${port.packageName}.`
+    const versions = body.flatMap((entry) => {
+      if (!entry || typeof entry.name !== 'string' || typeof entry.type !== 'string') throw new Error('invalid opam package index')
+      if (entry.type !== 'dir' || !entry.name.startsWith(prefix)) return []
+      const version = entry.name.slice(prefix.length)
+      if (!releaseTag(`v${version}`, port)) throw new Error('unrecognized opam package version')
+      return [version]
+    })
+    if (!versions.length) throw new Error('opam package index contains no recognized versions')
+    return versions
+  },
   async java(port) {
     const { missing, body } = await getText(
       `https://repo.maven.apache.org/maven2/${port.packageName.split(':')[0].replaceAll('.', '/')}/${port.packageName.split(':')[1]}/maven-metadata.xml`,
@@ -298,6 +351,7 @@ const PROBES = {
     return [...body.matchAll(/<version>([^<]+)<\/version>/g)].map((m) => m[1])
   },
   async kotlin(port) { return PROBES.java(port) },
+  async clojure(port) { return PROBES.java(port) },
   async scala(port) { return PROBES.java(port) },
   async fsharp(port) { return PROBES.csharp(port) },
   async csharp(port) {
@@ -394,8 +448,17 @@ const committed = { ports: { ...seed.ports, ...baseline.ports } }
 const ports = {}
 const notes = []
 for (const port of PORTS) {
-  if (!opts.offline && typeof PROBES[port.slug] !== 'function') throw new Error(`${port.slug}: no registry probe`)
   const previous = committed.ports?.[port.slug]
+  if (!opts.offline && typeof PROBES[port.slug] !== 'function') {
+    // A source-only port declares no registry to query. Preserve its explicit
+    // unpublished state; any published package still requires a real adapter.
+    const sourceOnly = !port.registry && previous?.status === 'unpublished'
+      && Object.values(previous.packages ?? {}).every((entry) => entry.status === 'unpublished')
+    if (!sourceOnly) throw new Error(`${port.slug}: no registry probe`)
+    ports[port.slug] = previous
+    notes.push(`${port.slug}: no registry configured; kept source-only metadata`)
+    continue
+  }
   if (opts.offline) {
     if (!previous) throw new Error(`--offline needs a committed entry for ${port.slug}`)
     ports[port.slug] = previous

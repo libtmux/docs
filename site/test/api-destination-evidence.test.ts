@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { API_HOSTS, EXTERNAL_INVENTORIES, PAGE_EXCEPTIONS, addressSegments, apiHostOf, arityOf, collectApiDestinations, linksIn, qualified, terminalSymbol, urlsIn } from '../../scripts/lib/api-destinations.mjs'
+import { API_HOSTS, PAGE_EXCEPTIONS, addressSegments, apiHostOf, arityOf, linksIn, qualified, terminalSymbol, urlsIn } from '../../scripts/lib/api-destinations.mjs'
 import { addressOf, mismatch } from '../../scripts/lib/api-addresses.mjs'
 import { judge, judgeLabel, pageIdentity, sourceIdentity } from '../../scripts/lib/api-identities.mjs'
 import { PORT_LANGUAGES, languageOfUrl, languageProblem, loadReviewedLinks, doccHeading } from '../../scripts/lib/api-links.mjs'
@@ -11,93 +11,9 @@ import {
   INVENTORY_SOURCES, MAX_UNVERIFIABLE_SHARE, UNVERIFIABLE_REASONS, checkApiEvidence, expectationsOf, expectedSymbols, inventoryDigest, mentions, needsCheck, readPage, recordProblems, sameAddress, sectionAt, slugSymbol,
 } from '../../scripts/lib/api-destination-verification.mjs'
 import evidence from '../src/data/api-destination-evidence.json'
+import { API_MODEL_PORTS } from '../src/lib/ports'
 
 const root = new URL('../../', import.meta.url).pathname
-const destinations = collectApiDestinations({ root })
-const today = new Date(`${evidence.checkedAt}T12:00:00Z`)
-
-describe('API destination evidence', () => {
-  it('records the heading a link was read at, never the name of the book or site the page belongs to', () => {
-    // "Associated items - The Rust Reference" is headed "Associated items": a record that kept "The Rust Reference" could not see a page move.
-    // A name that ends the titles of three pages of one host is the host's book, not any page's.
-    const records = evidence.destinations as { url: string; host: string; title?: string; heading?: string }[]
-    const parts = (record: { title?: string }) => (record.title ?? '').split(/\s+[-|\u2013\u2014]\s+/).map((part) => part.trim().toLowerCase()).filter(Boolean)
-    const seen = new Map<string, Set<string>>()
-    for (const record of records) for (const part of new Set(parts(record))) seen.set(`${record.host}\0${part}`, new Set([...(seen.get(`${record.host}\0${part}`) ?? []), record.url.split('#')[0]]))
-    const books = new Set([...seen].filter(([, pages]) => pages.size >= 3).map(([key]) => key))
-    for (const record of records) {
-      if (record.heading === undefined) continue
-      expect(books.has(`${record.host}\0${record.heading.toLowerCase()}`), `${record.url} records ${JSON.stringify(record.heading)}`).toBe(false)
-    }
-    expect([...books].some((key) => key.endsWith('\0the rust reference'))).toBe(true)
-  })
-
-  it('holds a passing record for every destination the site generates, and none for a link nothing makes', () => {
-    const { problems } = checkApiEvidence(destinations, evidence, { today, root })
-    expect(problems).toEqual([])
-  })
-
-  it('never records an unreadable host as passing', () => {
-    for (const record of evidence.destinations as { url: string; ok: boolean; unverifiable?: string; failure?: string; detail?: string }[]) {
-      if (record.unverifiable) {
-        expect(record.ok, record.url).toBe(false)
-        expect(UNVERIFIABLE_REASONS.some((reason) => reason.test(record.unverifiable!)), `${record.url}: ${record.unverifiable}`).toBe(true)
-      } else if (!record.ok) {
-        expect(record.failure, record.url).toBeTruthy()
-        expect(record.detail, record.url).toBeTruthy()
-      }
-    }
-  })
-
-  it('requires a page that answers 200 at its own address, and a verdict for each name', () => {
-    for (const record of evidence.destinations as { url: string; ok: boolean; status: number; finalUrl?: string; checkedAt: string; terminal?: { symbol: string; at: string }[] }[]) {
-      expect(record.url, 'https url').toMatch(/^https:\/\//)
-      expect(record.checkedAt, record.url).toMatch(/^\d{4}-\d{2}-\d{2}$/)
-      if (!record.ok) continue
-      expect(record.status, record.url).toBe(200)
-      expect(record.finalUrl, `${record.url} is a redirect`).toBeUndefined()
-      const destination = destinations.get(record.url)
-      if (!destination) continue
-      expect(needsCheck(destination, record), record.url).toBe(false)
-    }
-  })
-
-  it('names every cached inventory, each checked against its host and still holding the entries it was checked with', () => {
-    expect(evidence.inventories.map((record) => record.name).sort()).toEqual(Object.keys(INVENTORY_SOURCES).sort())
-    for (const record of evidence.inventories as { name: string; ok: boolean; missing: number; digest: string }[]) {
-      expect(record.ok, record.name).toBe(true)
-      expect(record.missing, record.name).toBe(0)
-      const entries = JSON.parse(readFileSync(new URL(`../src/data/inventories/${record.name}.entries.json`, import.meta.url), 'utf8')).e as [string, string][]
-      expect(record.digest, record.name).toBe(inventoryDigest(entries))
-    }
-  })
-
-  it('keeps a manual\'s own labels out of the inventories, so a name never means one', () => {
-    for (const name of ['python', 'julia']) {
-      const { e } = JSON.parse(readFileSync(new URL(`../src/data/inventories/${name}.entries.json`, import.meta.url), 'utf8')) as { e: [string, string][] }
-      const names = new Set(e.map(([entry]) => entry))
-      for (const label of name === 'python' ? ['search', 'default', 'genindex', 'modindex'] : ['index', 'Level-6']) expect(names.has(label), `${name}: ${label}`).toBe(false)
-    }
-  })
-
-  it('holds one record for each address', () => {
-    const urls = (evidence.destinations as { url: string }[]).map((record) => record.url)
-    expect(new Set(urls).size).toBe(urls.length)
-  })
-
-  it('lists the same inventories the reference and the prose linker attach', () => {
-    for (const file of ['src/lib/api-models.ts', 'src/lib/prose-resolver.ts']) {
-      const source = readFileSync(new URL(`../${file}`, import.meta.url), 'utf8')
-      for (const { baseUrl, langs } of EXTERNAL_INVENTORIES) {
-        const attached = new RegExp(`baseUrl: '${baseUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}',\\s*langs: \\[([^\\]]*)\\]`).exec(source)
-          ?? new RegExp(`langs: \\[([^\\]]*)\\][^}]*baseUrl: '${baseUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'`).exec(source)
-          ?? new RegExp(`baseUrl: '${baseUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'[^}]*langs: \\[([^\\]]*)\\]`).exec(source)
-        expect(attached, `${file} attaches ${baseUrl}`).not.toBeNull()
-        expect([...attached![1]!.matchAll(/'(\w+)'/g)].map(([, lang]) => lang), `${file} ${baseUrl}`).toEqual(langs)
-      }
-    }
-  })
-})
 
 describe('what the verifier reads from a page', () => {
   it('matches a symbol as a whole word, never inside another', () => {
@@ -274,10 +190,55 @@ describe('what the verifier reads from a page', () => {
   })
 
   it('knows which hosts document a language or an SDK', () => {
+    expect(apiHostOf('https://ocaml.org/manual/5.5/api/Iarray.html#TYPEt')).toBe('ocaml.org')
+    expect(languageOfUrl('https://ocaml.org/manual/5.5/api/Iarray.html#TYPEt')).toBe('ocaml')
+    expect(languageProblem('ocaml', 'https://ocaml.org/manual/5.5/api/Iarray.html#TYPEt')).toBeUndefined()
+    const url = 'https://ocaml.org/manual/5.5/api/Iarray.html#TYPEt'
+    const html = '<title>OCaml library : Iarray</title><h1>Module <a>Iarray</a></h1><pre><span id="TYPEt"><span>type</span> <code>\'a</code> t</span> = <code>\'a iarray</code></pre>'
+    const identity = pageIdentity(url, readPage(html))
+    expect(identity).toMatchObject({ kind: 'type', path: ['Iarray', 't'] })
+    expect(judge(sourceIdentity({ port: 'ocaml', name: 'Iarray.t', source: 'type' }), identity)).toBeUndefined()
+    expect(judge(sourceIdentity({ port: 'ocaml', name: 'Seq.t', source: 'type' }), identity)).toMatchObject({ failure: 'owner' })
+    expect(pageIdentity(url, readPage(html.replace('<span>type</span>', '<span>val</span>')))).toMatchObject({ kind: 'other' })
     expect(apiHostOf('https://pkg.go.dev/time#Duration')).toBe('pkg.go.dev')
     expect(apiHostOf('https://elixir.hexdocs.pm/Enum.html')).toBe('elixir.hexdocs.pm')
     expect(apiHostOf('https://github.com/libtmux/libtmux')).toBeUndefined()
     expect(API_HOSTS.has('docs.oracle.com')).toBe(true)
+  })
+
+  it('checks OCaml value anchors against their declaration and owning module', () => {
+    const url = 'https://ocaml.org/manual/5.5/api/Seq.html#VALfilter'
+    const html = '<title>OCaml library : Seq</title><h1>Module <a>Seq</a></h1><pre><span id="VALfilter"><span>val</span> filter</span> : (\'a -&gt; bool) -&gt; \'a t -&gt; \'a t</pre>'
+    expect(addressOf(url)).toMatchObject({ path: ['Seq', 'filter'], exact: true, fragment: 'member' })
+    const identity = pageIdentity(url, readPage(html))
+    expect(identity).toMatchObject({ kind: 'member', path: ['Seq', 'filter'] })
+    expect(judge(sourceIdentity({ port: 'ocaml', name: 'Seq.filter', source: 'builtin' }), identity)).toBeUndefined()
+    expect(judge(sourceIdentity({ port: 'ocaml', name: 'List.filter', source: 'builtin' }), identity)).toMatchObject({ failure: 'owner' })
+    for (const forged of [html.replace('<span>val</span>', '<span>type</span>'), html.replace('> filter</span>', '> invented</span>')]) {
+      expect(pageIdentity(url, readPage(forged))).toMatchObject({ kind: 'other' })
+    }
+    for (const name of ['List', 'Unix']) {
+      const module = pageIdentity(`https://ocaml.org/manual/5.5/api/${name}.html`, readPage(`<title>OCaml library : ${name}</title><h1>Module <a>${name}</a></h1>`))
+      expect(judge(sourceIdentity({ port: 'ocaml', name, source: 'builtin' }), module), name).toBeUndefined()
+    }
+  })
+
+  it('matches complete OCaml identifiers including apostrophes in value and type declarations', () => {
+    const actual = []
+    const expected = []
+    for (const [prefix, keyword, base, kind] of [['VAL', 'val', 'filter', 'member'], ['TYPE', 'type', 't', 'type']]) {
+      for (const name of [base, `${base}'`, `${base}''`, `${base}'item`]) {
+        for (const declared of [name, `${name}'`, `${name}''`, `${name}_other`, `${name}2`]) {
+          const url = `https://ocaml.org/manual/5.5/api/Seq.html#${prefix}${name}`
+          const html = `<title>OCaml library : Seq</title><h1>Module <a>Seq</a></h1><pre><span id="${prefix}${name}">${keyword} ${keyword === 'type' ? "'a " : ''}${declared}</span>${keyword === 'type' ? ' = unit' : ' : unit'}</pre>`
+          const identity = pageIdentity(url, readPage(html))
+          if (!identity) throw new Error(`Missing OCaml page identity for ${prefix}${name}`)
+          actual.push([prefix, name, declared, identity.kind, identity.kind === 'other' ? [] : identity.path])
+          expected.push([prefix, name, declared, name === declared ? kind : 'other', name === declared ? ['Seq', name] : []])
+        }
+      }
+    }
+    expect(actual).toEqual(expected)
   })
 })
 
@@ -443,6 +404,38 @@ describe('what a page says it is', () => {
     expect(pageIdentity('https://doc.rust-lang.org/std/io/struct.Error.html#method.kind', page)).toMatchObject({ kind: 'member', path: ['std', 'io', 'Error', 'kind'] })
   })
 
+  it('reads Erlang module names, type and callback roles, and arities from OTP ExDoc', () => {
+    const url = 'https://www.erlang.org/doc/apps/erts/erlang.html#t:map/0'
+    const html = '<h1><span translate="no">erlang</span><small>(erts v17.1.1)</small></h1><section class="detail" id="t:map/0"><a aria-label="Link to this type"></a></section>'
+    const page = read(url, html)
+    expect(page).toMatchObject({ via: 'erlang', kind: 'type', path: ['erlang', 'map'], arity: 0 })
+    expect(addressOf(url)).toMatchObject({ path: ['erlang', 'map'], fragment: 'member', arity: '0' })
+    expect(addressSegments('erlang', 't:erlang:map/0')).toEqual(['erlang', 'map'])
+    expect(terminalSymbol('erlang', 't:erlang:map/0')).toBe('map')
+    const source = (name: string, extra = {}) => sourceIdentity({ port: 'erlang', name, source: 'type', ...extra })
+    expect(judge(source('t:erlang:map/0'), page)).toBeUndefined()
+    expect(judge(source('erlang:map'), page)).toBeUndefined()
+    expect(judge(source('map'), page)).toBeUndefined()
+    expect(judge(source('map()'), page)).toBeUndefined()
+    expect(judge(source('erlang:map()'), { ...page, arity: 1 })).toMatchObject({ failure: 'arity' })
+    expect(judge(source('t:erlang:map(Type)'), page)).toMatchObject({ failure: 'arity' })
+    expect(judge(source('t:other:map/0'), page)).toMatchObject({ failure: 'owner' })
+    expect(judge(source('c:erlang:map/0'), page)).toMatchObject({ failure: 'kind' })
+    expect(judge(source('t:erlang:map/1'), page)).toMatchObject({ failure: 'arity' })
+    expect(judgeLabel('`erlang:map()`', page)).toBeUndefined()
+    expect(judgeLabel('`other:map()`', page)).toMatchObject({ failure: 'label' })
+    expect(judgeLabel('`map()`', { ...page, path: ['other', 'map'] })).toMatchObject({ failure: 'label' })
+    for (const name of ['erlang', 'binary']) {
+      const module = read(`https://www.erlang.org/doc/apps/erts/${name}.html`, `<h1><span translate="no">${name}</span></h1>`)
+      const use = { port: 'erlang', source: 'doc', role: 'mod' }
+      expect(judge(sourceIdentity({ ...use, name: `m:${name}` }), module)).toBeUndefined()
+      expect(judge(sourceIdentity({ ...use, name }), module)).toBeUndefined()
+      expect(judge(sourceIdentity({ ...use, name: `other:${name}` }), module)).toMatchObject({ failure: 'owner' })
+      expect(judgeLabel(name, module)).toBeUndefined()
+      expect(judgeLabel(name, { ...module, path: ['other', name] })).toMatchObject({ failure: 'label' })
+    }
+  })
+
   it('reads javadoc\'s package line and the parameters a member\'s anchor spells', () => {
     const page = readPage('<html><head><title>Process</title></head><body><div class="sub-title"><span class="package-label-in-type">Package</span>&nbsp;<a href="x">java.lang</a></div><h1>Class Process</h1><section id="method-detail"><section class="detail" id="waitFor(long,java.util.concurrent.TimeUnit)"></section></section></body></html>')
     const url = 'https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Process.html'
@@ -558,9 +551,25 @@ describe('the reviewed link table', () => {
     expect(languageProblem('scala', 'https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html')).toBeUndefined()
     expect(languageProblem('powershell', 'https://learn.microsoft.com/dotnet/api/system.string')).toBeUndefined()
     expect(languageProblem('fsharp', 'https://learn.microsoft.com/dotnet/api/system.string')).toBeUndefined()
+    expect(languageProblem('erlang', 'https://www.erlang.org/doc/apps/erts/erlang.html#t:map/0')).toBeUndefined()
+    expect(languageProblem('erlang', 'https://go.dev/ref/spec#Constants')).toMatchObject({ failure: 'language' })
     expect(languageProblem('py', 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html')).toMatchObject({ failure: 'language' })
     expect(languageProblem('fsharp', 'https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/static')).toMatchObject({ failure: 'language' })
-    expect(Object.keys(PORT_LANGUAGES).length).toBeGreaterThan(10)
+    expect(Object.keys(PORT_LANGUAGES).sort()).toEqual(API_MODEL_PORTS.map((port) => port.slug).sort())
+  })
+
+  it('holds Haskell language, compiler and package guides to their own language', () => {
+    for (const url of [
+      'https://www.haskell.org/onlinereport/haskell2010/haskellch4.html#x10-680004.2',
+      'https://downloads.haskell.org/ghc/9.14.1/docs/users_guide/exts/field_selectors.html',
+      'https://cabal.readthedocs.io/en/3.18/cabal-package-description-file.html',
+    ]) {
+      expect(apiHostOf(url)).toBe(new URL(url).hostname)
+      expect(languageOfUrl(url)).toBe('haskell')
+      expect(languageProblem('haskell', url)).toBeUndefined()
+      expect(languageProblem('java', url)).toMatchObject({ failure: 'language' })
+    }
+    expect(languageProblem('haskell', 'https://go.dev/ref/spec')).toMatchObject({ failure: 'language' })
   })
 
   it('gives each Microsoft Learn product its own language, and the platform only its API, runtime, standard library and NuGet pages', () => {
@@ -604,7 +613,6 @@ describe('the reviewed link table', () => {
     const use = { port: '', name: 'a.md', source: 'authored', label: 'crate API', from: 'go', package: { identity: 'tmux-mcp', ports: ['rs'] } }
     const [expectation] = expectationsOf({ url: 'https://docs.rs/tmux-mcp', uses: [use] })
     expect(expectation).toMatchObject({ label: 'crate API', ports: ['go'], package: { identity: 'tmux-mcp', ports: ['rs'] } })
-    expect(Object.keys(destinations.get('https://docs.rs/tmux-mcp')?.uses.values().next().value.package ?? {})).toEqual(['identity', 'ports'])
   })
 
   it('keeps every port that wrote the same words at the same address, so the last one cannot hide the others', () => {

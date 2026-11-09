@@ -1,13 +1,14 @@
 ---
 import type { ApiModelBase, ApiSymbol } from '@libtmux/api-model'
-import { qualifiedNameOf } from '@libtmux/api-model'
+import { qualifiedNameOf } from '@libtmux/api-model/reference'
 import type { ApiRelationshipPath, ApiRelationshipSection } from '../../lib/api-relationships'
 import { apiCallSource } from '../../lib/api-relationships'
 import ApiBadge from './ApiBadge.astro'
+import { nativeKind } from '../../lib/api-labels'
 
 interface Props {
   owner?: ApiSymbol
-  model?: ApiModelBase
+  model?: ApiModelBase & { port?: string }
   sections?: ApiRelationshipSection[]
   paths?: ApiRelationshipPath[]
   hrefFor: (symbol: ApiSymbol) => string
@@ -58,8 +59,8 @@ const callSource = (section: ApiRelationshipSection, symbol: ApiSymbol) => !mode
   <h2 class="api-section-heading text-lg font-semibold" id={section.id}>{section.label}<a class="api-heading-link" href={`#${section.id}`} aria-label={`Link to ${section.label}`}>#</a></h2>
   <ul class="api-member-list mt-3">
     {section.items.map((symbol) => <li>
-      <span><ApiBadge label={symbol.kind} variant="kind" value={symbol.kind} compact preview={false} /><a class="api-member-link" href={hrefFor(symbol)}>{qualifiedNameOf(symbol)}</a></span>
-      <span class="api-member-badges"><ApiBadge label={symbol.kind} variant="kind" value={symbol.kind} plain /></span>
+      <span><ApiBadge label={nativeKind(symbol, model?.port)} variant="kind" value={nativeKind(symbol, model?.port)} compact preview={false} /><a class="api-member-link" href={hrefFor(symbol)}>{qualifiedNameOf(symbol)}</a></span>
+      <span class="api-member-badges"><ApiBadge label={nativeKind(symbol, model?.port)} variant="kind" value={nativeKind(symbol, model?.port)} plain /></span>
       {callSource(section, symbol) && <a class="text-xs" href={callSource(section, symbol)}>Call site ↗</a>}
     </li>)}
   </ul>

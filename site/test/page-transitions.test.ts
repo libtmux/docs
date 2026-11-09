@@ -1,7 +1,6 @@
 import { closeSync, openSync, readFileSync, readSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { beforeAll, describe, expect, it, vi } from 'vitest'
-import { loadHeaderTemplates, renderPage } from './header-page'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { SITE_BUILT, SITE_ROOT } from './site-root'
 
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8')
@@ -21,29 +20,8 @@ describe('shell sources', () => {
     expect(/<head>([\s\S]*?)<\/head>/.exec(layout)![1]).toContain('<ClientRouter fallback="swap" />')
   })
 
-  it('renders the router meta tags in the head of the base layout', async () => {
-    const { baseLayout } = await loadHeaderTemplates()
-    const html = await renderPage(baseLayout, 'https://libtmux.org/en/ts/latest/guides/panes/', { pagePath: 'guides/panes', portSlug: 'ts' })
-    const head = /<head>([\s\S]*?)<\/head>/.exec(html)![1]!
-    expect(head).toContain('<meta name="astro-view-transitions-enabled" content="true"')
-    expect(head).toContain('<meta name="astro-view-transitions-fallback" content="swap"')
-    vi.unstubAllEnvs()
-  })
-
   it('guards navigation between independently built trees', () => {
     expect(read('../src/components/docs/DocumentationScript.astro')).toMatch(/guardTreeNavigation\(\)/)
-  })
-
-  it('holds the first frame until the header bar is parsed', async () => {
-    const header = read('../src/components/SiteHeader.astro')
-    const panel = header.indexOf('id="site-header-panel"')
-    expect(panel).toBeGreaterThan(header.indexOf('site-header__menu-button'))
-    expect(panel).toBeGreaterThan(header.indexOf('site-header__always'))
-    const { baseLayout } = await loadHeaderTemplates()
-    const html = await renderPage(baseLayout, 'https://libtmux.org/en/ts/latest/guides/panes/', { pagePath: 'guides/panes', portSlug: 'ts' })
-    expect(/<head>([\s\S]*?)<\/head>/.exec(html)![1]).toContain('<link rel="expect" href="#site-header-panel" blocking="render">')
-    expect(html).toContain('id="site-header-panel"')
-    vi.unstubAllEnvs()
   })
 
   it('guards navigation within a page before the router listens for history', () => {

@@ -14,7 +14,7 @@
  */
 
 /** Language libraries, by the slug the site uses. */
-export type PortSlug = 'py' | 'ruby' | 'lua' | 'ts' | 'rs' | 'go' | 'java' | 'csharp' | 'cxx' | 'swift' | 'kotlin' | 'scala' | 'fsharp' | 'powershell' | 'julia' | 'elixir'
+export type PortSlug = 'perl' | 'py' | 'ruby' | 'lua' | 'ts' | 'rs' | 'go' | 'java' | 'csharp' | 'cxx' | 'swift' | 'kotlin' | 'scala' | 'fsharp' | 'powershell' | 'julia' | 'elixir' | 'ocaml' | 'haskell' | 'clojure' | 'lisp' | 'erlang'
 
 export type ApiProduct = 'core' | 'workspace' | 'mcp'
 
@@ -80,11 +80,22 @@ export type Modifier =
   | 'unsafe'
   | 'annotation'
 
+/** A compiler-resolved name in exact annotation text; offsets use UTF-16 code units. */
+export interface TypeReference {
+  start: number
+  end: number
+  /** Native symbol identity, including its namespace and arity where applicable. */
+  target: string
+  /** A provider-validated canonical language-library destination. */
+  external?: { href: string; project: string }
+}
+
 /** One parameter, as written. */
 export interface Param {
   name: string
   /** Type annotation verbatim from the source, unresolved. */
   type?: string
+  typeReferences?: TypeReference[]
   /** Default value verbatim, when one is written. */
   default?: string
   /** The caller may omit the parameter without supplying a default. */
@@ -169,12 +180,27 @@ export interface Signature {
   extension?: string
   /** Native signature text when its grammar carries more than the shared fields. */
   raw?: string
+  /** Native header text and links, in order. Their text concatenates exactly to `raw`. */
+  nativeSpans?: {
+    text: string
+    /** Original native destination, retained even when a public target is remapped. */
+    href?: string
+    /** Public identity resolved by the native producer. */
+    target?: string
+    declaration?: boolean
+    keyword?: boolean
+  }[]
+  /** Native producer offsets into raw declaration text; no renderer reparsing. */
+  nativeSyntax?: ({ start: number; end: number; kind: 'name' } | { start: number; end: number; kind: 'parameter'; parameter: number })[]
+  /** References into `raw`, supplied by the native compiler rather than inferred from spelling. */
+  references?: TypeReference[]
   /** Native impl or trait header that owns this callable, without its body. */
   enclosingDeclaration?: string
   /** Lexical bindings from that impl or trait, separate from callable generics. */
   enclosingTypeParamNames?: string[]
   params: Param[]
   returns?: string
+  returnsReferences?: TypeReference[]
   returnsDoc?: string
   /** Type parameters / generics, as written: `T`, `T: Clone`, `<T extends X>`. */
   typeParams?: string[]
@@ -282,6 +308,8 @@ export interface ApiSymbol {
   variant?: 'unit' | 'tuple' | 'struct'
   /** Distinct native declarations sharing one public name, such as a TypeScript type/value pair. */
   declarations?: { kind: SymbolKind; text: string; source: ApiSymbol['source']; doc?: DocBlock }[]
+  /** Original native comments; doc holds their normalized rendered content. */
+  nativeDocumentation?: string[]
   /** Explicit source imports used to resolve aliases in native signatures. */
   imports?: Record<string, string>
   /** Relationships resolved by the native documentation producer. */
@@ -350,6 +378,8 @@ export interface ApiSymbol {
 /** Everything extracted from one port's source tree. */
 /** Declarations and provenance shared by library and source references. */
 export interface ApiModelBase {
+  /** Native module export groups, in authored order, with exact public identities. */
+  exportGroups?: { owner: string; title: string; members: string[] }[]
   /** Native producer and inputs retained alongside the normalized surface. */
   nativeProvenance?: {
     files: { path: string; sha256: string }[]

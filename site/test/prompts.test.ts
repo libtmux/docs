@@ -96,6 +96,29 @@ describe('prompt composition', () => {
     }
   })
 
+  it('sets up Haskell through its public values API without requiring tmux', () => {
+    const text = promptFor(PORT_BY_SLUG.haskell!, 'setup')
+    expect(text).toContain('verify its pure values API')
+    expect(text).toContain('GHC 9.14.1 and Cabal 3.18.2.0')
+    expect(text).toContain('parseWindowId')
+    expect(text).toContain('renderWindowId')
+    expect(text).not.toContain('tmux -V')
+    expect(text).not.toContain('connect to a')
+    expect(text).not.toContain('prefer a final release over this prerelease')
+  })
+
+  it('reports missing Haskell operations instead of composing automation instructions', () => {
+    for (const topic of TOPICS.filter((entry) => entry.id !== 'setup')) {
+      const text = promptFor(PORT_BY_SLUG.haskell!, topic.id)
+      expect(text, topic.id).toContain('Availability')
+      expect(text, topic.id).toContain(topic.label)
+      expect(text, topic.id).toContain('Client, command, streaming and workspace APIs are not exposed')
+      expect(text, topic.id).not.toContain(topic.opening)
+      expect(text, topic.id).not.toContain('What it does:')
+      expect(text, topic.id).not.toContain('connect to a')
+    }
+  })
+
   it.each(MATRIX)('$port.slug/$topic.id cites the site and this port', ({ port, topic }) => {
     const text = promptFor(port, topic.id)
     // The machine-readable entry points, which are the whole reason a prompt
@@ -153,7 +176,7 @@ describe('prompt composition', () => {
       expect(text, 'names the prerelease').toContain(entry.version!)
     }
     if (entry.status === 'unpublished') {
-      expect(text, 'names the ref it installs from').toContain(entry.tag ?? 'default branch')
+      expect(text.replace(/\s+/g, ' '), 'names the ref it installs from').toContain(entry.tag ?? 'default branch')
     }
   })
 
@@ -364,7 +387,7 @@ describe('registry data', () => {
     const finalTag: RegistryEntry = { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' }
     expect(prompt(finalTag)).toContain('if you need a different version.')
     expect(prompt(finalTag)).not.toContain('prefer a final release')
-    expect(prompt({ ...finalTag, tag: 'v0.1.0-alpha.2' })).toContain('prefer a final release over this prerelease if there now is one.')
+    expect(prompt({ ...finalTag, tag: 'v0.1.0-alpha.2' })).toContain('prefer a final release if there now is one.')
   })
 
   it('composes the site’s prompt from the entry the registry holds', () => {

@@ -4,7 +4,7 @@ import { pathToFileURL } from 'node:url'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window, type Element } from 'happy-dom'
 import { afterEach, expect, it, vi } from 'vitest'
-import { parameterId, SymbolIndex, type ApiSymbol, type Param } from '@libtmux/api-model'
+import { parameterId, SymbolIndex, type ApiSymbol, type Param } from '@libtmux/api-model/reference'
 import { apiEntryFields, parameterBindingFacts, POWER_SHELL_COMMON_HELP, POWER_SHELL_COMMON_HELP_TITLE, powerShellCommonParameterHref, powerShellCommonParameterLabel } from '../src/lib/api-sections'
 import { linkTmuxDoc } from '../src/lib/tmux-links'
 import { signatureSpans, typeLayout } from '../src/lib/code-layout'
@@ -39,12 +39,16 @@ async function parameterComponents() {
   const type = await compile('../src/components/api/ApiType.astro', {
     './SymbolName.astro': name, './ApiKeyword.astro': keyword,
     '@libtmux/api-model': new URL('../../packages/api-model/src/index.ts', import.meta.url).href,
+    '@libtmux/api-model/reference': new URL('../../packages/api-model/src/reference.ts', import.meta.url).href,
     // A native type layout loads its grammar lazily, which only Vitest's own loader resolves.
     '../../lib/code-layout': bridge,
   })
-  const doc = await compile('../src/components/api/ApiDoc.astro', { '../../lib/tmux-links': bridge, '../../lib/mention-badge': new URL('../src/lib/mention-badge.ts', import.meta.url).href, '../../lib/symbol-form': new URL('../src/lib/symbol-form.ts', import.meta.url).href })
+  const doc = await compile('../src/components/api/ApiDoc.astro', { '../../lib/tmux-links': bridge,
+    '../../lib/mention-badge': new URL('../src/lib/mention-badge.ts', import.meta.url).href,
+    '../../lib/symbol-form': new URL('../src/lib/symbol-form.ts', import.meta.url).href,
+    '../../lib/api-labels': new URL('../src/lib/api-labels.ts', import.meta.url).href })
   const overloads = await compile('../src/components/api/ApiFieldOverloads.astro')
-  const imports = { '@libtmux/api-model': bridge, '../../lib/api-sections': bridge,
+  const imports = { '@libtmux/api-model': bridge, '@libtmux/api-model/reference': bridge, '../../lib/api-sections': bridge,
     './ApiType.astro': type, './ApiDoc.astro': doc, './ApiFieldOverloads.astro': overloads }
   const commands = await compile('../src/components/api/ApiCommandParameters.astro', imports)
   const source = readFileSync(new URL('../src/components/api/ApiEntry.astro', import.meta.url), 'utf8')
@@ -53,7 +57,7 @@ async function parameterComponents() {
   expect(start).toBeGreaterThan(0)
   expect(end).toBeGreaterThan(start)
   const wrapper = `---
-import { parameterId } from '@libtmux/api-model'
+import { parameterId } from '@libtmux/api-model/reference'
 import ApiType from './ApiType.astro'
 import ApiDoc from './ApiDoc.astro'
 import ApiFieldOverloads from './ApiFieldOverloads.astro'

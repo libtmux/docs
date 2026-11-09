@@ -10,7 +10,7 @@
  * `entries` names every inventory entry that stands for it, so an entry that
  * gains or loses a destination changes a row here.
  *
- * Julia and C++ publish no package, so each has only the repository link.
+ * Julia, C++ and Haskell publish no package, so each has only a source link.
  * Only Rust, Elixir, Java, Kotlin, Scala and Swift link an API reference of
  * their own; Go's package page is its reference.
  */
@@ -25,6 +25,47 @@ export interface ExpectedLinks {
 }
 
 export const LINKS: Record<string, ExpectedLinks> = {
+  ocaml: {
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-ocaml/lib', 'https://github.com/libtmux/libtmux-ocaml/tree/master/lib']],
+    indexed: true,
+    rows: [
+      ['source', 'libtmux', 'opam package · lib', 'https://github.com/libtmux/libtmux-ocaml/tree/master/lib', ['libtmux']],
+      ['source', 'libtmux-unix', 'opam package · unix', 'https://github.com/libtmux/libtmux-ocaml/tree/master/unix', ['libtmux-unix']],
+      ['source', 'libtmux-eio', 'opam package · eio', 'https://github.com/libtmux/libtmux-ocaml/tree/master/eio', ['libtmux-eio']],
+      ['source', 'libtmux-json', 'opam package · json', 'https://github.com/libtmux/libtmux-ocaml/tree/master/json', ['libtmux-json']],
+      ['source', 'libtmux-workspace', 'opam package · workspace', 'https://github.com/libtmux/libtmux-ocaml/tree/master/workspace', ['libtmux-workspace']],
+      ['source', 'libtmux-workspace-cli', 'opam package · cli', 'https://github.com/libtmux/libtmux-ocaml/tree/master/cli', ['libtmux-workspace-cli']],
+    ],
+  },
+  perl: {
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-perl/packages/core', 'https://github.com/libtmux/libtmux-perl/tree/master/packages/core']],
+    indexed: true,
+    rows: [
+      ['source', 'LibTmux', 'packages/core', 'https://github.com/libtmux/libtmux-perl/tree/master/packages/core', ['LibTmux']],
+      ['source', 'LibTmux-Async', 'packages/async', 'https://github.com/libtmux/libtmux-perl/tree/master/packages/async', ['LibTmux-Async']],
+      ['source', 'libtmux-perl', 'libtmux/libtmux-perl', 'https://github.com/libtmux/libtmux-perl', ['repository']],
+      ['source', 'LibTmux-Workspace', 'packages/workspace', 'https://github.com/libtmux/libtmux-perl/tree/master/packages/workspace', ['LibTmux-Workspace']],
+      ['source', 'libtmux-workspace', 'command · packages/workspace/bin/libtmux-workspace', 'https://github.com/libtmux/libtmux-perl/blob/master/packages/workspace/bin/libtmux-workspace', ['libtmux-workspace']],
+    ],
+  },
+  clojure: {
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-java/libtmux-clojure', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-clojure']],
+    indexed: true,
+    rows: [
+      ['source', 'libtmux-java', 'libtmux/libtmux-java', 'https://github.com/libtmux/libtmux-java', ['repository']],
+      ['source', 'libtmux-clojure', 'libtmux-clojure', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-clojure', ['core-source']],
+      ['source', 'libtmux-clojure-core-async', 'libtmux-clojure-core-async', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-clojure-core-async', ['adapter-source']],
+    ],
+  },
+  erlang: {
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-erlang/apps/libtmux_erlang', 'https://github.com/libtmux/libtmux-erlang/tree/master/apps/libtmux_erlang']],
+    indexed: true,
+    rows: [
+      ['source', 'libtmux_erlang', 'apps/libtmux_erlang', 'https://github.com/libtmux/libtmux-erlang/tree/master/apps/libtmux_erlang', ['libtmux_erlang']],
+      ['source', 'libtmux-erlang', 'libtmux/libtmux-erlang', 'https://github.com/libtmux/libtmux-erlang', ['repository']],
+      ['source', 'libtmux_erlang_workspace', 'apps/libtmux_erlang_workspace', 'https://github.com/libtmux/libtmux-erlang/tree/master/apps/libtmux_erlang_workspace', ['libtmux_erlang_workspace']],
+    ],
+  },
   py: {
     actions: [['source', 'GitHub', 'GitHub: tmux-python/libtmux', 'https://github.com/tmux-python/libtmux'],
       ['package', 'PyPI', 'PyPI: libtmux package', 'https://pypi.org/project/libtmux/']],
@@ -102,6 +143,26 @@ export const LINKS: Record<string, ExpectedLinks> = {
       ['source', 'libtmux-elixir', 'libtmux/libtmux-elixir', 'https://github.com/libtmux/libtmux-elixir', ['repository']],
       ['package', 'libtmux', 'Hex', 'https://hex.pm/packages/libtmux', ['libtmux']],
       ['api', 'libtmux', 'HexDocs', 'https://libtmux.hexdocs.pm/', ['libtmux']],
+    ],
+  },
+  haskell: {
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-haskell/src', 'https://github.com/libtmux/libtmux-haskell/tree/master/src']],
+    indexed: true,
+    rows: [
+      ['source', 'libtmux-haskell', 'Cabal package · src', 'https://github.com/libtmux/libtmux-haskell/tree/master/src', ['libtmux-haskell']],
+      ['source', 'libtmux-haskell', 'libtmux/libtmux-haskell', 'https://github.com/libtmux/libtmux-haskell', ['repository']],
+    ],
+  },
+  lisp: {
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-lisp/src', 'https://github.com/libtmux/libtmux-lisp/tree/master/src']],
+    indexed: true,
+    rows: [
+      ['source', 'libtmux', 'source distribution · src', 'https://github.com/libtmux/libtmux-lisp/tree/master/src', ['libtmux']],
+      ['source', 'libtmux-lisp', 'libtmux/libtmux-lisp', 'https://github.com/libtmux/libtmux-lisp', ['repository']],
+      ['source', 'libtmux/query', 'ASDF system · libtmux.asd', 'https://github.com/libtmux/libtmux-lisp/blob/master/libtmux.asd', ['libtmux/query', 'libtmux/regex', 'libtmux/json']],
+      ['source', 'libtmux/workspace', 'ASDF system · src/workspace.lisp', 'https://github.com/libtmux/libtmux-lisp/blob/master/src/workspace.lisp', ['libtmux/workspace']],
+      ['source', 'libtmux/workspace/cli', 'ASDF system · src/workspace-cli.lisp', 'https://github.com/libtmux/libtmux-lisp/blob/master/src/workspace-cli.lisp', ['libtmux/workspace/cli']],
+      ['source', 'libtmux-workspace', 'script · bin/libtmux-workspace', 'https://github.com/libtmux/libtmux-lisp/blob/master/bin/libtmux-workspace', ['workspace-command']],
     ],
   },
   ts: {

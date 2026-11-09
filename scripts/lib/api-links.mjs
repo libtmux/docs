@@ -88,6 +88,7 @@ export function languageOfUrl(url) {
     'developer.mozilla.org': 'typescript', 'www.typescriptlang.org': 'typescript',
     'docs.junit.org': 'java', 'javadoc.io': 'java',
     'kotlinlang.org': 'kotlin',
+    'clojure.org': 'clojure', 'clojure.github.io': 'clojure',
     'www.scala-lang.org': 'scala', 'docs.scala-lang.org': 'scala', 'typelevel.org': 'scala',
     'fsharp.github.io': 'fsharp', 'csharp.sdk.modelcontextprotocol.io': 'csharp', 'ts.sdk.modelcontextprotocol.io': 'typescript',
     'en.cppreference.com': 'cpp', 'eel.is': 'cpp', 'cmake.org': 'cpp',
@@ -95,7 +96,11 @@ export function languageOfUrl(url) {
     'docs.ruby-lang.org': 'ruby', 'ruby-doc.org': 'ruby',
     'www.lua.org': 'lua', 'luals.github.io': 'lua',
     'docs.julialang.org': 'julia',
+    'ocaml.org': 'ocaml',
     'www.erlang.org': 'erlang',
+    'www.haskell.org': 'haskell', 'downloads.haskell.org': 'haskell', 'cabal.readthedocs.io': 'haskell',
+    'perldoc.perl.org': 'perl', 'metacpan.org': 'perl',
+    'www.lispworks.com': 'lisp', 'asdf.common-lisp.dev': 'lisp',
     'modelcontextprotocol.io': 'any',
   }
   if (byHost[hostname]) return byHost[hostname]
@@ -107,10 +112,11 @@ export function languageOfUrl(url) {
 
 /** The languages each port's documentation legitimately reaches: its own, and what its platform shares. */
 export const PORT_LANGUAGES = {
-  py: ['python'], rs: ['rust'], go: ['go'], ts: ['typescript'], java: ['java'],
-  kotlin: ['kotlin', 'java'], scala: ['scala', 'java'],
+  py: ['python'], perl: ['perl'], rs: ['rust'], go: ['go'], ts: ['typescript'], java: ['java'],
+  kotlin: ['kotlin', 'java'], scala: ['scala', 'java'], clojure: ['clojure', 'java'],
   csharp: ['csharp', 'dotnet'], fsharp: ['fsharp', 'dotnet'], powershell: ['powershell', 'dotnet'],
-  cxx: ['cpp'], swift: ['swift'], julia: ['julia'], lua: ['lua'], elixir: ['elixir', 'erlang'], ruby: ['ruby'],
+  cxx: ['cpp'], swift: ['swift'], julia: ['julia'], lua: ['lua'], elixir: ['elixir', 'erlang'], ruby: ['ruby'], ocaml: ['ocaml'],
+  haskell: ['haskell'], erlang: ['erlang'], lisp: ['lisp'],
 }
 
 /**

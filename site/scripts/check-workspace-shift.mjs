@@ -1,8 +1,9 @@
+import { newCheckContext } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 
 /** A cold deep link into the preset picker lands in one scroll and shifts nothing. */
 export async function checkWorkspaceShift(browser, base) {
-  const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, colorScheme: 'light' })
+  const context = await newCheckContext(browser, base, { viewport: { width: 1280, height: 900 }, colorScheme: 'light' })
   const page = await context.newPage()
   const errors = []
   page.on('pageerror', (error) => errors.push(error.message))

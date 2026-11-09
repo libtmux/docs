@@ -303,10 +303,13 @@ if [ -n "${LIBTMUX_DOCS_PORT:-}" ] && { [ "$LIBTMUX_DOCS_PORT" = ruby ] || [ "$L
   node "$script_dir/gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT"
   node "$script_dir/stage-port-docs.mjs" --port "$LIBTMUX_DOCS_PORT"
 elif [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ] && { [ "$LIBTMUX_DOCS_PORT" = powershell ] || [ "$LIBTMUX_DOCS_PORT" = julia ] ||
-  [ "$LIBTMUX_DOCS_PORT" = elixir ]; }; then
+  [ "$LIBTMUX_DOCS_PORT" = elixir ] || [ "$LIBTMUX_DOCS_PORT" = ocaml ] || [ "$LIBTMUX_DOCS_PORT" = haskell ] || [ "$LIBTMUX_DOCS_PORT" = perl ] || [ "$LIBTMUX_DOCS_PORT" = lisp ] || [ "$LIBTMUX_DOCS_PORT" = erlang ]; }; then
   node "$script_dir/gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT"
   node "$script_dir/stage-port-docs.mjs" --port "$LIBTMUX_DOCS_PORT" --from-source
   node "$script_dir/gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT" --nav
+  if [ "$LIBTMUX_DOCS_PORT" = haskell ]; then
+    node "$script_dir/gen-tmux-usage.mjs" --ports "$LIBTMUX_DOCS_PORT" --source
+  fi
 elif [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ] && node --input-type=module -e '
   const { PORT_BY_SLUG } = await import("file://'"$site_dir"'/src/lib/ports.ts");
   process.exit(PORT_BY_SLUG[process.env.LIBTMUX_DOCS_PORT]?.parentLibrary ? 0 : 1);
@@ -320,12 +323,23 @@ elif [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ]; then
   node "$script_dir/gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT"
   node "$script_dir/gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT" --nav
 fi
+if [ "${LIBTMUX_DOCS_PORT:-}" = perl ] && [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ]; then
+  node "$script_dir/gen-tmux-usage.mjs" --ports perl
+fi
 node "$script_dir/stage-port-docs.mjs" --wrappers
 if [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ]; then
+  if [ "$LIBTMUX_DOCS_PORT" = clojure ]; then
+    node "$script_dir/gen-tmux-usage.mjs" --ports clojure
+  fi
   # The selected API and wire contracts must come from the same product source.
   # Python's MCP product has its own checkout and revision.
-  node "$script_dir/gen-mcp-protocol.mjs" --port "$LIBTMUX_DOCS_PORT" --source-bound
-  node "$script_dir/gen-mcp-tools.mjs" --port "$LIBTMUX_DOCS_PORT" --source-bound
+  if node --input-type=module -e '
+    const { PORT_BY_SLUG } = await import("file://'"$site_dir"'/src/lib/ports.ts");
+    process.exit(PORT_BY_SLUG[process.env.LIBTMUX_DOCS_PORT]?.productAvailability?.mcp === "excluded" ? 1 : 0);
+  '; then
+    node "$script_dir/gen-mcp-protocol.mjs" --port "$LIBTMUX_DOCS_PORT" --source-bound
+    node "$script_dir/gen-mcp-tools.mjs" --port "$LIBTMUX_DOCS_PORT" --source-bound
+  fi
 fi
 node "$script_dir/gen-example-sources.mjs"
 node "$script_dir/gen-mentions.mjs"

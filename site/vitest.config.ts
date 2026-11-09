@@ -7,6 +7,7 @@ export default defineConfig({
   // Astro supplies this virtual module inside a build; tests that read the project root use a stand-in.
   resolve: { alias: { 'astro:config/server': fileURLToPath(new URL('./test/astro-config-server.ts', import.meta.url)) } },
   test: {
+    execArgv: ['--import', new URL('./test/markdown-conditions.mjs', import.meta.url).href],
     // Reuse transforms of the generated API and protocol catalogs across workers.
     fsModuleCache: true,
     // Report skipped assembly suites beside the summary, outside worker output.

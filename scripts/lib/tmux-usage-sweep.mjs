@@ -24,14 +24,17 @@ export const OPTION_SPELLINGS = new Set(['set-window-option', 'show-window-optio
 
 /** Where the library itself lives in each port, so a consumer package or a test helper is not swept. */
 export const LIBRARY_ROOTS = {
+  perl: ['packages/core/lib/', 'packages/async/lib/'],
   py: ['src/libtmux/'],
   ruby: ['gems/libtmux/', 'gems/libtmux-async/'],
   lua: ['lua/libtmux/'],
   julia: ['src/'],
+  haskell: ['src/'],
   ts: ['packages/libtmux/'],
   rs: ['crates/libtmux/'],
   go: ['tmux/'],
   java: ['libtmux/src/'],
+  clojure: ['libtmux-clojure/', 'libtmux-clojure-core-async/'],
   kotlin: ['libtmux-kotlin/'],
   scala: ['libtmux-scala/', 'libtmux-scala-cats/'],
   csharp: ['src/LibTmux/'],
@@ -39,6 +42,8 @@ export const LIBRARY_ROOTS = {
   powershell: ['src/LibTmux.PowerShell/'],
   cxx: ['include/libtmux/'],
   swift: ['Sources/LibTmux/'],
+  ocaml: ['lib/', 'unix/', 'eio/', 'workspace/', 'json/'],
+  erlang: ['apps/libtmux_erlang/src/'],
 }
 const NOT_LIBRARY = /(^|\/)(tmuxtest|testing|tests?|examples?)(\/|$)/i
 /** Members every type has, whose names are never about a tmux command: `GetHashCode` is not a getter of a list. */

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { newCheckPage } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
@@ -36,7 +37,7 @@ export function assertCompleteApiExample(rendered, example) {
 /** Inspect rendered API examples against their native execution receipts. */
 export async function checkCompleteApiExamples(browser, base) {
   const examples = JSON.parse(readFileSync(new URL('../test/fixtures/api-examples.json', import.meta.url), 'utf8')).examples
-  const page = await browser.newPage()
+  const page = await newCheckPage(browser, base)
   try {
     for (const example of examples) {
       const path = example.page.replace(`ports/${example.port}/`, `${example.port}/latest/`)
@@ -217,9 +218,10 @@ export async function checkClipboard(page, base) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const browser = await chromium.launch()
   try {
-    const page = await browser.newPage()
+    const base = (process.argv[2] ?? 'http://localhost:8080/en').replace(/\/$/, '')
+    const page = await newCheckPage(browser, base)
     page.setDefaultTimeout(1000)
-    await checkClipboard(page, (process.argv[2] ?? 'http://localhost:8080/en').replace(/\/$/, ''))
+    await checkClipboard(page, base)
   } finally {
     await browser.close()
   }

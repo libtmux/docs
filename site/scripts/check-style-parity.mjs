@@ -17,6 +17,7 @@
  *
  * Usage: node scripts/check-style-parity.mjs [base-url]
  */
+import { newCheckPage } from './browser-context.mjs'
 import { chromium } from 'playwright'
 
 const base = process.argv[2] ?? 'http://localhost:8080'
@@ -163,7 +164,7 @@ async function styles(page, url, cases, side) {
 }
 
 const browser = await chromium.launch()
-const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
+const page = await newCheckPage(browser, base, { viewport: { width: 1440, height: 900 } })
 const sphinx = await styles(page, SPHINX, CASES, 'sphinx')
 /*
  * Two visits, one array.

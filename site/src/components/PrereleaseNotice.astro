@@ -1,6 +1,6 @@
 ---
 /**
- * The bar that says the libraries are released but still change between releases.
+ * Release status for the selected port, with the shared site's API notice.
  *
  * Sits directly under the header and scrolls away with the page rather than
  * pinning: the header is `sticky top-0`, and a second sticky strip would take
@@ -21,19 +21,24 @@
  * showing it twice is better than a dismiss button that silently does
  * nothing.
  */
+import { releaseMaturity, type Port } from '../lib/ports'
+import { registryFor } from '../lib/registry'
+
 interface Props {
   /** Match the root landing page's centered content column. */
   centered?: boolean
+  port?: Port
 }
-const { centered = false } = Astro.props
+const { centered = false, port } = Astro.props
+const unreleased = port && releaseMaturity(registryFor(port), port.tagGrammar) === 'unreleased'
 ---
 
 <div class:list={['prerelease-notice', { 'prerelease-notice--centered': centered }]} data-prerelease-notice>
   <div class="prerelease-notice__inner">
     <p class="prerelease-notice__text">
-      <strong class="prerelease-notice__badge">Early release</strong>
+      <strong class="prerelease-notice__badge">{unreleased ? 'Unreleased' : 'Early release'}</strong>
       <span>
-        libtmux is released, and its APIs may still change between releases.
+        {unreleased ? `${port.packageName} has not been released. Its API may change during development.` : 'libtmux is released, and its APIs may still change between releases.'}
         This site's structure and URLs may change too.
       </span>
     </p>

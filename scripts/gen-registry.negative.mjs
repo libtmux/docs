@@ -87,8 +87,8 @@ for (const [name, mutate] of mutations) {
     copyFileSync(script, join(dir, 'scripts/gen-registry.mjs'))
     copyFileSync(join(here, '../site/src/lib/versions.ts'), join(dir, 'site/src/lib/versions.ts'))
     copyFileSync(real, join(dir, 'site/src/data/registry.json'))
-    const ports = PORTS.map(({ slug, repo, packageName, tagGrammar, tagPrefix }) => ({
-      slug, repo, packageName, tagGrammar, tagPrefix, checkout: join(dir, 'absent', slug),
+    const ports = PORTS.map(({ slug, repo, packageName, tagGrammar, tagPrefix, registry }) => ({
+      slug, repo, packageName, tagGrammar, tagPrefix, registry, checkout: join(dir, 'absent', slug),
     }))
     writeFileSync(join(dir, 'site/src/lib/ports.ts'), `export const PORTS = ${JSON.stringify(ports)}\n`)
     const seed = JSON.parse(readFileSync(real, 'utf8'))
@@ -96,6 +96,7 @@ for (const [name, mutate] of mutations) {
     delete baseline.ports.powershell
     delete baseline.ports.julia
     baseline.ports.csharp = { status: 'release', version: '1.2.3', release: '1.2.3', tag: 'v1.2.3' }
+    baseline.ports.haskell = { status: 'release', version: '0.1.0.0', release: '0.1.0.0', tag: 'v0.1.0.0' }
     writeFileSync(join(dir, 'published.json'), JSON.stringify(baseline))
     writeFileSync(join(dir, 'fetch.mjs'), `
       import { readFileSync } from 'node:fs'
@@ -109,6 +110,9 @@ for (const [name, mutate] of mutations) {
     const gallery = (name) => `https://www.powershellgallery.com/api/v2/FindPackagesById()?id=%27${name}%27`
     const general = 'https://raw.githubusercontent.com/JuliaRegistries/General/master/L/LibTmux/Versions.toml'
     const hex = 'https://hex.pm/api/packages/libtmux'
+    const hackage = 'https://hackage.haskell.org/package/libtmux-haskell.json'
+    const erlangHex = 'https://hex.pm/api/packages/libtmux_erlang'
+    const erlangWorkspaceHex = 'https://hex.pm/api/packages/libtmux_erlang_workspace'
     const core = gallery('LibTmux')
     const workspace = gallery('LibTmux.Workspace')
     const next = `${core}&$skip=1`
@@ -116,6 +120,13 @@ for (const [name, mutate] of mutations) {
       `<entry><m:properties><d:Id>${name}</d:Id><d:Version>${version}</d:Version><d:Published m:type="Edm.DateTime">${published}</d:Published></m:properties></entry>`
     const feed = (entries, more = '') => `<feed xmlns="http://www.w3.org/2005/Atom" xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata">${entries}${more}</feed>`
     const replies = {
+      'https://api.github.com/repos/libtmux/libtmux-haskell/tags?per_page=100': {
+        body: JSON.stringify(['v0.1.0.0', 'v0.1.0.2', 'v0.1.0.10'].map((name) => ({ name }))),
+      },
+      [hackage]: { body: JSON.stringify({ '0.1.0.0': 'normal', '0.1.0.2': 'normal', '0.1.0.10': 'normal' }) },
+      'https://api.github.com/repos/libtmux/libtmux-erlang/tags?per_page=100': { body: '[]' },
+      [erlangHex]: { status: 404, body: '{"status":404}' },
+      [erlangWorkspaceHex]: { status: 404, body: '{"status":404}' },
       'https://api.github.com/repos/libtmux/libtmux-powershell/tags?per_page=100': {
         body: JSON.stringify(['v0.1.0-alpha2', 'v0.1.0-alpha3', 'v0.1.0-alpha4', 'v1.0.0'].map((name) => ({ name }))),
       },
@@ -149,6 +160,21 @@ for (const [name, mutate] of mutations) {
     const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
     let result = invoke(replies)
     check('an older published registry gains both ports', Object.keys(result.ports).length === PORTS.length, result.error)
+    check('source-only Perl keeps its unpublished package entries during online refresh',
+      same(result.ports.perl, seed.ports.perl), result.error)
+    writeFileSync(join(dir, 'published.json'), JSON.stringify({
+      ...baseline, ports: { ...baseline.ports, perl: { status: 'release', version: '1.0.0', release: '1.0.0', tag: 'v1.0.0' } },
+    }))
+    const unconfigured = invoke(replies)
+    check('a published Perl entry requires a registry probe', /perl: no registry probe/.test(unconfigured.error), unconfigured.error)
+    writeFileSync(join(dir, 'published.json'), JSON.stringify({
+      ...baseline, ports: { ...baseline.ports, perl: { ...seed.ports.perl, packages: {
+        ...seed.ports.perl.packages, 'LibTmux-Workspace': { status: 'release', version: '1.0.0', release: '1.0.0', tag: 'v1.0.0' },
+      } } },
+    }))
+    const companion = invoke(replies)
+    check('a published Perl companion also requires a registry probe', /perl: no registry probe/.test(companion.error), companion.error)
+    writeFileSync(join(dir, 'published.json'), JSON.stringify(baseline))
     check('Gallery pages refresh the core and workspace prereleases, excluding unlisted versions',
       result.ports.powershell?.version === '0.1.0-alpha3' && result.ports.powershell?.tag === 'v0.1.0-alpha3'
       && result.ports.powershell?.packages?.['LibTmux.Workspace']?.version === '0.1.0-alpha4', result.error)
@@ -157,10 +183,32 @@ for (const [name, mutate] of mutations) {
     check('Hex excludes retired releases and their tags',
       result.ports.elixir?.status === 'prerelease' && result.ports.elixir?.version === '0.0.1-alpha.1'
       && result.ports.elixir?.tag === 'v0.0.1-alpha.1', `${JSON.stringify(result.ports.elixir)} ${result.error}`)
+    check('Hackage preserves every numeric component and selects the newest matching tag',
+      result.ports.haskell?.version === '0.1.0.10' && result.ports.haskell?.tag === 'v0.1.0.10', `${JSON.stringify(result.ports.haskell)} ${result.error}`)
+    const emptyHackage = invoke({ ...replies, [hackage]: { body: '{}' } })
+    check('an empty Hackage response preserves the last known state',
+      same(emptyHackage.ports.haskell, baseline.ports.haskell), `${JSON.stringify(emptyHackage.ports.haskell)} ${emptyHackage.error}`)
+    const forbiddenHackage = invoke({ ...replies, [hackage]: { status: 403, body: 'Forbidden' } })
+    check('Hackage access failure preserves the last known state',
+      same(forbiddenHackage.ports.haskell, baseline.ports.haskell), `${JSON.stringify(forbiddenHackage.ports.haskell)} ${forbiddenHackage.error}`)
+    const absentHackage = invoke({ ...replies, [hackage]: { status: 404, body: 'Not found' } })
+    check('Hackage 404 is explicit package absence',
+      absentHackage.ports.haskell?.status === 'unpublished' && absentHackage.ports.haskell?.version === null, `${JSON.stringify(absentHackage.ports.haskell)} ${absentHackage.error}`)
     const unlisted = invoke({ ...replies, [hex]: { status: 404, body: '{"status":404,"message":"Resource not found"}' } })
     check('a package Hex does not carry is unpublished',
       unlisted.ports.elixir?.status === 'unpublished' && unlisted.ports.elixir?.version === null, `${JSON.stringify(unlisted.ports.elixir)} ${unlisted.error}`)
     check('an unavailable existing port retains its newer published entry', same(result.ports.csharp, baseline.ports.csharp), result.error)
+    check('missing Erlang packages have explicit unpublished core and workspace entries',
+      result.ports.erlang?.status === 'unpublished'
+      && result.ports.erlang?.packages?.libtmux_erlang_workspace?.status === 'unpublished', result.error)
+    const publishedErlang = { status: 'prerelease', version: '0.1.0-alpha.1', release: null, tag: 'v0.1.0-alpha.1' }
+    writeFileSync(join(dir, 'published.json'), JSON.stringify({ ...baseline, ports: { ...baseline.ports, erlang: publishedErlang } }))
+    for (const [url, status] of [[erlangHex, 403], [erlangWorkspaceHex, 503]]) {
+      const unavailable = invoke({ ...replies, [url]: { status, body: '{"error":"unavailable"}' } })
+      check(`Erlang HTTP ${status} preserves the published baseline`,
+        same(unavailable.ports.erlang, publishedErlang), `${JSON.stringify(unavailable.ports.erlang)} ${unavailable.error}`)
+    }
+    writeFileSync(join(dir, 'published.json'), JSON.stringify(baseline))
     // A published copy written under another schema names other fields, so it is no fallback.
     writeFileSync(join(dir, 'published.json'), JSON.stringify({ ...baseline, schema: 1 }))
     result = invoke(replies)
@@ -195,7 +243,7 @@ for (const [name, mutate] of mutations) {
         ...['core', 'mcp', 'workspace'].filter((product) => product === 'core' || productAvailable(port, product))
           .map((product) => [`${port.slug} ${product}`, () => productStatus(port, product, registry)]),
         ...Object.entries(registry.ports[port.slug].packages ?? {})
-          .map(([name, item]) => [`${port.slug} ${name}`, () => releaseMaturity(item)]),
+          .map(([name, item]) => [`${port.slug} ${name}`, () => releaseMaturity(item, port.tagGrammar)]),
       ].flatMap(([label, read]) => {
         try {
           read()
@@ -251,6 +299,34 @@ for (const [name, mutate] of mutations) {
     check('an incomplete Gallery entry is not an empty package feed', same(result.ports.powershell, seed.ports.powershell), result.error)
     result = invoke({ ...replies, [workspace]: { status: 500, body: 'unavailable' } })
     check('a failed sibling package probe does not publish a partial PowerShell entry', same(result.ports.powershell, seed.ports.powershell), result.error)
+
+    const ocamlTags = 'https://api.github.com/repos/libtmux/libtmux-ocaml/tags?per_page=100'
+    const opam = 'https://api.github.com/repos/ocaml/opam-repository/contents/packages/libtmux'
+    const ocaml = { ...replies, [ocamlTags]: tagged('v0.1.0-alpha.1', 'v0.1.0') }
+    writeFileSync(join(dir, 'published.json'), JSON.stringify(baseline))
+    result = invoke({ ...ocaml, [opam]: { body: JSON.stringify([
+      { type: 'dir', name: 'libtmux.0.1.0-alpha.1' },
+      { type: 'dir', name: 'libtmux.0.1.0' },
+      { type: 'file', name: 'README.md' },
+      { type: 'dir', name: 'another-package.9.0.0' },
+    ]) } })
+    const publishedOcaml = { status: 'release', version: '0.1.0', release: '0.1.0', tag: 'v0.1.0' }
+    check('opam directory versions select the published release and its tag',
+      same(result.ports.ocaml, publishedOcaml), `${JSON.stringify(result.ports.ocaml)} ${result.error}`)
+    result = invoke({ ...ocaml, [opam]: { body: JSON.stringify([{ type: 'dir', name: 'libtmux.0.1.0-alpha.1' }]) } })
+    check('opam does not treat an unpublished final tag as a registry release',
+      same(result.ports.ocaml, { status: 'prerelease', version: '0.1.0-alpha.1', release: null, tag: 'v0.1.0-alpha.1' }), result.error)
+    writeFileSync(join(dir, 'published.json'), JSON.stringify({ ...baseline, ports: { ...baseline.ports, ocaml: publishedOcaml } }))
+    for (const [why, response] of [
+      ['HTTP 403', { status: 403, body: 'unavailable' }],
+      ['HTTP 404', { status: 404, body: 'not found' }],
+      ['HTTP 500', { status: 500, body: 'unavailable' }],
+      ['malformed data', { body: JSON.stringify([{ type: 'dir', name: 'libtmux.not-a-version' }]) }],
+    ]) {
+      result = invoke({ ...ocaml, [opam]: response })
+      check(`opam ${why} preserves the last published entry`, same(result.ports.ocaml, publishedOcaml), result.error)
+    }
+    writeFileSync(join(dir, 'published.json'), JSON.stringify(baseline))
     result = invoke({}, true)
     check('offline refresh fills missing ports and preserves published entries',
       Object.keys(result.ports).length === PORTS.length && same(result.ports.powershell, seed.ports.powershell)

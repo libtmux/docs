@@ -1,10 +1,10 @@
 import type { APIRoute } from 'astro'
-import { moduleOf, qualifiedNameOf } from '@libtmux/api-model'
+import { moduleOf, qualifiedNameOf } from '@libtmux/api-model/reference'
 import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE, localeRoot } from '../i18n/locales.ts'
 import { buildLocale, localeOf } from '../i18n/resolve.ts'
 import { API_MODELS, PORT_NAME, pageSlug } from '../lib/api-models.ts'
-import { DOC_PRODUCTS, hasReference, PORTS, PORT_BY_SLUG, portPageUrl, productApiPath, productAvailable, productIsConcept, productInDevelopment, referenceUrl, CONCEPT_DESCRIPTION, type DocProduct } from '../lib/ports.ts'
+import { DOC_PRODUCTS, hasReference, PORTS, PORT_BY_SLUG, portPageUrl, productApiPath, productAvailable, productIncluded, productIsConcept, productInDevelopment, referenceUrl, CONCEPT_DESCRIPTION, type DocProduct } from '../lib/ports.ts'
 import { PORT_ROOT } from '../lib/site-root.ts'
 import { docsRoutePath } from '../lib/docs-paths.ts'
 import { docsEntriesAvailable } from '../lib/page-port-links.ts'
@@ -182,13 +182,15 @@ export const GET: APIRoute = async ({ site }) => {
       package: p.packageName,
       reference: hasReference(p) ? referenceUrl(p, versionFor(p.slug)) : null,
       ...(p.parentLibrary ? { parentLibrary: p.parentLibrary } : {}),
-      products: Object.entries(p.parentLibrary ? {} : DOC_PRODUCTS).map(([slug, product]) => ({
+      products: Object.entries(p.parentLibrary ? {} : DOC_PRODUCTS)
+        .filter(([slug]) => p.productAvailability?.[slug as DocProduct] !== 'excluded')
+        .map(([slug, product]) => ({
         slug, name: product.label,
-        availability: productAvailable(p, slug as DocProduct) ? 'available' : 'unpublished',
+        availability: p.productAvailability?.[slug as DocProduct] ?? 'available',
         inDevelopment: productInDevelopment(p, slug as DocProduct),
         ...(productIsConcept(p, slug as DocProduct) ? { support: 'concept', supportDescription: CONCEPT_DESCRIPTION } : {}),
         ...(slug === 'workspace' ? { cli: p.workspaceCli ?? null, cliAvailability: p.workspaceCliAvailability ?? null } : {}),
-        url: portPageUrl(p, versionFor(p.slug), slug),
+        url: p.productAvailability?.[slug as DocProduct] === 'excluded' ? null : portPageUrl(p, versionFor(p.slug), slug),
         reference: productAvailable(p, slug as DocProduct)
           ? portPageUrl(p, versionFor(p.slug), productApiPath(slug as DocProduct)) : null,
         ...(slug === 'mcp' ? { protocol: productAvailable(p, 'mcp')
@@ -202,7 +204,7 @@ export const GET: APIRoute = async ({ site }) => {
             inventory: `${refBase}${p.slug}/${versionFor(p.slug)}/objects.inv`,
           }
         : null,
-      documentation: documentationAreas(p.slug).map((area) => ({
+      documentation: documentationAreas(p.slug).filter((area) => !area.product || p.productAvailability?.[area.product] !== 'excluded').map((area) => ({
         id: area.id,
         name: area.label,
         kind: area.kind,

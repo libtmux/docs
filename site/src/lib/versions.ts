@@ -121,7 +121,7 @@ export function canonicalUrl(
  * follow. A single grammar cannot serve both, and reading a PEP 440 tag with
  * the SemVer one yields NaN for the patch number.
  */
-export type TagGrammar = 'semver' | 'pep440' | 'rubygems' | 'luarocks'
+export type TagGrammar = 'semver' | 'pep440' | 'rubygems' | 'luarocks' | 'cabal'
 
 interface Grammar {
   re: RegExp
@@ -153,6 +153,11 @@ const GRAMMARS: Record<TagGrammar, Grammar> = {
     re: /^v(\d+)\.(\d+)\.(\d+)((?:alpha|beta|rc)\d+)?$/,
     rank: (pre) => (pre === null ? 0 : -1),
   },
+  cabal: {
+    // Cabal's versionDigitParser rejects leading zeros and components longer than nine digits.
+    re: /^v((?:0|[1-9]\d{0,8})(?:\.(?:0|[1-9]\d{0,8}))*)$/,
+    rank: () => 0,
+  },
 }
 
 export interface ParsedTag {
@@ -165,6 +170,7 @@ export interface ParsedTag {
 export function parseTag(name: string, grammar: TagGrammar): ParsedTag | null {
   const m = GRAMMARS[grammar].re.exec(name)
   if (!m) return null
+  if (grammar === 'cabal') return { nums: m[1].split('.').map(Number), pre: null }
   const [, major, minor, patch, pre] = m
   return { nums: [Number(major), Number(minor), Number(patch)], pre: pre ?? null }
 }
@@ -194,10 +200,11 @@ export function compareTags(a: string, b: string, grammar: TagGrammar = 'semver'
   const pa = parseTag(a, grammar)
   const pb = parseTag(b, grammar)
   if (!pa || !pb) return pa ? -1 : pb ? 1 : 0
-  for (let i = 0; i < 3; i += 1) {
-    const d = (pb.nums[i] ?? 0) - (pa.nums[i] ?? 0)
+  for (let i = 0; i < Math.min(pa.nums.length, pb.nums.length); i += 1) {
+    const d = pb.nums[i] - pa.nums[i]
     if (d !== 0) return d
   }
+  if (pa.nums.length !== pb.nums.length) return pb.nums.length - pa.nums.length
   const { rank } = GRAMMARS[grammar]
   const ra = rank(pa.pre)
   const rb = rank(pb.pre)

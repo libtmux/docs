@@ -6,7 +6,7 @@ import { PORT_BY_SLUG } from '../lib/ports'
 import { CAPABILITY_GROUPS, coreLead, resolveCoreHome } from '../lib/core-home'
 import { portCapabilities, type CapabilityTable } from '../lib/core-capabilities'
 import { QUICKSTARTS } from '../lib/quickstarts'
-import { installFor, registryFor } from '../lib/registry'
+import { installFor, installsFor, installSelection, registryFor } from '../lib/registry'
 import { proseHref } from '../lib/docs-paths'
 import { SITE_ROOT } from '../lib/site-root'
 import CAPABILITY_TABLE from '../data/core-capabilities.json'
@@ -34,7 +34,8 @@ const home = resolveCoreHome(port, version)
 const example = QUICKSTARTS[port]?.complete
 const showcase = portCapabilities(port, CAPABILITY_TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>)
 
-const install = installFor(info)
+const sourceInstall = home.modules.length ? installsFor(info, installSelection(info, [], process.env))[0] : undefined
+const install = sourceInstall ?? installFor(info)
 const released = registryFor(info).version ?? ''
 const series = /^0\.(\d+)/.exec(released)?.[0]
 // The pin advice is the registry's own range syntax, for the registries whose syntax is settled.
@@ -59,22 +60,36 @@ const rest = (group: keyof typeof CAPABILITY_GROUPS) => home.capabilities[group]
 
 <h2 id="install">Install</h2>
 <div class="not-prose"><Code code={install.code} lang={install.lang} frame="none" /></div>
+{sourceInstall?.note && <p>{sourceInstall.note}</p>}
 {pin && series && <>
   <p><code>{info.packageName} {released}</code> is pre-1.0 and can change between minor versions. Pin to a range:</p>
   <div class="not-prose"><Code code={pin.code(info.packageName, series, released)} lang={pin.lang} frame="none" /></div>
 </>}
 
 <h2 id="at-a-glance">At a glance</h2>
-<p><strong>Server → Session → Window → Pane.</strong> Each level of the tmux hierarchy has its own entry in the {info.name} API, with the tmux object it wraps.</p>
+{home.modules.length > 0 ? <div class="core-home__table" role="region" aria-label="Public modules" tabindex="0">
+  <table class="table not-prose" data-core-home-modules>
+    <thead><tr><th>Module</th><th>Provides</th></tr></thead>
+    <tbody>{home.modules.map((module) => <tr>
+      <td><a href={module.href}><code>{module.name}</code></a></td>
+      <td>{module.summary}</td>
+    </tr>)}</tbody>
+  </table>
+</div> : <>
+<p><strong>Server → Session → {home.association && <><a href={home.association.href}>{home.association.name}</a> → </>}Window → Pane.</strong> Each level of the tmux hierarchy has its own entry in the {info.name} API, with the tmux object it wraps.</p>
 <div class="core-home__table" role="region" aria-label="Server, session, window, pane" tabindex="0">
   <table class="table not-prose" data-core-home-objects>
-    <thead><tr><th>Type</th><th>Wraps</th></tr></thead>
+    <thead><tr><th>{home.objectLabel}</th><th>Wraps</th></tr></thead>
     <tbody>{home.objects.map((object) => <tr data-role={object.role}>
       <td><a href={object.href}><code>{object.name}</code></a></td>
       <td>{object.wraps}{object.tmuxId && <>, ID <code>{object.tmuxId}n</code></>}</td>
-    </tr>)}</tbody>
+    </tr>)}{home.association && <tr data-role="window-link">
+      <td><a href={home.association.href}><code>{home.association.name}</code></a></td>
+      <td>A session-window association, with its index and active state</td>
+    </tr>}</tbody>
   </table>
 </div>
+</>}
 
 <h2 id="what-it-does">What it does</h2>
 {(example || showcase.length > 0) && <div class="not-prose"><CoreShowcase port={port} /></div>}

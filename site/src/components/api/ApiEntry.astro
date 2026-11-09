@@ -1,5 +1,5 @@
 ---
-import { boundLabel, parameterId, qualifiedNameOf, typeParameterId, typeParameterList, type ApiSymbol, type SymbolIndex, type SymbolKind } from '@libtmux/api-model'
+import { boundLabel, parameterId, qualifiedNameOf, typeParameterId, typeParameterList, type ApiSymbol, type SymbolIndex, type SymbolKind } from '@libtmux/api-model/reference'
 import { apiInventoryAttributes } from '../../lib/inventory-targets'
 import { API_MODELS, mentionsOf, referenceAlternatives } from '../../lib/api-models'
 import { productApiIndex } from '../../lib/product-api'
@@ -23,6 +23,7 @@ import ApiCommandParameters from './ApiCommandParameters.astro'
 import ApiSignatureParameters from './ApiSignatureParameters.astro'
 import { apiSignatureLayouts } from '../../lib/code-layout'
 import { pythonSignatureLayout } from '../../lib/python-code-layout'
+import { nativeKind } from '../../lib/api-labels'
 
 /**
  * One documented symbol, in the shape gp-sphinx's stylesheet expects.
@@ -209,13 +210,14 @@ const catalogEntries = !linkRows ? [] : catalogLinks ?? (port && !manualLinks ? 
 const mentionSections = [...new Set(mentions.map((m) => m.section ?? 'docs'))].sort()
 
 const badges = [
-  { label: symbol.command?.kind ?? kind, variant: 'kind' as const, value: kind },
+  { label: symbol.command?.kind ?? nativeKind(symbol, language), variant: 'kind' as const, value: nativeKind(symbol, language) },
   ...(symbol.package ? [{ label: symbol.package, variant: 'mod' as const, value: 'package' }] : []),
-  ...symbol.modifiers.map((m) => ({ label: m, variant: 'mod' as const, value: m })),
+  ...symbol.modifiers.filter((m) => port !== 'clojure' || m !== 'overload')
+    .map((m) => ({ label: m, variant: 'mod' as const, value: m })),
   ...(symbol.signatures.length > 1 && symbol.modifiers.includes('overload')
     ? [
         {
-          label: `${symbol.signatures.length} overloads`,
+          label: `${symbol.signatures.length} ${port === 'clojure' ? 'arities' : 'overloads'}`,
           variant: 'mod' as const,
           value: 'overload',
         },
@@ -258,7 +260,7 @@ const folds = (sig: { params: unknown[] }) => sig.params.length >= FOLD_THRESHOL
 const foldable = symbol.signatures.some(folds)
 
 const { params, returns, raises, typeParameters } = apiEntryFields(symbol, language)
-const methods = apiMethodDetails(symbol)
+const methods = apiMethodDetails(symbol, language)
 const overloadTargets = new Map(methods.map((method) => [method.overloadLabel, method.id]))
 /**
  * Parameters declared by an enclosing type that this symbol's signature uses.
@@ -341,9 +343,9 @@ const hasBody =
               {...signatureTargets[i]}
               tabindex={signatureLayouts.has(sig) ? '0' : undefined}
               role={signatureLayouts.has(sig) ? 'region' : undefined}
-              aria-label={signatureLayouts.has(sig) ? `Signature for ${symbol.name}${symbol.signatures.length > 1 ? `, overload ${symbol.signatures.indexOf(sig) + 1} of ${symbol.signatures.length}` : ''}` : undefined}
+              aria-label={signatureLayouts.has(sig) ? `Signature for ${symbol.name}${symbol.signatures.length > 1 ? `, ${port === 'clojure' ? 'arity' : 'overload'} ${symbol.signatures.indexOf(sig) + 1} of ${symbol.signatures.length}` : ''}` : undefined}
               data-code-columns={signatureLayouts.get(sig)?.limit} data-code-width-status={signatureLayouts.has(sig) ? (signatureLayouts.get(sig)!.failures.length ? 'unresolved' : 'fits') : undefined} data-code-width-failures={signatureLayouts.get(sig)?.failures.length ? JSON.stringify(signatureLayouts.get(sig)!.failures) : undefined}>{sig.label && sig.label !== '__AllParameterSets' && <span class="api-native-signature-label">{sig.label}{sig.isDefault ? ' (default)' : ''}: </span>}<ApiType type={nativeSignatureText(symbol, sig, language)} index={index} context={symbol} signature={sig} nameHref={nameHref} layout={signatureLayouts.get(sig)} /></span>
-          )) : <span class="api-native-signature">{anonymousDeclarationLabel(symbol)}</span>) : <>
+          )) : <span class="api-native-signature">{language === 'ocaml' && ['module', 'interface'].includes(symbol.kind) ? `${symbol.kind === 'interface' ? 'module type' : 'module'} ${symbol.name}` : anonymousDeclarationLabel(symbol)}</span>) : <>
           {keyword && <em class="property"><span class="pre">{keyword}</span> </em>}
           {prename && <span class="sig-prename descclassname"><span class="pre">{prename}</span></span>}<span class="sig-name descname">{nameHref ? <a class="api-signature-name-link pre" href={nameHref}>{symbol.name}</a> : <span class="pre">{symbol.name}</span>}</span>{alias?.typeParams && <ApiType type={alias.typeParams} index={index} context={symbol} />}
           {
@@ -500,7 +502,7 @@ const hasBody =
         {apiCommandRelatedLinks(symbol, index).length > 0 && <div class="api-command-related">
           <span class="api-command-related__label">Related APIs</span>
           <ul>{apiCommandRelatedLinks(symbol, index).map((link) => <li><a href={link.href} class="api-xref">
-            {link.symbol ? <><ApiBadge label={link.symbol.command?.kind ?? link.symbol.kind} value={link.symbol.command?.kind ?? link.symbol.kind} variant="kind" compact /><code>{link.text}</code></> : link.text}
+            {link.symbol ? <><ApiBadge label={link.symbol.command?.kind ?? nativeKind(link.symbol, language)} value={link.symbol.command?.kind ?? nativeKind(link.symbol, language)} variant="kind" compact /><code>{link.text}</code></> : link.text}
           </a></li>)}</ul>
         </div>}
       </div>

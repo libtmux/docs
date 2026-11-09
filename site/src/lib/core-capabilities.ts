@@ -23,6 +23,7 @@ export const CAPABILITIES = [
   { id: 'create-windows', label: 'Create windows' },
   { id: 'move-windows', label: 'Move windows' },
   { id: 'set-layouts', label: 'Set layouts' },
+  { id: 'typed-values', label: 'Validate tmux IDs, dimensions and releases' },
 ] as const
 export type CapabilityId = (typeof CAPABILITIES)[number]['id']
 
@@ -96,6 +97,7 @@ export const MAX_PROGRAM_LINES = 150
  */
 export function programProblems(lang: string, content: string): string[] {
   const rules: Record<string, { imports: RegExp; entry: RegExp; local?: RegExp }> = {
+    ocaml: { imports: /^open Libtmux$/m, entry: /^let \(\) =/m, local: /open Example|#use/ },
     rust: { imports: /^use /m, entry: /^(?:async )?fn main\(|^(?:#\[[^\]]+\]\s*)+(?:async )?fn main\(/m },
     go: { imports: /^import[ (]/m, entry: /^func main\(\)/m },
     // A port may indent its require inside the begin block so excerpts of that block carry it.

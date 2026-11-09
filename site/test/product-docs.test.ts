@@ -1,16 +1,23 @@
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, globSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { createHash } from 'node:crypto'
+import { parseFrontmatter } from '@astrojs/markdown-remark'
 import { Window, type Element as DomElement } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
 import { CONCEPT_DESCRIPTION, PORTS, productAvailable, productDescription, productIsConcept, productInDevelopment, productStatus, workspaceOverviewNotice, type Port } from '../src/lib/ports'
+import { proseSources } from '../../scripts/lib/api-destinations.mjs'
 import { REGISTRY } from '../src/lib/registry'
 import { LANG_TO_PORT } from '../src/plugins/remark-port-code.mjs'
-import { SITE_BUILT, SITE_PREFIX, PREVIEW_PREFIX, productionPath, publishedPath, sitePath } from './site-root'
+import { SITE_BUILT, SITE_PREFIX, PREVIEW_PREFIX, REPO_ROOT, productionPath, publishedPath, sitePath } from './site-root'
 import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects } from '../src/lib/mcp-catalog'
 import { mcpObjectGroup } from '../src/lib/mcp-reference'
 import { mentionBadge, mentionBadgeHtml } from '../src/lib/mention-badge'
-import { mcpTitle, workspaceSubtitle, workspaceTitle } from '../src/lib/product-copy'
+import { headingTitle } from '../src/lib/branding'
+import { docsPath, type DocsPage } from '../src/lib/docs-paths'
+import { docsEntriesAvailable } from '../src/lib/page-port-links'
+import { documentationAreas, SOURCE_GUIDE_PORTS, sourceGuidesFor } from '../src/lib/port-documentation'
+import { KNOWN_PORTS, resolvePortData } from '../src/lib/workspace-shared-slots'
+import { DEFAULT_LOCALE, isLocale } from '../src/i18n/locales'
 import type { ApiTreeJson } from '../src/lib/api-search'
 import { PRODUCT_SECTIONS } from '../src/lib/product-api-sections'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
@@ -38,13 +45,22 @@ interface DocsManifest {
   pages: { url: string; markdownUrl: string }[]
   ports: {
     slug: string
-    products: { slug: string; availability: string; inDevelopment: boolean; support?: string; supportDescription?: string; cli?: string | null; cliAvailability?: string | null; reference: string | null; protocol?: string | null }[]
+    products: { slug: string; availability: string; url: string | null; inDevelopment: boolean; support?: string; supportDescription?: string; cli?: string | null; cliAvailability?: string | null; reference: string | null; protocol?: string | null }[]
     documentation: { id: string; name: string; kind: string; availability: string; url: string; package?: string }[]
   }[]
 }
 
 const products = ['mcp', 'workspace'] as const
 const primaryPorts = PORTS.filter((port) => !port.parentLibrary)
+// Read authored and staged routes only when the assembled-output checks run.
+let sourcePages: Map<string, DocsPage[]> | undefined
+function portPages(port: string): DocsPage[] {
+  if (!sourcePages) {
+    const entries = proseSources({ root: REPO_ROOT })
+    sourcePages = new Map(PORTS.map((owner) => [owner.slug, docsEntriesAvailable(entries, owner.slug)]))
+  }
+  return sourcePages.get(port)!
+}
 /** A regular-expression alternation over the registered ports, so a new port is covered without editing a list. */
 const portSlugs = (ports: readonly Port[] = PORTS) => ports.map((port) => port.slug).join('|')
 const read = (path: string) => readFileSync(sitePath(path), 'utf8')
@@ -73,35 +89,118 @@ const pagesBeyondOverview = (pages: { url: string }[], overview: string) => page
   .filter((path) => path.startsWith(overview) && path !== overview)
 const urlFor = (path: string) => new URL(`/${SITE_PREFIX}${path}`, 'https://libtmux.org')
 const productUrl = new RegExp(`/(?:${portSlugs(primaryPorts)})/[^/]+/(?:mcp|workspace)(?:/|$)`)
-// Python, Ruby, PowerShell and Julia keep real workspace Topics or native replacements; no other port does.
-const legacyWorkspaceTopics = new RegExp(`/(?:${portSlugs(PORTS.filter((port) => !['py', 'ruby', 'powershell', 'julia'].includes(port.slug)))})/[^/]+/workspace/topics/?$`)
+// Only a documented Internals section without a public Topics page needs this redirect.
+function legacyWorkspaceTopics(url: string) {
+  const match = /\/([^/]+)\/[^/]+\/workspace\/topics\/?$/.exec(url)
+  if (!match || !PORTS.some((port) => port.slug === match[1])) return false
+  const sections = sectionsFor(match[1], 'workspace')
+  return sections.includes('internals/topics') && !sections.includes('topics')
+}
 // A page's storage identity under `ports/` must not reach a public link.
 const storageIdentity = new RegExp(`/ports/(?:${portSlugs()})/`)
 // Port documentation is not translated, so no port tree exists under a translated locale.
 const localizedPortTree = new RegExp(`^/ja/(?:${portSlugs()})/`)
-const nativeProductDocs = (port: string) => ['powershell', 'julia'].includes(port)
-const mcpClientSetupRoutes: Record<string, string[]> = {
-  py: ['mcp/guides'], ruby: ['mcp/guides/connect-client', 'mcp/source-guide'],
-  julia: ['mcp/source-guide'], ts: ['mcp/guides'], rs: ['mcp/guides/connect-client'],
-  go: ['mcp/guides/connect-client'], java: ['mcp/guides'], csharp: ['mcp/guides/connect-client'],
-  cxx: ['mcp/guides'], swift: ['mcp/guides'],
+
+const productSources = new Map<string, { title?: string; subtitle?: string; shared?: boolean } | undefined>()
+type SourcePage = DocsPage & { data: DocsPage['data'] & { title: string } }
+const sourceByPort = new Map<string, Map<string, SourcePage>>()
+let sourceEntries: SourcePage[] | undefined
+
+/** Expected routes come from source, so a missing rendered page cannot remove its own test. */
+function documentsFor(port: string): Map<string, SourcePage> {
+  const cached = sourceByPort.get(port)
+  if (cached) return cached
+  if (!sourceEntries) {
+    const base = new URL('../src/content/docs/', import.meta.url)
+    const idFor = (file: string) => file.replace(/\.mdx?$/, '').replace(/\/index$/, '')
+    const entries = globSync(['**/*.md', '**/*.mdx'], { cwd: base }).filter((file) => {
+      const locale = file.split('/')[0]
+      return !isLocale(locale) || locale === DEFAULT_LOCALE
+    }).map((file) => ({
+      id: idFor(file), data: parseFrontmatter(readFileSync(new URL(file, base), 'utf8')).frontmatter,
+    })) as SourcePage[]
+    const owned = new Set(entries.map((entry) => entry.id))
+    const shared = new URL('../src/content/_workspace-shared/', import.meta.url)
+    for (const file of globSync(['**/*.md', '**/*.mdx'], { cwd: shared })) {
+      const { frontmatter } = parseFrontmatter(readFileSync(new URL(file, shared), 'utf8'))
+      for (const slug of KNOWN_PORTS) {
+        const id = `ports/${slug}/${idFor(file)}`
+        if (!owned.has(id)) entries.push({ id, data: resolvePortData(frontmatter, slug, 'workspace') } as SourcePage)
+      }
+    }
+    sourceEntries = entries
+  }
+  const documents = new Map(docsEntriesAvailable(sourceEntries, port).map((entry) => [docsPath(entry), entry]))
+  // A staging omission is a failure, not permission to skip that port's native guides.
+  for (const guide of SOURCE_GUIDE_PORTS.includes(port) ? sourceGuidesFor(port) : []) {
+    expect(documents.has(guide.route), `${port}: stage native guide ${guide.sourcePath}`).toBe(true)
+  }
+  sourceByPort.set(port, documents)
+  return documents
 }
 
-it('advertises local native loaders while retaining their development status', () => {
-  // Ruby ships its own released `libtmux-workspace load` and published MCP
-  // gem, and Lua has neither product at all: both fall outside the
-  // py-vs-generic-local-CLI dichotomy this test covers.
-  const native = (p: Port) => p.workspaceCliAvailability === 'local' || p.workspaceCliAvailability === 'published'
-  for (const port of PORTS.filter((p) => p.slug === 'py' || native(p))) {
-    expect(port.workspaceCli).toBe(port.slug === 'julia' ? 'libtmux-workspace load' : native(port) ? 'tmux-workspace load' : 'tmuxp load')
-    if (!native(port)) expect(port.workspaceCliAvailability).toBe('released')
-    expect(productInDevelopment(port, 'workspace')).toBe(native(port))
-    expect(productInDevelopment(port, 'mcp')).toBe(true)
+function sourceGuide(port: string, product: ProductPage['product']) {
+  return SOURCE_GUIDE_PORTS.includes(port)
+    ? sourceGuidesFor(port).find((guide) => guide.product === product && guide.route === `${product}/source-guide`) : undefined
+}
+/** Authored metadata determines headings and which section roots really exist. */
+function productSource(port: string, product: ProductPage['product'], section: string): { title?: string; subtitle?: string; shared?: boolean } | undefined {
+  const key = `${port}/${product}/${section}`
+  if (productSources.has(key)) return productSources.get(key)
+  const route = [product, section].filter(Boolean).join('/')
+  const guide = SOURCE_GUIDE_PORTS.includes(port)
+    ? sourceGuidesFor(port).find((entry) => entry.route === route) : undefined
+  if (guide) {
+    const source = { title: guide.title }
+    productSources.set(key, source)
+    return source
+  }
+  const roots = [`docs/ports/${port}`, ...(product === 'workspace' && KNOWN_PORTS.has(port) ? ['_workspace-shared'] : [])]
+  for (const root of roots) for (const suffix of ['.md', '/index.md']) {
+    const file = new URL(`../src/content/${root}/${route}${suffix}`, import.meta.url)
+    if (!existsSync(file)) continue
+    const { frontmatter } = parseFrontmatter(readFileSync(file, 'utf8'))
+    const data = resolvePortData(frontmatter, port, product)
+    const source = { title: data.title as string, subtitle: data.subtitle as string | undefined, shared: root === '_workspace-shared' }
+    productSources.set(key, source)
+    return source
+  }
+  productSources.set(key, undefined)
+  return undefined
+}
+
+function counterpartRoutes(port: string, path: string): Map<string, readonly string[]> {
+  const own = documentsFor(port).get(path)
+  const paths = [path, ...(own?.data.aliases ?? [])]
+  const product = path.split('/')[0] as ProductPage['product']
+  return new Map(PORTS.filter((candidate) => !candidate.parentLibrary && candidate.productAvailability?.[product] !== 'excluded')
+    .map((candidate) => {
+      if (own?.data.equivalence && candidate.slug === port) return [port, [path]] as const
+      const documents = [...documentsFor(candidate.slug).values()]
+      // Equivalent pages are all offered; otherwise the switcher offers one page per port: its own page
+      // before a shared one, and a match on this page's route before a match on one of its aliases.
+      const matches = own?.data.equivalence
+        ? documents.filter((entry) => entry.data.equivalence === own.data.equivalence && entry.data.product === own.data.product)
+        : paths.flatMap((route) => documents.filter((entry) => docsPath(entry) === route || entry.data.aliases?.includes(route)))
+      const owned = matches.filter((entry) => entry.data.port === candidate.slug)
+      const offered = own?.data.equivalence ? matches : (owned.length ? owned : matches).slice(0, 1)
+      // A product overview may be an alias of a core integration guide.
+      return [candidate.slug, [...new Set(offered.map((entry) => path === product && entry.data.aliases?.includes(path) ? path : docsPath(entry)))]] as const
+    }).filter(([, routes]) => routes.length))
+}
+
+it('advertises workspace loaders with their declared command and development status', () => {
+  for (const port of PORTS.filter((entry) => entry.workspaceCli)) {
+    expect(port.workspaceCli).toMatch(/^\S+\s+\S+/)
+    const executable = port.packages?.find((entry) => entry.id === 'workspace')?.executable
+    if (executable) expect([port.workspaceCli, port.workspaceCli!.split(/\s+/)[0]]).toContain(executable)
+    expect(productInDevelopment(port, 'workspace')).toBe(productAvailable(port, 'workspace') && port.workspaceCliAvailability !== 'released')
+    expect(productInDevelopment(port, 'mcp')).toBe(productAvailable(port, 'mcp'))
     expect(productDescription(port, 'workspace')).not.toMatch(/worktree|checkpoint/)
     if (port.workspaceCliAvailability === 'local') {
-      expect(productDescription(port, 'workspace')).toContain(port.slug === 'julia' ? 'LibTmuxWorkspace' : 'Build the CLI from source')
+      expect(productDescription(port, 'workspace')).toContain(port.productDescriptions?.workspace ?? 'Build the CLI from source')
     }
-    if (native(port)) expect(workspaceOverviewNotice(port)?.body).toContain(`\`${port.workspaceCli!.split(/\s+/)[0]}\``)
+    if (['local', 'published'].includes(port.workspaceCliAvailability!)) expect(workspaceOverviewNotice(port)?.body).toContain(`\`${port.workspaceCli!.split(/\s+/)[0]}\``)
     if (port.workspaceCliAvailability === 'published') {
       expect(productDescription(port, 'workspace')).toContain('published')
       expect(workspaceOverviewNotice(port)?.body).not.toMatch(/unreleased|local/)
@@ -109,20 +208,57 @@ it('advertises local native loaders while retaining their development status', (
   }
 })
 
-function sectionsFor(port: string, product: ProductPage['product']): string[] {
-  if (port === 'powershell' && product === 'mcp') return []
-  if (nativeProductDocs(port)) return ['', 'source-guide', 'reference']
-  // A product with no published implementation has only the overview that says so.
-  if (!productAvailable(PORTS.find((entry) => entry.slug === port)!, product)) return ['']
-  if (port === 'ruby') return ['', 'topics', 'guides', 'examples', 'reference']
-  // `reference` is a section of the product now, not a page inside Internals:
-  // the Workspace Manager and the MCP server are packages with APIs of their
-  // own, and Internals keeps the notes about building one.
-  if (product === 'mcp') return ['', 'topics', 'guides', 'examples', 'reference']
-  return port === 'py'
-    ? ['', 'topics', 'guides', 'examples', 'reference', 'internals', 'internals/topics', 'internals/examples']
-    : ['', 'guides', 'examples', 'reference', 'internals', 'internals/topics', 'internals/guides', 'internals/examples']
+function sectionsFor(port: string, product: ProductPage['product'], documents = documentsFor(port)): string[] {
+  const owner = PORTS.find((entry) => entry.slug === port)!
+  if (owner.parentLibrary || owner.productAvailability?.[product] === 'excluded') return []
+  for (const area of documentationAreas(port).filter((area) => area.product === product)) {
+    const overview = documents.get(area.route)
+    expect(overview, `${port}: required ${product} overview`).toBeDefined()
+    expect(overview!.data, `${port}: ${product} overview ownership`).toMatchObject({ port, product })
+  }
+  return ['', 'topics', 'guides', 'examples', 'reference', 'internals', 'internals/topics', 'internals/guides', 'internals/examples', 'source-guide']
+    .filter((section) => {
+      const path = `${product}${section ? `/${section}` : ''}`
+      const entry = documents.get(path)
+      if (!entry) return false
+      expect(entry.data, `${port}: ${path} ownership`).toMatchObject({ port, product })
+      return true
+    })
 }
+
+it('keeps declared product overviews and their ownership required', () => {
+  for (const port of primaryPorts) {
+    for (const product of products) sectionsFor(port.slug, product)
+    for (const area of documentationAreas(port.slug).filter((area) => area.product && port.productAvailability?.[area.product] !== 'excluded')) {
+      const documents = documentsFor(port.slug)
+      const missing = new Map(documents)
+      missing.delete(area.route)
+      expect(() => sectionsFor(port.slug, area.product!, missing)).toThrow(`${port.slug}: required ${area.product} overview`)
+      const mislabelled = new Map(documents)
+      const overview = documents.get(area.route)!
+      mislabelled.set(area.route, { ...overview, data: { ...overview.data, product: undefined } })
+      expect(() => sectionsFor(port.slug, area.product!, mislabelled)).toThrow(`${port.slug}: ${area.product} overview ownership`)
+    }
+  }
+})
+
+it('keeps declared product entry pages in the source-derived checks', () => {
+  for (const port of primaryPorts) for (const product of products) {
+    const sections = sectionsFor(port.slug, product)
+    if (port.productAvailability?.[product] === 'excluded') expect(sections).toEqual([])
+    else if (!productAvailable(port, product)) {
+      const source = productSource(port.slug, product, '')
+      if (source) {
+        expect(sections).toEqual([''])
+        expect(source.title, `${port.slug} ${product} overview`).toBeTruthy()
+      } else {
+        expect(sections).toEqual([])
+        expect(SOURCE_GUIDE_PORTS.includes(port.slug) && sourceGuidesFor(port.slug).some((guide) => guide.aliases.includes(product)),
+          `${port.slug} ${product} has a documented replacement`).toBe(true)
+      }
+    } else expect(sections, `${port.slug} ${product} entry pages`).toEqual(expect.arrayContaining(['', 'reference']))
+  }
+})
 
 function pages(): ProductPage[] {
   const versions = manifest()
@@ -379,7 +515,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   })
 
   it.each(PORTS.filter((port) => !port.parentLibrary).map((port) => port.slug))('%s exposes supported products from latest homes and core navigation', async (port) => {
-    for (const section of ['', 'guides/', 'topics/']) {
+    const sections = ['guides', 'topics'].filter((section) => documentsFor(port).has(section))
+    for (const section of ['', ...sections.map((section) => `${section}/`)]) {
       const path = `${port}/latest/${section}`
       await inspect(path, (document) => {
         const navigation = document.querySelectorAll(section ? '[data-surface-picker]' : 'main')
@@ -449,25 +586,15 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     })
   })
 
-  it('serves both products and every section with the chosen port content', () => {
+  it('serves each documented product and section with the chosen port content', () => {
     for (const page of pages()) {
       const html = pageHtml(page.path)
       const article = html.match(/<article\b[^>]*>([\s\S]*?)<\/article>/i)?.[1]
       expect(article, page.path).toBeDefined()
       const headings1 = [...article!.matchAll(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi)].map((match) => match[1]!)
       expect(headings1, page.path).toHaveLength(1)
-      const sharedBrowse = page.product === 'workspace' && !['py', 'ruby'].includes(page.port)
-        && ['guides', 'examples'].includes(page.section)
-      if (nativeProductDocs(page.port)) {
-        const nativeTitles = page.product === 'workspace'
-          ? { '': `${workspaceTitle(page.port)} ${workspaceSubtitle(page.port)}`, 'source-guide': 'Workspace guide', reference: `${page.port === 'julia' ? 'LibTmuxWorkspace' : 'LibTmux.Workspace'} API reference` }
-          : { '': mcpTitle(page.port), 'source-guide': 'MCP server guide', reference: 'LibTmuxMCP API reference' }
-        expect(text(headings1[0]!), page.path).toBe(nativeTitles[page.section as keyof typeof nativeTitles])
-      } else if (sharedBrowse) {
-        expect(text(headings1[0]!), page.path).toBe(page.section === 'guides' ? 'Guides' : 'Examples')
-      } else {
-        expect(text(headings1[0]!), page.path).toContain(page.name)
-      }
+      const source = documentsFor(page.port).get(`${page.product}${page.section ? `/${page.section}` : ''}`)!
+      expect(text(headings1[0]!), page.path).toBe(headingTitle(source.data))
       const context = html.match(/<div\b[^>]*class="surface-picker-footer"[^>]*>([\s\S]*?)<\/div>/i)?.[1]
       expect(context, `${page.path} language and version context`).toBeDefined()
       expect(text(context!), page.path).toBe(`${page.name} · ${page.version} · en`)
@@ -518,20 +645,33 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     }
   })
 
-  it.each(PORTS.filter((port) => !port.parentLibrary && products.some((product) => !productAvailable(port, product))))
-    ('$name builds, lists and links only the overview of a product it has not published', (port) => {
+  it.each(PORTS.filter((port) => !port.parentLibrary && products.some((product) => port.productAvailability?.[product] === 'unpublished')))
+    ('$name builds and lists only permitted unavailable-product pages', (port) => {
     const version = manifest().defaultVersion[port.slug]!
     const docs = JSON.parse(read(`${port.slug}/${version}/docs.json`)) as DocsManifest
-    for (const product of products.filter((entry) => !productAvailable(port, entry))) {
+    for (const product of products.filter((entry) => port.productAvailability?.[entry] === 'unpublished')) {
       // Whatever the product's other pages would be called, none is built or listed.
       const directory = sitePath(`${port.slug}/${version}/${product}`)
       const built = existsSync(directory) ? readdirSync(directory, { recursive: true }).map(String) : []
-      expect(built.filter((file) => file.endsWith('.html') && file !== 'index.html'), `${port.slug} ${product} pages built beyond the overview`).toEqual([])
+      const availability = port.productAvailability?.[product] ?? 'available'
+      const overview = availability === 'unpublished'
+      expect(built.filter((file) => file.endsWith('.html') && (!overview || file !== 'index.html')),
+        `${port.slug} ${product} pages built outside its availability`).toEqual([])
+      if (!overview) expect(docs.pages.some((entry) => new URL(entry.url).pathname
+        === urlFor(`${port.slug}/${version}/${product}/`).pathname), `${port.slug} ${product} excluded overview`).toBe(false)
       expect(pagesBeyondOverview(docs.pages, urlFor(`${port.slug}/${version}/${product}/`).pathname),
         `${port.slug} ${product} pages listed beyond the overview`).toEqual([])
       const advertised = docs.ports.find((entry) => entry.slug === port.slug)!.products.find((entry) => entry.slug === product)!
-      expect(advertised.availability, `${port.slug} ${product}`).toBe('unpublished')
       expect(advertised.reference, `${port.slug} ${product} reference`).toBeNull()
+      if (port.productAvailability?.[product] === 'excluded') {
+        expect(built, `${port.slug} ${product} has no pages`).toEqual([])
+        expect(advertised.availability).toBe('excluded')
+        expect(advertised.url).toBeNull()
+        expect(docs.pages.some((entry) => new URL(entry.url).pathname.replace(/\/$/, '') === urlFor(`${port.slug}/${version}/${product}`).pathname)).toBe(false)
+      } else {
+        expect(built, `${port.slug} ${product} overview exists`).toContain('index.html')
+        expect(advertised.availability, `${port.slug} ${product}`).toBe('unpublished')
+      }
     }
   })
 
@@ -540,8 +680,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       expect(storageIdentity.test(`/en/ports/${port.slug}/guides/`), `${port.slug} storage identity`).toBe(true)
       expect(localizedPortTree.test(`/ja/${port.slug}/latest/`), `${port.slug} localized tree`).toBe(true)
       if (!port.parentLibrary) expect(productUrl.test(`/en/${port.slug}/latest/mcp/`), `${port.slug} product URL`).toBe(true)
-      const redirected = !['py', 'ruby', 'powershell', 'julia'].includes(port.slug)
-      expect(legacyWorkspaceTopics.test(`/en/${port.slug}/latest/workspace/topics/`), `${port.slug} legacy Topics`).toBe(redirected)
+      const redirected = documentsFor(port.slug).has('workspace/internals/topics') && !documentsFor(port.slug).has('workspace/topics')
+      expect(legacyWorkspaceTopics(`/en/${port.slug}/latest/workspace/topics/`), `${port.slug} legacy Topics`).toBe(redirected)
     }
     expect(productUrl.test('/en/elixir/latest/mcp/guides/')).toBe(true)
     expect(productUrl.test('/en/elixir/latest/guides/overview/')).toBe(false)
@@ -600,6 +740,12 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         return
       }
       const surface = page.product === 'mcp' ? 'MCP' : 'Workspace Manager'
+      if (sourceGuide(page.port, 'workspace') && page.product === 'workspace' && page.section === '') {
+        expect(document.querySelector('[data-workspace-coming]'), `${page.path} native examples already documented`).toBeNull()
+        const guide = urlFor(`${page.port}/${page.version}/workspace/source-guide/`).pathname
+        expect([...document.querySelectorAll('article a[href]')].some((link) =>
+          new URL(link.getAttribute('href')!, urlFor(page.path)).pathname === guide), `${page.path} native example guide`).toBe(true)
+      }
       const section = page.section === 'source-guide' ? 'guides' : page.section.split('/')[0] || 'home'
       const sectionLabel = section === 'reference' ? 'API Reference' : section[0].toUpperCase() + section.slice(1)
       expect(picker?.querySelector('.surface-current .surface-label')?.textContent, `${page.path} current app`).toBe(surface)
@@ -609,7 +755,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       expect(picker?.querySelector('.surface-current small')?.textContent, `${page.path} current section`).toBe(sectionLabel)
       const current = picker?.querySelectorAll('[aria-current="location"]')
       expect(current, `${page.path} one current section`).toHaveLength(1)
-      const sectionPath = `${page.port}/${page.version}/${page.product}/${page.section === 'source-guide' ? 'source-guide/' : section === 'home' ? '' : `${section}/`}`
+      const sourceGuideSection = page.section === 'source-guide' && !sectionsFor(page.port, page.product).includes('guides')
+      const sectionPath = `${page.port}/${page.version}/${page.product}/${sourceGuideSection ? 'source-guide/' : section === 'home' ? '' : `${section}/`}`
       expect(current![0].getAttribute('href'), `${page.path} current destination`).toBe(urlFor(sectionPath).pathname)
       expect(resolves(current![0].getAttribute('href')!), `${page.path} current destination exists`).toBe(true)
       // The API reference is the reference sidebar, one navigation for every viewport; the other sections share the section sidebar.
@@ -620,7 +767,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(nav.getAttribute('aria-label'), page.path).toBe(`${surface}: ${sectionLabel}`)
         const links = [...nav.querySelectorAll('a[href]')]
         expect(links.length, `${page.path} current section pages`).toBeGreaterThan(0)
-        const sourceGuidePath = port.slug === 'ruby' && section === 'guides'
+        const sourceGuidePath = sourceGuide(page.port, page.product) && section === 'guides'
           ? urlFor(`${page.port}/${page.version}/${page.product}/source-guide/`).pathname : undefined
         if (sourceGuidePath) {
           const guides = links.filter((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname === sourceGuidePath)
@@ -656,7 +803,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           }
         }
       }
-      if (page.product === 'workspace' && page.port !== 'ruby' && !nativeProductDocs(page.port) && productAvailable(port, 'workspace')) {
+      if (page.product === 'workspace' && sectionsFor(page.port, 'workspace').includes('internals')) {
         expect([...picker!.querySelectorAll('a[href]')].some((link) => link.getAttribute('href') === urlFor(`${page.port}/${page.version}/workspace/internals/`).pathname),
           `${page.path} Internals remains reachable in the picker`).toBe(true)
       }
@@ -670,7 +817,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(article, `${page.path} native CLI`).toContain(port.workspaceCli.split(/\s+/)[0])
         expect(article.match(/concept example/gi), `${page.path} states scope once`).toHaveLength(1)
         const links = [...document.querySelectorAll('article a[href]')]
-        const installation = nativeProductDocs(page.port) ? 'source-guide' : 'guides/installation'
+        const installation = documentsFor(page.port).has('workspace/guides/installation') ? 'guides/installation' : 'source-guide'
         expect(links.some((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname === urlFor(`${page.port}/${page.version}/workspace/${installation}/`).pathname), `${page.path} native installation`).toBe(true)
         expect(links.some((link) => link.getAttribute('href') === 'https://tmuxp.git-pull.com/'), `${page.path} foreign installation`).toBe(false)
       }
@@ -787,19 +934,9 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       const links = [...document.querySelectorAll('[data-page-port-switcher] a[data-port][href]')]
       const tmux = document.querySelector('[data-page-port-switcher] .tmux-area a[href]')
       expect(tmux?.getAttribute('href'), `${page.path} tmux destination`).toBe(urlFor('tmux/').pathname)
-      const clientSetup = page.product === 'mcp' && page.section === 'guides'
-        && ['py', 'ts', 'java', 'cxx', 'swift'].includes(page.port)
-      const counterparts = clientSetup ? new Map(Object.entries(mcpClientSetupRoutes).map(([port, routes]) => [port,
+      const counterparts = new Map([...counterpartRoutes(page.port, `${page.product}${page.section ? `/${page.section}` : ''}`)].map(([port, routes]) => [port,
         routes.map((route) => urlFor(`${port}/${port === page.port ? page.version : defaults[port]}/${route}/`).pathname),
-      ])) : new Map(PORTS.flatMap((port) => {
-        const section = page.section
-        if (port.slug === 'powershell' && page.product === 'mcp' && !section) {
-          return [[port.slug, [urlFor(`${port.slug}/${defaults[port.slug]}/mcp/`).pathname]]]
-        }
-        if (port.parentLibrary || !sectionsFor(port.slug, page.product).includes(section)) return []
-        const version = port.slug === page.port ? page.version : defaults[port.slug]
-        return [[port.slug, [urlFor(`${port.slug}/${version}/${page.product}/${section ? `${section}/` : ''}`).pathname]]]
-      }))
+      ]))
       expect(links.length, `${page.path} port counterparts`).toBe([...counterparts.values()].flat().length)
       for (const port of PORTS) {
         const expected = counterparts.get(port.slug)
@@ -814,6 +951,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           expect(unavailable?.textContent, `${page.path} unavailable ${port.name}`).toContain('No matching page')
           const home = unavailable?.querySelector('a[data-picker-home]')?.getAttribute('href')
           expect(home, `${page.path} ${port.name} home exit`).toBeDefined()
+          if (!productAvailable(port, page.product)) {
+            const version = port.slug === page.port ? page.version : defaults[port.slug]
+            expect(home, `${page.path} unavailable product uses core home`).toBe(urlFor(`${port.slug}/${version}/`).pathname)
+          }
           expect(resolves(home!, urlFor(page.path).href), `${page.path} ${port.name} home exists`).toBe(true)
         }
       }
@@ -835,18 +976,15 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     })
   })
 
-  it.each([
-    ['powershell', 'workspace'], ['julia', 'workspace'], ['julia', 'mcp'],
-  ])('switches from the native %s %s source guide to verified task counterparts', async (port, product) => {
+  it.each(primaryPorts.flatMap((port) => products.filter((product) => sourceGuide(port.slug, product))
+    .map((product) => [port.slug, product] as const)))('switches from the native %s %s source guide to verified task counterparts', async (port, product) => {
     const defaults = manifest().defaultVersion
-    const routes: Record<string, string[]> = product === 'workspace' ? {
-      ruby: ['workspace/source-guide'], powershell: ['workspace/source-guide'], julia: ['workspace/source-guide'],
-    } : mcpClientSetupRoutes
+    const routes = counterpartRoutes(port, `${product}/source-guide`)
     const path = `${port}/${defaults[port]}/${product}/source-guide/`
     await inspect(path, (document) => {
       const links = [...document.querySelectorAll('[data-page-port-switcher] a[data-port][href]')]
       expect(links.map((link) => new URL(link.getAttribute('href')!, urlFor(path)).pathname).sort()).toEqual(
-        Object.entries(routes).flatMap(([slug, paths]) => paths.map((route) => urlFor(`${slug}/${defaults[slug]}/${route}/`).pathname)).sort(),
+        [...routes].flatMap(([slug, paths]) => paths.map((route) => urlFor(`${slug}/${defaults[slug]}/${route}/`).pathname)).sort(),
       )
       for (const link of links) expect(resolves(link.getAttribute('href')!, urlFor(path).href)).toBe(true)
     })
@@ -867,7 +1005,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   })
 
   it.each(PORTS.filter((port) => !port.parentLibrary && productAvailable(port, 'workspace')
-    && !['py', 'ruby', 'powershell', 'julia'].includes(port.slug)))
+    && KNOWN_PORTS.has(port.slug) && port.workspaceCliAvailability === 'local'))
     ('$name publishes workspace Guides and Examples browse pages', async (port) => {
     for (const page of pages().filter((entry) => entry.product === 'workspace'
       && entry.port === port.slug && ['guides', 'examples'].includes(entry.section))) await inspect(page.path, (document) => {
@@ -956,7 +1094,23 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         }
         for (const product of products) {
           const metadata = advertised.products.find((entry) => entry.slug === product)!
-          expect(metadata.availability, `${root}${port.slug} ${product} availability`).toBe(productAvailable(port, product) ? 'available' : 'unpublished')
+          if (port.productAvailability?.[product] === 'excluded') {
+            expect(metadata, `${root}${port.slug} ${product} excluded metadata`).toBeUndefined()
+            expect(advertised.documentation.map((area) => area.id), `${root}${port.slug} ${product} excluded navigation`).not.toContain(product)
+            const path = `${port.slug}/${rootVersion || defaults[port.slug]}/${product}/`
+            const prefix = urlFor(path).pathname
+            expect(existsSync(sitePath(path)), `${root}${port.slug} ${product} excluded tree`).toBe(false)
+            expect(exported.pages.filter((entry) => {
+              const pathname = new URL(entry.url).pathname
+              return pathname === prefix.slice(0, -1) || pathname.startsWith(prefix)
+            }), `${root}${port.slug} ${product} excluded pages`).toEqual([])
+            expect(read(`${root}llms.txt`), `${root}${port.slug} ${product} excluded agent links`)
+              .not.toMatch(new RegExp(`/${port.slug}/[^/]+/${product}(?:/|\\))`))
+            continue
+          }
+          expect(metadata, `${root}${port.slug} ${product} metadata`).toBeDefined()
+          expect(metadata.availability, `${root}${port.slug} ${product} availability`).toBe(port.productAvailability?.[product] ?? 'available')
+          expect(resolves(metadata.url!, urlFor(root).href), `${root}${port.slug} ${product} overview`).toBe(true)
           expect(metadata.inDevelopment, `${root}${port.slug} ${product} development status`).toBe(productInDevelopment(port, product))
           if (productIsConcept(port, product)) {
             expect(metadata.support).toBe('concept')
@@ -990,7 +1144,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(resolves(entry.url), entry.url).toBe(true)
         expect(resolves(entry.markdownUrl), entry.markdownUrl).toBe(true)
         expect(entry.url, `${root} canonical workspace API exports`).not.toMatch(/\/workspace\/api(?:\/|$)/)
-        expect(entry.url, `${root} legacy workspace Topics redirect excluded`).not.toMatch(legacyWorkspaceTopics)
+        expect(legacyWorkspaceTopics(entry.url), `${root} legacy workspace Topics redirect excluded`).toBe(false)
         if (root) expect(new URL(entry.url).pathname).toContain(`/${SITE_PREFIX}${root}`)
       }
     }

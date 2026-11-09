@@ -1,5 +1,5 @@
 /** Where libraries and the C source meet the catalog. */
-import { qualifiedNameOf, type ApiModel, type ApiSymbol, type SourceApiModel } from '@libtmux/api-model'
+import { qualifiedNameOf, type ApiModel, type ApiSymbol, type SourceApiModel } from '@libtmux/api-model/reference'
 import { API_MODELS, PORT_NAME, referenceHref } from './api-models'
 import type { CatalogEntry } from './tmux-catalog'
 import { tmuxCatalogMentions, tmuxCatalogProseMentions } from './tmux-catalog-links'

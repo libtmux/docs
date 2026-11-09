@@ -7,7 +7,8 @@ import { runInNewContext } from 'node:vm'
 import { describe, expect, it } from 'vitest'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window, type Element, type HTMLElement } from 'happy-dom'
-import { parameterId, parentInventory, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
+import { extractErlang } from '@libtmux/api-model'
+import { parameterId, parentInventory, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model/reference'
 import { apiEntryFields, nativeSignatureText, usesNativeSignatures } from '../src/lib/api-sections'
 import { API_MODEL_PORTS } from '../src/lib/ports'
 import { extractSourceWithSpec } from '../../packages/api-model/src/languages/spec'
@@ -40,6 +41,7 @@ async function signatureComponent() {
   const type = await compile('../src/components/api/ApiType.astro', {
     './SymbolName.astro': name, './ApiKeyword.astro': keyword,
     '@libtmux/api-model': new URL('../../packages/api-model/src/index.ts', import.meta.url).href,
+    '@libtmux/api-model/reference': new URL('../../packages/api-model/src/reference.ts', import.meta.url).href,
     '../../lib/code-layout': new URL('../src/lib/code-layout.ts', import.meta.url).href,
   })
   const source = readFileSync(new URL('../src/components/api/ApiEntry.astro', import.meta.url), 'utf8')
@@ -58,7 +60,47 @@ function displayedSignature(element: Element): string {
   return copy.textContent ?? ''
 }
 
+it('renders Erlang compiler references with exact native declarations and Markdown', async () => {
+  const artifact = JSON.parse(readFileSync(new URL('../../packages/api-model/test/fixtures/erlang-native.json', import.meta.url), 'utf8'))
+  const model = extractErlang(artifact)
+  const href = (symbol: ApiSymbol) => `/reference/${encodeURIComponent(symbol.id)}/`
+  const index = new SymbolIndex(model.symbols, href, 'erlang')
+  const component = await (componentPromise ??= signatureComponent())
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  try {
+    for (const id of ['probe:read/1', 'probe:links/1', '#probe:row{}', 't:probe:handle/0', 'c:probe:prepare/1']) {
+      const symbol = model.symbols.find((entry) => entry.id === id)!
+      const sig = symbol.signatures[0]!
+      expect(usesNativeSignatures(symbol, 'erlang')).toBe(true)
+      const signatureLayouts = await apiSignatureLayouts(symbol, 'erlang')
+      expect(signatureLayouts.get(sig)?.failures).toEqual([])
+      win.document.body.innerHTML = await container.renderToString(component, { props: {
+        symbol, sig, port: 'erlang', language: 'erlang', index, signatureLayouts,
+        nativeSignatureText: () => signatureLayouts.get(sig)!.text,
+      } })
+      const element = win.document.querySelector('.api-native-signature')!
+      expect(displayedSignature(element)).toBe(sig.raw)
+      expect(element.getAttribute('data-code-width-status')).toBe('fits')
+      const links = [...element.querySelectorAll('a.api-type-link')].map((link) => link.getAttribute('href'))
+      if (id === 'probe:read/1') {
+        expect(links).toContain(href(model.symbols.find((entry) => entry.id === 't:probe:handle/0')!))
+        expect(links).not.toContain(href(model.symbols.find((entry) => entry.id === 'probe:handle/0')!))
+      }
+      if (id === 'probe:links/1') {
+        for (const target of ['#probe:row{}', 't:probe:box/0', 't:probe:box/1']) {
+          expect(links).toContain(href(model.symbols.find((entry) => entry.id === target)!))
+        }
+        expect(links).toContain('https://www.erlang.org/doc/apps/kernel/file.html#t:filename_all/0')
+      }
+      const markdown = await symbolMarkdownWithLayout({ model, symbol, index })
+      expect(fromMarkdown(markdown).children.find((node) => node.type === 'code')).toMatchObject({ value: sig.raw })
+    }
+  } finally { await win.happyDOM.abort() }
+})
+
 const cases = [
+  ['perl', 'LibTmux::Server::capture_pane'],
   ['ts', 'server.Server.setHook'],
   ['ts', 'selection.Selection.filter'],
   ['ts', 'selection.Selection.[Symbol.iterator]'],
@@ -70,6 +112,10 @@ const cases = [
   ['scala', 'io.github.libtmux.scaladsl.Server.sessions'],
   ['kotlin', 'io.github.libtmux.kotlin.Server.sessions'],
   ['fsharp', 'LibTmux.FSharp.Server.newSession'],
+  ['ocaml', 'Libtmux_unix.Client.capture'],
+  ['ocaml', 'Libtmux_unix.Client.t'],
+  ['ocaml', 'Libtmux.Snapshot.panes'],
+  ['ocaml', 'Libtmux.Command.view:type'],
   ['julia', 'LibTmux.Server'],
   ['powershell', 'LibTmux\\Connect-TmuxControl'],
 ] as const
@@ -393,7 +439,10 @@ async function checkHostedDeclarations(port: string) {
     await check()
     const text = displayedSignature(win.document.body)
     await expect(check(text.replace(entry.symbol.name, 'missingCallable'))).rejects.toThrow('native declaration survives')
-    await expect(check(text.replace(entry.symbol.signatures[0].params[0].name, 'missingParameter'))).rejects.toThrow('native declaration survives')
+    const operand = entry.symbol.signatures[0].params[0]?.name ??
+      entry.symbol.signatures[0].nativeSpans?.find((span) => span.href)?.text
+    expect(operand).toBeTruthy()
+    await expect(check(text.replace(operand!, 'missingParameter'))).rejects.toThrow('native declaration survives')
     await expect(check(text, { ...entry.attributes, 'data-signature-native': '[]' })).rejects.toThrow()
     for (const value of ['null', '[""]', '[null]']) {
       await expect(check(text, { ...entry.attributes, 'data-signature-native': value })).rejects.toThrow('prepared native declarations are bound')
@@ -619,13 +668,15 @@ describe('native signature emission', () => {
 
   it('checks the hosted signature fixture against rendered Julia declarations without return annotations', () => checkHostedDeclarations('julia'))
 
+  it('checks the hosted signature fixture against curried native Haskell declarations', () => checkHostedDeclarations('haskell'))
+
   it('selects fixtures for every API port and retains existing typed-return choices', async () => {
     const models = Object.fromEntries(API_MODEL_PORTS.map(({ slug }) => [slug,
       JSON.parse(readFileSync(new URL(`../src/data/api/${slug}.json`, import.meta.url), 'utf8')) as ApiModel]))
     const before = JSON.stringify(models.julia)
     const { entries } = await signatureProbe(models)
     expect([...new Set(entries.map(({ port }) => port))]).toEqual(API_MODEL_PORTS.map(({ slug }) => slug))
-    expect(new Set(entries.map(({ port }) => port)).size).toBe(16)
+    expect(new Set(entries.map(({ port }) => port)).size).toBe(API_MODEL_PORTS.length)
     for (const [port, model] of Object.entries(models)) {
       const callables = model.symbols.filter((symbol) => symbol.signatures.some((signature) => signature.params.length > 0 && signature.returns))
       const selected = callables.find((symbol) => /capture/i.test(symbol.name)) ?? callables[0]

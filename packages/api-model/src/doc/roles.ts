@@ -48,6 +48,10 @@ export type DocSpan =
       target: string
       /** What to show. `~` means "last segment only"; explicit titles win. */
       label: string
+      /** Custom odoc labels are prose rather than code. */
+      code?: boolean
+      /** An authored symbol link, rather than inline code offered for resolution. */
+      explicit?: boolean
     }
 
 /**
@@ -278,6 +282,8 @@ function labelFor(raw: string): { target: string; label: string } {
  */
 const SYNTAX: Record<string, ReadonlySet<string>> = {
   py: new Set(['rest', 'citation']),
+  // Pod::Simple exports local POD targets as roles and external targets as Markdown links.
+  perl: new Set(['pod', 'markdown-link']),
   rs: new Set(['intra-doc']),
   go: new Set(['go-link']),
   java: new Set(['jsdoc']),
@@ -292,10 +298,15 @@ const SYNTAX: Record<string, ReadonlySet<string>> = {
   cxx: new Set([]),
   kotlin: new Set(['kdoc', 'jsdoc']),
   scala: new Set(['scaladoc', 'jsdoc']),
+  clojure: new Set(['cljdoc', 'markdown-link']),
   julia: new Set(['markdown-link', 'documenter']),
   // ExDoc links a Markdown destination written as code: [the server](`LibTmux.Server`).
   elixir: new Set(['markdown-link', 'exdoc']),
+  erlang: new Set(['markdown-link', 'exdoc']),
   powershell: new Set(['markdown-link']),
+  ocaml: new Set(['odoc', 'markdown-link']),
+  // Haddock's producer resolves public links into roles and preserves external Markdown links.
+  haskell: new Set(['rest-role', 'markdown-link', 'literal-code']),
 }
 
 /**
@@ -352,6 +363,21 @@ function tokenizeRun(text: string, lang?: string): DocSpan[] {
   type Hit = { start: number; end: number; span: DocSpan }
   const hits: Hit[] = []
 
+  if (syntax.has('odoc')) {
+    // The native exporter preserves references and converts odoc code and URL links to Markdown.
+    for (const match of text.matchAll(/\{\{!([^{}\s]+)\}([^{}]*)\}|\{!([^{}\s]+)\}/g)) {
+      let target = match[1] ?? match[3]!
+      const legacy = /^(type|val|module|module-type|class|class-type|exception|constructor|field):(.+)$/.exec(target)
+      const typed = /(?:^|\.)(module-type|class-type|type|val|value|module|class|exception|exn|constructor|const|field|recfield)-([^.]+)$/.exec(target)
+      const kind = legacy?.[1] ?? typed?.[1]
+      if (legacy) target = legacy[2]!
+      else if (typed) target = target.slice(0, typed.index) + (typed[0].startsWith('.') ? '.' : '') + typed[2]!
+      const label = match[1] ? match[2]! : target.replace(/(?:^|(?<=\.))(?:module-type|class-type|type|val|value|module|class|exception|exn|constructor|const|field|recfield)-/g, '')
+      hits.push({ start: match.index, end: match.index + match[0].length,
+        span: { kind: 'ref', role: `odoc:${kind ?? 'any'}`, target, label, ...(match[1] ? { code: false } : {}) } })
+    }
+  }
+
   if (syntax.has('documenter')) {
     // Documenter's named @ref destination contains spaces that Markdown URLs cannot.
     for (const match of text.matchAll(/\[(?:(`+)([^\n]*?)\1|([^\]\n]+))\]\(@ref\s+([^\n)]+)\)/g)) {
@@ -395,22 +421,24 @@ function tokenizeRun(text: string, lang?: string): DocSpan[] {
     hits.push({ start: match.index, end: match.index + match[0].length, span: { kind: 'kbd', text: match[1] } })
   }
 
-  if (syntax.has('kdoc') || syntax.has('scaladoc')) {
+  if (syntax.has('kdoc') || syntax.has('scaladoc') || syntax.has('cljdoc')) {
     const prose = text.split('')
     for (const pattern of [LITERAL_RE, BACKTICK_RE]) {
       for (const match of text.matchAll(pattern)) {
         for (let i = match.index; i < match.index + match[0].length; i++) prose[i] = ' '
       }
     }
-    const links = syntax.has('scaladoc')
+    const wiki = syntax.has('scaladoc') || syntax.has('cljdoc')
+    const links = wiki
       ? /\[\[([^\]\s]+)(?:\s+([^\]]+))?\]\]/g
       : /(?<!\[)\[([^\]\n]+)\](?:\[([\w.]+)\])?(?![\](])/g
     for (const match of prose.join('').matchAll(links)) {
-      const target = syntax.has('scaladoc') ? match[1] : (match[2] ?? match[1])
-      const label = syntax.has('scaladoc') ? (match[2] ?? match[1]) : match[1]
-      if (!/^[\w.#]+$/.test(target)) continue
+      const target = wiki ? match[1] : (match[2] ?? match[1])
+      const label = wiki ? (match[2] ?? match[1]) : match[1]
+      if (!(syntax.has('cljdoc') ? /^[\w.*+!?<>=&$%/-]+$/ : /^[\w.#]+$/).test(target)) continue
       hits.push({ start: match.index, end: match.index + match[0].length,
-        span: { kind: 'ref', role: 'any', target, label } })
+        span: { kind: 'ref', role: 'any', target, label,
+          ...(syntax.has('cljdoc') ? { explicit: true } : {}) } })
     }
   }
 
@@ -514,7 +542,7 @@ function tokenizeRun(text: string, lang?: string): DocSpan[] {
     }
   }
 
-  if (syntax.has('rest')) for (const m of text.matchAll(ROLE_RE)) {
+  if (syntax.has('rest') || syntax.has('rest-role') || syntax.has('pod')) for (const m of text.matchAll(ROLE_RE)) {
     const role = m[1].replace(/^py:/, '')
     const { target, label } = labelFor(m[2])
     if (!ROLES.has(m[1])) {
@@ -599,11 +627,13 @@ function tokenizeRun(text: string, lang?: string): DocSpan[] {
     }
   } else {
     for (const code of markdownCode(text, masked.join(''))) {
-      const span: DocSpan = code.ticks === 1
+      const span: DocSpan = syntax.has('odoc') || syntax.has('literal-code') || syntax.has('pod') ? { kind: 'code', text: code.text }
+        : code.ticks === 1
         ? { kind: 'ref', role: 'any', target: syntax.has('intra-doc') && RUST_CODE_PATH_RE.test(code.text) ? rustTarget(code.text) : code.text, label: code.text }
         : syntax.has('docc') && code.ticks === 2
           ? { kind: 'ref', role: 'any', target: doccTarget(code.text), label: code.text }
           : { kind: 'code', text: code.text }
+      if (lang === 'erlang' && span.kind === 'ref') span.label = span.label.replace(/^[mtc]:/, '')
       hits.push({ start: code.start, end: code.end, span })
     }
   }

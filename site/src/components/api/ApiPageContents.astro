@@ -90,6 +90,14 @@ const { sections, related } = Astro.props as Props
         }
         settleArrival()
       }
+      // Chrome on iOS shrinks innerHeight under the keyboard; while a field has focus keep the tallest height seen at this width.
+      let tallest = 0
+      let tallestWidth = 0
+      const viewportHeight = () => {
+        const editing = document.activeElement?.matches('textarea, select, [contenteditable]:not([contenteditable="false"]), input:not([type="button"], [type="checkbox"], [type="radio"], [type="submit"], [type="reset"], [type="range"], [type="color"], [type="file"])')
+        if (innerWidth !== tallestWidth || !editing) { tallestWidth = innerWidth; tallest = innerHeight } else tallest = Math.max(tallest, innerHeight)
+        return tallest
+      }
       const measureMembers = (readingTop) => {
         if (!memberHeading || !members) return
         memberHeight = Math.ceil(memberHeading.getBoundingClientRect().height)
@@ -98,7 +106,7 @@ const { sections, related } = Astro.props as Props
         const fontSize = Number.parseFloat(getComputedStyle(root).fontSize) || 16
         // Keep a reading area beside the stacked bars, scaled to text size and viewport.
         stickyMembers = memberHeight > 0 &&
-          innerHeight - readingTop - memberHeight - groupHeight >= Math.max(fontSize * 6, innerHeight / 3)
+          viewportHeight() - readingTop - memberHeight - groupHeight >= Math.max(fontSize * 6, viewportHeight() / 3)
         members.toggleAttribute('data-api-sticky-members', stickyMembers)
         setLength(members, '--api-member-heading-height', memberHeight)
         const last = groupHeadings.at(-1)
@@ -229,6 +237,10 @@ const { sections, related } = Astro.props as Props
         schedule()
       }, { signal })
       window.addEventListener('resize', schedule, { signal })
+      window.visualViewport?.addEventListener('resize', schedule, { signal })
+      // Focus lands before the keyboard shrinks the frame: record the full height first. activeElement is still the old field during focusout, so recompute two frames later.
+      document.addEventListener('focusin', () => { viewportHeight() }, { signal })
+      document.addEventListener('focusout', () => requestAnimationFrame(schedule), { signal })
       this.observer = new ResizeObserver(schedule)
       if (header) this.observer.observe(header)
       if (row) this.observer.observe(row)

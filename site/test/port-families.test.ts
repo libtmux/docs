@@ -19,10 +19,10 @@ describe('port picker families', () => {
     expect(PORT_FAMILIES.filter((family) => family.ports.length === 0)).toEqual([])
   })
 
-  it('puts Elixir in the BEAM family and in no other', () => {
-    expect(familiesOf('elixir')).toEqual(['BEAM'])
+  it.each(['erlang', 'elixir'])('puts %s in the BEAM family and in no other', (port) => {
+    expect(familiesOf(port)).toEqual(['BEAM'])
     for (const family of portFamilies(slugs)) {
-      expect(family.ports.includes('elixir'), family.label).toBe(family.label === 'BEAM')
+      expect(family.ports.includes(port), family.label).toBe(family.label === 'BEAM')
     }
   })
 
@@ -30,6 +30,7 @@ describe('port picker families', () => {
     const labels = PORT_FAMILIES.map((family) => family.label)
     expect(labels.slice(0, 2)).toEqual(['Scripting & web', 'Compiled & native'])
     expect(labels.slice(2)).toEqual(['JVM', '.NET', 'BEAM'])
+    expect(PORT_FAMILIES.find((family) => family.label === 'JVM')?.ports).toEqual(['java', 'kotlin', 'scala', 'clojure'])
   })
 
   it('leaves the catch-all family empty for the registered ports, and last', () => {

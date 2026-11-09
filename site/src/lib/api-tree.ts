@@ -5,7 +5,7 @@
  * Buckets and their contents are decided once per port in
  * `scripts/gen-api-model.mjs`; this only shapes them for a tree.
  */
-import { membersOf, memberSignals, symbolsForProduct, type ApiModel, type ApiModelBase, type ApiSymbol } from '@libtmux/api-model'
+import { membersOf, memberSignals, symbolsForProduct, type ApiModel, type ApiModelBase, type ApiSymbol } from '@libtmux/api-model/reference'
 import mentions from '../data/mentions.json'
 import { API_MODELS, API_NAV, OWNER_KINDS, isMemberOwner, pageSlug, referenceHref, topLevelTypesOf, type NavEntry, type PortNavData, type NavBucket } from './api-models'
 import type { ApiTreeBucket, ApiTreeJson } from './api-search'
@@ -13,6 +13,7 @@ import { createHash } from 'node:crypto'
 import { PORT_BY_SLUG, type ApiDependencyNavigation } from './ports'
 import type { BreadcrumbItem } from './sidebar'
 import { nativeQualifiedName, nativeShortName } from './native-name'
+import { nativeKind } from './api-labels'
 
 export interface TreeBucket {
   id: string
@@ -32,10 +33,10 @@ export interface TreeMember {
 
 const treeVersions = new WeakMap<ApiModelBase, string>()
 /** Invalidate saved rows when their schema, declarations, ordering or dependency URLs change. */
-export function apiTreeVersion(model: ApiModelBase, tree: TreeBucket[], hrefs?: Record<string, string>): string {
+export function apiTreeVersion(model: ApiModelBase & { port?: string }, tree: TreeBucket[], hrefs?: Record<string, string>): string {
   let version = treeVersions.get(model)
   if (!version) {
-    version = `2:${createHash('sha256').update(JSON.stringify([model, tree, hrefs, mentions])).digest('hex').slice(0, 20)}`
+    version = `${model.port === 'haskell' ? 3 : 2}:${createHash('sha256').update(JSON.stringify([model, tree, hrefs, mentions])).digest('hex').slice(0, 20)}`
     treeVersions.set(model, version)
   }
   return version
@@ -289,7 +290,10 @@ export function treeRowSymbol(model: ApiModelBase, symbol: ApiSymbol | undefined
 export function membersByTypeFor(scope: string, model: ApiModelBase): Map<string, TreeMember[]> {
   const out = new Map<string, TreeMember[]>()
   const signals = memberSignals(scope, mentions.mentions)
-  for (const owner of model.symbols.filter(isMemberOwner)) {
+  // Common Lisp packages are namespaces; their exports are already first-class
+  // rows in native task buckets, not a second lazy copy below the package.
+  for (const owner of model.symbols.filter((symbol) =>
+    isMemberOwner(symbol) && !(scope.split(':')[0] === 'lisp' && symbol.kind === 'module'))) {
     const listed = membersOf(model, owner, signals).filter((symbol) => !isTuplePayload(owner, symbol))
     // An enum lists its variants together, then its other members; ranking by use interleaves them. A Java constant, a
     // Swift case and some Rust variants carry no `variant` shape, so a constant counts as one.
@@ -430,7 +434,8 @@ export function referenceTreeFor(scope: string, model: ApiModelBase, tree: TreeB
       shortName: symbols.get(t.id) ? nativeShortName(naming, symbols.get(t.id)!) : t.name,
       slug: t.slug, m: members.has(t.id) ? 1 : 0,
       ...(t.shortcut ? { shortcut: true } : {}),
-      kind: t.kind, category: category(t.kind), summary: symbols.get(t.id)?.doc?.summary ?? '' })),
+      kind: symbols.get(t.id) ? nativeKind(symbols.get(t.id)!, naming.port) : t.kind,
+      category: category(t.kind), summary: symbols.get(t.id)?.doc?.summary ?? '' })),
     children: b.children.map(bucket),
   })
   const relationships = Object.fromEntries(model.symbols.flatMap((symbol) => {
@@ -445,7 +450,7 @@ export function referenceTreeFor(scope: string, model: ApiModelBase, tree: TreeB
     members: Object.fromEntries([...members].map(([id, list]) => [id, list.map((m) => {
       const symbol = symbols.get(m.id)
       const kind = symbol?.kind ?? 'member'
-      return [m.name, m.slug, m.id, kind, category(kind), symbol?.doc?.summary ?? '',
+      return [m.name, m.slug, m.id, symbol ? nativeKind(symbol, naming.port) : kind, category(kind), symbol?.doc?.summary ?? '',
         symbol ? nativeQualifiedName(naming, symbol) : m.id, symbol ? nativeShortName(naming, symbol) : m.name]
     })])),
   }

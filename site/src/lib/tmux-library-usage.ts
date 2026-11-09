@@ -6,20 +6,26 @@
  * API model was extracted from. A symbol appears only where the source shows
  * it sending the command, so a link here is a claim about the code.
  */
-import { qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model'
+import { qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model/reference'
 import { API_MODELS, PORT_NAME, referenceHref } from './api-models'
 import { PORTS } from './ports'
 import scopeTable from '../data/tmux-usage/scopes.json'
 import csharp from '../data/tmux-usage/csharp.json'
+import clojure from '../data/tmux-usage/clojure.json'
 import cxx from '../data/tmux-usage/cxx.json'
 import elixir from '../data/tmux-usage/elixir.json'
+import erlang from '../data/tmux-usage/erlang.json'
 import fsharp from '../data/tmux-usage/fsharp.json'
 import go from '../data/tmux-usage/go.json'
+import haskell from '../data/tmux-usage/haskell.json'
 import java from '../data/tmux-usage/java.json'
 import julia from '../data/tmux-usage/julia.json'
 import kotlin from '../data/tmux-usage/kotlin.json'
+import lisp from '../data/tmux-usage/lisp.json'
 import lua from '../data/tmux-usage/lua.json'
+import ocaml from '../data/tmux-usage/ocaml.json'
 import powershell from '../data/tmux-usage/powershell.json'
+import perl from '../data/tmux-usage/perl.json'
 import py from '../data/tmux-usage/py.json'
 import rs from '../data/tmux-usage/rs.json'
 import ruby from '../data/tmux-usage/ruby.json'
@@ -67,7 +73,7 @@ export interface TmuxScope {
 }
 
 export const TMUX_USAGE: Record<string, UsageDocument> = {
-  csharp, cxx, elixir, fsharp, go, java, julia, kotlin, lua, powershell, py, rs, ruby, scala, swift, ts,
+  csharp, clojure, cxx, elixir, erlang, fsharp, go, haskell, java, julia, kotlin, lisp, lua, ocaml, powershell, perl, py, rs, ruby, scala, swift, ts,
 } as unknown as Record<string, UsageDocument>
 
 const SCOPES = scopeTable.commands as Record<string, { scopes: TmuxScope[] }>
@@ -117,7 +123,7 @@ export function namesCommand(command: string, member: string): boolean {
 }
 
 /** The member a symbol id ends with, without the owners before it or the argument labels after it: `Server.capture(_:includingHistory:)` gives `capture`. */
-const memberName = (id: string): string => id.replace(/\(.*$/s, '').split(/[.#:\\]+/).at(-1) ?? id
+const memberName = (id: string): string => id.replace(/\(.*$/s, '').split(/[.#:\\/]+/).at(-1) ?? id
 
 /**
  * Whether a use belongs on the command's own pages, and not only on the method's.

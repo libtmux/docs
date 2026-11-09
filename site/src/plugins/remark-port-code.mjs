@@ -21,11 +21,16 @@ import { visit } from 'unist-util-visit'
  */
 /** @type {Record<string, string | undefined>} */
 export const LANG_TO_PORT = {
+  ocaml: 'ocaml',
   python: 'py',
   py: 'py',
   ruby: 'ruby',
   rb: 'ruby',
+  erlang: 'erlang',
+  erl: 'erlang',
   lua: 'lua',
+  lisp: 'lisp',
+  commonlisp: 'lisp',
   typescript: 'ts',
   ts: 'ts',
   javascript: 'ts',
@@ -36,6 +41,7 @@ export const LANG_TO_PORT = {
   golang: 'go',
   java: 'java',
   kotlin: 'kotlin',
+  clojure: 'clojure',
   scala: 'scala',
   fsharp: 'fsharp',
   fs: 'fsharp',
@@ -51,11 +57,14 @@ export const LANG_TO_PORT = {
 
 /** Checkout locations used to refresh the revision-bound cache. */
 export const CHECKOUTS = {
+  ocaml: '~/work/libtmux/libtmux-ocaml-docs-site',
+  erlang: '~/work/libtmux/libtmux-erlang-docs-site',
   py: '~/work/python/libtmux',
   ruby: '~/work/libtmux/libtmux-ruby-docs',
   lua: '~/work/libtmux/libtmux-lua-docs',
   powershell: '~/work/libtmux/libtmux-powershell-docs-site',
   julia: '~/work/libtmux/libtmux-julia-docs-site',
+  lisp: '~/work/libtmux/libtmux-lisp-docs-site',
   ts: '~/work/libtmux/libtmux-ts-docs',
   rs: '~/work/libtmux/libtmux-rs-docs',
   go: '~/work/libtmux/libtmux-go-docs',

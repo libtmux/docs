@@ -13,7 +13,9 @@
  *
  * Nothing here runs a build tool. The files are parsed as text.
  */
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawnSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
+import { parseTag } from '../../site/src/lib/versions.ts'
 
 /** A read-only view of one repository at one revision. */
 export function repositoryAt(checkout, revision) {
@@ -68,6 +70,50 @@ function newestTag(tags, prefix) {
 }
 
 const READERS = {
+  /** Directly authored opam manifests name the packages distributed from Git. */
+  ocaml(repo) {
+    return {
+      distributions: repo.files().filter((path) => /^[^/]+\.opam$/.test(path)).map((manifest) => ({
+        name: manifest.slice(0, -'.opam'.length), manifest,
+        ...(/^version:\s*"([^"]+)"/m.test(repo.read(manifest))
+          ? { version: /^version:\s*"([^"]+)"/m.exec(repo.read(manifest))[1] } : {}),
+      })), units: [],
+    }
+  },
+  /** Root and workspace Cabal packages; executable examples are independent consumers. */
+  haskell(repo) {
+    const distributions = repo.files().filter((path) => /^[^/]+\.cabal$/.test(path) || /^packages\/[^/]+\/[^/]+\.cabal$/.test(path)).map((manifest) => {
+      const text = repo.read(manifest)
+      const name = /^name:\s*([A-Za-z0-9-]+)\s*$/m.exec(text)?.[1]
+      const version = /^version:\s*(\S+)\s*$/m.exec(text)?.[1]
+      if (!name || !version || !parseTag(`v${version}`, 'cabal')) throw new Error(`Invalid Cabal package identity in ${manifest}`)
+      return { name, version, manifest }
+    })
+    if (!distributions.length) throw new Error('No Cabal packages in the Haskell repository')
+    return { distributions, units: [] }
+  },
+  /** Each MakeMaker declaration owns one native Perl distribution. */
+  perl(repo) {
+    const distributions = repo.files().filter((path) => /^packages\/(core|async|workspace)\/Makefile\.PL$/.test(path)).map((manifest) => {
+      const text = repo.read(manifest)
+      const name = /NAME\s*=>\s*'([^']+)'/.exec(text)?.[1]?.replaceAll('::', '-')
+      const version = /VERSION\s*=>\s*'([^']+)'/.exec(text)?.[1]
+      return { name, version, manifest }
+    })
+    return { distributions, units: [{ unit: 'command', name: 'libtmux-workspace', path: 'packages/workspace/bin/libtmux-workspace', file: true }] }
+  },
+  /** OTP application terms are data, parsed natively without evaluating code. */
+  erlang(repo) {
+    const manifests = repo.files().filter((path) => /^(?:apps\/[^/]+\/)?src\/[^/]+\.app\.src$/.test(path))
+    if (!manifests.length) return { distributions: [], units: [] }
+    const input = JSON.stringify(manifests.map((manifest) => ({ manifest, text: repo.read(manifest) })))
+    if (Buffer.byteLength(input) > 1048576) throw new Error('Invalid Erlang application manifest: input exceeds 1 MiB')
+    const result = spawnSync('escript', [fileURLToPath(new URL('./read-erlang-apps.escript', import.meta.url))], {
+      input, encoding: 'utf8', timeout: 5000, maxBuffer: 1048576,
+    })
+    if (result.error || result.status !== 0) throw new Error(`Invalid Erlang application manifest: ${result.error?.message ?? result.stderr}`)
+    return { distributions: JSON.parse(result.stdout), units: [] }
+  },
   /** `[project] name` and `version`. */
   py(repo, { repository, manifest = 'pyproject.toml' }) {
     const project = section(repo.read(manifest), 'project')
@@ -167,7 +213,7 @@ const READERS = {
       if (!repo.has(manifest)) return []
       const build = repo.read(manifest)
       const scala = build.includes('libtmux.published-scala-library')
-      if (!scala && !/libtmux\.(?:published-library|publication)\b/.test(build)) return []
+      if (!scala && !/libtmux\.(?:published-library|publication|clojure-library)\b/.test(build)) return []
       return [{ name: `io.github.libtmux:${directory}${scala ? '_3' : ''}`, version, manifest }]
     })
     return { distributions, units: [] }
@@ -219,12 +265,26 @@ const READERS = {
     })
     return { distributions, units: [] }
   },
+
+  /** One source distribution exports the non-test ASDF systems and workspace script. */
+  lisp(repo) {
+    const manifest = 'libtmux.asd'
+    const text = repo.read(manifest)
+    const systems = [...text.matchAll(/\(defsystem\s+"(libtmux(?:\/[^"]+)?)"/g)].map((match) => match[1])
+      .filter((name) => !name.includes('/tests'))
+    const version = /:version\s+"([^"]+)"/.exec(text)?.[1]
+    const units = systems.filter((name) => name !== 'libtmux').map((name) => ({ unit: 'ASDF system', name }))
+    if (repo.has('bin/libtmux-workspace')) units.push({ unit: 'script', name: 'libtmux-workspace' })
+    return { distributions: [{ name: 'libtmux', version, manifest }], units }
+  },
 }
 
 /** Which reader a port uses: a wrapper port reads its parent's repository. */
 const READER_FOR = {
-  py: 'py', ruby: 'ruby', lua: 'lua', powershell: 'powershell', julia: 'julia', ts: 'ts', rs: 'rs', go: 'go',
-  java: 'java', kotlin: 'java', scala: 'java', csharp: 'dotnet', fsharp: 'dotnet', cxx: 'cxx', swift: 'swift', elixir: 'elixir',
+  perl: 'perl', py: 'py', ruby: 'ruby', lua: 'lua', powershell: 'powershell', julia: 'julia', ts: 'ts', rs: 'rs', go: 'go',
+  java: 'java', clojure: 'java', kotlin: 'java', scala: 'java', csharp: 'dotnet', fsharp: 'dotnet', cxx: 'cxx', swift: 'swift', elixir: 'elixir', ocaml: 'ocaml',
+  haskell: 'haskell',
+  lisp: 'lisp', erlang: 'erlang',
 }
 
 /**
@@ -232,7 +292,7 @@ const READER_FOR = {
  * @param {string} slug
  * @param {{ revision: string, files(): string[], read(path: string): string, has(path: string): boolean, tags(): string[] }} repo
  * @param {{ identity?: string, repository?: string, manifest?: string }} [options]
- * @returns {{ distributions: { name: string, version?: string, manifest: string }[], units: { unit: string, name: string, path?: string }[] }}
+ * @returns {{ distributions: { name: string, version?: string, manifest: string }[], units: { unit: string, name: string, path?: string, file?: boolean }[] }}
  */
 export function readPort(slug, repo, options = {}) {
   const reader = READERS[READER_FOR[slug]]

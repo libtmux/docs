@@ -2,7 +2,7 @@ import { readFileSync, realpathSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { experimental_AstroContainer } from 'astro/container'
-import { parameterId, qualifiedNameOf, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model'
+import { parameterId, qualifiedNameOf, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model/reference'
 import { Window } from 'happy-dom'
 import { afterEach, expect, it, vi } from 'vitest'
 import { signatureMultiline } from '../src/lib/api-sections'
@@ -34,11 +34,11 @@ async function parameterComponent() {
     '../../lib/word-break': new URL('../src/lib/word-break.ts', import.meta.url).href,
   })
   const type = await compile('../src/components/api/ApiType.astro', {
-    '@libtmux/api-model': helpers, './SymbolName.astro': name, './ApiKeyword.astro': keyword,
+    '@libtmux/api-model': helpers, '@libtmux/api-model/reference': helpers, './SymbolName.astro': name, './ApiKeyword.astro': keyword,
     '../../lib/code-layout': new URL('../src/lib/code-layout.ts', import.meta.url).href,
   })
   const url = await compile('../src/components/api/ApiSignatureParameters.astro', {
-    '@libtmux/api-model': helpers, '../../lib/api-sections': helpers, './ApiType.astro': type,
+    '@libtmux/api-model': helpers, '@libtmux/api-model/reference': helpers, '../../lib/api-sections': helpers, './ApiType.astro': type,
   })
   return (await import(/* @vite-ignore */ url)).default
 }

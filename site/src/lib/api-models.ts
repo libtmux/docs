@@ -1,4 +1,6 @@
-import { conceptsFor, isMemberOwner, OWNER_KINDS, parameterId, parentInventory, sourceUrl, SymbolIndex, type ApiModel, type ApiModelBase, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model'
+import perlModel from '../data/api/perl.json'
+import perlNav from '../data/api/perl.nav.json'
+import { conceptsFor, isMemberOwner, OWNER_KINDS, parameterId, parentInventory, sourceUrl, SymbolIndex, type ApiModel, type ApiModelBase, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model/reference'
 import mentionIndex from '../data/mentions.json'
 import domInv from '../data/inventories/dom.entries.json'
 import jdkInv from '../data/inventories/jdk.entries.json'
@@ -9,12 +11,20 @@ import registryData from '../data/registry.json'
 import { PORT_BY_SLUG, referenceUrl, type DocProduct, type RegistryData } from './ports'
 import { buildTarget, defaultVersionFor, registryVersion } from './versions'
 import { mcpToolSymbols } from './mcp-catalog'
+import { nativeKind } from './api-labels'
+import { apiDocLinksFor } from './port-documentation'
 import powershellNav from '../data/api/powershell.nav.json'
 import juliaNav from '../data/api/julia.nav.json'
 import elixirNav from '../data/api/elixir.nav.json'
+import haskellNav from '../data/api/haskell.nav.json'
+import lispNav from '../data/api/lisp.nav.json'
 import powershellModel from '../data/api/powershell.json'
 import juliaModel from '../data/api/julia.json'
 import elixirModel from '../data/api/elixir.json'
+import haskellModel from '../data/api/haskell.json'
+import lispModel from '../data/api/lisp.json'
+import erlangModel from '../data/api/erlang.json'
+import erlangNav from '../data/api/erlang.nav.json'
 import cxxNav from '../data/api/cxx.nav.json'
 import csharpNav from '../data/api/csharp.nav.json'
 import goNav from '../data/api/go.nav.json'
@@ -37,10 +47,14 @@ import swiftModel from '../data/api/swift.json'
 import tsModel from '../data/api/ts.json'
 import kotlinModel from '../data/api/kotlin.json'
 import scalaModel from '../data/api/scala.json'
+import ocamlModel from '../data/api/ocaml.json'
+import ocamlNav from '../data/api/ocaml.nav.json'
 import fsharpModel from '../data/api/fsharp.json'
 import kotlinNav from '../data/api/kotlin.nav.json'
 import scalaNav from '../data/api/scala.nav.json'
 import fsharpNav from '../data/api/fsharp.nav.json'
+import clojureModel from '../data/api/clojure.json'
+import clojureNav from '../data/api/clojure.nav.json'
 
 /**
  * The extracted models, in one module rather than in the route.
@@ -52,9 +66,13 @@ import fsharpNav from '../data/api/fsharp.nav.json'
  * passed. Imports are visible to both.
  */
 export const API_MODELS: Record<string, ApiModel> = {
+  perl: perlModel as unknown as ApiModel,
+  erlang: erlangModel as unknown as ApiModel,
   powershell: powershellModel as unknown as ApiModel,
   julia: juliaModel as unknown as ApiModel,
   elixir: elixirModel as unknown as ApiModel,
+  haskell: haskellModel as unknown as ApiModel,
+  lisp: lispModel as unknown as ApiModel,
   py: pyModel as unknown as ApiModel,
   ruby: rubyModel as unknown as ApiModel,
   lua: luaModel as unknown as ApiModel,
@@ -67,7 +85,9 @@ export const API_MODELS: Record<string, ApiModel> = {
   swift: swiftModel as unknown as ApiModel,
   kotlin: kotlinModel as unknown as ApiModel,
   scala: scalaModel as unknown as ApiModel,
+  ocaml: ocamlModel as unknown as ApiModel,
   fsharp: fsharpModel as unknown as ApiModel,
+  clojure: clojureModel as unknown as ApiModel,
 }
 
 /** One entry in a curated sidebar bucket, carrying just enough to link it. */
@@ -115,9 +135,13 @@ export interface PortNavData {
  * what a page renders cannot disagree.
  */
 export const API_NAV: Record<string, PortNavData> = {
+  perl: perlNav as unknown as PortNavData,
+  erlang: erlangNav as unknown as PortNavData,
   powershell: powershellNav as unknown as PortNavData,
   julia: juliaNav as unknown as PortNavData,
   elixir: elixirNav as unknown as PortNavData,
+  haskell: haskellNav as unknown as PortNavData,
+  lisp: lispNav as unknown as PortNavData,
   py: pyNav as unknown as PortNavData,
   ruby: rubyNav as unknown as PortNavData,
   lua: luaNav as unknown as PortNavData,
@@ -130,15 +154,21 @@ export const API_NAV: Record<string, PortNavData> = {
   swift: swiftNav as unknown as PortNavData,
   kotlin: kotlinNav as unknown as PortNavData,
   scala: scalaNav as unknown as PortNavData,
+  ocaml: ocamlNav as unknown as PortNavData,
   fsharp: fsharpNav as unknown as PortNavData,
+  clojure: clojureNav as unknown as PortNavData,
 }
 
-export { isMemberOwner, OWNER_KINDS } from '@libtmux/api-model'
+export { isMemberOwner, OWNER_KINDS } from '@libtmux/api-model/reference'
 
 export const PORT_NAME: Record<string, string> = {
+  perl: 'Perl',
+  erlang: 'Erlang',
   powershell: 'PowerShell',
   julia: 'Julia',
   elixir: 'Elixir',
+  haskell: 'Haskell',
+  lisp: 'Common Lisp',
   py: 'Python',
   ruby: 'Ruby',
   lua: 'Lua',
@@ -152,6 +182,8 @@ export const PORT_NAME: Record<string, string> = {
   kotlin: 'Kotlin',
   scala: 'Scala',
   fsharp: 'F#',
+  ocaml: 'OCaml',
+  clojure: 'Clojure',
 }
 
 /**
@@ -180,7 +212,9 @@ export function ownersOf(model: ApiModelBase) {
 /** The types the port index lists: top-level only, so nesting reads as nesting. */
 export function topLevelTypesOf(model: ApiModelBase) {
   const owners = new Set(ownersOf(model).map((symbol) => symbol.id))
-  return model.symbols.filter((s) => !s.parent && OWNER_KINDS.has(s.kind)
+  const packages = new Set(model.symbols.filter((symbol) => symbol.kind === 'module').map((symbol) => symbol.id))
+  const lisp = 'port' in model && model.port === 'lisp'
+  return model.symbols.filter((s) => (!s.parent || (lisp && packages.has(s.parent))) && OWNER_KINDS.has(s.kind)
     && (s.kind !== 'typealias' || owners.has(s.id)))
 }
 
@@ -237,7 +271,7 @@ const INVENTORIES: {
   {
     data: jdkInv,
     baseUrl: 'https://docs.oracle.com/en/java/javase/21/docs/api/',
-    langs: ['java', 'kotlin', 'scala'],
+    langs: ['java', 'kotlin', 'scala', 'clojure'],
     project: 'Java SE',
   },
   {
@@ -283,7 +317,13 @@ export function parentApiInventory(port: string): InventoryEntry[] {
 /** Build an index with this site's language-scoped external inventories. */
 export function createApiIndex(model: ApiModelBase & { port?: string; language?: string }, hrefFor: (s: ApiSymbol) => string): SymbolIndex {
   const language = model.port ?? model.language
-  const index = new SymbolIndex(model.symbols, hrefFor, language)
+  const docRoot = model.symbols[0] && /^(.*\/)reference\//.exec(hrefFor(model.symbols[0]))?.[1]
+  const guideLinks = language && PORT_BY_SLUG[language] && docRoot ? apiDocLinksFor(language, docRoot) : new Map<string, string>()
+  const index = new SymbolIndex(model.symbols, hrefFor, language, (href) => {
+    const cut = href.indexOf('#')
+    const target = guideLinks.get(cut < 0 ? href : href.slice(0, cut))
+    return target ? target + (cut < 0 ? '' : href.slice(cut)) : href
+  })
   for (const { data, baseUrl, langs, project } of INVENTORIES) {
     if (!language || !langs.includes(language)) continue
     index.addInventory(baseUrl, entriesOf(data), langs, project)
@@ -418,7 +458,7 @@ export function referenceAlternatives(port: string, publicId: string) {
         name,
         publicId: targetId,
         href,
-        kind: target?.command?.kind ?? target?.kind,
+        kind: target?.command?.kind ?? (target && nativeKind(target, targetPort)),
         note,
         absent: concept.absent?.[targetPort],
       }

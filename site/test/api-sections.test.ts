@@ -10,6 +10,15 @@ const symbol = (id: string, overrides: Partial<ApiSymbol> = {}): ApiSymbol => ({
 })
 
 describe('reference page navigation', () => {
+  it('derives stable native method fragments when the optional dispatch identity is absent', () => {
+    const owner = symbol('LibTmux::Server::attach_argv', { kind: 'method', signatures: [
+      { methodKind: 'call', raw: 'sub attach_argv($self, %args)', params: [{ name: 'args', variadic: 'keyword' }] },
+    ] })
+    const [method] = apiMethodDetails(owner)
+    expect(method.id).toMatch(/^LibTmux::Server::attach_argv\.method-[a-f0-9]{16}$/)
+    owner.signatures[0].raw = 'sub attach_argv( $self,\n %args )'
+    expect(apiMethodDetails(owner)[0].id).toBe(method.id)
+  })
   it('keeps overload fragments stable through insertion, reordering, and signature formatting', () => {
     const owner = symbol('Server.open')
     const first = { params: [{ name: 'name', type: 'string' }], returns: 'Server', raw: 'open(name: string): Server' }

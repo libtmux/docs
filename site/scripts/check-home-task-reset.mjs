@@ -1,3 +1,4 @@
+import { newCheckContext } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 
 async function checkTaskFirstPaint(browser, base) {
@@ -7,16 +8,19 @@ async function checkTaskFirstPaint(browser, base) {
     { slug: 'v0.1.0-alpha.12', label: 'v0.1.0-alpha.12', kind: 'prerelease', supported: true },
   ] } }
   for (const width of [853, 390, 280]) {
-    const context = await browser.newContext({ viewport: { width, height: 789 }, reducedMotion: 'reduce' })
+    const context = await newCheckContext(browser, base, { viewport: { width, height: 789 }, reducedMotion: 'reduce' })
     let releaseWidget
     const widgetReady = new Promise((resolve) => { releaseWidget = resolve })
     try {
-      await context.route('**/astro/runtime/client/dev-toolbar/entrypoint.js', (route) => route.fulfill({ contentType: 'application/javascript', body: 'export {}' }))
+      await context.route('**/astro/runtime/client/dev-toolbar/entrypoint.js', (route) => new URL(route.request().url()).origin === new URL(base).origin
+        ? route.fulfill({ contentType: 'application/javascript', body: 'export {}' }) : route.fallback())
       await context.route('**/*AgentPrompt*', async (route) => {
+        if (new URL(route.request().url()).origin !== new URL(base).origin) return route.fallback()
         if (route.request().resourceType() === 'script') await widgetReady
-        await route.continue()
+        await route.fallback()
       })
-      await context.route('**/versions.json', (route) => route.fulfill({ json: versions }))
+      await context.route('**/versions.json', (route) => new URL(route.request().url()).origin === new URL(base).origin
+        ? route.fulfill({ json: versions }) : route.fallback())
       const page = await context.newPage()
       page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
       const response = await page.goto(`${base}/?port=ts&errors=1&cleanup=1`, { waitUntil: 'commit' })
@@ -72,10 +76,11 @@ export async function chooseHomeTask(page, topic) {
 export async function checkHomeTaskReset(browser, base) {
   await checkTaskFirstPaint(browser, base)
   for (const blocked of [false, true]) {
-    const context = await browser.newContext({ viewport: { width: 914, height: 777 }, reducedMotion: 'reduce' })
+    const context = await newCheckContext(browser, base, { viewport: { width: 914, height: 777 }, reducedMotion: 'reduce' })
     try {
       if (blocked) {
-        await context.route('**/astro/runtime/client/dev-toolbar/entrypoint.js', (route) => route.fulfill({ contentType: 'application/javascript', body: 'export {}' }))
+        await context.route('**/astro/runtime/client/dev-toolbar/entrypoint.js', (route) => new URL(route.request().url()).origin === new URL(base).origin
+          ? route.fulfill({ contentType: 'application/javascript', body: 'export {}' }) : route.fallback())
         await context.addInitScript(() => Object.defineProperty(window, 'localStorage', {
           get() { throw new DOMException('Storage blocked', 'SecurityError') },
         }))

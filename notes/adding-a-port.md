@@ -54,7 +54,9 @@ products. Leave out private workspaces and development tools.
 Name a package page or API reference only where the host really serves one.
 A port installed from Git, or from its own registry, names no host page. Set
 an entry `planned` or `configured-unpublished` until its host serves it: only
-`published` entries produce links. List a page an ecosystem suggests and its
+`published` entries produce registry/API links. Set `sourceAvailable: true`
+only for a verified public source directory or file; that source can be linked
+while the distribution remains `configured-unpublished`. List a page an ecosystem suggests and its
 host does not serve as `unavailable`.
 
 Give a package that ships inside another distribution (a Go package, a
@@ -84,9 +86,9 @@ and records what it found:
 $ node scripts/verify-destinations.mjs
 ```
 
-The verifier refuses to run, with or without `--check`, if a port in `ports.ts`
-has no inventory entry with a published library: the header builds its links
-from that entry, so a port without one would offer nothing. A host the
+The verifier requires a published library, or a configured but unpublished
+has no library with a public distribution or explicitly available source:source repository and source installation instructions.
+The latter names no registry or API host until those pages exist. A host the
 inventory has not named before needs an identity rule in
 `scripts/lib/destination-verification.mjs` and its cases in
 `scripts/verify-destinations.negative.mjs`; without a rule its destinations are
@@ -152,6 +154,111 @@ In the new worktree, on `docs-site`:
   see `notes/architecture.md`'s renderer table and the injection-mechanism
   notes in `notes/research/04-versioning.md` §5 for the pattern used by each
   existing skinned generator.
+
+Haskell's [Haddock exporter](../packages/api-model/scripts/export-haskell.py)
+builds a selected committed source archive. Its
+[adapter](../packages/api-model/src/languages/haskell.ts) currently qualifies
+`LibTmux.Id`, `LibTmux.Value` and `LibTmux.Version` with the port's pinned
+GHC/Haddock toolchain. It preserves native signature links, opaque data
+heads, constructor and record-label ownership, instance heads, and authored
+export groups. The stored model retains those groups so sidebar regeneration
+needs no checkout or native toolchain. Additional module and declaration
+forms need native fixtures and qualification before the adapter accepts them.
+
+Haskell's reader guides use the routes in
+[`port-documentation.ts`](../site/src/lib/port-documentation.ts). Its section
+profile currently offers Guides; navigation and landing pages use that same
+profile. After regenerating the API model, refresh the committed guide cache:
+
+```console
+$ node scripts/stage-port-docs.mjs \
+    --port haskell \
+    --from-source \
+    --refresh-cache
+```
+
+The command reads committed guide bytes at the API model's revision. Public
+module links reach the shared reference; source fragments retain their pinned
+GitHub destinations. Add the pinned source checkout to `test.yml` when a port
+gains source-owned guides. Reading a guide checkout does not qualify native
+export freshness; the port's publisher runs its selected native toolchain.
+
+Haskell command usage is read from `src/` and `internal/` at the API model's
+revision by the [source reader](../scripts/lib/tmux-usage-haskell.mjs).
+The pinned WASM grammar is qualified against those inputs, not all GHC2024
+syntax. The reader follows demanded same-file actions, lexical helpers and
+literal argument builders. Unused lazy actions are not sends. Unsupported
+command-bearing flows, including imported or higher-order helpers, CPP and
+Template Haskell, fail generation; literate inputs are not qualified.
+The initial argv profile accepts a separate command name and at most one
+single-letter option. Combined flags and ambiguous option operands need
+option-arity qualification. Custom `do` semantics, command-bearing pattern
+bindings, tmux command separators and sends beyond the shared helper-depth
+limit fail explicitly. Actual sends require a resolved scope and public
+attribution; ambiguous or widely shared helpers need further qualification.
+The current public scalar modules send no commands, so the generated usage
+document has no symbol entries. New public operations need source evidence
+and reader qualification before appearing on tmux command pages.
+
+### Erlang compiler artifact
+
+The Erlang exporter builds a clean source checkout with its selected Rebar3
+in a temporary build directory, then reads EEP-48 Markdown and abstract code.
+Use the source project's OTP 29 and Rebar3 toolchain on `PATH`. With the
+Erlang source checkout beside this docs worktree, export its core API:
+
+```console
+$ escript packages/api-model/scripts/export-erlang.escript \
+    ../libtmux-erlang \
+    libtmux_erlang \
+    ../libtmux-erlang/_build/docs/api.json
+```
+
+The version-3 artifact records the source commit, tracked input hashes, OTP
+version and exporter source digest.
+It retains native module, function, type and callback documentation, typespecs,
+nominal types, supporting non-exported types and exported native records.
+Source locations follow included headers. Opaque declarations expose their
+name and parameters. Hidden modules and members stay out. Dirty sources,
+missing compiler chunks and ambiguous source paths fail the export.
+
+The exporter parses formatted declarations to identify type and native-record
+references, including their arities and UTF-16 ranges. It checks that formatting
+preserves the syntax tree. OTP destinations require a compiler-known builtin or
+an entry in that module's documentation; unknown types remain unresolved.
+The exporter observes compiler file calls inside the temporary Rebar VM and
+uses an identity parse transform to capture the actual compiler options before
+OTP's deterministic build removes preprocessing context. OTP's preprocessor recovers
+full paths in that same VM, preserving its library paths, environment and
+working directory. The resulting forms must match the compiled
+forms. This rejects external public headers even when their basenames and
+declarations match tracked headers. Private OTP headers may supply implementation
+records, but every documented declaration must resolve to a regular tracked
+source file. Tracked source symlinks are rejected; temporary Rebar build links
+back to those regular files are permitted.
+An unreproducible preprocessing context fails the export. Explicit `-file`
+source remapping is unsupported. Temporary compiler
+context and build output are removed on completion or an export error.
+
+`extractErlang` maps the artifact to the shared API model. The compiler supplies
+callable parameters, return types, overload clauses and quoted atom spellings.
+The model retains native arities, supporting types and distinct type/callback
+identities. Native `m:`, `t:` and `c:` references resolve within their module.
+API signatures and their Markdown copies retain Erlang syntax and use the
+compiler's reference ranges for links. The site checks the 60-column display
+limit after native formatting. The `libtmux_erlang_workspace` application maps
+to the workspace product; the core application maps to core.
+Erlang has no shared site routes or package destinations until the port's
+delivery checks are complete. The compiler fixture runs in the outer test loop; it
+requires OTP 29 and Rebar3 on CI and skips locally when that toolchain is absent.
+
+The tmux-usage reader also requires OTP 29. It uses `erl_scan` for literal
+decoding and canonical atom names, then attributes written calls by module
+and arity, including static imports. Deferred fun bodies do not establish
+that their enclosing function sends a command. Macro-generated declaration
+heads fail rather than disappear from the scan. Variable-carried commands,
+custom sigils and macro-expanded calls need reviewed usage claims. Native
+scanner checks belong to the outer loop.
 
 ### Wrapper libraries
 
@@ -254,6 +361,27 @@ bytes are a no-op and different bytes fail before upload.
 
 ## Checklist summary
 
+After assembling the complete site, record the new port's resolved API
+cross-references. The publication audit requires an entry for every port:
+
+```console
+$ node scripts/check-xrefs.mjs _site/en --update
+```
+
+Review `scripts/xref-floor.json`: the new port needs a positive measured count,
+and existing floors must remain intact. A selected-port build measures only
+that port; use its count without replacing other ports' entries.
+
+Record the unresolved type-name count as well, including an explicit zero:
+
+```console
+$ node scripts/check-type-links.mjs _site/en --update
+```
+
+Review `scripts/type-links-ceiling.json` and retain every other port's entry.
+If the new count is positive, inspect it with `--list` before recording it;
+`--force` permits a deliberate nonzero initial ceiling.
+
 - [ ] `ports.ts`: new `Port` entry, renderer and product availability decided
 - [ ] `port-inventory.ts`: entries from the manifests, verified, with evidence committed
 - [ ] Worktree added on branch `docs-site`, `checkout`/`worktree` paths match
@@ -261,6 +389,8 @@ bytes are a no-op and different bytes fail before upload.
 - [ ] Source-owned prose/examples stage from the selected revision
 - [ ] Registry, version grammar, installs, prompts, and product routes agree
 - [ ] Source-bound trunk, branch, PR, tag, and alias builds are checked
+- [ ] Measured cross-reference floor added without lowering existing floors
+- [ ] Measured type-link ceiling added without changing other ports' ceilings
 - [ ] CI caller and exact preview cleanup are committed on `docs-site`
 - [ ] Port and reusable-workflow pins use the same public full site SHA
 - [ ] Maintainer opens the port PR and coordinates publication and shell search

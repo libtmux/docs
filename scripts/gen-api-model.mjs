@@ -15,12 +15,20 @@ import { fileURLToPath } from 'node:url'
 import { PORTS as PORT_DEFS } from '../site/src/lib/ports.ts'
 import { extractDoxygen } from '../packages/api-model/src/languages/doxygen.ts'
 import { extractLua } from '../packages/api-model/src/languages/lua.ts'
+import { extractPerlArtifact } from '../packages/api-model/src/languages/perl.ts'
 import { extractRuby } from '../packages/api-model/src/languages/ruby.ts'
 import { extractPowerShell } from '../packages/api-model/src/languages/powershell.ts'
 import { extractJulia } from '../packages/api-model/src/languages/julia.ts'
+import { extractOcamlArtifact } from '../packages/api-model/src/languages/ocaml.ts'
 import { extractElixir } from '../packages/api-model/src/languages/elixir.ts'
+import { extractHaskellArtifact } from '../packages/api-model/src/languages/haskell.ts'
+import { extractClojure } from '../packages/api-model/src/languages/clojure.ts'
+import { attachCompleteClojureExamples } from '../packages/api-model/src/languages/clojure-examples.ts'
+import { extractCommonLisp } from '../packages/api-model/src/languages/lisp.ts'
+import { extractErlang } from '../packages/api-model/src/languages/erlang.ts'
 import { attachCompleteGoExamples, readCompleteGoExamples } from '../packages/api-model/src/languages/go-examples.ts'
 import { attachCompleteCSharpExamples } from '../packages/api-model/src/languages/csharp-examples.ts'
+import { attachCompleteOcamlExamples } from '../packages/api-model/src/languages/ocaml-examples.ts'
 import { attachCompleteFSharpExamples } from '../packages/api-model/src/languages/fsharp-examples.ts'
 import { attachCompleteRustExamples } from '../packages/api-model/src/languages/rust-examples.ts'
 import { attachNativeRustIdStructs } from '../packages/api-model/src/languages/rust-id-structs.ts'
@@ -97,7 +105,7 @@ function packageVersion(checkout, port, product) {
     return /^version\s*=\s*"([^"]+)"/m.exec(read(`crates/${crate}/Cargo.toml`))?.[1]
       ?? /^version\s*=\s*"([^"]+)"/m.exec(read('Cargo.toml'))?.[1]
   }
-  if (['java', 'kotlin', 'scala'].includes(port)) return /^libtmuxVersion=(.+)$/m.exec(read('gradle.properties'))?.[1]
+  if (['java', 'kotlin', 'scala', 'clojure'].includes(port)) return /^libtmuxVersion=(.+)$/m.exec(read('gradle.properties'))?.[1]
   if (['csharp', 'fsharp'].includes(port)) {
     const props = read('Directory.Build.props')
     const prefix = /<VersionPrefix>([^<]+)</.exec(props)?.[1]
@@ -127,7 +135,7 @@ function packageVersion(checkout, port, product) {
  * Falls back to `head` loudly. A dead link is worse than a live one, but a
  * silently missing source link is worse than both.
  */
-function publicRevision(checkout, head, port, repo) {
+function publicRevision(checkout, head, port, repo, publicRef) {
   if (!head) return undefined
 
   // The blob URL and the merge-base have to name the same repository;
@@ -138,7 +146,10 @@ function publicRevision(checkout, head, port, repo) {
     process.exit(1)
   }
 
-  const ref =
+  if (publicRef && !git(checkout, 'rev-parse', '--verify', '--quiet', publicRef)) {
+    throw new Error(`gen-api-model: ${port} has no authenticated public source ref ${publicRef}`)
+  }
+  const ref = publicRef ??
     git(checkout, 'symbolic-ref', 'refs/remotes/origin/HEAD') ??
     ['refs/remotes/origin/master', 'refs/remotes/origin/main'].find((r) =>
       git(checkout, 'rev-parse', '--verify', '--quiet', r),
@@ -219,6 +230,10 @@ const PORTS = {
       excludePaths: [/(^|\.)_vendor\./, /(^|\.)_compat\./],
     },
   },
+  perl: {
+    checkout: '~/work/libtmux/libtmux-perl-docs-site', root: '.', nativeArtifact: 'docs/_build/api.json',
+    repo: 'libtmux/libtmux-perl', options: {},
+  },
   ruby: {
     checkout: '~/work/libtmux/libtmux-ruby-docs',
     root: '.',
@@ -236,12 +251,27 @@ const PORTS = {
     root: '.', nativeArtifact: 'docs/build/api.json',
     repo: 'libtmux/libtmux-julia', options: {},
   },
+  erlang: {
+    checkout: '~/work/libtmux/libtmux-erlang-docs-site',
+    root: '.', nativeArtifact: '_build/docs/api.json',
+    repo: 'libtmux/libtmux-erlang', options: {},
+  },
   // Written by packages/api-model/scripts/export-elixir.exs, run from the
   // checkout with `MIX_ENV=prod mix run --no-start <script> _build/docs/api.json`.
   elixir: {
     checkout: '~/work/libtmux/libtmux-elixir-docs-site',
     root: '.', nativeArtifact: '_build/docs/api.json',
     repo: 'libtmux/libtmux-elixir', options: {},
+  },
+  haskell: {
+    checkout: '~/work/libtmux/libtmux-haskell-docs',
+    root: '.', nativeArtifact: '.cache/docs/api.json',
+    repo: 'libtmux/libtmux-haskell', options: {},
+  },
+  lisp: {
+    checkout: '~/work/libtmux/libtmux-lisp-docs-site',
+    root: '.', nativeArtifact: 'docs/_build/api.json',
+    repo: 'libtmux/libtmux-lisp', options: {},
   },
   lua: {
     checkout: '~/work/libtmux/libtmux-lua-docs',
@@ -302,6 +332,25 @@ const PORTS = {
     generate: [':libtmux-scala:generateScalaSources', ':libtmux-scala-cats:generateScalaSources'],
     pathRoots: ['libtmux-scala/', 'libtmux-scala-cats/', 'libtmux-scala-ox/',
       'docs/guide/scala/', 'examples/src/main/scala/'],
+    repo: 'libtmux/libtmux-java', options: {},
+  },
+  ocaml: {
+    checkout: '~/work/libtmux/libtmux-ocaml-docs-site',
+    root: '.', nativeArtifact: '_build/docs/ocaml.json',
+    repo: 'libtmux/libtmux-ocaml', options: {},
+  },
+  clojure: {
+    checkout: '~/work/libtmux/libtmux-java-clojure',
+    root: '.', nativeArtifact: 'build/docs/clojure-api.json',
+    publicRef: 'refs/remotes/origin/master',
+    pathRoots: ['libtmux-clojure/', 'libtmux-clojure-core-async/', 'docs/guide/clojure', 'examples/src/main/clojure/'],
+    generate: ({ head }) => [
+      '--init-script', join(repoRoot, 'packages/api-model/scripts/export-clojure.gradle'),
+      'exportClojureApi',
+      `-PlibtmuxClojureExporter=${join(repoRoot, 'packages/api-model/scripts/export-clojure.clj')}`,
+      `-PlibtmuxDocsSourceRevision=${head}`,
+      '--max-workers=1',
+    ],
     repo: 'libtmux/libtmux-java', options: {},
   },
   fsharp: {
@@ -587,12 +636,13 @@ for (const [port, cfg] of Object.entries(PORTS)) {
   }
   // The commit a reader can actually open, which is not always the one the
   // model is generated from. See `publicRevision`.
-  const revision = selectedSource ?? publicRevision(checkout, head, port, cfg.repo)
+  const revision = selectedSource ?? publicRevision(checkout, head, port, cfg.repo, cfg.publicRef)
 
   if (cfg.generate && (!cfg.generateWhen || existsSync(join(checkout, cfg.generateWhen)))) {
     // Gradle owns dependency tracking; stale generated methods must never be
     // accepted simply because their output directory already exists.
-    execFileSync(join(checkout, 'gradlew'), [...cfg.generate, '--console=plain'], {
+    const generation = typeof cfg.generate === 'function' ? cfg.generate({ head }) : cfg.generate
+    execFileSync(join(checkout, 'gradlew'), [...generation, '--console=plain'], {
       cwd: checkout, stdio: 'inherit',
     })
   }
@@ -639,8 +689,41 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       process.exit(1)
     }
     const artifact = JSON.parse(readFileSync(artifactPath, 'utf8'))
-    const nativeExtractors = { ruby: extractRuby, lua: extractLua, powershell: extractPowerShell, julia: extractJulia, elixir: extractElixir }
+    const nativeExtractors = { perl: extractPerlArtifact, ruby: extractRuby, lua: extractLua, powershell: extractPowerShell, julia: extractJulia, elixir: extractElixir, ocaml: extractOcamlArtifact, haskell: extractHaskellArtifact, clojure: extractClojure, lisp: extractCommonLisp, erlang: extractErlang }
     model = nativeExtractors[port](artifact, head)
+    if (port === 'haskell') {
+      const verify = (root, sourceRevision, input) => {
+        const bytes = execFileSync('git', ['-C', root, 'show', `${sourceRevision}:${input.path}`], {
+          maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'pipe'],
+        })
+        if (createHash('sha256').update(bytes).digest('hex') !== input.sha256) {
+          throw new Error(`Haskell native input differs from its committed source: ${input.path}`)
+        }
+      }
+      for (const input of model.nativeProvenance.files) verify(checkout, head, input)
+      const exporter = model.nativeProvenance.exporter
+      verify(repoRoot, exporter.revision, exporter)
+      if (createHash('sha256').update(readFileSync(join(repoRoot, exporter.path))).digest('hex') !== exporter.sha256) {
+        throw new Error('Haskell native artifact uses different exporter bytes')
+      }
+    }
+    if (model.nativeProvenance) {
+      for (const input of model.nativeProvenance.files) {
+        // OCaml records installed compiler artifacts beside its committed interfaces.
+        const compiled = port === 'ocaml' && input.path.startsWith('_build/install/default/lib/')
+        const bytes = compiled ? readFileSync(join(checkout, input.path))
+          : execFileSync('git', ['-C', checkout, 'show', `${head}:${input.path}`], { maxBuffer: 1 << 26 })
+        if (createHash('sha256').update(bytes).digest('hex') !== input.sha256) {
+          throw new Error(`gen-api-model: ${port} native artifact source differs from ${head}: ${input.path}`)
+        }
+      }
+      for (const input of model.nativeProvenance.exporter.files ?? []) {
+        const bytes = readFileSync(join(port === 'ocaml' ? checkout : repoRoot, input.path))
+        if (createHash('sha256').update(bytes).digest('hex') !== input.sha256) {
+          throw new Error(`gen-api-model: ${port} native artifact exporter is stale: ${input.path}`)
+        }
+      }
+    }
   } else {
     model = await extractProject({
       port,
@@ -650,6 +733,9 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       options: cfg.options,
     })
   }
+
+  if (port === 'ocaml') attachCompleteOcamlExamples(model.symbols, (file) =>
+    execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], { encoding: 'utf8', maxBuffer: 1 << 26 }), revision)
 
   if (port === 'go') {
     // Read committed bytes at the citation revision, never a newer working tree.
@@ -667,6 +753,18 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     if (examples.length) attachCompleteGoExamples(model.symbols, examples, {
       repo: cfg.repo, revision, goVersion,
     })
+  }
+
+  if (port === 'clojure') {
+    attachCompleteClojureExamples(model.symbols, (file) => {
+      try {
+        return execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], {
+          encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'],
+        })
+      } catch {
+        return undefined
+      }
+    }, { repo: cfg.repo, revision })
   }
 
   if (['java', 'kotlin', 'scala'].includes(port)) {
@@ -957,18 +1055,19 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     // A port moving is not staleness of this file's content: every revision
     // and extracted revision moves with it, on the model and on each symbol.
     // Compare everything else, and the two sidecars built from the same pass.
-    const strip = (t) => t.replace(/"(?:revision|extractedRevision)":"[0-9a-f]*",?/g, '')
+    const strip = (t) => port === 'haskell' ? t : t.replace(/"(?:revision|extractedRevision)":"[0-9a-f]*",?/g, '')
     const read = (file) => {
       const path = join(repoRoot, 'site/src/data/api', file)
       return existsSync(path) ? readFileSync(path, 'utf8') : ''
     }
     const tree = git(checkout, 'ls-tree', '-r', '--name-only', head ?? 'HEAD')
     const committedPaths = read(`${port}.paths.json`)
+    const expectedPathRecord = `${JSON.stringify({ port, repo: cfg.repo, revision, paths: tree ? repositoryPaths(tree, cfg) : [] })}\n`
     const nav = navSidecar(port, model)
     const stalePaths = [
       strip(read(`${port}.json`)) !== strip(text) && `${port}.json`,
-      tree && JSON.stringify(committedPaths && JSON.parse(committedPaths).paths) !==
-        JSON.stringify(repositoryPaths(tree, cfg)) && `${port}.paths.json`,
+      tree && (port === 'haskell' ? committedPaths !== expectedPathRecord : JSON.stringify(committedPaths && JSON.parse(committedPaths).paths) !==
+        JSON.stringify(repositoryPaths(tree, cfg))) && `${port}.paths.json`,
       nav && read(`${port}.nav.json`) !== `${JSON.stringify(nav)}\n` && `${port}.nav.json`,
     ].filter(Boolean)
     if (stalePaths.length) {

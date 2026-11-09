@@ -49,6 +49,7 @@ const PYLIB = 'https://docs.python.org/3/library'
 const RUST = 'https://doc.rust-lang.org/std'
 const JULIA = 'https://docs.julialang.org/en/v1/base'
 const HEXDOCS = 'https://elixir.hexdocs.pm'
+const OTP = 'https://www.erlang.org/doc/apps/erts/erlang.html'
 const TS = 'https://www.typescriptlang.org/docs/handbook'
 const CPPREF = 'https://en.cppreference.com/cpp'
 const JLS = 'https://docs.oracle.com/javase/specs/jls/se21/html'
@@ -249,6 +250,7 @@ const pages = {
   '/cppref/cpp/types/remove_cvref': { body: cppref('std::remove_cvref', 'template&lt; class T &gt; struct remove_cvref;', 'Like remove_cv, but also removes the reference. Possible implementation: remove_cv_t&lt;remove_reference_t&lt;T&gt;&gt;. Helper type: remove_cvref_t.') },
   '/cppref/cpp/keyword/bool': { body: html('C++ keyword: bool - cppreference.com', '<h1 id="firstHeading">C++ keyword: bool</h1>') },
   '/cppref/cpp/keyword/int': { body: html('C++ keyword: int - cppreference.com', '<h1 id="firstHeading">C++ keyword: int</h1>') },
+  '/erlang/doc/apps/erts/erlang.html': { body: exdoc('erlang', [['t:map/0', 'type', 'map()'], ['t:map/1', 'type', 'map(Type)'], ['map/2', 'function', 'map/2'], ['c:map/0', 'callback', 'map/0']], '(erts v17.1.1)') },
   '/fsharp/fsharp-core-docs/reference/fsharp-collections-seqmodule.html': { body: fsdocs('Seq Module', 'FSharp.Collections', ['filter']) },
   '/fsharp/fsharp-core-docs/reference/fsharp-collections-seq-1.html': { body: fsdocs("seq&lt;'T&gt; Type", 'FSharp.Collections') },
   '/fsharp/fsharp-core-docs/reference/fsharp-collections-listmodule.html': { body: fsdocs('List Module', 'FSharp.Collections', ['filter']) },
@@ -278,16 +280,19 @@ const pages = {
   '/julia/en/v1/manual/types/': { body: plain('Types · The Julia Language', 'Types', part('Composite-Types', 'Composite Types', 'Composite types are called records, structs, or objects in various languages.')) },
 }
 
+// Every response closes its connection. The collector between the cases and the Markdown plants reads the whole
+// data tree and takes longer than a server holds an idle connection, and a client that reuses a connection the
+// server has closed fails with UND_ERR_SOCKET on the first plant that follows.
 const server = createServer((request, response) => {
   const entry = pages[request.url?.split('?')[0] ?? '']
   if (!entry) {
-    response.writeHead(404).end('not found')
+    response.writeHead(404, { connection: 'close' }).end('not found')
   } else if (entry.location) {
-    response.writeHead(entry.status, { location: entry.location }).end()
+    response.writeHead(entry.status, { location: entry.location, connection: 'close' }).end()
   } else if (entry.status) {
-    response.writeHead(entry.status).end('')
+    response.writeHead(entry.status, { connection: 'close' }).end('')
   } else {
-    response.writeHead(200, { 'content-type': 'text/html' }).end(entry.body)
+    response.writeHead(200, { 'content-type': 'text/html', connection: 'close' }).end(entry.body)
   }
 })
 await new Promise((ok) => server.listen(0, '127.0.0.1', ok))
@@ -295,6 +300,7 @@ const origin = `http://127.0.0.1:${server.address().port}`
 const rewriteOrigins = {
   'https://docs.oracle.com': `${origin}/oracle`, 'https://docs.python.org': `${origin}/python`,
   'https://doc.rust-lang.org': `${origin}/rust`, 'https://docs.julialang.org': `${origin}/julia`,
+  'https://www.erlang.org': `${origin}/erlang`,
   'https://elixir.hexdocs.pm': `${origin}/hexdocs`, 'https://pkg.go.dev': `${origin}/go`,
   'https://learn.microsoft.com': `${origin}/learn`, 'https://en.cppreference.com': `${origin}/cppref`,
   'https://www.typescriptlang.org': `${origin}/ts`, 'https://fsharp.github.io': `${origin}/fsharp`,
@@ -412,6 +418,13 @@ const cases = [
   { name: 'rustdoc control: Option::map at #method.map', destination: at(`${RUST}/option/enum.Option.html#method.map`, 'rs', 'Option::map'), ok: true },
   { name: 'identifier: Option::map at #method.map_or', destination: at(`${RUST}/option/enum.Option.html#method.map_or`, 'rs', 'Option::map'), failure: 'symbol' },
   { name: 'identifier: Iterator::next at #method.next_chunk', destination: at(`${RUST}/iter/trait.Iterator.html#method.next_chunk`, 'rs', 'Iterator::next'), failure: 'symbol' },
+  { name: 'OTP control: the type erlang:map/0 at t:map/0', destination: at(`${OTP}#t:map/0`, 'erlang', 't:erlang:map/0'), ok: true },
+  { name: 'OTP owner: other:map/0 at erlang:map/0', destination: at(`${OTP}#t:map/0`, 'erlang', 't:other:map/0'), failure: 'owner' },
+  { name: 'OTP identifier: erlang:pid/0 at erlang:map/0', destination: at(`${OTP}#t:map/0`, 'erlang', 't:erlang:pid/0'), failure: 'symbol' },
+  { name: 'OTP kind: the type erlang:map at a function', destination: at(`${OTP}#map/2`, 'erlang', 't:erlang:map'), failure: 'kind' },
+  { name: 'OTP arity: the type erlang:map/1 at map/0', destination: at(`${OTP}#t:map/0`, 'erlang', 't:erlang:map/1'), failure: 'arity' },
+  { name: 'OTP call arity: map() at the one-operand type', destination: at(`${OTP}#t:map/1`, 'erlang', 'map()', 'type'), failure: 'arity' },
+  { name: 'OTP callback control: erlang:map/0 at c:map/0', destination: at(`${OTP}#c:map/0`, 'erlang', 'c:erlang:map/0'), ok: true },
   { name: 'ExDoc control: Enum.map/2 at #map/2', destination: at(`${HEXDOCS}/Enum.html#map/2`, 'elixir', 'Enum.map/2'), ok: true },
   { name: 'identifier: Enum.map/2 at #map_every/3', destination: at(`${HEXDOCS}/Enum.html#map_every/3`, 'elixir', 'Enum.map/2'), failure: 'symbol' },
   { name: 'identifier: Enum.member?/2 at #member?/3, the same name with another operand count', destination: at(`${HEXDOCS}/Enum.html#member?/3`, 'elixir', 'Enum.member?/2'), failure: 'arity' },

@@ -1,4 +1,5 @@
-import { qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model'
+import type { ApiSymbol } from '@libtmux/api-model'
+import { qualifiedNameOf } from '@libtmux/api-model/modules'
 
 /**
  * The name a programmer writes for a declaration, in the language's own spelling.
@@ -7,7 +8,7 @@ import { qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model'
  * write that path as it is (Python `libtmux.Server.new_session`, Go `tmux.Client.Session`), and two already keep
  * their own separators in the id (C++ `libtmux::Server`, Ruby `LibTmux::Server#list_sessions`, Lua
  * `libtmux.Buffer:reference`, Elixir `LibTmux.Capture.fetch/2`, PowerShell `LibTmux\Connect-TmuxServer`). Rust and
- * TypeScript are the two that need a spelling of their own:
+ * TypeScript need a spelling of their own:
  *
  * - Rust names a path with `::` from the crate: `libtmux::control::ControlSender::unmute_pane`. The id begins at the
  *   module, so the crate comes from the file the symbol is written in, and the markers the extractor adds for the
@@ -17,8 +18,12 @@ import { qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model'
  *
  * `nativeShortName` is the short form a hover card uses for its header: the owner and the member in the language's
  * separator (`ControlSender::unmute_pane`, `Server#new_session`, `Buffer:reference`, `Capture.fetch/2`), and the bare name
- * for a declaration with no owner. The full name is the page's Qualified name row. The page heading still joins the owner
- * and the member with a dot in every port, so for Rust, C++, Ruby, Lua and PowerShell it differs from the card's header.
+ * for a declaration with no owner. Haskell uses the bare declaration name: documentation ownership by a data type is
+ * not source qualification. The full name is the page's Qualified name row. Other ports' page headings join the owner
+ * and the member with a dot, so for Rust, C++, Ruby, Lua and PowerShell they differ from the card's header.
+ * OCaml constructors and record fields use their module's namespace, while their stable ids retain the owning type.
+ * Clojure headings keep the full namespace/var spelling.
+ * Common Lisp keeps its package colon in the page heading.
  *
  * This is for display. The public id, the anchors and the URLs stay as the model has them.
  */
@@ -90,10 +95,16 @@ function typescriptName(model: { symbols: readonly ApiSymbol[] }, symbol: ApiSym
  * uses dots where the language writes `::`.
  */
 export function nativeShortName(model: { port?: string; symbols: readonly ApiSymbol[] } | undefined, symbol: ApiSymbol): string {
+  // A data type owns its documentation, but only a module qualifies a Haskell name.
+  if (model?.port === 'haskell') return symbol.name
   const owner = model && symbol.parent ? symbolTable(model.symbols).get(symbol.parent) : undefined
   if (!owner) return symbol.name
   if (model?.port === 'rs') return `${owner.name}${tupleField(symbol.name) ? '.' : '::'}${symbol.name}`
+  // Erlang places the record marker before the module: #tmux_model:pane{}.
+  if (model?.port === 'erlang' && symbol.kind === 'struct') return qualifiedNameOf(symbol)
   const id = qualifiedNameOf(symbol), ownerId = qualifiedNameOf(owner)
+  // OCaml constructors and record fields live in their module's namespace, not their type's.
+  if (model?.port === 'ocaml') return id.split('.').slice(-2).join('.')
   // Swift writes a member's labels in its name and fewer of them in its id, so the id is not always the owner and the name.
   const fits = id.startsWith(ownerId) && id.endsWith(symbol.name) && id.length > ownerId.length + symbol.name.length
   return `${owner.name}${(fits && id.slice(ownerId.length, id.length - symbol.name.length)) || '.'}${symbol.name}`

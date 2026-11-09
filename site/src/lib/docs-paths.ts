@@ -57,7 +57,7 @@ export function docsPath(entry: DocsPage): string {
 
 /** Infer library references only outside the native tmux prose routes. */
 export function isTmuxProse(entry: DocsPage, buildPort?: string): boolean {
-  if (entry.data.port || buildPort) return false
+  if (entry.data.port || (buildPort && !PORT_BY_SLUG[buildPort]?.parentLibrary)) return false
   const locale = entry.id.split('/')[0]!
   const id = isLocale(locale) && locale !== DEFAULT_LOCALE ? entry.id.slice(locale.length + 1) : entry.id
   const path = docsPath({ ...entry, id })

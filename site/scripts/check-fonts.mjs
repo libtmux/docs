@@ -22,6 +22,7 @@
  *
  * Usage: node scripts/check-fonts.mjs [--site DIR] [--url BASE] [--json]
  */
+import { newCheckPage } from './browser-context.mjs'
 import { existsSync, readFileSync } from 'node:fs'
 import { globSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -169,7 +170,7 @@ try {
   const browser = await chromium.launch()
   usage = []
   for (const [name, path, ours] of ARCHETYPES) {
-    const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
+    const page = await newCheckPage(browser, BASE, { viewport: { width: 1440, height: 900 } })
     const response = await page.goto(BASE + path, { waitUntil: 'networkidle' }).catch(() => null)
     if (!response?.ok()) {
       failures.push(`${name}: ${path} returned ${response?.status() ?? 'no response'}`)

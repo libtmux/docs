@@ -584,6 +584,14 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
       'LibTmux.Base.show': 'one display extension page shared by IDs, servers, snapshots, control connections and observation streams',
     },
   },
+  lisp: {
+    unsettled: {
+      libtmux: 'public package spanning the task buckets; its exported declarations have their own placements',
+      'libtmux.json': 'optional interchange package; its exported declarations sit under Formats and Errors',
+      'libtmux.workspace': 'workspace package spanning plans, steps, errors and operations',
+      'libtmux.workspace.cli': 'workspace command package; MAIN has its own placement',
+    },
+  },
   lua: {
     unsettled: {
       'libtmux.Configurable': 'options and hooks shared by sessions, windows and panes; the concrete handle is the subclass',
@@ -595,6 +603,12 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
       'libtmux.Reference': 'target reference shared by every tmux entity',
       'libtmux.Runtime': 'runtime protocol shared by host integrations',
       'libtmux.Watch': 'watch handle shared by several tmux objects',
+    },
+  },
+  perl: {
+    unsettled: {
+      LibTmux: 'distribution namespace and version; concrete packages have their own placements',
+      'LibTmux::Entity': 'shared captured-handle base; concrete entity packages own the tmux objects',
     },
   },
   ruby: {
@@ -744,6 +758,25 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
 
 /** Place language-specific public helpers with the task they support. */
 const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
+  ocaml: {
+    server: ['Libtmux_unix.Client', 'Libtmux_eio.Client', 'Libtmux.Endpoint', 'Libtmux.Generation', 'Libtmux.Source'],
+    snapshots: ['Libtmux.Snapshot', 'Libtmux.Captured_text', 'Libtmux_unix.Rendered', 'Libtmux_eio.Rendered'],
+    queries: ['Libtmux.Field', 'Libtmux.Relation', 'Libtmux.Expr', 'Libtmux.Query', 'Libtmux.Model', 'Libtmux.Cardinality', 'Libtmux.Plan', 'Libtmux_json.Expr'],
+    commands: ['Libtmux', 'Libtmux.ID', 'Libtmux.Created', 'Libtmux.Operations', 'Libtmux.Spawn'],
+    layout: ['Libtmux.Geometry'],
+    options: ['Libtmux.Options'],
+    errors: ['Libtmux_json.Decode_error', 'Libtmux_unix.Cleanup', 'Libtmux_eio.Cleanup'],
+    workspace: ['Libtmux_workspace', 'Libtmux_workspace.Config', 'Libtmux_workspace.Execution'],
+    runtime: ['Libtmux_unix', 'Libtmux_eio', 'Libtmux_json'],
+    control: ['Libtmux.Output', 'Libtmux_unix.Cancellation', 'Libtmux_unix.Operation', 'Libtmux_eio.Operation', 'Libtmux_unix.Subscription', 'Libtmux_eio.Subscription'],
+  },
+  perl: {
+    queries: ['Schema', 'Selection', 'Selection::Iterator', 'PaneSelection', 'WindowSelection',
+      'WindowLinkSelection', 'SessionSelection', 'ClientSelection'].map((name) => `LibTmux::${name}`),
+    commands: ['LibTmux::Operation'],
+    async: ['LibTmux::Async::Server', 'LibTmux::Async::Transport'],
+    errors: ['LibTmux::X', 'LibTmux::Async::X', 'LibTmux::Workspace::X'],
+  },
   powershell: {
     commands: ['LibTmux\\Invoke-TmuxChain'],
     pane: ['LibTmux\\Send-TmuxText'],
@@ -766,6 +799,23 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
     errors: ['CrossServerReference', 'StaleReference', 'ObservationLost', 'UnsupportedCriterion', 'Base.showerror']
       .map((name) => `LibTmux.${name}`).concat('LibTmuxWorkspace.Base.showerror'),
   },
+  erlang: {
+    server: ['tmux_server'],
+    session: ['tmux_session'],
+    window: ['tmux_window', 'tmux_window_link'],
+    pane: ['tmux_pane'],
+    buffers: ['tmux_buffer'],
+    capabilities: ['tmux_capability'],
+    commands: ['tmux_command', 'tmux_operation', 'tmux_scope'],
+    control: ['tmux_control'],
+    queries: ['tmux_filter', 'tmux_matcher', 'tmux_schema', 'tmux_select', 'tmux_query', 'tmux_json'],
+    snapshots: ['tmux_model', 'tmux_identity', 'tmux_snapshot'],
+    hooks: ['tmux_hook'],
+    keys: ['tmux_key'],
+    options: ['tmux_option'],
+    version: ['tmux_version'],
+    errors: ['tmux_error'],
+  },
   // Elixir's modules are named for what they do rather than for a tmux object.
   elixir: {
     queries: ['Selection', 'Schema', 'Wire'].map((name) => `LibTmux.${name}`),
@@ -774,9 +824,32 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
     control: ['LibTmux.Protocol'],
     snapshots: ['LibTmux.Ref'],
   },
+  lisp: {
+    server: ['libtmux:client', 'libtmux:daemon'],
+    session: ['libtmux:session/type'],
+    window: ['libtmux:window/type', 'libtmux:window-link'],
+    pane: ['libtmux:pane', 'libtmux:clear-history', 'libtmux:copy-mode', 'libtmux:current-path',
+      'libtmux:dead-p'],
+    client: ['libtmux:attached-client'],
+    keys: ['libtmux:send-prefix', 'libtmux:send-text'],
+    layout: ['libtmux:height', 'libtmux:width'],
+    formats: ['libtmux.json:document-limit', 'libtmux.json:document-path', 'libtmux:display-message'],
+    control: ['libtmux:wait-for'],
+    snapshots: ['libtmux:active-p', 'libtmux:entity', 'libtmux:entity-data', 'libtmux:entity-model',
+      'libtmux:id', 'libtmux:index', 'libtmux:name', 'libtmux:provenance', 'libtmux:refresh',
+      'libtmux:same-entity-p', 'libtmux:snapshot', 'libtmux:title'],
+    workspace: ['libtmux.workspace:workspace', 'libtmux.workspace:workspace-plan',
+      'libtmux.workspace:workspace-result', 'libtmux.workspace:workspace-step',
+      'libtmux.workspace.cli:main'],
+  },
   java: {
     commands: ['MessageLog', 'PrintedText', 'Prompt', 'Shell'].map((name) => `io.github.libtmux.${name}.${name}`),
     server: ['io.github.libtmux.IncarnationFence.IncarnationFence'],
+  },
+  clojure: {
+    server: ['libtmux.core'],
+    snapshots: ['libtmux.data'],
+    async: ['libtmux.async', 'libtmux.core-async'],
   },
   kotlin: {
     commands: ['Batch', 'ExecutionPolicy', 'MessageLog', 'Prompt', 'Shell', 'retryIfSafe'].map((name) => `io.github.libtmux.kotlin.${name}`),
@@ -801,6 +874,7 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
 
 /** Free functions and cmdlets need the same discovery-first order as object members. */
 const LANGUAGE_ORDER: Record<string, Record<string, string[]>> = {
+  ocaml: { server: ['Libtmux_unix.Client', 'Libtmux_eio.Client', 'Libtmux.Endpoint', 'Libtmux.Source', 'Libtmux.Generation'] },
   julia: Object.fromEntries(Object.entries({
     server: ['Server', 'open_server', 'with_server', 'from_env', 'OwnedServer', 'ServerIdentity'],
     session: ['sessions', 'session', 'new_session', 'rename_session', 'kill_session', 'SessionRef', 'SessionID', 'SessionWhere'],
@@ -854,7 +928,7 @@ function languageBucket(bucket: Bucket, port: string, root = bucket.id): Bucket 
 }
 
 export const NAV: Record<string, PortNav> = Object.fromEntries(
-  ['powershell', 'julia', 'elixir', 'py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'kotlin', 'scala', 'fsharp', 'csharp', 'cxx', 'swift'].map((port) => [
+  ['perl', 'powershell', 'julia', 'elixir', 'lisp', 'erlang', 'py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'clojure', 'kotlin', 'scala', 'fsharp', 'csharp', 'cxx', 'swift', 'ocaml'].map((port) => [
     port,
     {
       port,

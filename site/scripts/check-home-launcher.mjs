@@ -1,6 +1,8 @@
+import { newCheckContext } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 import { PORTS } from '../src/lib/ports.ts'
 import HOME_PROOF from '../test/fixtures/home-examples.json' with { type: 'json' }
+import HOME_EXAMPLES from '../src/data/home-examples.json' with { type: 'json' }
 import { createHash } from 'node:crypto'
 import { checkHomeHover } from './check-home-hover.mjs'
 import { checkWorkspaceHover } from './check-workspace-hover.mjs'
@@ -86,18 +88,24 @@ export async function checkHomeResponsiveLayout(page, width, port = null) {
     const example = document.querySelector('.home-examples > [data-home-language]:not([hidden]) [data-home-example]')
     const title = bounds(example.querySelector('.home-example-heading h2'))
     const panel = bounds(example.querySelector('.home-example-code'))
-    const options = bounds(example.querySelector('.home-example-toolbar'))
+    const toolbar = example.querySelector('.home-example-toolbar')
+    const options = toolbar ? bounds(toolbar) : null
     return {
+      singleView: example.hasAttribute('data-single-view'),
+      hasOptions: Boolean(options),
       overflow: document.documentElement.scrollWidth > innerWidth + 1,
       pickerRow: Math.abs(language.y - solution.y) < 1,
       pickerRight: solution.right,
       headerHeight: bounds(document.querySelector('.site-header__bar')).height,
-      optionsInPanel: options.left >= panel.left - 1 && options.right <= panel.right + 1 && options.bottom <= panel.bottom + 1,
-      optionsBelowTitle: options.top >= title.bottom,
+      optionsInPanel: !options || (options.left >= panel.left - 1 && options.right <= panel.right + 1 && options.bottom <= panel.bottom + 1),
+      optionsBelowTitle: !options || options.top >= title.bottom,
     }
   })
   assert(!layout.overflow && layout.pickerRight <= width, `${width}: the header fits without page overflow`)
   assert(layout.pickerRow, `${width}: Port and Solution stay on the same row`)
+  const singleView = Boolean(HOME_EXAMPLES[port ?? PORTS[0].slug].singleView)
+  assert.equal(layout.singleView, singleView, `${port}: the example declares its available views`)
+  assert.equal(layout.hasOptions, !singleView, `${port}: only selectable examples offer detail toggles`)
   if (width >= 561) assert(layout.headerHeight <= 53, `${width}: the entire header fits on one row`)
   assert(layout.optionsInPanel && layout.optionsBelowTitle, `${width}: example options stay inside the code panel's bottom row`)
 }
@@ -117,7 +125,7 @@ async function checkSolutionHome(page, solution, port) {
 
 /** Exercise the real homepage, including the prompt controlled by its picker. */
 export async function checkHomeLauncher(browser, base) {
-  const context = await browser.newContext({ reducedMotion: 'reduce' })
+  const context = await newCheckContext(browser, base, { reducedMotion: 'reduce' })
   const page = await context.newPage()
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   const errors = []
@@ -302,9 +310,14 @@ export async function checkHomeLauncher(browser, base) {
       }))
       const hash = (text) => createHash('sha256').update(text).digest('hex')
       assert.deepEqual(rendered.commands, proof.shellRecipe, `${proof.port}: exact setup and run copy payloads`)
-      for (const view of ['concise', 'errors', 'cleanup', 'full']) {
-        await panel.locator('[data-example-errors]').setChecked(view === 'errors' || view === 'full')
-        await panel.locator('[data-example-cleanup]').setChecked(view === 'cleanup' || view === 'full')
+      const singleView = Boolean(HOME_EXAMPLES[proof.port].singleView)
+      assert.equal(await panel.locator('[data-single-view]').count(), singleView ? 1 : 0)
+      if (singleView) assert.equal(await panel.locator('.home-example-options').count(), 0)
+      for (const view of singleView ? ['full'] : ['concise', 'errors', 'cleanup', 'full']) {
+        if (!singleView) {
+          await panel.locator('[data-example-errors]').setChecked(view === 'errors' || view === 'full')
+          await panel.locator('[data-example-cleanup]').setChecked(view === 'cleanup' || view === 'full')
+        }
         const selected = panel.locator(`[data-home-view="${view}"]`)
         assert.equal(await panel.locator('[data-home-view]:visible').count(), 1, `${proof.port}/${view}: exactly one complete program is shown`)
         assert(await selected.isVisible(), `${proof.port}/${view}: the selected program is shown`)
@@ -373,10 +386,10 @@ export async function checkHomeLauncher(browser, base) {
   } finally {
     await context.close()
   }
-  const blockedStorage = await browser.newContext()
+  const blockedStorage = await newCheckContext(browser, base)
   try {
     // Astro's development toolbar reads storage unguarded; it is absent from published pages.
-    await blockedStorage.route('**/astro/runtime/client/dev-toolbar/entrypoint.js', (route) => route.fulfill({ contentType: 'application/javascript', body: 'export {}' }))
+    await blockedStorage.route('**/astro/runtime/client/dev-toolbar/entrypoint.js', (route) => new URL(route.request().url()).origin !== new URL(base).origin ? route.fallback() : route.fulfill({ contentType: 'application/javascript', body: 'export {}' }))
     await blockedStorage.addInitScript(() => Object.defineProperty(window, 'localStorage', {
       get() { throw new DOMException('Storage blocked', 'SecurityError') },
     }))
@@ -397,7 +410,7 @@ export async function checkHomeLauncher(browser, base) {
   } finally {
     await blockedStorage.close()
   }
-  const noScript = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 777 } })
+  const noScript = await newCheckContext(browser, base, { javaScriptEnabled: false, viewport: { width: 390, height: 777 } })
   try {
     const page = await noScript.newPage()
     await page.goto(`${base}/`)
@@ -426,5 +439,5 @@ export async function checkHomeLauncher(browser, base) {
   await checkColorScheme(browser, base)
   await checkLanguageIconScheme(browser, base)
   await checkHomeExampleOptions(browser, base)
-  console.log('Homepage: 13 languages, 52 complete selectable programs/copy, owned solutions, shared URLs, reset, blocked storage, prompt tasks/copy, shared themes, container sizing, keyboard and no-JS PASS')
+  console.log('Homepage: every language, complete programs/copy, owned solutions, shared URLs, reset, blocked storage, prompt tasks/copy, shared themes, container sizing, keyboard and no-JS PASS')
 }

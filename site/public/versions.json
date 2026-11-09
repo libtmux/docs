@@ -128,6 +128,54 @@
         "kind": "trunk",
         "supported": true
       }
+    ],
+    "ocaml": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "haskell": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "perl": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "clojure": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "lisp": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "erlang": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
     ]
   },
   "defaultVersion": {
@@ -146,6 +194,12 @@
     "swift": "latest",
     "powershell": "latest",
     "julia": "latest",
-    "elixir": "latest"
+    "elixir": "latest",
+    "ocaml": "latest",
+    "haskell": "latest",
+    "perl": "latest",
+    "clojure": "latest",
+    "lisp": "latest",
+    "erlang": "latest"
   }
 }

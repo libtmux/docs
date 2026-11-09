@@ -1,6 +1,6 @@
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { SKIP, visit } from 'unist-util-visit'
-import { proseMentions, type ApiProduct } from '@libtmux/api-model'
+import { proseMentions, type ApiProduct } from '@libtmux/api-model/reference'
 import { resolvePortContent } from './workspace-shared-slots'
 import { createProseLinker, PORT_BY_LABEL, protocolRunMentions } from './prose-resolver'
 import { PORT_BY_SLUG } from './ports'
@@ -104,7 +104,8 @@ export function linkProseMarkdown(raw: string, port?: string, product?: ApiProdu
   for (const mention of proseMentions(body, PORT_BY_LABEL, portAt)) {
     if (!spans.has(mention.start)) continue
     // As on the rendered page: a slot or a page that names its port says its language; the port of the build alone does not.
-    const decision = link(mention.text, { pagePort: portAt(mention.start) ?? port ?? mention.port, before: mention.before, languageSaid: Boolean(portAt(mention.start)) || project.portSaid !== false })
+    const pagePort = portAt(mention.start) ?? (project.portSaid === false ? mention.port ?? port : port ?? mention.port)
+    const decision = link(mention.text, { pagePort, before: mention.before, languageSaid: Boolean(portAt(mention.start) ?? mention.port) || project.portSaid !== false })
     if (decision.kind !== 'link') continue
     // Angle destinations preserve balanced punctuation in API slugs.
     const href = (project.resolved?.(decision.href) ?? decision.href).replaceAll('<', '%3C').replaceAll('>', '%3E')

@@ -7,6 +7,7 @@ import { experimental_AstroContainer } from 'astro/container'
 import { Window, type HTMLAnchorElement } from 'happy-dom'
 import { API_GLOSSARY_GROUPS, ALL_GLOSSARY_GROUPS, MCP_GLOSSARY_GROUPS, API_GLOSSARY_PATH, apiGlossary, apiGlossaryHref, apiGlossaryMarkdown } from '../src/lib/api-glossary'
 import { NATIVE_API_GLOSSARIES } from '../src/lib/api-glossary-native'
+import { nativeKind } from '../src/lib/api-labels'
 import { glossaryPreview } from '../src/lib/link-preview'
 import { GET as markdownRoute } from '../src/pages/reference/glossary.md'
 import { GET as jsonRoute } from '../src/pages/reference/glossary.json'
@@ -18,7 +19,10 @@ const modelSource = ts.createSourceFile(modelPath.pathname, readFileSync(modelPa
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
 const windows: Window[] = []
 const nativeAuthorities: Record<string, RegExp> = {
+  perl: /^https:\/\/(?:perldoc\.perl\.org\/5\.44\.0\/|metacpan\.org\/pod\/)/,
+  clojure: /^https:\/\/clojure\.org\//,
   scala: /^https:\/\/docs\.scala-lang\.org\//, java: /^https:\/\/docs\.oracle\.com\//,
+  ocaml: /^https:\/\/ocaml\.org\//,
   kotlin: /^https:\/\/kotlinlang\.org\//, julia: /^https:\/\/docs\.julialang\.org\//,
   py: /^https:\/\/(?:docs\.python\.org|peps\.python\.org|packaging\.python\.org)\//,
   ts: /^https:\/\/www\.typescriptlang\.org\//,
@@ -30,6 +34,9 @@ const nativeAuthorities: Record<string, RegExp> = {
   ruby: /^https:\/\/(?:docs\.ruby-lang\.org|guides\.rubygems\.org|github\.com\/ruby\/rbs)\//,
   lua: /^https:\/\/(?:www\.lua\.org|luals\.github\.io)\//,
   swift: /^https:\/\/(?:docs\.swift\.org|www\.swift\.org)\//,
+  haskell: /^https:\/\/(?:www\.haskell\.org|downloads\.haskell\.org|cabal\.readthedocs\.io)\//,
+  lisp: /^https:\/\/(?:www\.lispworks\.com\/documentation\/HyperSpec|asdf\.common-lisp\.dev)\//,
+  erlang: /^https:\/\/(?:www\.erlang\.org|github\.com\/erlang\/otp)\//,
 }
 
 afterEach(async () => {
@@ -157,7 +164,7 @@ describe('API glossary coverage', () => {
     const ids = native.groups.flatMap((group) => group.terms.map((term) => term.id))
     expect(new Set(ids).size).toBe(ids.length)
     for (const symbol of model.symbols) {
-      for (const label of [symbol.kind, ...(symbol.modifiers ?? []), ...(symbol.command ? [symbol.command.kind] : []), ...(symbol.inheritedFrom ? ['inherited'] : []), 'package']) {
+      for (const label of [nativeKind(symbol, port), ...(symbol.modifiers ?? []), ...(symbol.command ? [symbol.command.kind] : []), ...(symbol.inheritedFrom ? ['inherited'] : []), 'package']) {
         expect(apiGlossaryHref(label, path), `${symbol.id}:${label}`).toBe(`${path}#${label}`)
       }
     }

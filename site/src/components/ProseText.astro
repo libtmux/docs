@@ -1,5 +1,5 @@
 ---
-import { decideMention, notASymbol } from '@libtmux/api-model'
+import { decideMention, notASymbol, portFromSentence } from '@libtmux/api-model/reference'
 import { productApiHref } from '../lib/product-api'
 import { PORT_BY_SLUG, referenceUrl } from '../lib/ports'
 import { defaultVersionFor } from '../lib/versions'
@@ -43,10 +43,12 @@ const segments = text.split(/`([^`]+)`/).map((value, i) => ({
   value,
 }))
 
-const resolved = segments.map((seg) => {
-  if (!seg.code || notASymbol(seg.value)) return { ...seg, href: undefined, title: undefined }
+const resolved = segments.map((seg, index) => {
+  const before = segments.slice(0, index).map(({ value }) => value).join('')
+  if (!seg.code || notASymbol(seg.value, portFromSentence(before) ?? port)) return { ...seg, href: undefined, title: undefined }
   const d = decideMention(seg.value, {
     pagePort: port,
+    before,
     // The same builders the rehype plugin injects: a reference URL carries a
     // port, a version and a package, none of which api-model can know.
     symbolHref: (target, symbol) => productApiHref(API_MODELS[target], symbol, defaultVersionFor(target)),

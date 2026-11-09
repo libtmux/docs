@@ -1,6 +1,286 @@
 {
  "mentions": [
   {
+   "port": "clojure",
+   "symbol": "libtmux.async",
+   "page": "/clojure/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.async/cancel!",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.async/runtime!",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.async/then!",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.control",
+   "page": "/clojure/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.control/attach!",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core",
+   "page": "/clojure/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core-async",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core-async/observe!",
+   "page": "/clojure/latest/guides/core-async/",
+   "title": "core.async adapter",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/apply-layout!",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/batch!",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/capture!",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/chain!",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/clients!",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/new-session!",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/open!",
+   "page": "/clojure/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/open!",
+   "page": "/clojure/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/panes!",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/refresh!",
+   "page": "/clojure/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/refresh!",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/rename!",
+   "page": "/clojure/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/rename!",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/send-keys!",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/send-literal!",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/sessions!",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/snapshot!",
+   "page": "/clojure/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/snapshot!",
+   "page": "/clojure/latest/guides/captured-values/",
+   "title": "Captured values",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/snapshot!",
+   "page": "/clojure/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/split-pane!",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.core/windows!",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data",
+   "page": "/clojure/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data/data",
+   "page": "/clojure/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data/exactly-one",
+   "page": "/clojure/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data/from-capture",
+   "page": "/clojure/latest/guides/captured-values/",
+   "title": "Captured values",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data/matching",
+   "page": "/clojure/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data/panes",
+   "page": "/clojure/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data/same-entity?",
+   "page": "/clojure/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data/same-link?",
+   "page": "/clojure/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data/windows",
+   "page": "/clojure/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
    "port": "csharp",
    "symbol": "LibTmux.CapturedRelation.IsCaptured",
    "page": "/powershell/latest/concepts/captured-state/",
@@ -2738,6 +3018,818 @@
    "section": "concepts"
   },
   {
+   "port": "erlang",
+   "symbol": "t:tmux_model:pane_input/0",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "t:tmux_operation:completed/0",
+   "page": "/erlang/latest/guides/operations/",
+   "title": "Owned operations",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "t:tmux_operation:failure/0",
+   "page": "/erlang/latest/guides/operations/",
+   "title": "Owned operations",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "t:tmux_operation:state/0",
+   "page": "/erlang/latest/guides/operations/",
+   "title": "Owned operations",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "t:tmux_pane:join_options/0",
+   "page": "/erlang/latest/guides/panes/",
+   "title": "Isolate and rejoin a running pane",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "t:tmux_schema:error_detail/0",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "t:tmux_select:t/1",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "t:tmux_server:scope_failure/0",
+   "page": "/erlang/latest/topics/ownership/",
+   "title": "Ownership and identity",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_buffer",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_buffer:capabilities/1",
+   "page": "/erlang/latest/guides/buffers/",
+   "title": "Preserve byte buffers and paste deliberately",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_buffer:load/3",
+   "page": "/erlang/latest/guides/buffers/",
+   "title": "Preserve byte buffers and paste deliberately",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_buffer:paste/3",
+   "page": "/erlang/latest/guides/buffers/",
+   "title": "Preserve byte buffers and paste deliberately",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_capability",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_capability",
+   "page": "/erlang/latest/reference/commands/",
+   "title": "Command capabilities",
+   "section": "reference"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command",
+   "page": "/erlang/latest/guides/hooks/",
+   "title": "Register a hook and await its effect",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:literal_format/2",
+   "page": "/erlang/latest/guides/piping/",
+   "title": "Pipe pane output",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:raw/2",
+   "page": "/erlang/latest/guides/keys/",
+   "title": "Install application keybindings",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:raw/2",
+   "page": "/erlang/latest/reference/commands/",
+   "title": "Command capabilities",
+   "section": "reference"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:source_file/2",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:source_file/2",
+   "page": "/erlang/latest/guides/configuration/",
+   "title": "Apply configuration and await its completion signal",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:to_config/1",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:to_config/1",
+   "page": "/erlang/latest/guides/commands/",
+   "title": "Build commands before running them",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:to_config/1",
+   "page": "/erlang/latest/guides/configuration/",
+   "title": "Apply configuration and await its completion signal",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:to_config/1",
+   "page": "/erlang/latest/guides/keys/",
+   "title": "Install application keybindings",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:wait_for/2",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:wait_for/2",
+   "page": "/erlang/latest/guides/configuration/",
+   "title": "Apply configuration and await its completion signal",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_control:close/1",
+   "page": "/erlang/latest/topics/control/",
+   "title": "Control connections",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_error",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_error",
+   "page": "/erlang/latest/topics/diagnostics/",
+   "title": "Diagnostics",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_filter",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_filter:decode_json/1",
+   "page": "/erlang/latest/concepts/queries/",
+   "title": "Selections and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_hook",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_hook:run/2",
+   "page": "/erlang/latest/guides/hooks/",
+   "title": "Register a hook and await its effect",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_hook:set/3",
+   "page": "/erlang/latest/guides/hooks/",
+   "title": "Register a hook and await its effect",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_identity",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_json",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_key",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_key:bind/3",
+   "page": "/erlang/latest/guides/keys/",
+   "title": "Install application keybindings",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_key:bind/4",
+   "page": "/erlang/latest/guides/keys/",
+   "title": "Install application keybindings",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_key:clear_table/2",
+   "page": "/erlang/latest/guides/keys/",
+   "title": "Install application keybindings",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_key:listing/1",
+   "page": "/erlang/latest/guides/keys/",
+   "title": "Install application keybindings",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_key:listing/2",
+   "page": "/erlang/latest/guides/keys/",
+   "title": "Install application keybindings",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_key:unbind/2",
+   "page": "/erlang/latest/guides/keys/",
+   "title": "Install application keybindings",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_key:unbind/3",
+   "page": "/erlang/latest/guides/keys/",
+   "title": "Install application keybindings",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_matcher",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_model",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_model",
+   "page": "/erlang/latest/guides/installation/",
+   "title": "Installation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_model:new/2",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_model:to_map/1",
+   "page": "/erlang/latest/guides/compatibility/",
+   "title": "Support and remaining gaps",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_operation",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_operation:await/2",
+   "page": "/erlang/latest/topics/diagnostics/",
+   "title": "Diagnostics",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_operation:start/3",
+   "page": "/erlang/latest/guides/configuration/",
+   "title": "Apply configuration and await its completion signal",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_operation:status/1",
+   "page": "/erlang/latest/guides/operations/",
+   "title": "Owned operations",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_operation:status/1",
+   "page": "/erlang/latest/topics/diagnostics/",
+   "title": "Diagnostics",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_operation:transfer/2",
+   "page": "/erlang/latest/guides/operations/",
+   "title": "Owned operations",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_option",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_option:describe/2",
+   "page": "/erlang/latest/guides/options/",
+   "title": "Read and change scoped options",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:break/4",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:break/4",
+   "page": "/erlang/latest/guides/panes/",
+   "title": "Isolate and rejoin a running pane",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:get/2",
+   "page": "/erlang/latest/guides/panes/",
+   "title": "Isolate and rejoin a running pane",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:join/3",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:join/3",
+   "page": "/erlang/latest/guides/panes/",
+   "title": "Isolate and rejoin a running pane",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:move/3",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:move/3",
+   "page": "/erlang/latest/guides/panes/",
+   "title": "Isolate and rejoin a running pane",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:pipe/3",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:pipe/3",
+   "page": "/erlang/latest/guides/piping/",
+   "title": "Pipe pane output",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:resize/2",
+   "page": "/erlang/latest/guides/commands/",
+   "title": "Build commands before running them",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:respawn/2",
+   "page": "/erlang/latest/guides/operations/",
+   "title": "Owned operations",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:split/2",
+   "page": "/erlang/latest/guides/operations/",
+   "title": "Owned operations",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:stop_pipe/1",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:stop_pipe/1",
+   "page": "/erlang/latest/guides/piping/",
+   "title": "Pipe pane output",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:swap/3",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:swap/3",
+   "page": "/erlang/latest/guides/panes/",
+   "title": "Isolate and rejoin a running pane",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_query",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_query:explain/1",
+   "page": "/erlang/latest/concepts/queries/",
+   "title": "Selections and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_schema",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_scope",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_scope:run_or_error/2",
+   "page": "/erlang/latest/topics/ownership/",
+   "title": "Ownership and identity",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_scope:run/2",
+   "page": "/erlang/latest/topics/ownership/",
+   "title": "Ownership and identity",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_select",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_select:filter/2",
+   "page": "/erlang/latest/concepts/queries/",
+   "title": "Selections and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_select:one/1",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:bind/2",
+   "page": "/erlang/latest/concepts/architecture/",
+   "title": "Architecture decisions",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:bind/2",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "title": "Object graph",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:bind/2",
+   "page": "/erlang/latest/guides/commands/",
+   "title": "Build commands before running them",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:bind/2",
+   "page": "/erlang/latest/guides/compatibility/",
+   "title": "Support and remaining gaps",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:close/1",
+   "page": "/erlang/latest/guides/piping/",
+   "title": "Pipe pane output",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:close/1",
+   "page": "/erlang/latest/topics/ownership/",
+   "title": "Ownership and identity",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:command/3",
+   "page": "/erlang/latest/guides/configuration/",
+   "title": "Apply configuration and await its completion signal",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:open/1",
+   "page": "/erlang/latest/topics/ownership/",
+   "title": "Ownership and identity",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:snapshot/1",
+   "page": "/erlang/latest/guides/panes/",
+   "title": "Isolate and rejoin a running pane",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:start_owned/1",
+   "page": "/erlang/latest/topics/ownership/",
+   "title": "Ownership and identity",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:stop_owned/1",
+   "page": "/erlang/latest/topics/ownership/",
+   "title": "Ownership and identity",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:with_owned/2",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:with_owned/2",
+   "page": "/erlang/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:with_owned/2",
+   "page": "/erlang/latest/topics/ownership/",
+   "title": "Ownership and identity",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:with_server/2",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:with_server/2",
+   "page": "/erlang/latest/topics/ownership/",
+   "title": "Ownership and identity",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_session",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_session:rename/2",
+   "page": "/erlang/latest/guides/commands/",
+   "title": "Build commands before running them",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_session:select/2",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "title": "Object graph",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_session:select/2",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_session:select/3",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "title": "Object graph",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_session:select/3",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_snapshot",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_snapshot:related/3",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "title": "Object graph",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_version",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_window",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_window_link",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "title": "Object graph",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_window_link",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_window_link:get/3",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "title": "Object graph",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_window_link:get/3",
+   "page": "/erlang/latest/guides/panes/",
+   "title": "Isolate and rejoin a running pane",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_window:kill/1",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "title": "Object graph",
+   "section": "concepts"
+  },
+  {
    "port": "fsharp",
    "symbol": "LibTmux.FSharp.CardinalityError.MultipleMatches",
    "page": "/fsharp/latest/concepts/queries/",
@@ -5195,6 +6287,69 @@
    "section": "ports"
   },
   {
+   "port": "haskell",
+   "symbol": "LibTmux.Id",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Id",
+   "page": "/haskell/latest/guides/typed-values/",
+   "title": "Typed values",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Id#t:IdError",
+   "page": "/haskell/latest/guides/api-documentation/",
+   "title": "API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Value",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Value",
+   "page": "/haskell/latest/guides/typed-values/",
+   "title": "Typed values",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Value#t:ValueError",
+   "page": "/haskell/latest/guides/api-documentation/",
+   "title": "API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Version",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Version",
+   "page": "/haskell/latest/guides/typed-values/",
+   "title": "Typed values",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Version#t:VersionError",
+   "page": "/haskell/latest/guides/api-documentation/",
+   "title": "API documentation",
+   "section": "guides"
+  },
+  {
    "port": "java",
    "symbol": "io.github.libtmux.batch.Batch.Batch",
    "page": "/java/latest/concepts/transports/",
@@ -5400,6 +6555,13 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Pane_.Pane_",
+   "page": "/clojure/latest/guides/captured-values/",
+   "title": "Captured values",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Pane_.Pane_",
    "page": "/java/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
@@ -5522,6 +6684,34 @@
    "page": "/java/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.query.FilterExpr.FilterExpr",
+   "page": "/clojure/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.query.FilterExpr.FilterExpr",
+   "page": "/clojure/latest/guides/captured-values/",
+   "title": "Captured values",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.query.FilterExpr.FilterExpr",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.query.FilterExpr.FilterExpr",
+   "page": "/clojure/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "java",
@@ -7260,6 +8450,1469 @@
    "section": "topics"
   },
   {
+   "port": "lisp",
+   "symbol": "libtmux",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:active-p",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:attached-client",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:bind-key",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:break-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:cancel",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:capture-pane",
+   "page": "/lisp/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:capture-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:capture-pane",
+   "page": "/lisp/latest/guides/tutorial/",
+   "title": "REPL tutorial",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:capture-pane-bytes",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:capture-pane-bytes",
+   "page": "/lisp/latest/guides/tutorial/",
+   "title": "REPL tutorial",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:cleanup-failed",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:clear-history",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:client",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:client",
+   "page": "/lisp/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:client-busy",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:client-busy",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:client-cleanup-failures",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:clients",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:close-client",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:close-client",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:command-cancelled",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:command-cancelled",
+   "page": "/lisp/latest/guides/tutorial/",
+   "title": "REPL tutorial",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:command-outcome",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:command-outcome",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:copy-mode",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:current-command",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:current-path",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:dead-p",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:decoding-error",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:delete-buffer",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:detach-client",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:display-message",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:entity-data",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:entity-data",
+   "page": "/lisp/latest/guides/tutorial/",
+   "title": "REPL tutorial",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:error-actual-version",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:error-cause",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:error-cause",
+   "page": "/lisp/latest/topics/query-interchange/",
+   "title": "Query interchange",
+   "section": "topics"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:error-client",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:error-commands",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:error-feature",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:error-outcome",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:error-required-version",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:error-setting",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:fetch-clients",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:fetch-panes",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:fetch-sessions",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:fetch-snapshot",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:fetch-snapshot",
+   "page": "/lisp/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:fetch-snapshot",
+   "page": "/lisp/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:fetch-windows",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:field-unavailable",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:field-unavailable",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:field-value",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:height",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:id",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:incomplete-snapshot",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:index",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:invalid-argument",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:join-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:kill-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:kill-server",
+   "page": "/lisp/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:kill-server",
+   "page": "/lisp/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:kill-server",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:kill-server",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:kill-server",
+   "page": "/lisp/latest/guides/tutorial/",
+   "title": "REPL tutorial",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:kill-session",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:kill-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:last-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:last-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:link-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:list-buffers",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:list-commands",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:list-keys",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:list-server-access",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:load-buffer",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:lock-client",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:lock-server",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:lock-session",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:make-cancellation-token",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:move-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:move-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:name",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:new-session",
+   "page": "/lisp/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:new-session",
+   "page": "/lisp/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:new-session",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:new-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:next-layout",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:next-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:open-client",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:outcome-arguments",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:outcome-exit-code",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:outcome-observation-error",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:outcome-phase",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:outcome-reason",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:outcome-stderr",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:outcome-stdout",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:outcome-value",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:panes",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:paste-buffer",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:pipe-pane",
+   "page": "/lisp/latest/guides/capabilities/",
+   "title": "Capabilities and limits",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:pipe-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:pipe-pane",
+   "page": "/lisp/latest/guides/tutorial/",
+   "title": "REPL tutorial",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:previous-layout",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:previous-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:refresh",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:refresh",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:refresh-client",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:remove-environment",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:rename-session",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:rename-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:resize-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:resize-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:respawn-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:respawn-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:rotate-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:run-command",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:run-command",
+   "page": "/lisp/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:run-command",
+   "page": "/lisp/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:run-command",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:same-entity-p",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:save-buffer",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:select-layout",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:select-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:select-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:send-keys",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:send-prefix",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:send-text",
+   "page": "/lisp/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:send-text",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:server-access",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:sessions",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:sessions",
+   "page": "/lisp/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:set-buffer",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:set-environment",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:set-hook",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:set-option",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:show-buffer",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:show-environment-text",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:show-hooks-text",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:show-options-text",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:split-pane",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:stale-target",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:stale-target",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:suspend-client",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:swap-panes",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:swap-windows",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:switch-client",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:title",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:unbind-key",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:unlink-window",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:unset-environment",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:unset-hook",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:unset-option",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:unsupported-capability",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:unsupported-configuration",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:unsupported-tmux",
+   "page": "/lisp/latest/guides/verification/",
+   "title": "Verification evidence",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:wait-for",
+   "page": "/lisp/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:wait-for",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:wait-for",
+   "page": "/lisp/latest/guides/tutorial/",
+   "title": "REPL tutorial",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:width",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:window-link",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:window-links",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:windows",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:windows",
+   "page": "/lisp/latest/guides/tutorial/",
+   "title": "REPL tutorial",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:with-client",
+   "page": "/lisp/latest/concepts/transport/",
+   "title": "Transport and cleanup",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:with-client",
+   "page": "/lisp/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.json:document-limit",
+   "page": "/lisp/latest/topics/query-interchange/",
+   "title": "Query interchange",
+   "section": "topics"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.json:document-path",
+   "page": "/lisp/latest/topics/query-interchange/",
+   "title": "Query interchange",
+   "section": "topics"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.json:filter-document-limit-exceeded",
+   "page": "/lisp/latest/topics/query-interchange/",
+   "title": "Query interchange",
+   "section": "topics"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.json:invalid-filter-document",
+   "page": "/lisp/latest/topics/query-interchange/",
+   "title": "Query interchange",
+   "section": "topics"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.json:read-filter",
+   "page": "/lisp/latest/topics/query-interchange/",
+   "title": "Query interchange",
+   "section": "topics"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.json:write-filter",
+   "page": "/lisp/latest/topics/query-interchange/",
+   "title": "Query interchange",
+   "section": "topics"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query",
+   "page": "/lisp/latest/guides/tutorial/",
+   "title": "REPL tutorial",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:ambiguous-match",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:compile-filter",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:fields",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:from",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:invalid-filter",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:invalid-query-target",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:items",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:matching",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:matching",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:matching",
+   "page": "/lisp/latest/guides/tutorial/",
+   "title": "REPL tutorial",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:no-match",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:one",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:one-or-none",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:order-by",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:query-limit-exceeded",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:required-relations",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:where",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:where-if",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:apply-workspace",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:make-workspace",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:parse-workspace",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:plan-steps",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:plan-workspace",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:read-workspace",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:result-created-p",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:result-outcomes",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:result-snapshot",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:step-action",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:step-data",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:workspace-apply-failed",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:workspace-conflict",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:workspace-deadline-exceeded",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace.cli:main",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
    "port": "lua",
    "symbol": "libtmux.CaptureOptions.alternate_screen",
    "page": "/lua/latest/guides/panes/",
@@ -8371,6 +11024,503 @@
    "page": "/lua/latest/guides/topology/",
    "title": "Topology operations",
    "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_eio.Client",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_eio.Client.await",
+   "page": "/ocaml/latest/guides/benchmarking/",
+   "title": "Measure capture, concurrency and output delivery",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_eio.Client.submit",
+   "page": "/ocaml/latest/guides/benchmarking/",
+   "title": "Measure capture, concurrency and output delivery",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_eio.Workspace",
+   "page": "/ocaml/latest/guides/packages/",
+   "title": "Choose the packages your application needs",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_json",
+   "page": "/ocaml/latest/workspace/reference/",
+   "title": "OCaml workspace API reference",
+   "section": "ports"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_json.Decode_error.category.Wrong_type",
+   "page": "/ocaml/latest/guides/query-interchange/",
+   "title": "Share a scalar pane query",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_json.Decode_error.t",
+   "page": "/ocaml/latest/guides/query-interchange/",
+   "title": "Share a scalar pane query",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_json.Expr",
+   "page": "/ocaml/latest/guides/query-interchange/",
+   "title": "Share a scalar pane query",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_json.Expr.decode",
+   "page": "/ocaml/latest/guides/query-interchange/",
+   "title": "Share a scalar pane query",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_json.Expr.of_string",
+   "page": "/ocaml/latest/guides/query-interchange/",
+   "title": "Share a scalar pane query",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_json.Workspace.of_string",
+   "page": "/ocaml/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_unix.Cancellation",
+   "page": "/ocaml/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_unix.Cancellation.Cancelled",
+   "page": "/ocaml/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_unix.Cancellation.with_",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_unix.Cleanup.create",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_unix.Cleanup.inspect",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_unix.Cleanup.phase.Open_pidfd",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_unix.Cleanup.phase.Unreaped_child",
+   "page": "/ocaml/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_unix.Cleanup.phase.Unreaped_child",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_unix.Client",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_unix.Workspace",
+   "page": "/ocaml/latest/guides/packages/",
+   "title": "Choose the packages your application needs",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_workspace",
+   "page": "/ocaml/latest/workspace/reference/",
+   "title": "OCaml workspace API reference",
+   "section": "ports"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_workspace.Config.make",
+   "page": "/ocaml/latest/guides/bootstrap/",
+   "title": "Start a private tmux server from OCaml",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_workspace.Config.pane:type.startup",
+   "page": "/ocaml/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_workspace.Execution.executor.protect",
+   "page": "/ocaml/latest/guides/getting-started/",
+   "title": "Install and run your first capture",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_workspace.Execution.status",
+   "page": "/ocaml/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_workspace.Plan.make",
+   "page": "/ocaml/latest/guides/bootstrap/",
+   "title": "Start a private tmux server from OCaml",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_workspace.Plan.make",
+   "page": "/ocaml/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Cardinality.error.No_match",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Cardinality.pp_error",
+   "page": "/ocaml/latest/guides/testing/",
+   "title": "Testing and CI",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Endpoint.named_socket",
+   "page": "/ocaml/latest/guides/getting-started/",
+   "title": "Install and run your first capture",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Endpoint.socket_path",
+   "page": "/ocaml/latest/guides/getting-started/",
+   "title": "Install and run your first capture",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Error.pp",
+   "page": "/ocaml/latest/guides/getting-started/",
+   "title": "Install and run your first capture",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Error.t",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Error.t.Capacity",
+   "page": "/ocaml/latest/guides/streaming/",
+   "title": "Observe output and wait for rendered text",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Error.t.Closed",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Error.t.Disconnected",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Expr.compile",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Expr.Rel.any",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Expr.Rel.none",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Formats.lookup",
+   "page": "/ocaml/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Model.pane",
+   "page": "/ocaml/latest/guides/query-interchange/",
+   "title": "Share a scalar pane query",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Operations.set_option",
+   "page": "/ocaml/latest/guides/benchmarking/",
+   "title": "Measure capture, concurrency and output delivery",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Output.event.End",
+   "page": "/ocaml/latest/guides/benchmarking/",
+   "title": "Measure capture, concurrency and output delivery",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Plan.panes",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Plan.pushdown.Require_exact",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Plan.source_filter",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Query.exactly_one",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Query.matching",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Query.one_or_none",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Session.window_links",
+   "page": "/ocaml/latest/guides/graph/",
+   "title": "Sessions, window links and panes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Session.windows",
+   "page": "/ocaml/latest/guides/graph/",
+   "title": "Sessions, window links and panes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Snapshot.panes",
+   "page": "/ocaml/latest/guides/queries/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Spawn.command.Exec",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Spawn.command.Shell",
+   "page": "/ocaml/latest/guides/control/",
+   "title": "Submit actions and retain their outcomes",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux.Window.panes",
+   "page": "/ocaml/latest/guides/graph/",
+   "title": "Sessions, window links and panes",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Filter",
+   "page": "/perl/latest/guides/filtering/",
+   "title": "Filtering",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Pane::cursor_shape",
+   "page": "/perl/latest/concepts/fields/",
+   "title": "Entity fields",
+   "section": "concepts"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server",
+   "page": "/perl/latest/examples/orchestration/",
+   "title": "Create sessions, windows, and panes",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Snapshot::windows",
+   "page": "/perl/latest/concepts/graph/",
+   "title": "Snapshot graph and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::WindowLink",
+   "page": "/perl/latest/concepts/graph/",
+   "title": "Snapshot graph and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Workspace::X::Load::cause",
+   "page": "/perl/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Workspace::X::Load::report",
+   "page": "/perl/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Workspace::X::Load::report_data",
+   "page": "/perl/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::X",
+   "page": "/perl/latest/topics/errors/",
+   "title": "Errors and recovery",
+   "section": "topics"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::X::Creation",
+   "page": "/perl/latest/topics/errors/",
+   "title": "Errors and recovery",
+   "section": "topics"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::X::Creation::cause",
+   "page": "/perl/latest/topics/errors/",
+   "title": "Errors and recovery",
+   "section": "topics"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::X::details",
+   "page": "/perl/latest/topics/query-planning/",
+   "title": "Live query planning",
+   "section": "topics"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::X::InvalidSelection",
+   "page": "/perl/latest/concepts/graph/",
+   "title": "Snapshot graph and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::X::QueryMismatch",
+   "page": "/perl/latest/topics/query-planning/",
+   "title": "Live query planning",
+   "section": "topics"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::X::Unloaded",
+   "page": "/perl/latest/topics/errors/",
+   "title": "Errors and recovery",
+   "section": "topics"
   },
   {
    "port": "powershell",
@@ -15046,7 +18196,7 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "scala",
+   "port": "java",
    "text": "libtmux.filter/1",
    "page": "/scala/latest/guides/query/",
    "line": 119,
@@ -15060,7 +18210,7 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "kotlin",
+   "port": "java",
    "text": "WatchPaneOutput",
    "page": "/kotlin/latest/examples/",
    "line": 15,

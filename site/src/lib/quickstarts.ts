@@ -16,6 +16,14 @@ export interface HomeExample {
   sourceRepository: string
   sourceRevision: string
   sourceTree: string
+  /** Library source installed by the example when it differs from the example revision. */
+  libraryRevision?: string
+  /** Validated against the native verification record before execution. */
+  execution?: string
+  /** Resolved against the showcase's capability catalogue. */
+  capability?: string
+  /** A program with no selectable lifecycle variants; explains its resource behavior. */
+  singleView?: string
   program: string
   excerpt: { startLine: number; endLine: number; dedent: number; importsEndLine: number }
   files: { name: string; lang: string; code: string }[]

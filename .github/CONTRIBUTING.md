@@ -104,7 +104,9 @@ $ pnpm test
 The outer loop includes the `*.outer.test.ts` integration suites, which seed
 the full API catalog, run native compiler comparisons, or exercise subprocess
 shutdown. Elixir exporter fixtures and live clang-format comparisons run here;
-the medium loop keeps the pinned formatter fixtures. It also adds type
+the medium loop keeps the pinned formatter fixtures. Adversarial example,
+workspace-showcase, and product-copy CLI checks also run in outer because
+they spawn subprocesses and temporary Git repositories. It also adds type
 checks and starts its own Astro development server
 from current source. Browser checks cover prose, an MCP table, row permalinks,
 API equivalents, and phone dropdown placement at 1440, 768, and 390 pixels. The
@@ -115,14 +117,25 @@ medium, and outer respectively; measure the complete pnpm command when
 changing a loop. `test:fast` aliases medium. The runner stops an over-budget
 loop and fails.
 
-The medium and outer loops first stage the integrated Ruby and Lua guides
-from local Git objects. Each revision comes from `site/src/data/api/<port>.json`;
-the checkout's current branch and uncommitted files do not affect these guides.
-Keep those repositories at their standard `checkout` paths in `ports.ts`, or
-set `LIBTMUX_DOCS_CHECKOUT_RUBY` and `LIBTMUX_DOCS_CHECKOUT_LUA` to local clones
-containing the required commits. Missing repositories or commits fail with
-the required revision and environment variable. The gate does not fetch;
-a fresh docs clone needs these source checkouts before `pnpm test`.
+`scripts/test-tiers.json` assigns existing compiler/rendering, subprocess/Git,
+and full-catalog integration suites to outer, with a reason for each group.
+Publication retains exhaustive link rendering and destination/literal catalog audits.
+Medium and outer exclude publication suites; the unfiltered package tests in
+`test:publication` run every suite, including both manifest tiers and suffix
+tiers. Native shell tree/search fixtures stay in inner; owned Git collection
+fixtures run in outer. No tier changes a test's assertions.
+
+The medium and outer loops stage every port in `SOURCE_GUIDE_PORTS` in
+[`port-documentation.ts`](../site/src/lib/port-documentation.ts), including Perl.
+Native guides come from local Git objects at each integrated
+`site/src/data/api/<port>.json` revision; the checkout's current branch and
+uncommitted files do not affect them. Wrapper guides use the committed guide cache.
+Keep native repositories at their `checkout` paths in
+[`ports.ts`](../site/src/lib/ports.ts), or set `LIBTMUX_DOCS_CHECKOUT_<UPPERCASE_PORT>`
+to a clone containing the required commit, such as `LIBTMUX_DOCS_CHECKOUT_PERL`.
+Missing repositories or commits report the exact revision and override.
+The gate never fetches. Provision every catalogued native checkout before
+running these loops in a fresh docs clone; unchanged staged guides retain their timestamps.
 
 Browser checks use Playwright's installed Chromium by default. To use local
 Chrome:
@@ -661,9 +674,41 @@ review evidence. Custom output and cache locations need their own cleanup.
 
 ## Pull requests
 
+Apply the `no-preview` label before pushing a revision that needs CI validation
+while publication awaits approval. CI still builds and audits the artifact and
+runs the publisher dry run; the label holds the preview publishing job.
+The guard reads the triggering event's labels. Adding the label later does
+not stop an existing run.
+
 Keep commits focused on one topic. Explain the problem, resulting behavior,
 and verification, including failures or skipped checks. Keep unrelated
 cleanup in separate work.
 
 Follow [WRITING.md](../WRITING.md#commits) for commit messages and
 [AGENTS.md](../AGENTS.md#repository-boundaries) for push and deployment limits.
+
+### Perl source-bound documentation checks
+
+The reusable port builder checks the selected Perl artifact after rendering.
+It runs the native model/POD/source/inventory suites and the shared Node type
+checks before uploading an artifact. These checks use the selected source
+revision and the builder workflow's own committed docs revision. They do not
+replace the development-loop timing gates or the full publication audit.
+
+```console
+$ node site/node_modules/vitest/vitest.mjs run \
+  --root packages/api-model \
+  test/perl.test.ts
+```
+
+```console
+$ node site/node_modules/vitest/vitest.mjs run \
+  --root site \
+  test/perl-pod-links.test.ts \
+  test/perl-source-usage.test.ts \
+  test/source-only-inventory.test.ts
+```
+
+```console
+$ pnpm run --recursive type-check
+```

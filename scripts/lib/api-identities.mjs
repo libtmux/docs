@@ -168,7 +168,7 @@ function exdoc(url, page, fragment) {
   const path = h1[1].trim().split('.')
   // The small text is the package version, or `behaviour`, `protocol`, `exception` and the like.
   const word = (h1[2] ?? '').trim()
-  const base = { via: 'exdoc', declared: word && !word.startsWith('(') ? word : 'module', kind: 'module', path, title: page.title }
+  const base = { via: new URL(url).hostname === 'www.erlang.org' ? 'erlang' : 'exdoc', declared: word && !word.startsWith('(') ? word : 'module', kind: 'module', path, title: page.title }
   if (!fragment) return base
   const anchor = page.anchors.find((candidate) => candidate.id === fragment)
   const entry = /^(?:[tc]:)?(.+?)(?:\/(\d+))?$/.exec(fragment)
@@ -281,6 +281,26 @@ function documenter(url, page, fragment) {
   return { via: 'documenter', declared, kind: declared === 'type' ? 'type' : bucket(declared === 'constant' ? 'constant' : declared), path: name.split('.'), title: page.title }
 }
 
+function ocamldoc(_url, page, fragment) {
+  const heading = page.headings.find((entry) => entry.level === 1)?.text ?? ''
+  const module = /^Module ([A-Z][\w']*(?:\.[A-Z][\w']*)*)$/.exec(heading)
+  if (!module) return undefined
+  const base = { via: 'ocamldoc', declared: 'module', kind: 'module', path: dotted(module[1]), title: page.title }
+  if (!fragment) return base
+  const member = /^(TYPE|VAL)([a-z_][\w']*)$/.exec(fragment)
+  const anchor = page.anchors.find((entry) => entry.id === fragment)
+  if (!member || !anchor) return undefined
+  const end = page.html.indexOf('</pre>', anchor.at)
+  if (end < 0) return undefined
+  const declaration = strip(page.html.slice(anchor.at, end))
+  const isType = member[1] === 'TYPE'
+  const named = (isType
+    ? /^type\s+(?:(?:[+-]?'[\w']+|\([^)]*\))\s+)?([a-z_][\w']*)(?![\w'])/
+    : /^val\s+([a-z_][\w']*)(?![\w'])/).exec(declaration)
+  if (named?.[1] !== member[2]) return undefined
+  return { ...base, declared: isType ? 'type' : 'val', kind: isType ? 'type' : 'member', path: [...base.path, member[2]] }
+}
+
 function mdn(url, page) {
   const { pathname } = new URL(splitUrl(url).page)
   const parts = decodeURIComponent(pathname).split('/').filter(Boolean)
@@ -305,6 +325,15 @@ export function doccIdentity(url, data) {
   return { via: 'docc', declared: kind ?? 'topic', kind: DOCC_KINDS[kind] ?? (kind ? 'other' : 'topic'), path, title: data.metadata?.title ?? '' }
 }
 
+/** Native POD names a module in its NAME paragraph, independently of its URL. */
+function pod(_url, page, fragment) {
+  if (fragment) return undefined
+  const paragraph = /<h[1-6]\b[^>]*\bid=["']NAME["'][^>]*>[\s\S]*?<\/h[1-6]>\s*<p>([\s\S]*?)<\/p>/i.exec(page.html)?.[1]
+  const name = paragraph && /^([A-Za-z]\w*(?:::\w+)*)\s+-\s+/.exec(strip(paragraph))?.[1]
+  if (!name) return undefined
+  return { via: 'pod', declared: 'module', kind: 'module', path: name.split('::'), title: page.title }
+}
+
 /**
  * The identity a page declares, or `undefined` when the host publishes none we
  * read (a handbook, a manual, a wiki): those links stand on the rules of
@@ -327,13 +356,15 @@ function parserFor(hostname, pathname, page) {
   if (hostname === 'javadoc.io' || hostname === 'www.scala-lang.org' || hostname === 'typelevel.org') return /class="fqname|id="definition"/.test(page.html) ? scaladoc : javadoc
   if (hostname === 'kotlinlang.org' && pathname.includes('/api/')) return dokka
   if (hostname === 'en.cppreference.com') return cppreference
-  if (hostname.endsWith('hexdocs.pm')) return exdoc
+  if (hostname.endsWith('hexdocs.pm') || (hostname === 'www.erlang.org' && pathname.startsWith('/doc/apps/'))) return exdoc
   if (hostname === 'fsharp.github.io') return fsdocs
   if (hostname === 'csharp.sdk.modelcontextprotocol.io') return docfx
   if (hostname === 'learn.microsoft.com' && /\/(dotnet\/api|powershell\/module)\//i.test(pathname)) return learn
   if (hostname === 'docs.python.org') return cpython
   if (hostname === 'pkg.go.dev') return godoc
+  if (hostname === 'perldoc.perl.org' || hostname === 'metacpan.org') return pod
   if (hostname === 'docs.julialang.org') return documenter
+  if (hostname === 'ocaml.org' && /^\/manual\/[^/]+\/api\//.test(pathname)) return ocamldoc
   if (hostname === 'developer.mozilla.org') return mdn
   return undefined
 }
@@ -373,7 +404,8 @@ export function judge(source, identity) {
       if (qualifier.length <= before.length && qualifier.every((segment, index) => segment === before[before.length - qualifier.length + index])) ownerMatch = true
     } else {
       const dots = owner(candidate)
-      if (bareOwners(source.port, source.symbol).includes(dots)) ownerMatch = true
+      if (source.port === 'erlang' && source.kind === 'module' && before.length === 0) ownerMatch = true
+      else if (bareOwners(source.port, source.symbol).includes(dots)) ownerMatch = true
       // Rust's standard macros are in scope in every file.
       else if (source.port === 'rs' && identity.declared === 'macro' && PRELUDE_MACROS.has(dots)) ownerMatch = true
       // A member written bare in the docs of a type that is, or extends, its owner: exactly that type, as the port resolves its name.
@@ -393,7 +425,7 @@ export function judge(source, identity) {
     return { failure: 'kind', detail: `${said} is a ${source.kind}, and the page declares a ${identity.declared} (${identity.kind})` }
   }
   // How many operands, and which parameters.
-  if (identity.arity !== undefined && (identity.via === 'learn' || identity.via === 'exdoc' || identity.via === 'fsdocs')) {
+  if (identity.arity !== undefined && (identity.via === 'learn' || identity.via === 'exdoc' || identity.via === 'erlang' || identity.via === 'fsdocs')) {
     const wanted = source.arity ?? (identity.via === 'learn' ? 0 : undefined)
     if (wanted !== undefined && wanted !== identity.arity) return { failure: 'arity', detail: `${said} takes ${wanted}, and the page declares ${identity.arity}` }
   }
@@ -408,8 +440,8 @@ export function judge(source, identity) {
 
 /** The language each reader's host documents, to hold a bare word on a link to the scope that language gives it. */
 const PORT_OF = {
-  rustdoc: 'rs', javadoc: 'java', dokka: 'kotlin', scaladoc: 'scala', cppreference: 'cxx', exdoc: 'elixir', fsdocs: 'fsharp',
-  learn: 'csharp', docfx: 'csharp', cpython: 'py', godoc: 'go', documenter: 'julia', mdn: 'ts', docc: 'swift',
+  rustdoc: 'rs', javadoc: 'java', dokka: 'kotlin', scaladoc: 'scala', cppreference: 'cxx', exdoc: 'elixir', erlang: 'erlang', fsdocs: 'fsharp',
+  learn: 'csharp', docfx: 'csharp', cpython: 'py', godoc: 'go', documenter: 'julia', mdn: 'ts', docc: 'swift', ocamldoc: 'ocaml',
 }
 
 /** A name written whole inside a link's words: `Option::map`, `AbortSignal.timeout`, `std::fs::read_to_string`. */
@@ -434,16 +466,20 @@ export function judgeLabel(label, identity) {
   const paths = [identity.path, ...(identity.alternatives ?? [])].filter((path) => path?.length)
   const said = (identity.path ?? []).join('.') || JSON.stringify(identity.title)
   const fail = (detail) => ({ failure: 'label', detail: `the link says ${JSON.stringify(label)}, and the page documents ${said} (${identity.declared}): ${detail}` })
-  if (!NAME_TOKEN.test(text)) return fail('words that describe a page are not its symbol\'s name; a link like that is a row of the reviewed link table')
+  const port = PORT_OF[identity.via]
+  if (!NAME_TOKEN.test(port === 'erlang' ? text.replaceAll(':', '.') : text)) return fail('words that describe a page are not its symbol\'s name; a link like that is a row of the reviewed link table')
   const mark = /[!?]$/.exec(text)?.[0] ?? ''
-  const segments = parseName(text.replace(/[!?]$/, '')).segments
+  const segments = parseName(text.replace(/[!?]$/, ''), port).segments
   const ends = (path) => segments.length > 0 && segments.length <= path.length && segments.every((segment, index) => segment === path[path.length - segments.length + index])
   const named = paths.filter((path) => ends(path) && ((/[!?]$/.exec(path.at(-1))?.[0] ?? '') === mark || (identity.declared === 'macro' && mark === '!')))
   if (named.length === 0) return fail(segments.length > 1 ? 'it is written under another owner or names another member' : 'it is not that name')
   // A single bare name, whose owner the language fixes.
-  const port = PORT_OF[identity.via]
-  const owners = segments.length === 1 && port && BARE_OWNERS[port]?.[segments[0]] !== undefined ? [BARE_OWNERS[port][segments[0]]] : undefined
-  if (owners && !named.some((path) => owners.includes(owner(path)))) return fail(`${port} puts ${segments[0]} in ${owners[0]}`)
+  let owners
+  if (segments.length === 1 && port) {
+    const fixed = BARE_OWNERS[port]?.[segments[0]]
+    owners = port === 'erlang' && identity.kind === 'module' ? [''] : fixed === undefined ? undefined : [fixed]
+  }
+  if (owners && !named.some((path) => owners.includes(owner(path)))) return fail(`${port} puts ${segments[0]} in ${owners[0] || 'the top level'}`)
   return undefined
 }
 

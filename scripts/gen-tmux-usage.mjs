@@ -30,14 +30,15 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { homedir, tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { extractProject } from '../packages/api-model/src/project.ts'
 import { GRAMMARS, isLibrarySource, scanSource } from './lib/tmux-usage-scan.mjs'
+import { reachableHaskellSources } from './lib/tmux-usage-haskell.mjs'
 import { applyConditions, applyExclusions, conditionProblem, deriveUsage, partialProblems, ruleHolds, verifyClaims } from './lib/tmux-usage-derive.mjs'
 import { auditEvidence } from './lib/tmux-usage-audit.mjs'
 import { dispatcherProblems, guardProblems, preflightProblems } from './lib/tmux-usage-dispatch.mjs'
 import { forwardUsage } from './lib/tmux-usage-forward.mjs'
 import { settleCandidates, sweepCandidates } from './lib/tmux-usage-sweep.mjs'
 import { libraryScopes, scopeProblems } from './lib/tmux-usage-scopes.mjs'
+import { bindOcamlDefinitions } from './lib/tmux-usage-ocaml.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const dataDir = join(root, 'site/src/data')
@@ -207,12 +208,26 @@ export async function scanPort({ port, model, commands, checkout, known, dispatc
   const symbols = publicSymbols(model)
   const functions = []
   const types = []
-  const sources = librarySources(checkout, model.revision, grammar)
+  const modules = []
+  const available = librarySources(checkout, model.revision, grammar)
+  const sources = grammar === 'haskell'
+    ? await reachableHaskellSources(available, model.symbols.map((symbol) => symbol.source?.file).filter(Boolean))
+    : available
   const wanted = new Set(commands)
+  const native = port === 'perl' ? readJson(join(checkout, 'docs/_build/api.json')) : undefined
+  if (native && (native.nativeScan?.schema !== 'libtmux.perl-source/v1' || native.nativeScan.revision !== model.revision || native.nativeProvenance?.exporter?.working_tree !== false)) {
+    throw new Error('Perl command indexing requires committed source-bound native PPI analysis')
+  }
   for (const [path, text] of sources) {
-    const scanned = await scanSource({ grammar, text, commands: wanted, known, dispatch, builders, guards, labels, trace })
+    if (grammar === 'haskell' && path.endsWith('.lhs')) throw new Error(`Haskell source usage coverage: literate input is not qualified: ${path}`)
+    const scanned = await scanSource({ grammar, text, commands: wanted, known, dispatch, builders, guards, labels, trace, native: native?.nativeScan.files[path] })
     for (const fn of scanned.functions) functions.push({ ...fn, file: path })
     for (const type of scanned.types) types.push({ ...type, file: path })
+    for (const module of scanned.modules ?? []) modules.push({ ...module, file: path })
+  }
+  if (port === 'ocaml') {
+    if (!sources.size || !functions.length) throw new Error('ocaml: the pinned library scan found no implementation functions')
+    bindOcamlDefinitions({ symbols, functions, modules, sources })
   }
   const cache = new Map()
   const readSource = (path) => {
@@ -257,10 +272,14 @@ function derivePort({ port, scanned, commands, scopes, claims, report, sends }) 
  * Where a core library keeps the source its public symbols come from, for reading it at another revision than its model.
  * Only a core that a wrapper shares a repository with, and is pinned apart from, needs this.
  */
-const CORE_EXTRACTION = { csharp: { roots: ['src/LibTmux'], options: { inheritedMembers: true } } }
+const CORE_EXTRACTION = {
+  csharp: { roots: ['src/LibTmux'], options: { inheritedMembers: true } },
+  java: { roots: ['libtmux/src/main/java'] },
+}
 
 /** The public symbols of a core library as they were at a revision, extracted from that revision's own files. */
 async function modelAtRevision({ port, checkout, revision }) {
+  const { extractProject } = await import('../packages/api-model/src/project.ts')
   const config = CORE_EXTRACTION[port]
   if (!config) throw new Error(`${port}: no source roots are configured to read its symbols at ${revision.slice(0, 8)}`)
   const dir = mkdtempSync(join(tmpdir(), 'tmux-usage-'))
@@ -479,6 +498,10 @@ export async function main() {
     }
     const checkout = checkoutFor(port)
     if (!existsSync(join(checkout, '.git')) && !existsSync(join(checkout, 'HEAD'))) {
+      if (check && port.slug === 'ocaml') {
+        failures.push('ocaml: source verification requires its pinned checkout; set LIBTMUX_DOCS_CHECKOUT_OCAML')
+        continue
+      }
       if (check) { console.log(`gen-tmux-usage: ${port.slug}: no checkout at ${checkout}; skipped regeneration`); continue }
       throw new Error(`${port.slug}: no checkout at ${checkout}; set LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`)
     }

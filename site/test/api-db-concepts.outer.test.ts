@@ -2,7 +2,7 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { CONCEPTS } from '@libtmux/api-model'
+import { CONCEPTS } from '@libtmux/api-model/reference'
 import { bindingsOf, conceptOf, seed, symbolById } from '../src/db'
 import { MODEL_DIR } from '../src/db/paths'
 

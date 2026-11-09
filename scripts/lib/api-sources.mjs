@@ -62,6 +62,7 @@ export const GO_PACKAGES = {
  * is one whole name. The rest are read from the name by `kindOf`.
  */
 export const NAME_KINDS = {
+  ocaml: { Iarray: 'module', List: 'module', Seq: 'module', Unix: 'module', 'Iarray.t': 'type', 'Seq.t': 'type', 'Seq.filter': 'member' },
   kotlin: { Dispatchers: 'object', NonCancellable: 'object', Unit: 'object' },
   // `String` in Scala is the alias `Predef` declares, and its page is Predef's.
   scala: { Using: 'object', String: 'object' },
@@ -89,6 +90,7 @@ export const ARITIES = {
 /** Owners a port's names have without an import: what the language provides, as page owners written with dots. */
 export const DEFAULT_SCOPES = {
   java: ['java.lang'],
+  clojure: ['java.lang'],
   kotlin: ['kotlin', 'kotlin.collections', 'kotlin.text', 'kotlin.io', 'kotlin.ranges', 'kotlin.sequences', 'kotlin.annotation', 'kotlin.comparisons', 'kotlin.jvm', 'java.lang'],
   // `scala`, `scala.Predef` and `java.lang` are imported as a whole. What the package object and Predef bind to a collection is per name (`DEFAULT_NAMES`).
   scala: ['scala', 'scala.Predef', 'java.lang'],
@@ -102,6 +104,7 @@ export const DEFAULT_SCOPES = {
   py: ['', 'builtins'],
   julia: ['Base', 'Core'],
   elixir: [''],
+  perl: [''],
   cxx: ['', 'std'],
   lua: [''],
   powershell: [''],
@@ -130,10 +133,15 @@ export const PRELUDE_MACROS = new Set(['std', 'core', 'alloc'])
 
 /** What each port means by a bare name it imports, as the owner the name's page is under. */
 export const BARE_OWNERS = Object.fromEntries(Object.entries({
+  ocaml: { '': ['Iarray', 'List', 'Seq', 'Unix'] },
+  erlang: {
+    // OTP's predefined types are available without a module qualifier.
+    erlang: ['map', 'binary', 'boolean', 'non_neg_integer', 'term', 'reference', 'pid', 'pos_integer', 'atom', 'float', 'integer', 'timeout', 'module', 'stacktrace'],
+  },
   java: {
     'java.util': ['List', 'Set', 'Map', 'Optional', 'OptionalInt', 'OptionalLong', 'Collection', 'Iterator'],
     'java.util.function': ['Function', 'Supplier', 'Consumer', 'Predicate', 'LongSupplier'],
-    'java.util.concurrent': ['Executor', 'TimeUnit'],
+    'java.util.concurrent': ['Executor', 'TimeUnit', 'CompletionStage'],
     'io.modelcontextprotocol.server': ['McpSyncServer'], 'io.modelcontextprotocol.spec': ['McpServerTransportProvider'],
     'java.util.regex': ['Pattern'],
     'java.nio.file': ['Path'], 'java.nio': ['ByteBuffer'], 'java.time': ['Duration', 'Instant'],
@@ -146,6 +154,10 @@ export const BARE_OWNERS = Object.fromEntries(Object.entries({
     'kotlinx.coroutines': ['CoroutineScope', 'CoroutineDispatcher', 'Dispatchers', 'NonCancellable', 'launch', 'coroutineScope', 'withContext', 'runInterruptible'],
     'kotlinx.coroutines.flow': ['Flow', 'FlowCollector', 'StateFlow', 'MutableStateFlow', 'collect'],
     'java.nio.file': ['Path'],
+  },
+  clojure: {
+    'java.time': ['Instant'],
+    'java.util.concurrent': ['CompletionStage'],
   },
   scala: {
     'cats.effect.kernel': ['Async', 'Deferred', 'Outcome', 'Resource', 'Fiber', 'Ref'],
@@ -214,18 +226,18 @@ export function hintOwners(port, hint) {
 /** Ports whose names carry a kind a page can contradict: PascalCase types, camelCase members. */
 const PASCAL = new Set(['java', 'kotlin', 'scala', 'csharp', 'fsharp'])
 /** Ports that compare kinds at all. */
-const KIND_CHECKED = new Set(['java', 'kotlin', 'scala', 'csharp', 'fsharp', 'rs', 'cxx', 'elixir'])
+const KIND_CHECKED = new Set(['java', 'kotlin', 'scala', 'csharp', 'fsharp', 'rs', 'cxx', 'elixir', 'ocaml', 'erlang'])
 
 /**
  * A name as written: its segments with generics and subscripts out of the way
  * but the path after them kept (`Option<T>::map` is `Option`, `map`), the
- * parameter list of a trailing call, an Elixir kind prefix and operand count,
+ * parameter list of a trailing call, an ExDoc kind prefix and operand count,
  * and the generic arity the last segment writes.
  */
-export function parseName(name) {
+export function parseName(name, port) {
   let text = name.trim().replace(/^new\s+/, '').replace(/`\d+/g, '')
   let hint
-  const prefix = /^([tc]):(?=[A-Za-z_])/.exec(text)
+  const prefix = (port === 'erlang' ? /^([tcm]):(?=[A-Za-z_])/ : /^([tc]):(?=[A-Za-z_])/).exec(text)
   if (prefix) {
     hint = prefix[1]
     text = text.slice(2)
@@ -249,10 +261,11 @@ export function parseName(name) {
       }
     }
   }
+  if (port === 'erlang' && arity === undefined && params) arity = String(params.length)
   const angle = stripGroups(text, '<', '>')
   const square = stripGroups(angle.text, '[', ']')
   const generics = angle.first === undefined ? undefined : splitTop(angle.first).length
-  const segments = square.text.split(/::|[.#\\]/).map((segment) => segment.trim()).filter((segment) => segment && segment !== '_root_')
+  const segments = square.text.split(port === 'erlang' ? /[:.#\\]/ : /::|[.#\\]/).map((segment) => segment.trim()).filter((segment) => segment && segment !== '_root_')
   return { segments, hint, arity, params, generics }
 }
 
@@ -266,12 +279,12 @@ export const arityOf = (name) => parseName(name).arity
 export function terminalSymbol(port, name) {
   const aliased = TYPE_ALIASES[port]?.[name]
   if (aliased) return aliased.split('.').at(-1)
-  return parseName(name).segments.at(-1) ?? name.trim()
+  return parseName(name, port).segments.at(-1) ?? name.trim()
 }
 
 /** A name's segments as an address would spell them: a package alias replaced, the root marker dropped. */
 export function addressSegments(port, name) {
-  const segments = parseName(name).segments
+  const segments = parseName(name, port).segments
   const whole = NAME_ALIASES[port]?.[segments.join('.')]
   return whole ? whole.split('.') : segments
 }
@@ -281,7 +294,7 @@ const ROLE_KINDS = { class: 'type', exc: 'type', interface: 'type', meth: 'membe
 
 /** The kind a port's name has, from the table, the role it was written under, or the conventions of its language. */
 export function kindOf(port, name, { source, role } = {}) {
-  const { segments, hint, arity } = parseName(name)
+  const { segments, hint, arity } = parseName(name, port)
   const last = segments.at(-1) ?? ''
   const table = NAME_KINDS[port] ?? {}
   const tabled = table[segments.join('.')] ?? (Object.hasOwn(table, last) ? table[last] : undefined)
@@ -289,6 +302,11 @@ export function kindOf(port, name, { source, role } = {}) {
   if (!KIND_CHECKED.has(port)) return undefined
   if (hint === 't') return 'type'
   if (hint === 'c') return 'callback'
+  if (port === 'erlang') {
+    if (hint === 'm' || role === 'mod') return 'module'
+    if (source === 'type' || (arity === undefined && BARE_OWNERS.erlang?.[last])) return 'type'
+    return arity !== undefined ? 'member' : undefined
+  }
   if (TYPE_ALIASES[port]?.[name]) return 'type'
   if (role && ROLE_KINDS[role]) return ROLE_KINDS[role]
   if (port === 'elixir') {
@@ -319,7 +337,7 @@ const RUST_PRIMITIVES = new Set(['bool', 'char', 'str', 'u8', 'u16', 'u32', 'u64
  */
 export function sourceIdentity(use) {
   const { port, name } = use
-  const parsed = parseName(name)
+  const parsed = parseName(name, port)
   const aliased = TYPE_ALIASES[port]?.[name]
   const segments = aliased ? aliased.split('.') : addressSegments(port, name)
   const key = `${port}:${name}`

@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { danglingReport } from '../src/integrations/dangling-report'
 import { danglingReportPath } from '../src/lib/dangling-report-path'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
+import haskellModel from '../src/data/api/haskell.json'
 
 /**
  * The build's ceiling counts every line of one file, and any process that renders prose through the linker can write to
@@ -57,8 +58,76 @@ describe('the build\'s dangling report', () => {
     const before = state(build)
     await render()
     // A key sent by a link is not a reference to resolve, nor is a session target; the rest is read in the port's build.
-    expect(names(own).sort()).toEqual(['Nope.thing()', 'capture:0.0', 'tmux.conf'])
+    expect(names(own).sort()).toEqual(['Nope.thing()'])
     expect(state(build)).toEqual(before)
+  })
+
+  it('resolves Clojure dependencies and leaves fixture settings literal without concealing a missing var', async () => {
+    const own = join(directory, 'clojure.jsonl')
+    vi.stubEnv('LIBTMUX_DOCS_DANGLING_REPORT', own)
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'clojure')
+    const text = 'The fixture supplies `libtmux.docs.socket` and `libtmux.docs.binary`. Failures throw `ExceptionInfo`. Add `io.github.libtmux/libtmux-clojure-core-async` for `core.async`; use `libtmux.core/snapshot!`.'
+    const rendered = await (await processor).render(text, { frontmatter: { port: 'clojure' } })
+    expect(names(own)).toEqual([])
+    expect(rendered.code).toContain('https://github.com/clojure/clojure/blob/clojure-1.12.6/src/jvm/clojure/lang/ExceptionInfo.java')
+    expect(rendered.code).toContain('https://github.com/clojure/core.async')
+    expect(rendered.code).toContain('/clojure/latest/reference/libtmux-core-snapshot/')
+    await (await processor).render('Use `libtmux.core/missing!`, `io.github.libtmux/missing-package` and `libtmux.docs.unknown`.', { frontmatter: { port: 'clojure' } })
+    expect(names(own)).toEqual(['libtmux.core/missing!', 'io.github.libtmux/missing-package', 'libtmux.docs.unknown'])
+  })
+
+  it('keeps shared tmux prose out of a selected Clojure build report', async () => {
+    const own = join(directory, 'clojure-native.jsonl')
+    vi.stubEnv('LIBTMUX_DOCS_DANGLING_REPORT', own)
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'clojure')
+    const rendered = await (await processor).render('Write `tmux.conf`; capture `=work:editor`.', {
+      fileURL: new URL('../src/content/docs/topics/interaction.md', import.meta.url), frontmatter: {},
+    })
+    expect(names(own)).toEqual([])
+    expect(rendered.code).not.toContain('api-mention')
+    await (await processor).render('Use `libtmux.core/missing!`.', { frontmatter: { port: 'clojure' } })
+    expect(names(own)).toEqual(['libtmux.core/missing!'])
+  })
+
+  it('requires a language claim before assigning shared site prose to a facade', async () => {
+    const own = join(directory, 'clojure-shared.jsonl')
+    vi.stubEnv('LIBTMUX_DOCS_DANGLING_REPORT', own)
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'clojure')
+    await (await processor).render('Read `llms.txt` and `sphinx.ext.intersphinx`.', {
+      fileURL: new URL('../src/content/docs/meta/exports.md', import.meta.url), frontmatter: {},
+    })
+    expect(names(own)).toEqual([])
+    await (await processor).render('```clojure\n(require libtmux.core)\n```\n\nUse `libtmux.core/missing!`.', { frontmatter: {} })
+    expect(names(own)).toEqual(['libtmux.core/missing!'])
+  })
+
+  it('reports unknown core and dotted-package Lisp APIs as references, not configuration keys', async () => {
+    const own = join(directory, 'lisp.jsonl')
+    vi.stubEnv('LIBTMUX_DOCS_DANGLING_REPORT', own)
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'lisp')
+    await (await processor).render('Call `libtmux:missing-function` and `libtmux.query:missing-function`.', { frontmatter: { port: 'lisp' } })
+    expect(names(own)).toEqual(['libtmux:missing-function', 'libtmux.query:missing-function'])
+    await (await processor).render('Common Lisp calls `libtmux:missing-function`.', { frontmatter: { port: 'py' } })
+    expect(names(own)).toEqual(['libtmux:missing-function', 'libtmux.query:missing-function', 'libtmux:missing-function'])
+    vi.stubEnv('LIBTMUX_DOCS_PORT', '')
+    await (await processor).render('Common Lisp calls `libtmux:missing-function`.', { frontmatter: {} })
+    expect(names(own)).toHaveLength(4)
+    expect(JSON.parse(readFileSync(own, 'utf8').trim().split('\n').at(-1)!)).toMatchObject({ port: 'lisp', text: 'libtmux:missing-function' })
+  })
+
+  it('keeps the capture and terminal-input guides’ tmux key names out of the API report', async () => {
+    const own = join(directory, 'keys.jsonl')
+    vi.stubEnv('LIBTMUX_DOCS_DANGLING_REPORT', own)
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'lisp')
+    await (await processor).render([
+      'Without `-l`, `send-keys` reads `Enter` as the `Enter` key, so the shell runs the line.',
+      'Key names such as `Enter`, `C-c`, and `Up` work this way.',
+      'Tmux recognizes names such as `C-c` and `Enter`, and falls back to literal input.',
+      'Typing the word `Enter` and pressing Enter are separate operations.',
+      'This complete script types the word `Enter` into a pane running `cat`.',
+      'The screen contains `Enter`: the terminal echoes the input.',
+    ].join('\n\n'), { frontmatter: {} })
+    expect(names(own)).toEqual([])
   })
 
   it('is caught when a render adds to the file the check watches, so the check above can fail', async () => {
@@ -67,6 +136,24 @@ describe('the build\'s dangling report', () => {
     const before = state(watched)
     await render()
     expect(state(watched)).not.toEqual(before)
+  })
+
+  it('links Haskell standard types and tracked project files without reporting them as missing API', async () => {
+    const own = join(directory, 'haskell.jsonl')
+    vi.stubEnv('LIBTMUX_DOCS_DANGLING_REPORT', own)
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'haskell')
+    const { code } = await (await processor).render(
+      'Use `IO`, `Either` and `Integer`. Configure `cabal.project` and `libtmux-haskell.cabal`; read `src/LibTmux/Id.hs`. Call `Nope.thing()`.',
+      { frontmatter: {} },
+    )
+    expect(names(own)).toEqual(['Nope.thing()'])
+    for (const destination of [
+      'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/System-IO.html#t:IO',
+      'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Data-Either.html#t:Either',
+      'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Prelude.html#t:Integer',
+      ...['cabal.project', 'libtmux-haskell.cabal', 'src/LibTmux/Id.hs'].map((path) =>
+        `https://github.com/libtmux/libtmux-haskell/blob/${haskellModel.revision}/${path}`),
+    ]) expect(code).toContain(`href="${destination}"`)
   })
 })
 

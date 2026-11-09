@@ -23,7 +23,7 @@ import { fileURLToPath } from 'node:url'
 import { BUILTINS } from '../../packages/api-model/src/builtins.ts'
 import { Resolver, SymbolIndex, conceptNotes, decideMention, proseTexts, looksLikeApiMention, notASymbol, sourceUrl } from '../../packages/api-model/src/index.ts'
 import { fromMarkdown } from 'mdast-util-from-markdown'
-import { parseApiProse } from '../../site/src/lib/api-prose.ts'
+import { parseApiProse } from '../../packages/api-model/src/reference.ts'
 import { SOURCE_GUIDE_PORTS } from '../../site/src/lib/port-documentation.ts'
 import { stagedPortGuides } from '../stage-port-docs.mjs'
 import { powerShellCommonParameterHref, powerShellCommonParameterLabel } from '../../site/src/lib/powershell-common-parameters.ts'
@@ -47,7 +47,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
  */
 export const EXTERNAL_INVENTORIES = [
   { file: 'python', project: 'Python', baseUrl: 'https://docs.python.org/3/', langs: ['py'] },
-  { file: 'jdk', project: 'Java SE', baseUrl: 'https://docs.oracle.com/en/java/javase/21/docs/api/', langs: ['java', 'kotlin', 'scala'] },
+  { file: 'jdk', project: 'Java SE', baseUrl: 'https://docs.oracle.com/en/java/javase/21/docs/api/', langs: ['java', 'kotlin', 'scala', 'clojure'] },
   { file: 'dom', project: 'MDN Web Docs', baseUrl: 'https://developer.mozilla.org/', langs: ['ts'] },
   { file: 'julia', project: 'Julia', baseUrl: 'https://docs.julialang.org/en/v1/', langs: ['julia'] },
 ]
@@ -62,7 +62,11 @@ export const API_HOSTS = new Set([
   'docs.oracle.com', 'docs.junit.org', 'kotlinlang.org', 'www.scala-lang.org', 'docs.scala-lang.org', 'typelevel.org', 'javadoc.io',
   'learn.microsoft.com', 'fsharp.github.io', 'en.cppreference.com', 'eel.is', 'developer.apple.com', 'docs.swift.org',
   'docs.ruby-lang.org', 'ruby-doc.org', 'www.lua.org', 'luals.github.io', 'docs.julialang.org', 'hexdocs.pm', 'www.erlang.org',
+  'ocaml.org',
+  'perldoc.perl.org', 'metacpan.org',
+  'clojure.org', 'clojure.github.io',
   'gofastmcp.com', 'csharp.sdk.modelcontextprotocol.io', 'ts.sdk.modelcontextprotocol.io', 'modelcontextprotocol.io', 'cmake.org',
+  'www.haskell.org', 'downloads.haskell.org', 'cabal.readthedocs.io',
 ])
 
 export const apiHostOf = (url) => {
@@ -369,7 +373,8 @@ export function proseSources({ root = ROOT, meta = false } = {}) {
   }
   for (const port of SOURCE_GUIDE_PORTS) {
     const artifact = readJson(join(root, 'site', 'src', 'data', 'port-guides', `${port}.json`))
-    for (const [file, source] of stagedPortGuides(port, artifact)) pages.push(entry(`_staged/${file}`, source))
+    // Badge SVGs ride in the same map for the stager to publish; they are not pages.
+    for (const [file, source] of stagedPortGuides(port, artifact)) if (!file.startsWith('badges/')) pages.push(entry(`_staged/${file}`, source))
   }
   // A page a port writes for itself keeps its id; the shared source fills the ids no page claims.
   const claimed = new Set(pages.map((page) => page.id))

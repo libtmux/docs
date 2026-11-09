@@ -424,9 +424,9 @@ describe('the overview page', () => {
 describe('a workspace overview with no tested files', () => {
   const page = readFileSync(new URL('../src/components/docs/DocPage.astro', import.meta.url), 'utf8')
 
-  it('keeps the old overview and says tested example files are coming', () => {
-    expect(page).toMatch(/isWorkspaceOverview && !workspaceExamples && \(\s*<p[^>]*data-workspace-coming>Tested example workspace files for this port are coming\.<\/p>/)
-    // The note is for the ports whose own tests hold no quotable file, and for no other.
+  it('keeps the overview and shows the placeholder only without examples or a native guide', () => {
+    expect(page).toMatch(/isWorkspaceOverview && !workspaceExamples && !hasWorkspaceGuide && \(\s*<p[^>]*data-workspace-coming>Tested example workspace files for this port are coming\.<\/p>/)
+    // Missing showcase files do not imply that a port lacks a native guide.
     const empty = Object.entries(data.ports).filter(([, block]) => block.examples.length === 0).map(([port]) => port)
     expect(empty.length).toBeGreaterThan(0)
     for (const port of empty) expect(workspaceShowcase(port), port).toBeUndefined()

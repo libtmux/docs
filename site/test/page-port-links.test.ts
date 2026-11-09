@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
+import { Window } from 'happy-dom'
+import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
 vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '/pr-42/en')
 vi.stubEnv('LIBTMUX_DOCS_LOCALES_ROOT', '/pr-42')
 const { docsEntryAvailable, docsEntriesAvailable, pagePortLinks } = await import('../src/lib/page-port-links')
-const { PORTS, PORT_BY_SLUG, productAvailable } = await import('../src/lib/ports')
+const { PORTS, PORT_BY_SLUG, productAvailable, productExcluded } = await import('../src/lib/ports')
 const { referencePageLinks } = await import('../src/lib/reference-page-links')
 const { localePageHref, localeSourcePath } = await import('../src/i18n/locales')
 
@@ -19,6 +21,16 @@ describe('prose route ownership', () => {
   const shared = { id: 'concepts', data: {} }
   const ruby = { id: '_staged/ruby/concepts', data: { port: 'ruby', route: 'concepts' } }
   const lua = { id: '_staged/lua/concepts', data: { port: 'lua', route: 'concepts' } }
+
+  it('omits excluded product overviews while retaining unpublished ones', () => {
+    for (const pagePath of ['mcp', 'mcp/']) {
+      const links = pagePortLinks({ ...options, pagePath, portSlug: 'ts' })
+      expect(links.find((entry) => entry.port === 'erlang')?.links).toEqual([])
+      expect(links.find((entry) => entry.port === 'elixir')?.links).toEqual([
+        { href: '/pr-42/en/elixir/latest/mcp/' },
+      ])
+    }
+  })
 
   it('selects native prose independently of collection order and keeps shared fallbacks', () => {
     for (const entries of [[shared, ruby, lua], [lua, ruby, shared]]) {
@@ -46,6 +58,61 @@ describe('prose route ownership', () => {
 })
 
 describe('reference picker exits', () => {
+  it('keeps an excluded MCP product out of shared-page language links', () => {
+    for (const pagePath of ['mcp', 'mcp/tools']) {
+      const entries = pagePortLinks({ ...options, pagePath, portSlug: 'ts' })
+      expect(entries.find((entry) => entry.port === 'ocaml')).toMatchObject({
+        links: [], home: { href: '/pr-42/en/ocaml/latest/', label: 'Go to OCaml home' },
+      })
+      expect(entries.find((entry) => entry.port === 'ts')?.links).toEqual([
+        { href: `/pr-42/en/ts/v1.2.3/${pagePath}/` },
+      ])
+    }
+  })
+
+  it('excludes absent products and keeps unpublished overviews and language homes', async () => {
+    const picker = await loadAstroTemplate('components/PagePortSwitcher.astro')
+    const productDocs = [{ id: 'workspace', data: {} }]
+    for (const product of ['mcp', 'workspace'] as const) {
+      for (const pagePath of [product, `/${product}/`]) {
+        const entries = pagePortLinks({ ...options, docs: productDocs, portSlug: 'ts', pagePath })
+        for (const entry of entries) {
+          const port = PORT_BY_SLUG[entry.port]
+          const overview = !port.parentLibrary && !productExcluded(port, product)
+          const version = entry.port === 'ts' ? 'v1.2.3' : options.defaults[entry.port as keyof typeof options.defaults] ?? 'latest'
+          expect(entry.links, `${entry.port}/${pagePath}`).toEqual(overview
+            ? [{ href: `/pr-42/en/${entry.port}/${version}/${product}/` }] : [])
+          expect(entry.home?.href, `${entry.port}/${pagePath} home`).toBe(`/pr-42/en/${entry.port}/${version}/`)
+        }
+        const window = new Window()
+        try {
+          window.document.body.innerHTML = await renderAstroTemplate(picker, { props: { entries, portSlug: 'ts' } })
+          const haskell = window.document.querySelector('[data-port="haskell"]')!
+          if (product === 'mcp') {
+            expect(haskell.textContent).toContain('No matching page')
+            expect([...haskell.querySelectorAll('a')].map((link) => link.getAttribute('href')))
+              .toEqual(['/pr-42/en/haskell/latest/'])
+          } else {
+            expect(haskell.tagName).toBe('A')
+            expect(haskell.getAttribute('href')).toBe('/pr-42/en/haskell/latest/workspace/')
+          }
+        } finally { await window.happyDOM.abort() }
+      }
+    }
+  })
+
+  it('keeps an excluded MCP product out of shared-page language links', () => {
+    for (const pagePath of ['mcp', 'mcp/tools']) {
+      const entries = pagePortLinks({ ...options, pagePath, portSlug: 'ts' })
+      expect(entries.find((entry) => entry.port === 'lisp')).toMatchObject({
+        links: [], home: { href: '/pr-42/en/lisp/latest/', label: 'Go to Common Lisp home' },
+      })
+      expect(entries.find((entry) => entry.port === 'ts')?.links).toEqual([
+        { href: `/pr-42/en/ts/v1.2.3/${pagePath}/` },
+      ])
+    }
+  })
+
   it('keeps missing equivalents distinct from product and language home shortcuts', () => {
     const entries = pagePortLinks({ ...options, pagePath: 'mcp/reference/libtmux-mcp-arguments', portSlug: 'cxx' })
     expect(entries.find((entry) => entry.port === 'rs')).toMatchObject({
@@ -127,10 +194,18 @@ describe('shared product pages and the ports that lack the product', () => {
 })
 
 describe('matching pages in another port', () => {
+  it.each(['mcp', 'mcp/tools'])('keeps excluded Perl MCP out of %s destinations', (path) => {
+    expect(PORT_BY_SLUG.perl.productAvailability?.mcp).toBe('excluded')
+    const entry = pagePortLinks({ ...options, pagePath: path, portSlug: 'ts' })
+      .find((entry) => entry.port === 'perl')!
+    expect(entry.links).toEqual([])
+    expect(entry.home?.href).toBe('/pr-42/en/perl/latest/')
+  })
+
   it('links cmdlet switches to parameters and keeps Julia receiver names out of function links', async () => {
     const { referenceAlternatives, API_MODELS } = await import('../src/lib/api-models')
     const { productApiIndex } = await import('../src/lib/product-api')
-    const { parameterId } = await import('@libtmux/api-model')
+    const { parameterId } = await import('@libtmux/api-model/reference')
     const examples = [
       ['julia', 'LibTmux.snapshot', 'Depth'], ['cxx', 'libtmux::Session::windows', 'Session'],
       ['cxx', 'libtmux::Window::panes', 'Window'], ['cxx', 'libtmux::Server::sessions', 'Server'],

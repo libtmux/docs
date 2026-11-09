@@ -11,7 +11,7 @@ import { isTuplePayload } from '../src/lib/api-tree'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { PORT_BY_SLUG, productAvailable } from '../src/lib/ports'
 import { getResolver } from '../src/lib/prose-resolver'
-import { decideMention, symbolsForProduct, type ApiProduct } from '@libtmux/api-model'
+import { decideMention, symbolsForProduct, type ApiProduct } from '@libtmux/api-model/reference'
 import type { SidebarItem } from '../src/lib/sidebar'
 import mentionIndex from '../src/data/mentions.json'
 import { apiCommandRelatedLinks } from '../src/lib/api-sections'
@@ -23,6 +23,11 @@ const navigationLinks = (items: SidebarItem[]): string[] => items.flatMap((item)
 ])
 
 describe('product declaration trees', () => {
+  it('provides the Lisp workspace reference landing route', () => {
+    const page = readFileSync(new URL('../src/content/docs/ports/lisp/workspace/reference.md', import.meta.url), 'utf8')
+    expect(page).toMatch(/^port: lisp$/m)
+    expect(page).toMatch(/^product: workspace$/m)
+  })
   it('keeps public product pages out of core without dropping internal declarations', () => {
     const model = API_MODELS.go
     const workspace = model.symbols.find((symbol) => symbol.id === 'workspace.Workspace.InitialSessionRequest')!

@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -70,7 +70,87 @@ function elixirToolchain(files: Record<string, string | undefined>) {
 const support = (reference: unknown) => JSON.stringify({ schema_version: 1, reference })
 const tracking = 'erlang 29\nelixir 1.20\n'
 
+describe('Haskell documentation producer', () => {
+  function toolchain(pins: string) {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-haskell-toolchain-'))
+    const output = join(directory, 'output')
+    try {
+      writeFileSync(join(directory, '.tool-versions'), pins)
+      writeFileSync(output, '')
+      const result = spawnSync('python3', ['-I', join(root, 'scripts/read-haskell-toolchain.py'), directory], {
+        encoding: 'utf8', timeout: 5000, env: { ...process.env, GITHUB_OUTPUT: output },
+      })
+      return { ...result, output: readFileSync(output, 'utf8') }
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  }
+
+  it('reads exact compiler and Cabal pins from the selected source', () => {
+    const result = toolchain('ghc 9.14.1\ncabal 3.18.2.0\n')
+    expect(result.status, result.stderr).toBe(0)
+    expect(result.output).toBe('ghc-version=9.14.1\ncabal-version=3.18.2.0\n')
+  })
+
+  it.each([
+    'ghc latest\ncabal 3.18.2.0\n',
+    'ghc 9.14\ncabal 3.18.2.0\n',
+    'ghc 9.14.1\ncabal 3.18\n',
+    'ghc 9.14.1\n',
+    'ghc 9.14.1\nghc 9.12.2\ncabal 3.18.2.0\n',
+    'ghc 9.14.1 injected\ncabal 3.18.2.0\n',
+  ])('rejects missing, moving or ambiguous pins without writing outputs: %j', (pins) => {
+    const result = toolchain(pins)
+    expect(result.status).not.toBe(0)
+    expect(result.stderr).toContain('selected source must pin an exact, unique')
+    expect(result.output).toBe('')
+  })
+
+  it('exports the selected source with the same committed docs checkout that builds the site', () => {
+    const body = script('Export Haskell API from the selected source')
+    expect(body).toContain('"$PORT_CHECKOUT"')
+    expect(body).toContain('--source-revision "$SOURCE_SHA"')
+    expect(body).toContain('--output "$PORT_CHECKOUT/.cache/docs/api.json"')
+    expect(workflow).toContain('run: python3 docs/scripts/read-haskell-toolchain.py port')
+    expect(workflow).toContain('ghc-version: ${{ steps.haskell-runtime.outputs.ghc-version }}')
+    expect(workflow).toContain('cabal-version: ${{ steps.haskell-runtime.outputs.cabal-version }}')
+    expect(workflow).toContain('EXPORTER: ${{ github.workspace }}/docs/packages/api-model/scripts/export-haskell.py')
+  })
+
+  it.each([0, 23])('passes selected source arguments intact and propagates exporter exit %s', (exitCode) => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-haskell-export-'))
+    try {
+      const exporter = join(directory, 'export tooling.py')
+      const selected = join(directory, 'selected source')
+      const trace = join(directory, 'arguments.json')
+      writeFileSync(exporter, `import json, pathlib, sys
+pathlib.Path(${JSON.stringify(trace)}).write_text(json.dumps(sys.argv[1:]))
+raise SystemExit(${exitCode})
+`)
+      const sha = 'a'.repeat(40)
+      const result = spawnSync('bash', ['-e', '-c', script('Export Haskell API from the selected source')], {
+        encoding: 'utf8', timeout: 5000,
+        env: { ...process.env, EXPORTER: exporter, PORT_CHECKOUT: selected, SOURCE_SHA: sha },
+      })
+      expect(result.status, result.stderr).toBe(exitCode)
+      expect(JSON.parse(readFileSync(trace, 'utf8'))).toEqual([
+        '--checkout', selected, '--source-revision', sha, '--output', `${selected}/.cache/docs/api.json`,
+      ])
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+})
+
 describe('native documentation producers', () => {
+  it('prepares the JVM toolchain for every member of the Java library family', () => {
+    const family = Object.values(PORT_BY_SLUG)
+      .filter((port) => port.slug === 'java' || port.parentLibrary?.slug === 'java')
+      .map((port) => port.slug).sort()
+    for (const action of ['actions/setup-java', 'gradle/actions/setup-gradle']) {
+      const condition = workflow.match(new RegExp(`      - if: ([^\\n]+)\\n        uses: ${action}@`))?.[1]
+      expect(condition, action).toBeDefined()
+      const selected = Array.from(condition!.matchAll(/matrix\.port == '([^']+)'/g), (match) => match[1]).sort()
+      expect(selected, action).toEqual(family)
+    }
+  })
+
   it.each([0, 23])('uses Julia tooling to build its tmux floor and stops on build failure %s', (exitCode) => {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-julia-tmux-'))
     const tooling = join(directory, 'export tooling')
@@ -174,6 +254,36 @@ require('node:fs').appendFileSync(process.env.EXPORT_INVOCATIONS, JSON.stringify
         ['-NoLogo', '-NoProfile', '-File', join(tooling, 'eng/Export-Docs.ps1'), '-SourceRoot', source, '-Restore'],
       ])
     } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+})
+
+describe('Common Lisp documentation producer', () => {
+  it('installs the selected source toolchain and exports before the shared build', () => {
+    const setup = workflow.indexOf('name: Install Common Lisp documentation toolchain')
+    const install = workflow.indexOf('name: Install locked Common Lisp dependencies')
+    const exportStep = workflow.indexOf('name: Export Common Lisp API from the selected source')
+    const build = workflow.indexOf("name: Build this port's tree")
+    expect(setup).toBeGreaterThan(workflow.indexOf('name: Snapshot source inputs before native generation'))
+    expect(setup).toBeLessThan(install)
+    expect(install).toBeLessThan(exportStep)
+    expect(exportStep).toBeLessThan(build)
+
+    const setupStep = workflow.slice(setup, install)
+    expect(setupStep).toContain("if: matrix.port == 'lisp'")
+    expect(setupStep).toMatch(/uses: jdx\/mise-action@[0-9a-f]{40} # v\d+\.\d+\.\d+\n/)
+    expect(setupStep).toContain('version: 2026.11.3')
+    expect(setupStep).toContain('working_directory: port')
+    expect(setupStep).toContain('cache: false')
+
+    const installStep = workflow.slice(install, exportStep)
+    expect(installStep).toContain("if: matrix.port == 'lisp'")
+    expect(installStep).toContain('working-directory: port')
+    expect(installStep).toContain('run: mise run setup')
+
+    const exportBlock = workflow.slice(exportStep, build)
+    expect(exportBlock).toContain("if: matrix.port == 'lisp'")
+    expect(exportBlock).toContain('working-directory: port')
+    expect(exportBlock).toContain('run: mise run docs-artifact')
   })
 })
 
@@ -282,13 +392,13 @@ if (process.argv[2] === process.env.FAILING_TASK) process.exit(23)
     expect(setup).toBeLessThan(tests.indexOf('- name: test-all'))
   })
 
-  // setup-beam must receive exactly what the reader printed: a literal version, a decoy step that
-  // mentions the output, or a second setup-beam step would leave the pinned pair unused.
+  // Check the Elixir branch independently of other ports' BEAM toolchains.
   const toolchainWiring = (text: string) => {
     const steps = text.split(/\n(?=      - )/).map((step) => step.replace(/^\n?      - /, '        '))
     const key = (step: string, name: string) => new RegExp(`^ {8}${name}: (.+)$`, 'm').exec(step)?.[1]
     const readers = steps.filter((step) => /read-elixir-toolchain\.py/.test(key(step, 'run') ?? ''))
     const setups = steps.filter((step) => /^erlef\/setup-beam@/.test(key(step, 'uses') ?? ''))
+      .filter((step) => key(step, 'if') !== "matrix.port == 'erlang'")
     const block = setups[0] ? /^ {8}with:\n((?: {10}.*\n?)*)/m.exec(setups[0])?.[1] ?? '' : ''
     const inputs = Object.fromEntries([...block.matchAll(/^ {10}([\w-]+): (.+)$/gm)].map((match) => [match[1], match[2]]))
     return { readers: readers.map((step) => key(step, 'id')), setups: setups.length, inputs }
@@ -317,6 +427,9 @@ if (process.argv[2] === process.env.FAILING_TASK) process.exit(23)
     expect(toolchainWiring(literal).inputs['elixir-version']).toBe('1.18.0')
     const doubled = real.replace('      - name: Stage integrated source guides', `      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1\n        with:\n${otp}${elixir}\n      - name: Stage integrated source guides`)
     expect(toolchainWiring(doubled).setups).toBe(2)
+    const overlapping = doubled.replace('      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1\n        with:',
+      "      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1\n        if: matrix.port == 'elixir' || matrix.port == 'erlang'\n        with:")
+    expect(toolchainWiring(overlapping).setups).toBe(2)
   })
 
   it('writes the artifact the API model step reads', () => {
@@ -324,6 +437,208 @@ if (process.argv[2] === process.env.FAILING_TASK) process.exit(23)
     const artifact = /\belixir: \{[^}]*nativeArtifact: '([^']+)'/.exec(model)?.[1]
     expect(artifact).toBeDefined()
     expect(script('Export Elixir API from the selected source')).toContain(` ${artifact}\n`)
+  })
+})
+
+describe('OCaml documentation producer', () => {
+  it.each(['', 'install', 'build', 'tools/export_api.py'])('exports installed interfaces and stops on task %j failure', (failure) => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-ocaml-export-'))
+    try {
+      const source = join(directory, 'selected source')
+      const calls = join(directory, 'calls')
+      mkdirSync(source)
+      writeFileSync(join(directory, 'opam'), `#!${process.execPath}
+const fs = require('node:fs')
+const argv = process.argv.slice(2)
+fs.appendFileSync(process.env.EXPORT_CALLS, JSON.stringify({ argv, cwd: process.cwd(), export: process.env.LIBTMUX_API_EXPORT }) + '\\n')
+if (argv.includes(process.env.FAILING_TASK)) process.exit(23)
+`, { mode: 0o700 })
+      const result = spawnSync('bash', ['-e', '-c', script('Export OCaml API from the selected source')], {
+        cwd: source, encoding: 'utf8', timeout: 1000,
+        env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, LIBTMUX_API_EXPORT: '1',
+          EXPORT_CALLS: calls, FAILING_TASK: failure },
+      })
+      const commands = readFileSync(calls, 'utf8').trim().split('\n').map((line) => JSON.parse(line))
+      const expected = [
+        ['install', '.', '--deps-only', '--with-doc', '--yes'],
+        ['exec', '--', 'dune', 'build', '@install', 'tools/api_export.exe'],
+        ['exec', '--', 'python3', 'tools/export_api.py', '--output', '_build/docs/ocaml.json'],
+      ]
+      expect(result.status, result.stderr).toBe(failure ? 23 : 0)
+      expect(commands).toEqual(expected.slice(0, failure === 'install' ? 1 : failure === 'build' ? 2 : 3)
+        .map((argv) => ({ argv, cwd: realpathSync(source), export: '1' })))
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+
+  it('prepares the pinned compiler and public exporter before building the port tree', () => {
+    const setup = workflow.indexOf('uses: ocaml/setup-ocaml@')
+    const exporter = workflow.indexOf('name: Export OCaml API from the selected source')
+    const build = workflow.indexOf("name: Build this port's tree")
+    expect(setup).toBeGreaterThan(workflow.indexOf('name: Snapshot source inputs before native generation'))
+    expect(exporter).toBeGreaterThan(setup)
+    expect(exporter).toBeLessThan(build)
+    const steps = workflow.slice(workflow.lastIndexOf('\n      - ', setup), exporter)
+    expect(steps).toContain("if: matrix.port == 'ocaml'")
+    expect(steps).toContain('ocaml-compiler: ocaml-base-compiler.5.5.2')
+    expect(steps).toContain('opam-local-packages: port/*.opam')
+    expect(steps).toMatch(/uses: ocaml\/setup-ocaml@[0-9a-f]{40} # v\d+\.\d+\.\d+/)
+    expect(workflow.slice(exporter, build)).toContain("LIBTMUX_API_EXPORT: '1'")
+    const model = readFileSync(join(root, 'scripts/gen-api-model.mjs'), 'utf8')
+    const artifact = /\bocaml: \{[^}]*nativeArtifact: '([^']+)'/.exec(model)?.[1]
+    expect(artifact).toBe('_build/docs/ocaml.json')
+    expect(script('Export OCaml API from the selected source')).toContain(` ${artifact}\n`)
+  })
+})
+
+describe('Erlang documentation producer', () => {
+  function toolchain(source?: string) {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-erlang-toolchain-'))
+    const output = join(directory, 'output')
+    try {
+      mkdirSync(join(directory, 'port'))
+      writeFileSync(output, '')
+      if (source !== undefined) writeFileSync(join(directory, 'port/.tool-versions'), source)
+      const result = spawnSync('bash', ['-e', '-c', script('Read selected Erlang toolchain')], {
+        cwd: directory, encoding: 'utf8', timeout: 5000,
+        env: { ...process.env, GITHUB_OUTPUT: output },
+      })
+      return { ...result, output: readFileSync(output, 'utf8') }
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  }
+
+  it('reads exact OTP and Rebar3 versions from the selected source', () => {
+    const result = toolchain('erlang 29.1.2\nrebar 3.28.0\n')
+    expect(result.status, result.stderr).toBe(0)
+    expect(result.output).toBe('otp-version=29.1.2\nrebar3-version=3.28.0\n')
+  })
+
+  it.each([
+    undefined,
+    'erlang 29.1.2\n',
+    'rebar 3.28.0\n',
+    'erlang 29.1.2\nerlang 29.1.2\nrebar 3.28.0\n',
+    'erlang 29.1.2\nrebar 3.28.0\nrebar 3.28.0\n',
+    'erlang 29\nrebar 3.28.0\n',
+    'erlang 29.1.2\nrebar latest\n',
+    'erlang 29.1.2 injected\nrebar 3.28.0\n',
+    'erlang 28.3.3\nrebar 3.28.0\n',
+    'erlang 29.1.2\nrebar 3.29.0\n',
+  ])('rejects absent, ambiguous or unsupported source pins: %s', (source) => {
+    const result = toolchain(source)
+    expect(result.status).not.toBe(0)
+    expect(result.output).toBe('')
+  })
+
+  it.each(['ok', 'download', 'checksum', 'version'])('checks the pinned Rebar3 producer and stops on %s failure', (mode) => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-erlang-rebar-'))
+    const output = join(directory, 'path')
+    const invocations = join(directory, 'invocations')
+    try {
+      writeFileSync(output, '')
+      writeFileSync(join(directory, 'gh'), `#!${process.execPath}
+const fs = require('node:fs')
+fs.appendFileSync(process.env.REBAR_INVOCATIONS, JSON.stringify(process.argv.slice(2)) + '\\n')
+if (process.env.REBAR_PROBE === 'download') process.exit(23)
+process.stdout.write('#!/bin/sh\\nprintf "rebar ${mode === 'version' ? '3.27.0' : '3.28.0'} on Erlang/OTP 29\\\\n"\\n')
+`, { mode: 0o700 })
+      if (mode !== 'checksum') writeFileSync(join(directory, 'sha256sum'), `#!${process.execPath}
+const fs = require('node:fs')
+const input = fs.readFileSync(0, 'utf8')
+fs.appendFileSync(process.env.REBAR_INVOCATIONS, JSON.stringify({ checksum: input }) + '\\n')
+if (!input.startsWith('5a28b1cca082d3b023ec0f5df9d9f9d52557036c6f2a21c1ffa11b93a984dd42  ')) process.exit(24)
+`, { mode: 0o700 })
+      const result = spawnSync('bash', ['-e', '-c', script('Install pinned Erlang Rebar3')], {
+        cwd: directory, encoding: 'utf8', timeout: 5000,
+        env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, RUNNER_TEMP: directory, GITHUB_PATH: output,
+          REBAR3_VERSION: '3.28.0', REBAR_PROBE: mode, REBAR_INVOCATIONS: invocations },
+      })
+      const calls = readFileSync(invocations, 'utf8').trim().split('\n').map((line) => JSON.parse(line))
+      expect(calls[0]).toEqual(['api', '-H', 'Accept: application/octet-stream', 'repos/erlang/rebar3/releases/assets/664140441'])
+      if (mode === 'ok') {
+        expect(result.status, result.stderr).toBe(0)
+        const installed = readFileSync(output, 'utf8').trim()
+        expect(installed.startsWith(`${directory}/libtmux-erlang-rebar3.`)).toBe(true)
+        expect(existsSync(join(installed, 'rebar3'))).toBe(true)
+        expect(calls[1].checksum).toContain(`${installed}/rebar3\n`)
+      } else {
+        expect(result.status).not.toBe(0)
+        if (mode === 'download') expect(result.status).toBe(23)
+        if (mode === 'checksum') expect(result.stderr).toContain('computed checksum did NOT match')
+        if (mode === 'version') expect(result.stderr).toContain('Expected Rebar3 3.28.0')
+        expect(readFileSync(output, 'utf8')).toBe('')
+        expect(readdirSync(directory).some((name) => name.startsWith('libtmux-erlang-rebar3.'))).toBe(false)
+      }
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+
+  it.each([0, 23])('exports the selected core source and propagates escript status %s', (status) => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-erlang-export-'))
+    const source = join(directory, 'selected source')
+    const output = join(directory, 'invocations')
+    const exportScript = join(directory, 'docs/packages/api-model/scripts/export-erlang.escript')
+    try {
+      mkdirSync(source)
+      writeFileSync(join(directory, 'escript'), `#!${process.execPath}
+require('node:fs').appendFileSync(process.env.EXPORT_INVOCATIONS, JSON.stringify({ argv: process.argv.slice(2), cwd: process.cwd() }) + '\\n')
+process.exit(${status})
+`, { mode: 0o700 })
+      const result = spawnSync('bash', ['-e', '-c', script('Export Erlang API from the selected source')], {
+        cwd: source, encoding: 'utf8', timeout: 5000,
+        env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, EXPORTER: exportScript, EXPORT_INVOCATIONS: output },
+      })
+      expect(result.status, result.stderr).toBe(status)
+      expect(JSON.parse(readFileSync(output, 'utf8'))).toEqual({
+        argv: [exportScript, '.', 'libtmux_erlang', '_build/docs/api.json'], cwd: realpathSync(source),
+      })
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+
+  it('installs the helper compiler and make without executing tmux', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-erlang-system-deps-'))
+    const output = join(directory, 'invocations')
+    try {
+      mkdirSync(join(directory, 'docs/scripts'), { recursive: true })
+      writeFileSync(join(directory, 'docs/scripts/apt-get.sh'), `#!${process.execPath}
+require('node:fs').appendFileSync(process.env.DEPENDENCY_INVOCATIONS, JSON.stringify(process.argv.slice(2)) + '\\n')
+`, { mode: 0o700 })
+      writeFileSync(join(directory, 'tmux'), '#!/bin/sh\nexit 23\n', { mode: 0o700 })
+      const result = spawnSync('bash', ['-e', '-c', script('Install native system dependencies')], {
+        cwd: directory, encoding: 'utf8', timeout: 5000,
+        env: { ...process.env, PORT: 'erlang', PATH: `${directory}:${process.env.PATH}`, DEPENDENCY_INVOCATIONS: output },
+      })
+      expect(result.status, result.stderr).toBe(0)
+      expect(readFileSync(output, 'utf8').trim().split('\n').map((line) => JSON.parse(line))).toEqual([
+        ['update', '-qq'], ['install', '--no-install-recommends', '-y', '-qq', 'build-essential'],
+      ])
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+
+  it('wires source pins and the shared exporter before assembly without an Erlang tooling checkout', () => {
+    const step = (name: string) => workflow.split(/\n(?=      - )/).find((value) => value.includes(`name: ${name}\n`))!
+    const read = workflow.indexOf('name: Read selected Erlang toolchain')
+    const setup = workflow.indexOf('name: Install selected Erlang runtime')
+    const rebar = workflow.indexOf('name: Install pinned Erlang Rebar3')
+    const exportStep = workflow.indexOf('name: Export Erlang API from the selected source')
+    expect(read).toBeGreaterThan(workflow.indexOf('name: Snapshot source inputs before native generation'))
+    expect(read).toBeLessThan(setup)
+    expect(setup).toBeLessThan(rebar)
+    expect(rebar).toBeLessThan(exportStep)
+    expect(exportStep).toBeLessThan(workflow.indexOf("name: Build this port's tree"))
+    expect(step('Install selected Erlang runtime')).toContain("if: matrix.port == 'erlang'")
+    expect(step('Install selected Erlang runtime')).toContain('erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1')
+    for (const input of ['otp-version: ${{ steps.erlang-runtime.outputs.otp-version }}', 'version-type: strict', 'install-hex: false', 'install-rebar: false']) {
+      expect(step('Install selected Erlang runtime')).toContain(input)
+    }
+    expect(step('Install pinned Erlang Rebar3')).toContain('REBAR3_VERSION: ${{ steps.erlang-runtime.outputs.rebar3-version }}')
+    expect(step('Export Erlang API from the selected source')).toContain('working-directory: port')
+    expect(step('Export Erlang API from the selected source')).toContain('EXPORTER: ${{ github.workspace }}/docs/packages/api-model/scripts/export-erlang.escript')
+    expect(step('Check out native documentation tooling')).not.toContain('erlang')
+    expect(step('Install native system dependencies')).toContain("matrix.port == 'erlang'")
+    expect(script('Install native system dependencies')).toContain('packages=(build-essential)')
+    const model = readFileSync(join(root, 'scripts/gen-api-model.mjs'), 'utf8')
+    const artifact = /\berlang: \{[^}]*nativeArtifact: '([^']+)'/.exec(model)?.[1]
+    expect(artifact).toBe('_build/docs/api.json')
+    expect(script('Export Erlang API from the selected source')).toContain(` ${artifact}\n`)
   })
 })
 
@@ -468,7 +783,7 @@ describe('selected MCP runtime provisioning', () => {
 
   it.each([
     ['go', true], ['py', true], ['ruby', true],
-    ['lua', false], ['kotlin', false], ['scala', false], ['fsharp', false], ['powershell', false], ['julia', true], ['elixir', false],
+    ['lua', false], ['kotlin', false], ['scala', false], ['fsharp', false], ['powershell', false], ['julia', true], ['elixir', false], ['erlang', false],
   ])('uses the product catalog for %s runtime availability', (port, required) => {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-mcp-availability-'))
     try {

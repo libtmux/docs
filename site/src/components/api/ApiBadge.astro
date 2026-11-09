@@ -8,7 +8,7 @@
  * Beside a name in a list or a table it is the plain word. Modifiers are
  * outline-only words, so kind stays the loudest thing.
  */
-import { kindMark, markClass } from '../../lib/api-labels'
+import { kindLabel, kindMark, kindPalette, markClass } from '../../lib/api-labels'
 import { apiGlossaryHref } from '../../lib/api-glossary'
 interface Props {
   label: string
@@ -23,24 +23,25 @@ interface Props {
   preview?: boolean
 }
 const { label, variant, value, compact = false, plain = false, preview = true } = Astro.props as Props
-const palette = value === 'cmdlet' ? 'function' : value
-const text = compact ? kindMark(palette) : label
+const palette = kindPalette(value)
+const word = kindLabel(label)
+const text = compact ? kindMark(value) : word
 // Cmdlets use the function palette but retain their PowerShell command kind.
 const href = compact || plain ? undefined : apiGlossaryHref(variant === 'kind' ? label : value, Astro.url.pathname)
 // Compact marks already sit inside navigation links.
 const Tag = href ? 'a' : 'span'
 const legend = variant === 'kind' && !compact && !plain
-const mark = legend ? kindMark(palette) : undefined
+const mark = legend ? kindMark(value) : undefined
 ---
-{plain && variant === 'kind' && label && <span class={`api-kind-word api-badge--kind-${palette}`}>{label}</span>}
+{plain && variant === 'kind' && label && <span class={`api-kind-word api-badge--kind-${palette}`}>{word}</span>}
 {legend && label && <Tag
   href={href}
   data-link-preview={href && preview ? '' : undefined}
   class:list={['api-badge', 'api-badge--kind', `api-badge--kind-${palette}`, 'api-leg']}
   data-mark={mark ? markClass(mark) : undefined}
-  title={preview ? `${label} (kind)` : undefined}
-  aria-label={href ? `${label}: read the ${label} definition in the API glossary` : undefined}
->{mark && <span class="api-leg__m" aria-hidden="true"><span class="api-leg__g" data-mark={markClass(mark)}>{mark}</span></span>}<span class="api-leg__w"><span class="api-badge__label api-leg__wl">{label}</span></span></Tag>}
+  title={preview ? `${word} (kind)` : undefined}
+  aria-label={href ? `${word}: read the ${word} definition in the API glossary` : undefined}
+>{mark && <span class="api-leg__m" aria-hidden="true"><span class="api-leg__g" data-mark={markClass(mark)}>{mark}</span></span>}<span class="api-leg__w"><span class="api-badge__label api-leg__wl">{word}</span></span></Tag>}
 {!plain && !legend && text && <Tag
   href={href}
   data-link-preview={href && preview ? '' : undefined}
@@ -49,7 +50,7 @@ const mark = legend ? kindMark(palette) : undefined
     `api-badge--${variant}`,
     `api-badge--${variant}-${palette}`,
   ]}
-  title={preview ? compact ? value : variant === 'kind' ? `${label} (kind)` : label : variant === 'mod' && !compact ? label : undefined}
-  aria-label={href ? `${label}: read the ${variant === 'kind' ? label : value} definition in the API glossary` : undefined}
+  title={preview ? compact ? kindLabel(value) : variant === 'kind' ? `${word} (kind)` : label : variant === 'mod' && !compact ? label : undefined}
+  aria-label={href ? `${word}: read the ${variant === 'kind' ? word : value} definition in the API glossary` : undefined}
   aria-hidden={compact ? 'true' : undefined}
 ><span class="api-badge__label" data-mark={compact ? markClass(text) : undefined}>{text}</span></Tag>}

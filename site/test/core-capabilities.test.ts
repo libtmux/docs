@@ -288,6 +288,30 @@ jobs:
 })
 
 describe('the showcase component', () => {
+  it('shows the pure Haskell program as typed values with one visible view and no lifecycle controls', async () => {
+    const { Window } = await import('happy-dom')
+    const { createComponent, renderTemplate } = await import('astro/runtime/server/index.js')
+    const { loadAstroTemplate, renderAstroTemplate } = await import('./astro-templates')
+    const Code = createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre>${props.code}</pre>`)
+    const template = await loadAstroTemplate('components/CoreShowcase.astro', {
+      real: ['components/HomeExample.astro'], modules: { 'astro-expressive-code/components': { Code } },
+    })
+    const window = new Window()
+    try {
+      const source = readFileSync(new URL('../src/components/HomeExample.astro', import.meta.url), 'utf8')
+      window.document.head.innerHTML = `<style>${source.match(/<style>([\s\S]*?)<\/style>/)![1]}</style>`
+      window.document.body.innerHTML = await renderAstroTemplate(template, { props: { port: 'haskell' } })
+      expect(window.document.querySelector('[data-capability-panel]')?.getAttribute('data-capability-panel')).toBe('typed-values')
+      const view = window.document.querySelector('[data-home-view]')!
+      expect(view?.getAttribute('data-home-view')).toBe('full')
+      expect(window.getComputedStyle(view).display).toBe('block')
+      expect(window.document.querySelectorAll('[data-home-view]')).toHaveLength(1)
+      expect(window.document.querySelector('input, [data-with-cleanup], [data-without-cleanup]')).toBeNull()
+      expect(window.document.querySelector('[data-core-apis]')).toBeNull()
+      expect(window.document.body.textContent).toContain('does not start tmux')
+      expect(window.document.body.textContent).not.toMatch(/Navigate tmux|private tmux server|stops its/)
+    } finally { await window.happyDOM.abort() }
+  })
   it('leads with the quickstart, then each program once, and shows a port with only the quickstart that one panel, with no list', async () => {
     const { Window } = await import('happy-dom')
     const { createComponent, renderTemplate } = await import('astro/runtime/server/index.js')
@@ -337,7 +361,7 @@ describe('the showcase component', () => {
     expect([...ts.querySelectorAll('[data-capability-panel]')].map((panel) => panel.getAttribute('data-capability-panel'))).toEqual(['typed-graph'])
     expect(ts.querySelector('[data-capability-panel="typed-graph"][data-default] [data-core-player]')).not.toBeNull()
     expect(ts.querySelector('.core-showcase__picker, [data-capability-option]'), 'no list of one').toBeNull()
-    expect(ts.querySelector('[data-apis-for="typed-graph"]')).not.toBeNull()
+    expect(ts.querySelector('[data-apis-for="typed-graph"]'), 'no empty API list when use detection is not qualified').toBeNull()
   })
 
   it('plays a capability whose recording is of its cached program, and keeps a plain block for one without', async () => {

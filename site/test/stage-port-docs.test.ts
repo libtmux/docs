@@ -11,10 +11,21 @@ import fsharpGuides from '../src/data/port-guides/fsharp.json'
 import csharpModel from '../src/data/api/csharp.json'
 import powershellGuides from '../src/data/port-guides/powershell.json'
 import juliaGuides from '../src/data/port-guides/julia.json'
+import haskellModel from '../src/data/api/haskell.json'
+import clojureGuides from '../src/data/port-guides/clojure.json'
+import lispGuides from '../src/data/port-guides/lisp.json'
 
 afterEach(() => vi.unstubAllEnvs())
 
 describe('integrated guide inputs', () => {
+  it('routes native Clojure namespace anchors to their actual API pages', () => {
+    const staged = stagedPortGuides('clojure', clojureGuides)
+    const readme = staged.get('clojure/guides/getting-started/index.md')!
+    expect(readme).toContain('../../reference/libtmux-core/')
+    expect(readme).toContain('../../reference/libtmux-data/')
+    expect(readme).not.toContain('reference/#libtmux')
+  })
+
   const port = PORTS.find((entry) => entry.slug === 'lua')!
 
   it('reads the integrated commit regardless of newer HEAD or dirty files', () => {
@@ -22,9 +33,11 @@ describe('integrated guide inputs', () => {
     const git = (...args: string[]) => execFileSync('git', ['-C', checkout, ...args], { encoding: 'utf8', stdio: 'pipe' }).trim()
     try {
       git('init', '-q')
-      for (const path of Object.keys(stagedRoutesFor('lua'))) {
+      const paths = Object.keys(stagedRoutesFor('lua'))
+      const contents = new Map(paths.map((path, index) => [path, `# Integrated guide ${index}\n\nUTF-8: café λ\nblob 0\n\0\n`]))
+      for (const path of paths) {
         mkdirSync(dirname(join(checkout, path)), { recursive: true })
-        writeFileSync(join(checkout, path), '# Integrated guide\n')
+        writeFileSync(join(checkout, path), contents.get(path)!)
       }
       git('add', '.')
       git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'integrated')
@@ -36,7 +49,7 @@ describe('integrated guide inputs', () => {
       const artifact = artifactFromRevision(port, checkout, revision)
       expect(artifact.source).toEqual({ repository: port.repo, revision })
       expect(artifact.guides.length).toBe(Object.keys(stagedRoutesFor('lua')).length)
-      expect(artifact.guides.every((guide: { content: string }) => guide.content === '# Integrated guide\n')).toBe(true)
+      for (const guide of artifact.guides) expect(guide.content).toBe(contents.get(guide.path))
     } finally {
       rmSync(checkout, { recursive: true, force: true })
     }
@@ -56,6 +69,44 @@ describe('integrated guide inputs', () => {
 })
 
 describe('staged port guide links', () => {
+  it('stages revision-bound Haskell reader guides without advertising operations', () => {
+    const revision = haskellModel.revision
+    const program = '```console\n$ cabal run --verbose=0 typed-values\n```'
+    const guides = ['README', 'installation', 'values', 'api', 'status'].map((name) => ({
+      path: `docs/${name}.md`,
+      content: `# ${name}\n\n[Install](installation.md) [Program](../examples/typed-values/Main.hs)\n\n[LibTmux.Id](../src/LibTmux/Id.hs)\n\n[Source line](../src/LibTmux/Id.hs#L20) [Unknown anchor](../src/LibTmux/Id.hs#unknown)\n\n${program}\n`,
+    }))
+    const files = stagedPortGuides('haskell', { source: { repository: 'libtmux/libtmux-haskell', revision }, guides })
+    const index = files.get('haskell/guides/index.md')!
+    expect(index).toContain('run the public values example')
+    expect(index).not.toContain('Connect to tmux')
+    expect(files.size).toBe(6)
+    for (const [path, content] of files) {
+      expect(path).toMatch(/^haskell\/guides\//)
+      expect(content).toContain(`"ref":"${revision}"`)
+    }
+    const page = files.get('haskell/guides/typed-values/index.md')!
+    expect(page).toContain('[Install](../installation/)')
+    expect(page).toContain(`https://github.com/libtmux/libtmux-haskell/blob/${revision}/examples/typed-values/Main.hs`)
+    expect(page).toContain(program)
+    expect(page).toContain('[LibTmux.Id](../../reference/libtmux-id/)')
+    expect(page).toContain(`https://github.com/libtmux/libtmux-haskell/blob/${revision}/src/LibTmux/Id.hs#L20`)
+    expect(page).toContain(`https://github.com/libtmux/libtmux-haskell/blob/${revision}/src/LibTmux/Id.hs#unknown`)
+    expect(page).not.toContain('reference/libtmux-id/#')
+    expect(() => stagedPortGuides('haskell', {
+      source: { repository: 'libtmux/libtmux-haskell', revision: 'd'.repeat(40) }, guides,
+    })).toThrow('guide source differs from the Haskell API model')
+  })
+  it('resolves native Lisp API anchors into core and workspace declaration pages', () => {
+    const pages = stagedPortGuides('lisp', lispGuides)
+    const operations = pages.get('lisp/guides/operations/index.md')!
+    const workspace = pages.get('lisp/workspace/source-guide/index.md')!
+    expect(operations).toContain('../../reference/libtmux-kill-pane/')
+    expect(operations).not.toContain('../../reference/#kill-pane-function')
+    expect(workspace).toContain('../reference/libtmux-workspace-read-workspace/')
+    expect(workspace).toContain('../../reference/libtmux-command-outcome/')
+    expect(workspace).not.toMatch(/reference\/#(?:read-workspace-function|command-outcome-type)/)
+  })
   it('renders Julia raw HTML with revision-bound source links while preserving code examples', () => {
     const artifact = structuredClone(juliaGuides)
     const guide = artifact.guides.find((entry) => entry.path === 'docs/src/queries.md')!
@@ -127,14 +178,33 @@ describe('staged port guide links', () => {
     expect(index).toContain('title: "Guides"')
     expect(index).toContain('"label":"Overview","order":1')
     const cards = JSON.parse(/^cards: (.+)$/m.exec(index)![1])
-    expect(cards[0].label).toBe('Getting started')
-    expect(cards[1].label).toBe('Attaching to tmux')
+    expect(cards[0].href).toMatch(/^\.\.\/guides\/(?:getting-started|overview)\/$/)
+    const setup = files.get(`${port}/${cards[0].href.slice(3)}index.md`)!
+    expect(cards[0].label).toBe(JSON.parse(/^title: (.+)$/m.exec(setup)![1]))
+    if (port === 'haskell') expect(cards.map((card: { label: string }) => card.label)).toEqual([
+      'Getting started', 'Installation', 'Typed values', 'API documentation', 'Implementation status',
+    ])
+    else if (port === 'clojure') expect(cards[1].label).toBe('Captures, effects and streams')
+    else if (port === 'perl' || port === 'erlang') expect(cards[1].label).toBe('Installation')
+    else if (port !== 'ocaml') expect(cards[1].label).toBe('Attaching to tmux')
+    if (port === 'perl') {
+      const example = files.get('perl/examples/orchestration/index.md')!
+      const body = /^---\n[\s\S]*?\n---\n\n([\s\S]*)$/.exec(example)![1]
+      expect(body).toMatch(/^Constructing `LibTmux::Server`/)
+    }
     for (const section of ['examples', 'topics']) {
       const page = files.get(`${port}/${section}/index.md`)
       if (!page) continue
       expect(page).toContain(`title: "${section[0].toUpperCase()}${section.slice(1)}"`)
       expect(JSON.parse(/^cards: (.+)$/m.exec(page)![1]).length).toBeGreaterThan(0)
     }
+  })
+  it('keeps the OCaml setup title and source examples', () => {
+    const artifact = JSON.parse(readFileSync(new URL('../src/data/port-guides/ocaml.json', import.meta.url), 'utf8'))
+    const setup = artifact.guides.find((guide: { path: string }) => guide.path === 'docs/getting-started.md')
+    const page = stagedPortGuides('ocaml', artifact).get('ocaml/guides/getting-started/index.md')!
+    expect(page).toContain('title: "Install and run your first capture"')
+    for (const [example] of setup.content.matchAll(/^```[^\n]*\n[\s\S]*?^```/gm)) expect(page).toContain(example)
   })
   const routes = {
     'docs/runtime.md': ['guides/source/runtime'],

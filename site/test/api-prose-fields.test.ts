@@ -3,12 +3,12 @@ import { describe, expect, it } from 'vitest'
 import {
   BUILTINS, PROSE_FIELDS, RENDERED_TEXTS, STRUCTURAL_FIELDS, commandFacts, isStructuralField, parameterBindingFacts, parameterBindingText, proseTexts, unclassifiedFields,
   type ApiSymbol, type SymbolIndex,
-} from '@libtmux/api-model'
+} from '@libtmux/api-model/reference'
 import { apiHostOf, apiIndexes, collectApiDestinations } from '../../scripts/lib/api-destinations.mjs'
 import { normalizeAddress } from '../../scripts/lib/api-markdown-links.mjs'
 import { languageOfUrl } from '../../scripts/lib/api-links.mjs'
 import { createProseLinker } from '../src/lib/prose-resolver'
-import { parseApiProse } from '../src/lib/api-prose'
+import { parseApiProse } from '@libtmux/api-model/reference'
 import { API_MODELS } from '../src/lib/api-models'
 import { defaultVersionFor } from '../src/lib/versions'
 import { productApiIndex } from '../src/lib/product-api'

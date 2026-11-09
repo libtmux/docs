@@ -4,6 +4,7 @@ import {
   PORT_BY_SLUG,
   portPageUrl,
   productAvailable,
+  productIncluded,
   productDescription,
   type DocProduct,
   type PortPackageId,
@@ -44,7 +45,19 @@ export interface PortSourceGuide {
 interface PortDocumentation {
   domains: readonly DocumentationDomain[]
   sourceGuides: readonly PortSourceGuide[]
+  stagedSections?: readonly string[]
+  /** Source directory relative to which native API comments write guide links. */
+  apiDocRoot?: string
   redirects?: readonly { sourcePath: string; path: string; target: string }[]
+  /** Section overviews to stage and offer when the shared operational sections do not apply. */
+  sections?: Readonly<Record<string, string>>
+}
+
+const SECTION_DESCRIPTIONS: Readonly<Record<string, string>> = {
+  guides: 'Connect to tmux and work with its sessions, windows, and panes.',
+  examples: 'Run complete programs with their documented setup and cleanup.',
+  topics: 'Understand object ownership, state, and operation behavior.',
+  concepts: 'Understand captured queries, object identities, and operations.',
 }
 
 const guide = (
@@ -65,6 +78,83 @@ const libraryDomain = (description: string): DocumentationDomain => ({
 })
 
 const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
+  ocaml: {
+    stagedSections: ['guides'],
+    domains: [
+      libraryDomain('Immutable OCaml observations, typed queries and explicit native transports.'),
+      { id: 'workspace', label: 'Workspace Manager', kind: 'product', navGroup: 'Apps', route: 'workspace', package: 'workspace', product: 'workspace',
+        description: 'Validate, preview and apply JSON workspaces with retained execution receipts.' },
+    ],
+    sourceGuides: [
+      ...['getting-started', 'bootstrap', 'graph', 'queries', 'query-interchange', 'control', 'recovery', 'streaming', 'showcases', 'packages', 'compatibility', 'testing', 'benchmarking', 'status'].map((name, index) =>
+        guide(`docs/${name}.md`, `guides/${name}`, 'core', { aliases: [], sidebar: { group: 'Guides', order: index + 1 } })),
+      guide('docs/workspaces.md', 'workspace/source-guide', 'workspace', { title: 'Workspace guide', product: 'workspace', package: 'workspace', aliases: [] }),
+    ],
+    redirects: [{ sourcePath: 'docs/api.md', path: 'guides/api', target: 'reference' }],
+  },
+  haskell: {
+    domains: [
+      libraryDomain('Parse tmux IDs, validate values and check stable releases with pure Haskell functions.'),
+      { id: 'workspace', label: 'Workspace Manager', kind: 'unavailable', navGroup: 'Availability', route: 'workspace', product: 'workspace',
+        description: 'The workspace library and CLI are planned as a separate Cabal package using the core.' },
+      { id: 'mcp', label: 'MCP', kind: 'unavailable', navGroup: 'Availability', route: 'mcp', product: 'mcp',
+        description: 'MCP is excluded from this port.' },
+    ],
+    sections: { guides: 'Install the source package, run the public values example, and understand the available API.' },
+    sourceGuides: [
+      guide('docs/README.md', 'guides/getting-started', 'core', { title: 'Getting started', sidebar: { group: 'Guides', order: 1 } }),
+      guide('docs/installation.md', 'guides/installation', 'core', { title: 'Installation', sidebar: { group: 'Guides', order: 2 } }),
+      guide('docs/values.md', 'guides/typed-values', 'core', { title: 'Typed values', sidebar: { group: 'Guides', order: 3 } }),
+      guide('docs/api.md', 'guides/api-documentation', 'core', { title: 'API documentation', sidebar: { group: 'Guides', order: 4 } }),
+      guide('docs/status.md', 'guides/status', 'core', { title: 'Implementation status', sidebar: { group: 'Guides', order: 5 } }),
+    ],
+  },
+  perl: {
+    domains: [
+      libraryDomain('Use explicit tmux commands and captured graph selections with stable Perl.'),
+      { id: 'async', label: 'Async', kind: 'companion-package', navGroup: 'Library', route: 'guides/async', package: 'async', description: 'Optional Future execution with a caller-owned IO::Async loop.' },
+      { id: 'workspace', label: 'Workspace Manager', kind: 'product', navGroup: 'Apps', route: 'workspace', package: 'workspace', product: 'workspace', description: 'Validate, plan, and load versioned JSON workspaces through public core APIs.' },
+    ],
+    sourceGuides: [
+      guide('README.md', 'guides/getting-started', 'core', { title: 'Getting started', sidebar: { group: 'Guides', order: 1 } }),
+      guide('docs/installation.md', 'guides/installation', 'core', { title: 'Installation', sidebar: { group: 'Guides', order: 2 } }),
+      guide('docs/filtering.md', 'guides/filtering', 'core', { title: 'Filtering' }),
+      guide('docs/orchestration.md', 'examples/orchestration', 'core', { title: 'Create sessions, windows, and panes', aliases: ['guides/orchestration'] }),
+      guide('docs/graph.md', 'concepts/graph', 'core', { title: 'Snapshot graph and identity', aliases: ['guides/graph'] }),
+      guide('docs/fields.md', 'concepts/fields', 'core', { title: 'Entity fields', aliases: ['guides/fields'] }),
+      guide('docs/query-planning.md', 'topics/query-planning', 'core', { title: 'Live query planning', aliases: ['guides/query-planning'] }),
+      guide('docs/errors.md', 'topics/errors', 'core', { title: 'Errors and recovery', aliases: ['guides/errors'] }),
+      guide('docs/compatibility.md', 'topics/compatibility', 'core', { title: 'Linux and tmux compatibility', aliases: ['guides/compatibility'] }),
+      guide('docs/async.md', 'guides/async', 'async', { package: 'async', title: 'Optional async execution' }),
+      guide('docs/workspace.md', 'workspace/source-guide', 'workspace', { package: 'workspace', product: 'workspace', title: 'Workspace guide', aliases: [] }),
+    ],
+  },
+  lisp: {
+    domains: [
+      libraryDomain('Native CLOS observations, ordinary sequences and explicit tmux operations.'),
+      { id: 'workspace', label: 'Workspace Manager', kind: 'product', navGroup: 'Apps', route: 'workspace', package: 'workspace', product: 'workspace',
+        description: 'Validate, plan and explicitly apply bounded JSON workspaces through the native Lisp engine.' },
+    ],
+    sourceGuides: [
+      guide('README.md', 'guides/getting-started', 'core', { title: 'Getting started', aliases: [], sidebar: { group: 'Guides', order: 1 } }),
+      guide('docs/tutorial.md', 'guides/tutorial', 'core', { title: 'REPL tutorial', aliases: [], sidebar: { group: 'Guides', order: 2 } }),
+      guide('docs/captures.md', 'concepts/captures', 'core', { title: 'Captures and identity', aliases: [], sidebar: { group: 'Concepts', order: 1 } }),
+      guide('docs/queries.md', 'guides/queries', 'core', { title: 'Native queries', aliases: [], sidebar: { group: 'Guides', order: 3 } }),
+      guide('docs/query-interchange.md', 'topics/query-interchange', 'core', { title: 'Query interchange', aliases: [], sidebar: { group: 'Topics', order: 1 } }),
+      guide('docs/operations.md', 'guides/operations', 'core', { title: 'Explicit operations', aliases: [], sidebar: { group: 'Guides', order: 4 } }),
+      guide('docs/transport.md', 'concepts/transport', 'core', { title: 'Transport and cleanup', aliases: [], sidebar: { group: 'Concepts', order: 2 } }),
+      guide('docs/capabilities.md', 'guides/capabilities', 'core', { title: 'Capabilities and limits', aliases: [], sidebar: { group: 'Guides', order: 5 } }),
+      guide('docs/testing.md', 'guides/testing', 'core', { title: 'Testing', aliases: [], sidebar: { group: 'Guides', order: 6 } }),
+      guide('verification.md', 'guides/verification', 'core', { title: 'Verification evidence', aliases: [], sidebar: { group: 'Guides', order: 7 } }),
+      guide('docs/workspaces.md', 'workspace/source-guide', 'workspace', { title: 'Workspace guide', product: 'workspace', package: 'workspace', aliases: [], sidebar: { group: 'Guides', order: 2 } }),
+    ],
+    redirects: [
+      { sourcePath: 'docs/api.md', path: 'guides/api', target: 'reference' },
+      { sourcePath: 'docs/query-api.md', path: 'guides/query-api', target: 'reference' },
+      { sourcePath: 'docs/json-api.md', path: 'guides/json-api', target: 'reference' },
+      { sourcePath: 'docs/workspace-api.md', path: 'workspace/api', target: 'workspace/reference' },
+    ],
+  },
   powershell: {
     domains: [
       libraryDomain('Install LibTmux and use cmdlets to read and control tmux.'),
@@ -102,6 +192,32 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('docs/src/workspaces.md', 'workspace/source-guide', 'workspace', { title: 'Workspace guide', product: 'workspace', package: 'workspace', aliases: [] }),
     ],
     redirects: [{ sourcePath: 'docs/src/api.md', path: 'guides/api-overview', target: 'reference' }],
+  },
+  clojure: {
+    domains: [
+      libraryDomain('Captured persistent values, explicit effects and bounded JVM tasks over libtmux-java.'),
+      { id: 'async', label: 'core.async adapter', kind: 'companion-package', navGroup: 'Library',
+        route: 'guides/core-async', package: 'async',
+        description: 'Use the optional, separately installable adapter for bounded event channels and explicit shutdown.' },
+    ],
+    sourceGuides: [
+      guide('libtmux-clojure/README.md', 'guides/getting-started', 'core', {
+        title: 'Getting started', sidebar: { group: 'Guides', order: 2 },
+      }),
+      guide('docs/guide/clojure.md', 'guides/captures-and-effects', 'core', {
+        title: 'Captures, effects and streams', sidebar: { group: 'Guides', order: 3 },
+      }),
+      guide('docs/guide/clojure-reference.md', 'guides/captured-values', 'core', {
+        title: 'Captured values', sidebar: { group: 'Guides', order: 4 },
+      }),
+      guide('libtmux-clojure-core-async/README.md', 'guides/core-async', 'async', {
+        title: 'core.async adapter', sidebar: { group: 'Guides', order: 5 },
+      }),
+    ],
+    redirects: [
+      { sourcePath: 'docs/guide/clojure-api.md', path: 'guides/native-api', target: 'reference' },
+      { sourcePath: 'docs/guide/clojure-core-async-api.md', path: 'guides/adapter-api', target: 'reference/libtmux-core-async' },
+    ],
   },
   kotlin: {
     domains: [libraryDomain('Kotlin coroutine handles, builders and flows over the Java/JVM library.')],
@@ -205,6 +321,36 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
         package: 'workspace', product: 'workspace', aliases: [],
       }),
     ],
+  },
+  erlang: {
+    apiDocRoot: 'docs',
+    domains: [
+      libraryDomain('Install the OTP application from Git and use native records, captured graphs and explicit tmux operations.'),
+      { id: 'workspace', label: 'Workspace Manager', kind: 'unavailable', navGroup: 'Availability', route: 'workspace', product: 'workspace',
+        description: 'The source application validates JSON desired state. Its plan/apply workflow and CLI are unfinished.' },
+    ],
+    sourceGuides: [
+      guide('README.md', 'guides/getting-started', 'core', { title: 'Getting started', aliases: [], sidebar: { group: 'Guides', order: 1 } }),
+      guide('docs/installation.md', 'guides/installation', 'core', { title: 'Installation', aliases: [], sidebar: { group: 'Guides', order: 2 } }),
+      guide('docs/graph.md', 'concepts/object-graph', 'core', { title: 'Object graph', aliases: [] }),
+      guide('docs/querying.md', 'concepts/queries', 'core', { title: 'Selections and queries', aliases: [] }),
+      guide('docs/ownership.md', 'topics/ownership', 'core', { title: 'Ownership and identity', aliases: [] }),
+      guide('docs/diagnostics.md', 'topics/diagnostics', 'core', { title: 'Diagnostics', aliases: [] }),
+      guide('docs/adr-0001-architecture.md', 'concepts/architecture', 'core', { title: 'Architecture decisions', aliases: [] }),
+      guide('docs/adr-0002-batched-hydration.md', 'concepts/capture-strategy', 'core', { title: 'Batched graph capture', aliases: [] }),
+      guide('docs/jobs.md', 'guides/operations', 'core', { title: 'Owned operations', aliases: [] }),
+      guide('docs/control.md', 'topics/control', 'core', { title: 'Control connections', aliases: [] }),
+      ...['panes', 'buffers', 'options', 'hooks', 'keys', 'configuration', 'commands', 'compatibility'].map((name) =>
+        guide(`docs/${name}.md`, `guides/${name}`, 'core', { aliases: [] })),
+      guide('docs/pipe.md', 'guides/piping', 'core', { title: 'Pipe pane output', aliases: [] }),
+      guide('docs/fields.md', 'reference/fields', 'core', { title: 'Fields and operators', aliases: [] }),
+      guide('docs/options-reference.md', 'reference/options', 'core', { title: 'Options', aliases: [] }),
+      guide('docs/commands-reference.md', 'reference/commands', 'core', { title: 'Command capabilities', aliases: [] }),
+      guide('docs/api.md', 'guides/api-documentation', 'core', { title: 'Native API documentation', aliases: [] }),
+      guide('docs/workspaces.md', 'guides/workspace-json', 'core', { title: 'Workspace JSON loader', aliases: [] }),
+      guide('docs/project-policy.md', 'topics/project-policy', 'core', { title: 'Project policy', aliases: [] }),
+    ],
+    redirects: [{ sourcePath: 'docs/guides.md', path: 'guides/overview', target: 'guides' }],
   },
   elixir: {
     domains: [
@@ -320,6 +466,9 @@ function assertDistinct(label: string, values: readonly string[]): void {
 /** Fail closed if port metadata and reader-facing configuration disagree. */
 function validate(portSlug: string, config: PortDocumentation): void {
   const port = PORT_BY_SLUG[portSlug]
+  for (const [section, description] of Object.entries(config.sections ?? {})) {
+    if (!Object.hasOwn(SECTION_DESCRIPTIONS, section) || !description.trim()) throw new Error(`port-documentation: invalid section ${portSlug}/${section}`)
+  }
   assertDistinct(`${portSlug} domain id`, config.domains.map((domain) => domain.id))
   assertDistinct(`${portSlug} domain route`, config.domains.map((domain) => domain.route))
   const domainById = new Map(config.domains.map((domain) => [domain.id, domain]))
@@ -348,7 +497,7 @@ function fallbackAreas(portSlug: string): readonly DocumentationDomain[] {
       id: 'core', label: 'Core library', kind: 'core', navGroup: 'Library', route: 'core', package: 'core',
       description: `Install ${port.packageName} and use the ${port.name} tmux API.`,
     },
-    ...Object.entries(port.parentLibrary ? {} : DOC_PRODUCTS).map(([id, product]) => {
+    ...Object.entries(DOC_PRODUCTS).filter(([id]) => productIncluded(port, id as DocProduct)).map(([id, product]) => {
       const available = productAvailable(port, id as DocProduct)
       return {
         id,
@@ -377,16 +526,47 @@ export function sourceGuidesFor(portSlug: string): readonly PortSourceGuide[] {
   return config.sourceGuides
 }
 
+/** Section indexes offered by the landing page and documentation menu. */
+export function documentationSectionsFor(portSlug: string): readonly string[] {
+  const config = documentationFor(portSlug)
+  if (config) validate(portSlug, config)
+  if (config?.sections) return Object.keys(config.sections)
+  return PORT_BY_SLUG[portSlug]!.parentLibrary ? ['guides', 'examples', 'concepts'] : ['topics', 'guides', 'examples', 'concepts']
+}
+
+/** Native API guide destinations under the displayed port/version root. */
+export function apiDocLinksFor(portSlug: string, baseHref: string): ReadonlyMap<string, string> {
+  const config = documentationFor(portSlug)
+  if (!config?.apiDocRoot) return new Map()
+  validate(portSlug, config)
+  const prefix = `${config.apiDocRoot}/`
+  return new Map(config.sourceGuides.filter((entry) => entry.sourcePath.startsWith(prefix))
+    .map((entry) => [entry.sourcePath.slice(prefix.length), `${baseHref}${entry.route}/`]))
+}
+
 /**
  * The section overviews staging writes for a port's source guides, unless the
  * port authors one itself: guides for every staged port, and examples, topics
- * and concepts too unless the port wraps another library's source.
+ * and concepts too unless the catalog selects its populated sections or the
+ * port wraps another library's source.
  * `scripts/stage-port-docs.mjs` writes them; the Core page cards are tested
  * against this list.
  */
 export function stagedSectionsFor(portSlug: string): readonly string[] {
-  if (!documentationFor(portSlug)) return []
+  const documentation = documentationFor(portSlug)
+  if (!documentation) return []
+  validate(portSlug, documentation)
+  if (documentation.stagedSections) return documentation.stagedSections
+  if (documentation.sections) return Object.keys(documentation.sections)
   return PORT_BY_SLUG[portSlug]!.parentLibrary ? ['guides'] : ['guides', 'examples', 'topics', 'concepts']
+}
+
+/** Reader-facing introduction for a section that staging actually writes. */
+export function stagedSectionDescription(portSlug: string, section: string): string {
+  if (!stagedSectionsFor(portSlug).includes(section)) throw new Error(`port-documentation: no staged section ${portSlug}/${section}`)
+  const description = documentationFor(portSlug)?.sections?.[section] ?? SECTION_DESCRIPTIONS[section]
+  if (!description?.trim()) throw new Error(`port-documentation: no description for ${portSlug}/${section}`)
+  return description
 }
 
 /** Retired source pages point to the reference that now owns their content. */

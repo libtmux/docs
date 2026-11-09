@@ -1,3 +1,15 @@
+import type { ApiSymbol } from '../model.ts'
+
+/** Context-scoped section IDs keep spaces, Unicode and punctuation distinct. */
+export function docSectionId(symbol: ApiSymbol, title: string): string {
+  const component = encodeURIComponent(title).replace(/[!'()*]/g, (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`)
+  return `${symbol.publicId ?? symbol.id}.section.${component}`
+}
+
+/** Only headings the prose renderer emits can be authored section targets. */
+export const docSectionTitles = (symbol: ApiSymbol): string[] => parseApiProse(symbol.doc?.body ?? '')
+  .flatMap((block) => block.kind === 'rubric' ? [block.text] : [])
+
 export interface ProseItem {
   text: string
   children: ProseItem[]

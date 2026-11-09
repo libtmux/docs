@@ -2,6 +2,153 @@
   "schemaVersion": 1,
   "dispatchers": [
     {
+      "port": "lisp",
+      "name": "perform-command",
+      "why": "Validates and guards the tmux argument list, then sends it through the owned subprocess transport.",
+      "evidence": [
+        {
+          "at": "src/dispatch.lisp:167",
+          "has": [
+            "(defun perform-command"
+          ],
+          "reaches": [
+            {
+              "at": "src/dispatch.lisp:212",
+              "has": [
+                "(execute-tmux client encoded token"
+              ],
+              "calls": "execute-tmux"
+            },
+            {
+              "at": "src/client.lisp:169",
+              "has": [
+                "(execute-command"
+              ],
+              "calls": "execute-command"
+            },
+            {
+              "at": "src/client.lisp:12",
+              "has": [
+                "(run-process argv"
+              ],
+              "calls": "run-process"
+            },
+            {
+              "at": "src/process-sbcl.lisp:454",
+              "has": [
+                "(acquire-job job)"
+              ],
+              "calls": "acquire-job"
+            },
+            {
+              "at": "src/process-sbcl.lisp:185",
+              "has": [
+                "(uiop:launch-program"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "lisp",
+      "name": "execute-tmux",
+      "why": "Sends the complete tmux argument list through the owned subprocess transport.",
+      "evidence": [
+        {
+          "at": "src/client.lisp:168",
+          "has": [
+            "(defun execute-tmux"
+          ],
+          "reaches": [
+            {
+              "at": "src/client.lisp:169",
+              "has": [
+                "(execute-command"
+              ],
+              "calls": "execute-command"
+            },
+            {
+              "at": "src/client.lisp:12",
+              "has": [
+                "(run-process argv"
+              ],
+              "calls": "run-process"
+            },
+            {
+              "at": "src/process-sbcl.lisp:454",
+              "has": [
+                "(acquire-job job)"
+              ],
+              "calls": "acquire-job"
+            },
+            {
+              "at": "src/process-sbcl.lisp:185",
+              "has": [
+                "(uiop:launch-program"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "lisp",
+      "name": "operate-on-target",
+      "why": "Adds an exact target to the command it is given, then sends it through the guarded subprocess path.",
+      "evidence": [
+        {
+          "at": "src/geometry.lisp:19",
+          "has": [
+            "(defun operate-on-target"
+          ],
+          "reaches": [
+            {
+              "at": "src/geometry.lisp:20",
+              "has": [
+                "(apply #'perform-command"
+              ],
+              "calls": "perform-command"
+            },
+            {
+              "at": "src/dispatch.lisp:212",
+              "has": [
+                "(execute-tmux client encoded token"
+              ],
+              "calls": "execute-tmux"
+            },
+            {
+              "at": "src/client.lisp:169",
+              "has": [
+                "(execute-command"
+              ],
+              "calls": "execute-command"
+            },
+            {
+              "at": "src/client.lisp:12",
+              "has": [
+                "(run-process argv"
+              ],
+              "calls": "run-process"
+            },
+            {
+              "at": "src/process-sbcl.lisp:454",
+              "has": [
+                "(acquire-job job)"
+              ],
+              "calls": "acquire-job"
+            },
+            {
+              "at": "src/process-sbcl.lisp:185",
+              "has": [
+                "(uiop:launch-program"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "port": "py",
       "name": "check_call",
       "why": "Runs the tmux binary with the argument list it is given and raises when it fails.",
@@ -9485,6 +9632,659 @@
               "at": "Sources/LibTmux/Transport.swift:72",
               "has": [
                 "Subprocess.run("
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "name": "raw",
+      "why": "Writes the supplied tmux command to the bound control client and waits for its reply.",
+      "evidence": [
+        {
+          "at": "unix/connection.ml:119",
+          "has": [
+            "let raw "
+          ],
+          "reaches": [
+            {
+              "at": "unix/connection.ml:125",
+              "has": [
+                "Runtime_io.write"
+              ],
+              "calls": "write",
+              "on": "runtime_io.ml"
+            },
+            {
+              "at": "unix/runtime_io.ml:276",
+              "has": [
+                "loop 0"
+              ],
+              "calls": "loop"
+            },
+            {
+              "at": "unix/runtime_io.ml:263",
+              "has": [
+                "Unix.write_substring"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "name": "request",
+      "why": "Writes the supplied tmux command to the bound control client and waits for its reply.",
+      "evidence": [
+        {
+          "at": "unix/connection.ml:265",
+          "has": [
+            "let request "
+          ],
+          "reaches": [
+            {
+              "at": "unix/connection.ml:271",
+              "has": [
+                "raw t.lane"
+              ],
+              "calls": "raw"
+            },
+            {
+              "at": "unix/connection.ml:125",
+              "has": [
+                "Runtime_io.write"
+              ],
+              "calls": "write",
+              "on": "runtime_io.ml"
+            },
+            {
+              "at": "unix/runtime_io.ml:276",
+              "has": [
+                "loop 0"
+              ],
+              "calls": "loop"
+            },
+            {
+              "at": "unix/runtime_io.ml:263",
+              "has": [
+                "Unix.write_substring"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "name": "metadata",
+      "why": "Writes the supplied tmux command to the bound control client and waits for its reply.",
+      "evidence": [
+        {
+          "at": "unix/connection.ml:282",
+          "has": [
+            "let metadata "
+          ],
+          "reaches": [
+            {
+              "at": "unix/connection.ml:284",
+              "has": [
+                "request t name"
+              ],
+              "calls": "request"
+            },
+            {
+              "at": "unix/connection.ml:271",
+              "has": [
+                "raw t.lane"
+              ],
+              "calls": "raw"
+            },
+            {
+              "at": "unix/connection.ml:125",
+              "has": [
+                "Runtime_io.write"
+              ],
+              "calls": "write",
+              "on": "runtime_io.ml"
+            },
+            {
+              "at": "unix/runtime_io.ml:276",
+              "has": [
+                "loop 0"
+              ],
+              "calls": "loop"
+            },
+            {
+              "at": "unix/runtime_io.ml:263",
+              "has": [
+                "Unix.write_substring"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "name": "no_output",
+      "why": "Writes the supplied tmux command to the bound control client and waits for its reply.",
+      "evidence": [
+        {
+          "at": "unix/connection.ml:288",
+          "has": [
+            "let no_output "
+          ],
+          "reaches": [
+            {
+              "at": "unix/connection.ml:289",
+              "has": [
+                "request t"
+              ],
+              "calls": "request"
+            },
+            {
+              "at": "unix/connection.ml:271",
+              "has": [
+                "raw t.lane"
+              ],
+              "calls": "raw"
+            },
+            {
+              "at": "unix/connection.ml:125",
+              "has": [
+                "Runtime_io.write"
+              ],
+              "calls": "write",
+              "on": "runtime_io.ml"
+            },
+            {
+              "at": "unix/runtime_io.ml:276",
+              "has": [
+                "loop 0"
+              ],
+              "calls": "loop"
+            },
+            {
+              "at": "unix/runtime_io.ml:263",
+              "has": [
+                "Unix.write_substring"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "name": "tmux_target:run/3",
+      "why": "Validates and executes a named tmux command through the endpoint operation owner.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_target.erl:83",
+          "has": [
+            "run(Server, Name, Args) ->"
+          ],
+          "reaches": [
+            {
+              "at": "apps/libtmux_erlang/src/tmux_target.erl:84",
+              "has": [
+                "run(Server, Name, Args, #{})."
+              ],
+              "calls": "run/4"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_target.erl:90",
+              "has": [
+                "classify(tmux_server:command(Server, Command, Options))"
+              ],
+              "calls": "command/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_server.erl:253",
+              "has": [
+                "case tmux_operation:start(Server, Command, Options) of"
+              ],
+              "calls": "start/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_operation.erl:78",
+              "has": [
+                "case tmux_server:submit(Server, Command, Options) of"
+              ],
+              "calls": "submit/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_server.erl:384",
+              "has": [
+                "tmux_admission:deliver(Admission, Lease, Bytes, Packed)"
+              ],
+              "leads": "start_stage/4",
+              "why": "Admission delivers the packed command to the endpoint owner. Its scheduler validates the lease and identity preflight, then starts the command stage with the stored argv; this process-message boundary is not a direct call edge."
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_server.erl:814",
+              "has": [
+                "case tmux_transport:start(maps:get(executable, Config)"
+              ],
+              "calls": "start/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_transport.erl:28",
+              "has": [
+                "start(Executable, Arguments, Options, oneshot)."
+              ],
+              "calls": "start/4"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_transport.erl:84",
+              "has": [
+                "case supervisor:start_child(tmux_sup, Child)"
+              ],
+              "leads": "launch/2",
+              "why": "The OTP child spec starts the transport owner; init schedules its launch continuation, whose handle_continue calls launch/2 with the validated executable and argv."
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_transport.erl:325",
+              "has": [
+                "try open_port({spawn_executable, Helper}"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "name": "tmux_target:run/4",
+      "why": "Builds a validated tmux command and awaits its owned one-shot execution.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_target.erl:87",
+          "has": [
+            "run(Server, Name, Args, Options) ->"
+          ],
+          "reaches": [
+            {
+              "at": "apps/libtmux_erlang/src/tmux_target.erl:90",
+              "has": [
+                "classify(tmux_server:command(Server, Command, Options))"
+              ],
+              "calls": "command/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_server.erl:253",
+              "has": [
+                "case tmux_operation:start(Server, Command, Options) of"
+              ],
+              "calls": "start/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_operation.erl:78",
+              "has": [
+                "case tmux_server:submit(Server, Command, Options) of"
+              ],
+              "calls": "submit/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_server.erl:384",
+              "has": [
+                "tmux_admission:deliver(Admission, Lease, Bytes, Packed)"
+              ],
+              "leads": "start_stage/4",
+              "why": "Admission delivers the packed command to the endpoint owner. Its scheduler validates the lease and identity preflight, then starts the command stage with the stored argv; this process-message boundary is not a direct call edge."
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_server.erl:814",
+              "has": [
+                "case tmux_transport:start(maps:get(executable, Config)"
+              ],
+              "calls": "start/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_transport.erl:28",
+              "has": [
+                "start(Executable, Arguments, Options, oneshot)."
+              ],
+              "calls": "start/4"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_transport.erl:84",
+              "has": [
+                "case supervisor:start_child(tmux_sup, Child)"
+              ],
+              "leads": "launch/2",
+              "why": "The OTP child spec starts the transport owner; init schedules its launch continuation, whose handle_continue calls launch/2 with the validated executable and argv."
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_transport.erl:325",
+              "has": [
+                "try open_port({spawn_executable, Helper}"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "name": "tmux_target:act/4",
+      "why": "Resolves the captured target and sends the named command with its stable target selector.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_target.erl:94",
+          "has": [
+            "act(Entity, Row, Name, Args) ->"
+          ],
+          "reaches": [
+            {
+              "at": "apps/libtmux_erlang/src/tmux_target.erl:97",
+              "has": [
+                "run(Server, Name, [<<\"-t\">>, Target, <<\"--\">> | Args])"
+              ],
+              "calls": "run/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_target.erl:84",
+              "has": [
+                "run(Server, Name, Args, #{})."
+              ],
+              "calls": "run/4"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_target.erl:90",
+              "has": [
+                "classify(tmux_server:command(Server, Command, Options))"
+              ],
+              "calls": "command/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_server.erl:253",
+              "has": [
+                "case tmux_operation:start(Server, Command, Options) of"
+              ],
+              "calls": "start/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_operation.erl:78",
+              "has": [
+                "case tmux_server:submit(Server, Command, Options) of"
+              ],
+              "calls": "submit/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_server.erl:384",
+              "has": [
+                "tmux_admission:deliver(Admission, Lease, Bytes, Packed)"
+              ],
+              "leads": "start_stage/4",
+              "why": "Admission delivers the packed command to the endpoint owner. Its scheduler validates the lease and identity preflight, then starts the command stage with the stored argv; this process-message boundary is not a direct call edge."
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_server.erl:814",
+              "has": [
+                "case tmux_transport:start(maps:get(executable, Config)"
+              ],
+              "calls": "start/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_transport.erl:28",
+              "has": [
+                "start(Executable, Arguments, Options, oneshot)."
+              ],
+              "calls": "start/4"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_transport.erl:84",
+              "has": [
+                "case supervisor:start_child(tmux_sup, Child)"
+              ],
+              "leads": "launch/2",
+              "why": "The OTP child spec starts the transport owner; init schedules its launch continuation, whose handle_continue calls launch/2 with the validated executable and argv."
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_transport.erl:325",
+              "has": [
+                "try open_port({spawn_executable, Helper}"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "name": "tmux_server:command/3",
+      "why": "Submits a validated command and awaits its owned operation.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_server.erl:252",
+          "has": [
+            "command(Server, Command, Options) ->"
+          ],
+          "reaches": [
+            {
+              "at": "apps/libtmux_erlang/src/tmux_server.erl:253",
+              "has": [
+                "case tmux_operation:start(Server, Command, Options) of"
+              ],
+              "calls": "start/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_operation.erl:78",
+              "has": [
+                "case tmux_server:submit(Server, Command, Options) of"
+              ],
+              "calls": "submit/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_server.erl:384",
+              "has": [
+                "tmux_admission:deliver(Admission, Lease, Bytes, Packed)"
+              ],
+              "leads": "start_stage/4",
+              "why": "Admission delivers the packed command to the endpoint owner. Its scheduler validates the lease and identity preflight, then starts the command stage with the stored argv; this process-message boundary is not a direct call edge."
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_server.erl:814",
+              "has": [
+                "case tmux_transport:start(maps:get(executable, Config)"
+              ],
+              "calls": "start/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_transport.erl:28",
+              "has": [
+                "start(Executable, Arguments, Options, oneshot)."
+              ],
+              "calls": "start/4"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_transport.erl:84",
+              "has": [
+                "case supervisor:start_child(tmux_sup, Child)"
+              ],
+              "leads": "launch/2",
+              "why": "The OTP child spec starts the transport owner; init schedules its launch continuation, whose handle_continue calls launch/2 with the validated executable and argv."
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_transport.erl:325",
+              "has": [
+                "try open_port({spawn_executable, Helper}"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "name": "tmux_observe:command/3",
+      "why": "Executes a bounded observation command and records its returned bytes and capture interval.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:280",
+          "has": [
+            "command(Name, Args, #{server := Server"
+          ],
+          "reaches": [
+            {
+              "at": "apps/libtmux_erlang/src/tmux_observe.erl:289",
+              "has": [
+                "?= tmux_target:run(Server, Name, Args,"
+              ],
+              "calls": "run/4"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_target.erl:90",
+              "has": [
+                "classify(tmux_server:command(Server, Command, Options))"
+              ],
+              "calls": "command/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_server.erl:253",
+              "has": [
+                "case tmux_operation:start(Server, Command, Options) of"
+              ],
+              "calls": "start/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_operation.erl:78",
+              "has": [
+                "case tmux_server:submit(Server, Command, Options) of"
+              ],
+              "calls": "submit/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_server.erl:384",
+              "has": [
+                "tmux_admission:deliver(Admission, Lease, Bytes, Packed)"
+              ],
+              "leads": "start_stage/4",
+              "why": "Admission delivers the packed command to the endpoint owner. Its scheduler validates the lease and identity preflight, then starts the command stage with the stored argv; this process-message boundary is not a direct call edge."
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_server.erl:814",
+              "has": [
+                "case tmux_transport:start(maps:get(executable, Config)"
+              ],
+              "calls": "start/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_transport.erl:28",
+              "has": [
+                "start(Executable, Arguments, Options, oneshot)."
+              ],
+              "calls": "start/4"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_transport.erl:84",
+              "has": [
+                "case supervisor:start_child(tmux_sup, Child)"
+              ],
+              "leads": "launch/2",
+              "why": "The OTP child spec starts the transport owner; init schedules its launch continuation, whose handle_continue calls launch/2 with the validated executable and argv."
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_transport.erl:325",
+              "has": [
+                "try open_port({spawn_executable, Helper}"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "name": "tmux_command:raw/2",
+      "kind": "builder",
+      "why": "Validates and returns a command value without performing I/O.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_command.erl:97",
+          "has": [
+            "raw(Name, Arguments) ->"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "name": "tmux_buffer:run/4",
+      "why": "Forwards a validated buffer operation to the owned tmux executor and classifies missing-buffer errors.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_buffer.erl:239",
+          "has": [
+            "run(Server, Name, Args, Options) ->"
+          ],
+          "reaches": [
+            {
+              "at": "apps/libtmux_erlang/src/tmux_buffer.erl:240",
+              "has": [
+                "case tmux_target:run(Server, Name, Args, Options) of"
+              ],
+              "calls": "run/4"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_target.erl:90",
+              "has": [
+                "classify(tmux_server:command(Server, Command, Options))"
+              ],
+              "calls": "command/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_server.erl:253",
+              "has": [
+                "case tmux_operation:start(Server, Command, Options) of"
+              ],
+              "calls": "start/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_operation.erl:78",
+              "has": [
+                "case tmux_server:submit(Server, Command, Options) of"
+              ],
+              "calls": "submit/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_server.erl:384",
+              "has": [
+                "tmux_admission:deliver(Admission, Lease, Bytes, Packed)"
+              ],
+              "leads": "start_stage/4",
+              "why": "Admission delivers the packed command to the endpoint owner. Its scheduler validates the lease and identity preflight, then starts the command stage with the stored argv; this process-message boundary is not a direct call edge."
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_server.erl:814",
+              "has": [
+                "case tmux_transport:start(maps:get(executable, Config)"
+              ],
+              "calls": "start/3"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_transport.erl:28",
+              "has": [
+                "start(Executable, Arguments, Options, oneshot)."
+              ],
+              "calls": "start/4"
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_transport.erl:84",
+              "has": [
+                "case supervisor:start_child(tmux_sup, Child)"
+              ],
+              "leads": "launch/2",
+              "why": "The OTP child spec starts the transport owner; init schedules its launch continuation, whose handle_continue calls launch/2 with the validated executable and argv."
+            },
+            {
+              "at": "apps/libtmux_erlang/src/tmux_transport.erl:325",
+              "has": [
+                "try open_port({spawn_executable, Helper}"
               ]
             }
           ]

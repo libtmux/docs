@@ -11,6 +11,18 @@ const repo = (files: Record<string, string>, tags: string[] = []) => ({
 const names = (result: { distributions: { name: string }[] }) => result.distributions.map((entry) => entry.name)
 
 describe('manifest packages', () => {
+  it('reads Cabal packages at the root and under packages, excluding example projects', () => {
+    const manifest = (name: string) => `cabal-version: 3.18\nname: ${name}\nversion: 0.1.0.0\n\nlibrary\n  default-language: GHC2024\n`
+    const result = readPort('haskell', repo({
+      'libtmux-haskell.cabal': manifest('libtmux-haskell'),
+      'packages/workspace/libtmux-haskell-workspace.cabal': manifest('libtmux-haskell-workspace'),
+      'examples/values/example.cabal': manifest('example'),
+    }))
+    expect(result).toEqual({ distributions: [
+      { name: 'libtmux-haskell', version: '0.1.0.0', manifest: 'libtmux-haskell.cabal' },
+      { name: 'libtmux-haskell-workspace', version: '0.1.0.0', manifest: 'packages/workspace/libtmux-haskell-workspace.cabal' },
+    ], units: [] })
+  })
   it('orders prereleases numerically and puts a release above its prereleases', () => {
     expect(['0.1.0-alpha.10', '0.1.0-alpha.9', '0.1.0', '0.0.9'].sort(compareSemver)).toEqual(['0.0.9', '0.1.0-alpha.9', '0.1.0-alpha.10', '0.1.0'])
     expect(compareSemver('v1.2.3', '1.2.3')).toBe(0)
@@ -119,6 +131,20 @@ describe('manifest packages', () => {
     // Control: the same project with a release version is a distribution too.
     expect(readPort('elixir', repo(files('0.1.0-alpha.1'))).distributions.map((entry) => [entry.name, entry.version]))
       .toEqual([['libtmux', '0.0.1-alpha.1'], ['libtmux_mcp', '0.1.0-alpha.1']])
+  })
+
+  it('reads the unreleased Common Lisp source distribution and its public systems and command', () => {
+    const result = readPort('lisp', repo({
+      'libtmux.asd': '(defsystem "libtmux" :version "0.1.0")\n(defsystem "libtmux/query")\n(defsystem "libtmux/workspace/cli")\n(defsystem "libtmux/tests")\n',
+      'mise.toml': '[tasks.workspace]\nrun = "tools/lisp.sh tools/test.lisp workspace"\n',
+      'bin/libtmux-workspace': '#!/bin/sh\nexec sbcl --script tools/workspace-cli.lisp "$@"\n',
+    }))
+    expect(result.distributions).toEqual([{ name: 'libtmux', version: '0.1.0', manifest: 'libtmux.asd' }])
+    expect(result.units).toEqual([
+      { unit: 'ASDF system', name: 'libtmux/query' },
+      { unit: 'ASDF system', name: 'libtmux/workspace/cli' },
+      { unit: 'script', name: 'libtmux-workspace' },
+    ])
   })
 
   it('refuses a port it has no reader for', () => {

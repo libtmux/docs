@@ -9,17 +9,23 @@
     {"slug":"lua","name":"Lua","shortName":"Lua","logoLanguage":"lua","versionedDocs":true,"mcp":false},
     {"slug":"powershell","name":"PowerShell","shortName":"PowerShell","logoLanguage":"powershell","versionedDocs":true,"mcp":false},
     {"slug":"julia","name":"Julia","shortName":"Julia","logoLanguage":"julia","versionedDocs":true,"mcp":true},
+    {"slug":"erlang","name":"Erlang","shortName":"Erl","logoLanguage":"erlang","versionedDocs":true,"mcp":false},
     {"slug":"elixir","name":"Elixir","shortName":"Ex","logoLanguage":"elixir","versionedDocs":true,"mcp":false},
+    {"slug":"haskell","name":"Haskell","shortName":"Hs","logoLanguage":"haskell","versionedDocs":true,"mcp":false},
+    {"slug":"lisp","name":"Common Lisp","shortName":"CL","logoLanguage":"lisp","versionedDocs":true,"mcp":false},
     {"slug":"ts","name":"TypeScript","shortName":"TS","logoLanguage":"typescript","versionedDocs":true,"mcp":true},
     {"slug":"rs","name":"Rust","shortName":"Rs","logoLanguage":"rust","versionedDocs":true,"mcp":true},
     {"slug":"go","name":"Go","shortName":"Go","logoLanguage":"go","versionedDocs":true,"mcp":true},
     {"slug":"java","name":"Java","shortName":"Java","logoLanguage":"java","versionedDocs":true,"mcp":true},
+    {"slug":"clojure","name":"Clojure","shortName":"Clj","logoLanguage":"clojure","versionedDocs":true,"mcp":false},
     {"slug":"kotlin","name":"Kotlin","shortName":"Kt","logoLanguage":"kotlin","versionedDocs":true,"mcp":false},
     {"slug":"scala","name":"Scala","shortName":"Sc","logoLanguage":"scala","versionedDocs":true,"mcp":false},
     {"slug":"csharp","name":"C#","shortName":"C#","logoLanguage":"csharp","versionedDocs":true,"mcp":true},
     {"slug":"fsharp","name":"F#","shortName":"F#","logoLanguage":"fsharp","versionedDocs":true,"mcp":false},
     {"slug":"cxx","name":"C++","shortName":"C++","logoLanguage":"cpp","versionedDocs":true,"mcp":true},
     {"slug":"swift","name":"Swift","shortName":"Sw","logoLanguage":"swift","versionedDocs":true,"mcp":true},
+    {"slug":"ocaml","name":"OCaml","shortName":"ML","logoLanguage":"ocaml","versionedDocs":true,"mcp":false},
+    {"slug":"perl","name":"Perl","shortName":"Pl","logoLanguage":"perl","versionedDocs":true,"mcp":false},
   ]
   // <<< end generated
 

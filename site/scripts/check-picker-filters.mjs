@@ -1,3 +1,4 @@
+import { newCheckContext } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 
 async function bounds(page, panel) {
@@ -61,7 +62,7 @@ async function exercise(page, selector, query, count) {
 export async function checkPickerFilters(browser, base, complete = false) {
   const sizes = complete ? [{ width: 853, height: 789 }, { width: 320, height: 360 }, { width: 280, height: 320 }] : [{ width: 320, height: 360 }]
   for (const colorScheme of complete ? ['light', 'dark'] : ['light']) {
-    const context = await browser.newContext({ colorScheme, reducedMotion: 'reduce' })
+    const context = await newCheckContext(browser, base, { colorScheme, reducedMotion: 'reduce' })
     const page = await context.newPage()
     page.setDefaultTimeout(5000)
     try {
@@ -77,10 +78,11 @@ export async function checkPickerFilters(browser, base, complete = false) {
   }
   if (!complete) return
 
-  const context = await browser.newContext({ viewport: { width: 853, height: 789 }, reducedMotion: 'reduce' })
+  const context = await newCheckContext(browser, base, { viewport: { width: 853, height: 789 }, reducedMotion: 'reduce' })
   let release
   const pending = new Promise((resolve) => { release = resolve })
   await context.route('**/versions.json', async (route) => {
+    if (new URL(route.request().url()).origin !== new URL(base).origin) return route.fallback()
     await pending
     await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ schema: 1, ports: { kotlin: [
       { slug: 'latest', label: 'latest', kind: 'trunk', supported: true },
@@ -120,7 +122,7 @@ export async function checkPickerFilters(browser, base, complete = false) {
     assert.equal(new URL(page.url()).hash, '#demo-versions', 'Sample versions use their own destination after choosing a sample language')
   } finally { release(); await context.unrouteAll({ behavior: 'wait' }); await context.close() }
 
-  const noScript = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 853, height: 789 } })
+  const noScript = await newCheckContext(browser, base, { javaScriptEnabled: false, viewport: { width: 853, height: 789 } })
   try {
     const page = await noScript.newPage()
     await page.goto(`${base}/demo/widgets/pickers/`)

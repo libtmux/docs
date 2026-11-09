@@ -1,11 +1,12 @@
 import { readFileSync } from 'node:fs'
 import { Window } from 'happy-dom'
 import { describe, expect, it, vi } from 'vitest'
-import { compareMembers, membersOf, memberSignals } from '@libtmux/api-model'
+import { compareMembers, membersOf, memberSignals } from '@libtmux/api-model/reference'
 import mentions from '../src/data/mentions.json'
 import { API_MODELS, API_NAV, OWNER_KINDS, topLevelTypesOf } from '../src/lib/api-models'
 import { bucketForSymbol, firstEntry, membersByType, navTree, referenceNavigation, referenceIndexSections } from '../src/lib/api-tree'
 import { API_MODEL_PORTS } from '../src/lib/ports'
+import { CORE_HOME } from '../src/lib/core-home'
 import type { ApiTreeBucket, ApiTreeJson } from '../src/lib/api-search'
 import { GET as referenceTreeRoute } from '../src/pages/reference/tree.json'
 import { versionsOf } from '../../scripts/reference-trees.mjs'
@@ -84,12 +85,24 @@ describe('Lua API sidebar', () => {
 })
 
 describe('shared reference index sections', () => {
-  it.each(PORTS)('leads the %s index and exports with the primary server', (port) => {
+  it.each(PORTS)('leads the %s index and exports with its native entry groups', (port) => {
     const sections = referenceIndexSections(port)
-    expect(sections[0].id).toBe('server')
-    if (port === 'powershell') expect(sections[0].free.map((symbol) => symbol.name))
+    if (port === 'haskell') {
+      expect(sections[0].id).toBe('exports:LibTmux.Id')
+      expect([...sections[0].types, ...sections[0].free].map((symbol) => symbol.name)).toContain('LibTmux.Id')
+      expect(sections.filter((section) => /^exports:LibTmux\.[^.:]+$/.test(section.id)).map((section) => section.id))
+        .toEqual(['exports:LibTmux.Id', 'exports:LibTmux.Value', 'exports:LibTmux.Version'])
+    } else if (port === 'powershell') expect(sections[0].free.map((symbol) => symbol.name))
       .toEqual(expect.arrayContaining(['Connect-TmuxServer', 'Get-TmuxServer', 'New-TmuxServer']))
-    else expect(sections[0].types[0].name).toBe('Server')
+    else if (port === 'ocaml') {
+      expect(sections[0].types).toEqual([])
+      expect(sections[0].free.slice(0, 2).map((symbol) => [symbol.id, symbol.kind]))
+        .toEqual([['Libtmux_unix.Client', 'module'], ['Libtmux_eio.Client', 'module']])
+      expect(firstEntry(navTree(port)[0]!)?.id).toBe('Libtmux_unix.Client')
+    } else if (port === 'clojure') expect(sections[0].types[0].name).toBe('libtmux.core')
+    else if (port === 'erlang') expect(sections[0].types[0]).toMatchObject({ name: 'tmux_server', kind: 'module' })
+    else if (port !== 'haskell') expect(sections[0].types[0].publicId ?? sections[0].types[0].id).toBe(CORE_HOME[port].objects!.server)
+    if (port !== 'haskell') expect(sections[0].id).toBe('server')
     const ids = sections.flatMap((section) => [...section.types, ...section.free]).map((symbol) => symbol.id)
     expect(new Set(ids).size).toBe(ids.length)
     const available = new Set(sections.map((section) => section.id))
@@ -241,15 +254,32 @@ describe('major tmux object domains', () => {
     expect(Object.keys(API_MODELS).sort()).toEqual([...PORTS].sort())
     expect(Object.keys(API_NAV).sort()).toEqual([...PORTS].sort())
   })
+  it('separates OCaml live server connections from captured client observations', () => {
+    const buckets = navTree('ocaml')
+    expect(buckets.find((bucket) => bucket.id === 'server')!.entries.slice(0, 2).map((entry) => entry.id))
+      .toEqual(['Libtmux_unix.Client', 'Libtmux_eio.Client'])
+    expect(buckets.find((bucket) => bucket.id === 'client')!.entries.map((entry) => entry.id))
+      .toContain('Libtmux.Client_observation')
+    expect(API_MODELS.ocaml.symbols.some((symbol) => symbol.kind === 'class' && symbol.name === 'Server')).toBe(false)
+  })
   it.each(PORTS)('uses the same useful member order for %s pages and lazy branches', (port) => {
     const model = API_MODELS[port]!
     const branches = membersByType(port)
     const compare = compareMembers(memberSignals(port, mentions.mentions))
-    const owners = model.symbols.filter((symbol) => port === 'powershell'
+    const primaryNames = port === 'lisp' ? ['client', 'session', 'window', 'pane', 'snapshot'] : ['Server', 'Session', 'Window', 'Pane', 'Client', 'Snapshot']
+    const owners = model.symbols.filter((symbol) => ['powershell', 'clojure', 'erlang'].includes(port)
       ? symbol.kind === 'module'
-      : OWNER_KINDS.has(symbol.kind) && ['Server', 'Session', 'Window', 'Pane', 'Client', 'Snapshot'].includes(symbol.name))
+      : port === 'haskell' ? OWNER_KINDS.has(symbol.kind)
+      : OWNER_KINDS.has(symbol.kind) && [...primaryNames, ...(port === 'ocaml' ? ['Client_observation', 'Window_link'] : [])].includes(symbol.name))
     if (port === 'powershell') expect(owners.map((owner) => owner.name).sort()).toEqual(['LibTmux', 'LibTmux.Workspace'])
-    else expect(owners.some((owner) => owner.name === 'Server'), port).toBe(true)
+    else if (port === 'ocaml') expect(owners.filter((owner) => owner.name === 'Client').map((owner) => owner.id))
+      .toEqual(['Libtmux_eio.Client', 'Libtmux_unix.Client'])
+    else if (port === 'haskell') expect(owners.map((owner) => owner.name))
+      .toEqual(expect.arrayContaining(['LibTmux.Id', 'LibTmux.Value', 'LibTmux.Version', 'IdError']))
+    else if (port === 'clojure') expect(owners.map((owner) => owner.name).sort())
+      .toEqual(['libtmux.async', 'libtmux.control', 'libtmux.core', 'libtmux.core-async', 'libtmux.data'])
+    else if (port === 'erlang') expect(owners.map((owner) => owner.name)).toEqual(expect.arrayContaining(['tmux_server', 'tmux_snapshot']))
+    else expect(owners.some((owner) => (owner.publicId ?? owner.id) === CORE_HOME[port].objects!.server), port).toBe(true)
     for (const owner of owners) {
       const displayed = membersOf(model, owner, memberSignals(port, mentions.mentions)).sort(compare)
       expect(branches.get(owner.publicId ?? owner.id)?.map((member) => member.id) ?? [], `${port}:${owner.id}`)

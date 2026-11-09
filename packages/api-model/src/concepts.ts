@@ -45,6 +45,7 @@ export const CONCEPTS: Record<string, Concept> = {
       swift: 'WorkspaceBuilder.build(_:on:)',
       powershell: 'LibTmux.Workspace\\Invoke-TmuxWorkspace',
       julia: 'LibTmuxWorkspace.apply',
+      lisp: 'libtmux.workspace:apply-workspace',
     },
     notes: {
       powershell: 'Applies the exact reviewed `-Plan` after PowerShell confirmation. `-WhatIf` previews without applying it; application is detached.',
@@ -154,6 +155,7 @@ export const CONCEPTS: Record<string, Concept> = {
       csharp: 'LibTmux.Pane.SendKeysAsync',
       cxx: 'libtmux::Pane::send_text',
       swift: 'Server.sendKeys(_:to:literally:)',
+      lisp: 'libtmux:send-keys',
     },
     absent: {
       java: 'no direct equivalent; `Pane.paste` writes a buffer instead',
@@ -3823,17 +3825,311 @@ for (const [id, binding] of Object.entries(ELIXIR_CONCEPTS)) {
   concept.symbols.elixir = binding.symbol
   if (binding.note) (concept.notes ??= {}).elixir = binding.note
 }
+// Captured Perl entities resolve locally; Server owns every explicit operation.
+const PERL_CONCEPTS: Record<string, { symbol: string; note?: string }> = {
+  server: { symbol: 'LibTmux::Server', note: 'Construction records connection settings without tmux I/O. Optional LibTmux::Async::Server returns standard Future results for operations.' },
+  session: { symbol: 'LibTmux::Session', note: 'A captured read-only entity; explicit Server operations accept its stable identity.' },
+  window: { symbol: 'LibTmux::Window', note: 'Physical window identity. WindowLink owns each session/index placement.' },
+  pane: { symbol: 'LibTmux::Pane', note: 'A physical pane retains its captured graph, without retaining transport.' },
+  'workspace-description': { symbol: 'LibTmux::Workspace::new', note: 'Validates and copies a libtmux.workspace/v1 JSON-compatible configuration.' },
+  'build-workspace': { symbol: 'LibTmux::Workspace::load', note: 'Loads through installed public core APIs; existing-target policy and known owned rollback effects are explicit.' },
+  snapshot: { symbol: 'LibTmux::Server::snapshot', note: 'Strict acquisition observes an interval, not an atomic transaction; retained handles do not refresh.' },
+  'server-cmd': { symbol: 'LibTmux::Server::cmd', note: 'Checked literal argument vector; no shell wrapper or implicit tmux command list.' },
+  'list-sessions': { symbol: 'LibTmux::Snapshot::sessions', note: 'Reads captured membership locally, preserving order.' },
+  'list-server-windows': { symbol: 'LibTmux::Snapshot::windows', note: 'One entry per physical identity. window_links retains all session placements.' },
+  'list-server-panes': { symbol: 'LibTmux::Snapshot::panes', note: 'One entry per captured physical pane; raw listings preserve contextual rows separately.' },
+  'list-clients': { symbol: 'LibTmux::Snapshot::clients', note: 'Local captured client membership; Server::clients explicitly acquires a new graph.' },
+  'list-panes': { symbol: 'LibTmux::Window::panes', note: 'Reads this physical window’s captured panes without I/O.' },
+  'pane-window': { symbol: 'LibTmux::Pane::window', note: 'Resolves the physical window from the retained graph, without selecting a session context.' },
+  'window-session': { symbol: 'LibTmux::WindowLink::session', note: 'The session belongs to an explicit WindowLink placement; a physical Window has no arbitrary single session.' },
+  'window-link-window': { symbol: 'LibTmux::WindowLink::window' },
+  'client-session': { symbol: 'LibTmux::Client::session', note: 'Captured nullable relation; unloaded data remains an error.' },
+  'active-pane': { symbol: 'LibTmux::Window::active_pane', note: 'Local captured relation. Unknown membership cannot prove that no pane is active.' },
+  'get-session': { symbol: 'LibTmux::Snapshot::session_by_id', note: 'Captured stable-ID lookup returns an entity or undef. Use Selection::one for strict criteria/name lookup.' },
+  'get-window': { symbol: 'LibTmux::Snapshot::window_by_id', note: 'Resolves physical identity without choosing an arbitrary session placement.' },
+  'get-pane': { symbol: 'LibTmux::Snapshot::pane_by_id' },
+  'search-server-panes': { symbol: 'LibTmux::Server::query_panes', note: 'Explicit acquisition supports validated criteria or an exclusive native_filter expression. Local Selection::where performs no I/O.' },
+}
+for (const [concept, method] of Object.entries({
+  'capture-pane': 'capture_pane', 'send-keys': 'send_keys', 'split-pane': 'split_pane',
+  'set-pane-title': 'set_title', 'select-layout': 'select_layout', 'unlink-window': 'unlink_window',
+  'new-session': 'new_session', 'new-window': 'new_window', 'kill-server': 'kill_server',
+  'kill-session': 'kill_session', 'kill-window': 'kill_window', 'kill-pane': 'kill_pane',
+  'rename-session': 'rename_session', 'rename-window': 'rename_window', 'select-window': 'select_window',
+  'select-pane': 'select_pane', 'resize-pane': 'resize_pane', 'link-window': 'link_window',
+  'move-window': 'move_window', 'detach-client': 'detach_client', 'show-buffer': 'show_buffer',
+  'set-buffer': 'set_buffer', 'delete-buffer': 'delete_buffer',
+})) {
+  PERL_CONCEPTS[concept] = { symbol: `LibTmux::Server::${method}`,
+    note: ['select-window', 'move-window', 'unlink-window'].includes(concept)
+      ? 'Requires an explicit WindowLink or session_id:index context; a physical window alone does not select a session placement.'
+      : 'Explicit Server operation. Captured entities remain local observations; use a new snapshot to observe changes.' }
+}
+for (const [concept, owner, field] of [
+  ['session-id', 'Session', 'id'], ['window-id', 'Window', 'id'], ['pane-id', 'Pane', 'id'],
+  ['session-name', 'Session', 'name'], ['window-name', 'Window', 'name'],
+  ['window-index', 'WindowLink', 'index'], ['window-active', 'WindowLink', 'active'],
+  ['pane-index', 'Pane', 'index'], ['window-height', 'Window', 'height'], ['window-width', 'Window', 'width'],
+  ['pane-height', 'Pane', 'height'], ['pane-width', 'Pane', 'width'], ['pane-title', 'Pane', 'title'],
+  ['pane-active', 'Pane', 'active'], ['session-attached', 'Session', 'attached'], ['session-created', 'Session', 'created'],
+  ['session-path', 'Session', 'path'], ['window-layout', 'Window', 'layout'],
+  ['pane-current-command', 'Pane', 'current_command'], ['pane-current-path', 'Pane', 'current_path'],
+  ['pane-pid', 'Pane', 'pid'], ['pane-dead', 'Pane', 'dead'],
+]) {
+  PERL_CONCEPTS[concept] = { symbol: `LibTmux::${owner}::${field}`, note: owner === 'WindowLink'
+    ? 'Captured session-relative placement data; this is not a property of the physical window.'
+    : concept === 'session-attached' ? 'Returns the captured attached-client count; zero means no attached client.'
+      : 'Schema-validated captured data; reading performs no tmux I/O.' }
+}
+for (const scope of ['server', 'session', 'window', 'pane']) {
+  for (const [verb, method] of [['', 'get_option'], ['set-', 'set_option'], ['unset-', 'unset_option']]) {
+    PERL_CONCEPTS[`${verb}${scope}-option`] = { symbol: `LibTmux::Server::${method}`,
+      note: `Pass scope => '${scope}' and the explicit target ID where applicable; inherited and global reads are deliberate options.` }
+  }
+}
+PERL_CONCEPTS['set-global-option'] = { symbol: 'LibTmux::Server::set_option', note: "Pass scope => 'session', global => true to set a session default." }
+for (const scope of ['server', 'session']) {
+  const selection = scope === 'server' ? 'global => true' : 'an explicit session target ID'
+  PERL_CONCEPTS[`${scope}-hooks`] = { symbol: 'LibTmux::Server::show_hooks', note: `Use ${selection}; raw bytes preserve sparse hook indexes and tmux quoting.` }
+  PERL_CONCEPTS[`set-${scope}-hook`] = { symbol: 'LibTmux::Server::set_hook', note: `Use ${selection}; command is an explicit native tmux command string.` }
+  for (const [concept, method] of [[`set-${scope}-environment`, 'set_environment'], [`unset-${scope}-environment`, 'unset_environment'], [`${scope}-get-environment`, 'get_environment']]) {
+    PERL_CONCEPTS[concept] = { symbol: `LibTmux::Server::${method}`, note: scope === 'server'
+      ? 'Omit session for the global environment. Missing or explicitly unset values remain failures.'
+      : 'Pass an explicit session ID. Empty text and zero-like text remain values.' }
+  }
+}
+for (const [id, binding] of Object.entries(PERL_CONCEPTS)) {
+  const concept = CONCEPTS[id]
+  if (!concept) throw new Error(`concepts: Perl maps unknown concept ${id}`)
+  concept.symbols.perl = binding.symbol
+  if (binding.note) (concept.notes ??= {}).perl = binding.note
+  if (binding.symbol.startsWith('LibTmux::Server::') && !binding.symbol.endsWith('::attach_argv')) {
+    (concept.variants ??= {}).perl = [binding.symbol.replace('LibTmux::Server::', 'LibTmux::Async::Server::')]
+  }
+}
+const PERL_ABSENT: Record<string, string> = {
+  'attach-session': 'attach_argv builds caller-owned terminal arguments without performing attachment; the caller owns process and TTY lifetime.',
+  'chain-commands': 'batch executes ordered independent requests, not a tmux command list in one invocation; command chaining is deferred.',
+  'freeze-workspace': 'The JSON workspace distribution validates, plans and loads configurations; live-session export is outside the selected scope.',
+  'list-windows': 'Traverse Session::window_links and resolve each link’s window, preserving explicit session placement and multiplicity.',
+  'list-session-panes': 'Traverse the session’s window links and physical windows; choose explicitly whether repeated linked panes should repeat.',
+  'active-window': 'Select the active captured WindowLink, then resolve its physical window.',
+  'linked-sessions': 'Window::links returns WindowLink records; resolve each link’s session explicitly.',
+  'pane-session': 'A physical pane’s window can be linked into several sessions; choose an explicit WindowLink context.',
+  'pane-window-id': 'Use pane->window->id; the public pane relationship returns the physical Window rather than a separate ID reader.',
+  'pane-session-id': 'Physical panes have no arbitrary session context; obtain the session ID through an explicit WindowLink.',
+  'window-session-id': 'Use link->session->id; physical Window identity is separate from session placement.',
+  'session-window-count': 'Count Session::window_links membership; repeated links remain distinct occurrences.',
+  'window-pane-count': 'Count the Window::panes selection or use native Perl array length.',
+  'server-alive': 'Explicit snapshot acquisition returns observed data or a typed failure; operational failures are not converted to false.',
+  'raise-if-dead': 'Explicit acquisition already propagates typed operational failures.',
+  'server-version': 'Read the acquired snapshot metadata version; the core has no standalone live version getter.',
+  'config-file': 'config_file is a constructor setting; there is no public configuration-file accessor.',
+  'socket-path': 'socket_path is a constructor selector; acquired snapshots record observed server scope separately.',
+  'socket-name': 'socket_name is a constructor selector; no inferred name is added to captured handles.',
+  'session-server': 'Captured handles retain a graph store, not a live Server or transport.',
+  'window-server': 'Captured handles retain a graph store, not a live Server or transport.',
+  'pane-server': 'Captured handles retain a graph store, not a live Server or transport.',
+  'client-server': 'Captured handles retain a graph store, not a live Server or transport.',
+  'refresh-session': 'Acquire a new snapshot; retained captured entities never refresh in place.',
+  'refresh-window': 'Acquire a new snapshot; retained captured entities never refresh in place.',
+  'refresh-pane': 'Acquire a new snapshot; retained captured entities never refresh in place.',
+}
+for (const [id, concept] of Object.entries(CONCEPTS)) {
+  if (!concept.symbols.perl) (concept.absent ??= {}).perl = PERL_ABSENT[id]
+    ?? 'No dedicated equivalent in the selected Perl surface. Explicit Server::cmd remains available for native tmux commands.'
+}
+
+// Common Lisp keeps captured relationships on ordinary generic functions.
+// FETCH-SNAPSHOT performs acquisition; SESSIONS, WINDOWS, PANES and CLIENTS
+// only traverse the retained observation.
+const LISP_CONCEPTS: Record<string, { symbol: string; note?: string }> = {
+  session: { symbol: 'libtmux:session/type', note: '`session` is an immutable captured entity. The same name also has a relation accessor with a distinct public identity.' },
+  window: { symbol: 'libtmux:window/type', note: '`window` is a physical captured window. `window-link` preserves each session placement.' },
+  pane: { symbol: 'libtmux:pane', note: '`pane` is an immutable captured physical pane.' },
+  snapshot: { symbol: 'libtmux:fetch-snapshot', note: '`fetch-snapshot` acquires a new interval observation. Retained snapshots never refresh in place.' },
+  'list-sessions': { symbol: 'libtmux:sessions', note: '`sessions` returns a fresh vector from a captured snapshot without contacting tmux.' },
+  'list-windows': { symbol: 'libtmux:windows', note: '`windows` traverses a captured session. Repeated links preserve their physical-window multiplicity.' },
+  'list-panes': { symbol: 'libtmux:panes', note: '`panes` traverses a captured window without contacting tmux.' },
+  'list-session-panes': { symbol: 'libtmux:panes', note: '`panes` traverses captured observations; applying it to a session returns panes reachable through its retained links.' },
+  'list-server-windows': { symbol: 'libtmux:windows', note: '`windows` on a snapshot returns captured physical windows once each.' },
+  'list-server-panes': { symbol: 'libtmux:panes', note: '`panes` on a snapshot returns captured physical panes once each.' },
+  'list-clients': { symbol: 'libtmux:clients', note: '`clients` returns fresh attached-client observations from a retained snapshot.' },
+}
+for (const [id, binding] of Object.entries(LISP_CONCEPTS)) {
+  const concept = CONCEPTS[id]
+  if (!concept) throw new Error(`concepts: Common Lisp maps unknown concept ${id}`)
+  concept.symbols.lisp = binding.symbol
+  if (binding.note) (concept.notes ??= {}).lisp = binding.note
+}
+const ERLANG_CONCEPTS: Record<string, { symbol: string; note?: string }> = {
+  server: { symbol: 'tmux_server', note: '`open/1` observes an existing daemon and starts an endpoint owner. Domain rows remain immutable values.' },
+  session: { symbol: '#tmux_model:session{}' },
+  window: { symbol: '#tmux_model:window{}', note: 'A physical window can have several session memberships. `window_link` holds the session-relative index and active flag.' },
+  pane: { symbol: '#tmux_model:pane{}' },
+  snapshot: { symbol: 'tmux_server:snapshot/1', note: 'Captures a new graph over an observation interval. Retained snapshots never refresh.' },
+  'server-cmd': { symbol: 'tmux_server:command/3', note: 'Executes an explicit command value with bounded output and separate outcome and cleanup evidence.' },
+  'list-sessions': { symbol: 'tmux_snapshot:sessions/1', note: 'Returns captured rows without tmux I/O.' },
+  'list-server-windows': { symbol: 'tmux_snapshot:windows/1', note: 'Returns unique captured physical windows. `window_links/1` lists session memberships.' },
+  'list-server-panes': { symbol: 'tmux_snapshot:panes/1', note: 'Returns unique captured physical panes without tmux I/O.' },
+  'list-windows': { symbol: 'tmux_snapshot:related/3', note: 'Pass `windows`, a captured session and its snapshot for a local relationship read.' },
+  'list-panes': { symbol: 'tmux_snapshot:related/3', note: 'Pass `panes`, a captured physical window and its snapshot for a local relationship read.' },
+  'capture-pane': { symbol: 'tmux_pane:capture/2' },
+  'send-keys': { symbol: 'tmux_pane:send_keys/2' },
+  'split-pane': { symbol: 'tmux_pane:split/2' },
+  'respawn-pane': { symbol: 'tmux_pane:respawn/2' },
+  'resize-pane': { symbol: 'tmux_pane:resize/2' },
+  'kill-pane': { symbol: 'tmux_pane:kill/1' },
+  'break-pane': { symbol: 'tmux_pane:break/4' },
+  'join-pane': { symbol: 'tmux_pane:join/3' },
+  'move-pane': { symbol: 'tmux_pane:move/3' },
+  'swap-pane': { symbol: 'tmux_pane:swap/3' },
+  'pipe-pane': { symbol: 'tmux_pane:pipe/3' },
+  'new-session': { symbol: 'tmux_session:create/2' },
+  'kill-session': { symbol: 'tmux_session:kill/1' },
+  'rename-session': { symbol: 'tmux_session:rename/2' },
+  'new-window': { symbol: 'tmux_window:create/2' },
+  'kill-window': { symbol: 'tmux_window:kill/1', note: 'Removes the physical window and its memberships.' },
+  'rename-window': { symbol: 'tmux_window:rename/2' },
+  'select-layout': { symbol: 'tmux_window:select_layout/2' },
+  'respawn-window': { symbol: 'tmux_window:respawn/2' },
+  'link-window': { symbol: 'tmux_window_link:link/3' },
+  'unlink-window': { symbol: 'tmux_window_link:unlink/2', note: 'Acts on one session-relative membership.' },
+  'move-window': { symbol: 'tmux_window_link:move/3' },
+  'swap-window': { symbol: 'tmux_window_link:swap/3' },
+  'select-window': { symbol: 'tmux_window_link:select/1', note: 'Selects a captured membership in its session.' },
+  'get-session': { symbol: 'tmux_session:get/2' },
+  'get-window': { symbol: 'tmux_window:get/2' },
+  'get-pane': { symbol: 'tmux_pane:get/2' },
+  'list-buffers': { symbol: 'tmux_buffer:list/1' },
+  'show-buffer': { symbol: 'tmux_buffer:show/2' },
+  'load-buffer': { symbol: 'tmux_buffer:load/3' },
+  'delete-buffer': { symbol: 'tmux_buffer:delete/2' },
+  'paste-buffer': { symbol: 'tmux_buffer:paste/3' },
+  'list-keys': { symbol: 'tmux_key:listing/1' },
+  'bind-key': { symbol: 'tmux_key:bind/3' },
+  'unbind-key': { symbol: 'tmux_key:unbind/2' },
+  'start-server': { symbol: 'tmux_server:start_owned/1', note: 'Starts a private daemon and returns an ownership token.' },
+  'kill-server': { symbol: 'tmux_server:stop_owned/1', note: 'Requires the ownership token for a library-owned daemon. Closing a borrowed endpoint preserves its daemon.' },
+  'server-version': { symbol: 'tmux_server:version/1' },
+  'source-file': { symbol: 'tmux_command:source_file/2', note: 'Builds a trusted command value. Execute it explicitly with `tmux_server:command/3`.' },
+  'wait-for': { symbol: 'tmux_command:wait_for/2', note: 'Builds a command value; construction performs no I/O.' },
+}
+for (const [id, binding] of Object.entries(ERLANG_CONCEPTS)) {
+  const concept = CONCEPTS[id]
+  if (!concept) throw new Error(`concepts: Erlang maps unknown concept ${id}`)
+  concept.symbols.erlang = binding.symbol
+  if (binding.note) (concept.notes ??= {}).erlang = binding.note
+}
 CONCEPTS['list-session-panes']!.absent!.julia = 'Traverse `windows(session)` and `panes(window)` in the captured snapshot. `panes(snapshot)` has server-wide scope.'
+
+const OCAML_CONCEPTS: Record<string, { symbol: string; note?: string; variants?: string[] }> = {
+  server: { symbol: 'Libtmux_unix.Client.t', variants: ['Libtmux_eio.Client.t'], note: 'A client is a live, generation-bound server connection. Endpoint describes a socket without connecting; closing a client releases its resources.' },
+  session: { symbol: 'Libtmux.Session.t' },
+  window: { symbol: 'Libtmux.Window.t', note: 'A global window can have several session placements. Window_link holds the session, index and current flag.' },
+  pane: { symbol: 'Libtmux.Pane.t' },
+  'workspace-description': { symbol: 'Libtmux_workspace.Config.t' },
+  'build-workspace': { symbol: 'Libtmux_unix.Workspace.await', variants: ['Libtmux_eio.Workspace.await'], note: 'Apply a validated Plan through submit, then await its retained execution receipt. Inspect preserves partial and late outcomes.' },
+  snapshot: { symbol: 'Libtmux_unix.Client.capture', variants: ['Libtmux_eio.Client.capture'], note: 'Acquires a complete immutable graph over an interval. Earlier observations remain readable without refreshing.' },
+  'list-sessions': { symbol: 'Libtmux.Snapshot.sessions', note: 'Reads an immutable array of already captured sessions without I/O.' },
+  'list-windows': { symbol: 'Libtmux.Session.windows', note: 'Reads distinct captured global windows in this session. window_links preserves individual indexed placements.' },
+  'list-panes': { symbol: 'Libtmux.Window.panes', note: 'Reads captured panes in one global window without I/O.' },
+  'list-server-windows': { symbol: 'Libtmux.Snapshot.windows', note: 'Reads captured global windows; use window_links for indexed session placements.' },
+  'list-server-panes': { symbol: 'Libtmux.Snapshot.panes' },
+  'list-clients': { symbol: 'Libtmux.Snapshot.clients', note: 'Reads captured attached-client observations, separate from transport Client.t handles.' },
+  'pane-window': { symbol: 'Libtmux.Pane.window' },
+  'window-session': { symbol: 'Libtmux.Window_link.session', note: 'The session belongs to a placement. A global Window has no single containing session.' },
+  'window-link-window': { symbol: 'Libtmux.Window_link.window' },
+  'client-session': { symbol: 'Libtmux.Client_observation.session', note: 'Returns the captured session when the attached client had one.' },
+  'get-session': { symbol: 'Libtmux.Snapshot.find_session', note: 'Exact opaque-ID lookup in an existing snapshot, without I/O or tmux target expansion.' },
+  'get-window': { symbol: 'Libtmux.Snapshot.find_window', note: 'Exact opaque-ID lookup in an existing snapshot, without I/O.' },
+  'get-pane': { symbol: 'Libtmux.Snapshot.find_pane', note: 'Exact opaque-ID lookup in an existing snapshot, without I/O.' },
+  'window-index': { symbol: 'Libtmux.Window_link.index' },
+  'window-active': { symbol: 'Libtmux.Window_link.is_current' },
+}
+for (const [concept, operation] of Object.entries({
+  'capture-pane': 'capture_text', 'send-keys': 'send_keys', 'split-pane': 'split_pane',
+  'respawn-pane': 'respawn_pane', 'clear-history': 'clear_history', 'set-pane-title': 'set_pane_title',
+  'select-layout': 'select_layout', 'rotate-panes': 'rotate_panes', 'unlink-window': 'unlink_window_at',
+  'new-session': 'create_session', 'new-window': 'create_window', 'kill-session': 'kill_session',
+  'kill-window': 'kill_window', 'kill-pane': 'kill_pane', 'rename-session': 'rename_session',
+  'rename-window': 'rename_window', 'select-window': 'select_window_at', 'select-pane': 'select_pane',
+  'resize-pane': 'resize_pane', 'resize-window': 'resize_window', 'link-window': 'link_window',
+  'move-window': 'move_window_at', 'break-pane': 'break_pane', 'move-pane': 'move_pane',
+  'join-pane': 'move_pane', 'swap-pane': 'swap_panes', 'detach-client': 'request_detach_client_at',
+  'refresh-client': 'refresh_client_at', 'switch-client': 'switch_client_at',
+  'wait-for': 'wait_for', 'server-version': 'version',
+})) OCAML_CONCEPTS[concept] = { symbol: `Libtmux_unix.Client.${operation}`, variants: [`Libtmux_eio.Client.${operation}`] }
+for (const [prefix, owner, members] of [
+  ['session', 'Session', ['id', 'name', 'attached']],
+  ['window', 'Window', ['id', 'name', 'height', 'width', 'layout']],
+  ['pane', 'Pane', ['id', 'index', 'height', 'width', 'title', 'active', 'current_command', 'current_path', 'pid', 'dead']],
+] as const) for (const member of members) OCAML_CONCEPTS[`${prefix}-${member.replaceAll('_', '-')}`] = { symbol: `Libtmux.${owner}.${member}` }
+for (const scope of ['server', 'session', 'window', 'pane']) {
+  for (const [suffix, operation] of Object.entries({ options: 'capture_options', option: 'read_option', hooks: 'capture_hooks' })) {
+    OCAML_CONCEPTS[`${scope}-${suffix}`] = { symbol: `Libtmux_unix.Client.${operation}`, variants: [`Libtmux_eio.Client.${operation}`], note: 'Pass the corresponding explicit Options scope; captured tables preserve their source and inheritance policy.' }
+  }
+  for (const [prefix, operation] of Object.entries({ 'set-': 'set_option', 'unset-': 'unset_option' })) OCAML_CONCEPTS[`${prefix}${scope}-option`] = { symbol: `Libtmux_unix.Client.${operation}`, variants: [`Libtmux_eio.Client.${operation}`] }
+  for (const [prefix, operation] of Object.entries({ 'set-': 'set_hook', 'unset-': 'remove_hook' })) OCAML_CONCEPTS[`${prefix}${scope}-hook`] = { symbol: `Libtmux_unix.Client.${operation}`, variants: [`Libtmux_eio.Client.${operation}`] }
+}
+for (const scope of ['server', 'session']) {
+  OCAML_CONCEPTS[`${scope}-environment`] = { symbol: 'Libtmux_unix.Client.capture_environment', variants: ['Libtmux_eio.Client.capture_environment'], note: 'Pass Environment.Global for server values or Environment.Session with a bound session target. Acquisition is explicit.' }
+  for (const [prefix, operation] of Object.entries({ 'set-': 'set_environment', 'unset-': 'unset_environment', 'remove-': 'remove_environment' })) OCAML_CONCEPTS[`${prefix}${scope}-environment`] = { symbol: `Libtmux_unix.Client.${operation}`, variants: [`Libtmux_eio.Client.${operation}`] }
+}
+for (const [id, binding] of Object.entries(OCAML_CONCEPTS)) {
+  const concept = CONCEPTS[id]
+  if (!concept) throw new Error(`concepts: OCaml maps unknown concept ${id}`)
+  concept.symbols.ocaml = binding.symbol
+  if (binding.note) (concept.notes ??= {}).ocaml = binding.note
+  if (binding.variants) (concept.variants ??= {}).ocaml = binding.variants
+}
+for (const [id, reason] of Object.entries({
+  'freeze-workspace': 'The workspace packages validate and apply descriptions; they do not export a live session as configuration.',
+  'list-session-panes': 'Traverse Session.windows and Window.panes in the captured graph. Snapshot.panes has server-wide scope.',
+  'pane-session': 'A pane belongs to a global window that can have several session placements. Traverse Window.links and Window_link.session.',
+  'kill-server': 'Client.close releases transport resources. The public client API does not terminate a borrowed tmux daemon.',
+  'server-from-env': 'Endpoint selection is explicit. Construct a named socket or socket path; the library does not infer an ambient server.',
+})) (CONCEPTS[id]!.absent ??= {}).ocaml = reason
+const CLOJURE_CONCEPTS: Record<string, { symbol: string; note?: string }> = {
+  server: { symbol: 'libtmux.core/open!', note: 'Opens a closeable Java server client for an explicit endpoint. Acquisitions return persistent maps with explicit Java references for effects.' },
+  session: { symbol: 'libtmux.core/sessions!', note: 'Acquires a vector of captured session maps. The session value is a map, not a wrapper class.' },
+  window: { symbol: 'libtmux.data/windows', note: 'Traverses captured window-placement maps without I/O; the window value is a map with an explicit Java reference for effects.' },
+  pane: { symbol: 'libtmux.data/panes', note: 'Traverses captured pane maps without I/O. Use keyword lookup for scalar observations and the preserved :tmux/ref for effects.' },
+  'capture-pane': { symbol: 'libtmux.core/capture!' },
+  'send-keys': { symbol: 'libtmux.core/send-keys!' },
+  'split-pane': { symbol: 'libtmux.core/split-pane!' },
+  'new-session': { symbol: 'libtmux.core/new-session!' },
+  'new-window': { symbol: 'libtmux.core/new-window!' },
+  'kill-server': { symbol: 'libtmux.core/kill-server!' },
+  'list-sessions': { symbol: 'libtmux.core/sessions!', note: 'Acquires a new captured graph and returns its session maps; acquisition failure throws.' },
+  'list-windows': { symbol: 'libtmux.data/windows', note: 'Traverses one capture locally. It does not issue a list-windows command.' },
+  'list-panes': { symbol: 'libtmux.data/panes', note: 'Traverses one capture locally. It does not issue a list-panes command.' },
+  'list-server-windows': { symbol: 'libtmux.core/windows!', note: 'Acquires a new graph and returns its window placements without deduplicating linked windows.' },
+  'list-server-panes': { symbol: 'libtmux.core/panes!', note: 'Acquires a new graph and returns its pane occurrences.' },
+  'list-clients': { symbol: 'libtmux.core/clients!' },
+  snapshot: { symbol: 'libtmux.core/snapshot!', note: 'Acquires a captured graph of persistent values. Retained values do not refresh after mutation or close.' },
+}
+for (const [id, binding] of Object.entries(CLOJURE_CONCEPTS)) {
+  const concept = CONCEPTS[id]
+  if (!concept) throw new Error(`concepts: Clojure maps unknown concept ${id}`)
+  concept.symbols.clojure = binding.symbol
+  if (binding.note) (concept.notes ??= {}).clojure = binding.note
+}
 for (const concept of Object.values(CONCEPTS)) {
   concept.absent ??= {}
   if (!concept.symbols.powershell) concept.absent.powershell ??= 'No source-verified PowerShell equivalent is recorded for this operation.'
   if (!concept.symbols.julia) concept.absent.julia ??= 'No source-verified Julia equivalent is recorded for this operation.'
   if (!concept.symbols.elixir) concept.absent.elixir = 'No source-verified Elixir equivalent is recorded for this operation.'
+  if (!concept.symbols.haskell) concept.absent.haskell = 'No public Haskell equivalent is implemented; the current modules expose scalar values and version parsing.'
+  if (!concept.symbols.erlang) concept.absent.erlang = 'No source-verified Erlang equivalent is recorded for this operation.'
   if (!concept.symbols.ruby) concept.absent.ruby = 'No source-verified Ruby equivalent is recorded for this operation.'
   if (!concept.symbols.lua) concept.absent.lua = 'No source-verified Lua equivalent is recorded for this operation.'
   if (!concept.symbols.kotlin) concept.absent.kotlin = 'No source-verified Kotlin equivalent is recorded for this operation.'
   if (!concept.symbols.scala) concept.absent.scala = 'No source-verified Scala equivalent is recorded for this operation.'
   if (!concept.symbols.fsharp) concept.absent.fsharp = 'No source-verified F# equivalent is recorded for this operation.'
+  if (!concept.symbols.ocaml) concept.absent.ocaml ??= 'No direct public OCaml equivalent is recorded for this operation.'
+  if (!concept.symbols.clojure) concept.absent.clojure = 'No source-verified Clojure equivalent is recorded for this operation.'
+  if (!concept.symbols.lisp) concept.absent.lisp = 'No source-verified Common Lisp equivalent is recorded for this operation.'
 }
 
 /** Every concept naming this symbol, including concepts sharing an overload group. */

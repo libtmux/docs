@@ -70,6 +70,18 @@
       }
     }
   },
+  "lisp": {
+    "workspace": {
+      "file": "examples/workspace.lisp",
+      "lang": "lisp",
+      "from": "(defun apply-workspace-document",
+      "to": "(ws:apply-workspace client workspace",
+      "ci": {
+        "workflow": ".github/workflows/tests.yml",
+        "command": "mise run package-examples"
+      }
+    }
+  },
   "ts": {
     "mcp": {
       "file": "examples/mcp-agent/mcp-agent.ts",
@@ -220,6 +232,18 @@
       }
     }
   },
+  "perl": {
+    "workspace": {
+      "file": "examples/workspace.pl",
+      "lang": "perl",
+      "from": "my $workspace = LibTmux::Workspace->new(",
+      "to": "say 'workspace load and repeat: ok';",
+      "ci": {
+        "workflow": ".github/workflows/scaffold.yml",
+        "command": "perl scripts/run-examples.pl --installed \"$prefix\""
+      }
+    }
+  },
   "swift": {
     "mcp": {
       "file": "Examples/Sources/ExampleCode/MCPEmbedding.swift",
@@ -240,6 +264,24 @@
         "workflow": ".github/workflows/ci.yml",
         "command": "swift test --package-path Examples"
       }
+    }
+  },
+  "ocaml": {
+    "workspace": {
+      "file": "examples/showcase_graph.ml",
+      "lang": "ocaml",
+      "from": "let config =",
+      "to": "let operation = get (Workspace.submit_bootstrap ~binary:wrapper plan) in",
+      "ci": {
+        "workflow": ".github/workflows/ocaml.yml",
+        "command": "opam exec -- python3 test/showcase_test.py \"$TMUX_BINARY\""
+      },
+      "more": [
+        {
+          "from": "let receipt = get (Workspace.await operation) in",
+          "to": "let initial = List.hd (Iarray.get receipt.steps 0).created in"
+        }
+      ]
     }
   }
 }

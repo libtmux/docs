@@ -1,7 +1,20 @@
 import { describe, expect, it } from 'vitest'
-import { documentationAreas, documentationCards, documentationNavigation, sourceGuideFor } from '../src/lib/port-documentation'
+import { documentationAreas, documentationCards, documentationNavigation, sourceGuideFor, sourceGuidesFor, stagedSectionsFor } from '../src/lib/port-documentation'
 
 describe('port documentation domains', () => {
+  it('limits Haskell guides to the public values package and its actual reader paths', () => {
+    expect(documentationAreas('haskell').map(({ id, kind }) => ({ id, kind }))).toEqual([
+      { id: 'core', kind: 'core' }, { id: 'workspace', kind: 'unavailable' }, { id: 'mcp', kind: 'unavailable' },
+    ])
+    expect(stagedSectionsFor('haskell')).toEqual(['guides'])
+    expect(sourceGuidesFor('haskell').map(({ sourcePath, route }) => [sourcePath, route])).toEqual([
+      ['docs/README.md', 'guides/getting-started'],
+      ['docs/installation.md', 'guides/installation'],
+      ['docs/values.md', 'guides/typed-values'],
+      ['docs/api.md', 'guides/api-documentation'],
+      ['docs/status.md', 'guides/status'],
+    ])
+  })
   it('keeps Ruby packages separate from products and Lua runtime adapters', () => {
     expect(documentationAreas('ruby').map(({ id, kind, package: packageId, product }) => ({ id, kind, package: packageId, product }))).toEqual([
       { id: 'core', kind: 'core', package: 'core', product: undefined },

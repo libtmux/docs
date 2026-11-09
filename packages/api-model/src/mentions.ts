@@ -1,6 +1,6 @@
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import type { ApiModel, ApiProduct } from './model.ts'
-import { decideMention, isLikelyReference, looksLikeApiMention, notApiReason } from './prose.ts'
+import { decideMention, isLikelyReference, looksLikeApiMention, notApiReason, portFromSentence } from './prose.ts'
 import { notASymbol, type Resolver } from './resolver.ts'
 export { looksLikeApiMention } from './prose.ts'
 
@@ -94,6 +94,8 @@ const FENCE_PORT: Record<string, string> = {
   cpp: 'cxx', 'c++': 'cxx', swift: 'swift',
   powershell: 'powershell', pwsh: 'powershell', ps1: 'powershell', julia: 'julia',
   elixir: 'elixir', ex: 'elixir', exs: 'elixir',
+  perl: 'perl', pl: 'perl', pm: 'perl',
+  lisp: 'lisp', 'common-lisp': 'lisp',
 }
 
 /** A symbol that a link on a page names. */
@@ -192,8 +194,9 @@ export function pageMentions(input: PageMentionsInput): { targets: LinkedOwner[]
   const linkedHere = new LinkedOwners()
   for (const { port: contextPort, text, line, before, linked, href } of proseMentions(input.body, input.portByLabel, input.portAt)) {
     const pagePort = authoredPort ?? contextPort
+    const effectivePort = portFromSentence(before) ?? pagePort
     if (!linked && nativeTmux) continue
-    if (notASymbol(text)) continue
+    if (notASymbol(text, effectivePort)) continue
     let target: LinkedOwner | undefined
     if (linked) {
       target = input.authoredTarget(href)
@@ -204,8 +207,8 @@ export function pageMentions(input: PageMentionsInput): { targets: LinkedOwner[]
         const authored = decision.kind === 'unresolved' ? linkedHere.recur(contextPort, text) : undefined
         if (!authored && decision.kind === 'unresolved' && pagePort && ownedByPrecedingType(text, before, pagePort, resolver, product)) continue
         if (!authored) {
-          if (decision.kind === 'unresolved' && pagePort && isLikelyReference(text) && !notApiReason(text)) {
-            dangling.push({ port: pagePort, text, page, line, why: decision.why })
+          if (decision.kind === 'unresolved' && effectivePort && isLikelyReference(text) && !notApiReason(text, effectivePort)) {
+            dangling.push({ port: effectivePort, text, page, line, why: decision.why })
           }
           continue
         }

@@ -18,7 +18,8 @@ import LinkPreview from '../components/LinkPreview.astro'
 import { buildTarget } from '../lib/versions'
 import type { VersionEntry } from '../lib/versions'
 import { withPortRoot, withRoot } from '../lib/site-root'
-import { PORT_BY_SLUG, portSourceUrl } from '../lib/ports'
+import { PORT_BY_SLUG, portSourceUrl, releaseMaturity } from '../lib/ports'
+import { registryFor } from '../lib/registry'
 import { markdownPath, type PageSource } from '../lib/markdown-twins'
 import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, repoPath } from '../i18n/contribute'
 import type { Locale } from '../i18n/locales'
@@ -278,7 +279,7 @@ const inventoryPage: InventoryPage = {
     {/* Under the navigation bars and inside the same `bare` guard: a page without the
         top bar is an embedded or vendored one, and a notice about this site's
         stability has no business appearing there. */}
-    {!bare && !tmux && <PrereleaseNotice centered={!navPort && !pagePath} />}
+    {!bare && !tmux && <PrereleaseNotice port={navPort ? PORT_BY_SLUG[navPort] : undefined} centered={!navPort && !pagePath} />}
     <!-- `data-pagefind-body` scopes the index to the page's own content.
          Without it Pagefind indexed the header and footer on all 1,066
          pages, so every nav label outranked the prose that mentioned it

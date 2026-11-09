@@ -7,7 +7,7 @@ import { Window, type HTMLButtonElement } from 'happy-dom'
 import ts from 'typescript'
 import { abbreviateNamespace, splitQualifiedName } from '../src/lib/api-labels'
 import { API_MODELS } from '../src/lib/api-models'
-import { loadAstroTemplate, renderAstroTemplate, withoutScope } from './astro-templates'
+import { loadAstroTemplate, withoutScope } from './astro-templates'
 
 vi.mock('astro:content', () => ({ getCollection: async () => [] }))
 
@@ -133,6 +133,8 @@ describe('a qualified name as a path to one declaration', () => {
     ['Lua method', 'libtmux.Buffer:reference', 'libtmux.Buffer:', 'reference'],
     ['PowerShell cmdlet', 'LibTmux.Workspace\\ConvertTo-TmuxWorkspace', 'LibTmux.Workspace\\', 'ConvertTo-TmuxWorkspace'],
     ['Elixir function', 'LibTmux.Capture.fetch/2', 'LibTmux.Capture.', 'fetch/2'],
+    ['Clojure var', 'libtmux.data/matching', 'libtmux.data/', 'matching'],
+    ['Clojure effect', 'libtmux.core/open!', 'libtmux.core/', 'open!'],
     // A Swift name ends in its argument labels, which are part of the name: their colons are not a separator.
     ['Swift method', 'Window.filterFieldType(_:)', 'Window.', 'filterFieldType(_:)'],
     ['Swift operator', 'Client.!=(_:_:)', 'Client.', '!=(_:_:)'],
@@ -171,23 +173,26 @@ describe('a qualified name as a path to one declaration', () => {
   })
 })
 
-describe('the rows of the source and package disclosure', () => {
-  const model = API_MODELS.rs
+describe('API declaration names on the page and in the source disclosure', () => {
   const options = {
-    real: ['components/api/ApiType.astro', 'components/api/SymbolName.astro', 'components/api/ApiBadge.astro', 'components/api/ApiQualifiedName.astro'],
+    real: ['components/api/ApiType.astro', 'components/api/SymbolName.astro', 'components/api/ApiBadge.astro', 'components/api/ApiQualifiedName.astro', 'components/PageToolbar.astro'],
     modules: {
       'astro-expressive-code/components': { Code: () => '' },
       '../../lib/page-ports-for': { pagePortsFor: async () => [] },
-      '../../lib/sidebar': { pageBreadcrumbs: async () => [] },
     },
   }
 
-  /** The real `ApiReference` page of one Rust member, with its shell stubbed. */
-  async function page(id: string) {
+  /** The real declaration page and breadcrumb toolbar, with its shell stubbed. */
+  async function page(id: string, model = API_MODELS.rs) {
     const template = await loadAstroTemplate('components/api/ApiReference.astro', options)
+    const owner = model.symbols.find((symbol) => symbol.id === id)!
+    const container = await experimental_AstroContainer.create()
     const win = new Window()
     windows.push(win)
-    win.document.body.innerHTML = withoutScope(await renderAstroTemplate(template, { props: { model, owner: model.symbols.find((symbol) => symbol.id === id)! } }))
+    win.document.body.innerHTML = withoutScope(await container.renderToString(template as never, {
+      request: new Request(`https://libtmux.org/en/${model.port}/latest/reference/${owner.slug}/`),
+      params: { slug: owner.slug }, props: { model, owner },
+    }))
     return win.document
   }
   /** The `dd` that follows the `dt` with this label. */
@@ -208,6 +213,24 @@ describe('the rows of the source and package disclosure', () => {
     expect(name.querySelector('.api-qualified-name__path')?.textContent).toBe('libtmux::pane::Pane::')
     expect([name.querySelector('.api-qualified-name__leaf')?.textContent, name.querySelector('.api-qualified-name__leaf')?.getAttribute('data-api-kind')]).toEqual(['send_keys', 'method'])
   })
+
+  it('keeps the Common Lisp package separator in the page heading', async () => {
+    const document = await page('libtmux:fetch-snapshot', API_MODELS.lisp)
+    expect(document.querySelector('h1')?.textContent.trim()).toBe('libtmux:fetch-snapshot')
+  })
+
+  it.each([
+    ['record', '#tmux_model:pane{}', '#tmux_model:pane{}', '#pane{}'],
+    ['function', 'tmux_server:snapshot/1', 'tmux_server:snapshot/1', 'snapshot/1'],
+    ['type', 't:tmux_model:pane/0', 'tmux_model:pane/0', 'pane/0'],
+    ['module', 'tmux_server', 'tmux_server', 'tmux_server'],
+  ])('uses the native Erlang %s name in the heading and its identity in the breadcrumb', async (_, id, heading, breadcrumb) => {
+    const document = await page(id, API_MODELS.erlang)
+    expect({
+      heading: document.querySelector('h1')?.textContent.trim(),
+      breadcrumb: document.querySelector('[aria-label="Breadcrumb"] [aria-current="page"]')?.textContent.trim(),
+    }).toEqual({ heading, breadcrumb })
+  })
 })
 
 /**
@@ -221,7 +244,7 @@ function placement(source: string): string[] {
   if (/ApiQualifiedName|api-qualified-name/.test(header)) problems.push('the heading still carries the qualified name')
   const panel = source.slice(source.indexOf('<details class="api-source-details"'), source.indexOf('</details>', source.indexOf('<details class="api-source-details"')))
   if (!/<dt>Qualified name<\/dt>\s*<dd><ApiQualifiedName name=\{nativeQualifiedName\(model, owner\)\}[^>]*\/><\/dd>/.test(panel)) problems.push('the disclosure has no qualified name row')
-  else if (!/<ApiQualifiedName [^>]*\bkind=\{owner\.kind\}/.test(panel)) problems.push('the qualified name is drawn without the declaration\'s kind')
+  else if (!/<ApiQualifiedName [^>]*\bkind=\{nativeKind\(owner, language\)\}/.test(panel)) problems.push('the qualified name is drawn without the declaration\'s kind')
   if (!/<dt>\{moduleLabel\}<\/dt>/.test(panel)) problems.push('the disclosure does not label its module row for the port')
   return problems
 }
@@ -243,7 +266,7 @@ describe('where the qualified name lives', () => {
       expect(placement(regressed)).toContain('the heading still carries the qualified name')
     })
     it('notices a qualified name drawn without the declaration\'s kind', () => {
-      expect(placement(reference.replace(' kind={owner.kind}', ''))).toEqual(['the qualified name is drawn without the declaration\'s kind'])
+      expect(placement(reference.replace(' kind={nativeKind(owner, language)}', ''))).toEqual(['the qualified name is drawn without the declaration\'s kind'])
     })
     it('notices a disclosure with no qualified name', () => {
       expect(placement(reference.replace('<dt>Qualified name</dt>', '<dt>Name</dt>'))).toContain('the disclosure has no qualified name row')

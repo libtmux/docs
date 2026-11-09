@@ -38,6 +38,25 @@
       "capture": "LibTmux::Pane#capture"
     }
   },
+  "lisp": {
+    "objects": {
+      "server": "libtmux:client",
+      "session": "libtmux:session/type",
+      "window": "libtmux:window/type",
+      "pane": "libtmux:pane"
+    },
+    "capabilities": {
+      "objects": "libtmux:snapshot",
+      "ids": "libtmux:id",
+      "queries": "libtmux.query:compile-filter",
+      "errors": "libtmux:libtmux-error",
+      "traversal": "libtmux:fetch-snapshot",
+      "argv": "libtmux:run-command",
+      "send-keys": "libtmux:send-keys",
+      "capture": "libtmux:capture-pane",
+      "version-gate": "libtmux:unsupported-capability"
+    }
+  },
   "lua": {
     "objects": {
       "server": "libtmux.Server",
@@ -302,6 +321,16 @@
       "capture": "libtmux::Pane::capture"
     }
   },
+  "haskell": {
+    "title": "Typed tmux values for Haskell",
+    "lead": "Parse tmux entity IDs, validate dimensions and indices, and check stable tmux releases with pure Haskell functions",
+    "modules": [
+      "LibTmux.Id",
+      "LibTmux.Value",
+      "LibTmux.Version"
+    ],
+    "capabilities": {}
+  },
   "swift": {
     "objects": {
       "server": "Server",
@@ -321,6 +350,97 @@
       "send-keys": "Server.sendKeys(_:to:literally:)",
       "control-mode": "ControlSession",
       "capture": "Server.capture(_:includingHistory:)"
+    }
+  },
+  "ocaml": {
+    "objects": {
+      "server": "Libtmux_unix.Client.t",
+      "session": "Libtmux.Session.t",
+      "window": "Libtmux.Window.t",
+      "pane": "Libtmux.Pane.t"
+    },
+    "wraps": {
+      "server": "A connection to one tmux server",
+      "window": "A shared tmux window"
+    },
+    "capabilities": {
+      "objects": "Libtmux.Pane",
+      "ids": "Libtmux.Pane.Id",
+      "queries": "Libtmux.Expr",
+      "errors": "Libtmux.Error",
+      "servers": "Libtmux_unix.Client.connect",
+      "traversal": "Libtmux.Snapshot.panes",
+      "send-keys": "Libtmux_unix.Client.send_keys",
+      "control-mode": "Libtmux_eio.Client.subscribe",
+      "capture": "Libtmux_unix.Client.capture_text",
+      "argv": "Libtmux.Command",
+      "version-gate": "Libtmux.Error.t.Unsupported_version",
+      "async": "Libtmux_eio.Client.capture"
+    }
+  },
+  "perl": {
+    "objects": {
+      "server": "LibTmux::Server",
+      "session": "LibTmux::Session",
+      "window": "LibTmux::Window",
+      "pane": "LibTmux::Pane"
+    },
+    "association": "LibTmux::WindowLink",
+    "capabilities": {
+      "objects": "LibTmux::Pane",
+      "ids": "LibTmux::Pane::id",
+      "queries": "LibTmux::Selection::where",
+      "errors": "LibTmux::X::InvalidFilter",
+      "servers": "LibTmux::Server::new",
+      "traversal": "LibTmux::Server::snapshot",
+      "send-keys": "LibTmux::Server::send_keys",
+      "capture": "LibTmux::Server::capture_pane",
+      "argv": "LibTmux::Server::cmd",
+      "version-gate": "LibTmux::X::Unsupported",
+      "async": "LibTmux::Async"
+    }
+  },
+  "clojure": {
+    "objects": {
+      "server": "libtmux.core/open!",
+      "session": "libtmux.core/sessions!",
+      "window": "libtmux.data/windows",
+      "pane": "libtmux.data/panes"
+    },
+    "capabilities": {
+      "objects": "libtmux.data",
+      "errors": "libtmux.core/error-summary",
+      "traversal": "libtmux.data/panes",
+      "servers": "libtmux.core/open!",
+      "send-keys": "libtmux.core/send-keys!",
+      "control-mode": "libtmux.control/subscribe!",
+      "capture": "libtmux.core/capture!",
+      "async": "libtmux.async"
+    }
+  },
+  "erlang": {
+    "objects": {
+      "server": "t:tmux_server:t/0",
+      "session": "#tmux_model:session{}",
+      "window": "#tmux_model:window{}",
+      "pane": "#tmux_model:pane{}"
+    },
+    "capabilities": {
+      "objects": "#tmux_model:pane{}",
+      "ids": "t:tmux_model:pane_id/0",
+      "queries": "tmux_filter",
+      "errors": "t:tmux_operation:failure/0",
+      "servers": "tmux_server:open/1",
+      "traversal": "tmux_snapshot:panes/1",
+      "send-keys": "tmux_pane:send_keys/2",
+      "capture": "tmux_pane:capture/2",
+      "argv": "tmux_command",
+      "version-gate": "tmux_capability",
+      "test-fixtures": "tmux_server:start_owned/1",
+      "async": "tmux_operation"
+    },
+    "objectDescriptions": {
+      "window": "A physical tmux window; session membership uses window links"
     }
   }
 }

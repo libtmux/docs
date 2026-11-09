@@ -3,7 +3,7 @@
 // build-site.sh imports this module with bare Node; local imports need `.ts`.
 import { withPortRoot } from './site-root.ts'
 import { COOLDOWN_SLOTS } from './cooldown.ts'
-import type { TagGrammar } from './versions.ts'
+import { parseTag, type TagGrammar } from './versions.ts'
 
 /**
  * Which renderer produces a self-hosted reference.
@@ -262,9 +262,7 @@ export interface Port {
    */
   workspaceCliAvailability?: 'local' | 'published' | 'released'
   /**
-   * How this port writes its version tags. Python follows PEP 440, which
-   * attaches a suffix with no separator and has post-releases; the rest
-   * follow SemVer. Reading one with the other's grammar drops the tag.
+   * The ecosystem's source-tag grammar, including Cabal's numeric components.
    */
   tagGrammar: TagGrammar
   /**
@@ -286,6 +284,8 @@ export interface Port {
   referenceKind?: 'model' | 'guide'
   /** Generated Markdown reference with type pages and named member anchors. */
   sourceReferenceDirectory?: string
+  /** Native single-file references, grouped by their owning package. */
+  sourceReferenceFiles?: readonly { file: string; package: string }[]
   renderer: Renderer
   /**
    * Whether this port's own documentation pipeline publishes
@@ -365,6 +365,15 @@ export interface Port {
    * "unknown package", which is the error that corrected this line.
    */
   installNote?: string
+}
+
+const ERLANG_SOURCE_INSTALL = `{deps, [
+    {libtmux_erlang, {git_subdir,
+        "https://github.com/libtmux/libtmux-erlang.git",
+        {ref, {revision}}, "apps/libtmux_erlang"}}
+]}.`
+const ERLANG_GIT_INSTALL: InstallForm = {
+  code: ERLANG_SOURCE_INSTALL.replaceAll('{revision}', '"master"'), lang: 'erlang',
 }
 
 const CORE_PORTS: readonly Port[] = [
@@ -652,6 +661,33 @@ const CORE_PORTS: readonly Port[] = [
     installNote: 'Requires Julia 1.13.1 and tmux 3.3a or newer. JSON layouts require tmux 3.8. Companion packages install from the same revision as the core.',
   },
   {
+    slug: 'erlang',
+    projectName: 'libtmux-erlang',
+    logoLanguage: 'erlang',
+    shortName: 'Erl',
+    name: 'Erlang',
+    language: 'Erlang',
+    packageName: 'libtmux_erlang',
+    repo: 'libtmux/libtmux-erlang',
+    docsDispatch: { workflow: 'docs.yml' },
+    productAvailability: { workspace: 'unpublished', mcp: 'excluded' },
+    checkout: '~/work/libtmux/libtmux-erlang',
+    worktree: '~/work/libtmux/libtmux-erlang-docs-site',
+    source: { path: 'apps/libtmux_erlang', ref: 'master' },
+    versionedDocs: true,
+    tagGrammar: 'semver',
+    renderer: 'astro',
+    publishesOwnTree: true,
+    generator: 'OTP documentation chunks and native typespecs',
+    installs: [{ label: 'rebar.config', filename: 'rebar.config', lang: 'erlang',
+      code: ERLANG_SOURCE_INSTALL,
+      additionalBlocks: [{ lang: 'console', code: 'rebar3 compile' }],
+      note: 'Merge this deps entry into rebar.config. Requires Erlang/OTP 29.1.2, Rebar3 3.28.0, Linux, tmux 3.3a–3.8, make and a C11 compiler. Commit rebar.lock to retain the resolved Git revision. The application is unreleased; no Hex package is advertised.' }],
+    initProject: { code: 'rebar3 new lib tmux_example && cd tmux_example', lang: 'console' },
+    installForms: { release: ERLANG_GIT_INSTALL, prerelease: ERLANG_GIT_INSTALL, git: ERLANG_GIT_INSTALL },
+    installNote: 'Add libtmux_erlang to your application dependencies and start it with application:ensure_all_started/1. Native records are experimental in OTP 29. The Git subdirectory selects the core application from its umbrella repository.',
+  },
+  {
     slug: 'elixir',
     projectName: 'libtmux-elixir',
     logoLanguage: 'elixir',
@@ -698,6 +734,85 @@ const CORE_PORTS: readonly Port[] = [
     },
     installNote:
       'Add the tuple to the deps list in mix.exs and run mix deps.get. Requires Elixir 1.20.4 or newer, Erlang/OTP 29.1.2 or a newer 29.x release, and tmux 3.3 or newer (the planned floor); Linux builds need a C11 compiler.',
+  },
+  {
+    slug: 'haskell',
+    projectName: 'libtmux-haskell',
+    logoLanguage: 'haskell',
+    shortName: 'Hs',
+    name: 'Haskell',
+    language: 'Haskell',
+    packageName: 'libtmux-haskell',
+    repo: 'libtmux/libtmux-haskell',
+    source: { path: 'src', ref: 'master' },
+    checkout: '~/work/libtmux/libtmux-haskell',
+    worktree: '~/work/libtmux/libtmux-haskell-docs',
+    docsDispatch: { workflow: 'docs.yml', ref: 'master' },
+    versionedDocs: true,
+    tagGrammar: 'cabal',
+    renderer: 'astro',
+    generator: 'Configured Haddock public interfaces',
+    publishesOwnTree: true,
+    productAvailability: { workspace: 'unpublished', mcp: 'excluded' },
+    packages: [{ id: 'core', name: 'libtmux-haskell', source: { path: 'src', ref: 'master' }, require: 'LibTmux.Id' }],
+    installs: [{
+      label: 'Cabal', lang: 'text', filename: 'cabal.project',
+      code: 'packages: .\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: {revision}',
+      note: 'Save as cabal.project and add libtmux-haskell ^>=0.1.0.0 to your component\'s build-depends. Requires Linux x86_64, GHC 9.14.1 and Cabal 3.18.2.0. The core package is available from source; it is not published on Hackage.',
+    }],
+    initProject: { lang: 'console', code: 'cabal init --non-interactive --exe --language=GHC2024 --dependency="base >=4.22 && <4.23, libtmux-haskell ^>=0.1.0.0"' },
+    installForms: {
+      release: { lang: 'text', code: 'build-depends: libtmux-haskell ^>={version}' },
+      prerelease: { lang: 'text', code: 'build-depends: libtmux-haskell =={version}' },
+      git: { lang: 'text', code: 'packages: .\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: master' },
+    },
+    installNote: 'The public API currently provides pure typed IDs, checked values and tmux-version admission. Server, capture and command APIs are under development. Workspace is planned; MCP is excluded.',
+  },
+  {
+    slug: 'lisp',
+    projectName: 'libtmux-lisp',
+    logoLanguage: 'lisp',
+    shortName: 'CL',
+    name: 'Common Lisp',
+    language: 'Common Lisp',
+    packageName: 'libtmux',
+    repo: 'libtmux/libtmux-lisp',
+    docsDispatch: { workflow: 'docs.yml' },
+    checkout: '~/work/libtmux/libtmux-lisp',
+    worktree: '~/work/libtmux/libtmux-lisp-docs-site',
+    source: { path: 'src', ref: 'master' },
+    versionedDocs: true,
+    tagGrammar: 'semver',
+    renderer: 'astro',
+    publishesOwnTree: true,
+    generator: 'SBCL package introspection, docstrings and CLOS metadata',
+    workspaceCli: 'mise exec -- tools/lisp.sh tools/workspace-cli.lisp',
+    workspaceCliAvailability: 'local',
+    productAvailability: { workspace: 'available', mcp: 'excluded' },
+    productDescriptions: {
+      workspace: 'Build the CLI from source to validate, plan and explicitly apply bounded JSON workspaces through the native Common Lisp engine.',
+    },
+    packages: [{
+      id: 'workspace', name: 'libtmux/workspace', require: '(asdf:load-system "libtmux/workspace")',
+      executable: 'mise exec -- tools/lisp.sh tools/workspace-cli.lisp', source: { path: 'src', ref: 'master' },
+      installs: [{
+        label: 'Source checkout', lang: 'console',
+        code: 'git clone https://github.com/libtmux/libtmux-lisp.git\ncd libtmux-lisp\nmise trust\nmise install\nmise run setup',
+        note: 'Loads the workspace ASDF systems and command from the same locked source checkout as the core library.',
+      }],
+    }],
+    installs: [{
+      label: 'Source checkout', lang: 'console',
+      code: 'git clone https://github.com/libtmux/libtmux-lisp.git\ncd libtmux-lisp\nmise trust\nmise install\nmise run setup',
+      note: 'The 0.1.0 ASDF systems are unreleased. This installs the pinned SBCL, ASDF and Qlot toolchain from source.',
+    }],
+    initProject: { code: 'mkdir my-tmux-app\ncd my-tmux-app', lang: 'console' },
+    installForms: {
+      release: { code: 'git clone --branch {tag} --depth 1 https://github.com/libtmux/libtmux-lisp.git vendor/libtmux-lisp', lang: 'console' },
+      prerelease: { code: 'git clone --branch {tag} --depth 1 https://github.com/libtmux/libtmux-lisp.git vendor/libtmux-lisp', lang: 'console' },
+      git: { code: 'git clone https://github.com/libtmux/libtmux-lisp.git vendor/libtmux-lisp', lang: 'console' },
+    },
+    installNote: 'Source-only and unreleased. Requires Linux x86-64, SBCL 2.6.10, ASDF/UIOP 3.3.7 and tmux 3.3a or newer; plain tmux 3.3 is rejected.',
   },
   {
     slug: 'ts',
@@ -1256,13 +1371,94 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
     installNote:
       'A target depends on the product, not the package: write .product(name: "LibTmux", package: "libtmux-swift"). The library is `LibTmux` while the package identity SwiftPM derives from the URL is `libtmux-swift`, which is neither the product name nor the `name:` in the package manifest.',
   },
+  {
+    slug: 'ocaml', projectName: 'libtmux-ocaml', logoLanguage: 'ocaml', shortName: 'ML',
+    name: 'OCaml', language: 'OCaml', packageName: 'libtmux',
+    repo: 'libtmux/libtmux-ocaml', checkout: '~/work/libtmux/libtmux-ocaml',
+    worktree: '~/work/libtmux/libtmux-ocaml-docs-site',
+    source: { path: 'lib', ref: 'master' }, versionedDocs: true, tagGrammar: 'semver',
+    publishesOwnTree: true,
+    docsDispatch: { workflow: 'docs.yml' },
+    renderer: 'astro', generator: 'OCaml typed interfaces and odoc comments', referenceKind: 'model',
+    workspaceCli: 'tmux-workspace apply', workspaceCliAvailability: 'local',
+    productAvailability: { workspace: 'available', mcp: 'excluded' },
+    packages: [{ id: 'workspace', name: 'libtmux-workspace-cli', executable: 'tmux-workspace',
+      source: { path: 'cli', ref: 'master' },
+      installs: [{ label: 'opam (source)', lang: 'console', code: 'git clone https://github.com/libtmux/libtmux-ocaml.git && \\\n  cd libtmux-ocaml && \\\n  opam install .',
+        note: 'Build the CLI from source, then use tmux-workspace apply with a validated JSON workspace.' }] }],
+    installs: [{ label: 'opam (source)', lang: 'console',
+      code: 'git clone https://github.com/libtmux/libtmux-ocaml.git && \\\n  cd libtmux-ocaml && \\\n  opam install .',
+      note: 'Source installation; no registry release. Requires OCaml 5.5.2, Linux and tmux 3.3a through 3.8.' }],
+    initProject: { lang: 'console', code: 'dune init project my_tmux_app' },
+    installForms: {
+      release: { lang: 'console', code: 'opam install .' },
+      prerelease: { lang: 'console', code: 'opam install .' },
+      git: { lang: 'console', code: 'git clone https://github.com/libtmux/libtmux-ocaml.git && \\\n  cd libtmux-ocaml && \\\n  opam install .' },
+    },
+  },
+  {
+    slug: 'perl', projectName: 'libtmux-perl', logoLanguage: 'perl', shortName: 'Pl',
+    name: 'Perl', language: 'Perl', packageName: 'LibTmux',
+    repo: 'libtmux/libtmux-perl', checkout: '~/work/libtmux/libtmux-perl',
+    worktree: '~/work/libtmux/libtmux-perl-docs-site',
+    source: { path: 'packages/core', ref: 'master' }, versionedDocs: true,
+    docsDispatch: { workflow: 'docs.yml' },
+    tagGrammar: 'semver', publishesOwnTree: true,
+    renderer: 'astro', generator: 'Perl PPI signatures and native POD', referenceKind: 'model',
+    workspaceCli: 'libtmux-workspace load', workspaceCliAvailability: 'local',
+    productAvailability: { workspace: 'available', mcp: 'excluded' },
+    packages: [
+      { id: 'core', name: 'LibTmux', require: 'LibTmux::Server', source: { path: 'packages/core', ref: 'master' } },
+      { id: 'async', name: 'LibTmux-Async', require: 'LibTmux::Async::Server', source: { path: 'packages/async', ref: 'master' },
+        installs: [{ label: 'cpm (source)', lang: 'console', code: 'cpm install --global ./packages/async', note: 'From the source checkout after core installation; adds Future and IO::Async with its required Ppoll backend.' }] },
+      { id: 'workspace', name: 'LibTmux-Workspace', require: 'LibTmux::Workspace', executable: 'libtmux-workspace',
+        source: { path: 'packages/workspace', ref: 'master' },
+        installs: [{ label: 'cpm (source)', lang: 'console', code: 'cpm install --global ./packages/workspace', note: 'From the source checkout after core installation. No CPAN release.' }] },
+    ],
+    installs: [{ label: 'cpm (source)', lang: 'console',
+      code: 'git clone https://github.com/libtmux/libtmux-perl.git && \\\n  cd libtmux-perl && \\\n  cpm install --global ./packages/core',
+      note: 'Unpublished development distribution. Requires Perl 5.44.0, Linux x86_64 LP64, and tmux 3.3a or newer.' }],
+    initProject: { lang: 'text', code: 'Create a Perl program using LibTmux::Server; install from the source checkout.' },
+    installForms: {
+      release: { lang: 'console', code: 'cpm install --global ./packages/core' },
+      prerelease: { lang: 'console', code: 'cpm install --global ./packages/core' },
+      git: { lang: 'console', code: 'git clone https://github.com/libtmux/libtmux-perl.git && \\\n  cd libtmux-perl && \\\n  cpm install --global ./packages/core' },
+    },
+    installNote: 'Install core before workspace or optional async. These package names do not identify published CPAN releases.',
+  },
+
 ] as const
 
 type WrapperLibrary = Omit<Port, 'repo' | 'checkout' | 'worktree' | 'tagGrammar' | 'tagPrefix' | 'versionedDocs' | 'renderer' | 'generator'> & {
   parentLibrary: { slug: string; runtime: string }
+  worktree?: string
 }
 
 const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
+  {
+    slug: 'clojure', logoLanguage: 'clojure', shortName: 'Clj', name: 'Clojure', language: 'Clojure',
+    projectName: 'libtmux-clojure',
+    parentLibrary: { slug: 'java', runtime: 'JVM' },
+    source: { path: 'libtmux-clojure', ref: 'master' },
+    sourceReferenceFiles: [
+      { file: 'docs/guide/clojure-api.md', package: 'io.github.libtmux:libtmux-clojure' },
+      { file: 'docs/guide/clojure-core-async-api.md', package: 'io.github.libtmux:libtmux-clojure-core-async' },
+    ],
+    worktree: '~/work/libtmux/libtmux-java-clojure',
+    packageName: 'io.github.libtmux:libtmux-clojure',
+    packages: [{ id: 'async', name: 'libtmux-clojure-core-async',
+      coordinate: 'io.github.libtmux:libtmux-clojure-core-async',
+      source: { path: 'libtmux-clojure-core-async', ref: 'master' }, require: 'libtmux.core-async' }],
+    installs: [{ label: 'Tools.deps', lang: 'clojure', filename: 'deps.edn',
+      code: '{:deps {io.github.libtmux/libtmux-clojure {:mvn/version "{version}"}}}',
+      note: 'Build and install the source checkout first; this module has no published registry release.' }],
+    initProject: { code: 'mkdir clojure-tmux && cd clojure-tmux', lang: 'console' },
+    installForms: {
+      release: { code: '{:deps {io.github.libtmux/libtmux-clojure {:mvn/version "{version}"}}}', lang: 'clojure' },
+      prerelease: { code: '{:deps {io.github.libtmux/libtmux-clojure {:mvn/version "{version}"}}}', lang: 'clojure' },
+      git: { code: 'git clone --branch master https://github.com/libtmux/libtmux-java && (cd libtmux-java && ./gradlew :libtmux:publishToMavenLocal :libtmux-clojure:publishToMavenLocal)', lang: 'console' },
+    },
+  },
   {
     slug: 'kotlin', logoLanguage: 'kotlin', shortName: 'Kt', name: 'Kotlin', language: 'Kotlin',
     projectName: 'libtmux-kotlin',
@@ -1456,6 +1652,11 @@ export const PICKER_GROUP_SUMMARY: Readonly<Record<PickerGroup, string>> = {
   core: 'API reference and guides', mcp: 'Tools for connected assistants', workspace: 'Repeatable development environments',
 }
 
+/** Whether a port includes a product, including its unpublished overview. */
+export function productIncluded(port: Port, product: DocProduct): boolean {
+  return !port.parentLibrary && port.productAvailability?.[product] !== 'excluded'
+}
+
 /** Whether a companion product has a published implementation for a port. */
 export function productAvailable(port: Port, product: DocProduct): boolean {
   return !port.parentLibrary && port.productAvailability?.[product] !== 'unpublished' && !productExcluded(port, product)
@@ -1509,14 +1710,17 @@ export function workspaceOverviewNotice(port: Port): { title: string; body: stri
     }
   }
   if (port.workspaceCliAvailability !== 'local') return concept
+  const cliPackage = port.packages?.find((pkg) => pkg.executable === command)
   return {
     title,
     body: scope + `Build \`${command}\` from the source revision in the installation guide. `
-      + 'Its CLI and workspace library have separate installation and configuration contracts.',
+      + (cliPackage ? `The \`${cliPackage.name}\` package supplies this command. ` : '')
+      + 'Follow the workspace guide for its configuration format.',
   }
 }
 
 export function productDescription(port: Port, product: DocProduct): string {
+  if (port.productAvailability?.[product] === 'excluded') return `${DOC_PRODUCTS[product].label} is excluded from this language port.`
   if (!productAvailable(port, product)) return 'Not available for this language port.'
   if (port.productDescriptions?.[product]) return port.productDescriptions[product]!
   if (product === 'workspace') {
@@ -1650,7 +1854,7 @@ export interface RegistryData {
 const FINAL_RELEASE = /^(?:[A-Za-z][\w.-]*[@/])?v?(?:0|[1-9]\d*)(?:\.(?:0|[1-9]\d*)){2}$/
 
 /** A final release's major number, label and `v` allowed, as in `libtmux@v0.1.0` or `0.1.0-1`. */
-const MAJOR = /^(?:[A-Za-z][\w.-]*[@/])?v?(\d+)\./
+const MAJOR = /^(?:[A-Za-z][\w.-]*[@/])?v?(\d+)(?:\.|$)/
 
 /** The series a final release belongs to, `0.x` for `0.1.0`. */
 const releaseSeries = (name: string | null): ReleaseSeries => `${Number(MAJOR.exec(name ?? '')?.[1] ?? 0)}.x`
@@ -1665,11 +1869,19 @@ export const isReleaseSeries = (maturity: Maturity): maturity is ReleaseSeries =
  * release and no tag is unreleased. Throws on a name whose marker is neither a
  * stage nor absent, so a new spelling fails a test rather than a reader's badge.
  */
-export function releaseMaturity(entry: RegistryEntry): Maturity {
+export function releaseMaturity(entry: RegistryEntry, grammar?: TagGrammar): Maturity {
+  if (grammar === 'cabal') {
+    for (const name of [entry.version, entry.release, entry.tag]) {
+      if (name === null) continue
+      const version = name.replace(/^(?:[A-Za-z][\w.-]*[@/])?v?/, 'v')
+      if (!parseTag(version, grammar)) throw new Error(`releaseMaturity: invalid Cabal version "${name}"`)
+    }
+  }
   if (entry.maturity) return entry.maturity
   if (entry.status === 'release') return releaseSeries(entry.release ?? entry.version ?? entry.tag)
   const name = entry.version ?? entry.tag
   if (!name) return 'unreleased'
+  if (grammar === 'cabal') return releaseSeries(name)
   // Before the stage search, so a stage word in a package label is not the release's stage.
   if (FINAL_RELEASE.test(name)) return releaseSeries(name)
   const stage = /alpha|beta|rc(?=[\d.-]|$)|(?<=\d)[ab](?=\d)/i.exec(name)?.[0].toLowerCase()
@@ -1716,7 +1928,7 @@ export function productStatus(port: Port, product: 'core' | DocProduct, registry
   if (product !== 'core' && productIsConcept(port, product)) return 'concept'
   const entry = registry.ports[port.slug]
   const found = product === 'core' ? entry : entry?.packages?.[port.packages?.find((item) => item.id === product)?.name ?? '']
-  return found ? releaseMaturity(found) : undefined
+  return found ? releaseMaturity(found, port.tagGrammar) : undefined
 }
 
 /**

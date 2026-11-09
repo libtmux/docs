@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro'
 import { API_MODELS } from '../../lib/api-models'
-import { pageSlug, sourceUrl, symbolsForProduct } from '@libtmux/api-model'
+import { pageSlug, sourceUrl, symbolsForProduct } from '@libtmux/api-model/reference'
 import { symbolMarkdownWithLayout } from '../../lib/symbol-markdown'
 import { productApiHref } from '../../lib/product-api'
 import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
