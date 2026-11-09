@@ -64,6 +64,7 @@ jobs:
             echo "perl=$(jq -r .revision site/src/data/api/perl.json)"
           } >> "$GITHUB_OUTPUT"
           echo "lisp=$(jq -r .revision site/src/data/api/lisp.json)" >> "$GITHUB_OUTPUT"
+          echo "erlang=$(jq -r .revision site/src/data/api/erlang.json)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v7
         with:
@@ -118,6 +119,12 @@ jobs:
           repository: libtmux/libtmux-lisp
           ref: ${{ steps.integrated-sources.outputs.lisp }}
           path: .port-sources/lisp
+          persist-credentials: false
+      - uses: actions/checkout@v7
+        with:
+          repository: libtmux/libtmux-erlang
+          ref: ${{ steps.integrated-sources.outputs.erlang }}
+          path: .port-sources/erlang
           persist-credentials: false
 
       # The exporter tests compile a fixture with the package's own toolchain:
@@ -189,6 +196,7 @@ jobs:
           LIBTMUX_DOCS_CHECKOUT_HASKELL: ${{ github.workspace }}/.port-sources/haskell
           LIBTMUX_DOCS_CHECKOUT_PERL: ${{ github.workspace }}/.port-sources/perl
           LIBTMUX_DOCS_CHECKOUT_LISP: ${{ github.workspace }}/.port-sources/lisp
+          LIBTMUX_DOCS_CHECKOUT_ERLANG: ${{ github.workspace }}/.port-sources/erlang
         run: |
           node scripts/stage-port-docs.mjs --from-source
           node scripts/stage-port-docs.mjs --cached --check
@@ -218,7 +226,7 @@ jobs:
           # OCaml's checkout also feeds source-derived usage checks. Its
           # compiled API is qualified by the owning port's exporter job.
           # Common Lisp's checkout stays available here so example sources are checked against the exact revision.
-          LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua,powershell,julia,elixir,ocaml,haskell,perl,lisp
+          LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua,powershell,julia,elixir,ocaml,haskell,perl,lisp,erlang
 
       - name: Upload audited preview
         if: github.event_name == 'pull_request'
