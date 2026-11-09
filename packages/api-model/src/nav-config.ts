@@ -927,7 +927,7 @@ function languageBucket(bucket: Bucket, port: string, root = bucket.id): Bucket 
 }
 
 export const NAV: Record<string, PortNav> = Object.fromEntries(
-  ['perl', 'powershell', 'julia', 'elixir', 'lisp''erlang', 'py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'clojure', 'kotlin', 'scala', 'fsharp', 'csharp', 'cxx', 'swift', 'ocaml'].map((port) => [
+  ['perl', 'powershell', 'julia', 'elixir', 'lisp', 'erlang', 'py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'clojure', 'kotlin', 'scala', 'fsharp', 'csharp', 'cxx', 'swift', 'ocaml'].map((port) => [
     port,
     {
       port,

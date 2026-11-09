@@ -105,7 +105,7 @@ describe('the products a port landing page offers', () => {
   })
 
   it('offers neither product for Lua, Elixir, Haskell or a wrapper library''offers neither product for Lua, Elixir, Erlang or a wrapper library', () => {
-    for (const slug of ['lua', 'elixir', 'haskell''erlang', 'kotlin', 'scala', 'fsharp']) expect(products(slug), slug).toEqual([])
+    for (const slug of ['lua', 'elixir', 'haskell', 'erlang', 'kotlin', 'scala', 'fsharp']) expect(products(slug), slug).toEqual([])
   })
 })
 

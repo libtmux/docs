@@ -115,7 +115,7 @@ export const PORT_LANGUAGES = {
   kotlin: ['kotlin', 'java'], scala: ['scala', 'java'], clojure: ['clojure', 'java'],
   csharp: ['csharp', 'dotnet'], fsharp: ['fsharp', 'dotnet'], powershell: ['powershell', 'dotnet'],
   cxx: ['cpp'], swift: ['swift'], julia: ['julia'], lua: ['lua'], elixir: ['elixir', 'erlang'], ruby: ['ruby'], ocaml: ['ocaml'],
-  haskell: ['haskell'],
+  haskell: ['haskell'], erlang: ['erlang'],
 }
 
 /**
