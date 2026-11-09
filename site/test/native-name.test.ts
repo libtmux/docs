@@ -199,7 +199,7 @@ describe('short names', () => {
   })
 
   it('follow native ownership and qualification for every symbol of every port', { timeout: 30_000 }, () => {
-    const separators: Record<string, string[]> = { perl: ['::'], rs: ['::'], cxx: ['::'], ruby: ['::', '.', '#'], lua: ['.', ':'], lisp: [':'], powershell: ['\\'], clojure: ['/'] }
+    const separators: Record<string, string[]> = { perl: ['::'], rs: ['::'], cxx: ['::'], ruby: ['::', '.', '#'], lua: ['.', ':'], lisp: [':'], powershell: ['\\'], clojure: ['/'], erlang: [':', '.'] }
     for (const [port, model] of Object.entries(API_MODELS)) {
       const owners = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
       for (const symbol of model.symbols) {

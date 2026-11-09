@@ -104,7 +104,7 @@ describe('the products a port landing page offers', () => {
     expect(MCP_SERVED_BY).toEqual({ powershell: 'csharp' })
   })
 
-  it('offers neither product for Lua, Elixir, Haskell or a wrapper library''offers neither product for Lua, Elixir, Erlang or a wrapper library', () => {
+  it('offers neither product for Lua, Elixir, Haskell, Erlang or a wrapper library', () => {
     for (const slug of ['lua', 'elixir', 'haskell', 'erlang', 'kotlin', 'scala', 'fsharp']) expect(products(slug), slug).toEqual([])
   })
 })

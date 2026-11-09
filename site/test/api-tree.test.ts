@@ -100,6 +100,7 @@ describe('shared reference index sections', () => {
         .toEqual([['Libtmux_unix.Client', 'module'], ['Libtmux_eio.Client', 'module']])
       expect(firstEntry(navTree(port)[0]!)?.id).toBe('Libtmux_unix.Client')
     } else if (port === 'clojure') expect(sections[0].types[0].name).toBe('libtmux.core')
+    else if (port === 'erlang') expect(sections[0].types[0].name).toBe('tmux_server')
     else if (port !== 'haskell') expect(sections[0].types[0].publicId ?? sections[0].types[0].id).toBe(CORE_HOME[port].objects!.server)
     if (port !== 'haskell') expect(sections[0].id).toBe('server')
     const ids = sections.flatMap((section) => [...section.types, ...section.free]).map((symbol) => symbol.id)
@@ -266,7 +267,7 @@ describe('major tmux object domains', () => {
     const branches = membersByType(port)
     const compare = compareMembers(memberSignals(port, mentions.mentions))
     const primaryNames = port === 'lisp' ? ['client', 'session', 'window', 'pane', 'snapshot'] : ['Server', 'Session', 'Window', 'Pane', 'Client', 'Snapshot']
-    const owners = model.symbols.filter((symbol) => ['powershell', 'clojure'].includes(port)
+    const owners = model.symbols.filter((symbol) => ['powershell', 'clojure', 'erlang'].includes(port)
       ? symbol.kind === 'module'
       : port === 'haskell' ? OWNER_KINDS.has(symbol.kind)
       : OWNER_KINDS.has(symbol.kind) && [...primaryNames, ...(port === 'ocaml' ? ['Client_observation', 'Window_link'] : [])].includes(symbol.name))
@@ -277,6 +278,7 @@ describe('major tmux object domains', () => {
       .toEqual(expect.arrayContaining(['LibTmux.Id', 'LibTmux.Value', 'LibTmux.Version', 'IdError']))
     else if (port === 'clojure') expect(owners.map((owner) => owner.name).sort())
       .toEqual(['libtmux.async', 'libtmux.control', 'libtmux.core', 'libtmux.core-async', 'libtmux.data'])
+    else if (port === 'erlang') expect(owners.some((owner) => owner.name === 'tmux_server'), port).toBe(true)
     else expect(owners.some((owner) => (owner.publicId ?? owner.id) === CORE_HOME[port].objects!.server), port).toBe(true)
     for (const owner of owners) {
       const displayed = membersOf(model, owner, memberSignals(port, mentions.mentions)).sort(compare)

@@ -14,7 +14,7 @@ export const PORT_FAMILIES: readonly PortFamily[] = [
   { label: 'Compiled & native', ports: ['rs', 'go', 'cxx', 'lisp', 'swift', 'ocaml', 'haskell'] },
   { label: 'JVM', ports: ['java', 'kotlin', 'scala', 'clojure'] },
   { label: '.NET', ports: ['csharp', 'fsharp', 'powershell'] },
-  { label: 'BEAM', ports: ['elixir'] },
+  { label: 'BEAM', ports: ['elixir', 'erlang'] },
 ]
 
 /** The label of the group that collects every port no family names. */

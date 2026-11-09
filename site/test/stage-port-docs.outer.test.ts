@@ -123,7 +123,7 @@ it.each(['ruby', 'lua', 'kotlin', 'ocaml', 'haskell'] as const)('stages other ca
     expect(JSON.parse(readFileSync(cache, 'utf8')).source.revision).toBe(revision)
     const observed = new Date('2000-01-01T00:00:00Z')
     utimesSync(rendered, observed, observed)
-    const repeated = invoke('--port', slug, ...(slug === 'kotlin' ? ['--from-source'] : []))
+    const repeated = invoke('--port', slug, ...(['kotlin', 'ocaml', 'haskell'].includes(slug) ? ['--from-source'] : []))
     expect(repeated.status, repeated.stderr).toBe(0)
     expect(statSync(rendered).mtimeMs).toBe(observed.getTime())
     const wrappers = invoke('--wrappers')

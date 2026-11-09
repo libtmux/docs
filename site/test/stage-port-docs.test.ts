@@ -185,7 +185,7 @@ describe('staged port guide links', () => {
       'Getting started', 'Installation', 'Typed values', 'API documentation', 'Implementation status',
     ])
     else if (port === 'clojure') expect(cards[1].label).toBe('Captures, effects and streams')
-    else if (port === 'perl') expect(cards[1].label).toBe('Installation')
+    else if (port === 'perl' || port === 'erlang') expect(cards[1].label).toBe('Installation')
     else if (port !== 'ocaml') expect(cards[1].label).toBe('Attaching to tmux')
     if (port === 'perl') {
       const example = files.get('perl/examples/orchestration/index.md')!

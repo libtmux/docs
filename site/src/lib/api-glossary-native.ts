@@ -22,6 +22,7 @@ const rubySyntax = (page: string) => `https://docs.ruby-lang.org/en/3.4/syntax/$
 const luaManual = (section: string) => `https://www.lua.org/manual/5.4/manual.html#${section}`
 const luaAnnotation = (section: string) => `https://luals.github.io/wiki/annotations/#${section}`
 const elixirDocs = (page: string) => `https://elixir.hexdocs.pm/${page}`
+const erlangDocs = (page: string) => `https://www.erlang.org/doc/system/${page}.html`
 const swiftBook = (page: string) => `https://docs.swift.org/latest/documentation/the-swift-programming-language/${page}/`
 const clhs = (page: string) => `https://www.lispworks.com/documentation/HyperSpec/Body/${page}.htm`
 
@@ -140,6 +141,15 @@ export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> =
     exception: term('A Common Lisp condition type that handlers can inspect and, where documented, recover from through restarts.', 'Common Lisp conditions', clhs('09_'), 'Signalling a condition and transferring control are distinct operations; read the function contract for the condition and restart protocol.'),
     opaque: term('A public CLOS class whose representation is intentionally outside the supported API.', 'Common Lisp classes', clhs('m_defcla'), 'Construct, inspect and compare instances through exported functions rather than depending on private slot names.'),
     package: term('The ASDF system supplying this API, distinct from the Common Lisp package that qualifies its symbols.', 'ASDF systems', 'https://asdf.common-lisp.dev/asdf.html#Defining-systems-with-defsystem'),
+  },
+  erlang: {
+    module: term('An Erlang module, a file of functions compiled together and called by name as module:function(Arguments).', 'Erlang modules', erlangDocs('ref_man_modules'), 'A module exports the functions other modules may call, each identified by its name and arity.'),
+    function: term('An Erlang function identified by its module, name and arity.', 'Erlang functions', erlangDocs('ref_man_functions'), 'Functions of one name and different arities are different functions. A function that fails raises an exception or returns an error tuple, as its documentation says.'),
+    struct: term('An Erlang record, a tuple with named fields declared with -record and shared through a header file.', 'Erlang records', erlangDocs('ref_man_records'), 'A record is a plain tuple at run time. Code that reads it needs the same declaration, usually from a shared header.'),
+    package: term('The OTP application supplying these modules, described by its .app.src file and started with the application controller.', 'OTP applications', erlangDocs('applications'), 'An application declares the applications it depends on and the modules it provides.'),
+    opaque: term('An Erlang type declared with -opaque, whose structure callers must not depend on.', 'Erlang types and function specifications', erlangDocs('typespec'), 'Other modules should build and inspect the value only through the declaring module’s functions.'),
+    abstract: term('A callback of a behaviour, declared with -callback and without a body.', 'Erlang behaviours', erlangDocs('design_principles'), 'A module implements a behaviour by exporting each callback the behaviour declares.'),
+    typealias: term('An Erlang type declared with -type or -opaque, named and given an arity.', 'Erlang types and function specifications', erlangDocs('typespec'), 'Types document values for readers and tools such as Dialyzer. They are not checked when a function runs.'),
   },
   elixir: {
     module: term('An Elixir module, a named collection of functions, macros and types defined with defmodule.', 'Elixir modules and functions', elixirDocs('modules-and-functions.html'), 'Module names are atoms, and a nested name such as LibTmux.Control.Request is one flat module rather than a child of LibTmux.Control.'),

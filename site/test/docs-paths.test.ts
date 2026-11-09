@@ -86,12 +86,16 @@ describe('product document URLs', () => {
       { path: 'clojure/latest/guides/native-api', target: 'clojure/latest/reference' },
       { path: 'clojure/latest/guides/adapter-api', target: 'clojure/latest/reference/libtmux-core-async' },
       { path: 'fsharp/v0.46.2/guides/api-overview', target: 'fsharp/v0.46.2/reference' },
+      { path: 'erlang/latest/guides/overview', target: 'erlang/latest/guides' },
     ])
     expect(sourceGuideRedirects('julia')).toEqual([
       { path: 'guides/api-overview', target: 'reference' },
     ])
     expect(sourceGuideRedirects('fsharp')).toEqual([
       { path: 'guides/api-overview', target: 'reference' },
+    ])
+    expect(sourceGuideRedirects('erlang')).toEqual([
+      { path: 'guides/overview', target: 'guides' },
     ])
     expect(sourceGuideRedirects('ocaml')).toEqual([
       { path: 'guides/api', target: 'reference' },

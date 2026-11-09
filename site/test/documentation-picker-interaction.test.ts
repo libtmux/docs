@@ -136,14 +136,14 @@ async function renderPicker(entries: PagePortLink[], portSlug = 'julia') {
   win.document.body.innerHTML = await container.renderToString(await pickerComponent, { props: { entries, portSlug } })
 }
 
-it('draws each port once, under its family, with Elixir under BEAM', async () => {
+it('draws each port once, under its family, with Elixir and Erlang under BEAM', async () => {
   await renderPicker(pagePortLinks({ pagePath: 'reference/glossary', portSlug: 'elixir', version: 'latest', defaults: {}, docs: [] }), 'elixir')
   const drawn = Array.from(win.document.querySelectorAll('.port-family')).map((section) => ({
     label: section.querySelector('h3')!.textContent,
     ports: [...new Set(Array.from(section.querySelectorAll('[data-port]')).map((row) => row.getAttribute('data-port')))],
   }))
   expect(drawn.map((family) => family.label)).toEqual(PORT_FAMILIES.map((family) => family.label))
-  expect(drawn.find((family) => family.label === 'BEAM')?.ports).toEqual(['elixir'])
+  expect(drawn.find((family) => family.label === 'BEAM')?.ports).toEqual(['elixir', 'erlang'])
   expect(drawn.filter((family) => family.ports.includes('elixir'))).toHaveLength(1)
   expect(drawn.flatMap((family) => family.ports).sort()).toEqual(PORTS.map((port) => port.slug).sort())
 })

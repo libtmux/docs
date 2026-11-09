@@ -356,7 +356,7 @@ function parserFor(hostname, pathname, page) {
   if (hostname === 'javadoc.io' || hostname === 'www.scala-lang.org' || hostname === 'typelevel.org') return /class="fqname|id="definition"/.test(page.html) ? scaladoc : javadoc
   if (hostname === 'kotlinlang.org' && pathname.includes('/api/')) return dokka
   if (hostname === 'en.cppreference.com') return cppreference
-  if (hostname.endsWith('hexdocs.pm')) return exdoc
+  if (hostname.endsWith('hexdocs.pm') || hostname === 'www.erlang.org') return exdoc
   if (hostname === 'fsharp.github.io') return fsdocs
   if (hostname === 'csharp.sdk.modelcontextprotocol.io') return docfx
   if (hostname === 'learn.microsoft.com' && /\/(dotnet\/api|powershell\/module)\//i.test(pathname)) return learn

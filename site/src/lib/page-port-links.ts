@@ -141,7 +141,7 @@ export function pagePortLinks({
     } else if (protocol && !protocol[2]) {
       if (productAvailable(port, 'mcp') && MCP_REFERENCE[port.slug]) links = [{ href: portPageUrl(port, targetVersion, path) }]
     } else if (!port.parentLibrary && (SHARED_PAGE_PATHS as readonly string[]).includes(path)) {
-      if ((path !== 'mcp' && path !== 'workspace') || productIncluded(port, path)) {
+      if ((path !== 'mcp' && path !== 'workspace') || !productExcluded(port, path)) {
         links = [{ href: portPageUrl(port, targetVersion, path) }]
       }
     } else {
