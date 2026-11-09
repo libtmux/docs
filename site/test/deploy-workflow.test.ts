@@ -687,6 +687,7 @@ const testedHead = 'b'.repeat(40)
 const testedMerge = 'a'.repeat(40)
 const currentPullRequest = {
   number: 42, state: 'open',
+  draft: false, labels: [],
   head: { repo: { full_name: 'libtmux/libtmux-powershell' }, sha: testedHead },
   merge_commit_sha: testedMerge,
 }
@@ -741,15 +742,26 @@ describe('current PR publication guard', () => {
     expect(reusable.slice(start)).not.toMatch(/always\(\)|!cancelled\(\)|continue-on-error/)
   })
 
-  it.each(['powershell', 'julia', 'elixir'])('allows the current tested same-repository %s preview', (port) => {
+  it.each(['powershell', 'julia', 'elixir', 'erlang'])('allows the current tested same-repository %s preview', (port) => {
     const repo = `libtmux/libtmux-${port}`
     const result = requireCurrentPullRequest({ ...currentPullRequest, head: { repo: { full_name: repo }, sha: testedHead } }, { PORT: port, REPOSITORY: repo })
     expect(result.status, result.stderr).toBe(0)
     expect(result.calls).toEqual([['api', '--method', 'GET', `repos/${repo}/pulls/42`]])
   })
 
+  it('keeps ordinary labels eligible for preview publication', () => {
+    expect(requireCurrentPullRequest({ ...currentPullRequest, labels: [{ name: 'documentation' }] }).status).toBe(0)
+  })
+
   it.each([
     ['closed PR', { ...currentPullRequest, state: 'closed' }],
+    ['draft PR', { ...currentPullRequest, draft: true }],
+    ['preview opt-out label', { ...currentPullRequest, labels: [{ name: 'no-preview' }] }],
+    ['case-varied preview opt-out', { ...currentPullRequest, labels: [{ name: 'No-Preview' }] }],
+    ['unknown draft state', { ...currentPullRequest, draft: null }],
+    ['string draft state', { ...currentPullRequest, draft: 'false' }],
+    ['unknown labels', { ...currentPullRequest, labels: null }],
+    ['malformed labels', { ...currentPullRequest, labels: {} }],
     ['fork head', { ...currentPullRequest, head: { repo: { full_name: 'other/fork' }, sha: testedHead } }],
     ['new head', { ...currentPullRequest, head: { ...currentPullRequest.head, sha: 'c'.repeat(40) } }],
     ['new merge', { ...currentPullRequest, merge_commit_sha: 'd'.repeat(40) }],

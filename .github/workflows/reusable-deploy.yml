@@ -297,7 +297,8 @@ jobs:
 
       # Keep this check inside the job that uploads. A partial rerun can reuse
       # upstream job outputs, but must query current PR state on every upload
-      # attempt. Match the verified artifact source to the tested merge too.
+      # attempt. Honor current preview opt-outs and match the artifact source
+      # to the tested merge too.
       - name: Require current tested pull request
         if: inputs.require-current-pr && inputs.version-kind == 'pr'
         env:
@@ -323,10 +324,12 @@ jobs:
           jq -e --slurp --argjson number "$PR" --arg repo "$REPOSITORY" --arg head "$EXPECTED_HEAD" --arg merge "$TESTED_MERGE" '
             length == 1 and (.[0] |
               type == "object" and .number == $number and .state == "open" and
+              .draft == false and (.labels | type == "array") and
+              all(.labels[]; (.name | type) == "string" and (.name | ascii_downcase) != "no-preview") and
               .head.repo.full_name == $repo and .head.sha == $head and
               .merge_commit_sha == $merge)
           ' <<< "$response" > /dev/null || {
-            echo '::error::current PR is not open at the tested source; refusing preview publication' >&2
+            echo '::error::current PR is ineligible or differs from the tested source; refusing preview publication' >&2
             exit 1
           }
 
