@@ -30,3 +30,26 @@ it('titles a page in the manifest as its Markdown twin titles it', async () => {
   for (const entry of checked) expect(entry.title, entry.url).toBe(twins.get(entry.url))
   expect(checked.map((entry) => entry.title)).toEqual(['Rust-based tmux workspace manager', 'tmux MCP, built in Rust'])
 })
+
+it('omits excluded products while preserving unpublished overviews in agent manifests', async () => {
+  entries.splice(0, entries.length)
+  vi.stubEnv('LIBTMUX_DOCS_VERSION', 'latest')
+  for (const scope of ['', 'lisp', 'lua']) {
+    vi.stubEnv('LIBTMUX_DOCS_PORT', scope)
+    const json = await (await manifest({ site: new URL('https://libtmux.org') } as Parameters<typeof manifest>[0])).json()
+    if (scope) expect(json.ports.map((port: { slug: string }) => port.slug)).toEqual([scope])
+    if (scope !== 'lua') {
+      const lisp = json.ports.find((port: { slug: string }) => port.slug === 'lisp')
+      expect(lisp.products.map((product: { slug: string }) => product.slug)).toEqual(['workspace'])
+      expect(lisp.products[0]).toMatchObject({ availability: 'available', inDevelopment: true })
+      expect(lisp.products[0].url).toMatch(/\/lisp\/latest\/workspace\/$/)
+    }
+    if (scope !== 'lisp') {
+      const lua = json.ports.find((port: { slug: string }) => port.slug === 'lua')
+      expect(lua.products.find((product: { slug: string }) => product.slug === 'mcp')).toMatchObject({
+        availability: 'unpublished', reference: null, protocol: null,
+        url: expect.stringMatching(/\/lua\/latest\/mcp\/$/),
+      })
+    }
+  }
+})
