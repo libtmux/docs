@@ -209,9 +209,24 @@ option-arity qualification. Custom `do` semantics, command-bearing pattern
 bindings, tmux command separators and sends beyond the shared helper-depth
 limit fail explicitly. Actual sends require a resolved scope and public
 attribution; ambiguous or widely shared helpers need further qualification.
-The current public scalar modules send no commands, so the generated usage
-document has no symbol entries. New public operations need source evidence
-and reader qualification before appearing on tmux command pages.
+
+The queued native capture path uses a separate
+[reviewed source profile](../scripts/tmux-usage/haskell-native.json).
+Qualification checks the exact revision, the complete library and C-source
+inventory, each file's digest, every public callable or field classification,
+the full API model and native build metadata, and the
+[reviewed claims](../scripts/tmux-usage/claims.json). Its parser indexes
+declaration bounds for the shared evidence audit; it does not infer queued
+execution from function names. A changed source, public export or claim fails
+qualification until the profile is reviewed again.
+
+Capture selects `ReadSnapshot`, whose fixed queue reaches the native spawner.
+It sends `display-message` and `if-shell`; `list-clients` runs when sessions
+exist. Graph enumeration uses tmux format loops. The older private scalar and
+graph readers are not public capture paths. Recovery inspects or retires
+existing owners without redispatch. Caller-supplied `IO` in `withServer` and
+`tryTmux` is classified separately, and pure snapshot navigation has no send.
+The scalar-only API retains the ordinary reader and has no command entries.
 
 ### Erlang compiler artifact
 

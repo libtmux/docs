@@ -5276,6 +5276,32 @@
           ]
         }
       ]
+    },
+    {
+      "port": "haskell",
+      "kind": "values",
+      "why": "windowLinks reads captured graph appearances or supplies offline fixture data; neither operation sends link-window.",
+      "names": [
+        "windowLinks"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "in": "src/LibTmux/Snapshot",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Snapshot.hs:95",
+          "has": [
+            "windowLinks = G.graphLinks"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Snapshot/Fixture.hs:68",
+          "has": [
+            "windowLinks :: ![WindowLink]"
+          ]
+        }
+      ]
     }
   ]
 }

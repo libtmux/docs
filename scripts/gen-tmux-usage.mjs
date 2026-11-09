@@ -32,6 +32,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { GRAMMARS, isLibrarySource, scanSource } from './lib/tmux-usage-scan.mjs'
 import { reachableHaskellSources } from './lib/tmux-usage-haskell.mjs'
+import { qualifyNativeHaskell } from './lib/tmux-usage-haskell-native.mjs'
 import { applyConditions, applyExclusions, conditionProblem, deriveUsage, partialProblems, ruleHolds, verifyClaims } from './lib/tmux-usage-derive.mjs'
 import { auditEvidence } from './lib/tmux-usage-audit.mjs'
 import { dispatcherProblems, guardProblems, preflightProblems } from './lib/tmux-usage-dispatch.mjs'
@@ -201,7 +202,9 @@ export function portDocument(port, model, found, commands) {
 }
 
 /** Read a port's source at its pinned revision: every function, and the public symbols that name them. */
-export async function scanPort({ port, model, commands, checkout, known, dispatch, builders, guards, labels, trace }) {
+export async function scanPort({ port, model, commands, checkout, known, dispatch, builders, guards, labels, trace,
+  nativeProfile = /** @type {object | undefined} */ (undefined),
+  nativeClaims = /** @type {import('./lib/tmux-usage-derive.mjs').Claim[]} */ ([]) }) {
   const grammar = GRAMMARS[port]
   // A port with no reader would be generated as sending nothing, and pass.
   if (!grammar) throw new Error(`${port}: no reader for its source; add it to GRAMMARS in scripts/lib/tmux-usage-scan.mjs`)
@@ -210,9 +213,24 @@ export async function scanPort({ port, model, commands, checkout, known, dispatc
   const types = []
   const modules = []
   const available = librarySources(checkout, model.revision, grammar)
+  const cache = new Map()
+  const readSource = (path) => {
+    if (available.has(path)) return available.get(path)
+    if (!cache.has(path)) {
+      const result = spawnSync('git', ['-C', checkout, 'show', `${model.revision}:${path}`], { maxBuffer: 1 << 28 })
+      cache.set(path, result.status === 0 ? result.stdout.toString('utf8') : undefined)
+    }
+    return cache.get(path)
+  }
   const sources = grammar === 'haskell'
     ? await reachableHaskellSources(available, model.symbols.map((symbol) => symbol.source?.file).filter(Boolean))
     : available
+  const nativeCapture = port === 'haskell' && model.repo === 'libtmux/libtmux-haskell'
+    && (model.nativeProvenance?.exporter?.version >= 2 || symbols.some((symbol) => symbol.id === 'LibTmux.Server#v:capture'))
+  if (nativeCapture && !nativeProfile) throw new Error('Native Haskell usage qualification: no reviewed profile for this capture API')
+  const reviewedFiles = nativeCapture ? qualifyNativeHaskell({ model, symbols,
+    inventory: git(checkout, 'ls-tree', '-r', '--name-only', model.revision).toString('utf8').trim().split('\n'),
+    readSource, profile: nativeProfile, claims: nativeClaims }) : undefined
   const wanted = new Set(commands)
   const native = port === 'perl' ? readJson(join(checkout, 'docs/_build/api.json')) : undefined
   if (native && (native.nativeScan?.schema !== 'libtmux.perl-source/v1' || native.nativeScan.revision !== model.revision || native.nativeProvenance?.exporter?.working_tree !== false)) {
@@ -220,7 +238,7 @@ export async function scanPort({ port, model, commands, checkout, known, dispatc
   }
   for (const [path, text] of sources) {
     if (grammar === 'haskell' && path.endsWith('.lhs')) throw new Error(`Haskell source usage coverage: literate input is not qualified: ${path}`)
-    const scanned = await scanSource({ grammar, text, commands: wanted, known, dispatch, builders, guards, labels, trace, native: native?.nativeScan.files[path] })
+    const scanned = await scanSource({ grammar, text, commands: wanted, known, dispatch, builders, guards, labels, trace, native: native?.nativeScan.files[path], reviewedDigest: reviewedFiles?.[path] })
     for (const fn of scanned.functions) functions.push({ ...fn, file: path })
     for (const type of scanned.types) types.push({ ...type, file: path })
     for (const module of scanned.modules ?? []) modules.push({ ...module, file: path })
@@ -228,15 +246,6 @@ export async function scanPort({ port, model, commands, checkout, known, dispatc
   if (port === 'ocaml') {
     if (!sources.size || !functions.length) throw new Error('ocaml: the pinned library scan found no implementation functions')
     bindOcamlDefinitions({ symbols, functions, modules, sources })
-  }
-  const cache = new Map()
-  const readSource = (path) => {
-    if (sources.has(path)) return sources.get(path)
-    if (!cache.has(path)) {
-      const result = spawnSync('git', ['-C', checkout, 'show', `${model.revision}:${path}`], { maxBuffer: 1 << 28 })
-      cache.set(path, result.status === 0 ? result.stdout.toString('utf8') : undefined)
-    }
-    return cache.get(path)
   }
   return { symbols, functions, types, readSource }
 }
@@ -399,6 +408,8 @@ export { dispatcherProblems, guardProblems, preflightProblems }
 export async function main() {
   const scopes = readJson(join(usageDir, 'scopes.json'))
   const claims = existsSync(claimsPath) ? readJson(claimsPath).claims : []
+  const nativeProfilePath = join(rulesDir, 'haskell-native.json')
+  const nativeProfile = existsSync(nativeProfilePath) ? readJson(nativeProfilePath) : undefined
   const exclusions = existsSync(exclusionsPath) ? readJson(exclusionsPath).exclusions : []
   const reviews = existsSync(reviewsPath) ? readJson(reviewsPath).reviews : []
   const dispatchers = existsSync(dispatchersPath) ? readJson(dispatchersPath).dispatchers : []
@@ -450,6 +461,8 @@ export async function main() {
       dispatch: new Set(apis.filter((api) => api.kind !== 'builder').map((api) => api.name)), builders: new Set(apis.filter((api) => api.kind === 'builder').map((api) => api.name)),
       guards: wrappers.map(({ name, owner }) => ({ name, owner })),
       labels: new Map(apis.filter((api) => api.labels?.length).map((api) => [api.name, new Set(api.labels.map((label) => label.at))])),
+      nativeProfile: port.slug === 'haskell' ? nativeProfile : undefined,
+      nativeClaims: rules(claims),
     })
     scans.set(scanKey(port.slug, model.revision), { read: scanned.readSource, functions: scanned.functions })
     const dispatchProblems = model.revision === pinned

@@ -94,7 +94,75 @@
   ],
   "port": "haskell",
   "repo": "libtmux/libtmux-haskell",
-  "revision": "581f0ee45016ffb2283366bb1edc1658df26c5ed",
+  "revision": "875045d7b7b2d17fa76ec614aa83809d6fe71719",
   "schemaVersion": 1,
-  "symbols": {}
+  "symbols": {
+    "LibTmux.Server#v:capture": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "cbits/process.c:125",
+          "internal/LibTmux/Internal/Process/Native.hs:30",
+          "internal/LibTmux/Internal/Process/Native.hs:100",
+          "internal/LibTmux/Internal/Process.hs:86",
+          "internal/LibTmux/Internal/Process.hs:178",
+          "internal/LibTmux/Internal/Runtime.hs:554",
+          "internal/LibTmux/Internal/Runtime.hs:479",
+          "internal/LibTmux/Internal/Runtime.hs:480",
+          "internal/LibTmux/Internal/Runtime.hs:444",
+          "internal/LibTmux/Internal/Runtime.hs:427",
+          "internal/LibTmux/Internal/Capture.hs:86",
+          "internal/LibTmux/Internal/Capture.hs:79",
+          "src/LibTmux/Server.hs:110",
+          "internal/LibTmux/Internal/Record.hs:104"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "if-shell",
+        "evidence": [
+          "cbits/process.c:125",
+          "internal/LibTmux/Internal/Process/Native.hs:30",
+          "internal/LibTmux/Internal/Process/Native.hs:100",
+          "internal/LibTmux/Internal/Process.hs:86",
+          "internal/LibTmux/Internal/Process.hs:178",
+          "internal/LibTmux/Internal/Runtime.hs:554",
+          "internal/LibTmux/Internal/Runtime.hs:479",
+          "internal/LibTmux/Internal/Runtime.hs:480",
+          "internal/LibTmux/Internal/Runtime.hs:444",
+          "internal/LibTmux/Internal/Runtime.hs:427",
+          "internal/LibTmux/Internal/Capture.hs:86",
+          "internal/LibTmux/Internal/Capture.hs:79",
+          "src/LibTmux/Server.hs:110",
+          "internal/LibTmux/Internal/Record.hs:106"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "cbits/process.c:125",
+          "internal/LibTmux/Internal/Process/Native.hs:30",
+          "internal/LibTmux/Internal/Process/Native.hs:100",
+          "internal/LibTmux/Internal/Process.hs:86",
+          "internal/LibTmux/Internal/Process.hs:178",
+          "internal/LibTmux/Internal/Runtime.hs:554",
+          "internal/LibTmux/Internal/Runtime.hs:479",
+          "internal/LibTmux/Internal/Runtime.hs:480",
+          "internal/LibTmux/Internal/Runtime.hs:444",
+          "internal/LibTmux/Internal/Runtime.hs:427",
+          "internal/LibTmux/Internal/Capture.hs:86",
+          "internal/LibTmux/Internal/Capture.hs:79",
+          "src/LibTmux/Server.hs:110",
+          "internal/LibTmux/Internal/Record.hs:114",
+          "internal/LibTmux/Internal/Record.hs:106"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "when the server has sessions"
+      }
+    ]
+  }
 }

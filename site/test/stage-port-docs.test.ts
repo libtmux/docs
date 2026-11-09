@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { artifactFromRevision, expandDocumenter, linkSnapshotDepths, rewriteLinks, stagedPortGuides, stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
 import { PORTS } from '../src/lib/ports'
-import { SOURCE_GUIDE_PORTS } from '../src/lib/port-documentation'
+import { SOURCE_GUIDE_PORTS, sourceGuidesFor } from '../src/lib/port-documentation'
 import scalaGuides from '../src/data/port-guides/scala.json'
 import fsharpGuides from '../src/data/port-guides/fsharp.json'
 import csharpModel from '../src/data/api/csharp.json'
@@ -69,18 +69,19 @@ describe('integrated guide inputs', () => {
 })
 
 describe('staged port guide links', () => {
-  it('stages revision-bound Haskell reader guides without advertising operations', () => {
+  it('stages revision-bound Haskell capture guides and preserves source fragments', () => {
     const revision = haskellModel.revision
     const program = '```console\n$ cabal run --verbose=0 typed-values\n```'
-    const guides = ['README', 'installation', 'values', 'api', 'status'].map((name) => ({
-      path: `docs/${name}.md`,
-      content: `# ${name}\n\n[Install](installation.md) [Program](../examples/typed-values/Main.hs)\n\n[LibTmux.Id](../src/LibTmux/Id.hs)\n\n[Source line](../src/LibTmux/Id.hs#L20) [Unknown anchor](../src/LibTmux/Id.hs#unknown)\n\n${program}\n`,
+    const guides = sourceGuidesFor('haskell').map(({ sourcePath }) => ({
+      path: sourcePath,
+      content: `# ${sourcePath}\n\n[Install](installation.md) [Program](../examples/typed-values/Main.hs)\n\n[LibTmux.Id](../src/LibTmux/Id.hs) [LibTmux.Server](../src/LibTmux/Server.hs)\n\n[Source line](../src/LibTmux/Id.hs#L20) [Unknown anchor](../src/LibTmux/Id.hs#unknown)\n\n${program}\n`,
     }))
     const files = stagedPortGuides('haskell', { source: { repository: 'libtmux/libtmux-haskell', revision }, guides })
     const index = files.get('haskell/guides/index.md')!
-    expect(index).toContain('run the public values example')
-    expect(index).not.toContain('Connect to tmux')
-    expect(files.size).toBe(6)
+    expect(index).toContain('capture and navigate a server')
+    expect(index).toContain('capture/')
+    expect(index).toContain('offline-fixtures/')
+    expect(files.size).toBe(guides.length + 1)
     for (const [path, content] of files) {
       expect(path).toMatch(/^haskell\/guides\//)
       expect(content).toContain(`"ref":"${revision}"`)
@@ -90,6 +91,7 @@ describe('staged port guide links', () => {
     expect(page).toContain(`https://github.com/libtmux/libtmux-haskell/blob/${revision}/examples/typed-values/Main.hs`)
     expect(page).toContain(program)
     expect(page).toContain('[LibTmux.Id](../../reference/libtmux-id/)')
+    expect(page).toContain('[LibTmux.Server](../../reference/libtmux-server/)')
     expect(page).toContain(`https://github.com/libtmux/libtmux-haskell/blob/${revision}/src/LibTmux/Id.hs#L20`)
     expect(page).toContain(`https://github.com/libtmux/libtmux-haskell/blob/${revision}/src/LibTmux/Id.hs#unknown`)
     expect(page).not.toContain('reference/libtmux-id/#')
@@ -182,7 +184,8 @@ describe('staged port guide links', () => {
     const setup = files.get(`${port}/${cards[0].href.slice(3)}index.md`)!
     expect(cards[0].label).toBe(JSON.parse(/^title: (.+)$/m.exec(setup)![1]))
     if (port === 'haskell') expect(cards.map((card: { label: string }) => card.label)).toEqual([
-      'Getting started', 'Installation', 'Typed values', 'API documentation', 'Implementation status',
+      'Getting started', 'Installation', 'Capture and navigate', 'Offline fixtures',
+      'Typed values', 'Capture performance', 'API documentation', 'Implementation status',
     ])
     else if (port === 'clojure') expect(cards[1].label).toBe('Captures, effects and streams')
     else if (port === 'perl' || port === 'erlang') expect(cards[1].label).toBe('Installation')

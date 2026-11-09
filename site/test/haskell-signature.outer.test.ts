@@ -17,7 +17,7 @@ const tokens = (text: string) => text.replace(/\s+/g, ' ').trim()
 describe('native Haddock signatures', () => {
   it('keeps signatureless module declarations on the ordinary named-header path', async () => {
     const modules = model.symbols.filter((symbol) => symbol.kind === 'module')
-    expect(modules).toHaveLength(3)
+    expect(modules).toHaveLength(7)
     for (const symbol of modules) {
       expect(symbol.signatures).toEqual([])
       expect(usesNativeSignatures(symbol, 'haskell')).toBe(false)
@@ -28,7 +28,7 @@ describe('native Haddock signatures', () => {
   })
 
   it('uses the native text and explicit destinations for every public header and Markdown twin', async () => {
-    expect(declarations).toHaveLength(35)
+    expect(declarations).toHaveLength(221)
     let links = 0
     for (const symbol of declarations) {
       expect(usesNativeSignatures(symbol, 'haskell'), symbol.id).toBe(true)
@@ -50,7 +50,7 @@ describe('native Haddock signatures', () => {
       for (const [, href] of expected) expect(markdown).toContain(`](${href})`)
       expect(markdown).not.toContain('## Methods')
     }
-    expect(links).toBe(58)
+    expect(links).toBe(291)
   })
 
   it('renders each real production header with native links and its own declaration anchor', async () => {
@@ -60,7 +60,7 @@ describe('native Haddock signatures', () => {
       try {
         const element = rendered.signatures[0]!
         expect(displayedSignature(element), symbol.id).toBe(rendered.layouts.get(symbol.signatures[0]!)!.text)
-        expect(element.getAttribute('data-code-width-status')).toBe('fits')
+        expect(element.getAttribute('data-code-width-status'), symbol.id).toBe('fits')
         const name = element.querySelector('a.api-declaration-name')!
         expect(name?.textContent).toBe(symbol.name)
         expect(name?.getAttribute('href')).toBe(nameHref)
@@ -75,7 +75,7 @@ describe('native Haddock signatures', () => {
 
   it('keeps data constructors out of dispatch-method sections', () => {
     const constructors = declarations.filter((symbol) => symbol.signatures[0]?.methodKind === 'constructor')
-    expect(constructors).toHaveLength(5)
+    expect(constructors).toHaveLength(43)
     for (const symbol of constructors) {
       expect(apiMethodDetails(symbol, 'haskell')).toEqual([])
       expect(apiEntrySections(symbol, 'haskell').map((section) => section.label)).not.toContain('Methods')
