@@ -38,13 +38,18 @@
   outline-offset: -2px;
 }
 
+/* The panel holds the program and its toolbar; it is the first column. */
+.home-example-stage > .home-example-code {
+  min-width: 0;
+}
+
 /* The code is the first column; the side holds the tmux and the result. Narrow, they stack: code, tmux, result. */
 .home-example-stage {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
 }
 
-.home-example-stage > .home-example-view {
+.home-example-stage > .home-example-code > .home-example-view {
   min-width: 0;
   container-type: inline-size;
 }
@@ -55,26 +60,26 @@
 }
 
 /* The program is set a size smaller than the homepage's, so that most of its lines fit the column beside the tmux. */
-.home-example-player .home-example-stage > .home-example-view .expressive-code {
+.home-example-player .home-example-stage > .home-example-code > .home-example-view .expressive-code {
   --ec-codeFontSize: clamp(0.75rem, calc((100cqi - 2rem) / (var(--home-code-columns) * 0.625)), 0.875rem);
 }
 
 /* More specific than the landing page's cap on every program in its panels, which holds for the stand-alone example. */
-.home-example-player .home-example-stage > .home-example-view .expressive-code {
+.home-example-player .home-example-stage > .home-example-code > .home-example-view .expressive-code {
   margin: 0;
 }
 
-.home-example-player .home-example-stage > .home-example-view .expressive-code .frame,
-.home-example[data-player] .home-example-player .home-example-stage > .home-example-view .expressive-code pre {
+.home-example-player .home-example-stage > .home-example-code > .home-example-view .expressive-code .frame,
+.home-example[data-player] .home-example-player .home-example-stage > .home-example-code > .home-example-view .expressive-code pre {
   margin: 0;
   border: 0;
   border-radius: 0;
   box-shadow: none;
 }
 
-.home-example[data-player] .home-example-player .home-example-stage > .home-example-view .expressive-code pre {
+.home-example[data-player] .home-example-player .home-example-stage > .home-example-code > .home-example-view .expressive-code pre {
   box-sizing: border-box;
-  height: 17rem;
+  height: calc(17rem - var(--home-toolbar-row, 0rem));
   max-height: none;
   overflow: auto;
   tab-size: 8;
@@ -89,13 +94,14 @@
     height: 35rem;
   }
 
-  .home-example-stage > .home-example-view,
-  .home-example-stage > .home-example-view .expressive-code,
-  .home-example-stage > .home-example-view .expressive-code .frame {
+  .home-example-stage > .home-example-code,
+  .home-example-stage > .home-example-code > .home-example-view,
+  .home-example-stage > .home-example-code > .home-example-view .expressive-code,
+  .home-example-stage > .home-example-code > .home-example-view .expressive-code .frame {
     height: 100%;
   }
 
-  .home-example[data-player] .home-example-player .home-example-stage > .home-example-view .expressive-code pre {
+  .home-example[data-player] .home-example-player .home-example-stage > .home-example-code > .home-example-view .expressive-code pre {
     height: 100%;
   }
 

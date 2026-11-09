@@ -74,7 +74,7 @@ const descriptions: Record<string, string> = {
   .home-example-link { margin-block: .8rem 1.2rem; font-size: .8125rem; color: var(--color-muted); }
   .home-example-link a { color: var(--color-link); }
   /* Reserve the vertical scrollbar before sizing text to the code container. */
-  .home-examples :global(.expressive-code pre) { max-height: 34rem; overflow: auto; tab-size: 8; container-type: inline-size; scrollbar-gutter: stable; }
+  .home-examples :global(.expressive-code pre) { max-height: calc(34rem - var(--home-toolbar-row, 0rem)); overflow: auto; tab-size: 8; container-type: inline-size; scrollbar-gutter: stable; }
   @media (max-width: 48rem) {
     .home-preview { grid-template-columns: 1fr; }
     h1 { max-width: 18ch; }
