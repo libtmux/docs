@@ -7,7 +7,7 @@ import { Window, type HTMLButtonElement } from 'happy-dom'
 import ts from 'typescript'
 import { abbreviateNamespace, splitQualifiedName } from '../src/lib/api-labels'
 import { API_MODELS } from '../src/lib/api-models'
-import { loadAstroTemplate, renderAstroTemplate, withoutScope } from './astro-templates'
+import { loadAstroTemplate, withoutScope } from './astro-templates'
 
 vi.mock('astro:content', () => ({ getCollection: async () => [] }))
 
@@ -173,22 +173,26 @@ describe('a qualified name as a path to one declaration', () => {
   })
 })
 
-describe('the rows of the source and package disclosure', () => {
+describe('API declaration names on the page and in the source disclosure', () => {
   const options = {
-    real: ['components/api/ApiType.astro', 'components/api/SymbolName.astro', 'components/api/ApiBadge.astro', 'components/api/ApiQualifiedName.astro'],
+    real: ['components/api/ApiType.astro', 'components/api/SymbolName.astro', 'components/api/ApiBadge.astro', 'components/api/ApiQualifiedName.astro', 'components/PageToolbar.astro'],
     modules: {
       'astro-expressive-code/components': { Code: () => '' },
       '../../lib/page-ports-for': { pagePortsFor: async () => [] },
-      '../../lib/sidebar': { pageBreadcrumbs: async () => [] },
     },
   }
 
-  /** The real `ApiReference` page of one Rust member, with its shell stubbed. */
+  /** The real declaration page and breadcrumb toolbar, with its shell stubbed. */
   async function page(id: string, model = API_MODELS.rs) {
     const template = await loadAstroTemplate('components/api/ApiReference.astro', options)
+    const owner = model.symbols.find((symbol) => symbol.id === id)!
+    const container = await experimental_AstroContainer.create()
     const win = new Window()
     windows.push(win)
-    win.document.body.innerHTML = withoutScope(await renderAstroTemplate(template, { props: { model, owner: model.symbols.find((symbol) => symbol.id === id)! } }))
+    win.document.body.innerHTML = withoutScope(await container.renderToString(template as never, {
+      request: new Request(`https://libtmux.org/en/${model.port}/latest/reference/${owner.slug}/`),
+      params: { slug: owner.slug }, props: { model, owner },
+    }))
     return win.document
   }
   /** The `dd` that follows the `dt` with this label. */
@@ -213,6 +217,19 @@ describe('the rows of the source and package disclosure', () => {
   it('keeps the Common Lisp package separator in the page heading', async () => {
     const document = await page('libtmux:fetch-snapshot', API_MODELS.lisp)
     expect(document.querySelector('h1')?.textContent.trim()).toBe('libtmux:fetch-snapshot')
+  })
+
+  it.each([
+    ['record', '#tmux_model:pane{}', '#tmux_model:pane{}', '#pane{}'],
+    ['function', 'tmux_server:snapshot/1', 'tmux_server:snapshot/1', 'snapshot/1'],
+    ['type', 't:tmux_model:pane/0', 'tmux_model:pane/0', 'pane/0'],
+    ['module', 'tmux_server', 'tmux_server', 'tmux_server'],
+  ])('uses the native Erlang %s name in the heading and its identity in the breadcrumb', async (_, id, heading, breadcrumb) => {
+    const document = await page(id, API_MODELS.erlang)
+    expect({
+      heading: document.querySelector('h1')?.textContent.trim(),
+      breadcrumb: document.querySelector('[aria-label="Breadcrumb"] [aria-current="page"]')?.textContent.trim(),
+    }).toEqual({ heading, breadcrumb })
   })
 })
 
