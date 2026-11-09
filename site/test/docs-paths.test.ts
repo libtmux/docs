@@ -75,16 +75,20 @@ describe('product document URLs', () => {
     expect(docsRoutePath({ id: 'meta/third-party-notices', data: {} })).toBe('meta/third-party-notices')
   })
 
-  it('retires duplicate Julia and F# API overviews in root and selected-version builds', () => {
+  it('retires duplicate source overviews in root and selected-version builds', () => {
     expect(sourceGuideRedirects(undefined, { fsharp: 'v0.46.2' })).toEqual([
       { path: 'julia/latest/guides/api-overview', target: 'julia/latest/reference' },
       { path: 'fsharp/v0.46.2/guides/api-overview', target: 'fsharp/v0.46.2/reference' },
+      { path: 'erlang/latest/guides/overview', target: 'erlang/latest/guides' },
     ])
     expect(sourceGuideRedirects('julia')).toEqual([
       { path: 'guides/api-overview', target: 'reference' },
     ])
     expect(sourceGuideRedirects('fsharp')).toEqual([
       { path: 'guides/api-overview', target: 'reference' },
+    ])
+    expect(sourceGuideRedirects('erlang')).toEqual([
+      { path: 'guides/overview', target: 'guides' },
     ])
     expect(sourceGuideRedirects('py')).toEqual([])
   })

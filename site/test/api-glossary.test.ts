@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import ts from 'typescript'
 import { experimental_AstroContainer } from 'astro/container'
 import { Window, type HTMLAnchorElement } from 'happy-dom'
-import { API_GLOSSARY_GROUPS, ALL_GLOSSARY_GROUPS, MCP_GLOSSARY_GROUPS, API_GLOSSARY_PATH, apiGlossary, apiGlossaryHref, apiGlossaryMarkdown } from '../src/lib/api-glossary'
+import { API_GLOSSARY_GROUPS, ALL_GLOSSARY_GROUPS, MCP_GLOSSARY_GROUPS, API_GLOSSARY_PATH, apiGlossary, apiGlossaryHeadings, apiGlossaryHref, apiGlossaryMarkdown } from '../src/lib/api-glossary'
 import { NATIVE_API_GLOSSARIES } from '../src/lib/api-glossary-native'
 import { glossaryPreview } from '../src/lib/link-preview'
 import { GET as markdownRoute } from '../src/pages/reference/glossary.md'
@@ -30,6 +30,7 @@ const nativeAuthorities: Record<string, RegExp> = {
   ruby: /^https:\/\/(?:docs\.ruby-lang\.org|guides\.rubygems\.org|github\.com\/ruby\/rbs)\//,
   lua: /^https:\/\/(?:www\.lua\.org|luals\.github\.io)\//,
   swift: /^https:\/\/(?:docs\.swift\.org|www\.swift\.org)\//,
+  erlang: /^https:\/\/(?:www\.erlang\.org|github\.com\/erlang\/otp)\//,
 }
 
 afterEach(async () => {
@@ -284,6 +285,44 @@ describe('API glossary coverage', () => {
 })
 
 describe('rendered API badges', () => {
+  it('uses Erlang declaration names while preserving shared glossary anchors and application names', async () => {
+    const badge = await badgeComponent()
+    const glossary = await badgeComponent('ApiGlossaryContent')
+    const container = await experimental_AstroContainer.create()
+    const win = new Window()
+    windows.push(win)
+    const path = '/en/erlang/latest/reference/glossary/'
+    const request = new Request(`https://libtmux.org${path}`)
+    const headings = apiGlossaryHeadings(path)
+    const markdown = apiGlossaryMarkdown('https://libtmux.org', path)
+    for (const [id, label, variant] of [
+      ['struct', 'record', 'kind'], ['typealias', 'type', 'kind'],
+      ['abstract', 'callback', 'mod'], ['package', 'application', 'mod'],
+    ]) {
+      win.document.body.innerHTML = await container.renderToString(badge, { request, props: { label: id, value: id, variant } })
+      const link = win.document.querySelector('a')!
+      expect(link.querySelector('.api-badge__label')!.textContent, id).toBe(label)
+      expect(link.getAttribute('href')).toBe(`${path}#${id}`)
+      expect(link.getAttribute('aria-label')).toContain(`${label} definition`)
+      expect(headings.find((heading) => heading.slug === id)?.text).toBe(label)
+      expect(markdown).toContain(`### ${label}\n`)
+      expect(glossaryPreview(path).terms![id].title).toBe(label)
+    }
+    win.document.body.innerHTML = await container.renderToString(glossary, { props: { contextPath: path } })
+    expect(win.document.querySelector('#struct code')!.textContent).toBe('record')
+    expect(win.document.querySelector('#struct')!.getAttribute('data-inventory-display')).toBe('record')
+    win.document.body.innerHTML = await container.renderToString(badge, { request, props: { label: 'libtmux_erlang', variant: 'mod', value: 'package' } })
+    expect(win.document.querySelector('a')!.textContent).toBe('libtmux_erlang')
+    expect(win.document.querySelector('a')!.getAttribute('aria-label')).toContain('application definition')
+    win.document.body.innerHTML = await container.renderToString(badge, { request, props: { label: 'type alias', variant: 'kind', value: 'typealias', plain: true } })
+    expect(win.document.querySelector('.api-kind-word')!.textContent).toBe('type')
+    win.document.body.innerHTML = await container.renderToString(badge, {
+      request: new Request('https://libtmux.org/en/rs/latest/reference/glossary/'),
+      props: { label: 'struct', variant: 'kind', value: 'struct' },
+    })
+    expect(win.document.querySelector('.api-badge__label')!.textContent).toBe('struct')
+  })
+
   it('renders native Scala meanings and matching contextual twins in Core, MCP and Workspace', async () => {
     const component = await badgeComponent('ApiGlossaryContent')
     const container = await experimental_AstroContainer.create()

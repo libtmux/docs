@@ -661,6 +661,12 @@ review evidence. Custom output and cache locations need their own cleanup.
 
 ## Pull requests
 
+Apply the `no-preview` label before pushing a revision that needs CI validation
+while publication awaits approval. CI still builds and audits the artifact and
+runs the publisher dry run; the label holds the preview publishing job.
+The guard reads the triggering event's labels. Adding the label later does
+not stop an existing run.
+
 Keep commits focused on one topic. Explain the problem, resulting behavior,
 and verification, including failures or skipped checks. Keep unrelated
 cleanup in separate work.

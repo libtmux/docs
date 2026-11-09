@@ -20,6 +20,16 @@ describe('prose route ownership', () => {
   const ruby = { id: '_staged/ruby/concepts', data: { port: 'ruby', route: 'concepts' } }
   const lua = { id: '_staged/lua/concepts', data: { port: 'lua', route: 'concepts' } }
 
+  it('omits excluded product overviews while retaining unpublished ones', () => {
+    for (const pagePath of ['mcp', 'mcp/']) {
+      const links = pagePortLinks({ ...options, pagePath, portSlug: 'ts' })
+      expect(links.find((entry) => entry.port === 'erlang')?.links).toEqual([])
+      expect(links.find((entry) => entry.port === 'elixir')?.links).toEqual([
+        { href: '/pr-42/en/elixir/latest/mcp/' },
+      ])
+    }
+  })
+
   it('selects native prose independently of collection order and keeps shared fallbacks', () => {
     for (const entries of [[shared, ruby, lua], [lua, ruby, shared]]) {
       expect(docsEntriesAvailable(entries, 'ruby')).toEqual([ruby])

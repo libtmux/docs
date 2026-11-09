@@ -140,16 +140,37 @@
         }
       ]
     },
+    "erlang": {
+      "repo": "libtmux/libtmux-erlang",
+      "revision": "74a37c69c391c125afd11efd9abf23d1e4e44e0b",
+      "distributions": [
+        {
+          "name": "libtmux_erlang",
+          "version": "0.0.0+development",
+          "manifest": "apps/libtmux_erlang/src/libtmux_erlang.app.src",
+          "repo": "libtmux/libtmux-erlang",
+          "revision": "74a37c69c391c125afd11efd9abf23d1e4e44e0b"
+        },
+        {
+          "name": "libtmux_erlang_workspace",
+          "version": "0.0.0+development",
+          "manifest": "apps/libtmux_erlang_workspace/src/libtmux_erlang_workspace.app.src",
+          "repo": "libtmux/libtmux-erlang",
+          "revision": "74a37c69c391c125afd11efd9abf23d1e4e44e0b"
+        }
+      ],
+      "units": []
+    },
     "elixir": {
       "repo": "libtmux/libtmux-elixir",
-      "revision": "149565c9f04e043836191c8a7ff32a8ac39572ab",
+      "revision": "6e6e88e886bdd9267fcd8be66f561dc5d5462476",
       "distributions": [
         {
           "name": "libtmux",
           "version": "0.0.1-alpha.1",
           "manifest": "mix.exs",
           "repo": "libtmux/libtmux-elixir",
-          "revision": "149565c9f04e043836191c8a7ff32a8ac39572ab"
+          "revision": "6e6e88e886bdd9267fcd8be66f561dc5d5462476"
         }
       ],
       "units": []

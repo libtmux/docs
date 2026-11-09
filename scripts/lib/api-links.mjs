@@ -110,7 +110,7 @@ export const PORT_LANGUAGES = {
   py: ['python'], rs: ['rust'], go: ['go'], ts: ['typescript'], java: ['java'],
   kotlin: ['kotlin', 'java'], scala: ['scala', 'java'],
   csharp: ['csharp', 'dotnet'], fsharp: ['fsharp', 'dotnet'], powershell: ['powershell', 'dotnet'],
-  cxx: ['cpp'], swift: ['swift'], julia: ['julia'], lua: ['lua'], elixir: ['elixir', 'erlang'], ruby: ['ruby'],
+  cxx: ['cpp'], swift: ['swift'], julia: ['julia'], lua: ['lua'], erlang: ['erlang'], elixir: ['elixir', 'erlang'], ruby: ['ruby'],
 }
 
 /**

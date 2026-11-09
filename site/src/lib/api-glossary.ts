@@ -7,6 +7,7 @@ import { buildTarget } from './versions.ts'
 import { NATIVE_API_GLOSSARIES } from './api-glossary-native.ts'
 
 export interface Definition {
+  label?: string
   definition: string
   detail?: string
   references: { title: string; url: string }[]
@@ -273,7 +274,7 @@ export function apiGlossary(contextPath?: string) {
 export function apiGlossaryHeadings(contextPath?: string) {
   return apiGlossary(contextPath).groups.flatMap((group) => [
     { depth: 2, slug: group.id, text: group.title },
-    ...group.terms.map((term) => ({ depth: 3, slug: term.id, text: term.id })),
+    ...group.terms.map((term) => ({ depth: 3, slug: term.id, text: term.label ?? term.id })),
   ])
 }
 
@@ -290,7 +291,7 @@ export function apiGlossaryBody(contextPath?: string): string {
   return glossary.groups.flatMap((group) => [
     `## ${group.title}`, '', group.description, '',
     ...group.terms.flatMap((term) => [
-      `### ${term.id}`, '', term.definition, '',
+      `### ${term.label ?? term.id}`, '', term.definition, '',
       ...(term.detail ? [term.detail, ''] : []),
       `References: ${term.references.map((ref) => `[${ref.title}](${ref.url})`).join('; ')}.`, '',
     ]),

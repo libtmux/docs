@@ -12,7 +12,7 @@ const shell = readFileSync(new URL('../../.github/workflows/deploy-shell.yml', i
 const testWorkflow = readFileSync(new URL('../../.github/workflows/test.yml', import.meta.url), 'utf8')
 const publicationAudit = readFileSync(new URL('../../scripts/test-all.sh', import.meta.url), 'utf8')
 const publishRoot = readFileSync(new URL('../../scripts/publish-root.sh', import.meta.url), 'utf8')
-const sourceGuidePorts = ['ruby', 'lua', 'powershell', 'julia', 'elixir']
+const sourceGuidePorts = ['ruby', 'lua', 'powershell', 'julia', 'elixir', 'erlang']
 
 function sourceCheckoutContract(workflow: string): void {
   for (const port of sourceGuidePorts) {
@@ -410,7 +410,7 @@ describe('port publisher contract', () => {
     for (const port of ['ruby', 'lua']) {
       expect(audit).toContain(`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}: ` + '${{ github.workspace }}/.port-sources/' + port)
     }
-    expect(audit).not.toMatch(/LIBTMUX_DOCS_CHECKOUT_(POWERSHELL|JULIA|ELIXIR):/)
+    expect(audit).not.toMatch(/LIBTMUX_DOCS_CHECKOUT_(POWERSHELL|JULIA|ELIXIR|ERLANG):/)
     expect(testWorkflow).toContain('LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ' + sourceGuidePorts.join(','))
     expect(publicationAudit).toContain('LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS')
     expect(publicationAudit).toContain('--skip-native-model-ports')
@@ -456,6 +456,8 @@ describe('port publisher contract', () => {
     expect(publish).toContain('needs: [test, check-publish-preview]')
     expect(publish).toContain('artifact-id: ${{ needs.test.outputs.preview-artifact-id }}')
     expect(publish).toContain('github.event.pull_request.head.repo.full_name == github.repository')
+    expect(publish).toMatch(/github\.event\.pull_request\.head\.repo\.full_name == github\.repository &&\s+!contains\(github\.event\.pull_request\.labels\.\*\.name, 'no-preview'\)/)
+    expect(audit + check).not.toContain('labels.*.name')
     expect(publish).toContain('environment: docs-preview')
     expect(testWorkflow).toContain("format('deploy-shell-pr-{0}', github.event.pull_request.number)")
     expect((audit + check).replace(/^\s*#.*$/gm, '')).not.toMatch(/id-token:|secrets\.|continue-on-error|always\(\)|run-id:|github-token:/)
@@ -685,6 +687,7 @@ const testedHead = 'b'.repeat(40)
 const testedMerge = 'a'.repeat(40)
 const currentPullRequest = {
   number: 42, state: 'open',
+  draft: false, labels: [],
   head: { repo: { full_name: 'libtmux/libtmux-powershell' }, sha: testedHead },
   merge_commit_sha: testedMerge,
 }
@@ -739,15 +742,26 @@ describe('current PR publication guard', () => {
     expect(reusable.slice(start)).not.toMatch(/always\(\)|!cancelled\(\)|continue-on-error/)
   })
 
-  it.each(['powershell', 'julia', 'elixir'])('allows the current tested same-repository %s preview', (port) => {
+  it.each(['powershell', 'julia', 'elixir', 'erlang'])('allows the current tested same-repository %s preview', (port) => {
     const repo = `libtmux/libtmux-${port}`
     const result = requireCurrentPullRequest({ ...currentPullRequest, head: { repo: { full_name: repo }, sha: testedHead } }, { PORT: port, REPOSITORY: repo })
     expect(result.status, result.stderr).toBe(0)
     expect(result.calls).toEqual([['api', '--method', 'GET', `repos/${repo}/pulls/42`]])
   })
 
+  it('keeps ordinary labels eligible for preview publication', () => {
+    expect(requireCurrentPullRequest({ ...currentPullRequest, labels: [{ name: 'documentation' }] }).status).toBe(0)
+  })
+
   it.each([
     ['closed PR', { ...currentPullRequest, state: 'closed' }],
+    ['draft PR', { ...currentPullRequest, draft: true }],
+    ['preview opt-out label', { ...currentPullRequest, labels: [{ name: 'no-preview' }] }],
+    ['case-varied preview opt-out', { ...currentPullRequest, labels: [{ name: 'No-Preview' }] }],
+    ['unknown draft state', { ...currentPullRequest, draft: null }],
+    ['string draft state', { ...currentPullRequest, draft: 'false' }],
+    ['unknown labels', { ...currentPullRequest, labels: null }],
+    ['malformed labels', { ...currentPullRequest, labels: {} }],
     ['fork head', { ...currentPullRequest, head: { repo: { full_name: 'other/fork' }, sha: testedHead } }],
     ['new head', { ...currentPullRequest, head: { ...currentPullRequest.head, sha: 'c'.repeat(40) } }],
     ['new merge', { ...currentPullRequest, merge_commit_sha: 'd'.repeat(40) }],

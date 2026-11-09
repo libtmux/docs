@@ -30,3 +30,15 @@ it('titles a page in the manifest as its Markdown twin titles it', async () => {
   for (const entry of checked) expect(entry.title, entry.url).toBe(twins.get(entry.url))
   expect(checked.map((entry) => entry.title)).toEqual(['Rust-based tmux workspace manager', 'tmux MCP, built in Rust'])
 })
+
+it('omits Erlang MCP from the agent manifest while retaining unavailable workspace metadata', async () => {
+  entries.splice(0, entries.length)
+  vi.stubEnv('LIBTMUX_DOCS_PORT', 'erlang')
+  vi.stubEnv('LIBTMUX_DOCS_VERSION', 'master')
+  const json = await (await manifest({ site: new URL('https://libtmux.org') } as Parameters<typeof manifest>[0])).json()
+  expect(json.ports).toHaveLength(1)
+  expect(json.ports[0].slug).toBe('erlang')
+  expect(json.ports[0].products).toEqual([expect.objectContaining({ slug: 'workspace', availability: 'unpublished', cli: null, reference: null })])
+  expect(json.ports[0].documentation.map((entry: { id: string }) => entry.id)).toEqual(['core', 'workspace'])
+  expect(json.pages.some((entry: { url: string }) => new URL(entry.url).pathname.includes('/mcp/'))).toBe(false)
+})

@@ -141,7 +141,7 @@ async function components(stubs: Readonly<Record<string, string>> = {}) {
 
 function expectedHeadings(path: string) {
   return glossary.apiGlossary(path).groups.flatMap((group) => [
-    { id: group.id, text: group.title }, ...group.terms.map((term) => ({ id: term.id, text: term.id })),
+    { id: group.id, text: group.title }, ...group.terms.map((term) => ({ id: term.id, text: term.label ?? term.id })),
   ])
 }
 
@@ -160,7 +160,7 @@ function checkHeadings(document: Document, path: string) {
     expect(heading.lastElementChild).toBe(permalink)
     expect(permalink.getAttribute('data-pagefind-ignore')).toBe('all')
     expect(permalink.getAttribute('tabindex')).not.toBe('-1')
-    if (heading.tagName === 'H3') expect(heading.querySelector('code')?.textContent).toBe(id)
+    if (heading.tagName === 'H3') expect(heading.querySelector('code')?.textContent).toBe(text)
   }
   expect(document.querySelectorAll('a a')).toHaveLength(0)
 }

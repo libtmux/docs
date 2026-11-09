@@ -534,7 +534,9 @@ await verify('a planned Hex package that answers 404 passes', plannedOnHex('hex-
 // control is the committed inventory, evidence and manifests under the same flags; each case then breaks one thing.
 const committed = (name) => JSON.parse(readFileSync(join(dirname(script), '..', 'site', 'src', 'data', name), 'utf8'))
 const registered = PORTS.map((port) => port.slug)
-const atRecord = { args: ['--check', '--ports', registered.join(','), '--today', committed('destination-evidence.json').checkedAt], evidence: committed('destination-evidence.json'), manifests: committed('manifest-packages.json') }
+// Records can be refreshed independently of the bundle date. Synthetic age
+// cases use a fixed clock; committed evidence is checked against today.
+const atRecord = { args: ['--check', '--ports', registered.join(','), '--today', new Date().toISOString().slice(0, 10)], evidence: committed('destination-evidence.json'), manifests: committed('manifest-packages.json') }
 await verify('offline, the committed inventory covers every registered port', INVENTORY, { ...atRecord, expect: { code: 0, matches: [/agrees with the inventory/] } })
 const { elixir: _omitted, ...withoutElixir } = INVENTORY
 await verify('offline, a registered port with no inventory entry fails', withoutElixir, {

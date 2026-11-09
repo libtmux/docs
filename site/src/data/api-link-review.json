@@ -195,6 +195,8 @@
     {"label":"`CallToolResult.IsError`","url":"https://pkg.go.dev/github.com/modelcontextprotocol/go-sdk@v1.6.1/mcp#CallToolResult","heading":"type CallToolResult"},
     {"label":"`CallToolResult.StructuredContent`","url":"https://pkg.go.dev/github.com/modelcontextprotocol/go-sdk@v1.6.1/mcp#CallToolResult","heading":"type CallToolResult"},
     {"label":"`McpServer`","url":"https://ts.sdk.modelcontextprotocol.io/server#server-overview","heading":"Server overview"},
+    {"label":"OTP Logger configuration","url":"https://www.erlang.org/doc/apps/kernel/logger_chapter.html#configuration","heading":"Configuration"},
+    {"label":"OTP application boundaries and dependencies","url":"https://www.erlang.org/doc/system/applications.html","heading":"Applications"},
     {"label":"Lua table access","url":"https://www.lua.org/manual/5.4/manual.html#2.4","heading":"2.4 - Metatables and Metamethods"},
     {"label":"Lua method calls","url":"https://www.lua.org/manual/5.4/manual.html#3.4.10","heading":"3.4.10 - Function Calls"},
     {"label":"Lua function definitions","url":"https://www.lua.org/manual/5.4/manual.html#3.4.11","heading":"3.4.11 - Function Definitions"},

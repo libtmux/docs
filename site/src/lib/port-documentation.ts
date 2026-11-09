@@ -4,6 +4,7 @@ import {
   PORT_BY_SLUG,
   portPageUrl,
   productAvailable,
+  productIncluded,
   productDescription,
   type DocProduct,
   type PortPackageId,
@@ -44,6 +45,8 @@ export interface PortSourceGuide {
 interface PortDocumentation {
   domains: readonly DocumentationDomain[]
   sourceGuides: readonly PortSourceGuide[]
+  /** Source directory relative to which native API comments write guide links. */
+  apiDocRoot?: string
   redirects?: readonly { sourcePath: string; path: string; target: string }[]
 }
 
@@ -206,6 +209,36 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       }),
     ],
   },
+  erlang: {
+    apiDocRoot: 'docs',
+    domains: [
+      libraryDomain('Install the OTP application from Git and use native records, captured graphs and explicit tmux operations.'),
+      { id: 'workspace', label: 'Workspace Manager', kind: 'unavailable', navGroup: 'Availability', route: 'workspace', product: 'workspace',
+        description: 'The source application validates JSON desired state. Its plan/apply workflow and CLI are unfinished.' },
+    ],
+    sourceGuides: [
+      guide('README.md', 'guides/getting-started', 'core', { title: 'Getting started', aliases: [], sidebar: { group: 'Guides', order: 1 } }),
+      guide('docs/installation.md', 'guides/installation', 'core', { title: 'Installation', aliases: [], sidebar: { group: 'Guides', order: 2 } }),
+      guide('docs/graph.md', 'concepts/object-graph', 'core', { title: 'Object graph', aliases: [] }),
+      guide('docs/querying.md', 'concepts/queries', 'core', { title: 'Selections and queries', aliases: [] }),
+      guide('docs/ownership.md', 'topics/ownership', 'core', { title: 'Ownership and identity', aliases: [] }),
+      guide('docs/diagnostics.md', 'topics/diagnostics', 'core', { title: 'Diagnostics', aliases: [] }),
+      guide('docs/adr-0001-architecture.md', 'concepts/architecture', 'core', { title: 'Architecture decisions', aliases: [] }),
+      guide('docs/adr-0002-batched-hydration.md', 'concepts/capture-strategy', 'core', { title: 'Batched graph capture', aliases: [] }),
+      guide('docs/jobs.md', 'guides/operations', 'core', { title: 'Owned operations', aliases: [] }),
+      guide('docs/control.md', 'topics/control', 'core', { title: 'Control connections', aliases: [] }),
+      ...['panes', 'buffers', 'options', 'hooks', 'keys', 'configuration', 'commands', 'compatibility'].map((name) =>
+        guide(`docs/${name}.md`, `guides/${name}`, 'core', { aliases: [] })),
+      guide('docs/pipe.md', 'guides/piping', 'core', { title: 'Pipe pane output', aliases: [] }),
+      guide('docs/fields.md', 'reference/fields', 'core', { title: 'Fields and operators', aliases: [] }),
+      guide('docs/options-reference.md', 'reference/options', 'core', { title: 'Options', aliases: [] }),
+      guide('docs/commands-reference.md', 'reference/commands', 'core', { title: 'Command capabilities', aliases: [] }),
+      guide('docs/api.md', 'guides/api-documentation', 'core', { title: 'Native API documentation', aliases: [] }),
+      guide('docs/workspaces.md', 'guides/workspace-json', 'core', { title: 'Workspace JSON loader', aliases: [] }),
+      guide('docs/project-policy.md', 'topics/project-policy', 'core', { title: 'Project policy', aliases: [] }),
+    ],
+    redirects: [{ sourcePath: 'docs/guides.md', path: 'guides/overview', target: 'guides' }],
+  },
   elixir: {
     domains: [
       {
@@ -348,7 +381,7 @@ function fallbackAreas(portSlug: string): readonly DocumentationDomain[] {
       id: 'core', label: 'Core library', kind: 'core', navGroup: 'Library', route: 'core', package: 'core',
       description: `Install ${port.packageName} and use the ${port.name} tmux API.`,
     },
-    ...Object.entries(port.parentLibrary ? {} : DOC_PRODUCTS).map(([id, product]) => {
+    ...Object.entries(DOC_PRODUCTS).filter(([id]) => productIncluded(port, id as DocProduct)).map(([id, product]) => {
       const available = productAvailable(port, id as DocProduct)
       return {
         id,
@@ -375,6 +408,16 @@ export function sourceGuidesFor(portSlug: string): readonly PortSourceGuide[] {
   if (!config) throw new Error(`port-documentation: no source guide configuration for ${portSlug}`)
   validate(portSlug, config)
   return config.sourceGuides
+}
+
+/** Native API guide destinations under the displayed port/version root. */
+export function apiDocLinksFor(portSlug: string, baseHref: string): ReadonlyMap<string, string> {
+  const config = documentationFor(portSlug)
+  if (!config?.apiDocRoot) return new Map()
+  validate(portSlug, config)
+  const prefix = `${config.apiDocRoot}/`
+  return new Map(config.sourceGuides.filter((entry) => entry.sourcePath.startsWith(prefix))
+    .map((entry) => [entry.sourcePath.slice(prefix.length), `${baseHref}${entry.route}/`]))
 }
 
 /**

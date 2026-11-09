@@ -1,7 +1,7 @@
 import { symbolsForProduct, type ApiSymbol } from '@libtmux/api-model'
 import { headingTitle } from './branding'
 import { API_MODELS, pageSlug, referenceAlternatives, referenceHref } from './api-models'
-import { DOC_PRODUCTS, PORT_BY_SLUG, PORTS, portHomeUrl, portPageUrl, productAvailable, referenceUrl } from './ports'
+import { DOC_PRODUCTS, PORT_BY_SLUG, PORTS, portHomeUrl, portPageUrl, productAvailable, productIncluded, referenceUrl } from './ports'
 import { docsPath, docsRoutePath, type DocsPage } from './docs-paths'
 import { productApiHref } from './product-api'
 import { MCP_REFERENCE, equivalentMcpObject, mcpObjectAt, type McpSection } from './mcp-reference'
@@ -139,7 +139,9 @@ export function pagePortLinks({
     } else if (protocol && !protocol[2]) {
       if (productAvailable(port, 'mcp') && MCP_REFERENCE[port.slug]) links = [{ href: portPageUrl(port, targetVersion, path) }]
     } else if (!port.parentLibrary && (SHARED_PAGE_PATHS as readonly string[]).includes(path)) {
-      links = [{ href: portPageUrl(port, targetVersion, path) }]
+      if ((path !== 'mcp' && path !== 'workspace') || productIncluded(port, path)) {
+        links = [{ href: portPageUrl(port, targetVersion, path) }]
+      }
     } else {
       const eligible = entries.filter((entry) => docsEntryAvailable(entry, port.slug)
         && (!product || productAvailable(port, product)))

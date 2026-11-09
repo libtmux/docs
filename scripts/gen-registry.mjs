@@ -112,8 +112,8 @@ async function getJson(url, headers = {}) {
     headers: { 'user-agent': 'libtmux-docs gen-registry.mjs', ...headers },
     signal: AbortSignal.timeout(20_000),
   })
-  if (!res.ok) return { missing: res.status === 404 || res.status === 403, body: null }
-  return { missing: false, body: await res.json() }
+  if (!res.ok) return { missing: res.status === 404 || res.status === 403, status: res.status, body: null }
+  return { missing: false, status: res.status, body: await res.json() }
 }
 
 /**
@@ -260,6 +260,20 @@ const PROBES = {
     if (status === 404) return null
     if (body === null) throw new Error(`General: HTTP ${status}`)
     return generalVersions(body, port)
+  },
+  async erlang() {
+    const packages = {}
+    for (const name of ['libtmux_erlang', 'libtmux_erlang_workspace']) {
+      const { status, body } = await getJson(`https://hex.pm/api/packages/${name}`)
+      if (status === 404) { packages[name] = null; continue }
+      if (status !== 200) throw new Error(`Hex ${name}: HTTP ${status}`)
+      if (!Array.isArray(body?.releases) || body.releases.some((release) => typeof release.version !== 'string')) {
+        throw new Error(`Hex ${name}: invalid releases`)
+      }
+      const retired = new Set(Object.keys(body?.retirements ?? {}))
+      packages[name] = body.releases.map((release) => release.version).filter((version) => !retired.has(version))
+    }
+    return { versions: packages.libtmux_erlang, packages }
   },
   async elixir() {
     // Hex lists every release and the retirements beside them. A retired

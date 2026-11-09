@@ -60,7 +60,7 @@ export interface PortPackage {
   installs?: readonly InstallCommand[]
 }
 
-export type ProductAvailability = 'available' | 'unpublished'
+export type ProductAvailability = 'available' | 'unpublished' | 'excluded'
 
 /**
  * One way to add a port's package to a project.
@@ -366,6 +366,15 @@ export interface Port {
   installNote?: string
 }
 
+const ERLANG_SOURCE_INSTALL = `{deps, [
+    {libtmux_erlang, {git_subdir,
+        "https://github.com/libtmux/libtmux-erlang.git",
+        {ref, {revision}}, "apps/libtmux_erlang"}}
+]}.`
+const ERLANG_GIT_INSTALL: InstallForm = {
+  code: ERLANG_SOURCE_INSTALL.replaceAll('{revision}', '"master"'), lang: 'erlang',
+}
+
 const CORE_PORTS: readonly Port[] = [
   {
     slug: 'py',
@@ -649,6 +658,33 @@ const CORE_PORTS: readonly Port[] = [
       git: { code: 'using Pkg\nPkg.add(PackageSpec(url="https://github.com/libtmux/libtmux-julia.git", rev="master"))', lang: 'julia' },
     },
     installNote: 'Requires Julia 1.13.1 and tmux 3.3a or newer. JSON layouts require tmux 3.8. Companion packages install from the same revision as the core.',
+  },
+  {
+    slug: 'erlang',
+    projectName: 'libtmux-erlang',
+    logoLanguage: 'erlang',
+    shortName: 'Erl',
+    name: 'Erlang',
+    language: 'Erlang',
+    packageName: 'libtmux_erlang',
+    repo: 'libtmux/libtmux-erlang',
+    docsDispatch: { workflow: 'docs.yml' },
+    productAvailability: { workspace: 'unpublished', mcp: 'excluded' },
+    checkout: '~/work/libtmux/libtmux-erlang',
+    worktree: '~/work/libtmux/libtmux-erlang-docs-site',
+    source: { path: 'apps/libtmux_erlang', ref: 'master' },
+    versionedDocs: true,
+    tagGrammar: 'semver',
+    renderer: 'astro',
+    publishesOwnTree: true,
+    generator: 'OTP documentation chunks and native typespecs',
+    installs: [{ label: 'rebar.config', filename: 'rebar.config', lang: 'erlang',
+      code: ERLANG_SOURCE_INSTALL,
+      additionalBlocks: [{ lang: 'console', code: 'rebar3 compile' }],
+      note: 'Merge this deps entry into rebar.config. Requires Erlang/OTP 29.1.2, Rebar3 3.28.0, Linux, tmux 3.3a–3.8, make and a C11 compiler. Commit rebar.lock to retain the resolved Git revision. The application is unreleased; no Hex package is advertised.' }],
+    initProject: { code: 'rebar3 new lib tmux_example && cd tmux_example', lang: 'console' },
+    installForms: { release: ERLANG_GIT_INSTALL, prerelease: ERLANG_GIT_INSTALL, git: ERLANG_GIT_INSTALL },
+    installNote: 'Add libtmux_erlang to your application dependencies and start it with application:ensure_all_started/1. Native records are experimental in OTP 29. The Git subdirectory selects the core application from its umbrella repository.',
   },
   {
     slug: 'elixir',
@@ -1455,9 +1491,14 @@ export const PICKER_GROUP_SUMMARY: Readonly<Record<PickerGroup, string>> = {
   core: 'API reference and guides', mcp: 'Tools for connected assistants', workspace: 'Repeatable development environments',
 }
 
+/** Whether a port includes a product, including its unpublished overview. */
+export function productIncluded(port: Port, product: DocProduct): boolean {
+  return !port.parentLibrary && port.productAvailability?.[product] !== 'excluded'
+}
+
 /** Whether a companion product has a published implementation for a port. */
 export function productAvailable(port: Port, product: DocProduct): boolean {
-  return !port.parentLibrary && port.productAvailability?.[product] !== 'unpublished'
+  return productIncluded(port, product) && port.productAvailability?.[product] !== 'unpublished'
 }
 
 /** Non-Python companions dogfood their core library as concept examples. */

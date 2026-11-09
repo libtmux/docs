@@ -242,6 +242,7 @@ const lua = family('libtmux/libtmux-lua')
 const powershell = family('libtmux/libtmux-powershell')
 const julia = family('libtmux/libtmux-julia')
 const elixir = family('libtmux/libtmux-elixir', 'main')
+const erlang = family('libtmux/libtmux-erlang')
 const ts = family('libtmux/libtmux-ts')
 const rs = family('libtmux/libtmux-rs')
 const go = family('libtmux/libtmux-go')
@@ -345,6 +346,13 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
       aliases: ['using LibTmuxMCP', 'libtmux-mcp'] }),
     julia({ id: 'LibTmuxWorkspace', kind: 'companion', product: 'workspace', unit: 'package', label: 'LibTmuxWorkspace',
       path: 'packages/LibTmuxWorkspace', aliases: ['using LibTmuxWorkspace', 'libtmux-workspace'] }),
+  ],
+  erlang: [
+    erlang({ id: 'libtmux_erlang', kind: 'library', product: 'core', label: 'libtmux_erlang', path: 'apps/libtmux_erlang',
+      aliases: ['Erlang/OTP', 'Rebar3'], note: 'Installs from Git with Rebar3 git_subdir; no Hex release.' }),
+    erlang({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-erlang', coordinate: 'libtmux/libtmux-erlang' }),
+    erlang({ id: 'libtmux_erlang_workspace', kind: 'companion', product: 'workspace', label: 'libtmux_erlang_workspace', path: 'apps/libtmux_erlang_workspace',
+      note: 'Source application for validated JSON desired state. Plan/apply and its CLI are unfinished.' }),
   ],
   elixir: [
     elixir({ id: 'libtmux', kind: 'library', product: 'core', label: 'libtmux', ...hexPackage('libtmux'), path: 'lib', aliases: ['LibTmux'] }),

@@ -19,6 +19,7 @@ import { extractRuby } from '../packages/api-model/src/languages/ruby.ts'
 import { extractPowerShell } from '../packages/api-model/src/languages/powershell.ts'
 import { extractJulia } from '../packages/api-model/src/languages/julia.ts'
 import { extractElixir } from '../packages/api-model/src/languages/elixir.ts'
+import { extractErlang } from '../packages/api-model/src/languages/erlang.ts'
 import { attachCompleteGoExamples, readCompleteGoExamples } from '../packages/api-model/src/languages/go-examples.ts'
 import { attachCompleteCSharpExamples } from '../packages/api-model/src/languages/csharp-examples.ts'
 import { attachCompleteFSharpExamples } from '../packages/api-model/src/languages/fsharp-examples.ts'
@@ -235,6 +236,11 @@ const PORTS = {
     checkout: '~/work/libtmux/libtmux-julia-docs-site',
     root: '.', nativeArtifact: 'docs/build/api.json',
     repo: 'libtmux/libtmux-julia', options: {},
+  },
+  erlang: {
+    checkout: '~/work/libtmux/libtmux-erlang-docs-site',
+    root: '.', nativeArtifact: '_build/docs/api.json',
+    repo: 'libtmux/libtmux-erlang', options: {},
   },
   // Written by packages/api-model/scripts/export-elixir.exs, run from the
   // checkout with `MIX_ENV=prod mix run --no-start <script> _build/docs/api.json`.
@@ -639,7 +645,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       process.exit(1)
     }
     const artifact = JSON.parse(readFileSync(artifactPath, 'utf8'))
-    const nativeExtractors = { ruby: extractRuby, lua: extractLua, powershell: extractPowerShell, julia: extractJulia, elixir: extractElixir }
+    const nativeExtractors = { ruby: extractRuby, lua: extractLua, powershell: extractPowerShell, julia: extractJulia, elixir: extractElixir, erlang: extractErlang }
     model = nativeExtractors[port](artifact, head)
   } else {
     model = await extractProject({

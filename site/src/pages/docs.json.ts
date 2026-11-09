@@ -4,7 +4,7 @@ import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE, localeRoot } from '../i18n/locales.ts'
 import { buildLocale, localeOf } from '../i18n/resolve.ts'
 import { API_MODELS, PORT_NAME, pageSlug } from '../lib/api-models.ts'
-import { DOC_PRODUCTS, hasReference, PORTS, PORT_BY_SLUG, portPageUrl, productApiPath, productAvailable, productIsConcept, productInDevelopment, referenceUrl, CONCEPT_DESCRIPTION, type DocProduct } from '../lib/ports.ts'
+import { DOC_PRODUCTS, hasReference, PORTS, PORT_BY_SLUG, portPageUrl, productApiPath, productAvailable, productIncluded, productIsConcept, productInDevelopment, referenceUrl, CONCEPT_DESCRIPTION, type DocProduct } from '../lib/ports.ts'
 import { PORT_ROOT } from '../lib/site-root.ts'
 import { docsRoutePath } from '../lib/docs-paths.ts'
 import { docsEntriesAvailable } from '../lib/page-port-links.ts'
@@ -182,7 +182,7 @@ export const GET: APIRoute = async ({ site }) => {
       package: p.packageName,
       reference: hasReference(p) ? referenceUrl(p, versionFor(p.slug)) : null,
       ...(p.parentLibrary ? { parentLibrary: p.parentLibrary } : {}),
-      products: Object.entries(p.parentLibrary ? {} : DOC_PRODUCTS).map(([slug, product]) => ({
+      products: Object.entries(DOC_PRODUCTS).filter(([slug]) => productIncluded(p, slug as DocProduct)).map(([slug, product]) => ({
         slug, name: product.label,
         availability: productAvailable(p, slug as DocProduct) ? 'available' : 'unpublished',
         inDevelopment: productInDevelopment(p, slug as DocProduct),
