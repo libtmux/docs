@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { danglingReport } from '../src/integrations/dangling-report'
 import { danglingReportPath } from '../src/lib/dangling-report-path'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
+import HASKELL from '../src/data/api/haskell.json'
 
 /**
  * The build's ceiling counts every line of one file, and any process that renders prose through the linker can write to
@@ -83,7 +84,7 @@ describe('the build\'s dangling report', () => {
       'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Data-Either.html#t:Either',
       'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Prelude.html#t:Integer',
       ...['cabal.project', 'libtmux-haskell.cabal', 'src/LibTmux/Id.hs'].map((path) =>
-        `https://github.com/libtmux/libtmux-haskell/blob/eda8825caa1ffde21454bb2eb6954bf46d2939af/${path}`),
+        `https://github.com/libtmux/libtmux-haskell/blob/${HASKELL.revision}/${path}`),
     ]) expect(code).toContain(`href="${destination}"`)
   })
 })
