@@ -567,6 +567,11 @@ jobs:
           opam exec -- dune build @install tools/api_export.exe
           opam exec -- python3 tools/export_api.py --output _build/docs/ocaml.json
 
+      - name: Verify OCaml producer input ownership
+        if: matrix.port == 'ocaml'
+        working-directory: docs
+        run: node scripts/gen-api-model-ocaml.negative.mjs --checkout "$GITHUB_WORKSPACE/port"
+
       - name: Read the selected Perl documentation runtime
         if: matrix.port == 'perl'
         id: perl-runtime
