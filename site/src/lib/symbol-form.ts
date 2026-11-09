@@ -23,7 +23,7 @@ import type { ApiSymbol } from '@libtmux/api-model'
  * - A command is never a call: `new-session`, `monitor-activity`, `tmuxp load`. So is an MCP tool, which a client names
  *   on the wire and does not call by that name: `snapshot_pane`.
  *
- * Elixir writes `name/arity` and PowerShell invokes a cmdlet by name, so both are left as written.
+ * Erlang and Elixir write `name/arity` and PowerShell invokes a cmdlet by name, so these are left as written.
  */
 export type FormKind = 'type' | 'method' | 'function' | 'property' | 'enum-member' | 'environment' | 'command'
 
@@ -58,6 +58,7 @@ export const FORMS: Record<string, Language | 'as-written'> = {
   lisp: { qualifier: ':', call: false },
   elixir: 'as-written',
   clojure: 'as-written',
+  erlang: 'as-written',
   powershell: 'as-written',
 }
 
@@ -116,7 +117,7 @@ export function writtenForm({ lang, kind, symbol, owner, label, onOwnerPage = fa
   if (!lang || !forms) return label
   if (kind === 'command') return label.replace(/\(\)$/, '')
   if (kind === 'environment') return isEnvironmentVariable(label) ? label.slice(1) : label
-  // Elixir writes `name/arity` and PowerShell a cmdlet by name; only an Elixir atom is spelled by this table.
+  // Preserve native arities and cmdlet names; only an Elixir atom is spelled by this table.
   if (forms === 'as-written' && !(lang === 'elixir' && kind === 'enum-member')) return label
   const parsed = PATH.exec(label)
   if (!parsed) return label

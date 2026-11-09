@@ -30,6 +30,7 @@ const PRODUCTS: Record<string, LandingProduct[]> = {
   elixir: ['core'],
   haskell: ['core'],
   lisp: ['core', 'workspace'],
+  erlang: ['core'],
   ts: ['core', 'mcp', 'workspace'],
   rs: ['core', 'mcp', 'workspace'],
   go: ['core', 'mcp', 'workspace'],
@@ -103,8 +104,8 @@ describe('the products a port landing page offers', () => {
     expect(MCP_SERVED_BY).toEqual({ powershell: 'csharp' })
   })
 
-  it('offers neither product for Lua, Elixir, Haskell or a wrapper library', () => {
-    for (const slug of ['lua', 'elixir', 'haskell', 'kotlin', 'scala', 'fsharp']) expect(products(slug), slug).toEqual([])
+  it('offers neither product for Lua, Elixir, Haskell or a wrapper library''offers neither product for Lua, Elixir, Erlang or a wrapper library', () => {
+    for (const slug of ['lua', 'elixir', 'haskell''erlang', 'kotlin', 'scala', 'fsharp']) expect(products(slug), slug).toEqual([])
   })
 })
 

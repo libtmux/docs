@@ -390,7 +390,7 @@ function installStep(port: Port, released: boolean, install: InstallForm, wordin
   const check =
     released || port.slug === 'haskell'
       ? `Check ${(port.registry?.url ?? `https://github.com/${port.repo}`)} if you need a different version.`
-      : `Check ${(port.registry?.url ?? `https://github.com/${port.repo}`)} for a newer version, and prefer a final release over this prerelease if there now is one.`
+      : `Check ${(port.registry?.url ?? `https://github.com/${port.repo}`)} for a newer version, and prefer a final release if there now is one.`
   lines.push(wrap(check, 76, '   '))
   if (port.installNote) lines.push(wrap(port.installNote, 76, '   '))
   return lines.join('\n')
@@ -524,6 +524,10 @@ export function portParts(args: {
   if (port.slug === 'elixir') {
     unavailable['session-freezer'] = 'Elixir has no published workspace package or loader. Document the missing product and stop; do not call the scaffold or invent freeze and restore APIs.'
     unavailable['session-supervisor'] = 'Elixir has no published workspace product or reconciliation API. Document the missing product and stop; do not advertise scaffold packages as usable.'
+  }
+  if (port.slug === 'erlang') {
+    unavailable['session-freezer'] = 'Erlang workspace support validates JSON desired state through tmux_workspace:load/1 and tmux_workspace:to_map/1. It has no freeze, restore or apply API. Report that boundary and stop; do not invent a workspace execution command.'
+    unavailable['session-supervisor'] = 'Erlang workspace support validates JSON desired state. Plan/apply, reconciliation and the workspace CLI are unfinished. Report that boundary and stop; do not present the loader as a supervisor.'
   }
   if (port.slug === 'lua') {
     unavailable['session-freezer'] = 'Lua has no published workspace package or loader. Document the missing product and stop; do not call the scaffold or invent freeze and restore APIs.'

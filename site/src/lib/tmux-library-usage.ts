@@ -14,6 +14,7 @@ import csharp from '../data/tmux-usage/csharp.json'
 import clojure from '../data/tmux-usage/clojure.json'
 import cxx from '../data/tmux-usage/cxx.json'
 import elixir from '../data/tmux-usage/elixir.json'
+import erlang from '../data/tmux-usage/erlang.json'
 import fsharp from '../data/tmux-usage/fsharp.json'
 import go from '../data/tmux-usage/go.json'
 import haskell from '../data/tmux-usage/haskell.json'
@@ -72,7 +73,7 @@ export interface TmuxScope {
 }
 
 export const TMUX_USAGE: Record<string, UsageDocument> = {
-  csharp, clojure, cxx, elixir, fsharp, go, haskell, java, julia, kotlin, lisp, lua, ocaml, powershell, perl, py, rs, ruby, scala, swift, ts,
+  csharp, clojure, cxx, elixir, erlang, fsharp, go, haskell, java, julia, kotlin, lisp, lua, ocaml, powershell, perl, py, rs, ruby, scala, swift, ts,
 } as unknown as Record<string, UsageDocument>
 
 const SCOPES = scopeTable.commands as Record<string, { scopes: TmuxScope[] }>

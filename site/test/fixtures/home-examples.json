@@ -1911,6 +1911,107 @@
           "excerptSha256": "69f304fc94cf051a831d48012f8955e652cc66b7549ccbf6a42abe1745e71826"
         }
       }
+    },
+    {
+      "port": "erlang",
+      "page": "home",
+      "sourceRepository": "libtmux/libtmux-erlang",
+      "sourceRevision": "9a1ca749f7bf6f082c910c99f961bb586781ab0b",
+      "sourceTree": "84dce57239c93b84bfd9aa383e13100a746d0188",
+      "files": [
+        {
+          "name": "src/readme_demo.erl",
+          "sha256": "27d252a8a7c9eec73f07283ce37d451b320a941fd5cc650d1f87d8eca1644484",
+          "clipboardSha256": "789c44cf3770601d9d9e687345b2476d30d0a24b41c6917008d10bf31a403c36"
+        },
+        {
+          "name": "rebar.config",
+          "sha256": "7b9e3ce5a40312a0405047dd6790c85cbc4e77d03cb36c01f908a7360107305f",
+          "clipboardSha256": "b4914622185528463805e6082936a3c4bdb6d72dced532bc5b8d78b0586f1d90"
+        },
+        {
+          "name": "src/tmux_example.app.src",
+          "sha256": "1a7879b614af0cce98e5490b83f8743f761950de2cffb65603136b7428f5d33c",
+          "clipboardSha256": "eb2b210947622f55da3f3c6a39b1e36340c714066c5aca8107f4e04caaffc507"
+        }
+      ],
+      "excerptSha256": "789c44cf3770601d9d9e687345b2476d30d0a24b41c6917008d10bf31a403c36",
+      "shellRecipe": [
+        "rebar3 compile",
+        "env \\\n    -u TMUX \\\n    -u TMUX_PANE \\\n    erl \\\n    -noshell \\\n    -pa _build/default/lib/tmux_example/ebin \\\n    -pa _build/default/lib/libtmux_erlang/apps/libtmux_erlang/ebin \\\n    -eval '\n        {ok, _} = application:ensure_all_started(libtmux_erlang),\n        Tmux = unicode:characters_to_binary(os:find_executable(\"tmux\")),\n        Stats = readme_demo:run(Tmux),\n        io:format(\"~B session, ~B windows, ~B panes; ~B matches~n\", [\n            maps:get(sessions, Stats), maps:get(windows, Stats),\n            maps:get(panes, Stats), maps:get(matched_panes, Stats)]),\n        halt().'"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "1 session, 2 windows, 3 panes; 2 matches"
+        ]
+      ],
+      "tmuxVersions": [
+        "3.3",
+        "3.8"
+      ],
+      "variants": {
+        "concise": {
+          "files": [
+            {
+              "name": "src/readme_demo.erl",
+              "sha256": "f67944e219577f5c03d93629758ff5c97f72190d4c2e9359a8608cbf09076563",
+              "clipboardSha256": "d517f301c4f3fd78227d6867588e601ef6b928ead5c095dbd1db069876e84b84"
+            },
+            {
+              "name": "rebar.config",
+              "sha256": "7b9e3ce5a40312a0405047dd6790c85cbc4e77d03cb36c01f908a7360107305f",
+              "clipboardSha256": "b4914622185528463805e6082936a3c4bdb6d72dced532bc5b8d78b0586f1d90"
+            },
+            {
+              "name": "src/tmux_example.app.src",
+              "sha256": "1a7879b614af0cce98e5490b83f8743f761950de2cffb65603136b7428f5d33c",
+              "clipboardSha256": "eb2b210947622f55da3f3c6a39b1e36340c714066c5aca8107f4e04caaffc507"
+            }
+          ],
+          "excerptSha256": "d517f301c4f3fd78227d6867588e601ef6b928ead5c095dbd1db069876e84b84"
+        },
+        "errors": {
+          "files": [
+            {
+              "name": "src/readme_demo.erl",
+              "sha256": "f67944e219577f5c03d93629758ff5c97f72190d4c2e9359a8608cbf09076563",
+              "clipboardSha256": "d517f301c4f3fd78227d6867588e601ef6b928ead5c095dbd1db069876e84b84"
+            },
+            {
+              "name": "rebar.config",
+              "sha256": "7b9e3ce5a40312a0405047dd6790c85cbc4e77d03cb36c01f908a7360107305f",
+              "clipboardSha256": "b4914622185528463805e6082936a3c4bdb6d72dced532bc5b8d78b0586f1d90"
+            },
+            {
+              "name": "src/tmux_example.app.src",
+              "sha256": "1a7879b614af0cce98e5490b83f8743f761950de2cffb65603136b7428f5d33c",
+              "clipboardSha256": "eb2b210947622f55da3f3c6a39b1e36340c714066c5aca8107f4e04caaffc507"
+            }
+          ],
+          "excerptSha256": "d517f301c4f3fd78227d6867588e601ef6b928ead5c095dbd1db069876e84b84"
+        },
+        "cleanup": {
+          "files": [
+            {
+              "name": "src/readme_demo.erl",
+              "sha256": "27d252a8a7c9eec73f07283ce37d451b320a941fd5cc650d1f87d8eca1644484",
+              "clipboardSha256": "789c44cf3770601d9d9e687345b2476d30d0a24b41c6917008d10bf31a403c36"
+            },
+            {
+              "name": "rebar.config",
+              "sha256": "7b9e3ce5a40312a0405047dd6790c85cbc4e77d03cb36c01f908a7360107305f",
+              "clipboardSha256": "b4914622185528463805e6082936a3c4bdb6d72dced532bc5b8d78b0586f1d90"
+            },
+            {
+              "name": "src/tmux_example.app.src",
+              "sha256": "1a7879b614af0cce98e5490b83f8743f761950de2cffb65603136b7428f5d33c",
+              "clipboardSha256": "eb2b210947622f55da3f3c6a39b1e36340c714066c5aca8107f4e04caaffc507"
+            }
+          ],
+          "excerptSha256": "789c44cf3770601d9d9e687345b2476d30d0a24b41c6917008d10bf31a403c36"
+        }
+      }
     }
   ]
 }

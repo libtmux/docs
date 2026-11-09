@@ -57,6 +57,15 @@ export const LINKS: Record<string, ExpectedLinks> = {
       ['source', 'libtmux-clojure-core-async', 'libtmux-clojure-core-async', 'https://github.com/libtmux/libtmux-java/tree/master/libtmux-clojure-core-async', ['adapter-source']],
     ],
   },
+  erlang: {
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-erlang/apps/libtmux_erlang', 'https://github.com/libtmux/libtmux-erlang/tree/master/apps/libtmux_erlang']],
+    indexed: true,
+    rows: [
+      ['source', 'libtmux_erlang', 'apps/libtmux_erlang', 'https://github.com/libtmux/libtmux-erlang/tree/master/apps/libtmux_erlang', ['libtmux_erlang']],
+      ['source', 'libtmux-erlang', 'libtmux/libtmux-erlang', 'https://github.com/libtmux/libtmux-erlang', ['repository']],
+      ['source', 'libtmux_erlang_workspace', 'apps/libtmux_erlang_workspace', 'https://github.com/libtmux/libtmux-erlang/tree/master/apps/libtmux_erlang_workspace', ['libtmux_erlang_workspace']],
+    ],
+  },
   py: {
     actions: [['source', 'GitHub', 'GitHub: tmux-python/libtmux', 'https://github.com/tmux-python/libtmux'],
       ['package', 'PyPI', 'PyPI: libtmux package', 'https://pypi.org/project/libtmux/']],

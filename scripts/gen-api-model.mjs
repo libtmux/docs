@@ -25,6 +25,7 @@ import { extractHaskellArtifact } from '../packages/api-model/src/languages/hask
 import { extractClojure } from '../packages/api-model/src/languages/clojure.ts'
 import { attachCompleteClojureExamples } from '../packages/api-model/src/languages/clojure-examples.ts'
 import { extractCommonLisp } from '../packages/api-model/src/languages/lisp.ts'
+import { extractErlang } from '../packages/api-model/src/languages/erlang.ts'
 import { attachCompleteGoExamples, readCompleteGoExamples } from '../packages/api-model/src/languages/go-examples.ts'
 import { attachCompleteCSharpExamples } from '../packages/api-model/src/languages/csharp-examples.ts'
 import { attachCompleteOcamlExamples } from '../packages/api-model/src/languages/ocaml-examples.ts'
@@ -249,6 +250,11 @@ const PORTS = {
     checkout: '~/work/libtmux/libtmux-julia-docs-site',
     root: '.', nativeArtifact: 'docs/build/api.json',
     repo: 'libtmux/libtmux-julia', options: {},
+  },
+  erlang: {
+    checkout: '~/work/libtmux/libtmux-erlang-docs-site',
+    root: '.', nativeArtifact: '_build/docs/api.json',
+    repo: 'libtmux/libtmux-erlang', options: {},
   },
   // Written by packages/api-model/scripts/export-elixir.exs, run from the
   // checkout with `MIX_ENV=prod mix run --no-start <script> _build/docs/api.json`.
@@ -683,7 +689,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       process.exit(1)
     }
     const artifact = JSON.parse(readFileSync(artifactPath, 'utf8'))
-    const nativeExtractors = { perl: extractPerlArtifact, ruby: extractRuby, lua: extractLua, powershell: extractPowerShell, julia: extractJulia, elixir: extractElixir, ocaml: extractOcamlArtifact, haskell: extractHaskellArtifact, clojure: extractClojure, lisp: extractCommonLisp }
+    const nativeExtractors = { perl: extractPerlArtifact, ruby: extractRuby, lua: extractLua, powershell: extractPowerShell, julia: extractJulia, elixir: extractElixir, ocaml: extractOcamlArtifact, haskell: extractHaskellArtifact, clojure: extractClojure, lisp: extractCommonLisp, erlang: extractErlang }
     model = nativeExtractors[port](artifact, head)
     if (port === 'haskell') {
       const verify = (root, sourceRevision, input) => {

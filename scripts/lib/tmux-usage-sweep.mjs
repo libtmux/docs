@@ -43,6 +43,7 @@ export const LIBRARY_ROOTS = {
   cxx: ['include/libtmux/'],
   swift: ['Sources/LibTmux/'],
   ocaml: ['lib/', 'unix/', 'eio/', 'workspace/', 'json/'],
+  erlang: ['apps/libtmux_erlang/src/'],
 }
 const NOT_LIBRARY = /(^|\/)(tmuxtest|testing|tests?|examples?)(\/|$)/i
 /** Members every type has, whose names are never about a tmux command: `GetHashCode` is not a getter of a list. */

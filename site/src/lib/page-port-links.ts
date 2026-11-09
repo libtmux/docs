@@ -141,7 +141,9 @@ export function pagePortLinks({
     } else if (protocol && !protocol[2]) {
       if (productAvailable(port, 'mcp') && MCP_REFERENCE[port.slug]) links = [{ href: portPageUrl(port, targetVersion, path) }]
     } else if (!port.parentLibrary && (SHARED_PAGE_PATHS as readonly string[]).includes(path)) {
-      links = [{ href: portPageUrl(port, targetVersion, path) }]
+      if ((path !== 'mcp' && path !== 'workspace') || productIncluded(port, path)) {
+        links = [{ href: portPageUrl(port, targetVersion, path) }]
+      }
     } else {
       const eligible = entries.filter((entry) => docsEntryAvailable(entry, port.slug)
         && (!product || productAvailable(port, product)))

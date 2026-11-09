@@ -43,7 +43,7 @@ export function installSelection(
   sources: readonly { product: string; package: string; version?: string }[] = [],
   env: Record<string, string | undefined> = {},
 ): { version?: string; pin?: boolean; revision?: string } {
-  if (['julia', 'haskell'].includes(port.slug) && env.LIBTMUX_DOCS_PORT === port.slug && env.LIBTMUX_DOCS_SOURCE_SHA) {
+  if ((['julia', 'haskell'].includes(port.slug) || port.installs.some((command) => command.code.includes('{revision}'))) && env.LIBTMUX_DOCS_PORT === port.slug && env.LIBTMUX_DOCS_SOURCE_SHA) {
     const revision = env.LIBTMUX_DOCS_SOURCE_SHA
     if (!/^[a-f0-9]{40}$/.test(revision)) throw new Error(`${port.name} installation requires the documented source SHA`)
     return { revision }

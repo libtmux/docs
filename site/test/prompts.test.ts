@@ -387,7 +387,7 @@ describe('registry data', () => {
     const finalTag: RegistryEntry = { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' }
     expect(prompt(finalTag)).toContain('if you need a different version.')
     expect(prompt(finalTag)).not.toContain('prefer a final release')
-    expect(prompt({ ...finalTag, tag: 'v0.1.0-alpha.2' })).toContain('prefer a final release over this prerelease if there now is one.')
+    expect(prompt({ ...finalTag, tag: 'v0.1.0-alpha.2' })).toContain('prefer a final release if there now is one.')
   })
 
   it('composes the site’s prompt from the entry the registry holds', () => {

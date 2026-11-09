@@ -799,6 +799,23 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
     errors: ['CrossServerReference', 'StaleReference', 'ObservationLost', 'UnsupportedCriterion', 'Base.showerror']
       .map((name) => `LibTmux.${name}`).concat('LibTmuxWorkspace.Base.showerror'),
   },
+  erlang: {
+    server: ['tmux_server'],
+    session: ['tmux_session'],
+    window: ['tmux_window', 'tmux_window_link'],
+    pane: ['tmux_pane'],
+    buffers: ['tmux_buffer'],
+    capabilities: ['tmux_capability'],
+    commands: ['tmux_command', 'tmux_operation', 'tmux_scope'],
+    control: ['tmux_control'],
+    queries: ['tmux_filter', 'tmux_matcher', 'tmux_schema', 'tmux_select', 'tmux_query', 'tmux_json'],
+    snapshots: ['tmux_model', 'tmux_identity', 'tmux_snapshot'],
+    hooks: ['tmux_hook'],
+    keys: ['tmux_key'],
+    options: ['tmux_option'],
+    version: ['tmux_version'],
+    errors: ['tmux_error'],
+  },
   // Elixir's modules are named for what they do rather than for a tmux object.
   elixir: {
     queries: ['Selection', 'Schema', 'Wire'].map((name) => `LibTmux.${name}`),
@@ -910,7 +927,7 @@ function languageBucket(bucket: Bucket, port: string, root = bucket.id): Bucket 
 }
 
 export const NAV: Record<string, PortNav> = Object.fromEntries(
-  ['perl', 'powershell', 'julia', 'elixir', 'lisp', 'py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'clojure', 'kotlin', 'scala', 'fsharp', 'csharp', 'cxx', 'swift', 'ocaml'].map((port) => [
+  ['perl', 'powershell', 'julia', 'elixir', 'lisp''erlang', 'py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'clojure', 'kotlin', 'scala', 'fsharp', 'csharp', 'cxx', 'swift', 'ocaml'].map((port) => [
     port,
     {
       port,

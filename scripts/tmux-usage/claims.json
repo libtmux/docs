@@ -27913,6 +27913,875 @@
           "in": "libtmux.core/run-shell!"
         }
       ]
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_server:snapshot/1",
+      "command": "list-sessions",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "has": [
+            "?= command(Name, Args ++ FilterArgs"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "has": [
+            "scan_spec(Entity),"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "has": [
+            "?= spine(State0)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:21",
+          "has": [
+            "?= capture(Server, Options, none)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:112",
+          "has": [
+            "scan_spec(session) ->"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_server.erl:297",
+          "has": [
+            "snapshot(Server) -> snapshot(Server, #{})."
+          ],
+          "in": "tmux_server:snapshot/1"
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_server:snapshot/1",
+      "command": "list-windows",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "has": [
+            "?= command(Name, Args ++ FilterArgs"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "has": [
+            "scan_spec(Entity),"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "has": [
+            "?= spine(State0)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:21",
+          "has": [
+            "?= capture(Server, Options, none)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:115",
+          "has": [
+            "scan_spec(window) ->"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:116",
+          "has": [
+            "args => [<<\"-a\">>], format => <<\"#{session_id}\\t#{window_id}\\t#{window_index}\\t#{window_active}"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_server.erl:297",
+          "has": [
+            "snapshot(Server) -> snapshot(Server, #{})."
+          ],
+          "in": "tmux_server:snapshot/1"
+        }
+      ],
+      "when": "the server has a session"
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_server:snapshot/1",
+      "command": "list-panes",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "has": [
+            "?= command(Name, Args ++ FilterArgs"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "has": [
+            "scan_spec(Entity),"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "has": [
+            "?= spine(State0)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:21",
+          "has": [
+            "?= capture(Server, Options, none)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:120",
+          "has": [
+            "scan_spec(pane) ->"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:121",
+          "has": [
+            "args => [<<\"-a\">>], format => <<\"#{session_id}\\t#{window_id}\\t#{window_index}\\t#{pane_id}"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_server.erl:297",
+          "has": [
+            "snapshot(Server) -> snapshot(Server, #{})."
+          ],
+          "in": "tmux_server:snapshot/1"
+        }
+      ],
+      "when": "the server has a session"
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_server:snapshot/2",
+      "command": "list-sessions",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "has": [
+            "?= command(Name, Args ++ FilterArgs"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "has": [
+            "scan_spec(Entity),"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "has": [
+            "?= spine(State0)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:21",
+          "has": [
+            "?= capture(Server, Options, none)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:112",
+          "has": [
+            "scan_spec(session) ->"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_server.erl:325",
+          "has": [
+            "snapshot(Server, Options) -> tmux_observe:snapshot(Server, Options)."
+          ],
+          "in": "tmux_server:snapshot/2"
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_server:snapshot/2",
+      "command": "list-windows",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "has": [
+            "?= command(Name, Args ++ FilterArgs"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "has": [
+            "scan_spec(Entity),"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "has": [
+            "?= spine(State0)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:21",
+          "has": [
+            "?= capture(Server, Options, none)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:115",
+          "has": [
+            "scan_spec(window) ->"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:116",
+          "has": [
+            "args => [<<\"-a\">>], format => <<\"#{session_id}\\t#{window_id}\\t#{window_index}\\t#{window_active}"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_server.erl:325",
+          "has": [
+            "snapshot(Server, Options) -> tmux_observe:snapshot(Server, Options)."
+          ],
+          "in": "tmux_server:snapshot/2"
+        }
+      ],
+      "when": "the server has a session"
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_server:snapshot/2",
+      "command": "list-panes",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "has": [
+            "?= command(Name, Args ++ FilterArgs"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "has": [
+            "scan_spec(Entity),"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "has": [
+            "?= spine(State0)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:21",
+          "has": [
+            "?= capture(Server, Options, none)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:120",
+          "has": [
+            "scan_spec(pane) ->"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:121",
+          "has": [
+            "args => [<<\"-a\">>], format => <<\"#{session_id}\\t#{window_id}\\t#{window_index}\\t#{pane_id}"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_server.erl:325",
+          "has": [
+            "snapshot(Server, Options) -> tmux_observe:snapshot(Server, Options)."
+          ],
+          "in": "tmux_server:snapshot/2"
+        }
+      ],
+      "when": "the server has a session"
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_query:fetch/1",
+      "command": "list-sessions",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "has": [
+            "?= command(Name, Args ++ FilterArgs"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "has": [
+            "scan_spec(Entity),"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "has": [
+            "?= spine(State0)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_query.erl:246",
+          "has": [
+            "case tmux_observe:query(Server, RunPlan, Options) of"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:112",
+          "has": [
+            "scan_spec(session) ->"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_query.erl:215",
+          "has": [
+            "fetch(Query) -> fetch(Query, #{})."
+          ],
+          "in": "tmux_query:fetch/1"
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_query:fetch/1",
+      "command": "list-windows",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "has": [
+            "?= command(Name, Args ++ FilterArgs"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "has": [
+            "scan_spec(Entity),"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "has": [
+            "?= spine(State0)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_query.erl:246",
+          "has": [
+            "case tmux_observe:query(Server, RunPlan, Options) of"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:115",
+          "has": [
+            "scan_spec(window) ->"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:116",
+          "has": [
+            "args => [<<\"-a\">>], format => <<\"#{session_id}\\t#{window_id}\\t#{window_index}\\t#{window_active}"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_query.erl:215",
+          "has": [
+            "fetch(Query) -> fetch(Query, #{})."
+          ],
+          "in": "tmux_query:fetch/1"
+        }
+      ],
+      "when": "the server has a session"
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_query:fetch/1",
+      "command": "list-panes",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "has": [
+            "?= command(Name, Args ++ FilterArgs"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "has": [
+            "scan_spec(Entity),"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "has": [
+            "?= spine(State0)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_query.erl:246",
+          "has": [
+            "case tmux_observe:query(Server, RunPlan, Options) of"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:120",
+          "has": [
+            "scan_spec(pane) ->"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:121",
+          "has": [
+            "args => [<<\"-a\">>], format => <<\"#{session_id}\\t#{window_id}\\t#{window_index}\\t#{pane_id}"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_query.erl:215",
+          "has": [
+            "fetch(Query) -> fetch(Query, #{})."
+          ],
+          "in": "tmux_query:fetch/1"
+        }
+      ],
+      "when": "the server has a session"
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_query:fetch/2",
+      "command": "list-sessions",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "has": [
+            "?= command(Name, Args ++ FilterArgs"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "has": [
+            "scan_spec(Entity),"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "has": [
+            "?= spine(State0)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_query.erl:246",
+          "has": [
+            "case tmux_observe:query(Server, RunPlan, Options) of"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:112",
+          "has": [
+            "scan_spec(session) ->"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_query.erl:231",
+          "has": [
+            "fetch(Query, Options) when is_map(Options) ->"
+          ],
+          "in": "tmux_query:fetch/2"
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_query:fetch/2",
+      "command": "list-windows",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "has": [
+            "?= command(Name, Args ++ FilterArgs"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "has": [
+            "scan_spec(Entity),"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "has": [
+            "?= spine(State0)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_query.erl:246",
+          "has": [
+            "case tmux_observe:query(Server, RunPlan, Options) of"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:115",
+          "has": [
+            "scan_spec(window) ->"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:116",
+          "has": [
+            "args => [<<\"-a\">>], format => <<\"#{session_id}\\t#{window_id}\\t#{window_index}\\t#{window_active}"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_query.erl:231",
+          "has": [
+            "fetch(Query, Options) when is_map(Options) ->"
+          ],
+          "in": "tmux_query:fetch/2"
+        }
+      ],
+      "when": "the server has a session"
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_query:fetch/2",
+      "command": "list-panes",
+      "scope": "server",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:129",
+          "has": [
+            "?= command(Name, Args ++ FilterArgs"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:126",
+          "has": [
+            "scan_spec(Entity),"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:43",
+          "has": [
+            "?= spine(State0)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_query.erl:246",
+          "has": [
+            "case tmux_observe:query(Server, RunPlan, Options) of"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:120",
+          "has": [
+            "scan_spec(pane) ->"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:121",
+          "has": [
+            "args => [<<\"-a\">>], format => <<\"#{session_id}\\t#{window_id}\\t#{window_index}\\t#{pane_id}"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_query.erl:231",
+          "has": [
+            "fetch(Query, Options) when is_map(Options) ->"
+          ],
+          "in": "tmux_query:fetch/2"
+        }
+      ],
+      "when": "the server has a session"
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_pane:join/3",
+      "command": "join-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_pane.erl:274",
+          "has": [
+            "tmux_target:run(Server, Command, Flags ++"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_pane.erl:236",
+          "has": [
+            "join(Source, Destination, Options) -> relocate(<<\"join-pane\">>, Source, Destination, Options)."
+          ],
+          "in": "tmux_pane:join/3"
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_pane:move/3",
+      "command": "move-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_pane.erl:274",
+          "has": [
+            "tmux_target:run(Server, Command, Flags ++"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_pane.erl:245",
+          "has": [
+            "move(Source, Destination, Options) -> relocate(<<\"move-pane\">>, Source, Destination, Options)."
+          ],
+          "in": "tmux_pane:move/3"
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_window_link:link/3",
+      "command": "link-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_window_link.erl:143",
+          "has": [
+            "tmux_target:run(Server, Command, Flags ++"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_window_link.erl:87",
+          "has": [
+            "link(Link, Session, Options) -> place(<<\"link-window\">>, Link, Session, Options)."
+          ],
+          "in": "tmux_window_link:link/3"
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_window_link:move/3",
+      "command": "move-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_window_link.erl:143",
+          "has": [
+            "tmux_target:run(Server, Command, Flags ++"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_window_link.erl:98",
+          "has": [
+            "move(Link, Session, Options) -> place(<<\"move-window\">>, Link, Session, Options)."
+          ],
+          "in": "tmux_window_link:move/3"
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_session:rename/2",
+      "command": "rename-session",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_session.erl:75",
+          "has": [
+            "tmux_target:execute(Command)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_session.erl:97",
+          "has": [
+            "tmux_command:generated(session_rename,"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_command.erl:214",
+          "has": [
+            "session_rename ->"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_target.erl:59",
+          "has": [
+            "classify(tmux_server:command(Server, Validated, #{}))"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_session.erl:72",
+          "has": [
+            "rename(Session, Name) ->"
+          ],
+          "in": "tmux_session:rename/2"
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_pane:resize/2",
+      "command": "resize-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_pane.erl:320",
+          "has": [
+            "tmux_target:execute(Command)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_pane.erl:341",
+          "has": [
+            "tmux_command:generated(pane_resize,"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_command.erl:215",
+          "has": [
+            "pane_resize ->"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_target.erl:59",
+          "has": [
+            "classify(tmux_server:command(Server, Validated, #{}))"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_pane.erl:317",
+          "has": [
+            "resize(Pane, Options) ->"
+          ],
+          "in": "tmux_pane:resize/2"
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_key:bind/3",
+      "command": "bind-key",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_key.erl:77",
+          "has": [
+            "tmux_target:run(Server, <<\"bind-key\">>"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_key.erl:53",
+          "has": [
+            "bind(Server, Key, Commands) -> bind(Server, Key, Commands, #{})."
+          ],
+          "in": "tmux_key:bind/3"
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_key:unbind/2",
+      "command": "unbind-key",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_key.erl:102",
+          "has": [
+            "tmux_target:run(Server, <<\"unbind-key\">>, Flags ++"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_key.erl:83",
+          "has": [
+            "unbind(Server, Key) -> unbind(Server, Key, #{})."
+          ],
+          "in": "tmux_key:unbind/2"
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_option:set/3",
+      "command": "set-option",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_option.erl:142",
+          "has": [
+            "tmux_target:run(Server, <<\"set-option\">>,"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_option.erl:121",
+          "has": [
+            "set(Scope, Key, Value) -> set(Scope, Key, Value, #{})."
+          ],
+          "in": "tmux_option:set/3"
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_buffer:show/2",
+      "command": "show-buffer",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_buffer.erl:94",
+          "has": [
+            "?= run(Server, <<\"show-buffer\">>"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_buffer.erl:81",
+          "has": [
+            "show(Server, Buffer) -> show(Server, Buffer, #{})."
+          ],
+          "in": "tmux_buffer:show/2"
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "symbol": "tmux_server:start_owned/1",
+      "command": "start-server",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_owned_server.erl:200",
+          "has": [
+            "case tmux_transport:start_channel(maps:get(executable, Config), Args,"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_owned_server.erl:197",
+          "has": [
+            "<<\"start-server\">>, <<\";\">>"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_server.erl:142",
+          "has": [
+            "start_owned(Options) -> tmux_owned_server:start(Options)."
+          ],
+          "in": "tmux_server:start_owned/1"
+        }
+      ]
     }
   ]
 }

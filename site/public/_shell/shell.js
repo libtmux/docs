@@ -9,6 +9,7 @@
     {"slug":"lua","name":"Lua","shortName":"Lua","logoLanguage":"lua","versionedDocs":true,"mcp":false},
     {"slug":"powershell","name":"PowerShell","shortName":"PowerShell","logoLanguage":"powershell","versionedDocs":true,"mcp":false},
     {"slug":"julia","name":"Julia","shortName":"Julia","logoLanguage":"julia","versionedDocs":true,"mcp":true},
+    {"slug":"erlang","name":"Erlang","shortName":"Erl","logoLanguage":"erlang","versionedDocs":true,"mcp":false},
     {"slug":"elixir","name":"Elixir","shortName":"Ex","logoLanguage":"elixir","versionedDocs":true,"mcp":false},
     {"slug":"haskell","name":"Haskell","shortName":"Hs","logoLanguage":"haskell","versionedDocs":true,"mcp":false},
     {"slug":"lisp","name":"Common Lisp","shortName":"CL","logoLanguage":"lisp","versionedDocs":true,"mcp":false},

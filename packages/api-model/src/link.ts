@@ -378,6 +378,7 @@ export class SymbolIndex {
    * forgets to say produces fewer links, not wrong ones.
    */
   private readonly lang: string | undefined
+  private readonly docHref: ((href: string) => string) | undefined
 
   /** The port this index describes, which decides how a page writes a symbol. */
   get language(): string | undefined {
@@ -389,9 +390,10 @@ export class SymbolIndex {
     return symbol.parent ? this.byDeclared.get(symbol.parent) : undefined
   }
 
-  constructor(symbols: ApiSymbol[], hrefFor: (symbol: ApiSymbol) => string, lang?: string) {
+  constructor(symbols: ApiSymbol[], hrefFor: (symbol: ApiSymbol) => string, lang?: string, docHref?: (href: string) => string) {
     this.lang = lang
     this.hrefFor = hrefFor
+    this.docHref = docHref
     for (const s of symbols) {
       if (!this.byDeclared.has(s.id) || !s.inheritedFrom) this.byDeclared.set(s.id, s)
       const pub = s.publicId ?? s.id
@@ -1187,6 +1189,7 @@ export class SymbolIndex {
 
   linkDoc(spans: DocSpan[], context?: ApiSymbol): (DocSpan & { link?: LinkTarget })[] {
     return spans.map((span) => {
+      if (span.kind === 'link' && this.docHref) return { ...span, href: this.docHref(span.href) }
       if (span.kind !== 'ref') return span
       const resolved = this.resolve(span.target, span.role, context)
       const lone = /^([A-Za-z_$][\w$]*)(\(.*\))?$/s.exec(span.target)

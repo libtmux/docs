@@ -168,6 +168,14 @@
         "kind": "trunk",
         "supported": true
       }
+    ],
+    "erlang": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
     ]
   },
   "defaultVersion": {
@@ -191,6 +199,7 @@
     "haskell": "latest",
     "perl": "latest",
     "clojure": "latest",
-    "lisp": "latest"
+    "lisp": "latest",
+    "erlang": "latest"
   }
 }
