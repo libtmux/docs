@@ -1,3 +1,4 @@
+import { newCheckContext } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 import { checkHomeResponsiveLayout } from './check-home-launcher.mjs'
 import { checkPickerFilters } from './check-picker-filters.mjs'
@@ -96,7 +97,7 @@ function revealedContrast(id) {
 export async function checkRowPermalinks(browser, base, pages = ROW_PERMALINK_PAGES) {
   let rows = 0
   for (const colorScheme of ['light', 'dark']) {
-    const context = await browser.newContext({ colorScheme, reducedMotion: 'reduce' })
+    const context = await newCheckContext(browser, base, { colorScheme, reducedMotion: 'reduce' })
     const page = await context.newPage()
     page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     try {
@@ -174,7 +175,7 @@ export async function checkDevSample(browser, base) {
   await checkKindBadgeLinks(browser, base, { sample: true })
   await checkBlockLinksUndecorated(browser, base, { sample: true })
   await checkTmuxKeys(browser, base)
-  const context = await browser.newContext({ reducedMotion: 'reduce' })
+  const context = await newCheckContext(browser, base, { reducedMotion: 'reduce' })
   const page = await context.newPage()
   const errors = []
   page.on('pageerror', (error) => errors.push(error.message))

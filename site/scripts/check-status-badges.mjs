@@ -1,3 +1,4 @@
+import { newCheckContext } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 import { CONCEPT_DESCRIPTION, PICKER_GROUP_SUMMARY, PORT_BY_SLUG, PRODUCT_STATUS_GUIDE, PRODUCT_STATUS_LINK, productStatusLine, productAvailable, productStatus } from '../src/lib/ports.ts'
 import registry from '../src/data/registry.json' with { type: 'json' }
@@ -222,7 +223,7 @@ export async function checkStatusBadges(browser, base, options = {}) {
     touch = true, timeout, sabotage } = options
   let rows = 0
   for (const scheme of schemes) {
-    const context = await browser.newContext({ colorScheme: scheme, reducedMotion: 'reduce' })
+    const context = await newCheckContext(browser, base, { colorScheme: scheme, reducedMotion: 'reduce' })
     const page = await context.newPage()
     page.setDefaultTimeout(timeout ?? (process.env.CI ? 20000 : 10000))
     page.setDefaultNavigationTimeout(60000)
@@ -269,7 +270,7 @@ export async function checkStatusBadges(browser, base, options = {}) {
     }
   }
   if (touch && !sabotage) {
-    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, reducedMotion: 'reduce' })
+    const context = await newCheckContext(browser, base, { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, reducedMotion: 'reduce' })
     const page = await context.newPage()
     page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     page.setDefaultNavigationTimeout(60000)

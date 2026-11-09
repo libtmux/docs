@@ -1,8 +1,9 @@
+import { newCheckPage } from './browser-context.mjs'
 import { chromium } from 'playwright'
 
 const url = process.argv[2] ?? 'http://127.0.0.1:53972/'
 const browser = await chromium.launch()
-const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, colorScheme: 'dark' })
+const page = await newCheckPage(browser, url, { viewport: { width: 1280, height: 900 }, colorScheme: 'dark' })
 await page.addInitScript(() => {
   window.__shifts = []
   window.__phase = 'load'

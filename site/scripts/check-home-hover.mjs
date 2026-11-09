@@ -1,9 +1,10 @@
+import { newCheckContext } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 import { PORTS } from '../src/lib/ports.ts'
 
 /** Real pointer events, with the clock advanced instead of sleeping per option. */
 export async function checkHomeHover(browser, base) {
-  const context = await browser.newContext({ viewport: { width: 914, height: 777 }, colorScheme: 'light', reducedMotion: 'no-preference' })
+  const context = await newCheckContext(browser, base, { viewport: { width: 914, height: 777 }, colorScheme: 'light', reducedMotion: 'no-preference' })
   const page = await context.newPage()
   const errors = []
   page.on('pageerror', (error) => errors.push(error.message))

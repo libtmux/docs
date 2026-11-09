@@ -21,6 +21,7 @@
  *
  * Usage: node scripts/check-mobile-nav.mjs [base-url]
  */
+import { newCheckContext } from './browser-context.mjs'
 import { chromium } from 'playwright'
 import { checkApiNavigation } from './check-navigation.mjs'
 const BASE = (process.argv[2] ?? 'http://localhost:8080').replace(/\/$/, '')
@@ -28,7 +29,7 @@ const b = await chromium.launch()
 const fails = [], ok = []
 const note = (pass, msg) => (pass ? ok : fails).push(msg)
 const WITH_TOC = '/tmux/topics/traversal/', NO_TOC = '/tmux/concepts/'
-const ctx = await b.newContext()
+const ctx = await newCheckContext(b, BASE)
 const apiPage = await ctx.newPage()
 try {
   await checkApiNavigation(apiPage, BASE)

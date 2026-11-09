@@ -17,6 +17,7 @@
  *
  * Usage: node scripts/check-visual.mjs [--update] [base-url]
  */
+import { newCheckPage } from './browser-context.mjs'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -60,7 +61,7 @@ let written = 0
 
 for (const [scheme] of [['light'], ['dark']]) {
   for (const [vname, width, height] of VIEWPORTS) {
-    const page = await browser.newPage({ viewport: { width, height }, colorScheme: scheme })
+    const page = await newCheckPage(browser, base, { viewport: { width, height }, colorScheme: scheme })
     for (const [pname, path] of PAGES) {
       const name = `${pname}-${vname}-${scheme}.png`
       const file = join(dir, name)

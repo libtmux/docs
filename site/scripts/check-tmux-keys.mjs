@@ -1,3 +1,4 @@
+import { newCheckContext } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 
 /** Contrast of a rendered element's text against what is painted behind it. */
@@ -53,7 +54,7 @@ export const TMUX_KEY_PAGES = [
  */
 export async function checkTmuxKeys(browser, base) {
   for (const colorScheme of ['light', 'dark']) {
-    const context = await browser.newContext({ colorScheme, reducedMotion: 'reduce' })
+    const context = await newCheckContext(browser, base, { colorScheme, reducedMotion: 'reduce' })
     const page = await context.newPage()
     page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const errors = []

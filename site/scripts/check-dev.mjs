@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { newCheckContext, newCheckPage } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -24,6 +25,7 @@ import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkKindBadgeLinksFai
 import { checkTypeParameters } from './check-type-parameters.mjs'
 import { checkTmuxKeys, TMUX_KEY_PAGES } from './check-tmux-keys.mjs'
 import { checkSidebarDemo } from './check-sidebar-demo.mjs'
+import { checkGuideRedirect } from './check-navigation.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiAnchorsOnly = process.argv.includes('--api-anchors')
@@ -53,6 +55,8 @@ assert(requestedBrowserPort === undefined || /^\d+$/.test(requestedBrowserPort)
   && Number(requestedBrowserPort) >= 1 && Number(requestedBrowserPort) <= 65535,
   'LIBTMUX_DOCS_BROWSER_PORT must be an integer from 1 to 65535')
 const documentationNavigationOnly = process.argv.includes('--documentation-navigation')
+const guideRedirectOnly = process.argv.includes('--guide-redirect')
+const sidebarDemoOnly = process.argv.includes('--sidebar-demo')
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
 
 Object.assign(process.env, {
@@ -307,7 +311,7 @@ async function retryReload(check, page) {
 }
 
 async function checkSignatureLayouts(browser, base) {
-  const page = await browser.newPage({ javaScriptEnabled: false })
+  const page = await newCheckPage(browser, base, { javaScriptEnabled: false })
   try {
     await page.goto(`${base}/api-signature-probe/`, { waitUntil: 'load' })
     const entries = page.locator('[data-signature-port]')
@@ -448,7 +452,7 @@ async function checkSignatureLayouts(browser, base) {
 async function checkKeywordHelp(browser, base) {
   const fullMatrix = apiSignaturesOnly || keywordHelpOnly
   for (const javaScriptEnabled of [false, true]) {
-    const page = await browser.newPage({ javaScriptEnabled })
+    const page = await newCheckPage(browser, base, { javaScriptEnabled })
     const errors = []
     page.on('pageerror', (error) => errors.push(error.message))
     page.setDefaultTimeout(5000)
@@ -540,7 +544,7 @@ async function checkMemberBodies(browser, base) {
 }
 
 async function checkReferenceAndHeroes(browser, base) {
-  const page = await browser.newPage({ reducedMotion: 'reduce' })
+  const page = await newCheckPage(browser, base, { reducedMotion: 'reduce' })
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   try {
     await page.goto(`${base}/api-body-probe/`)
@@ -785,6 +789,8 @@ try {
   // Compile the initial pages during setup; navigation assertions measure
   // the running app. The outer loop still budgets this initial compilation.
   const firstPage = homeLauncherOnly || homeControlsOnly ? '/'
+    : sidebarDemoOnly ? '/demo/sidebar/'
+    : guideRedirectOnly ? '/ruby/latest/guides/overview/'
     : keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
     : apiStickyOnly || permalinkRevealOnly ? '/swift/latest/reference/server/'
     : badgeCentringOnly ? '/py/v0.46.2/guides/attaching-to-tmux/'
@@ -793,7 +799,7 @@ try {
     : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/'
     : typeParametersOnly ? '/ts/latest/reference/selection-selection-where/' : '/tmux/concepts/server-session-window-pane/'
   const fullRun = ![homeLauncherOnly, homeControlsOnly, keywordHelpOnly, apiSignaturesOnly, referenceLayoutOnly, globalHeaderOnly, headerMenuSectionsOnly, statusBadgesOnly, badgeCentringOnly, referencePreviewsOnly,
-    referencePreferencesOnly, documentationNavigationOnly, apiNavigationOnly, apiAnchorsOnly, typeParametersOnly, permalinkRevealOnly, requiredAppearanceOnly].some(Boolean)
+    referencePreferencesOnly, documentationNavigationOnly, guideRedirectOnly, sidebarDemoOnly, apiNavigationOnly, apiAnchorsOnly, typeParametersOnly, permalinkRevealOnly, requiredAppearanceOnly].some(Boolean)
   const setupPages = sampleOnly ? [firstPage, '/demo/widgets/pickers/', ...TMUX_KEY_PAGES]
     : [firstPage, ...(fullRun ? TMUX_KEY_PAGES : [])]
   const ready = Promise.all(setupPages.map(async (path) => {
@@ -863,10 +869,14 @@ try {
   } else if (referencePreferencesOnly) {
     await retryReload(() => checkReferencePreferences(browser, base))
     await retryReload(() => checkGlobalHeader(browser, base))
+  } else if (guideRedirectOnly) {
+    await checkGuideRedirect(browser, base)
+  } else if (sidebarDemoOnly) {
+    await checkSidebarDemo(browser, `${base}/demo/sidebar/`)
   } else if (documentationNavigationOnly) {
     await retryReload(() => checkDocumentationNavigation(browser, base, true))
   } else if (apiNavigationOnly) {
-    const page = await browser.newPage({ reducedMotion: 'reduce' })
+    const page = await newCheckPage(browser, base, { reducedMotion: 'reduce' })
     page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     await retryReload(() => checkApiNavigation(page, base))
     await checkApiNavigationFail(browser, base)
@@ -912,15 +922,15 @@ try {
     // Cold API indexes occupy the same development server as the page walk.
     // Finish that initial compilation before starting timed browser navigation.
     await apiExamples
-    const page = await browser.newPage({ reducedMotion: 'reduce' })
+    const page = await newCheckPage(browser, base, { reducedMotion: 'reduce' })
     page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const manifest = await page.request.get(`${base}/page-links.json`)
     assert(manifest.ok(), `Native navigation manifest: HTTP ${manifest.status()}`)
     assert.equal((await manifest.json()).schema, 1)
-    const clipboardPage = await browser.newPage()
+    const clipboardPage = await newCheckPage(browser, base)
     clipboardPage.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const clipboard = schedule(() => checkClipboard(clipboardPage, base).finally(() => clipboardPage.close()))
-    const navigationPage = await browser.newPage({ reducedMotion: 'reduce' })
+    const navigationPage = await newCheckPage(browser, base, { reducedMotion: 'reduce' })
     navigationPage.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const navigation = schedule(() => retryReload(() => checkNavigation(navigationPage, base)).finally(() => navigationPage.close())
       .then(() => retryReload(() => checkMcpInstallRevisit(browser, base))))
@@ -938,7 +948,7 @@ try {
       .then(() => checkStatusBadgesFail(browser, base)))
     const homeLauncher = schedule(() => checkHomeLauncher(browser, base))
     const documentationNavigation = schedule(() => retryReload(() => checkDocumentationNavigation(browser, base)))
-    const apiNavigationPage = await browser.newPage({ reducedMotion: 'reduce' })
+    const apiNavigationPage = await newCheckPage(browser, base, { reducedMotion: 'reduce' })
     apiNavigationPage.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     const apiNavigation = schedule(() => retryReload(() => checkApiNavigation(apiNavigationPage, base)).then(() => checkApiNavigationFail(browser, base)).finally(() => apiNavigationPage.close()))
     const apiAnchors = schedule(() => retryReload(() => checkApiAnchorArrival(browser, base)))
@@ -1196,7 +1206,7 @@ try {
       })
       assert.equal(toolbar.background, toolbar.page, `${colorScheme}: toolbar uses the page surface before theme initialization`)
       assert.equal(toolbar.icon, toolbar.text, `${colorScheme}: toolbar icons use the page text color`)
-      const context = await browser.newContext({ javaScriptEnabled: false, colorScheme, viewport: { width: 390, height: 844 } })
+      const context = await newCheckContext(browser, base, { javaScriptEnabled: false, colorScheme, viewport: { width: 390, height: 844 } })
       const noScript = await context.newPage()
       await noScript.goto(`${base}/tmux/concepts/server-session-window-pane/`, { waitUntil: 'load' })
       const checkContrast = async (scheme, selectors = ['h1', '.prose h2', '.prose p']) => {
