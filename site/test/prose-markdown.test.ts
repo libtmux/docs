@@ -34,6 +34,19 @@ function exampleBytes(markdown: string): string[] {
 }
 
 describe('prose Markdown links', () => {
+  it('keeps OCaml local filenames and output labels plain while linking source and Stdlib references', async () => {
+    const source = 'Save the example as `main.ml`. Save the interface as `main.mli`. Save the package as `example.opam`. Output: `editor:2`, `logs:1`. Read `json/libtmux_json.mli`, `List`, `Unix` and `Seq.filter`.'
+    const processor = await createMarkdownProcessor({ rehypePlugins: [rehypeApiLinks], syntaxHighlight: false })
+    const html = (await processor.render(source, { frontmatter: { port: 'ocaml' } })).code
+    const markdown = linkProseMarkdown(source, 'ocaml')
+    const sourcePath = JSON.parse(readFileSync(new URL('../src/data/api/ocaml.paths.json', import.meta.url), 'utf8'))
+    const expected = [`https://github.com/${sourcePath.repo}/blob/${sourcePath.revision}/json/libtmux_json.mli`,
+      'https://ocaml.org/manual/5.5/api/List.html', 'https://ocaml.org/manual/5.5/api/Unix.html', 'https://ocaml.org/manual/5.5/api/Seq.html#VALfilter']
+    expect(urls(markdown)).toEqual(expected)
+    for (const href of expected) expect(html).toContain(`href="${href}"`)
+    for (const literal of ['main.ml', 'main.mli', 'example.opam', 'editor:2', 'logs:1']) expect(html).toContain(`<code>${literal}</code>`)
+  })
+
   it('links native commands through prose HTML and Markdown without claiming prose aliases', async () => {
     const source = 'Call tmux resize-pane. Use `$ tmux -L local run -b true` and `display-message`. Keep tmux has many panes.\n\n[Keep `run-shell`](https://example.com/authored).\n\n<code><a href="https://example.com/native">run-shell</a></code>\n\n`tmux run-shell true && tmux display-message hello`\n\n```sh\ntmux run-shell true\n```'
     const processor = await createMarkdownProcessor({ rehypePlugins: [rehypeApiLinks], syntaxHighlight: false })
@@ -362,8 +375,8 @@ describe('prose Markdown links', () => {
 
   it.each(Object.keys(PORT_BY_SLUG))('links a real %s declaration in its selected version', (port) => {
     const model = API_MODELS[port]
-    const name = port === 'powershell' ? 'New-TmuxServer' : 'Server'
-    const symbol = model.symbols.find((entry) => entry.name === name && (port === 'powershell' ? entry.command : !entry.parent))!
+    const name = port === 'powershell' ? 'New-TmuxServer' : port === 'ocaml' ? 'Libtmux_unix.Client' : 'Server'
+    const symbol = model.symbols.find((entry) => port === 'ocaml' ? entry.id === name : entry.name === name && (port === 'powershell' ? entry.command : !entry.parent))!
     expect(symbol, `${port} ${name} declaration`).toBeDefined()
     vi.stubEnv('LIBTMUX_DOCS_PORT', port)
     vi.stubEnv('LIBTMUX_DOCS_VERSION', 'next')

@@ -70,11 +70,14 @@ const CAPABILITY_EVIDENCE: Record<CapabilityKey, { needs: string; test: (symbol:
   capture: { needs: 'a capture symbol', test: (symbol) => /capture|content|text|screen|scrollback/i.test(symbol.name) },
   'current-pane': { needs: 'an environment constructor', test: (symbol) => /env/i.test(symbol.name) },
   'test-fixtures': { needs: 'a test or fixture symbol', test: (symbol) => /test|fixture|junit|pytest/i.test(`${qualifiedNameOf(symbol)} ${symbol.source?.file ?? ''}`) },
-  async: { needs: 'an async, suspend, Promise or Task signature', test: (symbol) => /async|suspend|promise|\btask\b/i.test([symbol.name, ...symbol.signatures.map((signature) => `${signature.raw ?? ''} ${signature.returns ?? ''}`)].join(' ')) },
+  async: { needs: 'an async, suspend, Promise or Task signature, or a documented Eio capture operation', test: (symbol) =>
+    (symbol.package === 'libtmux-eio' && symbol.id === 'Libtmux_eio.Client.capture') || /async|suspend|promise|\btask\b/i.test([symbol.name, ...symbol.signatures.map((signature) => `${signature.raw ?? ''} ${signature.returns ?? ''}`)].join(' ')) },
 }
 
 export interface CoreHomeEntry {
   objects: Record<CoreRole, string>
+  /** A native model may distinguish a connection or global window from contextual handles. */
+  wraps?: Partial<Record<CoreRole, string>>
   capabilities: Partial<Record<CapabilityKey, string>>
 }
 
@@ -114,7 +117,7 @@ export function resolveCoreHome(port: string, version: string, entry: CoreHomeEn
   if (!entry) throw new Error(`core-home: ${port} has no entry`)
   const objects = CORE_ROLES.map((role) => {
     if (!entry.objects[role]) throw new Error(`core-home: ${port} names no ${role} type`)
-    return { role, ...link(port, entry.objects[role], version, role), wraps: TMUX_OBJECTS[role].wraps, tmuxId: TMUX_OBJECTS[role].id }
+    return { role, ...link(port, entry.objects[role], version, role), wraps: entry.wraps?.[role] ?? TMUX_OBJECTS[role].wraps, tmuxId: TMUX_OBJECTS[role].id }
   })
   const capabilities: CoreHome['capabilities'] = { typed: [], cli: [] }
   for (const [key, id] of Object.entries(entry.capabilities)) {

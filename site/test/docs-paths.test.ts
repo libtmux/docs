@@ -75,8 +75,9 @@ describe('product document URLs', () => {
     expect(docsRoutePath({ id: 'meta/third-party-notices', data: {} })).toBe('meta/third-party-notices')
   })
 
-  it('retires duplicate Julia and F# API overviews in root and selected-version builds', () => {
+  it('retires source API overviews in root and selected-version builds', () => {
     expect(sourceGuideRedirects(undefined, { fsharp: 'v0.46.2' })).toEqual([
+      { path: 'ocaml/latest/guides/api', target: 'ocaml/latest/reference' },
       { path: 'julia/latest/guides/api-overview', target: 'julia/latest/reference' },
       { path: 'fsharp/v0.46.2/guides/api-overview', target: 'fsharp/v0.46.2/reference' },
     ])
@@ -85,6 +86,9 @@ describe('product document URLs', () => {
     ])
     expect(sourceGuideRedirects('fsharp')).toEqual([
       { path: 'guides/api-overview', target: 'reference' },
+    ])
+    expect(sourceGuideRedirects('ocaml')).toEqual([
+      { path: 'guides/api', target: 'reference' },
     ])
     expect(sourceGuideRedirects('py')).toEqual([])
   })

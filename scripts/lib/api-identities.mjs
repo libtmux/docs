@@ -281,6 +281,43 @@ function documenter(url, page, fragment) {
   return { via: 'documenter', declared, kind: declared === 'type' ? 'type' : bucket(declared === 'constant' ? 'constant' : declared), path: name.split('.'), title: page.title }
 }
 
+function ocamldocMember(page, fragment) {
+  const member = /^(TYPE|VAL)([a-z_][\w']*)$/.exec(fragment)
+  const anchor = page.anchors.find((entry) => entry.id === fragment)
+  if (!member || !anchor) return undefined
+  const end = page.html.indexOf('</pre>', anchor.at)
+  if (end < 0) return undefined
+  const declaration = strip(page.html.slice(anchor.at, end))
+  const isType = member[1] === 'TYPE'
+  const named = (isType
+    ? /^type\s+(?:(?:[+-]?'[\w']+|\([^)]*\))\s+)?([a-z_][\w']*)(?![\w'])/
+    : /^val\s+([a-z_][\w']*)(?![\w'])/).exec(declaration)
+  if (named?.[1] !== member[2]) return undefined
+  return { declared: isType ? 'type' : 'val', kind: isType ? 'type' : 'member', name: member[2] }
+}
+
+function ocamldoc(_url, page, fragment) {
+  const heading = page.headings.find((entry) => entry.level === 1)?.text ?? ''
+  const module = /^Module ([A-Z][\w']*(?:\.[A-Z][\w']*)*)$/.exec(heading)
+  if (!module) return undefined
+  const base = { via: 'ocamldoc', declared: 'module', kind: 'module', path: dotted(module[1]), title: page.title }
+  if (!fragment) return base
+  const anchor = page.anchors.find((entry) => entry.id === fragment)
+  if (!anchor) return undefined
+  const constructor = /^TYPEELT([a-z_][\w']*)\.([A-Z][\w']*)$/.exec(fragment)
+  if (constructor) {
+    const end = page.html.indexOf('</span>', anchor.at)
+    const declaration = end < 0 ? '' : page.html.slice(anchor.at, end)
+    if (!ocamldocMember(page, `TYPE${constructor[1]}`)
+      || !/<span\b[^>]*\bclass=["']constructor["'][^>]*>/.test(declaration)
+      || strip(declaration) !== constructor[2]) return undefined
+    return { ...base, declared: 'constructor', kind: 'member', path: [...base.path, constructor[2]] }
+  }
+  const member = ocamldocMember(page, fragment)
+  if (!member) return undefined
+  return { ...base, declared: member.declared, kind: member.kind, path: [...base.path, member.name] }
+}
+
 function mdn(url, page) {
   const { pathname } = new URL(splitUrl(url).page)
   const parts = decodeURIComponent(pathname).split('/').filter(Boolean)
@@ -334,6 +371,7 @@ function parserFor(hostname, pathname, page) {
   if (hostname === 'docs.python.org') return cpython
   if (hostname === 'pkg.go.dev') return godoc
   if (hostname === 'docs.julialang.org') return documenter
+  if (hostname === 'ocaml.org' && /^\/manual\/[^/]+\/api\//.test(pathname)) return ocamldoc
   if (hostname === 'developer.mozilla.org') return mdn
   return undefined
 }
@@ -409,7 +447,7 @@ export function judge(source, identity) {
 /** The language each reader's host documents, to hold a bare word on a link to the scope that language gives it. */
 const PORT_OF = {
   rustdoc: 'rs', javadoc: 'java', dokka: 'kotlin', scaladoc: 'scala', cppreference: 'cxx', exdoc: 'elixir', fsdocs: 'fsharp',
-  learn: 'csharp', docfx: 'csharp', cpython: 'py', godoc: 'go', documenter: 'julia', mdn: 'ts', docc: 'swift',
+  learn: 'csharp', docfx: 'csharp', cpython: 'py', godoc: 'go', documenter: 'julia', mdn: 'ts', docc: 'swift', ocamldoc: 'ocaml',
 }
 
 /** A name written whole inside a link's words: `Option::map`, `AbortSignal.timeout`, `std::fs::read_to_string`. */

@@ -153,6 +153,15 @@ const ELIXIR_BUILTIN_TYPES = [
 ]
 
 export const BUILTINS: Record<string, Record<string, string>> = {
+  ocaml: {
+    Iarray: 'https://ocaml.org/manual/5.5/api/Iarray.html',
+    'Iarray.t': 'https://ocaml.org/manual/5.5/api/Iarray.html#TYPEt',
+    List: 'https://ocaml.org/manual/5.5/api/List.html',
+    Seq: 'https://ocaml.org/manual/5.5/api/Seq.html',
+    'Seq.t': 'https://ocaml.org/manual/5.5/api/Seq.html#TYPEt',
+    'Seq.filter': 'https://ocaml.org/manual/5.5/api/Seq.html#VALfilter',
+    Unix: 'https://ocaml.org/manual/5.5/api/Unix.html',
+  },
   elixir: {
     ...Object.fromEntries(ELIXIR_BASIC_TYPES.map((name) => [name, elixirDocs('typespecs.html#basic-types')])),
     ...Object.fromEntries(ELIXIR_BUILTIN_TYPES.map((name) => [name, elixirDocs('typespecs.html#built-in-types')])),

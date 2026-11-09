@@ -196,7 +196,7 @@ describe('short names', () => {
     expect(nativeShortName(API_MODELS.swift, symbol)).toBe(`Server.${symbol.name}`)
   })
 
-  it('are the owner, a separator that the language writes, and the member, for every symbol of every port', { timeout: 30_000 }, () => {
+  it('use the native owner namespace and member separator across ports', { timeout: 30_000 }, () => {
     const separators: Record<string, string[]> = { rs: ['::'], cxx: ['::'], ruby: ['::', '.', '#'], lua: ['.', ':'], powershell: ['\\'] }
     for (const [port, model] of Object.entries(API_MODELS)) {
       const owners = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
@@ -204,6 +204,8 @@ describe('short names', () => {
         const shown = nativeShortName(model, symbol)
         const owner = symbol.parent ? owners.get(symbol.parent) : undefined
         if (!owner) { expect(shown, `${port} ${symbol.id}`).toBe(symbol.name); continue }
+        // OCaml types group constructors and fields without qualifying their names.
+        if (port === 'ocaml' && owner.kind !== 'module') continue
         expect(shown.startsWith(owner.name) && shown.endsWith(symbol.name), `${port} ${symbol.id}`).toBe(true)
         const separator = shown.slice(owner.name.length, shown.length - symbol.name.length)
         // A Rust tuple field follows its owner with a dot, as rustdoc writes it; every other Rust member with `::`.
@@ -211,6 +213,16 @@ describe('short names', () => {
         expect(allowed, `${port} ${symbol.id}`).toContain(separator)
       }
     }
+  })
+
+  it.each([
+    ['Libtmux.Cardinality.error.Multiple_matches', 'Cardinality.Multiple_matches'],
+    ['Libtmux.Cardinality.error.Multiple_matches.at_least', 'Cardinality.at_least'],
+    ['Libtmux.Command.view:type.Rename_session', 'Command.Rename_session'],
+    ['Libtmux.Snapshot.t', 'Snapshot.t'],
+    ['Libtmux_unix.Client.capture', 'Client.capture'],
+  ])('writes the native OCaml namespace of %s as %s', (id, expected) => {
+    expect(nativeShortName(API_MODELS.ocaml, symbolNamed('ocaml', id))).toBe(expected)
   })
 
   it('are the end of the full name wherever the id ends with the name, so the card is the page\'s name without its path', { timeout: 30_000 }, () => {

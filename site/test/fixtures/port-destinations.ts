@@ -20,6 +20,9 @@ export interface ExpectedDestinations {
 const github = (url: string, name: string): ExpectedLink => ({ url, label: `${name} on GitHub` })
 
 export const DESTINATIONS: Record<string, ExpectedDestinations> = {
+  ocaml: {
+    source: github('https://github.com/libtmux/libtmux-ocaml/tree/master/lib', 'libtmux-ocaml/lib'),
+  },
   py: {
     source: github('https://github.com/tmux-python/libtmux', 'libtmux'),
     registry: { name: 'PyPI', url: 'https://pypi.org/project/libtmux/', icon: 'pypi', label: 'libtmux on PyPI' },

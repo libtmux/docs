@@ -16,6 +16,7 @@ import { neverLinks } from './never-links.ts'
  */
 
 export const PORT_NAME: Record<string, string> = {
+  ocaml: 'OCaml',
   py: 'Python',
   ts: 'TypeScript',
   rs: 'Rust',

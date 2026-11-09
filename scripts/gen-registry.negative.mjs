@@ -251,6 +251,34 @@ for (const [name, mutate] of mutations) {
     check('an incomplete Gallery entry is not an empty package feed', same(result.ports.powershell, seed.ports.powershell), result.error)
     result = invoke({ ...replies, [workspace]: { status: 500, body: 'unavailable' } })
     check('a failed sibling package probe does not publish a partial PowerShell entry', same(result.ports.powershell, seed.ports.powershell), result.error)
+
+    const ocamlTags = 'https://api.github.com/repos/libtmux/libtmux-ocaml/tags?per_page=100'
+    const opam = 'https://api.github.com/repos/ocaml/opam-repository/contents/packages/libtmux'
+    const ocaml = { ...replies, [ocamlTags]: tagged('v0.1.0-alpha.1', 'v0.1.0') }
+    writeFileSync(join(dir, 'published.json'), JSON.stringify(baseline))
+    result = invoke({ ...ocaml, [opam]: { body: JSON.stringify([
+      { type: 'dir', name: 'libtmux.0.1.0-alpha.1' },
+      { type: 'dir', name: 'libtmux.0.1.0' },
+      { type: 'file', name: 'README.md' },
+      { type: 'dir', name: 'another-package.9.0.0' },
+    ]) } })
+    const publishedOcaml = { status: 'release', version: '0.1.0', release: '0.1.0', tag: 'v0.1.0' }
+    check('opam directory versions select the published release and its tag',
+      same(result.ports.ocaml, publishedOcaml), `${JSON.stringify(result.ports.ocaml)} ${result.error}`)
+    result = invoke({ ...ocaml, [opam]: { body: JSON.stringify([{ type: 'dir', name: 'libtmux.0.1.0-alpha.1' }]) } })
+    check('opam does not treat an unpublished final tag as a registry release',
+      same(result.ports.ocaml, { status: 'prerelease', version: '0.1.0-alpha.1', release: null, tag: 'v0.1.0-alpha.1' }), result.error)
+    writeFileSync(join(dir, 'published.json'), JSON.stringify({ ...baseline, ports: { ...baseline.ports, ocaml: publishedOcaml } }))
+    for (const [why, response] of [
+      ['HTTP 403', { status: 403, body: 'unavailable' }],
+      ['HTTP 404', { status: 404, body: 'not found' }],
+      ['HTTP 500', { status: 500, body: 'unavailable' }],
+      ['malformed data', { body: JSON.stringify([{ type: 'dir', name: 'libtmux.not-a-version' }]) }],
+    ]) {
+      result = invoke({ ...ocaml, [opam]: response })
+      check(`opam ${why} preserves the last published entry`, same(result.ports.ocaml, publishedOcaml), result.error)
+    }
+    writeFileSync(join(dir, 'published.json'), JSON.stringify(baseline))
     result = invoke({}, true)
     check('offline refresh fills missing ports and preserves published entries',
       Object.keys(result.ports).length === PORTS.length && same(result.ports.powershell, seed.ports.powershell)

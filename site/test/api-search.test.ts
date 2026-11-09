@@ -64,8 +64,9 @@ describe('reference symbol search', () => {
     }
     expect(searchApi(inventory, '', 'types').every((entry) => entry.category === 'types')).toBe(true)
     expect(searchApi(inventory, '', 'members').every((entry) => entry.category === 'members')).toBe(true)
-    const server = searchApi(inventory, 'Server')[0]
-    expect(server.category, `${port}: Server type precedes properties with the same name`).toBe('types')
-    expect(symbols.get(server.id)?.name).toBe('Server')
+    const server = searchApi(inventory, port === 'ocaml' ? 'Libtmux_unix.Client' : 'Server')[0]
+    expect(server.category, `${port}: primary server declaration category`).toBe('types')
+    expect(symbols.get(server.id)?.name).toBe(port === 'ocaml' ? 'Client' : 'Server')
+    if (port === 'ocaml') expect(server).toMatchObject({ id: 'Libtmux_unix.Client', kind: 'module' })
   })
 })

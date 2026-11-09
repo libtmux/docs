@@ -68,6 +68,16 @@ function newestTag(tags, prefix) {
 }
 
 const READERS = {
+  /** Directly authored opam manifests name the packages distributed from Git. */
+  ocaml(repo) {
+    return {
+      distributions: repo.files().filter((path) => /^[^/]+\.opam$/.test(path)).map((manifest) => ({
+        name: manifest.slice(0, -'.opam'.length), manifest,
+        ...(/^version:\s*"([^"]+)"/m.test(repo.read(manifest))
+          ? { version: /^version:\s*"([^"]+)"/m.exec(repo.read(manifest))[1] } : {}),
+      })), units: [],
+    }
+  },
   /** `[project] name` and `version`. */
   py(repo, { repository, manifest = 'pyproject.toml' }) {
     const project = section(repo.read(manifest), 'project')
@@ -224,7 +234,7 @@ const READERS = {
 /** Which reader a port uses: a wrapper port reads its parent's repository. */
 const READER_FOR = {
   py: 'py', ruby: 'ruby', lua: 'lua', powershell: 'powershell', julia: 'julia', ts: 'ts', rs: 'rs', go: 'go',
-  java: 'java', kotlin: 'java', scala: 'java', csharp: 'dotnet', fsharp: 'dotnet', cxx: 'cxx', swift: 'swift', elixir: 'elixir',
+  java: 'java', kotlin: 'java', scala: 'java', csharp: 'dotnet', fsharp: 'dotnet', cxx: 'cxx', swift: 'swift', elixir: 'elixir', ocaml: 'ocaml',
 }
 
 /**

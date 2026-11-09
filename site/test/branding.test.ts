@@ -28,6 +28,7 @@ describe('route branding', () => {
       kotlin: 'libtmux-kotlin: Kotlin-based tmux client', scala: 'libtmux-scala: Scala-based tmux client',
       csharp: 'libtmux-dotnet: C#-based tmux client', fsharp: 'libtmux-fsharp: F#-based tmux client',
       cxx: 'libtmux-cxx: C++-based tmux client', swift: 'libtmux-swift: Swift-based tmux client',
+      ocaml: 'libtmux-ocaml: OCaml-based tmux client',
     })
     expect(portTagline(PORTS.find((port) => port.slug === 'rs')!)).toBe('Rust-based tmux client')
     // The home title carries no ` | project` suffix, for Julia's differing project name too.
@@ -46,6 +47,7 @@ describe('route branding', () => {
       rs: 'libtmux-rs', go: 'libtmux-go', java: 'libtmux-java', kotlin: 'libtmux-kotlin',
       scala: 'libtmux-scala', csharp: 'libtmux-dotnet', fsharp: 'libtmux-fsharp',
       cxx: 'libtmux-cxx', swift: 'libtmux-swift',
+      ocaml: 'libtmux-ocaml',
     }
     expect(Object.fromEntries(PORTS.map((port) => [port.slug, branding(port.slug).projectName]))).toEqual(names)
     expect(branding('java', 'reference/libtmux-scala-cats').projectName).toBe('libtmux-scala')
@@ -96,6 +98,8 @@ describe('route branding', () => {
   })
   it('ships raster and vector fallbacks for every palette and product', () => {
     for (const language of Object.keys(palettes)) for (const product of ['library', 'mcp', 'workspace']) {
+      const owners = PORTS.filter((port) => port.logoLanguage === language)
+      if (product !== 'library' && owners.length && owners.every((port) => port.productAvailability?.[product as 'mcp' | 'workspace'] === 'excluded')) continue
       const brand = { asset: (file: string) => `/brand/${language}/${product}/${file}` }
       for (const file of ['logo.svg', 'favicon.ico', 'logo-32.png', 'logo-512.png', 'apple-touch-icon-light.png', 'opengraph-light.png', 'twitter-light.png', 'site.webmanifest']) {
         expect(existsSync(publicFile(brand.asset(file))), brand.asset(file)).toBe(true)

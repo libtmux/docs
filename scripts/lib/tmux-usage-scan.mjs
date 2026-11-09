@@ -12,13 +12,13 @@ import { receiverOf, scanElixir, scanFSharp, scanJulia } from './tmux-usage-lexi
 /** Port to the grammar that reads its source. PowerShell cmdlets are C#; Julia, F# and Elixir are read by their text. */
 export const GRAMMARS = {
   py: 'python', ts: 'typescript', rs: 'rust', go: 'go', java: 'java', kotlin: 'kotlin', scala: 'scala',
-  csharp: 'csharp', powershell: 'csharp', cxx: 'cpp', swift: 'swift', ruby: 'ruby', lua: 'lua', julia: 'julia', fsharp: 'fsharp', elixir: 'elixir',
+  csharp: 'csharp', powershell: 'csharp', cxx: 'cpp', swift: 'swift', ruby: 'ruby', lua: 'lua', julia: 'julia', fsharp: 'fsharp', elixir: 'elixir', ocaml: 'ocaml',
 }
 
 /** Source extensions per grammar, minus declaration-only files. */
 export const EXTENSIONS = {
   python: /\.py$/, typescript: /(?<!\.d)\.ts$/, rust: /\.rs$/, go: /\.go$/, java: /\.java$/, kotlin: /\.kt$/,
-  scala: /\.scala$/, csharp: /\.cs$/, cpp: /\.(?:cpp|cc|cxx|hpp|hh|h)$/, swift: /\.swift$/, ruby: /\.rb$/, lua: /\.lua$/, julia: /\.jl$/, fsharp: /\.fs$/, elixir: /\.ex$/,
+  scala: /\.scala$/, csharp: /\.cs$/, cpp: /\.(?:cpp|cc|cxx|hpp|hh|h)$/, swift: /\.swift$/, ruby: /\.rb$/, lua: /\.lua$/, julia: /\.jl$/, fsharp: /\.fs$/, elixir: /\.ex$/, ocaml: /\.ml$/,
 }
 
 /** Directories and names that hold tests, examples, tooling and build output rather than the library. */
@@ -42,6 +42,7 @@ const FUNCTIONS = {
   swift: ['function_declaration', 'init_declaration', 'property_declaration', 'subscript_declaration'],
   ruby: ['method', 'singleton_method'],
   lua: ['function_definition_statement', 'local_function_definition_statement'],
+  ocaml: ['let_binding'],
 }
 
 /** Declarations that are functions at the top of a type and only local variables inside a function: `let reply = ...` is not a method named reply. */
@@ -61,6 +62,7 @@ const OWNERS = {
   swift: ['class_declaration', 'protocol_declaration'],
   ruby: ['class', 'module'],
   lua: [],
+  ocaml: ['module_binding'],
 }
 
 const STRINGS = {
@@ -68,6 +70,7 @@ const STRINGS = {
   go: ['interpreted_string_literal', 'raw_string_literal'], java: ['string_literal'], kotlin: ['string_literal'],
   scala: ['string'], csharp: ['string_literal', 'verbatim_string_literal', 'raw_string_literal'], cpp: ['string_literal', 'raw_string_literal'],
   swift: ['line_string_literal', 'multi_line_string_literal', 'raw_string_literal'], ruby: ['string'], lua: ['string'],
+  ocaml: ['string'],
 }
 
 const CALLS = {
@@ -75,6 +78,7 @@ const CALLS = {
   java: ['method_invocation', 'object_creation_expression'], kotlin: ['call_expression'], scala: ['call_expression'],
   csharp: ['invocation_expression', 'object_creation_expression'], cpp: ['call_expression'], swift: ['call_expression'],
   ruby: ['call'], lua: ['call'],
+  ocaml: ['application_expression'],
 }
 
 /**
@@ -95,6 +99,7 @@ const WRAPPERS = new Set([
   'member_access_expression', 'navigation_expression', 'navigation_suffix', 'selector_expression', 'member_expression',
   'attribute', 'binary_expression', 'string_concatenation', 'interpolated_string_expression',
   'spread_element', 'splat_argument', 'list_splat', 'hash_splat_argument', 'spread_expression', 'range_expression', 'compound_literal_expression',
+  'application_expression', 'list_expression', 'tuple_expression',
 ])
 
 /** A node that starts a new function-like scope; strings inside it do not describe the call around it. */
@@ -140,6 +145,10 @@ function lastIdentifier(text) {
 
 /** Names the node declares, with the owner chain that qualifies it. */
 function declaredName(grammar, node) {
+  if (grammar === 'ocaml') {
+    const pattern = node.childForFieldName('pattern')
+    return pattern?.type === 'value_name' ? { name: pattern.text } : undefined
+  }
   const field = node.childForFieldName('name')
   if (field && grammar === 'lua') {
     const parts = field.text.split(/[.:]/)
@@ -327,7 +336,7 @@ function nestedInCommand(node, STR, commandOf, skip = () => false) {
 }
 
 /** The part of a `case`, `when` or `match` arm that is tested against, as opposed to the part that runs. */
-const LABELS = /^(?:switch_label|case_switch_label|case_pattern_switch_label|constant_pattern|match_pattern|when_condition|switch_pattern|case_pattern|case_label)$/
+const LABELS = /^(?:switch_label|case_switch_label|case_pattern_switch_label|constant_pattern|match_pattern|when_condition|switch_pattern|case_pattern|case_label|string_pattern)$/
 /** Arms whose tested part is a named field: the node under that field is the label. */
 const ARMS = { switch_case: ['value'], expression_case: ['value'], case_statement: ['value'], when: ['pattern'], in_clause: ['pattern'], case_clause: ['pattern', 'value'], switch_expression_arm: ['pattern'] }
 const COMPARISONS = /^(?:binary_expression|comparison_operator|binary_operator|equality_expression|infix_expression)$/
@@ -580,7 +589,7 @@ export function withoutPrimaryConstructors(text) {
  * @param {{ grammar: string, text: string, commands: ReadonlySet<string>, known: ReadonlySet<string>, dispatch?: ReadonlySet<string>, builders?: ReadonlySet<string>, guards?: { name: string, owner?: string }[], labels?: ReadonlyMap<string, ReadonlySet<number>>, trace?: (site: object, context: object) => void }} input
  *   `commands` are the names to find; `known` are all tmux command names, so
  *   a list that holds a different command is not read as this command's flags.
- * @returns {Promise<{ functions: ScannedFunction[], types: { name?: string, start: number, end: number }[], orphans: Site[] }>}
+ * @returns {Promise<{ functions: ScannedFunction[], types: { name?: string, start: number, end: number }[], orphans: Site[], modules?: { path: string, target?: string, include?: boolean, open?: boolean }[] }>}
  *   `types` are the declarations that own functions, so a claim can anchor to
  *   a class; `orphans` are the sites outside any named function.
  */
@@ -608,8 +617,13 @@ export async function scanSource({ grammar, text, commands, known, dispatch, bui
   const parser = await parserFor(grammar)
   // The Swift grammar predates typed throws; blanking the type keeps every line and column.
   const tree = parser.parse(grammar === 'swift' ? withoutNewSwift(text) : grammar === 'csharp' ? withoutPrimaryConstructors(text) : text)
+  if (grammar === 'ocaml' && tree.rootNode.hasError) {
+    tree.delete()
+    throw new Error('the OCaml grammar could not parse the implementation source')
+  }
   const functions = []
   const types = []
+  const modules = []
   const orphans = []
   const stack = []
   const owners = []
@@ -708,6 +722,15 @@ export async function scanSource({ grammar, text, commands, known, dispatch, bui
     let pushed = false
     let owned = false
     let namespaced = false
+    if (grammar === 'ocaml' && node.type === 'module_binding') {
+      const body = node.childForFieldName('body')
+      modules.push({ path: [...owners.filter(Boolean), ownerName(grammar, node)].join('.'), ...(body?.type === 'module_path' ? { target: body.text } : {}) })
+    }
+    if (grammar === 'ocaml' && ['include_module', 'open_module'].includes(node.type)) {
+      const body = node.namedChildren[0]
+      const target = body?.type === 'module_application' ? body.childForFieldName('functor') : body
+      if (target?.type === 'module_path') modules.push({ path: owners.filter(Boolean).join('.'), target: target.text, ...(node.type === 'open_module' ? { open: true } : { include: true }) })
+    }
     if (OWN.has(node.type)) {
       const name = ownerName(grammar, node)
       if (node.type === 'namespace_definition') {
@@ -727,7 +750,7 @@ export async function scanSource({ grammar, text, commands, known, dispatch, bui
     } else if (grammar === 'go' && node.type === 'function_declaration') {
       pushFunction(node.childForFieldName('name').text, undefined)
       pushed = true
-    } else if (FN.has(node.type) && !(stack.length && LOCAL_BINDINGS.has(node.type))) {
+    } else if (FN.has(node.type) && !(stack.length && (LOCAL_BINDINGS.has(node.type) || (grammar === 'ocaml' && !node.namedChildren.some((child) => child.type === 'parameter'))))) {
       const declared = declaredName(grammar, node)
       if (declared?.name) { pushFunction(declared.name, declared.owner, declared.scope); pushed = true }
     }
@@ -738,6 +761,11 @@ export async function scanSource({ grammar, text, commands, known, dispatch, bui
         name, owner: owner ?? owners.filter(Boolean).at(-1), start: row(wrapper), nameLine: row(node.childForFieldName('name') ?? node),
         end: node.endPosition.row + 1, kind: node.type, sites: [], calls: new Map(), receivers: new Map(),
         ...(functionShape(grammar, node) ? { shape: functionShape(grammar, node) } : {}),
+        ...(grammar === 'ocaml' ? {
+          modulePath: owners.filter(Boolean).join('.'),
+          ...(stack.length ? { enclosing: { start: stack.at(-1).start, end: stack.at(-1).end } } : {}),
+          moduleArgument: inModuleArgument(node),
+        } : {}),
         // A namespace opened by a macro is invisible here, so an empty chain is unknown, not global.
         ...([...namespaces.filter(Boolean), ...scope].length ? { namespace: [...namespaces.filter(Boolean), ...scope].join('::') } : {}),
       }
@@ -764,6 +792,7 @@ export async function scanSource({ grammar, text, commands, known, dispatch, bui
       const callee = calleeOf(grammar, node)
       if (callee?.name) {
         recordCall(stack.at(-1), callee.name, callee.receiver, row(node), callShape(grammar, node), calleeRow(node))
+        if (grammar === 'ocaml') stack.at(-1).callList.at(-1).path = node.childForFieldName('function')?.text
         if (dispatch) {
           const callDepths = (stack.at(-1).callDepths ??= new Map())
           callDepths.set(callee.name, Math.min(callDepths.get(callee.name) ?? Infinity, nesting(grammar, node)))
@@ -833,7 +862,13 @@ export async function scanSource({ grammar, text, commands, known, dispatch, bui
   }
   walk(tree.rootNode)
   tree.delete()
-  return { functions, types, orphans }
+  return { functions, types, orphans, modules }
+}
+
+/** A functor argument's local bindings do not add public members to its enclosing module. */
+function inModuleArgument(node) {
+  for (let at = node; at.parent; at = at.parent) if (at.parent.type === 'module_application' && at.parent.childForFieldName('argument')?.id === at.id) return true
+  return false
 }
 
 /**

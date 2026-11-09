@@ -285,6 +285,20 @@ const GO = 'github.com/libtmux/libtmux-go'
  * testing products in the order a reader reaches for them.
  */
 export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
+  ocaml: [
+    { id: 'libtmux', kind: 'library', product: 'core', unit: 'opam package', label: 'libtmux', coordinate: 'libtmux',
+      aliases: ['Libtmux'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'lib', status: 'published' },
+    { id: 'libtmux-unix', kind: 'companion', product: 'core', unit: 'opam package', label: 'libtmux-unix', coordinate: 'libtmux-unix',
+      aliases: ['Libtmux_unix'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'unix', status: 'published' },
+    { id: 'libtmux-eio', kind: 'companion', product: 'core', unit: 'opam package', label: 'libtmux-eio', coordinate: 'libtmux-eio',
+      aliases: ['Libtmux_eio'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'eio', status: 'published' },
+    { id: 'libtmux-json', kind: 'companion', product: 'core', unit: 'opam package', label: 'libtmux-json', coordinate: 'libtmux-json',
+      aliases: ['Libtmux_json'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'json', status: 'published' },
+    { id: 'libtmux-workspace', kind: 'companion', product: 'workspace', unit: 'opam package', label: 'libtmux-workspace', coordinate: 'libtmux-workspace',
+      aliases: ['Libtmux_workspace'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'workspace', status: 'published' },
+    { id: 'libtmux-workspace-cli', kind: 'cli', product: 'workspace', unit: 'opam package', label: 'libtmux-workspace-cli', coordinate: 'libtmux-workspace-cli',
+      aliases: ['tmux-workspace'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'cli', status: 'published' },
+  ],
   py: [
     py({ id: 'libtmux', kind: 'library', product: 'core', label: 'libtmux', ...pypi('libtmux'), aliases: ['libtmux'] }),
     // The pytest plugin is an entry point of the libtmux distribution, not a package of its own.

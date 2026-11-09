@@ -9490,6 +9490,185 @@
           ]
         }
       ]
+    },
+    {
+      "port": "ocaml",
+      "name": "raw",
+      "why": "Writes the supplied tmux command to the bound control client and waits for its reply.",
+      "evidence": [
+        {
+          "at": "unix/connection.ml:119",
+          "has": [
+            "let raw "
+          ],
+          "reaches": [
+            {
+              "at": "unix/connection.ml:125",
+              "has": [
+                "Runtime_io.write"
+              ],
+              "calls": "write",
+              "on": "runtime_io.ml"
+            },
+            {
+              "at": "unix/runtime_io.ml:276",
+              "has": [
+                "loop 0"
+              ],
+              "calls": "loop"
+            },
+            {
+              "at": "unix/runtime_io.ml:263",
+              "has": [
+                "Unix.write_substring"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "name": "request",
+      "why": "Writes the supplied tmux command to the bound control client and waits for its reply.",
+      "evidence": [
+        {
+          "at": "unix/connection.ml:265",
+          "has": [
+            "let request "
+          ],
+          "reaches": [
+            {
+              "at": "unix/connection.ml:271",
+              "has": [
+                "raw t.lane"
+              ],
+              "calls": "raw"
+            },
+            {
+              "at": "unix/connection.ml:125",
+              "has": [
+                "Runtime_io.write"
+              ],
+              "calls": "write",
+              "on": "runtime_io.ml"
+            },
+            {
+              "at": "unix/runtime_io.ml:276",
+              "has": [
+                "loop 0"
+              ],
+              "calls": "loop"
+            },
+            {
+              "at": "unix/runtime_io.ml:263",
+              "has": [
+                "Unix.write_substring"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "name": "metadata",
+      "why": "Writes the supplied tmux command to the bound control client and waits for its reply.",
+      "evidence": [
+        {
+          "at": "unix/connection.ml:282",
+          "has": [
+            "let metadata "
+          ],
+          "reaches": [
+            {
+              "at": "unix/connection.ml:284",
+              "has": [
+                "request t name"
+              ],
+              "calls": "request"
+            },
+            {
+              "at": "unix/connection.ml:271",
+              "has": [
+                "raw t.lane"
+              ],
+              "calls": "raw"
+            },
+            {
+              "at": "unix/connection.ml:125",
+              "has": [
+                "Runtime_io.write"
+              ],
+              "calls": "write",
+              "on": "runtime_io.ml"
+            },
+            {
+              "at": "unix/runtime_io.ml:276",
+              "has": [
+                "loop 0"
+              ],
+              "calls": "loop"
+            },
+            {
+              "at": "unix/runtime_io.ml:263",
+              "has": [
+                "Unix.write_substring"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "name": "no_output",
+      "why": "Writes the supplied tmux command to the bound control client and waits for its reply.",
+      "evidence": [
+        {
+          "at": "unix/connection.ml:288",
+          "has": [
+            "let no_output "
+          ],
+          "reaches": [
+            {
+              "at": "unix/connection.ml:289",
+              "has": [
+                "request t"
+              ],
+              "calls": "request"
+            },
+            {
+              "at": "unix/connection.ml:271",
+              "has": [
+                "raw t.lane"
+              ],
+              "calls": "raw"
+            },
+            {
+              "at": "unix/connection.ml:125",
+              "has": [
+                "Runtime_io.write"
+              ],
+              "calls": "write",
+              "on": "runtime_io.ml"
+            },
+            {
+              "at": "unix/runtime_io.ml:276",
+              "has": [
+                "loop 0"
+              ],
+              "calls": "loop"
+            },
+            {
+              "at": "unix/runtime_io.ml:263",
+              "has": [
+                "Unix.write_substring"
+              ]
+            }
+          ]
+        }
+      ]
     }
   ]
 }

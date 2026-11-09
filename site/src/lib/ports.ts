@@ -1256,6 +1256,31 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
     installNote:
       'A target depends on the product, not the package: write .product(name: "LibTmux", package: "libtmux-swift"). The library is `LibTmux` while the package identity SwiftPM derives from the URL is `libtmux-swift`, which is neither the product name nor the `name:` in the package manifest.',
   },
+  {
+    slug: 'ocaml', projectName: 'libtmux-ocaml', logoLanguage: 'ocaml', shortName: 'ML',
+    name: 'OCaml', language: 'OCaml', packageName: 'libtmux',
+    repo: 'libtmux/libtmux-ocaml', checkout: '~/work/libtmux/libtmux-ocaml',
+    worktree: '~/work/libtmux/libtmux-ocaml-docs-site',
+    source: { path: 'lib', ref: 'master' }, versionedDocs: true, tagGrammar: 'semver',
+    publishesOwnTree: true,
+    docsDispatch: { workflow: 'docs.yml' },
+    renderer: 'astro', generator: 'OCaml typed interfaces and odoc comments', referenceKind: 'model',
+    workspaceCli: 'tmux-workspace apply', workspaceCliAvailability: 'local',
+    productAvailability: { workspace: 'available', mcp: 'excluded' },
+    packages: [{ id: 'workspace', name: 'libtmux-workspace-cli', executable: 'tmux-workspace',
+      source: { path: 'cli', ref: 'master' },
+      installs: [{ label: 'opam (source)', lang: 'console', code: 'git clone https://github.com/libtmux/libtmux-ocaml.git && \\\n  cd libtmux-ocaml && \\\n  opam install .',
+        note: 'Build the CLI from source, then use tmux-workspace apply with a validated JSON workspace.' }] }],
+    installs: [{ label: 'opam (source)', lang: 'console',
+      code: 'git clone https://github.com/libtmux/libtmux-ocaml.git && \\\n  cd libtmux-ocaml && \\\n  opam install .',
+      note: 'Source installation; no registry release. Requires OCaml 5.5.2, Linux and tmux 3.3a through 3.8.' }],
+    initProject: { lang: 'console', code: 'dune init project my_tmux_app' },
+    installForms: {
+      release: { lang: 'console', code: 'opam install .' },
+      prerelease: { lang: 'console', code: 'opam install .' },
+      git: { lang: 'console', code: 'git clone https://github.com/libtmux/libtmux-ocaml.git && \\\n  cd libtmux-ocaml && \\\n  opam install .' },
+    },
+  },
 ] as const
 
 type WrapperLibrary = Omit<Port, 'repo' | 'checkout' | 'worktree' | 'tagGrammar' | 'tagPrefix' | 'versionedDocs' | 'renderer' | 'generator'> & {

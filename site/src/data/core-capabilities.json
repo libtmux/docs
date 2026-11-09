@@ -212,5 +212,182 @@
         }
       ]
     }
+  },
+  "ocaml": {
+    "typed-graph": {
+      "file": "examples/showcase_graph.ml",
+      "lang": "ocaml",
+      "tmux": "3.3+",
+      "ci": {
+        "workflow": ".github/workflows/ocaml.yml",
+        "job": "native",
+        "step": "Execute installed documentation and standalone programs",
+        "command": "opam exec -- python3 test/showcase_test.py \"$TMUX_BINARY\""
+      },
+      "checkedBy": [
+        {
+          "file": "test/showcase_test.py",
+          "contains": "assert process.returncode == 0 and not error"
+        },
+        {
+          "file": "test/showcase_test.py",
+          "contains": "entry[\"expected_stdout_line\"].encode() in output.splitlines()"
+        },
+        {
+          "file": "examples/showcase.json",
+          "contains": "graph: 2 sessions, 2 windows, 3 links, 2 panes"
+        }
+      ]
+    },
+    "watch": {
+      "file": "examples/showcase_watch.ml",
+      "lang": "ocaml",
+      "tmux": "3.3+",
+      "ci": {
+        "workflow": ".github/workflows/ocaml.yml",
+        "job": "native",
+        "step": "Execute installed documentation and standalone programs",
+        "command": "opam exec -- python3 test/showcase_test.py \"$TMUX_BINARY\""
+      },
+      "checkedBy": [
+        {
+          "file": "test/showcase_test.py",
+          "contains": "assert process.returncode == 0 and not error"
+        },
+        {
+          "file": "test/showcase_test.py",
+          "contains": "entry[\"expected_stdout_line\"].encode() in output.splitlines()"
+        },
+        {
+          "file": "examples/showcase.json",
+          "contains": "observed: changed"
+        }
+      ]
+    },
+    "send-keys": {
+      "file": "examples/showcase_send_keys.ml",
+      "lang": "ocaml",
+      "tmux": "3.3+",
+      "ci": {
+        "workflow": ".github/workflows/ocaml.yml",
+        "job": "native",
+        "step": "Execute installed documentation and standalone programs",
+        "command": "opam exec -- python3 test/showcase_test.py \"$TMUX_BINARY\""
+      },
+      "checkedBy": [
+        {
+          "file": "test/showcase_test.py",
+          "contains": "assert process.returncode == 0 and not error"
+        },
+        {
+          "file": "test/showcase_test.py",
+          "contains": "entry[\"expected_stdout_line\"].encode() in output.splitlines()"
+        },
+        {
+          "file": "examples/showcase.json",
+          "contains": "sent: literal: $HOME; #{pane_id}"
+        }
+      ]
+    },
+    "rename-windows": {
+      "file": "examples/showcase_rename_window.ml",
+      "lang": "ocaml",
+      "tmux": "3.3+",
+      "ci": {
+        "workflow": ".github/workflows/ocaml.yml",
+        "job": "native",
+        "step": "Execute installed documentation and standalone programs",
+        "command": "opam exec -- python3 test/showcase_test.py \"$TMUX_BINARY\""
+      },
+      "checkedBy": [
+        {
+          "file": "test/showcase_test.py",
+          "contains": "assert process.returncode == 0 and not error"
+        },
+        {
+          "file": "test/showcase_test.py",
+          "contains": "entry[\"expected_stdout_line\"].encode() in output.splitlines()"
+        },
+        {
+          "file": "examples/showcase.json",
+          "contains": "renamed: editor-main"
+        }
+      ]
+    },
+    "create-windows": {
+      "file": "examples/showcase_create_window.ml",
+      "lang": "ocaml",
+      "tmux": "3.3+",
+      "ci": {
+        "workflow": ".github/workflows/ocaml.yml",
+        "job": "native",
+        "step": "Execute installed documentation and standalone programs",
+        "command": "opam exec -- python3 test/showcase_test.py \"$TMUX_BINARY\""
+      },
+      "checkedBy": [
+        {
+          "file": "test/showcase_test.py",
+          "contains": "assert process.returncode == 0 and not error"
+        },
+        {
+          "file": "test/showcase_test.py",
+          "contains": "entry[\"expected_stdout_line\"].encode() in output.splitlines()"
+        },
+        {
+          "file": "examples/showcase.json",
+          "contains": "created: logs"
+        }
+      ]
+    },
+    "move-windows": {
+      "file": "examples/showcase_move_window.ml",
+      "lang": "ocaml",
+      "tmux": "3.3+",
+      "ci": {
+        "workflow": ".github/workflows/ocaml.yml",
+        "job": "native",
+        "step": "Execute installed documentation and standalone programs",
+        "command": "opam exec -- python3 test/showcase_test.py \"$TMUX_BINARY\""
+      },
+      "checkedBy": [
+        {
+          "file": "test/showcase_test.py",
+          "contains": "assert process.returncode == 0 and not error"
+        },
+        {
+          "file": "test/showcase_test.py",
+          "contains": "entry[\"expected_stdout_line\"].encode() in output.splitlines()"
+        },
+        {
+          "file": "examples/showcase.json",
+          "contains": "moved: build at 7"
+        }
+      ]
+    },
+    "set-layouts": {
+      "file": "examples/showcase_layout.ml",
+      "lang": "ocaml",
+      "tmux": "3.3+",
+      "ci": {
+        "workflow": ".github/workflows/ocaml.yml",
+        "job": "native",
+        "step": "Execute installed documentation and standalone programs",
+        "command": "opam exec -- python3 test/showcase_test.py \"$TMUX_BINARY\""
+      },
+      "checkedBy": [
+        {
+          "file": "test/showcase_test.py",
+          "contains": "assert process.returncode == 0 and not error"
+        },
+        {
+          "file": "test/showcase_test.py",
+          "contains": "entry[\"expected_stdout_line\"].encode() in output.splitlines()"
+        },
+        {
+          "file": "examples/showcase.json",
+          "contains": "layout: 3 horizontal panes"
+        }
+      ]
+    }
   }
 }

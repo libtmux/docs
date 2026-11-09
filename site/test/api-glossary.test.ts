@@ -19,6 +19,7 @@ const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/p
 const windows: Window[] = []
 const nativeAuthorities: Record<string, RegExp> = {
   scala: /^https:\/\/docs\.scala-lang\.org\//, java: /^https:\/\/docs\.oracle\.com\//,
+  ocaml: /^https:\/\/ocaml\.org\//,
   kotlin: /^https:\/\/kotlinlang\.org\//, julia: /^https:\/\/docs\.julialang\.org\//,
   py: /^https:\/\/(?:docs\.python\.org|peps\.python\.org|packaging\.python\.org)\//,
   ts: /^https:\/\/www\.typescriptlang\.org\//,

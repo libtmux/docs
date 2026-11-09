@@ -327,6 +327,56 @@ if (process.argv[2] === process.env.FAILING_TASK) process.exit(23)
   })
 })
 
+describe('OCaml documentation producer', () => {
+  it.each(['', 'install', 'build', 'tools/export_api.py'])('exports installed interfaces and stops on task %j failure', (failure) => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-ocaml-export-'))
+    try {
+      const source = join(directory, 'selected source')
+      const calls = join(directory, 'calls')
+      mkdirSync(source)
+      writeFileSync(join(directory, 'opam'), `#!${process.execPath}
+const fs = require('node:fs')
+const argv = process.argv.slice(2)
+fs.appendFileSync(process.env.EXPORT_CALLS, JSON.stringify({ argv, cwd: process.cwd(), export: process.env.LIBTMUX_API_EXPORT }) + '\\n')
+if (argv.includes(process.env.FAILING_TASK)) process.exit(23)
+`, { mode: 0o700 })
+      const result = spawnSync('bash', ['-e', '-c', script('Export OCaml API from the selected source')], {
+        cwd: source, encoding: 'utf8', timeout: 1000,
+        env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, LIBTMUX_API_EXPORT: '1',
+          EXPORT_CALLS: calls, FAILING_TASK: failure },
+      })
+      const commands = readFileSync(calls, 'utf8').trim().split('\n').map((line) => JSON.parse(line))
+      const expected = [
+        ['install', '.', '--deps-only', '--with-doc', '--yes'],
+        ['exec', '--', 'dune', 'build', '@install', 'tools/api_export.exe'],
+        ['exec', '--', 'python3', 'tools/export_api.py', '--output', '_build/docs/ocaml.json'],
+      ]
+      expect(result.status, result.stderr).toBe(failure ? 23 : 0)
+      expect(commands).toEqual(expected.slice(0, failure === 'install' ? 1 : failure === 'build' ? 2 : 3)
+        .map((argv) => ({ argv, cwd: realpathSync(source), export: '1' })))
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+
+  it('prepares the pinned compiler and public exporter before building the port tree', () => {
+    const setup = workflow.indexOf('uses: ocaml/setup-ocaml@')
+    const exporter = workflow.indexOf('name: Export OCaml API from the selected source')
+    const build = workflow.indexOf("name: Build this port's tree")
+    expect(setup).toBeGreaterThan(workflow.indexOf('name: Snapshot source inputs before native generation'))
+    expect(exporter).toBeGreaterThan(setup)
+    expect(exporter).toBeLessThan(build)
+    const steps = workflow.slice(workflow.lastIndexOf('\n      - ', setup), exporter)
+    expect(steps).toContain("if: matrix.port == 'ocaml'")
+    expect(steps).toContain('ocaml-compiler: ocaml-base-compiler.5.5.2')
+    expect(steps).toContain('opam-local-packages: port/*.opam')
+    expect(steps).toMatch(/uses: ocaml\/setup-ocaml@[0-9a-f]{40} # v\d+\.\d+\.\d+/)
+    expect(workflow.slice(exporter, build)).toContain("LIBTMUX_API_EXPORT: '1'")
+    const model = readFileSync(join(root, 'scripts/gen-api-model.mjs'), 'utf8')
+    const artifact = /\bocaml: \{[^}]*nativeArtifact: '([^']+)'/.exec(model)?.[1]
+    expect(artifact).toBe('_build/docs/ocaml.json')
+    expect(script('Export OCaml API from the selected source')).toContain(` ${artifact}\n`)
+  })
+})
+
 describe('source-bound guide staging', () => {
   const build = readFileSync(join(root, 'scripts/build-site.sh'), 'utf8')
   // Ruby and Lua carry their guides in the exporter artifact, wrappers stage

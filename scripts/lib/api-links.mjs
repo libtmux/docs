@@ -95,6 +95,7 @@ export function languageOfUrl(url) {
     'docs.ruby-lang.org': 'ruby', 'ruby-doc.org': 'ruby',
     'www.lua.org': 'lua', 'luals.github.io': 'lua',
     'docs.julialang.org': 'julia',
+    'ocaml.org': 'ocaml',
     'www.erlang.org': 'erlang',
     'modelcontextprotocol.io': 'any',
   }
@@ -110,7 +111,7 @@ export const PORT_LANGUAGES = {
   py: ['python'], rs: ['rust'], go: ['go'], ts: ['typescript'], java: ['java'],
   kotlin: ['kotlin', 'java'], scala: ['scala', 'java'],
   csharp: ['csharp', 'dotnet'], fsharp: ['fsharp', 'dotnet'], powershell: ['powershell', 'dotnet'],
-  cxx: ['cpp'], swift: ['swift'], julia: ['julia'], lua: ['lua'], elixir: ['elixir', 'erlang'], ruby: ['ruby'],
+  cxx: ['cpp'], swift: ['swift'], julia: ['julia'], lua: ['lua'], elixir: ['elixir', 'erlang'], ruby: ['ruby'], ocaml: ['ocaml'],
 }
 
 /**
