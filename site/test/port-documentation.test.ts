@@ -11,6 +11,7 @@ describe('port documentation domains', () => {
       ['docs/README.md', 'guides/getting-started'],
       ['docs/installation.md', 'guides/installation'],
       ['docs/capture.md', 'guides/capture'],
+      ['docs/shared-runtime.md', 'guides/shared-runtime'],
       ['docs/fixtures.md', 'guides/offline-fixtures'],
       ['docs/values.md', 'guides/typed-values'],
       ['docs/performance.md', 'guides/performance'],
