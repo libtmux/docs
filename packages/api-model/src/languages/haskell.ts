@@ -16,10 +16,13 @@ interface NativeSymbol extends Omit<ApiSymbol, 'doc' | 'parent' | 'source'> {
   parent: string | null
   source: NativeSource
   instances?: NativeInstance[]
+  nativeLocation?: { module: string; anchor?: string }
+  definingModule?: string
 }
 interface HashedInput { path: string; sha256: string }
 interface HaskellArtifact {
   schema: string
+  profile?: string
   port: string
   repo: string
   revision: string
@@ -36,13 +39,18 @@ interface HaskellArtifact {
       nativeArtifacts: HashedInput[]
     }
   }
-  modules: { name: string; groups: { title: string; members: string[] }[] }[]
+  modules: { name: string; groups: { title: string; members: string[] }[];
+    reexports?: { module: string; href: string }[] }[]
   symbols: NativeSymbol[]
 }
 
 const COMMIT = /^[a-f0-9]{40}$/
 const HASH = /^[a-f0-9]{64}$/
 const QUALIFIED_MODULES = ['LibTmux.Id', 'LibTmux.Value', 'LibTmux.Version']
+const OBSERVATION_MODULES = ['LibTmux', 'LibTmux.Id', 'LibTmux.Server', 'LibTmux.Snapshot',
+  'LibTmux.Snapshot.Fixture', 'LibTmux.Value', 'LibTmux.Version']
+const OBSERVATION_ORIGINS = [...OBSERVATION_MODULES,
+  ...['Capture', 'Graph', 'Runtime', 'Scheduler', 'Scope', 'TmuxText'].map((name) => `LibTmux.Internal.${name}`)]
 const VERSION = /^(?:0|[1-9]\d*)(?:\.(?:0|[1-9]\d*))+$/
 
 function check(condition: unknown, reason: string): asserts condition {
@@ -59,14 +67,13 @@ function hashedInputs(inputs: HashedInput[], expected: string[], label: string):
 }
 
 /** Preserve the native destination; resolve only explicitly identified public declarations. */
-function validateLink(link: NativeLink, byId: Map<string, NativeSymbol>): void {
+function validateLink(link: NativeLink, byId: Map<string, NativeSymbol>, destinations: Map<string, string[]>): void {
   check(link && typeof link.text === 'string' && link.text.length && typeof link.href === 'string', 'missing native link')
   if (link.target !== undefined) {
     const target = byId.get(link.target)
     check(target, `unknown public link target ${link.target}`)
-    const [module, anchor] = link.target.split('#')
-    const expected = `${module.replaceAll('.', '-')}.html${anchor ? `#${anchor}` : ''}`
-    check(link.href === expected, `native destination differs from ${link.target}`)
+    const targets = destinations.get(link.href)
+    check(targets?.length === 1 && targets[0] === link.target, `native destination differs or is ambiguous for ${link.target}`)
   } else {
     let url: URL
     try { url = new URL(link.href) } catch { throw new Error(`Invalid Haskell native URL: ${link.href}`) }
@@ -74,7 +81,8 @@ function validateLink(link: NativeLink, byId: Map<string, NativeSymbol>): void {
   }
 }
 
-function validateSignature(signature: Signature, symbol: NativeSymbol, byId: Map<string, NativeSymbol>): void {
+function validateSignature(signature: Signature, symbol: NativeSymbol, byId: Map<string, NativeSymbol>,
+  destinations: Map<string, string[]>): void {
   check(typeof signature.raw === 'string' && signature.raw.length && Array.isArray(signature.params) &&
     signature.params.length === 0 && Array.isArray(signature.nativeSpans) && signature.nativeSpans.length, `missing native signature for ${symbol.id}`)
   const spans = signature.nativeSpans
@@ -87,7 +95,7 @@ function validateSignature(signature: Signature, symbol: NativeSymbol, byId: Map
     `missing declaration marker for ${symbol.id}`)
   for (const span of spans) {
     check(span.target === undefined || span.href !== undefined, `link target has no destination in ${symbol.id}`)
-    if (span.href !== undefined) validateLink(span as NativeLink, byId)
+    if (span.href !== undefined) validateLink(span as NativeLink, byId, destinations)
   }
   check(signature.methodKind === undefined || signature.methodKind === 'constructor', `unsupported method kind for ${symbol.id}`)
 }
@@ -96,7 +104,8 @@ function validateSignature(signature: Signature, symbol: NativeSymbol, byId: Map
 export function extractHaskellArtifact(input: unknown, expectedRevision?: string): ApiModel {
   check(input && typeof input === 'object', 'missing document')
   const artifact = structuredClone(input) as HaskellArtifact
-  check(artifact.schema === 'libtmux.haskell-api/1' && artifact.port === 'haskell' &&
+  const observations = artifact.schema === 'libtmux.haskell-api/2' && artifact.profile === 'observations/1'
+  check((artifact.schema === 'libtmux.haskell-api/1' || observations) && artifact.port === 'haskell' &&
     artifact.repo === 'libtmux/libtmux-haskell' && typeof artifact.revision === 'string' && COMMIT.test(artifact.revision),
   'unsupported schema or source identity')
   check(!expectedRevision || artifact.revision === expectedRevision, 'source revision differs from the selected checkout')
@@ -105,25 +114,41 @@ export function extractHaskellArtifact(input: unknown, expectedRevision?: string
   check(artifact.package?.name === 'libtmux-haskell' && VERSION.test(artifact.package.version) &&
     Array.isArray(artifact.package.exposedModules) && artifact.package.exposedModules.length, 'invalid Cabal package identity')
   const modules = artifact.package.exposedModules
-  check(modules.length === QUALIFIED_MODULES.length && modules.every((module, index) => module === QUALIFIED_MODULES[index]),
+  const qualified = observations ? OBSERVATION_MODULES : QUALIFIED_MODULES
+  check(modules.length === qualified.length && modules.every((module, index) => module === qualified[index]),
     'unqualified exposed module profile')
   check(Array.isArray(artifact.modules) && artifact.modules.length === modules.length &&
     artifact.modules.every((module, index) => module?.name === modules[index] && Array.isArray(module.groups)),
   'native modules differ from the configured public modules')
+  check(artifact.modules.every((module) => observations && module.name === 'LibTmux'
+    ? module.groups.length === 0 : module.groups.length > 0), 'missing or unexpected native export groups')
+  if (observations) {
+    for (const module of artifact.modules) {
+      const seen = new Set<string>()
+      check(Array.isArray(module.reexports) && (module.name === 'LibTmux' ? module.reexports.length > 0 : !module.reexports.length) &&
+        module.reexports.every((item) => item && modules.includes(item.module) && item.module !== module.name &&
+          !seen.has(item.module) && seen.add(item.module) &&
+          item.href === `${item.module.replaceAll('.', '-')}.html`), `invalid module reexports for ${module.name}`)
+    }
+  }
   const exporter = artifact.nativeProvenance?.exporter
-  check(exporter?.name === 'Haddock public interface export' && exporter.version === 1 && exporter.repository === 'libtmux/docs' &&
+  check(exporter?.name === 'Haddock public interface export' && exporter.version === (observations ? 2 : 1) && exporter.repository === 'libtmux/docs' &&
     typeof exporter.revision === 'string' && COMMIT.test(exporter.revision) &&
     exporter.path === 'packages/api-model/scripts/export-haskell.py' && HASH.test(exporter.sha256), 'missing committed producer identity')
   check(exporter.build?.compiler === `ghc-${artifact.compiler}` && exporter.build.cabal === '3.18.2.0' &&
     exporter.build.unit === `${artifact.package.name}-${artifact.package.version}-inplace` &&
     typeof exporter.build.platform === 'string' && /^[\w]+-[\w]+$/.test(exporter.build.platform) &&
     ['stdout', 'stderr'].includes(exporter.interfaceStream), 'invalid configured native build')
-  const sourceFiles = modules.map((module) => `src/${module.replaceAll('.', '/')}.hs`)
+  const origins = observations ? OBSERVATION_ORIGINS : modules
+  const sourceFile = (module: string) => `${module.startsWith('LibTmux.Internal.') ? 'internal' : 'src'}/${module.replaceAll('.', '/')}.hs`
+  const sourceFiles = origins.map(sourceFile)
   hashedInputs(artifact.nativeProvenance.files, ['.tool-versions', 'cabal.project', 'libtmux-haskell.cabal', ...sourceFiles], 'source inputs')
   hashedInputs(exporter.nativeArtifacts, ['interface.haddock', 'interface.json',
-    ...modules.flatMap((module) => [`${module.replaceAll('.', '-')}.html`, `src/${module}.html`])], 'native inputs')
+    ...modules.map((module) => `${module.replaceAll('.', '-')}.html`),
+    ...origins.map((module) => `src/${module}.html`)], 'native inputs')
   check(Array.isArray(artifact.symbols) && artifact.symbols.length, 'no public declarations')
   const byId = new Map<string, NativeSymbol>()
+  const destinations = new Map<string, string[]>()
   for (const symbol of artifact.symbols) {
     check(symbol && typeof symbol.id === 'string' && !byId.has(symbol.id), 'missing or repeated public identity')
     check(symbol.apiScope === 'exported' && symbol.product === 'core' && symbol.package === artifact.package.name,
@@ -133,15 +158,31 @@ export function extractHaskellArtifact(input: unknown, expectedRevision?: string
       symbol.modifiers.length <= 1 && Array.isArray(symbol.signatures), `unsupported declaration shape ${symbol.id}`)
     if (symbol.kind === 'module') {
       check(modules.includes(symbol.id) && symbol.name === symbol.id && symbol.parent === null &&
-        symbol.signatures.length === 0 && symbol.modifiers.length === 0, `invalid public module ${symbol.id}`)
+        symbol.signatures.length === 0 && symbol.modifiers.length === 0 &&
+        (symbol.publicId === undefined || symbol.publicId === symbol.id) &&
+        (symbol.qualifiedName === undefined || symbol.qualifiedName === symbol.id) &&
+        (symbol.namespace === undefined || symbol.namespace === symbol.id), `invalid public module ${symbol.id}`)
     } else {
+      const fieldName = observations && symbol.kind === 'property'
+        ? `${symbol.parent?.split('#t:')[1]}.${symbol.name}` : symbol.name
       check(typeof symbol.namespace === 'string' && modules.includes(symbol.namespace) &&
         /^[A-Za-z_][\w']*$/.test(symbol.name) && symbol.qualifiedName === `${symbol.namespace}.${symbol.name}` &&
-        symbol.id === `${symbol.namespace}#${symbol.kind === 'typealias' ? 't' : 'v'}:${symbol.name}` &&
+        symbol.id === `${symbol.namespace}#${symbol.kind === 'typealias' ? 't' : 'v'}:${fieldName}` &&
         symbol.publicId === symbol.id && symbol.signatures.length === 1, `invalid public declaration identity ${symbol.id}`)
     }
     const module = symbol.kind === 'module' ? symbol.id : symbol.namespace!
-    check(symbol.source?.file === `src/${module.replaceAll('.', '/')}.hs` && symbol.source.revision === artifact.revision &&
+    const anchor = symbol.kind === 'module' ? undefined : `${symbol.kind === 'typealias' ? 't' : 'v'}:${symbol.name}`
+    if (observations) {
+      check(symbol.nativeLocation?.module === module && symbol.nativeLocation.anchor === anchor &&
+        typeof symbol.definingModule === 'string' && origins.includes(symbol.definingModule) &&
+        (symbol.kind !== 'module' || symbol.definingModule === module),
+      `invalid native location or defining origin for ${symbol.id}`)
+    }
+    const href = `${module.replaceAll('.', '-')}.html${anchor ? `#${anchor}` : ''}`
+    const targets = destinations.get(href) ?? []
+    targets.push(symbol.id)
+    destinations.set(href, targets)
+    check(symbol.source?.file === sourceFile(observations ? symbol.definingModule! : module) && symbol.source.revision === artifact.revision &&
       (symbol.source.line === undefined || (Number.isSafeInteger(symbol.source.line) && symbol.source.line > 0)),
     `source differs from the public declaration ${symbol.id}`)
     check(symbol.doc === null || (symbol.doc && typeof symbol.doc.summary === 'string' &&
@@ -158,13 +199,16 @@ export function extractHaskellArtifact(input: unknown, expectedRevision?: string
     check(parent && (parent.kind === 'module' ? parent.id === symbol.namespace && symbol.kind !== 'property' && !constructor
       : parent.kind === 'typealias' && !parent.modifiers.includes('opaque') && parent.namespace === symbol.namespace &&
         ((symbol.kind === 'property' && !constructor) || (symbol.kind === 'function' && constructor))), `invalid public parent for ${symbol.id}`)
+    if (observations && parent.kind !== 'module') {
+      check(symbol.definingModule === parent.definingModule, `child defining origin differs for ${symbol.id}`)
+    }
     if (symbol.kind === 'typealias') {
-      // This producer profile exports scalar data heads, not aliases or hidden representations.
+      // The qualified profiles contain unparameterized data heads, not aliases or hidden representations.
       check(symbol.signatures[0].raw === `data ${symbol.name}` && Array.isArray(symbol.instances),
         `unsupported type representation or missing instances for ${symbol.id}`)
       check(symbol.modifiers.includes('opaque') === !constructorOwners.has(symbol.id), `opaque status differs for ${symbol.id}`)
     } else check(symbol.modifiers.length === 0, `opaque non-type ${symbol.id}`)
-    validateSignature(symbol.signatures[0], symbol, byId)
+    validateSignature(symbol.signatures[0], symbol, byId, destinations)
   }
   const model: ApiModel = {
     port: 'haskell', repo: artifact.repo, revision: artifact.revision,
@@ -185,6 +229,14 @@ export function extractHaskellArtifact(input: unknown, expectedRevision?: string
     }
     for (const span of native.signatures.flatMap((signature) => signature.nativeSpans ?? [])) if (span.target) refer(span.target)
     let doc = native.doc ?? undefined
+    if (observations && native.kind === 'module') {
+      const reexports = artifact.modules.find((module) => module.name === native.id)!.reexports!
+      if (reexports.length) {
+        for (const item of reexports) refer(item.module)
+        doc = { summary: doc?.summary ?? '', body: [doc?.body, '## Reexports',
+          reexports.map((item) => `- :obj:\`${item.module} <${item.module}>\``).join('\n')].filter(Boolean).join('\n\n') }
+      }
+    }
     if (native.instances !== undefined) {
       check(native.kind === 'typealias' && Array.isArray(native.instances), `instances on a non-type ${native.id}`)
       const heads = new Set<string>()
@@ -198,7 +250,7 @@ export function extractHaskellArtifact(input: unknown, expectedRevision?: string
           (instance.source.line === undefined || (Number.isSafeInteger(instance.source.line) && instance.source.line > 0)),
         `instance source differs for ${native.id}`)
         for (const link of instance.references) {
-          validateLink(link, byId)
+          validateLink(link, byId, destinations)
           if (link.target) refer(link.target)
         }
         // Only simple class/type heads are qualified; owner and display must agree.

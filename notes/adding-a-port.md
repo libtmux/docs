@@ -157,13 +157,26 @@ In the new worktree, on `docs-site`:
 
 Haskell's [Haddock exporter](../packages/api-model/scripts/export-haskell.py)
 builds a selected committed source archive. Its
-[adapter](../packages/api-model/src/languages/haskell.ts) currently qualifies
-`LibTmux.Id`, `LibTmux.Value` and `LibTmux.Version` with the port's pinned
-GHC/Haddock toolchain. It preserves native signature links, opaque data
-heads, constructor and record-label ownership, instance heads, and authored
-export groups. The stored model retains those groups so sidebar regeneration
-needs no checkout or native toolchain. Additional module and declaration
-forms need native fixtures and qualification before the adapter accepts them.
+[adapter](../packages/api-model/src/languages/haskell.ts) accepts two qualified
+profiles with the port's pinned GHC/Haddock toolchain:
+
+- Scalar v1 covers `LibTmux.Id`, `LibTmux.Value` and `LibTmux.Version`.
+- Observation v2 adds `LibTmux`, `LibTmux.Server`, `LibTmux.Snapshot` and
+  `LibTmux.Snapshot.Fixture`. Its [native fixture](../packages/api-model/test/fixtures/haskell-observations-native/README.md)
+  records the library and producer revisions separately.
+
+Both retain native signatures, opaque data heads, constructors, record labels,
+instance heads and authored export groups. Observation field identities include
+their record owner; displayed Haskell names and field types remain native.
+Source links use the actual defining files, including private files behind a
+public reexport, without creating private reference pages. Native source text
+and line markers are checked against the committed source.
+
+The stored model retains export groups and ordered module-reexport relations,
+so sidebar regeneration needs no checkout or native toolchain. The reexport
+root has its own row; it does not duplicate the target modules' declarations.
+Additional module and declaration forms need native fixtures and qualification
+before the adapter accepts them.
 
 Haskell's reader guides use the routes in
 [`port-documentation.ts`](../site/src/lib/port-documentation.ts). Its section
