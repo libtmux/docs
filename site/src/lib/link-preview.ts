@@ -130,7 +130,7 @@ export function glossaryPreview(href: string): LinkPreview {
   const glossary = apiGlossary(href)
   return { schema: 1, title: glossary.title, description: glossary.description, href: glossary.path,
     terms: Object.fromEntries(glossary.groups.flatMap((group) => group.terms.map((term) => [term.id, {
-      schema: 1, title: term.id, kind: term.id, description: term.definition, detail: term.detail,
+      schema: 1, title: term.label ?? term.id, kind: term.id, description: term.definition, detail: term.detail,
       href: `${glossary.path}#${term.id}`, footer: [glossary.title, group.title],
     } satisfies LinkPreview]))),
   }
