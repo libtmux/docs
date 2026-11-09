@@ -55,7 +55,9 @@ export function addressOf(url) {
   if (host === 'ocaml.org' && /^\/manual\/[^/]+\/api\//.test(u.pathname)) {
     const path = dotted(stem)
     const member = /^(?:TYPE|VAL)([a-z_][\w']*)$/.exec(fragment)
-    return { path: member ? [...path, member[1]] : path, exact: true, fragment: member ? 'member' : none, type: stem }
+    const constructor = /^TYPEELT[a-z_][\w']*\.([A-Z][\w']*)$/.exec(fragment)
+    const name = member?.[1] ?? constructor?.[1]
+    return { path: name ? [...path, name] : path, exact: true, fragment: name ? 'member' : none, type: stem }
   }
 
   if (host === 'doc.rust-lang.org' || host === 'docs.rs') {

@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { API_HOSTS, EXTERNAL_INVENTORIES, PAGE_EXCEPTIONS, addressSegments, apiHostOf, arityOf, collectApiDestinations, linksIn, qualified, terminalSymbol, urlsIn } from '../../scripts/lib/api-destinations.mjs'
 import { addressOf, mismatch } from '../../scripts/lib/api-addresses.mjs'
 import { judge, judgeLabel, pageIdentity, sourceIdentity } from '../../scripts/lib/api-identities.mjs'
@@ -13,10 +13,12 @@ import {
 import evidence from '../src/data/api-destination-evidence.json'
 
 const root = new URL('../../', import.meta.url).pathname
-const destinations = collectApiDestinations({ root })
+let collectedDestinations: ReturnType<typeof collectApiDestinations> | undefined
+const destinations = () => collectedDestinations ??= collectApiDestinations({ root })
 const today = new Date(`${evidence.checkedAt}T12:00:00Z`)
 
 describe('API destination evidence', () => {
+  beforeAll(() => { destinations() })
   it('records the heading a link was read at, never the name of the book or site the page belongs to', () => {
     // "Associated items - The Rust Reference" is headed "Associated items": a record that kept "The Rust Reference" could not see a page move.
     // A name that ends the titles of three pages of one host is the host's book, not any page's.
@@ -33,7 +35,7 @@ describe('API destination evidence', () => {
   })
 
   it('holds a passing record for every destination the site generates, and none for a link nothing makes', () => {
-    const { problems } = checkApiEvidence(destinations, evidence, { today, root })
+    const { problems } = checkApiEvidence(destinations(), evidence, { today, root })
     expect(problems).toEqual([])
   })
 
@@ -56,7 +58,7 @@ describe('API destination evidence', () => {
       if (!record.ok) continue
       expect(record.status, record.url).toBe(200)
       expect(record.finalUrl, `${record.url} is a redirect`).toBeUndefined()
-      const destination = destinations.get(record.url)
+      const destination = destinations().get(record.url)
       if (!destination) continue
       expect(needsCheck(destination, record), record.url).toBe(false)
     }
@@ -307,6 +309,26 @@ describe('what the verifier reads from a page', () => {
     }
   })
 
+  it('checks OCaml variant constructors against their type and declared name', () => {
+    const html = '<title>OCaml library : Option</title><h1>Module <a>Option</a></h1>'
+      + '<pre><span id="TYPEt">type \'a t</span> = \'a option = </pre><table class="typetable">'
+      + '<tr><td><code><span id="TYPEELTt.None"><span class="constructor">None</span></span></code></td></tr>'
+      + '<tr><td><code><span id="TYPEELTt.Some"><span class="constructor">Some</span></span> of \'a</code></td></tr></table>'
+    for (const name of ['None', 'Some']) {
+      const url = `https://ocaml.org/manual/5.5/api/Option.html#TYPEELTt.${name}`
+      expect(addressOf(url)).toMatchObject({ path: ['Option', name], exact: true, fragment: 'member' })
+      const identity = pageIdentity(url, readPage(html))
+      expect(identity).toMatchObject({ via: 'ocamldoc', declared: 'constructor', kind: 'member', path: ['Option', name] })
+      expect(judge(sourceIdentity({ port: 'ocaml', name: `Option.${name}`, source: 'builtin' }), identity)).toBeUndefined()
+      expect(judge(sourceIdentity({ port: 'ocaml', name: `Other.${name}`, source: 'builtin' }), identity)).toMatchObject({ failure: 'owner' })
+      for (const forged of [html.replace('type \'a t', 'type \'a other'),
+        html.replace(`class="constructor">${name}`, 'class="constructor">Invented'),
+        html.replace(`class="constructor">${name}`, `class="type">${name}`)]) {
+        expect(pageIdentity(url, readPage(forged))).toMatchObject({ kind: 'other' })
+      }
+    }
+  })
+
   it('matches complete OCaml identifiers including apostrophes in value and type declarations', () => {
     const actual = []
     const expected = []
@@ -549,6 +571,7 @@ describe('what a link\'s words say', () => {
 })
 
 describe('the reviewed link table', () => {
+  beforeAll(() => { destinations() })
   const { rows, byPair } = loadReviewedLinks(root)
 
   it('has one row for each text and address, each with a heading, sorted so a review reads as the rows that changed', () => {
@@ -649,7 +672,7 @@ describe('the reviewed link table', () => {
     const use = { port: '', name: 'a.md', source: 'authored', label: 'crate API', from: 'go', package: { identity: 'tmux-mcp', ports: ['rs'] } }
     const [expectation] = expectationsOf({ url: 'https://docs.rs/tmux-mcp', uses: [use] })
     expect(expectation).toMatchObject({ label: 'crate API', ports: ['go'], package: { identity: 'tmux-mcp', ports: ['rs'] } })
-    expect(Object.keys(destinations.get('https://docs.rs/tmux-mcp')?.uses.values().next().value.package ?? {})).toEqual(['identity', 'ports'])
+    expect(Object.keys(destinations().get('https://docs.rs/tmux-mcp')?.uses.values().next().value.package ?? {})).toEqual(['identity', 'ports'])
   })
 
   it('keeps every port that wrote the same words at the same address, so the last one cannot hide the others', () => {
