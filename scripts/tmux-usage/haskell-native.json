@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "repository": "libtmux/libtmux-haskell",
-  "revision": "875045d7b7b2d17fa76ec614aa83809d6fe71719",
+  "revision": "b9960257139c630985fced6d14ac59ba6870df02",
   "files": {
     ".tool-versions": "13c8a19b336b86a161f4d5ea74347960e884e2c0887d399fe752d84eecfd35e7",
-    "cabal.project": "1678f77196c52e237d9d82f18956372713d0fdcf731850d04d1d19ada1fe1efc",
+    "cabal.project": "54c2c3398926d9c54f77321f313a5d21462ac17bf9c50300951eee4c4f973493",
     "cbits/process.c": "847f16335d7f924041e02a836cac098b5e5e5725b8d9ebe1ca21b6c618872fa0",
     "cbits/process.h": "88adae819ffd43af9bfc4eec57f1a640e12f4103d106ed0cf37b2186f6a6c0c8",
     "internal/LibTmux/Internal/Budget.hs": "b9d5e202feac125b518f22bb200d695c11afde8c8e0f93eb7043a8076570ba91",
@@ -16,22 +16,22 @@
     "internal/LibTmux/Internal/Process.hs": "44dd53a93312d9f5f96e587cecf5e909bbefce36adee7326becab101787521e5",
     "internal/LibTmux/Internal/Process/Native.hs": "eeddd25bbda9251cd8bfae9a43ed5e569fb831256e69cf5039a88dbeba545833",
     "internal/LibTmux/Internal/Record.hs": "b14168f972c598711953d1f08955341557c150b72d6b01d276274b9f9fbf6fa1",
-    "internal/LibTmux/Internal/Runtime.hs": "446bc810282a0163bc11ba9d76d421fe34cf631c255b732bdc07db7619d2df92",
-    "internal/LibTmux/Internal/Scheduler.hs": "3dbbc76b7760a75916c68527505c954315d664f1f4e817b79a25d9fa7ac36420",
-    "internal/LibTmux/Internal/Scope.hs": "ee4ebc57bf9718f6aca9c2331574e5a0c3c6514246467a4a8a6dc607f13f5847",
+    "internal/LibTmux/Internal/Runtime.hs": "f0d28b32a5ebf5271bc20cf3fa7f76c5ff051da15978acfcc9f7347442ff6565",
+    "internal/LibTmux/Internal/Scheduler.hs": "d97dd8c431a84c41ab947baac096e757cf498ebb0747b0e311fa7a73eee927b1",
+    "internal/LibTmux/Internal/Scope.hs": "82ca0084d522d2b704a2b5ecde0a2ab05ca209f0ecb42976d65f637b596c3208",
     "internal/LibTmux/Internal/SocketPin.hs": "a751fb1d891bdf6f7ca5e29e11c4cba8d30ead3dc7703a18e549d271de3df12f",
     "internal/LibTmux/Internal/TmuxText.hs": "766344310c5151417ab8fadc36d3a8940c051dde9fa7a2ac379dead984afacba",
     "internal/LibTmux/Internal/Topology.hs": "e97add3ce6717d9d4e6e931d568fc85150b2552039f8a44bc4059942b19c432d",
-    "libtmux-haskell.cabal": "aad0afa37e438b06f05abb94dbd577d9c9573d2cbc9e2c834bae8ee6f87e9905",
+    "libtmux-haskell.cabal": "12ab43213290d89c15d694f3735d312f6dfe75904ee7f1d42c0783e7dac1cdbc",
     "src/LibTmux.hs": "d9dcb17fc4f7a7aecda31b48f2eb2286ee9637e4c85d997716431a882f5a1529",
     "src/LibTmux/Id.hs": "3456edf88bf412e8769e5c96cc5d35b7b118ea3bd3786f167c9002f9804fb3b7",
-    "src/LibTmux/Server.hs": "98f8691edffcc690372aceca03261c50022807440c621aac5b0e8e77f4344342",
+    "src/LibTmux/Server.hs": "bb22fe587ecbc6c41b4be65d5c41fc9cf3dc6134e1cbbd840aa3b2fc05e05a24",
     "src/LibTmux/Snapshot.hs": "cddfee4e757f1dd4b35ee9f099fa796c86213ea7ff50a4727ddf198d26aaa2a1",
     "src/LibTmux/Snapshot/Fixture.hs": "b1b53369587d2ea963a97ba2b34ce963233130c4e47581292510613e7819a919",
     "src/LibTmux/Value.hs": "e199c3d0bbf08a159daa35bb4ae9a5d2ad4761117d375f292dd8b250bb459e55",
     "src/LibTmux/Version.hs": "cf4e4d94a113a95ffb7b650cffbd0b4f702608627db84b7c7bf7630b83e4dfa7"
   },
-  "claimsSha256": "d8d2ec1dafaaa956cce1717ff61a94e38110e15740d4a359ab0a2544e61c8102",
+  "claimsSha256": "0243353a205fe34831dc97e14904377b136b65b238d3dfd8918b45a91d5f4b9a",
   "classifications": [
     {
       "kind": "sends",
@@ -45,7 +45,9 @@
       "why": "These wrappers execute caller-supplied IO. Opening, pinning and scope cleanup send no tmux commands of their own.",
       "symbols": [
         "LibTmux.Server#v:withServer",
-        "LibTmux.Server#v:tryTmux"
+        "LibTmux.Server#v:tryTmux",
+        "LibTmux.Server#v:withRuntime",
+        "LibTmux.Server#v:withServerIn"
       ]
     },
     {
@@ -239,9 +241,10 @@
         "LibTmux.Value#v:NonPositiveDimension",
         "LibTmux.Value#v:NegativeIndex",
         "LibTmux.Version#v:MalformedVersion",
-        "LibTmux.Version#v:UnsupportedVersion"
+        "LibTmux.Version#v:UnsupportedVersion",
+        "LibTmux.Server#v:RuntimeClosed"
       ]
     }
   ],
-  "modelSha256": "d57a8391180a0cbec6fbf8758ec60d0d83b9415bc3e2a0ec557eee685cc31e34"
+  "modelSha256": "04a96c18b31024e30da3cada1eb4334bb441d569b2d6d3810310121d2665c76f"
 }

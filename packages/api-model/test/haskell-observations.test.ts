@@ -16,7 +16,7 @@ describe('native Haskell observation profile', () => {
   it('preserves every declaration, native signature and actual defining source', () => {
     const original = structuredClone(artifact)
     const model = extractHaskellArtifact(artifact, artifact.revision)
-    expect(model.symbols).toHaveLength(228)
+    expect(model.symbols).toHaveLength(232)
     expect(model.symbols.map((entry) => entry.id)).toEqual(artifact.symbols.map((entry: { id: string }) => entry.id))
     for (const native of artifact.symbols) {
       const actual = model.symbols.find((entry) => entry.id === native.id)!

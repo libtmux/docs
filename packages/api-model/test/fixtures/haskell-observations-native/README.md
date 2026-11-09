@@ -1,10 +1,12 @@
 # Native observation interface fixture
 
-These are unmodified public Haddock pages and the installed interface for
+These public Haddock pages and the installed interface describe
 `libtmux-haskell` at
-[`0f99299022ac819968834838c6d18a2faaf17443`](https://github.com/libtmux/libtmux-haskell/commit/0f99299022ac819968834838c6d18a2faaf17443).
+[`b9960257139c630985fced6d14ac59ba6870df02`](https://github.com/libtmux/libtmux-haskell/commit/b9960257139c630985fced6d14ac59ba6870df02).
 An isolated Git archive was built with GHC 9.14.1, GHC2024, Cabal 3.18.2.0
 and Haddock 2.33.0. `provenance.json` records input identities and hashes.
+The HTML files retain the native bytes. `installed.json` stores the native
+JSON interface with indentation while preserving every parsed value.
 
 The source-anchor index retains native identifiers and line markers, with
 duplicates intact. It covers the public modules and the private files that

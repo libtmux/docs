@@ -1,5 +1,5 @@
 {
-  "revision": "0f99299022ac819968834838c6d18a2faaf17443",
+  "revision": "b9960257139c630985fced6d14ac59ba6870df02",
   "modules": [
     "LibTmux",
     "LibTmux.Id",
@@ -27,27 +27,27 @@
   "sourceHashes": {
     "LibTmux": "d9dcb17fc4f7a7aecda31b48f2eb2286ee9637e4c85d997716431a882f5a1529",
     "LibTmux.Id": "3456edf88bf412e8769e5c96cc5d35b7b118ea3bd3786f167c9002f9804fb3b7",
-    "LibTmux.Server": "98f8691edffcc690372aceca03261c50022807440c621aac5b0e8e77f4344342",
+    "LibTmux.Server": "bb22fe587ecbc6c41b4be65d5c41fc9cf3dc6134e1cbbd840aa3b2fc05e05a24",
     "LibTmux.Snapshot": "cddfee4e757f1dd4b35ee9f099fa796c86213ea7ff50a4727ddf198d26aaa2a1",
     "LibTmux.Snapshot.Fixture": "b1b53369587d2ea963a97ba2b34ce963233130c4e47581292510613e7819a919",
     "LibTmux.Value": "e199c3d0bbf08a159daa35bb4ae9a5d2ad4761117d375f292dd8b250bb459e55",
     "LibTmux.Version": "cf4e4d94a113a95ffb7b650cffbd0b4f702608627db84b7c7bf7630b83e4dfa7",
     "LibTmux.Internal.Capture": "2d64c8e56a6abfa704ab0644bebc3590f5a1bd0cf5a952571be65ebc6d9aec5a",
     "LibTmux.Internal.Graph": "1f0097798f1cfa5e1837006fcfb1c33ba1b089c8e9ea1aa2e503382ad1eae14f",
-    "LibTmux.Internal.Runtime": "446bc810282a0163bc11ba9d76d421fe34cf631c255b732bdc07db7619d2df92",
-    "LibTmux.Internal.Scheduler": "3dbbc76b7760a75916c68527505c954315d664f1f4e817b79a25d9fa7ac36420",
-    "LibTmux.Internal.Scope": "ee4ebc57bf9718f6aca9c2331574e5a0c3c6514246467a4a8a6dc607f13f5847",
+    "LibTmux.Internal.Runtime": "f0d28b32a5ebf5271bc20cf3fa7f76c5ff051da15978acfcc9f7347442ff6565",
+    "LibTmux.Internal.Scheduler": "d97dd8c431a84c41ab947baac096e757cf498ebb0747b0e311fa7a73eee927b1",
+    "LibTmux.Internal.Scope": "82ca0084d522d2b704a2b5ecde0a2ab05ca209f0ecb42976d65f637b596c3208",
     "LibTmux.Internal.TmuxText": "766344310c5151417ab8fadc36d3a8940c051dde9fa7a2ac379dead984afacba"
   },
   "nativeFiles": {
-    "installed.json": "1fe53546ca1523159edab45972038a964e0d418d704df825a3fcaa5db93d82db",
+    "installed.json": "55f08ad827e0181e5bc786280be619f82e864a72f1db64637041227379525e7b",
     "LibTmux-Snapshot.html": "0647d8b3cf241416148d4424f59d06a9d3055e0b5ed748c1b5d927c3627799e7",
-    "LibTmux-Server.html": "fe60da5d755508504efc5a609d6711bb95a293a931afbbf48d7d63a7072c73db",
+    "LibTmux-Server.html": "dffb9e9de1f8b804cc58a4073ff528466a27a00f64acc42e77e971d31e4252df",
     "LibTmux-Value.html": "4160151534c27a8c787c9ab36fa6dcbf740fc193a7a3553935172be72111ff1d",
     "LibTmux-Version.html": "3461a42be3733565d16ab18cf3b729e41eab6ef20e87c90b2ca10fa993999510",
     "LibTmux.html": "50286b083988017f17f4f642f3e9a449ebd7b0d1c40e8901d608162d8a2a9874",
     "LibTmux-Snapshot-Fixture.html": "9d0939a019c99f33119619f0c424a87fea6e87abbd0a8ade758d78e05ae53a7c",
-    "source-anchors.json": "a5c3b8e99100cf5b1ef7cb62a7d2f0f4b7df57fcd315a49eeb5691b9fe377ac6",
+    "source-anchors.json": "caacb129b225f1f069bf7c3f48f518486fd8cbdcd192562a456e2cb02c624988",
     "LibTmux-Id.html": "cf7102eba62a0e9b02e7ea7acefb85d1822a4d192a1fceb680246ed42bd10d45"
   },
   "compiler": "9.14.1",

@@ -28947,7 +28947,7 @@
     },
     {
       "port": "haskell",
-      "revision": "875045d7b7b2d17fa76ec614aa83809d6fe71719",
+      "revision": "b9960257139c630985fced6d14ac59ba6870df02",
       "symbol": "LibTmux.Server#v:capture",
       "command": "display-message",
       "scope": null,
@@ -28984,31 +28984,31 @@
           ]
         },
         {
-          "at": "internal/LibTmux/Internal/Runtime.hs:554",
+          "at": "internal/LibTmux/Internal/Runtime.hs:686",
           "has": [
             "created <- try @SomeException (P.submitRegistered register resourceClass hooks pool spec \"\")"
           ]
         },
         {
-          "at": "internal/LibTmux/Internal/Runtime.hs:479",
+          "at": "internal/LibTmux/Internal/Runtime.hs:611",
           "has": [
             "N.spec executable ([executable, \"-u\", \"-N\", \"-S\", pinPath (serverPin client)]"
           ]
         },
         {
-          "at": "internal/LibTmux/Internal/Runtime.hs:480",
+          "at": "internal/LibTmux/Internal/Runtime.hs:612",
           "has": [
             "<> commandArguments nonce command)"
           ]
         },
         {
-          "at": "internal/LibTmux/Internal/Runtime.hs:444",
+          "at": "internal/LibTmux/Internal/Runtime.hs:576",
           "has": [
             "ReadSnapshot generation -> Record.snapshotCommands generation nonce"
           ]
         },
         {
-          "at": "internal/LibTmux/Internal/Runtime.hs:427",
+          "at": "internal/LibTmux/Internal/Runtime.hs:559",
           "has": [
             "startRead (ReadSnapshot (pinGeneration (serverPin client)))"
           ]
@@ -29026,7 +29026,7 @@
           ]
         },
         {
-          "at": "src/LibTmux/Server.hs:110",
+          "at": "src/LibTmux/Server.hs:160",
           "has": [
             "(started, finished, decoded) <- C.captureSnapshot runtime handle executable duration"
           ],
@@ -29042,7 +29042,7 @@
     },
     {
       "port": "haskell",
-      "revision": "875045d7b7b2d17fa76ec614aa83809d6fe71719",
+      "revision": "b9960257139c630985fced6d14ac59ba6870df02",
       "symbol": "LibTmux.Server#v:capture",
       "command": "if-shell",
       "scope": null,
@@ -29079,31 +29079,31 @@
           ]
         },
         {
-          "at": "internal/LibTmux/Internal/Runtime.hs:554",
+          "at": "internal/LibTmux/Internal/Runtime.hs:686",
           "has": [
             "created <- try @SomeException (P.submitRegistered register resourceClass hooks pool spec \"\")"
           ]
         },
         {
-          "at": "internal/LibTmux/Internal/Runtime.hs:479",
+          "at": "internal/LibTmux/Internal/Runtime.hs:611",
           "has": [
             "N.spec executable ([executable, \"-u\", \"-N\", \"-S\", pinPath (serverPin client)]"
           ]
         },
         {
-          "at": "internal/LibTmux/Internal/Runtime.hs:480",
+          "at": "internal/LibTmux/Internal/Runtime.hs:612",
           "has": [
             "<> commandArguments nonce command)"
           ]
         },
         {
-          "at": "internal/LibTmux/Internal/Runtime.hs:444",
+          "at": "internal/LibTmux/Internal/Runtime.hs:576",
           "has": [
             "ReadSnapshot generation -> Record.snapshotCommands generation nonce"
           ]
         },
         {
-          "at": "internal/LibTmux/Internal/Runtime.hs:427",
+          "at": "internal/LibTmux/Internal/Runtime.hs:559",
           "has": [
             "startRead (ReadSnapshot (pinGeneration (serverPin client)))"
           ]
@@ -29121,7 +29121,7 @@
           ]
         },
         {
-          "at": "src/LibTmux/Server.hs:110",
+          "at": "src/LibTmux/Server.hs:160",
           "has": [
             "(started, finished, decoded) <- C.captureSnapshot runtime handle executable duration"
           ],
@@ -29137,7 +29137,7 @@
     },
     {
       "port": "haskell",
-      "revision": "875045d7b7b2d17fa76ec614aa83809d6fe71719",
+      "revision": "b9960257139c630985fced6d14ac59ba6870df02",
       "symbol": "LibTmux.Server#v:capture",
       "command": "list-clients",
       "scope": null,
@@ -29174,31 +29174,31 @@
           ]
         },
         {
-          "at": "internal/LibTmux/Internal/Runtime.hs:554",
+          "at": "internal/LibTmux/Internal/Runtime.hs:686",
           "has": [
             "created <- try @SomeException (P.submitRegistered register resourceClass hooks pool spec \"\")"
           ]
         },
         {
-          "at": "internal/LibTmux/Internal/Runtime.hs:479",
+          "at": "internal/LibTmux/Internal/Runtime.hs:611",
           "has": [
             "N.spec executable ([executable, \"-u\", \"-N\", \"-S\", pinPath (serverPin client)]"
           ]
         },
         {
-          "at": "internal/LibTmux/Internal/Runtime.hs:480",
+          "at": "internal/LibTmux/Internal/Runtime.hs:612",
           "has": [
             "<> commandArguments nonce command)"
           ]
         },
         {
-          "at": "internal/LibTmux/Internal/Runtime.hs:444",
+          "at": "internal/LibTmux/Internal/Runtime.hs:576",
           "has": [
             "ReadSnapshot generation -> Record.snapshotCommands generation nonce"
           ]
         },
         {
-          "at": "internal/LibTmux/Internal/Runtime.hs:427",
+          "at": "internal/LibTmux/Internal/Runtime.hs:559",
           "has": [
             "startRead (ReadSnapshot (pinGeneration (serverPin client)))"
           ]
@@ -29216,7 +29216,7 @@
           ]
         },
         {
-          "at": "src/LibTmux/Server.hs:110",
+          "at": "src/LibTmux/Server.hs:160",
           "has": [
             "(started, finished, decoded) <- C.captureSnapshot runtime handle executable duration"
           ],

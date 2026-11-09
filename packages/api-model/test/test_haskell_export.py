@@ -115,7 +115,7 @@ class _ObservationExportTest(unittest.TestCase):
             root["reexports"],
             [{"module": name, "href": name.replace(".", "-") + ".html"} for name in names],
         )
-        self.assertEqual(len(result["symbols"]), 228)
+        self.assertEqual(len(result["symbols"]), 232)
         self.assertEqual(sum(s.get("parent") == "LibTmux" for s in result["symbols"]), 0)
 
     def test_duplicate_fields_keep_their_owner_docs_types_and_defining_source(self):

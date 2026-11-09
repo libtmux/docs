@@ -209,6 +209,7 @@
     "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$complete": "LibTmux.Server",
     "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$TmuxException": "LibTmux.Server",
     "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$ServerClosed": "LibTmux.Server",
+    "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$RuntimeClosed": "LibTmux.Server",
     "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$InvalidConfiguration": "LibTmux.Server",
     "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$InvalidObservation": "LibTmux.Server",
     "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$OperationFailed": "LibTmux.Server",
@@ -224,7 +225,10 @@
     "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$pinDirectory": "LibTmux.Server",
     "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$executable": "LibTmux.Server",
     "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$socketPath": "LibTmux.Server",
+    "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$Runtime": "LibTmux.Server",
     "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$Server": "LibTmux.Server",
+    "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withRuntime": "LibTmux.Server",
+    "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withServerIn": "LibTmux.Server",
     "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$serverConfig": "LibTmux.Server",
     "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withServer": "LibTmux.Server",
     "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$capture": "LibTmux.Server",
@@ -1770,6 +1774,18 @@
             }
           }
         },
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$Group": {
+          "meta": {
+            "version": null
+          },
+          "document": {
+            "tag": "DocParagraph",
+            "document": {
+              "tag": "DocString",
+              "string": "Opaque metadata identifying one owner's operations. This retains no\n Runtime, endpoint, resource or scheduler. Groups share admission limits."
+            }
+          }
+        },
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$Scheduler": {
           "meta": {
             "version": null
@@ -1793,6 +1809,18 @@
                   "string": " handles do not retain it."
                 }
               }
+            }
+          }
+        },
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$newGroup": {
+          "meta": {
+            "version": null
+          },
+          "document": {
+            "tag": "DocParagraph",
+            "document": {
+              "tag": "DocString",
+              "string": "Allocate a fresh group without reserving admission or resources."
             }
           }
         },
@@ -1902,6 +1930,18 @@
             }
           }
         },
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$admitIn": {
+          "meta": {
+            "version": null
+          },
+          "document": {
+            "tag": "DocParagraph",
+            "document": {
+              "tag": "DocString",
+              "string": "Reserve an operation in one group, under the scheduler's global limits.\n Group membership survives logical retirement for physical-owner selection.\n The token is forced before admission so metadata retains no caller thunk."
+            }
+          }
+        },
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$status": {
           "meta": {
             "version": null
@@ -1991,6 +2031,30 @@
             "document": {
               "tag": "DocString",
               "string": "Observe retained metadata in admission order, including uncertain work.\n The opaque handles remain bound to this context for explicit detach."
+            }
+          }
+        },
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$outstandingIn": {
+          "meta": {
+            "version": null
+          },
+          "document": {
+            "tag": "DocParagraph",
+            "document": {
+              "tag": "DocString",
+              "string": "Retained logical operations in one group, in admission order. Detached\n operations remain group members but no longer appear in this list."
+            }
+          }
+        },
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$memberOf": {
+          "meta": {
+            "version": null
+          },
+          "document": {
+            "tag": "DocParagraph",
+            "document": {
+              "tag": "DocString",
+              "string": "Match ownership metadata, including after completion or detachment.\n This does not establish logical or physical liveness."
             }
           }
         },
@@ -2236,6 +2300,7 @@
       "arg_map": {},
       "exports": [
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$admit",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$admitIn",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$await",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$cancelQueued",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$claim",
@@ -2246,8 +2311,11 @@
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$markDispatched",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$markResponseClosed",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$markUnknown",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$memberOf",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$newGroup",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$newScheduler",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$outstanding",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$outstandingIn",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$refuseBeforeBirth",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$status",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$AdmissionError",
@@ -2260,6 +2328,7 @@
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$Completion",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$CommandFailure",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$Success",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$Group",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$Lane",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$Inspection",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scheduler$Mutation",
@@ -5731,6 +5800,30 @@
             }
           }
         },
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$newServerOwner": {
+          "meta": {
+            "version": null
+          },
+          "document": {
+            "tag": "DocParagraph",
+            "document": {
+              "tag": "DocString",
+              "string": "Reserve and register one provisional owner before acquiring filesystem\n resources. A caller installing its own scope policy must mask the handoff."
+            }
+          }
+        },
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$adoptServerOwnerWith": {
+          "meta": {
+            "version": null
+          },
+          "document": {
+            "tag": "DocParagraph",
+            "document": {
+              "tag": "DocString",
+              "string": "Acquire a complete handle for an already registered owner. Its caller\n retains responsibility for cleanup when acquisition fails or is cancelled.\n Foreign or closed ownership refuses before filesystem acquisition; admission\n is checked again before publishing the handle."
+            }
+          }
+        },
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$inspect": {
           "meta": {
             "version": null
@@ -5754,6 +5847,66 @@
                   "string": ". Open and provisional clients count as pending ownership."
                 }
               }
+            }
+          }
+        },
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$inspectServerHandle": {
+          "meta": {
+            "version": null
+          },
+          "document": {
+            "tag": "DocParagraph",
+            "document": {
+              "tag": "DocString",
+              "string": "Observe only this handle's physical owners and logical group. Membership\n survives either kind of retirement; a foreign handle changes no state."
+            }
+          }
+        },
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$closeServerAdmission": {
+          "meta": {
+            "version": null
+          },
+          "document": {
+            "tag": "DocParagraph",
+            "document": {
+              "tag": "DocString",
+              "string": "Close one handle and settle its queued reads in the same STM cut.\n Other groups keep their admission, lane permits and first outcomes."
+            }
+          }
+        },
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$shutdownServerHandle": {
+          "meta": {
+            "version": null
+          },
+          "document": {
+            "tag": "DocParagraph",
+            "document": {
+              "tag": "DocString",
+              "string": "Bound one handle's physical cleanup under the Runtime's shared limits.\n Concurrent callers join its owned attempt; cancelling a waiter leaves it\n running. Logical uncertainty remains in the scoped and global reports."
+            }
+          }
+        },
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$awaitServerOwnerCleanup": {
+          "meta": {
+            "version": null
+          },
+          "document": {
+            "tag": "DocParagraph",
+            "document": {
+              "tag": "DocString",
+              "string": "Join only the selected owner's physical cleanup. Logical uncertainty is\n still explicit; cancellation leaves the registered owner available."
+            }
+          }
+        },
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$detachServerOwnerOperation": {
+          "meta": {
+            "version": null
+          },
+          "document": {
+            "tag": "DocParagraph",
+            "document": {
+              "tag": "DocString",
+              "string": "Relinquish only this owner's logical debt, including after pool cleanup.\n Runtime and immutable group checks precede any operation-state change."
             }
           }
         },
@@ -5971,17 +6124,23 @@
       "arg_map": {},
       "exports": [
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$adopt",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$adoptServerOwnerWith",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$adoptWith",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$awaitCleanup",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$awaitRead",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$awaitServerOwnerCleanup",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$cancelRead",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$cancelReceipt",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$closeServerHandle",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$detachOperation",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$detachReceipt",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$detachServerOwnerOperation",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$inspect",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$inspectReceipt",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$inspectServerHandle",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$inspectServerOwner",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$newRuntime",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$newServerOwner",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$readEntityFieldWith",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$readGraphWith",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$readOperation",
@@ -6000,6 +6159,8 @@
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$serverPin",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$serverPool",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$shutdown",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$shutdownServerHandle",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$shutdownServerOwner",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$usage",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$withCaptureBudget",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$EntityField",
@@ -6048,6 +6209,7 @@
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$Request",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$Runtime",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$ServerHandle",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$ServerOwner",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$VersionRead"
       ],
       "visible_exports": [],
@@ -6082,7 +6244,7 @@
             "tag": "DocParagraph",
             "document": {
               "tag": "DocString",
-              "string": "Reachable ownership after an incomplete or failed scope release. Keeping\n this value retains the Runtime responsible for its remaining resources."
+              "string": "Reachable responsibility after an incomplete or failed scope release.\n Retaining this value keeps its selected cleanup target and Runtime reachable."
             }
           }
         },
@@ -6094,7 +6256,7 @@
             "tag": "DocParagraph",
             "document": {
               "tag": "DocString",
-              "string": "Local observations of physical and logical cleanup responsibility.\n Each inspection returns new metadata; it performs no tmux operation."
+              "string": "Local observations of the selected physical and logical responsibility.\n Each inspection returns new metadata; it performs no tmux operation."
             }
           }
         },
@@ -6179,6 +6341,18 @@
             "document": {
               "tag": "DocString",
               "string": "Admission through the retained Server handle has closed."
+            }
+          }
+        },
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$RuntimeClosed": {
+          "meta": {
+            "version": null
+          },
+          "document": {
+            "tag": "DocParagraph",
+            "document": {
+              "tag": "DocString",
+              "string": "Admission through the retained Runtime has closed."
             }
           }
         },
@@ -6288,7 +6462,7 @@
               "tag": "DocAppend",
               "first": {
                 "tag": "DocString",
-                "string": "Wait for physical cleanup without a deadline, then inspect logical debt.\n Cancellation or failure preserves an annotated cleanup owner. Use\n "
+                "string": "Wait for this target's physical cleanup, then inspect its logical debt.\n The wait has no deadline.\n Cancellation or failure preserves an annotated cleanup owner. Use\n "
               },
               "second": {
                 "tag": "DocAppend",
@@ -6303,6 +6477,18 @@
               }
             }
           }
+        },
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$runServerScope": {
+          "meta": {
+            "version": null
+          },
+          "document": {
+            "tag": "DocParagraph",
+            "document": {
+              "tag": "DocString",
+              "string": "Protect one registered owner, including its pin acquisition. Keep the\n registration handoff masked and restore the action with the outer restore."
+            }
+          }
         }
       },
       "arg_map": {},
@@ -6315,6 +6501,7 @@
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$inspectCleanup",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$resumeCleanup",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$runScope",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$runServerScope",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$CleanupRecovery",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$CleanupStatus",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$CleanupStatus",
@@ -6328,6 +6515,7 @@
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$InvalidConfiguration",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$InvalidObservation",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$OperationFailed",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$RuntimeClosed",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$ServerClosed"
       ],
       "visible_exports": [],
@@ -6480,8 +6668,22 @@
                   "name": "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withServer"
                 },
                 "second": {
-                  "tag": "DocString",
-                  "string": " opens the handle.\n Paths retain POSIX bytes; no text decoding or shell interpretation occurs."
+                  "tag": "DocAppend",
+                  "first": {
+                    "tag": "DocString",
+                    "string": " or "
+                  },
+                  "second": {
+                    "tag": "DocAppend",
+                    "first": {
+                      "tag": "DocIdentifier",
+                      "name": "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withServerIn"
+                    },
+                    "second": {
+                      "tag": "DocString",
+                      "string": " opens the handle.\n Paths retain POSIX bytes; no text decoding or shell interpretation occurs."
+                    }
+                  }
                 }
               }
             }
@@ -6535,6 +6737,60 @@
             }
           }
         },
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$Runtime": {
+          "meta": {
+            "version": null
+          },
+          "document": {
+            "tag": "DocParagraph",
+            "document": {
+              "tag": "DocAppend",
+              "first": {
+                "tag": "DocString",
+                "string": "Shared resource limits and cleanup ownership for Server handles. Create\n one with "
+              },
+              "second": {
+                "tag": "DocAppend",
+                "first": {
+                  "tag": "DocIdentifier",
+                  "name": "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withRuntime"
+                },
+                "second": {
+                  "tag": "DocAppend",
+                  "first": {
+                    "tag": "DocString",
+                    "string": ", then adopt endpoints through "
+                  },
+                  "second": {
+                    "tag": "DocAppend",
+                    "first": {
+                      "tag": "DocIdentifier",
+                      "name": "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withServerIn"
+                    },
+                    "second": {
+                      "tag": "DocAppend",
+                      "first": {
+                        "tag": "DocString",
+                        "string": ".\n Detached "
+                      },
+                      "second": {
+                        "tag": "DocAppend",
+                        "first": {
+                          "tag": "DocIdentifier",
+                          "name": "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Graph$Snapshot"
+                        },
+                        "second": {
+                          "tag": "DocString",
+                          "string": " values retain no Runtime."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$Server": {
           "meta": {
             "version": null
@@ -6554,8 +6810,192 @@
                   "name": "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withServer"
                 },
                 "second": {
+                  "tag": "DocAppend",
+                  "first": {
+                    "tag": "DocString",
+                    "string": " or "
+                  },
+                  "second": {
+                    "tag": "DocAppend",
+                    "first": {
+                      "tag": "DocIdentifier",
+                      "name": "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withServerIn"
+                    },
+                    "second": {
+                      "tag": "DocString",
+                      "string": " keeps no admission open."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withRuntime": {
+          "meta": {
+            "version": null
+          },
+          "document": {
+            "tag": "DocAppend",
+            "first": {
+              "tag": "DocParagraph",
+              "document": {
+                "tag": "DocAppend",
+                "first": {
                   "tag": "DocString",
-                  "string": " does not keep admission open."
+                  "string": "Own a Runtime for the callback and perform bounded cleanup afterward.\n Closing it retires every adopted handle; application-owned threads remain\n the application's responsibility. Late adoption fails with "
+                },
+                "second": {
+                  "tag": "DocAppend",
+                  "first": {
+                    "tag": "DocIdentifier",
+                    "name": "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$RuntimeClosed"
+                  },
+                  "second": {
+                    "tag": "DocString",
+                    "string": ".\n The daemon remains running."
+                  }
+                }
+              }
+            },
+            "second": {
+              "tag": "DocParagraph",
+              "document": {
+                "tag": "DocAppend",
+                "first": {
+                  "tag": "DocString",
+                  "string": "Callback failures and cancellation keep their original exception class.\n Incomplete cleanup retains a "
+                },
+                "second": {
+                  "tag": "DocAppend",
+                  "first": {
+                    "tag": "DocIdentifier",
+                    "name": "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$CleanupRecovery"
+                  },
+                  "second": {
+                    "tag": "DocAppend",
+                    "first": {
+                      "tag": "DocString",
+                      "string": " in the exception context;\n use "
+                    },
+                    "second": {
+                      "tag": "DocAppend",
+                      "first": {
+                        "tag": "DocIdentifier",
+                        "name": "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$tryTmux"
+                      },
+                      "second": {
+                        "tag": "DocAppend",
+                        "first": {
+                          "tag": "DocString",
+                          "string": " and "
+                        },
+                        "second": {
+                          "tag": "DocAppend",
+                          "first": {
+                            "tag": "DocIdentifier",
+                            "name": "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$cleanupRecoveries"
+                          },
+                          "second": {
+                            "tag": "DocString",
+                            "string": " to keep that responsibility reachable."
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withServerIn": {
+          "meta": {
+            "version": null
+          },
+          "document": {
+            "tag": "DocAppend",
+            "first": {
+              "tag": "DocParagraph",
+              "document": {
+                "tag": "DocAppend",
+                "first": {
+                  "tag": "DocString",
+                  "string": "Adopt one endpoint within an existing Runtime and close only that handle\n after the callback. Other handles remain admitted under the shared limits;\n each adoption has its own "
+                },
+                "second": {
+                  "tag": "DocAppend",
+                  "first": {
+                    "tag": "DocIdentifier",
+                    "name": "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$serverGeneration"
+                  },
+                  "second": {
+                    "tag": "DocAppend",
+                    "first": {
+                      "tag": "DocString",
+                      "string": ". Use "
+                    },
+                    "second": {
+                      "tag": "DocAppend",
+                      "first": {
+                        "tag": "DocIdentifier",
+                        "name": "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withServer"
+                      },
+                      "second": {
+                        "tag": "DocString",
+                        "string": " for one handle."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "second": {
+              "tag": "DocParagraph",
+              "document": {
+                "tag": "DocAppend",
+                "first": {
+                  "tag": "DocString",
+                  "string": "Failed adoption can retain a "
+                },
+                "second": {
+                  "tag": "DocAppend",
+                  "first": {
+                    "tag": "DocIdentifier",
+                    "name": "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$CleanupRecovery"
+                  },
+                  "second": {
+                    "tag": "DocAppend",
+                    "first": {
+                      "tag": "DocString",
+                      "string": " before a "
+                    },
+                    "second": {
+                      "tag": "DocAppend",
+                      "first": {
+                        "tag": "DocIdentifier",
+                        "name": "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$Server"
+                      },
+                      "second": {
+                        "tag": "DocAppend",
+                        "first": {
+                          "tag": "DocString",
+                          "string": " exists.\n Inspection, retry and waiting through that owner stay scoped to the failed\n adoption. Cleanup preserves application exceptions, incoming masking state\n and cancellation; known acquisition failures use "
+                        },
+                        "second": {
+                          "tag": "DocAppend",
+                          "first": {
+                            "tag": "DocIdentifier",
+                            "name": "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$TmuxException"
+                          },
+                          "second": {
+                            "tag": "DocString",
+                            "string": "."
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -6583,22 +7023,8 @@
                   }
                 },
                 "second": {
-                  "tag": "DocAppend",
-                  "first": {
-                    "tag": "DocString",
-                    "string": " through PATH when opened.\n The private pin uses the socket's parent directory. The capture timeout is\n two seconds; callers can change it before "
-                  },
-                  "second": {
-                    "tag": "DocAppend",
-                    "first": {
-                      "tag": "DocIdentifier",
-                      "name": "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withServer"
-                    },
-                    "second": {
-                      "tag": "DocString",
-                      "string": "."
-                    }
-                  }
+                  "tag": "DocString",
+                  "string": " through PATH when opened.\n The private pin uses the socket's parent directory. The capture timeout is\n two seconds; callers can change it before opening a Server scope."
                 }
               }
             }
@@ -6725,8 +7151,36 @@
                       "name": "$ghc-internal$GHC.Internal.Control.Exception.Base$tryWithContext"
                     },
                     "second": {
-                      "tag": "DocString",
-                      "string": ". Inspection performs no tmux IO."
+                      "tag": "DocAppend",
+                      "first": {
+                        "tag": "DocString",
+                        "string": ". Inspection performs no tmux IO.\n Nested scopes can contribute overlapping owners; inspect and resume each\n retained responsibility through "
+                      },
+                      "second": {
+                        "tag": "DocAppend",
+                        "first": {
+                          "tag": "DocIdentifier",
+                          "name": "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$inspectCleanup"
+                        },
+                        "second": {
+                          "tag": "DocAppend",
+                          "first": {
+                            "tag": "DocString",
+                            "string": " and "
+                          },
+                          "second": {
+                            "tag": "DocAppend",
+                            "first": {
+                              "tag": "DocIdentifier",
+                              "name": "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$resumeCleanup"
+                            },
+                            "second": {
+                              "tag": "DocString",
+                              "string": "."
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -6851,7 +7305,9 @@
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$serverConfig",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$serverGeneration",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$tryTmux",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withRuntime",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withServer",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withServerIn",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Capture$CaptureRecovery",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$ReadRecovery",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Runtime$ReadRecovery",
@@ -6891,7 +7347,9 @@
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$InvalidConfiguration",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$InvalidObservation",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$OperationFailed",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$RuntimeClosed",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$ServerClosed",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$Runtime",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$Server",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$ServerConfig",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$ServerConfig",
@@ -6912,11 +7370,15 @@
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withServer",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$capture",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$serverGeneration",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$Runtime",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withRuntime",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withServerIn",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$TmuxException",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$CleanupFailed",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$InvalidConfiguration",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$InvalidObservation",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$OperationFailed",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$RuntimeClosed",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$ServerClosed",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$tryTmux",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$CleanupRecovery",
@@ -7021,7 +7483,9 @@
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$serverConfig",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$serverGeneration",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$tryTmux",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withRuntime",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withServer",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$withServerIn",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Snapshot$labelBytes",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Snapshot$labelFromBytes",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Snapshot$labelText",
@@ -7162,8 +7626,10 @@
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$InvalidConfiguration",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$InvalidObservation",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$OperationFailed",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$RuntimeClosed",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Scope$ServerClosed",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.TmuxText$TmuxText",
+        "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$Runtime",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$Server",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$ServerConfig",
         "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Server$ServerConfig",
