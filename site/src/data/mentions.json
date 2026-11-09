@@ -7296,6 +7296,13 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:bind-key",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:break-pane",
    "page": "/lisp/latest/guides/operations/",
    "title": "Explicit operations",
@@ -7471,7 +7478,28 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:decoding-error",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:delete-buffer",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:detach-client",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:display-message",
    "page": "/lisp/latest/guides/operations/",
    "title": "Explicit operations",
    "section": "guides"
@@ -7653,6 +7681,13 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:invalid-argument",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:join-pane",
    "page": "/lisp/latest/guides/operations/",
    "title": "Explicit operations",
@@ -7744,7 +7779,49 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:list-commands",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:list-keys",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:list-server-access",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:load-buffer",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:lock-client",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:lock-server",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:lock-session",
    "page": "/lisp/latest/guides/operations/",
    "title": "Explicit operations",
    "section": "guides"
@@ -7940,6 +8017,20 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:refresh",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:refresh-client",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:remove-environment",
    "page": "/lisp/latest/guides/operations/",
    "title": "Explicit operations",
@@ -8087,6 +8178,13 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:server-access",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:sessions",
    "page": "/lisp/latest/concepts/captures/",
    "title": "Captures and identity",
@@ -8136,6 +8234,27 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:show-environment-text",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:show-hooks-text",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:show-options-text",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:split-pane",
    "page": "/lisp/latest/guides/operations/",
    "title": "Explicit operations",
@@ -8157,6 +8276,13 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:suspend-client",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:swap-panes",
    "page": "/lisp/latest/guides/operations/",
    "title": "Explicit operations",
@@ -8171,10 +8297,24 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:switch-client",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:title",
    "page": "/lisp/latest/concepts/captures/",
    "title": "Captures and identity",
    "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:unbind-key",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
   },
   {
    "port": "lisp",
@@ -8223,6 +8363,27 @@
    "symbol": "libtmux:unsupported-tmux",
    "page": "/lisp/latest/guides/verification/",
    "title": "Verification evidence",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:wait-for",
+   "page": "/lisp/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:wait-for",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:wait-for",
+   "page": "/lisp/latest/guides/tutorial/",
+   "title": "REPL tutorial",
    "section": "guides"
   },
   {
@@ -8458,6 +8619,13 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux.workspace:apply-workspace",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux.workspace:make-workspace",
    "page": "/lisp/latest/workspace/source-guide/",
    "title": "Workspace guide",
@@ -8528,7 +8696,21 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux.workspace:workspace-apply-failed",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux.workspace:workspace-conflict",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:workspace-deadline-exceeded",
    "page": "/lisp/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
