@@ -709,13 +709,16 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     }
     if (model.nativeProvenance) {
       for (const input of model.nativeProvenance.files) {
-        const bytes = execFileSync('git', ['-C', checkout, 'show', `${head}:${input.path}`], { maxBuffer: 1 << 26 })
+        // OCaml records installed compiler artifacts beside its committed interfaces.
+        const compiled = port === 'ocaml' && input.path.startsWith('_build/install/default/lib/')
+        const bytes = compiled ? readFileSync(join(checkout, input.path))
+          : execFileSync('git', ['-C', checkout, 'show', `${head}:${input.path}`], { maxBuffer: 1 << 26 })
         if (createHash('sha256').update(bytes).digest('hex') !== input.sha256) {
           throw new Error(`gen-api-model: ${port} native artifact source differs from ${head}: ${input.path}`)
         }
       }
       for (const input of model.nativeProvenance.exporter.files ?? []) {
-        const bytes = readFileSync(join(repoRoot, input.path))
+        const bytes = readFileSync(join(port === 'ocaml' ? checkout : repoRoot, input.path))
         if (createHash('sha256').update(bytes).digest('hex') !== input.sha256) {
           throw new Error(`gen-api-model: ${port} native artifact exporter is stale: ${input.path}`)
         }
