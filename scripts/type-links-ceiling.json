@@ -17,5 +17,8 @@
   "kotlin": 24,
   "scala": 644,
   "fsharp": 36,
-  "perl": 1212
+  "perl": 1212,
+  "lisp": 70,
+  "ocaml": 2031,
+  "erlang": 0
 }
