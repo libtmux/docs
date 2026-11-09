@@ -83,7 +83,7 @@ export function addressOf(url) {
     return DOTTED.test(entry) ? { path: dotted(entry), exact: true, fragment: 'member' } : { path: dotted(stem), exact: true, fragment: 'heading' }
   }
 
-  if (host.endsWith('hexdocs.pm')) {
+  if (host.endsWith('hexdocs.pm') || (host === 'www.erlang.org' && /^\/doc\/apps\/[^/]+\/[^/]+\.html$/.test(u.pathname))) {
     const type = stem
     if (!file) return undefined
     const path = dotted(type)
