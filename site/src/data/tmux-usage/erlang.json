@@ -94,7 +94,7 @@
   ],
   "port": "erlang",
   "repo": "libtmux/libtmux-erlang",
-  "revision": "74a37c69c391c125afd11efd9abf23d1e4e44e0b",
+  "revision": "8f202650cf7504124c6e1c747756fcc36c96caeb",
   "schemaVersion": 1,
   "symbols": {
     "tmux_buffer:delete/2": [

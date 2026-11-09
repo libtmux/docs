@@ -142,21 +142,21 @@
     },
     "erlang": {
       "repo": "libtmux/libtmux-erlang",
-      "revision": "74a37c69c391c125afd11efd9abf23d1e4e44e0b",
+      "revision": "8f202650cf7504124c6e1c747756fcc36c96caeb",
       "distributions": [
         {
           "name": "libtmux_erlang",
           "version": "0.0.0+development",
           "manifest": "apps/libtmux_erlang/src/libtmux_erlang.app.src",
           "repo": "libtmux/libtmux-erlang",
-          "revision": "74a37c69c391c125afd11efd9abf23d1e4e44e0b"
+          "revision": "8f202650cf7504124c6e1c747756fcc36c96caeb"
         },
         {
           "name": "libtmux_erlang_workspace",
           "version": "0.0.0+development",
           "manifest": "apps/libtmux_erlang_workspace/src/libtmux_erlang_workspace.app.src",
           "repo": "libtmux/libtmux-erlang",
-          "revision": "74a37c69c391c125afd11efd9abf23d1e4e44e0b"
+          "revision": "8f202650cf7504124c6e1c747756fcc36c96caeb"
         }
       ],
       "units": []

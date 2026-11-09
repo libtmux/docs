@@ -3369,13 +3369,6 @@
   },
   {
    "port": "erlang",
-   "symbol": "tmux_model:to_map/1",
-   "page": "/erlang/latest/guides/workspace-json/",
-   "title": "Workspace JSON loader",
-   "section": "guides"
-  },
-  {
-   "port": "erlang",
    "symbol": "tmux_operation",
    "page": "/erlang/latest/guides/api-documentation/",
    "title": "Native API documentation",
@@ -17908,41 +17901,6 @@
   }
  ],
  "dangling": [
-  {
-   "port": "erlang",
-   "text": "Session.windows",
-   "page": "/erlang/latest/concepts/object-graph/",
-   "line": 97,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "erlang",
-   "text": "Session.window_links",
-   "page": "/erlang/latest/concepts/object-graph/",
-   "line": 98,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "erlang",
-   "text": "commands.hydration",
-   "page": "/erlang/latest/concepts/queries/",
-   "line": 138,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "erlang",
-   "text": "commands.isolated_hydration",
-   "page": "/erlang/latest/concepts/queries/",
-   "line": 139,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "erlang",
-   "text": "tmux_workspace:load/1",
-   "page": "/erlang/latest/guides/workspace-json/",
-   "line": 11,
-   "why": "not defined in the stated port"
-  },
   {
    "port": "fsharp",
    "text": "LibTmux.FSharp",
