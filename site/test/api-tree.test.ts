@@ -89,6 +89,7 @@ describe('shared reference index sections', () => {
     expect(sections[0].id).toBe('server')
     if (port === 'powershell') expect(sections[0].free.map((symbol) => symbol.name))
       .toEqual(expect.arrayContaining(['Connect-TmuxServer', 'Get-TmuxServer', 'New-TmuxServer']))
+    else if (port === 'erlang') expect(sections[0].types[0]).toMatchObject({ name: 'tmux_server', kind: 'module' })
     else expect(sections[0].types[0].name).toBe('Server')
     const ids = sections.flatMap((section) => [...section.types, ...section.free]).map((symbol) => symbol.id)
     expect(new Set(ids).size).toBe(ids.length)
@@ -245,10 +246,11 @@ describe('major tmux object domains', () => {
     const model = API_MODELS[port]!
     const branches = membersByType(port)
     const compare = compareMembers(memberSignals(port, mentions.mentions))
-    const owners = model.symbols.filter((symbol) => port === 'powershell'
+    const owners = model.symbols.filter((symbol) => ['powershell', 'erlang'].includes(port)
       ? symbol.kind === 'module'
       : OWNER_KINDS.has(symbol.kind) && ['Server', 'Session', 'Window', 'Pane', 'Client', 'Snapshot'].includes(symbol.name))
     if (port === 'powershell') expect(owners.map((owner) => owner.name).sort()).toEqual(['LibTmux', 'LibTmux.Workspace'])
+    else if (port === 'erlang') expect(owners.map((owner) => owner.name)).toEqual(expect.arrayContaining(['tmux_server', 'tmux_snapshot']))
     else expect(owners.some((owner) => owner.name === 'Server'), port).toBe(true)
     for (const owner of owners) {
       const displayed = membersOf(model, owner, memberSignals(port, mentions.mentions)).sort(compare)

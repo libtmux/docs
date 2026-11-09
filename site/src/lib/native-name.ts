@@ -93,6 +93,8 @@ export function nativeShortName(model: { port?: string; symbols: readonly ApiSym
   const owner = model && symbol.parent ? symbolTable(model.symbols).get(symbol.parent) : undefined
   if (!owner) return symbol.name
   if (model?.port === 'rs') return `${owner.name}${tupleField(symbol.name) ? '.' : '::'}${symbol.name}`
+  // Erlang places the record marker before the module: #tmux_model:pane{}.
+  if (model?.port === 'erlang' && symbol.kind === 'struct') return qualifiedNameOf(symbol)
   const id = qualifiedNameOf(symbol), ownerId = qualifiedNameOf(owner)
   // Swift writes a member's labels in its name and fewer of them in its id, so the id is not always the owner and the name.
   const fits = id.startsWith(ownerId) && id.endsWith(symbol.name) && id.length > ownerId.length + symbol.name.length

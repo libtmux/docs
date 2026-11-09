@@ -21,6 +21,7 @@ const rubySyntax = (page: string) => `https://docs.ruby-lang.org/en/3.4/syntax/$
 const luaManual = (section: string) => `https://www.lua.org/manual/5.4/manual.html#${section}`
 const luaAnnotation = (section: string) => `https://luals.github.io/wiki/annotations/#${section}`
 const elixirDocs = (page: string) => `https://elixir.hexdocs.pm/${page}`
+const erlangReference = (page: string) => `https://github.com/erlang/otp/blob/OTP-29.1.2/system/doc/reference_manual/${page}.md`
 const swiftBook = (page: string) => `https://docs.swift.org/latest/documentation/the-swift-programming-language/${page}/`
 
 export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> = {
@@ -88,6 +89,15 @@ export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> =
     abstract: term('A Julia abstract type that can have subtypes but no direct instances.', 'Julia abstract types', `${juliaManual('types')}#man-abstract-types`),
     readonly: term('A Julia field whose containing immutable struct prevents field reassignment.', 'Julia immutable composite types', `${juliaManual('types')}#Composite-Types`, 'A referenced vector or other mutable value can still change internally.'),
     package: term('The Julia package supplying the module and its public bindings.', 'Julia code loading', juliaManual('code-loading'), 'Package loading and module namespaces are related but distinct; use the documented project environment.'),
+  },
+  erlang: {
+    module: term('An Erlang module grouping function, type and record declarations under an atom name.', 'Erlang modules', erlangReference('modules'), 'Exports identify which functions, types and native records callers can use. Maps, lists and records are values passed explicitly to module functions.'),
+    struct: term('An exported Erlang native record with a fixed set of named fields, owned by its defining module.', 'Erlang native records', erlangReference('ref_man_native_records'), 'Session, window, window-link and pane rows use native records. Import an exported definition with -import_record(tmux_model, [pane]). Native records remain experimental in OTP 29.1.2; their internals are not a wire format.'),
+    function: term('An Erlang function identified by its module, name and arity, the number of arguments.', 'Erlang functions', erlangReference('ref_man_functions'), 'Functions sharing a name with different arities are distinct. Multiple clauses belong to one function; patterns and guards select the clause to execute.'),
+    typealias: term('An Erlang type declaration written with -type, -opaque or -nominal, identified by module, name and arity.', 'Erlang user-defined types', `${erlangReference('typespec')}#type-declarations-of-user-defined-types`, 'The shared typealias badge includes nominal IDs: Dialyzer distinguishes their declared names even when each is represented by a binary. Typespecs support analysis and documentation; runtime input validation remains necessary.'),
+    abstract: term('An Erlang behaviour callback declared with -callback, whose implementation belongs to a callback module.', 'Erlang behaviour callbacks', `${erlangReference('modules')}#behaviour-module-attribute`, 'The declaration describes the callback contract; it does not provide a function body to call on the behaviour module.'),
+    opaque: term('An Erlang type declared with -opaque, whose representation callers must not depend on.', 'Erlang opaque types', `${erlangReference('typespec')}#type-declarations-of-user-defined-types`, 'Selections and queries are opaque values. Use tmux_select:to_list/1 to obtain rows for lists functions, and tmux_query:fetch/1 to execute a query. Ordinary selection reads and query construction perform no tmux I/O.'),
+    package: term('The OTP application supplying these Erlang modules, described by an application resource file.', 'OTP applications', 'https://github.com/erlang/otp/blob/OTP-29.1.2/system/doc/design_principles/applications.md', 'The core application is libtmux_erlang. Its application name and the names of its modules serve different roles; use the documented source dependency to install it.'),
   },
   elixir: {
     module: term('An Elixir module, a named collection of functions, macros and types defined with defmodule.', 'Elixir modules and functions', elixirDocs('modules-and-functions.html'), 'Module names are atoms, and a nested name such as LibTmux.Control.Request is one flat module rather than a child of LibTmux.Control.'),

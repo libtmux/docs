@@ -128,7 +128,7 @@ describe('staged port guide links', () => {
     expect(index).toContain('"label":"Overview","order":1')
     const cards = JSON.parse(/^cards: (.+)$/m.exec(index)![1])
     expect(cards[0].label).toBe('Getting started')
-    expect(cards[1].label).toBe('Attaching to tmux')
+    expect(cards[1].label).toBe(port === 'erlang' ? 'Installation' : 'Attaching to tmux')
     for (const section of ['examples', 'topics']) {
       const page = files.get(`${port}/${section}/index.md`)
       if (!page) continue

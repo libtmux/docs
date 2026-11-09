@@ -30,6 +30,7 @@ const nativeAuthorities: Record<string, RegExp> = {
   ruby: /^https:\/\/(?:docs\.ruby-lang\.org|guides\.rubygems\.org|github\.com\/ruby\/rbs)\//,
   lua: /^https:\/\/(?:www\.lua\.org|luals\.github\.io)\//,
   swift: /^https:\/\/(?:docs\.swift\.org|www\.swift\.org)\//,
+  erlang: /^https:\/\/(?:www\.erlang\.org|github\.com\/erlang\/otp)\//,
 }
 
 afterEach(async () => {
