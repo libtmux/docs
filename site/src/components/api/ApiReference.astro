@@ -401,7 +401,7 @@ const title = glossary ? API_GLOSSARY_TITLE : owner
     ? source?.title ?? `${label} API reference`
     : 'API reference'
 const pageTitle = glossary ? API_GLOSSARY_TITLE : owner ? title : source?.title ?? 'API reference'
-const displayName = owner ? (['haskell', 'erlang'].includes(language) ? nativeShortName(model, owner)
+const displayName = owner ? (language === 'haskell' || language === 'erlang' ? nativeShortName(model, owner)
   : language === 'clojure' || language === 'lisp' ? nativeQualifiedName(model, owner)
   : declaringType ? `${declaringType.name}.${owner.name}` : owner.name) : pageTitle
 const breadcrumbs = source?.breadcrumbs ?? await pageBreadcrumbs(displayName, glossary ? 'reference/glossary' : slug ? `reference/${slug}` : 'reference', version, port)
