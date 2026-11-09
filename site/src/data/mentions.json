@@ -2738,6 +2738,818 @@
    "section": "concepts"
   },
   {
+   "port": "erlang",
+   "symbol": "t:tmux_model:pane_input/0",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "t:tmux_operation:completed/0",
+   "page": "/erlang/latest/guides/operations/",
+   "title": "Owned operations",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "t:tmux_operation:failure/0",
+   "page": "/erlang/latest/guides/operations/",
+   "title": "Owned operations",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "t:tmux_operation:state/0",
+   "page": "/erlang/latest/guides/operations/",
+   "title": "Owned operations",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "t:tmux_pane:join_options/0",
+   "page": "/erlang/latest/guides/panes/",
+   "title": "Isolate and rejoin a running pane",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "t:tmux_schema:error_detail/0",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "t:tmux_select:t/1",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "t:tmux_server:scope_failure/0",
+   "page": "/erlang/latest/topics/ownership/",
+   "title": "Ownership and identity",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_buffer",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_buffer:capabilities/1",
+   "page": "/erlang/latest/guides/buffers/",
+   "title": "Preserve byte buffers and paste deliberately",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_buffer:load/3",
+   "page": "/erlang/latest/guides/buffers/",
+   "title": "Preserve byte buffers and paste deliberately",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_buffer:paste/3",
+   "page": "/erlang/latest/guides/buffers/",
+   "title": "Preserve byte buffers and paste deliberately",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_capability",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_capability",
+   "page": "/erlang/latest/reference/commands/",
+   "title": "Command capabilities",
+   "section": "reference"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command",
+   "page": "/erlang/latest/guides/hooks/",
+   "title": "Register a hook and await its effect",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:literal_format/2",
+   "page": "/erlang/latest/guides/piping/",
+   "title": "Pipe pane output",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:raw/2",
+   "page": "/erlang/latest/guides/keys/",
+   "title": "Install application keybindings",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:raw/2",
+   "page": "/erlang/latest/reference/commands/",
+   "title": "Command capabilities",
+   "section": "reference"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:source_file/2",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:source_file/2",
+   "page": "/erlang/latest/guides/configuration/",
+   "title": "Apply configuration and await its completion signal",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:to_config/1",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:to_config/1",
+   "page": "/erlang/latest/guides/commands/",
+   "title": "Build commands before running them",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:to_config/1",
+   "page": "/erlang/latest/guides/configuration/",
+   "title": "Apply configuration and await its completion signal",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:to_config/1",
+   "page": "/erlang/latest/guides/keys/",
+   "title": "Install application keybindings",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:wait_for/2",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_command:wait_for/2",
+   "page": "/erlang/latest/guides/configuration/",
+   "title": "Apply configuration and await its completion signal",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_control:close/1",
+   "page": "/erlang/latest/topics/control/",
+   "title": "Control connections",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_error",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_error",
+   "page": "/erlang/latest/topics/diagnostics/",
+   "title": "Diagnostics",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_filter",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_filter:decode_json/1",
+   "page": "/erlang/latest/concepts/queries/",
+   "title": "Selections and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_hook",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_hook:run/2",
+   "page": "/erlang/latest/guides/hooks/",
+   "title": "Register a hook and await its effect",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_hook:set/3",
+   "page": "/erlang/latest/guides/hooks/",
+   "title": "Register a hook and await its effect",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_identity",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_json",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_key",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_key:bind/3",
+   "page": "/erlang/latest/guides/keys/",
+   "title": "Install application keybindings",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_key:bind/4",
+   "page": "/erlang/latest/guides/keys/",
+   "title": "Install application keybindings",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_key:clear_table/2",
+   "page": "/erlang/latest/guides/keys/",
+   "title": "Install application keybindings",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_key:listing/1",
+   "page": "/erlang/latest/guides/keys/",
+   "title": "Install application keybindings",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_key:listing/2",
+   "page": "/erlang/latest/guides/keys/",
+   "title": "Install application keybindings",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_key:unbind/2",
+   "page": "/erlang/latest/guides/keys/",
+   "title": "Install application keybindings",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_key:unbind/3",
+   "page": "/erlang/latest/guides/keys/",
+   "title": "Install application keybindings",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_matcher",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_model",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_model",
+   "page": "/erlang/latest/guides/installation/",
+   "title": "Installation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_model:new/2",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_model:to_map/1",
+   "page": "/erlang/latest/guides/compatibility/",
+   "title": "Support and remaining gaps",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_model:to_map/1",
+   "page": "/erlang/latest/guides/workspace-json/",
+   "title": "Workspace JSON loader",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_operation",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_operation:await/2",
+   "page": "/erlang/latest/topics/diagnostics/",
+   "title": "Diagnostics",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_operation:start/3",
+   "page": "/erlang/latest/guides/configuration/",
+   "title": "Apply configuration and await its completion signal",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_operation:status/1",
+   "page": "/erlang/latest/guides/operations/",
+   "title": "Owned operations",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_operation:status/1",
+   "page": "/erlang/latest/topics/diagnostics/",
+   "title": "Diagnostics",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_operation:transfer/2",
+   "page": "/erlang/latest/guides/operations/",
+   "title": "Owned operations",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_option",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_option:describe/2",
+   "page": "/erlang/latest/guides/options/",
+   "title": "Read and change scoped options",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:break/4",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:break/4",
+   "page": "/erlang/latest/guides/panes/",
+   "title": "Isolate and rejoin a running pane",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:get/2",
+   "page": "/erlang/latest/guides/panes/",
+   "title": "Isolate and rejoin a running pane",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:join/3",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:join/3",
+   "page": "/erlang/latest/guides/panes/",
+   "title": "Isolate and rejoin a running pane",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:move/3",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:move/3",
+   "page": "/erlang/latest/guides/panes/",
+   "title": "Isolate and rejoin a running pane",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:pipe/3",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:pipe/3",
+   "page": "/erlang/latest/guides/piping/",
+   "title": "Pipe pane output",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:resize/2",
+   "page": "/erlang/latest/guides/commands/",
+   "title": "Build commands before running them",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:respawn/2",
+   "page": "/erlang/latest/guides/operations/",
+   "title": "Owned operations",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:split/2",
+   "page": "/erlang/latest/guides/operations/",
+   "title": "Owned operations",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:stop_pipe/1",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:stop_pipe/1",
+   "page": "/erlang/latest/guides/piping/",
+   "title": "Pipe pane output",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:swap/3",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:swap/3",
+   "page": "/erlang/latest/guides/panes/",
+   "title": "Isolate and rejoin a running pane",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_query",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_query:explain/1",
+   "page": "/erlang/latest/concepts/queries/",
+   "title": "Selections and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_schema",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_scope",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_scope:run_or_error/2",
+   "page": "/erlang/latest/topics/ownership/",
+   "title": "Ownership and identity",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_scope:run/2",
+   "page": "/erlang/latest/topics/ownership/",
+   "title": "Ownership and identity",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_select",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_select:filter/2",
+   "page": "/erlang/latest/concepts/queries/",
+   "title": "Selections and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_select:one/1",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:bind/2",
+   "page": "/erlang/latest/concepts/architecture/",
+   "title": "Architecture decisions",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:bind/2",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "title": "Object graph",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:bind/2",
+   "page": "/erlang/latest/guides/commands/",
+   "title": "Build commands before running them",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:bind/2",
+   "page": "/erlang/latest/guides/compatibility/",
+   "title": "Support and remaining gaps",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:close/1",
+   "page": "/erlang/latest/guides/piping/",
+   "title": "Pipe pane output",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:close/1",
+   "page": "/erlang/latest/topics/ownership/",
+   "title": "Ownership and identity",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:command/3",
+   "page": "/erlang/latest/guides/configuration/",
+   "title": "Apply configuration and await its completion signal",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:open/1",
+   "page": "/erlang/latest/topics/ownership/",
+   "title": "Ownership and identity",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:snapshot/1",
+   "page": "/erlang/latest/guides/panes/",
+   "title": "Isolate and rejoin a running pane",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:start_owned/1",
+   "page": "/erlang/latest/topics/ownership/",
+   "title": "Ownership and identity",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:stop_owned/1",
+   "page": "/erlang/latest/topics/ownership/",
+   "title": "Ownership and identity",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:with_owned/2",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:with_owned/2",
+   "page": "/erlang/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:with_owned/2",
+   "page": "/erlang/latest/topics/ownership/",
+   "title": "Ownership and identity",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:with_server/2",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:with_server/2",
+   "page": "/erlang/latest/topics/ownership/",
+   "title": "Ownership and identity",
+   "section": "topics"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_session",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_session:rename/2",
+   "page": "/erlang/latest/guides/commands/",
+   "title": "Build commands before running them",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_session:select/2",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "title": "Object graph",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_session:select/2",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_session:select/3",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "title": "Object graph",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_session:select/3",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_snapshot",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_version",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_window",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_window_link",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "title": "Object graph",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_window_link",
+   "page": "/erlang/latest/guides/api-documentation/",
+   "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_window_link:get/3",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "title": "Object graph",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_window_link:get/3",
+   "page": "/erlang/latest/guides/panes/",
+   "title": "Isolate and rejoin a running pane",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_window:kill/1",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "title": "Object graph",
+   "section": "concepts"
+  },
+  {
    "port": "fsharp",
    "symbol": "LibTmux.FSharp.CardinalityError.MultipleMatches",
    "page": "/fsharp/latest/concepts/queries/",
@@ -14758,6 +15570,398 @@
   }
  ],
  "dangling": [
+  {
+   "port": "erlang",
+   "text": "Session.windows",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "line": 97,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "Session.window_links",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "line": 98,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "commands.hydration",
+   "page": "/erlang/latest/concepts/queries/",
+   "line": 138,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "commands.isolated_hydration",
+   "page": "/erlang/latest/concepts/queries/",
+   "line": 139,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "rebar.config",
+   "page": "/erlang/latest/guides/getting-started/",
+   "line": 22,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "rebar.lock",
+   "page": "/erlang/latest/guides/getting-started/",
+   "line": 34,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "readme_demo.erl",
+   "page": "/erlang/latest/guides/getting-started/",
+   "line": 56,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "rebar.lock",
+   "page": "/erlang/latest/guides/installation/",
+   "line": 18,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "src/inspect_demo.erl",
+   "page": "/erlang/latest/guides/installation/",
+   "line": 41,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "tmux_workspace:load/1",
+   "page": "/erlang/latest/guides/workspace-json/",
+   "line": 11,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "F:f:K:NO:rt:Z",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 68,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "F:f:K:NO:rt:yZ",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 69,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "F:f:K:kNO:rt:yZ",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 70,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "F:f:K:NO:rt:Z",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 71,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "F:f:K:NO:rt:yZ",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 72,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "F:f:hiK:kNO:rt:yZ",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 73,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "F:f:GK:NO:rst:wZ",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 74,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "F:f:GK:NO:rst:wyZ",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 75,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "F:f:GhK:kNO:rst:wyZ",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 76,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "eHMs:t:uq",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 87,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "deHMs:t:uq",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 88,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "deHMqSs:t:u",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 89,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "dekHMqSs:t:u",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 90,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "F:f:Nt:Z",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 91,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "F:f:Nt:yZ",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 92,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "F:f:kNt:yZ",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 93,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "aE:s:t:P",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 95,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "aCc:d:lINpt:F:v",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 101,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "aCc:d:jlINpt:F:v",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 102,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "CiNrt:TZ",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 107,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "AbB:Cc:Dde:EfF:hIkl:KLMm:Op:PR:s:S:t:T:vWx:X:y:Y:Z",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 145,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "A:B:cC:Df:F:l::LRSt:U",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 156,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "A:B:cC:Df:r:F:l::LRSt:U",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 157,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "A:B:cC:Df:r:F:lLRSt:U",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 158,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "DLMRTt:Ux:y:Z",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 161,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "D::L::MR::Tt:U::x:y:Z",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 162,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "Dt:UZ",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 168,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "DdegLlMmP:RT:t:UZ",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 175,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "FHlMN:Rt:X",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 177,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "c:FHKlMN:Rt:X",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 178,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "Fhgrt:u",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 183,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "agpRt:uw",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 184,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "agpERTt:uB:w",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 185,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "aFgopqst:uUw",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 186,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "aFgoqt:u",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 187,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "BF:gpt:w",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 191,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "AgHpqst:vw",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 193,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "AgF:Hpqst:vw",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 194,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "Fnqv",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 198,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "t:Fnqv",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 199,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "bB:c:de:EfF:hIkl:m:p:PR:s:S:t:T:vWZ",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 202,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "dDs:t:UZ",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 205,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "lc:EFnpt:rT:Z",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 207,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "c:EFlnO:pt:rT:Z",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 208,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "F:kst:wZ",
+   "page": "/erlang/latest/reference/commands/",
+   "line": 209,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "erlang",
+   "text": "erl_error:format_exception/3",
+   "page": "/erlang/latest/topics/diagnostics/",
+   "line": 109,
+   "why": "not defined in the stated port"
+  },
   {
    "port": "fsharp",
    "text": "LibTmux.FSharp",

@@ -9,12 +9,15 @@ import registryData from '../data/registry.json'
 import { PORT_BY_SLUG, referenceUrl, type DocProduct, type RegistryData } from './ports'
 import { buildTarget, defaultVersionFor, registryVersion } from './versions'
 import { mcpToolSymbols } from './mcp-catalog'
+import { apiDocLinksFor } from './port-documentation'
 import powershellNav from '../data/api/powershell.nav.json'
 import juliaNav from '../data/api/julia.nav.json'
 import elixirNav from '../data/api/elixir.nav.json'
 import powershellModel from '../data/api/powershell.json'
 import juliaModel from '../data/api/julia.json'
 import elixirModel from '../data/api/elixir.json'
+import erlangModel from '../data/api/erlang.json'
+import erlangNav from '../data/api/erlang.nav.json'
 import cxxNav from '../data/api/cxx.nav.json'
 import csharpNav from '../data/api/csharp.nav.json'
 import goNav from '../data/api/go.nav.json'
@@ -52,6 +55,7 @@ import fsharpNav from '../data/api/fsharp.nav.json'
  * passed. Imports are visible to both.
  */
 export const API_MODELS: Record<string, ApiModel> = {
+  erlang: erlangModel as unknown as ApiModel,
   powershell: powershellModel as unknown as ApiModel,
   julia: juliaModel as unknown as ApiModel,
   elixir: elixirModel as unknown as ApiModel,
@@ -115,6 +119,7 @@ export interface PortNavData {
  * what a page renders cannot disagree.
  */
 export const API_NAV: Record<string, PortNavData> = {
+  erlang: erlangNav as unknown as PortNavData,
   powershell: powershellNav as unknown as PortNavData,
   julia: juliaNav as unknown as PortNavData,
   elixir: elixirNav as unknown as PortNavData,
@@ -136,6 +141,7 @@ export const API_NAV: Record<string, PortNavData> = {
 export { isMemberOwner, OWNER_KINDS } from '@libtmux/api-model'
 
 export const PORT_NAME: Record<string, string> = {
+  erlang: 'Erlang',
   powershell: 'PowerShell',
   julia: 'Julia',
   elixir: 'Elixir',
@@ -283,7 +289,13 @@ export function parentApiInventory(port: string): InventoryEntry[] {
 /** Build an index with this site's language-scoped external inventories. */
 export function createApiIndex(model: ApiModelBase & { port?: string; language?: string }, hrefFor: (s: ApiSymbol) => string): SymbolIndex {
   const language = model.port ?? model.language
-  const index = new SymbolIndex(model.symbols, hrefFor, language)
+  const docRoot = model.symbols[0] && /^(.*\/)reference\//.exec(hrefFor(model.symbols[0]))?.[1]
+  const guideLinks = language && PORT_BY_SLUG[language] && docRoot ? apiDocLinksFor(language, docRoot) : new Map<string, string>()
+  const index = new SymbolIndex(model.symbols, hrefFor, language, (href) => {
+    const cut = href.indexOf('#')
+    const target = guideLinks.get(cut < 0 ? href : href.slice(0, cut))
+    return target ? target + (cut < 0 ? '' : href.slice(cut)) : href
+  })
   for (const { data, baseUrl, langs, project } of INVENTORIES) {
     if (!language || !langs.includes(language)) continue
     index.addInventory(baseUrl, entriesOf(data), langs, project)

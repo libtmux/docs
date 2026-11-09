@@ -3823,12 +3823,72 @@ for (const [id, binding] of Object.entries(ELIXIR_CONCEPTS)) {
   concept.symbols.elixir = binding.symbol
   if (binding.note) (concept.notes ??= {}).elixir = binding.note
 }
+const ERLANG_CONCEPTS: Record<string, { symbol: string; note?: string }> = {
+  server: { symbol: 'tmux_server', note: '`open/1` observes an existing daemon and starts an endpoint owner. Domain rows remain immutable values.' },
+  session: { symbol: '#tmux_model:session{}' },
+  window: { symbol: '#tmux_model:window{}', note: 'A physical window can have several session memberships. `window_link` holds the session-relative index and active flag.' },
+  pane: { symbol: '#tmux_model:pane{}' },
+  snapshot: { symbol: 'tmux_server:snapshot/1', note: 'Captures a new graph over an observation interval. Retained snapshots never refresh.' },
+  'server-cmd': { symbol: 'tmux_server:command/3', note: 'Executes an explicit command value with bounded output and separate outcome and cleanup evidence.' },
+  'list-sessions': { symbol: 'tmux_snapshot:sessions/1', note: 'Returns captured rows without tmux I/O.' },
+  'list-server-windows': { symbol: 'tmux_snapshot:windows/1', note: 'Returns unique captured physical windows. `window_links/1` lists session memberships.' },
+  'list-server-panes': { symbol: 'tmux_snapshot:panes/1', note: 'Returns unique captured physical panes without tmux I/O.' },
+  'list-windows': { symbol: 'tmux_snapshot:related/3', note: 'Pass `windows`, a captured session and its snapshot for a local relationship read.' },
+  'list-panes': { symbol: 'tmux_snapshot:related/3', note: 'Pass `panes`, a captured physical window and its snapshot for a local relationship read.' },
+  'capture-pane': { symbol: 'tmux_pane:capture/2' },
+  'send-keys': { symbol: 'tmux_pane:send_keys/2' },
+  'split-pane': { symbol: 'tmux_pane:split/2' },
+  'respawn-pane': { symbol: 'tmux_pane:respawn/2' },
+  'resize-pane': { symbol: 'tmux_pane:resize/2' },
+  'kill-pane': { symbol: 'tmux_pane:kill/1' },
+  'break-pane': { symbol: 'tmux_pane:break/4' },
+  'join-pane': { symbol: 'tmux_pane:join/3' },
+  'move-pane': { symbol: 'tmux_pane:move/3' },
+  'swap-pane': { symbol: 'tmux_pane:swap/3' },
+  'pipe-pane': { symbol: 'tmux_pane:pipe/3' },
+  'new-session': { symbol: 'tmux_session:create/2' },
+  'kill-session': { symbol: 'tmux_session:kill/1' },
+  'rename-session': { symbol: 'tmux_session:rename/2' },
+  'new-window': { symbol: 'tmux_window:create/2' },
+  'kill-window': { symbol: 'tmux_window:kill/1', note: 'Removes the physical window and its memberships.' },
+  'rename-window': { symbol: 'tmux_window:rename/2' },
+  'select-layout': { symbol: 'tmux_window:select_layout/2' },
+  'respawn-window': { symbol: 'tmux_window:respawn/2' },
+  'link-window': { symbol: 'tmux_window_link:link/3' },
+  'unlink-window': { symbol: 'tmux_window_link:unlink/2', note: 'Acts on one session-relative membership.' },
+  'move-window': { symbol: 'tmux_window_link:move/3' },
+  'swap-window': { symbol: 'tmux_window_link:swap/3' },
+  'select-window': { symbol: 'tmux_window_link:select/1', note: 'Selects a captured membership in its session.' },
+  'get-session': { symbol: 'tmux_session:get/2' },
+  'get-window': { symbol: 'tmux_window:get/2' },
+  'get-pane': { symbol: 'tmux_pane:get/2' },
+  'list-buffers': { symbol: 'tmux_buffer:list/1' },
+  'show-buffer': { symbol: 'tmux_buffer:show/2' },
+  'load-buffer': { symbol: 'tmux_buffer:load/3' },
+  'delete-buffer': { symbol: 'tmux_buffer:delete/2' },
+  'paste-buffer': { symbol: 'tmux_buffer:paste/3' },
+  'list-keys': { symbol: 'tmux_key:listing/1' },
+  'bind-key': { symbol: 'tmux_key:bind/3' },
+  'unbind-key': { symbol: 'tmux_key:unbind/2' },
+  'start-server': { symbol: 'tmux_server:start_owned/1', note: 'Starts a private daemon and returns an ownership token.' },
+  'kill-server': { symbol: 'tmux_server:stop_owned/1', note: 'Requires the ownership token for a library-owned daemon. Closing a borrowed endpoint preserves its daemon.' },
+  'server-version': { symbol: 'tmux_server:version/1' },
+  'source-file': { symbol: 'tmux_command:source_file/2', note: 'Builds a trusted command value. Execute it explicitly with `tmux_server:command/3`.' },
+  'wait-for': { symbol: 'tmux_command:wait_for/2', note: 'Builds a command value; construction performs no I/O.' },
+}
+for (const [id, binding] of Object.entries(ERLANG_CONCEPTS)) {
+  const concept = CONCEPTS[id]
+  if (!concept) throw new Error(`concepts: Erlang maps unknown concept ${id}`)
+  concept.symbols.erlang = binding.symbol
+  if (binding.note) (concept.notes ??= {}).erlang = binding.note
+}
 CONCEPTS['list-session-panes']!.absent!.julia = 'Traverse `windows(session)` and `panes(window)` in the captured snapshot. `panes(snapshot)` has server-wide scope.'
 for (const concept of Object.values(CONCEPTS)) {
   concept.absent ??= {}
   if (!concept.symbols.powershell) concept.absent.powershell ??= 'No source-verified PowerShell equivalent is recorded for this operation.'
   if (!concept.symbols.julia) concept.absent.julia ??= 'No source-verified Julia equivalent is recorded for this operation.'
   if (!concept.symbols.elixir) concept.absent.elixir = 'No source-verified Elixir equivalent is recorded for this operation.'
+  if (!concept.symbols.erlang) concept.absent.erlang = 'No source-verified Erlang equivalent is recorded for this operation.'
   if (!concept.symbols.ruby) concept.absent.ruby = 'No source-verified Ruby equivalent is recorded for this operation.'
   if (!concept.symbols.lua) concept.absent.lua = 'No source-verified Lua equivalent is recorded for this operation.'
   if (!concept.symbols.kotlin) concept.absent.kotlin = 'No source-verified Kotlin equivalent is recorded for this operation.'

@@ -4557,6 +4557,314 @@
           ]
         }
       ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_command",
+      "names": [
+        "source_file/2"
+      ],
+      "commands": [
+        "source-file"
+      ],
+      "kind": "builds",
+      "why": "Returns a validated command value; execution requires an explicit endpoint operation.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_command.erl:179",
+          "has": [
+            "raw(<<\"source-file\">>"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_command",
+      "names": [
+        "wait_for/2"
+      ],
+      "commands": [
+        "wait-for"
+      ],
+      "kind": "builds",
+      "why": "Returns a validated command value; execution requires an explicit endpoint operation.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_command.erl:144",
+          "has": [
+            "raw(<<\"wait-for\">>"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_session",
+      "names": [
+        "rename_command/2"
+      ],
+      "commands": [
+        "rename-session"
+      ],
+      "kind": "builds",
+      "why": "Returns a validated command value; execution requires an explicit endpoint operation.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_session.erl:97",
+          "has": [
+            "tmux_command:generated(session_rename,"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_pane",
+      "names": [
+        "resize_command/2"
+      ],
+      "commands": [
+        "resize-pane"
+      ],
+      "kind": "builds",
+      "why": "Returns a validated command value; execution requires an explicit endpoint operation.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_pane.erl:341",
+          "has": [
+            "tmux_command:generated(pane_resize,"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_model",
+      "names": [
+        "window_link/1"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "values",
+      "why": "Constructs a detached membership record without tmux I/O.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_model.erl:208",
+          "has": [
+            "window_link(Fields) -> new(window_link, Fields)."
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_snapshot",
+      "names": [
+        "window_links/1"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "values",
+      "why": "Reads already captured membership values without tmux I/O.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_snapshot.erl:105",
+          "has": [
+            "window_links(Snapshot) -> rows(window_link, Snapshot)."
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_select",
+      "names": [
+        "window_links/1"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "values",
+      "why": "Selects already captured membership values without tmux I/O.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_select.erl:70",
+          "has": [
+            "window_links(Snapshot) -> from_snapshot(window_link, Snapshot)."
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_query",
+      "names": [
+        "window_links/1"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "builds",
+      "why": "Builds a future observation; fetching reads memberships and never links a window.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_query.erl:139",
+          "has": [
+            "window_links(Server) -> #query{server = Server, entity = window_link}."
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_pane",
+      "names": [
+        "get/2"
+      ],
+      "commands": [
+        "list-panes"
+      ],
+      "kind": "other-command",
+      "why": "Observes fields of one explicit stable ID with display-message rather than listing the collection.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_pane.erl:127",
+          "has": [
+            "get(Server, Id) -> tmux_observe:get(Server, pane, Id)."
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:13",
+          "has": [
+            "?= read_row(Entity, Id, Target, State)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:243",
+          "has": [
+            "?= command(<<\"display-message\">>"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_session",
+      "names": [
+        "get/2"
+      ],
+      "commands": [
+        "list-sessions"
+      ],
+      "kind": "other-command",
+      "why": "Observes fields of one explicit stable ID with display-message rather than listing the collection.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_session.erl:64",
+          "has": [
+            "get(Server, Id) -> tmux_observe:get(Server, session, Id)."
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:13",
+          "has": [
+            "?= read_row(Entity, Id, Target, State)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:243",
+          "has": [
+            "?= command(<<\"display-message\">>"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_window",
+      "names": [
+        "get/2"
+      ],
+      "commands": [
+        "list-windows"
+      ],
+      "kind": "other-command",
+      "why": "Observes fields of one explicit stable ID with display-message rather than listing the collection.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_window.erl:56",
+          "has": [
+            "get(Server, Id) -> tmux_observe:get(Server, window, Id)."
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:13",
+          "has": [
+            "?= read_row(Entity, Id, Target, State)"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl:243",
+          "has": [
+            "?= command(<<\"display-message\">>"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_hook",
+      "names": [
+        "get/3"
+      ],
+      "commands": [
+        "show-hooks"
+      ],
+      "kind": "other-command",
+      "why": "Reads typed hook values with show-options -H, preserving indexed metadata.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_hook.erl:72",
+          "has": [
+            "?= tmux_target:run(Server, <<\"show-options\">>"
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_hook.erl:73",
+          "has": [
+            "ScopeArgs ++ Flags ++ [<<\"-H\">>"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "erlang",
+      "owner": "tmux_server",
+      "names": [
+        "close/1"
+      ],
+      "commands": [
+        "kill-server"
+      ],
+      "kind": "no-send",
+      "why": "Closes the library endpoint and its operations while preserving the daemon; owned shutdown requires the ownership token.",
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_server.erl:267",
+          "has": [
+            "close(Server) -> server_request(Server, close, 1000)."
+          ]
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_server.erl:132",
+          "has": [
+            "`close/1` only closes the endpoint and preserves the daemon."
+          ]
+        }
+      ]
     }
   ]
 }

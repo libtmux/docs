@@ -92,6 +92,26 @@
       "release": null,
       "tag": "v0.1.1-alpha.2"
     },
+    "erlang": {
+      "status": "unpublished",
+      "version": null,
+      "release": null,
+      "tag": null,
+      "packages": {
+        "libtmux_erlang": {
+          "status": "unpublished",
+          "version": null,
+          "release": null,
+          "tag": null
+        },
+        "libtmux_erlang_workspace": {
+          "status": "unpublished",
+          "version": null,
+          "release": null,
+          "tag": null
+        }
+      }
+    },
     "elixir": {
       "status": "release",
       "version": "0.1.0",

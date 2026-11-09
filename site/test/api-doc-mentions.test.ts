@@ -5,7 +5,7 @@ import { createMarkdownProcessor } from '@astrojs/markdown-remark'
 import { fromHtml } from 'hast-util-from-html'
 import { select, selectAll } from 'astro-expressive-code/hast'
 import { SymbolIndex, type ApiSymbol } from '@libtmux/api-model'
-import { API_MODELS, indexFor } from '../src/lib/api-models'
+import { API_MODELS, createApiIndex, indexFor } from '../src/lib/api-models'
 import { MCP_REFERENCE } from '../src/lib/mcp-catalog'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
 import { mentionBadge, mentionBadgeHtml } from '../src/lib/mention-badge'
@@ -59,6 +59,23 @@ function problems(root: Pick<DomElement, 'querySelectorAll'>): string[] {
 }
 
 describe('a doc comment cross-reference', () => {
+  it('routes native Erlang guide links within the displayed source version', async () => {
+    const model = API_MODELS.erlang
+    const context = model.symbols.find((symbol) => symbol.id === 'tmux_buffer')!
+    const version = '9a1ca749f7bf6f082c910c99f961bb586781ab0b'
+    const from = createApiIndex(model, (symbol) => `/en/erlang/${version}/reference/${symbol.slug}/`)
+    const root = await render(context.doc!.body!, context, from)
+    expect(root.querySelector('a[href$="/guides/buffers/"]')?.getAttribute('href'))
+      .toBe(`/en/erlang/${version}/guides/buffers/`)
+    const links = from.docSpans('[operations](jobs.md#owned-operations) and [manual](https://example.org/jobs.md) and [unknown](unknown.md)')
+      .filter((span) => span.kind === 'link').map((span) => span.href)
+    expect(links).toEqual([`/en/erlang/${version}/guides/operations/#owned-operations`, 'https://example.org/jobs.md', 'unknown.md'])
+    const nativeGuides = model.symbols.flatMap((symbol) => from.docSpans(symbol.doc?.body ?? '', symbol)
+      .flatMap((span) => span.kind === 'link' && !/^[a-z]+:/.test(span.href) ? [span.href] : []))
+    expect(nativeGuides.length).toBeGreaterThan(0)
+    expect(nativeGuides.every((href) => href.startsWith(`/en/erlang/${version}/`) && !href.includes('.md'))).toBe(true)
+  })
+
   it('names its kind in the title, the data attribute and the accessible name, and draws no badge', async () => {
     const root = await render('`Pane` sits in a `Window`. Send keys to a `Pane` again.')
     const links = [...root.querySelectorAll<DomAnchor>('a.api-xref')]

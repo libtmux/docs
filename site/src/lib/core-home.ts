@@ -3,8 +3,8 @@
  * Pane types, and the capabilities it really has, each tied to the symbol of
  * the extracted API model that provides it.
  *
- * `data/core-home.json` names symbols only. Labels, the tmux object each type
- * wraps and every link come from here and from the model, so a symbol that is
+ * `data/core-home.json` names symbols and optional object descriptions. Default
+ * labels and every link come from here and from the model, so a symbol that is
  * wrong, renamed or removed fails `resolveCoreHome` (and
  * `test/core-home.test.ts`) instead of rendering a dead link or a claim
  * nothing backs. A capability a port lacks has no entry and is not listed.
@@ -55,9 +55,9 @@ export const CAPABILITY_GROUPS = {
  * unrelated symbol fails `resolveCoreHome` rather than rendering a claim the
  * symbol does not support.
  */
-const CAPABILITY_EVIDENCE: Record<CapabilityKey, { needs: string; test: (symbol: ApiSymbol) => boolean }> = {
+const CAPABILITY_EVIDENCE: Record<CapabilityKey, { needs: string; test: (symbol: ApiSymbol, symbols: readonly ApiSymbol[]) => boolean }> = {
   objects: { needs: 'a type or cmdlet', test: (symbol) => ['class', 'struct', 'interface', 'enum', 'trait', 'module', 'typealias', 'function'].includes(symbol.kind) },
-  ids: { needs: 'an ID type or accessor', test: (symbol) => /\b(id|ID)\b|Id\b|ID\b/.test(symbol.name) },
+  ids: { needs: 'an ID type or accessor', test: (symbol) => /\b(id|ID)\b|Id\b|ID\b/.test(symbol.name.replaceAll('_', ' ')) },
   queries: { needs: 'a filter, query or selection', test: (symbol) => /filter|query|select|where|expr/i.test(symbol.name) },
   errors: { needs: 'an error, exception or failure type', test: (symbol) => /error|exception|failure/i.test(symbol.name) },
   traversal: { needs: 'a panes, windows, sessions or snapshot accessor', test: (symbol) => /panes|windows|sessions|snapshot/i.test(symbol.name) },
@@ -69,12 +69,16 @@ const CAPABILITY_EVIDENCE: Record<CapabilityKey, { needs: string; test: (symbol:
   'watch-other': { needs: 'a wait, poll, hook or watch symbol', test: (symbol) => /wait|poll|watch|hook|observ/i.test(symbol.name) },
   capture: { needs: 'a capture symbol', test: (symbol) => /capture|content|text|screen|scrollback/i.test(symbol.name) },
   'current-pane': { needs: 'an environment constructor', test: (symbol) => /env/i.test(symbol.name) },
-  'test-fixtures': { needs: 'a test or fixture symbol', test: (symbol) => /test|fixture|junit|pytest/i.test(`${qualifiedNameOf(symbol)} ${symbol.source?.file ?? ''}`) },
-  async: { needs: 'an async, suspend, Promise or Task signature', test: (symbol) => /async|suspend|promise|\btask\b/i.test([symbol.name, ...symbol.signatures.map((signature) => `${signature.raw ?? ''} ${signature.returns ?? ''}`)].join(' ')) },
+  'test-fixtures': { needs: 'a fixture or owned-server lifecycle', test: (symbol, symbols) => /test|fixture|junit|pytest/i.test(`${qualifiedNameOf(symbol)} ${symbol.source?.file ?? ''}`)
+    || (/server:start_owned\/1$/.test(qualifiedNameOf(symbol)) && symbols.some((member) => member.parent === symbol.parent && member.name === 'stop_owned/1')) },
+  // OTP operations expose start/await/cancel rather than an async keyword.
+  async: { needs: 'an async signature or operation lifecycle', test: (symbol, symbols) => /async|suspend|promise|\btask\b/i.test([symbol.name, ...symbol.signatures.map((signature) => `${signature.raw ?? ''} ${signature.returns ?? ''}`)].join(' '))
+    || (symbol.kind === 'module' && ['start/3', 'await/2', 'cancel/1'].every((name) => symbols.some((member) => member.parent === symbol.id && member.name === name && !member.id.startsWith('c:')))) },
 }
 
 export interface CoreHomeEntry {
   objects: Record<CoreRole, string>
+  objectDescriptions?: Partial<Record<CoreRole, string>>
   capabilities: Partial<Record<CapabilityKey, string>>
 }
 
@@ -101,7 +105,7 @@ function link(port: string, id: string, version: string, what: string, evidence?
     throw new Error(`core-home: ${port} ${what} names ${id}, which has no core reference page`)
   }
   const needed = evidence && CAPABILITY_EVIDENCE[evidence]
-  if (needed && !needed.test(symbol)) throw new Error(`core-home: ${port} ${what} names ${id}, which is not ${needed.needs}`)
+  if (needed && !needed.test(symbol, API_MODELS[port].symbols)) throw new Error(`core-home: ${port} ${what} names ${id}, which is not ${needed.needs}`)
   const href = referenceHref(port, id, version)
   if (!href) throw new Error(`core-home: ${port} ${what} has no reference page for ${id}`)
   return { id, name: qualifiedNameOf(symbol), href }
@@ -114,7 +118,7 @@ export function resolveCoreHome(port: string, version: string, entry: CoreHomeEn
   if (!entry) throw new Error(`core-home: ${port} has no entry`)
   const objects = CORE_ROLES.map((role) => {
     if (!entry.objects[role]) throw new Error(`core-home: ${port} names no ${role} type`)
-    return { role, ...link(port, entry.objects[role], version, role), wraps: TMUX_OBJECTS[role].wraps, tmuxId: TMUX_OBJECTS[role].id }
+    return { role, ...link(port, entry.objects[role], version, role), wraps: entry.objectDescriptions?.[role] ?? TMUX_OBJECTS[role].wraps, tmuxId: TMUX_OBJECTS[role].id }
   })
   const capabilities: CoreHome['capabilities'] = { typed: [], cli: [] }
   for (const [key, id] of Object.entries(entry.capabilities)) {

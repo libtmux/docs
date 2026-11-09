@@ -25,6 +25,8 @@ export const LANG_TO_PORT = {
   py: 'py',
   ruby: 'ruby',
   rb: 'ruby',
+  erlang: 'erlang',
+  erl: 'erlang',
   lua: 'lua',
   typescript: 'ts',
   ts: 'ts',
@@ -51,6 +53,7 @@ export const LANG_TO_PORT = {
 
 /** Checkout locations used to refresh the revision-bound cache. */
 export const CHECKOUTS = {
+  erlang: '~/work/libtmux/libtmux-erlang-docs-site',
   py: '~/work/python/libtmux',
   ruby: '~/work/libtmux/libtmux-ruby-docs',
   lua: '~/work/libtmux/libtmux-lua-docs',
