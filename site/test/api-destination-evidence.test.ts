@@ -223,6 +223,32 @@ describe('what the verifier reads from a page', () => {
     }
   })
 
+  it('checks OCaml variant constructors against their type and declared name', () => {
+    const html = '<title>OCaml library : Option</title><h1>Module <a>Option</a></h1>'
+      + '<pre><span id="TYPEt">type \'a t</span> = \'a option = </pre><table class="typetable">'
+      + '<tr><td><code><span id="TYPEELTt.None"><span class="constructor">None</span></span></code></td></tr>'
+      + '<tr><td><code><span id="TYPEELTt.Some"><span class="constructor">Some</span></span> of \'a</code></td></tr></table>'
+    for (const name of ['None', 'Some']) {
+      const url = `https://ocaml.org/manual/5.5/api/Option.html#TYPEELTt.${name}`
+      expect(addressOf(url)).toMatchObject({ path: ['Option', name], exact: true, fragment: 'member' })
+      const identity = pageIdentity(url, readPage(html))
+      expect(identity).toMatchObject({ via: 'ocamldoc', declared: 'constructor', kind: 'member', path: ['Option', name] })
+      expect(judge(sourceIdentity({ port: 'ocaml', name: `Option.${name}`, source: 'builtin' }), identity)).toBeUndefined()
+      expect(judge(sourceIdentity({ port: 'ocaml', name: `Other.${name}`, source: 'builtin' }), identity)).toMatchObject({ failure: 'owner' })
+      for (const forged of [html.replace('type \'a t', 'type \'a other'),
+        html.replace(`class="constructor">${name}`, 'class="constructor">Invented'),
+        html.replace(`class="constructor">${name}`, `class="type">${name}`),
+        html.replace(`class="constructor">${name}`, `data-class="constructor">${name}`),
+        html.replace(`class="constructor">${name}`, `data-note.text=" class='constructor' ">${name}`),
+        html.replace(`class="constructor">${name}`, `title=" class='constructor'">${name}`),
+        html.replace(`class="constructor">${name}`, `title="<span class='constructor' ">${name}`),
+        html.replace(`<span class="constructor">${name}</span>`, `<b title="<span class='constructor' ">${name}</b>`),
+        html.replace(`class="constructor">${name}`, `><!-- <span class='constructor' -->${name}`)]) {
+        expect(pageIdentity(url, readPage(forged))).toMatchObject({ kind: 'other' })
+      }
+    }
+  })
+
   it('matches complete OCaml identifiers including apostrophes in value and type declarations', () => {
     const actual = []
     const expected = []
