@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -282,13 +282,13 @@ if (process.argv[2] === process.env.FAILING_TASK) process.exit(23)
     expect(setup).toBeLessThan(tests.indexOf('- name: test-all'))
   })
 
-  // setup-beam must receive exactly what the reader printed: a literal version, a decoy step that
-  // mentions the output, or a second setup-beam step would leave the pinned pair unused.
+  // Check the Elixir branch independently of other ports' BEAM toolchains.
   const toolchainWiring = (text: string) => {
     const steps = text.split(/\n(?=      - )/).map((step) => step.replace(/^\n?      - /, '        '))
     const key = (step: string, name: string) => new RegExp(`^ {8}${name}: (.+)$`, 'm').exec(step)?.[1]
     const readers = steps.filter((step) => /read-elixir-toolchain\.py/.test(key(step, 'run') ?? ''))
     const setups = steps.filter((step) => /^erlef\/setup-beam@/.test(key(step, 'uses') ?? ''))
+      .filter((step) => key(step, 'if') !== "matrix.port == 'erlang'")
     const block = setups[0] ? /^ {8}with:\n((?: {10}.*\n?)*)/m.exec(setups[0])?.[1] ?? '' : ''
     const inputs = Object.fromEntries([...block.matchAll(/^ {10}([\w-]+): (.+)$/gm)].map((match) => [match[1], match[2]]))
     return { readers: readers.map((step) => key(step, 'id')), setups: setups.length, inputs }
@@ -317,6 +317,9 @@ if (process.argv[2] === process.env.FAILING_TASK) process.exit(23)
     expect(toolchainWiring(literal).inputs['elixir-version']).toBe('1.18.0')
     const doubled = real.replace('      - name: Stage integrated source guides', `      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1\n        with:\n${otp}${elixir}\n      - name: Stage integrated source guides`)
     expect(toolchainWiring(doubled).setups).toBe(2)
+    const overlapping = doubled.replace('      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1\n        with:',
+      "      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1\n        if: matrix.port == 'elixir' || matrix.port == 'erlang'\n        with:")
+    expect(toolchainWiring(overlapping).setups).toBe(2)
   })
 
   it('writes the artifact the API model step reads', () => {
@@ -324,6 +327,158 @@ if (process.argv[2] === process.env.FAILING_TASK) process.exit(23)
     const artifact = /\belixir: \{[^}]*nativeArtifact: '([^']+)'/.exec(model)?.[1]
     expect(artifact).toBeDefined()
     expect(script('Export Elixir API from the selected source')).toContain(` ${artifact}\n`)
+  })
+})
+
+describe('Erlang documentation producer', () => {
+  function toolchain(source?: string) {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-erlang-toolchain-'))
+    const output = join(directory, 'output')
+    try {
+      mkdirSync(join(directory, 'port'))
+      writeFileSync(output, '')
+      if (source !== undefined) writeFileSync(join(directory, 'port/.tool-versions'), source)
+      const result = spawnSync('bash', ['-e', '-c', script('Read selected Erlang toolchain')], {
+        cwd: directory, encoding: 'utf8', timeout: 5000,
+        env: { ...process.env, GITHUB_OUTPUT: output },
+      })
+      return { ...result, output: readFileSync(output, 'utf8') }
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  }
+
+  it('reads exact OTP and Rebar3 versions from the selected source', () => {
+    const result = toolchain('erlang 29.1.2\nrebar 3.28.0\n')
+    expect(result.status, result.stderr).toBe(0)
+    expect(result.output).toBe('otp-version=29.1.2\nrebar3-version=3.28.0\n')
+  })
+
+  it.each([
+    undefined,
+    'erlang 29.1.2\n',
+    'rebar 3.28.0\n',
+    'erlang 29.1.2\nerlang 29.1.2\nrebar 3.28.0\n',
+    'erlang 29.1.2\nrebar 3.28.0\nrebar 3.28.0\n',
+    'erlang 29\nrebar 3.28.0\n',
+    'erlang 29.1.2\nrebar latest\n',
+    'erlang 29.1.2 injected\nrebar 3.28.0\n',
+    'erlang 28.3.3\nrebar 3.28.0\n',
+    'erlang 29.1.2\nrebar 3.29.0\n',
+  ])('rejects absent, ambiguous or unsupported source pins: %s', (source) => {
+    const result = toolchain(source)
+    expect(result.status).not.toBe(0)
+    expect(result.output).toBe('')
+  })
+
+  it.each(['ok', 'download', 'checksum', 'version'])('checks the pinned Rebar3 producer and stops on %s failure', (mode) => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-erlang-rebar-'))
+    const output = join(directory, 'path')
+    const invocations = join(directory, 'invocations')
+    try {
+      writeFileSync(output, '')
+      writeFileSync(join(directory, 'gh'), `#!${process.execPath}
+const fs = require('node:fs')
+fs.appendFileSync(process.env.REBAR_INVOCATIONS, JSON.stringify(process.argv.slice(2)) + '\\n')
+if (process.env.REBAR_PROBE === 'download') process.exit(23)
+process.stdout.write('#!/bin/sh\\nprintf "rebar ${mode === 'version' ? '3.27.0' : '3.28.0'} on Erlang/OTP 29\\\\n"\\n')
+`, { mode: 0o700 })
+      if (mode !== 'checksum') writeFileSync(join(directory, 'sha256sum'), `#!${process.execPath}
+const fs = require('node:fs')
+const input = fs.readFileSync(0, 'utf8')
+fs.appendFileSync(process.env.REBAR_INVOCATIONS, JSON.stringify({ checksum: input }) + '\\n')
+if (!input.startsWith('5a28b1cca082d3b023ec0f5df9d9f9d52557036c6f2a21c1ffa11b93a984dd42  ')) process.exit(24)
+`, { mode: 0o700 })
+      const result = spawnSync('bash', ['-e', '-c', script('Install pinned Erlang Rebar3')], {
+        cwd: directory, encoding: 'utf8', timeout: 5000,
+        env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, RUNNER_TEMP: directory, GITHUB_PATH: output,
+          REBAR3_VERSION: '3.28.0', REBAR_PROBE: mode, REBAR_INVOCATIONS: invocations },
+      })
+      const calls = readFileSync(invocations, 'utf8').trim().split('\n').map((line) => JSON.parse(line))
+      expect(calls[0]).toEqual(['api', '-H', 'Accept: application/octet-stream', 'repos/erlang/rebar3/releases/assets/664140441'])
+      if (mode === 'ok') {
+        expect(result.status, result.stderr).toBe(0)
+        const installed = readFileSync(output, 'utf8').trim()
+        expect(installed.startsWith(`${directory}/libtmux-erlang-rebar3.`)).toBe(true)
+        expect(existsSync(join(installed, 'rebar3'))).toBe(true)
+        expect(calls[1].checksum).toContain(`${installed}/rebar3\n`)
+      } else {
+        expect(result.status).not.toBe(0)
+        if (mode === 'download') expect(result.status).toBe(23)
+        if (mode === 'checksum') expect(result.stderr).toContain('computed checksum did NOT match')
+        if (mode === 'version') expect(result.stderr).toContain('Expected Rebar3 3.28.0')
+        expect(readFileSync(output, 'utf8')).toBe('')
+        expect(readdirSync(directory).some((name) => name.startsWith('libtmux-erlang-rebar3.'))).toBe(false)
+      }
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+
+  it.each([0, 23])('exports the selected core source and propagates escript status %s', (status) => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-erlang-export-'))
+    const source = join(directory, 'selected source')
+    const output = join(directory, 'invocations')
+    const exportScript = join(directory, 'docs/packages/api-model/scripts/export-erlang.escript')
+    try {
+      mkdirSync(source)
+      writeFileSync(join(directory, 'escript'), `#!${process.execPath}
+require('node:fs').appendFileSync(process.env.EXPORT_INVOCATIONS, JSON.stringify({ argv: process.argv.slice(2), cwd: process.cwd() }) + '\\n')
+process.exit(${status})
+`, { mode: 0o700 })
+      const result = spawnSync('bash', ['-e', '-c', script('Export Erlang API from the selected source')], {
+        cwd: source, encoding: 'utf8', timeout: 5000,
+        env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, EXPORTER: exportScript, EXPORT_INVOCATIONS: output },
+      })
+      expect(result.status, result.stderr).toBe(status)
+      expect(JSON.parse(readFileSync(output, 'utf8'))).toEqual({
+        argv: [exportScript, '.', 'libtmux_erlang', '_build/docs/api.json'], cwd: realpathSync(source),
+      })
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+
+  it('installs the helper compiler and make without executing tmux', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-erlang-system-deps-'))
+    const output = join(directory, 'invocations')
+    try {
+      mkdirSync(join(directory, 'docs/scripts'), { recursive: true })
+      writeFileSync(join(directory, 'docs/scripts/apt-get.sh'), `#!${process.execPath}
+require('node:fs').appendFileSync(process.env.DEPENDENCY_INVOCATIONS, JSON.stringify(process.argv.slice(2)) + '\\n')
+`, { mode: 0o700 })
+      writeFileSync(join(directory, 'tmux'), '#!/bin/sh\nexit 23\n', { mode: 0o700 })
+      const result = spawnSync('bash', ['-e', '-c', script('Install native system dependencies')], {
+        cwd: directory, encoding: 'utf8', timeout: 5000,
+        env: { ...process.env, PORT: 'erlang', PATH: `${directory}:${process.env.PATH}`, DEPENDENCY_INVOCATIONS: output },
+      })
+      expect(result.status, result.stderr).toBe(0)
+      expect(readFileSync(output, 'utf8').trim().split('\n').map((line) => JSON.parse(line))).toEqual([
+        ['update', '-qq'], ['install', '--no-install-recommends', '-y', '-qq', 'build-essential'],
+      ])
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+
+  it('wires source pins and the shared exporter before assembly without an Erlang tooling checkout', () => {
+    const step = (name: string) => workflow.split(/\n(?=      - )/).find((value) => value.includes(`name: ${name}\n`))!
+    const read = workflow.indexOf('name: Read selected Erlang toolchain')
+    const setup = workflow.indexOf('name: Install selected Erlang runtime')
+    const rebar = workflow.indexOf('name: Install pinned Erlang Rebar3')
+    const exportStep = workflow.indexOf('name: Export Erlang API from the selected source')
+    expect(read).toBeGreaterThan(workflow.indexOf('name: Snapshot source inputs before native generation'))
+    expect(read).toBeLessThan(setup)
+    expect(setup).toBeLessThan(rebar)
+    expect(rebar).toBeLessThan(exportStep)
+    expect(exportStep).toBeLessThan(workflow.indexOf("name: Build this port's tree"))
+    expect(step('Install selected Erlang runtime')).toContain("if: matrix.port == 'erlang'")
+    expect(step('Install selected Erlang runtime')).toContain('erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1')
+    for (const input of ['otp-version: ${{ steps.erlang-runtime.outputs.otp-version }}', 'version-type: strict', 'install-hex: false', 'install-rebar: false']) {
+      expect(step('Install selected Erlang runtime')).toContain(input)
+    }
+    expect(step('Install pinned Erlang Rebar3')).toContain('REBAR3_VERSION: ${{ steps.erlang-runtime.outputs.rebar3-version }}')
+    expect(step('Export Erlang API from the selected source')).toContain('working-directory: port')
+    expect(step('Export Erlang API from the selected source')).toContain('EXPORTER: ${{ github.workspace }}/docs/packages/api-model/scripts/export-erlang.escript')
+    expect(step('Check out native documentation tooling')).not.toContain('erlang')
+    expect(step('Install native system dependencies')).toContain("matrix.port == 'erlang'")
+    expect(script('Install native system dependencies')).toContain('packages=(build-essential)')
+    const model = readFileSync(join(root, 'scripts/gen-api-model.mjs'), 'utf8')
+    const artifact = /\berlang: \{[^}]*nativeArtifact: '([^']+)'/.exec(model)?.[1]
+    expect(artifact).toBe('_build/docs/api.json')
+    expect(script('Export Erlang API from the selected source')).toContain(` ${artifact}\n`)
   })
 })
 
@@ -468,7 +623,7 @@ describe('selected MCP runtime provisioning', () => {
 
   it.each([
     ['go', true], ['py', true], ['ruby', true],
-    ['lua', false], ['kotlin', false], ['scala', false], ['fsharp', false], ['powershell', false], ['julia', true], ['elixir', false],
+    ['lua', false], ['kotlin', false], ['scala', false], ['fsharp', false], ['powershell', false], ['julia', true], ['elixir', false], ['erlang', false],
   ])('uses the product catalog for %s runtime availability', (port, required) => {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-mcp-availability-'))
     try {

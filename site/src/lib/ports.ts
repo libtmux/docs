@@ -668,6 +668,7 @@ const CORE_PORTS: readonly Port[] = [
     language: 'Erlang',
     packageName: 'libtmux_erlang',
     repo: 'libtmux/libtmux-erlang',
+    docsDispatch: { workflow: 'docs.yml' },
     productAvailability: { workspace: 'unpublished', mcp: 'excluded' },
     checkout: '~/work/libtmux/libtmux-erlang',
     worktree: '~/work/libtmux/libtmux-erlang-docs-site',
