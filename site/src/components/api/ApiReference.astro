@@ -27,7 +27,7 @@ import { withRoot } from '../../lib/site-root'
 import { API_MODELS, API_NAV, PORT_NAME, indexFor, isMemberOwner, ownersOf, pageSlug, referenceAlternatives, topLevelTypesOf } from '../../lib/api-models'
 import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
 import { productApiHref } from '../../lib/product-api'
-import { nativeQualifiedName } from '../../lib/native-name'
+import { nativeQualifiedName, nativeShortName } from '../../lib/native-name'
 import { plainMention } from '../../lib/mention-badge'
 import { symbolSource } from '../../lib/markdown-twins'
 import { localeSourcePath } from '../../i18n/locales'
@@ -399,7 +399,9 @@ const title = glossary ? API_GLOSSARY_TITLE : owner
     ? source?.title ?? `${label} API reference`
     : 'API reference'
 const pageTitle = glossary ? API_GLOSSARY_TITLE : owner ? title : source?.title ?? 'API reference'
-const displayName = owner ? (declaringType ? `${declaringType.name}.${owner.name}` : owner.name) : pageTitle
+const displayName = owner
+  ? (port === 'erlang' ? nativeShortName(model, owner) : declaringType ? `${declaringType.name}.${owner.name}` : owner.name)
+  : pageTitle
 const breadcrumbs = source?.breadcrumbs ?? await pageBreadcrumbs(displayName, glossary ? 'reference/glossary' : slug ? `reference/${slug}` : 'reference', version, port)
 const pagePath = glossary ? 'reference/glossary' : source?.pagePath ?? (slug ? `reference/${slug}` : 'reference')
 const description = glossary ? glossaryContext.description : source?.description ?? `Types, methods, and functions in libtmux for ${label}.`
