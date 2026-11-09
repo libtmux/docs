@@ -143,7 +143,7 @@ export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> =
     package: term('The ASDF system supplying this API, distinct from the Common Lisp package that qualifies its symbols.', 'ASDF systems', 'https://asdf.common-lisp.dev/asdf.html#Defining-systems-with-defsystem'),
   },
   erlang: {
-    module: term('An Erlang module, a file of functions compiled together and called by name as module:function(Arguments).', 'Erlang modules', erlangDocs('ref_man_modules'), 'A module exports the functions other modules may call, each identified by its name and arity.'),
+    module: term('An Erlang module, a file of functions compiled together and called by name as module:function(Arguments).', 'Erlang modules', erlangDocs('modules'), 'A module exports the functions other modules may call, each identified by its name and arity.'),
     function: term('An Erlang function identified by its module, name and arity.', 'Erlang functions', erlangDocs('ref_man_functions'), 'Functions of one name and different arities are different functions. A function that fails raises an exception or returns an error tuple, as its documentation says.'),
     struct: term('An Erlang record, a tuple with named fields declared with -record and shared through a header file.', 'Erlang records', erlangDocs('ref_man_records'), 'A record is a plain tuple at run time. Code that reads it needs the same declaration, usually from a shared header.'),
     package: term('The OTP application supplying these modules, described by its .app.src file and started with the application controller.', 'OTP applications', erlangDocs('applications'), 'An application declares the applications it depends on and the modules it provides.'),

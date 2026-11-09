@@ -981,6 +981,11 @@
       "heading": "Libraries With Dune"
     },
     {
+      "label": "`None`",
+      "url": "https://ocaml.org/manual/5.5/api/Option.html#TYPEELTt.None",
+      "heading": "#TYPEELTt.None"
+    },
+    {
       "label": "OCaml expressions",
       "url": "https://ocaml.org/manual/5.5/expr.html#s:value-expr",
       "heading": "7 Expressions"
@@ -1054,6 +1059,46 @@
       "label": "`McpServer`",
       "url": "https://ts.sdk.modelcontextprotocol.io/server#server-overview",
       "heading": "Server overview"
+    },
+    {
+      "label": "OTP Logger configuration",
+      "url": "https://www.erlang.org/doc/apps/kernel/logger_chapter.html#configuration",
+      "heading": "Configuration"
+    },
+    {
+      "label": "OTP application boundaries and dependencies",
+      "url": "https://www.erlang.org/doc/system/applications.html",
+      "heading": "Applications"
+    },
+    {
+      "label": "OTP applications",
+      "url": "https://www.erlang.org/doc/system/applications.html",
+      "heading": "Applications"
+    },
+    {
+      "label": "Erlang behaviours",
+      "url": "https://www.erlang.org/doc/system/design_principles.html",
+      "heading": "Overview"
+    },
+    {
+      "label": "Erlang modules",
+      "url": "https://www.erlang.org/doc/system/modules.html",
+      "heading": "Modules"
+    },
+    {
+      "label": "Erlang functions",
+      "url": "https://www.erlang.org/doc/system/ref_man_functions.html",
+      "heading": "Functions"
+    },
+    {
+      "label": "Erlang records",
+      "url": "https://www.erlang.org/doc/system/ref_man_records.html",
+      "heading": "Records"
+    },
+    {
+      "label": "Erlang types and function specifications",
+      "url": "https://www.erlang.org/doc/system/typespec.html",
+      "heading": "Types and Function Specifications"
     },
     {
       "label": "Haskell datatype declarations",

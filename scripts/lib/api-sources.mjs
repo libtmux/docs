@@ -108,6 +108,8 @@ export const DEFAULT_SCOPES = {
   cxx: ['', 'std'],
   lua: [''],
   powershell: [''],
+  // Built-in types such as map(), binary() and term() are documented on the erlang module's page.
+  erlang: ['erlang'],
 }
 
 /**
@@ -279,10 +281,13 @@ export function terminalSymbol(port, name) {
 
 /** A name's segments as an address would spell them: a package alias replaced, the root marker dropped. */
 export function addressSegments(port, name) {
-  const segments = parseName(name).segments
+  const segments = parseName(erlangDotted(port, name)).segments
   const whole = NAME_ALIASES[port]?.[segments.join('.')]
   return whole ? whole.split('.') : segments
 }
+
+/** Erlang writes module:name; its documentation pages declare the same pair as module.name. */
+const erlangDotted = (port, name) => port === 'erlang' ? name.replace(/^([a-z]\w*):(?=[a-z_])/, '$1.') : name
 
 /** What a reference role means a name is. */
 const ROLE_KINDS = { class: 'type', exc: 'type', interface: 'type', meth: 'member', func: 'member', attr: 'member', data: 'member', const: 'member', var: 'member', mod: 'module' }
@@ -327,7 +332,8 @@ const RUST_PRIMITIVES = new Set(['bool', 'char', 'str', 'u8', 'u16', 'u32', 'u64
  */
 export function sourceIdentity(use) {
   const { port, name } = use
-  const parsed = parseName(name)
+  // Erlang writes module:name; its documentation pages declare the same pair as module.name.
+  const parsed = parseName(erlangDotted(port, name))
   const aliased = TYPE_ALIASES[port]?.[name]
   const segments = aliased ? aliased.split('.') : addressSegments(port, name)
   const key = `${port}:${name}`
