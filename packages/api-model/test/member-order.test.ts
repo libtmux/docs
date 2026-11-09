@@ -45,6 +45,9 @@ function violations(compare: Compare): string[] {
     for (const concept of LISTINGS) {
       const listing = byId.get(CONCEPTS[concept]!.symbols[port] ?? '')
       if (!listing?.parent) continue
+      // Erlang's session- and window-scoped listings are reads of one relationship function, `tmux_snapshot:related/3`,
+      // which cannot lead a module that also holds the server-wide listings.
+      if (port === 'erlang' && concept !== 'list-sessions') continue
       const rank = [...children.get(listing.parent)!].sort(cmp)
         .filter((member) => memberTier(member, signals) !== 'parent').indexOf(listing)
       if (rank >= TOP) found.push(`${port}: ${concept} is #${rank + 1} on ${listing.parent}`)
@@ -118,7 +121,10 @@ d('member order', () => {
         checked++
       }
     }
-    if (port === 'haskell') {
+    if (port === 'erlang') {
+      // Erlang's listings live on one snapshot module and its creation functions on per-entity modules, so no owner holds both.
+      expect(groups).toEqual([])
+    } else if (port === 'haskell') {
       // The current public modules contain scalar values, with no entity graph or listing API.
       expect(groups).toEqual([])
       expect([...listingIds].filter(Boolean)).toEqual([])
@@ -174,7 +180,7 @@ d('member order', () => {
     // F#/PowerShell use .NET handles; Julia's and Elixir's relationships are
     // read from a captured snapshot, not through accessors on an entity.
     // Haskell currently exposes scalar values without a public entity graph.
-    expect(parents.length > 0).toBe(!['fsharp', 'powershell', 'julia', 'elixir', 'haskell', 'clojure', 'lisp'].includes(port))
+    expect(parents.length > 0).toBe(!['fsharp', 'powershell', 'julia', 'elixir', 'erlang', 'haskell', 'clojure', 'lisp'].includes(port))
     for (const parent of parents) {
       const siblings = symbols.filter((symbol) => symbol.parent === parent.parent).toSorted(compareMembers(signals))
       for (const sibling of siblings.filter((symbol) => memberTier(symbol, signals) !== 'parent')) {
