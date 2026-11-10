@@ -11456,21 +11456,21 @@
    "port": "perl",
    "symbol": "LibTmux::Workspace::X::Load::cause",
    "page": "/perl/latest/workspace/source-guide/",
-   "title": "Workspace loading",
+   "title": "Workspace guide",
    "section": "workspace"
   },
   {
    "port": "perl",
    "symbol": "LibTmux::Workspace::X::Load::report",
    "page": "/perl/latest/workspace/source-guide/",
-   "title": "Workspace loading",
+   "title": "Workspace guide",
    "section": "workspace"
   },
   {
    "port": "perl",
    "symbol": "LibTmux::Workspace::X::Load::report_data",
    "page": "/perl/latest/workspace/source-guide/",
-   "title": "Workspace loading",
+   "title": "Workspace guide",
    "section": "workspace"
   },
   {
