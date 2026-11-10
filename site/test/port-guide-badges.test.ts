@@ -68,6 +68,20 @@ describe('localizeBadges', () => {
     expect(svg).toContain(`aria-label="gem: ${version.startsWith('v') ? version : `v${version}`}"`)
   })
 
+  it.each([
+    ['lua', 'https://img.shields.io/luarocks/v/tony/libtmux', '0.1.0-1', 'luarocks: v0.1.0-1'],
+    ['elixir', 'https://img.shields.io/hexpm/v/libtmux', '0.1.0', 'hex: v0.1.0'],
+    ['kotlin', 'https://img.shields.io/maven-central/v/io.github.libtmux/libtmux-kotlin', '0.1.0', 'maven-central: v0.1.0'],
+    ['scala', 'https://img.shields.io/maven-central/v/io.github.libtmux/libtmux-scala_3', '0.1.0', 'maven-central: v0.1.0'],
+  ])('renders the %s registry badge from a port entry without packages', (port, url, version, aria) => {
+    const data = { ports: { [port]: { version } } }
+    const [svg] = localizeBadges(`![x](${url})`, port, data).files.values()
+    expect(svg).toContain(`aria-label="${aria}"`)
+    expect(svg).toContain('fill="#ea7233"')
+    const [labelled] = localizeBadges(`![x](${url}?label=libtmux)`, port, data).files.values()
+    expect(labelled).toContain(`aria-label="libtmux: v${version}"`)
+  })
+
   it('does not double the v of a registry version that has one', () => {
     const [svg] = localizeBadges('![a](https://img.shields.io/gem/v/x)', 'go', { ports: { go: { packages: { x: { version: 'v0.1.0' } } } } }).files.values()
     expect(svg).toContain('aria-label="gem: v0.1.0"')
@@ -88,6 +102,8 @@ describe('localizeBadges', () => {
 
   it('refuses a badge it cannot render rather than hotlinking it', () => {
     expect(() => localizeBadges('![x](https://img.shields.io/github/stars/o/r)', 'ruby', registry)).toThrow(/unsupported badge/)
+    expect(() => localizeBadges('![x](https://img.shields.io/hexpm/dt/libtmux)', 'elixir', { ports: { elixir: { version: '0.1.0' } } })).toThrow(/unsupported badge/)
+    expect(() => localizeBadges('![x](https://img.shields.io/maven-central/v/libtmux)', 'kotlin', { ports: { kotlin: { version: '0.1.0' } } })).toThrow(/unsupported badge/)
     expect(() => localizeBadges('![x](https://img.shields.io/gem/v/missing)', 'ruby', registry)).toThrow(/registry data does not carry/)
   })
 })

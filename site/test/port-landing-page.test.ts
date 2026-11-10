@@ -398,6 +398,19 @@ describe('the version root of a port', () => {
     expect(links.map((link) => link.href)).toEqual(['/haskell/latest/core/', '/haskell/latest/guides/'])
   })
 
+  it('lists each example program and its workflow once, in a footer after the cards, and no link back to the version root', async () => {
+    const document = await renderRoot('ocaml')
+    const footer = document.querySelector('[data-ci-examples]')!
+    expect(footer.querySelector('p')!.textContent).toBe("Example programs, each run by the port's CI:")
+    const items = [...footer.querySelectorAll('li')]
+    expect(items.length).toBeGreaterThan(1)
+    expect(items[0]!.textContent).toBe('examples/showcase_graph.ml in .github/workflows/ocaml.yml')
+    expect(items[0]!.querySelector('a')!.getAttribute('href')).toMatch(/^https:\/\/github\.com\/.+\/blob\/[0-9a-f]{40}\/examples\/showcase_graph\.ml$/)
+    expect(footer.nextElementSibling, 'nothing follows the footer').toBeNull()
+    expect(document.body.textContent).not.toContain('versions and install instructions')
+    expect(document.querySelector('a[href$="/ocaml/"]')).toBeNull()
+  })
+
   it('offers the selector instead of one long install list', async () => {
     const document = await renderRoot('go')
     expect(document.querySelectorAll('[data-port-landing]')).toHaveLength(1)

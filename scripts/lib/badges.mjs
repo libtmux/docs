@@ -18,14 +18,22 @@ import { toMarkdown } from 'mdast-util-to-markdown'
 const root = join(dirname(fileURLToPath(import.meta.url)), '../..')
 export const BADGE_DIRECTORY = 'badges'
 
-/** Registries whose `/<service>/v/<package>` badge reports a published version. */
+/**
+ * Registries whose `/<service>/v/<qualifier>.../<package>` badge reports a
+ * published version. `label` is what shields shows without a `label` query;
+ * `qualifiers` counts the path segments before the package (a LuaRocks user,
+ * a Maven group).
+ */
 const VERSION_SERVICES = {
-  gem: 'gem',
-  crates: 'crates.io',
-  npm: 'npm',
-  nuget: 'nuget',
-  powershellgallery: 'powershell gallery',
-  pypi: 'pypi',
+  gem: { label: 'gem', qualifiers: 0 },
+  crates: { label: 'crates.io', qualifiers: 0 },
+  hexpm: { label: 'hex', qualifiers: 0 },
+  luarocks: { label: 'luarocks', qualifiers: 1 },
+  'maven-central': { label: 'maven-central', qualifiers: 1 },
+  npm: { label: 'npm', qualifiers: 0 },
+  nuget: { label: 'nuget', qualifiers: 0 },
+  powershellgallery: { label: 'powershell gallery', qualifiers: 0 },
+  pypi: { label: 'pypi', qualifiers: 0 },
 }
 
 const OFF_ORIGIN = /^https?:\/\/(?:img\.shields\.io|badgen\.net|badge\.fury\.io|(?:www\.)?github\.com\/[^/]+\/[^/]+\/(?:actions\/workflows\/[^/]+|workflows\/[^/]+)\/badge\.svg|github\.com\/[^/]+\/[^/]+\/workflows\/.*\/badge\.svg)/i
@@ -84,9 +92,10 @@ export function badgeSpec(url, { port, registry }) {
     const [, label, message, color] = match
     return { label: query.label ?? unescapeStatic(label), message: unescapeStatic(message), color: query.color ?? color }
   }
-  if (VERSION_SERVICES[segments[0]] && segments[1] === 'v' && segments.length === 3) {
-    const version = registryVersion(registry, port, decodeURIComponent(segments[2]))
-    return { label: query.label ?? VERSION_SERVICES[segments[0]], message: addV(version), color: query.color ?? versionColor(version) }
+  const service = Object.hasOwn(VERSION_SERVICES, segments[0]) ? VERSION_SERVICES[segments[0]] : undefined
+  if (service && segments[1] === 'v' && segments.length === 3 + service.qualifiers) {
+    const version = registryVersion(registry, port, decodeURIComponent(segments.at(-1)))
+    return { label: query.label ?? service.label, message: addV(version), color: query.color ?? versionColor(version) }
   }
   throw new Error(`${port}: unsupported badge ${url}; add a mapping to scripts/lib/badges.mjs`)
 }

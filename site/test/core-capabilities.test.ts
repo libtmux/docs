@@ -354,8 +354,8 @@ describe('the showcase component', () => {
     expect(lists[0]!.textContent).toContain('Server::new_session')
     expect(lists[0]!.textContent).toMatch(/\+17 more/)
     expect(doc.querySelector('.core-showcase__apis-title')!.textContent).toBe('APIs used')
-    expect(doc.body.textContent).toContain('just check')
-    expect(doc.body.textContent).toContain('The whole program')
+    expect(doc.body.textContent, 'the CI sentence moved to the page footer').not.toContain('The whole program')
+    expect(doc.querySelector('.core-showcase__source')).toBeNull()
     expect([...doc.querySelectorAll('.core-showcase__links a')].map((a) => a.textContent)).toEqual(['Core Library documentation →', 'More examples →'])
     const ts = await render('ts')
     expect(portCapabilities('ts', table, cache), 'ts has only its quickstart').toEqual([])
@@ -363,6 +363,28 @@ describe('the showcase component', () => {
     expect(ts.querySelector('[data-capability-panel="typed-graph"][data-default] [data-core-player]')).not.toBeNull()
     expect(ts.querySelector('.core-showcase__picker, [data-capability-option]'), 'no list of one').toBeNull()
     expect(ts.querySelector('[data-apis-for="typed-graph"]'), 'no empty API list when use detection is not qualified').toBeNull()
+  })
+
+  it('draws each capability once on every port, because the script selects panels by id', async () => {
+    const { Window } = await import('happy-dom')
+    const { createComponent, renderTemplate } = await import('astro/runtime/server/index.js')
+    const { loadAstroTemplate, renderAstroTemplate } = await import('./astro-templates')
+    const Code = createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre data-code>${props.code}</pre>`)
+    const template = await loadAstroTemplate('components/CoreShowcase.astro', {
+      stubs: {
+        'components/HomeExample.astro': '---\n---\n<div data-home-example />',
+        'components/core/CorePlayer.astro': '---\n---\n<div data-core-player />',
+      },
+      modules: { 'astro-expressive-code/components': { Code } },
+    })
+    for (const port of Object.keys(PORT_BY_SLUG)) {
+      const window = new Window()
+      window.document.body.innerHTML = await renderAstroTemplate(template, { url: `https://libtmux.org/${port}/latest/`, props: { port } })
+      const doc = window.document as unknown as Document
+      const panels = [...doc.querySelectorAll('[data-capability-panel]')].map((panel) => panel.getAttribute('data-capability-panel'))
+      expect(new Set(panels).size, `${port} panels ${panels.join(', ')}`).toBe(panels.length)
+      expect([...doc.querySelectorAll('[data-capability-option]')].map((a) => a.getAttribute('data-capability-option')), port).toEqual(panels.length > 1 ? panels : [])
+    }
   })
 
   it('plays a capability whose recording is of its cached program, and keeps a plain block for one without', async () => {
@@ -388,7 +410,6 @@ describe('the showcase component', () => {
       expect(panel.querySelector('[data-core-player]')!.getAttribute('data-core-player'), id).toBe(id)
       expect(panel.querySelector('[data-core-player]')!.getAttribute('data-options'), 'no toggles for a program with one view').toBe('false')
       expect(panel.querySelector('[data-code]'), `${id} is not also drawn as a plain block`).toBeNull()
-      expect(panel.textContent).toContain('The whole program')
     }
     // rs records its send-keys program, but not create-windows, whose values the recorder cannot reach.
     const rs = await render('rs')
