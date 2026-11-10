@@ -159,7 +159,7 @@ const homeEntries = PORTS.map((port) => ({
         </div>
       </section>}
       <ApiReferences port={versionRootPort} version={buildVersion} />
-      {ciExamples.length > 0 && <div class="mt-10 text-xs text-muted" data-ci-examples>
+      {ciExamples.length > 0 && <div class="mt-10 text-xs text-muted wrap-anywhere" data-ci-examples>
         <p>Example programs, each run by the port's CI:</p>
         <ul class="mt-1 space-y-0.5">
           {ciExamples.map((item) => <li><a class="hover:underline" href={item.sourceUrl}><code>{item.file}</code></a> in <code>{item.ci.workflow}</code></li>)}
