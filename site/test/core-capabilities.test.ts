@@ -353,8 +353,8 @@ describe('the showcase component', () => {
     expect(lists[0]!.textContent).toContain('Server::new_session')
     expect(lists[0]!.textContent).toMatch(/\+17 more/)
     expect(doc.querySelector('.core-showcase__apis-title')!.textContent).toBe('APIs used')
-    expect(doc.body.textContent).toContain('just check')
-    expect(doc.body.textContent).toContain('The whole program')
+    expect(doc.body.textContent, 'the CI sentence moved to the page footer').not.toContain('The whole program')
+    expect(doc.querySelector('.core-showcase__source')).toBeNull()
     expect([...doc.querySelectorAll('.core-showcase__links a')].map((a) => a.textContent)).toEqual(['Core Library documentation →', 'More examples →'])
     const ts = await render('ts')
     expect(portCapabilities('ts', table, cache), 'ts has only its quickstart').toEqual([])
@@ -409,7 +409,6 @@ describe('the showcase component', () => {
       expect(panel.querySelector('[data-core-player]')!.getAttribute('data-core-player'), id).toBe(id)
       expect(panel.querySelector('[data-core-player]')!.getAttribute('data-options'), 'no toggles for a program with one view').toBe('false')
       expect(panel.querySelector('[data-code]'), `${id} is not also drawn as a plain block`).toBeNull()
-      expect(panel.textContent).toContain('The whole program')
     }
     // rs records its send-keys program, but not create-windows, whose values the recorder cannot reach.
     const rs = await render('rs')

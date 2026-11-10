@@ -17,6 +17,10 @@ import { localesFor } from '../i18n/resolve'
 import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE } from '../i18n/locales'
 import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, repoPath } from '../i18n/contribute'
+import { portCapabilities, type CapabilityTable } from '../lib/core-capabilities'
+import type { CachedSource } from '../lib/port-landing'
+import TABLE from '../data/core-capabilities.json'
+import SOURCES from '../data/example-sources.json'
 import { documentationCards, documentationSectionsFor } from '../lib/port-documentation'
 
 /**
@@ -43,6 +47,8 @@ const versionSections = versionRootPort
       { route: 'concepts', href: portPageUrl(versionRootPort, buildVersion, 'concepts'), label: 'Concepts', body: 'The domain model every port shares.' },
     ].filter((section) => documentationSectionsFor(versionRootPort.slug).includes(section.route))
   : []
+// The programs the showcase shows, each with the workflow that runs it.
+const ciExamples = versionRootPort ? portCapabilities(versionRootPort.slug, TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>) : []
 const versionDomains = versionRootPort ? documentationCards(versionRootPort.slug, buildVersion) : []
 
 /**
@@ -158,6 +164,12 @@ const homeEntries = PORTS.map((port) => ({
           All {versionRootPort.name} versions and install instructions
         </a>
       </p>
+      {ciExamples.length > 0 && <div class="mt-10 text-xs text-muted" data-ci-examples>
+        <p>Example programs, each run by the port's CI:</p>
+        <ul class="mt-1 space-y-0.5">
+          {ciExamples.map((item) => <li><a class="hover:underline" href={item.sourceUrl}><code>{item.file}</code></a> in <code>{item.ci.workflow}</code></li>)}
+        </ul>
+      </div>}
     </DocsLayout>
   ) : (
 
