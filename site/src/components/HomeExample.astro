@@ -153,7 +153,7 @@ const headingRow = heading || Astro.slots.has('hint')
   .home-example-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem 1rem; margin-bottom: .85rem; }
   h2 { font-size: 1rem; font-weight: 600; }
   /* The code panel: the code in the first row, the toggles in the second. The toolbar is a row of the panel, outside the scrolling pre, so it never covers code and the code's own scroll area is all the code. */
-  .home-example-code { display: grid; grid-template-rows: minmax(0, 1fr) auto; min-width: 0; }
+  .home-example-code { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; min-width: 0; }
   /* The toolbar is a row of the panel, not extra height: every host takes it from the code's height, so the block is as tall as the code alone was. */
   .home-example-code:has(> .home-example-toolbar) { --home-toolbar-row: 1.5rem; }
   .home-example-code > .home-example-view { grid-row: 1; }
