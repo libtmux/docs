@@ -17,7 +17,7 @@ const tokens = (text: string) => text.replace(/\s+/g, ' ').trim()
 describe('native Haddock signatures', () => {
   it('keeps signatureless module declarations on the ordinary named-header path', async () => {
     const modules = model.symbols.filter((symbol) => symbol.kind === 'module')
-    expect(modules).toHaveLength(7)
+    expect(modules).toHaveLength(16)
     for (const symbol of modules) {
       expect(symbol.signatures).toEqual([])
       expect(usesNativeSignatures(symbol, 'haskell')).toBe(false)
@@ -28,7 +28,7 @@ describe('native Haddock signatures', () => {
   })
 
   it('uses the native text and explicit destinations for every public header and Markdown twin', async () => {
-    expect(declarations).toHaveLength(225)
+    expect(declarations).toHaveLength(332)
     let links = 0
     for (const symbol of declarations) {
       expect(usesNativeSignatures(symbol, 'haskell'), symbol.id).toBe(true)
@@ -50,7 +50,7 @@ describe('native Haddock signatures', () => {
       for (const [, href] of expected) expect(markdown).toContain(`](${href})`)
       expect(markdown).not.toContain('## Methods')
     }
-    expect(links).toBe(299)
+    expect(links).toBe(568)
   })
 
   it('renders each real production header with native links and its own declaration anchor', async () => {
@@ -75,7 +75,7 @@ describe('native Haddock signatures', () => {
 
   it('keeps data constructors out of dispatch-method sections', () => {
     const constructors = declarations.filter((symbol) => symbol.signatures[0]?.methodKind === 'constructor')
-    expect(constructors).toHaveLength(44)
+    expect(constructors).toHaveLength(52)
     for (const symbol of constructors) {
       expect(apiMethodDetails(symbol, 'haskell')).toEqual([])
       expect(apiEntrySections(symbol, 'haskell').map((section) => section.label)).not.toContain('Methods')

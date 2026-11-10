@@ -26,7 +26,7 @@ describe('Haskell reference semantics', () => {
   it('preserves distinct kinds in previews and the searchable tree without changing source identities', () => {
     const kinds = model.symbols.map((symbol) => symbolPreview(model, symbol, 'latest').kind)
     expect(Object.fromEntries([...Map.groupBy(kinds, (kind) => kind)].map(([kind, values]) => [kind, values.length])))
-      .toEqual({ module: 7, 'data-type': 43, 'data-constructor': 44, 'record-field': 69, function: 69 })
+      .toEqual({ module: 16, 'data-type': 53, 'data-constructor': 52, 'record-field': 74, function: 153 })
     const records = searchApi(referenceTree('haskell'), '')
     expect(new Set(records.map((entry) => entry.id))).toEqual(new Set(model.symbols.map((symbol) => symbol.id)))
     for (const entry of records) {
