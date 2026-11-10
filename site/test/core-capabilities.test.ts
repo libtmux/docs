@@ -288,7 +288,7 @@ jobs:
 })
 
 describe('the showcase component', () => {
-  it('shows the pure Haskell program as typed values with one visible view and no lifecycle controls', async () => {
+  it('shows the real-tmux Haskell query with one complete view and public API links', async () => {
     const { Window } = await import('happy-dom')
     const { createComponent, renderTemplate } = await import('astro/runtime/server/index.js')
     const { loadAstroTemplate, renderAstroTemplate } = await import('./astro-templates')
@@ -301,15 +301,16 @@ describe('the showcase component', () => {
       const source = readFileSync(new URL('../src/components/HomeExample.astro', import.meta.url), 'utf8')
       window.document.head.innerHTML = `<style>${source.match(/<style>([\s\S]*?)<\/style>/)![1]}</style>`
       window.document.body.innerHTML = await renderAstroTemplate(template, { props: { port: 'haskell' } })
-      expect(window.document.querySelector('[data-capability-panel]')?.getAttribute('data-capability-panel')).toBe('typed-values')
+      expect(window.document.querySelector('[data-capability-panel]')?.getAttribute('data-capability-panel')).toBe('typed-graph')
       const view = window.document.querySelector('[data-home-view]')!
       expect(view?.getAttribute('data-home-view')).toBe('full')
       expect(window.getComputedStyle(view).display).toBe('block')
       expect(window.document.querySelectorAll('[data-home-view]')).toHaveLength(1)
       expect(window.document.querySelector('input, [data-with-cleanup], [data-without-cleanup]')).toBeNull()
-      expect(window.document.querySelector('[data-core-apis]')).toBeNull()
-      expect(window.document.body.textContent).toContain('does not start tmux')
-      expect(window.document.body.textContent).not.toMatch(/Navigate tmux|private tmux server|stops its/)
+      expect(window.document.querySelector('[data-core-apis]')).not.toBeNull()
+      expect(window.document.body.textContent).toContain('private demo server')
+      expect(window.document.body.textContent).toContain('withServer')
+      expect(window.document.body.textContent).toContain('runQuery')
     } finally { await window.happyDOM.abort() }
   })
   it('leads with the quickstart, then each program once, and shows a port with only the quickstart that one panel, with no list', async () => {

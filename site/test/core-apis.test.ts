@@ -8,16 +8,18 @@ import TABLE from '../src/data/core-capabilities.json'
 import SOURCES from '../src/data/example-sources.json'
 import type { CachedSource } from '../src/lib/port-landing'
 
-const showcasePorts = Object.keys(TABLE).filter((port) => portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>).length > 0)
+const capabilityPorts = Object.keys(TABLE).filter((port) => portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>).length > 0)
+const showcasePorts = [...new Set([...capabilityPorts,
+  ...Object.keys(QUICKSTARTS).filter((port) => CORE_APIS[port] !== undefined)])]
 
 const programs = (port: string): Record<string, string> => ({
-  'typed-graph': homeProgram(QUICKSTARTS[port]!.complete!, 'full'),
+  [QUICKSTARTS[port]!.complete!.capability ?? 'typed-graph']: homeProgram(QUICKSTARTS[port]!.complete!, 'full'),
   ...Object.fromEntries(portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>).map((item) => [item.id, item.code])),
 })
 
 describe('the APIs a showcase example uses', () => {
   it('has a list for every example the showcase shows, and none for another', () => {
-    // A port that gains a showcase example must list its APIs, whichever port it is.
+    // Capability entries require API maps; fallback quickstarts may declare their own.
     expect(showcasePorts).toEqual(expect.arrayContaining(['rs', 'ruby', 'go']))
     for (const port of showcasePorts) expect(Object.keys(CORE_APIS[port] ?? {}).sort(), port).toEqual(Object.keys(programs(port)).sort())
     expect(Object.keys(CORE_APIS).sort()).toEqual([...showcasePorts].sort())

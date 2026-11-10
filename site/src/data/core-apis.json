@@ -221,5 +221,14 @@
       "Libtmux_unix.Client.select_layout",
       "Libtmux.Pane.width"
     ]
+  },
+  "haskell": {
+    "typed-graph": [
+      "LibTmux.Server#v:withServer",
+      "LibTmux.Server#v:capture",
+      "LibTmux.Query#v:runQuery",
+      "LibTmux.Query#v:fetch",
+      "LibTmux.Query#v:exactlyOne"
+    ]
   }
 }

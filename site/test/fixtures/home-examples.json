@@ -1571,104 +1571,109 @@
       "port": "haskell",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-haskell",
-      "sourceRevision": "581f0ee45016ffb2283366bb1edc1658df26c5ed",
-      "sourceTree": "d11969975cbcd0f194a35e81f1e10fc3aec1b017",
-      "libraryRevision": "581f0ee45016ffb2283366bb1edc1658df26c5ed",
-      "execution": "pure-values",
+      "sourceRevision": "fb86b60139795746e8964643a4f048fcd8a63d14",
+      "sourceTree": "991616dba69bcdd25f968d19d45aeba6ac2a7129",
+      "libraryRevision": "fb86b60139795746e8964643a4f048fcd8a63d14",
+      "execution": "owned-tmux",
       "files": [
         {
           "name": "Main.hs",
-          "sha256": "451e2d429dc1ab4c417651806e4f0332525762a0a9a28d42579df78c67c8bbbf",
-          "clipboardSha256": "11472b743a9a2417415169ca6fbd80d804259972f07d24e64e9d7dab6d8b4f5a"
+          "sha256": "aad1e917592c39e7bfe4ffe715938f4d39bf47d8d1b4ce792b220043688c84e2",
+          "clipboardSha256": "aa82d0798a40fe68016e847535c0e34246b7d16a2f19eee54f080972e7f477d5"
         },
         {
-          "name": "libtmux-typed-values.cabal",
-          "sha256": "0e72b9a095f1309846e0952f880b5e999363a8e5490a41c4530a338191951bc1",
-          "clipboardSha256": "24be7446179a8c3f776e5af233933df6b8aae37d488570f2c89b13104990610d"
+          "name": "libtmux-query-graph.cabal",
+          "sha256": "0190866137a206a2aa4aca656bc027ebcb59efa6e26e40a4550accd49f3164fd",
+          "clipboardSha256": "573084940195002cba5ad8d3bdd6d57efd1a2a8e1374654ee7624297fdf039d3"
         },
         {
           "name": "cabal.project",
-          "sha256": "275dff397a14d3394086e2921fa5e17566025842ff86f290ba145af517b31af3",
-          "clipboardSha256": "27b689897a625972f3c2e03ad9318424753f331ba944664af2c0c2855d6b07e8"
+          "sha256": "ffef7cc02a94ce62ad714b5e9e2051205d1ae4ba331ec40dc831d03ede5da99c",
+          "clipboardSha256": "1fa85d4ab641714248682a6fd3038d308d8675a011c3a35ddcea613217668f38"
         }
       ],
       "shellRecipe": [
         "cabal update",
-        "cabal run --verbose=0 typed-values"
+        "LIBTMUX_DEMO_DIR=$(mktemp -d -t libtmux-haskell-demo.XXXXXX) && \\\ntrap 'tmux -N -S \"$LIBTMUX_DEMO_DIR/s\" kill-server; rm -r -- \"$LIBTMUX_DEMO_DIR\"' EXIT && \\\nenv -u TMUX -u TMUX_PANE tmux \\\n    -S \"$LIBTMUX_DEMO_DIR/s\" \\\n    -f /dev/null \\\n    new-session \\\n    -d \\\n    -s demo \\\n    -n editor \\\n    -x 120 \\\n    -y 40 \\\n    /bin/cat - && \\\nenv -u TMUX -u TMUX_PANE tmux \\\n    -N \\\n    -S \"$LIBTMUX_DEMO_DIR/s\" \\\n    link-window \\\n    -s demo:0 \\\n    -t demo:4 && \\\ncabal run --verbose=0 query-graph -- \\\n    \"$LIBTMUX_DEMO_DIR/s\" \\\n    \"$(command -v tmux)\""
       ],
       "expectedOutputs": [
         [],
         [
-          "(\"3.3a\",\"@17\",120)"
+          "query agrees with native predicate: True",
+          "unique physical pane: %0",
+          "contextual matches: 2",
+          "contextual uniqueness: AtLeastTwoMatches",
+          "highest link index: 4",
+          "sessions containing a match: 1",
+          "required fields: [\"pane.active\",\"pane.width\"]",
+          "required relationships: [\"session.windowLinks\",\"windowLink.panes\"]",
+          "fresh capture matches: 1"
         ]
       ],
-      "excerptSha256": "11472b743a9a2417415169ca6fbd80d804259972f07d24e64e9d7dab6d8b4f5a",
+      "excerptSha256": "aa82d0798a40fe68016e847535c0e34246b7d16a2f19eee54f080972e7f477d5",
       "variants": {
         "concise": {
           "files": [
             {
               "name": "Main.hs",
-              "sha256": "451e2d429dc1ab4c417651806e4f0332525762a0a9a28d42579df78c67c8bbbf",
-              "clipboardSha256": "11472b743a9a2417415169ca6fbd80d804259972f07d24e64e9d7dab6d8b4f5a"
+              "sha256": "aad1e917592c39e7bfe4ffe715938f4d39bf47d8d1b4ce792b220043688c84e2",
+              "clipboardSha256": "aa82d0798a40fe68016e847535c0e34246b7d16a2f19eee54f080972e7f477d5"
             },
             {
-              "name": "libtmux-typed-values.cabal",
-              "sha256": "0e72b9a095f1309846e0952f880b5e999363a8e5490a41c4530a338191951bc1",
-              "clipboardSha256": "24be7446179a8c3f776e5af233933df6b8aae37d488570f2c89b13104990610d"
+              "name": "libtmux-query-graph.cabal",
+              "sha256": "0190866137a206a2aa4aca656bc027ebcb59efa6e26e40a4550accd49f3164fd",
+              "clipboardSha256": "573084940195002cba5ad8d3bdd6d57efd1a2a8e1374654ee7624297fdf039d3"
             },
             {
               "name": "cabal.project",
-              "sha256": "275dff397a14d3394086e2921fa5e17566025842ff86f290ba145af517b31af3",
-              "clipboardSha256": "27b689897a625972f3c2e03ad9318424753f331ba944664af2c0c2855d6b07e8"
+              "sha256": "ffef7cc02a94ce62ad714b5e9e2051205d1ae4ba331ec40dc831d03ede5da99c",
+              "clipboardSha256": "1fa85d4ab641714248682a6fd3038d308d8675a011c3a35ddcea613217668f38"
             }
           ],
-          "excerptSha256": "11472b743a9a2417415169ca6fbd80d804259972f07d24e64e9d7dab6d8b4f5a",
-          "execution": "pure-values",
-          "libraryRevision": "581f0ee45016ffb2283366bb1edc1658df26c5ed"
+          "excerptSha256": "aa82d0798a40fe68016e847535c0e34246b7d16a2f19eee54f080972e7f477d5",
+          "execution": "owned-tmux"
         },
         "errors": {
           "files": [
             {
               "name": "Main.hs",
-              "sha256": "451e2d429dc1ab4c417651806e4f0332525762a0a9a28d42579df78c67c8bbbf",
-              "clipboardSha256": "11472b743a9a2417415169ca6fbd80d804259972f07d24e64e9d7dab6d8b4f5a"
+              "sha256": "aad1e917592c39e7bfe4ffe715938f4d39bf47d8d1b4ce792b220043688c84e2",
+              "clipboardSha256": "aa82d0798a40fe68016e847535c0e34246b7d16a2f19eee54f080972e7f477d5"
             },
             {
-              "name": "libtmux-typed-values.cabal",
-              "sha256": "0e72b9a095f1309846e0952f880b5e999363a8e5490a41c4530a338191951bc1",
-              "clipboardSha256": "24be7446179a8c3f776e5af233933df6b8aae37d488570f2c89b13104990610d"
+              "name": "libtmux-query-graph.cabal",
+              "sha256": "0190866137a206a2aa4aca656bc027ebcb59efa6e26e40a4550accd49f3164fd",
+              "clipboardSha256": "573084940195002cba5ad8d3bdd6d57efd1a2a8e1374654ee7624297fdf039d3"
             },
             {
               "name": "cabal.project",
-              "sha256": "275dff397a14d3394086e2921fa5e17566025842ff86f290ba145af517b31af3",
-              "clipboardSha256": "27b689897a625972f3c2e03ad9318424753f331ba944664af2c0c2855d6b07e8"
+              "sha256": "ffef7cc02a94ce62ad714b5e9e2051205d1ae4ba331ec40dc831d03ede5da99c",
+              "clipboardSha256": "1fa85d4ab641714248682a6fd3038d308d8675a011c3a35ddcea613217668f38"
             }
           ],
-          "excerptSha256": "11472b743a9a2417415169ca6fbd80d804259972f07d24e64e9d7dab6d8b4f5a",
-          "execution": "pure-values",
-          "libraryRevision": "581f0ee45016ffb2283366bb1edc1658df26c5ed"
+          "excerptSha256": "aa82d0798a40fe68016e847535c0e34246b7d16a2f19eee54f080972e7f477d5",
+          "execution": "owned-tmux"
         },
         "cleanup": {
           "files": [
             {
               "name": "Main.hs",
-              "sha256": "451e2d429dc1ab4c417651806e4f0332525762a0a9a28d42579df78c67c8bbbf",
-              "clipboardSha256": "11472b743a9a2417415169ca6fbd80d804259972f07d24e64e9d7dab6d8b4f5a"
+              "sha256": "aad1e917592c39e7bfe4ffe715938f4d39bf47d8d1b4ce792b220043688c84e2",
+              "clipboardSha256": "aa82d0798a40fe68016e847535c0e34246b7d16a2f19eee54f080972e7f477d5"
             },
             {
-              "name": "libtmux-typed-values.cabal",
-              "sha256": "0e72b9a095f1309846e0952f880b5e999363a8e5490a41c4530a338191951bc1",
-              "clipboardSha256": "24be7446179a8c3f776e5af233933df6b8aae37d488570f2c89b13104990610d"
+              "name": "libtmux-query-graph.cabal",
+              "sha256": "0190866137a206a2aa4aca656bc027ebcb59efa6e26e40a4550accd49f3164fd",
+              "clipboardSha256": "573084940195002cba5ad8d3bdd6d57efd1a2a8e1374654ee7624297fdf039d3"
             },
             {
               "name": "cabal.project",
-              "sha256": "275dff397a14d3394086e2921fa5e17566025842ff86f290ba145af517b31af3",
-              "clipboardSha256": "27b689897a625972f3c2e03ad9318424753f331ba944664af2c0c2855d6b07e8"
+              "sha256": "ffef7cc02a94ce62ad714b5e9e2051205d1ae4ba331ec40dc831d03ede5da99c",
+              "clipboardSha256": "1fa85d4ab641714248682a6fd3038d308d8675a011c3a35ddcea613217668f38"
             }
           ],
-          "excerptSha256": "11472b743a9a2417415169ca6fbd80d804259972f07d24e64e9d7dab6d8b4f5a",
-          "execution": "pure-values",
-          "libraryRevision": "581f0ee45016ffb2283366bb1edc1658df26c5ed"
+          "excerptSha256": "aa82d0798a40fe68016e847535c0e34246b7d16a2f19eee54f080972e7f477d5",
+          "execution": "owned-tmux"
         }
       }
     },

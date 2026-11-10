@@ -6288,6 +6288,13 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux",
+   "page": "/haskell/latest/guides/api-documentation/",
+   "title": "API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Id",
    "page": "/haskell/latest/guides/status/",
    "title": "Implementation status",
@@ -6319,6 +6326,125 @@
    "symbol": "LibTmux.Id#t:WindowId",
    "page": "/haskell/latest/guides/typed-values/",
    "title": "Typed values",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query#v:AtLeastTwoMatches",
+   "page": "/haskell/latest/guides/query/",
+   "title": "Typed queries",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query#v:atMostOne",
+   "page": "/haskell/latest/guides/query/",
+   "title": "Typed queries",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query#v:dimensionAtLeast",
+   "page": "/haskell/latest/guides/query/",
+   "title": "Typed queries",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query#v:every",
+   "page": "/haskell/latest/guides/query/",
+   "title": "Typed queries",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query#v:exactlyOne",
+   "page": "/haskell/latest/guides/query/",
+   "title": "Typed queries",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query#v:fetch",
+   "page": "/haskell/latest/guides/query/",
+   "title": "Typed queries",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query#v:limit",
+   "page": "/haskell/latest/guides/query/",
+   "title": "Typed queries",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query#v:matching",
+   "page": "/haskell/latest/guides/query/",
+   "title": "Typed queries",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query#v:none",
+   "page": "/haskell/latest/guides/query/",
+   "title": "Typed queries",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query#v:optionalRelated",
+   "page": "/haskell/latest/guides/query/",
+   "title": "Typed queries",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query#v:orderBy",
+   "page": "/haskell/latest/guides/query/",
+   "title": "Typed queries",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query#v:paneOccurrences",
+   "page": "/haskell/latest/guides/query/",
+   "title": "Typed queries",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query#v:panes",
+   "page": "/haskell/latest/guides/query/",
+   "title": "Typed queries",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query#v:requirements",
+   "page": "/haskell/latest/guides/query/",
+   "title": "Typed queries",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query#v:runQuery",
+   "page": "/haskell/latest/guides/query/",
+   "title": "Typed queries",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query#v:some",
+   "page": "/haskell/latest/guides/query/",
+   "title": "Typed queries",
    "section": "guides"
   },
   {
@@ -6372,6 +6498,13 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Server#v:capture",
+   "page": "/haskell/latest/guides/query/",
+   "title": "Typed queries",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Server#v:captureRecoveries",
    "page": "/haskell/latest/guides/capture/",
    "title": "Capture and navigate",
@@ -6410,6 +6543,13 @@
    "symbol": "LibTmux.Server#v:tryTmux",
    "page": "/haskell/latest/guides/capture/",
    "title": "Capture and navigate",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:tryTmux",
+   "page": "/haskell/latest/guides/query/",
+   "title": "Typed queries",
    "section": "guides"
   },
   {
@@ -6512,6 +6652,13 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Snapshot#t:Snapshot",
+   "page": "/haskell/latest/guides/query/",
+   "title": "Typed queries",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Snapshot#t:SnapshotOrigin",
    "page": "/haskell/latest/guides/offline-fixtures/",
    "title": "Offline fixtures",
@@ -6541,13 +6688,6 @@
   {
    "port": "haskell",
    "symbol": "LibTmux.Snapshot#v:lookupPaneId",
-   "page": "/haskell/latest/guides/capture/",
-   "title": "Capture and navigate",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Snapshot#v:paneOccurrences",
    "page": "/haskell/latest/guides/capture/",
    "title": "Capture and navigate",
    "section": "guides"
@@ -18368,6 +18508,13 @@
    "text": "LibTmux.Query.Json",
    "page": "/fsharp/latest/guides/supported-query-fields/",
    "line": 17,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "haskell",
+   "text": "Natural",
+   "page": "/haskell/latest/guides/query/",
+   "line": 169,
    "why": "not defined in the stated port"
   },
   {
