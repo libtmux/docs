@@ -20,6 +20,7 @@ import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PORTS } from '../site/src/lib/ports.ts'
+import { checkoutCandidates } from './lib/port-checkout.mjs'
 import { registrationLinkProblems } from './lib/mcp-source-links.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -43,7 +44,7 @@ for (const [slug, entry] of Object.entries(matrix.ports)) {
   const port = PORTS.find((candidate) => candidate.slug === slug)
   const candidates = slug === 'py'
     ? [process.env.LIBTMUX_DOCS_MCP_PY, '~/work/python/libtmux-mcp']
-    : [process.env[`LIBTMUX_DOCS_CHECKOUT_${slug.toUpperCase()}`], port?.worktree, port?.checkout]
+    : port ? checkoutCandidates(port) : []
   const checkout = candidates.filter(Boolean).map(expand).find((path) => existsSync(path))
   if (!checkout) {
     skipped.push(`${slug} (no checkout)`)

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { statementLines } from '../../../site/src/lib/core-statement.ts'
+import { resolveCheckout } from '../port-checkout.mjs'
 
 /**
  * What every port's recipes share: where a program comes from, how marker
@@ -40,7 +41,7 @@ export function capabilitySource(root, port, file) {
 }
 
 /** Where a port's checkout lives: its environment variable, or the port's own worktree. */
-export const checkoutOf = (port, env, expand) => expand(env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || port.worktree)
+export const checkoutOf = (port, env) => resolveCheckout(port, { env, order: ['worktree'] })
 
 /**
  * Insert a marker line after each step's statement. `mark(step)` is the line

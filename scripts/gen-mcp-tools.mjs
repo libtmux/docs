@@ -138,6 +138,7 @@ const PORTS = [
  */
 const portsModule = resolve(dirname(dirname(fileURLToPath(import.meta.url))), 'site/src/lib/ports.ts')
 const { PORTS: PORT_DEFS, productAvailable } = await import(`file://${portsModule}`)
+const { resolveCheckout } = await import('./lib/port-checkout.mjs')
 const portBySlug = Object.fromEntries(PORT_DEFS.map((port) => [port.slug, port]))
 if (only && !portBySlug[only]) throw new Error(`Unknown MCP port: ${only}`)
 if (sourceBound && (!only || process.env.LIBTMUX_DOCS_PORT !== only || !/^[0-9a-f]{40}$/.test(process.env.LIBTMUX_DOCS_SOURCE_SHA ?? ''))) {
@@ -146,7 +147,7 @@ if (sourceBound && (!only || process.env.LIBTMUX_DOCS_PORT !== only || !/^[0-9a-
 if (only && !productAvailable(portBySlug[only], 'mcp')) process.exit(0)
 for (const port of PORTS) {
   const definition = portBySlug[port.slug]
-  const configured = process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || definition.worktree
+  const configured = resolveCheckout(definition, { ports: PORT_DEFS, order: ['worktree'] })
   const oldRoot = definition.checkout
   port.dir = port.slug === 'py' ? port.dir.replace('~/work/python/libtmux-mcp', process.env.LIBTMUX_DOCS_MCP_PY || '~/work/python/libtmux-mcp') : port.dir.replace(oldRoot, configured)
   port.checkout = expand(port.slug === 'py' ? process.env.LIBTMUX_DOCS_MCP_PY || '~/work/python/libtmux-mcp' : configured)

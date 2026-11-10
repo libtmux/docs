@@ -2,7 +2,6 @@
 /** Stage source-owned port guides from the same native artifact as the API. */
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
-import { homedir } from 'node:os'
 import { dirname, join, posix, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { fromMarkdown } from 'mdast-util-from-markdown'
@@ -12,6 +11,7 @@ import { defaultVersionFor, linkedVersionFor } from '../site/src/lib/versions.ts
 import { sourceGuidesFor, sourceGuideRedirectsFor, stagedSectionsFor, stagedSectionDescription, SOURCE_GUIDE_PORTS } from '../site/src/lib/port-documentation.ts'
 import { SymbolIndex, parameterId } from '../packages/api-model/src/link.ts'
 import { BADGE_DIRECTORY, badgesStale, localizeBadges } from './lib/badges.mjs'
+import { resolveCheckout } from './lib/port-checkout.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const output = join(root, 'site/src/content/docs/_staged')
@@ -33,7 +33,6 @@ export function stagedRoutesFor(port) {
 
 const ROUTES = Object.fromEntries(SOURCE_GUIDE_PORTS.map((slug) => [slug, stagedRoutesFor(slug)]))
 
-const expand = (value) => value.startsWith('~/') ? join(homedir(), value.slice(2)) : value
 
 function titleAndBody(content, sourcePath) {
   // The shared catalog supplies page metadata; source frontmatter is not article prose.
@@ -377,7 +376,7 @@ export function run() {
     && (!wrappersOnly || entry.parentLibrary) && !(cached && entry.slug === publicationPort))
   if (refreshCache && !selectedPort) throw new Error('--refresh-cache requires one --port')
   for (const port of selected) {
-    const checkout = expand(process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || (integrated ? port.checkout : port.worktree))
+    const checkout = resolveCheckout(port, { order: [integrated ? 'checkout' : 'worktree'] })
     const artifactPath = join(checkout, 'docs/_build/api.json')
     const selectedSource = process.env.LIBTMUX_DOCS_PORT === port.slug && process.env.LIBTMUX_DOCS_SOURCE_SHA
     const cachePath = join(cacheRoot, `${port.slug}.json`)

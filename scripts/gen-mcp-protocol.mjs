@@ -5,6 +5,7 @@ import { homedir, tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PORTS, productAvailable } from '../site/src/lib/ports.ts'
+import { resolveCheckout } from './lib/port-checkout.mjs'
 import { captureProtocol } from './lib/mcp-protocol.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -18,7 +19,7 @@ if (sourceBound && (!only || process.env.LIBTMUX_DOCS_PORT !== only || !/^[0-9a-
 }
 const checkoutFor = (port) => expand(port.slug === 'py'
   ? process.env.LIBTMUX_DOCS_MCP_PY || '~/work/python/libtmux-mcp'
-  : process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || port.worktree)
+  : resolveCheckout(port, { order: ['worktree'] }))
 const commands = {
   py: ['.venv/bin/python', '-m', 'libtmux_mcp'],
   ruby: [

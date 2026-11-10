@@ -329,12 +329,9 @@ fi
 node "$script_dir/stage-port-docs.mjs" --wrappers
 if [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ]; then
   if [ "$LIBTMUX_DOCS_PORT" = clojure ]; then
-    # gen-tmux-usage also reads the Java core the wrapper stands on. Clojure
-    # lives in the Java repository, so its checkout is the Java checkout; a
-    # clean CI runner has no other copy at Java's default path.
-    if [ -n "${LIBTMUX_DOCS_CHECKOUT_CLOJURE:-}" ]; then
-      export LIBTMUX_DOCS_CHECKOUT_JAVA="${LIBTMUX_DOCS_CHECKOUT_JAVA:-$LIBTMUX_DOCS_CHECKOUT_CLOJURE}"
-    fi
+    # gen-tmux-usage also reads the Java core the wrapper stands on; the
+    # checkout resolver (scripts/lib/port-checkout.mjs) serves it from the
+    # wrapper's own checkout, which is the Java repository.
     node "$script_dir/gen-tmux-usage.mjs" --ports clojure
   fi
   # The selected API and wire contracts must come from the same product source.
