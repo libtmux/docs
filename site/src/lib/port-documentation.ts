@@ -127,7 +127,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('docs/errors.md', 'topics/errors', 'core', { title: 'Errors and recovery', aliases: ['guides/errors'] }),
       guide('docs/compatibility.md', 'topics/compatibility', 'core', { title: 'Linux and tmux compatibility', aliases: ['guides/compatibility'] }),
       guide('docs/async.md', 'guides/async', 'async', { package: 'async', title: 'Optional async execution' }),
-      guide('docs/workspace.md', 'workspace/source-guide', 'workspace', { package: 'workspace', product: 'workspace', title: 'Workspace loading', aliases: [] }),
+      guide('docs/workspace.md', 'workspace/source-guide', 'workspace', { package: 'workspace', product: 'workspace', title: 'Workspace guide', aliases: [] }),
     ],
   },
   lisp: {

@@ -280,16 +280,19 @@ const pages = {
   '/julia/en/v1/manual/types/': { body: plain('Types · The Julia Language', 'Types', part('Composite-Types', 'Composite Types', 'Composite types are called records, structs, or objects in various languages.')) },
 }
 
+// Every response closes its connection. The collector between the cases and the Markdown plants reads the whole
+// data tree and takes longer than a server holds an idle connection, and a client that reuses a connection the
+// server has closed fails with UND_ERR_SOCKET on the first plant that follows.
 const server = createServer((request, response) => {
   const entry = pages[request.url?.split('?')[0] ?? '']
   if (!entry) {
-    response.writeHead(404).end('not found')
+    response.writeHead(404, { connection: 'close' }).end('not found')
   } else if (entry.location) {
-    response.writeHead(entry.status, { location: entry.location }).end()
+    response.writeHead(entry.status, { location: entry.location, connection: 'close' }).end()
   } else if (entry.status) {
-    response.writeHead(entry.status).end('')
+    response.writeHead(entry.status, { connection: 'close' }).end('')
   } else {
-    response.writeHead(200, { 'content-type': 'text/html' }).end(entry.body)
+    response.writeHead(200, { 'content-type': 'text/html', connection: 'close' }).end(entry.body)
   }
 })
 await new Promise((ok) => server.listen(0, '127.0.0.1', ok))

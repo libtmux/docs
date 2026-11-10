@@ -176,11 +176,16 @@ function counterpartRoutes(port: string, path: string): Map<string, readonly str
   return new Map(PORTS.filter((candidate) => !candidate.parentLibrary && candidate.productAvailability?.[product] !== 'excluded')
     .map((candidate) => {
       if (own?.data.equivalence && candidate.slug === port) return [port, [path]] as const
-      const matches = [...documentsFor(candidate.slug).values()].filter((entry) => own?.data.equivalence
-        ? entry.data.equivalence === own.data.equivalence && entry.data.product === own.data.product
-        : paths.some((route) => docsPath(entry) === route || entry.data.aliases?.includes(route)))
+      const documents = [...documentsFor(candidate.slug).values()]
+      // Equivalent pages are all offered; otherwise the switcher offers one page per port: its own page
+      // before a shared one, and a match on this page's route before a match on one of its aliases.
+      const matches = own?.data.equivalence
+        ? documents.filter((entry) => entry.data.equivalence === own.data.equivalence && entry.data.product === own.data.product)
+        : paths.flatMap((route) => documents.filter((entry) => docsPath(entry) === route || entry.data.aliases?.includes(route)))
+      const owned = matches.filter((entry) => entry.data.port === candidate.slug)
+      const offered = own?.data.equivalence ? matches : (owned.length ? owned : matches).slice(0, 1)
       // A product overview may be an alias of a core integration guide.
-      return [candidate.slug, [...new Set(matches.map((entry) => path === product && entry.data.aliases?.includes(path) ? path : docsPath(entry)))]] as const
+      return [candidate.slug, [...new Set(offered.map((entry) => path === product && entry.data.aliases?.includes(path) ? path : docsPath(entry)))]] as const
     }).filter(([, routes]) => routes.length))
 }
 
