@@ -9,7 +9,7 @@ import { defaultVersionFor } from '../lib/versions'
 import { branding } from '../lib/branding'
 import { withRoot } from '../lib/site-root'
 import { documentationSectionsFor } from '../lib/port-documentation'
-import { coreLead } from '../lib/core-home'
+import { CORE_HOME, coreLead } from '../lib/core-home'
 
 interface Props {
   solutions: { port: string; version: string; surfaces: DocumentationSurface[] }[]
@@ -34,7 +34,7 @@ const descriptions: Record<string, string> = {
         <div class="home-solutions" aria-label={`${port.name} solutions`}>
           {solutions[index].surfaces.filter((surface) => surface.id !== 'home').map((surface) => <a href={surface.href}>
             <img src={withRoot(branding(port.slug, surface.id === 'core' ? '' : surface.id).asset('logo.svg'))} alt="" width="30" height="30" />
-            <span><strong>{surface.label}</strong><small>{surface.id === 'core' && QUICKSTARTS[port.slug]?.complete?.execution === 'pure-values' ? coreLead(port.slug) : descriptions[surface.id]}</small></span>
+            <span><strong>{surface.label}</strong><small>{surface.id === 'core' && CORE_HOME[port.slug]?.modules !== undefined ? coreLead(port.slug) : descriptions[surface.id]}</small></span>
             <span class="home-solution-arrow" aria-hidden="true">→</span>
           </a>)}
         </div>
