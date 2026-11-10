@@ -9,7 +9,7 @@
       "when": "the server has sessions",
       "evidence": [
         {
-          "at": "src/capture.lisp:30",
+          "at": "src/capture.lisp:40",
           "has": [
             "(execute-tmux client arguments token"
           ]
@@ -29,13 +29,13 @@
           "span": 6
         },
         {
-          "at": "src/capture.lisp:61",
+          "at": "src/capture.lisp:67",
           "has": [
             "(let ((outcome (execute-capture-command client (listing-batch-command)"
           ]
         },
         {
-          "at": "src/capture.lisp:100",
+          "at": "src/capture.lisp:103",
           "has": [
             "(when (plusp (length session-rows))",
             "(capture-listing-batch client token budget before)"
@@ -43,13 +43,13 @@
           "span": 3
         },
         {
-          "at": "src/capture.lisp:124",
+          "at": "src/capture.lisp:127",
           "has": [
             "(return (acquire-snapshot client token budget entity-limit))"
           ]
         },
         {
-          "at": "src/capture.lisp:183",
+          "at": "src/capture.lisp:186",
           "has": [
             "(libtmux.internal::capture-with-retries client token budget entity-limit)"
           ],
@@ -65,7 +65,7 @@
       "when": "the server has sessions",
       "evidence": [
         {
-          "at": "src/capture.lisp:30",
+          "at": "src/capture.lisp:40",
           "has": [
             "(execute-tmux client arguments token"
           ]
@@ -85,13 +85,13 @@
           "span": 6
         },
         {
-          "at": "src/capture.lisp:61",
+          "at": "src/capture.lisp:67",
           "has": [
             "(let ((outcome (execute-capture-command client (listing-batch-command)"
           ]
         },
         {
-          "at": "src/capture.lisp:100",
+          "at": "src/capture.lisp:103",
           "has": [
             "(when (plusp (length session-rows))",
             "(capture-listing-batch client token budget before)"
@@ -99,19 +99,19 @@
           "span": 3
         },
         {
-          "at": "src/capture.lisp:124",
+          "at": "src/capture.lisp:127",
           "has": [
             "(return (acquire-snapshot client token budget entity-limit))"
           ]
         },
         {
-          "at": "src/capture.lisp:183",
+          "at": "src/capture.lisp:186",
           "has": [
             "(libtmux.internal::capture-with-retries client token budget entity-limit)"
           ]
         },
         {
-          "at": "src/capture.lisp:187",
+          "at": "src/capture.lisp:190",
           "has": [
             "(sessions (apply #'fetch-snapshot client options))"
           ],
@@ -127,7 +127,7 @@
       "when": "the server has sessions",
       "evidence": [
         {
-          "at": "src/capture.lisp:30",
+          "at": "src/capture.lisp:40",
           "has": [
             "(execute-tmux client arguments token"
           ]
@@ -147,13 +147,13 @@
           "span": 6
         },
         {
-          "at": "src/capture.lisp:61",
+          "at": "src/capture.lisp:67",
           "has": [
             "(let ((outcome (execute-capture-command client (listing-batch-command)"
           ]
         },
         {
-          "at": "src/capture.lisp:100",
+          "at": "src/capture.lisp:103",
           "has": [
             "(when (plusp (length session-rows))",
             "(capture-listing-batch client token budget before)"
@@ -161,19 +161,19 @@
           "span": 3
         },
         {
-          "at": "src/capture.lisp:124",
+          "at": "src/capture.lisp:127",
           "has": [
             "(return (acquire-snapshot client token budget entity-limit))"
           ]
         },
         {
-          "at": "src/capture.lisp:183",
+          "at": "src/capture.lisp:186",
           "has": [
             "(libtmux.internal::capture-with-retries client token budget entity-limit)"
           ]
         },
         {
-          "at": "src/capture.lisp:190",
+          "at": "src/capture.lisp:193",
           "has": [
             "(windows (apply #'fetch-snapshot client options))"
           ],
@@ -189,7 +189,7 @@
       "when": "the server has sessions",
       "evidence": [
         {
-          "at": "src/capture.lisp:30",
+          "at": "src/capture.lisp:40",
           "has": [
             "(execute-tmux client arguments token"
           ]
@@ -209,13 +209,13 @@
           "span": 6
         },
         {
-          "at": "src/capture.lisp:61",
+          "at": "src/capture.lisp:67",
           "has": [
             "(let ((outcome (execute-capture-command client (listing-batch-command)"
           ]
         },
         {
-          "at": "src/capture.lisp:100",
+          "at": "src/capture.lisp:103",
           "has": [
             "(when (plusp (length session-rows))",
             "(capture-listing-batch client token budget before)"
@@ -223,19 +223,19 @@
           "span": 3
         },
         {
-          "at": "src/capture.lisp:124",
+          "at": "src/capture.lisp:127",
           "has": [
             "(return (acquire-snapshot client token budget entity-limit))"
           ]
         },
         {
-          "at": "src/capture.lisp:183",
+          "at": "src/capture.lisp:186",
           "has": [
             "(libtmux.internal::capture-with-retries client token budget entity-limit)"
           ]
         },
         {
-          "at": "src/capture.lisp:193",
+          "at": "src/capture.lisp:196",
           "has": [
             "(panes (apply #'fetch-snapshot client options))"
           ],
@@ -251,7 +251,7 @@
       "when": "the server has sessions",
       "evidence": [
         {
-          "at": "src/capture.lisp:30",
+          "at": "src/capture.lisp:40",
           "has": [
             "(execute-tmux client arguments token"
           ]
@@ -271,13 +271,13 @@
           "span": 6
         },
         {
-          "at": "src/capture.lisp:61",
+          "at": "src/capture.lisp:67",
           "has": [
             "(let ((outcome (execute-capture-command client (listing-batch-command)"
           ]
         },
         {
-          "at": "src/capture.lisp:100",
+          "at": "src/capture.lisp:103",
           "has": [
             "(when (plusp (length session-rows))",
             "(capture-listing-batch client token budget before)"
@@ -285,19 +285,19 @@
           "span": 3
         },
         {
-          "at": "src/capture.lisp:124",
+          "at": "src/capture.lisp:127",
           "has": [
             "(return (acquire-snapshot client token budget entity-limit))"
           ]
         },
         {
-          "at": "src/capture.lisp:183",
+          "at": "src/capture.lisp:186",
           "has": [
             "(libtmux.internal::capture-with-retries client token budget entity-limit)"
           ]
         },
         {
-          "at": "src/capture.lisp:196",
+          "at": "src/capture.lisp:199",
           "has": [
             "(clients (apply #'fetch-snapshot client options))"
           ],
@@ -313,7 +313,7 @@
       "when": "the server has sessions",
       "evidence": [
         {
-          "at": "src/capture.lisp:30",
+          "at": "src/capture.lisp:40",
           "has": [
             "(execute-tmux client arguments token"
           ]
@@ -333,13 +333,13 @@
           "span": 6
         },
         {
-          "at": "src/capture.lisp:61",
+          "at": "src/capture.lisp:67",
           "has": [
             "(let ((outcome (execute-capture-command client (listing-batch-command)"
           ]
         },
         {
-          "at": "src/capture.lisp:100",
+          "at": "src/capture.lisp:103",
           "has": [
             "(when (plusp (length session-rows))",
             "(capture-listing-batch client token budget before)"
@@ -347,19 +347,19 @@
           "span": 3
         },
         {
-          "at": "src/capture.lisp:124",
+          "at": "src/capture.lisp:127",
           "has": [
             "(return (acquire-snapshot client token budget entity-limit))"
           ]
         },
         {
-          "at": "src/capture.lisp:183",
+          "at": "src/capture.lisp:186",
           "has": [
             "(libtmux.internal::capture-with-retries client token budget entity-limit)"
           ]
         },
         {
-          "at": "src/capture.lisp:208",
+          "at": "src/capture.lisp:211",
           "has": [
             "(apply #'fetch-snapshot client options))))"
           ],

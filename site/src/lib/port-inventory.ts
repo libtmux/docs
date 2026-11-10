@@ -416,6 +416,8 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
       label: 'libtmux/regex', path: 'libtmux.asd', file: true, aliases: ['libtmux.regex'] }),
     lisp({ id: 'libtmux/json', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
       label: 'libtmux/json', path: 'libtmux.asd', file: true, aliases: ['libtmux.json'] }),
+    lisp({ id: 'libtmux/control', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
+      label: 'libtmux/control', path: 'libtmux.asd', file: true, aliases: ['libtmux.control'] }),
     lisp({ id: 'libtmux/workspace', kind: 'companion', product: 'workspace', unit: 'ASDF system', within: 'libtmux',
       label: 'libtmux/workspace', path: 'src/workspace.lisp', file: true,
       aliases: ['libtmux.workspace', '(asdf:load-system "libtmux/workspace")'] }),

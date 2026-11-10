@@ -101,12 +101,17 @@ describe('staged port guide links', () => {
   it('resolves native Lisp API anchors into core and workspace declaration pages', () => {
     const pages = stagedPortGuides('lisp', lispGuides)
     const operations = pages.get('lisp/guides/operations/index.md')!
-    const workspace = pages.get('lisp/workspace/source-guide/index.md')!
+    const owned = pages.get('lisp/workspace/source-guide/index.md')!
+    const legacy = pages.get('lisp/workspace/legacy-guide/index.md')!
     expect(operations).toContain('../../reference/libtmux-kill-pane/')
     expect(operations).not.toContain('../../reference/#kill-pane-function')
-    expect(workspace).toContain('../reference/libtmux-workspace-read-workspace/')
-    expect(workspace).toContain('../../reference/libtmux-command-outcome/')
-    expect(workspace).not.toMatch(/reference\/#(?:read-workspace-function|command-outcome-type)/)
+    expect(owned).toContain('../reference/libtmux-workspace-fetch-workspace-state/')
+    expect(owned).toContain('../../reference/libtmux-wait-for/')
+    expect(legacy).toContain('../reference/libtmux-workspace-read-workspace/')
+    expect(legacy).toContain('../../reference/libtmux-command-outcome/')
+    for (const workspace of [owned, legacy]) {
+      expect(workspace).not.toMatch(/reference\/#(?:read-workspace-function|command-outcome-type)/)
+    }
   })
   // CI checks out libtmux-lisp at the model revision; set LIBTMUX_DOCS_CHECKOUT_LISP elsewhere.
   it.skipIf(!process.env.LIBTMUX_DOCS_CHECKOUT_LISP)('maps every public Lisp package to a native reference file with its anchors', () => {

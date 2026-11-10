@@ -7,13 +7,13 @@
       "why": "Validates and guards the tmux argument list, then sends it through the owned subprocess transport.",
       "evidence": [
         {
-          "at": "src/dispatch.lisp:167",
+          "at": "src/dispatch.lisp:221",
           "has": [
             "(defun perform-command"
           ],
           "reaches": [
             {
-              "at": "src/dispatch.lisp:212",
+              "at": "src/dispatch.lisp:274",
               "has": [
                 "(execute-tmux client encoded token"
               ],
@@ -34,7 +34,7 @@
               "calls": "run-process"
             },
             {
-              "at": "src/process-sbcl.lisp:454",
+              "at": "src/process-sbcl.lisp:456",
               "has": [
                 "(acquire-job job)"
               ],
@@ -76,7 +76,7 @@
               "calls": "run-process"
             },
             {
-              "at": "src/process-sbcl.lisp:454",
+              "at": "src/process-sbcl.lisp:456",
               "has": [
                 "(acquire-job job)"
               ],
@@ -111,7 +111,7 @@
               "calls": "perform-command"
             },
             {
-              "at": "src/dispatch.lisp:212",
+              "at": "src/dispatch.lisp:274",
               "has": [
                 "(execute-tmux client encoded token"
               ],
@@ -132,7 +132,7 @@
               "calls": "run-process"
             },
             {
-              "at": "src/process-sbcl.lisp:454",
+              "at": "src/process-sbcl.lisp:456",
               "has": [
                 "(acquire-job job)"
               ],

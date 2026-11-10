@@ -146,7 +146,8 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('docs/capabilities.md', 'guides/capabilities', 'core', { title: 'Capabilities and limits', aliases: [], sidebar: { group: 'Guides', order: 5 } }),
       guide('docs/testing.md', 'guides/testing', 'core', { title: 'Testing', aliases: [], sidebar: { group: 'Guides', order: 6 } }),
       guide('verification.md', 'guides/verification', 'core', { title: 'Verification evidence', aliases: [], sidebar: { group: 'Guides', order: 7 } }),
-      guide('docs/workspaces.md', 'workspace/source-guide', 'workspace', { title: 'Workspace guide', product: 'workspace', package: 'workspace', aliases: [], sidebar: { group: 'Guides', order: 2 } }),
+      guide('docs/workspace-owned.md', 'workspace/source-guide', 'workspace', { title: 'Workspace guide', product: 'workspace', package: 'workspace', aliases: [], sidebar: { group: 'Guides', order: 2 } }),
+      guide('docs/workspaces.md', 'workspace/legacy-guide', 'workspace', { title: 'Legacy workspace topology guide', product: 'workspace', package: 'workspace', aliases: [], sidebar: { group: 'Guides', order: 3 } }),
     ],
     redirects: [
       { sourcePath: 'docs/api.md', path: 'guides/api', target: 'reference' },

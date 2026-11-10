@@ -191,17 +191,21 @@
     },
     "lisp": {
       "repo": "libtmux/libtmux-lisp",
-      "revision": "37c85da8d14efe97c921cb69061b67ee8e5b0c86",
+      "revision": "e6f319c4257789cfe39547af001c718975f0a2ef",
       "distributions": [
         {
           "name": "libtmux",
           "version": "0.1.0",
           "manifest": "libtmux.asd",
           "repo": "libtmux/libtmux-lisp",
-          "revision": "37c85da8d14efe97c921cb69061b67ee8e5b0c86"
+          "revision": "e6f319c4257789cfe39547af001c718975f0a2ef"
         }
       ],
       "units": [
+        {
+          "unit": "ASDF system",
+          "name": "libtmux/control"
+        },
         {
           "unit": "ASDF system",
           "name": "libtmux/json"
