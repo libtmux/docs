@@ -231,6 +231,12 @@ declaration bounds for the shared evidence audit; it does not infer queued
 execution from function names. A changed source, public export or claim fails
 qualification until the profile is reviewed again.
 
+Set `LIBTMUX_DOCS_PORT=haskell` and bind `LIBTMUX_DOCS_SOURCE_SHA` and
+`LIBTMUX_DOCS_SOURCE_REF` to the selected commit when regenerating this model.
+Qualify native command usage against that generated model. An unselected
+authoring build can cite the public default branch and produce a different
+full-model digest.
+
 Capture selects `ReadSnapshot`, whose fixed queue reaches the native spawner.
 It sends `display-message` and `if-shell`; `list-clients` runs when sessions
 exist. Graph enumeration uses tmux format loops. The older private scalar and
