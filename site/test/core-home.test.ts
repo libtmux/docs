@@ -105,7 +105,7 @@ describe('Core Library home page', () => {
       expect(window.document.body.textContent).toContain(`tag: "${sourceSha}"`)
       expect(window.document.body.textContent).not.toMatch(/Control tmux|Server →|connect to|Traversal from/)
       expect(markdown).not.toMatch(/\| Type \| Wraps|Control tmux/)
-      expect(markdown).toContain(CORE_HOME.haskell!.lead)
+      expect(markdown).toContain(coreLead('haskell'))
       expect([...window.document.querySelectorAll('h2')].map((heading) => heading.id))
         .toEqual(coreHomeHeadings('haskell', 'latest').map((heading) => heading.slug))
     } finally { await window.happyDOM.abort(); vi.unstubAllEnvs() }
