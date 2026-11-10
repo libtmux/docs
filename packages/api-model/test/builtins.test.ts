@@ -92,6 +92,14 @@ describe('C++ standard references', () => {
 })
 
 describe('standard types in product signatures', () => {
+  it('links the Haskell Natural bound used in the query guide', () => {
+    const index = new SymbolIndex([], () => '#', 'haskell')
+    expect(index.resolve('Natural')).toMatchObject({
+      href: 'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Numeric-Natural.html#t:Natural', external: true,
+    })
+    expect(builtinHref('ts', 'Natural')).toBeUndefined()
+  })
+
   it('links the OCaml modules and sequence function used in native guides', () => {
     const index = new SymbolIndex([], () => '#', 'ocaml')
     for (const [name, page] of [['List', 'List.html'], ['Unix', 'Unix.html'], ['Seq.filter', 'Seq.html#VALfilter']]) {

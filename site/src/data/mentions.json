@@ -18511,13 +18511,6 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "haskell",
-   "text": "Natural",
-   "page": "/haskell/latest/guides/query/",
-   "line": 169,
-   "why": "not defined in the stated port"
-  },
-  {
    "port": "kotlin",
    "text": "@kotlin.Metadata",
    "page": "/kotlin/latest/guides/coroutines/",
