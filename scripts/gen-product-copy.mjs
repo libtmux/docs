@@ -24,6 +24,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PORT_BY_SLUG } from '../site/src/lib/ports.ts'
+import { checkoutOverride } from './lib/port-checkout.mjs'
 import { hasRevision, readAt } from './gen-workspace-showcase.mjs'
 import { MCP, VERBS, WORKSPACE } from './lib/product-copy-sources.mjs'
 
@@ -44,7 +45,7 @@ export function pinned(port, product) {
 
 /** A checkout that has the revision's objects. */
 function findCheckout(port, spec, revision) {
-  const candidates = [process.env[`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}`], spec.checkout, checkoutFor(port), PORT_BY_SLUG[port]?.worktree, PORT_BY_SLUG[port]?.checkout]
+  const candidates = [checkoutOverride(port), spec.checkout, checkoutFor(port), PORT_BY_SLUG[port]?.worktree, PORT_BY_SLUG[port]?.checkout]
     .filter(Boolean).map(expand)
   return candidates.find((candidate) => hasRevision({ checkout: candidate, revision }))
 }

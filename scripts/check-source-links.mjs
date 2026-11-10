@@ -21,6 +21,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { PORTS } from '../site/src/lib/ports.ts'
+import { resolveCheckout } from './lib/port-checkout.mjs'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const expand = (p) => (p.startsWith('~/') ? join(homedir(), p.slice(2)) : p)
@@ -37,7 +38,7 @@ const only = arg('--port')
  * graph path names the sources, and that is the repository the blob URL
  * addresses too.
  */
-const CHECKOUT = Object.fromEntries(PORTS.map((port) => [port.slug, port.checkout]))
+const CHECKOUT = Object.fromEntries(PORTS.map((port) => [port.slug, resolveCheckout(port, { order: ['checkout'] })]))
 const PRODUCT_CHECKOUT = {
   'tmux-python/tmuxp': '~/work/python/tmuxp',
   'tmux-python/libtmux-mcp': '~/work/python/libtmux-mcp',

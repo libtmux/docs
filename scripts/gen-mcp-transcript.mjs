@@ -5,6 +5,7 @@ import { homedir, hostname, tmpdir, userInfo } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PORTS } from '../site/src/lib/ports.ts'
+import { checkoutOverride } from './lib/port-checkout.mjs'
 import { EXAMPLES, STALE_TARGET } from '../site/src/lib/mcp-examples.ts'
 import { hasState, recordingStateProblems } from '../site/src/lib/mcp-tmux-state.ts'
 import { contractsOf, sameContracts } from '../site/src/lib/mcp-contract.ts'
@@ -112,7 +113,7 @@ if (!only || !SERVERS[only]) throw new Error(`--port must be one of ${Object.key
 const port = PORTS.find((entry) => entry.slug === only)
 const example = EXAMPLES[only]
 const standIn = GENERATION[only]
-const checkout = expand(process.env[`LIBTMUX_DOCS_CHECKOUT_${only.toUpperCase()}`] || (only === 'py' ? '~/work/python/libtmux-mcp' : port.worktree))
+const checkout = (checkoutOverride(port) ?? expand(only === 'py' ? '~/work/python/libtmux-mcp' : port.worktree))
 if (!existsSync(checkout)) throw new Error(`${only}: no checkout at ${checkout}`)
 const git = (...args) => execFileSync('git', ['-C', checkout, ...args], { encoding: 'utf8' }).trim()
 if (git('status', '--porcelain', '--untracked-files=no')) throw new Error(`${only}: the checkout must be clean`)
