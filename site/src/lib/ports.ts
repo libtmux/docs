@@ -790,7 +790,7 @@ const CORE_PORTS: readonly Port[] = [
     workspaceCliAvailability: 'local',
     productAvailability: { workspace: 'available', mcp: 'excluded' },
     productDescriptions: {
-      workspace: 'Build the CLI from source to validate, plan and explicitly apply bounded JSON workspaces through the native Common Lisp engine.',
+      workspace: 'Build the CLI from source to validate, plan, apply and inspect owned JSON workspaces through the native Common Lisp engine.',
     },
     packages: [{
       id: 'workspace', name: 'libtmux/workspace', require: '(asdf:load-system "libtmux/workspace")',

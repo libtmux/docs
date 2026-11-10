@@ -133,7 +133,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
     domains: [
       libraryDomain('Native CLOS observations, ordinary sequences and explicit tmux operations.'),
       { id: 'workspace', label: 'Workspace Manager', kind: 'product', navGroup: 'Apps', route: 'workspace', package: 'workspace', product: 'workspace',
-        description: 'Validate, plan and explicitly apply bounded JSON workspaces through the native Lisp engine.' },
+        description: 'Validate, plan, apply and inspect owned JSON workspaces through the native Lisp engine.' },
     ],
     sourceGuides: [
       guide('README.md', 'guides/getting-started', 'core', { title: 'Getting started', aliases: [], sidebar: { group: 'Guides', order: 1 } }),
