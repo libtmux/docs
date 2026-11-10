@@ -143,6 +143,22 @@ export const LISP_REFERENCE_FILES = {
   'libtmux.workspace.cli': 'docs/workspace-api.md',
 }
 
+/**
+ * Source-guide link routes for Common Lisp declarations. A declaration whose
+ * package has no entry in LISP_REFERENCE_FILES throws: the port's own build
+ * regenerates the model at its head, which can name a package added since.
+ */
+export function lispReferenceRoutes(symbols) {
+  const routes = {}
+  for (const symbol of symbols.filter((entry) => entry.kind !== 'module')) {
+    const file = LISP_REFERENCE_FILES[symbol.namespace]
+    if (!file) throw new Error(`Common Lisp declaration has no native reference: ${symbol.id}`)
+    const anchor = `${symbol.name}-${symbol.kind === 'function' ? 'function' : 'type'}`
+    routes[`${file}#${anchor}`] = [`${symbol.product === 'workspace' ? 'workspace/' : ''}reference/${symbol.slug}`]
+  }
+  return routes
+}
+
 export function stagedPortGuides(port, artifact) {
   const identity = PORTS.find((entry) => entry.slug === port)
   const routes = ROUTES[port]
@@ -171,15 +187,8 @@ export function stagedPortGuides(port, artifact) {
   }
   if (port === 'lisp') {
     const { symbols } = JSON.parse(readFileSync(join(root, 'site/src/data/api/lisp.json'), 'utf8'))
-    for (const symbol of symbols.filter((entry) => entry.kind !== 'module')) {
-      const file = LISP_REFERENCE_FILES[symbol.namespace]
-      if (!file) throw new Error(`Common Lisp declaration has no native reference: ${symbol.id}`)
-      const anchor = `${symbol.name}-${symbol.kind === 'function' ? 'function' : 'type'}`
-      linkRoutes[`${file}#${anchor}`] = [
-        `${symbol.product === 'workspace' ? 'workspace/' : ''}reference/${symbol.slug}`,
-      ]
-      nativeReferenceFiles.add(file)
-    }
+    Object.assign(linkRoutes, lispReferenceRoutes(symbols))
+    for (const symbol of symbols.filter((entry) => entry.kind !== 'module')) nativeReferenceFiles.add(LISP_REFERENCE_FILES[symbol.namespace])
   }
   if (port === 'powershell') {
     const model = JSON.parse(readFileSync(join(root, 'site/src/data/api/powershell.json'), 'utf8'))

@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { LISP_REFERENCE_FILES, artifactFromRevision, expandDocumenter, linkSnapshotDepths, rewriteLinks, stagedPortGuides, stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
+import { LISP_REFERENCE_FILES, artifactFromRevision, lispReferenceRoutes, expandDocumenter, linkSnapshotDepths, rewriteLinks, stagedPortGuides, stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
 import { PORTS } from '../src/lib/ports'
 import { SOURCE_GUIDE_PORTS } from '../src/lib/port-documentation'
 import scalaGuides from '../src/data/port-guides/scala.json'
@@ -107,6 +107,12 @@ describe('staged port guide links', () => {
     expect(workspace).toContain('../reference/libtmux-workspace-read-workspace/')
     expect(workspace).toContain('../../reference/libtmux-command-outcome/')
     expect(workspace).not.toMatch(/reference\/#(?:read-workspace-function|command-outcome-type)/)
+  })
+  it('fails staging on a Lisp package the reference table lacks (negative control)', () => {
+    const known = lispModel.symbols.find((entry: { kind: string }) => entry.kind !== 'module')!
+    expect(() => lispReferenceRoutes([known])).not.toThrow()
+    expect(() => lispReferenceRoutes([{ ...known, namespace: 'libtmux.not-yet-mapped', id: 'libtmux.not-yet-mapped:thing' }]))
+      .toThrow('Common Lisp declaration has no native reference: libtmux.not-yet-mapped:thing')
   })
   // CI checks out libtmux-lisp at the model revision; set LIBTMUX_DOCS_CHECKOUT_LISP elsewhere.
   it.skipIf(!process.env.LIBTMUX_DOCS_CHECKOUT_LISP)('maps every public Lisp package to a native reference file with its anchors', () => {
