@@ -327,7 +327,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
     domains: [
       libraryDomain('Install the OTP application from Git and use native records, captured graphs and explicit tmux operations.'),
       { id: 'workspace', label: 'Workspace Manager', kind: 'unavailable', navGroup: 'Availability', route: 'workspace', product: 'workspace',
-        description: 'The source application validates JSON desired state. Its plan/apply workflow and CLI are unfinished.' },
+        description: 'Plan and apply JSON workspaces with a standalone escript built from source. No package is published.' },
     ],
     sourceGuides: [
       guide('README.md', 'guides/getting-started', 'core', { title: 'Getting started', aliases: [], sidebar: { group: 'Guides', order: 1 } }),
