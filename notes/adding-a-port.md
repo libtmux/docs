@@ -157,7 +157,7 @@ In the new worktree, on `docs-site`:
 
 Haskell's [Haddock exporter](../packages/api-model/scripts/export-haskell.py)
 builds a selected committed source archive. Its
-[adapter](../packages/api-model/src/languages/haskell.ts) accepts three qualified
+[adapter](../packages/api-model/src/languages/haskell.ts) accepts four qualified
 profiles with the port's pinned GHC/Haddock toolchain:
 
 - Scalar v1 covers `LibTmux.Id`, `LibTmux.Value` and `LibTmux.Version`.
@@ -167,8 +167,11 @@ profiles with the port's pinned GHC/Haddock toolchain:
 - Query v3 adds `LibTmux.Query` and its typed field/relationship modules. Its
   [native fixture](../packages/api-model/test/fixtures/haskell-query-native/README.md)
   preserves opaque type parameters and constrained signatures.
+- Mutation v4 retains the query modules and adds checked rename, pane-title and
+  recovery declarations. Its [native fixture](../packages/api-model/test/fixtures/haskell-mutations-native/README.md)
+  qualifies the private defining source of the opaque recovery receipt.
 
-Both retain native signatures, opaque data heads, constructors, record labels,
+All profiles retain native signatures, opaque data heads, constructors, record labels,
 instance heads and authored export groups. Observation field identities include
 their record owner; displayed Haskell names and field types remain native.
 Source links use the actual defining files, including private files behind a
