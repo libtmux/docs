@@ -37,8 +37,8 @@ def _artifact():
     return EXPORT.extract_modules(*_native_inputs())
 
 
-def _observation_inputs():
-    fixture = ROOT / "test/fixtures/haskell-observations-native"
+def _profile_inputs(fixture_name="haskell-observations-native"):
+    fixture = ROOT / "test/fixtures" / fixture_name
     meta = json.loads((fixture / "provenance.json").read_text())
     return [
         {
@@ -50,6 +50,39 @@ def _observation_inputs():
         json.loads((fixture / "source-anchors.json").read_text()),
         meta["revision"],
     ]
+
+
+class _QueryExportTest(unittest.TestCase):
+    def test_query_parameters_constraints_and_defining_sources_survive(self):
+        result = EXPORT.extract_modules(*_profile_inputs("haskell-query-native"))
+        symbols = {item["id"]: item for item in result["symbols"]}
+        self.assertEqual(len(result["modules"]), 16)
+        for name, parameters in [
+            ("Field", "row value"),
+            ("Expr", "row"),
+            ("Query", "row"),
+            ("Order", "row"),
+            ("ToMany", "parent child"),
+            ("ToOne", "parent child"),
+            ("ToOptional", "parent child"),
+        ]:
+            with self.subTest(name=name):
+                item = symbols[f"LibTmux.Query#t:{name}"]
+                self.assertEqual(item["signatures"][0]["raw"], f"data {name} {parameters}")
+                self.assertEqual(item["modifiers"], ["opaque"])
+                self.assertTrue(item["source"]["file"].startswith("internal/LibTmux/Internal/"))
+        for name, signature in [
+            ("eq", "eq :: Eq value => Field row value -> value -> Expr row"),
+            ("runQuery", "runQuery :: Snapshot -> Query row -> Either QueryError [row]"),
+            ("fetch", "fetch :: Server -> Query row -> IO (Either QueryError [row])"),
+        ]:
+            with self.subTest(name=name):
+                item = symbols[f"LibTmux.Query#v:{name}"]
+                self.assertEqual(item["signatures"][0]["raw"], signature)
+        self.assertNotIn("line", symbols["LibTmux.Query#t:Order"]["source"])
+        self.assertIn("LibTmux.Query.Pane#v:width", symbols)
+        self.assertIn("LibTmux.Snapshot#v:Pane.width", symbols)
+        self.assertFalse(any("Internal" in item["id"] for item in result["symbols"]))
 
 
 class _ObservationExportTest(unittest.TestCase):
@@ -78,7 +111,7 @@ class _ObservationExportTest(unittest.TestCase):
     def test_explicit_missing_source_anchors_fail_instead_of_becoming_file_links(self):
         for line in [False, True]:
             with self.subTest(line=line):
-                inputs = _observation_inputs()
+                inputs = _profile_inputs()
                 html = inputs[0]["LibTmux.Snapshot"]
                 anchor = (
                     re.search(r"src/LibTmux.Internal.Graph.html#line-\d+", html)[0]
@@ -95,7 +128,7 @@ class _ObservationExportTest(unittest.TestCase):
 
     def test_fields_and_constructors_require_value_namespace_native_anchors(self):
         for inputs, module, name in [
-            (_observation_inputs(), "LibTmux.Snapshot", "ref"),
+            (_profile_inputs(), "LibTmux.Snapshot", "ref"),
             (_native_inputs(), "LibTmux.Id", "InvalidId"),
         ]:
             with self.subTest(name=name):
@@ -106,7 +139,7 @@ class _ObservationExportTest(unittest.TestCase):
                     EXPORT.extract_modules(*inputs)
 
     def test_root_reexports_keep_order_without_cloning_child_declarations(self):
-        result = EXPORT.extract_modules(*_observation_inputs())
+        result = EXPORT.extract_modules(*_profile_inputs())
         root = result["modules"][0]
         self.assertEqual(root["name"], "LibTmux")
         self.assertEqual(root["groups"], [])
@@ -119,7 +152,7 @@ class _ObservationExportTest(unittest.TestCase):
         self.assertEqual(sum(s.get("parent") == "LibTmux" for s in result["symbols"]), 0)
 
     def test_duplicate_fields_keep_their_owner_docs_types_and_defining_source(self):
-        result = EXPORT.extract_modules(*_observation_inputs())
+        result = EXPORT.extract_modules(*_profile_inputs())
         symbols = {s["id"]: s for s in result["symbols"]}
         docs = {
             "Session": "Target identity in the observation's generation.",
@@ -177,7 +210,7 @@ class _ObservationExportTest(unittest.TestCase):
             ),
         ]:
             with self.subTest(description=description):
-                inputs = _observation_inputs()
+                inputs = _profile_inputs()
                 mutate(inputs)
                 with self.assertRaisesRegex(ValueError, "visible-export|Compiled public owner"):
                     EXPORT.extract_modules(*inputs)
@@ -216,7 +249,7 @@ class _ObservationExportTest(unittest.TestCase):
             ),
         ]:
             with self.subTest(description=description):
-                inputs = _observation_inputs()
+                inputs = _profile_inputs()
                 original = dict(inputs[0])
                 edit(inputs[0])
                 self.assertNotEqual(inputs[0], original)

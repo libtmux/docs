@@ -157,13 +157,16 @@ In the new worktree, on `docs-site`:
 
 Haskell's [Haddock exporter](../packages/api-model/scripts/export-haskell.py)
 builds a selected committed source archive. Its
-[adapter](../packages/api-model/src/languages/haskell.ts) accepts two qualified
+[adapter](../packages/api-model/src/languages/haskell.ts) accepts three qualified
 profiles with the port's pinned GHC/Haddock toolchain:
 
 - Scalar v1 covers `LibTmux.Id`, `LibTmux.Value` and `LibTmux.Version`.
 - Observation v2 adds `LibTmux`, `LibTmux.Server`, `LibTmux.Snapshot` and
   `LibTmux.Snapshot.Fixture`. Its [native fixture](../packages/api-model/test/fixtures/haskell-observations-native/README.md)
   records the library and producer revisions separately.
+- Query v3 adds `LibTmux.Query` and its typed field/relationship modules. Its
+  [native fixture](../packages/api-model/test/fixtures/haskell-query-native/README.md)
+  preserves opaque type parameters and constrained signatures.
 
 Both retain native signatures, opaque data heads, constructors, record labels,
 instance heads and authored export groups. Observation field identities include
@@ -175,8 +178,10 @@ and line markers are checked against the committed source.
 The stored model retains export groups and ordered module-reexport relations,
 so sidebar regeneration needs no checkout or native toolchain. The reexport
 root has its own row; it does not duplicate the target modules' declarations.
-Additional module and declaration forms need native fixtures and qualification
-before the adapter accepts them.
+Field modules without authored groups retain Haddock's default Documentation
+section. An ambiguous native source identifier retains its defining file
+without an invented line. Additional module and declaration forms need native
+fixtures and qualification before the adapter accepts them.
 
 Haskell's reader guides use the routes in
 [`port-documentation.ts`](../site/src/lib/port-documentation.ts). Its section

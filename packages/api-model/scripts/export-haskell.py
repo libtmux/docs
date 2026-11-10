@@ -32,6 +32,28 @@ OBSERVATION_ORIGINS = OBSERVATION_MODULES + [
     for name in ["Capture", "Graph", "Runtime", "Scheduler", "Scope", "TmuxText"]
 ]
 
+QUERY_MODULES = sorted(
+    OBSERVATION_MODULES
+    + ["LibTmux.Query"]
+    + [
+        "LibTmux.Query." + name
+        for name in [
+            "Client",
+            "ClientAttachment",
+            "Link",
+            "Occurrence",
+            "Pane",
+            "ServerInfo",
+            "Session",
+            "Window",
+        ]
+    ]
+)
+QUERY_ORIGINS = QUERY_MODULES + [
+    "LibTmux.Internal." + name
+    for name in ["Capture", "Field", "Graph", "Query", "Runtime", "Scheduler", "Scope", "TmuxText"]
+]
+
 
 def _source_file(module):
     prefix = "internal/" if module.startswith("LibTmux.Internal.") else "src/"
@@ -142,10 +164,16 @@ def extract_modules(pages, installed, exposed, locations, revision):
             msg = f"Configured public module is absent or hidden: {module}"
             raise ValueError(msg)
     observations = "LibTmux" in exposed
-    if observations and exposed != OBSERVATION_MODULES:
+    if observations and exposed not in [OBSERVATION_MODULES, QUERY_MODULES]:
         msg = "Unqualified observation module profile"
         raise ValueError(msg)
-    source_modules = OBSERVATION_ORIGINS if observations else exposed
+    source_modules = (
+        QUERY_ORIGINS
+        if exposed == QUERY_MODULES
+        else OBSERVATION_ORIGINS
+        if observations
+        else exposed
+    )
 
     documents = {module: _Document(pages[module]).root for module in exposed}
     page_modules = {module.replace(".", "-") + ".html": module for module in exposed}
@@ -161,12 +189,15 @@ def extract_modules(pages, installed, exposed, locations, revision):
         for block in interface.elements():
             if (
                 observations
-                and module == "LibTmux"
+                and (module == "LibTmux" or exposed == QUERY_MODULES)
                 and block is interface.elements()[0]
                 and block.tag == "h1"
                 and block.text() == "Documentation"
                 and not block.elements()
             ):
+                if module != "LibTmux":
+                    group = {"title": block.text(), "members": []}
+                    groups[module].append(group)
                 continue
             if block.attrs.get("id", "").startswith("g:"):
                 group = {"title": _compact(block.text()), "members": []}
@@ -420,7 +451,7 @@ def extract_modules(pages, installed, exposed, locations, revision):
         anchor = unquote(urlsplit(href).fragment) if href else name
         if observations:
             matches = locations[module].get(anchor, [])
-            if href and len(set(matches)) != 1:
+            if href and (not matches or (len(set(matches)) != 1 and exposed != QUERY_MODULES)):
                 msg = f"Missing or ambiguous explicit native source anchor: {module}: {anchor}"
                 raise ValueError(msg)
         elif anchor.startswith("line-"):
@@ -744,11 +775,14 @@ def build_native(checkout, revision, native_output=None):
         ):
             msg = "Unsupported configured public module or re-export shape"
             raise ValueError(msg)
-        if modules not in [SCALAR_MODULES, OBSERVATION_MODULES]:
+        if modules not in [SCALAR_MODULES, OBSERVATION_MODULES, QUERY_MODULES]:
             msg = "Unqualified configured public module profile"
             raise ValueError(msg)
-        observations = modules == OBSERVATION_MODULES
-        source_modules = OBSERVATION_ORIGINS if observations else modules
+        queries = modules == QUERY_MODULES
+        observations = queries or modules == OBSERVATION_MODULES
+        source_modules = (
+            QUERY_ORIGINS if queries else OBSERVATION_ORIGINS if observations else modules
+        )
         shown = _command([tools["haddock"], f"--show-interface={interface}"], source_root)
         if bool(shown.stdout.strip()) == bool(shown.stderr.strip()):
             msg = "Expected one complete native JSON interface stream"
@@ -806,8 +840,12 @@ def build_native(checkout, revision, native_output=None):
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(data)
         return {
-            "schema": "libtmux.haskell-api/2" if observations else "libtmux.haskell-api/1",
-            **({"profile": "observations/1"} if observations else {}),
+            "schema": "libtmux.haskell-api/3"
+            if queries
+            else "libtmux.haskell-api/2"
+            if observations
+            else "libtmux.haskell-api/1",
+            **({"profile": "queries/1" if queries else "observations/1"} if observations else {}),
             "port": "haskell",
             "repo": "libtmux/libtmux-haskell",
             "revision": revision,
@@ -826,7 +864,7 @@ def build_native(checkout, revision, native_output=None):
                 ],
                 "exporter": {
                     "name": "Haddock public interface export",
-                    "version": 2 if observations else 1,
+                    "version": 3 if queries else 2 if observations else 1,
                     "build": {
                         "compiler": plan["compiler-id"],
                         "cabal": plan["cabal-version"],
