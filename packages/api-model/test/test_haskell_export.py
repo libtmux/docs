@@ -52,6 +52,45 @@ def _profile_inputs(fixture_name="haskell-observations-native"):
     ]
 
 
+class _MutationExportTest(unittest.TestCase):
+    def test_mutations_keep_io_options_and_recovery_sources(self):
+        result = EXPORT.extract_modules(*_profile_inputs("haskell-mutations-native"))
+        symbols = {item["id"]: item for item in result["symbols"]}
+        for name, signature in [
+            ("renameSession", "renameSession :: Server -> SessionRef -> Text -> IO ()"),
+            ("renameWindow", "renameWindow :: Server -> WindowRef -> TmuxText -> IO ()"),
+            ("setPaneTitle", "setPaneTitle :: Server -> PaneRef -> Text -> IO ()"),
+            (
+                "renameSessionWith",
+                "renameSessionWith :: MutationOptions -> Server -> SessionRef -> Text -> IO ()",
+            ),
+        ]:
+            with self.subTest(name=name):
+                self.assertEqual(
+                    symbols[f"LibTmux.Server#v:{name}"]["signatures"][0]["raw"], signature
+                )
+        recovery = symbols["LibTmux.Server#t:MutationRecovery"]
+        self.assertEqual(recovery["modifiers"], ["opaque"])
+        self.assertEqual(recovery["source"]["file"], "internal/LibTmux/Internal/Mutation.hs")
+        options = symbols["LibTmux.Server#t:MutationOptions"]
+        self.assertEqual(options["modifiers"], [])
+        timeout = symbols["LibTmux.Server#v:MutationOptions.timeout"]
+        self.assertEqual(timeout["parent"], options["id"])
+        self.assertEqual(timeout["nativeLocation"]["anchor"], "v:timeout")
+        self.assertIn("LibTmux.Server#v:MutationAppliedWithErrors", symbols)
+        self.assertFalse(any("Internal" in item["id"] for item in result["symbols"]))
+
+    def test_rejects_unqualified_or_missing_defining_sources(self):
+        for change in ["unknown", "missing"]:
+            inputs = _profile_inputs("haskell-mutations-native")
+            if change == "unknown":
+                inputs[3]["LibTmux.Internal.Unqualified"] = {}
+            else:
+                del inputs[3]["LibTmux.Internal.Mutation"]
+            with self.subTest(change=change), self.assertRaisesRegex(ValueError, "source.*profile"):
+                EXPORT.extract_modules(*inputs)
+
+
 class _QueryExportTest(unittest.TestCase):
     def test_query_parameters_constraints_and_defining_sources_survive(self):
         result = EXPORT.extract_modules(*_profile_inputs("haskell-query-native"))

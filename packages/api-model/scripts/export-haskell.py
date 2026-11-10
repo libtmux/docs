@@ -53,6 +53,7 @@ QUERY_ORIGINS = QUERY_MODULES + [
     "LibTmux.Internal." + name
     for name in ["Capture", "Field", "Graph", "Query", "Runtime", "Scheduler", "Scope", "TmuxText"]
 ]
+MUTATION_ORIGINS = [*QUERY_ORIGINS, "LibTmux.Internal.Mutation"]
 
 
 def _source_file(module):
@@ -167,13 +168,22 @@ def extract_modules(pages, installed, exposed, locations, revision):
     if observations and exposed not in [OBSERVATION_MODULES, QUERY_MODULES]:
         msg = "Unqualified observation module profile"
         raise ValueError(msg)
+    mutations = "LibTmux.Internal.Mutation" in interfaces
+    if mutations and exposed != QUERY_MODULES:
+        msg = "Unqualified mutation module profile"
+        raise ValueError(msg)
     source_modules = (
-        QUERY_ORIGINS
+        MUTATION_ORIGINS
+        if mutations
+        else QUERY_ORIGINS
         if exposed == QUERY_MODULES
         else OBSERVATION_ORIGINS
         if observations
         else exposed
     )
+    if set(locations) != set(source_modules):
+        msg = "Native source inputs differ from the qualified source profile"
+        raise ValueError(msg)
 
     documents = {module: _Document(pages[module]).root for module in exposed}
     page_modules = {module.replace(".", "-") + ".html": module for module in exposed}
@@ -778,10 +788,20 @@ def build_native(checkout, revision, native_output=None):
         if modules not in [SCALAR_MODULES, OBSERVATION_MODULES, QUERY_MODULES]:
             msg = "Unqualified configured public module profile"
             raise ValueError(msg)
+        mutations = "LibTmux.Internal.Mutation" in field("hidden-modules").split()
+        if mutations and modules != QUERY_MODULES:
+            msg = "Unqualified configured mutation module profile"
+            raise ValueError(msg)
         queries = modules == QUERY_MODULES
         observations = queries or modules == OBSERVATION_MODULES
         source_modules = (
-            QUERY_ORIGINS if queries else OBSERVATION_ORIGINS if observations else modules
+            MUTATION_ORIGINS
+            if mutations
+            else QUERY_ORIGINS
+            if queries
+            else OBSERVATION_ORIGINS
+            if observations
+            else modules
         )
         shown = _command([tools["haddock"], f"--show-interface={interface}"], source_root)
         if bool(shown.stdout.strip()) == bool(shown.stderr.strip()):
@@ -840,12 +860,24 @@ def build_native(checkout, revision, native_output=None):
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(data)
         return {
-            "schema": "libtmux.haskell-api/3"
+            "schema": "libtmux.haskell-api/4"
+            if mutations
+            else "libtmux.haskell-api/3"
             if queries
             else "libtmux.haskell-api/2"
             if observations
             else "libtmux.haskell-api/1",
-            **({"profile": "queries/1" if queries else "observations/1"} if observations else {}),
+            **(
+                {
+                    "profile": "mutations/1"
+                    if mutations
+                    else "queries/1"
+                    if queries
+                    else "observations/1"
+                }
+                if observations
+                else {}
+            ),
             "port": "haskell",
             "repo": "libtmux/libtmux-haskell",
             "revision": revision,
@@ -864,7 +896,7 @@ def build_native(checkout, revision, native_output=None):
                 ],
                 "exporter": {
                     "name": "Haddock public interface export",
-                    "version": 3 if queries else 2 if observations else 1,
+                    "version": 4 if mutations else 3 if queries else 2 if observations else 1,
                     "build": {
                         "compiler": plan["compiler-id"],
                         "cabal": plan["cabal-version"],
