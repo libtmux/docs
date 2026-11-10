@@ -12,7 +12,7 @@ import AgentPrompt from '../components/widgets/AgentPrompt.astro'
 import HomeIntro from '../components/HomeIntro.astro'
 import HomeLauncher from '../components/HomeLauncher.astro'
 import { getDocumentationSurfaces } from '../lib/documentation-navigation'
-import { withPortRoot, withRoot } from '../lib/site-root'
+import { withRoot } from '../lib/site-root'
 import { localesFor } from '../i18n/resolve'
 import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE } from '../i18n/locales'
@@ -159,11 +159,6 @@ const homeEntries = PORTS.map((port) => ({
         </div>
       </section>}
       <ApiReferences port={versionRootPort} version={buildVersion} />
-      <p class="mt-8 text-sm">
-        <a class="hover:underline" href={withPortRoot(`/${versionRootPort.slug}/`)}>
-          All {versionRootPort.name} versions and install instructions
-        </a>
-      </p>
       {ciExamples.length > 0 && <div class="mt-10 text-xs text-muted" data-ci-examples>
         <p>Example programs, each run by the port's CI:</p>
         <ul class="mt-1 space-y-0.5">
