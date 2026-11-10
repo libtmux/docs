@@ -211,9 +211,9 @@ export function extractHaskellArtifact(input: unknown, expectedRevision?: string
     }
     if (symbol.kind === 'typealias') {
       const head = symbol.signatures[0].raw
-      const qualifiedHead = queries
+      const qualifiedHead = typeof head === 'string' && (queries
         ? new RegExp(`^data ${symbol.name}(?: [a-z][\\w']*)*$`).test(head)
-        : head === `data ${symbol.name}`
+        : head === `data ${symbol.name}`)
       check(qualifiedHead && Array.isArray(symbol.instances),
         `unsupported type representation or missing instances for ${symbol.id}`)
       check(symbol.modifiers.includes('opaque') === !constructorOwners.has(symbol.id), `opaque status differs for ${symbol.id}`)

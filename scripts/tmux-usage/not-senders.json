@@ -5302,6 +5302,46 @@
           ]
         }
       ]
+    },
+    {
+      "port": "haskell",
+      "names": [
+        "windowLinks"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "values",
+      "why": "A typed relationship token reads captured memberships; it never links a window.",
+      "in": "src/LibTmux/Query/Session.hs",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Query/Session.hs:30",
+          "has": [
+            "windowLinks = Q.SessionLinks"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "names": [
+        "windowLinks"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "values",
+      "why": "A typed relationship token reads captured memberships; it never links a window.",
+      "in": "src/LibTmux/Query/Window.hs",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Query/Window.hs:39",
+          "has": [
+            "windowLinks = Q.WindowLinks"
+          ]
+        }
+      ]
     }
   ]
 }
