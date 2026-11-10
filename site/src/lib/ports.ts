@@ -766,7 +766,7 @@ const CORE_PORTS: readonly Port[] = [
       prerelease: { lang: 'text', code: 'build-depends: libtmux-haskell =={version}' },
       git: { lang: 'text', code: 'packages: .\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: master' },
     },
-    installNote: 'The pinned source exposes a scoped Server, detached snapshots, typed queries, checked values and validated offline fixtures. Public mutations, events and workspace tooling remain in development; MCP is excluded.',
+    installNote: 'The source provides scoped Server handles, detached snapshots, typed queries, checked renames and pane titles, and validated offline fixtures. Creation, events and workspace tooling remain in development; MCP is excluded.',
   },
   {
     slug: 'lisp',

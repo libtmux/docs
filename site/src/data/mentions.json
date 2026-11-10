@@ -6470,6 +6470,13 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Server#t:MutationOptions",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Server#t:Server",
    "page": "/haskell/latest/guides/api-documentation/",
    "title": "API documentation",
@@ -6477,9 +6484,23 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Server#t:Server",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Server#t:TmuxException",
    "page": "/haskell/latest/guides/capture/",
    "title": "Capture and navigate",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:awaitMutationRecovery",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
    "section": "guides"
   },
   {
@@ -6533,6 +6554,111 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Server#v:detachMutationRecovery",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:Failed",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:inspectMutationRecovery",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:InvalidTarget",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:MutationAppliedWithErrors",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:mutationGeneration",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:mutationOperation",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:mutationRecoveries",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:MutationRejected",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:MutationTimedOut",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:OutcomeUnknown",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:renameSession",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:renameWindow",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:renameWindowWith",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:resumeMutationRecovery",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Server#v:RuntimeClosed",
    "page": "/haskell/latest/guides/shared-runtime/",
    "title": "Shared Runtime scopes",
@@ -6540,9 +6666,30 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Server#v:ServerClosed",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:setPaneTitle",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Server#v:tryTmux",
    "page": "/haskell/latest/guides/capture/",
    "title": "Capture and navigate",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:tryTmux",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
    "section": "guides"
   },
   {
@@ -6673,6 +6820,13 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Snapshot#t:TmuxText",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Snapshot#v:AcquiredFromTmux",
    "page": "/haskell/latest/guides/offline-fixtures/",
    "title": "Offline fixtures",
@@ -6683,6 +6837,13 @@
    "symbol": "LibTmux.Snapshot#v:DefinedOffline",
    "page": "/haskell/latest/guides/offline-fixtures/",
    "title": "Offline fixtures",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Snapshot#v:labelFromBytes",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Rename and set pane titles",
    "section": "guides"
   },
   {

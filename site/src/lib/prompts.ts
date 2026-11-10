@@ -452,12 +452,12 @@ export function portParts(args: {
   if (port.ecosystemHost) {
     reading.push([port.ecosystemHost.url, `${port.name} reference on ${port.ecosystemHost.name}`])
   }
-  if (observationApi) reading.push([portUrl(ctx, port, 'core/'), 'the complete capture/query example and Cabal files'])
+  if (observationApi) reading.push([portUrl(ctx, port, 'core/'), 'the complete capture/mutation example and Cabal files'])
 
   const setup = [
     ...(observationApi ? [
-      'The public Haskell package captures detached tmux graphs and queries',
-      'their sessions, windows and panes. Documentation for every language',
+      'The Haskell package captures detached tmux graphs, queries their entities,',
+      'renames sessions and windows, and sets pane titles. Documentation',
     ] : [
       'libtmux drives a real tmux server from code. It gives you objects for the',
       'server, its sessions, windows and panes. Documentation for every language',
@@ -490,9 +490,9 @@ export function portParts(args: {
     '   Skip this in a project that already exists, and match what is here.',
     installStep(port, released, install, wording),
     ...(observationApi ? [
-      '4. Run the complete capture/query example with its displayed setup.',
-      '   Use its private demo server. Check that runQuery agrees with the',
-      '   native predicate, verify the expected output and cleanup, and show',
+      '4. Run the complete capture/mutation example with its displayed setup.',
+      '   Use its private demo server. Check renameSession, renameWindow and',
+      '   setPaneTitle, verify the expected output and cleanup, and show',
       '   the output and the files you added.',
     ] : [
       '4. Write the smallest program that proves the install works: connect to a',
@@ -538,8 +538,8 @@ export function portParts(args: {
   return {
     setup, notes, unavailable,
     ...(observationApi ? {
-      opening: 'Set up libtmux in this repository and verify its capture and query API.',
-      unavailableTask: 'Haskell exposes capture, detached graph traversal and typed queries. Mutation, event streaming and workspace APIs are not public. Report this boundary and stop; do not invent operations or use internal modules.',
+      opening: 'Set up libtmux in this repository and verify its capture, query and mutation API.',
+      unavailableTask: 'Haskell provides capture, detached graph traversal, typed queries, renameSession, renameWindow and setPaneTitle. Creation, session selection, input, event streaming and workspace APIs are not public. Report this boundary and stop; do not invent operations or use internal modules.',
     } : {}),
   }
 }

@@ -2,7 +2,7 @@
 port: haskell
 route: core
 title: "tmux client library for Haskell"
-description: "tmux client library for Haskell. Capture tmux state, navigate sessions, windows and panes, and filter detached snapshots"
+description: "tmux client library for Haskell. Capture tmux state, query detached snapshots, rename sessions and windows, and set pane titles"
 cards:
   - label: Getting started
     href: ../guides/getting-started/
@@ -13,6 +13,9 @@ cards:
   - label: Query snapshots
     href: ../guides/query/
     body: Filter typed fields, follow relationships and check selection cardinality.
+  - label: Rename and set titles
+    href: ../guides/mutations/
+    body: Select explicit targets, apply checked changes and capture fresh observations.
   - label: Typed values
     href: ../guides/typed-values/
     body: Understand entity IDs, indices, dimensions and version admission.
@@ -26,7 +29,9 @@ cards:
 
 Capture through a scoped Server handle, then inspect ordinary Haskell records
 after it closes. Window links retain each session's index and pane appearances.
-Public mutations, event streams and workspace tooling remain under development.
+Rename sessions and physical windows, or set a pane title through an explicit
+reference. Capture again to observe the change; existing snapshots retain their
+values. Creation, input, event streams and workspace tooling remain in development.
 MCP is excluded. Read the
 [implementation status](../guides/status/)
 before choosing the package for automation.

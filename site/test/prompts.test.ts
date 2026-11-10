@@ -96,11 +96,11 @@ describe('prompt composition', () => {
     }
   })
 
-  it('sets up Haskell through its capture and query example with compatible tools', () => {
-    const text = promptFor(PORT_BY_SLUG.haskell!, 'setup')
-    expect(text).toContain('verify its capture and query API')
+  it('sets up Haskell through its capture and mutation example with compatible tools', () => {
+    const text = promptFor(PORT_BY_SLUG.haskell!, 'setup').replace(/\s+/g, ' ')
+    expect(text).toContain('verify its capture, query and mutation API')
     expect(text).toContain('package manifest')
-    expect(text).toContain('runQuery')
+    expect(text).toContain('renameSession')
     expect(text).toContain('private demo server')
     expect(text).toContain('tmux -V')
     expect(text).not.toMatch(/GHC 9\.14\.1|Cabal 3\.18\.2\.0/)
@@ -110,10 +110,11 @@ describe('prompt composition', () => {
 
   it('reports missing Haskell operations instead of composing automation instructions', () => {
     for (const topic of TOPICS.filter((entry) => entry.id !== 'setup')) {
-      const text = promptFor(PORT_BY_SLUG.haskell!, topic.id)
+      const text = promptFor(PORT_BY_SLUG.haskell!, topic.id).replace(/\s+/g, ' ')
       expect(text, topic.id).toContain('Availability')
       expect(text, topic.id).toContain(topic.label)
-      expect(text, topic.id).toContain('Mutation, event streaming and workspace APIs are not public')
+      expect(text, topic.id).toContain('Creation, session selection, input, event streaming and workspace APIs are not public')
+      expect(text, topic.id).toContain('renameSession, renameWindow and setPaneTitle')
       expect(text, topic.id).not.toContain(topic.opening)
       expect(text, topic.id).not.toContain('What it does:')
       expect(text, topic.id).not.toContain('connect to a')

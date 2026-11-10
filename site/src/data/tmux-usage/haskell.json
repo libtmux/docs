@@ -94,7 +94,7 @@
   ],
   "port": "haskell",
   "repo": "libtmux/libtmux-haskell",
-  "revision": "fb86b60139795746e8964643a4f048fcd8a63d14",
+  "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
   "schemaVersion": 1,
   "symbols": {
     "LibTmux.Query#v:fetch": [
@@ -105,6 +105,7 @@
           "internal/LibTmux/Internal/Process/Native.hs:30",
           "internal/LibTmux/Internal/Process/Native.hs:100",
           "internal/LibTmux/Internal/Process.hs:92",
+          "internal/LibTmux/Internal/Process.hs:92",
           "internal/LibTmux/Internal/Process.hs:192",
           "internal/LibTmux/Internal/Runtime.hs:719",
           "internal/LibTmux/Internal/Runtime.hs:636",
@@ -113,9 +114,10 @@
           "internal/LibTmux/Internal/Runtime.hs:576",
           "internal/LibTmux/Internal/Capture.hs:86",
           "internal/LibTmux/Internal/Capture.hs:79",
-          "src/LibTmux/Server.hs:160",
+          "src/LibTmux/Server.hs:171",
           "internal/LibTmux/Internal/Record.hs:106",
-          "src/LibTmux/Query.hs:82"
+          "src/LibTmux/Query.hs:82",
+          "src/LibTmux/Query.hs:84"
         ],
         "reviewed": true,
         "scope": null
@@ -127,6 +129,7 @@
           "internal/LibTmux/Internal/Process/Native.hs:30",
           "internal/LibTmux/Internal/Process/Native.hs:100",
           "internal/LibTmux/Internal/Process.hs:92",
+          "internal/LibTmux/Internal/Process.hs:92",
           "internal/LibTmux/Internal/Process.hs:192",
           "internal/LibTmux/Internal/Runtime.hs:719",
           "internal/LibTmux/Internal/Runtime.hs:636",
@@ -135,9 +138,10 @@
           "internal/LibTmux/Internal/Runtime.hs:576",
           "internal/LibTmux/Internal/Capture.hs:86",
           "internal/LibTmux/Internal/Capture.hs:79",
-          "src/LibTmux/Server.hs:160",
+          "src/LibTmux/Server.hs:171",
           "internal/LibTmux/Internal/Record.hs:108",
-          "src/LibTmux/Query.hs:82"
+          "src/LibTmux/Query.hs:82",
+          "src/LibTmux/Query.hs:84"
         ],
         "reviewed": true,
         "scope": null
@@ -149,6 +153,7 @@
           "internal/LibTmux/Internal/Process/Native.hs:30",
           "internal/LibTmux/Internal/Process/Native.hs:100",
           "internal/LibTmux/Internal/Process.hs:92",
+          "internal/LibTmux/Internal/Process.hs:92",
           "internal/LibTmux/Internal/Process.hs:192",
           "internal/LibTmux/Internal/Runtime.hs:719",
           "internal/LibTmux/Internal/Runtime.hs:636",
@@ -157,10 +162,11 @@
           "internal/LibTmux/Internal/Runtime.hs:576",
           "internal/LibTmux/Internal/Capture.hs:86",
           "internal/LibTmux/Internal/Capture.hs:79",
-          "src/LibTmux/Server.hs:160",
+          "src/LibTmux/Server.hs:171",
           "internal/LibTmux/Internal/Record.hs:116",
           "internal/LibTmux/Internal/Record.hs:108",
-          "src/LibTmux/Query.hs:82"
+          "src/LibTmux/Query.hs:82",
+          "src/LibTmux/Query.hs:84"
         ],
         "reviewed": true,
         "scope": null,
@@ -175,6 +181,7 @@
           "internal/LibTmux/Internal/Process/Native.hs:30",
           "internal/LibTmux/Internal/Process/Native.hs:100",
           "internal/LibTmux/Internal/Process.hs:92",
+          "internal/LibTmux/Internal/Process.hs:92",
           "internal/LibTmux/Internal/Process.hs:192",
           "internal/LibTmux/Internal/Runtime.hs:719",
           "internal/LibTmux/Internal/Runtime.hs:636",
@@ -183,7 +190,7 @@
           "internal/LibTmux/Internal/Runtime.hs:576",
           "internal/LibTmux/Internal/Capture.hs:86",
           "internal/LibTmux/Internal/Capture.hs:79",
-          "src/LibTmux/Server.hs:160",
+          "src/LibTmux/Server.hs:171",
           "internal/LibTmux/Internal/Record.hs:106"
         ],
         "reviewed": true,
@@ -196,6 +203,7 @@
           "internal/LibTmux/Internal/Process/Native.hs:30",
           "internal/LibTmux/Internal/Process/Native.hs:100",
           "internal/LibTmux/Internal/Process.hs:92",
+          "internal/LibTmux/Internal/Process.hs:92",
           "internal/LibTmux/Internal/Process.hs:192",
           "internal/LibTmux/Internal/Runtime.hs:719",
           "internal/LibTmux/Internal/Runtime.hs:636",
@@ -204,7 +212,7 @@
           "internal/LibTmux/Internal/Runtime.hs:576",
           "internal/LibTmux/Internal/Capture.hs:86",
           "internal/LibTmux/Internal/Capture.hs:79",
-          "src/LibTmux/Server.hs:160",
+          "src/LibTmux/Server.hs:171",
           "internal/LibTmux/Internal/Record.hs:108"
         ],
         "reviewed": true,
@@ -217,6 +225,7 @@
           "internal/LibTmux/Internal/Process/Native.hs:30",
           "internal/LibTmux/Internal/Process/Native.hs:100",
           "internal/LibTmux/Internal/Process.hs:92",
+          "internal/LibTmux/Internal/Process.hs:92",
           "internal/LibTmux/Internal/Process.hs:192",
           "internal/LibTmux/Internal/Runtime.hs:719",
           "internal/LibTmux/Internal/Runtime.hs:636",
@@ -225,13 +234,178 @@
           "internal/LibTmux/Internal/Runtime.hs:576",
           "internal/LibTmux/Internal/Capture.hs:86",
           "internal/LibTmux/Internal/Capture.hs:79",
-          "src/LibTmux/Server.hs:160",
+          "src/LibTmux/Server.hs:171",
           "internal/LibTmux/Internal/Record.hs:116",
           "internal/LibTmux/Internal/Record.hs:108"
         ],
         "reviewed": true,
         "scope": null,
         "when": "when the server has sessions"
+      }
+    ],
+    "LibTmux.Server#v:renameSession": [
+      {
+        "command": "rename-session",
+        "evidence": [
+          "src/LibTmux/Server.hs:195",
+          "src/LibTmux/Server.hs:202",
+          "src/LibTmux/Server.hs:239",
+          "internal/LibTmux/Internal/Mutation.hs:69",
+          "internal/LibTmux/Internal/Runtime.hs:547",
+          "internal/LibTmux/Internal/Runtime.hs:681",
+          "internal/LibTmux/Internal/Runtime.hs:682",
+          "internal/LibTmux/Internal/Command.hs:105",
+          "internal/LibTmux/Internal/Command.hs:109",
+          "internal/LibTmux/Internal/Command.hs:116",
+          "internal/LibTmux/Internal/Command.hs:117",
+          "cbits/process.c:125",
+          "internal/LibTmux/Internal/Process/Native.hs:30",
+          "internal/LibTmux/Internal/Process/Native.hs:100",
+          "internal/LibTmux/Internal/Process.hs:92",
+          "internal/LibTmux/Internal/Process.hs:92",
+          "internal/LibTmux/Internal/Process.hs:192",
+          "internal/LibTmux/Internal/Runtime.hs:719",
+          "internal/LibTmux/Internal/Runtime.hs:636"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux.Server#v:renameSessionWith": [
+      {
+        "command": "rename-session",
+        "evidence": [
+          "src/LibTmux/Server.hs:202",
+          "src/LibTmux/Server.hs:239",
+          "internal/LibTmux/Internal/Mutation.hs:69",
+          "internal/LibTmux/Internal/Runtime.hs:547",
+          "internal/LibTmux/Internal/Runtime.hs:681",
+          "internal/LibTmux/Internal/Runtime.hs:682",
+          "internal/LibTmux/Internal/Command.hs:105",
+          "internal/LibTmux/Internal/Command.hs:109",
+          "internal/LibTmux/Internal/Command.hs:116",
+          "internal/LibTmux/Internal/Command.hs:117",
+          "cbits/process.c:125",
+          "internal/LibTmux/Internal/Process/Native.hs:30",
+          "internal/LibTmux/Internal/Process/Native.hs:100",
+          "internal/LibTmux/Internal/Process.hs:92",
+          "internal/LibTmux/Internal/Process.hs:92",
+          "internal/LibTmux/Internal/Process.hs:192",
+          "internal/LibTmux/Internal/Runtime.hs:719",
+          "internal/LibTmux/Internal/Runtime.hs:636"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux.Server#v:renameWindow": [
+      {
+        "command": "rename-window",
+        "evidence": [
+          "src/LibTmux/Server.hs:208",
+          "src/LibTmux/Server.hs:215",
+          "src/LibTmux/Server.hs:239",
+          "internal/LibTmux/Internal/Mutation.hs:69",
+          "internal/LibTmux/Internal/Runtime.hs:547",
+          "internal/LibTmux/Internal/Runtime.hs:681",
+          "internal/LibTmux/Internal/Runtime.hs:682",
+          "internal/LibTmux/Internal/Command.hs:105",
+          "internal/LibTmux/Internal/Command.hs:109",
+          "internal/LibTmux/Internal/Command.hs:119",
+          "internal/LibTmux/Internal/Command.hs:120",
+          "cbits/process.c:125",
+          "internal/LibTmux/Internal/Process/Native.hs:30",
+          "internal/LibTmux/Internal/Process/Native.hs:100",
+          "internal/LibTmux/Internal/Process.hs:92",
+          "internal/LibTmux/Internal/Process.hs:92",
+          "internal/LibTmux/Internal/Process.hs:192",
+          "internal/LibTmux/Internal/Runtime.hs:719",
+          "internal/LibTmux/Internal/Runtime.hs:636"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux.Server#v:renameWindowWith": [
+      {
+        "command": "rename-window",
+        "evidence": [
+          "src/LibTmux/Server.hs:215",
+          "src/LibTmux/Server.hs:239",
+          "internal/LibTmux/Internal/Mutation.hs:69",
+          "internal/LibTmux/Internal/Runtime.hs:547",
+          "internal/LibTmux/Internal/Runtime.hs:681",
+          "internal/LibTmux/Internal/Runtime.hs:682",
+          "internal/LibTmux/Internal/Command.hs:105",
+          "internal/LibTmux/Internal/Command.hs:109",
+          "internal/LibTmux/Internal/Command.hs:119",
+          "internal/LibTmux/Internal/Command.hs:120",
+          "cbits/process.c:125",
+          "internal/LibTmux/Internal/Process/Native.hs:30",
+          "internal/LibTmux/Internal/Process/Native.hs:100",
+          "internal/LibTmux/Internal/Process.hs:92",
+          "internal/LibTmux/Internal/Process.hs:92",
+          "internal/LibTmux/Internal/Process.hs:192",
+          "internal/LibTmux/Internal/Runtime.hs:719",
+          "internal/LibTmux/Internal/Runtime.hs:636"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux.Server#v:setPaneTitle": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "src/LibTmux/Server.hs:220",
+          "src/LibTmux/Server.hs:227",
+          "src/LibTmux/Server.hs:239",
+          "internal/LibTmux/Internal/Mutation.hs:69",
+          "internal/LibTmux/Internal/Runtime.hs:547",
+          "internal/LibTmux/Internal/Runtime.hs:681",
+          "internal/LibTmux/Internal/Runtime.hs:682",
+          "internal/LibTmux/Internal/Command.hs:105",
+          "internal/LibTmux/Internal/Command.hs:109",
+          "internal/LibTmux/Internal/Command.hs:122",
+          "internal/LibTmux/Internal/Command.hs:123",
+          "cbits/process.c:125",
+          "internal/LibTmux/Internal/Process/Native.hs:30",
+          "internal/LibTmux/Internal/Process/Native.hs:100",
+          "internal/LibTmux/Internal/Process.hs:92",
+          "internal/LibTmux/Internal/Process.hs:92",
+          "internal/LibTmux/Internal/Process.hs:192",
+          "internal/LibTmux/Internal/Runtime.hs:719",
+          "internal/LibTmux/Internal/Runtime.hs:636"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux.Server#v:setPaneTitleWith": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "src/LibTmux/Server.hs:227",
+          "src/LibTmux/Server.hs:239",
+          "internal/LibTmux/Internal/Mutation.hs:69",
+          "internal/LibTmux/Internal/Runtime.hs:547",
+          "internal/LibTmux/Internal/Runtime.hs:681",
+          "internal/LibTmux/Internal/Runtime.hs:682",
+          "internal/LibTmux/Internal/Command.hs:105",
+          "internal/LibTmux/Internal/Command.hs:109",
+          "internal/LibTmux/Internal/Command.hs:122",
+          "internal/LibTmux/Internal/Command.hs:123",
+          "cbits/process.c:125",
+          "internal/LibTmux/Internal/Process/Native.hs:30",
+          "internal/LibTmux/Internal/Process/Native.hs:100",
+          "internal/LibTmux/Internal/Process.hs:92",
+          "internal/LibTmux/Internal/Process.hs:92",
+          "internal/LibTmux/Internal/Process.hs:192",
+          "internal/LibTmux/Internal/Runtime.hs:719",
+          "internal/LibTmux/Internal/Runtime.hs:636"
+        ],
+        "reviewed": true,
+        "scope": null
       }
     ]
   }

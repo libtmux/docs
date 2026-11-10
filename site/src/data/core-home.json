@@ -323,7 +323,7 @@
   },
   "haskell": {
     "title": "tmux client library for Haskell",
-    "lead": "Capture tmux state, navigate sessions, windows and panes, and filter detached snapshots",
+    "lead": "Capture tmux state, query detached snapshots, rename sessions and windows, and set pane titles",
     "modules": [
       "LibTmux.Server",
       "LibTmux.Snapshot",
