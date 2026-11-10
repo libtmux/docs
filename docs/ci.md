@@ -529,6 +529,25 @@ page in the browser is printed as unresolved and never counted as passing, and
 a run that leaves more than a twentieth of the destinations unresolved fails,
 because a run that asked almost nothing has checked almost nothing.
 
+## Port heads check (`port-heads.yml`)
+
+Runs weekly and on demand, never on a pull request. A port's own docs workflow
+regenerates its API model and guides from the port's head, so a new package or
+README badge service in the port can break that build while this repository's
+CI, which reads committed models and guides, stays green. Each leg checks out
+one port's default branch beside this repository's main and runs, without
+deploying, what a port publish runs: the badge check
+(`scripts/check-port-badges.mjs`, which names the port, file and URL of an
+unmapped badge) and `scripts/stage-port-source.sh`, the model, staging and
+usage steps `build-site.sh` shares with it. Only that port's
+`LIBTMUX_DOCS_CHECKOUT_<PORT>` is set, so a wrapper leg such as clojure proves
+the wrapper's checkout alone is enough.
+
+`scripts/check-port-heads.mjs` owns the phases. A port whose model needs an
+exporter this job does not install reports `skipped` with the reason, and any
+other failure fails the leg. Lisp is provisioned; to cover another port, add
+its toolchain steps from `port-docs.yml` and its slug to `--provisioned`.
+
 ## Secrets this scheme expects
 
 | Secret | Used by | Scope | Storage level |

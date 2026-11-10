@@ -1,0 +1,109 @@
+name: port-heads
+
+# Runs the steps a port's publish runs, against each port's default-branch
+# head and this repository's main, without deploying anything.
+#
+# A port's own docs workflow regenerates its API model and guides from the
+# port's head, so a new package, a new README badge service or a changed guide
+# can break that build while docs CI, which reads committed models and guides,
+# stays green. Three failures reached release that way: a Lisp package the
+# reference table lacked, a wrapper whose build did not name its parent's
+# checkout, and unmapped README badges. This workflow finds the next one on a
+# schedule instead of in a release.
+#
+# It is off the pull-request path: schedule and manual dispatch only. Each leg
+# sets only LIBTMUX_DOCS_CHECKOUT_<PORT> for its own port, as a port publish
+# does, so a wrapper leg proves the wrapper's checkout alone is enough.
+# scripts/check-port-heads.mjs holds the phases and says which ports need an
+# exporter this job does not install; those report `skipped` rather than pass.
+#
+# Read-only: no secrets, no write access, no upload to the deploy bucket.
+
+on:
+  schedule:
+    - cron: '41 7 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: port-heads
+  cancel-in-progress: false
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '26'
+      - run: pnpm install --frozen-lockfile
+      - id: matrix
+        run: node scripts/check-port-heads.mjs matrix
+
+  check:
+    needs: matrix
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
+    name: ${{ matrix.port }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: docs
+          persist-credentials: false
+      # The default branch: no ref. Full history, because the generators
+      # resolve revisions and tags in the port's repository.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ matrix.repo }}
+          path: port
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
+        with:
+          package_json_file: docs/package.json
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '26'
+      - run: pnpm install --frozen-lockfile
+        working-directory: docs
+
+      # The same toolchain steps port-docs.yml runs for Lisp. Another port
+      # joins by adding its steps here and its slug to --provisioned below.
+      - name: Install Common Lisp documentation toolchain
+        if: matrix.port == 'lisp'
+        uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+        with:
+          version: 2026.11.3
+          working_directory: port
+          cache: false
+      - name: Install locked Common Lisp dependencies
+        if: matrix.port == 'lisp'
+        working-directory: port
+        run: mise run setup
+      - name: Export Common Lisp API from the port head
+        if: matrix.port == 'lisp'
+        working-directory: port
+        run: mise run docs-artifact
+
+      - name: Run the port publish steps against docs main
+        working-directory: docs
+        env:
+          PORT: ${{ matrix.port }}
+          PORT_CHECKOUT: ${{ github.workspace }}/port
+        run: >
+          node scripts/check-port-heads.mjs run
+          --port "$PORT"
+          --checkout "$PORT_CHECKOUT"
+          --provisioned lisp
