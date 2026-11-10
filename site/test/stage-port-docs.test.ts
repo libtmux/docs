@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { artifactFromRevision, expandDocumenter, linkSnapshotDepths, rewriteLinks, stagedPortGuides, stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
+import { LISP_REFERENCE_FILES, artifactFromRevision, expandDocumenter, linkSnapshotDepths, rewriteLinks, stagedPortGuides, stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
 import { PORTS } from '../src/lib/ports'
 import { SOURCE_GUIDE_PORTS } from '../src/lib/port-documentation'
 import scalaGuides from '../src/data/port-guides/scala.json'
@@ -14,6 +14,7 @@ import juliaGuides from '../src/data/port-guides/julia.json'
 import haskellModel from '../src/data/api/haskell.json'
 import clojureGuides from '../src/data/port-guides/clojure.json'
 import lispGuides from '../src/data/port-guides/lisp.json'
+import lispModel from '../src/data/api/lisp.json'
 
 afterEach(() => vi.unstubAllEnvs())
 
@@ -106,6 +107,24 @@ describe('staged port guide links', () => {
     expect(workspace).toContain('../reference/libtmux-workspace-read-workspace/')
     expect(workspace).toContain('../../reference/libtmux-command-outcome/')
     expect(workspace).not.toMatch(/reference\/#(?:read-workspace-function|command-outcome-type)/)
+  })
+  // CI checks out libtmux-lisp at the model revision; set LIBTMUX_DOCS_CHECKOUT_LISP elsewhere.
+  it.skipIf(!process.env.LIBTMUX_DOCS_CHECKOUT_LISP)('maps every public Lisp package to a native reference file with its anchors', () => {
+    const checkout = process.env.LIBTMUX_DOCS_CHECKOUT_LISP!
+    const source = readFileSync(join(checkout, 'tools/documentation.lisp'), 'utf8')
+    const list = source.match(/\(defparameter \*artifact-packages\*([\s\S]*?)\n\n/)![1]
+    const packages = [...list.matchAll(/\("([^"]+)" :/g)].map((match) => match[1])
+    expect(packages.length).toBeGreaterThan(0)
+    for (const name of packages) {
+      expect(LISP_REFERENCE_FILES[name as keyof typeof LISP_REFERENCE_FILES], name).toBeTruthy()
+      const text = readFileSync(join(checkout, LISP_REFERENCE_FILES[name as keyof typeof LISP_REFERENCE_FILES]), 'utf8')
+      expect(text, name).toMatch(/<a id="[^"]+-(?:function|type)"><\/a>/)
+    }
+    for (const symbol of lispModel.symbols.filter((entry) => entry.kind !== 'module')) {
+      const file = LISP_REFERENCE_FILES[symbol.namespace as keyof typeof LISP_REFERENCE_FILES]
+      const anchor = `${symbol.name}-${symbol.kind === 'function' ? 'function' : 'type'}`
+      expect(readFileSync(join(checkout, file), 'utf8'), symbol.id).toContain(`<a id="${anchor}"></a>`)
+    }
   })
   it('renders Julia raw HTML with revision-bound source links while preserving code examples', () => {
     const artifact = structuredClone(juliaGuides)
