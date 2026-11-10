@@ -44,6 +44,14 @@ describe('the APIs a showcase example uses', () => {
     expect(used.more).toBe(17)
   })
 
+  it.each([
+    '-- Tmux.renameSession server ref "unused"\nmain = pure ()',
+    '{- outer {- nested -} Tmux.renameSession server ref "unused" -}\nmain = pure ()',
+  ])('excludes Haskell comments from API usage', (code) => {
+    expect(() => apisUsed('haskell', ['LibTmux.Server#v:renameSession'], code, 'latest'))
+      .toThrow(/never uses renameSession/)
+  })
+
   it('counts a use, not a mention in a comment or a string, and a call by its qualified form', () => {
     const real = programs('rs')['typed-graph']!
     // The name only in a comment, or only in a string.

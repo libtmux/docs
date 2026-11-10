@@ -14,7 +14,7 @@ import { API_MODELS, referenceHref } from './api-models.ts'
 import { PORT_BY_SLUG, referenceUrl } from './ports.ts'
 
 /** The language each port's examples are written in. */
-const LANG: Record<string, string> = { rs: 'rust', go: 'go', ruby: 'ruby', ocaml: 'ocaml' }
+const LANG: Record<string, string> = { rs: 'rust', go: 'go', ruby: 'ruby', ocaml: 'ocaml', haskell: 'haskell' }
 
 /** Entries shown before "+N more". */
 export const MAX_APIS = 10
@@ -40,6 +40,7 @@ const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 /** Languages the examples are written in, and what starts a comment or a string in each. */
 const SYNTAX: Record<string, { line?: string; block?: [string, string]; quotes: string[] }> = {
   ocaml: { block: ['(*', '*)'], quotes: ['"'] },
+  haskell: { line: '--', block: ['{-', '-}'], quotes: ['"'] },
   rust: { line: '//', block: ['/*', '*/'], quotes: ['"'] },
   go: { line: '//', block: ['/*', '*/'], quotes: ['"', '`', "'"] },
   ruby: { line: '#', quotes: ['"', "'"] },
@@ -58,7 +59,7 @@ export function withoutLiterals(code: string, lang: string): string {
       blank(end < 0 ? rest.length : end)
     } else if (syntax.block && rest.startsWith(syntax.block[0])) {
       let end = rest.indexOf(syntax.block[1], syntax.block[0].length)
-      if (lang === 'ocaml') {
+      if (lang === 'ocaml' || lang === 'haskell') {
         let depth = 1
         let at = syntax.block[0].length
         while (at < rest.length && depth > 0) {

@@ -224,11 +224,16 @@
   },
   "haskell": {
     "typed-graph": [
+      "LibTmux.Server#v:serverConfig",
+      "LibTmux.Server#v:tryTmux",
       "LibTmux.Server#v:withServer",
       "LibTmux.Server#v:capture",
       "LibTmux.Query#v:runQuery",
-      "LibTmux.Query#v:fetch",
-      "LibTmux.Query#v:exactlyOne"
+      "LibTmux.Query#v:exactlyOne",
+      "LibTmux.Snapshot#v:lookupWindow",
+      "LibTmux.Server#v:renameSession",
+      "LibTmux.Server#v:renameWindow",
+      "LibTmux.Server#v:setPaneTitle"
     ]
   }
 }
