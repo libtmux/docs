@@ -83,8 +83,9 @@ for (const [name, mutate] of mutations) {
 {
   const dir = mkdtempSync(join(tmpdir(), 'gen-registry-online-'))
   try {
-    for (const path of ['scripts', 'site/src/lib', 'site/src/data']) mkdirSync(join(dir, path), { recursive: true })
+    for (const path of ['scripts/lib', 'site/src/lib', 'site/src/data']) mkdirSync(join(dir, path), { recursive: true })
     copyFileSync(script, join(dir, 'scripts/gen-registry.mjs'))
+    copyFileSync(join(here, 'lib/port-checkout.mjs'), join(dir, 'scripts/lib/port-checkout.mjs'))
     copyFileSync(join(here, '../site/src/lib/versions.ts'), join(dir, 'site/src/lib/versions.ts'))
     copyFileSync(real, join(dir, 'site/src/data/registry.json'))
     const ports = PORTS.map(({ slug, repo, packageName, tagGrammar, tagPrefix, registry }) => ({
