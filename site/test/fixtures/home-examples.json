@@ -1594,7 +1594,7 @@
       ],
       "shellRecipe": [
         "cabal update",
-        "LIBTMUX_DEMO_DIR=$(mktemp -d -t libtmux-haskell-demo.XXXXXX) && \\\ntrap 'tmux -N -S \"$LIBTMUX_DEMO_DIR/s\" kill-server; rm -r -- \"$LIBTMUX_DEMO_DIR\"' EXIT && \\\nenv -u TMUX -u TMUX_PANE tmux \\\n    -S \"$LIBTMUX_DEMO_DIR/s\" \\\n    -f /dev/null \\\n    new-session \\\n    -d \\\n    -s demo \\\n    -n editor \\\n    -x 120 \\\n    -y 40 \\\n    /bin/cat - && \\\nenv -u TMUX -u TMUX_PANE tmux \\\n    -N \\\n    -S \"$LIBTMUX_DEMO_DIR/s\" \\\n    link-window \\\n    -s demo:0 \\\n    -t demo:4 && \\\ncabal run --verbose=0 query-graph -- \\\n    \"$LIBTMUX_DEMO_DIR/s\" \\\n    \"$(command -v tmux)\""
+        "(\nLIBTMUX_DEMO_DIR=$(mktemp -d -t libtmux-haskell-demo.XXXXXX) && \\\ntrap 'tmux -N -S \"$LIBTMUX_DEMO_DIR/s\" kill-server; rm -r -- \"$LIBTMUX_DEMO_DIR\"' EXIT && \\\nenv -u TMUX -u TMUX_PANE tmux \\\n    -S \"$LIBTMUX_DEMO_DIR/s\" \\\n    -f /dev/null \\\n    new-session \\\n    -d \\\n    -s demo \\\n    -n editor \\\n    -x 120 \\\n    -y 40 \\\n    /bin/cat - && \\\nenv -u TMUX -u TMUX_PANE tmux \\\n    -N \\\n    -S \"$LIBTMUX_DEMO_DIR/s\" \\\n    link-window \\\n    -s demo:0 \\\n    -t demo:4 && \\\ncabal run --verbose=0 query-graph -- \\\n    \"$LIBTMUX_DEMO_DIR/s\" \\\n    \"$(command -v tmux)\"\n)"
       ],
       "expectedOutputs": [
         [],
