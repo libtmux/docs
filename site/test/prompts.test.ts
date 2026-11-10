@@ -96,13 +96,14 @@ describe('prompt composition', () => {
     }
   })
 
-  it('sets up Haskell through its public values API without requiring tmux', () => {
+  it('sets up Haskell through its capture and query example with compatible tools', () => {
     const text = promptFor(PORT_BY_SLUG.haskell!, 'setup')
-    expect(text).toContain('verify its pure values API')
-    expect(text).toContain('GHC 9.14.1 and Cabal 3.18.2.0')
-    expect(text).toContain('parseWindowId')
-    expect(text).toContain('renderWindowId')
-    expect(text).not.toContain('tmux -V')
+    expect(text).toContain('verify its capture and query API')
+    expect(text).toContain('package manifest')
+    expect(text).toContain('runQuery')
+    expect(text).toContain('private demo server')
+    expect(text).toContain('tmux -V')
+    expect(text).not.toMatch(/GHC 9\.14\.1|Cabal 3\.18\.2\.0/)
     expect(text).not.toContain('connect to a')
     expect(text).not.toContain('prefer a final release over this prerelease')
   })
@@ -112,7 +113,7 @@ describe('prompt composition', () => {
       const text = promptFor(PORT_BY_SLUG.haskell!, topic.id)
       expect(text, topic.id).toContain('Availability')
       expect(text, topic.id).toContain(topic.label)
-      expect(text, topic.id).toContain('Client, command, streaming and workspace APIs are not exposed')
+      expect(text, topic.id).toContain('Mutation, event streaming and workspace APIs are not public')
       expect(text, topic.id).not.toContain(topic.opening)
       expect(text, topic.id).not.toContain('What it does:')
       expect(text, topic.id).not.toContain('connect to a')
