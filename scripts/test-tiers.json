@@ -3,6 +3,7 @@
     {
       "reason": "Executes real subprocesses or Git repositories.",
       "files": [
+        "packages/api-model/test/haskell-native.test.ts",
         "site/test/api-example-verification.test.ts",
         "site/test/api-fidelity.test.ts",
         "site/test/cargo-features.test.ts",
