@@ -20,8 +20,8 @@ import { homeCodeColumns } from '../lib/quickstarts'
  * and the APIs it uses under that. Narrow pages fold the menu into a dropdown.
  * The menu is plain links, so Tab and Enter reach every capability.
  * The selection is the `capability` query parameter and leaves `product` and
- * the example toggles alone. Every example is an excerpt of a program or test
- * the port's CI runs; see `lib/core-capabilities.ts`.
+ * the example toggles alone. Every example is a program the port's CI runs, listed
+ * in the page footer; see `lib/core-capabilities.ts`.
  *
  * A port whose only example is its quickstart gets that one panel, with no
  * list. Returns nothing when the port has neither.
@@ -32,10 +32,11 @@ interface Props {
   links?: { href: string; label: string }[]
 }
 const { port, links = [] } = Astro.props as Props
-const programs = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>)
 const quickstart = QUICKSTARTS[port]?.complete
 const quickstartCapability = CAPABILITIES.find((item) => item.id === (quickstart?.capability ?? 'typed-graph'))
 if (!quickstartCapability) throw new Error(`CoreShowcase: ${port} names an unknown quickstart capability`)
+// The quickstart is the panel for its capability, so a port table entry for the same capability is not a second panel: the script selects panels by id.
+const programs = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>).filter((item) => !quickstart || item.id !== quickstartCapability.id)
 const quickstartCode = quickstart ? homeProgram(quickstart, 'full') : ''
 // A recording of this program, run for real, makes the first capability a player; without one the program stands alone.
 const player = quickstart ? await playableCapability(port, quickstartCapability.id, quickstartCode) : undefined
@@ -92,10 +93,6 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
           {apis.get(item.id)!.more > 0 && <li><a href={apis.get(item.id)!.moreHref}>+{apis.get(item.id)!.more} more</a></li>}
         </ul>
       </div>}
-      <p class="core-showcase__source">
-        {item.tmux && <small class="core-showcase__tmux">tmux {item.tmux}</small>}
-        The whole program, <a href={item.sourceUrl}><code>{item.file}</code></a>. The port's CI runs it in <code>{item.ci.workflow}</code>{(item.ci.where ?? item.ci.directory) && <> from <code>{item.ci.where ?? item.ci.directory}/</code></>}: <code>{item.ci.command}</code>.
-      </p>
     </section>)}
   </div>
   {links.length > 0 && <p class="core-showcase__links">{links.map((link) => <a href={link.href}>{link.label}</a>)}</p>}
@@ -189,9 +186,6 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
     margin-inline-start: .5rem; padding: .05rem .4rem; border: 1px solid var(--color-edge); border-radius: .75rem;
     font-size: .6875rem; font-weight: 500; color: var(--color-muted);
   }
-  .core-showcase__source { margin-top: .6rem; font-size: .8125rem; color: var(--color-muted); }
-  .core-showcase__source a { color: var(--color-link); }
-  .core-showcase__source code { white-space: normal; overflow-wrap: anywhere; }
   .core-showcase :global(.expressive-code pre) { overflow: auto; tab-size: 8; }
   @media (min-width: 56rem) {
     .core-showcase__picker > summary { display: none !important; }
