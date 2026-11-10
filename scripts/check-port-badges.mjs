@@ -15,6 +15,7 @@
  */
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { PORTS } from '../site/src/lib/ports.ts'
 import { SOURCE_GUIDE_PORTS } from '../site/src/lib/port-documentation.ts'
 import { badgeProblems, readRegistry } from './lib/badges.mjs'
 import { resolveCheckout } from './lib/port-checkout.mjs'
@@ -23,7 +24,11 @@ import { stagedRoutesFor } from './stage-port-docs.mjs'
 const option = (name) => (process.argv.includes(name) ? process.argv[process.argv.indexOf(name) + 1] : undefined)
 const only = option('--port')
 const require = process.argv.includes('--require')
-if (only && !SOURCE_GUIDE_PORTS.includes(only)) throw new Error(`check-port-badges: ${only} stages no source guides`)
+if (only && !PORTS.some((port) => port.slug === only)) throw new Error(`check-port-badges: unknown port ${only}`)
+if (only && !SOURCE_GUIDE_PORTS.includes(only)) {
+  console.log(`check-port-badges: ${only} stages no source guides`)
+  process.exit(0)
+}
 
 const registry = readRegistry()
 const problems = []

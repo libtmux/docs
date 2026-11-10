@@ -11,13 +11,16 @@ name: port-heads
 # checkout, and unmapped README badges. This workflow finds the next one on a
 # schedule instead of in a release.
 #
-# It is off the pull-request path: schedule and manual dispatch only. Each leg
-# sets only LIBTMUX_DOCS_CHECKOUT_<PORT> for its own port, as a port publish
-# does, so a wrapper leg proves the wrapper's checkout alone is enough.
-# scripts/check-port-heads.mjs holds the phases and says which ports need an
-# exporter this job does not install; those report `skipped` rather than pass.
+# It is off the pull-request path: schedule and manual dispatch only. The
+# `build` jobs call port-docs.yml, the workflow a port publish calls, once per
+# library family with the port's repository and head commit and publish false,
+# so every port runs its own exporters, toolchains and build-site.sh exactly as
+# a release does. No reusable-deploy.yml job follows, so nothing is deployed.
+# A wrapper leg sets only the wrapper's LIBTMUX_DOCS_CHECKOUT_<PORT>, as in a
+# release. The `badges` jobs add scripts/check-port-badges.mjs, which lists
+# every unmapped badge in the port's staged guides rather than the first.
 #
-# Read-only: no secrets, no write access, no upload to the deploy bucket.
+# Read-only: no secrets, no write access.
 
 on:
   schedule:
@@ -48,28 +51,44 @@ jobs:
       - id: matrix
         run: node scripts/check-port-heads.mjs matrix
 
-  check:
+  build:
     needs: matrix
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
-    name: ${{ matrix.port }}
+    name: build ${{ matrix.port }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/port-docs.yml
+    with:
+      port: ${{ matrix.port }}
+      include-wrappers: true
+      source-repository: ${{ matrix.repo }}
+      source-ref: ${{ matrix.ref }}
+      version: latest
+      version-kind: trunk
+      is-default: false
+      publish: false
+
+  badges:
+    needs: matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
+    name: badges ${{ matrix.port }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: docs
           persist-credentials: false
-      # The default branch: no ref. Full history, because the generators
-      # resolve revisions and tags in the port's repository.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ matrix.repo }}
+          ref: ${{ matrix.ref }}
           path: port
-          fetch-depth: 0
           persist-credentials: false
-
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
         with:
           package_json_file: docs/package.json
@@ -78,32 +97,17 @@ jobs:
           node-version: '26'
       - run: pnpm install --frozen-lockfile
         working-directory: docs
-
-      # The same toolchain steps port-docs.yml runs for Lisp. Another port
-      # joins by adding its steps here and its slug to --provisioned below.
-      - name: Install Common Lisp documentation toolchain
-        if: matrix.port == 'lisp'
-        uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
-        with:
-          version: 2026.11.3
-          working_directory: port
-          cache: false
-      - name: Install locked Common Lisp dependencies
-        if: matrix.port == 'lisp'
-        working-directory: port
-        run: mise run setup
-      - name: Export Common Lisp API from the port head
-        if: matrix.port == 'lisp'
-        working-directory: port
-        run: mise run docs-artifact
-
-      - name: Run the port publish steps against docs main
+      - name: Check every staged guide's badges at the port head
         working-directory: docs
         env:
-          PORT: ${{ matrix.port }}
+          MEMBERS: ${{ matrix.members }}
           PORT_CHECKOUT: ${{ github.workspace }}/port
-        run: >
-          node scripts/check-port-heads.mjs run
-          --port "$PORT"
-          --checkout "$PORT_CHECKOUT"
-          --provisioned lisp
+        run: |
+          set -euo pipefail
+          for member in $MEMBERS; do
+            [[ "$member" =~ ^[a-z]+$ ]] || { echo "invalid port slug: $member" >&2; exit 1; }
+            export "LIBTMUX_DOCS_CHECKOUT_${member^^}=$PORT_CHECKOUT"
+          done
+          for member in $MEMBERS; do
+            node scripts/check-port-badges.mjs --port "$member" --require
+          done
