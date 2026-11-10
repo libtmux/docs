@@ -364,6 +364,28 @@ describe('the showcase component', () => {
     expect(ts.querySelector('[data-apis-for="typed-graph"]'), 'no empty API list when use detection is not qualified').toBeNull()
   })
 
+  it('draws each capability once on every port, because the script selects panels by id', async () => {
+    const { Window } = await import('happy-dom')
+    const { createComponent, renderTemplate } = await import('astro/runtime/server/index.js')
+    const { loadAstroTemplate, renderAstroTemplate } = await import('./astro-templates')
+    const Code = createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre data-code>${props.code}</pre>`)
+    const template = await loadAstroTemplate('components/CoreShowcase.astro', {
+      stubs: {
+        'components/HomeExample.astro': '---\n---\n<div data-home-example />',
+        'components/core/CorePlayer.astro': '---\n---\n<div data-core-player />',
+      },
+      modules: { 'astro-expressive-code/components': { Code } },
+    })
+    for (const port of Object.keys(PORT_BY_SLUG)) {
+      const window = new Window()
+      window.document.body.innerHTML = await renderAstroTemplate(template, { url: `https://libtmux.org/${port}/latest/`, props: { port } })
+      const doc = window.document as unknown as Document
+      const panels = [...doc.querySelectorAll('[data-capability-panel]')].map((panel) => panel.getAttribute('data-capability-panel'))
+      expect(new Set(panels).size, `${port} panels ${panels.join(', ')}`).toBe(panels.length)
+      expect([...doc.querySelectorAll('[data-capability-option]')].map((a) => a.getAttribute('data-capability-option')), port).toEqual(panels.length > 1 ? panels : [])
+    }
+  })
+
   it('plays a capability whose recording is of its cached program, and keeps a plain block for one without', async () => {
     const { Window } = await import('happy-dom')
     const { createComponent, renderTemplate } = await import('astro/runtime/server/index.js')

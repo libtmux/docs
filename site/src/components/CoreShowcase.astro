@@ -32,10 +32,11 @@ interface Props {
   links?: { href: string; label: string }[]
 }
 const { port, links = [] } = Astro.props as Props
-const programs = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>)
 const quickstart = QUICKSTARTS[port]?.complete
 const quickstartCapability = CAPABILITIES.find((item) => item.id === (quickstart?.capability ?? 'typed-graph'))
 if (!quickstartCapability) throw new Error(`CoreShowcase: ${port} names an unknown quickstart capability`)
+// The quickstart is the panel for its capability, so a port table entry for the same capability is not a second panel: the script selects panels by id.
+const programs = portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>).filter((item) => !quickstart || item.id !== quickstartCapability.id)
 const quickstartCode = quickstart ? homeProgram(quickstart, 'full') : ''
 // A recording of this program, run for real, makes the first capability a player; without one the program stands alone.
 const player = quickstart ? await playableCapability(port, quickstartCapability.id, quickstartCode) : undefined
