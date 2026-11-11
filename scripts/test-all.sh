@@ -95,6 +95,9 @@ node scripts/check-palette.mjs
 step 'palette (negative)'
 node scripts/check-palette.negative.mjs
 
+step 'source links (negative)'
+node scripts/check-source-links.negative.mjs
+
 # The run summary has to say what it did not run. Four checks skip whenever
 # nothing is serving, which is always in CI.
 step 'run summary (negative)'

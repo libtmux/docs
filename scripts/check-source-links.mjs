@@ -21,6 +21,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { PORTS } from '../site/src/lib/ports.ts'
+import { commitOnHost } from './lib/commit-on-host.mjs'
 import { resolveCheckout } from './lib/port-checkout.mjs'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -30,6 +31,8 @@ const arg = (name) => {
   return i === -1 ? undefined : process.argv[i + 1]
 }
 const only = arg('--port')
+// Tests point the check at a fixture model directory.
+const modelDir = process.env.LIBTMUX_DOCS_SOURCE_LINKS_MODELS || join(repoRoot, 'site/src/data/api')
 
 /**
  * The repository each port's paths belong to.
@@ -74,7 +77,7 @@ const report = (port, msg) => {
 
 for (const [port, where] of Object.entries(CHECKOUT)) {
   if (only && only !== port) continue
-  const modelPath = join(repoRoot, 'site/src/data/api', `${port}.json`)
+  const modelPath = join(modelDir, `${port}.json`)
   if (!existsSync(modelPath)) {
     console.log(`check-source-links: ${port} has no model — run gen-api-model.mjs`)
     skipped++
@@ -156,13 +159,21 @@ for (const [port, where] of Object.entries(CHECKOUT)) {
     .filter(Boolean)
     .map((l) => l.split('/')[0])
   const publicRemotes = [...new Set(remotes)].filter((r) => !PRIVATE_REMOTES.has(r))
+  let reachableVia = publicRemotes.join(', ')
   if (!publicRemotes.length) {
-    report(
-      port,
-      `revision ${rev.slice(0, 8)} is on no public remote (${[...new Set(remotes)].join(', ') || 'no remote'}) — ` +
-        'every source link for this port 404s',
-    )
-    continue
+    // A CI checkout fetches this one revision detached and shallow, so no
+    // remote-tracking branch holds it. A developer's unpushed commit looks the
+    // same locally; only the host tells them apart.
+    const host = await commitOnHost(unit.repository, rev)
+    if (!host.ok) {
+      report(
+        port,
+        `revision ${rev.slice(0, 8)} is on no public remote (${[...new Set(remotes)].join(', ') || 'no remote'}) — ` +
+          `every source link for this port 404s: ${host.reason}`,
+      )
+      continue
+    }
+    reachableVia = 'github.com'
   }
 
   // 3. Every path has to exist at that commit, and every line has to be
@@ -200,7 +211,7 @@ for (const [port, where] of Object.entries(CHECKOUT)) {
   if (!missing && !past) {
     console.log(
       `check-source-links: ${port} ${unit.repository} ${unit.symbols.length} declaration and method locations, ${lengths.size} files ` +
-        `at ${rev.slice(0, 8)} (${publicRemotes.join(', ')})` +
+        `at ${rev.slice(0, 8)} (${reachableVia})` +
         (noLine ? `, ${noLine} without a line` : ''),
     )
   }
