@@ -6,6 +6,7 @@ import { auditEvidence } from '../../scripts/lib/tmux-usage-audit.mjs'
 import { chainProblems, dispatcherProblems, guardProblems, preflightProblems } from '../../scripts/lib/tmux-usage-dispatch.mjs'
 import { forwardUsage } from '../../scripts/lib/tmux-usage-forward.mjs'
 import { carriesCommand, memberWords, selects, settleCandidates, sweepCandidates } from '../../scripts/lib/tmux-usage-sweep.mjs'
+import { locate } from '../../scripts/lib/tmux-usage-locate.mjs'
 import { scanElixir, scanFSharp, scanJulia, tokenizeElixir } from '../../scripts/lib/tmux-usage-lexical.mjs'
 import { guardFlag, libraryScopes, scopeProblems } from '../../scripts/lib/tmux-usage-scopes.mjs'
 import { bindOcamlDefinitions } from '../../scripts/lib/tmux-usage-ocaml.mjs'
@@ -434,7 +435,7 @@ describe('reviewed claims', () => {
   })
 
   it('accepts a claim whose lines still say what it says, anchored in the symbol', () => {
-    expect(verify([claim()])).toEqual({
+    expect(verify([claim()])).toMatchObject({
       problems: [],
       entries: [{ symbol: 'server.Server.panes', command: 'list-panes', scope: 'server', evidence: ['server.rs:6', 'server.rs:3'], hops: 1, reviewed: true }],
     })
@@ -457,7 +458,7 @@ describe('reviewed claims', () => {
     expect(run({ has: ['run(', '"set-option"'], span: 3 }).problems).toEqual([])
     // Without the span the command is not on the cited line, and a command above the cited line is never read.
     expect(run({ has: ['run(', '"set-option"'] }).problems.join('\n')).toMatch(/does not contain "\\"set-option\\""/)
-    expect(run({ has: ['"set-option"', 'run('], span: 3 }).problems.join('\n')).toMatch(/does not contain "\\"set-option\\""/)
+    expect(run({ has: ['"set-option"', 'run('], span: 3 }).problems.join('\n')).toMatch(/does not contain "run\("/)
   })
 
   it('holds a rule that names a revision for that revision only, and one that names none for the revision its model was extracted at', () => {
@@ -1940,5 +1941,27 @@ describe('a check a library makes before every command', () => {
     expect(preflightProblems({ port: 'go', preflights: [{ ...rule, evidence: [{ at: 'run.go:9', has: ['check('] }, rule.evidence[1]] }], readSource })).toEqual(['go: preflight run-shell: run.go:9 is not a line of the pinned source'])
     // A rule that cites no line that spells the command is about something else.
     expect(preflightProblems({ port: 'go', preflights: [{ ...rule, evidence: [rule.evidence[0]] }], readSource })).toEqual(['go: preflight run-shell: no cited line spells the command'])
+  })
+})
+
+describe('locating a citation by its text', () => {
+  const text = ['a', 'run(x)', 'b', 'run(y)', 'c'].join('\n')
+
+  it('finds the line the text is on, whatever line was stored', () => {
+    expect(locate({ at: 'f.rs', has: ['run(y)'] }, text)).toEqual({ at: 'f.rs:4', moved: undefined })
+    expect(locate({ at: 'f.rs:1', has: ['run(y)'] }, text)).toEqual({ at: 'f.rs:4', moved: 3 })
+  })
+
+  it('uses the stored line only to choose between lines that hold the text', () => {
+    expect(locate({ at: 'f.rs:4', has: ['run('] }, text)).toMatchObject({ at: 'f.rs:4' })
+    expect(locate({ at: 'f.rs', has: ['run('] }, text)).toMatchObject({ problem: expect.stringContaining('matches 2 lines') })
+    expect(locate({ at: 'f.rs:5', has: ['run('] }, text)).toMatchObject({ problem: expect.stringContaining('matches 2 lines') })
+  })
+
+  it('names the text that is missing, or only found outside the body it must be in', () => {
+    expect(locate({ at: 'f.rs', has: ['nope'] }, text)).toEqual({ problem: 'f.rs does not contain "nope"' })
+    expect(locate({ at: 'f.rs', has: ['run(x)'] }, text, [{ start: 3, end: 5 }], 'm.f')).toMatchObject({ problem: expect.stringContaining('outside the body of m.f') })
+    expect(locate({ at: 'f.rs', has: ['run('] }, text, [{ start: 3, end: 5 }])).toMatchObject({ at: 'f.rs:4' })
+    expect(locate({ at: 'g.rs', has: ['x'] }, undefined)).toEqual({ problem: 'g.rs is not a file of the pinned source' })
   })
 })
