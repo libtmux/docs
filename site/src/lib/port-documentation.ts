@@ -119,6 +119,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('README.md', 'guides/getting-started', 'core', { title: 'Getting started', sidebar: { group: 'Guides', order: 1 } }),
       guide('docs/installation.md', 'guides/installation', 'core', { title: 'Installation', sidebar: { group: 'Guides', order: 2 } }),
       guide('docs/filtering.md', 'guides/filtering', 'core', { title: 'Filtering' }),
+      guide('examples/README.md', 'examples/programs', 'core', { title: 'Runnable programs', description: 'Run the tested Perl programs and compare each with its expected result.', aliases: [] }),
       guide('docs/orchestration.md', 'examples/orchestration', 'core', { title: 'Create sessions, windows, and panes', aliases: ['guides/orchestration'] }),
       guide('docs/graph.md', 'concepts/graph', 'core', { title: 'Snapshot graph and identity', aliases: ['guides/graph'] }),
       guide('docs/fields.md', 'concepts/fields', 'core', { title: 'Entity fields', aliases: ['guides/fields'] }),

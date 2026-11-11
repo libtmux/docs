@@ -11,6 +11,7 @@ import fsharpGuides from '../src/data/port-guides/fsharp.json'
 import csharpModel from '../src/data/api/csharp.json'
 import powershellGuides from '../src/data/port-guides/powershell.json'
 import juliaGuides from '../src/data/port-guides/julia.json'
+import perlGuides from '../src/data/port-guides/perl.json'
 import haskellModel from '../src/data/api/haskell.json'
 import clojureGuides from '../src/data/port-guides/clojure.json'
 import lispGuides from '../src/data/port-guides/lisp.json'
@@ -97,6 +98,14 @@ describe('staged port guide links', () => {
     expect(() => stagedPortGuides('haskell', {
       source: { repository: 'libtmux/libtmux-haskell', revision: 'd'.repeat(40) }, guides,
     })).toThrow('guide source differs from the Haskell API model')
+  })
+  it('lists every tested Perl program on the examples index, each linking its source', () => {
+    const page = stagedPortGuides('perl', perlGuides).get('perl/examples/programs/index.md')!
+    const { revision } = perlGuides.source
+    const programs = ['quickstart', 'selection', 'workspace', 'async', 'await', 'async-lifecycle']
+    for (const name of programs) {
+      expect(page).toContain(`[${name}.pl](https://github.com/libtmux/libtmux-perl/blob/${revision}/examples/${name}.pl)`)
+    }
   })
   it('resolves native Lisp API anchors into core and workspace declaration pages', () => {
     const pages = stagedPortGuides('lisp', lispGuides)
