@@ -205,7 +205,11 @@ jobs:
         if: matrix.port == 'powershell' || matrix.port == 'julia'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.sha }}
+          # A port caller's generator is its own tooling at the caller's commit.
+          # A docs-repo caller (source-repository set) uses the selected port
+          # source, which carries that tooling.
+          repository: ${{ inputs.source-repository || github.repository }}
+          ref: ${{ inputs.source-repository && needs.identity.outputs.source-ref || github.sha }}
           path: docs-generator
           persist-credentials: false
 

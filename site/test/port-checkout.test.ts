@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
+import type { Port } from '../src/lib/ports.ts'
 import { checkoutCandidates, checkoutOverride, resolveCheckout } from '../../scripts/lib/port-checkout.mjs'
 
 const ports = [
   { slug: 'java', repo: 'libtmux/libtmux-java', checkout: '/src/java', worktree: '/src/java-docs' },
   { slug: 'clojure', repo: 'libtmux/libtmux-java', checkout: '/src/java', worktree: '/src/java-clojure', parentLibrary: { slug: 'java', runtime: 'JVM' } },
   { slug: 'other', repo: 'libtmux/libtmux-other', checkout: '/src/other-clone', worktree: '/src/other-docs' },
-]
+] as unknown as readonly Port[]
 
 describe('port checkout resolver', () => {
   it('prefers the port override over ports.ts', () => {

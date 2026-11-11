@@ -14,10 +14,16 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PORTS } from '../site/src/lib/ports.ts'
 
+/**
+ * Ports whose own repository builds the docs tree in its own workflow, exporting
+ * the native model with tools it carries, and never calls port-docs.yml.
+ */
+export const OWN_WORKFLOW = ['lua', 'ruby']
+
 /** One leg per core port; its wrappers share its repository and are built with it. */
-export function matrix(headOf = defaultBranchHead) {
+export function matrix(headOf = defaultBranchHead, { own = false } = {}) {
   return {
-    include: PORTS.filter((port) => !port.parentLibrary).map((port) => ({
+    include: PORTS.filter((port) => !port.parentLibrary && OWN_WORKFLOW.includes(port.slug) === own).map((port) => ({
       port: port.slug,
       repo: port.repo,
       ref: headOf(port.repo),
@@ -35,7 +41,11 @@ function defaultBranchHead(repo) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   if (process.argv[2] !== 'matrix') throw new Error('usage: check-port-heads.mjs matrix')
-  const json = JSON.stringify(matrix())
-  if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `matrix=${json}\n`)
-  console.log(json)
+  const all = matrix(defaultBranchHead, { own: false })
+  const own = matrix(defaultBranchHead, { own: true })
+  const outputs = { matrix: JSON.stringify(all), own: JSON.stringify(own), badges: JSON.stringify({ include: [...all.include, ...own.include] }) }
+  for (const [name, json] of Object.entries(outputs)) {
+    if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${json}\n`)
+    console.log(`${name}=${json}`)
+  }
 }

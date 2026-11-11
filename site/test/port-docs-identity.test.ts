@@ -182,7 +182,7 @@ describe('a scheduled port-head build', () => {
     const input = workflow.match(/source-repository:\n(?:\s+.*\n)+?\s+default: ''/)
     expect(input?.[0]).toContain('required: false')
     expect(input?.[0]).toContain('type: string')
-    expect(workflow.match(/repository: \$\{\{ inputs\.source-repository \|\| github\.repository \}\}/g)).toHaveLength(1)
+    expect(workflow.match(/repository: \$\{\{ inputs\.source-repository \|\| github\.repository \}\}/g)).toHaveLength(2)
   })
 })
 

@@ -39,6 +39,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
+      own: ${{ steps.matrix.outputs.own }}
+      badges: ${{ steps.matrix.outputs.badges }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -70,13 +72,113 @@ jobs:
       is-default: false
       publish: false
 
+  # Lua and Ruby repositories build their own docs tree in their own docs.yml
+  # and do not call port-docs.yml, so there is no shared workflow to call. This
+  # job runs the same exporter and build steps those workflows run, from the
+  # port head's own export-docs tooling, against docs main.
+  native:
+    needs: matrix
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.matrix.outputs.own) }}
+    name: build ${{ matrix.port }}
+    env:
+      LIBTMUX_DOCS_PORT: ${{ matrix.port }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ matrix.repo }}
+          ref: ${{ matrix.ref }}
+          fetch-depth: 0
+          path: port
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ matrix.repo }}
+          ref: ${{ matrix.ref }}
+          path: docs-generator
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: docs
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '26'
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
+        with:
+          package_json_file: docs/package.json
+      - run: pnpm install --frozen-lockfile
+        working-directory: docs
+
+      # Lua: the pinned LuaLS exporter, as libtmux-lua's docs.yml runs it.
+      - if: matrix.port == 'lua'
+        uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
+        with:
+          version: 2026.9.9
+          working_directory: port
+          cache: false
+      - name: Export the Lua source
+        if: matrix.port == 'lua'
+        run: |
+          set -euo pipefail
+          python docs-generator/scripts/bootstrap_native.py luals
+          python docs-generator/scripts/export-docs \
+            --source "$GITHUB_WORKSPACE/port" \
+            --luals "$GITHUB_WORKSPACE/docs-generator/.cache/tools/luals-3.19.1/bin/lua-language-server" \
+            --output "$GITHUB_WORKSPACE/port/docs/_build"
+
+      # Ruby: the bundle and exporter, as libtmux-ruby's docs.yml runs them.
+      - if: matrix.port == 'ruby'
+        uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: '4.0.7'
+          working-directory: port
+          bundler-cache: false
+      - name: Export the Ruby source
+        if: matrix.port == 'ruby'
+        working-directory: port
+        env:
+          BUNDLE_FROZEN: 'true'
+        run: |
+          set -euo pipefail
+          bundle install
+          "$GITHUB_WORKSPACE/docs-generator/scripts/apt-get.sh" update -qq
+          "$GITHUB_WORKSPACE/docs-generator/scripts/apt-get.sh" install --no-install-recommends -y -qq tmux
+          bundle exec ruby "$GITHUB_WORKSPACE/docs-generator/scripts/export-docs" \
+            --source "$GITHUB_WORKSPACE/port" \
+            --output "$GITHUB_WORKSPACE/port/docs/_build"
+
+      - name: Build the port tree against docs main
+        working-directory: docs
+        env:
+          PORT: ${{ matrix.port }}
+          SOURCE_REF: ${{ matrix.ref }}
+          LIBTMUX_DOCS_VERSION: latest
+          LIBTMUX_DOCS_VERSION_KIND: trunk
+          LIBTMUX_DOCS_IS_DEFAULT: 'false'
+          LIBTMUX_DOCS_RESOLVES_TO: ''
+          LIBTMUX_DOCS_GENERATOR_CHECKOUT: ${{ github.workspace }}/docs-generator
+        run: |
+          set -euo pipefail
+          [[ "$PORT" =~ ^[a-z]+$ ]] || { echo "invalid port slug: $PORT" >&2; exit 1; }
+          export "LIBTMUX_DOCS_CHECKOUT_${PORT^^}=$GITHUB_WORKSPACE/port"
+          source_sha=$(git -C "$GITHUB_WORKSPACE/port" rev-parse HEAD)
+          export LIBTMUX_DOCS_SOURCE_SHA="$source_sha"
+          export LIBTMUX_DOCS_SOURCE_REF="$SOURCE_REF"
+          node scripts/publication-provenance.mjs snapshot "$RUNNER_TEMP/build-inputs.json" "$PWD"
+          LIBTMUX_DOCS_INPUT_SNAPSHOT="$RUNNER_TEMP/build-inputs.json" \
+            ./scripts/build-site.sh --ports "$PORT" --versions latest --skip-refs --skip-pagefind
+
   badges:
     needs: matrix
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
+      matrix: ${{ fromJSON(needs.matrix.outputs.badges) }}
     name: badges ${{ matrix.port }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
