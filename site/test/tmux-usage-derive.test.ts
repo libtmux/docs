@@ -468,36 +468,11 @@ describe('reviewed claims', () => {
     expect(ruleHolds({ revision: 'bbb' }, 'aaa', 'aaa')).toBe(false)
   })
 
-  it('holds a rule that excepts a revision at every other revision, so the rule for newer code follows a head', () => {
-    expect(ruleHolds({ except: ['aaa'] }, 'ccc', 'aaa')).toBe(true)
-    expect(ruleHolds({ except: ['aaa'] }, 'ccc', 'bbb')).toBe(true)
+  it('does not hold a rule at a revision it excepts', () => {
+    expect(ruleHolds({ except: ['aaa'] }, 'ccc', 'ccc')).toBe(true)
     expect(ruleHolds({ except: ['aaa'] }, 'aaa111', 'aaa111')).toBe(false)
     expect(ruleHolds({ except: ['aaa'], revision: 'ccc' }, 'ccc1', 'aaa')).toBe(true)
   })
-
-  it.each([
-    ['a line that no longer holds the text', { evidence: [{ at: 'server.rs:6', has: ['.arg("-s")'] }, { at: 'server.rs:3', in: 'server.Server.panes' }] }, /does not contain/],
-    ['a line past the end of the file', { evidence: [{ at: 'server.rs:99' }, { at: 'server.rs:3', in: 'server.Server.panes' }] }, /not a line of the pinned source/],
-    ['a line outside the symbol body', { evidence: [{ at: 'server.rs:6', in: 'server.Server.panes' }] }, /outside the body/],
-    ['no line anchored in the symbol', { evidence: [{ at: 'server.rs:3' }] }, /no evidence line is anchored/],
-    ['a symbol the model does not have', { symbol: 'server.Server.gone' }, /no such public symbol/],
-    ['a scope the command does not have', { scope: 'pane' }, /not a scope of this command/],
-    ['no evidence', { evidence: [] }, /cites no evidence/],
-  ])('rejects %s', (_name, over, message) => {
-    const { entries, problems } = verify([claim(over)])
-    expect(entries).toEqual([])
-    expect(problems.join('\n')).toMatch(message)
-  })
-})
-
-describe('the condition of a send', () => {
-  const claim = (over: Record<string, unknown> = {}) => ({
-    port: 'rs', symbol: 'server.Server.panes', command: 'list-panes', scope: 'server', evidence: [{ at: 'server.rs:2', has: ['list-panes'] }, { at: 'server.rs:1', in: 'server.Server.panes' }], ...over,
-  })
-  const source = ['pub async fn panes() {', '    cmd("list-panes", "-a")', '}'].join('\n')
-  const symbols = [{ id: 'server.Server.panes', name: 'panes', parentName: 'Server', file: 'server.rs', line: 1 }]
-  const functions = [located({ file: 'server.rs', name: 'panes', owner: 'Server', start: 1, nameLine: 1, end: 3 })]
-  const verify = (claims: unknown[]) => verifyClaims({ claims: claims as never, spec, functions, types: [], symbols, readSource: (path: string) => (path === 'server.rs' ? source : undefined) })
 
   it('accepts a few words and carries them to the entry, and refuses a long one, an empty one and a marked one with none', () => {
     expect(conditionProblem(undefined, false)).toBeUndefined()

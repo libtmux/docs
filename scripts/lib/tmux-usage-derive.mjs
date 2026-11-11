@@ -33,10 +33,9 @@ export function classify(spec, flags) {
  * Whether a claim, an exclusion or a review is read against the source at `revision`. One without a `revision` holds
  * for the revision its port's model was extracted at; one with a `revision` holds for the revision it starts with,
  * which is how a wrapper that shares a repository with its core library reads the core where the wrapper is pinned.
- * One with `except` and no `revision` holds at every revision but those, which is how the rule for newer code follows a port's head.
  */
 export const ruleHolds = (rule, revision, pinned) => !rule.except?.some((prefix) => revision.startsWith(prefix))
-  && (rule.revision ? revision.startsWith(rule.revision) : rule.except ? true : revision === pinned)
+  && (rule.revision ? revision.startsWith(rule.revision) : revision === pinned)
 
 const SELF_RECEIVERS = new Set(['this', 'self', 'base', 'super', 'cls', 'me'])
 
