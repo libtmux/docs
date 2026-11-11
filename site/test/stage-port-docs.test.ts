@@ -120,6 +120,16 @@ describe('staged port guide links', () => {
     const index = pages.get('haskell/guides/index.md')!
     expect(index).not.toContain('Read about')
   })
+  it('labels a link to a staged guide with its title, not the file name in code', () => {
+    const page = stagedPortGuides('clojure', clojureGuides).get('clojure/guides/captures-and-effects/index.md')!
+    expect(page).toContain('[Captured values](../captured-values/) lists every captured key')
+    expect(page).not.toContain('`clojure-reference.md`')
+    const titles = new Map([['guides/captured-values', 'Captured values']])
+    const routes = { 'docs/reference.md': ['guides/captured-values'], 'docs/other.md': ['reference/x'] }
+    const link = (name: string) => rewriteLinks(`[\`${name}.md\`](${name}.md)`, 'docs/guide.md', 'guides/guide', routes as never, 'o/r', 'rev', new Set(), new Map(), titles)
+    expect(link('reference')).toBe('[Captured values](../captured-values/)')
+    expect(link('other')).toContain('`other.md`')
+  })
   it('lists every tested Perl program on the examples index, each linking its source', () => {
     const page = stagedPortGuides('perl', perlGuides).get('perl/examples/programs/index.md')!
     const { revision } = perlGuides.source
