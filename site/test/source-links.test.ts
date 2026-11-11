@@ -19,7 +19,7 @@ function fixture(port: 'java' | 'kotlin' | 'scala' = 'kotlin', { generated = tru
   mkdirSync(join(directory, 'site/src/lib'), { recursive: true })
   mkdirSync(join(directory, 'site/src/data/api'), { recursive: true })
   mkdirSync(join(directory, 'scripts/lib'), { recursive: true })
-  for (const file of ['scripts/check-source-links.mjs', 'scripts/lib/port-checkout.mjs']) copyFileSync(join(root, file), join(directory, file))
+  for (const file of ['scripts/check-source-links.mjs', 'scripts/lib/port-checkout.mjs', 'scripts/lib/commit-on-host.mjs']) copyFileSync(join(root, file), join(directory, file))
   writeFileSync(join(directory, 'site/src/lib/ports.ts'), `export const PORTS = ${JSON.stringify([{ slug: port, checkout }])}\n`)
   writeFileSync(join(directory, 'package.json'), '{"type":"module"}')
   writeFileSync(join(checkout, 'src/Server.java'), 'package fixture;\nclass Server {}\n')
