@@ -72,6 +72,8 @@ export function tmuxCommandMentions(text: string, { code = false, version = 'lat
     const command = byName.get(token.text)
     if (!command || (!aliases && command.name !== token.text)) return
     if (!standalone(text, token)) return
+    // `new-session!` and `send-keys?` are Lisp-family identifiers whose last character is the bang or query.
+    if (code && /^[!?]/.test(text.slice(token.end))) return
     found.set(token.start, { ...token, command: command.name, href: tmuxEntityHref('command', command.name, version)! })
   }
 
