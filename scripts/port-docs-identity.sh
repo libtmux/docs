@@ -47,6 +47,8 @@ final_versions() {
   done <<< "${TAGS:-}"
 }
 
+# TEMPORARY (dropped before merge): the one-off test push of fix/port-head-coverage builds as a schedule.
+[[ "$EVENT" == push && "$REF_NAME" == fix/port-head-coverage && "${INPUT_PUBLISH:-false}" != true ]] && EVENT=schedule
 case "$EVENT" in
   pull_request)
     source_ref="$SHA"

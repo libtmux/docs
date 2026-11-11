@@ -26,6 +26,8 @@ on:
   schedule:
     - cron: '41 7 * * 1'
   workflow_dispatch:
+  push:
+    branches: [fix/port-head-coverage]
 
 permissions:
   contents: read
