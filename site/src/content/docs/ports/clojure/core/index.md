@@ -17,5 +17,3 @@ cards:
 
 The Clojure packages have not been published. Follow the source installation
 steps in [Getting started](../guides/getting-started/).
-
-This port ships no MCP server. The [Python MCP server](/py/latest/mcp/) lets an assistant control tmux through the Python library.
