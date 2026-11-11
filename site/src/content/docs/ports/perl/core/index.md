@@ -24,5 +24,3 @@ admission, cancellation, and cleanup. Linux x86_64 LP64 is qualified; other
 platforms and ABIs remain unsupported.
 
 The distributions are available from source and have no CPAN release.
-
-This port ships no MCP server. The [Python MCP server](/py/latest/mcp/) lets an assistant control tmux through the Python library.

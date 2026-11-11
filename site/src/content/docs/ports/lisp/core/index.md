@@ -17,5 +17,3 @@ cards:
     href: ../reference/
     body: Browse public packages, CLOS types, conditions, macros, and functions.
 ---
-
-This port ships no MCP server. The [Python MCP server](/py/latest/mcp/) lets an assistant control tmux through the Python library.

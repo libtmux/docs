@@ -19,5 +19,3 @@ cards:
     href: ../reference/
     body: Native records, modules, functions and types.
 ---
-
-This port ships no MCP server. The [Python MCP server](/py/latest/mcp/) lets an assistant control tmux through the Python library.
