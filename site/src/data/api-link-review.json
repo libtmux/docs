@@ -981,11 +981,6 @@
       "heading": "Libraries With Dune"
     },
     {
-      "label": "`None`",
-      "url": "https://ocaml.org/manual/5.5/api/Option.html#TYPEELTt.None",
-      "heading": "#TYPEELTt.None"
-    },
-    {
       "label": "OCaml expressions",
       "url": "https://ocaml.org/manual/5.5/expr.html#s:value-expr",
       "heading": "7 Expressions"
