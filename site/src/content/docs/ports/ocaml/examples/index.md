@@ -13,6 +13,9 @@ cards:
   - label: Workspaces
     href: ../workspace/source-guide/
     body: Validate, plan and apply a complete JSON workspace.
+  - label: Interrupted workspace
+    href: ../workspace/recovery/
+    body: Cancel an Eio waiter, inspect its journal and check the created session.
 ---
 
 Start with the [graph program](../guides/getting-started/), then run the

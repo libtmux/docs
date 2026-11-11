@@ -11209,6 +11209,13 @@
   },
   {
    "port": "ocaml",
+   "symbol": "Libtmux_eio.Workspace.inspect",
+   "page": "/ocaml/latest/workspace/recovery/",
+   "title": "Interrupt a workspace and inspect its journal",
+   "section": "workspace"
+  },
+  {
+   "port": "ocaml",
    "symbol": "Libtmux_json",
    "page": "/ocaml/latest/workspace/reference/",
    "title": "OCaml workspace API reference",
