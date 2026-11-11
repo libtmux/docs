@@ -41,6 +41,39 @@ function artifact() {
 }
 
 describe('compiled Clojure artifact', () => {
+  it('keeps var names and local arguments out of Java signature links', () => {
+    const input = artifact()
+    input.symbols.push(
+      callable('libtmux.control', 'send!', [['connection', 'argv', 'timeout']]),
+      callable('libtmux.data', 'one-or-none', [['values']]),
+      callable('libtmux.core', 'join-pane!', [['pane', 'window']]),
+      callable('libtmux.core', 'ready?', [['timeout-ms']]),
+    )
+    const model = extractClojure(input, revision)
+    const index = new SymbolIndex(model.symbols, (symbol) => `/${symbol.id}/`, 'clojure')
+    index.addInventory('/en/java/latest/reference/', ['timeout', 'values', 'join', 'or', 'none'].map((name) => ({
+      name, type: 'std:label', priority: 1, uri: `${name}/`, dispname: name,
+    })), ['clojure'], 'libtmux Java')
+    index.addInventory('https://docs.oracle.com/en/java/javase/25/docs/api/', [{
+      name: 'java.util.concurrent.CompletionStage', type: 'std:label', priority: 1,
+      uri: 'java.base/java/util/concurrent/CompletionStage.html', dispname: '-',
+    }], ['clojure'], 'Java SE')
+    for (const id of ['libtmux.control/send!', 'libtmux.data/one-or-none', 'libtmux.core/join-pane!', 'libtmux.core/ready?']) {
+      const symbol = model.symbols.find((entry) => entry.id === id)!
+      const signature = symbol.signatures[0]!
+      const spans = index.linkType(signature.raw!, symbol, signature)
+      expect(spans.some((span) => span.link), signature.raw).toBe(false)
+      expect(spans.map((span) => span.text).join('')).toBe(signature.raw)
+      expect(spans.find((span) => span.text === symbol.name)?.declaration).toBe(true)
+      for (const parameter of signature.params) {
+        expect(spans.find((span) => span.text === parameter.name)?.declaration, parameter.name).toBe(true)
+      }
+    }
+    expect(index.linkType('java.util.concurrent.CompletionStage')[0]?.link?.href)
+      .toContain('java/util/concurrent/CompletionStage.html')
+    expect(index.docSpans('See [[libtmux.core/close!]].')[1]?.link?.symbol?.id).toBe('libtmux.core/close!')
+  })
+
   it('keeps keywords literal when their names match callable declarations', () => {
     const input = artifact()
     input.symbols.push(callable('libtmux.core', 'timeout', [['value']]))

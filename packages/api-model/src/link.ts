@@ -1524,7 +1524,7 @@ export class SymbolIndex {
       ? String.raw`[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*!?`
       // A number is matched whole, so `1_000` is not a literal followed by a name.
       : this.lang === 'elixir' ? String.raw`\d[\d_]*(?:\.\d+)?(?:[eE][+-]?\d+)?|[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*[!?]?`
-      : this.lang === 'clojure' ? String.raw`::?[^\s,()[\]{}"';]+|[A-Za-z_][A-Za-z0-9_.]*(?:::[A-Za-z_][A-Za-z0-9_.]*)*`
+      : this.lang === 'clojure' ? String.raw`::?[^\s,()[\]{}"';]+|[A-Za-z_][A-Za-z0-9_./?!*+<>=:$%&-]*`
       : this.lang === 'powershell' ? String.raw`(?:[A-Za-z_][A-Za-z0-9_.]*\\)?[A-Za-z_][A-Za-z0-9_.-]*`
       : this.lang === 'ts' ? String.raw`[A-Za-z_$][A-Za-z0-9_$.]*`
       : this.lang === 'rs' ? String.raw`(?:r#)?[A-Za-z_][A-Za-z0-9_.]*(?:::(?:r#)?[A-Za-z_][A-Za-z0-9_.]*)*`
@@ -1675,6 +1675,7 @@ export class SymbolIndex {
       }
       if (signature && context && (ident === context.name || ident.endsWith(`.${context.name}`)) &&
           (/\b(?:def|fun|class|interface|trait|object|type|val|var|member|let)\s+$/.test(annotation.slice(0, m.index)) ||
+            (this.lang === 'clojure' && annotation === signature.raw && annotation.slice(0, m.index).trim() === '(') ||
             (this.lang === 'julia' && annotation.slice(0, m.index).trim() === '' && /^[{(]/.test(annotation.slice(m.index! + ident.length))))) {
         const receiver = ident.slice(0, -context.name.length).replace(/\.$/, '')
         if (receiver) out.push(...this.linkType(receiver, context), { text: '.' })
@@ -1682,7 +1683,8 @@ export class SymbolIndex {
         continue
       }
       if (signature && (signature.params.some((param) => param.name === ident) || signature.receiver?.name === ident) &&
-          (/^\s*\??\s*:(?!:)/.test(annotation.slice(m.index! + ident.length)) ||
+          ((this.lang === 'clojure' && annotation === signature.raw) ||
+            /^\s*\??\s*:(?!:)/.test(annotation.slice(m.index! + ident.length)) ||
             (this.lang === 'julia' && /(?:^|[(,;])\s*$/.test(annotation.slice(0, m.index)) &&
               /^\s*(?:::|[=,;)]|\.\.\.)/.test(annotation.slice(m.index! + ident.length))))) {
         const parameter = this.lang === 'julia' && context && signature.params.some((param) => param.name === ident)
