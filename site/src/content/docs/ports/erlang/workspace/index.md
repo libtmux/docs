@@ -11,8 +11,8 @@ tableOfContents: true
 
 The Erlang workspace manager plans and applies JSON workspaces through the
 [core library](../core/). It is the `libtmux_erlang_workspace` application in
-the same repository, with a standalone `libtmux-workspace` escript. No registry
-package is published, so you build the escript from a source checkout:
+the same repository, with a standalone `libtmux-workspace` escript. It is not
+published to a registry, so you build the escript from a source checkout:
 
 ```console
 $ mise exec -- rebar3 escriptize
