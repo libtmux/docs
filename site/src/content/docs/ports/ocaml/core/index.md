@@ -17,7 +17,7 @@ Process observations with `Iarray`, `Seq` and ordinary predicates. Typed
 expressions add inspection and JSON interchange; client calls perform I/O.
 
 The core and workspace library depend on the standard library. Blocking Linux,
-Eio, JSON and the workspace CLI are separate packages. This port excludes MCP.
+Eio, JSON and the workspace CLI are separate packages.
 
 [Installation and first use](../guides/getting-started/) ·
 [Captured graph](../guides/graph/) · [API reference](../reference/)

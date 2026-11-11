@@ -236,7 +236,7 @@ const BAD_RULES = [
   ['a dispatcher that shares its name with a function that sends nothing', 'rs', 'dispatchers.json', (document) => { dispatcher(document, 'rs', 'list').evidence.push({ at: 'crates/libtmux/src/plan/wire.rs:149', has: ['list'] }) },
     /rs: dispatcher list at crates\/libtmux\/src\/plan\/wire.rs:149: reaches no transport, and cites no chain to one/],
   ['a chain hop whose line does not hold its text', 'rs', 'dispatchers.json', (document) => { dispatcher(document, 'rs', 'send').evidence[0].reaches[0].has = ['.sendx('] },
-    /rs: dispatcher send at crates\/libtmux\/src\/control.rs:583: hop crates\/libtmux\/src\/control.rs:584 does not contain "\.sendx\("/],
+    /rs: dispatcher send: crates\/libtmux\/src\/control.rs(?::\d+)? does not contain "\.sendx\("/],
   ['a chain that skips the function between two hops', 'rs', 'dispatchers.json', (document) => { dispatcher(document, 'rs', 'dispatch').evidence[0].reaches.splice(1, 1) },
     /rs: dispatcher dispatch at crates\/libtmux\/src\/plan\/run.rs:446: hop crates\/libtmux\/src\/plan\/run.rs:464 leads to cmd, but crates\/libtmux\/src\/internal\/core.rs:535 is not a line of it/],
   ['a chain hop on a field whose type it does not say', 'rs', 'dispatchers.json', (document) => { delete dispatcher(document, 'rs', 'send').evidence[0].reaches[0].on },
@@ -244,8 +244,10 @@ const BAD_RULES = [
   ['a chain hop that leads somewhere and does not say why', 'rs', 'dispatchers.json', (document) => { delete dispatcher(document, 'rs', 'send').evidence[0].reaches.find((hop) => hop.leads).why },
     /rs: dispatcher send at crates\/libtmux\/src\/control.rs:583: hop crates\/libtmux\/src\/control.rs:818 leads to serve and says nothing about why the scan cannot follow it/],
   ['a chain that goes to the overload the arguments of the call do not fit', 'java', 'dispatchers.json', (document) => {
-    const run = dispatcher(document, 'java', 'run').evidence.find((item) => item.at.endsWith('Server.java:1221'))
-    run.reaches = [run.reaches[0], { ...run.reaches.find((hop) => hop.at.endsWith('Server.java:1251')), at: run.reaches[0].at.replace(':1222', ':1230'), has: ['fence.guarded(snapshot'] }]
+    const items = dispatcher(document, 'java', 'run').evidence
+    const run = items.find((item) => item.has[0].startsWith('run(List<String>'))
+    const guarded = items.find((item) => item.has[0].startsWith('CommandResult run(ServerSnapshot snapshot, List<String> argv)')).reaches.find((hop) => hop.has[0].startsWith('fence.guarded(snapshot'))
+    run.reaches = [run.reaches[0], { ...guarded, at: run.reaches[0].at.replace(/:\d+$/, ''), has: ['fence.guarded(snapshot'], within: 'cmd' }]
   }, /java: dispatcher run at .*Server\.java:1221: hop .*Server\.java:1222 is a call of cmd\(1\), which resolves to Server\.cmd at .*Server\.java:765 and Server\.cmd at .*Server\.java:771, and not to Server\.cmd at .*Server\.java:1229/],
   ['a julia send some methods make, with no condition that says so', 'julia', 'conditions.json', (document) => { document.conditions = document.conditions.filter((item) => !(item.symbol === 'LibTmux.capture_bytes' && item.command === 'list-buffers')) },
     /julia: LibTmux\.capture_bytes list-buffers null: only the ControlConnection methods send it, and 1 other method such as src\/pane_io\.jl:64 do not, so it needs a condition that says when/],
@@ -275,16 +277,21 @@ const BAD_RULES = [
   ['an elixir dispatcher whose chain stops before the port is written to', 'elixir', 'dispatchers.json', (document) => { dispatcher(document, 'elixir', 'rows').evidence[0].reaches.pop() },
     /elixir: dispatcher rows at lib\/libtmux\/capture.ex:193: hop lib\/libtmux\/transport\/oneshot.ex:172 is not a transport/],
   ['an elixir claim whose line does not hold its text', 'elixir', 'claims.json', (document) => {
-    document.claims.find((claim) => claim.port === 'elixir' && claim.symbol === 'LibTmux.Capture.fetch/2' && claim.command === 'list-sessions').evidence[0].has = ['list(state, "list-panes"']
-  }, /elixir: LibTmux.Capture.fetch\/2 list-sessions null: lib\/libtmux\/capture.ex:158 does not contain "list\(state, \\"list-panes\\""/],
+    document.claims.find((claim) => claim.port === 'elixir' && claim.symbol === 'LibTmux.Capture.fetch/2' && claim.command === 'list-sessions').evidence[0].has = ['list(state, "list-nothing"']
+  }, /elixir: LibTmux.Capture.fetch\/2 list-sessions null: lib\/libtmux\/capture.ex(?::\d+)? does not contain "list\(state, \\"list-nothing\\""/],
   ['an elixir claim whose message hop to the connection manager does not hold its text', 'elixir', 'claims.json', (document) => {
-    document.claims.find((claim) => claim.port === 'elixir' && claim.symbol === 'LibTmux.Control.reconnect/2' && claim.command === 'attach-session').evidence.find((item) => item.at.endsWith('manager.ex:573')).has = ['stop(state, ticket)']
-  }, /elixir: LibTmux.Control.reconnect\/2 attach-session null: lib\/libtmux\/control\/manager.ex:573 does not contain "stop\(state, ticket\)"/],
-  ['an elixir claim that is not anchored in the symbol it names', 'elixir', 'claims.json', (document) => {
-    document.claims.find((claim) => claim.port === 'elixir' && claim.symbol === 'LibTmux.Server.snapshot/2' && claim.command === 'list-clients').evidence.at(-1).at = 'lib/libtmux/server.ex:60'
-  }, /elixir: LibTmux.Server.snapshot\/2 list-clients null: lib\/libtmux\/server.ex:60 (?:does not contain|is outside the body of)/],
+    document.claims.find((claim) => claim.port === 'elixir' && claim.symbol === 'LibTmux.Control.reconnect/2' && claim.command === 'attach-session').evidence.find((item) => item.has[0].startsWith('reconnect(state, ticket)')).has = ['stop(state, ticket)']
+  }, /elixir: LibTmux.Control.reconnect\/2 attach-session null: lib\/libtmux\/control\/manager.ex(?::\d+)? does not contain "stop\(state, ticket\)"/],
+  // The text is in the file, in a function that is not the claimed symbol's, so only the body of the symbol tells it from a citation that holds.
+  ['a julia claim whose text is in the file but outside the symbol it names', 'julia', 'claims.json', (document) => {
+    document.claims.find((claim) => claim.port === 'julia' && claim.symbol === 'LibTmux.snapshot' && claim.command === 'list-windows').evidence.find((item) => item.in).has = ['function _snapshot_remaining(']
+  }, /julia: LibTmux.snapshot list-windows \w+: src\/acquisition.jl(?::\d+)? is outside the body of LibTmux.snapshot/],
+  // A line is looked up by its text, so a stored line that is not the one cannot hide a citation that does not hold, and text that is on several lines is not a citation.
+  ['an elixir claim whose text is on many lines of the file', 'elixir', 'claims.json', (document) => {
+    document.claims.find((claim) => claim.port === 'elixir' && claim.symbol === 'LibTmux.Capture.fetch/2' && claim.command === 'list-sessions').evidence[0].has = ['state']
+  }, /elixir: LibTmux.Capture.fetch\/2 list-sessions null: lib\/libtmux\/capture.ex matches \d+ lines/],
   ['a preflight whose line does not hold its text', 'go', 'preflights.json', (document) => { document.preflights[0].evidence[1].has = ['s.checkNothing('] },
-    /go: preflight run-shell: tmux\/transport.go:106 does not contain "s.checkNothing\("/],
+    /go: preflight run-shell: tmux\/transport.go(?::\d+)? does not contain "s.checkNothing\("/],
   ['a preflight that gives no reason', 'go', 'preflights.json', (document) => { delete document.preflights[0].why },
     /go: preflight run-shell: names no command or gives no reason/],
   ['a conditional guard that does not say when', 'go', 'guards.json', (document) => { delete document.guards.find((guard) => guard.port === 'go' && guard.name === 'guardCommand').when },
@@ -295,6 +302,12 @@ const BAD_RULES = [
   ['a guard dropped, so the if-shell it wraps is recorded in place of the command', 'java', 'guards.json', (document) => { document.guards = document.guards.filter((guard) => !(guard.port === 'java' && guard.name === 'killOwnedServer')) },
     /java: io.github.libtmux.junit5.NamedServerFixture.NamedServerFixture.close kill-server: .* is not a call that sends kill-server/],
 ]
+// A line that moved is found again: a claim that cites the line it had before a port added code above it, with the text it holds, still holds.
+// The hint is only read to choose between lines that all hold the text, so this must pass and name the line the text is on now.
+const MOVED = ['elixir', 'claims.json', (document) => {
+  const evidence = document.claims.find((claim) => claim.port === 'elixir' && claim.symbol === 'LibTmux.Capture.fetch/2' && claim.command === 'list-sessions').evidence[0]
+  evidence.at = `${evidence.at.replace(/:\d+$/, '')}:2`
+}]
 const ruled = new Set()
 for (const [name, port, file, change, message] of BAD_RULES) {
   if (!existsSync(join(checkoutOf(port), '.git'))) { console.log(`skip ${name}: no checkout of ${port}`); continue }
@@ -307,6 +320,13 @@ for (const [name, port, file, change, message] of BAD_RULES) {
   editRules(seeded, file, change)
   const seededRun = runRules(fixture(), seeded, port)
   check(`${name} fails`, seededRun.code !== 0 && message.test(seededRun.out), seededRun.out)
+}
+
+if (existsSync(join(checkoutOf(MOVED[0]), '.git'))) {
+  const moved = ruleFixture()
+  editRules(moved, MOVED[1], MOVED[2])
+  const movedRun = runRules(fixture(), moved, MOVED[0])
+  check('a claim whose stored line is not where its text is still holds', movedRun.code === 0, movedRun.out)
 }
 
 // A qualifier is a short phrase beside a method, so the data that carries one longer than that fails without a checkout.

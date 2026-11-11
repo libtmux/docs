@@ -108,6 +108,10 @@ d('member order', () => {
       id: 'LibTmux free functions',
       members: symbols.filter((symbol) => !symbol.parent && symbol.kind === 'function' && symbol.id.startsWith('LibTmux.')),
     })
+    if (port === 'haskell') groups.push({
+      id: 'LibTmux.Snapshot',
+      members: symbols.filter((symbol) => symbol.parent === 'LibTmux.Snapshot'),
+    })
     let checked = 0
     for (const { id, members } of groups) {
       const ordered = members.toSorted(compareMembers(signals))
@@ -128,11 +132,7 @@ d('member order', () => {
         checked++
       }
     }
-    if (port === 'haskell') {
-      // The current public modules contain scalar values, with no entity graph or listing API.
-      expect(groups).toEqual([])
-      expect([...listingIds].filter(Boolean)).toEqual([])
-    } else expect(checked, `${port} must exercise at least one real listing or query`).toBeGreaterThan(0)
+    expect(checked, `${port} must exercise at least one real listing or query`).toBeGreaterThan(0)
   })
 
   it('leads a Lua Server, which has no sessions accessor, with its queries', () => {
@@ -183,7 +183,7 @@ d('member order', () => {
     const parents = symbols.filter((symbol) => memberTier(symbol, signals) === 'parent')
     // F#/PowerShell use .NET handles; Julia's and Elixir's relationships are
     // read from a captured snapshot, not through accessors on an entity.
-    // Haskell currently exposes scalar values without a public entity graph.
+    // Haskell resolves detached references through snapshot functions.
     expect(parents.length > 0).toBe(!['fsharp', 'powershell', 'julia', 'elixir', 'erlang', 'haskell', 'clojure', 'lisp'].includes(port))
     for (const parent of parents) {
       const siblings = symbols.filter((symbol) => symbol.parent === parent.parent).toSorted(compareMembers(signals))

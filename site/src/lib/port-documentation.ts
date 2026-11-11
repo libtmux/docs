@@ -89,24 +89,31 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       ...['getting-started', 'bootstrap', 'graph', 'queries', 'query-interchange', 'control', 'recovery', 'streaming', 'showcases', 'packages', 'compatibility', 'testing', 'benchmarking', 'status'].map((name, index) =>
         guide(`docs/${name}.md`, `guides/${name}`, 'core', { aliases: [], sidebar: { group: 'Guides', order: index + 1 } })),
       guide('docs/workspaces.md', 'workspace/source-guide', 'workspace', { title: 'Workspace guide', product: 'workspace', package: 'workspace', aliases: [] }),
+      guide('docs/workspace-recovery.md', 'workspace/recovery', 'workspace', { title: 'Interrupt a workspace and inspect its journal', product: 'workspace', package: 'workspace', aliases: [] }),
     ],
     redirects: [{ sourcePath: 'docs/api.md', path: 'guides/api', target: 'reference' }],
   },
   haskell: {
     domains: [
-      libraryDomain('Parse tmux IDs, validate values and check stable releases with pure Haskell functions.'),
+      libraryDomain('Capture tmux state, query detached observations and rename selected targets.'),
       { id: 'workspace', label: 'Workspace Manager', kind: 'unavailable', navGroup: 'Availability', route: 'workspace', product: 'workspace',
         description: 'The workspace library and CLI are planned as a separate Cabal package using the core.' },
       { id: 'mcp', label: 'MCP', kind: 'unavailable', navGroup: 'Availability', route: 'mcp', product: 'mcp',
         description: 'MCP is excluded from this port.' },
     ],
-    sections: { guides: 'Install the source package, run the public values example, and understand the available API.' },
+    sections: { guides: 'Install the source package, capture and navigate a server, and test with offline observations.' },
     sourceGuides: [
       guide('docs/README.md', 'guides/getting-started', 'core', { title: 'Getting started', sidebar: { group: 'Guides', order: 1 } }),
       guide('docs/installation.md', 'guides/installation', 'core', { title: 'Installation', sidebar: { group: 'Guides', order: 2 } }),
-      guide('docs/values.md', 'guides/typed-values', 'core', { title: 'Typed values', sidebar: { group: 'Guides', order: 3 } }),
-      guide('docs/api.md', 'guides/api-documentation', 'core', { title: 'API documentation', sidebar: { group: 'Guides', order: 4 } }),
-      guide('docs/status.md', 'guides/status', 'core', { title: 'Implementation status', sidebar: { group: 'Guides', order: 5 } }),
+      guide('docs/capture.md', 'guides/capture', 'core', { title: 'Capture and navigate', sidebar: { group: 'Guides', order: 3 } }),
+      guide('docs/query.md', 'guides/query', 'core', { title: 'Typed queries', sidebar: { group: 'Guides', order: 4 } }),
+      guide('docs/mutations.md', 'guides/mutations', 'core', { title: 'Rename and set pane titles', sidebar: { group: 'Guides', order: 5 } }),
+      guide('docs/shared-runtime.md', 'guides/shared-runtime', 'core', { title: 'Shared Runtime scopes', sidebar: { group: 'Guides', order: 6 } }),
+      guide('docs/fixtures.md', 'guides/offline-fixtures', 'core', { title: 'Offline fixtures', sidebar: { group: 'Guides', order: 7 } }),
+      guide('docs/values.md', 'guides/typed-values', 'core', { title: 'Typed values', description: 'Construct tmux domain values without starting a process or contacting a server.', sidebar: { group: 'Guides', order: 8 } }),
+      guide('docs/performance.md', 'guides/performance', 'core', { title: 'Capture performance', sidebar: { group: 'Guides', order: 9 } }),
+      guide('docs/api.md', 'guides/api-documentation', 'core', { title: 'API documentation', description: 'Find the public modules and what each one is for.', sidebar: { group: 'Guides', order: 10 } }),
+      guide('docs/status.md', 'guides/status', 'core', { title: 'Implementation status', sidebar: { group: 'Guides', order: 11 } }),
     ],
   },
   perl: {
@@ -119,6 +126,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('README.md', 'guides/getting-started', 'core', { title: 'Getting started', sidebar: { group: 'Guides', order: 1 } }),
       guide('docs/installation.md', 'guides/installation', 'core', { title: 'Installation', sidebar: { group: 'Guides', order: 2 } }),
       guide('docs/filtering.md', 'guides/filtering', 'core', { title: 'Filtering' }),
+      guide('examples/README.md', 'examples/programs', 'core', { title: 'Runnable programs', description: 'Run the tested Perl programs and compare each with its expected result.', aliases: [] }),
       guide('docs/orchestration.md', 'examples/orchestration', 'core', { title: 'Create sessions, windows, and panes', aliases: ['guides/orchestration'] }),
       guide('docs/graph.md', 'concepts/graph', 'core', { title: 'Snapshot graph and identity', aliases: ['guides/graph'] }),
       guide('docs/fields.md', 'concepts/fields', 'core', { title: 'Entity fields', aliases: ['guides/fields'] }),
@@ -133,7 +141,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
     domains: [
       libraryDomain('Native CLOS observations, ordinary sequences and explicit tmux operations.'),
       { id: 'workspace', label: 'Workspace Manager', kind: 'product', navGroup: 'Apps', route: 'workspace', package: 'workspace', product: 'workspace',
-        description: 'Validate, plan and explicitly apply bounded JSON workspaces through the native Lisp engine.' },
+        description: 'Validate, plan, apply and inspect owned JSON workspaces through the native Lisp engine.' },
     ],
     sourceGuides: [
       guide('README.md', 'guides/getting-started', 'core', { title: 'Getting started', aliases: [], sidebar: { group: 'Guides', order: 1 } }),
@@ -146,7 +154,8 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('docs/capabilities.md', 'guides/capabilities', 'core', { title: 'Capabilities and limits', aliases: [], sidebar: { group: 'Guides', order: 5 } }),
       guide('docs/testing.md', 'guides/testing', 'core', { title: 'Testing', aliases: [], sidebar: { group: 'Guides', order: 6 } }),
       guide('verification.md', 'guides/verification', 'core', { title: 'Verification evidence', aliases: [], sidebar: { group: 'Guides', order: 7 } }),
-      guide('docs/workspaces.md', 'workspace/source-guide', 'workspace', { title: 'Workspace guide', product: 'workspace', package: 'workspace', aliases: [], sidebar: { group: 'Guides', order: 2 } }),
+      guide('docs/workspace-owned.md', 'workspace/source-guide', 'workspace', { title: 'Workspace guide', product: 'workspace', package: 'workspace', aliases: [], sidebar: { group: 'Guides', order: 2 } }),
+      guide('docs/workspaces.md', 'workspace/legacy-guide', 'workspace', { title: 'Legacy workspace topology guide', product: 'workspace', package: 'workspace', aliases: [], sidebar: { group: 'Guides', order: 3 } }),
     ],
     redirects: [
       { sourcePath: 'docs/api.md', path: 'guides/api', target: 'reference' },
@@ -327,7 +336,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
     domains: [
       libraryDomain('Install the OTP application from Git and use native records, captured graphs and explicit tmux operations.'),
       { id: 'workspace', label: 'Workspace Manager', kind: 'unavailable', navGroup: 'Availability', route: 'workspace', product: 'workspace',
-        description: 'The source application validates JSON desired state. Its plan/apply workflow and CLI are unfinished.' },
+        description: 'Plan and apply JSON workspaces with a standalone escript built from source. No package is published.' },
     ],
     sourceGuides: [
       guide('README.md', 'guides/getting-started', 'core', { title: 'Getting started', aliases: [], sidebar: { group: 'Guides', order: 1 } }),

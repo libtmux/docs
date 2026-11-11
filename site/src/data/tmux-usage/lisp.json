@@ -94,7 +94,7 @@
   ],
   "port": "lisp",
   "repo": "libtmux/libtmux-lisp",
-  "revision": "37c85da8d14efe97c921cb69061b67ee8e5b0c86",
+  "revision": "e6f319c4257789cfe39547af001c718975f0a2ef",
   "schemaVersion": 1,
   "symbols": {
     "libtmux:bind-key": [
@@ -173,14 +173,14 @@
       {
         "command": "list-panes",
         "evidence": [
-          "src/capture.lisp:30",
+          "src/capture.lisp:40",
           "src/records.lisp:17",
           "src/records.lisp:65",
-          "src/capture.lisp:61",
-          "src/capture.lisp:100",
-          "src/capture.lisp:124",
-          "src/capture.lisp:183",
-          "src/capture.lisp:196"
+          "src/capture.lisp:67",
+          "src/capture.lisp:103",
+          "src/capture.lisp:127",
+          "src/capture.lisp:186",
+          "src/capture.lisp:199"
         ],
         "reviewed": true,
         "scope": "server",
@@ -191,14 +191,14 @@
       {
         "command": "list-panes",
         "evidence": [
-          "src/capture.lisp:30",
+          "src/capture.lisp:40",
           "src/records.lisp:17",
           "src/records.lisp:65",
-          "src/capture.lisp:61",
-          "src/capture.lisp:100",
-          "src/capture.lisp:124",
-          "src/capture.lisp:183",
-          "src/capture.lisp:193"
+          "src/capture.lisp:67",
+          "src/capture.lisp:103",
+          "src/capture.lisp:127",
+          "src/capture.lisp:186",
+          "src/capture.lisp:196"
         ],
         "reviewed": true,
         "scope": "server",
@@ -209,14 +209,14 @@
       {
         "command": "list-panes",
         "evidence": [
-          "src/capture.lisp:30",
+          "src/capture.lisp:40",
           "src/records.lisp:17",
           "src/records.lisp:65",
-          "src/capture.lisp:61",
-          "src/capture.lisp:100",
-          "src/capture.lisp:124",
-          "src/capture.lisp:183",
-          "src/capture.lisp:187"
+          "src/capture.lisp:67",
+          "src/capture.lisp:103",
+          "src/capture.lisp:127",
+          "src/capture.lisp:186",
+          "src/capture.lisp:190"
         ],
         "reviewed": true,
         "scope": "server",
@@ -227,13 +227,13 @@
       {
         "command": "list-panes",
         "evidence": [
-          "src/capture.lisp:30",
+          "src/capture.lisp:40",
           "src/records.lisp:17",
           "src/records.lisp:65",
-          "src/capture.lisp:61",
-          "src/capture.lisp:100",
-          "src/capture.lisp:124",
-          "src/capture.lisp:183"
+          "src/capture.lisp:67",
+          "src/capture.lisp:103",
+          "src/capture.lisp:127",
+          "src/capture.lisp:186"
         ],
         "reviewed": true,
         "scope": "server",
@@ -244,14 +244,14 @@
       {
         "command": "list-panes",
         "evidence": [
-          "src/capture.lisp:30",
+          "src/capture.lisp:40",
           "src/records.lisp:17",
           "src/records.lisp:65",
-          "src/capture.lisp:61",
-          "src/capture.lisp:100",
-          "src/capture.lisp:124",
-          "src/capture.lisp:183",
-          "src/capture.lisp:190"
+          "src/capture.lisp:67",
+          "src/capture.lisp:103",
+          "src/capture.lisp:127",
+          "src/capture.lisp:186",
+          "src/capture.lisp:193"
         ],
         "reviewed": true,
         "scope": "server",
@@ -398,7 +398,7 @@
       {
         "command": "new-session",
         "evidence": [
-          "src/creation.lisp:73"
+          "src/creation.lisp:74"
         ],
         "scope": null
       }
@@ -416,7 +416,7 @@
       {
         "command": "next-layout",
         "evidence": [
-          "src/geometry.lisp:77"
+          "src/geometry.lisp:98"
         ],
         "scope": null
       }
@@ -452,7 +452,7 @@
       {
         "command": "previous-layout",
         "evidence": [
-          "src/geometry.lisp:85"
+          "src/geometry.lisp:106"
         ],
         "scope": null
       }
@@ -470,14 +470,14 @@
       {
         "command": "list-panes",
         "evidence": [
-          "src/capture.lisp:30",
+          "src/capture.lisp:40",
           "src/records.lisp:17",
           "src/records.lisp:65",
-          "src/capture.lisp:61",
-          "src/capture.lisp:100",
-          "src/capture.lisp:124",
-          "src/capture.lisp:183",
-          "src/capture.lisp:208"
+          "src/capture.lisp:67",
+          "src/capture.lisp:103",
+          "src/capture.lisp:127",
+          "src/capture.lisp:186",
+          "src/capture.lisp:211"
         ],
         "reviewed": true,
         "scope": "server",
@@ -543,7 +543,7 @@
       {
         "command": "resize-pane",
         "evidence": [
-          "src/geometry.lisp:45"
+          "src/geometry.lisp:58"
         ],
         "scope": null
       }
@@ -552,7 +552,7 @@
       {
         "command": "resize-window",
         "evidence": [
-          "src/geometry.lisp:58"
+          "src/geometry.lisp:71"
         ],
         "scope": null
       }
@@ -615,7 +615,7 @@
       {
         "command": "select-layout",
         "evidence": [
-          "src/geometry.lisp:69"
+          "src/geometry.lisp:89"
         ],
         "scope": null
       }

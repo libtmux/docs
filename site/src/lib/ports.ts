@@ -249,6 +249,8 @@ export interface Port {
   versionedDocs: boolean
   /** Command that loads a workspace file. */
   workspaceCli?: string
+  /** The command a source checkout runs when `workspaceCli` starts a launcher such as `mise`, which is not the program. */
+  workspaceCliRun?: string
   /** Whether companion products exist for this language port. */
   productAvailability?: Partial<Record<DocProduct, ProductAvailability>>
   /** Native product descriptions where the generic CLI wording does not apply. */
@@ -754,11 +756,11 @@ const CORE_PORTS: readonly Port[] = [
     generator: 'Configured Haddock public interfaces',
     publishesOwnTree: true,
     productAvailability: { workspace: 'unpublished', mcp: 'excluded' },
-    packages: [{ id: 'core', name: 'libtmux-haskell', source: { path: 'src', ref: 'master' }, require: 'LibTmux.Id' }],
+    packages: [{ id: 'core', name: 'libtmux-haskell', source: { path: 'src', ref: 'master' }, require: 'LibTmux' }],
     installs: [{
       label: 'Cabal', lang: 'text', filename: 'cabal.project',
       code: 'packages: .\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: {revision}',
-      note: 'Save as cabal.project and add libtmux-haskell ^>=0.1.0.0 to your component\'s build-depends. Requires Linux x86_64, GHC 9.14.1 and Cabal 3.18.2.0. The core package is available from source; it is not published on Hackage.',
+      note: 'Save as cabal.project and add libtmux-haskell ^>=0.1.0.0 to your component\'s build-depends. Requires Linux x86_64 with glibc 2.39+ and pidfd support. Choose GHC and Cabal versions that satisfy the package manifest. The core package is available from source; it is not published on Hackage.',
     }],
     initProject: { lang: 'console', code: 'cabal init --non-interactive --exe --language=GHC2024 --dependency="base >=4.22 && <4.23, libtmux-haskell ^>=0.1.0.0"' },
     installForms: {
@@ -766,7 +768,7 @@ const CORE_PORTS: readonly Port[] = [
       prerelease: { lang: 'text', code: 'build-depends: libtmux-haskell =={version}' },
       git: { lang: 'text', code: 'packages: .\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: master' },
     },
-    installNote: 'The public API currently provides pure typed IDs, checked values and tmux-version admission. Server, capture and command APIs are under development. Workspace is planned; MCP is excluded.',
+    installNote: 'The source provides scoped Server handles, detached snapshots, typed queries, checked renames and pane titles, and validated offline fixtures. Creation, events and workspace tooling remain in development; MCP is excluded.',
   },
   {
     slug: 'lisp',
@@ -787,10 +789,11 @@ const CORE_PORTS: readonly Port[] = [
     publishesOwnTree: true,
     generator: 'SBCL package introspection, docstrings and CLOS metadata',
     workspaceCli: 'mise exec -- tools/lisp.sh tools/workspace-cli.lisp',
+    workspaceCliRun: 'bin/libtmux-workspace',
     workspaceCliAvailability: 'local',
     productAvailability: { workspace: 'available', mcp: 'excluded' },
     productDescriptions: {
-      workspace: 'Build the CLI from source to validate, plan and explicitly apply bounded JSON workspaces through the native Common Lisp engine.',
+      workspace: 'Build the CLI from source to validate, plan, apply and inspect owned JSON workspaces through the native Common Lisp engine.',
     },
     packages: [{
       id: 'workspace', name: 'libtmux/workspace', require: '(asdf:load-system "libtmux/workspace")',
@@ -1701,7 +1704,7 @@ export function workspaceOverviewNotice(port: Port): { title: string; body: stri
   if (!port.workspaceCli) return concept
   const title = concept?.title ?? `Workspace Manager for ${port.name} is in development.`
   const scope = concept ? `${concept.body} ` : ''
-  const command = port.workspaceCli.split(/\s+/)[0]
+  const command = port.workspaceCliRun ?? port.workspaceCli.split(/\s+/)[0]
   if (port.workspaceCliAvailability === 'published') {
     return {
       title,
@@ -1710,10 +1713,12 @@ export function workspaceOverviewNotice(port: Port): { title: string; body: stri
     }
   }
   if (port.workspaceCliAvailability !== 'local') return concept
-  const cliPackage = port.packages?.find((pkg) => pkg.executable === command)
+  const cliPackage = port.packages?.find((pkg) => pkg.executable === command || pkg.executable === port.workspaceCli)
   return {
     title,
-    body: scope + `Build \`${command}\` from the source revision in the installation guide. `
+    body: scope + (port.workspaceCliRun
+      ? `Run \`${command}\` from a source checkout; the installation guide lists the setup. `
+      : `Build \`${command}\` from the source revision in the installation guide. `)
       + (cliPackage ? `The \`${cliPackage.name}\` package supplies this command. ` : '')
       + 'Follow the workspace guide for its configuration format.',
   }

@@ -16,6 +16,10 @@ const r = new Resolver(PORTS.map((port) => JSON.parse(readFileSync(join(DATA, `$
 const inventory = join(here, '../../../site/src/data/inventories/python.inv')
 if (existsSync(inventory)) r.addInventory('Python', 'https://docs.python.org/3/', readInventory(readFileSync(inventory)).entries)
 
+// Slow by design: one Markdown parse per page of the corpus. It outgrows vitest's 5 s
+// default on a starved CI runner, so it carries its own budget (measurements: commit message).
+const CORPUS_BUDGET_MS = 20_000
+
 it('resolves most unlinked references in the real corpus', () => {
     const LABEL: Record<string, string> = {
       Python: 'py', Ruby: 'ruby', Lua: 'lua', TypeScript: 'ts', Rust: 'rs', Go: 'go',
@@ -47,4 +51,4 @@ it('resolves most unlinked references in the real corpus', () => {
     expect(linkable).toBeGreaterThan(200)
     // Floor, not a pin. 87% at the time of writing.
     expect(resolved / linkable).toBeGreaterThan(0.8)
-  })
+  }, CORPUS_BUDGET_MS)

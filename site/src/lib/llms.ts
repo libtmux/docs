@@ -16,7 +16,7 @@ import type { Locale } from '../i18n/locales.ts'
 import { PORT_ROOT, SITE_ROOT } from './site-root.ts'
 import { API_MODELS } from './api-models.ts'
 import { MCP_REFERENCE } from './mcp-reference'
-import { productApiHref, productApiRoots } from './product-api.ts'
+import { coreApiSymbols, productApiHref, productApiRoots } from './product-api.ts'
 import { tmuxReferenceUrl } from './tmux-reference'
 import { buildsTmuxDocumentation, tmuxManualUrl } from './tmux-manual-data.ts'
 import { CATALOG_TITLE, tmuxCatalogUrl } from './tmux-catalog.ts'
@@ -195,4 +195,36 @@ export function referenceLine(origin: string): string | null {
   // named separately, by `referenceEntries`.
   const where = 'libtmux.org'
   return `- [${p.name} API reference](${absolute}): every public symbol, generated from the source. Hosted on ${where}.`
+}
+
+/** The most root declarations llms.txt lists for one port; larger APIs link their index. */
+const REFERENCE_ENTRY_LIMIT = 80
+
+/**
+ * The classes and modules at the top of the selected port's API, each with the
+ * first sentence its source documents it with. Empty outside a port build and
+ * for an API too large to list here, which the reference line already links.
+ */
+export function referenceEntries(origin: string): string[] {
+  const port = process.env.LIBTMUX_DOCS_PORT || undefined
+  const model = port ? API_MODELS[port] : undefined
+  if (!model || !hasReference(PORT_BY_SLUG[port!])) return []
+  const { version } = buildTarget(process.env)
+  const symbols = coreApiSymbols(model)
+  const ids = new Set(symbols.map((symbol) => symbol.id))
+  const roots = symbols.filter((symbol) => !symbol.parent || !ids.has(symbol.parent))
+    .sort((a, b) => a.name.localeCompare(b.name))
+  if (roots.length > REFERENCE_ENTRY_LIMIT) return []
+  return roots.map((symbol) => {
+    // `[[name]]` and `[[ns/name]]` are source cross-references; show the name.
+    const summary = (symbol.doc?.summary ?? '').replace(/\[\[(?:[^\]/]*\/)?([^\]]+)\]\]/g, '$1').trim()
+    const href = productApiHref(model, symbol, version)
+    return `- [${qualifiedNameOf(symbol)}](${href.startsWith('/') ? origin + href : href})${summary ? `: ${summary}` : ''}`
+  })
+}
+
+/** Whether this build's port ships an MCP server, so its exports may mention MCP contracts. */
+export function exportsMcpContracts(): boolean {
+  const port = process.env.LIBTMUX_DOCS_PORT || undefined
+  return !port || productAvailable(PORT_BY_SLUG[port], 'mcp')
 }

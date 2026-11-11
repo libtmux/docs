@@ -32,6 +32,7 @@ export const CAPABILITIES = {
   queries: { group: 'typed', label: 'Filtering and queries over tmux objects' },
   errors: { group: 'typed', label: 'Typed errors instead of exit codes and stderr' },
   servers: { group: 'cli', label: 'Connect to or start a tmux server' },
+  connect: { group: 'cli', label: 'Connect to a running tmux server' },
   traversal: { group: 'cli', label: 'Traversal from a server down to its panes' },
   'send-keys': { group: 'cli', label: 'Send keys to a pane' },
   'control-mode': { group: 'cli', label: 'Watch for changes through tmux control mode' },
@@ -65,6 +66,7 @@ const CAPABILITY_EVIDENCE: Record<CapabilityKey, { needs: string; test: (symbol:
   argv: { needs: 'a command or run symbol', test: (symbol) => /cmd|command|run|exec|invoke/i.test(symbol.name) },
   'version-gate': { needs: 'a version or unsupported-feature error', test: (symbol) => /version|unsupported|capabilit/i.test(symbol.name) },
   servers: { needs: 'a server, connect, open, start or create symbol', test: (symbol) => /server|connect|open|start|new|create|attach/i.test(symbol.name) },
+  connect: { needs: 'a server, connect or open symbol', test: (symbol) => /server|connect|open|attach/i.test(symbol.name) },
   'send-keys': { needs: 'a send-keys symbol', test: (symbol) => /send|key|type|input/i.test(symbol.name) },
   'control-mode': { needs: 'a watch, notification, control or stream symbol', test: (symbol) => /watch|notification|control|event|subscribe|observ|stream/i.test(symbol.name) },
   'watch-other': { needs: 'a wait, poll, hook or watch symbol', test: (symbol) => /wait|poll|watch|hook|observ/i.test(symbol.name) },
@@ -88,12 +90,15 @@ export interface CoreGraphHomeEntry {
   modules?: never
   objectDescriptions?: Partial<Record<CoreRole, string>>
   capabilities: Partial<Record<CapabilityKey, string>>
+  /** Replaces a capability's shared label where the port delivers it differently, as plain maps instead of typed objects. */
+  capabilityLabels?: Partial<Record<CapabilityKey, string>>
 }
 
 export interface CoreModuleHomeEntry {
   modules: readonly string[]
   objects?: never
   association?: never
+  capabilityLabels?: never
   title: string
   lead: string
   capabilities: Record<string, never>
@@ -157,7 +162,7 @@ export function resolveCoreHome(port: string, version: string, entry: CoreHomeEn
   for (const [key, id] of Object.entries(entry.capabilities)) {
     const capability = CAPABILITIES[key as CapabilityKey]
     if (!capability) throw new Error(`core-home: ${port} lists unknown capability ${key}`)
-    capabilities[capability.group].push({ key: key as CapabilityKey, label: capability.label, ...link(port, id, version, key, key as CapabilityKey) })
+    capabilities[capability.group].push({ key: key as CapabilityKey, label: entry.capabilityLabels?.[key as CapabilityKey] ?? capability.label, ...link(port, id, version, key, key as CapabilityKey) })
   }
   for (const group of Object.values(capabilities)) group.sort((a, b) =>
     Object.keys(CAPABILITIES).indexOf(a.key) - Object.keys(CAPABILITIES).indexOf(b.key))
@@ -222,7 +227,7 @@ export function coreDescription(port: string, entry: CoreHomeEntry | undefined =
   const has = (key: CapabilityKey) => key in entry.capabilities
   const clauses = [
     'Control tmux',
-    ...(has('servers') ? ['connect to and create servers'] : []),
+    ...(has('servers') ? ['connect to and create servers'] : has('connect') ? ['connect to servers'] : []),
     'navigate sessions, windows, and panes',
     ...(has('send-keys') ? ['send keys'] : []),
     ...(has('control-mode') ? ['watch for changes via control mode'] : has('watch-other') ? ['wait for changes'] : []),

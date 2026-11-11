@@ -8,7 +8,9 @@
  * functions the symbol answers. Sends a scan cannot see (a command named by a
  * template, a scope passed as a typed argument) are reviewed claims in
  * `scripts/tmux-usage/claims.json`; each one must still be true of the pinned
- * source or generation fails. Symbols that carry a command's name and only
+ * source or generation fails. A reviewed rule cites a file and the text of the
+ * line, and the line is found in the source being built
+ * (`scripts/lib/tmux-usage-locate.mjs`). Symbols that carry a command's name and only
  * build or record it (a plan, a chain, a request) are `exclusions.json`, held
  * to the same standard. A method whose own name says it sends a command, with
  * no entry for it, is a candidate that a claim or a review in
@@ -31,8 +33,11 @@ import { homedir, tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { GRAMMARS, isLibrarySource, scanSource } from './lib/tmux-usage-scan.mjs'
+import { resolveCheckout } from './lib/port-checkout.mjs'
 import { reachableHaskellSources } from './lib/tmux-usage-haskell.mjs'
+import { qualifyNativeHaskell } from './lib/tmux-usage-haskell-native.mjs'
 import { applyConditions, applyExclusions, conditionProblem, deriveUsage, partialProblems, ruleHolds, verifyClaims } from './lib/tmux-usage-derive.mjs'
+import { locateRules } from './lib/tmux-usage-locate.mjs'
 import { auditEvidence } from './lib/tmux-usage-audit.mjs'
 import { dispatcherProblems, guardProblems, preflightProblems } from './lib/tmux-usage-dispatch.mjs'
 import { forwardUsage } from './lib/tmux-usage-forward.mjs'
@@ -201,7 +206,9 @@ export function portDocument(port, model, found, commands) {
 }
 
 /** Read a port's source at its pinned revision: every function, and the public symbols that name them. */
-export async function scanPort({ port, model, commands, checkout, known, dispatch, builders, guards, labels, trace }) {
+export async function scanPort({ port, model, commands, checkout, known, dispatch, builders, guards, labels, trace,
+  nativeProfile = /** @type {object | undefined} */ (undefined),
+  nativeClaims = /** @type {import('./lib/tmux-usage-derive.mjs').Claim[]} */ ([]) }) {
   const grammar = GRAMMARS[port]
   // A port with no reader would be generated as sending nothing, and pass.
   if (!grammar) throw new Error(`${port}: no reader for its source; add it to GRAMMARS in scripts/lib/tmux-usage-scan.mjs`)
@@ -210,9 +217,24 @@ export async function scanPort({ port, model, commands, checkout, known, dispatc
   const types = []
   const modules = []
   const available = librarySources(checkout, model.revision, grammar)
+  const cache = new Map()
+  const readSource = (path) => {
+    if (available.has(path)) return available.get(path)
+    if (!cache.has(path)) {
+      const result = spawnSync('git', ['-C', checkout, 'show', `${model.revision}:${path}`], { maxBuffer: 1 << 28 })
+      cache.set(path, result.status === 0 ? result.stdout.toString('utf8') : undefined)
+    }
+    return cache.get(path)
+  }
   const sources = grammar === 'haskell'
     ? await reachableHaskellSources(available, model.symbols.map((symbol) => symbol.source?.file).filter(Boolean))
     : available
+  const nativeCapture = port === 'haskell' && model.repo === 'libtmux/libtmux-haskell'
+    && (model.nativeProvenance?.exporter?.version >= 2 || symbols.some((symbol) => symbol.id === 'LibTmux.Server#v:capture'))
+  if (nativeCapture && !nativeProfile) throw new Error('Native Haskell usage qualification: no reviewed profile for this capture API')
+  const reviewedFiles = nativeCapture ? qualifyNativeHaskell({ model, symbols,
+    inventory: git(checkout, 'ls-tree', '-r', '--name-only', model.revision).toString('utf8').trim().split('\n'),
+    readSource, profile: nativeProfile, claims: nativeClaims }) : undefined
   const wanted = new Set(commands)
   const native = port === 'perl' ? readJson(join(checkout, 'docs/_build/api.json')) : undefined
   if (native && (native.nativeScan?.schema !== 'libtmux.perl-source/v1' || native.nativeScan.revision !== model.revision || native.nativeProvenance?.exporter?.working_tree !== false)) {
@@ -220,7 +242,7 @@ export async function scanPort({ port, model, commands, checkout, known, dispatc
   }
   for (const [path, text] of sources) {
     if (grammar === 'haskell' && path.endsWith('.lhs')) throw new Error(`Haskell source usage coverage: literate input is not qualified: ${path}`)
-    const scanned = await scanSource({ grammar, text, commands: wanted, known, dispatch, builders, guards, labels, trace, native: native?.nativeScan.files[path] })
+    const scanned = await scanSource({ grammar, text, commands: wanted, known, dispatch, builders, guards, labels, trace, native: native?.nativeScan.files[path], reviewedDigest: reviewedFiles?.[path] })
     for (const fn of scanned.functions) functions.push({ ...fn, file: path })
     for (const type of scanned.types) types.push({ ...type, file: path })
     for (const module of scanned.modules ?? []) modules.push({ ...module, file: path })
@@ -228,15 +250,6 @@ export async function scanPort({ port, model, commands, checkout, known, dispatc
   if (port === 'ocaml') {
     if (!sources.size || !functions.length) throw new Error('ocaml: the pinned library scan found no implementation functions')
     bindOcamlDefinitions({ symbols, functions, modules, sources })
-  }
-  const cache = new Map()
-  const readSource = (path) => {
-    if (sources.has(path)) return sources.get(path)
-    if (!cache.has(path)) {
-      const result = spawnSync('git', ['-C', checkout, 'show', `${model.revision}:${path}`], { maxBuffer: 1 << 28 })
-      cache.set(path, result.status === 0 ? result.stdout.toString('utf8') : undefined)
-    }
-    return cache.get(path)
   }
   return { symbols, functions, types, readSource }
 }
@@ -255,6 +268,7 @@ function derivePort({ port, scanned, commands, scopes, claims, report, sends }) 
   const { symbols, functions, types, readSource } = scanned
   const found = new Map()
   const problems = []
+  const located = []
   for (const command of commands) {
     const spec = scopes.commands[command] && { scopes: libraryScopes(scopes.commands[command]) }
     const derived = deriveUsage({ command, spec, functions, symbols, definitionOptions: DEFINITION_OPTIONS[port] })
@@ -262,10 +276,11 @@ function derivePort({ port, scanned, commands, scopes, claims, report, sends }) 
       claims: claims.filter((claim) => claim.port === port && claim.command === command), spec, functions, types, symbols, readSource, definitionOptions: DEFINITION_OPTIONS[port], sends,
     })
     problems.push(...reviewed.problems)
+    located.push(...reviewed.resolved)
     mergeEntries(found, [...derived.entries, ...reviewed.entries])
     for (const item of derived.unresolved) report.push(`${port} ${command}: ${item.file}:${item.line} in ${item.function}: ${item.reason}`)
   }
-  return { found, problems }
+  return { found, problems, claims: located }
 }
 
 /**
@@ -329,6 +344,12 @@ function forwardPort({ port, config, scanned, core, coreScan, readEvidence }) {
   return { entries: result.entries, problems }
 }
 
+/**
+ * A rule that names a revision holds for that revision only; one that names none holds for every revision of its port, but
+ * those it lists in `except`, which is how the rule for code that changed stands beside the rule for the code it replaced.
+ */
+const atRevision = (rule, revision) => !rule.except?.some((prefix) => revision.startsWith(prefix)) && (!rule.revision || revision.startsWith(rule.revision))
+
 /** Ports that have a model, in the order the site lists them. */
 export async function portsWithModels() {
   const { PORTS } = await import(`file://${join(root, 'site/src/lib/ports.ts')}`)
@@ -336,8 +357,7 @@ export async function portsWithModels() {
 }
 
 export function checkoutFor(port) {
-  const override = process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`]
-  return expand(override || port.checkout)
+  return resolveCheckout(port, { order: ['checkout'] })
 }
 
 /**
@@ -378,14 +398,17 @@ export function documentProblems(document, model, scopes, commands, viaRevision)
 }
 
 /** The methods named for a command that nothing credits, and the reviews that no longer hold. */
-function sweepProblems({ port, model, document, reviews, exclusions, report, readSource }) {
+function sweepProblems({ port, model, document, reviews, exclusions, report, readSource, functions }) {
   const has = new Set(Object.entries(document.symbols).flatMap(([symbol, uses]) => uses.map((use) => `${symbol}\0${use.command}`)))
   const { candidates } = sweepCandidates({ port, commands: document.commands, symbols: publicSymbols(model), has })
+  const own = reviews.filter((review) => review.port === port && atRevision(review, model.revision))
+  const located = readSource ? locateRules(own, { readSource, functions, label: (review) => `${port}: review of ${review.owner ?? review.ownerSuffix ?? ''}${review.names ? `.${review.names.join('|')}` : ''}${review.commands ? ` for ${review.commands.join(',')}` : ''}` }) : { rules: own, problems: [] }
   const { unreviewed, problems } = settleCandidates({
-    port, candidates, reviews: reviews.filter((review) => review.port === port), readSource,
+    port, candidates, reviews: located.rules, readSource,
     // An exclusion settles the builders it removed, and is held to its own evidence elsewhere.
     covering: exclusions.filter((exclusion) => exclusion.port === port),
   })
+  problems.push(...located.problems)
   for (const candidate of unreviewed) report.push(`${port} sweep ${candidate.command}: ${candidate.symbol}`)
   if (unreviewed.length) {
     const shown = unreviewed.slice(0, 6).map((candidate) => `${candidate.symbol.split('.').slice(-2).join('.')} (${candidate.command})`).join(', ')
@@ -399,6 +422,8 @@ export { dispatcherProblems, guardProblems, preflightProblems }
 export async function main() {
   const scopes = readJson(join(usageDir, 'scopes.json'))
   const claims = existsSync(claimsPath) ? readJson(claimsPath).claims : []
+  const nativeProfilePath = join(rulesDir, 'haskell-native.json')
+  const nativeProfile = existsSync(nativeProfilePath) ? readJson(nativeProfilePath) : undefined
   const exclusions = existsSync(exclusionsPath) ? readJson(exclusionsPath).exclusions : []
   const reviews = existsSync(reviewsPath) ? readJson(reviewsPath).reviews : []
   const dispatchers = existsSync(dispatchersPath) ? readJson(dispatchersPath).dispatchers : []
@@ -443,25 +468,34 @@ export async function main() {
     const pinned = models.get(port.slug).revision
     const rules = (list) => list.filter((rule) => rule.port === port.slug && ruleHolds(rule, model.revision, pinned))
     // A dispatch API is a name, so it holds at any revision of its port; its definition is checked at the model's.
-    const apis = dispatchers.filter((api) => api.port === port.slug && (!api.revision || model.revision.startsWith(api.revision)))
-    const wrappers = guards.filter((guard) => guard.port === port.slug)
+    const apis = dispatchers.filter((api) => api.port === port.slug && atRevision(api, model.revision))
+    const wrappers = guards.filter((guard) => guard.port === port.slug && atRevision(guard, model.revision))
     const scanned = await scanPort({
       port: port.slug, model, commands: commandsToRecord, checkout: checkoutFor(port), known,
       dispatch: new Set(apis.filter((api) => api.kind !== 'builder').map((api) => api.name)), builders: new Set(apis.filter((api) => api.kind === 'builder').map((api) => api.name)),
       guards: wrappers.map(({ name, owner }) => ({ name, owner })),
       labels: new Map(apis.filter((api) => api.labels?.length).map((api) => [api.name, new Set(api.labels.map((label) => label.at))])),
+      nativeProfile: port.slug === 'haskell' ? nativeProfile : undefined,
+      nativeClaims: rules(claims),
     })
-    scans.set(scanKey(port.slug, model.revision), { read: scanned.readSource, functions: scanned.functions })
-    const dispatchProblems = model.revision === pinned
-      ? [...dispatcherProblems({ port: port.slug, dispatchers: apis, readSource: scanned.readSource, functions: scanned.functions }),
-        ...guardProblems({ port: port.slug, guards: wrappers, readSource: scanned.readSource, functions: scanned.functions })] : []
+    // Each rule cites text, and the lines it is on are looked up in the source built here.
+    const locating = (list, kind) => locateRules(list, { readSource: scanned.readSource, functions: scanned.functions, label: (rule) => `${port.slug}: ${kind} ${rule.name ?? rule.command ?? rule.owner ?? rule.symbol}` })
+    const dispatchProblems = []
+    if (model.revision === pinned) {
+      const located = { dispatchers: locating(apis, 'dispatcher'), guards: locating(wrappers, 'guard') }
+      dispatchProblems.push(...located.dispatchers.problems, ...located.guards.problems,
+        ...dispatcherProblems({ port: port.slug, dispatchers: located.dispatchers.rules, readSource: scanned.readSource, functions: scanned.functions }),
+        ...guardProblems({ port: port.slug, guards: located.guards.rules, readSource: scanned.readSource, functions: scanned.functions }))
+    }
     const sends = (parent, symbol, command, scope) => {
       const entry = core?.found.get(`${symbol}\0${command}\0${scope}`)
       return parent === core?.port && entry ? { ...entry, revision: core.revision } : undefined
     }
-    const { found, problems } = derivePort({ port: port.slug, scanned, commands: commandsToRecord, scopes, claims: rules(claims), report, sends })
-    const excluded = applyExclusions({ exclusions: rules(exclusions), found, symbols: scanned.symbols, readSource: scanned.readSource })
-    return { port: port.slug, revision: model.revision, found, scanned, problems: [...dispatchProblems, ...problems, ...excluded.problems] }
+    const { found, problems, claims: located } = derivePort({ port: port.slug, scanned, commands: commandsToRecord, scopes, claims: rules(claims), report, sends })
+    scans.set(scanKey(port.slug, model.revision), { read: scanned.readSource, functions: scanned.functions, claims: located })
+    const exclusionRules = locating(rules(exclusions), 'exclusion')
+    const excluded = applyExclusions({ exclusions: exclusionRules.rules, found, symbols: scanned.symbols, readSource: scanned.readSource })
+    return { port: port.slug, revision: model.revision, found, scanned, problems: [...dispatchProblems, ...problems, ...exclusionRules.problems, ...excluded.problems] }
   }
 
   /** The core library as the wrapper sees it: read where the wrapper is pinned if they share a repository, else at the core's model. */
@@ -479,7 +513,8 @@ export async function main() {
     return passes.get(key)
   }
 
-  const claimFor = (slug, symbol, command, scope, revision) => claims.find((claim) => claim.port === slug && claim.symbol === symbol
+  // The claim as it was located in the scan at that revision, which is where its cited lines are read.
+  const claimFor = (slug, symbol, command, scope, revision) => scans.get(scanKey(slug, revision))?.claims.find((claim) => claim.port === slug && claim.symbol === symbol
     && claim.command === command && claim.scope === scope && ruleHolds(claim, revision, models.get(slug).revision))
 
   let compared = 0
@@ -505,13 +540,19 @@ export async function main() {
       if (check) { console.log(`gen-tmux-usage: ${port.slug}: no checkout at ${checkout}; skipped regeneration`); continue }
       throw new Error(`${port.slug}: no checkout at ${checkout}; set LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`)
     }
-    const config = forwarders[port.slug]
-    const core = config ? await corePassFor(port, config) : undefined
-    if (config && !core) failures.push(`${port.slug}: its core library ${config.parent} was not generated`)
+    const declared = forwarders[port.slug]
+    const core = declared ? await corePassFor(port, declared) : undefined
+    if (declared && !core) failures.push(`${port.slug}: its core library ${declared.parent} was not generated`)
     const pass = await derivePass({ port, model, core })
     const { found, scanned } = pass
     failures.push(...pass.problems)
-    failures.push(...preflightProblems({ port: port.slug, preflights: preflights.filter((rule) => rule.port === port.slug), readSource: scanned.readSource }))
+    // The lines the reviewed rules cite are looked up in this port's source, so a forwarder's, a preflight's and a condition's are too.
+    const locating = (list, kind) => locateRules(list, { readSource: scanned.readSource, functions: scanned.functions, label: (rule) => `${port.slug}: ${kind} ${rule.name ?? rule.command ?? rule.symbol ?? ''}` })
+    const generatedLines = declared?.generated && locating([declared.generated], 'forwarder')
+    failures.push(...(generatedLines?.problems ?? []))
+    const config = declared && { ...declared, ...(generatedLines?.rules[0] ? { generated: generatedLines.rules[0] } : {}) }
+    const checks = locating(preflights.filter((rule) => rule.port === port.slug && atRevision(rule, model.revision)), 'preflight')
+    failures.push(...checks.problems, ...preflightProblems({ port: port.slug, preflights: checks.rules, readSource: scanned.readSource }))
     if (config && core) {
       const forwarded = forwardPort({
         port: port.slug, config, scanned, coreScan: core.scanned, readEvidence: scanned.readSource,
@@ -520,7 +561,9 @@ export async function main() {
       failures.push(...forwarded.problems)
       mergeEntries(found, forwarded.entries)
     }
-    const qualifiers = conditions.filter((item) => item.port === port.slug)
+    const qualified = locating(conditions.filter((item) => item.port === port.slug && atRevision(item, model.revision)), 'condition')
+    failures.push(...qualified.problems)
+    const qualifiers = qualified.rules
     applyConditions({ conditions: qualifiers, found, readSource: scanned.readSource, lenient: true })
     // Go keeps one handle per tmux object and delegates to the server's methods, so a method that calls one on its `server` field sends what it sends.
     if (DELEGATING.has(port.slug)) {
@@ -536,7 +579,7 @@ export async function main() {
     // A generic function's methods are not credited with each other's sends.
     if (DEFINITION_OPTIONS[port.slug]?.freeFunctions) failures.push(...partialProblems(found).map((problem) => `${port.slug}: ${problem}`))
     const document = portDocument(port.slug, model, [...found.values()], commandsToRecord)
-    failures.push(...sweepProblems({ port: port.slug, model, document, reviews, exclusions, report, readSource: scanned.readSource }))
+    failures.push(...sweepProblems({ port: port.slug, model, document, reviews, exclusions, report, readSource: scanned.readSource, functions: scanned.functions }))
     // The committed entries are the ones audited, because a check has to read what is published and not what a scan makes of it.
     const subject = committed ?? document
     failures.push(...auditEvidence({

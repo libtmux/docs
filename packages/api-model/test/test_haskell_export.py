@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import subprocess
 import tempfile
 import unittest
@@ -34,6 +35,265 @@ def _native_inputs():
 
 def _artifact():
     return EXPORT.extract_modules(*_native_inputs())
+
+
+def _profile_inputs(fixture_name="haskell-observations-native"):
+    fixture = ROOT / "test/fixtures" / fixture_name
+    meta = json.loads((fixture / "provenance.json").read_text())
+    return [
+        {
+            name: (fixture / (name.replace(".", "-") + ".html")).read_text()
+            for name in meta["modules"]
+        },
+        json.loads((fixture / "installed.json").read_text()),
+        meta["modules"],
+        json.loads((fixture / "source-anchors.json").read_text()),
+        meta["revision"],
+    ]
+
+
+class _MutationExportTest(unittest.TestCase):
+    def test_mutations_keep_io_options_and_recovery_sources(self):
+        result = EXPORT.extract_modules(*_profile_inputs("haskell-mutations-native"))
+        symbols = {item["id"]: item for item in result["symbols"]}
+        for name, signature in [
+            ("renameSession", "renameSession :: Server -> SessionRef -> Text -> IO ()"),
+            ("renameWindow", "renameWindow :: Server -> WindowRef -> TmuxText -> IO ()"),
+            ("setPaneTitle", "setPaneTitle :: Server -> PaneRef -> Text -> IO ()"),
+            (
+                "renameSessionWith",
+                "renameSessionWith :: MutationOptions -> Server -> SessionRef -> Text -> IO ()",
+            ),
+        ]:
+            with self.subTest(name=name):
+                self.assertEqual(
+                    symbols[f"LibTmux.Server#v:{name}"]["signatures"][0]["raw"], signature
+                )
+        recovery = symbols["LibTmux.Server#t:MutationRecovery"]
+        self.assertEqual(recovery["modifiers"], ["opaque"])
+        self.assertEqual(recovery["source"]["file"], "internal/LibTmux/Internal/Mutation.hs")
+        options = symbols["LibTmux.Server#t:MutationOptions"]
+        self.assertEqual(options["modifiers"], [])
+        timeout = symbols["LibTmux.Server#v:MutationOptions.timeout"]
+        self.assertEqual(timeout["parent"], options["id"])
+        self.assertEqual(timeout["nativeLocation"]["anchor"], "v:timeout")
+        self.assertIn("LibTmux.Server#v:MutationAppliedWithErrors", symbols)
+        self.assertFalse(any("Internal" in item["id"] for item in result["symbols"]))
+
+    def test_rejects_unqualified_or_missing_defining_sources(self):
+        for change in ["unknown", "missing"]:
+            inputs = _profile_inputs("haskell-mutations-native")
+            if change == "unknown":
+                inputs[3]["LibTmux.Internal.Unqualified"] = {}
+            else:
+                del inputs[3]["LibTmux.Internal.Mutation"]
+            with self.subTest(change=change), self.assertRaisesRegex(ValueError, "source.*profile"):
+                EXPORT.extract_modules(*inputs)
+
+
+class _QueryExportTest(unittest.TestCase):
+    def test_query_parameters_constraints_and_defining_sources_survive(self):
+        result = EXPORT.extract_modules(*_profile_inputs("haskell-query-native"))
+        symbols = {item["id"]: item for item in result["symbols"]}
+        self.assertEqual(len(result["modules"]), 16)
+        for name, parameters in [
+            ("Field", "row value"),
+            ("Expr", "row"),
+            ("Query", "row"),
+            ("Order", "row"),
+            ("ToMany", "parent child"),
+            ("ToOne", "parent child"),
+            ("ToOptional", "parent child"),
+        ]:
+            with self.subTest(name=name):
+                item = symbols[f"LibTmux.Query#t:{name}"]
+                self.assertEqual(item["signatures"][0]["raw"], f"data {name} {parameters}")
+                self.assertEqual(item["modifiers"], ["opaque"])
+                self.assertTrue(item["source"]["file"].startswith("internal/LibTmux/Internal/"))
+        for name, signature in [
+            ("eq", "eq :: Eq value => Field row value -> value -> Expr row"),
+            ("runQuery", "runQuery :: Snapshot -> Query row -> Either QueryError [row]"),
+            ("fetch", "fetch :: Server -> Query row -> IO (Either QueryError [row])"),
+        ]:
+            with self.subTest(name=name):
+                item = symbols[f"LibTmux.Query#v:{name}"]
+                self.assertEqual(item["signatures"][0]["raw"], signature)
+        self.assertNotIn("line", symbols["LibTmux.Query#t:Order"]["source"])
+        self.assertIn("LibTmux.Query.Pane#v:width", symbols)
+        self.assertIn("LibTmux.Snapshot#v:Pane.width", symbols)
+        self.assertFalse(any("Internal" in item["id"] for item in result["symbols"]))
+
+
+class _ObservationExportTest(unittest.TestCase):
+    def test_native_source_text_matches_committed_bytes_without_annotation_tooltips(self):
+        page = (
+            '<pre><span id="line-1"></span>data '
+            '<span class="annot"><span class="annottext">Generated tooltip\n</span>'
+            '<a id="Value"></a>Value</span>\n</pre>'
+        )
+        self.assertEqual(
+            EXPORT._checked_source_page(page, b"data Value\n"), {"line-1": [1], "Value": [1]}
+        )
+        with self.assertRaisesRegex(ValueError, "source text differs"):
+            EXPORT._checked_source_page(page, b"data Changed\n")
+
+    def test_source_markers_are_qualified_by_physical_visible_line_positions(self):
+        page = '<pre>\n\n\n<a id="Value"></a>data Value\n</pre>'
+        self.assertEqual(EXPORT._checked_source_page(page, b"\n\n\ndata Value\n")["Value"], [4])
+        for markers in ['<span id="line-999"></span>', '<span id="line-1"></span>' * 2]:
+            with (
+                self.subTest(markers=markers),
+                self.assertRaisesRegex(ValueError, "source line marker"),
+            ):
+                EXPORT._checked_source_page(f"<pre>{markers}data Value\n</pre>", b"data Value\n")
+
+    def test_explicit_missing_source_anchors_fail_instead_of_becoming_file_links(self):
+        for line in [False, True]:
+            with self.subTest(line=line):
+                inputs = _profile_inputs()
+                html = inputs[0]["LibTmux.Snapshot"]
+                anchor = (
+                    re.search(r"src/LibTmux.Internal.Graph.html#line-\d+", html)[0]
+                    if line
+                    else "src/LibTmux.Internal.Graph.html#Session"
+                )
+                replacement = "src/LibTmux.Internal.Graph.html#" + (
+                    "line-999999" if line else "Absent"
+                )
+                self.assertIn(anchor, html)
+                inputs[0]["LibTmux.Snapshot"] = html.replace(anchor, replacement, 1)
+                with self.assertRaisesRegex(ValueError, "explicit native source anchor"):
+                    EXPORT.extract_modules(*inputs)
+
+    def test_fields_and_constructors_require_value_namespace_native_anchors(self):
+        for inputs, module, name in [
+            (_profile_inputs(), "LibTmux.Snapshot", "ref"),
+            (_native_inputs(), "LibTmux.Id", "InvalidId"),
+        ]:
+            with self.subTest(name=name):
+                marker = f'id="v:{name}"'
+                self.assertIn(marker, inputs[0][module])
+                inputs[0][module] = inputs[0][module].replace(marker, f'id="t:{name}"', 1)
+                with self.assertRaisesRegex(ValueError, "Unsupported Haddock public anchor"):
+                    EXPORT.extract_modules(*inputs)
+
+    def test_root_reexports_keep_order_without_cloning_child_declarations(self):
+        result = EXPORT.extract_modules(*_profile_inputs())
+        root = result["modules"][0]
+        self.assertEqual(root["name"], "LibTmux")
+        self.assertEqual(root["groups"], [])
+        names = ["LibTmux." + name for name in ["Server", "Snapshot", "Id", "Value", "Version"]]
+        self.assertEqual(
+            root["reexports"],
+            [{"module": name, "href": name.replace(".", "-") + ".html"} for name in names],
+        )
+        self.assertEqual(len(result["symbols"]), 232)
+        self.assertEqual(sum(s.get("parent") == "LibTmux" for s in result["symbols"]), 0)
+
+    def test_duplicate_fields_keep_their_owner_docs_types_and_defining_source(self):
+        result = EXPORT.extract_modules(*_profile_inputs())
+        symbols = {s["id"]: s for s in result["symbols"]}
+        docs = {
+            "Session": "Target identity in the observation's generation.",
+            "Window": "Shared identity across this snapshot's window links.",
+            "Pane": "Pane identity in the observation's generation.",
+        }
+        for owner, summary in docs.items():
+            with self.subTest(owner=owner):
+                field = symbols[f"LibTmux.Snapshot#v:{owner}.ref"]
+                self.assertEqual(field["name"], "ref")
+                self.assertEqual(field["kind"], "property")
+                self.assertEqual(field["parent"], f"LibTmux.Snapshot#t:{owner}")
+                self.assertEqual(field["qualifiedName"], "LibTmux.Snapshot.ref")
+                self.assertEqual(field["signatures"][0]["raw"], f"ref :: !{owner}Ref")
+                self.assertEqual(field["doc"]["summary"], summary)
+                self.assertEqual(
+                    field["nativeLocation"], {"module": "LibTmux.Snapshot", "anchor": "v:ref"}
+                )
+                self.assertEqual(field["definingModule"], "LibTmux.Internal.Graph")
+                self.assertEqual(field["source"]["file"], "internal/LibTmux/Internal/Graph.hs")
+                self.assertNotIn("line", field["source"])
+        self.assertFalse(
+            any(s["kind"] == "function" and s["name"] == "ref" for s in symbols.values())
+        )
+        self.assertFalse(any("Internal" in s["id"] for s in symbols.values()))
+
+    def test_compiled_origins_and_export_multiplicity_are_checked(self):
+        for description, mutate in [
+            (
+                "wrong defining source",
+                lambda inputs: inputs[0].__setitem__(
+                    "LibTmux.Snapshot",
+                    inputs[0]["LibTmux.Snapshot"].replace(
+                        "src/LibTmux.Internal.Graph.html#Pane",
+                        "src/LibTmux.Internal.Scope.html#Pane",
+                        1,
+                    ),
+                ),
+            ),
+            (
+                "omitted repeated field",
+                lambda inputs: next(
+                    item
+                    for item in inputs[1]["inst_ifaces"]
+                    if item["module"].endswith("$LibTmux.Snapshot")
+                )["visible_exports"].remove(
+                    "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Graph$ref"
+                ),
+            ),
+            (
+                "wrong compiled owner",
+                lambda inputs: inputs[1]["link_env"].__setitem__(
+                    "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Graph$ref", "LibTmux.Server"
+                ),
+            ),
+        ]:
+            with self.subTest(description=description):
+                inputs = _profile_inputs()
+                mutate(inputs)
+                with self.assertRaisesRegex(ValueError, "visible-export|Compiled public owner"):
+                    EXPORT.extract_modules(*inputs)
+
+    def test_reexport_and_duplicate_label_ambiguity_fail_instead_of_guessing(self):
+        for description, edit in [
+            (
+                "hidden reexport",
+                lambda pages: pages.__setitem__(
+                    "LibTmux",
+                    pages["LibTmux"].replace(
+                        'href="LibTmux-Server.html"', 'href="LibTmux-Internal-Runtime.html"'
+                    ),
+                ),
+            ),
+            (
+                "missing reexport",
+                lambda pages: pages.__setitem__(
+                    "LibTmux",
+                    pages["LibTmux"].replace(
+                        'module <a href="LibTmux-Server.html">LibTmux.Server</a>',
+                        'module <a href="LibTmux-Snapshot.html">LibTmux.Snapshot</a>',
+                    ),
+                ),
+            ),
+            (
+                "ambiguous authored field",
+                lambda pages: pages.__setitem__(
+                    "LibTmux",
+                    pages["LibTmux"].replace(
+                        'href="LibTmux-Server.html#v:capture"',
+                        'href="LibTmux-Snapshot.html#v:ref"',
+                        1,
+                    ),
+                ),
+            ),
+        ]:
+            with self.subTest(description=description):
+                inputs = _profile_inputs()
+                original = dict(inputs[0])
+                edit(inputs[0])
+                self.assertNotEqual(inputs[0], original)
+                with self.assertRaisesRegex(ValueError, "reexport|ambiguous"):
+                    EXPORT.extract_modules(*inputs)
 
 
 class _NativeExportTest(unittest.TestCase):

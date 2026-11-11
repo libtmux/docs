@@ -80,7 +80,7 @@ describe('Core Library home data', () => {
 })
 
 describe('Core Library home page', () => {
-  it('shows the Haskell public modules without claiming an operational object graph', async () => {
+  it('links the Haskell capture, snapshot, query and fixture modules', async () => {
     const { Window } = await import('happy-dom')
     const { createComponent, renderTemplate } = await import('astro/runtime/server/index.js')
     const { loadAstroTemplate, renderAstroTemplate } = await import('./astro-templates')
@@ -97,14 +97,15 @@ describe('Core Library home page', () => {
         props: { port: 'haskell', version: 'latest', cards: [] },
       })
       const rows = [...window.document.querySelectorAll('[data-core-home-modules] tbody a')]
-      expect(rows.map((row) => row.textContent)).toEqual(['LibTmux.Id', 'LibTmux.Value', 'LibTmux.Version'])
+      expect(rows.map((row) => row.textContent)).toEqual(['LibTmux.Server', 'LibTmux.Snapshot', 'LibTmux.Query', 'LibTmux.Snapshot.Fixture'])
       const markdown = coreHomeMarkdown('haskell', 'latest', 'https://libtmux.org')
       for (const row of rows) expect(markdown).toContain(`https://libtmux.org${row.getAttribute('href')}`)
       expect(window.document.querySelector('[data-core-home-objects]')).toBeNull()
       expect(window.document.body.textContent).toContain('not published on Hackage')
       expect(window.document.body.textContent).toContain(`tag: "${sourceSha}"`)
       expect(window.document.body.textContent).not.toMatch(/Control tmux|Server →|connect to|Traversal from/)
-      expect(markdown).not.toMatch(/\| Type \| Wraps|Control tmux|navigate sessions/)
+      expect(markdown).not.toMatch(/\| Type \| Wraps|Control tmux/)
+      expect(markdown).toContain(coreLead('haskell'))
       expect([...window.document.querySelectorAll('h2')].map((heading) => heading.id))
         .toEqual(coreHomeHeadings('haskell', 'latest').map((heading) => heading.slug))
     } finally { await window.happyDOM.abort(); vi.unstubAllEnvs() }
@@ -161,7 +162,7 @@ describe('the one-sentence definition', () => {
     for (const port of PORTS) {
       const entry = CORE_HOME[port.slug]!
       const sentence = coreDescription(port.slug)
-      expect(sentence.startsWith(`${coreTitle(port.slug)}. ${port.slug === 'haskell' ? 'Parse tmux entity IDs' : 'Control tmux, '}`), port.slug).toBe(true)
+      expect(sentence.startsWith(`${coreTitle(port.slug)}. ${entry.modules !== undefined ? entry.lead : 'Control tmux, '}`), port.slug).toBe(true)
       expect(sentence.includes('connect to and create servers'), `${port.slug} servers`).toBe('servers' in entry.capabilities)
       expect(sentence.includes('send keys'), `${port.slug} send keys`).toBe('send-keys' in entry.capabilities)
       expect(sentence.includes('via control mode'), `${port.slug} control mode`).toBe('control-mode' in entry.capabilities)
@@ -231,5 +232,26 @@ describe('the cards of the Core Library page', () => {
     }
     // Not a staged port, and no authored workspace section: nothing writes this route.
     expect(routesOf('swift').has('topics-and-notes')).toBe(false)
+  })
+})
+
+describe('Clojure connection claim', () => {
+  // `libtmux.core/open!` opens a client on an explicit socket; it never starts a server.
+  it('says the port connects to servers and does not claim it starts one', () => {
+    const entry = CORE_HOME.clojure!
+    expect(entry.capabilities).not.toHaveProperty('servers')
+    expect(entry.capabilities).toHaveProperty('connect', 'libtmux.core/open!')
+    const labels = Object.values(resolveCoreHome('clojure', 'latest').capabilities).flat().map((row) => row.label)
+    expect(labels).toContain(CAPABILITIES.connect.label)
+    expect(labels.join('\n')).not.toMatch(/start|create/i)
+    expect(coreDescription('clojure')).not.toMatch(/create servers/)
+  })
+
+  // Captures are plain data and failures are `ex-info` maps, not typed objects or exceptions.
+  it('labels captures and errors as what Clojure offers', () => {
+    const labels = Object.values(resolveCoreHome('clojure', 'latest').capabilities).flat().map((row) => row.label).join('\n')
+    expect(labels).toContain('plain maps')
+    expect(labels).toContain('ex-info')
+    expect(labels).not.toMatch(/Typed (objects|errors)/)
   })
 })

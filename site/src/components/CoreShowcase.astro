@@ -177,10 +177,10 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
   .core-showcase__apilist a { color: var(--color-link); }
   .core-showcase__apilist code { font-size: inherit; overflow-wrap: anywhere; }
   /* The treatment of the front page examples: column-fit type size, a fixed height, scrolling inside the block. */
-  .core-showcase__panel :global(.expressive-code) {
+  .core-showcase__panel > :global(.expressive-code) {
     --ec-codeFontSize: clamp(.8125rem, calc((100cqi - 2rem) / (var(--home-code-columns, 80) * .625)), .9375rem);
   }
-  .core-showcase__panel :global(.expressive-code pre) { height: calc(34rem - var(--home-toolbar-row, 0rem)); max-height: none; overflow: auto; tab-size: 8; scrollbar-gutter: stable; }
+  .core-showcase__panel > :global(.expressive-code pre) { height: calc(34rem - var(--home-toolbar-row, 0rem)); max-height: none; overflow: auto; tab-size: 8; scrollbar-gutter: stable; }
   .core-showcase__panel h3 { margin: 0 0 .6rem; font-size: 1rem; }
   .core-showcase__tmux {
     margin-inline-start: .5rem; padding: .05rem .4rem; border: 1px solid var(--color-edge); border-radius: .75rem;

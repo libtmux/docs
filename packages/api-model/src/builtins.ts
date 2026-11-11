@@ -169,6 +169,7 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     IO: 'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/System-IO.html#t:IO',
     Either: 'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Data-Either.html#t:Either',
     Integer: 'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Prelude.html#t:Integer',
+    Natural: 'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Numeric-Natural.html#t:Natural',
   },
   elixir: {
     ...Object.fromEntries(ELIXIR_BASIC_TYPES.map((name) => [name, elixirDocs('typespecs.html#basic-types')])),

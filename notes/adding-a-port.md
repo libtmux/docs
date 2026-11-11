@@ -157,13 +157,34 @@ In the new worktree, on `docs-site`:
 
 Haskell's [Haddock exporter](../packages/api-model/scripts/export-haskell.py)
 builds a selected committed source archive. Its
-[adapter](../packages/api-model/src/languages/haskell.ts) currently qualifies
-`LibTmux.Id`, `LibTmux.Value` and `LibTmux.Version` with the port's pinned
-GHC/Haddock toolchain. It preserves native signature links, opaque data
-heads, constructor and record-label ownership, instance heads, and authored
-export groups. The stored model retains those groups so sidebar regeneration
-needs no checkout or native toolchain. Additional module and declaration
-forms need native fixtures and qualification before the adapter accepts them.
+[adapter](../packages/api-model/src/languages/haskell.ts) accepts four qualified
+profiles with the port's pinned GHC/Haddock toolchain:
+
+- Scalar v1 covers `LibTmux.Id`, `LibTmux.Value` and `LibTmux.Version`.
+- Observation v2 adds `LibTmux`, `LibTmux.Server`, `LibTmux.Snapshot` and
+  `LibTmux.Snapshot.Fixture`. Its [native fixture](../packages/api-model/test/fixtures/haskell-observations-native/README.md)
+  records the library and producer revisions separately.
+- Query v3 adds `LibTmux.Query` and its typed field/relationship modules. Its
+  [native fixture](../packages/api-model/test/fixtures/haskell-query-native/README.md)
+  preserves opaque type parameters and constrained signatures.
+- Mutation v4 retains the query modules and adds checked rename, pane-title and
+  recovery declarations. Its [native fixture](../packages/api-model/test/fixtures/haskell-mutations-native/README.md)
+  qualifies the private defining source of the opaque recovery receipt.
+
+All profiles retain native signatures, opaque data heads, constructors, record labels,
+instance heads and authored export groups. Observation field identities include
+their record owner; displayed Haskell names and field types remain native.
+Source links use the actual defining files, including private files behind a
+public reexport, without creating private reference pages. Native source text
+and line markers are checked against the committed source.
+
+The stored model retains export groups and ordered module-reexport relations,
+so sidebar regeneration needs no checkout or native toolchain. The reexport
+root has its own row; it does not duplicate the target modules' declarations.
+Field modules without authored groups retain Haddock's default Documentation
+section. An ambiguous native source identifier retains its defining file
+without an invented line. Additional module and declaration forms need native
+fixtures and qualification before the adapter accepts them.
 
 Haskell's reader guides use the routes in
 [`port-documentation.ts`](../site/src/lib/port-documentation.ts). Its section
@@ -178,8 +199,11 @@ $ node scripts/stage-port-docs.mjs \
 ```
 
 The command reads committed guide bytes at the API model's revision. Public
-module links reach the shared reference; source fragments retain their pinned
-GitHub destinations. Add the pinned source checkout to `test.yml` when a port
+module links reach the shared reference. An inline link labelled with a unique
+public declaration opens that declaration; a shared type/constructor name
+opens the data head. Ambiguous record labels stay at the module. Source
+fragments retain their pinned GitHub destinations. Add the pinned source
+checkout to `test.yml` when a port
 gains source-owned guides. Reading a guide checkout does not qualify native
 export freshness; the port's publisher runs its selected native toolchain.
 
@@ -196,9 +220,30 @@ option-arity qualification. Custom `do` semantics, command-bearing pattern
 bindings, tmux command separators and sends beyond the shared helper-depth
 limit fail explicitly. Actual sends require a resolved scope and public
 attribution; ambiguous or widely shared helpers need further qualification.
-The current public scalar modules send no commands, so the generated usage
-document has no symbol entries. New public operations need source evidence
-and reader qualification before appearing on tmux command pages.
+
+The queued native capture path uses a separate
+[reviewed source profile](../scripts/tmux-usage/haskell-native.json).
+Qualification checks the exact revision, the complete library and C-source
+inventory, each file's digest, every public callable or field classification,
+the full API model and native build metadata, and the
+[reviewed claims](../scripts/tmux-usage/claims.json). Its parser indexes
+declaration bounds for the shared evidence audit; it does not infer queued
+execution from function names. A changed source, public export or claim fails
+qualification until the profile is reviewed again.
+
+Set `LIBTMUX_DOCS_PORT=haskell` and bind `LIBTMUX_DOCS_SOURCE_SHA` and
+`LIBTMUX_DOCS_SOURCE_REF` to the selected commit when regenerating this model.
+Qualify native command usage against that generated model. An unselected
+authoring build can cite the public default branch and produce a different
+full-model digest.
+
+Capture selects `ReadSnapshot`, whose fixed queue reaches the native spawner.
+It sends `display-message` and `if-shell`; `list-clients` runs when sessions
+exist. Graph enumeration uses tmux format loops. The older private scalar and
+graph readers are not public capture paths. Recovery inspects or retires
+existing owners without redispatch. Caller-supplied `IO` in `withServer` and
+`tryTmux` is classified separately, and pure snapshot navigation has no send.
+The scalar-only API retains the ordinary reader and has no command entries.
 
 ### Erlang compiler artifact
 

@@ -605,7 +605,7 @@ export function withoutPrimaryConstructors(text) {
  *   `types` are the declarations that own functions, so a claim can anchor to
  *   a class; `orphans` are the sites outside any named function.
  */
-export async function scanSource({ grammar, text, commands, known, dispatch, builders: declared = new Set(), guards = [], labels = new Map(), trace, native }) {
+export async function scanSource({ grammar, text, commands, known, dispatch, builders: declared = new Set(), guards = [], labels = new Map(), trace, native, reviewedDigest }) {
   // A guard wraps the command it is handed and hands it on, so it passes a command through as a builder does.
   const builders = new Set([...declared, ...guards.map((guard) => guard.name)])
   const isGuard = (fn) => guards.some((guard) => guard.name === fn?.name && (!guard.owner || guard.owner === fn.owner))
@@ -626,7 +626,7 @@ export async function scanSource({ grammar, text, commands, known, dispatch, bui
   if (grammar === 'elixir') return scanElixir(text, { commands, known, dispatch })
   if (grammar === 'erlang') return scanErlang(text, { commands, known, dispatch, builders, labels })
   if (grammar === 'fsharp') return scanFSharp(text)
-  if (grammar === 'haskell') return scanHaskell(text, { commands, known, dispatch })
+  if (grammar === 'haskell') return scanHaskell(text, { commands, known, dispatch, reviewedDigest })
   if (grammar === 'clojure') return scanClojure(text, { commands, dispatch })
   if (grammar === 'commonlisp') return scanLisp(text, { commands, known, dispatch })
   // A grammar that no reader above or below handles would reach the loader as a file that does not exist.

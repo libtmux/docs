@@ -1,4 +1,4 @@
-import { PORTS } from '../../../site/src/lib/ports.ts'
+import { checkoutOverride, resolveCheckout } from '../port-checkout.mjs'
 import { quickstartSource, withoutMarks } from './common.mjs'
 import { buildDotnet, dotnetFence, dotnetProbe, projectFiles, runCommand, toolchain } from './dotnet.mjs'
 
@@ -89,7 +89,7 @@ export const RECIPES = {
     paneCommands: ['sh'],
     source: (root) => quickstartSource(root, 'fsharp', 'app/Program.fs'),
     /** F# is built on the C# library: its checkout is libtmux-dotnet's. */
-    checkout: (port, env, expand) => expand(env.LIBTMUX_DOCS_CHECKOUT_FSHARP || env.LIBTMUX_DOCS_CHECKOUT_CSHARP || PORTS.find((entry) => entry.slug === 'csharp').worktree),
+    checkout: (port, env) => checkoutOverride('fsharp', { env }) ?? resolveCheckout('csharp', { env, order: ['worktree'] }),
     helpers: [],
     // In the order the calls run. The snapshot's sessions, windows, panes and the lookups after them are read from what it captured and send tmux nothing. The owned server is stopped when the task ends; the mark that follows `GetResult()` comes after that.
     steps: [

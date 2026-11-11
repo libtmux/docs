@@ -17,6 +17,49 @@ from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
+SCALAR_MODULES = ["LibTmux.Id", "LibTmux.Value", "LibTmux.Version"]
+OBSERVATION_MODULES = [
+    "LibTmux",
+    "LibTmux.Id",
+    "LibTmux.Server",
+    "LibTmux.Snapshot",
+    "LibTmux.Snapshot.Fixture",
+    "LibTmux.Value",
+    "LibTmux.Version",
+]
+OBSERVATION_ORIGINS = OBSERVATION_MODULES + [
+    "LibTmux.Internal." + name
+    for name in ["Capture", "Graph", "Runtime", "Scheduler", "Scope", "TmuxText"]
+]
+
+QUERY_MODULES = sorted(
+    OBSERVATION_MODULES
+    + ["LibTmux.Query"]
+    + [
+        "LibTmux.Query." + name
+        for name in [
+            "Client",
+            "ClientAttachment",
+            "Link",
+            "Occurrence",
+            "Pane",
+            "ServerInfo",
+            "Session",
+            "Window",
+        ]
+    ]
+)
+QUERY_ORIGINS = QUERY_MODULES + [
+    "LibTmux.Internal." + name
+    for name in ["Capture", "Field", "Graph", "Query", "Runtime", "Scheduler", "Scope", "TmuxText"]
+]
+MUTATION_ORIGINS = [*QUERY_ORIGINS, "LibTmux.Internal.Mutation"]
+
+
+def _source_file(module):
+    prefix = "internal/" if module.startswith("LibTmux.Internal.") else "src/"
+    return prefix + module.replace(".", "/") + ".hs"
+
 
 class _Node:
     """An inert native-document tree; parsing never loads scripts or assets."""
@@ -100,9 +143,12 @@ def _definition(node):
     return _one([item for item in node.walk() if item.has("def")], "public declaration anchor")
 
 
-def _native_id(module, node):
-    anchor = _definition(node).attrs.get("id", "")
-    if not re.fullmatch(r"[tv]:.+", anchor):
+def _native_id(module, node, namespace=None):
+    definition = _definition(node)
+    anchor = definition.attrs.get("id", "")
+    if not re.fullmatch(r"[tv]:.+", anchor) or (
+        namespace is not None and anchor != f"{namespace}:{definition.text()}"
+    ):
         msg = f"Unsupported Haddock public anchor: {anchor}"
         raise ValueError(msg)
     return f"{module}#{anchor}"
@@ -118,11 +164,32 @@ def extract_modules(pages, installed, exposed, locations, revision):
         if module not in interfaces or "OptHide" in interfaces[module]["options"]:
             msg = f"Configured public module is absent or hidden: {module}"
             raise ValueError(msg)
+    observations = "LibTmux" in exposed
+    if observations and exposed not in [OBSERVATION_MODULES, QUERY_MODULES]:
+        msg = "Unqualified observation module profile"
+        raise ValueError(msg)
+    mutations = "LibTmux.Internal.Mutation" in interfaces
+    if mutations and exposed != QUERY_MODULES:
+        msg = "Unqualified mutation module profile"
+        raise ValueError(msg)
+    source_modules = (
+        MUTATION_ORIGINS
+        if mutations
+        else QUERY_ORIGINS
+        if exposed == QUERY_MODULES
+        else OBSERVATION_ORIGINS
+        if observations
+        else exposed
+    )
+    if set(locations) != set(source_modules):
+        msg = "Native source inputs differ from the qualified source profile"
+        raise ValueError(msg)
 
     documents = {module: _Document(pages[module]).root for module in exposed}
     page_modules = {module.replace(".", "-") + ".html": module for module in exposed}
     entries = []
     groups = {module: [] for module in exposed}
+    reexports = {module: [] for module in exposed}
     for module, document in documents.items():
         interface = _one(
             [node for node in document.walk() if node.attrs.get("id") == "interface"],
@@ -130,6 +197,18 @@ def extract_modules(pages, installed, exposed, locations, revision):
         )
         group = None
         for block in interface.elements():
+            if (
+                observations
+                and (module == "LibTmux" or exposed == QUERY_MODULES)
+                and block is interface.elements()[0]
+                and block.tag == "h1"
+                and block.text() == "Documentation"
+                and not block.elements()
+            ):
+                if module != "LibTmux":
+                    group = {"title": block.text(), "members": []}
+                    groups[module].append(group)
+                continue
             if block.attrs.get("id", "").startswith("g:"):
                 group = {"title": _compact(block.text()), "members": []}
                 groups[module].append(group)
@@ -155,6 +234,21 @@ def extract_modules(pages, installed, exposed, locations, revision):
                 [node for node in block.elements() if node.tag == "p" and node.has("src")],
                 "declaration header",
             )
+            if observations and _compact(header.text()).startswith("module "):
+                links = [node for node in header.walk() if node.tag == "a"]
+                target = page_modules.get(links[0].attrs.get("href")) if len(links) == 1 else None
+                if (
+                    module != "LibTmux"
+                    or target is None
+                    or target == module
+                    or _compact(header.text()) != f"module {target}"
+                    or len(block.elements()) != 1
+                    or target in [item["module"] for item in reexports[module]]
+                ):
+                    msg = f"Unsupported or repeated native module reexport: {module}"
+                    raise ValueError(msg)
+                reexports[module].append({"module": target, "href": links[0].attrs["href"]})
+                continue
             identity = _native_id(module, header)
             if identity.split("#", 1)[1].startswith("t:"):
                 if not re.match(
@@ -174,32 +268,72 @@ def extract_modules(pages, installed, exposed, locations, revision):
             for constructors in [node for node in block.elements() if node.has("constructors")]:
                 for row in [node for node in constructors.walk() if node.tag == "tr"]:
                     entries.extend(
-                        (module, _native_id(module, cell), "function", identity, cell, row)
+                        (module, _native_id(module, cell, "v"), "function", identity, cell, row)
                         for cell in row.elements()
                         if cell.tag == "td" and cell.has("src")
                     )
             for fields in [node for node in block.walk() if node.has("fields")]:
-                entries.extend(
-                    (module, _native_id(module, field), "property", identity, field, field.parent)
-                    for field in fields.walk()
-                    if field.tag == "dfn" and field.has("src")
-                )
+                for field in fields.walk():
+                    if field.tag != "dfn" or not field.has("src"):
+                        continue
+                    native_id = _native_id(module, field, "v" if observations else None)
+                    field_id = (
+                        f"{module}#v:{identity.split('#t:', 1)[1]}.{_definition(field).text()}"
+                        if observations
+                        else native_id
+                    )
+                    entries.append((module, field_id, "property", identity, field, field.parent))
 
     identities = [identity for _, identity, *_ in entries]
     if len(identities) != len(set(identities)):
         msg = "Duplicate namespace-aware public identity"
         raise ValueError(msg)
-    targets = set(identities) | set(exposed)
+    native_targets = {module: [module] for module in exposed}
+    entry_origins = {}
+    for module, identity, _, parent, header, _ in entries:
+        anchor = _definition(header).attrs["id"]
+        native_targets.setdefault(f"{module}#{anchor}", []).append(identity)
+        href = next((node.attrs["href"] for node in header.walk() if node.has("link")), None)
+        origin = entry_origins.get(parent, module)
+        if href:
+            parsed = urlsplit(href)
+            matches = [name for name in source_modules if parsed.path == f"src/{name}.html"]
+            if len(matches) != 1 or parsed.scheme or parsed.netloc or parsed.query:
+                msg = f"Unsupported cross-module native source: {module}: {href}"
+                raise ValueError(msg)
+            origin = matches[0]
+        entry_origins[identity] = origin
     for module in exposed:
         observed = Counter(
-            _definition(header).text() for owner, _, _, _, header, _ in entries if owner == module
+            (
+                (
+                    f"${installed['package_info']}-inplace${entry_origins[identity]}$"
+                    + _definition(header).text()
+                )
+                if observations
+                else _definition(header).text()
+            )
+            for owner, identity, _, _, header, _ in entries
+            if owner == module
         )
         expected = Counter(
-            name.rsplit("$", 1)[-1] for name in interfaces[module]["visible_exports"]
+            (name if observations else name.rsplit("$", 1)[-1])
+            for name in interfaces[module]["visible_exports"]
         )
         if observed != expected:
             msg = f"Native declaration and visible-export sets disagree: {module}"
             raise ValueError(msg)
+        if observations:
+            for name in interfaces[module]["visible_exports"]:
+                if installed["link_env"].get(name) != module:
+                    msg = f"Compiled public owner differs: {module}: {name}"
+                    raise ValueError(msg)
+            expanded = Counter(interfaces[module]["visible_exports"])
+            for item in reexports[module]:
+                expanded.update(interfaces[item["module"]]["exports"])
+            if expanded != Counter(interfaces[module]["exports"]):
+                msg = f"Native module reexports disagree with compiled exports: {module}"
+                raise ValueError(msg)
 
     def link(href, module):
         parsed = urlsplit(href)
@@ -210,10 +344,14 @@ def extract_modules(pages, installed, exposed, locations, revision):
             return None
         owner = page_modules.get(parsed.path) if parsed.path else module
         target = owner if not parsed.fragment else f"{owner}#{unquote(parsed.fragment)}"
-        if owner is None or target not in targets:
+        choices = native_targets.get(target, [])
+        if owner is None or not choices:
             msg = f"Documentation link has no public target: {module}: {href}"
             raise ValueError(msg)
-        return target
+        if len(choices) != 1:
+            msg = f"Documentation link has ambiguous public targets: {module}: {href}"
+            raise ValueError(msg)
+        return choices[0]
 
     def markdown(node, module):
         if isinstance(node, str):
@@ -316,12 +454,17 @@ def extract_modules(pages, installed, exposed, locations, revision):
         )
 
     def source(module, name, href=None):
-        result = {"file": "src/" + module.replace(".", "/") + ".hs", "revision": revision}
+        result = {"file": _source_file(module), "revision": revision}
         if href and urlsplit(href).path != f"src/{module}.html":
             msg = f"Unsupported cross-module native source: {module}: {href}"
             raise ValueError(msg)
         anchor = unquote(urlsplit(href).fragment) if href else name
-        if anchor.startswith("line-"):
+        if observations:
+            matches = locations[module].get(anchor, [])
+            if href and (not matches or (len(set(matches)) != 1 and exposed != QUERY_MODULES)):
+                msg = f"Missing or ambiguous explicit native source anchor: {module}: {anchor}"
+                raise ValueError(msg)
+        elif anchor.startswith("line-"):
             matches = [int(anchor[5:])]
         else:
             matches = locations[module].get(anchor, [])
@@ -345,6 +488,11 @@ def extract_modules(pages, installed, exposed, locations, revision):
                 "signatures": [],
                 "doc": documentation(description, module),
                 "source": source(module, ""),
+                **(
+                    {"nativeLocation": {"module": module}, "definingModule": module}
+                    if observations
+                    else {}
+                ),
                 "package": "libtmux-haskell",
                 "product": "core",
                 "apiScope": "exported",
@@ -364,9 +512,17 @@ def extract_modules(pages, installed, exposed, locations, revision):
             "signatures": [signature(header, module, kind == "function" and parent != module)],
             "doc": documentation(block, module),
             "source": source(
-                module,
+                entry_origins[identity],
                 name,
                 next((node.attrs["href"] for node in header.walk() if node.has("link")), None),
+            ),
+            **(
+                {
+                    "nativeLocation": {"module": module, "anchor": _definition(header).attrs["id"]},
+                    "definingModule": entry_origins[identity],
+                }
+                if observations
+                else {}
             ),
             "package": "libtmux-haskell",
             "product": "core",
@@ -407,7 +563,9 @@ def extract_modules(pages, installed, exposed, locations, revision):
                             "markdown": "instance " + markdown(head, module).strip(),
                             "references": references,
                             "source": source(
-                                module, name, _one(sources, "instance source") if sources else None
+                                entry_origins[identity],
+                                name,
+                                _one(sources, "instance source") if sources else None,
                             ),
                             "doc": documentation(row, module),
                         }
@@ -415,7 +573,14 @@ def extract_modules(pages, installed, exposed, locations, revision):
             symbol["instances"] = instances
         symbols.append(symbol)
     return {
-        "modules": [{"name": module, "groups": groups[module]} for module in exposed],
+        "modules": [
+            {
+                "name": module,
+                "groups": groups[module],
+                **({"reexports": reexports[module]} if observations else {}),
+            }
+            for module in exposed
+        ],
         "symbols": symbols,
     }
 
@@ -435,6 +600,40 @@ class _SourceLocations(HTMLParser):
             self.line = int(anchor[5:])
         elif anchor:
             self.locations.setdefault(anchor, []).append(self.line)
+
+
+def _checked_source_page(page, committed):
+    """Qualify native line anchors against the same archived source bytes."""
+    pre = _one(
+        [node for node in _Document(page).root.walk() if node.tag == "pre"], "native source body"
+    )
+
+    parts = []
+    locations = {}
+    line = 1
+
+    def walk(node):
+        nonlocal line
+        if isinstance(node, str):
+            parts.append(node)
+            line += node.count("\n")
+            return
+        if node.has("annottext"):
+            return
+        anchor = node.attrs.get("id", "")
+        if anchor.startswith("line-") and (anchor != f"line-{line}" or anchor in locations):
+            msg = f"Invalid native source line marker: {anchor} at line {line}"
+            raise ValueError(msg)
+        if anchor:
+            locations.setdefault(anchor, []).append(line)
+        for child in node.children:
+            walk(child)
+
+    walk(pre)
+    if "".join(parts).encode() != committed:
+        msg = "Native source text differs from the committed source input"
+        raise ValueError(msg)
+    return locations
 
 
 def _command(arguments, cwd):
@@ -488,9 +687,12 @@ def _checked_component(plan, source_root, registration):
     return component
 
 
-def build_native(checkout, revision):
+def build_native(checkout, revision, native_output=None):
     """Build committed source in isolation and extract its configured public API."""
     checkout = Path(checkout).resolve()
+    if native_output is not None and Path(native_output).exists():
+        msg = "Native output must name a new directory"
+        raise ValueError(msg)
     if (
         not re.fullmatch(r"[a-f0-9]{40}", revision)
         or _git(checkout, "rev-parse", f"{revision}^{{commit}}") != revision
@@ -583,6 +785,24 @@ def build_native(checkout, revision):
         ):
             msg = "Unsupported configured public module or re-export shape"
             raise ValueError(msg)
+        if modules not in [SCALAR_MODULES, OBSERVATION_MODULES, QUERY_MODULES]:
+            msg = "Unqualified configured public module profile"
+            raise ValueError(msg)
+        mutations = "LibTmux.Internal.Mutation" in field("hidden-modules").split()
+        if mutations and modules != QUERY_MODULES:
+            msg = "Unqualified configured mutation module profile"
+            raise ValueError(msg)
+        queries = modules == QUERY_MODULES
+        observations = queries or modules == OBSERVATION_MODULES
+        source_modules = (
+            MUTATION_ORIGINS
+            if mutations
+            else QUERY_ORIGINS
+            if queries
+            else OBSERVATION_ORIGINS
+            if observations
+            else modules
+        )
         shown = _command([tools["haddock"], f"--show-interface={interface}"], source_root)
         if bool(shown.stdout.strip()) == bool(shown.stderr.strip()):
             msg = "Expected one complete native JSON interface stream"
@@ -605,14 +825,23 @@ def build_native(checkout, revision):
         }
         source_pages = {
             module: (interface.parent / "src" / (module + ".html")).read_text()
-            for module in modules
+            for module in source_modules
         }
+        for module in source_modules:
+            matches = [
+                source_root / prefix / (module.replace(".", "/") + ".hs")
+                for prefix in ["src", "internal"]
+            ]
+            if [path for path in matches if path.is_file()] != [source_root / _source_file(module)]:
+                msg = f"Missing or ambiguous committed module source: {module}"
+                raise ValueError(msg)
         locations = {
-            module: _SourceLocations(text).locations for module, text in source_pages.items()
+            module: _checked_source_page(text, (source_root / _source_file(module)).read_bytes())
+            for module, text in source_pages.items()
         }
         result = extract_modules(rendered, installed, modules, locations, revision)
         files = [".tool-versions", "cabal.project", "libtmux-haskell.cabal"]
-        files.extend("src/" + module.replace(".", "/") + ".hs" for module in modules)
+        files.extend(_source_file(module) for module in source_modules)
         native_files = {
             "interface.haddock": interface.read_bytes(),
             "interface.json": native_json.encode(),
@@ -623,8 +852,32 @@ def build_native(checkout, revision):
         native_files.update(
             {"src/" + module + ".html": text.encode() for module, text in source_pages.items()}
         )
+        if native_output is not None:
+            destination = Path(native_output)
+            destination.mkdir(parents=True, exist_ok=False)
+            for name, data in native_files.items():
+                target = destination / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(data)
         return {
-            "schema": "libtmux.haskell-api/1",
+            "schema": "libtmux.haskell-api/4"
+            if mutations
+            else "libtmux.haskell-api/3"
+            if queries
+            else "libtmux.haskell-api/2"
+            if observations
+            else "libtmux.haskell-api/1",
+            **(
+                {
+                    "profile": "mutations/1"
+                    if mutations
+                    else "queries/1"
+                    if queries
+                    else "observations/1"
+                }
+                if observations
+                else {}
+            ),
             "port": "haskell",
             "repo": "libtmux/libtmux-haskell",
             "revision": revision,
@@ -643,7 +896,7 @@ def build_native(checkout, revision):
                 ],
                 "exporter": {
                     "name": "Haddock public interface export",
-                    "version": 1,
+                    "version": 4 if mutations else 3 if queries else 2 if observations else 1,
                     "build": {
                         "compiler": plan["compiler-id"],
                         "cabal": plan["cabal-version"],
@@ -687,9 +940,12 @@ def main():
     parser.add_argument("--checkout", type=Path, required=True)
     parser.add_argument("--source-revision", required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--native-output", type=Path, help="Retain hashed native inputs in a new directory"
+    )
     arguments = parser.parse_args()
     exporter = _exporter_identity()
-    artifact = build_native(arguments.checkout, arguments.source_revision)
+    artifact = build_native(arguments.checkout, arguments.source_revision, arguments.native_output)
     artifact["nativeProvenance"]["exporter"].update(exporter)
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
     arguments.output.write_text(

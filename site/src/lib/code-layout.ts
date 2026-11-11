@@ -316,19 +316,9 @@ export function supportsCSignatures(symbol: ApiSymbol, language?: string): boole
 /** Prepare one layout per overload for both HTML and the Markdown twin. */
 export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string): Promise<Map<Signature, CodeLayout>> {
   if (language === 'haskell') {
-    return new Map(await Promise.all(symbol.signatures.map(async (signature) => {
-      if (!signature.raw || !signature.nativeSpans?.length || signature.nativeSpans.map((span) => span.text).join('') !== signature.raw) {
-        throw new Error(`Unavailable native Haskell header: ${symbol.id}`)
-      }
-      let spans = signature.nativeSpans
-      if ((await codeWidthFailures(signature.raw, 'api')).length) {
-        // The qualified profile needs only a continuation before the type separator.
-        const separator = spans.findIndex((span) => !span.href && !span.target && !span.declaration && span.text.includes(' :: '))
-        spans = spans.map((span, i) => i === separator ? { ...span, text: span.text.replace(' :: ', '\n  :: ') } : span)
-      }
-      const text = spans.map((span) => span.text).join('')
-      return [signature, { text, nativeSpans: spans, limit: CODE_COLUMNS.api, failures: await codeWidthFailures(text, 'api') }] as const
-    })))
+    const { haskellSignatureLayout } = await import('./haskell-code-layout.ts')
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) =>
+      [signature, await haskellSignatureLayout(symbol, signature)] as const)))
   }
   if (language === 'perl' && symbol.signatures.length) {
     return new Map(await Promise.all(symbol.signatures.map(async (signature) => {

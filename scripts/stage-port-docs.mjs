@@ -2,7 +2,6 @@
 /** Stage source-owned port guides from the same native artifact as the API. */
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
-import { homedir } from 'node:os'
 import { dirname, join, posix, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { fromMarkdown } from 'mdast-util-from-markdown'
@@ -12,6 +11,7 @@ import { defaultVersionFor, linkedVersionFor } from '../site/src/lib/versions.ts
 import { sourceGuidesFor, sourceGuideRedirectsFor, stagedSectionsFor, stagedSectionDescription, SOURCE_GUIDE_PORTS } from '../site/src/lib/port-documentation.ts'
 import { SymbolIndex, parameterId } from '../packages/api-model/src/link.ts'
 import { BADGE_DIRECTORY, badgesStale, localizeBadges } from './lib/badges.mjs'
+import { resolveCheckout } from './lib/port-checkout.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const output = join(root, 'site/src/content/docs/_staged')
@@ -33,7 +33,6 @@ export function stagedRoutesFor(port) {
 
 const ROUTES = Object.fromEntries(SOURCE_GUIDE_PORTS.map((slug) => [slug, stagedRoutesFor(slug)]))
 
-const expand = (value) => value.startsWith('~/') ? join(homedir(), value.slice(2)) : value
 
 function titleAndBody(content, sourcePath) {
   // The shared catalog supplies page metadata; source frontmatter is not article prose.
@@ -52,12 +51,34 @@ function titleAndBody(content, sourcePath) {
   }
 }
 
+/**
+ * The first sentence of a guide's opening prose as plain text, or an empty
+ * string when the guide opens with code, a table or a list, or its first
+ * sentence is longer than `limit`. Staged pages use it where the catalog
+ * gives no description.
+ */
+export function leadSentence(body, limit = 240) {
+  const text = (node) => node.type === 'text' || node.type === 'inlineCode' ? node.value
+    : node.type === 'image' || node.type === 'html' ? '' : (node.children ?? []).map(text).join('')
+  for (const node of fromMarkdown(body).children) {
+    if (node.type === 'heading' || node.type === 'html') continue
+    if (node.type !== 'paragraph') return ''
+    const plain = text(node).replace(/\s+/g, ' ').trim()
+    if (!plain) continue
+    const sentence = /^(.+?[.!?])(?:\s|$)/.exec(plain)?.[1] ?? plain
+    return sentence.length <= limit && !sentence.endsWith(':') ? sentence : ''
+  }
+  return ''
+}
+
 function external(value) {
   return /^(?:[a-z][a-z0-9+.-]*:|#|\/)/i.test(value)
 }
 
-export function rewriteLinks(content, sourcePath, route, routes, repo, revision, nativeReferenceFiles = new Set()) {
-  const targetUrl = (destination, image = false) => {
+export function rewriteLinks(content, sourcePath, route, routes, repo, revision, nativeReferenceFiles = new Set(), nativeDeclarations = new Map(), titles = new Map()) {
+  // The staged route of the last destination `targetUrl` resolved onto a page of this site.
+  let stagedRoute
+  const targetUrl = (destination, image = false, label) => {
     const owned = !image && /^https?:\/\/libtmux\.org\/en\/([^/]+)\//.exec(destination)
     if (owned) {
       const port = owned[1] === 'dotnet' ? 'csharp' : owned[1]
@@ -75,10 +96,12 @@ export function rewriteLinks(content, sourcePath, route, routes, repo, revision,
     const [target, fragment = ''] = destination.split('#', 2)
     const normalized = posix.normalize(posix.join(posix.dirname(sourcePath), target))
     const memberRoute = fragment && routes[`${normalized}#${fragment}`]
+    const declaration = !fragment && label && nativeDeclarations.get(`${normalized}\0${label}`)
     // Unknown native-help sections keep their source destination rather than
     // acquiring a fragment that the shared reference does not render.
-    const staged = memberRoute || (fragment && nativeReferenceFiles.has(normalized) ? undefined : routes[normalized])
+    const staged = memberRoute || declaration || (fragment && nativeReferenceFiles.has(normalized) ? undefined : routes[normalized])
     if (staged) {
+      stagedRoute = staged.length === 1 && !fragment ? staged[0] : undefined
       let href = posix.relative(route, staged[0]) || '.'
       if (!href.startsWith('.')) href = `./${href}`
       const anchor = staged[1] || (!memberRoute ? fragment : '')
@@ -92,9 +115,18 @@ export function rewriteLinks(content, sourcePath, route, routes, repo, revision,
   const editsFor = (node) => {
     const children = (node.children ?? []).flatMap(editsFor)
     if (!['link', 'image', 'definition'].includes(node.type)) return children
-    const url = targetUrl(node.url, node.type === 'image')
+    const label = node.type === 'link' && node.children.every((child) => ['text', 'inlineCode'].includes(child.type))
+      ? node.children.map((child) => child.value).join('') : undefined
+    stagedRoute = undefined
+    const url = targetUrl(node.url, node.type === 'image', label)
     if (url === node.url) return children
     node.url = url
+    // A file name is a repository reader's label; a page of this site has a title.
+    const title = titles.get(stagedRoute)
+    const [only] = node.children ?? []
+    if (node.type === 'link' && title && node.children.length === 1 && only.type === 'inlineCode' && only.value.endsWith('.md')) {
+      node.children = [{ type: 'text', value: title }]
+    }
     return [{ start: node.position.start.offset, end: node.position.end.offset,
       text: toMarkdown(node).trimEnd() }]
   }
@@ -144,11 +176,28 @@ export const LISP_REFERENCE_FILES = {
   'libtmux.workspace.cli': 'docs/workspace-api.md',
 }
 
+/**
+ * Source-guide link routes for Common Lisp declarations. A declaration whose
+ * package has no entry in LISP_REFERENCE_FILES throws: the port's own build
+ * regenerates the model at its head, which can name a package added since.
+ */
+export function lispReferenceRoutes(symbols) {
+  const routes = {}
+  for (const symbol of symbols.filter((entry) => entry.kind !== 'module')) {
+    const file = LISP_REFERENCE_FILES[symbol.namespace]
+    if (!file) throw new Error(`Common Lisp declaration has no native reference: ${symbol.id}`)
+    const anchor = `${symbol.name}-${symbol.kind === 'function' ? 'function' : 'type'}`
+    routes[`${file}#${anchor}`] = [`${symbol.product === 'workspace' ? 'workspace/' : ''}reference/${symbol.slug}`]
+  }
+  return routes
+}
+
 export function stagedPortGuides(port, artifact) {
   const identity = PORTS.find((entry) => entry.slug === port)
   const routes = ROUTES[port]
   const linkRoutes = Object.fromEntries(Object.entries(routes).map(([sourcePath, guide]) => [sourcePath, [guide.route]]))
   const nativeReferenceFiles = new Set()
+  const nativeDeclarations = new Map()
   for (const redirect of sourceGuideRedirectsFor(port)) linkRoutes[redirect.sourcePath] = [redirect.target]
   if (port === 'haskell') {
     const model = JSON.parse(readFileSync(join(root, 'site/src/data/api/haskell.json'), 'utf8'))
@@ -157,6 +206,16 @@ export function stagedPortGuides(port, artifact) {
       if (symbol.source?.file) {
         linkRoutes[symbol.source.file] = [`reference/${symbol.slug}`]
         nativeReferenceFiles.add(symbol.source.file)
+        const names = Map.groupBy(model.symbols.filter((entry) => entry.kind !== 'module'
+          && (entry.namespace === symbol.id || entry.parent === symbol.id)
+          && entry.apiScope !== 'internal' && (entry.product ?? 'core') === 'core'), (entry) => entry.name)
+        for (const [name, declarations] of names) {
+          // A shared type/constructor spelling selects the data head.
+          // Repeated record labels stay at the module.
+          const heads = declarations.filter((entry) => entry.kind === 'typealias')
+          const selected = heads.length === 1 ? heads[0] : declarations.length === 1 ? declarations[0] : undefined
+          if (selected?.slug) nativeDeclarations.set(`${symbol.source.file}\0${name}`, [`reference/${selected.slug}`])
+        }
       }
     }
   }
@@ -172,15 +231,8 @@ export function stagedPortGuides(port, artifact) {
   }
   if (port === 'lisp') {
     const { symbols } = JSON.parse(readFileSync(join(root, 'site/src/data/api/lisp.json'), 'utf8'))
-    for (const symbol of symbols.filter((entry) => entry.kind !== 'module')) {
-      const file = LISP_REFERENCE_FILES[symbol.namespace]
-      if (!file) throw new Error(`Common Lisp declaration has no native reference: ${symbol.id}`)
-      const anchor = `${symbol.name}-${symbol.kind === 'function' ? 'function' : 'type'}`
-      linkRoutes[`${file}#${anchor}`] = [
-        `${symbol.product === 'workspace' ? 'workspace/' : ''}reference/${symbol.slug}`,
-      ]
-      nativeReferenceFiles.add(file)
-    }
+    Object.assign(linkRoutes, lispReferenceRoutes(symbols))
+    for (const symbol of symbols.filter((entry) => entry.kind !== 'module')) nativeReferenceFiles.add(LISP_REFERENCE_FILES[symbol.namespace])
   }
   if (port === 'powershell') {
     const model = JSON.parse(readFileSync(join(root, 'site/src/data/api/powershell.json'), 'utf8'))
@@ -210,6 +262,8 @@ export function stagedPortGuides(port, artifact) {
   }
   const guides = new Map((artifact.guides ?? []).map((guide) => [guide.path, guide.content]))
   const files = new Map()
+  const descriptions = new Map()
+  const titles = new Map(Object.entries(routes).map(([path, entry]) => [entry.route, entry.title ?? titleAndBody(guides.get(path) ?? '', path).title]))
   for (const [sourcePath, guide] of Object.entries(routes)) {
     const { route, product, package: packageId, domain, aliases, equivalence, sidebar } = guide
     const content = guides.get(sourcePath)
@@ -221,10 +275,10 @@ export function stagedPortGuides(port, artifact) {
     const nativeLinked = port === 'julia' ? linkDocumenter(linked, artifact.source) : linked
     const { content: badged, files: badgeFiles } = localizeBadges(nativeLinked, port)
     for (const [name, svg] of badgeFiles) files.set(name, svg)
-    const rewritten = rewriteLinks(badged, sourcePath, route, linkRoutes, artifact.source.repository, artifact.source.revision, nativeReferenceFiles)
+    const rewritten = rewriteLinks(badged, sourcePath, route, linkRoutes, artifact.source.repository, artifact.source.revision, nativeReferenceFiles, nativeDeclarations, titles)
     const data = {
       title,
-      description: guide.description ?? `${title}: ${identity.packageName} documentation.`,
+      description: guide.description ?? (leadSentence(rewritten) || `${title} guide for ${identity.packageName}.`),
       port,
       ...(product ? { product } : {}),
       ...(packageId ? { package: packageId } : {}),
@@ -236,13 +290,14 @@ export function stagedPortGuides(port, artifact) {
       sidebar: sidebar ?? { group: product ? (product === 'mcp' ? 'MCP' : 'Workspace Manager')
         : route === 'reference' ? 'API reference' : route.split('/')[0].replace(/^./, (letter) => letter.toUpperCase()) },
     }
+    descriptions.set(sourcePath, data.description)
     const frontmatter = Object.entries(data).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')
     files.set(`${port}/${route}/index.md`, `---\n${frontmatter}\n---\n\n${rewritten.trim()}\n`)
   }
   {
     const source = { repo: artifact.source.repository, path: Object.keys(routes)[0], ref: artifact.source.revision }
     const writeIndex = (route, title, body, cards = []) => {
-      const data = { title, description: `${title} for ${identity.packageName}.`, port, route, source, cards,
+      const data = { title, description: leadSentence(body) || `${title} for ${identity.packageName}.`, port, route, source, cards,
         sidebar: { group: route === 'reference' ? 'API reference' : route[0].toUpperCase() + route.slice(1), label: 'Overview', order: 1 } }
       const frontmatter = Object.entries(data).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')
       files.set(`${port}/${route}/index.md`, `---\n${frontmatter}\n---\n\n${body}\n`)
@@ -252,7 +307,7 @@ export function stagedPortGuides(port, artifact) {
       if (existsSync(join(root, `site/src/content/docs/ports/${port}/${section}/index.md`))) continue
       const selected = Object.entries(routes).filter(([, entry]) => entry.domain === 'core' && entry.route.startsWith(`${section}/`))
       const cards = selected.map(([path, entry]) => ({ label: entry.title ?? titleAndBody(guides.get(path), path).title,
-        href: `../${entry.route}/`, body: entry.description ?? `Read about ${titleAndBody(guides.get(path), path).title.toLowerCase()}.`,
+        href: `../${entry.route}/`, body: descriptions.get(path),
         order: entry.sidebar?.order ?? Number.MAX_SAFE_INTEGER }))
         .sort((a, b) => a.order - b.order || a.label.localeCompare(b.label))
         .map(({ order: _order, ...card }) => card)
@@ -377,7 +432,7 @@ export function run() {
     && (!wrappersOnly || entry.parentLibrary) && !(cached && entry.slug === publicationPort))
   if (refreshCache && !selectedPort) throw new Error('--refresh-cache requires one --port')
   for (const port of selected) {
-    const checkout = expand(process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || (integrated ? port.checkout : port.worktree))
+    const checkout = resolveCheckout(port, { order: [integrated ? 'checkout' : 'worktree'] })
     const artifactPath = join(checkout, 'docs/_build/api.json')
     const selectedSource = process.env.LIBTMUX_DOCS_PORT === port.slug && process.env.LIBTMUX_DOCS_SOURCE_SHA
     const cachePath = join(cacheRoot, `${port.slug}.json`)

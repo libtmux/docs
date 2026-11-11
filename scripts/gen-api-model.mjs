@@ -37,6 +37,7 @@ import { attachCompleteJvmExamples } from '../packages/api-model/src/languages/j
 import { attachCompleteSwiftExamples } from '../packages/api-model/src/languages/swift-examples.ts'
 import { mapLine, parseHunks } from '../packages/api-model/src/source-lines.ts'
 import { cargoFeatureNames } from './lib/cargo-features.mjs'
+import { resolveCheckout } from './lib/port-checkout.mjs'
 import { extractProject } from '../packages/api-model/src/project.ts'
 import { scopeProductSymbols } from '../packages/api-model/src/product-exports.ts'
 import { inheritProductFromOwners } from '../packages/api-model/src/products.ts'
@@ -601,8 +602,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
   // reason is the same here: doc-comment work happens on a port's `docs-site`
   // worktree, and without an override there is no way to see its effect on
   // the reference until the branch lands.
-  const override = process.env[`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}`]
-  const checkout = expand(override || portBySlug[port].worktree)
+  const checkout = resolveCheckout(portBySlug[port], { order: ['worktree'] })
   if (!existsSync(checkout)) {
     // Generating without source is impossible, so that still fails. Checking
     // without source is merely unanswerable, and a fresh clone and a CI runner

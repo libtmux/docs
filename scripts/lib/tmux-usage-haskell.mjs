@@ -1,5 +1,6 @@
 /** Native Haskell syntax and demanded action paths for the source-usage index. */
 import { parserFor } from '../../packages/api-model/src/parser.ts'
+import { createHash } from 'node:crypto'
 
 const row = (node) => node.startPosition.row + 1
 const field = (node, name) => node?.childForFieldName(name)
@@ -62,7 +63,10 @@ export async function reachableHaskellSources(sources, roots) {
 }
 
 /** Parse the qualified source profile; unsupported command flow is a generation error. */
-export async function scanHaskell(text, { commands, known, dispatch = new Set() }) {
+export async function scanHaskell(text, { commands, known, dispatch = new Set(), reviewedDigest }) {
+  if (reviewedDigest && createHash('sha256').update(text).digest('hex') !== reviewedDigest) {
+    throw new Error('Native Haskell usage qualification: source differs from its reviewed digest')
+  }
   const parser = await parserFor('haskell')
   const tree = parser.parse(text)
   const module = field(tree.rootNode.namedChildren.find((node) => node.type === 'header'), 'module')?.text ?? 'Main'
@@ -105,6 +109,9 @@ export async function scanHaskell(text, { commands, known, dispatch = new Set() 
     }
 
     const root = scopeFor(field(tree.rootNode, 'declarations'), undefined) ?? { names: new Map() }
+    // A separately qualified native catalogue supplies reviewed sends. This
+    // index only proves the declaration bounds used by the shared claim audit.
+    if (reviewedDigest) return { functions: infos.map((info) => info.record), types: [], orphans: [] }
     const preludeImports = field(tree.rootNode, 'imports')?.namedChildren.filter((node) => field(node, 'module')?.text === 'Prelude') ?? []
     const pragmas = tree.rootNode.descendantsOfType('pragma')
     const rebindable = pragmas.some((node) => /\bRebindableSyntax\b/.test(node.text))

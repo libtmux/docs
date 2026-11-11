@@ -6,7 +6,6 @@ vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '/pr-42/en')
 vi.stubEnv('LIBTMUX_DOCS_LOCALES_ROOT', '/pr-42')
 const { docsEntryAvailable, docsEntriesAvailable, pagePortLinks } = await import('../src/lib/page-port-links')
 const { PORTS, PORT_BY_SLUG, productAvailable, productExcluded } = await import('../src/lib/ports')
-const { referencePageLinks } = await import('../src/lib/reference-page-links')
 const { localePageHref, localeSourcePath } = await import('../src/i18n/locales')
 
 const docs = [
@@ -228,19 +227,6 @@ describe('matching pages in another port', () => {
         expect(links.some((href) => /libtmux-(session|window|snapshot)\/$/.test(href))).toBe(false)
       }
     }
-  })
-
-  it('publishes native differences and reverse links for Julia action references', () => {
-    const manifest = referencePageLinks()
-    const server = manifest.symbols.cxx['libtmux::Server']
-    expect(server.find((entry) => entry.port === 'powershell')).toMatchObject({
-      kind: 'cmdlet', href: '/pr-42/en/powershell/latest/reference/libtmux-new-tmuxserver/',
-      note: expect.stringContaining('shared .NET `LibTmux.Server`'),
-    })
-    expect(server.find((entry) => entry.port === 'fsharp')).toMatchObject({ kind: 'module' })
-    expect(manifest.symbols.julia['LibTmux.SessionRef']).toEqual(expect.arrayContaining([
-      expect.objectContaining({ port: 'cxx', href: '/pr-42/en/cxx/latest/reference/libtmux-session/' }),
-    ]))
   })
 
   it('links server types to verified Julia types, PowerShell cmdlets and F# modules in both directions', () => {

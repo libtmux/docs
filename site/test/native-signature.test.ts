@@ -60,6 +60,31 @@ function displayedSignature(element: Element): string {
   return copy.textContent ?? ''
 }
 
+it('renders Clojure call arities without linking local bindings to Java methods', async () => {
+  const model = JSON.parse(readFileSync(new URL('../src/data/api/clojure.json', import.meta.url), 'utf8')) as ApiModel
+  const href = (symbol: ApiSymbol) => `/reference/${symbol.slug}/`
+  const index = createApiIndex(model, href)
+  const component = await (componentPromise ??= signatureComponent())
+  const container = await experimental_AstroContainer.create()
+  const win = new Window()
+  try {
+    const functions = model.symbols.filter((symbol) => symbol.kind === 'function')
+    expect(functions.length).toBeGreaterThan(0)
+    for (const symbol of functions) {
+      for (const sig of symbol.signatures) {
+        win.document.body.innerHTML = await container.renderToString(component, { props: {
+          symbol, sig, port: 'clojure', language: 'clojure', index,
+          nameHref: href(symbol), nativeSignatureText,
+        } })
+        const element = win.document.querySelector('.api-native-signature')!
+        expect(displayedSignature(element)).toBe(sig.raw)
+        expect(element.querySelector('.api-declaration-name')?.textContent).toBe(symbol.name)
+        expect(element.querySelectorAll('a.api-type-link'), sig.raw).toHaveLength(0)
+      }
+    }
+  } finally { await win.happyDOM.abort() }
+})
+
 it('renders Erlang compiler references with exact native declarations and Markdown', async () => {
   const artifact = JSON.parse(readFileSync(new URL('../../packages/api-model/test/fixtures/erlang-native.json', import.meta.url), 'utf8'))
   const model = extractErlang(artifact)

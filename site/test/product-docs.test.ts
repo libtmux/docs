@@ -200,7 +200,7 @@ it('advertises workspace loaders with their declared command and development sta
     if (port.workspaceCliAvailability === 'local') {
       expect(productDescription(port, 'workspace')).toContain(port.productDescriptions?.workspace ?? 'Build the CLI from source')
     }
-    if (['local', 'published'].includes(port.workspaceCliAvailability!)) expect(workspaceOverviewNotice(port)?.body).toContain(`\`${port.workspaceCli!.split(/\s+/)[0]}\``)
+    if (['local', 'published'].includes(port.workspaceCliAvailability!)) expect(workspaceOverviewNotice(port)?.body).toContain(`\`${port.workspaceCliRun ?? port.workspaceCli!.split(/\s+/)[0]}\``)
     if (port.workspaceCliAvailability === 'published') {
       expect(productDescription(port, 'workspace')).toContain('published')
       expect(workspaceOverviewNotice(port)?.body).not.toMatch(/unreleased|local/)
@@ -726,7 +726,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         developmentStatus(document, page.path, productIsConcept(port, page.product))
       const picker = document.querySelector('[data-surface-picker]')
       if (!productAvailable(port, page.product)) {
-        expect(document.querySelector('article')!.textContent, `${page.path} availability`).toMatch(/not published|no published/i)
+        expect(document.querySelector('article')!.textContent, `${page.path} availability`).toMatch(/not\s+published|no\s+published/i)
         expect(picker?.querySelector('.surface-current .surface-label')?.textContent, `${page.path} available app`).toBe('Core Library')
         expect(picker?.querySelector('.surface-current small')?.textContent, `${page.path} available section`).toBe('Home')
         const current = picker?.querySelectorAll('[aria-current="location"]')
@@ -813,7 +813,11 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           .find((text) => /concept example/i.test(text))
         expect(status, `${page.path} concept scope`).toBeDefined()
         const article = document.querySelector('article')!.textContent
-        if (port.workspaceCliAvailability === 'local') expect(article, `${page.path} source installation`).toContain('from the source revision in the installation guide')
+        if (port.workspaceCliAvailability === 'local') {
+          expect(article, `${page.path} source installation`).toContain(port.workspaceCliRun
+            ? 'from a source checkout; the installation guide lists the setup'
+            : 'from the source revision in the installation guide')
+        }
         expect(article, `${page.path} native CLI`).toContain(port.workspaceCli.split(/\s+/)[0])
         expect(article.match(/concept example/gi), `${page.path} states scope once`).toHaveLength(1)
         const links = [...document.querySelectorAll('article a[href]')]
@@ -1158,5 +1162,15 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       expect(new URL(entry.url).pathname, entry.url).not.toMatch(localizedPortTree)
       expect(resolves(entry.url), entry.url).toBe(true)
     }
+  })
+})
+
+describe('Lisp workspace notice', () => {
+  // `mise` only launches the checkout's script; it is not something to build.
+  it('names the command a checkout runs, not its launcher', () => {
+    const lisp = PORTS.find((port) => port.slug === 'lisp')!
+    const body = workspaceOverviewNotice(lisp)!.body
+    expect(body).toContain('Run `bin/libtmux-workspace` from a source checkout')
+    expect(body).not.toMatch(/Build|`mise`/)
   })
 })

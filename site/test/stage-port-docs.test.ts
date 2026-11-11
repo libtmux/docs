@@ -3,15 +3,17 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { LISP_REFERENCE_FILES, artifactFromRevision, expandDocumenter, linkSnapshotDepths, rewriteLinks, stagedPortGuides, stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
+import { LISP_REFERENCE_FILES, artifactFromRevision, leadSentence, lispReferenceRoutes, expandDocumenter, linkSnapshotDepths, rewriteLinks, stagedPortGuides, stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
 import { PORTS } from '../src/lib/ports'
-import { SOURCE_GUIDE_PORTS } from '../src/lib/port-documentation'
+import { SOURCE_GUIDE_PORTS, sourceGuidesFor } from '../src/lib/port-documentation'
 import scalaGuides from '../src/data/port-guides/scala.json'
 import fsharpGuides from '../src/data/port-guides/fsharp.json'
 import csharpModel from '../src/data/api/csharp.json'
 import powershellGuides from '../src/data/port-guides/powershell.json'
 import juliaGuides from '../src/data/port-guides/julia.json'
+import perlGuides from '../src/data/port-guides/perl.json'
 import haskellModel from '../src/data/api/haskell.json'
+import haskellGuides from '../src/data/port-guides/haskell.json'
 import clojureGuides from '../src/data/port-guides/clojure.json'
 import lispGuides from '../src/data/port-guides/lisp.json'
 import lispModel from '../src/data/api/lisp.json'
@@ -70,18 +72,19 @@ describe('integrated guide inputs', () => {
 })
 
 describe('staged port guide links', () => {
-  it('stages revision-bound Haskell reader guides without advertising operations', () => {
+  it('stages revision-bound Haskell capture guides and preserves source fragments', () => {
     const revision = haskellModel.revision
     const program = '```console\n$ cabal run --verbose=0 typed-values\n```'
-    const guides = ['README', 'installation', 'values', 'api', 'status'].map((name) => ({
-      path: `docs/${name}.md`,
-      content: `# ${name}\n\n[Install](installation.md) [Program](../examples/typed-values/Main.hs)\n\n[LibTmux.Id](../src/LibTmux/Id.hs)\n\n[Source line](../src/LibTmux/Id.hs#L20) [Unknown anchor](../src/LibTmux/Id.hs#unknown)\n\n${program}\n`,
+    const guides = sourceGuidesFor('haskell').map(({ sourcePath }) => ({
+      path: sourcePath,
+      content: `# ${sourcePath}\n\n[Install](installation.md) [Program](../examples/typed-values/Main.hs)\n\n[LibTmux.Id](../src/LibTmux/Id.hs) [LibTmux.Server](../src/LibTmux/Server.hs)\n\n[withServer](../src/LibTmux/Server.hs) [capture](../src/LibTmux/Server.hs) [Snapshot](../src/LibTmux/Snapshot.hs) [Pane](../src/LibTmux/Snapshot.hs) [width](../src/LibTmux/Snapshot.hs)\n\n[withServer](../src/LibTmux/Server.hs#L93) [Source line](../src/LibTmux/Id.hs#L20) [Unknown anchor](../src/LibTmux/Id.hs#unknown)\n\n${program}\n`,
     }))
     const files = stagedPortGuides('haskell', { source: { repository: 'libtmux/libtmux-haskell', revision }, guides })
     const index = files.get('haskell/guides/index.md')!
-    expect(index).toContain('run the public values example')
-    expect(index).not.toContain('Connect to tmux')
-    expect(files.size).toBe(6)
+    expect(index).toContain('capture and navigate a server')
+    expect(index).toContain('capture/')
+    expect(index).toContain('offline-fixtures/')
+    expect(files.size).toBe(guides.length + 1)
     for (const [path, content] of files) {
       expect(path).toMatch(/^haskell\/guides\//)
       expect(content).toContain(`"ref":"${revision}"`)
@@ -91,6 +94,13 @@ describe('staged port guide links', () => {
     expect(page).toContain(`https://github.com/libtmux/libtmux-haskell/blob/${revision}/examples/typed-values/Main.hs`)
     expect(page).toContain(program)
     expect(page).toContain('[LibTmux.Id](../../reference/libtmux-id/)')
+    expect(page).toContain('[LibTmux.Server](../../reference/libtmux-server/)')
+    expect(page).toContain('[withServer](../../reference/libtmux-server-v-withserver/)')
+    expect(page).toContain('[capture](../../reference/libtmux-server-v-capture/)')
+    expect(page).toContain('[Snapshot](../../reference/libtmux-snapshot-t-snapshot/)')
+    expect(page).toContain('[Pane](../../reference/libtmux-snapshot-t-pane/)')
+    expect(page).toContain('[width](../../reference/libtmux-snapshot/)')
+    expect(page).toContain(`[withServer](https://github.com/libtmux/libtmux-haskell/blob/${revision}/src/LibTmux/Server.hs#L93)`)
     expect(page).toContain(`https://github.com/libtmux/libtmux-haskell/blob/${revision}/src/LibTmux/Id.hs#L20`)
     expect(page).toContain(`https://github.com/libtmux/libtmux-haskell/blob/${revision}/src/LibTmux/Id.hs#unknown`)
     expect(page).not.toContain('reference/libtmux-id/#')
@@ -98,15 +108,56 @@ describe('staged port guide links', () => {
       source: { repository: 'libtmux/libtmux-haskell', revision: 'd'.repeat(40) }, guides,
     })).toThrow('guide source differs from the Haskell API model')
   })
+  it('describes a guide with its own first sentence instead of its title', () => {
+    expect(leadSentence('# T\n\n<!-- c -->\n\n![badge](x.svg)\n\nUse [`withServer`](a.md) to adopt a server.  Then more.\n')).toBe('Use withServer to adopt a server.')
+    expect(leadSentence('```sh\nmake\n```\n\nLater prose.')).toBe('')
+    const pages = stagedPortGuides('haskell', haskellGuides)
+    for (const [path, page] of pages) {
+      const description = /^description: (.*)$/m.exec(page)![1]
+      expect(description, path).not.toMatch(/documentation\.\"$|^"Guides for /)
+      expect(description, path).not.toMatch(/^"Read about/)
+    }
+    const index = pages.get('haskell/guides/index.md')!
+    expect(index).not.toContain('Read about')
+  })
+  it('labels a link to a staged guide with its title, not the file name in code', () => {
+    const page = stagedPortGuides('clojure', clojureGuides).get('clojure/guides/captures-and-effects/index.md')!
+    expect(page).toContain('[Captured values](../captured-values/) lists every captured key')
+    expect(page).not.toContain('`clojure-reference.md`')
+    const titles = new Map([['guides/captured-values', 'Captured values']])
+    const routes = { 'docs/reference.md': ['guides/captured-values'], 'docs/other.md': ['reference/x'] }
+    const link = (name: string) => rewriteLinks(`[\`${name}.md\`](${name}.md)`, 'docs/guide.md', 'guides/guide', routes as never, 'o/r', 'rev', new Set(), new Map(), titles)
+    expect(link('reference')).toBe('[Captured values](../captured-values/)')
+    expect(link('other')).toContain('`other.md`')
+  })
+  it('lists every tested Perl program on the examples index, each linking its source', () => {
+    const page = stagedPortGuides('perl', perlGuides).get('perl/examples/programs/index.md')!
+    const { revision } = perlGuides.source
+    const programs = ['quickstart', 'selection', 'workspace', 'async', 'await', 'async-lifecycle']
+    for (const name of programs) {
+      expect(page).toContain(`[${name}.pl](https://github.com/libtmux/libtmux-perl/blob/${revision}/examples/${name}.pl)`)
+    }
+  })
   it('resolves native Lisp API anchors into core and workspace declaration pages', () => {
     const pages = stagedPortGuides('lisp', lispGuides)
     const operations = pages.get('lisp/guides/operations/index.md')!
-    const workspace = pages.get('lisp/workspace/source-guide/index.md')!
+    const owned = pages.get('lisp/workspace/source-guide/index.md')!
+    const legacy = pages.get('lisp/workspace/legacy-guide/index.md')!
     expect(operations).toContain('../../reference/libtmux-kill-pane/')
     expect(operations).not.toContain('../../reference/#kill-pane-function')
-    expect(workspace).toContain('../reference/libtmux-workspace-read-workspace/')
-    expect(workspace).toContain('../../reference/libtmux-command-outcome/')
-    expect(workspace).not.toMatch(/reference\/#(?:read-workspace-function|command-outcome-type)/)
+    expect(owned).toContain('../reference/libtmux-workspace-fetch-workspace-state/')
+    expect(owned).toContain('../../reference/libtmux-wait-for/')
+    expect(legacy).toContain('../reference/libtmux-workspace-read-workspace/')
+    expect(legacy).toContain('../../reference/libtmux-command-outcome/')
+    for (const workspace of [owned, legacy]) {
+      expect(workspace).not.toMatch(/reference\/#(?:read-workspace-function|command-outcome-type)/)
+    }
+  })
+  it('fails staging on a Lisp package the reference table lacks (negative control)', () => {
+    const known = lispModel.symbols.find((entry: { kind: string }) => entry.kind !== 'module')!
+    expect(() => lispReferenceRoutes([known])).not.toThrow()
+    expect(() => lispReferenceRoutes([{ ...known, namespace: 'libtmux.not-yet-mapped', id: 'libtmux.not-yet-mapped:thing' }]))
+      .toThrow('Common Lisp declaration has no native reference: libtmux.not-yet-mapped:thing')
   })
   // CI checks out libtmux-lisp at the model revision; set LIBTMUX_DOCS_CHECKOUT_LISP elsewhere.
   it.skipIf(!process.env.LIBTMUX_DOCS_CHECKOUT_LISP)('maps every public Lisp package to a native reference file with its anchors', () => {
@@ -201,7 +252,8 @@ describe('staged port guide links', () => {
     const setup = files.get(`${port}/${cards[0].href.slice(3)}index.md`)!
     expect(cards[0].label).toBe(JSON.parse(/^title: (.+)$/m.exec(setup)![1]))
     if (port === 'haskell') expect(cards.map((card: { label: string }) => card.label)).toEqual([
-      'Getting started', 'Installation', 'Typed values', 'API documentation', 'Implementation status',
+      'Getting started', 'Installation', 'Capture and navigate', 'Typed queries', 'Rename and set pane titles', 'Shared Runtime scopes', 'Offline fixtures',
+      'Typed values', 'Capture performance', 'API documentation', 'Implementation status',
     ])
     else if (port === 'clojure') expect(cards[1].label).toBe('Captures, effects and streams')
     else if (port === 'perl' || port === 'erlang') expect(cards[1].label).toBe('Installation')

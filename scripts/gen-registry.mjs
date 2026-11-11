@@ -49,7 +49,7 @@
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { homedir } from 'node:os'
+import { resolveCheckout } from './lib/port-checkout.mjs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -75,8 +75,6 @@ function parseArgs(argv) {
   }
   return opts
 }
-
-const expand = (p) => (p.startsWith('~/') ? join(homedir(), p.slice(2)) : p)
 
 /**
  * Read a registry version under the port's own tag grammar.
@@ -395,7 +393,7 @@ const PROBES = {
  * to the committed value rather than blanking it.
  */
 async function allTags(port) {
-  const checkout = expand(port.checkout)
+  const checkout = resolveCheckout(port, { order: ['checkout'] })
   if (existsSync(join(checkout, '.git'))) {
     try {
       const out = execFileSync('git', ['tag', '--list'], {

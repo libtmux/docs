@@ -214,6 +214,8 @@ jobs:
           fi
         env:
           PREVIEW_PREFIX: pr-${{ github.event.pull_request.number }}
+          # check-source-links asks the GitHub API whether a pinned revision is public.
+          GITHUB_TOKEN: ${{ github.token }}
           LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby
           LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua
           LIBTMUX_DOCS_CHECKOUT_OCAML: ${{ github.workspace }}/.port-sources/ocaml

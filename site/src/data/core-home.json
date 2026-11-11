@@ -322,12 +322,13 @@
     }
   },
   "haskell": {
-    "title": "Typed tmux values for Haskell",
-    "lead": "Parse tmux entity IDs, validate dimensions and indices, and check stable tmux releases with pure Haskell functions",
+    "title": "tmux client library for Haskell",
+    "lead": "Capture tmux state, query detached snapshots, rename sessions and windows, and set pane titles",
     "modules": [
-      "LibTmux.Id",
-      "LibTmux.Value",
-      "LibTmux.Version"
+      "LibTmux.Server",
+      "LibTmux.Snapshot",
+      "LibTmux.Query",
+      "LibTmux.Snapshot.Fixture"
     ],
     "capabilities": {}
   },
@@ -411,11 +412,15 @@
       "objects": "libtmux.data",
       "errors": "libtmux.core/error-summary",
       "traversal": "libtmux.data/panes",
-      "servers": "libtmux.core/open!",
+      "connect": "libtmux.core/open!",
       "send-keys": "libtmux.core/send-keys!",
       "control-mode": "libtmux.control/subscribe!",
       "capture": "libtmux.core/capture!",
       "async": "libtmux.async"
+    },
+    "capabilityLabels": {
+      "objects": "Captured values as plain maps instead of parsed format strings",
+      "errors": "ex-info failures with classified tmux error data instead of exit codes and stderr"
     }
   },
   "erlang": {

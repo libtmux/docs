@@ -88,10 +88,15 @@ describe('shared reference index sections', () => {
   it.each(PORTS)('leads the %s index and exports with its native entry groups', (port) => {
     const sections = referenceIndexSections(port)
     if (port === 'haskell') {
-      expect(sections[0].id).toBe('exports:LibTmux.Id')
-      expect([...sections[0].types, ...sections[0].free].map((symbol) => symbol.name)).toContain('LibTmux.Id')
-      expect(sections.filter((section) => /^exports:LibTmux\.[^.:]+$/.test(section.id)).map((section) => section.id))
-        .toEqual(['exports:LibTmux.Id', 'exports:LibTmux.Value', 'exports:LibTmux.Version'])
+      const modules = API_MODELS[port].symbols.filter((symbol) => symbol.kind === 'module')
+      const moduleSections = sections.filter((section) => [...section.types, ...section.free]
+        .some((symbol) => symbol.kind === 'module'))
+      expect(modules.length).toBeGreaterThan(0)
+      expect(sections[0].id).toBe(`exports:${modules[0].id}`)
+      expect(moduleSections.map((section) => section.id)).toEqual(modules.map((symbol) => `exports:${symbol.id}`))
+      for (const [i, section] of moduleSections.entries()) {
+        expect([...section.types, ...section.free].map((symbol) => symbol.id)).toEqual([modules[i].id])
+      }
     } else if (port === 'powershell') expect(sections[0].free.map((symbol) => symbol.name))
       .toEqual(expect.arrayContaining(['Connect-TmuxServer', 'Get-TmuxServer', 'New-TmuxServer']))
     else if (port === 'ocaml') {

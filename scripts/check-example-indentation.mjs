@@ -25,6 +25,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { PORTS } from '../site/src/lib/ports.ts'
+import { resolveCheckout } from './lib/port-checkout.mjs'
 import { compareIndentation } from './lib/example-indentation.mjs'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -71,7 +72,7 @@ const rows = []
 for (const port of PORTS) {
   if (only && only !== port.slug) continue
   const modelPath = modelOverride ?? join(repoRoot, 'site/src/data/api', `${port.slug}.json`)
-  const checkout = expand(process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || port.checkout)
+  const checkout = resolveCheckout(port, { order: ['checkout'] })
   if (!existsSync(modelPath) || !existsSync(checkout)) {
     console.log(`check-example-indentation: ${port.slug} skipped, no ${existsSync(modelPath) ? `checkout at ${port.checkout}` : 'model'}`)
     skipped++

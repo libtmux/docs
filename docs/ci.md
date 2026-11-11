@@ -529,6 +529,33 @@ page in the browser is printed as unresolved and never counted as passing, and
 a run that leaves more than a twentieth of the destinations unresolved fails,
 because a run that asked almost nothing has checked almost nothing.
 
+## Port heads check (`port-heads.yml`)
+
+Runs weekly and on demand, never on a pull request. A port's own docs workflow
+regenerates its API model and guides from the port's head, so a new package or
+README badge service in the port can break that build while this repository's
+CI, which reads committed models and guides, stays green.
+
+The `build` job calls [`port-docs.yml`](../.github/workflows/port-docs.yml), the
+workflow every port publish calls, once per library family (a core port and its
+wrappers) with the port's repository, the head commit of its default branch,
+`publish: false` and the `latest` trunk identity. Every port therefore runs its
+own exporters, toolchains and `build-site.sh` exactly as a release does, wrapper
+legs set only the wrapper's `LIBTMUX_DOCS_CHECKOUT_<PORT>`, and no
+`reusable-deploy.yml` job follows, so nothing is deployed. The matrix
+(`scripts/check-port-heads.mjs matrix`) resolves each head with `git ls-remote`.
+
+To allow this, `port-docs.yml` has one optional input, `source-repository`
+(string, default empty). Empty keeps today's behavior, building the calling
+repository. Set, it names the repository that is checked out, whose tags the
+identity step lists and which the matrix checks against `ports.ts`.
+`port-docs-identity.sh` also accepts a `schedule` event, treated like a dispatch
+that names its inputs, and refuses it when `publish` is true.
+
+The `badges` job runs `scripts/check-port-badges.mjs` over each family's staged
+guides at the same head. It lists every unmapped badge with port, file and URL,
+where the build stops at the first.
+
 ## Secrets this scheme expects
 
 | Secret | Used by | Scope | Storage level |
