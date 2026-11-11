@@ -234,3 +234,16 @@ describe('the cards of the Core Library page', () => {
     expect(routesOf('swift').has('topics-and-notes')).toBe(false)
   })
 })
+
+describe('Clojure connection claim', () => {
+  // `libtmux.core/open!` opens a client on an explicit socket; it never starts a server.
+  it('says the port connects to servers and does not claim it starts one', () => {
+    const entry = CORE_HOME.clojure!
+    expect(entry.capabilities).not.toHaveProperty('servers')
+    expect(entry.capabilities).toHaveProperty('connect', 'libtmux.core/open!')
+    const labels = Object.values(resolveCoreHome('clojure', 'latest').capabilities).flat().map((row) => row.label)
+    expect(labels).toContain(CAPABILITIES.connect.label)
+    expect(labels.join('\n')).not.toMatch(/start|create/i)
+    expect(coreDescription('clojure')).not.toMatch(/create servers/)
+  })
+})
