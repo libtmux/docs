@@ -4995,6 +4995,7 @@
     },
     {
       "port": "go",
+      "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
       "symbol": "tmux.Pane.CaptureToFile",
       "command": "capture-pane",
       "scope": null,
@@ -5033,6 +5034,111 @@
           "in": "tmux.Pane.CaptureToFile"
         }
       ]
+    },
+    {
+      "port": "go",
+      "symbol": "tmux.Pane.CaptureToFile",
+      "command": "capture-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "tmux/pane_capture.go",
+          "has": [
+            "\"capture-pane\")"
+          ]
+        },
+        {
+          "at": "tmux/pane_capture.go",
+          "has": [
+            "p.captureArguments(ctx, scratch.name, true, request)"
+          ],
+          "in": "tmux.Pane.CaptureToFile"
+        },
+        {
+          "at": "tmux/pane_capture.go",
+          "has": [
+            "p.server.Cmd(ctx, arguments...)"
+          ],
+          "in": "tmux.Pane.CaptureToFile"
+        }
+      ],
+      "revision": "068da4f165ba859294dac4cfbd77ee3f660ad78a"
+    },
+    {
+      "port": "go",
+      "symbol": "tmux.Pane.SendKeys",
+      "command": "send-keys",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "tmux/pane_input.go",
+          "has": [
+            "arguments := []string{\"send-keys\", \"-t\", target}"
+          ],
+          "within": "sendKeysArguments"
+        },
+        {
+          "at": "tmux/pane_input.go",
+          "has": [
+            "sendKeysArguments(target, request, version)"
+          ],
+          "within": "sendKeysCommand"
+        },
+        {
+          "at": "tmux/pane_input.go",
+          "has": [
+            "sendKeysCommand(target, request, current)"
+          ],
+          "in": "tmux.Pane.SendKeys"
+        },
+        {
+          "at": "tmux/pane_input.go",
+          "has": [
+            "p.server.literalCmd(ctx, arguments...)"
+          ],
+          "in": "tmux.Pane.SendKeys"
+        }
+      ],
+      "forwardable": true,
+      "revision": "068da4f165ba859294dac4cfbd77ee3f660ad78a"
+    },
+    {
+      "port": "go",
+      "symbol": "tmux.Pane.ClearHistory",
+      "command": "clear-history",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "tmux/pane_input.go",
+          "has": [
+            "targetedArguments(\"clear-history\", target)"
+          ],
+          "within": "clearHistoryArguments"
+        },
+        {
+          "at": "tmux/pane_input.go",
+          "has": [
+            "clearHistoryArguments(target, request, version)"
+          ],
+          "within": "clearHistoryCommand"
+        },
+        {
+          "at": "tmux/pane_input.go",
+          "has": [
+            "clearHistoryCommand(target, request, current)"
+          ],
+          "in": "tmux.Pane.ClearHistory"
+        },
+        {
+          "at": "tmux/pane_input.go",
+          "has": [
+            "p.server.literalCmd(ctx, arguments...)"
+          ],
+          "in": "tmux.Pane.ClearHistory"
+        }
+      ],
+      "forwardable": true,
+      "revision": "068da4f165ba859294dac4cfbd77ee3f660ad78a"
     },
     {
       "port": "go",

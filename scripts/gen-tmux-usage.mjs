@@ -334,6 +334,9 @@ function forwardPort({ port, config, scanned, core, coreScan, readEvidence }) {
   return { entries: result.entries, problems }
 }
 
+/** A rule that names a revision holds for that revision only; one that names none holds for every revision of its port. */
+const atRevision = (rule, revision) => !rule.revision || revision.startsWith(rule.revision)
+
 /** Ports that have a model, in the order the site lists them. */
 export async function portsWithModels() {
   const { PORTS } = await import(`file://${join(root, 'site/src/lib/ports.ts')}`)
@@ -386,7 +389,7 @@ export function documentProblems(document, model, scopes, commands, viaRevision)
 function sweepProblems({ port, model, document, reviews, exclusions, report, readSource, functions }) {
   const has = new Set(Object.entries(document.symbols).flatMap(([symbol, uses]) => uses.map((use) => `${symbol}\0${use.command}`)))
   const { candidates } = sweepCandidates({ port, commands: document.commands, symbols: publicSymbols(model), has })
-  const own = reviews.filter((review) => review.port === port)
+  const own = reviews.filter((review) => review.port === port && atRevision(review, model.revision))
   const located = readSource ? locateRules(own, { readSource, functions, label: (review) => `${port}: review of ${review.owner ?? review.ownerSuffix ?? ''}${review.names ? `.${review.names.join('|')}` : ''}${review.commands ? ` for ${review.commands.join(',')}` : ''}` }) : { rules: own, problems: [] }
   const { unreviewed, problems } = settleCandidates({
     port, candidates, reviews: located.rules, readSource,
@@ -452,7 +455,7 @@ export async function main() {
     const rules = (list) => list.filter((rule) => rule.port === port.slug && ruleHolds(rule, model.revision, pinned))
     // A dispatch API is a name, so it holds at any revision of its port; its definition is checked at the model's.
     const apis = dispatchers.filter((api) => api.port === port.slug && (!api.revision || model.revision.startsWith(api.revision)))
-    const wrappers = guards.filter((guard) => guard.port === port.slug)
+    const wrappers = guards.filter((guard) => guard.port === port.slug && atRevision(guard, model.revision))
     const scanned = await scanPort({
       port: port.slug, model, commands: commandsToRecord, checkout: checkoutFor(port), known,
       dispatch: new Set(apis.filter((api) => api.kind !== 'builder').map((api) => api.name)), builders: new Set(apis.filter((api) => api.kind === 'builder').map((api) => api.name)),
@@ -532,7 +535,7 @@ export async function main() {
     const generatedLines = declared?.generated && locating([declared.generated], 'forwarder')
     failures.push(...(generatedLines?.problems ?? []))
     const config = declared && { ...declared, ...(generatedLines?.rules[0] ? { generated: generatedLines.rules[0] } : {}) }
-    const checks = locating(preflights.filter((rule) => rule.port === port.slug), 'preflight')
+    const checks = locating(preflights.filter((rule) => rule.port === port.slug && atRevision(rule, model.revision)), 'preflight')
     failures.push(...checks.problems, ...preflightProblems({ port: port.slug, preflights: checks.rules, readSource: scanned.readSource }))
     if (config && core) {
       const forwarded = forwardPort({
@@ -542,7 +545,7 @@ export async function main() {
       failures.push(...forwarded.problems)
       mergeEntries(found, forwarded.entries)
     }
-    const qualified = locating(conditions.filter((item) => item.port === port.slug), 'condition')
+    const qualified = locating(conditions.filter((item) => item.port === port.slug && atRevision(item, model.revision)), 'condition')
     failures.push(...qualified.problems)
     const qualifiers = qualified.rules
     applyConditions({ conditions: qualifiers, found, readSource: scanned.readSource, lenient: true })

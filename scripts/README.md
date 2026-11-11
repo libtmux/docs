@@ -439,6 +439,10 @@ revision. A wrapper in another repository, such as the PowerShell cmdlets,
 stands on the release it depends on. Every `via` names the revision of the core
 lines it cites.
 
+A review, guard, condition or preflight with a `revision` is read only for a model
+extracted at that revision, so code that changed between two pins keeps one rule
+for each.
+
 A claim's evidence names the file and `has` the text of the line that sends,
 and `span` the following lines of the same statement that may hold the rest when
 a call spans lines: the first text must be on the cited line itself. The line

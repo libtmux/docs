@@ -5348,6 +5348,33 @@
           ]
         }
       ]
+    },
+    {
+      "port": "go",
+      "owner": "Pane",
+      "names": [
+        "WaitForText"
+      ],
+      "commands": [
+        "wait-for"
+      ],
+      "kind": "other-command",
+      "why": "WaitForText polls the screen with capture-pane and a run-shell liveness report; it does not send tmux's wait-for.",
+      "evidence": [
+        {
+          "at": "tmux/pane_text_wait.go",
+          "has": [
+            "\"capture-pane\", \"-p\", \"-J\", \"-t\", target,"
+          ]
+        },
+        {
+          "at": "tmux/pane_text_wait.go",
+          "has": [
+            "\"run-shell\", \"-C\", \"-t\", target, marker+"
+          ]
+        }
+      ],
+      "revision": "068da4f165ba859294dac4cfbd77ee3f660ad78a"
     }
   ]
 }
