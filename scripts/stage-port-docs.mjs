@@ -51,6 +51,26 @@ function titleAndBody(content, sourcePath) {
   }
 }
 
+/**
+ * The first sentence of a guide's opening prose as plain text, or an empty
+ * string when the guide opens with code, a table or a list, or its first
+ * sentence is longer than `limit`. Staged pages use it where the catalog
+ * gives no description.
+ */
+export function leadSentence(body, limit = 240) {
+  const text = (node) => node.type === 'text' || node.type === 'inlineCode' ? node.value
+    : node.type === 'image' || node.type === 'html' ? '' : (node.children ?? []).map(text).join('')
+  for (const node of fromMarkdown(body).children) {
+    if (node.type === 'heading' || node.type === 'html') continue
+    if (node.type !== 'paragraph') return ''
+    const plain = text(node).replace(/\s+/g, ' ').trim()
+    if (!plain) continue
+    const sentence = /^(.+?[.!?])(?:\s|$)/.exec(plain)?.[1] ?? plain
+    return sentence.length <= limit && !sentence.endsWith(':') ? sentence : ''
+  }
+  return ''
+}
+
 function external(value) {
   return /^(?:[a-z][a-z0-9+.-]*:|#|\/)/i.test(value)
 }
@@ -232,6 +252,7 @@ export function stagedPortGuides(port, artifact) {
   }
   const guides = new Map((artifact.guides ?? []).map((guide) => [guide.path, guide.content]))
   const files = new Map()
+  const descriptions = new Map()
   for (const [sourcePath, guide] of Object.entries(routes)) {
     const { route, product, package: packageId, domain, aliases, equivalence, sidebar } = guide
     const content = guides.get(sourcePath)
@@ -246,7 +267,7 @@ export function stagedPortGuides(port, artifact) {
     const rewritten = rewriteLinks(badged, sourcePath, route, linkRoutes, artifact.source.repository, artifact.source.revision, nativeReferenceFiles, nativeDeclarations)
     const data = {
       title,
-      description: guide.description ?? `${title}: ${identity.packageName} documentation.`,
+      description: guide.description ?? (leadSentence(rewritten) || `${title} guide for ${identity.packageName}.`),
       port,
       ...(product ? { product } : {}),
       ...(packageId ? { package: packageId } : {}),
@@ -258,13 +279,14 @@ export function stagedPortGuides(port, artifact) {
       sidebar: sidebar ?? { group: product ? (product === 'mcp' ? 'MCP' : 'Workspace Manager')
         : route === 'reference' ? 'API reference' : route.split('/')[0].replace(/^./, (letter) => letter.toUpperCase()) },
     }
+    descriptions.set(sourcePath, data.description)
     const frontmatter = Object.entries(data).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')
     files.set(`${port}/${route}/index.md`, `---\n${frontmatter}\n---\n\n${rewritten.trim()}\n`)
   }
   {
     const source = { repo: artifact.source.repository, path: Object.keys(routes)[0], ref: artifact.source.revision }
     const writeIndex = (route, title, body, cards = []) => {
-      const data = { title, description: `${title} for ${identity.packageName}.`, port, route, source, cards,
+      const data = { title, description: leadSentence(body) || `${title} for ${identity.packageName}.`, port, route, source, cards,
         sidebar: { group: route === 'reference' ? 'API reference' : route[0].toUpperCase() + route.slice(1), label: 'Overview', order: 1 } }
       const frontmatter = Object.entries(data).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')
       files.set(`${port}/${route}/index.md`, `---\n${frontmatter}\n---\n\n${body}\n`)
@@ -274,7 +296,7 @@ export function stagedPortGuides(port, artifact) {
       if (existsSync(join(root, `site/src/content/docs/ports/${port}/${section}/index.md`))) continue
       const selected = Object.entries(routes).filter(([, entry]) => entry.domain === 'core' && entry.route.startsWith(`${section}/`))
       const cards = selected.map(([path, entry]) => ({ label: entry.title ?? titleAndBody(guides.get(path), path).title,
-        href: `../${entry.route}/`, body: entry.description ?? `Read about ${titleAndBody(guides.get(path), path).title.toLowerCase()}.`,
+        href: `../${entry.route}/`, body: descriptions.get(path),
         order: entry.sidebar?.order ?? Number.MAX_SAFE_INTEGER }))
         .sort((a, b) => a.order - b.order || a.label.localeCompare(b.label))
         .map(({ order: _order, ...card }) => card)
