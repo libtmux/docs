@@ -14,10 +14,14 @@ command-line tool will live in a separate Cabal package and use the core
 library to operate on tmux.
 
 There is no workspace package to install, loader command to run, or workspace
-API reference yet. The current public core provides typed IDs, checked
-dimensions and indices, and tmux-version admission.
+API reference yet. The core library captures complete server state, queries
+detached snapshots with typed predicates, and renames sessions and windows or
+sets pane titles through checked references. It also provides typed IDs,
+checked dimensions and indices, and tmux-version admission. It cannot yet
+create sessions, windows or panes, send input, or stream events, which a
+workspace manager needs.
 
 Start with the [core library](../core/) and its
-[tested values example](../guides/typed-values/). Read the
+[examples](../examples/). Read the
 [implementation status](../guides/status/) for the available capabilities and
 remaining work.
