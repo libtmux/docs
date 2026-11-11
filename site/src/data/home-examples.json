@@ -650,7 +650,7 @@
     "libraryRevision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
     "execution": "owned-tmux",
     "capability": "typed-graph",
-    "singleView": "This complete program validates its selection, preserves operational failures and closes its library scope. The run command creates and stops a private demo server.",
+    "singleView": "The run command starts and stops a private demo server.",
     "program": "Main.hs",
     "excerpt": {
       "startLine": 1,

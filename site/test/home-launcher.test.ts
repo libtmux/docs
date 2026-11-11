@@ -45,13 +45,12 @@ const panelOf = (document: Document, slug: string) => document.querySelector(`.h
 const rowsOf = (panel: Element) => [...panel.querySelectorAll<HTMLAnchorElement>('nav a[data-picker-option]')]
 
 describe('the front page solution picker', () => {
-  it('links the Haskell mutation example to its guides and describes captured values', async () => {
+  it('links the Haskell mutation example to its guides and gives every Core card one line', async () => {
     const document = await frontPage()
     const panel = document.querySelector('.home-examples [data-home-language="haskell"]')!
     expect.soft(panel.querySelector('.home-example-link a')!.getAttribute('href')).toMatch(/\/haskell\/[^/]+\/guides\/$/)
-    const solutions = text(document.querySelector('.home-intro [data-home-language="haskell"] .home-solutions'))
-    expect.soft(solutions).toContain('Capture tmux state')
-    expect.soft(solutions).toContain('query detached snapshots')
+    const core = PORTS.map((port) => text(document.querySelector(`.home-intro [data-home-language="${port.slug}"] .home-solutions > a small`)))
+    expect.soft(new Set(core)).toEqual(new Set(['Control tmux from your code.']))
     expect(document.querySelector('.home-examples [data-home-language="ts"] .home-example-link a')!.getAttribute('href')).toContain('/examples/')
   })
   it.each(PORTS)('lists $name Home first, at the latest home of that language', async (port) => {
