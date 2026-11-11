@@ -38,7 +38,7 @@ export function rangesOf(item, functions, ranges) {
 /**
  * @param {{ at: string, has?: string[], span?: number }} item
  * @param {string | undefined} text the file at the revision being built
- * @param {{ start: number, end: number }[] | undefined} ranges the lines the citation must be in, or anywhere when absent
+ * @param {{ start: number, end: number }[]} [ranges] the lines the citation must be in, or anywhere when absent
  * @param {string} [scope] what the ranges are the body of, for the message
  * @returns {{ at: string } | { problem: string }}
  */
