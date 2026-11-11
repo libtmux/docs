@@ -6,7 +6,7 @@
  * records the 2026 evidence that it moves no ranking and does remove agent 404s.
  */
 import type { APIRoute } from 'astro'
-import { llmsHeader, llmsPages, referenceLine } from '../lib/llms.ts'
+import { exportsMcpContracts, llmsHeader, llmsPages, referenceEntries, referenceLine } from '../lib/llms.ts'
 import { TOPICS } from '../lib/prompts.ts'
 import { buildsPrompts, topicPath } from '../lib/prompt-routes.ts'
 
@@ -28,7 +28,7 @@ export const GET: APIRoute = async ({ site }) => {
   }
 
   const reference = referenceLine(origin)
-  if (reference) out.push('## Reference', '', reference, '')
+  if (reference) out.push('## Reference', '', reference, ...referenceEntries(origin), '')
 
   /*
    * Prompts are for the reader on the other side of this file.
@@ -52,7 +52,7 @@ export const GET: APIRoute = async ({ site }) => {
 
   out.push('## Optional', '')
   out.push(
-    `- [Full documentation text](${origin}${base}llms-full.txt): guides and MCP contracts in a single fetch.`,
+    `- [Full documentation text](${origin}${base}llms-full.txt): ${exportsMcpContracts() ? 'guides and MCP contracts' : 'guides'} in a single fetch.`,
   )
   out.push('')
 

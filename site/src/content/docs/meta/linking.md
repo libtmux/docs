@@ -20,7 +20,12 @@ links to select a language, version or preview.
 | File or format | Use it for |
 | --- | --- |
 | [llms.txt](/llms.txt) | Discover guides, API references and agent prompts through a Markdown index. |
+<!-- port:root,py,ruby,julia,ts,rs,go,java,csharp,cxx,swift -->
 | [llms-full.txt](/llms-full.txt) | Fetch guides and MCP contracts together as Markdown. API references are linked separately. |
+<!-- /port -->
+<!-- port:lua,powershell,erlang,elixir,haskell,lisp,ocaml,perl -->
+| [llms-full.txt](/llms-full.txt) | Fetch the guides together as Markdown. API references are linked separately. |
+<!-- /port -->
 | [docs.json](/docs.json) | Discover page titles, URLs, descriptions, headings and Markdown URLs in a structured manifest. |
 | Markdown | Read one page as text using its footer's **Markdown** link. |
 | Raw source | Inspect the source file using its footer's **Raw source** link, where available. |

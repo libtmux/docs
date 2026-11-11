@@ -1,5 +1,5 @@
 /**
- * `/llms-full.txt` — prose and MCP contracts as Markdown.
+ * `/llms-full.txt` — prose, plus MCP contracts for a port that ships an MCP server, as Markdown.
  *
  * The generated API reference is indexed in llms.txt and deliberately not
  * inlined here; see lib/llms.ts. The Markdown-twins integration appends the
