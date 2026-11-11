@@ -8466,6 +8466,13 @@
   {
    "port": "lisp",
    "symbol": "libtmux",
+   "page": "/lisp/latest/workspace/legacy-guide/",
+   "title": "Legacy workspace topology guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux",
    "page": "/lisp/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
@@ -8634,8 +8641,8 @@
   {
    "port": "lisp",
    "symbol": "libtmux:command-outcome",
-   "page": "/lisp/latest/workspace/source-guide/",
-   "title": "Workspace guide",
+   "page": "/lisp/latest/workspace/legacy-guide/",
+   "title": "Legacy workspace topology guide",
    "section": "workspace"
   },
   {
@@ -9326,6 +9333,13 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:select-layout",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:select-pane",
    "page": "/lisp/latest/guides/operations/",
    "title": "Explicit operations",
@@ -9432,6 +9446,13 @@
   {
    "port": "lisp",
    "symbol": "libtmux:show-hooks-text",
+   "page": "/lisp/latest/guides/operations/",
+   "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:show-options",
    "page": "/lisp/latest/guides/operations/",
    "title": "Explicit operations",
    "section": "guides"
@@ -9578,6 +9599,13 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:wait-for",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:width",
    "page": "/lisp/latest/concepts/captures/",
    "title": "Captures and identity",
@@ -9624,6 +9652,27 @@
    "page": "/lisp/latest/examples/capture-pane-output/",
    "title": "Capture pane output",
    "section": "examples"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.control:await-request",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.control:next-event",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.control:submit-command",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "lisp",
@@ -9691,6 +9740,13 @@
   {
    "port": "lisp",
    "symbol": "libtmux.query:compile-filter",
+   "page": "/lisp/latest/guides/queries/",
+   "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:explain",
    "page": "/lisp/latest/guides/queries/",
    "title": "Native queries",
    "section": "guides"
@@ -9809,7 +9865,42 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux.workspace",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux.workspace:apply-workspace",
+   "page": "/lisp/latest/workspace/legacy-guide/",
+   "title": "Legacy workspace topology guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:fetch-workspace-state",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:inspect-workspace",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:inspection-evidence",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:inspection-terminal",
    "page": "/lisp/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
@@ -9817,13 +9908,20 @@
   {
    "port": "lisp",
    "symbol": "libtmux.workspace:make-workspace",
-   "page": "/lisp/latest/workspace/source-guide/",
-   "title": "Workspace guide",
+   "page": "/lisp/latest/workspace/legacy-guide/",
+   "title": "Legacy workspace topology guide",
    "section": "workspace"
   },
   {
    "port": "lisp",
    "symbol": "libtmux.workspace:parse-workspace",
+   "page": "/lisp/latest/workspace/legacy-guide/",
+   "title": "Legacy workspace topology guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:plan-data",
    "page": "/lisp/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
@@ -9831,20 +9929,27 @@
   {
    "port": "lisp",
    "symbol": "libtmux.workspace:plan-steps",
-   "page": "/lisp/latest/workspace/source-guide/",
-   "title": "Workspace guide",
+   "page": "/lisp/latest/workspace/legacy-guide/",
+   "title": "Legacy workspace topology guide",
    "section": "workspace"
   },
   {
    "port": "lisp",
    "symbol": "libtmux.workspace:plan-workspace",
-   "page": "/lisp/latest/workspace/source-guide/",
-   "title": "Workspace guide",
+   "page": "/lisp/latest/workspace/legacy-guide/",
+   "title": "Legacy workspace topology guide",
    "section": "workspace"
   },
   {
    "port": "lisp",
    "symbol": "libtmux.workspace:read-workspace",
+   "page": "/lisp/latest/workspace/legacy-guide/",
+   "title": "Legacy workspace topology guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:result-causes",
    "page": "/lisp/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
@@ -9852,8 +9957,29 @@
   {
    "port": "lisp",
    "symbol": "libtmux.workspace:result-created-p",
+   "page": "/lisp/latest/workspace/legacy-guide/",
+   "title": "Legacy workspace topology guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:result-created-p",
    "page": "/lisp/latest/workspace/source-guide/",
    "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:result-data",
+   "page": "/lisp/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:result-outcomes",
+   "page": "/lisp/latest/workspace/legacy-guide/",
+   "title": "Legacy workspace topology guide",
    "section": "workspace"
   },
   {
@@ -9866,6 +9992,13 @@
   {
    "port": "lisp",
    "symbol": "libtmux.workspace:result-snapshot",
+   "page": "/lisp/latest/workspace/legacy-guide/",
+   "title": "Legacy workspace topology guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:result-snapshot",
    "page": "/lisp/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
@@ -9873,15 +10006,22 @@
   {
    "port": "lisp",
    "symbol": "libtmux.workspace:step-action",
-   "page": "/lisp/latest/workspace/source-guide/",
-   "title": "Workspace guide",
+   "page": "/lisp/latest/workspace/legacy-guide/",
+   "title": "Legacy workspace topology guide",
    "section": "workspace"
   },
   {
    "port": "lisp",
    "symbol": "libtmux.workspace:step-data",
-   "page": "/lisp/latest/workspace/source-guide/",
-   "title": "Workspace guide",
+   "page": "/lisp/latest/workspace/legacy-guide/",
+   "title": "Legacy workspace topology guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:workspace-apply-failed",
+   "page": "/lisp/latest/workspace/legacy-guide/",
+   "title": "Legacy workspace topology guide",
    "section": "workspace"
   },
   {
@@ -9894,13 +10034,27 @@
   {
    "port": "lisp",
    "symbol": "libtmux.workspace:workspace-conflict",
+   "page": "/lisp/latest/workspace/legacy-guide/",
+   "title": "Legacy workspace topology guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:workspace-deadline-exceeded",
+   "page": "/lisp/latest/workspace/legacy-guide/",
+   "title": "Legacy workspace topology guide",
+   "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:workspace-inspection-error",
    "page": "/lisp/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
   },
   {
    "port": "lisp",
-   "symbol": "libtmux.workspace:workspace-deadline-exceeded",
+   "symbol": "libtmux.workspace:workspace-state-error",
    "page": "/lisp/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
@@ -9908,8 +10062,8 @@
   {
    "port": "lisp",
    "symbol": "libtmux.workspace.cli:main",
-   "page": "/lisp/latest/workspace/source-guide/",
-   "title": "Workspace guide",
+   "page": "/lisp/latest/workspace/legacy-guide/",
+   "title": "Legacy workspace topology guide",
    "section": "workspace"
   },
   {
