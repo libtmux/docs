@@ -6478,6 +6478,13 @@
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#t:Server",
+   "page": "/haskell/latest/core/",
+   "title": "tmux client library for Haskell",
+   "section": "core"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#t:Server",
    "page": "/haskell/latest/guides/api-documentation/",
    "title": "API documentation",
    "section": "guides"
