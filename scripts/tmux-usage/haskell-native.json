@@ -43,7 +43,7 @@
     "src/LibTmux/Value.hs": "e199c3d0bbf08a159daa35bb4ae9a5d2ad4761117d375f292dd8b250bb459e55",
     "src/LibTmux/Version.hs": "cf4e4d94a113a95ffb7b650cffbd0b4f702608627db84b7c7bf7630b83e4dfa7"
   },
-  "claimsSha256": "7be705e6619a4582f44642b6fc7a4f7c87a13d837d4eb686c3b438bd5cb938da",
+  "claimsSha256": "d38dd009a5fd6064dc72fbce998cddaf8d72b6678fee289b1de31f81a3c5650e",
   "classifications": [
     {
       "kind": "sends",
