@@ -5037,6 +5037,9 @@
     },
     {
       "port": "go",
+      "except": [
+        "2de249b600d65218ee8b8fdc07c6b2b919242151"
+      ],
       "symbol": "tmux.Pane.CaptureToFile",
       "command": "capture-pane",
       "scope": null,
@@ -5061,11 +5064,13 @@
           ],
           "in": "tmux.Pane.CaptureToFile"
         }
-      ],
-      "revision": "068da4f165ba859294dac4cfbd77ee3f660ad78a"
+      ]
     },
     {
       "port": "go",
+      "except": [
+        "2de249b600d65218ee8b8fdc07c6b2b919242151"
+      ],
       "symbol": "tmux.Pane.SendKeys",
       "command": "send-keys",
       "scope": null,
@@ -5099,11 +5104,13 @@
           "in": "tmux.Pane.SendKeys"
         }
       ],
-      "forwardable": true,
-      "revision": "068da4f165ba859294dac4cfbd77ee3f660ad78a"
+      "forwardable": true
     },
     {
       "port": "go",
+      "except": [
+        "2de249b600d65218ee8b8fdc07c6b2b919242151"
+      ],
       "symbol": "tmux.Pane.ClearHistory",
       "command": "clear-history",
       "scope": null,
@@ -5137,8 +5144,7 @@
           "in": "tmux.Pane.ClearHistory"
         }
       ],
-      "forwardable": true,
-      "revision": "068da4f165ba859294dac4cfbd77ee3f660ad78a"
+      "forwardable": true
     },
     {
       "port": "go",

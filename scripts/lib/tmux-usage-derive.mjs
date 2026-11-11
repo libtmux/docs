@@ -34,7 +34,8 @@ export function classify(spec, flags) {
  * for the revision its port's model was extracted at; one with a `revision` holds for the revision it starts with,
  * which is how a wrapper that shares a repository with its core library reads the core where the wrapper is pinned.
  */
-export const ruleHolds = (rule, revision, pinned) => (rule.revision ? revision.startsWith(rule.revision) : revision === pinned)
+export const ruleHolds = (rule, revision, pinned) => !rule.except?.some((prefix) => revision.startsWith(prefix))
+  && (rule.revision ? revision.startsWith(rule.revision) : revision === pinned)
 
 const SELF_RECEIVERS = new Set(['this', 'self', 'base', 'super', 'cls', 'me'])
 

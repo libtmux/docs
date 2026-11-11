@@ -5351,6 +5351,9 @@
     },
     {
       "port": "go",
+      "except": [
+        "2de249b600d65218ee8b8fdc07c6b2b919242151"
+      ],
       "owner": "Pane",
       "names": [
         "WaitForText"
@@ -5373,8 +5376,7 @@
             "\"run-shell\", \"-C\", \"-t\", target, marker+"
           ]
         }
-      ],
-      "revision": "068da4f165ba859294dac4cfbd77ee3f660ad78a"
+      ]
     }
   ]
 }

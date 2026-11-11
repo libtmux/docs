@@ -441,7 +441,8 @@ lines it cites.
 
 A review, guard, condition or preflight with a `revision` is read only for a model
 extracted at that revision, so code that changed between two pins keeps one rule
-for each.
+for each. The rule for the newer code lists the older revision in `except`, so it
+holds at every later revision and not at the pin it does not fit.
 
 A claim's evidence names the file and `has` the text of the line that sends,
 and `span` the following lines of the same statement that may hold the rest when

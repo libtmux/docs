@@ -334,8 +334,11 @@ function forwardPort({ port, config, scanned, core, coreScan, readEvidence }) {
   return { entries: result.entries, problems }
 }
 
-/** A rule that names a revision holds for that revision only; one that names none holds for every revision of its port. */
-const atRevision = (rule, revision) => !rule.revision || revision.startsWith(rule.revision)
+/**
+ * A rule that names a revision holds for that revision only; one that names none holds for every revision of its port, but
+ * those it lists in `except`, which is how the rule for code that changed stands beside the rule for the code it replaced.
+ */
+const atRevision = (rule, revision) => !rule.except?.some((prefix) => revision.startsWith(prefix)) && (!rule.revision || revision.startsWith(rule.revision))
 
 /** Ports that have a model, in the order the site lists them. */
 export async function portsWithModels() {
@@ -454,7 +457,7 @@ export async function main() {
     const pinned = models.get(port.slug).revision
     const rules = (list) => list.filter((rule) => rule.port === port.slug && ruleHolds(rule, model.revision, pinned))
     // A dispatch API is a name, so it holds at any revision of its port; its definition is checked at the model's.
-    const apis = dispatchers.filter((api) => api.port === port.slug && (!api.revision || model.revision.startsWith(api.revision)))
+    const apis = dispatchers.filter((api) => api.port === port.slug && atRevision(api, model.revision))
     const wrappers = guards.filter((guard) => guard.port === port.slug && atRevision(guard, model.revision))
     const scanned = await scanPort({
       port: port.slug, model, commands: commandsToRecord, checkout: checkoutFor(port), known,
