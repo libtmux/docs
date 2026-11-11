@@ -246,4 +246,12 @@ describe('Clojure connection claim', () => {
     expect(labels.join('\n')).not.toMatch(/start|create/i)
     expect(coreDescription('clojure')).not.toMatch(/create servers/)
   })
+
+  // Captures are plain data and failures are `ex-info` maps, not typed objects or exceptions.
+  it('labels captures and errors as what Clojure offers', () => {
+    const labels = Object.values(resolveCoreHome('clojure', 'latest').capabilities).flat().map((row) => row.label).join('\n')
+    expect(labels).toContain('plain maps')
+    expect(labels).toContain('ex-info')
+    expect(labels).not.toMatch(/Typed (objects|errors)/)
+  })
 })

@@ -90,12 +90,15 @@ export interface CoreGraphHomeEntry {
   modules?: never
   objectDescriptions?: Partial<Record<CoreRole, string>>
   capabilities: Partial<Record<CapabilityKey, string>>
+  /** Replaces a capability's shared label where the port delivers it differently, as plain maps instead of typed objects. */
+  capabilityLabels?: Partial<Record<CapabilityKey, string>>
 }
 
 export interface CoreModuleHomeEntry {
   modules: readonly string[]
   objects?: never
   association?: never
+  capabilityLabels?: never
   title: string
   lead: string
   capabilities: Record<string, never>
@@ -159,7 +162,7 @@ export function resolveCoreHome(port: string, version: string, entry: CoreHomeEn
   for (const [key, id] of Object.entries(entry.capabilities)) {
     const capability = CAPABILITIES[key as CapabilityKey]
     if (!capability) throw new Error(`core-home: ${port} lists unknown capability ${key}`)
-    capabilities[capability.group].push({ key: key as CapabilityKey, label: capability.label, ...link(port, id, version, key, key as CapabilityKey) })
+    capabilities[capability.group].push({ key: key as CapabilityKey, label: entry.capabilityLabels?.[key as CapabilityKey] ?? capability.label, ...link(port, id, version, key, key as CapabilityKey) })
   }
   for (const group of Object.values(capabilities)) group.sort((a, b) =>
     Object.keys(CAPABILITIES).indexOf(a.key) - Object.keys(CAPABILITIES).indexOf(b.key))

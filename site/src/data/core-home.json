@@ -417,6 +417,10 @@
       "control-mode": "libtmux.control/subscribe!",
       "capture": "libtmux.core/capture!",
       "async": "libtmux.async"
+    },
+    "capabilityLabels": {
+      "objects": "Captured values as plain maps instead of parsed format strings",
+      "errors": "ex-info failures with classified tmux error data instead of exit codes and stderr"
     }
   },
   "erlang": {
